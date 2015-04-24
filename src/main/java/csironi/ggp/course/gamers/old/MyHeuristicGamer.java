@@ -1,7 +1,7 @@
 /**
  * 
  */
-package csironi.ggp.course.gamers;
+package csironi.ggp.course.gamers.old;
 
 import org.ggp.base.player.gamer.statemachine.sample.SampleGamer;
 import org.ggp.base.util.statemachine.Move;

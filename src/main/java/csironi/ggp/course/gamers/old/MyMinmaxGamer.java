@@ -1,7 +1,7 @@
 /**
  *
  */
-package csironi.ggp.course.gamers;
+package csironi.ggp.course.gamers.old;
 
 import java.io.BufferedWriter;
 import java.io.FileWriter;
@@ -23,20 +23,22 @@ import org.ggp.base.util.statemachine.exceptions.TransitionDefinitionException;
 /**
  * Implementation of a MinMax player for the GGP course.
  *
- * Does this implementation of minmax make sense for games with 3 or more players?
+ * NOTE: this player only works on two-player games! Do not use it for single-player games or multi-player games!
  *
- * NOTE: this player only works on multi-player games! Do not use it for single-player games!
+ * @see MyMinmaxPlusGamer for multi-player games.
+ *
  * @author C.Sironi
  *
  */
-public class MyMinmaxPlusGamer extends SampleGamer {
+public class MyMinmaxGamer extends SampleGamer {
 
 	private PrintWriter out = null;
+
 
 	/**
 	 *
 	 */
-	public MyMinmaxPlusGamer() {
+	public MyMinmaxGamer() {
 		// TODO Auto-generated constructor stub
 	}
 
@@ -55,10 +57,11 @@ public class MyMinmaxPlusGamer extends SampleGamer {
 		Role myRole = getRole();
 
 		List<Move> myMoves = stateMachine.getLegalMoves(state, myRole);
+
 		Move selection = myMoves.get(0);
 
 		try{
-			out = new PrintWriter(new BufferedWriter(new FileWriter("C:\\Users\\c.sironi\\BITBUCKET REPOS\\GGP-Base\\LOG\\mylogMinmaxPlus.txt", true)));
+			out = new PrintWriter(new BufferedWriter(new FileWriter("C:\\Users\\c.sironi\\BITBUCKET REPOS\\GGP-Base\\LOG\\mylogMinmax.txt", true)));
 
 			// If I only have one available move I will return that one otherwise I'll perform minmax search
 			if(myMoves.size() != 1){
@@ -90,36 +93,16 @@ public class MyMinmaxPlusGamer extends SampleGamer {
 
 		StateMachine stateMachine = getStateMachine();
 
-		// Find out what index my role has in the list of roles
+		// Find out the index of my role in the list of roles
 		Map<Role,Integer> map = stateMachine.getRoleIndices();
 		int myIndex = map.get(myRole);
+		// Find out the index of the opponent's role in the list of roles
+		// NOTE: we are assuming that we are dealing only with two-players games
+		// thus if my index is 0 the opponent's index is 1 and vice versa.
+		int opponentIndex = (myIndex+1)%2;
 
-
-		out.println("Begin");
-		out.println("My role: " + myRole);
 		out.println("My index: " + myIndex);
-
-		// Find the index of the opponent's role that needs to be investigated next
-		// (i.e. All the roles must be investigated, starting from index 0 to the last index.
-		// This check makes sure that my role won't be investigated as an opponent, thus as a min node).
-		int nextOpponentIndex = 0;
-		if(nextOpponentIndex == myIndex){
-			nextOpponentIndex = 1;
-		}
-
-		out.println("Next opponent index: " + nextOpponentIndex);
-
-		// Retrieve the list of all roles
-		List<Role> roles = stateMachine.getRoles();
-
-		out.print("Roles: [ ");
-		for(Role role: roles){
-			out.print(role + " ");
-		}
-		out.println("]");
-
-		int numberOfRoles = roles.size();
-		out.println("Number of roles: " + numberOfRoles);
+		out.println("Opponent's index: " + opponentIndex);
 
 		// Check all my available moves to find the best one
 		List<Move> myMoves = stateMachine.getLegalMoves(state, myRole);
@@ -134,16 +117,9 @@ public class MyMinmaxPlusGamer extends SampleGamer {
 		int maxScore = 0;
 
 		for (Move move: myMoves){
-			// Create the list of joint moves for this state with the same capacity as the size of the list of roles
-			ArrayList<Move> jointMoves = new ArrayList<Move>(numberOfRoles);
-			// Initialization as null of all joint moves
-			for(int i=0; i<numberOfRoles; i++){
-				jointMoves.add(null);
-			}
-			jointMoves.set(myIndex, move);
 
 			// Compute the score for the current move
-			int currentScore = minscore(state, myRole, roles, jointMoves, myIndex, nextOpponentIndex);
+			int currentScore = minscore(state, myRole, move, myIndex, opponentIndex);
 
 			// Check if the maximum score must be updated
 			/*if(currentScore == 100){
@@ -167,22 +143,17 @@ public class MyMinmaxPlusGamer extends SampleGamer {
 	 *
 	 *
 	 */
-	private int minscore(MachineState state, Role myRole, List<Role> roles, List<Move> jointMoves, int myIndex, int thisOpponentIndex)
+	private int minscore(MachineState state, Role myRole, Move myMove, int myIndex, int opponentIndex)
 			throws TransitionDefinitionException, MoveDefinitionException,
 			GoalDefinitionException{
 
-		// Find the index of the opponent's role that needs to be investigated next
-		// (i.e. All the roles must be investigated, starting from index 0 to the last index.
-		// This check makes sure that my role won't be investigated as an opponent, thus as a min node).
-		int nextOpponentIndex = thisOpponentIndex + 1;
-		if(nextOpponentIndex == myIndex){
-			nextOpponentIndex++;
-		}
-
 		StateMachine stateMachine = getStateMachine();
 
-		// Find legal moves for the current opponent
-		List<Move> moves = stateMachine.getLegalMoves(state, roles.get(thisOpponentIndex));
+		// Retrieve the list of all roles
+		List<Role> roles = stateMachine.getRoles();
+
+		// Find legal moves for the opponent
+		List<Move> moves = stateMachine.getLegalMoves(state, roles.get(opponentIndex));
 
 		out.print("Opponent moves: [ ");
 		for(Move move: moves){
@@ -193,24 +164,17 @@ public class MyMinmaxPlusGamer extends SampleGamer {
 		int minScore = 100;
 
 		for (Move move: moves){
-			// Add this move to a copy of the joint moves list in the position specified
-			// by the thisOpponentIndex variable.
-			// NOTE: the array is copied for safety reasons (i.e. assignments for a position of the array
-			// won't overlap), but using the same array for each recursive call shouldn't be a problem,
-			// on the contrary it should save space.
-			ArrayList<Move> newJointMoves = new ArrayList<Move>(jointMoves);
-			newJointMoves.set(thisOpponentIndex, move);
 
-			// Check if this is the last min node and thus the maxscore has to be called next
-			// and the state must be advanced. Otherwise the minscore will be called.
-			int currentScore = 0;
-			if(nextOpponentIndex >= roles.size()){
-				// Advance the state
-				MachineState nextState = stateMachine.getNextState(state, newJointMoves);
-				currentScore = maxscore(nextState, myRole, roles, myIndex);
-			}else{
-				currentScore = minscore(state, myRole, roles, newJointMoves, myIndex, nextOpponentIndex);
+			// Create the list of joint moves for this state with the same capacity of 2 (= total number if roles)
+			ArrayList<Move> jointMoves = new ArrayList<Move>(2);
+			// Initialization as null of all joint moves
+			for(int i=0; i<2; i++){
+				jointMoves.add(null);
 			}
+			jointMoves.set(myIndex, myMove);
+			jointMoves.set(opponentIndex, move);
+
+			int currentScore = maxscore(stateMachine.getNextState(state, jointMoves), myRole, myIndex, opponentIndex);
 			if(currentScore < minScore){
 				minScore = currentScore;
 			}
@@ -224,7 +188,7 @@ public class MyMinmaxPlusGamer extends SampleGamer {
 	 *
 	 *
 	 */
-	private int maxscore(MachineState state, Role myRole, List<Role> roles, int myIndex)
+	private int maxscore(MachineState state, Role myRole, int myIndex, int opponentIndex)
 			throws TransitionDefinitionException, MoveDefinitionException,
 			GoalDefinitionException{
 
@@ -235,14 +199,6 @@ public class MyMinmaxPlusGamer extends SampleGamer {
 			int goal = stateMachine.getGoal(state, myRole);
 			out.println("Terminal state goal: " + goal);
 			return goal;
-		}
-
-		// Find the index of the opponent's role that needs to be investigated next
-		// (i.e. All the roles must be investigated, starting from index 0 to the last index.
-		// This check makes sure that my role won't be investigated as an opponent, thus as a min node).
-		int nextOpponentIndex = 0;
-		if(nextOpponentIndex == myIndex){
-			nextOpponentIndex = 1;
 		}
 
 		// Check all my available moves to find the best one
@@ -256,19 +212,10 @@ public class MyMinmaxPlusGamer extends SampleGamer {
 
 		int maxScore = 0;
 
-		int numberOfRoles = roles.size();
-
 		for (Move move: myMoves){
-			// Create the list of joint moves for this state with the same capacity as the size of the list of roles
-			ArrayList<Move> jointMoves = new ArrayList<Move>(numberOfRoles);
-			// Initialization as null of all joint moves
-			for(int i=0; i<numberOfRoles; i++){
-				jointMoves.add(null);
-			}
-			jointMoves.set(myIndex, move);
 
 			// Compute the score for the current move
-			int currentScore = minscore(state, myRole, roles, jointMoves, myIndex, nextOpponentIndex);
+			int currentScore = minscore(state, myRole, move, myIndex, opponentIndex);
 
 			// Check if the maximum score must be updated
 			/*if(currentScore == 100){
@@ -282,5 +229,8 @@ public class MyMinmaxPlusGamer extends SampleGamer {
 
 		return maxScore;
 	}
+
+
+
 
 }

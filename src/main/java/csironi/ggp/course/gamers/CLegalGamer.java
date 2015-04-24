@@ -4,7 +4,6 @@
 package csironi.ggp.course.gamers;
 
 import java.util.List;
-import java.util.Random;
 
 import org.ggp.base.player.gamer.event.GamerSelectedMoveEvent;
 import org.ggp.base.player.gamer.statemachine.sample.SampleGamer;
@@ -14,17 +13,13 @@ import org.ggp.base.util.statemachine.exceptions.MoveDefinitionException;
 import org.ggp.base.util.statemachine.exceptions.TransitionDefinitionException;
 
 /**
+ * Legal gamer realized for the GGP course.
+ * This gamer chooses at each step the first legal action.
+ *
  * @author C.Sironi
  *
  */
-public class MyRandomGamer extends SampleGamer {
-
-	/**
-	 *
-	 */
-	public MyRandomGamer() {
-		// TODO Auto-generated constructor stub
-	}
+public class CLegalGamer extends SampleGamer {
 
 	/* (non-Javadoc)
 	 * @see org.ggp.base.player.gamer.statemachine.StateMachineGamer#stateMachineSelectMove(long)
@@ -34,16 +29,32 @@ public class MyRandomGamer extends SampleGamer {
 			throws TransitionDefinitionException, MoveDefinitionException,
 			GoalDefinitionException {
 
+		// We get the current start time
 		long start = System.currentTimeMillis();
 
+		/**
+		 * We put in memory the list of legal moves from the
+		 * current state. The goal of every stateMachineSelectMove()
+		 * is to return one of these moves. The choice of which
+		 * Move to play is the goal of GGP.
+		 */
 		List<Move> moves = getStateMachine().getLegalMoves(getCurrentState(), getRole());
-		Move selection = (moves.get(new Random().nextInt(moves.size())));
 
+		// SampleLegalGamer is very simple : it picks the first legal move
+		Move selection = moves.get(0);
+
+		// We get the end time
+		// It is mandatory that stop<timeout
 		long stop = System.currentTimeMillis();
 
+		/**
+		 * These are functions used by other parts of the GGP codebase
+		 * You shouldn't worry about them, just make sure that you have
+		 * moves, selection, stop and start defined in the same way as
+		 * this example, and copy-paste these two lines in your player
+		 */
 		notifyObservers(new GamerSelectedMoveEvent(moves, selection, stop - start));
 		return selection;
-
 	}
 
 }

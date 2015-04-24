@@ -1,7 +1,7 @@
 /**
  *
  */
-package csironi.ggp.course.gamers;
+package csironi.ggp.course.gamers.old;
 
 import java.io.BufferedWriter;
 import java.io.FileWriter;
