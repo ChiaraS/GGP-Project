@@ -1,7 +1,7 @@
 /**
  *
  */
-package csironi.ggp.extension.gamers;
+package csironi.ggp.course.gamers;
 
 import java.io.BufferedWriter;
 import java.io.FileWriter;
@@ -22,6 +22,8 @@ import org.ggp.base.util.statemachine.exceptions.TransitionDefinitionException;
 
 /**
  * Implementation of a MinMax player for the GGP course.
+ *
+ * Does this implementation of minmax make sense for games with 3 or more players?
  *
  * NOTE: this player only works on multi-player games! Do not use it for single-player games!
  * @author C.Sironi
@@ -46,18 +48,17 @@ public class MyMinmaxPlusGamer extends SampleGamer {
 			throws TransitionDefinitionException, MoveDefinitionException,
 			GoalDefinitionException {
 
-			long start = System.currentTimeMillis();
+		long start = System.currentTimeMillis();
 
-			StateMachine stateMachine = getStateMachine();
-			MachineState state = getCurrentState();
-			Role myRole = getRole();
+		StateMachine stateMachine = getStateMachine();
+		MachineState state = getCurrentState();
+		Role myRole = getRole();
 
-			List<Move> myMoves = stateMachine.getLegalMoves(state, myRole);
-
-			Move selection = myMoves.get(0);
+		List<Move> myMoves = stateMachine.getLegalMoves(state, myRole);
+		Move selection = myMoves.get(0);
 
 		try{
-			out = new PrintWriter(new BufferedWriter(new FileWriter("C:\\Users\\c.sironi\\BITBUCKET REPOS\\GGP-Base\\LOG\\mylog.txt", true)));
+			out = new PrintWriter(new BufferedWriter(new FileWriter("C:\\Users\\c.sironi\\BITBUCKET REPOS\\GGP-Base\\LOG\\mylogMinmaxPlus.txt", true)));
 
 			// If I only have one available move I will return that one otherwise I'll perform minmax search
 			if(myMoves.size() != 1){

@@ -1,4 +1,4 @@
-package csironi.ggp.extension.gamers;
+package csironi.ggp.course.gamers;
 
 import java.util.List;
 import java.util.Random;

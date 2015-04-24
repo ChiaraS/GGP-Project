@@ -1,7 +1,7 @@
 /**
  *
  */
-package csironi.ggp.extension.gamers;
+package csironi.ggp.course.gamers;
 
 import java.util.ArrayList;
 import java.util.List;
