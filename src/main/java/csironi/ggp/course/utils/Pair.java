@@ -15,8 +15,17 @@ public class Pair<T, V> {
 		return this.t;
 	}
 
+	public void setFirst(T t){
+		this.t=t;
+	}
+
 	public V getSecond(){
 		return this.v;
+	}
+
+	@Override
+	public String toString(){
+		return "<"+t+","+v+">";
 	}
 
 }

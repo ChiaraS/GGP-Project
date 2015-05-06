@@ -7,15 +7,8 @@ import java.io.BufferedWriter;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.PrintWriter;
-import java.util.List;
 
-import org.ggp.base.util.statemachine.MachineState;
-import org.ggp.base.util.statemachine.Move;
-import org.ggp.base.util.statemachine.Role;
 import org.ggp.base.util.statemachine.StateMachine;
-import org.ggp.base.util.statemachine.exceptions.GoalDefinitionException;
-import org.ggp.base.util.statemachine.exceptions.MoveDefinitionException;
-import org.ggp.base.util.statemachine.exceptions.TransitionDefinitionException;
 
 /**
  * @author C.Sironi
@@ -44,18 +37,13 @@ public abstract class SearchAlgorithm {
 		this.stateMachine = stateMachine;
 	}
 
-
-	public abstract List<Move> bestmove(MachineState state, Role role)
-			throws TransitionDefinitionException, MoveDefinitionException,
-			GoalDefinitionException;
-
 	/**
 	 * This methods writes to the log file the given string.
 	 *
 	 * @param toLog the string to be written on the file.
 	 */
 	// TODO Switch to the use of the GGP-base logger
-	private void log(String toLog){
+	protected void log(String toLog){
 
 		if(log){
 			try{

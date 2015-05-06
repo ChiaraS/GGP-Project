@@ -14,9 +14,9 @@ import org.ggp.base.util.statemachine.exceptions.GoalDefinitionException;
 import org.ggp.base.util.statemachine.exceptions.MoveDefinitionException;
 import org.ggp.base.util.statemachine.exceptions.TransitionDefinitionException;
 
-import csironi.ggp.course.utils.Pair;
-
 /**
+ *
+ *
  * @author C.Sironi
  *
  */
@@ -29,105 +29,278 @@ public class MinMax extends SearchAlgorithm {
 		super(log, logFileName, stateMachine);
 	}
 
-
-
-	/* (non-Javadoc)
-	 * @see csironi.ggp.course.gamers.algorithms.SearchAlgorithm#bestmove()
-	 */
-	@Override
-	public List<Move> bestmove(MachineState state, Role role)
+	public Move bestmove(MachineState state, Role role, Boolean prune, int alpha, int beta)
 			throws TransitionDefinitionException, MoveDefinitionException,
 			GoalDefinitionException {
 
-		Pair<List<Move>, Integer> result = maxscore(state, role);
+		log("Starting bestmove");
 
-		// Revert the order of the actions since they are listed from last to first wrt to the root.
-		List<Move> bestPathMoves = new ArrayList<Move>();
-		for(Move move: result.getFirst()){
-			bestPathMoves.add(0, move);
+
+		/*Only for log*/
+		List<Role> roles = stateMachine.getRoles();
+		String toLog = "Roles: [ ";
+		for(Role r: roles){
+			toLog += r + " ";
+		}
+		toLog += "]";
+		log(toLog);
+
+		List<Move> moves = stateMachine.getLegalMoves(state, role);
+
+		toLog = "My moves: [ ";
+		for(Move move: moves){
+			toLog += move + " ";
+		}
+		toLog += "]";
+		log(toLog);
+
+		Move selection = moves.get(0);
+
+		if(prune){
+
+			for (Move move: moves){
+
+				int currentScore;
+
+				if(stateMachine.getRoles().size() == 1){
+					ArrayList<Move> jointMoves = new ArrayList<Move>();
+					jointMoves.add(move);
+					currentScore = maxscore(stateMachine.getNextState(state, jointMoves), role, alpha, beta);
+				}else{
+					currentScore = minscore(state, role, move, alpha, beta);
+				}
+
+				if(currentScore > alpha){
+					alpha = currentScore;
+					selection = move;
+				}
+
+				log("Current maxScore (alpha): " + alpha);
+
+				if(alpha >= beta){
+					log("Alpa >= beta: stopping!");
+					log("Returned move " + move);
+					return move;
+				}
+
+			}
+
+		}else{
+			int maxScore = 0;
+
+			for (Move move: moves){
+
+				int currentScore;
+
+				if(stateMachine.getRoles().size() == 1){
+					ArrayList<Move> jointMoves = new ArrayList<Move>();
+					jointMoves.add(move);
+					currentScore = maxscore(stateMachine.getNextState(state, jointMoves), role);
+				}else{
+					currentScore = minscore(state, role, move);
+				}
+
+				// Check if the maximum score must be updated
+				/*if(currentScore == 100){
+					return move;
+				}*/
+				if(currentScore > maxScore){
+					maxScore = currentScore;
+					selection = move;
+				}
+
+				log("Current maxScore: " + maxScore);
+			}
+
 		}
 
-		return bestPathMoves;
+		log("Returned move " + selection);
+
+		return selection;
 	}
 
 
-	private Pair<List<Move>, Integer> maxscore(MachineState state, Role role/*MachineState state, Role myRole, List<Role> roles, int myIndex*/)
+	private int maxscore(MachineState state, Role role)
 			throws TransitionDefinitionException, MoveDefinitionException,
 			GoalDefinitionException{
+
+		log("Performing maxscore");
 
 		// Check if the state is terminal
 		if(stateMachine.isTerminal(state)){
 			int goal = stateMachine.getGoal(state, role);
-			//out.println("Terminal state goal: " + goal);
-			return new Pair<List<Move>, Integer> (new ArrayList<Move>(), goal);
+			log("Terminal state goal: " + goal);
+			return goal;
 		}
 
 		// Check all my available moves to find the best one
 		List<Move> moves = stateMachine.getLegalMoves(state, role);
 
-		//out.print("My moves: [ ");
-		//for(Move move: myMoves){
-		//	out.print(move + " ");
-		//}
-		//out.println("]");
+		String toLog = "My moves: [ ";
+		for(Move move: moves){
+			toLog += move + " ";
+		}
+		toLog += "]";
+		log(toLog);
 
-		Pair<List<Move>, Integer> maxResult = new Pair<List<Move>, Integer>(null,0);
+		int maxScore = 0;
 
 		for (Move move: moves){
 
-			Pair<List<Move>, Integer> currentResult;
+			log("Move [ " + move + " ]");
+
+			int currentScore;
 
 			if(stateMachine.getRoles().size() == 1){
 				ArrayList<Move> jointMoves = new ArrayList<Move>();
 				jointMoves.add(move);
-				currentResult = maxscore(stateMachine.getNextState(state, jointMoves), role);
+				currentScore = maxscore(stateMachine.getNextState(state, jointMoves), role);
 			}else{
-				currentResult = minscore(state, role, move);
+				currentScore = minscore(state, role, move);
 			}
 
 			// Check if the maximum score must be updated
 			/*if(currentScore == 100){
 				return move;
 			}*/
-			if(currentResult.getSecond().intValue() > maxResult.getSecond().intValue()){
-				maxResult = currentResult;
-				maxResult.getFirst().add(move);
+			if(currentScore > maxScore){
+				maxScore = currentScore;
 			}
-			//out.println("Current maxscore: " + maxScore);
+
+			log("Current maxScore: " + maxScore);
 		}
 
-		return maxResult;
+		return maxScore;
 	}
 
-	private Pair<List<Move>, Integer> minscore(MachineState state, Role role, Move move)
+	private int minscore(MachineState state, Role role, Move move)
 			throws TransitionDefinitionException, MoveDefinitionException,
 			GoalDefinitionException{
+
+		log("Performing minscore");
 
 		// Find all legal joint moves given the current move of the player
 		List<List<Move>> jointMovesList = stateMachine.getLegalJointMoves(state, role, move);
 
-		//out.print("Opponent moves: [ ");
-		//for(Move move: moves){
-		//	out.print(move + " ");
-		//}
-		//out.println("]");
-
-		Pair<List<Move>, Integer> minResult = new Pair<List<Move>, Integer>(null,100);
+		int minScore = 100;
 
 		for(List<Move> jointMoves: jointMovesList){
 
-			Pair<List<Move>, Integer> currentResult;
-
-			currentResult = maxscore(stateMachine.getNextState(state, jointMoves), role);
-			if(currentResult.getSecond().intValue() < minResult.getSecond().intValue()){
-				minResult = currentResult;
+			String toLog = "Joint moves: [ ";
+			for(Move m: jointMoves){
+				toLog += m + " ";
 			}
-			//out.println("Current minscore: " + minScore);
+			toLog += "]";
+			log(toLog);
+
+			int currentScore;
+
+			currentScore = maxscore(stateMachine.getNextState(state, jointMoves), role);
+			if(currentScore < minScore){
+				minScore = currentScore;
+			}
+			log("Current minScore: " + minScore);
 		}
 
-		return minResult;
+		return minScore;
 	}
 
 
+	private int maxscore(MachineState state, Role role, int alpha, int beta)
+			throws TransitionDefinitionException, MoveDefinitionException,
+			GoalDefinitionException{
+
+		log("Performing maxscore");
+
+		// Check if the state is terminal
+		if(stateMachine.isTerminal(state)){
+			int goal = stateMachine.getGoal(state, role);
+			log("Terminal state goal: " + goal);
+			return goal;
+		}
+
+		// Check all my available moves to find the best one
+		List<Move> moves = stateMachine.getLegalMoves(state, role);
+
+		String toLog = "My moves: [ ";
+		for(Move move: moves){
+			toLog += move + " ";
+		}
+		toLog += "]";
+		log(toLog);
+
+		for (Move move: moves){
+
+			log("Move [ " + move + " ]");
+
+			int currentScore;
+
+			if(stateMachine.getRoles().size() == 1){
+				ArrayList<Move> jointMoves = new ArrayList<Move>();
+				jointMoves.add(move);
+				currentScore = maxscore(stateMachine.getNextState(state, jointMoves), role, alpha, beta);
+			}else{
+				currentScore = minscore(state, role, move, alpha, beta);
+			}
+
+			// Check if the maximum score must be updated
+			/*if(currentScore == 100){
+				return move;
+			}*/
+			if(currentScore > alpha){
+				alpha = currentScore;
+			}
+
+			log("Current alpha: " + alpha);
+			log("Current beta: " + beta);
+
+			if(alpha >= beta){
+				log("Returning beta");
+				return beta;
+			}
+		}
+
+		log("Returning alpha");
+		return alpha;
+	}
+
+	private int minscore(MachineState state, Role role, Move move, int alpha, int beta)
+			throws TransitionDefinitionException, MoveDefinitionException,
+			GoalDefinitionException{
+
+		log("Performing minscore");
+
+		// Find all legal joint moves given the current move of the player
+		List<List<Move>> jointMovesList = stateMachine.getLegalJointMoves(state, role, move);
+
+		for(List<Move> jointMoves: jointMovesList){
+
+			String toLog = "Joint moves: [ ";
+			for(Move m: jointMoves){
+				toLog += m + " ";
+			}
+			toLog += "]";
+			log(toLog);
+
+			int currentScore;
+
+			currentScore = maxscore(stateMachine.getNextState(state, jointMoves), role, alpha, beta);
+			if(currentScore < beta){
+				beta = currentScore;
+			}
+
+			log("Current alpha: " + alpha);
+			log("Current beta: " + beta);
+
+			if(beta <= alpha){
+				log("Returning alpha");
+				return alpha;
+			}
+		}
+
+		log("Returning beta");
+
+		return beta;
+	}
 
 }

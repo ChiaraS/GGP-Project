@@ -13,8 +13,7 @@ import org.ggp.base.util.statemachine.exceptions.GoalDefinitionException;
 import org.ggp.base.util.statemachine.exceptions.MoveDefinitionException;
 import org.ggp.base.util.statemachine.exceptions.TransitionDefinitionException;
 
-import csironi.ggp.course.algorithms.MinMax;
-import csironi.ggp.course.algorithms.SearchAlgorithm;
+import csironi.ggp.course.algorithms.MinMaxSequence;
 
 /**
  * Compulsive deliberation gamer realized for the GGP course.
@@ -22,6 +21,9 @@ import csironi.ggp.course.algorithms.SearchAlgorithm;
  *
  * NOTE: if used to play multi-player games this gamer will behave as a minmax gamer (2-players game)
  * or as a paranoid gamer (3+ -players game).
+ *
+ * NOTE: this gamer doesn't manage time limits, thus if used for games with a big search space it might exceed time limits
+ * when looking for the move to play and the game manager will assign it a random chosen action.
  *
  * @author C.Sironi
  *
@@ -39,6 +41,7 @@ public class CDeliberationGamer extends SampleGamer {
 		// We get the current start time
 		long start = System.currentTimeMillis();
 
+		// Get state machine and list of available legal moves for the player
 		StateMachine stateMachine = getStateMachine();
 		List<Move> moves = stateMachine.getLegalMoves(getCurrentState(), getRole());
 
@@ -47,7 +50,8 @@ public class CDeliberationGamer extends SampleGamer {
 		// otherwise return the only one available.
 		if(moves.size() != 1){
 
-			SearchAlgorithm search = new MinMax(true, "C:\\Users\\c.sironi\\BITBUCKET REPOS\\GGP-Base\\LOG\\DeliberationLog.txt", stateMachine);
+			// Use the minmax search algorithm
+			MinMaxSequence search = new MinMaxSequence(true, "C:\\Users\\c.sironi\\BITBUCKET REPOS\\GGP-Base\\LOG\\DeliberationLog.txt", stateMachine);
 			List<Move> bestPathMoves = search.bestmove(getCurrentState(), getRole());
 			selection = bestPathMoves.get(0);
 		}

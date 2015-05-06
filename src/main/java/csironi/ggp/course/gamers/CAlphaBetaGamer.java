@@ -13,23 +13,20 @@ import org.ggp.base.util.statemachine.exceptions.GoalDefinitionException;
 import org.ggp.base.util.statemachine.exceptions.MoveDefinitionException;
 import org.ggp.base.util.statemachine.exceptions.TransitionDefinitionException;
 
-import csironi.ggp.course.algorithms.MinMaxSequence;
+import csironi.ggp.course.algorithms.MinMax;
 
 /**
- * Minmax gamer realized for the GGP course.
- * This gamer in two-players games at each step searches the whole search space using the minmax algorithm and chooses
- * the legal action that has the highest minmax value.
- *
- * NOTE: if used to play single-player games this gamer will behave as a compulsive deliberation gamer and if used to play
- * 3+ -players games it will behave as a paranoid gamer.
- *
- * NOTE: this gamer doesn't manage time limits, thus if used for games with a big search space it might exceed time limits
- * when looking for the move to play and the game manager will assign it a random chosen action.
- *
  * @author C.Sironi
  *
  */
-public class CMinmaxGamer extends SampleGamer {
+public class CAlphaBetaGamer extends SampleGamer {
+
+	/**
+	 *
+	 */
+	public CAlphaBetaGamer() {
+		// TODO Auto-generated constructor stub
+	}
 
 	/* (non-Javadoc)
 	 * @see org.ggp.base.player.gamer.statemachine.StateMachineGamer#stateMachineSelectMove(long)
@@ -38,6 +35,7 @@ public class CMinmaxGamer extends SampleGamer {
 	public Move stateMachineSelectMove(long timeout)
 			throws TransitionDefinitionException, MoveDefinitionException,
 			GoalDefinitionException {
+
 		// We get the current start time
 		long start = System.currentTimeMillis();
 
@@ -49,9 +47,8 @@ public class CMinmaxGamer extends SampleGamer {
 		// otherwise return the only one available.
 		if(moves.size() != 1){
 
-			MinMaxSequence search = new MinMaxSequence(true, "C:\\Users\\c.sironi\\BITBUCKET REPOS\\GGP-Base\\LOG\\MinmaxLog.txt", stateMachine);
-			List<Move> bestPathMoves = search.bestmove(getCurrentState(), getRole());
-			selection = bestPathMoves.get(0);
+			MinMax search = new MinMax(true, "C:\\Users\\c.sironi\\BITBUCKET REPOS\\GGP-Base\\LOG\\AlphaBetaLog.txt", stateMachine);
+			selection = search.bestmove(getCurrentState(), getRole(), true, 0, 100);
 		}
 
 		// We get the end time
