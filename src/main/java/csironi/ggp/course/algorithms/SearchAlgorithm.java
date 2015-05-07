@@ -28,6 +28,8 @@ public abstract class SearchAlgorithm {
 
 	protected StateMachine stateMachine;
 
+	protected boolean timedOut;
+
 	/**
 	 *
 	 */
@@ -35,6 +37,7 @@ public abstract class SearchAlgorithm {
 		this.log = log;
 		this.logFileName = logFileName;
 		this.stateMachine = stateMachine;
+		this.timedOut = false;
 	}
 
 	/**

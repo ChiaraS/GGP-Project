@@ -19,12 +19,12 @@ import csironi.ggp.course.algorithms.MinMax;
  * @author C.Sironi
  *
  */
-public class CAlphaBetaGamer extends SampleGamer {
+public class CLimitedDepthGamer extends SampleGamer {
 
 	/**
 	 *
 	 */
-	public CAlphaBetaGamer() {
+	public CLimitedDepthGamer() {
 		// TODO Auto-generated constructor stub
 	}
 
@@ -49,8 +49,8 @@ public class CAlphaBetaGamer extends SampleGamer {
 		// otherwise return the only one available.
 		if(moves.size() != 1){
 
-			MinMax search = new MinMax(true, "C:\\Users\\c.sironi\\BITBUCKET REPOS\\GGP-Base\\LOG\\AlphaBetaLog.txt", stateMachine);
-			selection = search.bestmove(finishBy, getCurrentState(), getRole(), true, 0, 100, Integer.MAX_VALUE);
+			MinMax search = new MinMax(true, "C:\\Users\\c.sironi\\BITBUCKET REPOS\\GGP-Base\\LOG\\LimitedDepthLog.txt", stateMachine);
+			selection = search.bestmove(finishBy + 2000, getCurrentState(), getRole(), true, 0, 100, 10);
 		}
 
 		// We get the end time
@@ -59,6 +59,7 @@ public class CAlphaBetaGamer extends SampleGamer {
 
 		notifyObservers(new GamerSelectedMoveEvent(moves, selection, stop - start));
 		return selection;
+
 	}
 
 }
