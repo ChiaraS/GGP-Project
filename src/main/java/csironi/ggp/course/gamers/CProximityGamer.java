@@ -14,18 +14,18 @@ import org.ggp.base.util.statemachine.exceptions.MoveDefinitionException;
 import org.ggp.base.util.statemachine.exceptions.TransitionDefinitionException;
 
 import csironi.ggp.course.algorithms.MinMax;
-import csironi.ggp.course.evalfunctions.EvalZero;
+import csironi.ggp.course.evalfunctions.EvalProximity;
 
 /**
  * @author C.Sironi
  *
  */
-public class CAlphaBetaGamer extends SampleGamer {
+public class CProximityGamer extends SampleGamer {
 
 	/**
 	 *
 	 */
-	public CAlphaBetaGamer() {
+	public CProximityGamer() {
 		// TODO Auto-generated constructor stub
 	}
 
@@ -50,8 +50,8 @@ public class CAlphaBetaGamer extends SampleGamer {
 		// otherwise return the only one available.
 		if(moves.size() != 1){
 
-			MinMax search = new MinMax(true, "C:\\Users\\c.sironi\\BITBUCKET REPOS\\GGP-Base\\LOG\\AlphaBetaLog.txt", stateMachine);
-			selection = search.bestmove(finishBy, getCurrentState(), getRole(), true, 0, 100, Integer.MAX_VALUE, false, false, new EvalZero(stateMachine));
+			MinMax search = new MinMax(true, "C:\\Users\\c.sironi\\BITBUCKET REPOS\\GGP-Base\\LOG\\ProximityLog.txt", stateMachine);
+			selection = search.bestmove(finishBy, getCurrentState(), getRole(), true, 0, 100, 3, false, false, new EvalProximity(stateMachine));
 		}
 
 		// We get the end time

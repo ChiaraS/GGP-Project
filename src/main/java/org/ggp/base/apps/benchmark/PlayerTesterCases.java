@@ -7,7 +7,8 @@ package org.ggp.base.apps.benchmark;
  */
 public class PlayerTesterCases {
 	public static final PlayerTester.TestCase[] TEST_CASES = new PlayerTester.TestCase[] {
-		// Cases from the EndgameCaseGenerator
+
+		/*// Cases from the EndgameCaseGenerator
 		new PlayerTester.TestCase("Endgame", "ticTacToe", 0, 15, 5, "( ( cell 2 1 b ) ( control xplayer ) ( cell 1 2 x ) ( cell 1 1 o ) ( cell 3 2 b ) ( cell 2 3 x ) ( cell 3 3 b ) ( cell 3 1 b ) ( cell 1 3 b ) ( cell 2 2 o ) )", new String[] {"( mark 3 3 )", }),
 		new PlayerTester.TestCase("Endgame", "ticTacToe", 0, 15, 5, "( ( control xplayer ) ( cell 1 1 x ) ( cell 1 3 b ) ( cell 3 2 x ) ( cell 3 3 o ) ( cell 1 2 b ) ( cell 2 2 b ) ( cell 2 3 o ) ( cell 3 1 o ) ( cell 2 1 x ) )", new String[] {"( mark 1 3 )", }),
 		new PlayerTester.TestCase("Endgame", "ticTacToe", 0, 15, 5, "( ( cell 2 1 b ) ( cell 3 1 b ) ( cell 2 2 o ) ( cell 2 3 b ) ( cell 3 3 o ) ( cell 1 2 x ) ( cell 1 3 x ) ( cell 3 2 b ) ( cell 1 1 b ) ( control xplayer ) )", new String[] {"( mark 1 1 )", }),
@@ -37,5 +38,9 @@ public class PlayerTesterCases {
 		new PlayerTester.TestCase("Sancho", "2pffa", 0, 15, 5, "( ( cell 1 4 red ) ( cell 5 5 blue ) ( capture red 0 ) ( cell 3 3 red ) ( cell 7 4 blue ) ( control red ) ( step 3 ) ( capture blue 0 ) )", new String[] { "( move 1 4 3 5 )", }),
 		new PlayerTester.TestCase("Sancho", "2pttc", 0, 15, 5, "( ( cell 6 6 blue ) ( cell 5 3 blue ) ( cell 3 5 red ) ( cell 1 4 red ) ( cell 3 3 red ) ( cell 5 5 blue ) ( cell 7 4 blue ) ( step 7 ) ( control red ) ( cell 2 2 red ) )", new String[] { "( move 2 2 3 4 )", }),
 		new PlayerTester.TestCase("Sancho", "4pffa", 3, 15, 5, "( ( cell 4 7 green ) ( capture blue 0 ) ( cell 7 4 blue ) ( cell 4 1 yellow ) ( cell 3 3 yellow ) ( capture red 1 ) ( cell 6 2 red ) ( step 36 ) ( cell 3 2 yellow ) ( capture yellow 1 ) ( cell 1 4 red ) ( control green ) ( cell 4 5 red ) ( cell 2 2 yellow ) ( capture green 6 ) ( cell 5 3 blue ) ( cell 3 4 green ) )", new String[] { "( move 3 4 3 3 )", "( move 3 4 4 5 )", }),
+		*/
+
+		new PlayerTester.TestCase("Sancho", "3pConnectFour", 2, 30, 15, "( ( cell 1 6 blue ) ( cell 2 6 yellow ) ( cell 6 6 blue ) ( cell 7 6 red ) ( cell 8 6 red ) ( cell 1 5 blue ) ( cell 2 5 red ) ( cell 3 5 blue ) ( cell 4 5 yellow ) ( cell 6 5 red ) ( cell 7 5 yellow ) ( cell 8 5 red ) ( cell 1 4 red ) ( cell 2 4 yellow ) ( cell 3 4 yellow ) ( cell 4 4 red ) ( cell 5 4 blue ) ( cell 6 4 red ) ( cell 7 4 blue ) ( cell 8 4 yellow ) ( cell 1 3 yellow ) ( cell 2 3 yellow ) ( cell 3 3 blue ) ( cell 4 3 blue ) ( cell 5 3 yellow ) ( cell 6 3 yellow ) ( cell 7 3 red ) ( cell 8 3 blue ) ( cell 1 2 blue ) ( cell 2 2 red ) ( cell 3 2 blue ) ( cell 4 2 red ) ( cell 5 2 yellow ) ( cell 6 2 blue ) ( cell 7 2 blue ) ( cell 8 2 red ) ( cell 1 1 yellow ) ( cell 2 1 yellow ) ( cell 3 1 red ) ( cell 4 1 yellow ) ( cell 5 1 red ) ( cell 6 1 yellow ) ( cell 7 1 blue ) ( cell 8 1 red ) ( control blue ) )", new String[] { "( drop 5 )", }),
+
 	};
 }

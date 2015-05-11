@@ -20,12 +20,12 @@ import csironi.ggp.course.evalfunctions.EvalZero;
  * @author C.Sironi
  *
  */
-public class CAlphaBetaGamer extends SampleGamer {
+public class CShufflingIterativeDeepeningGamer extends SampleGamer {
 
 	/**
 	 *
 	 */
-	public CAlphaBetaGamer() {
+	public CShufflingIterativeDeepeningGamer() {
 		// TODO Auto-generated constructor stub
 	}
 
@@ -36,7 +36,6 @@ public class CAlphaBetaGamer extends SampleGamer {
 	public Move stateMachineSelectMove(long timeout)
 			throws TransitionDefinitionException, MoveDefinitionException,
 			GoalDefinitionException {
-
 		// We get the current start time
 		long start = System.currentTimeMillis();
 
@@ -48,10 +47,25 @@ public class CAlphaBetaGamer extends SampleGamer {
 		Move selection = moves.get(0);
 		// If there is more than one legal move available search the best one,
 		// otherwise return the only one available.
+
 		if(moves.size() != 1){
 
-			MinMax search = new MinMax(true, "C:\\Users\\c.sironi\\BITBUCKET REPOS\\GGP-Base\\LOG\\AlphaBetaLog.txt", stateMachine);
-			selection = search.bestmove(finishBy, getCurrentState(), getRole(), true, 0, 100, Integer.MAX_VALUE, false, false, new EvalZero(stateMachine));
+			MinMax search = new MinMax(true, "C:\\Users\\c.sironi\\BITBUCKET REPOS\\GGP-Base\\LOG\\ShufflingIterativeDeepeningLog.txt", stateMachine);
+
+			Move currentBestMove;
+
+			for(int i = 1; i <= Integer.MAX_VALUE; i++){
+
+				currentBestMove = search.bestmove(finishBy, getCurrentState(), getRole(), true, 0, 100, i, true, false, new EvalZero(stateMachine));
+
+				if(search.isTimedOut()){
+					break;
+				}
+
+				selection = currentBestMove;
+			}
+
+
 		}
 
 		// We get the end time

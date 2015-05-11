@@ -20,12 +20,12 @@ import csironi.ggp.course.evalfunctions.EvalZero;
  * @author C.Sironi
  *
  */
-public class CAlphaBetaGamer extends SampleGamer {
+public class CShufflingLimitedDepthGamer extends SampleGamer {
 
 	/**
 	 *
 	 */
-	public CAlphaBetaGamer() {
+	public CShufflingLimitedDepthGamer() {
 		// TODO Auto-generated constructor stub
 	}
 
@@ -36,7 +36,6 @@ public class CAlphaBetaGamer extends SampleGamer {
 	public Move stateMachineSelectMove(long timeout)
 			throws TransitionDefinitionException, MoveDefinitionException,
 			GoalDefinitionException {
-
 		// We get the current start time
 		long start = System.currentTimeMillis();
 
@@ -50,8 +49,8 @@ public class CAlphaBetaGamer extends SampleGamer {
 		// otherwise return the only one available.
 		if(moves.size() != 1){
 
-			MinMax search = new MinMax(true, "C:\\Users\\c.sironi\\BITBUCKET REPOS\\GGP-Base\\LOG\\AlphaBetaLog.txt", stateMachine);
-			selection = search.bestmove(finishBy, getCurrentState(), getRole(), true, 0, 100, Integer.MAX_VALUE, false, false, new EvalZero(stateMachine));
+			MinMax search = new MinMax(true, "C:\\Users\\c.sironi\\BITBUCKET REPOS\\GGP-Base\\LOG\\ShufflingLimitedDepthLog.txt", stateMachine);
+			selection = search.bestmove(finishBy, getCurrentState(), getRole(), true, 0, 100, 12, true, false, new EvalZero(stateMachine));
 		}
 
 		// We get the end time

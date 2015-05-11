@@ -40,6 +40,10 @@ public abstract class SearchAlgorithm {
 		this.timedOut = false;
 	}
 
+	public boolean isTimedOut(){
+		return this.timedOut;
+	}
+
 	/**
 	 * This methods writes to the log file the given string.
 	 *

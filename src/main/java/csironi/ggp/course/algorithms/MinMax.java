@@ -4,6 +4,7 @@
 package csironi.ggp.course.algorithms;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 import org.ggp.base.util.statemachine.MachineState;
@@ -13,6 +14,8 @@ import org.ggp.base.util.statemachine.StateMachine;
 import org.ggp.base.util.statemachine.exceptions.GoalDefinitionException;
 import org.ggp.base.util.statemachine.exceptions.MoveDefinitionException;
 import org.ggp.base.util.statemachine.exceptions.TransitionDefinitionException;
+
+import csironi.ggp.course.evalfunctions.EvaluationFunction;
 
 /**
  *
@@ -29,11 +32,11 @@ public class MinMax extends SearchAlgorithm {
 		super(log, logFileName, stateMachine);
 	}
 
-	public Move bestmove(long finishBy, MachineState state, Role role, Boolean prune, int alpha, int beta, int limit)
+	public Move bestmove(long finishBy, MachineState state, Role role, Boolean prune, int alpha, int beta, int limit, boolean shuffleTop, boolean shuffleInt, EvaluationFunction stateEval)
 			throws TransitionDefinitionException, MoveDefinitionException,
 			GoalDefinitionException {
 
-		log("Starting bestmove");
+		log("\nStarting bestmove with depth limit " + limit);
 
 
 		/*Only for log*/
@@ -56,102 +59,230 @@ public class MinMax extends SearchAlgorithm {
 
 		Move selection = moves.get(0);
 
-		if(limit <= 0){
+		if(shuffleTop){
 
-			log("Negative or 0 depth limit. Returning first legal action: " + selection);
+			log("Shuffling top moves");
 
-			return selection;
-		}
+			// Build an array of indexes
+			ArrayList<Integer> indexes = new ArrayList<Integer>();
+			for(int i=0; i < moves.size(); i++){
+				indexes.add(i);
+			}
 
-		if(prune){
+			Collections.shuffle(indexes);
 
-			for (Move move: moves){
+			toLog = "My moves: [ ";
+			for(Integer i: indexes){
+				toLog += moves.get(i) + " ";
+			}
+			toLog += "]";
+			log(toLog);
 
-				int currentScore;
+			selection = moves.get(indexes.get(0));
 
-				if(stateMachine.getRoles().size() == 1){
-					ArrayList<Move> jointMoves = new ArrayList<Move>();
-					jointMoves.add(move);
-					currentScore = maxscore(finishBy, stateMachine.getNextState(state, jointMoves), role, alpha, beta, 1, limit);
-				}else{
-					currentScore = minscore(finishBy, state, role, move, alpha, beta, 0, limit);
+			if(limit <= 0){
+
+				log("Negative or 0 depth limit. Returning first legal action: " + selection);
+
+				return selection;
+			}
+
+			if(prune){
+
+				for (Integer i: indexes){
+
+					Move move = moves.get(i);
+
+					int currentScore;
+
+					if(stateMachine.getRoles().size() == 1){
+						ArrayList<Move> jointMoves = new ArrayList<Move>();
+						jointMoves.add(move);
+						currentScore = maxscore(finishBy, stateMachine.getNextState(state, jointMoves), role, alpha, beta, 1, limit, shuffleInt, stateEval);
+					}else{
+						currentScore = minscore(finishBy, state, role, move, alpha, beta, 0, limit, shuffleInt, stateEval);
+					}
+
+					// If reached the timeout return the best move found so far excluding the one that was being investigated during timeout.
+					// The information about this last move will be unreliable.
+					// Otherwise check if the time is out and return the best move found so far including the last investigated move.
+					if(timedOut){
+
+						log("Ignoring last investigated move.");
+
+						break;
+					}
+
+					if(currentScore > alpha){
+						alpha = currentScore;
+						selection = move;
+					}
+
+					log("Current maxScore (alpha): " + alpha);
+
+					if(alpha >= beta){
+						log("Alpa >= beta: stopping!");
+						log("Returned move " + move);
+						return move;
+					}
+
+					if(System.currentTimeMillis() > finishBy){
+						log("Timeout detected.");
+						this.timedOut = true;
+						break;
+					}
+
 				}
 
-				// If reached the timeout return the best move found so far excluding the one that was being investigated during timeout.
-				// The information about this last move will be unreliable.
-				// Otherwise check if the time is out and return the best move found so far including the last investigated move.
-				if(timedOut){
+			}else{
+				int maxScore = 0;
 
-					log("Ignoring last investigated move.");
+				for (Integer i: indexes){
 
-					break;
-				}
+					Move move = moves.get(i);
 
-				if(currentScore > alpha){
-					alpha = currentScore;
-					selection = move;
-				}
+					int currentScore;
 
-				log("Current maxScore (alpha): " + alpha);
+					if(stateMachine.getRoles().size() == 1){
+						ArrayList<Move> jointMoves = new ArrayList<Move>();
+						jointMoves.add(move);
+						currentScore = maxscore(finishBy, stateMachine.getNextState(state, jointMoves), role, 1, limit, shuffleInt, stateEval);
+					}else{
+						currentScore = minscore(finishBy, state, role, move, 0, limit, shuffleInt, stateEval);
+					}
 
-				if(alpha >= beta){
-					log("Alpa >= beta: stopping!");
-					log("Returned move " + move);
-					return move;
-				}
+					// If reached the timeout return the best move found so far excluding the one that was being investigated during timeout.
+					// The information about this last move will be unreliable.
+					// Otherwise check if the time is out and return the best move found so far including the last investigated move.
+					if(timedOut){
 
-				if(System.currentTimeMillis() > finishBy){
-					log("Timeout detected.");
-					this.timedOut = true;
-					break;
+						log("Ignoring last investigated move.");
+
+						break;
+					}
+
+					// Check if the maximum score must be updated
+					/*if(currentScore == 100){
+						return move;
+					}*/
+					if(currentScore > maxScore){
+						maxScore = currentScore;
+						selection = move;
+					}
+
+					log("Current maxScore: " + maxScore);
+
+					if(System.currentTimeMillis() > finishBy){
+						log("Timeout detected.");
+						this.timedOut = true;
+						break;
+					}
 				}
 
 			}
 
 		}else{
-			int maxScore = 0;
 
-			for (Move move: moves){
+			if(limit <= 0){
 
-				int currentScore;
+				log("Negative or 0 depth limit. Returning first legal action: " + selection);
 
-				if(stateMachine.getRoles().size() == 1){
-					ArrayList<Move> jointMoves = new ArrayList<Move>();
-					jointMoves.add(move);
-					currentScore = maxscore(finishBy, stateMachine.getNextState(state, jointMoves), role, 1, limit);
-				}else{
-					currentScore = minscore(finishBy, state, role, move, 0, limit);
+				return selection;
+			}
+
+			if(prune){
+
+				for (Move move: moves){
+
+					int currentScore;
+
+					if(stateMachine.getRoles().size() == 1){
+						ArrayList<Move> jointMoves = new ArrayList<Move>();
+						jointMoves.add(move);
+						currentScore = maxscore(finishBy, stateMachine.getNextState(state, jointMoves), role, alpha, beta, 1, limit, shuffleInt, stateEval);
+					}else{
+						currentScore = minscore(finishBy, state, role, move, alpha, beta, 0, limit, shuffleInt, stateEval);
+					}
+
+					// If reached the timeout return the best move found so far excluding the one that was being investigated during timeout.
+					// The information about this last move will be unreliable.
+					// Otherwise check if the time is out and return the best move found so far including the last investigated move.
+					if(timedOut){
+
+						log("Ignoring last investigated move.");
+
+						break;
+					}
+
+					if(currentScore > alpha){
+						alpha = currentScore;
+						selection = move;
+					}
+
+					log("Current maxScore (alpha): " + alpha);
+
+					if(alpha >= beta){
+						log("Alpa >= beta: stopping!");
+						log("Returned move " + move);
+						return move;
+					}
+
+					if(System.currentTimeMillis() > finishBy){
+						log("Timeout detected.");
+						this.timedOut = true;
+						break;
+					}
+
 				}
 
-				// If reached the timeout return the best move found so far excluding the one that was being investigated during timeout.
-				// The information about this last move will be unreliable.
-				// Otherwise check if the time is out and return the best move found so far including the last investigated move.
-				if(timedOut){
+			}else{
+				int maxScore = 0;
 
-					log("Ignoring last investigated move.");
+				for (Move move: moves){
 
-					break;
+					int currentScore;
+
+					if(stateMachine.getRoles().size() == 1){
+						ArrayList<Move> jointMoves = new ArrayList<Move>();
+						jointMoves.add(move);
+						currentScore = maxscore(finishBy, stateMachine.getNextState(state, jointMoves), role, 1, limit, shuffleInt, stateEval);
+					}else{
+						currentScore = minscore(finishBy, state, role, move, 0, limit, shuffleInt, stateEval);
+					}
+
+					// If reached the timeout return the best move found so far excluding the one that was being investigated during timeout.
+					// The information about this last move will be unreliable.
+					// Otherwise check if the time is out and return the best move found so far including the last investigated move.
+					if(timedOut){
+
+						log("Ignoring last investigated move.");
+
+						break;
+					}
+
+					// Check if the maximum score must be updated
+					/*if(currentScore == 100){
+						return move;
+					}*/
+					if(currentScore > maxScore){
+						maxScore = currentScore;
+						selection = move;
+					}
+
+					log("Current maxScore: " + maxScore);
+
+					if(System.currentTimeMillis() > finishBy){
+						log("Timeout detected.");
+						this.timedOut = true;
+						break;
+					}
 				}
 
-				// Check if the maximum score must be updated
-				/*if(currentScore == 100){
-					return move;
-				}*/
-				if(currentScore > maxScore){
-					maxScore = currentScore;
-					selection = move;
-				}
-
-				log("Current maxScore: " + maxScore);
-
-				if(System.currentTimeMillis() > finishBy){
-					log("Timeout detected.");
-					this.timedOut = true;
-					break;
-				}
 			}
 
 		}
+
+
 
 		log("Returned move " + selection);
 
@@ -159,7 +290,7 @@ public class MinMax extends SearchAlgorithm {
 	}
 
 
-	private int maxscore(long finishBy, MachineState state, Role role, int level, int limit)
+	private int maxscore(long finishBy, MachineState state, Role role, int level, int limit, boolean shuffle, EvaluationFunction stateEval)
 			throws TransitionDefinitionException, MoveDefinitionException,
 			GoalDefinitionException{
 
@@ -180,56 +311,114 @@ public class MinMax extends SearchAlgorithm {
 
 		if(level >= limit){
 
-			log("Reached depth limit. Returning state value estimation: 0");
-			return 0;
+			int stateValue = stateEval.eval(state, role);
+			log("Reached depth limit. Returning state value estimation: " + stateValue);
+			return stateValue;
+
 		}
 
 		// Check all my available moves to find the best one
 		List<Move> moves = stateMachine.getLegalMoves(state, role);
 
-		String toLog = "My moves: [ ";
-		for(Move move: moves){
-			toLog += move + " ";
-		}
-		toLog += "]";
-		log(toLog);
-
 		int maxScore = 0;
 
-		for (Move move: moves){
+		if(shuffle){
 
-			log("Move [ " + move + " ]");
+			log("Shuffling internal moves");
 
-			int currentScore;
-
-			if(stateMachine.getRoles().size() == 1){
-				ArrayList<Move> jointMoves = new ArrayList<Move>();
-				jointMoves.add(move);
-				currentScore = maxscore(finishBy, stateMachine.getNextState(state, jointMoves), role, level+1, limit);
-			}else{
-				currentScore = minscore(finishBy, state, role, move, level, limit);
+			// Build an array of indexes
+			ArrayList<Integer> indexes = new ArrayList<Integer>();
+			for(int i=0; i < moves.size(); i++){
+				indexes.add(i);
 			}
 
-			if(timedOut){
-				log("Stopping maxscore.");
-				break;
+			Collections.shuffle(indexes);
+
+			String toLog = "My moves: [ ";
+			for(Integer i: indexes){
+				toLog += moves.get(i) + " ";
+			}
+			toLog += "]";
+			log(toLog);
+
+			for (Integer i: indexes){
+
+				Move move = moves.get(i);
+
+				log("Move [ " + move + " ]");
+
+				int currentScore;
+
+				if(stateMachine.getRoles().size() == 1){
+					ArrayList<Move> jointMoves = new ArrayList<Move>();
+					jointMoves.add(move);
+					currentScore = maxscore(finishBy, stateMachine.getNextState(state, jointMoves), role, level+1, limit, shuffle, stateEval);
+				}else{
+					currentScore = minscore(finishBy, state, role, move, level, limit, shuffle, stateEval);
+				}
+
+				if(timedOut){
+					log("Stopping maxscore.");
+					break;
+				}
+
+				// Check if the maximum score must be updated
+				/*if(currentScore == 100){
+					return move;
+				}*/
+				if(currentScore > maxScore){
+					maxScore = currentScore;
+				}
+
+				log("Current maxScore: " + maxScore);
 			}
 
-			// Check if the maximum score must be updated
-			/*if(currentScore == 100){
-				return move;
-			}*/
-			if(currentScore > maxScore){
-				maxScore = currentScore;
-			}
 
-			log("Current maxScore: " + maxScore);
+
+		}else{
+
+			String toLog = "My moves: [ ";
+			for(Move move: moves){
+				toLog += move + " ";
+			}
+			toLog += "]";
+			log(toLog);
+
+			for (Move move: moves){
+
+				log("Move [ " + move + " ]");
+
+				int currentScore;
+
+				if(stateMachine.getRoles().size() == 1){
+					ArrayList<Move> jointMoves = new ArrayList<Move>();
+					jointMoves.add(move);
+					currentScore = maxscore(finishBy, stateMachine.getNextState(state, jointMoves), role, level+1, limit, shuffle, stateEval);
+				}else{
+					currentScore = minscore(finishBy, state, role, move, level, limit, shuffle, stateEval);
+				}
+
+				if(timedOut){
+					log("Stopping maxscore.");
+					break;
+				}
+
+				// Check if the maximum score must be updated
+				/*if(currentScore == 100){
+					return move;
+				}*/
+				if(currentScore > maxScore){
+					maxScore = currentScore;
+				}
+
+				log("Current maxScore: " + maxScore);
+			}
 		}
 
 		return maxScore;
 	}
 
-	private int minscore(long finishBy, MachineState state, Role role, Move move, int level, int limit)
+	private int minscore(long finishBy, MachineState state, Role role, Move move, int level, int limit, boolean shuffle, EvaluationFunction stateEval)
 			throws TransitionDefinitionException, MoveDefinitionException,
 			GoalDefinitionException{
 
@@ -251,7 +440,7 @@ public class MinMax extends SearchAlgorithm {
 
 			int currentScore;
 
-			currentScore = maxscore(finishBy, stateMachine.getNextState(state, jointMoves), role, level+1, limit);
+			currentScore = maxscore(finishBy, stateMachine.getNextState(state, jointMoves), role, level+1, limit, shuffle, stateEval);
 
 			if(timedOut){
 				log("Stopping minscore.");
@@ -268,7 +457,7 @@ public class MinMax extends SearchAlgorithm {
 	}
 
 
-	private int maxscore(long finishBy, MachineState state, Role role, int alpha, int beta, int level, int limit)
+	private int maxscore(long finishBy, MachineState state, Role role, int alpha, int beta, int level, int limit, boolean shuffle, EvaluationFunction stateEval)
 			throws TransitionDefinitionException, MoveDefinitionException,
 			GoalDefinitionException{
 
@@ -288,53 +477,115 @@ public class MinMax extends SearchAlgorithm {
 		}
 
 		if(level >= limit){
-			log("Reached depth limit. Returning state value estimation: 0");
-			return 0;
+
+			int stateValue = stateEval.eval(state, role);
+			log("Reached depth limit. Returning state value estimation: " + stateValue);
+			return stateValue;
 		}
 
 		// Check all my available moves to find the best one
 		List<Move> moves = stateMachine.getLegalMoves(state, role);
 
-		String toLog = "My moves: [ ";
-		for(Move move: moves){
-			toLog += move + " ";
-		}
-		toLog += "]";
-		log(toLog);
+		if(shuffle){
 
-		for (Move move: moves){
+			log("Shuffling internal moves");
 
-			log("Move [ " + move + " ]");
-
-			int currentScore;
-
-			if(stateMachine.getRoles().size() == 1){
-				ArrayList<Move> jointMoves = new ArrayList<Move>();
-				jointMoves.add(move);
-				currentScore = maxscore(finishBy, stateMachine.getNextState(state, jointMoves), role, alpha, beta, level+1, limit);
-			}else{
-				currentScore = minscore(finishBy, state, role, move, alpha, beta, level, limit);
+			// Build an array of indexes
+			ArrayList<Integer> indexes = new ArrayList<Integer>();
+			for(int i=0; i < moves.size(); i++){
+				indexes.add(i);
 			}
 
-			if(timedOut){
-				log("Stopping maxscore.");
-				break;
+			Collections.shuffle(indexes);
+
+			String toLog = "My moves: [ ";
+			for(Integer i: indexes){
+				toLog += moves.get(i) + " ";
+			}
+			toLog += "]";
+			log(toLog);
+
+			for (Integer i: indexes){
+
+				Move move = moves.get(i);
+
+				log("Move [ " + move + " ]");
+
+				int currentScore;
+
+				if(stateMachine.getRoles().size() == 1){
+					ArrayList<Move> jointMoves = new ArrayList<Move>();
+					jointMoves.add(move);
+					currentScore = maxscore(finishBy, stateMachine.getNextState(state, jointMoves), role, alpha, beta, level+1, limit, shuffle, stateEval);
+				}else{
+					currentScore = minscore(finishBy, state, role, move, alpha, beta, level, limit, shuffle, stateEval);
+				}
+
+				if(timedOut){
+					log("Stopping maxscore.");
+					break;
+				}
+
+				// Check if the maximum score must be updated
+				/*if(currentScore == 100){
+					return move;
+				}*/
+				if(currentScore > alpha){
+					alpha = currentScore;
+				}
+
+				log("Current alpha: " + alpha);
+				log("Current beta: " + beta);
+
+				if(alpha >= beta){
+					log("Returning beta");
+					return beta;
+				}
 			}
 
-			// Check if the maximum score must be updated
-			/*if(currentScore == 100){
-				return move;
-			}*/
-			if(currentScore > alpha){
-				alpha = currentScore;
+		}else{
+
+			String toLog = "My moves: [ ";
+			for(Move move: moves){
+				toLog += move + " ";
 			}
+			toLog += "]";
+			log(toLog);
 
-			log("Current alpha: " + alpha);
-			log("Current beta: " + beta);
+			for (Move move: moves){
 
-			if(alpha >= beta){
-				log("Returning beta");
-				return beta;
+				log("Move [ " + move + " ]");
+
+				int currentScore;
+
+				if(stateMachine.getRoles().size() == 1){
+					ArrayList<Move> jointMoves = new ArrayList<Move>();
+					jointMoves.add(move);
+					currentScore = maxscore(finishBy, stateMachine.getNextState(state, jointMoves), role, alpha, beta, level+1, limit, shuffle, stateEval);
+				}else{
+					currentScore = minscore(finishBy, state, role, move, alpha, beta, level, limit, shuffle, stateEval);
+				}
+
+				if(timedOut){
+					log("Stopping maxscore.");
+					break;
+				}
+
+				// Check if the maximum score must be updated
+				/*if(currentScore == 100){
+					return move;
+				}*/
+				if(currentScore > alpha){
+					alpha = currentScore;
+				}
+
+				log("Current alpha: " + alpha);
+				log("Current beta: " + beta);
+
+				if(alpha >= beta){
+					log("Returning beta");
+					return beta;
+				}
 			}
 		}
 
@@ -342,7 +593,7 @@ public class MinMax extends SearchAlgorithm {
 		return alpha;
 	}
 
-	private int minscore(long finishBy, MachineState state, Role role, Move move, int alpha, int beta, int level, int limit)
+	private int minscore(long finishBy, MachineState state, Role role, Move move, int alpha, int beta, int level, int limit, boolean shuffle, EvaluationFunction stateEval)
 			throws TransitionDefinitionException, MoveDefinitionException,
 			GoalDefinitionException{
 
@@ -362,7 +613,7 @@ public class MinMax extends SearchAlgorithm {
 
 			int currentScore;
 
-			currentScore = maxscore(finishBy, stateMachine.getNextState(state, jointMoves), role, alpha, beta, level+1, limit);
+			currentScore = maxscore(finishBy, stateMachine.getNextState(state, jointMoves), role, alpha, beta, level+1, limit, shuffle, stateEval);
 
 			if(timedOut){
 				log("Stopping maxscore.");

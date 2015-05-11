@@ -14,6 +14,7 @@ import org.ggp.base.util.statemachine.exceptions.MoveDefinitionException;
 import org.ggp.base.util.statemachine.exceptions.TransitionDefinitionException;
 
 import csironi.ggp.course.algorithms.MinMax;
+import csironi.ggp.course.evalfunctions.EvalZero;
 
 /**
  * @author C.Sironi
@@ -50,7 +51,7 @@ public class CLimitedDepthGamer extends SampleGamer {
 		if(moves.size() != 1){
 
 			MinMax search = new MinMax(true, "C:\\Users\\c.sironi\\BITBUCKET REPOS\\GGP-Base\\LOG\\LimitedDepthLog.txt", stateMachine);
-			selection = search.bestmove(finishBy + 2000, getCurrentState(), getRole(), true, 0, 100, 10);
+			selection = search.bestmove(finishBy, getCurrentState(), getRole(), true, 0, 100, 12, false, false, new EvalZero(stateMachine));
 		}
 
 		// We get the end time

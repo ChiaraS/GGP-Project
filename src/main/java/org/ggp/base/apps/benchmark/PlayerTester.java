@@ -11,7 +11,6 @@ import java.util.Set;
 
 import org.ggp.base.player.GamePlayer;
 import org.ggp.base.player.gamer.Gamer;
-import org.ggp.base.player.gamer.statemachine.random.RandomGamer;
 import org.ggp.base.server.GameServer;
 import org.ggp.base.server.event.ServerNewMovesEvent;
 import org.ggp.base.util.game.Game;
@@ -29,6 +28,8 @@ import org.ggp.base.util.symbol.factory.SymbolFactory;
 import org.ggp.base.util.symbol.factory.exceptions.SymbolFormatException;
 import org.ggp.base.util.symbol.grammar.Symbol;
 import org.ggp.base.util.symbol.grammar.SymbolList;
+
+import csironi.ggp.course.gamers.CAlphaBetaGamer;
 
 /**
  * PlayerTester is a benchmarking tool to evaluate the skill of a player.
@@ -210,6 +211,6 @@ public class PlayerTester {
     }
 
     public static void main(String[] args) throws InterruptedException, SymbolFormatException, IOException {
-    	System.out.println("Benchmark score for random player: " + getBenchmarkScores(new RandomGamer()));
+    	System.out.println("Benchmark score for random player: " + getBenchmarkScores(new CAlphaBetaGamer()));
     }
 }
