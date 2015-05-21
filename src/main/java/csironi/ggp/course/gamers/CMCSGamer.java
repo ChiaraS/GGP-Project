@@ -1,6 +1,3 @@
-/**
- *
- */
 package csironi.ggp.course.gamers;
 
 import java.util.List;
@@ -14,29 +11,18 @@ import org.ggp.base.util.statemachine.exceptions.MoveDefinitionException;
 import org.ggp.base.util.statemachine.exceptions.TransitionDefinitionException;
 
 import csironi.ggp.course.algorithms.MinMax;
-import csironi.ggp.course.evalfunctions.EvalProximity;
+import csironi.ggp.course.evalfunctions.EvalMCS;
 
-/**
- * @author C.Sironi
- *
- */
-public class CProximityGamer extends SampleGamer {
+public class CMCSGamer extends SampleGamer {
 
-	/**
-	 *
-	 */
-	public CProximityGamer() {
+	public CMCSGamer() {
 		// TODO Auto-generated constructor stub
 	}
 
-	/* (non-Javadoc)
-	 * @see org.ggp.base.player.gamer.statemachine.StateMachineGamer#stateMachineSelectMove(long)
-	 */
 	@Override
 	public Move stateMachineSelectMove(long timeout)
 			throws TransitionDefinitionException, MoveDefinitionException,
 			GoalDefinitionException {
-
 		// We get the current start time
 		long start = System.currentTimeMillis();
 
@@ -50,8 +36,8 @@ public class CProximityGamer extends SampleGamer {
 		// otherwise return the only one available.
 		if(moves.size() != 1){
 
-			MinMax search = new MinMax(true, "C:\\Users\\c.sironi\\BITBUCKET REPOS\\GGP-Base\\LOG\\ProximityLog.txt", stateMachine);
-			selection = search.bestmove(finishBy, getCurrentState(), getRole(), true, 0, 100, 12, false, false, new EvalProximity(stateMachine));
+			MinMax search = new MinMax(true, "C:\\Users\\c.sironi\\BITBUCKET REPOS\\GGP-Base\\LOG\\MCSLog.txt", stateMachine);
+			selection = search.bestmove(finishBy, getCurrentState(), getRole(), true, 0, 50, 1, false, false, new EvalMCS(stateMachine, 100));
 		}
 
 		// We get the end time
