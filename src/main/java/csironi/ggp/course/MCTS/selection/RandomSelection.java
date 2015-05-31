@@ -29,15 +29,16 @@ public class RandomSelection implements SelectionStrategy {
 	/**
 	 *
 	 */
-	public RandomSelection() {
-		// TODO Auto-generated constructor stub
+	public RandomSelection(ExpansionStrategy expansionStrategy, PlayoutStrategy playoutStrategy) {
+		this.expansionStrategy = expansionStrategy;
+		this.playoutStrategy = playoutStrategy;
 	}
 
 	/* (non-Javadoc)
 	 * @see csironi.ggp.course.MCTS.selection.SelectionStrategy#select(csironi.ggp.course.MCTS.MCTNode, org.ggp.base.util.statemachine.Role)
 	 */
 	@Override
-	public int[] select(MCTNode node, Role role) {
+	public int[] select(MCTNode node) {
 
 		int[] goals;
 

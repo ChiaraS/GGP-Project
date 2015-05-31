@@ -3,8 +3,6 @@
  */
 package csironi.ggp.course.MCTS.selection;
 
-import org.ggp.base.util.statemachine.Role;
-
 import csironi.ggp.course.MCTS.MCTNode;
 
 /**
@@ -13,6 +11,6 @@ import csironi.ggp.course.MCTS.MCTNode;
  */
 public interface SelectionStrategy {
 
-	public int[] select(MCTNode node, Role role);
+	public int[] select(MCTNode node);
 
 }
