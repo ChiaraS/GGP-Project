@@ -3,7 +3,8 @@
  */
 package csironi.ggp.course.MCTS.backpropagation;
 
-import csironi.ggp.course.MCTS.MCTNode;
+import java.util.List;
+
 
 /**
  * @author C.Sironi
@@ -11,6 +12,6 @@ import csironi.ggp.course.MCTS.MCTNode;
  */
 public interface BackpropagationStrategy {
 
-	public void backpropagate(MCTNode expandedNode, int[] rewards);
+	public void update(List<Integer> goals);
 
 }

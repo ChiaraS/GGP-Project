@@ -3,7 +3,6 @@
  */
 package csironi.ggp.course.gamers;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
@@ -16,10 +15,11 @@ import org.ggp.base.util.statemachine.exceptions.GoalDefinitionException;
 import org.ggp.base.util.statemachine.exceptions.MoveDefinitionException;
 import org.ggp.base.util.statemachine.exceptions.TransitionDefinitionException;
 
-import csironi.ggp.course.MCTS.MCTNode;
+import csironi.ggp.course.MCTS.MCTSManager;
 import csironi.ggp.course.MCTS.expansion.RandomExpansion;
+import csironi.ggp.course.MCTS.finalMoveChioce.MaxAvgScoreMoveChoice;
+import csironi.ggp.course.MCTS.playout.RandomPlayout;
 import csironi.ggp.course.MCTS.selection.RandomSelection;
-import csironi.ggp.course.MCTS.selection.SelectionStrategy;
 
 /**
  * @author user
@@ -45,6 +45,8 @@ public class CMCTSRandomGamer extends SampleGamer {
 		// Get the current start time
 		long start = System.currentTimeMillis();
 
+		long finishBy = timeout - 1000;
+
 		// Get state machine
 		StateMachine stateMachine = getStateMachine();
 
@@ -56,21 +58,13 @@ public class CMCTSRandomGamer extends SampleGamer {
 		// otherwise return the only one available.
 		if(moves.size() != 1){
 
+			MCTSManager manager = new MCTSManager(new RandomSelection(new RandomExpansion(), new RandomPlayout(stateMachine)), new MaxAvgScoreMoveChoice());
+
 			Role myRole = getRole();
 			Map<Role, Integer> roleIndexes = stateMachine.getRoleIndices();
 			int myRoleIndex = roleIndexes.get(myRole);
 
-			SelectionStrategy selectionStrategy = new RandomSelection(new RandomExpansion(), new RandomPlayout());
-
-			List<Role> roles = stateMachine.getRoles();
-			List<Move> jointMoves = new ArrayList<Move>();
-			for(int i = 0; i < roles.size(); i++){
-				jointMoves.add(i, null);
-			}
-
-			MCTNode root = new MCTNode(stateMachine, stateMachine.getInitialState(), myRoleIndex, myRoleIndex, null, jointMoves);
-			root.initializeChildren();
-			selectionStrategy.select(root);
+			selection = manager.selectBestMove(finishBy, stateMachine, myRoleIndex, getCurrentState());
 		}
 
 		// We get the end time

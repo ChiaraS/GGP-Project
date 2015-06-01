@@ -10,14 +10,17 @@ import org.ggp.base.util.statemachine.MachineState;
 import org.ggp.base.util.statemachine.Move;
 import org.ggp.base.util.statemachine.Role;
 import org.ggp.base.util.statemachine.StateMachine;
+import org.ggp.base.util.statemachine.exceptions.GoalDefinitionException;
 import org.ggp.base.util.statemachine.exceptions.MoveDefinitionException;
 import org.ggp.base.util.statemachine.exceptions.TransitionDefinitionException;
+
+import csironi.ggp.course.MCTS.backpropagation.BackpropagationStrategy;
 
 /**
  * @author C.Sironi
  *
  */
-public class MCTNode {
+public class MCTNode implements BackpropagationStrategy {
 
 	private StateMachine stateMachine;
 
@@ -50,6 +53,7 @@ public class MCTNode {
 		this.stateMachine = stateMachine;
 		this.state = state;
 		this.playingRoleIndex = playingRoleIndex;
+		this.myRoleIndex = myRoleIndex;
 		this.scoreSum = 0;
 		this.visits = 0;
 		this.moveFromParent = moveFromParent;
@@ -62,28 +66,31 @@ public class MCTNode {
 		this.visitedChildren = new ArrayList<MCTNode>();
 		this.unvisitedChildren = new ArrayList<MCTNode>();
 
-		List<Role> roles = this.stateMachine.getRoles();
-		Role playingRole = roles.get(this.playingRoleIndex);
-		List<Move> moves = this.stateMachine.getLegalMoves(state, playingRole);
+		// If state is terminal there are no children to add because there are no legal moves
+		if(!this.stateMachine.isTerminal(this.state)){
+			List<Role> roles = this.stateMachine.getRoles();
+			Role playingRole = roles.get(this.playingRoleIndex);
+			List<Move> moves = this.stateMachine.getLegalMoves(state, playingRole);
 
-		int nextPlayingRoleIndex = (this.playingRoleIndex+1)%roles.size();
+			int nextPlayingRoleIndex = (this.playingRoleIndex+1)%roles.size();
 
-		for(Move move: moves){
-			List<Move> childJointMoves = new ArrayList<Move>(this.jointMoves);
-			childJointMoves.set(this.playingRoleIndex, move);
+			for(Move move: moves){
+				List<Move> childJointMoves = new ArrayList<Move>(this.jointMoves);
+				childJointMoves.set(this.playingRoleIndex, move);
 
-			MachineState childState = this.state;
+				MachineState childState = this.state;
 
-			if(nextPlayingRoleIndex == this.myRoleIndex){
-				childState = this.stateMachine.getNextState(this.state, childJointMoves);
+				if(nextPlayingRoleIndex == this.myRoleIndex){
+					childState = this.stateMachine.getNextState(this.state, childJointMoves);
 
-				for(int i = 0; i < childJointMoves.size(); i++){
-					childJointMoves.set(i, null);
+					for(int i = 0; i < childJointMoves.size(); i++){
+						childJointMoves.set(i, null);
+					}
 				}
-			}
 
-			MCTNode child = new MCTNode(this.stateMachine, childState, nextPlayingRoleIndex, myRoleIndex, move, childJointMoves);
-			this.unvisitedChildren.add(child);
+				MCTNode child = new MCTNode(this.stateMachine, childState, nextPlayingRoleIndex, myRoleIndex, move, childJointMoves);
+				this.unvisitedChildren.add(child);
+			}
 		}
 
 	}
@@ -104,22 +111,58 @@ public class MCTNode {
 		return this.unvisitedChildren.size();
 	}
 
-	public void incrementVisits(){
-		this.visits++;
+	public MachineState getState(){
+		return this.state;
+	}
+
+	public List<Move> getJointMoves(){
+		return this.jointMoves;
+	}
+
+	public boolean isMyTurn(){
+		return this.myRoleIndex == this.playingRoleIndex;
 	}
 
 	public MCTNode childFirstVisit(int index) throws MoveDefinitionException, TransitionDefinitionException{
 		MCTNode visitedChild = this.unvisitedChildren.remove(index);
 		visitedChild.initializeChildren();
-		visitedChild.incrementVisits();
 		this.visitedChildren.add(visitedChild);
 		return visitedChild;
 	}
 
-	public MCTNode childVisit(int index){
-		MCTNode visitedChild = this.visitedChildren.get(index);
-		visitedChild.incrementVisits();
-		return visitedChild;
+	public MCTNode getVisitedChild(int index){
+		return this.visitedChildren.get(index);
+	}
+
+	public List<Integer> getTerminalGoals() throws GoalDefinitionException{
+		return this.stateMachine.getGoals(this.state);
+	}
+
+	public List<MCTNode> getVisitedChildren(){
+		return this.visitedChildren;
+	}
+
+	@Override
+	public void update(List<Integer> goals){
+
+		int numberOfRoles = this.jointMoves.size();
+
+		int updateIndex = (this.playingRoleIndex-1+numberOfRoles)%numberOfRoles;
+		this.scoreSum += goals.get(updateIndex);
+		this.visits = this.visits+1;
+
+	}
+
+	public int getVisits() {
+		return this.visits;
+	}
+
+	public int getScoreSum() {
+		return this.scoreSum;
+	}
+
+	public Move getMoveFromParent(){
+		return this.moveFromParent;
 	}
 
 
