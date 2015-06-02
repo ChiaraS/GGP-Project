@@ -6,6 +6,7 @@ package csironi.ggp.course.MCTS;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.ggp.base.util.logging.GamerLogger;
 import org.ggp.base.util.statemachine.MachineState;
 import org.ggp.base.util.statemachine.Move;
 import org.ggp.base.util.statemachine.Role;
@@ -52,8 +53,13 @@ public class MCTSManager {
 		List<Integer> goals;
 
 		long startTime = System.currentTimeMillis();
+		long endTime;
+		long remainingTime;
+
+		GamerLogger.log("Phil", "Starting MCTS at time: " + startTime);
+
 		int numberOfIterations = 0;
-		long avgTime;
+		double avgTime;
 
 		do{
 
@@ -61,9 +67,16 @@ public class MCTSManager {
 			root.update(goals);
 
 			numberOfIterations++;
-			avgTime = (System.currentTimeMillis() - startTime)/numberOfIterations;
 
-		}while(System.currentTimeMillis() + 2*avgTime < finishBy);
+			endTime = System.currentTimeMillis();
+			avgTime = (double) (endTime - startTime)/numberOfIterations;
+			remainingTime = finishBy - endTime;
+
+		}while(remainingTime > 2 * avgTime);
+
+		GamerLogger.log("Phil", "Ending MCTS at time: " + System.currentTimeMillis());
+		GamerLogger.log("Phil", "Number of simulations: " + numberOfIterations);
+		GamerLogger.log("Phil", "Average time per simulation: " + avgTime +  "ms");
 
 		return this.finalMoveChoiceStrategy.chooseFinalMove(root);
 

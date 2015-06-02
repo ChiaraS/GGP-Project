@@ -8,6 +8,7 @@ import java.util.Map;
 
 import org.ggp.base.player.gamer.event.GamerSelectedMoveEvent;
 import org.ggp.base.player.gamer.statemachine.sample.SampleGamer;
+import org.ggp.base.util.logging.GamerLogger;
 import org.ggp.base.util.statemachine.Move;
 import org.ggp.base.util.statemachine.Role;
 import org.ggp.base.util.statemachine.StateMachine;
@@ -45,7 +46,10 @@ public class CMCTSRandomGamer extends SampleGamer {
 		// Get the current start time
 		long start = System.currentTimeMillis();
 
-		long finishBy = timeout - 1000;
+		GamerLogger.log("Phil", "Selecting move");
+		GamerLogger.log("Phil", "Start time: " + start);
+
+		long finishBy = timeout - 100;
 
 		// Get state machine
 		StateMachine stateMachine = getStateMachine();
@@ -70,6 +74,9 @@ public class CMCTSRandomGamer extends SampleGamer {
 		// We get the end time
 		// It is mandatory that stop<timeout
 		long stop = System.currentTimeMillis();
+
+		GamerLogger.log("Phil", "Move selected: " + selection);
+		GamerLogger.log("Phil", "End time: " + stop);
 
 		notifyObservers(new GamerSelectedMoveEvent(moves, selection, stop - start));
 		return selection;
