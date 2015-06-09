@@ -24,12 +24,23 @@ import csironi.ggp.course.MCTS.selection.SelectionStrategy;
  */
 public class MCTSManager {
 
+	/**
+	 * Strategy that the player uses to perform selection (e.g. random, UCT, ...).
+	 */
 	SelectionStrategy selectionStrategy;
 
+	/**
+	 * Strategy that the player uses at the end of its turn to choose the move to be sent to the game manager
+	 * (e.g. pick the action with highest number of visits, or the action with highest average score,...).
+	 */
 	FinalMoveChoiceStrategy finalMoveChoiceStrategy;
 
 	/**
+	 * Constructor that initializes the selection and the final move choice strategies.
 	 *
+	 * @param selectionStrategy the strategy that the player uses to perform selection.
+	 * @param finalMoveChoiceStrategy the strategy that the player uses at the end of its
+	 * turn to choose the move to be sent to the game manager.
 	 */
 	public MCTSManager(SelectionStrategy selectionStrategy, FinalMoveChoiceStrategy finalMoveChoiceStrategy) {
 
@@ -42,12 +53,12 @@ public class MCTSManager {
 	public Move selectBestMove(long finishBy, StateMachine stateMachine, int myRoleIndex, MachineState currentState) throws MoveDefinitionException, TransitionDefinitionException, GoalDefinitionException{
 
 		List<Role> roles = stateMachine.getRoles();
-		List<Move> jointMoves = new ArrayList<Move>();
+		List<Move> jointMove = new ArrayList<Move>();
 		for(int i = 0; i < roles.size(); i++){
-			jointMoves.add(null);
+			jointMove.add(null);
 		}
 
-		MCTNode root = new MCTNode(stateMachine, currentState, myRoleIndex, myRoleIndex, null, jointMoves);
+		MCTNode root = new MCTNode(stateMachine, currentState, myRoleIndex, myRoleIndex, null, jointMove);
 		root.initializeChildren();
 
 		List<Integer> goals;

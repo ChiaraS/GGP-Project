@@ -17,6 +17,16 @@ import csironi.ggp.course.MCTS.MCTNode;
  */
 public interface SelectionStrategy {
 
+	/**
+	 * This method performs the selection of a child of the given node and decides when
+	 * to perform expansion and start the play-out.
+	 *
+	 * @param node the node for which to select the child to investigate next.
+	 * @return the tuple of scores to be backpropagated in the Monte Carlo Tree.
+	 * @throws GoalDefinitionException
+	 * @throws MoveDefinitionException
+	 * @throws TransitionDefinitionException
+	 */
 	public List<Integer> select(MCTNode node) throws GoalDefinitionException, MoveDefinitionException, TransitionDefinitionException;
 
 }

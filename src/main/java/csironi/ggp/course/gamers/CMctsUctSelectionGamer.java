@@ -20,13 +20,20 @@ import csironi.ggp.course.MCTS.MCTSManager;
 import csironi.ggp.course.MCTS.expansion.RandomExpansion;
 import csironi.ggp.course.MCTS.finalMoveChioce.MaxAvgScoreMoveChoice;
 import csironi.ggp.course.MCTS.playout.RandomPlayout;
-import csironi.ggp.course.MCTS.selection.RandomSelection;
+import csironi.ggp.course.MCTS.selection.UCTSelection;
 
 /**
  * @author C.Sironi
  *
  */
-public class CMCTSRandomGamer extends SampleGamer {
+public class CMctsUctSelectionGamer extends SampleGamer {
+
+	/**
+	 *
+	 */
+	public CMctsUctSelectionGamer() {
+		// TODO Auto-generated constructor stub
+	}
 
 	/* (non-Javadoc)
 	 * @see org.ggp.base.player.gamer.statemachine.StateMachineGamer#stateMachineSelectMove(long)
@@ -55,7 +62,7 @@ public class CMCTSRandomGamer extends SampleGamer {
 		// otherwise return the only one available.
 		if(moves.size() != 1){
 
-			MCTSManager manager = new MCTSManager(new RandomSelection(new RandomExpansion(), new RandomPlayout(stateMachine)), new MaxAvgScoreMoveChoice());
+			MCTSManager manager = new MCTSManager(new UCTSelection(new RandomExpansion(), new RandomPlayout(stateMachine), 1.0/Math.sqrt(2)), new MaxAvgScoreMoveChoice());
 
 			Role myRole = getRole();
 			Map<Role, Integer> roleIndexes = stateMachine.getRoleIndices();
@@ -73,12 +80,11 @@ public class CMCTSRandomGamer extends SampleGamer {
 
 		notifyObservers(new GamerSelectedMoveEvent(moves, selection, stop - start));
 		return selection;
-
 	}
 
 	@Override
 	public String getName() {
-		return "Phil";
+		return "Phil2";
 	}
 
 }

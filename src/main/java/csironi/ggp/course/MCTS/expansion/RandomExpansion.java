@@ -19,7 +19,7 @@ public class RandomExpansion implements ExpansionStrategy {
 	Random random;
 
 	/**
-	 *
+	 * Contructor.
 	 */
 	public RandomExpansion() {
 		this.random = new Random();
@@ -31,6 +31,7 @@ public class RandomExpansion implements ExpansionStrategy {
 	@Override
 	public MCTNode expand(MCTNode nodeToExpand) throws MoveDefinitionException, TransitionDefinitionException {
 
+		// Visit for the first time one random unvisited child of the node nodeToExpand.
 		return nodeToExpand.childFirstVisit(this.random.nextInt(nodeToExpand.getUnvisitedChildrenNumber()));
 
 	}
