@@ -50,11 +50,6 @@ public final class StartRequest extends Request
         // in the gamer to indicate that we're starting a new match.
 		Match match = new Match(matchId, -1, startClock, playClock, game);
 
-		/**C.Sironi************************LOG*************************
-		//Start logging of the match*/
-		GamerLogger.startFileLogging(match, roleName.getValue());
-		/*******************************************************/
-
 		gamer.setMatch(match);
 		gamer.setRoleName(roleName);
 		gamer.notifyObservers(new GamerNewMatchEvent(match, roleName));

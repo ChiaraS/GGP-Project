@@ -55,6 +55,7 @@ public class CMCTSRandomGamer extends SampleGamer {
 		// otherwise return the only one available.
 		if(moves.size() != 1){
 
+			//create only once!!!!
 			MCTSManager manager = new MCTSManager(new RandomSelection(new RandomExpansion(), new RandomPlayout(stateMachine)), new MaxAvgScoreMoveChoice());
 
 			Role myRole = getRole();
@@ -80,5 +81,8 @@ public class CMCTSRandomGamer extends SampleGamer {
 	public String getName() {
 		return "Phil";
 	}
+
+
+	//!!!! ONLY ONE RANDOM!
 
 }

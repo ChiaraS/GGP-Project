@@ -26,12 +26,12 @@ import csironi.ggp.course.MCTS.selection.UCTSelection;
  * @author C.Sironi
  *
  */
-public class CMctsUctSelectionGamer extends SampleGamer {
+public class PhilUCT extends SampleGamer {
 
 	/**
 	 *
 	 */
-	public CMctsUctSelectionGamer() {
+	public PhilUCT() {
 		// TODO Auto-generated constructor stub
 	}
 
@@ -46,8 +46,8 @@ public class CMctsUctSelectionGamer extends SampleGamer {
 		// Get the current start time
 		long start = System.currentTimeMillis();
 
-		GamerLogger.log("Phil", "Selecting move");
-		GamerLogger.log("Phil", "Start time: " + start);
+		GamerLogger.log("Stats", "Selecting move");
+		GamerLogger.log("Stats", "Start time: " + start);
 
 		long finishBy = timeout - 100;
 
@@ -75,16 +75,12 @@ public class CMctsUctSelectionGamer extends SampleGamer {
 		// It is mandatory that stop<timeout
 		long stop = System.currentTimeMillis();
 
-		GamerLogger.log("Phil", "Move selected: " + selection);
-		GamerLogger.log("Phil", "End time: " + stop);
+		GamerLogger.log("Stats", "Move selected: " + selection);
+		GamerLogger.log("Stats", "End time: " + stop);
 
 		notifyObservers(new GamerSelectedMoveEvent(moves, selection, stop - start));
 		return selection;
 	}
 
-	@Override
-	public String getName() {
-		return "Phil2";
-	}
 
 }

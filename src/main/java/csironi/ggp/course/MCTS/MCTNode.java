@@ -105,6 +105,8 @@ public class MCTNode implements BackpropagationStrategy {
 	 */
 	public void initializeChildren() throws MoveDefinitionException, TransitionDefinitionException{
 
+		// INITIALIZE ONLY SCORE AND VISITS! DON'T SIMULATE EACH MOVE
+
 		this.visitedChildren = new ArrayList<MCTNode>();
 		this.unvisitedChildren = new ArrayList<MCTNode>();
 

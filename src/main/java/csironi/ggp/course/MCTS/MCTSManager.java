@@ -67,7 +67,7 @@ public class MCTSManager {
 		long endTime;
 		long remainingTime;
 
-		GamerLogger.log("Phil", "Starting MCTS at time: " + startTime);
+		GamerLogger.log("Stats", "Starting MCTS at time: " + startTime);
 
 		int numberOfIterations = 0;
 		double avgTime;
@@ -85,9 +85,9 @@ public class MCTSManager {
 
 		}while(remainingTime > 2 * avgTime);
 
-		GamerLogger.log("Phil", "Ending MCTS at time: " + System.currentTimeMillis());
-		GamerLogger.log("Phil", "Number of simulations: " + numberOfIterations);
-		GamerLogger.log("Phil", "Average time per simulation: " + avgTime +  "ms");
+		GamerLogger.log("Stats", "Ending MCTS at time: " + System.currentTimeMillis());
+		GamerLogger.log("Stats", "Number of simulations: " + numberOfIterations);
+		GamerLogger.log("Stats", "Average time per simulation: " + avgTime +  "ms");
 
 		return this.finalMoveChoiceStrategy.chooseFinalMove(root);
 

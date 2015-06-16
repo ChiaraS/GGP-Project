@@ -77,13 +77,23 @@ public final class GameServerRunner
 			f.createNewFile();
 		}
 
+
+		BufferedWriter bw;
+
+		/**
+		 * Do not save the match history in an XML
+		 */
+		/*
 		// Open up the XML file for this match, and save the match there.
 		f = new File(tourneyName + "/" + matchName + ".xml");
 		if (f.exists()) f.delete();
-		BufferedWriter bw = new BufferedWriter(new FileWriter(f));
+		bw = new BufferedWriter(new FileWriter(f));
 		bw.write(match.toXML());
 		bw.flush();
 		bw.close();
+		*/
+
+
 
 		// Open up the JSON file for this match, and save the match there.
 		f = new File(tourneyName + "/" + matchName + ".json");
@@ -92,6 +102,7 @@ public final class GameServerRunner
 		bw.write(match.toJSON());
 		bw.flush();
 		bw.close();
+
 
 		// Save the goals in the "/scores" file for the tournament.
 		bw = new BufferedWriter(new FileWriter(tourneyName + "/scores", true));
@@ -109,7 +120,7 @@ public final class GameServerRunner
 				goalStr += ",";
 			}
 		}
-		bw.write(playerStr + "=" + goalStr);
+		bw.write("\n" + playerStr + "=" + goalStr);
 		bw.flush();
 		bw.close();
 	}

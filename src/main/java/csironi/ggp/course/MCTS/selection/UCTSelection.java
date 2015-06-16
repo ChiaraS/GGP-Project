@@ -90,7 +90,7 @@ public class UCTSelection implements SelectionStrategy {
 	private double getUCTValue(MCTNode node, double np){
 
 		double ni = (double) node.getVisits();
-		double avgScore = (double) node.getScoreSum() / ni;
+		double avgScore = ((double) node.getScoreSum() / ni) / 100.0;
 		return avgScore + this.c * Math.sqrt(Math.log(np)/ni);
 
 	}
