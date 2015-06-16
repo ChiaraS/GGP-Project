@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!DOCTYPE smart_grid SYSTEM "SingleExperiment.dtd">
+
+<experiment gamekey="ticTacToe" start_clock="20" play_clock="10" repetitions="100">
+	<external_player name="CadiaPlayer" port="59834"></external_player>
+	<internal_player name="Random" type="RandomGamer"></internal_player>
+	<configurable_internal_plyer name="Phil" type="PhilUCT" player_config="c=0.7" provers="propnet yap prover"></configurable_internal_plyer>
+</experiment>
