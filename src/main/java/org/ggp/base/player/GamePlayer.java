@@ -1,5 +1,6 @@
 package org.ggp.base.player;
 
+import java.io.File;
 import java.io.IOException;
 import java.net.ServerSocket;
 import java.net.Socket;
@@ -82,6 +83,19 @@ public final class GamePlayer extends Thread implements Subject
 	@Override
 	public void run()
 	{
+
+		/**
+		 * AGGIUNTA: to avoid loosing logs between matches, set the name of the spill-over log file for this gamer.
+		 * All logs that don't refer to a match will be written on that file for this gamer.
+		 */
+		String spilloverDirectory = "spilloverFiles";
+		new File(spilloverDirectory).mkdirs();
+		GamerLogger.setSpilloverLogfile(spilloverDirectory + "/" + System.currentTimeMillis() + "-" + this.gamer.getName());
+		/**
+		 * FINE AGGIUNTA
+		 */
+
+
 		while (listener != null) {
 			try {
 				Socket connection = listener.accept();

@@ -54,6 +54,15 @@ public final class StartRequest extends Request
 		gamer.setRoleName(roleName);
 		gamer.notifyObservers(new GamerNewMatchEvent(match, roleName));
 
+
+		/**
+		 * AGGIUNTA
+		 */
+		GamerLogger.startFileLogging(match, roleName.getValue());
+		/**
+		 * FINE AGGIUNTA
+		 */
+
 		// Finally, have the gamer begin metagaming.
 		try {
 			gamer.notifyObservers(new PlayerTimeEvent(gamer.getMatch().getStartClock() * 1000));

@@ -49,6 +49,14 @@ public final class AbortRequest extends Request
 		gamer.setRoleName(null);
 	    gamer.setMatch(null);
 
+	    /**
+	     * AGGIUNTA: stop logging for this match
+	     */
+	    GamerLogger.stopFileLogging();
+	    /**
+	     * FINE AGGUINTA
+	     */
+
 		return "aborted";
 	}
 

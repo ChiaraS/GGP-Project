@@ -57,6 +57,14 @@ public final class StopRequest extends Request
 		gamer.setRoleName(null);
 	    gamer.setMatch(null);
 
+	    /**
+	     * AGGIUNTA: stop logging for this match
+	     */
+	    GamerLogger.stopFileLogging();
+	    /**
+	     * FINE AGGUINTA
+	     */
+
 		return "done";
 	}
 

@@ -18,11 +18,48 @@ import java.util.Set;
 import org.ggp.base.util.match.Match;
 
 /**
+ * !!!!!!!!!!!!!!!!!!!! ADD A METHOD TO SET MANUALLY THE FILES TO SKIP (i.e. if i want to skip writing on file the
+ * logs of the category Error or StateMAchine i should be able to do that!)
+ *
+ *
+ *
  * This logger is an adaptation of org.ggp.base.util.logging.GamerLogger as a non-static class.
  * This logger can be instantiated for each of the players that are running at the same time and
  * allows to save separate log files for each of them.
- * For long run game players, this logger can be used to create different log directories
- * for each match played by the corresponding player.
+ *
+ * Each log message can be associated to a different category of logs. This category is represented by
+ * the parameter 'toFile'. Any category can be used. Some examples of categories that can be defined
+ * are 'GamePlayer' for logs about network messages received/sent by the game player, 'Logger' for logs
+ * about the logging procedure (e.g. when it started/ended) for this player, 'Statistics' for logs about
+ * the playing statistics of this player in a certain match (e.g. thinking time, number of iterations of
+ * the decision procedure,...) and so on. This logger, for each log, will also record the category in which
+ * it is classified.
+ * For long run game players, this logger can be used to create different log directories for each match
+ * played by the corresponding player, containing separate files for each defined category.
+ *
+ * Each log message is also associated to a level of importance. This level of importance can be used to
+ * decide which logs to show and which to hide because they are not relevant.
+ *
+ * DETAILS: This class saves logs for the player that instantiates it.
+ * There are 3 different main setting for the way this class saves logs:
+ * 1. By default it writes all logs on the standard output (System.err for error logs and System.out for
+ * all other logs.). It is possible to set the importance level for each log. This setting only prints
+ * logs with level higher than or equal to LOG_LEVEL_ORDINARY.
+ * 2. If a spill-over file name is set and the logger has not been set to write logs to file (i.e.
+ * 'writeLogsToFile == false') then this class will write all logs on this file (also writing the category
+ * of the log).
+ * 3. If the logger has been set to write logs to file, then for each match it will create a different
+ * directory and in this directory create a different log file for each log category. Then it will write each
+ * log in the directory of the corresponding match, in the file corresponding to its category.
+ *
+ * NOTE 1: with configuration 2. and 3., it is also possible to state which categories of logs we want to
+ * display on the standard output/standard error besides writing them on a file. Whenever a message is logged
+ * with configuration 2. or 3., if its category is set to be displayed and its importance level is higher than
+ * the 'minLevelToDisplay', then the log will also be printed on standard output/standard error.
+ *
+ * NOTE 2: this class, when writing logs on a file (either the spill-over file or a file corresponding to a log
+ * category), from time to time checks if the file is becoming too long, and if so it stops writing on that file
+ * and closes it (the file name is memorized in a list of files to skip when writing logs).
  *
  * @author C.Sironi
  */
@@ -57,6 +94,12 @@ public class Logger {
      */
     private static final Random theRandom = new Random();
 
+    /**
+     * Maximum size that a log file can reach before being closed and not written on anymore.
+     */
+    private static final long maximumLogfileSize = 25 * 1024 * 1024;
+
+
     //////////////////////////////////////// NON-STATIC FIELDS ////////////////////////////////////////
 
     /**
@@ -65,20 +108,22 @@ public class Logger {
      */
     private String myDirectory;
 
-
-    private static HashSet<String> filesToDisplay = new HashSet<String>();
-    private static int minLevelToDisplay = Integer.MAX_VALUE;
+    /**
+     * List of log categories that we want also to be displayed on standard output/standard error when logging
+     * them on a file.
+     */
+    private HashSet<String> filesToDisplay = new HashSet<String>();
 
     /**
-     * True if ANY output of this logger should be discarded (not written on any file or on the console).
+     * Minimum importance level that a log message must have to be also written on standard output/standard error
+     * whilst being written on a log file.
      */
-    private boolean suppressLoggerOutput;
+    private int minLevelToDisplay = Integer.MAX_VALUE;
 
     /**
-     * True if the logger must write logs for the current specific match on specific files in the specific
-     * directory that corresponds to this match, false otherwise.
+     * List of the names of the files that are too long and must not be written anymore with logs.
      */
-    private boolean writeLogsToFile = false;
+    private final Set<String> filesToSkip = new HashSet<String>();
 
     /**
      * Name of a general log file on which to save the logs for this player when we are not saving on specific
@@ -89,10 +134,18 @@ public class Logger {
      */
     private String spilloverLogfile;
 
+    /**
+     * True if the logger must write logs for the current specific match on specific files in the specific
+     * directory that corresponds to this match, false otherwise.
+     */
+    private boolean writeLogsToFile = false;
+
+    /**
+     * True if ANY output of this logger should be discarded (not written on any file or on the console).
+     */
+    private boolean suppressLoggerOutput;
 
 
-    private static final Set<String> filesToSkip = new HashSet<String>();
-    private static final long maximumLogfileSize = 25 * 1024 * 1024;
 
 	/**
 	 *
@@ -104,10 +157,11 @@ public class Logger {
 	/*************************************** METHODS **************************************/
 
 	/**
-	 * This method starts file logging for a particular match of the player.
+	 * This method starts file logging for a particular match of the player in the specific directory
+	 * corresponding to the match.
 	 *
 	 * @param m the match for which to save logs.
-	 * @param roleName the role of the player in this match.
+	 * @param roleName the role of the player in this match (used to create a unique directory for the match).
 	 */
 	public void startFileLogging(Match m, String roleName) {
         this.writeLogsToFile = true;
@@ -122,7 +176,7 @@ public class Logger {
     }
 
 	/**
-	 * This method stops file logging for the corresponding player for the current match.
+	 * This method stops file logging for the corresponding player for the current match being logged.
 	 */
 	public void stopFileLogging() {
         log("Logger", "Stopped logging to files at: " + new Date());
@@ -174,7 +228,6 @@ public class Logger {
         }
 
         try {
-            String logMessage = logFormat(logLevel, ordinaryOutput == System.err, message);
 
             // If we are also displaying this file, write it to the standard output.
             if(filesToDisplay.contains(toFile) || logLevel >= minLevelToDisplay) {
@@ -186,7 +239,12 @@ public class Logger {
             String myFilename = myDirectory + "/" + toFile;
             if(!writeLogsToFile && spilloverLogfile != null) {
             	myFilename = spilloverLogfile;
+            	// Since we will not write the log in the file corresponding to its category, add the category
+            	// to the message.
+            	message = "[" + toFile + "]" + message;
             }
+
+            String logMessage = logFormat(logLevel, ordinaryOutput == System.err, message);
 
             // Periodically check to make sure we're not writing TOO MUCH to this file.
             if(filesToSkip.size() != 0 && filesToSkip.contains(myFilename)) {
@@ -222,7 +280,7 @@ public class Logger {
 
 
     // Public Interface
-    public static void emitToConsole(String s) {
+    public void emitToConsole(String s) {
         // TODO: fix this hack!
         if(!writeLogsToFile && !suppressLoggerOutput) {
             System.out.print(s);
@@ -235,11 +293,11 @@ public class Logger {
 
 
 
-    public static void setFileToDisplay(String toFile) {
+    public void setFileToDisplay(String toFile) {
         filesToDisplay.add(toFile);
     }
 
-    public static void setMinimumLevelToDisplay(int nLevel) {
+    public void setMinimumLevelToDisplay(int nLevel) {
         minLevelToDisplay = nLevel;
     }
 
@@ -247,7 +305,7 @@ public class Logger {
 
 
 
-    public static void logError(String toFile, String message) {
+    public void logError(String toFile, String message) {
         logEntry(System.err, toFile, message, LOG_LEVEL_CRITICAL);
         if(writeLogsToFile) {
             logEntry(System.err, "Errors", "(in " + toFile + ") " + message, LOG_LEVEL_CRITICAL);
@@ -256,13 +314,13 @@ public class Logger {
 
 
 
-    public static void logStackTrace(String toFile, Exception ex) {
+    public void logStackTrace(String toFile, Exception ex) {
         StringWriter s = new StringWriter();
         ex.printStackTrace(new PrintWriter(s));
         logError(toFile, s.toString());
     }
 
-    public static void logStackTrace(String toFile, Error ex) {
+    public void logStackTrace(String toFile, Error ex) {
         StringWriter s = new StringWriter();
         ex.printStackTrace(new PrintWriter(s));
         logError(toFile, s.toString());
