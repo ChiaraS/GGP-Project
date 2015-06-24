@@ -32,7 +32,6 @@ public class PhilUCT extends SampleGamer {
 	 *
 	 */
 	public PhilUCT() {
-		// TODO Auto-generated constructor stub
 	}
 
 	/* (non-Javadoc)
