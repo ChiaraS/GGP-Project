@@ -1,5 +1,9 @@
 package org.ggp.base.player.request.grammar;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.ThreadContext;
+import org.apache.logging.log4j.message.StructuredDataMessage;
 import org.ggp.base.player.event.PlayerTimeEvent;
 import org.ggp.base.player.gamer.Gamer;
 import org.ggp.base.player.gamer.event.GamerNewMatchEvent;
@@ -7,12 +11,20 @@ import org.ggp.base.player.gamer.event.GamerUnrecognizedMatchEvent;
 import org.ggp.base.player.gamer.exception.MetaGamingException;
 import org.ggp.base.util.game.Game;
 import org.ggp.base.util.gdl.grammar.GdlConstant;
-import org.ggp.base.util.logging.GamerLogger;
 import org.ggp.base.util.match.Match;
 
 
 public final class StartRequest extends Request
 {
+	/**
+	 * Static reference to the logger
+	 */
+	private static final Logger LOGGER;
+
+	static{
+		LOGGER = LogManager.getRootLogger();
+	}
+
 	private final Game game;
 	private final Gamer gamer;
 	private final String matchId;
@@ -41,7 +53,7 @@ public final class StartRequest extends Request
 	    // Ensure that we aren't already playing a match. If we are,
 	    // ignore the message, saying that we're busy.
         if (gamer.getMatch() != null) {
-            GamerLogger.logError("GamePlayer", "Got start message while already busy playing a game: ignoring.");
+        	LOGGER.warn(new StructuredDataMessage("" + System.currentTimeMillis(), "Got START message while already busy playing a game: ignoring.", "Network"));
             gamer.notifyObservers(new GamerUnrecognizedMatchEvent(matchId));
             return "busy";
         }
@@ -54,21 +66,20 @@ public final class StartRequest extends Request
 		gamer.setRoleName(roleName);
 		gamer.notifyObservers(new GamerNewMatchEvent(match, roleName));
 
+		String playerID = ThreadContext.get("PLAYER_ID");
+		LOGGER.info(new StructuredDataMessage("" + System.currentTimeMillis(), "Starting match " + match.getMatchId() + ". Writing logs in folder logs\\" + playerID + "\\" + match.getMatchId(), "GamePlayer"));
 
-		/**
-		 * AGGIUNTA
-		 */
-		GamerLogger.startFileLogging(match, roleName.getValue());
-		/**
-		 * FINE AGGIUNTA
-		 */
+		ThreadContext.put("MATCH_ID", match.getMatchId());
+		LOGGER.info(new StructuredDataMessage("" + System.currentTimeMillis(), "Starting file logging for match " + match.getMatchId() + ".", "MatchLogger"));
 
 		// Finally, have the gamer begin metagaming.
 		try {
 			gamer.notifyObservers(new PlayerTimeEvent(gamer.getMatch().getStartClock() * 1000));
 			gamer.metaGame(gamer.getMatch().getStartClock() * 1000 + receptionTime);
 		} catch (MetaGamingException e) {
-		    GamerLogger.logStackTrace("GamePlayer", e);
+
+			String messageID = "" + System.currentTimeMillis();
+			LOGGER.error(new StructuredDataMessage(messageID,e.getMessage(),"MatchLogger"));
 
 		    // Upon encountering an uncaught exception during metagaming,
 		    // assume that indicates that we aren't actually able to play

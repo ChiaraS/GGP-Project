@@ -1,12 +1,15 @@
 package org.ggp.base.player;
 
-import java.io.File;
 import java.io.IOException;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.ThreadContext;
+import org.apache.logging.log4j.message.StructuredDataMessage;
 import org.ggp.base.player.event.PlayerDroppedPacketEvent;
 import org.ggp.base.player.event.PlayerReceivedMessageEvent;
 import org.ggp.base.player.event.PlayerSentMessageEvent;
@@ -16,7 +19,6 @@ import org.ggp.base.player.request.factory.RequestFactory;
 import org.ggp.base.player.request.grammar.Request;
 import org.ggp.base.util.http.HttpReader;
 import org.ggp.base.util.http.HttpWriter;
-import org.ggp.base.util.logging.GamerLogger;
 import org.ggp.base.util.observer.Event;
 import org.ggp.base.util.observer.Observer;
 import org.ggp.base.util.observer.Subject;
@@ -24,13 +26,32 @@ import org.ggp.base.util.observer.Subject;
 
 public final class GamePlayer extends Thread implements Subject
 {
+	/**
+	 * Static reference to the logger
+	 */
+	private static final Logger LOGGER;
+
+	static{
+		/**
+    	 * AGGIUNTA!!!!!!!! Spostare in posto piú consono!!!!
+    	 */
+    	System.setProperty("Log4jContextSelector", "org.apache.logging.log4j.core.async.AsyncLoggerContextSelector");
+
+		LOGGER = LogManager.getRootLogger();
+	}
+
+
+
+
     private final int port;
     private final Gamer gamer;
     private ServerSocket listener;
     private final List<Observer> observers;
+    private final String playerID;
 
     public GamePlayer(int port, Gamer gamer) throws IOException
     {
+
         observers = new ArrayList<Observer>();
         listener = null;
 
@@ -40,12 +61,18 @@ public final class GamePlayer extends Thread implements Subject
             } catch (IOException ex) {
                 listener = null;
                 port++;
-                System.err.println("Failed to start gamer on port: " + (port-1) + " trying port " + port);
+
+                LOGGER.warn(new StructuredDataMessage("" + System.currentTimeMillis(),"Failed to start gamer on port: " + (port - 1) + " trying port " + port, "GamePlayer"));
+
             }
         }
 
         this.port = port;
         this.gamer = gamer;
+        this.playerID = System.currentTimeMillis() + "." + this.gamer.getName() + "." + this.port;
+
+
+        LOGGER.info("Started player " + playerID + ". Writing logs to file logs\\" + this.playerID + "\\PlayerAvailable.log", "GamePlayer");
     }
 
 	@Override
@@ -76,7 +103,7 @@ public final class GamePlayer extends Thread implements Subject
 			listener.close();
 			listener = null;
 		} catch (IOException e) {
-			;
+			LOGGER.error(new StructuredDataMessage("" + System.currentTimeMillis() , "Impossible to close listener", "GamePlayer"));
 		}
 	}
 
@@ -84,17 +111,10 @@ public final class GamePlayer extends Thread implements Subject
 	public void run()
 	{
 
-		/**
-		 * AGGIUNTA: to avoid loosing logs between matches, set the name of the spill-over log file for this gamer.
-		 * All logs that don't refer to a match will be written on that file for this gamer.
-		 */
-		String spilloverDirectory = "spilloverFiles";
-		new File(spilloverDirectory).mkdirs();
-		GamerLogger.setSpilloverLogfile(spilloverDirectory + "/" + System.currentTimeMillis() + "-" + this.gamer.getName());
-		/**
-		 * FINE AGGIUNTA
-		 */
-
+		// LOGGING DETAILS
+		ThreadContext.put("PLAYER_ID", playerID);
+		LOGGER.info(new StructuredDataMessage("" + System.currentTimeMillis(),"Starting logs for player " + this.playerID + ". Player available to play a match.", "GamePlayer"));
+		// LOGGING DETAILS
 
 		while (listener != null) {
 			try {
@@ -105,7 +125,7 @@ public final class GamePlayer extends Thread implements Subject
 				}
 
 				notifyObservers(new PlayerReceivedMessageEvent(in));
-				GamerLogger.log("GamePlayer", "[Received at " + System.currentTimeMillis() + "] " + in, GamerLogger.LOG_LEVEL_DATA_DUMP);
+				LOGGER.info(new StructuredDataMessage("" + System.currentTimeMillis(), "[MESSAGE RECEIVED] " + in, "Network"));
 
 				Request request = new RequestFactory().create(gamer, in);
 				String out = request.process(System.currentTimeMillis());
@@ -113,12 +133,16 @@ public final class GamePlayer extends Thread implements Subject
 				HttpWriter.writeAsServer(connection, out);
 				connection.close();
 				notifyObservers(new PlayerSentMessageEvent(out));
-				GamerLogger.log("GamePlayer", "[Sent at " + System.currentTimeMillis() + "] " + out, GamerLogger.LOG_LEVEL_DATA_DUMP);
+				LOGGER.info(new StructuredDataMessage("" + System.currentTimeMillis(), "[MESSAGE SENT] " + out, "Network"));
+
 			} catch (Exception e) {
-				GamerLogger.log("GamePlayer", "[Dropped data at " + System.currentTimeMillis() + "] Due to " + e, GamerLogger.LOG_LEVEL_DATA_DUMP);
+				LOGGER.error(new StructuredDataMessage("" + System.currentTimeMillis(), "[DATA DROPPED] CAUSE: " + e, "Network"));
 				notifyObservers(new PlayerDroppedPacketEvent());
+
 			}
 		}
+
+		ThreadContext.clearAll();
 	}
 
 	// Simple main function that starts a RandomGamer on a specified port.

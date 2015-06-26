@@ -52,7 +52,7 @@ public final class AbortRequest extends Request
 	    /**
 	     * AGGIUNTA: stop logging for this match
 	     */
-	    GamerLogger.stopFileLogging();
+	    //GamerLogger.stopFileLogging();
 	    /**
 	     * FINE AGGUINTA
 	     */

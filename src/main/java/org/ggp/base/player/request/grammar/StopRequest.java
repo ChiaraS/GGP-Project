@@ -60,7 +60,7 @@ public final class StopRequest extends Request
 	    /**
 	     * AGGIUNTA: stop logging for this match
 	     */
-	    GamerLogger.stopFileLogging();
+	    //GamerLogger.stopFileLogging();
 	    /**
 	     * FINE AGGUINTA
 	     */

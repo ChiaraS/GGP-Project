@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<Configuration>
+
+	<Appenders>
+	
+		<Routing name="LogRouter">
+  			<Routes pattern="$${ctx:PLAYER_ID}">
+ 
+    			<Route>
+    				<Routing name="MatchRouter">
+    					<Routes pattern="$${ctx:MATCH_ID}">
+    						<Route>
+    							<Routing name="FileRouter">
+    								<Routes pattern="$${sd:type}">
+    									<Route>
+    										<RandomAccessFile name="Match-${ctx:MATCH_ID}-${sd:type}" fileName="logs/${ctx:PLAYER_ID}/${ctx:MATCH_ID}/${sd:type}.log">
+      											<PatternLayout pattern="%d{ISO8601} %-5level %-30.30logger{1} %msg%n"/>
+    										</RandomAccessFile>    											
+    									</Route>
+    									<Route key="$${sd:type}">
+    										<RandomAccessFile name="Match-${ctx:MATCH_ID}" fileName="logs/${ctx:PLAYER_ID}/${ctx:MATCH_ID}/Match.log">
+      											<PatternLayout pattern="%d{ISO8601} %-5level %-30.30logger{1} %msg%n"/>
+    										</RandomAccessFile>    									
+    									</Route>
+    								</Routes>    							
+    							</Routing>
+    						</Route>
+    						<Route key="$${ctx:MATCH_ID}">    						
+    							<!-- This appender writes logs on the general log file for the specific GamePlayer
+    							that is logging. Used by the GamePlayer when it is not playing a match (mostly to
+    							record network messages). -->
+								<RandomAccessFile name="PlayerAvailable-${ctx:PLAYER_ID}" fileName="logs/${ctx:PLAYER_ID}/PlayerAvailable.log">
+      								<PatternLayout pattern="%d{ISO8601} %-5level %-30.30logger{1} %msg%n"/>
+    							</RandomAccessFile>   							
+    						</Route>    				
+    					</Routes>
+    				</Routing>
+    			</Route>
+ 
+    			<!-- This route is chosen if ThreadContext has no value for key PLAYER_ID
+    			(i.e. a player has not been started yet). -->
+    			<Route key="$${ctx:PLAYER_ID}">
+    				<!-- This appender writes logs on a general log file. Used when a GamePlayer
+					has not been started yet. -->
+					<RandomAccessFile name="General" fileName="logs/General.log">
+      					<PatternLayout pattern="%d{ISO8601} %-5level %-30.30logger{1} %msg%n"/>
+    				</RandomAccessFile>				    	
+			    </Route>
+    			
+  			</Routes>
+		</Routing>
+		
+		<!-- <Async name="AsyncPlayerLog">
+      		<AppenderRef ref="LogRouter" level="trace"/>
+    	</Async> -->
+    		
+	</Appenders>
+
+	<Loggers>
+		<Root level="trace">
+			<AppenderRef ref="LogRouter"/>
+		</Root>
+	</Loggers>
+</Configuration>
