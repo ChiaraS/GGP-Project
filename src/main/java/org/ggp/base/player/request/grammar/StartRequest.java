@@ -78,8 +78,7 @@ public final class StartRequest extends Request
 			gamer.metaGame(gamer.getMatch().getStartClock() * 1000 + receptionTime);
 		} catch (MetaGamingException e) {
 
-			String messageID = "" + System.currentTimeMillis();
-			LOGGER.error(new StructuredDataMessage(messageID,e.getMessage(),"MatchLogger"));
+			LOGGER.error(new StructuredDataMessage("" + System.currentTimeMillis(), e.getMessage(),"MatchLogger"));
 
 		    // Upon encountering an uncaught exception during metagaming,
 		    // assume that indicates that we aren't actually able to play
