@@ -1,12 +1,25 @@
 package org.ggp.base.player.request.grammar;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.message.StructuredDataMessage;
 import org.ggp.base.player.gamer.Gamer;
 import org.ggp.base.player.gamer.exception.GamePreviewException;
 import org.ggp.base.util.game.Game;
-import org.ggp.base.util.logging.GamerLogger;
 
 public final class PreviewRequest extends Request
 {
+
+	/**
+	 * Static reference to the logger
+	 */
+	private static final Logger LOGGER;
+
+	static{
+		LOGGER = LogManager.getRootLogger();
+	}
+
+
 	private final Game game;
 	private final Gamer gamer;
 	private final int previewClock;
@@ -29,7 +42,7 @@ public final class PreviewRequest extends Request
 		// Ensure that we aren't already playing a match. If we are,
 	    // ignore the message, saying that we're busy.
 		if (gamer.getMatch() != null) {
-            GamerLogger.logError("GamePlayer", "Got preview message while already busy playing a game: ignoring.");
+			LOGGER.warn(new StructuredDataMessage("" + System.currentTimeMillis(), "Got PREVIEW message while already busy playing a game: ignoring.", "GamePlayer"));
             //gamer.notifyObservers(new GamerUnrecognizedMatchEvent(matchId));
             return "busy";
         }
@@ -40,7 +53,7 @@ public final class PreviewRequest extends Request
 			gamer.preview(game, previewClock * 1000 + receptionTime);
 			//gamer.metaGame(gamer.getMatch().getStartClock() * 1000 + receptionTime);
 		} catch (GamePreviewException e) {
-		    GamerLogger.logStackTrace("GamePlayer", e);
+			LOGGER.error(new StructuredDataMessage("" + System.currentTimeMillis(), e.getMessage(),"GamePlayer"));
 
 		    // Upon encountering an uncaught exception during previewing,
 		    // assume that indicates that we aren't actually able to play

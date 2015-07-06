@@ -7,17 +7,22 @@
 		<Routing name="LogRouter">
   			<Routes pattern="$${ctx:PLAYER_ID}">
  
+ 				<!-- This route is chosen for any possible value of PLAYER_ID in ThreadContext. -->
     			<Route>
     				<Routing name="MatchRouter">
     					<Routes pattern="$${ctx:MATCH_ID}">
+    					
+    						<!-- This route is chosen for any possible value of MATCH_ID in ThreadContext. -->
     						<Route>
     							<Routing name="FileRouter">
     								<Routes pattern="$${sd:type}">
+    									<!-- This route is chosen for any possible value of message type. -->
     									<Route>
     										<RandomAccessFile name="Match-${ctx:MATCH_ID}-${sd:type}" fileName="logs/${ctx:PLAYER_ID}/${ctx:MATCH_ID}/${sd:type}.log">
       											<PatternLayout pattern="%d{ISO8601} %-5level %-30.30logger{1} %msg%n"/>
     										</RandomAccessFile>    											
     									</Route>
+    									<!-- This route is chosen if there is no type associated with the message. -->
     									<Route key="$${sd:type}">
     										<RandomAccessFile name="Match-${ctx:MATCH_ID}" fileName="logs/${ctx:PLAYER_ID}/${ctx:MATCH_ID}/Match.log">
       											<PatternLayout pattern="%d{ISO8601} %-5level %-30.30logger{1} %msg%n"/>
@@ -26,11 +31,14 @@
     								</Routes>    							
     							</Routing>
     						</Route>
+    						
+    						<!-- This route is chosen if ThreadContext has no value for key MATCH_ID
+    						(i.e. a player has not been started yet). -->
     						<Route key="$${ctx:MATCH_ID}">    						
     							<!-- This appender writes logs on the general log file for the specific GamePlayer
     							that is logging. Used by the GamePlayer when it is not playing a match (mostly to
     							record network messages). -->
-								<RandomAccessFile name="PlayerAvailable-${ctx:PLAYER_ID}" fileName="logs/${ctx:PLAYER_ID}/PlayerAvailable.log">
+								<RandomAccessFile name="GamePlayer-${ctx:PLAYER_ID}" fileName="logs/${ctx:PLAYER_ID}/GamePlayer.log">
       								<PatternLayout pattern="%d{ISO8601} %-5level %-30.30logger{1} %msg%n"/>
     							</RandomAccessFile>   							
     						</Route>    				

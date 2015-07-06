@@ -2,15 +2,28 @@ package org.ggp.base.player.request.grammar;
 
 import java.util.List;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.ThreadContext;
+import org.apache.logging.log4j.message.StructuredDataMessage;
 import org.ggp.base.player.gamer.Gamer;
 import org.ggp.base.player.gamer.event.GamerCompletedMatchEvent;
 import org.ggp.base.player.gamer.event.GamerUnrecognizedMatchEvent;
 import org.ggp.base.player.gamer.exception.StoppingException;
 import org.ggp.base.util.gdl.grammar.GdlTerm;
-import org.ggp.base.util.logging.GamerLogger;
 
 public final class StopRequest extends Request
 {
+
+	/**
+	 * Static reference to the logger
+	 */
+	private static final Logger LOGGER;
+
+	static{
+		LOGGER = LogManager.getRootLogger();
+	}
+
 	private final Gamer gamer;
 	private final String matchId;
 	private final List<GdlTerm> moves;
@@ -35,7 +48,7 @@ public final class StopRequest extends Request
         // playing a different match, send back "busy".
 		if (gamer.getMatch() == null || !gamer.getMatch().getMatchId().equals(matchId))
 		{
-		    GamerLogger.logError("GamePlayer", "Got stop message not intended for current game: ignoring.");
+		    LOGGER.warn(new StructuredDataMessage("" + System.currentTimeMillis(), "Got STOP message not intended for current game: ignoring.", "GamePlayer"));
 			gamer.notifyObservers(new GamerUnrecognizedMatchEvent(matchId));
 			return "busy";
 		}
@@ -49,21 +62,18 @@ public final class StopRequest extends Request
 		try {
 			gamer.stop();
 		} catch (StoppingException e) {
-		    GamerLogger.logStackTrace("GamePlayer", e);
+		    LOGGER.error(new StructuredDataMessage("" + System.currentTimeMillis(), e.getMessage(), "GamePlayer"));
 		}
 
-		// Once the match has ended, set 'roleName' and 'match'
-		// to NULL to indicate that we're ready to begin a new match.
-		gamer.setRoleName(null);
-	    gamer.setMatch(null);
 
-	    /**
-	     * AGGIUNTA: stop logging for this match
-	     */
-	    //GamerLogger.stopFileLogging();
-	    /**
-	     * FINE AGGUINTA
-	     */
+	    LOGGER.info(new StructuredDataMessage("" + System.currentTimeMillis(), "Match " + matchId + "stopped. Stopping file logging for match " + matchId + ".", "GamePlayer"));
+	    ThreadContext.remove("MATCH_ID");
+	    LOGGER.info(new StructuredDataMessage("" + System.currentTimeMillis(), "Match " + matchId + "stopped. Player available to play a match.", "GamePlayer"));
+
+	    // Once the match has ended, set 'roleName' and 'match'
+	 	// to NULL to indicate that we're ready to begin a new match.
+	 	gamer.setRoleName(null);
+	 	gamer.setMatch(null);
 
 		return "done";
 	}

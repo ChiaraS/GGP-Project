@@ -3,13 +3,15 @@ package org.ggp.base.player.gamer.statemachine;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.message.StructuredDataMessage;
 import org.ggp.base.player.gamer.Gamer;
 import org.ggp.base.player.gamer.exception.AbortingException;
 import org.ggp.base.player.gamer.exception.MetaGamingException;
 import org.ggp.base.player.gamer.exception.MoveSelectionException;
 import org.ggp.base.player.gamer.exception.StoppingException;
 import org.ggp.base.util.gdl.grammar.GdlTerm;
-import org.ggp.base.util.logging.GamerLogger;
 import org.ggp.base.util.statemachine.MachineState;
 import org.ggp.base.util.statemachine.Move;
 import org.ggp.base.util.statemachine.Role;
@@ -32,6 +34,16 @@ import org.ggp.base.util.statemachine.exceptions.TransitionDefinitionException;
  */
 public abstract class StateMachineGamer extends Gamer
 {
+
+	/**
+	 * Static reference to the logger
+	 */
+	private static final Logger LOGGER;
+
+	static{
+		LOGGER = LogManager.getRootLogger();
+	}
+
     // =====================================================================
     // First, the abstract methods which need to be overriden by subclasses.
     // These determine what state machine is used, what the gamer does during
@@ -144,8 +156,8 @@ public abstract class StateMachineGamer extends Gamer
             currentState = newCurrentState;
             stateMachine = newStateMachine;
         } catch (Exception e) {
-            GamerLogger.log("GamePlayer", "Caught an exception while switching state machine!");
-            GamerLogger.logStackTrace("GamePlayer", e);
+        	LOGGER.error(new StructuredDataMessage("" + System.currentTimeMillis(), "Caught an exception while switching state machine!", "GamePlayer"));
+        	LOGGER.error(new StructuredDataMessage("" + System.currentTimeMillis(), e.getMessage(), "GamePlayer"));
         }
     }
 
@@ -188,7 +200,7 @@ public abstract class StateMachineGamer extends Gamer
 		}
 		catch (Exception e)
 		{
-		    GamerLogger.logStackTrace("GamePlayer", e);
+			LOGGER.error(new StructuredDataMessage("" + System.currentTimeMillis(), e.getMessage(), "GamePlayer"));
 			throw new MetaGamingException(e);
 		}
 	}
@@ -223,7 +235,7 @@ public abstract class StateMachineGamer extends Gamer
 		}
 		catch (Exception e)
 		{
-		    GamerLogger.logStackTrace("GamePlayer", e);
+			LOGGER.error(new StructuredDataMessage("" + System.currentTimeMillis(), e.getMessage(), "GamePlayer"));
 			throw new MoveSelectionException(e);
 		}
 	}
@@ -251,7 +263,7 @@ public abstract class StateMachineGamer extends Gamer
 		}
 		catch (Exception e)
 		{
-			GamerLogger.logStackTrace("GamePlayer", e);
+			LOGGER.error(new StructuredDataMessage("" + System.currentTimeMillis(), e.getMessage(), "GamePlayer"));
 			throw new StoppingException(e);
 		}
 	}
@@ -263,7 +275,7 @@ public abstract class StateMachineGamer extends Gamer
 		}
 		catch (Exception e)
 		{
-			GamerLogger.logStackTrace("GamePlayer", e);
+			LOGGER.error(new StructuredDataMessage("" + System.currentTimeMillis(), e.getMessage(), "GamePlayer"));
 			throw new AbortingException(e);
 		}
 	}

@@ -70,7 +70,7 @@ public final class StartRequest extends Request
 		LOGGER.info(new StructuredDataMessage("" + System.currentTimeMillis(), "Starting match " + match.getMatchId() + ". Writing logs in folder logs\\" + playerID + "\\" + match.getMatchId(), "GamePlayer"));
 
 		ThreadContext.put("MATCH_ID", match.getMatchId());
-		LOGGER.info(new StructuredDataMessage("" + System.currentTimeMillis(), "Starting file logging for match " + match.getMatchId() + ".", "MatchLogger"));
+		LOGGER.info(new StructuredDataMessage("" + System.currentTimeMillis(), "Starting file logging for match " + match.getMatchId() + ".", "GamePlayer"));
 
 		// Finally, have the gamer begin metagaming.
 		try {
@@ -78,7 +78,7 @@ public final class StartRequest extends Request
 			gamer.metaGame(gamer.getMatch().getStartClock() * 1000 + receptionTime);
 		} catch (MetaGamingException e) {
 
-			LOGGER.error(new StructuredDataMessage("" + System.currentTimeMillis(), e.getMessage(),"MatchLogger"));
+			LOGGER.error(new StructuredDataMessage("" + System.currentTimeMillis(), e.getMessage(),"GamePlayer"));
 
 		    // Upon encountering an uncaught exception during metagaming,
 		    // assume that indicates that we aren't actually able to play
