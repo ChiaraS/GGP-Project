@@ -24,7 +24,10 @@ import org.ggp.base.util.match.Match;
  * TODO: More details about specific use examples.
  *
  * @author Sam Schreiber
+ *
+ * @deprecated
  */
+@Deprecated
 public class GamerLogger {
     // Public Interface
     public static void emitToConsole(String s) {

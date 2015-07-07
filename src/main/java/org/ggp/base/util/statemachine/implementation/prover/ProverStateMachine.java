@@ -4,11 +4,13 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.message.StructuredDataMessage;
 import org.ggp.base.util.gdl.grammar.Gdl;
 import org.ggp.base.util.gdl.grammar.GdlConstant;
 import org.ggp.base.util.gdl.grammar.GdlRelation;
 import org.ggp.base.util.gdl.grammar.GdlSentence;
-import org.ggp.base.util.logging.GamerLogger;
 import org.ggp.base.util.prover.Prover;
 import org.ggp.base.util.prover.aima.AimaProver;
 import org.ggp.base.util.statemachine.MachineState;
@@ -26,6 +28,16 @@ import com.google.common.collect.ImmutableList;
 
 public class ProverStateMachine extends StateMachine
 {
+	/**
+	 * Static reference to the logger
+	 */
+	private static final Logger LOGGER;
+
+	static{
+		LOGGER = LogManager.getRootLogger();
+	}
+
+
 	private MachineState initialState;
 	private Prover prover;
 	private ImmutableList<Role> roles;
@@ -59,7 +71,7 @@ public class ProverStateMachine extends StateMachine
 
 		if (results.size() != 1)
 		{
-		    GamerLogger.logError("StateMachine", "Got goal results of size: " + results.size() + " when expecting size one.");
+			LOGGER.error(new StructuredDataMessage("" + System.currentTimeMillis(),"[PROVER MACHINE] Got goal results of size: " + results.size() + " when expecting size one.", "StateMachine"));
 			throw new GoalDefinitionException(state, role);
 		}
 
@@ -72,6 +84,7 @@ public class ProverStateMachine extends StateMachine
 		}
 		catch (Exception e)
 		{
+			LOGGER.error(new StructuredDataMessage("" + System.currentTimeMillis(),"[PROVER MACHINE] Caught exception when computing the goal for role " + role + " in state " + state + ".", "StateMachine"), e);
 			throw new GoalDefinitionException(state, role);
 		}
 	}
@@ -89,6 +102,7 @@ public class ProverStateMachine extends StateMachine
 
 		if (results.size() == 0)
 		{
+			LOGGER.error(new StructuredDataMessage("" + System.currentTimeMillis(),"[PROVER MACHINE] Got no legal moves for role " + role + "in state " + state + ".", "StateMachine"));
 			throw new MoveDefinitionException(state, role);
 		}
 
@@ -104,6 +118,7 @@ public class ProverStateMachine extends StateMachine
 		{
 			if (!sentence.isGround())
 			{
+				LOGGER.error(new StructuredDataMessage("" + System.currentTimeMillis(),"[PROVER MACHINE] Got non-ground sentence when computing next state.", "StateMachine"));
 				throw new TransitionDefinitionException(state, moves);
 			}
 		}

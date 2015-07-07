@@ -55,7 +55,7 @@ public final class AbortRequest extends Request
 		try {
 			gamer.abort();
 		} catch (AbortingException e) {
-			LOGGER.error(new StructuredDataMessage("" + System.currentTimeMillis(), e.getMessage(), "GamePlayer"));
+			LOGGER.error(new StructuredDataMessage("" + System.currentTimeMillis(), "Error while aborting match.", "GamePlayer"), e);
 		}
 
 		LOGGER.info(new StructuredDataMessage("" + System.currentTimeMillis(), "Match " + matchId + "aborted. Stopping file logging for match " + matchId + ".", "GamePlayer"));

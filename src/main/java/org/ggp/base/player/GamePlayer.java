@@ -103,7 +103,7 @@ public final class GamePlayer extends Thread implements Subject
 			listener.close();
 			listener = null;
 		} catch (IOException e) {
-			LOGGER.error(new StructuredDataMessage("" + System.currentTimeMillis() , "Impossible to close listener", "GamePlayer"));
+			LOGGER.error(new StructuredDataMessage("" + System.currentTimeMillis() , "Impossible to close listener", "GamePlayer"), e);
 		}
 	}
 
@@ -136,7 +136,7 @@ public final class GamePlayer extends Thread implements Subject
 				LOGGER.info(new StructuredDataMessage("" + System.currentTimeMillis(), "[MESSAGE SENT] " + out, "GamePlayer"));
 
 			} catch (Exception e) {
-				LOGGER.error(new StructuredDataMessage("" + System.currentTimeMillis(), "[DATA DROPPED] CAUSE: " + e, "GamePlayer"));
+				LOGGER.error(new StructuredDataMessage("" + System.currentTimeMillis(), "[DATA DROPPED]", "GamePlayer"), e);
 				notifyObservers(new PlayerDroppedPacketEvent());
 
 			}

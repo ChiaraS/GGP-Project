@@ -59,7 +59,7 @@ public final class PlayRequest extends Request
 			gamer.notifyObservers(new PlayerTimeEvent(gamer.getMatch().getPlayClock() * 1000));
 			return gamer.selectMove(gamer.getMatch().getPlayClock() * 1000 + receptionTime).toString();
 		} catch (MoveSelectionException e) {
-			LOGGER.error(new StructuredDataMessage("" + System.currentTimeMillis(), e.getMessage(),"GamePlayer"));
+			LOGGER.error(new StructuredDataMessage("" + System.currentTimeMillis(), "Error while selecting move.","GamePlayer"), e);
 			return "nil";
 		}
 	}

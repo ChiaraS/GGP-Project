@@ -62,7 +62,7 @@ public final class StopRequest extends Request
 		try {
 			gamer.stop();
 		} catch (StoppingException e) {
-		    LOGGER.error(new StructuredDataMessage("" + System.currentTimeMillis(), e.getMessage(), "GamePlayer"));
+		    LOGGER.error(new StructuredDataMessage("" + System.currentTimeMillis(), "Error while stopping match.", "GamePlayer"), e);
 		}
 
 
