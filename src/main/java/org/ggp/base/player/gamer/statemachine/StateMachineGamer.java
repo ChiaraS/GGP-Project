@@ -156,7 +156,7 @@ public abstract class StateMachineGamer extends Gamer
             currentState = newCurrentState;
             stateMachine = newStateMachine;
         } catch (Exception e) {
-        	LOGGER.error(new StructuredDataMessage("" + System.currentTimeMillis(), "Caught an exception while switching state machine!", "GamePlayer"), e);
+        	LOGGER.error(new StructuredDataMessage("StateMachineGamer", "Caught an exception while switching state machine!", "GamePlayer"), e);
         }
     }
 
@@ -199,7 +199,7 @@ public abstract class StateMachineGamer extends Gamer
 		}
 		catch (Exception e)
 		{
-			LOGGER.error(new StructuredDataMessage("" + System.currentTimeMillis(), "Caught an exception while metagaming.", "GamePlayer"), e);
+			LOGGER.error(new StructuredDataMessage("StateMachineGamer", "Caught an exception while metagaming.", "GamePlayer"), e);
 			throw new MetaGamingException(e);
 		}
 	}
@@ -234,7 +234,7 @@ public abstract class StateMachineGamer extends Gamer
 		}
 		catch (Exception e)
 		{
-			LOGGER.error(new StructuredDataMessage("" + System.currentTimeMillis(), "Caught an exception while selecting next move.", "GamePlayer"), e);
+			LOGGER.error(new StructuredDataMessage("StateMachineGamer", "Caught an exception while selecting next move.", "GamePlayer"), e);
 			throw new MoveSelectionException(e);
 		}
 	}
@@ -262,7 +262,7 @@ public abstract class StateMachineGamer extends Gamer
 		}
 		catch (Exception e)
 		{
-			LOGGER.error(new StructuredDataMessage("" + System.currentTimeMillis(), "Caught an exception while stopping the match.", "GamePlayer"), e);
+			LOGGER.error(new StructuredDataMessage("StateMachineGamer", "Caught an exception while stopping the match.", "GamePlayer"), e);
 			throw new StoppingException(e);
 		}
 	}
@@ -274,7 +274,7 @@ public abstract class StateMachineGamer extends Gamer
 		}
 		catch (Exception e)
 		{
-			LOGGER.error(new StructuredDataMessage("" + System.currentTimeMillis(), "Caught an exception while aborting the match.", "GamePlayer"), e);
+			LOGGER.error(new StructuredDataMessage("StateMachineGamer", "Caught an exception while aborting the match.", "GamePlayer"), e);
 			throw new AbortingException(e);
 		}
 	}

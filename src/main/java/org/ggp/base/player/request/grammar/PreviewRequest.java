@@ -42,7 +42,7 @@ public final class PreviewRequest extends Request
 		// Ensure that we aren't already playing a match. If we are,
 	    // ignore the message, saying that we're busy.
 		if (gamer.getMatch() != null) {
-			LOGGER.warn(new StructuredDataMessage("" + System.currentTimeMillis(), "Got PREVIEW message while already busy playing a game: ignoring.", "GamePlayer"));
+			LOGGER.warn(new StructuredDataMessage("PreviewRequest", "Got PREVIEW message while already busy playing a game: ignoring.", "GamePlayer"));
             //gamer.notifyObservers(new GamerUnrecognizedMatchEvent(matchId));
             return "busy";
         }
@@ -53,7 +53,7 @@ public final class PreviewRequest extends Request
 			gamer.preview(game, previewClock * 1000 + receptionTime);
 			//gamer.metaGame(gamer.getMatch().getStartClock() * 1000 + receptionTime);
 		} catch (GamePreviewException e) {
-			LOGGER.error(new StructuredDataMessage("" + System.currentTimeMillis(), "Error during game preview.","GamePlayer"), e);
+			LOGGER.error(new StructuredDataMessage("PreviewRequest", "Error during game preview.","GamePlayer"), e);
 
 		    // Upon encountering an uncaught exception during previewing,
 		    // assume that indicates that we aren't actually able to play

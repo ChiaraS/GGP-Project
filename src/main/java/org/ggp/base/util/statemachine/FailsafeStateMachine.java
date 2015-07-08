@@ -59,34 +59,34 @@ public class FailsafeStateMachine extends StateMachine
         if(attemptLoadingInitialMachine())
             return;
 
-        LOGGER.warn(new StructuredDataMessage("" + System.currentTimeMillis(), "[FAILSAFE MACHINE] Failed to load initial state machine. Falling back...", "StateMachine"));
+        LOGGER.warn(new StructuredDataMessage("FailsafeStateMachine", "[FAILSAFE MACHINE] Failed to load initial state machine. Falling back...", "StateMachine"));
         if(attemptLoadingProverMachine())
             return;
 
-        LOGGER.error(new StructuredDataMessage("" + System.currentTimeMillis(), "[FAILSAFE MACHINE] Catastrophic failure to load *any* state machine. Cannot recover.", "StateMachine"));
-        LOGGER.error(new StructuredDataMessage("" + System.currentTimeMillis(), "[FAILSAFE MACHINE] Cannot recover from current state. Shutting down.", "StateMachine"));
+        LOGGER.error(new StructuredDataMessage("FailsafeStateMachine", "[FAILSAFE MACHINE] Catastrophic failure to load *any* state machine. Cannot recover.", "StateMachine"));
+        LOGGER.error(new StructuredDataMessage("FailsafeStateMachine", "[FAILSAFE MACHINE] Cannot recover from current state. Shutting down.", "StateMachine"));
         theBackingMachine = null;
     }
 
     private void failGracefully(Exception e1, Error e2) {
-        if(e1 != null) LOGGER.error(new StructuredDataMessage("" + System.currentTimeMillis(), "[FAILSAFE MACHINE] Caught exception.", "StateMachine"), e1);
-        if(e2 != null) LOGGER.error(new StructuredDataMessage("" + System.currentTimeMillis(), "[FAILSAFE MACHINE] Caught error.", "StateMachine"), e2);
-        LOGGER.info(new StructuredDataMessage("" + System.currentTimeMillis(), "[FAILSAFE MACHINE] Graceful failure mode kicking in.", "StateMachine"));
+        if(e1 != null) LOGGER.error(new StructuredDataMessage("FailsafeStateMachine", "[FAILSAFE MACHINE] Caught exception.", "StateMachine"), e1);
+        if(e2 != null) LOGGER.error(new StructuredDataMessage("FailsafeStateMachine", "[FAILSAFE MACHINE] Caught error.", "StateMachine"), e2);
+        LOGGER.info(new StructuredDataMessage("FailsafeStateMachine", "[FAILSAFE MACHINE] Graceful failure mode kicking in.", "StateMachine"));
 
         if(theBackingMachine.getClass() != ProverStateMachine.class) {
-        	LOGGER.warn(new StructuredDataMessage("" + System.currentTimeMillis(), "[FAILSAFE MACHINE] Online failure for " + theBackingMachine.getClass() + ". Attempting to restart with a standard prover.", "StateMachine"));
+        	LOGGER.warn(new StructuredDataMessage("FailsafeStateMachine", "[FAILSAFE MACHINE] Online failure for " + theBackingMachine.getClass() + ". Attempting to restart with a standard prover.", "StateMachine"));
             if(attemptLoadingProverMachine())
                 return;
         }
 
         theBackingMachine = null;
-        LOGGER.error(new StructuredDataMessage("" + System.currentTimeMillis(), "[FAILSAFE MACHINE] Online failure for regular prover. Cannot recover.", "StateMachine"));
+        LOGGER.error(new StructuredDataMessage("FailsafeStateMachine", "[FAILSAFE MACHINE] Online failure for regular prover. Cannot recover.", "StateMachine"));
     }
 
     private boolean attemptLoadingInitialMachine() {
         try {
             theBackingMachine.initialize(gameDescription);
-            LOGGER.info(new StructuredDataMessage("" + System.currentTimeMillis(),"[FAILSAFE MACHINE] Successfully activated initial state machine for use!", "StateMahcine"));
+            LOGGER.info(new StructuredDataMessage("FailsafeStateMachine","[FAILSAFE MACHINE] Successfully activated initial state machine for use!", "StateMahcine"));
             return true;
         } catch(Exception e1) {
         } catch(ThreadDeath d) {
@@ -101,7 +101,7 @@ public class FailsafeStateMachine extends StateMachine
             StateMachine theStateMachine = new ProverStateMachine();
             theStateMachine.initialize(gameDescription);
             theBackingMachine = theStateMachine;
-            LOGGER.info(new StructuredDataMessage("" + System.currentTimeMillis(), "[FAILSAFE MAHCINE] Successfully loaded traditional prover.", "StateMachine"));
+            LOGGER.info(new StructuredDataMessage("FailsafeStateMachine", "[FAILSAFE MAHCINE] Successfully loaded traditional prover.", "StateMachine"));
             return true;
         } catch(Exception e1) {
         } catch(ThreadDeath d) {

@@ -1,5 +1,8 @@
 package org.ggp.base.player.gamer.clojure;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.message.StructuredDataMessage;
 import org.ggp.base.player.gamer.Gamer;
 import org.ggp.base.player.gamer.exception.AbortingException;
 import org.ggp.base.player.gamer.exception.GamePreviewException;
@@ -8,7 +11,6 @@ import org.ggp.base.player.gamer.exception.MoveSelectionException;
 import org.ggp.base.player.gamer.exception.StoppingException;
 import org.ggp.base.util.game.Game;
 import org.ggp.base.util.gdl.grammar.GdlTerm;
-import org.ggp.base.util.logging.GamerLogger;
 
 import clojure.lang.RT;
 import clojure.lang.Var;
@@ -33,6 +35,16 @@ import clojure.lang.Var;
  */
 public abstract class ClojureGamer extends Gamer
 {
+
+	/**
+	 * Static reference to the logger
+	 */
+	private static final Logger LOGGER;
+
+	static{
+		LOGGER = LogManager.getRootLogger();
+	}
+
     Gamer theClojureGamer;
 
     protected abstract String getClojureGamerFile();
@@ -53,8 +65,7 @@ public abstract class ClojureGamer extends Gamer
 	            // Call it!
 	            theClojureGamer = (Gamer)gamerVar.invoke();
 	        } catch(Exception e) {
-	            GamerLogger.logError("GamePlayer", "Caught exception in Clojure initialization:");
-	            GamerLogger.logStackTrace("GamePlayer", e);
+	        	LOGGER.error(new StructuredDataMessage("ClojureGamer", "Caught exception in Clojure initialization.", "GamePlayer"), e);
 	        }
     	}
     }
@@ -72,8 +83,7 @@ public abstract class ClojureGamer extends Gamer
         try {
             theClojureGamer.preview(game, timeout);
         } catch(GamePreviewException e) {
-            GamerLogger.logError("GamePlayer", "Caught exception in Clojure stateMachineMetaGame:");
-            GamerLogger.logStackTrace("GamePlayer", e);
+        	LOGGER.error(new StructuredDataMessage("ClojureGamer", "Caught exception in Clojure stateMachineMetaGame.", "GamePlayer"), e);
         }
     }
 
@@ -85,8 +95,7 @@ public abstract class ClojureGamer extends Gamer
         try {
             theClojureGamer.metaGame(timeout);
         } catch(MetaGamingException e) {
-            GamerLogger.logError("GamePlayer", "Caught exception in Clojure stateMachineMetaGame:");
-            GamerLogger.logStackTrace("GamePlayer", e);
+        	LOGGER.error(new StructuredDataMessage("ClojureGamer", "Caught exception in Clojure stateMachineMetaGame.", "GamePlayer"), e);
         }
     }
 
@@ -98,8 +107,7 @@ public abstract class ClojureGamer extends Gamer
         try {
             return theClojureGamer.selectMove(timeout);
         } catch(MoveSelectionException e) {
-            GamerLogger.logError("GamePlayer", "Caught exception in Clojure stateMachineSelectMove:");
-            GamerLogger.logStackTrace("GamePlayer", e);
+        	LOGGER.error(new StructuredDataMessage("ClojureGamer", "Caught exception in Clojure stateMachineSelectMove.", "GamePlayer"), e);
             return null;
         }
     }
@@ -112,8 +120,7 @@ public abstract class ClojureGamer extends Gamer
         try {
             theClojureGamer.stop();
         } catch(StoppingException e) {
-            GamerLogger.logError("GamePlayer", "Caught exception in Clojure stateMachineStop:");
-            GamerLogger.logStackTrace("GamePlayer", e);
+        	LOGGER.error(new StructuredDataMessage("ClojureGamer", "Caught exception in Clojure stateMachineStop.", "GamePlayer"), e);
         }
     }
 
@@ -125,8 +132,7 @@ public abstract class ClojureGamer extends Gamer
         try {
             theClojureGamer.abort();
         } catch(AbortingException e) {
-            GamerLogger.logError("GamePlayer", "Caught exception in Clojure stateMachineAbort:");
-            GamerLogger.logStackTrace("GamePlayer", e);
+        	LOGGER.error(new StructuredDataMessage("ClojureGamer", "Caught exception in Clojure stateMachineAbort.", "GamePlayer"), e);
         }
     }
 

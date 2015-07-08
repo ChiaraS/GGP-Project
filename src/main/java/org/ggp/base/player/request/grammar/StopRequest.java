@@ -48,7 +48,7 @@ public final class StopRequest extends Request
         // playing a different match, send back "busy".
 		if (gamer.getMatch() == null || !gamer.getMatch().getMatchId().equals(matchId))
 		{
-		    LOGGER.warn(new StructuredDataMessage("" + System.currentTimeMillis(), "Got STOP message not intended for current game: ignoring.", "GamePlayer"));
+		    LOGGER.warn(new StructuredDataMessage("StopRequest", "Got STOP message not intended for current game: ignoring.", "GamePlayer"));
 			gamer.notifyObservers(new GamerUnrecognizedMatchEvent(matchId));
 			return "busy";
 		}
@@ -62,13 +62,13 @@ public final class StopRequest extends Request
 		try {
 			gamer.stop();
 		} catch (StoppingException e) {
-		    LOGGER.error(new StructuredDataMessage("" + System.currentTimeMillis(), "Error while stopping match.", "GamePlayer"), e);
+		    LOGGER.error(new StructuredDataMessage("StopRequest", "Error while stopping match.", "GamePlayer"), e);
 		}
 
 
-	    LOGGER.info(new StructuredDataMessage("" + System.currentTimeMillis(), "Match " + matchId + "stopped. Stopping file logging for match " + matchId + ".", "GamePlayer"));
+	    LOGGER.info(new StructuredDataMessage("StopRequest", "Match " + matchId + " stopped. Stopping file logging for match " + matchId + ".", "GamePlayer"));
 	    ThreadContext.remove("MATCH_ID");
-	    LOGGER.info(new StructuredDataMessage("" + System.currentTimeMillis(), "Match " + matchId + "stopped. Player available to play a match.", "GamePlayer"));
+	    LOGGER.info(new StructuredDataMessage("StopRequest", "Match " + matchId + " stopped. Player available to play a match.", "GamePlayer"));
 
 	    // Once the match has ended, set 'roleName' and 'match'
 	 	// to NULL to indicate that we're ready to begin a new match.

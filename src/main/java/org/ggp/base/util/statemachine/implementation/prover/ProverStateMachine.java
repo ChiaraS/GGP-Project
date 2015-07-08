@@ -71,7 +71,7 @@ public class ProverStateMachine extends StateMachine
 
 		if (results.size() != 1)
 		{
-			LOGGER.error(new StructuredDataMessage("" + System.currentTimeMillis(),"[PROVER MACHINE] Got goal results of size: " + results.size() + " when expecting size one.", "StateMachine"));
+			LOGGER.error(new StructuredDataMessage("ProverStateMachine", "[PROVER MACHINE] Got goal results of size: " + results.size() + " when expecting size one.", "StateMachine"));
 			throw new GoalDefinitionException(state, role);
 		}
 
@@ -84,7 +84,7 @@ public class ProverStateMachine extends StateMachine
 		}
 		catch (Exception e)
 		{
-			LOGGER.error(new StructuredDataMessage("" + System.currentTimeMillis(),"[PROVER MACHINE] Caught exception when computing the goal for role " + role + " in state " + state + ".", "StateMachine"), e);
+			LOGGER.error(new StructuredDataMessage("ProverStateMachine","[PROVER MACHINE] Caught exception when computing the goal for role " + role + " in state " + state + ".", "StateMachine"), e);
 			throw new GoalDefinitionException(state, role);
 		}
 	}
@@ -102,7 +102,7 @@ public class ProverStateMachine extends StateMachine
 
 		if (results.size() == 0)
 		{
-			LOGGER.error(new StructuredDataMessage("" + System.currentTimeMillis(),"[PROVER MACHINE] Got no legal moves for role " + role + "in state " + state + ".", "StateMachine"));
+			LOGGER.error(new StructuredDataMessage("ProverStateMachine", "[PROVER MACHINE] Got no legal moves for role " + role + "in state " + state + ".", "StateMachine"));
 			throw new MoveDefinitionException(state, role);
 		}
 
@@ -118,7 +118,7 @@ public class ProverStateMachine extends StateMachine
 		{
 			if (!sentence.isGround())
 			{
-				LOGGER.error(new StructuredDataMessage("" + System.currentTimeMillis(),"[PROVER MACHINE] Got non-ground sentence when computing next state.", "StateMachine"));
+				LOGGER.error(new StructuredDataMessage("ProverStateMachine", "[PROVER MACHINE] Got non-ground sentence when computing next state.", "StateMachine"));
 				throw new TransitionDefinitionException(state, moves);
 			}
 		}

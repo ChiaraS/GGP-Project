@@ -47,7 +47,7 @@ public final class PlayRequest extends Request
 	    // playing a different match, send back "busy".
 		if (gamer.getMatch() == null || !gamer.getMatch().getMatchId().equals(matchId)) {
 			gamer.notifyObservers(new GamerUnrecognizedMatchEvent(matchId));
-			LOGGER.warn(new StructuredDataMessage("" + System.currentTimeMillis(), "Got PLAY message not intended for current game: ignoring.", "GamePlayer"));
+			LOGGER.warn(new StructuredDataMessage("PlayRequest", "Got PLAY message not intended for current game: ignoring.", "GamePlayer"));
 			return "busy";
 		}
 
@@ -59,7 +59,7 @@ public final class PlayRequest extends Request
 			gamer.notifyObservers(new PlayerTimeEvent(gamer.getMatch().getPlayClock() * 1000));
 			return gamer.selectMove(gamer.getMatch().getPlayClock() * 1000 + receptionTime).toString();
 		} catch (MoveSelectionException e) {
-			LOGGER.error(new StructuredDataMessage("" + System.currentTimeMillis(), "Error while selecting move.","GamePlayer"), e);
+			LOGGER.error(new StructuredDataMessage("PlayRequest", "Error while selecting move.","GamePlayer"), e);
 			return "nil";
 		}
 	}

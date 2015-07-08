@@ -15,6 +15,12 @@
     						<!-- This route is chosen for any possible value of MATCH_ID in ThreadContext. -->
     						<Route>
     							<Routing name="FileRouter">
+    								
+    								<!-- Questo router poi verrá sostituito da uno basato sui marker e non sull'sd:type
+    								e nel codice tutti i messaggi di log implementati come structured data verranno
+    								sostituiti da semplici messaggi con marker associato. In questo modo potró loggare i messaggi
+    								sulle statistiche (che ora avrebbero sd:type="Stats" e poi avranno invece marker="Stats") in
+    								formato CSV senza avere extra header. -->
     								<Routes pattern="$${sd:type}">
     									<!-- This route is chosen for any possible value of message type. -->
     									<Route>

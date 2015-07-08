@@ -72,7 +72,7 @@ public final class GamePlayer extends Thread implements Subject
         this.playerID = System.currentTimeMillis() + "." + this.gamer.getName() + "." + this.port;
 
 
-        LOGGER.info("Started player " + playerID + ". Writing logs to file logs\\" + this.playerID + "\\PlayerAvailable.log");
+        LOGGER.info("Started player " + playerID + ". Writing logs to file logs\\" + this.playerID + "\\GamePlayer.log");
     }
 
 	@Override
@@ -103,7 +103,7 @@ public final class GamePlayer extends Thread implements Subject
 			listener.close();
 			listener = null;
 		} catch (IOException e) {
-			LOGGER.error(new StructuredDataMessage("" + System.currentTimeMillis() , "Impossible to close listener", "GamePlayer"), e);
+			LOGGER.error(new StructuredDataMessage("GamePlayer", "Impossible to close listener", "GamePlayer"), e);
 		}
 	}
 
@@ -125,7 +125,7 @@ public final class GamePlayer extends Thread implements Subject
 				}
 
 				notifyObservers(new PlayerReceivedMessageEvent(in));
-				LOGGER.info(new StructuredDataMessage("" + System.currentTimeMillis(), "[MESSAGE RECEIVED] " + in, "GamePlayer"));
+				LOGGER.info(new StructuredDataMessage("GamePlayer", "[MESSAGE RECEIVED] " + in, "GamePlayer"));
 
 				Request request = new RequestFactory().create(gamer, in);
 				String out = request.process(System.currentTimeMillis());
@@ -133,10 +133,10 @@ public final class GamePlayer extends Thread implements Subject
 				HttpWriter.writeAsServer(connection, out);
 				connection.close();
 				notifyObservers(new PlayerSentMessageEvent(out));
-				LOGGER.info(new StructuredDataMessage("" + System.currentTimeMillis(), "[MESSAGE SENT] " + out, "GamePlayer"));
+				LOGGER.info(new StructuredDataMessage("GamePlayer", "[MESSAGE SENT] " + out, "GamePlayer"));
 
 			} catch (Exception e) {
-				LOGGER.error(new StructuredDataMessage("" + System.currentTimeMillis(), "[DATA DROPPED]", "GamePlayer"), e);
+				LOGGER.error(new StructuredDataMessage("GamePlayer", "[DATA DROPPED]", "GamePlayer"), e);
 				notifyObservers(new PlayerDroppedPacketEvent());
 
 			}

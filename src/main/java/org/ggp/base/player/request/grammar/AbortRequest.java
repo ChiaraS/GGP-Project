@@ -44,7 +44,7 @@ public final class AbortRequest extends Request
         // playing a different match, send back "busy".
 		if (gamer.getMatch() == null || !gamer.getMatch().getMatchId().equals(matchId))
 		{
-			LOGGER.warn(new StructuredDataMessage("" + System.currentTimeMillis(), "Got ABORT message not intended for current game: ignoring.", "GamePlayer"));
+			LOGGER.warn(new StructuredDataMessage("AbortRequest", "Got ABORT message not intended for current game: ignoring.", "GamePlayer"));
 			gamer.notifyObservers(new GamerUnrecognizedMatchEvent(matchId));
 			return "busy";
 		}
@@ -55,12 +55,12 @@ public final class AbortRequest extends Request
 		try {
 			gamer.abort();
 		} catch (AbortingException e) {
-			LOGGER.error(new StructuredDataMessage("" + System.currentTimeMillis(), "Error while aborting match.", "GamePlayer"), e);
+			LOGGER.error(new StructuredDataMessage("AbortRequest", "Error while aborting match.", "GamePlayer"), e);
 		}
 
-		LOGGER.info(new StructuredDataMessage("" + System.currentTimeMillis(), "Match " + matchId + "aborted. Stopping file logging for match " + matchId + ".", "GamePlayer"));
+		LOGGER.info(new StructuredDataMessage("AbortRequest", "Match " + matchId + "aborted. Stopping file logging for match " + matchId + ".", "GamePlayer"));
 	    ThreadContext.remove("MATCH_ID");
-	    LOGGER.info(new StructuredDataMessage("" + System.currentTimeMillis(), "Match " + matchId + "aborted. Player available to play a match.", "GamePlayer"));
+	    LOGGER.info(new StructuredDataMessage("AbortRequest", "Match " + matchId + "aborted. Player available to play a match.", "GamePlayer"));
 
 		// Once the match has ended, set 'roleName' and 'match'
 		// to NULL to indicate that we're ready to begin a new match.
