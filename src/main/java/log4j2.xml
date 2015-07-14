@@ -4,6 +4,17 @@
 
 	<Appenders>
 	
+		<Console name="ConsoleOut" target="SYSTEM_OUT">
+      		<PatternLayout pattern="%d{HH:mm:ss.SSS} %level{ERROR=!, WARN=?, INFO=-, DEBUG=., TRACE=.} %msg%n"/>
+      		<ThresholdFilter level="error" onMatch="DENY" onMismatch="ACCEPT" />
+    	</Console>
+    	<Console name="ConsoleErr" target="SYSTEM_ERR">
+      		<PatternLayout pattern="%d{HH:mm:ss.SSS} %level{ERROR=!, WARN=?, INFO=-, DEBUG=., TRACE=.} %msg%n"/>
+    	</Console>
+    	<RandomAccessFile name="GeneralLogs" fileName="logs/General.log">
+      		<PatternLayout pattern="%d{ISO8601} %-5level %-30.30logger{1} %msg%n"/>
+    	</RandomAccessFile>   	
+	
 		<Routing name="LogRouter">
   			<Routes pattern="$${ctx:PLAYER_ID}">
  
@@ -46,7 +57,7 @@
     							record network messages). -->
 								<RandomAccessFile name="GamePlayer-${ctx:PLAYER_ID}" fileName="logs/${ctx:PLAYER_ID}/GamePlayer.log">
       								<PatternLayout pattern="%d{ISO8601} %-5level %-30.30logger{1} %msg%n"/>
-    							</RandomAccessFile>   							
+    							</RandomAccessFile>					
     						</Route>    				
     					</Routes>
     				</Routing>
@@ -57,9 +68,11 @@
     			<Route key="$${ctx:PLAYER_ID}">
     				<!-- This appender writes logs on a general log file. Used when a GamePlayer
 					has not been started yet. -->
-					<RandomAccessFile name="General" fileName="logs/General.log">
-      					<PatternLayout pattern="%d{ISO8601} %-5level %-30.30logger{1} %msg%n"/>
-    				</RandomAccessFile>				    	
+					<Async name="General">
+      					<AppenderRef ref="GeneralLogs" level="trace"/>
+      					<AppenderRef ref="ConsoleOut" level="trace"/>
+      					<AppenderRef ref="ConsoleErr" level="error"/>
+   					</Async>   							    	
 			    </Route>
     			
   			</Routes>

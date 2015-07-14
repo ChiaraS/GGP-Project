@@ -112,7 +112,7 @@ public final class GamePlayer extends Thread implements Subject
 	{
 
 		// LOGGING DETAILS
-		ThreadContext.put("PLAYER_ID", playerID);
+		ThreadContext.put("PLAYER_ID", this.playerID);
 		LOGGER.info("Starting logs for player " + this.playerID + ". Player available to play a match.");
 		// LOGGING DETAILS
 

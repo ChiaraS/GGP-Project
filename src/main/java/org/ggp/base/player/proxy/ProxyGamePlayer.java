@@ -110,7 +110,7 @@ public final class ProxyGamePlayer extends Thread implements Subject
 	        ProcessBuilder pb = new ProcessBuilder(processArgs);
 
 	        try {
-	            GamerLogger.log("Proxy", "[PROXY] Starting a new proxy client, using gamer " + gamerName + ".");
+	            GamerLogger.log("Proxy", "[ProxyPlayer] Starting a new proxy client, using gamer " + gamerName + ".");
 
 	            theClientProcess = pb.start();
 	            outConnector = new StreamConnector(theClientProcess.getErrorStream(), System.err);
