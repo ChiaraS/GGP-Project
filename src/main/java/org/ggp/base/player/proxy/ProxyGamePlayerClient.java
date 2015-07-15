@@ -58,10 +58,10 @@ public final class ProxyGamePlayerClient extends Thread implements Subject, Obse
      */
     public static void main(String[] args) {
 
-        LOGGER.info("Starting the ProxyGamePlayerClient program.");
+        LOGGER.info("[ProxyClient] Starting the ProxyGamePlayerClient program.");
 
         if (!(args.length == 2)) {
-            LOGGER.error("Usage is: \n\tProxyGamePlayerClient gamer port");
+            LOGGER.error("[ProxyClient] Usage is: \n\tProxyGamePlayerClient gamer port");
             return;
         }
 
@@ -70,7 +70,7 @@ public final class ProxyGamePlayerClient extends Thread implements Subject, Obse
         try {
             port = Integer.valueOf(args[1]);
         } catch(Exception e) {
-            LOGGER.error("Caught exception when parsing the port number: " + args[1]+" is not a valid port.", e);
+            LOGGER.error("[ProxyClient] Caught exception when parsing the port number: " + args[1]+" is not a valid port.", e);
             return;
         }
 
@@ -84,7 +84,7 @@ public final class ProxyGamePlayerClient extends Thread implements Subject, Obse
 
         int idx = gamerNames.indexOf(args[0]);
         if (idx == -1) {
-        	String message = args[0] + " is not a subclass of gamer. Valid options are:";
+        	String message = "[ProxyClient] " + args[0] + " is not a subclass of gamer. Valid options are:";
             for(String s : gamerNames)
                 message += "\n" + s;
             LOGGER.error(message);
@@ -94,7 +94,7 @@ public final class ProxyGamePlayerClient extends Thread implements Subject, Obse
         try {
             gamer = (Gamer)(gamers.get(idx).newInstance());
         } catch(Exception ex) {
-            LOGGER.error("Caught exception when creating the gamer: cannot create instance of " + args[0] + ".", ex);
+            LOGGER.error("[ProxyClient] Caught exception when creating the gamer: cannot create instance of " + args[0] + ".", ex);
             return;
         }
 
@@ -103,7 +103,7 @@ public final class ProxyGamePlayerClient extends Thread implements Subject, Obse
             theClient.start();
 
         } catch (IOException e) {
-            LOGGER.error("Caught exception when creating and starting the Proxy Game Player Client.", e);
+            LOGGER.error("[ProxyClient] Caught exception when creating and starting the Proxy Game Player Client.", e);
         }
     }
 
@@ -119,7 +119,7 @@ public final class ProxyGamePlayerClient extends Thread implements Subject, Obse
 		this.port = port;
 		this.playerID = System.currentTimeMillis() + "." + this.gamer.getName() + "." + this.port;
 
-		LOGGER.info("Started player " + playerID + ". Writing logs to file logs\\" + this.playerID + "\\GamePlayer.log");
+		LOGGER.info("[ProxyClient] Started player " + playerID + ". Writing logs to file logs\\" + this.playerID + "\\GamePlayer.log");
 
 		gamer.addObserver(this);
 	}
@@ -146,7 +146,7 @@ public final class ProxyGamePlayerClient extends Thread implements Subject, Obse
 	{
 		// LOGGING DETAILS
 		ThreadContext.put("PLAYER_ID", this.playerID);
-		LOGGER.info("Starting logs for player " + this.playerID + ". Player available to play a match.");
+		LOGGER.info("[ProxyClient] Starting logs for player " + this.playerID + ". Player available to play a match.");
 		// LOGGING DETAILS
 
 		while (!isInterrupted())
