@@ -11,7 +11,7 @@
     	<Console name="ConsoleErr" target="SYSTEM_ERR">
       		<PatternLayout pattern="%d{HH:mm:ss.SSS} %level{ERROR=!, WARN=?, INFO=-, DEBUG=., TRACE=.} %msg%n"/>
     	</Console>
-    	<RandomAccessFile name="GeneralLogs" fileName="logs/General.log">
+    	<RandomAccessFile name="GeneralLogs" fileName="logs/${ctx:GENERAL}/General.log">
       		<PatternLayout pattern="%d{ISO8601} %-5level %-30.30logger{1} %msg%n"/>
     	</RandomAccessFile>   	
 	
@@ -35,13 +35,13 @@
     								<Routes pattern="$${sd:type}">
     									<!-- This route is chosen for any possible value of message type. -->
     									<Route>
-    										<RandomAccessFile name="Match-${ctx:MATCH_ID}-${sd:type}" fileName="logs/${ctx:PLAYER_ID}/${ctx:MATCH_ID}/${sd:type}.log">
+    										<RandomAccessFile name="Match-${ctx:MATCH_ID}-${sd:type}" fileName="logs/${ctx:GENERAL}/${ctx:PLAYER_ID}/${ctx:MATCH_ID}/${sd:type}.log">
       											<PatternLayout pattern="%d{ISO8601} %-5level %-30.30logger{1} %msg%n"/>
     										</RandomAccessFile>    											
     									</Route>
     									<!-- This route is chosen if there is no type associated with the message. -->
     									<Route key="$${sd:type}">
-    										<RandomAccessFile name="Match-${ctx:MATCH_ID}" fileName="logs/${ctx:PLAYER_ID}/${ctx:MATCH_ID}/Match.log">
+    										<RandomAccessFile name="Match-${ctx:MATCH_ID}" fileName="logs/${ctx:GENERAL}/${ctx:PLAYER_ID}/${ctx:MATCH_ID}/Match.log">
       											<PatternLayout pattern="%d{ISO8601} %-5level %-30.30logger{1} %msg%n"/>
     										</RandomAccessFile>    									
     									</Route>
@@ -55,7 +55,7 @@
     							<!-- This appender writes logs on the general log file for the specific GamePlayer
     							that is logging. Used by the GamePlayer when it is not playing a match (mostly to
     							record network messages). -->
-								<RandomAccessFile name="GamePlayer-${ctx:PLAYER_ID}" fileName="logs/${ctx:PLAYER_ID}/GamePlayer.log">
+								<RandomAccessFile name="GamePlayer-${ctx:PLAYER_ID}" fileName="logs/${ctx:GENERAL}/${ctx:PLAYER_ID}/GamePlayer.log">
       								<PatternLayout pattern="%d{ISO8601} %-5level %-30.30logger{1} %msg%n"/>
     							</RandomAccessFile>					
     						</Route>    				

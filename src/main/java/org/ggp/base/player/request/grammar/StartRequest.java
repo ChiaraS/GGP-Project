@@ -67,7 +67,7 @@ public final class StartRequest extends Request
 		gamer.notifyObservers(new GamerNewMatchEvent(match, roleName));
 
 		String playerID = ThreadContext.get("PLAYER_ID");
-		LOGGER.info(new StructuredDataMessage("StartRequest", "Starting match " + match.getMatchId() + ". Writing logs in folder logs\\" + playerID + "\\" + match.getMatchId(), "GamePlayer"));
+		LOGGER.info(new StructuredDataMessage("StartRequest", "Starting match " + match.getMatchId() + ". Writing logs in folder logs\\" + ThreadContext.get("GENERAL") + "\\" + playerID + "\\" + match.getMatchId(), "GamePlayer"));
 
 		ThreadContext.put("MATCH_ID", match.getMatchId());
 		LOGGER.info(new StructuredDataMessage("StartRequest", "Starting file logging for match " + match.getMatchId() + ".", "GamePlayer"));

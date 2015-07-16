@@ -25,6 +25,7 @@ import javax.swing.JSpinner;
 import javax.swing.JTabbedPane;
 import javax.swing.SpinnerNumberModel;
 
+import org.apache.logging.log4j.ThreadContext;
 import org.ggp.base.apps.server.leaderboard.LeaderboardPanel;
 import org.ggp.base.apps.server.scheduling.PendingMatch;
 import org.ggp.base.apps.server.scheduling.Scheduler;
@@ -60,6 +61,14 @@ public final class Server extends JPanel implements ActionListener
 
 	public static void main(String[] args)
 	{
+		System.setProperty("Log4jContextSelector", "org.apache.logging.log4j.core.async.AsyncLoggerContextSelector");
+		System.setProperty("isThreadContextMapInheritable", "true");
+		ThreadContext.put("GENERAL", System.currentTimeMillis() + "ServerApp");
+		//This is needed only so that log files for a match can be routed to different files according
+		//to the type of log message (StructuredDataMessage type (sd:type) for now, marker value later
+		//when log4j2 will be switched to next version).
+		ThreadContext.put("PLAYER_ID", "MatchesLogs");
+
 	    NativeUI.setNativeUI();
 	    GdlPool.caseSensitive = false;
 

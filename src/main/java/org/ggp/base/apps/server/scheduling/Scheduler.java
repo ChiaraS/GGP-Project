@@ -14,6 +14,7 @@ import java.util.Set;
 import javax.swing.AbstractAction;
 import javax.swing.JTabbedPane;
 
+import org.apache.logging.log4j.ThreadContext;
 import org.ggp.base.apps.server.error.ErrorPanel;
 import org.ggp.base.apps.server.history.HistoryPanel;
 import org.ggp.base.apps.server.leaderboard.LeaderboardPanel;
@@ -86,6 +87,8 @@ public final class Scheduler implements Observer
 
 	private synchronized void doSchedule(PendingMatch spec) {
 		try {
+			ThreadContext.put("MATCH_ID", spec.matchID);
+
 			Match match = new Match(spec.matchID, spec.previewClock, spec.startClock, spec.playClock, spec.theGame);
 
 			List<String> hosts = new ArrayList<String>(spec.thePlayers.size());
@@ -128,6 +131,8 @@ public final class Scheduler implements Observer
 			gameServer.addObserver(leaderboardPanel);
 			gameServer.addObserver(this);
 			gameServer.start();
+
+			ThreadContext.remove("MATCH_ID");
 
 			activePlayers.addAll(playerNames);
 

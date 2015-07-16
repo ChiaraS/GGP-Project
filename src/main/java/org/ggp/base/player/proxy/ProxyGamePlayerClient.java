@@ -37,7 +37,11 @@ public final class ProxyGamePlayerClient extends Thread implements Subject, Obse
 
 	static{
 
-    	System.setProperty("Log4jContextSelector", "org.apache.logging.log4j.core.async.AsyncLoggerContextSelector");
+		//These properties have to be set here before creating the logger, in the main method is already too late
+		System.setProperty("Log4jContextSelector", "org.apache.logging.log4j.core.async.AsyncLoggerContextSelector");
+    	System.setProperty("isThreadContextMapInheritable", "true");
+
+    	ThreadContext.put("GENERAL", System.currentTimeMillis() + "ProxyClient");
 
 		LOGGER = LogManager.getRootLogger();
 	}

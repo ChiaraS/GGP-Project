@@ -32,10 +32,6 @@ public final class GamePlayer extends Thread implements Subject
 	private static final Logger LOGGER;
 
 	static{
-		/**
-    	 * AGGIUNTA!!!!!!!! Spostare in posto piú consono!!!!
-    	 */
-    	System.setProperty("Log4jContextSelector", "org.apache.logging.log4j.core.async.AsyncLoggerContextSelector");
 
 		LOGGER = LogManager.getRootLogger();
 	}
@@ -51,7 +47,6 @@ public final class GamePlayer extends Thread implements Subject
 
     public GamePlayer(int port, Gamer gamer) throws IOException
     {
-
         observers = new ArrayList<Observer>();
         listener = null;
 
@@ -72,7 +67,7 @@ public final class GamePlayer extends Thread implements Subject
         this.playerID = System.currentTimeMillis() + "." + this.gamer.getName() + "." + this.port;
 
 
-        LOGGER.info("Started player " + playerID + ". Writing logs to file logs\\" + this.playerID + "\\GamePlayer.log");
+        LOGGER.info("Started player " + playerID + ". Writing logs to file logs\\" + ThreadContext.get("GENERAL") + "\\" + this.playerID + "\\GamePlayer.log");
     }
 
 	@Override

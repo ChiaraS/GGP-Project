@@ -34,7 +34,6 @@ import org.ggp.base.util.configuration.GamerConfiguration;
 import org.ggp.base.util.gdl.grammar.GdlPool;
 import org.ggp.base.util.http.HttpReader;
 import org.ggp.base.util.http.HttpWriter;
-import org.ggp.base.util.logging.GamerLogger;
 import org.ggp.base.util.observer.Event;
 import org.ggp.base.util.observer.Observer;
 import org.ggp.base.util.observer.Subject;
@@ -79,12 +78,6 @@ public final class ProxyGamePlayer extends Thread implements Subject
 	private static final Logger LOGGER;
 
 	static{
-
-    	System.setProperty("Log4jContextSelector", "org.apache.logging.log4j.core.async.AsyncLoggerContextSelector");
-
-    	/**SERVE??
-    	 * System.setProperty("isThreadContextMapInheritable", "true");
-    	 */
 
 		LOGGER = LogManager.getRootLogger();
 	}
@@ -239,6 +232,7 @@ public final class ProxyGamePlayer extends Thread implements Subject
 
 	public final int myPort;
 	private final String myPlayerID;
+
 	public ProxyGamePlayer(int port, Class<? extends Gamer> gamer) throws IOException
 	{
 	    // Use a random gamer as our "default" gamer, that we fall back to
@@ -258,7 +252,6 @@ public final class ProxyGamePlayer extends Thread implements Subject
 			}
 		}
 		this.myPort = port;
-		this.myPlayerID = "Proxy." + System.currentTimeMillis() + "." + this.theDefaultGamer.getName() + "." + this.myPort;
 
 		// Start up the socket for communicating with clients
 		int clientPort = 17147;
@@ -271,6 +264,8 @@ public final class ProxyGamePlayer extends Thread implements Subject
 		    }
 		}
 		LOGGER.info("[Proxy] Opened client communication socket on port " + clientPort + ".");
+
+		this.myPlayerID =  System.currentTimeMillis() + ".Proxy-" + this.theDefaultGamer.getName() + "." + this.myPort + "." + clientPort;
 
 		LOGGER.info("[Proxy] Started proxy player " + myPlayerID + ". Writing logs to file logs\\" + this.myPlayerID + "\\GamePlayer.log");
 
@@ -330,7 +325,7 @@ public final class ProxyGamePlayer extends Thread implements Subject
 				String in = nextMessage.theMessage;
 				long receptionTime = nextMessage.receptionTime;
 				notifyObservers(new PlayerReceivedMessageEvent(in));
-				LOGGER.info(new StructuredDataMessage("ProxyGamePlayer", "[Proxy] Got incoming message:" + in, "GamePlayer"));
+				LOGGER.info(new StructuredDataMessage("ProxyGamePlayer", "[Proxy] [MESSAGE RECEIVED] " + in, "GamePlayer"));
 
 				// Formulate a request, and see how the legal gamer responds.
 				String legalProxiedResponse;
@@ -340,7 +335,7 @@ public final class ProxyGamePlayer extends Thread implements Subject
 				} catch(OutOfMemoryError e) {
 				    // Something went horribly wrong -- our baseline prover failed.
 				    System.gc();
-				    LOGGER.error(new StructuredDataMessage("ProxyGamePlayer", "Caught exception while processing a server request with default gamer.", "GamePlayer"), e);
+				    LOGGER.error(new StructuredDataMessage("ProxyGamePlayer", "[Proxy] Caught exception while processing a server request with default gamer.", "GamePlayer"), e);
 				    legalProxiedResponse = "SORRY";
 				}
 				latestProxiedResponse = legalProxiedResponse;
@@ -376,7 +371,7 @@ public final class ProxyGamePlayer extends Thread implements Subject
                 currentMoveCode = 0L;
 
                 // And finally write the latest response out to the server.
-				LOGGER.info(new StructuredDataMessage("ProxyGamePlayer", "[Proxy] Wrote outgoing message:" + out, "GamePlayer"));
+				LOGGER.info(new StructuredDataMessage("ProxyGamePlayer", "[Proxy] [MESSAGE SENT] " + out, "GamePlayer"));
 				HttpWriter.writeAsServer(connection, out);
 				connection.close();
 				notifyObservers(new PlayerSentMessageEvent(out));
@@ -384,17 +379,19 @@ public final class ProxyGamePlayer extends Thread implements Subject
 				// Once everything is said and done, restart the client if we're
 				// due for a restart (having finished playing a game).
 				if(needRestart) {
+					LOGGER.info(new StructuredDataMessage("ProxyGamePlayer", "[Proxy] Cleaning up and restarting client after end of match.", "GamePlayer"));
 	                theClientManager.closeClient();
 	                theClientManager.pleaseStop = true;
 
 	                if(GamerConfiguration.runningOnLinux()) {
 	                	// Clean up the working directory and terminate any orphan processes.
 	                	Thread.sleep(500);
-	                	GamerLogger.log("Proxy", "[PROXY] Calling cleanup scripts.");
+
+	                	LOGGER.info(new StructuredDataMessage("ProxyGamePlayer", "[Proxy] Calling cleanup scripts.", "GamePlayer"));
 	                	try {
 	                	    Runtime.getRuntime().exec("./cleanup.sh").waitFor();
 	                	} catch(IOException e) {
-	                	    GamerLogger.logStackTrace("Proxy", e);
+	                		LOGGER.info(new StructuredDataMessage("ProxyGamePlayer", "[Proxy] Caught exception while running cleanup scripts.", "GamePlayer"), e);
 	                	}
 	                	Thread.sleep(500);
 	                }
@@ -408,7 +405,7 @@ public final class ProxyGamePlayer extends Thread implements Subject
 
                     long usedMemory = Runtime.getRuntime().totalMemory() - Runtime.getRuntime().freeMemory();
                     double usedMemoryInMegs = usedMemory / 1024.0 / 1024.0;
-                    GamerLogger.log("Proxy", "[PROXY] Before collection, using " + usedMemoryInMegs + "mb of memory as proxy.");
+                    LOGGER.info(new StructuredDataMessage("ProxyGamePlayer", "[Proxy] Before collection, using " + usedMemoryInMegs + "mb of memory as proxy.", "GamePlayer"));
 
 	                // Okay, seriously garbage collect please. As it turns out,
 	                // this takes some convincing; Java isn't usually eager to do it.
@@ -419,21 +416,19 @@ public final class ProxyGamePlayer extends Thread implements Subject
 
 	                usedMemory = Runtime.getRuntime().totalMemory() - Runtime.getRuntime().freeMemory();
 	                usedMemoryInMegs = usedMemory / 1024.0 / 1024.0;
-	                GamerLogger.log("Proxy", "[PROXY] After collection, using a non-transient " + usedMemoryInMegs + "mb of memory as proxy.");
-
-	                System.out.println("Cleaned up completed match, with a residual " + usedMemoryInMegs + "mb of memory as proxy.");
+	                LOGGER.info(new StructuredDataMessage("ProxyGamePlayer", "[Proxy] After collection, using a non-transient " + usedMemoryInMegs + "mb of memory as proxy.", "GamePlayer"));
 
                     needRestart = false;
 				}
 			}
 			catch (Exception e)
 			{
-			    GamerLogger.logStackTrace("Proxy", e);
+				LOGGER.error(new StructuredDataMessage("ProxyGamePlayer", "[Proxy] [DATA DROPPED] ", "GamePlayer"), e);
 				notifyObservers(new PlayerDroppedPacketEvent());
 			}
 			catch (Error e)
 			{
-			    GamerLogger.logStackTrace("Proxy", e);
+				LOGGER.error(new StructuredDataMessage("ProxyGamePlayer", "[Proxy] [DATA DROPPED] ", "GamePlayer"), e);
 			    notifyObservers(new PlayerDroppedPacketEvent());
 			}
 		}
@@ -457,12 +452,11 @@ public final class ProxyGamePlayer extends Thread implements Subject
                   timeToFinish = System.currentTimeMillis();
                 }
     	        timeToSleep = timeToFinish - System.currentTimeMillis();
+    	        LOGGER.info(new StructuredDataMessage("ProxyGamePlayer", "[Proxy] Forwarded PlayRequest to the proxy client. Waiting for a response." , "GamePlayer"));
     	        if(timeToSleep > 0)
     	            Thread.sleep(timeToSleep);
     	    } else if(theRequest instanceof StartRequest) {
-    	        GamerLogger.startFileLogging(theDefaultGamer.getMatch(), theDefaultGamer.getRoleName().toString());
-
-    	        System.out.println("Started playing " + theDefaultGamer.getMatch().getMatchId() + ".");
+    	    	LOGGER.info(new StructuredDataMessage("ProxyGamePlayer", "[Proxy] Forwarded StartRequest for match " + theDefaultGamer.getMatch().getMatchId() + " to the proxy client.", "GamePlayer"));
 
     	        // They have this long to metagame
     	        timeToFinish = receptionTime + theDefaultGamer.getMatch().getStartClock() * 1000 - METAGAME_BUFFER;
@@ -470,15 +464,15 @@ public final class ProxyGamePlayer extends Thread implements Subject
                 if(timeToSleep > 0)
                     Thread.sleep(timeToSleep);
     	   } else if(theRequest instanceof StopRequest || theRequest instanceof AbortRequest) {
-    	       GamerLogger.stopFileLogging();
+    	       LOGGER.info(new StructuredDataMessage("ProxyGamePlayer", "[Proxy] Forwarded " + theRequest.getClass().getSimpleName() + "message to the proxy client.", "GamePlayer"));
     	       needRestart = true;
     	   }
 	    } catch(InterruptedException ie) {
 	        // Rise and shine!
-	        GamerLogger.log("Proxy", "[PROXY] Got woken up by final move!");
+	    	LOGGER.info(new StructuredDataMessage("ProxyGamePlayer", "[Proxy] Got woken up by final move!", "GamePlayer"));
 	    }
 
-	    GamerLogger.log("Proxy", "[PROXY] Proxy slept for " + (System.currentTimeMillis() - startSleeping) + ", and woke up " + (System.currentTimeMillis() - timeToFinish) + "ms late (started " + (startSleeping - receptionTime) + "ms after receiving message).");
+	    LOGGER.info(new StructuredDataMessage("ProxyGamePlayer", "[Proxy] Proxy slept for " + (System.currentTimeMillis() - startSleeping) + ", and woke up " + (System.currentTimeMillis() - timeToFinish) + "ms later (started " + (startSleeping - receptionTime) + "ms after receiving message).", "GamePlayer"));
 	}
 
 	private String latestProxiedResponse;

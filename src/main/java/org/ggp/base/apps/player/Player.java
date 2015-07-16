@@ -20,6 +20,7 @@ import javax.swing.JTabbedPane;
 import javax.swing.JTextField;
 import javax.swing.border.TitledBorder;
 
+import org.apache.logging.log4j.ThreadContext;
 import org.ggp.base.apps.player.config.ConfigPanel;
 import org.ggp.base.apps.player.detail.DetailPanel;
 import org.ggp.base.apps.player.match.MatchPanel;
@@ -49,6 +50,11 @@ public final class Player extends JPanel
 
 	public static void main(String[] args) throws IOException
 	{
+		System.setProperty("Log4jContextSelector", "org.apache.logging.log4j.core.async.AsyncLoggerContextSelector");
+		System.setProperty("isThreadContextMapInheritable", "true");
+
+		ThreadContext.put("GENERAL", System.currentTimeMillis() + "PlayerApp");
+
 	    NativeUI.setNativeUI();
 
 	    final Player playerPanel = new Player();
@@ -167,6 +173,7 @@ public final class Player extends JPanel
 
 					defaultPort++;
 					portTextField.setText(defaultPort.toString());
+
 				}
 				catch (Exception e)
 				{
