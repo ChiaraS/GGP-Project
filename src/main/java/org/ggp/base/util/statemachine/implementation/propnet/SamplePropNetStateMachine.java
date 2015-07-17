@@ -57,7 +57,7 @@ public class SamplePropNetStateMachine extends StateMachine {
 	@Override
 	public boolean isTerminal(MachineState state) {
 		// TODO: Compute whether the MachineState is terminal.
-		propNet.
+		//propNet.
 		propNet.getTerminalProposition().getValue();
 		return false;
 	}

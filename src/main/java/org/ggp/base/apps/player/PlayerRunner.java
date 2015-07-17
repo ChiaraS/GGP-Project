@@ -5,6 +5,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
+import org.apache.logging.log4j.ThreadContext;
 import org.ggp.base.player.GamePlayer;
 import org.ggp.base.player.gamer.Gamer;
 import org.ggp.base.util.reflection.ProjectSearcher;
@@ -38,6 +39,12 @@ public final class PlayerRunner
     		System.out.println("Could not find player class with that name. Available choices are: " + Arrays.toString(availableGamers.toArray()));
     		return;
     	}
+
+    	System.setProperty("Log4jContextSelector", "org.apache.logging.log4j.core.async.AsyncLoggerContextSelector");
+		System.setProperty("isThreadContextMapInheritable", "true");
+
+		ThreadContext.put("GENERAL", System.currentTimeMillis() + "PlayerRunner");
+
     	Gamer gamer = (Gamer) chosenGamerClass.newInstance();
 		new GamePlayer(port, gamer).start();
 	}
