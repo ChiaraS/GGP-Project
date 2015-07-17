@@ -16,6 +16,7 @@ import org.ggp.base.player.event.PlayerSentMessageEvent;
 import org.ggp.base.player.gamer.Gamer;
 import org.ggp.base.player.gamer.statemachine.random.RandomGamer;
 import org.ggp.base.player.request.factory.RequestFactory;
+import org.ggp.base.player.request.grammar.PlayRequest;
 import org.ggp.base.player.request.grammar.Request;
 import org.ggp.base.util.http.HttpReader;
 import org.ggp.base.util.http.HttpWriter;
@@ -113,6 +114,10 @@ public final class GamePlayer extends Thread implements Subject
 
 		while (listener != null) {
 			try {
+				//Stats
+				long start = System.currentTimeMillis();
+				//End stats
+
 				Socket connection = listener.accept();
 				String in = HttpReader.readAsServer(connection);
 				if (in.length() == 0) {
@@ -129,6 +134,12 @@ public final class GamePlayer extends Thread implements Subject
 				connection.close();
 				notifyObservers(new PlayerSentMessageEvent(out));
 				LOGGER.info(new StructuredDataMessage("GamePlayer", "[MESSAGE SENT] " + out, "GamePlayer"));
+
+				//Stats
+				if(request instanceof PlayRequest){
+					LOGGER.info(new StructuredDataMessage("GamePlayer", "MOVE_PROCESSING_TIME = " + (System.currentTimeMillis() - start), "Stats"));
+				}
+				//End stats
 
 			} catch (Exception e) {
 				LOGGER.error(new StructuredDataMessage("GamePlayer", "[DATA DROPPED]", "GamePlayer"), e);

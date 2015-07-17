@@ -2,6 +2,9 @@ package org.ggp.base.player.gamer.statemachine.sample;
 
 import java.util.List;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.message.StructuredDataMessage;
 import org.ggp.base.player.gamer.event.GamerSelectedMoveEvent;
 import org.ggp.base.util.statemachine.MachineState;
 import org.ggp.base.util.statemachine.Move;
@@ -26,11 +29,24 @@ import org.ggp.base.util.statemachine.exceptions.TransitionDefinitionException;
 public final class SampleMonteCarloGamer extends SampleGamer
 {
 	/**
+	 * Static reference to the logger
+	 */
+	private static final Logger LOGGER;
+
+	static{
+		LOGGER = LogManager.getRootLogger();
+	}
+
+	/**
 	 * Employs a simple sample "Monte Carlo" algorithm.
 	 */
 	@Override
 	public Move stateMachineSelectMove(long timeout) throws TransitionDefinitionException, MoveDefinitionException, GoalDefinitionException
 	{
+		//Stats
+		int visitedNodes = 0;
+		//End stats
+
 	    StateMachine theMachine = getStateMachine();
 		long start = System.currentTimeMillis();
 		long finishBy = timeout - 1000;
@@ -50,6 +66,9 @@ public final class SampleMonteCarloGamer extends SampleGamer
     		    int theScore = performDepthChargeFromMove(getCurrentState(), moves.get(i));
     		    moveTotalPoints[i] += theScore;
     		    moveTotalAttempts[i] += 1;
+
+    		    //Stats
+    		    visitedNodes = visitedNodes + this.depth[0] + 1;
     		}
 
     		// Compute the expected score for each move.
@@ -71,6 +90,9 @@ public final class SampleMonteCarloGamer extends SampleGamer
 		}
 
 		long stop = System.currentTimeMillis();
+
+		LOGGER.info(new StructuredDataMessage("SampleMonteCarloGamer", "VISITED_NODES = " + visitedNodes, "Stats"));
+		LOGGER.info(new StructuredDataMessage("SampleMonteCarloGamer", "MOVE_SELECTION_TIME = " + (stop - start), "Stats"));
 
 		notifyObservers(new GamerSelectedMoveEvent(moves, selection, stop - start));
 		return selection;

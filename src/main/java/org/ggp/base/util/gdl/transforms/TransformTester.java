@@ -16,6 +16,9 @@ import org.ggp.base.util.statemachine.verifier.StateMachineVerifier;
 public class TransformTester {
 	public static void main(String args[]) throws InterruptedException {
 
+		//To initialize logger
+		StateMachineVerifier smv = new StateMachineVerifier();
+
 	    final boolean showDiffs = false;
         final ProverStateMachine theReference = new ProverStateMachine();
         final ProverStateMachine theMachine = new ProverStateMachine();
