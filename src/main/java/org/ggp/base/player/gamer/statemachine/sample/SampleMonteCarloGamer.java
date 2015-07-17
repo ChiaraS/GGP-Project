@@ -34,7 +34,7 @@ public final class SampleMonteCarloGamer extends SampleGamer
 	{
 	    StateMachine theMachine = getStateMachine();
 		long start = System.currentTimeMillis();
-		long finishBy = timeout - 1000;
+		long finishBy = timeout - 40000;
 
 		int visitedNodes = 0;
 
