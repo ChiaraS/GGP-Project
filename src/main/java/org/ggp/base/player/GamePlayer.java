@@ -13,6 +13,7 @@ import org.ggp.base.player.event.PlayerSentMessageEvent;
 import org.ggp.base.player.gamer.Gamer;
 import org.ggp.base.player.gamer.statemachine.random.RandomGamer;
 import org.ggp.base.player.request.factory.RequestFactory;
+import org.ggp.base.player.request.grammar.PlayRequest;
 import org.ggp.base.player.request.grammar.Request;
 import org.ggp.base.util.http.HttpReader;
 import org.ggp.base.util.http.HttpWriter;
@@ -97,6 +98,8 @@ public final class GamePlayer extends Thread implements Subject
 
 
 		while (listener != null) {
+
+			long start = System.currentTimeMillis();
 			try {
 				Socket connection = listener.accept();
 				String in = HttpReader.readAsServer(connection);
@@ -109,6 +112,11 @@ public final class GamePlayer extends Thread implements Subject
 
 				Request request = new RequestFactory().create(gamer, in);
 				String out = request.process(System.currentTimeMillis());
+
+				if(request instanceof PlayRequest){
+					GamerLogger.log("Stats", "MOVE_PROCESSING_TIME = " + (System.currentTimeMillis() - start));
+				}
+
 
 				HttpWriter.writeAsServer(connection, out);
 				connection.close();
