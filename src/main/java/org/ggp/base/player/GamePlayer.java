@@ -99,9 +99,12 @@ public final class GamePlayer extends Thread implements Subject
 
 		while (listener != null) {
 
-			long start = System.currentTimeMillis();
+
 			try {
 				Socket connection = listener.accept();
+
+				long start = System.currentTimeMillis();
+
 				String in = HttpReader.readAsServer(connection);
 				if (in.length() == 0) {
 				    throw new IOException("Empty message received.");
@@ -113,13 +116,13 @@ public final class GamePlayer extends Thread implements Subject
 				Request request = new RequestFactory().create(gamer, in);
 				String out = request.process(System.currentTimeMillis());
 
+				HttpWriter.writeAsServer(connection, out);
+				connection.close();
+
 				if(request instanceof PlayRequest){
 					GamerLogger.log("Stats", "MOVE_PROCESSING_TIME = " + (System.currentTimeMillis() - start));
 				}
 
-
-				HttpWriter.writeAsServer(connection, out);
-				connection.close();
 				notifyObservers(new PlayerSentMessageEvent(out));
 				GamerLogger.log("GamePlayer", "[Sent at " + System.currentTimeMillis() + "] " + out, GamerLogger.LOG_LEVEL_DATA_DUMP);
 			} catch (Exception e) {

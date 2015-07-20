@@ -37,6 +37,7 @@ public final class SampleMonteCarloGamer extends SampleGamer
 		long finishBy = timeout - 40000;
 
 		int visitedNodes = 0;
+		int iterations = 0;
 
 		List<Move> moves = theMachine.getLegalMoves(getCurrentState(), getRole());
 		Move selection = moves.get(0);
@@ -54,6 +55,7 @@ public final class SampleMonteCarloGamer extends SampleGamer
     		    moveTotalPoints[i] += theScore;
     		    moveTotalAttempts[i] += 1;
     		    visitedNodes += this.depth[0] + 1;
+    		    iterations++;
 
     		}
 
@@ -78,6 +80,7 @@ public final class SampleMonteCarloGamer extends SampleGamer
 		long stop = System.currentTimeMillis();
 
 		GamerLogger.log("Stats", "VISITED_NODES = " + visitedNodes);
+		GamerLogger.log("Stats", "ITERATIONS = " + iterations);
 		GamerLogger.log("Stats", "MOVE_SELECTION_TIME = " + (stop - start));
 
 		notifyObservers(new GamerSelectedMoveEvent(moves, selection, stop - start));

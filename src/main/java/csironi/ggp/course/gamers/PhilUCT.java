@@ -6,8 +6,6 @@ package csironi.ggp.course.gamers;
 import java.util.List;
 import java.util.Map;
 
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 import org.ggp.base.player.gamer.event.GamerSelectedMoveEvent;
 import org.ggp.base.player.gamer.statemachine.sample.SampleGamer;
 import org.ggp.base.util.logging.GamerLogger;
@@ -30,7 +28,7 @@ import csironi.ggp.course.MCTS.selection.UCTSelection;
  */
 public class PhilUCT extends SampleGamer {
 
-	Logger l = LogManager.getLogger();
+	//Logger l = LogManager.getLogger();
 
 	/**
 	 *
