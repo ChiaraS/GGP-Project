@@ -114,11 +114,14 @@ public final class GamePlayer extends Thread implements Subject
 
 		while (listener != null) {
 			try {
+
+
+				Socket connection = listener.accept();
+
 				//Stats
 				long start = System.currentTimeMillis();
 				//End stats
 
-				Socket connection = listener.accept();
 				String in = HttpReader.readAsServer(connection);
 				if (in.length() == 0) {
 				    throw new IOException("Empty message received.");
@@ -132,6 +135,7 @@ public final class GamePlayer extends Thread implements Subject
 
 				HttpWriter.writeAsServer(connection, out);
 				connection.close();
+
 				notifyObservers(new PlayerSentMessageEvent(out));
 				LOGGER.info(new StructuredDataMessage("GamePlayer", "[MESSAGE SENT] " + out, "GamePlayer"));
 

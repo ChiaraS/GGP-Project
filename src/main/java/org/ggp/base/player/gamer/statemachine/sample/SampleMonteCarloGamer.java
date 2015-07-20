@@ -45,6 +45,7 @@ public final class SampleMonteCarloGamer extends SampleGamer
 	{
 		//Stats
 		int visitedNodes = 0;
+		int iterations = 0;
 		//End stats
 
 	    StateMachine theMachine = getStateMachine();
@@ -69,6 +70,7 @@ public final class SampleMonteCarloGamer extends SampleGamer
 
     		    //Stats
     		    visitedNodes = visitedNodes + this.depth[0] + 1;
+    		    iterations++;
     		}
 
     		// Compute the expected score for each move.
@@ -92,6 +94,7 @@ public final class SampleMonteCarloGamer extends SampleGamer
 		long stop = System.currentTimeMillis();
 
 		LOGGER.info(new StructuredDataMessage("SampleMonteCarloGamer", "VISITED_NODES = " + visitedNodes, "Stats"));
+		LOGGER.info(new StructuredDataMessage("SampleMonteCarloGamer", "ITERATIONS = " + iterations, "Stats"));
 		LOGGER.info(new StructuredDataMessage("SampleMonteCarloGamer", "MOVE_SELECTION_TIME = " + (stop - start), "Stats"));
 
 		notifyObservers(new GamerSelectedMoveEvent(moves, selection, stop - start));
