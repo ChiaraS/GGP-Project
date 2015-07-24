@@ -1,13 +1,13 @@
-package org.ggp.base.util.propnet.architecture.components;
+package org.ggp.base.util.propnet.architecture.selfPropagating.components;
 
 import org.ggp.base.util.gdl.grammar.GdlSentence;
-import org.ggp.base.util.propnet.architecture.Component;
+import org.ggp.base.util.propnet.architecture.selfPropagating.SelfPropagatingComponent;
 
 /**
  * The Proposition class is designed to represent named latches.
  */
 @SuppressWarnings("serial")
-public final class Proposition extends Component
+public final class SelfPropagatingProposition extends SelfPropagatingComponent
 {
 	/** The name of the Proposition. */
 	private GdlSentence name;
@@ -20,7 +20,7 @@ public final class Proposition extends Component
 	 * @param name
 	 *            The name of the Proposition.
 	 */
-	public Proposition(GdlSentence name)
+	public SelfPropagatingProposition(GdlSentence name)
 	{
 		this.name = name;
 		this.value = false;
@@ -52,7 +52,7 @@ public final class Proposition extends Component
 	/**
 	 * Returns the current value of the Proposition.
 	 *
-	 * @see org.ggp.base.util.propnet.architecture.Component#getValue()
+	 * @see org.ggp.base.util.propnet.architecture.basic.Component#getValue()
 	 */
 	@Override
 	public boolean getValue()
@@ -72,7 +72,7 @@ public final class Proposition extends Component
 	}
 
 	/**
-	 * @see org.ggp.base.util.propnet.architecture.Component#toString()
+	 * @see org.ggp.base.util.propnet.architecture.basic.Component#toString()
 	 */
 	@Override
 	public String toString()

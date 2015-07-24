@@ -1,6 +1,6 @@
-package org.ggp.base.util.propnet.architecture.components;
+package org.ggp.base.util.propnet.architecture.basic.components;
 
-import org.ggp.base.util.propnet.architecture.Component;
+import org.ggp.base.util.propnet.architecture.basic.Component;
 
 /**
  * The Transition class is designed to represent pass-through gates.
@@ -11,7 +11,7 @@ public final class Transition extends Component
 	/**
 	 * Returns the value of the input to the transition.
 	 *
-	 * @see org.ggp.base.util.propnet.architecture.Component#getValue()
+	 * @see org.ggp.base.util.propnet.architecture.basic.Component#getValue()
 	 */
 	@Override
 	public boolean getValue()
@@ -20,7 +20,7 @@ public final class Transition extends Component
 	}
 
 	/**
-	 * @see org.ggp.base.util.propnet.architecture.Component#toString()
+	 * @see org.ggp.base.util.propnet.architecture.basic.Component#toString()
 	 */
 	@Override
 	public String toString()

@@ -1,6 +1,6 @@
-package org.ggp.base.util.propnet.architecture.components;
+package org.ggp.base.util.propnet.architecture.basic.components;
 
-import org.ggp.base.util.propnet.architecture.Component;
+import org.ggp.base.util.propnet.architecture.basic.Component;
 
 /**
  * The Not class is designed to represent logical NOT gates.
@@ -11,7 +11,7 @@ public final class Not extends Component
 	/**
 	 * Returns the inverse of the input to the not.
 	 *
-	 * @see org.ggp.base.util.propnet.architecture.Component#getValue()
+	 * @see org.ggp.base.util.propnet.architecture.basic.Component#getValue()
 	 */
 	@Override
 	public boolean getValue()
@@ -20,7 +20,7 @@ public final class Not extends Component
 	}
 
 	/**
-	 * @see org.ggp.base.util.propnet.architecture.Component#toString()
+	 * @see org.ggp.base.util.propnet.architecture.basic.Component#toString()
 	 */
 	@Override
 	public String toString()

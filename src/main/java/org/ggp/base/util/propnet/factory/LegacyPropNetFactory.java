@@ -5,7 +5,7 @@ import java.util.List;
 import org.ggp.base.util.gdl.grammar.Gdl;
 import org.ggp.base.util.gdl.grammar.GdlRule;
 import org.ggp.base.util.logging.GamerLogger;
-import org.ggp.base.util.propnet.architecture.PropNet;
+import org.ggp.base.util.propnet.architecture.basic.PropNet;
 import org.ggp.base.util.propnet.factory.converter.PropNetConverter;
 import org.ggp.base.util.propnet.factory.flattener.PropNetFlattener;
 import org.ggp.base.util.statemachine.Role;

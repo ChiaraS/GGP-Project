@@ -1,6 +1,6 @@
-package org.ggp.base.util.propnet.architecture.components;
+package org.ggp.base.util.propnet.architecture.basic.components;
 
-import org.ggp.base.util.propnet.architecture.Component;
+import org.ggp.base.util.propnet.architecture.basic.Component;
 
 /**
  * The Or class is designed to represent logical OR gates.
@@ -11,7 +11,7 @@ public final class Or extends Component
 	/**
 	 * Returns true if and only if at least one of the inputs to the or is true.
 	 *
-	 * @see org.ggp.base.util.propnet.architecture.Component#getValue()
+	 * @see org.ggp.base.util.propnet.architecture.basic.Component#getValue()
 	 */
 	@Override
 	public boolean getValue()
@@ -27,7 +27,7 @@ public final class Or extends Component
 	}
 
 	/**
-	 * @see org.ggp.base.util.propnet.architecture.Component#toString()
+	 * @see org.ggp.base.util.propnet.architecture.basic.Component#toString()
 	 */
 	@Override
 	public String toString()

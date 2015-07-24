@@ -1,4 +1,4 @@
-package org.ggp.base.util.propnet.architecture;
+package org.ggp.base.util.propnet.architecture.selfPropagating;
 
 import java.io.Serializable;
 import java.util.HashSet;
@@ -10,22 +10,23 @@ import java.util.Set;
  * all methods.
  */
 
-public abstract class Component implements Serializable
+public abstract class SelfPropagatingComponent implements Serializable
 {
 
-	private static final long serialVersionUID = 352524175700224447L;
+	private static final long serialVersionUID = -6671761440002596846L;
+
     /** The inputs to the component. */
-    private final Set<Component> inputs;
+    private final Set<SelfPropagatingComponent> inputs;
     /** The outputs of the component. */
-    private final Set<Component> outputs;
+    private final Set<SelfPropagatingComponent> outputs;
 
     /**
      * Creates a new Component with no inputs or outputs.
      */
-    public Component()
+    public SelfPropagatingComponent()
     {
-        this.inputs = new HashSet<Component>();
-        this.outputs = new HashSet<Component>();
+        this.inputs = new HashSet<SelfPropagatingComponent>();
+        this.outputs = new HashSet<SelfPropagatingComponent>();
     }
 
     /**
@@ -34,17 +35,17 @@ public abstract class Component implements Serializable
      * @param input
      *            A new input.
      */
-    public void addInput(Component input)
+    public void addInput(SelfPropagatingComponent input)
     {
         inputs.add(input);
     }
 
-    public void removeInput(Component input)
+    public void removeInput(SelfPropagatingComponent input)
     {
     	inputs.remove(input);
     }
 
-    public void removeOutput(Component output)
+    public void removeOutput(SelfPropagatingComponent output)
     {
     	outputs.remove(output);
     }
@@ -65,7 +66,7 @@ public abstract class Component implements Serializable
      * @param output
      *            A new output.
      */
-    public void addOutput(Component output)
+    public void addOutput(SelfPropagatingComponent output)
     {
         outputs.add(output);
     }
@@ -75,7 +76,7 @@ public abstract class Component implements Serializable
      *
      * @return The inputs to the component.
      */
-    public Set<Component> getInputs()
+    public Set<SelfPropagatingComponent> getInputs()
     {
         return inputs;
     }
@@ -87,7 +88,7 @@ public abstract class Component implements Serializable
      *
      * @return The single input to the component.
      */
-    public Component getSingleInput() {
+    public SelfPropagatingComponent getSingleInput() {
         assert inputs.size() == 1;
         return inputs.iterator().next();
     }
@@ -97,7 +98,7 @@ public abstract class Component implements Serializable
      *
      * @return The outputs of the component.
      */
-    public Set<Component> getOutputs()
+    public Set<SelfPropagatingComponent> getOutputs()
     {
         return outputs;
     }
@@ -109,7 +110,7 @@ public abstract class Component implements Serializable
      *
      * @return The single output to the component.
      */
-    public Component getSingleOutput() {
+    public SelfPropagatingComponent getSingleOutput() {
         assert outputs.size() == 1;
         return outputs.iterator().next();
     }
@@ -145,7 +146,7 @@ public abstract class Component implements Serializable
         StringBuilder sb = new StringBuilder();
 
         sb.append("\"@" + Integer.toHexString(hashCode()) + "\"[shape=" + shape + ", style= filled, fillcolor=" + fillcolor + ", label=\"" + label + "\"]; ");
-        for ( Component component : getOutputs() )
+        for ( SelfPropagatingComponent component : getOutputs() )
         {
             sb.append("\"@" + Integer.toHexString(hashCode()) + "\"->" + "\"@" + Integer.toHexString(component.hashCode()) + "\"; ");
         }
