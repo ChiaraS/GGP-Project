@@ -16,11 +16,11 @@ import org.ggp.base.util.gdl.grammar.GdlRelation;
 import org.ggp.base.util.gdl.grammar.GdlSentence;
 import org.ggp.base.util.gdl.grammar.GdlTerm;
 import org.ggp.base.util.logging.GamerLogger;
-import org.ggp.base.util.propnet.architecture.selfPropagating.components.SelfPropagatingAnd;
-import org.ggp.base.util.propnet.architecture.selfPropagating.components.SelfPropagatingNot;
-import org.ggp.base.util.propnet.architecture.selfPropagating.components.SelfPropagatingOr;
-import org.ggp.base.util.propnet.architecture.selfPropagating.components.SelfPropagatingProposition;
-import org.ggp.base.util.propnet.architecture.selfPropagating.components.SelfPropagatingTransition;
+import org.ggp.base.util.propnet.architecture.selfPropagating.components.ForwardInterruptingAnd;
+import org.ggp.base.util.propnet.architecture.selfPropagating.components.ForwardInterruptingNot;
+import org.ggp.base.util.propnet.architecture.selfPropagating.components.ForwardInterruptingOr;
+import org.ggp.base.util.propnet.architecture.selfPropagating.components.ForwardInterruptingProposition;
+import org.ggp.base.util.propnet.architecture.selfPropagating.components.ForwardInterruptingTransition;
 import org.ggp.base.util.statemachine.Role;
 
 
@@ -66,42 +66,42 @@ import org.ggp.base.util.statemachine.Role;
  * @author Sam Schreiber
  */
 
-public final class SelfPropagatingPropNet
+public final class ForwardInterruptingPropNet
 {
 	/** References to every component in the PropNet. */
-	private final Set<SelfPropagatingComponent> components;
+	private final Set<ForwardInterruptingComponent> components;
 
 	/** References to every Proposition in the PropNet. */
-	private final Set<SelfPropagatingProposition> propositions;
+	private final Set<ForwardInterruptingProposition> propositions;
 
 	/** References to every BaseProposition in the PropNet, indexed by name. */
-	private final Map<GdlSentence, SelfPropagatingProposition> basePropositions;
+	private final Map<GdlSentence, ForwardInterruptingProposition> basePropositions;
 
 	/** References to every InputProposition in the PropNet, indexed by name. */
-	private final Map<GdlSentence, SelfPropagatingProposition> inputPropositions;
+	private final Map<GdlSentence, ForwardInterruptingProposition> inputPropositions;
 
 	/** References to every LegalProposition in the PropNet, indexed by role. */
-	private final Map<Role, Set<SelfPropagatingProposition>> legalPropositions;
+	private final Map<Role, Set<ForwardInterruptingProposition>> legalPropositions;
 
 	/** References to every GoalProposition in the PropNet, indexed by role. */
-	private final Map<Role, Set<SelfPropagatingProposition>> goalPropositions;
+	private final Map<Role, Set<ForwardInterruptingProposition>> goalPropositions;
 
 	/** A reference to the single, unique, InitProposition. */
-	private final SelfPropagatingProposition initProposition;
+	private final ForwardInterruptingProposition initProposition;
 
 	/** A reference to the single, unique, TerminalProposition. */
-	private final SelfPropagatingProposition terminalProposition;
+	private final ForwardInterruptingProposition terminalProposition;
 
 	/** A helper mapping between input/legal propositions. */
-	private final Map<SelfPropagatingProposition, SelfPropagatingProposition> legalInputMap;
+	private final Map<ForwardInterruptingProposition, ForwardInterruptingProposition> legalInputMap;
 
 	/** A helper list of all of the roles. */
 	private final List<Role> roles;
 
-	public void addComponent(SelfPropagatingComponent c)
+	public void addComponent(ForwardInterruptingComponent c)
 	{
 		components.add(c);
-		if (c instanceof SelfPropagatingProposition) propositions.add((SelfPropagatingProposition)c);
+		if (c instanceof ForwardInterruptingProposition) propositions.add((ForwardInterruptingProposition)c);
 	}
 
 	/**
@@ -111,7 +111,7 @@ public final class SelfPropagatingPropNet
 	 * @param components
 	 *            A list of Components.
 	 */
-	public SelfPropagatingPropNet(List<Role> roles, Set<SelfPropagatingComponent> components)
+	public ForwardInterruptingPropNet(List<Role> roles, Set<ForwardInterruptingComponent> components)
 	{
 
 	    this.roles = roles;
@@ -131,26 +131,26 @@ public final class SelfPropagatingPropNet
 	    return roles;
 	}
 
-	public Map<SelfPropagatingProposition, SelfPropagatingProposition> getLegalInputMap()
+	public Map<ForwardInterruptingProposition, ForwardInterruptingProposition> getLegalInputMap()
 	{
 		return legalInputMap;
 	}
 
-	private Map<SelfPropagatingProposition, SelfPropagatingProposition> makeLegalInputMap() {
-		Map<SelfPropagatingProposition, SelfPropagatingProposition> legalInputMap = new HashMap<SelfPropagatingProposition, SelfPropagatingProposition>();
+	private Map<ForwardInterruptingProposition, ForwardInterruptingProposition> makeLegalInputMap() {
+		Map<ForwardInterruptingProposition, ForwardInterruptingProposition> legalInputMap = new HashMap<ForwardInterruptingProposition, ForwardInterruptingProposition>();
 		// Create a mapping from Body->Input.
-		Map<List<GdlTerm>, SelfPropagatingProposition> inputPropsByBody = new HashMap<List<GdlTerm>, SelfPropagatingProposition>();
-		for(SelfPropagatingProposition inputProp : inputPropositions.values()) {
+		Map<List<GdlTerm>, ForwardInterruptingProposition> inputPropsByBody = new HashMap<List<GdlTerm>, ForwardInterruptingProposition>();
+		for(ForwardInterruptingProposition inputProp : inputPropositions.values()) {
 			List<GdlTerm> inputPropBody = (inputProp.getName()).getBody();
 			inputPropsByBody.put(inputPropBody, inputProp);
 		}
 		// Use that mapping to map Input->Legal and Legal->Input
 		// based on having the same Body proposition.
-		for(Set<SelfPropagatingProposition> legalProps : legalPropositions.values()) {
-			for(SelfPropagatingProposition legalProp : legalProps) {
+		for(Set<ForwardInterruptingProposition> legalProps : legalPropositions.values()) {
+			for(ForwardInterruptingProposition legalProp : legalProps) {
 				List<GdlTerm> legalPropBody = (legalProp.getName()).getBody();
 				if (inputPropsByBody.containsKey(legalPropBody)) {
-					SelfPropagatingProposition inputProp = inputPropsByBody.get(legalPropBody);
+					ForwardInterruptingProposition inputProp = inputPropsByBody.get(legalPropBody);
     				legalInputMap.put(inputProp, legalProp);
     				legalInputMap.put(legalProp, inputProp);
 				}
@@ -165,7 +165,7 @@ public final class SelfPropagatingPropNet
 	 * @return References to every BaseProposition in the PropNet, indexed by
 	 *         name.
 	 */
-	public Map<GdlSentence, SelfPropagatingProposition> getBasePropositions()
+	public Map<GdlSentence, ForwardInterruptingProposition> getBasePropositions()
 	{
 		return basePropositions;
 	}
@@ -175,7 +175,7 @@ public final class SelfPropagatingPropNet
 	 *
 	 * @return References to every Component in the PropNet.
 	 */
-	public Set<SelfPropagatingComponent> getComponents()
+	public Set<ForwardInterruptingComponent> getComponents()
 	{
 		return components;
 	}
@@ -186,7 +186,7 @@ public final class SelfPropagatingPropNet
 	 * @return References to every GoalProposition in the PropNet, indexed by
 	 *         player name.
 	 */
-	public Map<Role, Set<SelfPropagatingProposition>> getGoalPropositions()
+	public Map<Role, Set<ForwardInterruptingProposition>> getGoalPropositions()
 	{
 		return goalPropositions;
 	}
@@ -196,7 +196,7 @@ public final class SelfPropagatingPropNet
 	 *
 	 * @return
 	 */
-	public SelfPropagatingProposition getInitProposition()
+	public ForwardInterruptingProposition getInitProposition()
 	{
 		return initProposition;
 	}
@@ -207,7 +207,7 @@ public final class SelfPropagatingPropNet
 	 * @return References to every InputProposition in the PropNet, indexed by
 	 *         name.
 	 */
-	public Map<GdlSentence, SelfPropagatingProposition> getInputPropositions()
+	public Map<GdlSentence, ForwardInterruptingProposition> getInputPropositions()
 	{
 		return inputPropositions;
 	}
@@ -218,7 +218,7 @@ public final class SelfPropagatingPropNet
 	 * @return References to every LegalProposition in the PropNet, indexed by
 	 *         player name.
 	 */
-	public Map<Role, Set<SelfPropagatingProposition>> getLegalPropositions()
+	public Map<Role, Set<ForwardInterruptingProposition>> getLegalPropositions()
 	{
 		return legalPropositions;
 	}
@@ -228,7 +228,7 @@ public final class SelfPropagatingPropNet
 	 *
 	 * @return References to every Proposition in the PropNet.
 	 */
-	public Set<SelfPropagatingProposition> getPropositions()
+	public Set<ForwardInterruptingProposition> getPropositions()
 	{
 		return propositions;
 	}
@@ -238,7 +238,7 @@ public final class SelfPropagatingPropNet
 	 *
 	 * @return A reference to the single, unique, TerminalProposition.
 	 */
-	public SelfPropagatingProposition getTerminalProposition()
+	public ForwardInterruptingProposition getTerminalProposition()
 	{
 		return terminalProposition;
 	}
@@ -254,7 +254,7 @@ public final class SelfPropagatingPropNet
 		StringBuilder sb = new StringBuilder();
 
 		sb.append("digraph propNet\n{\n");
-		for ( SelfPropagatingComponent component : components )
+		for ( ForwardInterruptingComponent component : components )
 		{
 			sb.append("\t" + component.toString() + "\n");
 		}
@@ -291,16 +291,16 @@ public final class SelfPropagatingPropNet
 	 *
 	 * @return An index over the BasePropositions in the PropNet.
 	 */
-	private Map<GdlSentence, SelfPropagatingProposition> recordBasePropositions()
+	private Map<GdlSentence, ForwardInterruptingProposition> recordBasePropositions()
 	{
-		Map<GdlSentence, SelfPropagatingProposition> basePropositions = new HashMap<GdlSentence, SelfPropagatingProposition>();
-		for (SelfPropagatingProposition proposition : propositions) {
+		Map<GdlSentence, ForwardInterruptingProposition> basePropositions = new HashMap<GdlSentence, ForwardInterruptingProposition>();
+		for (ForwardInterruptingProposition proposition : propositions) {
 		    // Skip all propositions without exactly one input.
 		    if (proposition.getInputs().size() != 1)
 		        continue;
 
-			SelfPropagatingComponent component = proposition.getSingleInput();
-			if (component instanceof SelfPropagatingTransition) {
+			ForwardInterruptingComponent component = proposition.getSingleInput();
+			if (component instanceof ForwardInterruptingTransition) {
 				basePropositions.put(proposition.getName(), proposition);
 			}
 		}
@@ -318,10 +318,10 @@ public final class SelfPropagatingPropNet
 	 *
 	 * @return An index over the GoalPropositions in the PropNet.
 	 */
-	private Map<Role, Set<SelfPropagatingProposition>> recordGoalPropositions()
+	private Map<Role, Set<ForwardInterruptingProposition>> recordGoalPropositions()
 	{
-		Map<Role, Set<SelfPropagatingProposition>> goalPropositions = new HashMap<Role, Set<SelfPropagatingProposition>>();
-		for (SelfPropagatingProposition proposition : propositions)
+		Map<Role, Set<ForwardInterruptingProposition>> goalPropositions = new HashMap<Role, Set<ForwardInterruptingProposition>>();
+		for (ForwardInterruptingProposition proposition : propositions)
 		{
 		    // Skip all propositions that aren't GdlRelations.
 		    if (!(proposition.getName() instanceof GdlRelation))
@@ -333,7 +333,7 @@ public final class SelfPropagatingPropNet
 
 			Role theRole = new Role((GdlConstant) relation.get(0));
 			if (!goalPropositions.containsKey(theRole)) {
-				goalPropositions.put(theRole, new HashSet<SelfPropagatingProposition>());
+				goalPropositions.put(theRole, new HashSet<ForwardInterruptingProposition>());
 			}
 			goalPropositions.get(theRole).add(proposition);
 		}
@@ -346,9 +346,9 @@ public final class SelfPropagatingPropNet
 	 *
 	 * @return A reference to the single, unique, InitProposition.
 	 */
-	private SelfPropagatingProposition recordInitProposition()
+	private ForwardInterruptingProposition recordInitProposition()
 	{
-		for (SelfPropagatingProposition proposition : propositions)
+		for (ForwardInterruptingProposition proposition : propositions)
 		{
 		    // Skip all propositions that aren't GdlPropositions.
 			if (!(proposition.getName() instanceof GdlProposition))
@@ -367,10 +367,10 @@ public final class SelfPropagatingPropNet
 	 *
 	 * @return An index over the InputPropositions in the PropNet.
 	 */
-	private Map<GdlSentence, SelfPropagatingProposition> recordInputPropositions()
+	private Map<GdlSentence, ForwardInterruptingProposition> recordInputPropositions()
 	{
-		Map<GdlSentence, SelfPropagatingProposition> inputPropositions = new HashMap<GdlSentence, SelfPropagatingProposition>();
-		for (SelfPropagatingProposition proposition : propositions)
+		Map<GdlSentence, ForwardInterruptingProposition> inputPropositions = new HashMap<GdlSentence, ForwardInterruptingProposition>();
+		for (ForwardInterruptingProposition proposition : propositions)
 		{
 		    // Skip all propositions that aren't GdlFunctions.
 			if (!(proposition.getName() instanceof GdlRelation))
@@ -390,10 +390,10 @@ public final class SelfPropagatingPropNet
 	 *
 	 * @return An index over the LegalPropositions in the PropNet.
 	 */
-	private Map<Role, Set<SelfPropagatingProposition>> recordLegalPropositions()
+	private Map<Role, Set<ForwardInterruptingProposition>> recordLegalPropositions()
 	{
-		Map<Role, Set<SelfPropagatingProposition>> legalPropositions = new HashMap<Role, Set<SelfPropagatingProposition>>();
-		for (SelfPropagatingProposition proposition : propositions)
+		Map<Role, Set<ForwardInterruptingProposition>> legalPropositions = new HashMap<Role, Set<ForwardInterruptingProposition>>();
+		for (ForwardInterruptingProposition proposition : propositions)
 		{
 		    // Skip all propositions that aren't GdlRelations.
 			if (!(proposition.getName() instanceof GdlRelation))
@@ -404,7 +404,7 @@ public final class SelfPropagatingPropNet
 				GdlConstant name = (GdlConstant) relation.get(0);
 				Role r = new Role(name);
 				if (!legalPropositions.containsKey(r)) {
-					legalPropositions.put(r, new HashSet<SelfPropagatingProposition>());
+					legalPropositions.put(r, new HashSet<ForwardInterruptingProposition>());
 				}
 				legalPropositions.get(r).add(proposition);
 			}
@@ -418,13 +418,13 @@ public final class SelfPropagatingPropNet
 	 *
 	 * @return An index over Propositions in the PropNet.
 	 */
-	private Set<SelfPropagatingProposition> recordPropositions()
+	private Set<ForwardInterruptingProposition> recordPropositions()
 	{
-		Set<SelfPropagatingProposition> propositions = new HashSet<SelfPropagatingProposition>();
-		for (SelfPropagatingComponent component : components)
+		Set<ForwardInterruptingProposition> propositions = new HashSet<ForwardInterruptingProposition>();
+		for (ForwardInterruptingComponent component : components)
 		{
-			if (component instanceof SelfPropagatingProposition) {
-				propositions.add((SelfPropagatingProposition) component);
+			if (component instanceof ForwardInterruptingProposition) {
+				propositions.add((ForwardInterruptingProposition) component);
 			}
 		}
 		return propositions;
@@ -435,9 +435,9 @@ public final class SelfPropagatingPropNet
 	 *
 	 * @return A reference to the single, unqiue, TerminalProposition.
 	 */
-	private SelfPropagatingProposition recordTerminalProposition()
+	private ForwardInterruptingProposition recordTerminalProposition()
 	{
-		for ( SelfPropagatingProposition proposition : propositions )
+		for ( ForwardInterruptingProposition proposition : propositions )
 		{
 			if ( proposition.getName() instanceof GdlProposition )
 			{
@@ -458,8 +458,8 @@ public final class SelfPropagatingPropNet
 
 	public int getNumAnds() {
 		int andCount = 0;
-		for(SelfPropagatingComponent c : components) {
-			if(c instanceof SelfPropagatingAnd)
+		for(ForwardInterruptingComponent c : components) {
+			if(c instanceof ForwardInterruptingAnd)
 				andCount++;
 		}
 		return andCount;
@@ -467,8 +467,8 @@ public final class SelfPropagatingPropNet
 
 	public int getNumOrs() {
 		int orCount = 0;
-		for(SelfPropagatingComponent c : components) {
-			if(c instanceof SelfPropagatingOr)
+		for(ForwardInterruptingComponent c : components) {
+			if(c instanceof ForwardInterruptingOr)
 				orCount++;
 		}
 		return orCount;
@@ -476,8 +476,8 @@ public final class SelfPropagatingPropNet
 
 	public int getNumNots() {
 		int notCount = 0;
-		for(SelfPropagatingComponent c : components) {
-			if(c instanceof SelfPropagatingNot)
+		for(ForwardInterruptingComponent c : components) {
+			if(c instanceof ForwardInterruptingNot)
 				notCount++;
 		}
 		return notCount;
@@ -485,7 +485,7 @@ public final class SelfPropagatingPropNet
 
 	public int getNumLinks() {
 		int linkCount = 0;
-		for(SelfPropagatingComponent c : components) {
+		for(ForwardInterruptingComponent c : components) {
 			linkCount += c.getOutputs().size();
 		}
 		return linkCount;
@@ -500,19 +500,19 @@ public final class SelfPropagatingPropNet
 	 *
 	 * The INIT and terminal components cannot be removed.
 	 */
-	public void removeComponent(SelfPropagatingComponent c) {
+	public void removeComponent(ForwardInterruptingComponent c) {
 
 
 		//Go through all the collections it could appear in
-		if(c instanceof SelfPropagatingProposition) {
-			SelfPropagatingProposition p = (SelfPropagatingProposition) c;
+		if(c instanceof ForwardInterruptingProposition) {
+			ForwardInterruptingProposition p = (ForwardInterruptingProposition) c;
 			GdlSentence name = p.getName();
 			if(basePropositions.containsKey(name)) {
 				basePropositions.remove(name);
 			} else if(inputPropositions.containsKey(name)) {
 				inputPropositions.remove(name);
 				//The map goes both ways...
-				SelfPropagatingProposition partner = legalInputMap.get(p);
+				ForwardInterruptingProposition partner = legalInputMap.get(p);
 				if(partner != null) {
 					legalInputMap.remove(partner);
 					legalInputMap.remove(p);
@@ -522,17 +522,17 @@ public final class SelfPropagatingPropNet
 			} else if(name == GdlPool.getProposition(GdlPool.getConstant("terminal"))) {
 				throw new RuntimeException("The terminal component cannot be removed.");
 			} else {
-				for(Set<SelfPropagatingProposition> propositions : legalPropositions.values()) {
+				for(Set<ForwardInterruptingProposition> propositions : legalPropositions.values()) {
 					if(propositions.contains(p)) {
 						propositions.remove(p);
-						SelfPropagatingProposition partner = legalInputMap.get(p);
+						ForwardInterruptingProposition partner = legalInputMap.get(p);
 						if(partner != null) {
 							legalInputMap.remove(partner);
 							legalInputMap.remove(p);
 						}
 					}
 				}
-				for(Set<SelfPropagatingProposition> propositions : goalPropositions.values()) {
+				for(Set<ForwardInterruptingProposition> propositions : goalPropositions.values()) {
 					propositions.remove(p);
 				}
 			}
@@ -541,12 +541,23 @@ public final class SelfPropagatingPropNet
 		components.remove(c);
 
 		//Remove all the local links to the component
-		for(SelfPropagatingComponent parent : c.getInputs())
+		for(ForwardInterruptingComponent parent : c.getInputs())
 			parent.removeOutput(c);
-		for(SelfPropagatingComponent child : c.getOutputs())
+		for(ForwardInterruptingComponent child : c.getOutputs())
 			child.removeInput(c);
 		//These are actually unnecessary...
 		//c.removeAllInputs();
 		//c.removeAllOutputs();
+	}
+
+	/**
+	 * This method makes sure that the value of each component in the propnet is consistent with
+	 * the values of all its inputs (except base propositions that do not have to be consistent
+	 * with their corresponding input transitions).
+	 */
+	public void imposeConsistency(){
+		for(ForwardInterruptingComponent component: this.components){
+			component.imposeConsistency();
+		}
 	}
 }

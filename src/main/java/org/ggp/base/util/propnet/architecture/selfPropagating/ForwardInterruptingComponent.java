@@ -10,23 +10,30 @@ import java.util.Set;
  * all methods.
  */
 
-public abstract class SelfPropagatingComponent implements Serializable
+public abstract class ForwardInterruptingComponent implements Serializable
 {
 
 	private static final long serialVersionUID = -6671761440002596846L;
 
     /** The inputs to the component. */
-    private final Set<SelfPropagatingComponent> inputs;
+    private final Set<ForwardInterruptingComponent> inputs;
     /** The outputs of the component. */
-    private final Set<SelfPropagatingComponent> outputs;
+    private final Set<ForwardInterruptingComponent> outputs;
+
+    /**
+     * TRUE if the value of the component has already been correctly initialized and
+     * thus it is consistent with the value of its inputs, FALSE otherwise.
+     */
+    protected boolean consistent;
 
     /**
      * Creates a new Component with no inputs or outputs.
      */
-    public SelfPropagatingComponent()
+    public ForwardInterruptingComponent()
     {
-        this.inputs = new HashSet<SelfPropagatingComponent>();
-        this.outputs = new HashSet<SelfPropagatingComponent>();
+        this.inputs = new HashSet<ForwardInterruptingComponent>();
+        this.outputs = new HashSet<ForwardInterruptingComponent>();
+        this.consistent = false;
     }
 
     /**
@@ -35,17 +42,17 @@ public abstract class SelfPropagatingComponent implements Serializable
      * @param input
      *            A new input.
      */
-    public void addInput(SelfPropagatingComponent input)
+    public void addInput(ForwardInterruptingComponent input)
     {
         inputs.add(input);
     }
 
-    public void removeInput(SelfPropagatingComponent input)
+    public void removeInput(ForwardInterruptingComponent input)
     {
     	inputs.remove(input);
     }
 
-    public void removeOutput(SelfPropagatingComponent output)
+    public void removeOutput(ForwardInterruptingComponent output)
     {
     	outputs.remove(output);
     }
@@ -66,7 +73,7 @@ public abstract class SelfPropagatingComponent implements Serializable
      * @param output
      *            A new output.
      */
-    public void addOutput(SelfPropagatingComponent output)
+    public void addOutput(ForwardInterruptingComponent output)
     {
         outputs.add(output);
     }
@@ -76,7 +83,7 @@ public abstract class SelfPropagatingComponent implements Serializable
      *
      * @return The inputs to the component.
      */
-    public Set<SelfPropagatingComponent> getInputs()
+    public Set<ForwardInterruptingComponent> getInputs()
     {
         return inputs;
     }
@@ -88,7 +95,7 @@ public abstract class SelfPropagatingComponent implements Serializable
      *
      * @return The single input to the component.
      */
-    public SelfPropagatingComponent getSingleInput() {
+    public ForwardInterruptingComponent getSingleInput() {
         assert inputs.size() == 1;
         return inputs.iterator().next();
     }
@@ -98,7 +105,7 @@ public abstract class SelfPropagatingComponent implements Serializable
      *
      * @return The outputs of the component.
      */
-    public Set<SelfPropagatingComponent> getOutputs()
+    public Set<ForwardInterruptingComponent> getOutputs()
     {
         return outputs;
     }
@@ -110,7 +117,7 @@ public abstract class SelfPropagatingComponent implements Serializable
      *
      * @return The single output to the component.
      */
-    public SelfPropagatingComponent getSingleOutput() {
+    public ForwardInterruptingComponent getSingleOutput() {
         assert outputs.size() == 1;
         return outputs.iterator().next();
     }
@@ -121,6 +128,38 @@ public abstract class SelfPropagatingComponent implements Serializable
      * @return The value of the Component.
      */
     public abstract boolean getValue();
+
+    /**
+     * This method makes sure that the value of the component is consistent with its
+     * inputs, and if such value changes it informs its outputs that they have to
+     * recompute their value if the were consistent with this input and want to keep
+     * being consistent.
+     */
+    public abstract void imposeConsistency();
+
+    /**
+     * This method must be used to tell to this component that one of is inputs changed
+     * its value to newValue, thus this component has to modify its value accordingly.
+     *
+     * !REMARK: use this method only when the input really changes its value. This method
+     * assumes that, whatever value is received (true or false), the previous value was
+     * exactly the opposite (e.g. if the component that receives the newValue=false is
+     * and AND component, it will assume that the previous value was true and so it has
+     * to decrement the number of trueInputs by 1).
+     *
+     * @param newValue
+     */
+    public abstract void propagateConsistency(boolean newValue);
+
+    /**
+     * Checks if the value of this component is consistent with the value of its inputs.
+     *
+     * @return TRUE if the value of this component is consistent with the value of its
+     * inputs, FALSE otherwise.
+     */
+    public boolean isConsistent(){
+    	return this.consistent;
+    }
 
     /**
      * Returns a representation of the Component in .dot format.
@@ -146,7 +185,7 @@ public abstract class SelfPropagatingComponent implements Serializable
         StringBuilder sb = new StringBuilder();
 
         sb.append("\"@" + Integer.toHexString(hashCode()) + "\"[shape=" + shape + ", style= filled, fillcolor=" + fillcolor + ", label=\"" + label + "\"]; ");
-        for ( SelfPropagatingComponent component : getOutputs() )
+        for ( ForwardInterruptingComponent component : getOutputs() )
         {
             sb.append("\"@" + Integer.toHexString(hashCode()) + "\"->" + "\"@" + Integer.toHexString(component.hashCode()) + "\"; ");
         }

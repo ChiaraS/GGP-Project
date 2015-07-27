@@ -46,14 +46,14 @@ import org.ggp.base.util.gdl.transforms.DeORer;
 import org.ggp.base.util.gdl.transforms.GdlCleaner;
 import org.ggp.base.util.gdl.transforms.Relationizer;
 import org.ggp.base.util.gdl.transforms.VariableConstrainer;
-import org.ggp.base.util.propnet.architecture.selfPropagating.SelfPropagatingComponent;
-import org.ggp.base.util.propnet.architecture.selfPropagating.SelfPropagatingPropNet;
-import org.ggp.base.util.propnet.architecture.selfPropagating.components.SelfPropagatingAnd;
-import org.ggp.base.util.propnet.architecture.selfPropagating.components.SelfPropagatingConstant;
-import org.ggp.base.util.propnet.architecture.selfPropagating.components.SelfPropagatingNot;
-import org.ggp.base.util.propnet.architecture.selfPropagating.components.SelfPropagatingOr;
-import org.ggp.base.util.propnet.architecture.selfPropagating.components.SelfPropagatingProposition;
-import org.ggp.base.util.propnet.architecture.selfPropagating.components.SelfPropagatingTransition;
+import org.ggp.base.util.propnet.architecture.selfPropagating.ForwardInterruptingComponent;
+import org.ggp.base.util.propnet.architecture.selfPropagating.ForwardInterruptingPropNet;
+import org.ggp.base.util.propnet.architecture.selfPropagating.components.ForwardInterruptingAnd;
+import org.ggp.base.util.propnet.architecture.selfPropagating.components.ForwardInterruptingConstant;
+import org.ggp.base.util.propnet.architecture.selfPropagating.components.ForwardInterruptingNot;
+import org.ggp.base.util.propnet.architecture.selfPropagating.components.ForwardInterruptingOr;
+import org.ggp.base.util.propnet.architecture.selfPropagating.components.ForwardInterruptingProposition;
+import org.ggp.base.util.propnet.architecture.selfPropagating.components.ForwardInterruptingTransition;
 import org.ggp.base.util.statemachine.Role;
 
 import com.google.common.collect.HashMultiset;
@@ -89,7 +89,7 @@ import com.google.common.collect.Multiset;
  *   if multithreading).
  *
  */
-public class SelfPropagatingPropNetFactory {
+public class ForwardInterruptingPropNetFactory {
 	static final private GdlConstant LEGAL = GdlPool.getConstant("legal");
 	static final private GdlConstant NEXT = GdlPool.getConstant("next");
 	static final private GdlConstant TRUE = GdlPool.getConstant("true");
@@ -109,11 +109,11 @@ public class SelfPropagatingPropNetFactory {
 	 * @throws InterruptedException if the thread is interrupted during
 	 * PropNet creation.
 	 */
-	public static SelfPropagatingPropNet create(List<Gdl> description) throws InterruptedException {
+	public static ForwardInterruptingPropNet create(List<Gdl> description) throws InterruptedException {
 		return create(description, false);
 	}
 
-	public static SelfPropagatingPropNet create(List<Gdl> description, boolean verbose) throws InterruptedException {
+	public static ForwardInterruptingPropNet create(List<Gdl> description, boolean verbose) throws InterruptedException {
 		System.out.println("Building propnet...");
 
 		long startTime = System.currentTimeMillis();
@@ -165,10 +165,10 @@ public class SelfPropagatingPropNetFactory {
 			System.out.println("done");
 
 		List<Role> roles = Role.computeRoles(description);
-		Map<GdlSentence, SelfPropagatingComponent> components = new HashMap<GdlSentence, SelfPropagatingComponent>();
-		Map<GdlSentence, SelfPropagatingComponent> negations = new HashMap<GdlSentence, SelfPropagatingComponent>();
-		SelfPropagatingConstant trueComponent = new SelfPropagatingConstant(true);
-		SelfPropagatingConstant falseComponent = new SelfPropagatingConstant(false);
+		Map<GdlSentence, ForwardInterruptingComponent> components = new HashMap<GdlSentence, ForwardInterruptingComponent>();
+		Map<GdlSentence, ForwardInterruptingComponent> negations = new HashMap<GdlSentence, ForwardInterruptingComponent>();
+		ForwardInterruptingConstant trueComponent = new ForwardInterruptingConstant(true);
+		ForwardInterruptingConstant falseComponent = new ForwardInterruptingConstant(false);
 		Map<SentenceForm, FunctionInfo> functionInfoMap = new HashMap<SentenceForm, FunctionInfo>();
 		Map<SentenceForm, Collection<GdlSentence>> completedSentenceFormValues = new HashMap<SentenceForm, Collection<GdlSentence>>();
 		for(SentenceForm form : topologicalOrdering) {
@@ -189,7 +189,7 @@ public class SelfPropagatingPropNetFactory {
 						|| form.getName().equals(TERMINAL)) {
 					//Add it
 					for (GdlSentence trueSentence : constantChecker.getTrueSentences(form)) {
-						SelfPropagatingProposition trueProp = new SelfPropagatingProposition(trueSentence);
+						ForwardInterruptingProposition trueProp = new ForwardInterruptingProposition(trueSentence);
 						trueProp.addInput(trueComponent);
 						trueComponent.addOutput(trueProp);
 						components.put(trueSentence, trueComponent);
@@ -207,8 +207,8 @@ public class SelfPropagatingPropNetFactory {
 				System.out.println();
 			//TODO: Adjust "recursive forms" appropriately
 			//Add a temporary sentence form thingy? ...
-			Map<GdlSentence, SelfPropagatingComponent> temporaryComponents = new HashMap<GdlSentence, SelfPropagatingComponent>();
-			Map<GdlSentence, SelfPropagatingComponent> temporaryNegations = new HashMap<GdlSentence, SelfPropagatingComponent>();
+			Map<GdlSentence, ForwardInterruptingComponent> temporaryComponents = new HashMap<GdlSentence, ForwardInterruptingComponent>();
+			Map<GdlSentence, ForwardInterruptingComponent> temporaryNegations = new HashMap<GdlSentence, ForwardInterruptingComponent>();
 			addSentenceForm(form, model, components, negations, trueComponent, falseComponent, usingBase, usingInput, Collections.singleton(form), temporaryComponents, temporaryNegations, functionInfoMap, constantChecker, completedSentenceFormValues);
 			//TODO: Pass these over groups of multiple sentence forms
 			if(verbose && !temporaryComponents.isEmpty())
@@ -231,7 +231,7 @@ public class SelfPropagatingPropNetFactory {
 		removeUselessBasePropositions(components, negations, trueComponent, falseComponent);
 		if(verbose)
 			System.out.println("Creating component set...");
-		Set<SelfPropagatingComponent> componentSet = new HashSet<SelfPropagatingComponent>(components.values());
+		Set<ForwardInterruptingComponent> componentSet = new HashSet<ForwardInterruptingComponent>(components.values());
 		//Try saving some memory here...
 		components = null;
 		negations = null;
@@ -242,7 +242,7 @@ public class SelfPropagatingPropNetFactory {
 		//Make it look the same as the PropNetFactory results, until we decide
 		//how we want it to look
 		normalizePropositions(componentSet);
-		SelfPropagatingPropNet propnet = new SelfPropagatingPropNet(roles, componentSet);
+		ForwardInterruptingPropNet propnet = new ForwardInterruptingPropNet(roles, componentSet);
 		if(verbose) {
 			System.out.println("Done setting up propnet; took " + (System.currentTimeMillis() - startTime) + "ms, has " + componentSet.size() + " components and " + propnet.getNumLinks() + " links");
 			System.out.println("Propnet has " +propnet.getNumAnds()+" ands; "+propnet.getNumOrs()+" ors; "+propnet.getNumNots()+" nots");
@@ -253,12 +253,12 @@ public class SelfPropagatingPropNetFactory {
 
 
 	private static void removeUselessBasePropositions(
-			Map<GdlSentence, SelfPropagatingComponent> components, Map<GdlSentence, SelfPropagatingComponent> negations, SelfPropagatingConstant trueComponent,
-			SelfPropagatingConstant falseComponent) throws InterruptedException {
+			Map<GdlSentence, ForwardInterruptingComponent> components, Map<GdlSentence, ForwardInterruptingComponent> negations, ForwardInterruptingConstant trueComponent,
+			ForwardInterruptingConstant falseComponent) throws InterruptedException {
 		boolean changedSomething = false;
-		for(Entry<GdlSentence, SelfPropagatingComponent> entry : components.entrySet()) {
+		for(Entry<GdlSentence, ForwardInterruptingComponent> entry : components.entrySet()) {
 			if(entry.getKey().getName() == TRUE) {
-				SelfPropagatingComponent comp = entry.getValue();
+				ForwardInterruptingComponent comp = entry.getValue();
 				if(comp.getInputs().size() == 0) {
 					comp.addInput(falseComponent);
 					falseComponent.addOutput(comp);
@@ -280,10 +280,10 @@ public class SelfPropagatingPropNetFactory {
 	 *
 	 * @param componentSet
 	 */
-	private static void normalizePropositions(Set<SelfPropagatingComponent> componentSet) {
-		for(SelfPropagatingComponent component : componentSet) {
-			if(component instanceof SelfPropagatingProposition) {
-				SelfPropagatingProposition p = (SelfPropagatingProposition) component;
+	private static void normalizePropositions(Set<ForwardInterruptingComponent> componentSet) {
+		for(ForwardInterruptingComponent component : componentSet) {
+			if(component instanceof ForwardInterruptingProposition) {
+				ForwardInterruptingProposition p = (ForwardInterruptingProposition) component;
 				GdlSentence sentence = p.getName();
 				if(sentence instanceof GdlRelation) {
 					GdlRelation relation = (GdlRelation) sentence;
@@ -309,7 +309,7 @@ public class SelfPropagatingPropNetFactory {
 	private static void addFormToCompletedValues(
 			SentenceForm form,
 			Map<SentenceForm, Collection<GdlSentence>> completedSentenceFormValues,
-			Map<GdlSentence, SelfPropagatingComponent> components) throws InterruptedException {
+			Map<GdlSentence, ForwardInterruptingComponent> components) throws InterruptedException {
 		//Kind of inefficient. Could do better by collecting these as we go,
 		//then adding them back into the CSFV map once the sentence forms are complete.
 		//completedSentenceFormValues.put(form, new ArrayList<GdlSentence>());
@@ -332,11 +332,11 @@ public class SelfPropagatingPropNetFactory {
 
 
 	private static void processTemporaryComponents(
-			Map<GdlSentence, SelfPropagatingComponent> temporaryComponents,
-			Map<GdlSentence, SelfPropagatingComponent> temporaryNegations,
-			Map<GdlSentence, SelfPropagatingComponent> components,
-			Map<GdlSentence, SelfPropagatingComponent> negations, SelfPropagatingComponent trueComponent,
-			SelfPropagatingComponent falseComponent) throws InterruptedException {
+			Map<GdlSentence, ForwardInterruptingComponent> temporaryComponents,
+			Map<GdlSentence, ForwardInterruptingComponent> temporaryNegations,
+			Map<GdlSentence, ForwardInterruptingComponent> components,
+			Map<GdlSentence, ForwardInterruptingComponent> negations, ForwardInterruptingComponent trueComponent,
+			ForwardInterruptingComponent falseComponent) throws InterruptedException {
 		//For each component in temporary components, we want to "put it back"
 		//into the main components section.
 		//We also want to do optimization here...
@@ -348,12 +348,12 @@ public class SelfPropagatingPropNetFactory {
 		//is necessarily FALSE and should be replaced by the false
 		//component.
 		for(GdlSentence sentence : temporaryComponents.keySet()) {
-			SelfPropagatingComponent tempComp = temporaryComponents.get(sentence);
-			SelfPropagatingComponent realComp = components.get(sentence);
+			ForwardInterruptingComponent tempComp = temporaryComponents.get(sentence);
+			ForwardInterruptingComponent realComp = components.get(sentence);
 			if(realComp == null) {
 				realComp = falseComponent;
 			}
-			for(SelfPropagatingComponent output : tempComp.getOutputs()) {
+			for(ForwardInterruptingComponent output : tempComp.getOutputs()) {
 				//Disconnect
 				output.removeInput(tempComp);
 				//tempComp.removeOutput(output); //do at end
@@ -383,7 +383,7 @@ public class SelfPropagatingPropNetFactory {
 	 * component from the propnet entirely.
 	 * @throws InterruptedException
 	 */
-	private static void optimizeAwayTrueAndFalse(Map<GdlSentence, SelfPropagatingComponent> components, Map<GdlSentence, SelfPropagatingComponent> negations, SelfPropagatingComponent trueComponent, SelfPropagatingComponent falseComponent) throws InterruptedException {
+	private static void optimizeAwayTrueAndFalse(Map<GdlSentence, ForwardInterruptingComponent> components, Map<GdlSentence, ForwardInterruptingComponent> negations, ForwardInterruptingComponent trueComponent, ForwardInterruptingComponent falseComponent) throws InterruptedException {
 	    while(hasNonessentialChildren(trueComponent) || hasNonessentialChildren(falseComponent)) {
 	    	ConcurrencyUtils.checkForInterruption();
             optimizeAwayTrue(components, negations, null, trueComponent, falseComponent);
@@ -391,7 +391,7 @@ public class SelfPropagatingPropNetFactory {
         }
 	}
 
-	private static void optimizeAwayTrueAndFalse(SelfPropagatingPropNet pn, SelfPropagatingComponent trueComponent, SelfPropagatingComponent falseComponent) {
+	private static void optimizeAwayTrueAndFalse(ForwardInterruptingPropNet pn, ForwardInterruptingComponent trueComponent, ForwardInterruptingComponent falseComponent) {
 	    while(hasNonessentialChildren(trueComponent) || hasNonessentialChildren(falseComponent)) {
 	        optimizeAwayTrue(null, null, pn, trueComponent, falseComponent);
 	        optimizeAwayFalse(null, null, pn, trueComponent, falseComponent);
@@ -400,21 +400,21 @@ public class SelfPropagatingPropNetFactory {
 
 	//TODO: Create a version with just a set of components that we can share with post-optimizations
 	private static void optimizeAwayFalse(
-			Map<GdlSentence, SelfPropagatingComponent> components, Map<GdlSentence, SelfPropagatingComponent> negations, SelfPropagatingPropNet pn, SelfPropagatingComponent trueComponent,
-			SelfPropagatingComponent falseComponent) {
+			Map<GdlSentence, ForwardInterruptingComponent> components, Map<GdlSentence, ForwardInterruptingComponent> negations, ForwardInterruptingPropNet pn, ForwardInterruptingComponent trueComponent,
+			ForwardInterruptingComponent falseComponent) {
         assert((components != null && negations != null) || pn != null);
         assert((components == null && negations == null) || pn == null);
-        for (SelfPropagatingComponent output : Lists.newArrayList(falseComponent.getOutputs())) {
-        	if (isEssentialProposition(output) || output instanceof SelfPropagatingTransition) {
+        for (ForwardInterruptingComponent output : Lists.newArrayList(falseComponent.getOutputs())) {
+        	if (isEssentialProposition(output) || output instanceof ForwardInterruptingTransition) {
         		//Since this is the false constant, there are a few "essential" types
         		//we don't actually want to keep around.
         		if (!isLegalOrGoalProposition(output)) {
         			continue;
         		}
 	    	}
-			if(output instanceof SelfPropagatingProposition) {
+			if(output instanceof ForwardInterruptingProposition) {
 				//Move its outputs to be outputs of false
-				for(SelfPropagatingComponent child : output.getOutputs()) {
+				for(ForwardInterruptingComponent child : output.getOutputs()) {
 					//Disconnect
 					child.removeInput(output);
 					//output.removeOutput(child); //do at end
@@ -425,7 +425,7 @@ public class SelfPropagatingPropNetFactory {
 				output.removeAllOutputs();
 
 				if(!isEssentialProposition(output)) {
-					SelfPropagatingProposition prop = (SelfPropagatingProposition) output;
+					ForwardInterruptingProposition prop = (ForwardInterruptingProposition) output;
 					//Remove the proposition entirely
 					falseComponent.removeOutput(output);
 					output.removeInput(falseComponent);
@@ -437,32 +437,32 @@ public class SelfPropagatingPropNetFactory {
 					    pn.removeComponent(output);
 					}
 				}
-			} else if(output instanceof SelfPropagatingAnd) {
-				SelfPropagatingAnd and = (SelfPropagatingAnd) output;
+			} else if(output instanceof ForwardInterruptingAnd) {
+				ForwardInterruptingAnd and = (ForwardInterruptingAnd) output;
 				//Attach children of and to falseComponent
-				for(SelfPropagatingComponent child : and.getOutputs()) {
+				for(ForwardInterruptingComponent child : and.getOutputs()) {
 					child.addInput(falseComponent);
 					falseComponent.addOutput(child);
 					child.removeInput(and);
 				}
 				//Disconnect and completely
 				and.removeAllOutputs();
-				for(SelfPropagatingComponent parent : and.getInputs())
+				for(ForwardInterruptingComponent parent : and.getInputs())
 					parent.removeOutput(and);
 				and.removeAllInputs();
 				if(pn != null)
 				    pn.removeComponent(and);
-			} else if(output instanceof SelfPropagatingOr) {
-				SelfPropagatingOr or = (SelfPropagatingOr) output;
+			} else if(output instanceof ForwardInterruptingOr) {
+				ForwardInterruptingOr or = (ForwardInterruptingOr) output;
 				//Remove as input from or
 				or.removeInput(falseComponent);
 				falseComponent.removeOutput(or);
 				//If or has only one input, remove it
 				if(or.getInputs().size() == 1) {
-					SelfPropagatingComponent in = or.getSingleInput();
+					ForwardInterruptingComponent in = or.getSingleInput();
 					or.removeInput(in);
 					in.removeOutput(or);
-					for(SelfPropagatingComponent out : or.getOutputs()) {
+					for(ForwardInterruptingComponent out : or.getOutputs()) {
 						//Disconnect from and
 						out.removeInput(or);
 						//or.removeOutput(out); //do at end
@@ -479,13 +479,13 @@ public class SelfPropagatingPropNetFactory {
 						pn.removeComponent(or);
 					}
 				}
-			} else if(output instanceof SelfPropagatingNot) {
-				SelfPropagatingNot not = (SelfPropagatingNot) output;
+			} else if(output instanceof ForwardInterruptingNot) {
+				ForwardInterruptingNot not = (ForwardInterruptingNot) output;
 				//Disconnect from falseComponent
 				not.removeInput(falseComponent);
 				falseComponent.removeOutput(not);
 				//Connect all children of the not to trueComponent
-				for(SelfPropagatingComponent child : not.getOutputs()) {
+				for(ForwardInterruptingComponent child : not.getOutputs()) {
 					//Disconnect
 					child.removeInput(not);
 					//not.removeOutput(child); //Do at end
@@ -496,7 +496,7 @@ public class SelfPropagatingPropNetFactory {
 				not.removeAllOutputs();
 				if(pn != null)
 				    pn.removeComponent(not);
-			} else if(output instanceof SelfPropagatingTransition) {
+			} else if(output instanceof ForwardInterruptingTransition) {
 				//???
 				System.err.println("Fix optimizeAwayFalse's case for Transitions");
 			}
@@ -504,27 +504,27 @@ public class SelfPropagatingPropNetFactory {
 	}
 
 
-	private static boolean isLegalOrGoalProposition(SelfPropagatingComponent comp) {
-		if (!(comp instanceof SelfPropagatingProposition)) {
+	private static boolean isLegalOrGoalProposition(ForwardInterruptingComponent comp) {
+		if (!(comp instanceof ForwardInterruptingProposition)) {
 			return false;
 		}
 
-		SelfPropagatingProposition prop = (SelfPropagatingProposition) comp;
+		ForwardInterruptingProposition prop = (ForwardInterruptingProposition) comp;
 		GdlSentence name = prop.getName();
 		return name.getName() == GdlPool.LEGAL || name.getName() == GdlPool.GOAL;
 	}
 
 	private static void optimizeAwayTrue(
-			Map<GdlSentence, SelfPropagatingComponent> components, Map<GdlSentence, SelfPropagatingComponent> negations, SelfPropagatingPropNet pn, SelfPropagatingComponent trueComponent,
-			SelfPropagatingComponent falseComponent) {
+			Map<GdlSentence, ForwardInterruptingComponent> components, Map<GdlSentence, ForwardInterruptingComponent> negations, ForwardInterruptingPropNet pn, ForwardInterruptingComponent trueComponent,
+			ForwardInterruptingComponent falseComponent) {
 	    assert((components != null && negations != null) || pn != null);
-	    for (SelfPropagatingComponent output : Lists.newArrayList(trueComponent.getOutputs())) {
-	    	if (isEssentialProposition(output) || output instanceof SelfPropagatingTransition) {
+	    for (ForwardInterruptingComponent output : Lists.newArrayList(trueComponent.getOutputs())) {
+	    	if (isEssentialProposition(output) || output instanceof ForwardInterruptingTransition) {
 	    		continue;
 	    	}
-			if(output instanceof SelfPropagatingProposition) {
+			if(output instanceof ForwardInterruptingProposition) {
 				//Move its outputs to be outputs of true
-				for(SelfPropagatingComponent child : output.getOutputs()) {
+				for(ForwardInterruptingComponent child : output.getOutputs()) {
 					//Disconnect
 					child.removeInput(output);
 					//output.removeOutput(child); //do at end
@@ -535,7 +535,7 @@ public class SelfPropagatingPropNetFactory {
 				output.removeAllOutputs();
 
 				if(!isEssentialProposition(output)) {
-					SelfPropagatingProposition prop = (SelfPropagatingProposition) output;
+					ForwardInterruptingProposition prop = (ForwardInterruptingProposition) output;
 					//Remove the proposition entirely
 					trueComponent.removeOutput(output);
 					output.removeInput(trueComponent);
@@ -547,32 +547,32 @@ public class SelfPropagatingPropNetFactory {
 					    pn.removeComponent(output);
 					}
 				}
-			} else if(output instanceof SelfPropagatingOr) {
-				SelfPropagatingOr or = (SelfPropagatingOr) output;
+			} else if(output instanceof ForwardInterruptingOr) {
+				ForwardInterruptingOr or = (ForwardInterruptingOr) output;
 				//Attach children of or to trueComponent
-				for(SelfPropagatingComponent child : or.getOutputs()) {
+				for(ForwardInterruptingComponent child : or.getOutputs()) {
 					child.addInput(trueComponent);
 					trueComponent.addOutput(child);
 					child.removeInput(or);
 				}
 				//Disconnect or completely
 				or.removeAllOutputs();
-				for(SelfPropagatingComponent parent : or.getInputs())
+				for(ForwardInterruptingComponent parent : or.getInputs())
 					parent.removeOutput(or);
 				or.removeAllInputs();
 				if(pn != null)
 				    pn.removeComponent(or);
-			} else if(output instanceof SelfPropagatingAnd) {
-				SelfPropagatingAnd and = (SelfPropagatingAnd) output;
+			} else if(output instanceof ForwardInterruptingAnd) {
+				ForwardInterruptingAnd and = (ForwardInterruptingAnd) output;
 				//Remove as input from and
 				and.removeInput(trueComponent);
 				trueComponent.removeOutput(and);
 				//If and has only one input, remove it
 				if(and.getInputs().size() == 1) {
-					SelfPropagatingComponent in = and.getSingleInput();
+					ForwardInterruptingComponent in = and.getSingleInput();
 					and.removeInput(in);
 					in.removeOutput(and);
-					for(SelfPropagatingComponent out : and.getOutputs()) {
+					for(ForwardInterruptingComponent out : and.getOutputs()) {
 						//Disconnect from and
 						out.removeInput(and);
 						//and.removeOutput(out); //do at end
@@ -589,13 +589,13 @@ public class SelfPropagatingPropNetFactory {
 						pn.removeComponent(and);
 					}
 				}
-			} else if(output instanceof SelfPropagatingNot) {
-				SelfPropagatingNot not = (SelfPropagatingNot) output;
+			} else if(output instanceof ForwardInterruptingNot) {
+				ForwardInterruptingNot not = (ForwardInterruptingNot) output;
 				//Disconnect from trueComponent
 				not.removeInput(trueComponent);
 				trueComponent.removeOutput(not);
 				//Connect all children of the not to falseComponent
-				for(SelfPropagatingComponent child : not.getOutputs()) {
+				for(ForwardInterruptingComponent child : not.getOutputs()) {
 					//Disconnect
 					child.removeInput(not);
 					//not.removeOutput(child); //Do at end
@@ -606,7 +606,7 @@ public class SelfPropagatingPropNetFactory {
 				not.removeAllOutputs();
 				if(pn != null)
 				    pn.removeComponent(not);
-			} else if(output instanceof SelfPropagatingTransition) {
+			} else if(output instanceof ForwardInterruptingTransition) {
 				//???
 				System.err.println("Fix optimizeAwayTrue's case for Transitions");
 			}
@@ -614,9 +614,9 @@ public class SelfPropagatingPropNetFactory {
 	}
 
 
-	private static boolean hasNonessentialChildren(SelfPropagatingComponent trueComponent) {
-		for(SelfPropagatingComponent child : trueComponent.getOutputs()) {
-			if(child instanceof SelfPropagatingTransition)
+	private static boolean hasNonessentialChildren(ForwardInterruptingComponent trueComponent) {
+		for(ForwardInterruptingComponent child : trueComponent.getOutputs()) {
+			if(child instanceof ForwardInterruptingTransition)
 				continue;
 			if(!isEssentialProposition(child))
 				return true;
@@ -628,14 +628,14 @@ public class SelfPropagatingPropNetFactory {
 	}
 
 
-	private static boolean isEssentialProposition(SelfPropagatingComponent component) {
-		if(!(component instanceof SelfPropagatingProposition))
+	private static boolean isEssentialProposition(ForwardInterruptingComponent component) {
+		if(!(component instanceof ForwardInterruptingProposition))
 			return false;
 
 		//We're looking for things that would be outputs of "true" or "false",
 		//but we would still want to keep as propositions to be read by the
 		//state machine
-		SelfPropagatingProposition prop = (SelfPropagatingProposition) component;
+		ForwardInterruptingProposition prop = (ForwardInterruptingProposition) component;
 		GdlConstant name = prop.getName().getName();
 
 		return name.equals(LEGAL) /*|| name.equals(NEXT)*/ || name.equals(GOAL)
@@ -643,43 +643,43 @@ public class SelfPropagatingPropNetFactory {
 	}
 
 
-	private static void completeComponentSet(Set<SelfPropagatingComponent> componentSet) {
-		Set<SelfPropagatingComponent> newComponents = new HashSet<SelfPropagatingComponent>();
-		Set<SelfPropagatingComponent> componentsToTry = new HashSet<SelfPropagatingComponent>(componentSet);
+	private static void completeComponentSet(Set<ForwardInterruptingComponent> componentSet) {
+		Set<ForwardInterruptingComponent> newComponents = new HashSet<ForwardInterruptingComponent>();
+		Set<ForwardInterruptingComponent> componentsToTry = new HashSet<ForwardInterruptingComponent>(componentSet);
 		while(!componentsToTry.isEmpty()) {
-			for(SelfPropagatingComponent c : componentsToTry) {
-				for(SelfPropagatingComponent out : c.getOutputs()) {
+			for(ForwardInterruptingComponent c : componentsToTry) {
+				for(ForwardInterruptingComponent out : c.getOutputs()) {
 					if(!componentSet.contains(out))
 						newComponents.add(out);
 				}
-				for(SelfPropagatingComponent in : c.getInputs()) {
+				for(ForwardInterruptingComponent in : c.getInputs()) {
 					if(!componentSet.contains(in))
 						newComponents.add(in);
 				}
 			}
 			componentSet.addAll(newComponents);
 			componentsToTry = newComponents;
-			newComponents = new HashSet<SelfPropagatingComponent>();
+			newComponents = new HashSet<ForwardInterruptingComponent>();
 		}
 	}
 
 
-	private static void addTransitions(Map<GdlSentence, SelfPropagatingComponent> components) {
-		for(Entry<GdlSentence, SelfPropagatingComponent> entry : components.entrySet()) {
+	private static void addTransitions(Map<GdlSentence, ForwardInterruptingComponent> components) {
+		for(Entry<GdlSentence, ForwardInterruptingComponent> entry : components.entrySet()) {
 			GdlSentence sentence = entry.getKey();
 
 			if(sentence.getName().equals(NEXT)) {
 				//connect to true
 				GdlSentence trueSentence = GdlPool.getRelation(TRUE, sentence.getBody());
-				SelfPropagatingComponent nextComponent = entry.getValue();
-				SelfPropagatingComponent trueComponent = components.get(trueSentence);
+				ForwardInterruptingComponent nextComponent = entry.getValue();
+				ForwardInterruptingComponent trueComponent = components.get(trueSentence);
 				//There might be no true component (for example, because the bases
 				//told us so). If that's the case, don't have a transition.
 				if(trueComponent == null) {
 				    // Skipping transition to supposedly impossible 'trueSentence'
 				    continue;
 				}
-				SelfPropagatingTransition transition = new SelfPropagatingTransition();
+				ForwardInterruptingTransition transition = new ForwardInterruptingTransition();
 				transition.addInput(nextComponent);
 				nextComponent.addOutput(transition);
 				transition.addOutput(trueComponent);
@@ -691,21 +691,21 @@ public class SelfPropagatingPropNetFactory {
 	//TODO: Replace with version using constantChecker only
 	//TODO: This can give problematic results if interpreted in
 	//the standard way (see test_case_3d)
-	private static void setUpInit(Map<GdlSentence, SelfPropagatingComponent> components,
-			SelfPropagatingConstant trueComponent, SelfPropagatingConstant falseComponent) {
-		SelfPropagatingProposition initProposition = new SelfPropagatingProposition(GdlPool.getProposition(INIT_CAPS));
-		for(Entry<GdlSentence, SelfPropagatingComponent> entry : components.entrySet()) {
+	private static void setUpInit(Map<GdlSentence, ForwardInterruptingComponent> components,
+			ForwardInterruptingConstant trueComponent, ForwardInterruptingConstant falseComponent) {
+		ForwardInterruptingProposition initProposition = new ForwardInterruptingProposition(GdlPool.getProposition(INIT_CAPS));
+		for(Entry<GdlSentence, ForwardInterruptingComponent> entry : components.entrySet()) {
 			//Is this something that will be true?
 			if(entry.getValue() == trueComponent) {
 				if(entry.getKey().getName().equals(INIT)) {
 					//Find the corresponding true sentence
 					GdlSentence trueSentence = GdlPool.getRelation(TRUE, entry.getKey().getBody());
 					//System.out.println("True sentence from init: " + trueSentence);
-					SelfPropagatingComponent trueSentenceComponent = components.get(trueSentence);
+					ForwardInterruptingComponent trueSentenceComponent = components.get(trueSentence);
 					if(trueSentenceComponent.getInputs().isEmpty()) {
 						//Case where there is no transition input
 						//Add the transition input, connect to init, continue loop
-						SelfPropagatingTransition transition = new SelfPropagatingTransition();
+						ForwardInterruptingTransition transition = new ForwardInterruptingTransition();
 						//init goes into transition
 						transition.addInput(initProposition);
 						initProposition.addOutput(transition);
@@ -714,15 +714,15 @@ public class SelfPropagatingPropNetFactory {
 						transition.addOutput(trueSentenceComponent);
 					} else {
 						//The transition already exists
-						SelfPropagatingComponent transition = trueSentenceComponent.getSingleInput();
+						ForwardInterruptingComponent transition = trueSentenceComponent.getSingleInput();
 
 						//We want to add init as a thing that precedes the transition
 						//Disconnect existing input
-						SelfPropagatingComponent input = transition.getSingleInput();
+						ForwardInterruptingComponent input = transition.getSingleInput();
 						//input and init go into or, or goes into transition
 						input.removeOutput(transition);
 						transition.removeInput(input);
-						List<SelfPropagatingComponent> orInputs = new ArrayList<SelfPropagatingComponent>(2);
+						List<ForwardInterruptingComponent> orInputs = new ArrayList<ForwardInterruptingComponent>(2);
 						orInputs.add(input);
 						orInputs.add(initProposition);
 						orify(orInputs, transition, falseComponent);
@@ -736,13 +736,13 @@ public class SelfPropagatingPropNetFactory {
 	 * Adds an or gate connecting the inputs to produce the output.
 	 * Handles special optimization cases like a true/false input.
 	 */
-	private static void orify(Collection<SelfPropagatingComponent> inputs, SelfPropagatingComponent output, SelfPropagatingConstant falseProp) {
+	private static void orify(Collection<ForwardInterruptingComponent> inputs, ForwardInterruptingComponent output, ForwardInterruptingConstant falseProp) {
 		//TODO: Look for already-existing ors with the same inputs?
 		//Or can this be handled with a GDL transformation?
 
 		//Special case: An input is the true constant
-		for(SelfPropagatingComponent in : inputs) {
-			if(in instanceof SelfPropagatingConstant && in.getValue()) {
+		for(ForwardInterruptingComponent in : inputs) {
+			if(in instanceof ForwardInterruptingConstant && in.getValue()) {
 				//True constant: connect that to the component, done
 				in.addOutput(output);
 				output.addInput(in);
@@ -755,9 +755,9 @@ public class SelfPropagatingPropNetFactory {
 		//What if that "or" gate has multiple outputs? Could that happen?
 
 		//For reals... just skip over any false constants
-		SelfPropagatingOr or = new SelfPropagatingOr();
-		for(SelfPropagatingComponent in : inputs) {
-			if(!(in instanceof SelfPropagatingConstant)) {
+		ForwardInterruptingOr or = new ForwardInterruptingOr();
+		for(ForwardInterruptingComponent in : inputs) {
+			if(!(in instanceof ForwardInterruptingConstant)) {
 				in.addOutput(or);
 				or.addInput(in);
 			}
@@ -771,7 +771,7 @@ public class SelfPropagatingPropNetFactory {
 		}
 		//If there's just one, on the other hand, don't use the or gate
 		if(or.getInputs().size() == 1) {
-			SelfPropagatingComponent in = or.getSingleInput();
+			ForwardInterruptingComponent in = or.getSingleInput();
 			in.removeOutput(or);
 			or.removeInput(in);
 			in.addOutput(output);
@@ -831,12 +831,12 @@ public class SelfPropagatingPropNetFactory {
 	}
 
 	private static void addSentenceForm(SentenceForm form, SentenceDomainModel model,
-			Map<GdlSentence, SelfPropagatingComponent> components,
-			Map<GdlSentence, SelfPropagatingComponent> negations,
-			SelfPropagatingConstant trueComponent, SelfPropagatingConstant falseComponent,
+			Map<GdlSentence, ForwardInterruptingComponent> components,
+			Map<GdlSentence, ForwardInterruptingComponent> negations,
+			ForwardInterruptingConstant trueComponent, ForwardInterruptingConstant falseComponent,
 			boolean usingBase, boolean usingInput,
 			Set<SentenceForm> recursionForms,
-			Map<GdlSentence, SelfPropagatingComponent> temporaryComponents, Map<GdlSentence, SelfPropagatingComponent> temporaryNegations,
+			Map<GdlSentence, ForwardInterruptingComponent> temporaryComponents, Map<GdlSentence, ForwardInterruptingComponent> temporaryNegations,
 			Map<SentenceForm, FunctionInfo> functionInfoMap, ConstantChecker constantChecker,
 			Map<SentenceForm, Collection<GdlSentence>> completedSentenceFormValues) throws InterruptedException {
 		//This is the meat of it (along with the entire Assignments class).
@@ -854,7 +854,7 @@ public class SelfPropagatingPropNetFactory {
 			if(alwaysTrueSentence.getName().equals(LEGAL)
 					|| alwaysTrueSentence.getName().equals(NEXT)
 					|| alwaysTrueSentence.getName().equals(GOAL)) {
-				SelfPropagatingProposition prop = new SelfPropagatingProposition(alwaysTrueSentence);
+				ForwardInterruptingProposition prop = new ForwardInterruptingProposition(alwaysTrueSentence);
 				//Attach to true
 				trueComponent.addOutput(prop);
 				prop.addInput(trueComponent);
@@ -873,7 +873,7 @@ public class SelfPropagatingPropNetFactory {
 			SentenceForm inputForm = form.withName(INPUT);
 			for (GdlSentence inputSentence : constantChecker.getTrueSentences(inputForm)) {
 				GdlSentence doesSentence = GdlPool.getRelation(DOES, inputSentence.getBody());
-				SelfPropagatingProposition prop = new SelfPropagatingProposition(doesSentence);
+				ForwardInterruptingProposition prop = new ForwardInterruptingProposition(doesSentence);
 				components.put(doesSentence, prop);
 			}
 			return;
@@ -882,13 +882,13 @@ public class SelfPropagatingPropNetFactory {
 			SentenceForm baseForm = form.withName(BASE);
 			for (GdlSentence baseSentence : constantChecker.getTrueSentences(baseForm)) {
 				GdlSentence trueSentence = GdlPool.getRelation(TRUE, baseSentence.getBody());
-				SelfPropagatingProposition prop = new SelfPropagatingProposition(trueSentence);
+				ForwardInterruptingProposition prop = new ForwardInterruptingProposition(trueSentence);
 				components.put(trueSentence, prop);
 			}
 			return;
 		}
 
-		Map<GdlSentence, Set<SelfPropagatingComponent>> inputsToOr = new HashMap<GdlSentence, Set<SelfPropagatingComponent>>();
+		Map<GdlSentence, Set<ForwardInterruptingComponent>> inputsToOr = new HashMap<GdlSentence, Set<ForwardInterruptingComponent>>();
 		for(GdlRule rule : rules) {
 			Assignments assignments = AssignmentsFactory.getAssignmentsForRule(rule, model, functionInfoMap, completedSentenceFormValues);
 
@@ -909,7 +909,7 @@ public class SelfPropagatingPropNetFactory {
 				GdlSentence sentence = CommonTransforms.replaceVariables(rule.getHead(), assignment);
 
 				//Now we go through the conjuncts as before, but we wait to hook them up.
-				List<SelfPropagatingComponent> componentsToConnect = new ArrayList<SelfPropagatingComponent>(rule.arity());
+				List<ForwardInterruptingComponent> componentsToConnect = new ArrayList<ForwardInterruptingComponent>(rule.arity());
 				for(GdlLiteral literal : rule.getBody()) {
 					if(literal instanceof GdlSentence) {
 						//Get the sentence post-substitutions
@@ -926,7 +926,7 @@ public class SelfPropagatingPropNetFactory {
 							continue;
 						}
 
-						SelfPropagatingComponent conj = components.get(transformed);
+						ForwardInterruptingComponent conj = components.get(transformed);
 						//If conj is null and this is a sentence form we're still handling,
 						//hook up to a temporary sentence form
 						if(conj == null) {
@@ -934,7 +934,7 @@ public class SelfPropagatingPropNetFactory {
 						}
 						if(conj == null && SentenceModelUtils.inSentenceFormGroup(transformed, recursionForms)) {
 							//Set up a temporary component
-							SelfPropagatingProposition tempProp = new SelfPropagatingProposition(transformed);
+							ForwardInterruptingProposition tempProp = new ForwardInterruptingProposition(transformed);
 							temporaryComponents.put(transformed, tempProp);
 							conj = tempProp;
 						}
@@ -966,7 +966,7 @@ public class SelfPropagatingPropNetFactory {
 							continue;
 						}
 
-						SelfPropagatingComponent conj = negations.get(transformed);
+						ForwardInterruptingComponent conj = negations.get(transformed);
 						if(isThisConstant(conj, falseComponent)) {
 							//We need to change one of the variables inside
 							List<GdlVariable> varsInConjunct = getVarsInConjunct(internal);
@@ -980,20 +980,20 @@ public class SelfPropagatingPropNetFactory {
 						}
 						//Check for the recursive case:
 						if(conj == null && SentenceModelUtils.inSentenceFormGroup(transformed, recursionForms)) {
-							SelfPropagatingComponent positive = components.get(transformed);
+							ForwardInterruptingComponent positive = components.get(transformed);
 							if(positive == null) {
 								positive = temporaryComponents.get(transformed);
 							}
 							if(positive == null) {
 								//Make the temporary proposition
-								SelfPropagatingProposition tempProp = new SelfPropagatingProposition(transformed);
+								ForwardInterruptingProposition tempProp = new ForwardInterruptingProposition(transformed);
 								temporaryComponents.put(transformed, tempProp);
 								positive = tempProp;
 							}
 							//Positive is now set and in temporaryComponents
 							//Evidently, wasn't in temporaryNegations
 							//So we add the "not" gate and set it in temporaryNegations
-							SelfPropagatingNot not = new SelfPropagatingNot();
+							ForwardInterruptingNot not = new ForwardInterruptingNot();
 							//Add positive as input
 							not.addInput(positive);
 							positive.addOutput(not);
@@ -1001,7 +1001,7 @@ public class SelfPropagatingPropNetFactory {
 							conj = not;
 						}
 						if(conj == null) {
-							SelfPropagatingComponent positive = components.get(transformed);
+							ForwardInterruptingComponent positive = components.get(transformed);
 							//No, because then that will be attached to "negations", which could be bad
 
 							if(positive == null) {
@@ -1014,14 +1014,14 @@ public class SelfPropagatingPropNetFactory {
 
 							//Check if we're sharing a component with another sentence with a negation
 							//(i.e. look for "nots" in our outputs and use those instead)
-							SelfPropagatingNot existingNotOutput = getNotOutput(positive);
+							ForwardInterruptingNot existingNotOutput = getNotOutput(positive);
 							if(existingNotOutput != null) {
 								componentsToConnect.add(existingNotOutput);
 								negations.put(transformed, existingNotOutput);
 								continue; //to the next conjunct
 							}
 
-							SelfPropagatingNot not = new SelfPropagatingNot();
+							ForwardInterruptingNot not = new ForwardInterruptingNot();
 							not.addInput(positive);
 							positive.addOutput(not);
 							negations.put(transformed, not);
@@ -1036,12 +1036,12 @@ public class SelfPropagatingPropNetFactory {
 				}
 				if(!componentsToConnect.contains(null)) {
 					//Connect all the components
-					SelfPropagatingProposition andComponent = new SelfPropagatingProposition(TEMP);
+					ForwardInterruptingProposition andComponent = new ForwardInterruptingProposition(TEMP);
 
 					andify(componentsToConnect, andComponent, trueComponent);
 					if(!isThisConstant(andComponent, falseComponent)) {
 						if(!inputsToOr.containsKey(sentence))
-							inputsToOr.put(sentence, new HashSet<SelfPropagatingComponent>());
+							inputsToOr.put(sentence, new HashSet<ForwardInterruptingComponent>());
 						inputsToOr.get(sentence).add(andComponent);
 						//We'll want to make sure at least one of the non-constant
 						//components is changing
@@ -1054,14 +1054,14 @@ public class SelfPropagatingPropNetFactory {
 		}
 
 		//At the end, we hook up the conjuncts
-		for(Entry<GdlSentence, Set<SelfPropagatingComponent>> entry : inputsToOr.entrySet()) {
+		for(Entry<GdlSentence, Set<ForwardInterruptingComponent>> entry : inputsToOr.entrySet()) {
 			ConcurrencyUtils.checkForInterruption();
 
 			GdlSentence sentence = entry.getKey();
-			Set<SelfPropagatingComponent> inputs = entry.getValue();
-			Set<SelfPropagatingComponent> realInputs = new HashSet<SelfPropagatingComponent>();
-			for(SelfPropagatingComponent input : inputs) {
-				if(input instanceof SelfPropagatingConstant || input.getInputs().size() == 0) {
+			Set<ForwardInterruptingComponent> inputs = entry.getValue();
+			Set<ForwardInterruptingComponent> realInputs = new HashSet<ForwardInterruptingComponent>();
+			for(ForwardInterruptingComponent input : inputs) {
+				if(input instanceof ForwardInterruptingConstant || input.getInputs().size() == 0) {
 					realInputs.add(input);
 				} else {
 					realInputs.add(input.getSingleInput());
@@ -1070,7 +1070,7 @@ public class SelfPropagatingPropNetFactory {
 				}
 			}
 
-			SelfPropagatingProposition prop = new SelfPropagatingProposition(sentence);
+			ForwardInterruptingProposition prop = new ForwardInterruptingProposition(sentence);
 			orify(realInputs, prop, falseComponent);
 			components.put(sentence, prop);
 		}
@@ -1083,7 +1083,7 @@ public class SelfPropagatingPropNetFactory {
 			for(GdlSentence sentence : model.getDomain(form)) {
 				ConcurrencyUtils.checkForInterruption();
 
-				SelfPropagatingProposition prop = new SelfPropagatingProposition(sentence);
+				ForwardInterruptingProposition prop = new ForwardInterruptingProposition(sentence);
 				components.put(sentence, prop);
 			}
 		}
@@ -1108,17 +1108,17 @@ public class SelfPropagatingPropNetFactory {
 		return result;
 	}
 
-	private static boolean isThisConstant(SelfPropagatingComponent conj, SelfPropagatingConstant constantComponent) {
+	private static boolean isThisConstant(ForwardInterruptingComponent conj, ForwardInterruptingConstant constantComponent) {
 		if(conj == constantComponent)
 			return true;
-		return (conj instanceof SelfPropagatingProposition && conj.getInputs().size() == 1 && conj.getSingleInput() == constantComponent);
+		return (conj instanceof ForwardInterruptingProposition && conj.getInputs().size() == 1 && conj.getSingleInput() == constantComponent);
 	}
 
 
-	private static SelfPropagatingNot getNotOutput(SelfPropagatingComponent positive) {
-		for(SelfPropagatingComponent c : positive.getOutputs()) {
-			if(c instanceof SelfPropagatingNot) {
-				return (SelfPropagatingNot) c;
+	private static ForwardInterruptingNot getNotOutput(ForwardInterruptingComponent positive) {
+		for(ForwardInterruptingComponent c : positive.getOutputs()) {
+			if(c instanceof ForwardInterruptingNot) {
+				return (ForwardInterruptingNot) c;
 			}
 		}
 		return null;
@@ -1130,10 +1130,10 @@ public class SelfPropagatingPropNetFactory {
 	}
 
 
-	private static void andify(List<SelfPropagatingComponent> inputs, SelfPropagatingComponent output, SelfPropagatingConstant trueProp) {
+	private static void andify(List<ForwardInterruptingComponent> inputs, ForwardInterruptingComponent output, ForwardInterruptingConstant trueProp) {
 		//Special case: If the inputs include false, connect false to thisComponent
-		for(SelfPropagatingComponent c : inputs) {
-			if(c instanceof SelfPropagatingConstant && !c.getValue()) {
+		for(ForwardInterruptingComponent c : inputs) {
+			if(c instanceof ForwardInterruptingConstant && !c.getValue()) {
 				//Connect false (c) to the output
 				output.addInput(c);
 				c.addOutput(output);
@@ -1142,9 +1142,9 @@ public class SelfPropagatingPropNetFactory {
 		}
 
 		//For reals... just skip over any true constants
-		SelfPropagatingAnd and = new SelfPropagatingAnd();
-		for(SelfPropagatingComponent in : inputs) {
-			if(!(in instanceof SelfPropagatingConstant)) {
+		ForwardInterruptingAnd and = new ForwardInterruptingAnd();
+		for(ForwardInterruptingComponent in : inputs) {
+			if(!(in instanceof ForwardInterruptingConstant)) {
 				in.addOutput(and);
 				and.addInput(in);
 			}
@@ -1158,7 +1158,7 @@ public class SelfPropagatingPropNetFactory {
 		}
 		//If there's just one, on the other hand, don't use the and gate
 		if(and.getInputs().size() == 1) {
-			SelfPropagatingComponent in = and.getSingleInput();
+			ForwardInterruptingComponent in = and.getSingleInput();
 			in.removeOutput(and);
 			and.removeInput(in);
 			in.addOutput(output);
@@ -1173,7 +1173,7 @@ public class SelfPropagatingPropNetFactory {
 	 * Represents the "type" of a node with respect to which truth
 	 * values it is capable of having: true, false, either value,
 	 * or neither value. Used by
-	 * {@link SelfPropagatingPropNetFactory#removeUnreachableBasesAndInputs(SelfPropagatingPropNet, Set)}.
+	 * {@link ForwardInterruptingPropNetFactory#removeUnreachableBasesAndInputs(ForwardInterruptingPropNet, Set)}.
 	 */
 	private static enum Type { NEITHER(false, false),
 						TRUE(true, false),
@@ -1264,28 +1264,28 @@ public class SelfPropagatingPropNetFactory {
 	 * @param basesTrueByInit The set of base propositions that are true on the
 	 * first turn of the game.
 	 */
-	public static void removeUnreachableBasesAndInputs(SelfPropagatingPropNet pn, Set<SelfPropagatingProposition> basesTrueByInit) throws InterruptedException {
+	public static void removeUnreachableBasesAndInputs(ForwardInterruptingPropNet pn, Set<ForwardInterruptingProposition> basesTrueByInit) throws InterruptedException {
 		//If this doesn't contain a component, that's the equivalent of Type.NEITHER
-		Map<SelfPropagatingComponent, Type> reachability = Maps.newHashMap();
+		Map<ForwardInterruptingComponent, Type> reachability = Maps.newHashMap();
 		//Keep track of the number of true inputs to AND gates and false inputs to
 		//OR gates.
-		Multiset<SelfPropagatingComponent> numTrueInputs = HashMultiset.create();
-		Multiset<SelfPropagatingComponent> numFalseInputs = HashMultiset.create();
-		Stack<Pair<SelfPropagatingComponent, Type>> toAdd = new Stack<Pair<SelfPropagatingComponent, Type>>();
+		Multiset<ForwardInterruptingComponent> numTrueInputs = HashMultiset.create();
+		Multiset<ForwardInterruptingComponent> numFalseInputs = HashMultiset.create();
+		Stack<Pair<ForwardInterruptingComponent, Type>> toAdd = new Stack<Pair<ForwardInterruptingComponent, Type>>();
 
 		//It's easier here if we get just the one-way version of the map
-		Map<SelfPropagatingProposition, SelfPropagatingProposition> legalsToInputs = Maps.newHashMap();
-		for (SelfPropagatingProposition legalProp : Iterables.concat(pn.getLegalPropositions().values())) {
-			SelfPropagatingProposition inputProp = pn.getLegalInputMap().get(legalProp);
+		Map<ForwardInterruptingProposition, ForwardInterruptingProposition> legalsToInputs = Maps.newHashMap();
+		for (ForwardInterruptingProposition legalProp : Iterables.concat(pn.getLegalPropositions().values())) {
+			ForwardInterruptingProposition inputProp = pn.getLegalInputMap().get(legalProp);
 			if (inputProp != null) {
 				legalsToInputs.put(legalProp, inputProp);
 			}
 		}
 
 		//All constants have their values
-		for (SelfPropagatingComponent c : pn.getComponents()) {
+		for (ForwardInterruptingComponent c : pn.getComponents()) {
 			ConcurrencyUtils.checkForInterruption();
-			if (c instanceof SelfPropagatingConstant) {
+			if (c instanceof ForwardInterruptingConstant) {
 				if (c.getValue()) {
 					toAdd.add(Pair.of(c, Type.TRUE));
 				} else {
@@ -1295,25 +1295,25 @@ public class SelfPropagatingPropNetFactory {
 		}
 
 		//Every input can be false (we assume that no player will have just one move allowed all game)
-        for(SelfPropagatingProposition p : pn.getInputPropositions().values()) {
-        	toAdd.add(Pair.of((SelfPropagatingComponent) p, Type.FALSE));
+        for(ForwardInterruptingProposition p : pn.getInputPropositions().values()) {
+        	toAdd.add(Pair.of((ForwardInterruptingComponent) p, Type.FALSE));
         }
 	    //Every base with "init" can be true, every base without "init" can be false
-	    for(SelfPropagatingProposition baseProp : pn.getBasePropositions().values()) {
+	    for(ForwardInterruptingProposition baseProp : pn.getBasePropositions().values()) {
             if (basesTrueByInit.contains(baseProp)) {
-            	toAdd.add(Pair.of((SelfPropagatingComponent) baseProp, Type.TRUE));
+            	toAdd.add(Pair.of((ForwardInterruptingComponent) baseProp, Type.TRUE));
             } else {
-            	toAdd.add(Pair.of((SelfPropagatingComponent) baseProp, Type.FALSE));
+            	toAdd.add(Pair.of((ForwardInterruptingComponent) baseProp, Type.FALSE));
             }
 	    }
 	    //Keep INIT, for those who use it
-	    SelfPropagatingProposition initProposition = pn.getInitProposition();
-    	toAdd.add(Pair.of((SelfPropagatingComponent) initProposition, Type.BOTH));
+	    ForwardInterruptingProposition initProposition = pn.getInitProposition();
+    	toAdd.add(Pair.of((ForwardInterruptingComponent) initProposition, Type.BOTH));
 
     	while (!toAdd.isEmpty()) {
 			ConcurrencyUtils.checkForInterruption();
-    		Pair<SelfPropagatingComponent, Type> curEntry = toAdd.pop();
-    		SelfPropagatingComponent curComp = curEntry.left;
+    		Pair<ForwardInterruptingComponent, Type> curEntry = toAdd.pop();
+    		ForwardInterruptingComponent curComp = curEntry.left;
     		Type newInputType = curEntry.right;
     		Type oldType = reachability.get(curComp);
     		if (oldType == null) {
@@ -1326,15 +1326,15 @@ public class SelfPropagatingPropNetFactory {
     		//Make sure we don't double-apply a type.
 
     		Type typeToAdd = Type.NEITHER; // Any new values that we discover we can have this iteration.
-    		if (curComp instanceof SelfPropagatingProposition) {
+    		if (curComp instanceof ForwardInterruptingProposition) {
     			typeToAdd = newInputType;
-    		} else if (curComp instanceof SelfPropagatingTransition) {
+    		} else if (curComp instanceof ForwardInterruptingTransition) {
     			typeToAdd = newInputType;
-    		} else if (curComp instanceof SelfPropagatingConstant) {
+    		} else if (curComp instanceof ForwardInterruptingConstant) {
     			typeToAdd = newInputType;
-    		} else if (curComp instanceof SelfPropagatingNot) {
+    		} else if (curComp instanceof ForwardInterruptingNot) {
     			typeToAdd = newInputType.opposite();
-    		} else if (curComp instanceof SelfPropagatingAnd) {
+    		} else if (curComp instanceof ForwardInterruptingAnd) {
     			if (newInputType.hasTrue) {
     				numTrueInputs.add(curComp);
     				if (numTrueInputs.count(curComp) == curComp.getInputs().size()) {
@@ -1344,7 +1344,7 @@ public class SelfPropagatingPropNetFactory {
     			if (newInputType.hasFalse) {
     				typeToAdd = typeToAdd.with(Type.FALSE);
     			}
-    		} else if (curComp instanceof SelfPropagatingOr) {
+    		} else if (curComp instanceof ForwardInterruptingOr) {
     			if (newInputType.hasFalse) {
     				numFalseInputs.add(curComp);
     				if (numFalseInputs.count(curComp) == curComp.getInputs().size()) {
@@ -1369,37 +1369,37 @@ public class SelfPropagatingPropNetFactory {
     		}
 
     		//Add all our children to the stack
-    		for (SelfPropagatingComponent output : curComp.getOutputs()) {
+    		for (ForwardInterruptingComponent output : curComp.getOutputs()) {
     			toAdd.add(Pair.of(output, typeToAdd));
     		}
 			if (legalsToInputs.containsKey(curComp)) {
-				SelfPropagatingProposition inputProp = legalsToInputs.get(curComp);
+				ForwardInterruptingProposition inputProp = legalsToInputs.get(curComp);
 				if (inputProp == null) {
 					throw new IllegalStateException();
 				}
-				toAdd.add(Pair.of((SelfPropagatingComponent) inputProp, typeToAdd));
+				toAdd.add(Pair.of((ForwardInterruptingComponent) inputProp, typeToAdd));
 			}
     	}
 
-    	SelfPropagatingConstant trueConst = new SelfPropagatingConstant(true);
-    	SelfPropagatingConstant falseConst = new SelfPropagatingConstant(false);
+    	ForwardInterruptingConstant trueConst = new ForwardInterruptingConstant(true);
+    	ForwardInterruptingConstant falseConst = new ForwardInterruptingConstant(false);
 	    pn.addComponent(trueConst);
 	    pn.addComponent(falseConst);
 	    //Make them the input of all false/true components
-	    for(Entry<SelfPropagatingComponent, Type> entry : reachability.entrySet()) {
+	    for(Entry<ForwardInterruptingComponent, Type> entry : reachability.entrySet()) {
 	        Type type = entry.getValue();
 	        if(type == Type.TRUE || type == Type.FALSE) {
-	            SelfPropagatingComponent c = entry.getKey();
-	            if (c instanceof SelfPropagatingConstant) {
+	            ForwardInterruptingComponent c = entry.getKey();
+	            if (c instanceof ForwardInterruptingConstant) {
 	            	//Don't bother trying to remove this
 	            	continue;
 	            }
 	            //Disconnect from inputs
-	            for(SelfPropagatingComponent input : c.getInputs()) {
+	            for(ForwardInterruptingComponent input : c.getInputs()) {
 	                input.removeOutput(c);
 	            }
 	            c.removeAllInputs();
-	            if(type == Type.TRUE ^ (c instanceof SelfPropagatingNot)) {
+	            if(type == Type.TRUE ^ (c instanceof ForwardInterruptingNot)) {
 	                c.addInput(trueConst);
 	                trueConst.addOutput(c);
 	            } else {
@@ -1420,20 +1420,20 @@ public class SelfPropagatingPropNetFactory {
 	 * TODO: Currently fails on propnets with cycles.
 	 * @param pn
 	 */
-	public static void lopUselessLeaves(SelfPropagatingPropNet pn) {
+	public static void lopUselessLeaves(ForwardInterruptingPropNet pn) {
 		//Approach: Collect useful propositions based on a backwards
 		//search from goal/legal/terminal (passing through transitions)
-		Set<SelfPropagatingComponent> usefulComponents = new HashSet<SelfPropagatingComponent>();
+		Set<ForwardInterruptingComponent> usefulComponents = new HashSet<ForwardInterruptingComponent>();
 		//TODO: Also try with queue?
-		Stack<SelfPropagatingComponent> toAdd = new Stack<SelfPropagatingComponent>();
+		Stack<ForwardInterruptingComponent> toAdd = new Stack<ForwardInterruptingComponent>();
 		toAdd.add(pn.getTerminalProposition());
 		usefulComponents.add(pn.getInitProposition()); //Can't remove it...
-		for(Set<SelfPropagatingProposition> goalProps : pn.getGoalPropositions().values())
+		for(Set<ForwardInterruptingProposition> goalProps : pn.getGoalPropositions().values())
 			toAdd.addAll(goalProps);
-		for(Set<SelfPropagatingProposition> legalProps : pn.getLegalPropositions().values())
+		for(Set<ForwardInterruptingProposition> legalProps : pn.getLegalPropositions().values())
 			toAdd.addAll(legalProps);
 		while(!toAdd.isEmpty()) {
-			SelfPropagatingComponent curComp = toAdd.pop();
+			ForwardInterruptingComponent curComp = toAdd.pop();
 			if(usefulComponents.contains(curComp))
 				//We've already added it
 				continue;
@@ -1442,8 +1442,8 @@ public class SelfPropagatingPropNetFactory {
 		}
 
 		//Remove the components not marked as useful
-		List<SelfPropagatingComponent> allComponents = new ArrayList<SelfPropagatingComponent>(pn.getComponents());
-		for(SelfPropagatingComponent c : allComponents) {
+		List<ForwardInterruptingComponent> allComponents = new ArrayList<ForwardInterruptingComponent>(pn.getComponents());
+		for(ForwardInterruptingComponent c : allComponents) {
 			if(!usefulComponents.contains(c))
 				pn.removeComponent(c);
 		}
@@ -1454,9 +1454,9 @@ public class SelfPropagatingPropNetFactory {
 	 * of the form (init ?x). Does NOT remove the proposition "INIT".
 	 * @param pn
 	 */
-	public static void removeInits(SelfPropagatingPropNet pn) {
-		List<SelfPropagatingProposition> toRemove = new ArrayList<SelfPropagatingProposition>();
-		for(SelfPropagatingProposition p : pn.getPropositions()) {
+	public static void removeInits(ForwardInterruptingPropNet pn) {
+		List<ForwardInterruptingProposition> toRemove = new ArrayList<ForwardInterruptingProposition>();
+		for(ForwardInterruptingProposition p : pn.getPropositions()) {
 			if(p.getName() instanceof GdlRelation) {
 				GdlRelation relation = (GdlRelation) p.getName();
 				if(relation.getName() == INIT) {
@@ -1465,7 +1465,7 @@ public class SelfPropagatingPropNetFactory {
 			}
 		}
 
-		for(SelfPropagatingProposition p : toRemove) {
+		for(ForwardInterruptingProposition p : toRemove) {
 			pn.removeComponent(p);
 		}
 	}
@@ -1479,12 +1479,12 @@ public class SelfPropagatingPropNetFactory {
 	 *
 	 * @param pn
 	 */
-	public static void removeAnonymousPropositions(SelfPropagatingPropNet pn) {
-		List<SelfPropagatingProposition> toSplice = new ArrayList<SelfPropagatingProposition>();
-		List<SelfPropagatingProposition> toReplaceWithFalse = new ArrayList<SelfPropagatingProposition>();
-		for(SelfPropagatingProposition p : pn.getPropositions()) {
+	public static void removeAnonymousPropositions(ForwardInterruptingPropNet pn) {
+		List<ForwardInterruptingProposition> toSplice = new ArrayList<ForwardInterruptingProposition>();
+		List<ForwardInterruptingProposition> toReplaceWithFalse = new ArrayList<ForwardInterruptingProposition>();
+		for(ForwardInterruptingProposition p : pn.getPropositions()) {
 			//If it's important, continue to the next proposition
-			if(p.getInputs().size() == 1 && p.getSingleInput() instanceof SelfPropagatingTransition)
+			if(p.getInputs().size() == 1 && p.getSingleInput() instanceof ForwardInterruptingTransition)
 				//It's a base proposition
 				continue;
 			GdlSentence sentence = p.getName();
@@ -1511,23 +1511,23 @@ public class SelfPropagatingPropNetFactory {
 			//System.out.println("Removing " + p);
 			toSplice.add(p);
 		}
-		for(SelfPropagatingProposition p : toSplice) {
+		for(ForwardInterruptingProposition p : toSplice) {
 			//Get the inputs and outputs...
-			Set<SelfPropagatingComponent> inputs = p.getInputs();
-			Set<SelfPropagatingComponent> outputs = p.getOutputs();
+			Set<ForwardInterruptingComponent> inputs = p.getInputs();
+			Set<ForwardInterruptingComponent> outputs = p.getOutputs();
 			//Remove the proposition...
 			pn.removeComponent(p);
 			//And splice the inputs and outputs back together
 			if(inputs.size() > 1)
 				System.err.println("Programmer made a bad assumption here... might lead to trouble?");
-			for(SelfPropagatingComponent input : inputs) {
-				for(SelfPropagatingComponent output : outputs) {
+			for(ForwardInterruptingComponent input : inputs) {
+				for(ForwardInterruptingComponent output : outputs) {
 					input.addOutput(output);
 					output.addInput(input);
 				}
 			}
 		}
-		for(SelfPropagatingProposition p : toReplaceWithFalse) {
+		for(ForwardInterruptingProposition p : toReplaceWithFalse) {
 			System.out.println("Should be replacing " + p + " with false, but should do that in the OPNF, really; better equipped to do that there");
 		}
 	}

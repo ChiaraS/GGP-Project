@@ -4,14 +4,11 @@
 package csironi.ggp.course;
 
 import java.util.List;
-import java.util.Set;
 
 import org.ggp.base.util.game.Game;
 import org.ggp.base.util.gdl.grammar.Gdl;
-import org.ggp.base.util.propnet.architecture.selfPropagating.SelfPropagatingComponent;
-import org.ggp.base.util.propnet.architecture.selfPropagating.SelfPropagatingPropNet;
-import org.ggp.base.util.propnet.architecture.selfPropagating.components.SelfPropagatingProposition;
-import org.ggp.base.util.propnet.factory.SelfPropagatingPropNetFactory;
+import org.ggp.base.util.propnet.architecture.selfPropagating.ForwardInterruptingPropNet;
+import org.ggp.base.util.propnet.factory.ForwardInterruptingPropNetFactory;
 
 /**
  * @author C.Sironi
@@ -118,10 +115,10 @@ public class ProvaPropnet {
 
 		List<Gdl> BeLList = BeLGame.getRules();
 
-		SelfPropagatingPropNet BeLPropNet = null;
+		ForwardInterruptingPropNet BeLPropNet = null;
 
 		try {
-			BeLPropNet = SelfPropagatingPropNetFactory.create(BeLList, true);
+			BeLPropNet = ForwardInterruptingPropNetFactory.create(BeLList, true);
 		} catch (InterruptedException e) {
 			System.out.println("Uh oh");
 		}
@@ -133,23 +130,30 @@ public class ProvaPropnet {
 			BeLString = BeLPropNet.toString();
 		}
 
+		//System.out.println(BeLString);
+
+		BeLPropNet.imposeConsistency();
+
+		BeLString = BeLPropNet.toString();
+
 		System.out.println(BeLString);
 
+
 		//Set<Proposition> props = BeLPropNet.getPropositions();
-		Set<SelfPropagatingComponent> comps = BeLPropNet.getComponents();
+		//Set<ForwardInterruptingComponent> comps = BeLPropNet.getComponents();
 
 
 		/*for(Proposition p : props){
 			System.out.println("[ " + p.getName() + " , " + p.getValue() + " ]");
 		}*/
 
-		for(SelfPropagatingComponent c : comps){
-			if(c instanceof SelfPropagatingProposition){
-				System.out.println("[ " + ((SelfPropagatingProposition) c).getName() + " , " + ((SelfPropagatingProposition) c).getValue() + " ]");
+		/*for(ForwardInterruptingComponent c : comps){
+			if(c instanceof ForwardInterruptingProposition){
+				System.out.println("[ " + ((ForwardInterruptingProposition) c).getName() + " , " + ((ForwardInterruptingProposition) c).getValue() + " ]");
 			}else{
 				System.out.println("[ " + c.getClass().getName() + " , " + c.getValue() + " ]");
 			}
-		}
+		}*/
 
 
 
