@@ -59,7 +59,7 @@ public class ProverStateMachine extends StateMachine
 
 		if (results.size() != 1)
 		{
-		    GamerLogger.logError("StateMachine", "Got goal results of size: " + results.size() + " when expecting size one.");
+		    GamerLogger.logError("StateMachine", "[Prover] Got goal results of size: " + results.size() + " when expecting size one.");
 			throw new GoalDefinitionException(state, role);
 		}
 
