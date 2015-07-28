@@ -20,6 +20,9 @@ public final class ForwardInterruptingTransition extends ForwardInterruptingComp
 	}
 
 	/**
+	 * A transition is always consistent with its input since its value is always recomputed from its single input,
+	 * so this method does nothing but changing to TRUE the attribute that states that this component is consistent.
+	 *
 	 * @see org.ggp.base.util.propnet.architecture.forwardInterrupting.ForwardInterruptingComponent#imposeConsistency()
 	 */
 	@Override
@@ -32,8 +35,19 @@ public final class ForwardInterruptingTransition extends ForwardInterruptingComp
 	 *  @see org.ggp.base.util.propnet.architecture.forwardInterrupting.ForwardInterruptingComponent#propagateConsistency()
 	 */
 	@Override
-	public void propagateConsistency(boolean newValue){
+	public void propagateValue(boolean newValue){
 
+	}
+
+	/**
+	 * A transition is always consistent with its input since its value is always recomputed from its single input,
+	 * so this method does nothing but changing to FALSE the attribute that states that this component is consistent.
+	 *
+	 * @see org.ggp.base.util.propnet.architecture.forwardInterrupting.ForwardInterruptingComponent#resetValue()
+	 */
+	@Override
+	public void resetValue(){
+		this.consistent = false;
 	}
 
 	/**

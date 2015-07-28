@@ -34,6 +34,9 @@ public final class ForwardInterruptingConstant extends ForwardInterruptingCompon
 	}
 
 	/**
+	 * A constant is always consistent since it has no inputs, so this method does nothing
+	 * but changing to TRUE the attribute that states that this component is consistent.
+	 *
 	 * @see org.ggp.base.util.propnet.architecture.forwardInterrupting.ForwardInterruptingComponent#imposeConsistency()
 	 */
 	@Override
@@ -48,7 +51,18 @@ public final class ForwardInterruptingConstant extends ForwardInterruptingCompon
 	 * @see org.ggp.base.util.propnet.architecture.forwardInterrupting.ForwardInterruptingComponent#propagateConsistency()
 	 */
 	@Override
-	public void propagateConsistency(boolean newValue){
+	public void propagateValue(boolean newValue){
+	}
+
+	/**
+	 * A constant is always consistent since it has no inputs, so this method does nothing
+	 * but changing to FALSE the attribute that states that this component is consistent.
+	 *
+	 * @see org.ggp.base.util.propnet.architecture.forwardInterrupting.ForwardInterruptingComponent#resetValue()
+	 */
+	@Override
+	public void resetValue(){
+		this.consistent = false;
 	}
 
 	/**

@@ -20,6 +20,9 @@ public final class ForwardInterruptingNot extends ForwardInterruptingComponent
 	}
 
 	/**
+	 * A NOT is always consistent with its input since its value is always recomputed from its single input,
+	 * so this method does nothing but changing to FALSE the attribute that states that this component is consistent.
+	 *
 	 * @see org.ggp.base.util.propnet.architecture.forwardInterrupting.ForwardInterruptingComponent#imposeConsistency()
 	 */
 	@Override
@@ -31,15 +34,27 @@ public final class ForwardInterruptingNot extends ForwardInterruptingComponent
 	 *  @see org.ggp.base.util.propnet.architecture.forwardInterrupting.ForwardInterruptingComponent#propagateConsistency()
 	 */
 	@Override
-	public void propagateConsistency(boolean newValue){
-		// If this method is called it means that the input this component was consistent with
-		// changed value to newValue, so automatically this component changed value to !newValue and has
-		// to inform its outputs about it.
-		for(ForwardInterruptingComponent c: this.getOutputs()){
-			if(c.isConsistent()){
-				c.propagateConsistency(!newValue);
+	public void propagateValue(boolean newValue){
+		if(this.isConsistent()){
+			// If this method is called, and this component was consistent with its input, it means that the
+			// input this component was consistent with changed value to newValue, so automatically this
+			// component changed value to !newValue and has to inform its outputs about it.
+			for(ForwardInterruptingComponent c: this.getOutputs()){
+				c.propagateValue(!newValue);
 			}
 		}
+
+	}
+
+	/**
+	 * A NOT is always consistent with its input since its value is always recomputed from its single input,
+	 * so this method does nothing but changing to FALSE the attribute that states that this component is consistent.
+	 *
+	 * @see org.ggp.base.util.propnet.architecture.forwardInterrupting.ForwardInterruptingComponent#resetValue()
+	 */
+	@Override
+	public void resetValue(){
+		this.consistent = false;
 	}
 
 	/**

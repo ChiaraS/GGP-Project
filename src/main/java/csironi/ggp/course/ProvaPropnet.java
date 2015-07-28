@@ -130,7 +130,7 @@ public class ProvaPropnet {
 			BeLString = BeLPropNet.toString();
 		}
 
-		//System.out.println(BeLString);
+		System.out.println(BeLString);
 
 		BeLPropNet.imposeConsistency();
 
@@ -138,6 +138,19 @@ public class ProvaPropnet {
 
 		System.out.println(BeLString);
 
+		BeLPropNet.getInitProposition().setAndPropagateValue(true);
+
+		BeLString = BeLPropNet.toString();
+
+		System.out.println(BeLString);
+
+		BeLPropNet.resetValues();
+		BeLPropNet.getInitProposition().setValue(true);
+		BeLPropNet.imposeConsistency();
+
+		BeLString = BeLPropNet.toString();
+
+		System.out.println(BeLString);
 
 		//Set<Proposition> props = BeLPropNet.getPropositions();
 		//Set<ForwardInterruptingComponent> comps = BeLPropNet.getComponents();

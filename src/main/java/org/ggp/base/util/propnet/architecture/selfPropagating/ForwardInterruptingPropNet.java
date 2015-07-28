@@ -554,10 +554,25 @@ public final class ForwardInterruptingPropNet
 	 * This method makes sure that the value of each component in the propnet is consistent with
 	 * the values of all its inputs (except base propositions that do not have to be consistent
 	 * with their corresponding input transitions).
+	 *
+	 * !REMARK: this method gets stuck in an infinite computation if the propnet contains cycles
+	 * with endlessly flipping values.
 	 */
 	public void imposeConsistency(){
+		//TODO: detect endlessly flipping values to stop computation and avoid getting stuck here
 		for(ForwardInterruptingComponent component: this.components){
 			component.imposeConsistency();
+		}
+	}
+
+	/**
+	 * This method resets the value of all the components of the propnet (e.g. to FALSE for propositions,
+	 * to 0 trueInputs for AND and OR) making the propnet not necessarily consistent anymore.
+	 * This method exists to be used to reset the propnet if something weird seems to happen with its values.
+	 */
+	public void resetValues(){
+		for(ForwardInterruptingComponent component: this.components){
+			component.resetValue();
 		}
 	}
 }

@@ -51,7 +51,7 @@ public final class ForwardInterruptingAnd extends ForwardInterruptingComponent
 		if(this.getValue() != oldValue){
 			for(ForwardInterruptingComponent c: this.getOutputs()){
 				if(c.isConsistent()){
-					c.propagateConsistency(this.getValue());
+					c.propagateValue(this.getValue());
 				}
 			}
 		}
@@ -61,24 +61,34 @@ public final class ForwardInterruptingAnd extends ForwardInterruptingComponent
 	 *  @see org.ggp.base.util.propnet.architecture.forwardInterrupting.ForwardInterruptingComponent#propagateConsistency()
 	 */
 	@Override
-	public void propagateConsistency(boolean newValue){
-		// If this method is called it means that one of the inputs this component was consistent with
-		// changed value to newValue
-		boolean oldValue = this.getValue();
-		if(newValue){
-			this.trueInputs++;
-		}else{
-			this.trueInputs--;
-		}
-		// If the value of the component changed, inform the consistent outputs
-		// that they have to change as well
-		if(this.getValue() != oldValue){
-			for(ForwardInterruptingComponent c: this.getOutputs()){
-				if(c.isConsistent()){
-					c.propagateConsistency(this.getValue());
+	public void propagateValue(boolean newValue){
+		if(this.consistent){
+			// If this method is called, and this component was consistent with its input, it means that
+			// one of the inputs this component was consistent with changed value to newValue.
+			boolean oldValue = this.getValue();
+			if(newValue){
+				this.trueInputs++;
+			}else{
+				this.trueInputs--;
+			}
+			// If the value of the component changed, inform the outputs that, if they want to keep being
+			// consistent, they have to change as well
+			if(this.getValue() != oldValue){
+				for(ForwardInterruptingComponent c: this.getOutputs()){
+					c.propagateValue(this.getValue());
 				}
 			}
 		}
+
+	}
+
+	/**
+	 * @see org.ggp.base.util.propnet.architecture.forwardInterrupting.ForwardInterruptingComponent#resetValue()
+	 */
+	@Override
+	public void resetValue(){
+		this.trueInputs = 0;
+		this.consistent = false;
 	}
 
 	/**

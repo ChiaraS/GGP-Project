@@ -143,13 +143,13 @@ public abstract class ForwardInterruptingComponent implements Serializable
      *
      * !REMARK: use this method only when the input really changes its value. This method
      * assumes that, whatever value is received (true or false), the previous value was
-     * exactly the opposite (e.g. if the component that receives the newValue=false is
-     * and AND component, it will assume that the previous value was true and so it has
+     * exactly the opposite (e.g. if the component that receives the newValue=FALSE is
+     * and AND component, it will assume that the previous value was TRUE and so it has
      * to decrement the number of trueInputs by 1).
      *
      * @param newValue
      */
-    public abstract void propagateConsistency(boolean newValue);
+    public abstract void propagateValue(boolean newValue);
 
     /**
      * Checks if the value of this component is consistent with the value of its inputs.
@@ -160,6 +160,12 @@ public abstract class ForwardInterruptingComponent implements Serializable
     public boolean isConsistent(){
     	return this.consistent;
     }
+
+    /**
+     * This method resets the value of the component to a default value, probably removing
+     * the consistency with its inputs.
+     */
+    public abstract void resetValue();
 
     /**
      * Returns a representation of the Component in .dot format.
