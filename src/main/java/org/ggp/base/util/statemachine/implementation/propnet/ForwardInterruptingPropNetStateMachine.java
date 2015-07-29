@@ -11,8 +11,8 @@ import org.ggp.base.util.gdl.grammar.GdlConstant;
 import org.ggp.base.util.gdl.grammar.GdlRelation;
 import org.ggp.base.util.gdl.grammar.GdlSentence;
 import org.ggp.base.util.logging.GamerLogger;
-import org.ggp.base.util.propnet.architecture.selfPropagating.ForwardInterruptingPropNet;
-import org.ggp.base.util.propnet.architecture.selfPropagating.components.ForwardInterruptingProposition;
+import org.ggp.base.util.propnet.architecture.forwardInterrupting.ForwardInterruptingPropNet;
+import org.ggp.base.util.propnet.architecture.forwardInterrupting.components.ForwardInterruptingProposition;
 import org.ggp.base.util.propnet.factory.ForwardInterruptingPropNetFactory;
 import org.ggp.base.util.statemachine.MachineState;
 import org.ggp.base.util.statemachine.Move;
@@ -24,7 +24,6 @@ import org.ggp.base.util.statemachine.exceptions.TransitionDefinitionException;
 import org.ggp.base.util.statemachine.implementation.prover.query.ProverQueryBuilder;
 
 
-@SuppressWarnings("unused")
 public class ForwardInterruptingPropNetStateMachine extends StateMachine {
     /** The underlying proposition network  */
     private ForwardInterruptingPropNet propNet;
@@ -41,7 +40,7 @@ public class ForwardInterruptingPropNetStateMachine extends StateMachine {
     @Override
     public void initialize(List<Gdl> description) {
         try {
-			this.propNet = ForwardInterruptingPropNetFactory.create(description);
+			this.propNet = ForwardInterruptingPropNetFactory.create(description, true);
 	        this.roles = propNet.getRoles();
 	        // Set init proposition to true without propagating, so that when making
 	        // the propnet consistent its value will be propagated so that the next state
@@ -50,25 +49,37 @@ public class ForwardInterruptingPropNetStateMachine extends StateMachine {
 	        // No need to set all other inputs to false because they already are.
 	        // Impose consistency on the propnet.
 	        this.propNet.imposeConsistency();
-	        this.initialState = this.computeInitialState();
+	        // The initial state can be computed by only setting the truth value of the INIT
+	        // proposition to TRUE, and then computing the resulting next state.
+	        // Given that the INIT proposition has already been set to TRUE (without propagation)
+	        // before imposing consistency and all other input propositions are set to FALSE at
+	        // this moment, it is possible to use the computeNextState() method to compute the
+	        // initial state.
+	        this.initialState = this.computeNextState();
 		} catch (InterruptedException e) {
 			throw new RuntimeException(e);
 		}
     }
 
     /**
-     * The initial state can be computed by only setting the truth value of the INIT
-     * proposition to TRUE, and then computing the resulting state.
-     * This method assumes that the INIT proposition has already been set to TRUE and
-     * all other input propositions are set to FALSE. This method can make this assumption
-     * cause it must be called only once during the initialization of the propnet state
-     * machine, where all the propositions are already set to FALSE and the INIT proposition
-     * has already been set to TRUE (without propagation).
+     * This method returns the next machine state. It contains the set of all the base propositions
+     * that will become true in the next state, given the current state of the propnet, with both
+     * base and input proposition marked and their value propagated.
+     *
+     * !REMARK: this method computes the next state but doesn't advance the propnet state. The propnet
+     * will still be in the current state.
 	 *
-     * @return the initial state.
+     * @return the next state.
      */
-    private MachineState computeInitialState(){
+    private MachineState computeNextState(){
+
+    	//AGGIUNTA
+    	//System.out.println("COMPUTING NEXT STATE");
+    	//FINE AGGIUNTA
+
     	Set<GdlSentence> contents = new HashSet<GdlSentence>();
+    	// For all the base propositions that are true, add the corresponding proposition to the
+    	// next machine state.
 		for (ForwardInterruptingProposition p : this.propNet.getBasePropositions().values()){
 			if (p.getSingleInput().getValue()){
 				contents.add(p.getName());
@@ -152,7 +163,7 @@ public class ForwardInterruptingPropNetStateMachine extends StateMachine {
 		List<Move> legalMovesForRole = new ArrayList<Move>();
 		for(ForwardInterruptingProposition legalProp : legalPropsForRole){
 			if(legalProp.getValue()){
-				legalMovesForRole.add(this.getMoveFromProposition(legalProp));
+				legalMovesForRole.add(getMoveFromProposition(legalProp));
 			}
 		}
 
@@ -173,11 +184,11 @@ public class ForwardInterruptingPropNetStateMachine extends StateMachine {
 		// Mark base propositions according to state.
 		this.markBases(state);
 
-		// Mark input propositions according to the moves
+		// Mark input propositions according to the moves.
 		this.markInputs(moves);
 
-		// TODO
-		return null;
+		// Compute next state for each base proposition from the corresponding transition.
+		return this.computeNextState();
 	}
 
 	/* Already implemented for you */
@@ -200,16 +211,44 @@ public class ForwardInterruptingPropNetStateMachine extends StateMachine {
 	 * @return a list with the 'does' propositions corresponding to the given joint move.
 	 */
 	private List<GdlSentence> toDoes(List<Move> moves){
+
+		//AGGIUNTA
+    	//System.out.println("TO DOES");
+    	//System.out.println("MOVES");
+    	//System.out.println(moves);
+    	//FINE AGGIUNTA
+
 		List<GdlSentence> doeses = new ArrayList<GdlSentence>(moves.size());
 		Map<Role, Integer> roleIndices = getRoleIndices();
+
+		//AGGIUNTA
+		//System.out.println("ROLES");
+    	//System.out.println(this.roles);
+
+    	//System.out.println("ROLE INDICES");
+    	//System.out.println(roleIndices);
+    	//FINE AGGIUNTA
 
 		// TODO: both the roles and the moves should be already in the correct order so no need
 		// to retrieve the roles indices!!
 		for (int i = 0; i < roles.size(); i++)
 		{
+
+			//AGGIUNTA
+	    	//System.out.println("i=" + i);
+	    	//FINE AGGIUNTA
+
 			int index = roleIndices.get(roles.get(i));
 			doeses.add(ProverQueryBuilder.toDoes(roles.get(i), moves.get(index)));
 		}
+
+		//AGGIUNTA
+		//System.out.println("MOVES");
+		//System.out.println(moves);
+		//System.out.println("DOESES");
+		//System.out.println(doeses);
+		//FINE AGGIUNTA
+
 		return doeses;
 	}
 
@@ -241,6 +280,11 @@ public class ForwardInterruptingPropNetStateMachine extends StateMachine {
      * @param state the machine state to be set in the propnet.
      */
 	private void markBases(MachineState state){
+
+		//AGGIUNTA
+    	//System.out.println("MARKING BASES");
+    	//FINE AGGIUNTA
+
 		Set<GdlSentence> contents = state.getContents();
 		for(ForwardInterruptingProposition base : this.propNet.getBasePropositions().values()){
 			base.setAndPropagateValue(contents.contains(base.getName()));
@@ -252,9 +296,18 @@ public class ForwardInterruptingPropNetStateMachine extends StateMachine {
      * a performed move are set to TRUE and all others to FALSE. This method works only if the
      * GdlPool is being used.
      *
+     * !REMARK: also the INIT proposition can be considered as a special case of INPUT proposition,
+     * thus when marking the input propositions to compute a subsequent state different from the
+     * initial one, make sure that the INIT proposition is also set to FALSE.
+     *
      * @param moves the moves to be set as performed in the propnet.
      */
 	private void markInputs(List<Move> moves){
+
+		//AGGIUNTA
+    	//System.out.println("MARKING INPUTS");
+    	//FINE AGGIUNTA
+
 		// Transform the moves into 'does' propositions (the correct order should be kept).
 		List<GdlSentence> movesToDoes = this.toDoes(moves);
 
@@ -262,5 +315,15 @@ public class ForwardInterruptingPropNetStateMachine extends StateMachine {
 			input.setAndPropagateValue(movesToDoes.contains(input.getName()));
 		}
 
+		// Set to false also the INIT proposition
+		// REMARK: since at the moment the initial state is computed only once at the beginning,
+		// the setting of the INIT proposition to FALSE could be done only once after computing the
+		// initial state.
+		this.propNet.getInitProposition().setAndPropagateValue(false);
+
+	}
+
+	public ForwardInterruptingPropNet getPropNet(){
+		return this.propNet;
 	}
 }

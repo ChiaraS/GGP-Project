@@ -1,4 +1,4 @@
-package org.ggp.base.util.propnet.architecture.selfPropagating;
+package org.ggp.base.util.propnet.architecture.forwardInterrupting;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -16,11 +16,11 @@ import org.ggp.base.util.gdl.grammar.GdlRelation;
 import org.ggp.base.util.gdl.grammar.GdlSentence;
 import org.ggp.base.util.gdl.grammar.GdlTerm;
 import org.ggp.base.util.logging.GamerLogger;
-import org.ggp.base.util.propnet.architecture.selfPropagating.components.ForwardInterruptingAnd;
-import org.ggp.base.util.propnet.architecture.selfPropagating.components.ForwardInterruptingNot;
-import org.ggp.base.util.propnet.architecture.selfPropagating.components.ForwardInterruptingOr;
-import org.ggp.base.util.propnet.architecture.selfPropagating.components.ForwardInterruptingProposition;
-import org.ggp.base.util.propnet.architecture.selfPropagating.components.ForwardInterruptingTransition;
+import org.ggp.base.util.propnet.architecture.forwardInterrupting.components.ForwardInterruptingAnd;
+import org.ggp.base.util.propnet.architecture.forwardInterrupting.components.ForwardInterruptingNot;
+import org.ggp.base.util.propnet.architecture.forwardInterrupting.components.ForwardInterruptingOr;
+import org.ggp.base.util.propnet.architecture.forwardInterrupting.components.ForwardInterruptingProposition;
+import org.ggp.base.util.propnet.architecture.forwardInterrupting.components.ForwardInterruptingTransition;
 import org.ggp.base.util.statemachine.Role;
 
 

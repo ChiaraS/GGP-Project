@@ -1,4 +1,4 @@
-package org.ggp.base.util.propnet.architecture.selfPropagating;
+package org.ggp.base.util.propnet.architecture.forwardInterrupting;
 
 import java.io.Serializable;
 import java.util.HashSet;
@@ -164,6 +164,12 @@ public abstract class ForwardInterruptingComponent implements Serializable
     /**
      * This method resets the value of the component to a default value, probably removing
      * the consistency with its inputs.
+     *
+     * Note that the use of the resetValue() method on even only one of the components of the propnet, makes the whole
+	 * propnet inconsistent without the propnet realizing it, thus when using this method, even if only on one component,
+	 * before using again the propnet reset the value of all other components and re-impose the consistency over the
+	 * whole propnet.
+	 *
      */
     public abstract void resetValue();
 

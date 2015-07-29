@@ -1,7 +1,7 @@
-package org.ggp.base.util.propnet.architecture.selfPropagating.components;
+package org.ggp.base.util.propnet.architecture.forwardInterrupting.components;
 
 import org.ggp.base.util.gdl.grammar.GdlSentence;
-import org.ggp.base.util.propnet.architecture.selfPropagating.ForwardInterruptingComponent;
+import org.ggp.base.util.propnet.architecture.forwardInterrupting.ForwardInterruptingComponent;
 
 /**
  * The Proposition class is designed to represent named latches.
@@ -126,21 +126,25 @@ public final class ForwardInterruptingProposition extends ForwardInterruptingCom
 	 */
 	@Override
 	public void imposeConsistency(){
+		// If this proposition has an input...
 		if(this.getInputs().size() == 1){
 			ForwardInterruptingComponent component = this.getSingleInput();
+			//...and it is not a transition...
 			if(! (component instanceof ForwardInterruptingTransition)){
 				boolean oldValue = this.value;
 				this.value = component.getValue();
 				this.consistent = true;
 				if(this.value != oldValue){
 					for(ForwardInterruptingComponent c: this.getOutputs()){
-						if(c.isConsistent()){
-							c.propagateValue(this.getValue());
-						}
+						c.propagateValue(this.getValue());
 					}
 				}
 			}
 		}else{
+			// This case includes also propositions with more than one input
+			// (officially they should not exist).
+			// TODO: manage the case when the proposition has more than one input
+			// (i.e. throw exception).
 			this.consistent = true;
 		}
 	}

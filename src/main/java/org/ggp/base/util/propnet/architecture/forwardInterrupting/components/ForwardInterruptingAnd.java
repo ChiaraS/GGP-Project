@@ -1,32 +1,32 @@
-package org.ggp.base.util.propnet.architecture.selfPropagating.components;
+package org.ggp.base.util.propnet.architecture.forwardInterrupting.components;
 
-import org.ggp.base.util.propnet.architecture.selfPropagating.ForwardInterruptingComponent;
+import org.ggp.base.util.propnet.architecture.forwardInterrupting.ForwardInterruptingComponent;
 
 /**
- * The Or class is designed to represent logical OR gates.
+ * The And class is designed to represent logical AND gates.
  */
 @SuppressWarnings("serial")
-public final class ForwardInterruptingOr extends ForwardInterruptingComponent
+public final class ForwardInterruptingAnd extends ForwardInterruptingComponent
 {
+
 	/**
-	 * Number of inputs of this OR component that are TRUE.
+	 * Number of inputs of this AND component that are TRUE.
 	 */
 	private int trueInputs;
 
-	public ForwardInterruptingOr(){
-		super();
-		this.trueInputs = 0;
-	}
-
 	/**
-	 * Returns true if and only if at least one of the inputs to the or is true.
+	 * Returns true if and only if every input to the and is true.
 	 *
 	 * @see org.ggp.base.util.propnet.architecture.forwardInterrupting.ForwardInterruptingComponent#getValue()
 	 */
 	@Override
 	public boolean getValue()
 	{
-		return this.trueInputs > 0;
+		if(this.getInputs() != null){
+			return this.trueInputs == this.getInputs().size();
+		}
+
+		return true;
 	}
 
 	/**
@@ -36,11 +36,11 @@ public final class ForwardInterruptingOr extends ForwardInterruptingComponent
 	public void imposeConsistency(){
 		// Temporarily memorize current value
 		boolean oldValue = this.getValue();
-		// Reset and recompute the number of inputs that are true for this OR
+		// Reset and recompute the number of inputs that are true for this AND
 		// component
 		this.trueInputs = 0;
 		for(ForwardInterruptingComponent c: this.getInputs()){
-			if(c.getValue() == true){
+			if(c.getValue()){
 				this.trueInputs++;
 			}
 		}
@@ -50,9 +50,7 @@ public final class ForwardInterruptingOr extends ForwardInterruptingComponent
 		// that they have to change as well
 		if(this.getValue() != oldValue){
 			for(ForwardInterruptingComponent c: this.getOutputs()){
-				if(c.isConsistent()){
-					c.propagateValue(this.getValue());
-				}
+				c.propagateValue(this.getValue());
 			}
 		}
 	}
@@ -62,7 +60,7 @@ public final class ForwardInterruptingOr extends ForwardInterruptingComponent
 	 */
 	@Override
 	public void propagateValue(boolean newValue){
-		if(this.isConsistent()){
+		if(this.consistent){
 			// If this method is called, and this component was consistent with its input, it means that
 			// one of the inputs this component was consistent with changed value to newValue.
 			boolean oldValue = this.getValue();
@@ -71,8 +69,8 @@ public final class ForwardInterruptingOr extends ForwardInterruptingComponent
 			}else{
 				this.trueInputs--;
 			}
-			// If the value of the component changed, inform the consistent outputs
-			// that they have to change as well
+			// If the value of the component changed, inform the outputs that, if they want to keep being
+			// consistent, they have to change as well
 			if(this.getValue() != oldValue){
 				for(ForwardInterruptingComponent c: this.getOutputs()){
 					c.propagateValue(this.getValue());
@@ -97,6 +95,7 @@ public final class ForwardInterruptingOr extends ForwardInterruptingComponent
 	@Override
 	public String toString()
 	{
-		return toDot("ellipse", "grey", "OR " + this.trueInputs);
+		return toDot("invhouse", "grey", "AND " + this.trueInputs);
 	}
+
 }

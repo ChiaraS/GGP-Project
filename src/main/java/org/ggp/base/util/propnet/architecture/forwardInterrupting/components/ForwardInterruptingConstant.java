@@ -1,6 +1,6 @@
-package org.ggp.base.util.propnet.architecture.selfPropagating.components;
+package org.ggp.base.util.propnet.architecture.forwardInterrupting.components;
 
-import org.ggp.base.util.propnet.architecture.selfPropagating.ForwardInterruptingComponent;
+import org.ggp.base.util.propnet.architecture.forwardInterrupting.ForwardInterruptingComponent;
 
 /**
  * The Constant class is designed to represent nodes with fixed logical values.
