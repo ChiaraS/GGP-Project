@@ -27,7 +27,65 @@ public class ProvaPropnet {
 
 	public static void main(String []args){
 
-		provaGame("amazonsTorus");
+		//provaGame("amazonsTorus", 300000);
+
+		provaGame("gt_two_thirds_2p", 300000);
+
+		//printKeys();
+
+
+		//String description = "( ( role player1 ) ( role player2 ) ( <= ( base ( guessed ?player ?number ) ) ( role ?player ) ( guessableNumber ?number ) ) ( <= ( input ?player ( guess ?number ) ) ( role ?player ) ( guessableNumber ?number ) ) ( <= ( legal ?player ( guess ?number ) ) ( role ?player ) ( guessableNumber ?number ) ) ( <= ( next ( guessed ?player ?number ) ) ( does ?player ( guess ?number ) ) ) ( <= ( total ?number ) ( true ( guessed player1 ?n1 ) ) ( true ( guessed player2 ?n2 ) ) ( sum ?n1 ?n2 ?number ) ) ( <= ( twoThirdsAverage ?out ) ( total ?total ) ( times3 ?out ?total ) ) ( <= ( twoThirdsAverage ?out ) ( total ?total ) ( succ ?total ?tp1 ) ( times3 ?out ?tp1 ) ) ( <= ( twoThirdsAverage ?out ) ( total ?total ) ( succ ?tm1 ?total ) ( times3 ?out ?tm1 ) ) ( <= ( closeness ?player ?score ) ( true ( guessed ?player ?guess ) ) ( twoThirdsAverage ?result ) ( absDiff ?result ?guess ?score ) ) ( <= ( notClosest ?player ) ( closeness ?player ?score ) ( closeness ?otherPlayer ?lowerScore ) ( distinct ?player ?otherPlayer ) ( lt ?lowerScore ?score ) ) ( <= ( closest ?player ) ( role ?player ) ( not ( notClosest ?player ) ) ) ( <= ( goal player1 100 ) ( closest player1 ) ( notClosest player2 ) ) ( <= ( goal player2 100 ) ( notClosest player1 ) ( closest player2 ) ) ( <= ( goal ?player 50 ) ( role ?player ) ( closest player1 ) ( closest player2 ) ) ( <= ( goal ?player 0 ) ( notClosest ?player ) ) ( <= terminal ( true ( guessed ?player ?number ) ) ) ( <= ( absDiff ?x ?x 0 ) ( anyNumber ?x ) ) ( <= ( absDiff ?x ?y ?z ) ( lt ?y ?x ) ( succ ?xm1 ?x ) ( absDiff ?xm1 ?y ?zm1 ) ( succ ?zm1 ?z ) ) ( <= ( absDiff ?x ?y ?z ) ( lt ?x ?y ) ( succ ?ym1 ?y ) ( absDiff ?x ?ym1 ?zm1 ) ( succ ?zm1 ?z ) ) ( <= ( sum ?x 0 ?x ) ( anyNumber ?x ) ) ( <= ( sum ?x ?y ?z ) ( succ ?ym1 ?y ) ( sum ?x ?ym1 ?zm1 ) ( succ ?zm1 ?z ) ) ( times3 0 0 ) ( <= ( times3 ?x ?y ) ( succ ?ym1 ?y ) ( succ ?ym2 ?ym1 ) ( succ ?ym3 ?ym2 ) ( times3 ?xm1 ?ym3 ) ( succ ?xm1 ?x ) ) ( <= ( lt ?x ?y ) ( lte ?x ?y ) ( distinct ?x ?y ) ) ( <= ( lte ?x ?x ) ( anyNumber ?x ) ) ( <= ( lte ?x ?y ) ( succ ?ym1 ?y ) ( lte ?x ?ym1 ) ) ( anyNumber 0 ) (<= ( anyNumber ?n ) ( succ ?m ?n ) ) ( <= ( guessableNumber ?number ) ( lte ?number 3 ) ) ( succ 0 1 ) ( succ 1 2 ) ( succ 2 3 ) ( succ 3 4 ) ( succ 4 5 ) ( succ 5 6 ) ( succ 6 7 ) )";
+
+		//printPropnet(description, "gt_two_thirds_2p");
+
+	}
+
+	public static void printPropnet(String description, String gameName){
+		Game game = Game.createEphemeralGame(description);
+
+		List<Gdl> list = game.getRules();
+
+		ForwardInterruptingPropNet propNet = null;
+
+		try {
+			propNet = ForwardInterruptingPropNetFactory.create(list, true);
+		} catch (InterruptedException e) {
+			System.out.println("Uh oh");
+		}
+
+		String string = null;
+
+		if(propNet != null){
+
+			string = propNet.toString();
+		}
+
+		System.out.println(string);
+
+		// SAVE TO FILE
+		try{
+    		// Write propnet to file
+            BufferedWriter out = new BufferedWriter(new FileWriter(gameName + "Propnet.dot", false));
+            out.write(string);
+            out.close();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+		if(propNet != null){
+			propNet.imposeConsistency();
+			string = propNet.toString();
+		}
+
+		// SAVE TO FILE
+		try{
+    		// Write propnet to file
+            BufferedWriter out = new BufferedWriter(new FileWriter(gameName + "InitPropnet.dot", false));
+            out.write(string);
+            out.close();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
 
 	}
 
@@ -186,7 +244,7 @@ public class ProvaPropnet {
 
 	}
 
-	public static void provaGame(String game){
+	public static void provaGame(String game, long maxPropnetCreationTime){
 
         ProverStateMachine theReference;
         ForwardInterruptingPropNetStateMachine thePropNetMachine;
@@ -200,111 +258,123 @@ public class ProvaPropnet {
             List<Gdl> description = theRepository.getGame(gameKey).getRules();
 
             theReference = new ProverStateMachine();
-            thePropNetMachine = new ForwardInterruptingPropNetStateMachine();
+            thePropNetMachine = new ForwardInterruptingPropNetStateMachine(maxPropnetCreationTime);
 
             theReference.initialize(description);
             thePropNetMachine.initialize(description);
 
-            int step = 0;
-
-            //PRINTING THE PROPNET
             ForwardInterruptingPropNet propnet = thePropNetMachine.getPropNet();
-            String propnetRepresentation = null;
-    		if(propnet != null){
-    			propnetRepresentation = propnet.toString();
-    		}else{
-    			//System.out.println("UFFAAAAAAAAAA");
-    		}
-    		//System.out.println(propnetRepresentation);
-    		try{
-	    		// Write propnet to file
-	            BufferedWriter out = new BufferedWriter(new FileWriter("Step"+step+"Propnet"+gameKey+".dot", false));
-	            out.write(propnetRepresentation);
-	            out.close();
-	        } catch (IOException e) {
-	            e.printStackTrace();
-	        }
 
-    		//MachineState init = thePropNetMachine.getInitialState();
-    		//if(init == null){
-    		//	System.out.println("Cavolo!");
-    		//}else{
-    		//	System.out.println("INIT STATE:");
-    		//	System.out.println(init);
-    		//}
+            // It's possible to continue the execution only if the state machine managed to build the propnet
+            if(propnet != null){
 
-            //END OF PROPNET PRINTING
+	            int step = 0;
 
-    		MachineState proverState = null;
-    		MachineState propnetState = null;
+	            //PRINTING THE PROPNET
 
-    		try {
-                proverState = theReference.getInitialState();
-            } catch(Exception e) {
-                GamerLogger.log("StateMachine", "Prover machine failed to generate an initial state!");
+	            String propnetRepresentation = null;
+
+	    		propnetRepresentation = propnet.toString();
+
+	    		//System.out.println(propnetRepresentation);
+	    		try{
+		    		// Write propnet to file
+		            BufferedWriter out = new BufferedWriter(new FileWriter("Step"+step+"Propnet"+gameKey+".dot", false));
+		            out.write(propnetRepresentation);
+		            out.close();
+		        } catch (IOException e) {
+		            e.printStackTrace();
+		        }
+
+	    		//MachineState init = thePropNetMachine.getInitialState();
+	    		//if(init == null){
+	    		//	System.out.println("Cavolo!");
+	    		//}else{
+	    		//	System.out.println("INIT STATE:");
+	    		//	System.out.println(init);
+	    		//}
+
+	            //END OF PROPNET PRINTING
+
+	    		MachineState proverState = null;
+	    		MachineState propnetState = null;
+
+	    		try {
+	                proverState = theReference.getInitialState();
+	            } catch(Exception e) {
+	                GamerLogger.log("StateMachine", "Prover machine failed to generate an initial state!");
+	            }
+	    		try {
+	                propnetState = thePropNetMachine.getInitialState();
+	            } catch(Exception e) {
+	                GamerLogger.log("StateMachine", "Propnet machine failed to generate an initial state!");
+	            }
+
+	    		System.out.println("PROVER INITIAL STATE");
+	    		System.out.println(proverState);
+	    		System.out.println("PROPNET INITIAL STATE");
+	    		System.out.println(propnetState);
+
+	    		while(!theReference.isTerminal(proverState)){
+
+	    			step++;
+
+	    			List<Move> jointMove = null;
+	    			try {
+	    				jointMove = theReference.getRandomJointMove(proverState);
+	                    proverState = theReference.getNextState(proverState, jointMove);
+	                } catch(Exception e) {
+	                    GamerLogger.log("StateMachine", "Prover machine failed to generate an initial state!");
+	                }
+	        		try {
+	                    propnetState = thePropNetMachine.getNextState(propnetState, jointMove);
+	                } catch(Exception e) {
+	                    GamerLogger.log("StateMachine", "Propnet machine failed to generate an initial state!");
+	                }
+	        		System.out.println("PROVER STATE");
+	        		System.out.println(proverState);
+	        		System.out.println("PROPNET STATE");
+	        		System.out.println(propnetState);
+
+	        		//PRINTING THE PROPNET
+	                propnetRepresentation = null;
+	        		propnetRepresentation = propnet.toString();
+	        		//System.out.println(propnetRepresentation);
+	        		try{
+	    	    		// Write propnet to file
+	    	            BufferedWriter out = new BufferedWriter(new FileWriter("Step"+step+"Propnet"+gameKey+".dot", false));
+	    	            out.write(propnetRepresentation);
+	    	            out.close();
+	    	        } catch (IOException e) {
+	    	            e.printStackTrace();
+	    	        }
+
+	        		//MachineState init = thePropNetMachine.getInitialState();
+	        		//if(init == null){
+	        		//	System.out.println("Cavolo!");
+	        		//}else{
+	        		//	System.out.println("INIT STATE:");
+	        		//	System.out.println(init);
+	        		//}
+
+	                //END OF PROPNET PRINTING
+
+	    		}
             }
-    		try {
-                propnetState = thePropNetMachine.getInitialState();
-            } catch(Exception e) {
-                GamerLogger.log("StateMachine", "Propnet machine failed to generate an initial state!");
-            }
-
-    		System.out.println("PROVER INITIAL STATE");
-    		System.out.println(proverState);
-    		System.out.println("PROPNET INITIAL STATE");
-    		System.out.println(propnetState);
-
-    		while(!theReference.isTerminal(proverState)){
-
-    			step++;
-
-    			List<Move> jointMove = null;
-    			try {
-    				jointMove = theReference.getRandomJointMove(proverState);
-                    proverState = theReference.getNextState(proverState, jointMove);
-                } catch(Exception e) {
-                    GamerLogger.log("StateMachine", "Prover machine failed to generate an initial state!");
-                }
-        		try {
-                    propnetState = thePropNetMachine.getNextState(propnetState, jointMove);
-                } catch(Exception e) {
-                    GamerLogger.log("StateMachine", "Propnet machine failed to generate an initial state!");
-                }
-        		System.out.println("PROVER STATE");
-        		System.out.println(proverState);
-        		System.out.println("PROPNET STATE");
-        		System.out.println(propnetState);
-
-        		//PRINTING THE PROPNET
-                propnetRepresentation = null;
-        		if(propnet != null){
-        			propnetRepresentation = propnet.toString();
-        		}else{
-        			//System.out.println("UFFAAAAAAAAAA");
-        		}
-        		//System.out.println(propnetRepresentation);
-        		try{
-    	    		// Write propnet to file
-    	            BufferedWriter out = new BufferedWriter(new FileWriter("Step"+step+"Propnet"+gameKey+".dot", false));
-    	            out.write(propnetRepresentation);
-    	            out.close();
-    	        } catch (IOException e) {
-    	            e.printStackTrace();
-    	        }
-
-        		//MachineState init = thePropNetMachine.getInitialState();
-        		//if(init == null){
-        		//	System.out.println("Cavolo!");
-        		//}else{
-        		//	System.out.println("INIT STATE:");
-        		//	System.out.println(init);
-        		//}
-
-                //END OF PROPNET PRINTING
-
-    		}
+        }
+	}
 
 
+	public static void printKeys(){
+		GamerLogger.setSpilloverLogfile("GameKeys");
+
+        GameRepository theRepository = GameRepository.getDefaultRepository();
+        for(String gameKey : theRepository.getGameKeys()) {
+        	if(gameKey.contains("laikLee")){
+        		GamerLogger.log("GameKeys", "NO: " + gameKey);
+        	}else{
+        		GamerLogger.log("GameKeys", "YES: " + gameKey);
+        	}
         }
 	}
 }

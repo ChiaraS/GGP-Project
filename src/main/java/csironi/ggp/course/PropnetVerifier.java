@@ -22,25 +22,29 @@ public class PropnetVerifier {
         for(String gameKey : theRepository.getGameKeys()) {
             if(gameKey.contains("laikLee")) continue;
 
-            if(gameKey.equals("amazonsTorus")) continue;
-            if(gameKey.equals("god")) continue;
+            //if(!gameKey.equals("3pConnectFour") && !gameKey.equals("god")) continue;
 
-            //if(!gameKey.equals("3pConnectFour")) continue;
+            //if(!gameKey.equals("amazonsTorus")) continue;
 
             GamerLogger.log("StateMachine", "Testing on game " + gameKey);
 
             List<Gdl> description = theRepository.getGame(gameKey).getRules();
 
             theReference = new ProverStateMachine();
-            thePropNetMachine = new ForwardInterruptingPropNetStateMachine();
+            // Create propnet state machine giving it 5 minutes to build the propnet
+            thePropNetMachine = new ForwardInterruptingPropNetStateMachine(300000);
 
             theReference.initialize(description);
             thePropNetMachine.initialize(description);
 
-            System.out.println("Detected activation in game " + gameKey + ". Checking consistency: ");
-            StateMachineVerifier.checkMachineConsistency(theReference, thePropNetMachine, 10000);
+            if(thePropNetMachine.getPropNet() == null){
+            	GamerLogger.log("StateMachine", "No propnet available. Impossible to test this game");
+            	System.out.println("Skipping test on game " + gameKey + ". No propnet available.");
+            }else{
+            	System.out.println("Detected activation in game " + gameKey + ". Checking consistency: ");
+                StateMachineVerifier.checkMachineConsistency(theReference, thePropNetMachine, 10000);
+            }
         }
-
 	}
 
 }

@@ -13,7 +13,7 @@ import org.ggp.base.util.gdl.grammar.GdlSentence;
 import org.ggp.base.util.logging.GamerLogger;
 import org.ggp.base.util.propnet.architecture.forwardInterrupting.ForwardInterruptingPropNet;
 import org.ggp.base.util.propnet.architecture.forwardInterrupting.components.ForwardInterruptingProposition;
-import org.ggp.base.util.propnet.factory.ForwardInterruptingPropNetFactory;
+import org.ggp.base.util.propnet.factory.ForwardInterruptingPropNetCreator;
 import org.ggp.base.util.statemachine.MachineState;
 import org.ggp.base.util.statemachine.Move;
 import org.ggp.base.util.statemachine.Role;
@@ -32,6 +32,13 @@ public class ForwardInterruptingPropNetStateMachine extends StateMachine {
     /** The initial state */
     private MachineState initialState;
 
+    /** The maximum time (in milliseconds) that this state machine can spend to create the propnet */
+    private long maxPropnetCreationTime;
+
+    public ForwardInterruptingPropNetStateMachine(long maxPropnetCreationTime){
+    	this.maxPropnetCreationTime = maxPropnetCreationTime;
+    }
+
     /**
      * Initializes the PropNetStateMachine. You should compute the topological
      * ordering here. Additionally you may compute the initial state here, at
@@ -39,26 +46,68 @@ public class ForwardInterruptingPropNetStateMachine extends StateMachine {
      */
     @Override
     public void initialize(List<Gdl> description) {
-        try {
-			this.propNet = ForwardInterruptingPropNetFactory.create(description, true);
-	        this.roles = propNet.getRoles();
-	        // Set init proposition to true without propagating, so that when making
-	        // the propnet consistent its value will be propagated so that the next state
-	        // will correspond to the initial state.
-	        this.propNet.getInitProposition().setValue(true);
-	        // No need to set all other inputs to false because they already are.
-	        // Impose consistency on the propnet.
-	        this.propNet.imposeConsistency();
-	        // The initial state can be computed by only setting the truth value of the INIT
-	        // proposition to TRUE, and then computing the resulting next state.
-	        // Given that the INIT proposition has already been set to TRUE (without propagation)
-	        // before imposing consistency and all other input propositions are set to FALSE at
-	        // this moment, it is possible to use the computeNextState() method to compute the
-	        // initial state.
-	        this.initialState = this.computeNextState();
-		} catch (InterruptedException e) {
+
+    	ForwardInterruptingPropNetCreator creator = new ForwardInterruptingPropNetCreator(description);
+    	// Try to create the propnet, if it takes too long stop the creation.
+    	creator.start();
+    	try{
+    		creator.join(maxPropnetCreationTime);
+    	}catch (InterruptedException e) {
 			throw new RuntimeException(e);
 		}
+
+    	// After 'maxPropnetCreationTime' milliseconds, if the creator thread is still alive it means
+    	// that it is still busy creating the propnet and thus must be interrupted.
+    	if(creator.isAlive()){
+    		creator.interrupt();
+    		try{
+    			// Wait for the creator to actually stop running
+    			creator.join();
+    		}catch(InterruptedException e){
+    			// Do nothing cause it is normal that I get this exception here
+    		}
+    		// Set again the propnet to null just to be sure.
+    		// The propnet set to null after initializing the state machine means that the propnet
+    		// couldn't be created.
+    		this.propNet = null;
+    	}else{
+    		// If the creator is not alive, it might be because...
+    		this.propNet = creator.getPropNet();
+
+    		// ...it finished creating the propnet, and thus we can use it to finish initializing
+    		// the state machine...
+    		if(this.propNet != null){
+	    		this.roles = this.propNet.getRoles();
+		        // If it exists, set init proposition to true without propagating, so that when making
+		        // the propnet consistent its value will be propagated so that the next state
+		        // will correspond to the initial state.
+	    		// REMARK: if there is not TRUE proposition in the initial state, the INIT proposition
+	    		// will not exist.
+	    		ForwardInterruptingProposition init = this.propNet.getInitProposition();
+	    		if(init != null){
+	    			this.propNet.getInitProposition().setValue(true);
+	    		}
+
+		        // No need to set all other inputs to false because they already are.
+		        // Impose consistency on the propnet.
+		        this.propNet.imposeConsistency();
+		        // The initial state can be computed by only setting the truth value of the INIT
+		        // proposition to TRUE, and then computing the resulting next state.
+		        // Given that the INIT proposition has already been set to TRUE (without propagation)
+		        // before imposing consistency and all other input propositions are set to FALSE at
+		        // this moment, it is possible to use the computeNextState() method to compute the
+		        // initial state.
+		        // If there is no init proposition we can just set the initial state to the state with
+		        // empty content.
+		        if(init != null){
+		        	this.initialState = this.computeNextState();
+		        }else{
+		        	this.initialState = new MachineState(new HashSet<GdlSentence>());
+		        }
+
+    		}
+    		//...or it encountered an OutOfMemory error, and thus we have no propnet for this state machine.
+    	}
     }
 
     /**
@@ -78,6 +127,7 @@ public class ForwardInterruptingPropNetStateMachine extends StateMachine {
     	//FINE AGGIUNTA
 
     	Set<GdlSentence> contents = new HashSet<GdlSentence>();
+
     	// For all the base propositions that are true, add the corresponding proposition to the
     	// next machine state.
 		for (ForwardInterruptingProposition p : this.propNet.getBasePropositions().values()){
@@ -85,6 +135,7 @@ public class ForwardInterruptingPropNetStateMachine extends StateMachine {
 				contents.add(p.getName());
 			}
 		}
+
 		return new MachineState(contents);
     }
 
@@ -315,12 +366,15 @@ public class ForwardInterruptingPropNetStateMachine extends StateMachine {
 			input.setAndPropagateValue(movesToDoes.contains(input.getName()));
 		}
 
-		// Set to false also the INIT proposition
+		// Set to false also the INIT proposition, if it exists.
 		// REMARK: since at the moment the initial state is computed only once at the beginning,
 		// the setting of the INIT proposition to FALSE could be done only once after computing the
 		// initial state.
-		this.propNet.getInitProposition().setAndPropagateValue(false);
 
+		ForwardInterruptingProposition init = this.propNet.getInitProposition();
+		if(init != null){
+			this.propNet.getInitProposition().setAndPropagateValue(false);
+		}
 	}
 
 	public ForwardInterruptingPropNet getPropNet(){

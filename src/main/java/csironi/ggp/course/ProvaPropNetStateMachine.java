@@ -16,7 +16,7 @@ public class ProvaPropNetStateMachine {
 
 		List<Gdl> BeLList = BeLGame.getRules();
 
-		ForwardInterruptingPropNetStateMachine m = new ForwardInterruptingPropNetStateMachine();
+		ForwardInterruptingPropNetStateMachine m = new ForwardInterruptingPropNetStateMachine(300000);
 		m.initialize(BeLList);
 
 		MachineState initialState = m.getInitialState();
