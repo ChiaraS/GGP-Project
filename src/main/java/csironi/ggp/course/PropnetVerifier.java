@@ -24,7 +24,7 @@ public class PropnetVerifier {
 
             //if(!gameKey.equals("3pConnectFour") && !gameKey.equals("god")) continue;
 
-            //if(!gameKey.equals("amazonsTorus")) continue;
+            //if(!gameKey.equals("snake_2009_big")) continue;
 
             GamerLogger.log("StateMachine", "Testing on game " + gameKey);
 
@@ -38,7 +38,7 @@ public class PropnetVerifier {
             thePropNetMachine.initialize(description);
 
             if(thePropNetMachine.getPropNet() == null){
-            	GamerLogger.log("StateMachine", "No propnet available. Impossible to test this game");
+            	GamerLogger.log("StateMachine", "No propnet available. Impossible to test this game.");
             	System.out.println("Skipping test on game " + gameKey + ". No propnet available.");
             }else{
             	System.out.println("Detected activation in game " + gameKey + ". Checking consistency: ");

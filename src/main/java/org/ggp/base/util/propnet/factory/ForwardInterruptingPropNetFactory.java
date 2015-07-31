@@ -705,7 +705,10 @@ public class ForwardInterruptingPropNetFactory {
 					if(trueSentenceComponent.getInputs().isEmpty()) {
 						//Case where there is no transition input
 						//Add the transition input, connect to init, continue loop
-						ForwardInterruptingTransition transition = new ForwardInterruptingTransition();
+
+						// @author c.sironi: Also set to TRUE that fact that the value of this transition
+						// depends on the INIT proposition value.
+						ForwardInterruptingTransition transition = new ForwardInterruptingTransition(true);
 						//init goes into transition
 						transition.addInput(initProposition);
 						initProposition.addOutput(transition);
@@ -726,6 +729,9 @@ public class ForwardInterruptingPropNetFactory {
 						orInputs.add(input);
 						orInputs.add(initProposition);
 						orify(orInputs, transition, falseComponent);
+						// @author c.sironi: Also set to TRUE that fact that the value of this transition
+						// depends on the INIT proposition value.
+						((ForwardInterruptingTransition) transition).setDependingOnInit(true);
 					}
 				}
 			}

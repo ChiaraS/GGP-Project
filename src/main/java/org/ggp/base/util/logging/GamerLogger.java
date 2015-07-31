@@ -73,31 +73,55 @@ public class GamerLogger {
     public static final int LOG_LEVEL_IMPORTANT = 6;
     public static final int LOG_LEVEL_CRITICAL = 9;
 
+    public enum FORMAT{
+    	STANDARD_FORMAT, CSV_FORMAT, NO_METADATA_FORMAT
+    }
+
     public static void logError(String toFile, String message) {
-        logEntry(System.err, toFile, message, LOG_LEVEL_CRITICAL);
+        logError(FORMAT.STANDARD_FORMAT, toFile, message);
+    }
+
+    public static void logError(FORMAT formatType, String toFile, String message) {
+        logEntry(formatType, System.err, toFile, message, LOG_LEVEL_CRITICAL);
         if(writeLogsToFile) {
-            logEntry(System.err, "Errors", "(in " + toFile + ") " + message, LOG_LEVEL_CRITICAL);
+            logEntry(formatType, System.err, "Errors", "(in " + toFile + ") " + message, LOG_LEVEL_CRITICAL);
         }
     }
 
     public static void log(String toFile, String message) {
-        log(toFile, message, LOG_LEVEL_ORDINARY);
+        log(FORMAT.STANDARD_FORMAT, toFile, message);
+    }
+
+    public static void log(FORMAT formatType, String toFile, String message) {
+        log(formatType, toFile, message, LOG_LEVEL_ORDINARY);
     }
 
     public static void log(String toFile, String message, int nLevel) {
-        logEntry(System.out, toFile, message, nLevel);
+        log(FORMAT.STANDARD_FORMAT, toFile, message, nLevel);
+    }
+
+    public static void log(FORMAT formatType, String toFile, String message, int nLevel) {
+        logEntry(formatType, System.out, toFile, message, nLevel);
     }
 
     public static void logStackTrace(String toFile, Exception ex) {
+        logStackTrace(FORMAT.STANDARD_FORMAT, toFile, ex);
+    }
+
+    public static void logStackTrace(FORMAT formatType, String toFile, Exception ex) {
         StringWriter s = new StringWriter();
         ex.printStackTrace(new PrintWriter(s));
-        logError(toFile, s.toString());
+        logError(formatType, toFile, s.toString());
     }
 
     public static void logStackTrace(String toFile, Error ex) {
+        logStackTrace(FORMAT.STANDARD_FORMAT, toFile, ex);
+    }
+
+    public static void logStackTrace(FORMAT formatType, String toFile, Error ex) {
         StringWriter s = new StringWriter();
         ex.printStackTrace(new PrintWriter(s));
-        logError(toFile, s.toString());
+        logError(formatType, toFile, s.toString());
     }
 
     // Private Implementation
@@ -107,7 +131,7 @@ public class GamerLogger {
     private static final Set<String> filesToSkip = new HashSet<String>();
     private static final long maximumLogfileSize = 25 * 1024 * 1024;
 
-    private static void logEntry(PrintStream ordinaryOutput, String toFile, String message, int logLevel) {
+    private static void logEntry(FORMAT formatType, PrintStream ordinaryOutput, String toFile, String message, int logLevel) {
         if(suppressLoggerOutput)
             return;
 
@@ -121,7 +145,7 @@ public class GamerLogger {
         }
 
         try {
-            String logMessage = logFormat(logLevel, ordinaryOutput == System.err, message);
+            String logMessage = logFormat(formatType, logLevel, ordinaryOutput == System.err, message);
 
             // If we are also displaying this file, write it to the standard output.
             if(filesToDisplay.contains(toFile) || logLevel >= minLevelToDisplay) {
@@ -145,7 +169,7 @@ public class GamerLogger {
                     System.err.println("Adding " + myFilename + " to filesToSkip.");
                     filesToSkip.add(myFilename);
                     logLevel = 9;
-                    logMessage = logFormat(logLevel, ordinaryOutput == System.err, "File too long; stopping all writes to this file.");
+                    logMessage = logFormat(formatType, logLevel, ordinaryOutput == System.err, "File too long; stopping all writes to this file.");
                 }
             }
 
@@ -158,9 +182,21 @@ public class GamerLogger {
         }
     }
 
-    private static String logFormat(int logLevel, boolean isError, String message) {
-        String logMessage = "LOG " + System.currentTimeMillis() + " [L" + logLevel + "]: " + (isError ? "<ERR> " : "") + message;
-        if(logMessage.charAt(logMessage.length() - 1) != '\n') {
+    private static String logFormat(FORMAT formatType, int logLevel, boolean isError, String message) {
+
+        String logMessage = "";
+
+        switch(formatType){
+        	case STANDARD_FORMAT:
+        		logMessage = "LOG " + System.currentTimeMillis() + " [L" + logLevel + "]: " + (isError ? "<ERR> " : "") + message;
+        		break;
+        	case CSV_FORMAT: case NO_METADATA_FORMAT:
+        		logMessage = message;
+        		break;
+        }
+
+        int length = logMessage.length();
+        if(length <= 0 || logMessage.charAt(length - 1) != '\n'){
             logMessage += '\n';     // All log lines must end with a newline.
         }
         return logMessage;

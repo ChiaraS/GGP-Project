@@ -13,6 +13,7 @@ import org.ggp.base.util.gdl.grammar.GdlSentence;
 import org.ggp.base.util.logging.GamerLogger;
 import org.ggp.base.util.propnet.architecture.forwardInterrupting.ForwardInterruptingPropNet;
 import org.ggp.base.util.propnet.architecture.forwardInterrupting.components.ForwardInterruptingProposition;
+import org.ggp.base.util.propnet.architecture.forwardInterrupting.components.ForwardInterruptingTransition;
 import org.ggp.base.util.propnet.factory.ForwardInterruptingPropNetCreator;
 import org.ggp.base.util.statemachine.MachineState;
 import org.ggp.base.util.statemachine.Move;
@@ -61,7 +62,10 @@ public class ForwardInterruptingPropNetStateMachine extends StateMachine {
     	if(creator.isAlive()){
     		creator.interrupt();
     		try{
-    			// Wait for the creator to actually stop running
+    			// Wait for the creator to actually stop running (needed only to have no problems with logging:
+    			// if both the state machine thread and the propnet creator thread try to write on the same log
+    			// file at the same time there might be an exception. Moreover, the time order of the logs might
+    			// not be respected in the file).
     			creator.join();
     		}catch(InterruptedException e){
     			// Do nothing cause it is normal that I get this exception here
@@ -100,18 +104,51 @@ public class ForwardInterruptingPropNetStateMachine extends StateMachine {
 		        // If there is no init proposition we can just set the initial state to the state with
 		        // empty content.
 		        if(init != null){
-		        	this.initialState = this.computeNextState();
+		        	this.initialState = this.computeInitialState();
 		        }else{
 		        	this.initialState = new MachineState(new HashSet<GdlSentence>());
 		        }
 
     		}
-    		//...or it encountered an OutOfMemory error, and thus we have no propnet for this state machine.
+    		//...or it encountered an OutOfMemory error or some other error or Exception,
+    		// and thus we have no propnet for this state machine.
     	}
     }
 
     /**
-     * This method returns the next machine state. It contains the set of all the base propositions
+     * This method returns the next machine state. This state contains the set of all the base propositions
+     * that will become true in the next state, given the current state of the propnet, with both
+     * base and input proposition marked and their value propagated.
+     *
+     * !REMARK: this method computes the next state but doesn't advance the propnet state. The propnet
+     * will still be in the current state.
+	 *
+     * @return the next state.
+     */
+    private MachineState computeInitialState(){
+
+    	//AGGIUNTA
+    	//System.out.println("COMPUTING INIT STATE");
+    	//FINE AGGIUNTA
+
+    	Set<GdlSentence> contents = new HashSet<GdlSentence>();
+
+    	// Add to the initial machine state all the base propositions that are connected to a true transition
+    	// whose value also depends on the value of the INIT proposition.
+		for (ForwardInterruptingProposition p : this.propNet.getBasePropositions().values()){
+			// Get the transition (We can be sure that when getting the single input of a base proposition we get a
+			// transition, right?)
+			ForwardInterruptingTransition transition = ((ForwardInterruptingTransition) p.getSingleInput());
+			if (transition.getValue() && transition.isDependingOnInit()){
+				contents.add(p.getName());
+			}
+		}
+
+		return new MachineState(contents);
+    }
+
+    /**
+     * This method returns the next machine state. This state contains the set of all the base propositions
      * that will become true in the next state, given the current state of the propnet, with both
      * base and input proposition marked and their value propagated.
      *

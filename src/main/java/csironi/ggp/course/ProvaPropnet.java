@@ -29,7 +29,7 @@ public class ProvaPropnet {
 
 		//provaGame("amazonsTorus", 300000);
 
-		provaGame("gt_two_thirds_2p", 300000);
+		provaGame("snake_2009_big", 300000);
 
 		//printKeys();
 
