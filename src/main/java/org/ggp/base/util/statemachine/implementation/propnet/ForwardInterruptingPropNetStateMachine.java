@@ -36,6 +36,12 @@ public class ForwardInterruptingPropNetStateMachine extends StateMachine {
     /** The maximum time (in milliseconds) that this state machine can spend to create the propnet */
     private long maxPropnetCreationTime;
 
+    /**
+	 * Total time (in milliseconds) taken to construct the propnet.
+	 * If it is negative it means that the propnet didn't build in time.
+	 */
+	long constructionTime;
+
     public ForwardInterruptingPropNetStateMachine(long maxPropnetCreationTime){
     	this.maxPropnetCreationTime = maxPropnetCreationTime;
     }
@@ -112,6 +118,7 @@ public class ForwardInterruptingPropNetStateMachine extends StateMachine {
     		}
     		//...or it encountered an OutOfMemory error or some other error or Exception,
     		// and thus we have no propnet for this state machine.
+    		this.constructionTime = creator.getConstructionTime();
     	}
     }
 
@@ -416,5 +423,14 @@ public class ForwardInterruptingPropNetStateMachine extends StateMachine {
 
 	public ForwardInterruptingPropNet getPropNet(){
 		return this.propNet;
+	}
+
+	/**
+	 * Get method for the propnet construction time.
+	 *
+	 * @return the construction time of the propnet, -1 if it has not been created in time.
+	 */
+	public long getConstructionTime(){
+		return this.constructionTime;
 	}
 }

@@ -11,6 +11,13 @@ import org.ggp.base.util.statemachine.StateMachine;
 
 
 public class StateMachineVerifier {
+
+	/**
+	 * SOMETHING NOT TO DO! But this parameter is used to get the number of rounds played by the last executed test
+	 * for logging purposes. Absolutely not therad safe! Nor a god programming practice.
+	 */
+	public static int lastRounds;
+
     public static boolean checkMachineConsistency(StateMachine theReference, StateMachine theSubject, long timeToSpend) {
         long startTime = System.currentTimeMillis();
 
@@ -21,9 +28,9 @@ public class StateMachineVerifier {
         theMachines.add(theSubject);
 
         GamerLogger.emitToConsole("Consistency checking: [");
-        int nRound = 0;
+        lastRounds = 0;
         while(true) {
-            nRound++;
+            lastRounds++;
 
             GamerLogger.emitToConsole(".");
             MachineState[] theCurrentStates = new MachineState[theMachines.size()];
@@ -150,7 +157,7 @@ public class StateMachineVerifier {
         }
         GamerLogger.emitToConsole("]\n");
 
-        GamerLogger.log("StateMachine", "Completed automatic consistency testing on " + theSubject.getClass().getName() + ", w/ " + nRound + " rounds: all tests pass!");
+        GamerLogger.log("StateMachine", "Completed automatic consistency testing on " + theSubject.getClass().getName() + ", w/ " + lastRounds + " rounds: all tests pass!");
         return true;
     }
 }

@@ -14,6 +14,12 @@ public class ForwardInterruptingPropNetCreator extends Thread {
 	private ForwardInterruptingPropNet propNet;
 
 	/**
+	 * Total time (in milliseconds) taken to construct the propnet.
+	 * If it is negative it means that the propnet didn't build in time.
+	 */
+	long constructionTime;
+
+	/**
 	 * Reference to the GDL game description to be used to create the propnet.
 	 */
 	private List<Gdl> description;
@@ -25,6 +31,7 @@ public class ForwardInterruptingPropNetCreator extends Thread {
 	 */
 	public ForwardInterruptingPropNetCreator(List<Gdl> description) {
 		this.propNet = null;
+		this.constructionTime = -1L;
 		this.description = description;
 	}
 
@@ -37,7 +44,8 @@ public class ForwardInterruptingPropNetCreator extends Thread {
 		try{
 			long startTime = System.currentTimeMillis();
 			this.propNet = ForwardInterruptingPropNetFactory.create(this.description);
-			GamerLogger.log("StateMachine", "Propnet creation done. It took " + (System.currentTimeMillis() - startTime) + "ms.");
+			this.constructionTime = System.currentTimeMillis() - startTime;
+			GamerLogger.log("StateMachine", "Propnet creation done. It took " + (this.constructionTime) + "ms.");
 		}catch(InterruptedException ex){
 			this.propNet = null;
 			GamerLogger.log("StateMachine", "Propnet creation interrupted. Taking too long!");
@@ -64,6 +72,15 @@ public class ForwardInterruptingPropNetCreator extends Thread {
 	 */
 	public ForwardInterruptingPropNet getPropNet(){
 		return this.propNet;
+	}
+
+	/**
+	 * Get method for the propnet construction time.
+	 *
+	 * @return the construction time of the propnet, -1 if it has not been created in time.
+	 */
+	public long getConstructionTime(){
+		return this.constructionTime;
 	}
 
 

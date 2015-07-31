@@ -74,7 +74,7 @@ public class GamerLogger {
     public static final int LOG_LEVEL_CRITICAL = 9;
 
     public enum FORMAT{
-    	STANDARD_FORMAT, CSV_FORMAT, NO_METADATA_FORMAT
+    	STANDARD_FORMAT, CSV_FORMAT, PLAIN_FORMAT
     }
 
     public static void logError(String toFile, String message) {
@@ -190,7 +190,7 @@ public class GamerLogger {
         	case STANDARD_FORMAT:
         		logMessage = "LOG " + System.currentTimeMillis() + " [L" + logLevel + "]: " + (isError ? "<ERR> " : "") + message;
         		break;
-        	case CSV_FORMAT: case NO_METADATA_FORMAT:
+        	case CSV_FORMAT: case PLAIN_FORMAT:
         		logMessage = message;
         		break;
         }
