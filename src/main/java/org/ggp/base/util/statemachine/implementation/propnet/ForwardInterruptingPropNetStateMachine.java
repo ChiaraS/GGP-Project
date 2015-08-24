@@ -118,8 +118,8 @@ public class ForwardInterruptingPropNetStateMachine extends StateMachine {
     		}
     		//...or it encountered an OutOfMemory error or some other error or Exception,
     		// and thus we have no propnet for this state machine.
-    		this.constructionTime = creator.getConstructionTime();
     	}
+    	this.constructionTime = creator.getConstructionTime();
     }
 
     /**

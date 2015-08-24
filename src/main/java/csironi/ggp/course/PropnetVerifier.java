@@ -10,9 +10,46 @@ import org.ggp.base.util.statemachine.implementation.propnet.ForwardInterrupting
 import org.ggp.base.util.statemachine.implementation.prover.ProverStateMachine;
 import org.ggp.base.util.statemachine.verifier.StateMachineVerifier;
 
+/**
+ * This class verifies the consistency of the propnet state machine wrt the prover state machine.
+ *
+ * It is possible to specify as main arguments the time in milliseconds that the propnet state machine must use to
+ * build the propnet and the time in milliseconds that each test must take to run. If nothing or something
+ * inconsistent is specified, 5 mins is used as default value for the propnet building time and 10 seconds is used
+ * as default value for each test duration time.
+ *
+ * @author C.Sironi
+ *
+ */
 public class PropnetVerifier {
 
-	public static void main(String[] args) throws InterruptedException {
+	public static void main(String[] args) throws InterruptedException{
+
+		long buildingTime = 300000L;
+		long testTime = 10000L;
+
+		if (args.length != 0){
+
+			if(args.length == 2){
+				try{
+					buildingTime = Long.parseLong(args[0]);
+					testTime = Long.parseLong(args[1]);
+					System.out.println("Running tests with the following settings:");
+				}catch(NumberFormatException nfe){
+					System.out.println("Inconsistent time values specification! Running tests with default settings:");
+					buildingTime = 300000L;
+					testTime = 10000L;
+				}
+			}else{
+				System.out.println("Inconsistent time values specification! Running tests with default settings:");
+			}
+		}else{
+			System.out.println("Running tests with default settings:");
+		}
+
+		System.out.println("Propnet building time: " + buildingTime);
+		System.out.println("Running time for each test: " + testTime);
+		System.out.println();
 
         ProverStateMachine theReference;
         ForwardInterruptingPropNetStateMachine thePropNetMachine;
@@ -36,7 +73,7 @@ public class PropnetVerifier {
 
             theReference = new ProverStateMachine();
             // Create propnet state machine giving it 5 minutes to build the propnet
-            thePropNetMachine = new ForwardInterruptingPropNetStateMachine(300000);
+            thePropNetMachine = new ForwardInterruptingPropNetStateMachine(buildingTime);
 
             theReference.initialize(description);
             thePropNetMachine.initialize(description);
@@ -51,7 +88,7 @@ public class PropnetVerifier {
             }else{
             	System.out.println("Detected activation in game " + gameKey + ". Checking consistency: ");
             	long start = System.currentTimeMillis();
-                pass = StateMachineVerifier.checkMachineConsistency(theReference, thePropNetMachine, 10000);
+                pass = StateMachineVerifier.checkMachineConsistency(theReference, thePropNetMachine, testTime);
                 duration = System.currentTimeMillis() - start;
                 rounds = StateMachineVerifier.lastRounds;
             }
