@@ -19,7 +19,7 @@ import org.ggp.base.util.statemachine.exceptions.TransitionDefinitionException;
 import com.google.common.collect.ImmutableList;
 
 /**
- * @author C.Sironi
+ * @author Dubs
  *
  */
 public class YapStateMachine extends StateMachine {
