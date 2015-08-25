@@ -45,22 +45,22 @@ public class ForwardInterruptingPropNetCreator extends Thread {
 			long startTime = System.currentTimeMillis();
 			this.propNet = ForwardInterruptingPropNetFactory.create(this.description);
 			this.constructionTime = System.currentTimeMillis() - startTime;
-			GamerLogger.log("StateMachine", "Propnet creation done. It took " + (this.constructionTime) + "ms.");
+			GamerLogger.log("StateMachine", "[Propnet Creator] Propnet creation done. It took " + (this.constructionTime) + "ms.");
 		}catch(InterruptedException ex){
 			this.propNet = null;
-			GamerLogger.log("StateMachine", "Propnet creation interrupted. Taking too long!");
+			GamerLogger.logError("StateMachine", "[Propnet Creator] Propnet creation interrupted. Interrupted exception!");
 			GamerLogger.logStackTrace("StateMachine", ex);
 		}catch(OutOfMemoryError er){
 			this.propNet = null;
-			GamerLogger.log("StateMachine", "Propnet creation interrupted. Out of memory error!");
+			GamerLogger.logError("StateMachine", "[Propnet Creator] Propnet creation interrupted. Out of memory error!");
 			GamerLogger.logStackTrace("StateMachine", er);
 		}catch(Exception ex){
 			this.propNet = null;
-			GamerLogger.log("StateMachine", "Propnet creation interrupted. Exception during creation!");
+			GamerLogger.logError("StateMachine", "[Propnet Creator] Propnet creation interrupted. Exception during creation!");
 			GamerLogger.logStackTrace("StateMachine", ex);
 		}catch(Error er){
 			this.propNet = null;
-			GamerLogger.log("StateMachine", "Propnet creation interrupted. Error during creation!");
+			GamerLogger.logError("StateMachine", "[Propnet Creator] Propnet creation interrupted. Error during creation!");
 			GamerLogger.logStackTrace("StateMachine", er);
 		}
 	}

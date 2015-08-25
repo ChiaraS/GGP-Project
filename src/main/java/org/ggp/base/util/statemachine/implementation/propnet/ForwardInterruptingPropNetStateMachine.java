@@ -21,6 +21,7 @@ import org.ggp.base.util.statemachine.Role;
 import org.ggp.base.util.statemachine.StateMachine;
 import org.ggp.base.util.statemachine.exceptions.GoalDefinitionException;
 import org.ggp.base.util.statemachine.exceptions.MoveDefinitionException;
+import org.ggp.base.util.statemachine.exceptions.PropnetCreationException;
 import org.ggp.base.util.statemachine.exceptions.TransitionDefinitionException;
 import org.ggp.base.util.statemachine.implementation.prover.query.ProverQueryBuilder;
 
@@ -40,8 +41,23 @@ public class ForwardInterruptingPropNetStateMachine extends StateMachine {
 	 * Total time (in milliseconds) taken to construct the propnet.
 	 * If it is negative it means that the propnet didn't build in time.
 	 */
-	long constructionTime;
+	long constructionTime = -1L;
 
+	/**
+	 * Constructor that sets the maximum time (in milliseconds) that this state machine can spend to
+	 * create the propnet to the default value of 5 minutes.
+	 */
+	public ForwardInterruptingPropNetStateMachine(){
+    	this(300000L);
+    }
+
+	/**
+	 * Constructor that sets the maximum time (in milliseconds) that this state machine can spend to
+	 * create the propnet to the given time value.
+	 *
+	 * @param maxPropnetCreationTime the maximum time (in milliseconds) that this state machine can spend to
+	 * create the propnet.
+	 */
     public ForwardInterruptingPropNetStateMachine(long maxPropnetCreationTime){
     	this.maxPropnetCreationTime = maxPropnetCreationTime;
     }
@@ -60,7 +76,9 @@ public class ForwardInterruptingPropNetStateMachine extends StateMachine {
     	try{
     		creator.join(maxPropnetCreationTime);
     	}catch (InterruptedException e) {
-			throw new RuntimeException(e);
+    		GamerLogger.logError("StateMachine", "[Propnet] Propnet creation interrupted! Terminating initialization!");
+    		GamerLogger.logStackTrace("StateMachine", e);
+			throw new PropnetCreationException("Propnet creation interrupted by external action.");
 		}
 
     	// After 'maxPropnetCreationTime' milliseconds, if the creator thread is still alive it means
@@ -80,6 +98,9 @@ public class ForwardInterruptingPropNetStateMachine extends StateMachine {
     		// The propnet set to null after initializing the state machine means that the propnet
     		// couldn't be created.
     		this.propNet = null;
+    		// Throw an exception to signal that something went wrong with propnet creation, more precisely
+    		// the propnet was not constructed in time.
+    		throw new PropnetCreationException("Propnet creation interrupted, taking too long! " + this.maxPropnetCreationTime + "ms are not enough to build the propnet for the game.");
     	}else{
     		// If the creator is not alive, it might be because...
     		this.propNet = creator.getPropNet();
@@ -114,10 +135,12 @@ public class ForwardInterruptingPropNetStateMachine extends StateMachine {
 		        }else{
 		        	this.initialState = new MachineState(new HashSet<GdlSentence>());
 		        }
-
+    		}else{
+    			//...or it encountered an OutOfMemory error or some other error or Exception,
+    			// and thus we have no propnet for this state machine.
+    			throw new PropnetCreationException("Propnet creation interrupted, an error or exception occurred during creation!");
     		}
-    		//...or it encountered an OutOfMemory error or some other error or Exception,
-    		// and thus we have no propnet for this state machine.
+
     	}
     	this.constructionTime = creator.getConstructionTime();
     }
@@ -421,6 +444,30 @@ public class ForwardInterruptingPropNetStateMachine extends StateMachine {
 		}
 	}
 
+	/**
+	 * Set method for the 'maxPropnetCreationTime' parameter.
+	 *
+	 * @param maxPropnetCreationTime The maximum time (in milliseconds) that this state machine can
+	 * spend to create the propnet.
+	 */
+	public void setMaxPropnetCreationTime(long maxPropnetCreationTime){
+		this.maxPropnetCreationTime = maxPropnetCreationTime;
+	}
+
+	/**
+	 * Get method for the 'maxPropnetCreationTime' parameter.
+	 *
+	 * @return The maximum time (in milliseconds) that this state machine can spend to create the propnet.
+	 */
+	public long getMaxPropnetCreationTime(){
+		return this.maxPropnetCreationTime;
+	}
+
+	/**
+	 * Get method for the 'propNet' parameter.
+	 *
+	 * @return The proposition network.
+	 */
 	public ForwardInterruptingPropNet getPropNet(){
 		return this.propNet;
 	}
@@ -428,7 +475,7 @@ public class ForwardInterruptingPropNetStateMachine extends StateMachine {
 	/**
 	 * Get method for the propnet construction time.
 	 *
-	 * @return the construction time of the propnet, -1 if it has not been created in time.
+	 * @return the actual construction time of the propnet, -1 if it has not been created in time.
 	 */
 	public long getConstructionTime(){
 		return this.constructionTime;

@@ -6,6 +6,7 @@ import org.ggp.base.util.game.GameRepository;
 import org.ggp.base.util.gdl.grammar.Gdl;
 import org.ggp.base.util.logging.GamerLogger;
 import org.ggp.base.util.logging.GamerLogger.FORMAT;
+import org.ggp.base.util.statemachine.exceptions.PropnetCreationException;
 import org.ggp.base.util.statemachine.implementation.propnet.ForwardInterruptingPropNetStateMachine;
 import org.ggp.base.util.statemachine.implementation.prover.ProverStateMachine;
 import org.ggp.base.util.statemachine.verifier.StateMachineVerifier;
@@ -71,27 +72,32 @@ public class PropnetVerifier {
 
             List<Gdl> description = theRepository.getGame(gameKey).getRules();
 
+
             theReference = new ProverStateMachine();
+
             // Create propnet state machine giving it 5 minutes to build the propnet
             thePropNetMachine = new ForwardInterruptingPropNetStateMachine(buildingTime);
 
             theReference.initialize(description);
-            thePropNetMachine.initialize(description);
 
             boolean pass = false;
             int rounds = -1;
             long duration = 0L;
 
-            if(thePropNetMachine.getPropNet() == null){
-            	GamerLogger.log("StateMachine", "No propnet available. Impossible to test this game.");
-            	System.out.println("Skipping test on game " + gameKey + ". No propnet available.");
-            }else{
+            // Try to initialize the propnet state machine.
+            // If initialization fails, skip the test.
+            try{
+            	thePropNetMachine.initialize(description);
             	System.out.println("Detected activation in game " + gameKey + ". Checking consistency: ");
             	long start = System.currentTimeMillis();
                 pass = StateMachineVerifier.checkMachineConsistency(theReference, thePropNetMachine, testTime);
                 duration = System.currentTimeMillis() - start;
                 rounds = StateMachineVerifier.lastRounds;
+            }catch(PropnetCreationException re){
+            	GamerLogger.log("StateMachine", "No propnet available. Impossible to test this game. Cause: " + re.getMessage());
+            	System.out.println("Skipping test on game " + gameKey + ". No propnet available.");
             }
+
             GamerLogger.log(FORMAT.PLAIN_FORMAT, "StateMachine", "");
 
             GamerLogger.setSpilloverLogfile("PropnetVerifierTable.csv");
