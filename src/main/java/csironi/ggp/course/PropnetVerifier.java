@@ -6,7 +6,6 @@ import org.ggp.base.util.game.GameRepository;
 import org.ggp.base.util.gdl.grammar.Gdl;
 import org.ggp.base.util.logging.GamerLogger;
 import org.ggp.base.util.logging.GamerLogger.FORMAT;
-import org.ggp.base.util.statemachine.exceptions.PropnetCreationException;
 import org.ggp.base.util.statemachine.implementation.propnet.ForwardInterruptingPropNetStateMachine;
 import org.ggp.base.util.statemachine.implementation.prover.ProverStateMachine;
 import org.ggp.base.util.statemachine.verifier.StateMachineVerifier;
@@ -76,7 +75,7 @@ public class PropnetVerifier {
             theReference = new ProverStateMachine();
 
             // Create propnet state machine giving it 5 minutes to build the propnet
-            thePropNetMachine = new ForwardInterruptingPropNetStateMachine(buildingTime);
+            thePropNetMachine = new ForwardInterruptingPropNetStateMachine();
 
             theReference.initialize(description);
 
@@ -86,22 +85,22 @@ public class PropnetVerifier {
 
             // Try to initialize the propnet state machine.
             // If initialization fails, skip the test.
-            try{
+            try{fiiiixx
             	thePropNetMachine.initialize(description);
             	System.out.println("Detected activation in game " + gameKey + ". Checking consistency: ");
             	long start = System.currentTimeMillis();
                 pass = StateMachineVerifier.checkMachineConsistency(theReference, thePropNetMachine, testTime);
                 duration = System.currentTimeMillis() - start;
                 rounds = StateMachineVerifier.lastRounds;
-            }catch(PropnetCreationException re){
-            	GamerLogger.log("StateMachine", "No propnet available. Impossible to test this game. Cause: " + re.getMessage());
-            	System.out.println("Skipping test on game " + gameKey + ". No propnet available.");
+            }catch(Exception e){
+            	GamerLogger.log("StateMachine", "State machine " + thePropNetMachine.getName() + " initialization failed, impossible to test this game. Cause: " + e.getMessage());
+            	System.out.println("Skipping test on game " + gameKey + ". State machine initialization failed.");
             }
 
             GamerLogger.log(FORMAT.PLAIN_FORMAT, "StateMachine", "");
 
             GamerLogger.setSpilloverLogfile("PropnetVerifierTable.csv");
-            GamerLogger.log(FORMAT.CSV_FORMAT, "PropnetVerifierTable", gameKey + ";" + thePropNetMachine.getConstructionTime() + ";" + rounds + ";" + duration + ";" + pass + ";");
+            GamerLogger.log(FORMAT.CSV_FORMAT, "PropnetVerifierTable", gameKey + ";" + thePropNetMachine.getPropnetConstructionTime() + ";" + rounds + ";" + duration + ";" + pass + ";");
         }
 	}
 

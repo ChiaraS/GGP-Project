@@ -21,7 +21,7 @@ import org.ggp.base.util.statemachine.Role;
 import org.ggp.base.util.statemachine.StateMachine;
 import org.ggp.base.util.statemachine.exceptions.GoalDefinitionException;
 import org.ggp.base.util.statemachine.exceptions.MoveDefinitionException;
-import org.ggp.base.util.statemachine.exceptions.PropnetCreationException;
+import org.ggp.base.util.statemachine.exceptions.StateMachineInitializationException;
 import org.ggp.base.util.statemachine.exceptions.TransitionDefinitionException;
 import org.ggp.base.util.statemachine.implementation.prover.query.ProverQueryBuilder;
 
@@ -54,7 +54,7 @@ public class ForwardInterruptingPropNetStateMachine extends StateMachine {
     	}catch(InterruptedException e){
     		GamerLogger.logError("StateMachine", "[Propnet] Propnet creation interrupted!");
     		GamerLogger.logStackTrace("StateMachine", e);
-    		throw new PropnetCreationException();
+    		throw new StateMachineInitializationException(e);
     	}
     	// Compute the time taken to construct the propnet
     	this.propnetConstructionTime = System.currentTimeMillis() - startTime;

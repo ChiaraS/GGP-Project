@@ -4,12 +4,9 @@ import java.util.List;
 
 import org.ggp.base.util.gdl.grammar.Gdl;
 import org.ggp.base.util.logging.GamerLogger;
-import org.ggp.base.util.propnet.architecture.forwardInterrupting.ForwardInterruptingPropNet;
-import org.ggp.base.util.propnet.factory.ForwardInterruptingPropNetFactory;
 import org.ggp.base.util.statemachine.StateMachine;
-import org.ggp.base.util.statemachine.exceptions.PropnetCreationException;
 
-public class ForwardInterruptingPropNetStateMachineInitializer extends Thread {
+public class StateMachineInitializer extends Thread {
 
 	/**
 	 * Reference to the state machine that must be initialized.
@@ -22,12 +19,17 @@ public class ForwardInterruptingPropNetStateMachineInitializer extends Thread {
 	private List<Gdl> description;
 
 	/**
+	 * Total time taken for initialization.
+	 */
+	private long initializationTime;
+
+	/**
 	 * Constructor that initializes the state machine that this class must initialize and the GDL
 	 * game description that this class must use to initialize the state machine.
 	 *
 	 * @param description the GDL game description from which this class must create the propnet.
 	 */
-	public ForwardInterruptingPropNetStateMachineInitializer(StateMachine stateMachine, List<Gdl> description) {
+	public StateMachineInitializer(StateMachine stateMachine, List<Gdl> description) {
 		this.stateMachine = stateMachine;
 		this.description = description;
 	}
@@ -40,15 +42,19 @@ public class ForwardInterruptingPropNetStateMachineInitializer extends Thread {
 	public void run(){
 
 		try{
-			this.stateMachine.initialize(description);
-		}catch(PropnetCreationException e){
-
+			this.stateMachine.initialize(this.description);
+		}catch(Exception e){
+			this.stateMachine = null;
+			GamerLogger.logError("StateMachine", "[StateMachineInitializer] Exception during state machine initialization.");
+			GamerLogger.logStackTrace("StateMachine", e);
 		}
 
 
 
 
 
+
+		/*
 		try{
 			long startTime = System.currentTimeMillis();
 			this.propNet = ForwardInterruptingPropNetFactory.create(this.description);
@@ -70,25 +76,17 @@ public class ForwardInterruptingPropNetStateMachineInitializer extends Thread {
 			this.propNet = null;
 			GamerLogger.logError("StateMachine", "[Propnet Creator] Propnet creation interrupted. Error during creation!");
 			GamerLogger.logStackTrace("StateMachine", er);
-		}
+		}*/
 	}
 
-	/**
-	 * Get method for the propnet.
-	 *
-	 * @return the propnet if it has been created in time, NULL otherwise.
-	 */
-	public ForwardInterruptingPropNet getPropNet(){
-		return this.propNet;
-	}
 
 	/**
-	 * Get method for the propnet construction time.
+	 * Get method for the state machine initialization time.
 	 *
-	 * @return the construction time of the propnet, -1 if it has not been created in time.
+	 * @return the initialization time of the state machine, -1 if it has not been initialized in time.
 	 */
-	public long getConstructionTime(){
-		return this.constructionTime;
+	public long getInitializationTime(){
+		return this.initializationTime;
 	}
 
 
