@@ -17,6 +17,7 @@ import org.ggp.base.util.statemachine.Role;
 import org.ggp.base.util.statemachine.StateMachine;
 import org.ggp.base.util.statemachine.exceptions.GoalDefinitionException;
 import org.ggp.base.util.statemachine.exceptions.MoveDefinitionException;
+import org.ggp.base.util.statemachine.exceptions.StateMachineInitializationException;
 import org.ggp.base.util.statemachine.exceptions.TransitionDefinitionException;
 import org.ggp.base.util.statemachine.implementation.prover.query.ProverQueryBuilder;
 import org.ggp.base.util.statemachine.implementation.prover.result.ProverResultParser;
@@ -44,6 +45,14 @@ public class ProverStateMachine extends StateMachine
 		prover = new AimaProver(description);
 		roles = ImmutableList.copyOf(Role.computeRoles(description));
 		initialState = computeInitialState();
+	}
+
+	@Override
+	public void initialize(List<Gdl> description, long timeout)
+			throws StateMachineInitializationException {
+		this.initialize(description);
+ ?????????????
+
 	}
 
 	private MachineState computeInitialState()
@@ -117,9 +126,14 @@ public class ProverStateMachine extends StateMachine
 		return roles;
 	}
 
+	/*
+	 * (non-Javadoc)
+	 * @see org.ggp.base.util.statemachine.StateMachine#isTerminal(org.ggp.base.util.statemachine.MachineState)
+	 */
 	@Override
 	public boolean isTerminal(MachineState state)
 	{
 		return prover.prove(ProverQueryBuilder.getTerminalQuery(), ProverQueryBuilder.getContext(state));
 	}
+
 }

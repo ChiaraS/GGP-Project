@@ -14,6 +14,7 @@ import org.ggp.base.util.gdl.grammar.GdlSentence;
 import org.ggp.base.util.gdl.grammar.GdlTerm;
 import org.ggp.base.util.statemachine.exceptions.GoalDefinitionException;
 import org.ggp.base.util.statemachine.exceptions.MoveDefinitionException;
+import org.ggp.base.util.statemachine.exceptions.StateMachineInitializationException;
 import org.ggp.base.util.statemachine.exceptions.TransitionDefinitionException;
 
 import com.google.common.collect.ImmutableMap;
@@ -34,8 +35,22 @@ public abstract class StateMachine
 	 * <p>
 	 * This method should only be called once, and it should be called before any
 	 * other methods on the StateMachine.
+	 *
+	 * REMARK: only one of the two initialize methods must be called on the state machine,
+	 * it should be called only once and before any other method on the StateMachine.
 	 */
-    public abstract void initialize(List<Gdl> description);
+    public abstract void initialize(List<Gdl> description) throws StateMachineInitializationException;
+    /**
+	 * Initializes the StateMachine to describe the given game rules, trying to finish initialization
+	 * before the timeout occurs.
+	 * <p>
+	 * This method should only be called once, and it should be called before any
+	 * other methods on the StateMachine.
+	 *
+	 * REMARK: only one of the two initialize methods must be called on the state machine,
+	 * it should be called only once and before any other method on the StateMachine.
+	 */
+    public abstract void initialize(List<Gdl> description, long timeout) throws StateMachineInitializationException;
     /**
      * Returns the goal value for the given role in the given state. Goal values
      * are always between 0 and 100.

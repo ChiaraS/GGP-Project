@@ -1,46 +1,54 @@
-package org.ggp.base.util.propnet.factory;
+package org.ggp.base.util.statemachine.implementation.propnet;
 
 import java.util.List;
 
 import org.ggp.base.util.gdl.grammar.Gdl;
 import org.ggp.base.util.logging.GamerLogger;
 import org.ggp.base.util.propnet.architecture.forwardInterrupting.ForwardInterruptingPropNet;
+import org.ggp.base.util.propnet.factory.ForwardInterruptingPropNetFactory;
+import org.ggp.base.util.statemachine.StateMachine;
+import org.ggp.base.util.statemachine.exceptions.PropnetCreationException;
 
-public class ForwardInterruptingPropNetCreator extends Thread {
+public class ForwardInterruptingPropNetStateMachineInitializer extends Thread {
 
 	/**
-	 * Reference to the (hopefully) created propnet.
+	 * Reference to the state machine that must be initialized.
 	 */
-	private ForwardInterruptingPropNet propNet;
+	private StateMachine stateMachine;
 
 	/**
-	 * Total time (in milliseconds) taken to construct the propnet.
-	 * If it is negative it means that the propnet didn't build in time.
-	 */
-	long constructionTime;
-
-	/**
-	 * Reference to the GDL game description to be used to create the propnet.
+	 * Reference to the GDL game description that this class must use to initialize the state machine.
 	 */
 	private List<Gdl> description;
 
 	/**
-	 * Constructor that initializes the GDL game description from which this class must create the propnet.
+	 * Constructor that initializes the state machine that this class must initialize and the GDL
+	 * game description that this class must use to initialize the state machine.
 	 *
 	 * @param description the GDL game description from which this class must create the propnet.
 	 */
-	public ForwardInterruptingPropNetCreator(List<Gdl> description) {
-		this.propNet = null;
-		this.constructionTime = -1L;
+	public ForwardInterruptingPropNetStateMachineInitializer(StateMachine stateMachine, List<Gdl> description) {
+		this.stateMachine = stateMachine;
 		this.description = description;
 	}
 
 	/**
-	 * This method tries to create the propnet from the GDL description. If interrupted it just leaves
-	 * the propnet initialized to null.
+	 * This method tries to initialize the state machine with the GDL description.
+	 * If initialization takes too long this thread can be interrupted.
 	 */
 	@Override
 	public void run(){
+
+		try{
+			this.stateMachine.initialize(description);
+		}catch(PropnetCreationException e){
+
+		}
+
+
+
+
+
 		try{
 			long startTime = System.currentTimeMillis();
 			this.propNet = ForwardInterruptingPropNetFactory.create(this.description);

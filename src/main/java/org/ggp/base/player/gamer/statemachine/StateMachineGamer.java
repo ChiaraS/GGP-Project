@@ -16,6 +16,7 @@ import org.ggp.base.util.statemachine.Role;
 import org.ggp.base.util.statemachine.StateMachine;
 import org.ggp.base.util.statemachine.exceptions.GoalDefinitionException;
 import org.ggp.base.util.statemachine.exceptions.MoveDefinitionException;
+import org.ggp.base.util.statemachine.exceptions.StateMachineInitializationException;
 import org.ggp.base.util.statemachine.exceptions.TransitionDefinitionException;
 
 
@@ -154,7 +155,7 @@ public abstract class StateMachineGamer extends Gamer
      * state machine gamer back to the internal state that it has when it
      * arrives at a particular game state.
      */
-	public final void resetStateFromMatch() {
+	public final void resetStateFromMatch() throws StateMachineInitializationException{
         stateMachine = getInitialStateMachine();
         stateMachine.initialize(getMatch().getGame().getRules());
         currentState = stateMachine.getMachineStateFromSentenceList(getMatch().getMostRecentState());
@@ -179,7 +180,13 @@ public abstract class StateMachineGamer extends Gamer
 		try
 		{
 			stateMachine = getInitialStateMachine();
-			stateMachine.initialize(getMatch().getGame().getRules());
+			// Takes as input also the time by which the state machine must finish initialization.
+			// If this method throws an exception it means something went wrong with initialization
+			// (e.g. initialization didn't finish in time).
+			// REMARK: it's not necessarily true that, if initialization is taking longer than the
+			// timeout, this method will throw an exception, it might keep running indefinitely,
+			// depending on how the method has been implemented.
+			stateMachine.initialize(getMatch().getGame().getRules(), timeout);
 			currentState = stateMachine.getInitialState();
 			role = stateMachine.getRoleFromConstant(getRoleName());
 			getMatch().appendState(currentState.getContents());
