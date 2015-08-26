@@ -195,7 +195,7 @@ public abstract class StateMachineGamer extends Gamer
 		}
 		catch (Exception e)
 		{
-		    GamerLogger.logStackTrace("GamePlayer", e);
+			GamerLogger.logStackTrace("GamePlayer", e);
 			throw new MetaGamingException(e);
 		}
 	}

@@ -48,8 +48,7 @@ public class ProverStateMachine extends StateMachine
 	}
 
 	@Override
-	public void initialize(List<Gdl> description, long timeout)
-			throws StateMachineInitializationException {
+	public void initialize(List<Gdl> description, long timeout){
 		this.initialize(description);
  ?????????????
 
