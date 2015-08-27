@@ -18,6 +18,7 @@ import java.util.concurrent.TimeoutException;
 
 import org.ggp.base.util.gdl.grammar.Gdl;
 import org.ggp.base.util.gdl.grammar.GdlSentence;
+import org.ggp.base.util.logging.GamerLogger;
 import org.ggp.base.util.statemachine.MachineState;
 import org.ggp.base.util.statemachine.Move;
 import org.ggp.base.util.statemachine.Role;
@@ -35,20 +36,44 @@ import com.declarativa.interprolog.YAPSubprocessEngine;
  */
 public class YapEngine{
 
+	private static final boolean windows = false;
+
 	// File where to put the game description
-	private static final String descriptionFile = "C:\\Users\\c.sironi\\\"BITBUCKET REPOS\"\\GGP-Base\\csironi\\yapPrologFiles\\description.pl";
-	private static final File fileDescription = new File(descriptionFile);
+	private static final String descriptionFile;
+	private static final File fileDescription;
 
 	// File with all the predefined Prolog functions
-	private static final String functionsFile = "C:\\Users\\c.sironi\\\"BITBUCKET REPOS\"\\GGP-Base\\csironi\\yapPrologFiles\\prologFunctions.pl";
-	private static final File fileFunctions = new File(functionsFile);
+	private static final String functionsFile;
+	private static final File fileFunctions;
+
 	// Second file with all the predefined Prolog functions
 	// => using the Internal DataBase
-	private static final String functionsFileIdb = "C:\\Users\\c.sironi\\\"BITBUCKET REPOS\"\\GGP-Base\\csironi\\yapPrologFiles\\prologFunctionsIdb.pl";
-	private static final File fileFunctionsIdb = new File(functionsFileIdb);
+	private static final String functionsFileIdb;
+	private static final File fileFunctionsIdb;
 
-	// Where is the YAP directory
-	private static final String yapDirectory = "C:\\\"Program Files\"\\Yap64\\bin\\yap";
+	// Yap execution command
+	private static final String yapDirectory;
+
+	static{
+
+		if(windows){
+			//FOR WINDOWS
+			descriptionFile = "C:\\Users\\c.sironi\\BITBUCKET REPOS\\GGP-Base\\csironi\\yapPrologFiles\\description.pl";
+			functionsFile = "C:\\Users\\c.sironi\\BITBUCKET REPOS\\GGP-Base\\csironi\\yapPrologFiles\\prologFunctions.pl";
+			functionsFileIdb = "C:\\Users\\c.sironi\\BITBUCKET REPOS\\GGP-Base\\csironi\\yapPrologFiles\\prologFunctionsIdb.pl";
+			yapDirectory = "C:\\YapInstallation\\Yap64\\bin\\yap.exe";
+		}else{
+			//FOR LINUX
+			descriptionFile = "/home/csironi/YAPplayer/prologFiles/description.pl";
+			functionsFile = "/home/csironi/YAPplayer/prologFiles/prologFunctions.pl";
+			functionsFileIdb = "/home/csironi/YAPplayer/prologFiles/prologFunctionsIdb.pl";
+			yapDirectory = "/home/csironi/CadiaplayerInstallation/Yap/bin/yap";
+		}
+
+		fileDescription = new File(descriptionFile);
+		fileFunctions = new File(functionsFile);
+		fileFunctionsIdb = new File(functionsFileIdb);
+	}
 
 	// The YapEngineSupport which handles the translations and the mapping
 	private YapEngineSupport support;
@@ -95,12 +120,15 @@ public class YapEngine{
 	 */
 	public YapEngine(List<Gdl> description, boolean thread, boolean idb, StateMachine backingStateMachine)
 	{
+		System.out.println("Creazione YapEngine");
 		this.backingStateMachine = backingStateMachine;
 		THREAD = thread;
 		IDB = idb;
 
 		support = new YapEngineSupport();
+
 		engine = new YAPSubprocessEngine(yapDirectory);
+
 		//YAPSubprocessEngineWindow yapseW = new YAPSubprocessEngineWindow(engine);
 
 		flushAndWrite(support.toProlog(description));
@@ -145,16 +173,18 @@ public class YapEngine{
 			executor.invokeAny(Arrays.asList(bsmInit), 5000, TU);
 		}
 		catch(TimeoutException te){
-			System.err.println("backingStateMachine INITIALIZE Timeout");
-			te.printStackTrace();
+			GamerLogger.logError("StateMachine", "[Yap] Timeout during backing state machine initialization.");
+			GamerLogger.logStackTrace("StateMachine", te);
+			/////// TODO ADD THROW InititalizationException or something...to tell to StateMAchineGamer that there is a problem with
+			//state machine initialization
 		}
 		catch(NullPointerException ne){
-			System.err.println("backingStateMachine INITIALIZE NullPointer");
-			ne.printStackTrace();
+			GamerLogger.logError("StateMachine", "[Yap] Null pointer exception during backing state machine initialization.");
+			GamerLogger.logStackTrace("StateMachine", ne);
 		}
 		catch(Exception e){
-			System.err.println("backingStateMachine INITIALIZE __");
-			e.printStackTrace();
+			GamerLogger.logError("StateMachine", "[Yap] Exception during backing state machine initialization.");
+			GamerLogger.logStackTrace("StateMachine", e);
 		}
 
 	}
@@ -219,8 +249,8 @@ public class YapEngine{
 				currentState = support.askToState((String[]) engine.deterministicGoal("initialize_state(List), processList(List, LL), ipObjectTemplate('ArrayOfString',AS,_,[LL],_)", "[AS]") [0]);
 			}
 			catch(Exception e){
-				e.printStackTrace();
-				System.err.println("computeInitalStateGdl");
+				GamerLogger.logError("StateMachine", "[Yap] Exception during initial state computation.");
+				GamerLogger.logStackTrace("StateMachine", e);
 			}
 			return new MachineState(currentState);
 		}
@@ -228,19 +258,24 @@ public class YapEngine{
 		{
 			try{
 				currentState = support.askToState(executor.invokeAny(Arrays.asList(QUERYaosComputeInitialStateGdl), WaitForQuery, TU));
+				GamerLogger.log("StateMachine", "[Yap] Initial state computed with YAP.");
 			}
 			catch(TimeoutException te){
-				System.err.println("TIMEOUT : computeInitalStateGdl");
+				GamerLogger.logError("StateMachine", "[Yap] Timeout during initial state computation.");
+				GamerLogger.logStackTrace("StateMachine", te);
+				GamerLogger.log("StateMachine", "[Yap] Initial state computed with Prover.");
 				reInitialize();
 				return backingStateMachine.getInitialState();
 			}
 			catch(NullPointerException ne){
-				System.err.println("NULL : computeInitalStateGdl");
+				GamerLogger.logError("StateMachine", "[Yap] Null pointer exception during initial state computation.");
+				GamerLogger.logStackTrace("StateMachine", ne);
 				reInitialize();
 				return backingStateMachine.getInitialState();
 			}
 			catch(Exception e){
-				System.err.println("THREAD : computeInitalStateGdl");
+				GamerLogger.logError("StateMachine", "[Yap] Exception during initial state computation.");
+				GamerLogger.logStackTrace("StateMachine", e);
 				reInitialize();
 				return backingStateMachine.getInitialState();
 			}
@@ -265,21 +300,25 @@ public class YapEngine{
 		{
 			try{
 				roles = support.askToRoles(executor.invokeAny(Arrays.asList(QUERYaosComputeRoles), WaitForQuery, TU));
+				GamerLogger.log("StateMachine", "[Yap] Roles computed with YAP.");
 				fakeRoles = support.getFakeRoles(roles);
 				return roles;
 			}
 			catch(TimeoutException te){
-				System.err.println("TIMEOUT : computeRoles");
+				GamerLogger.logError("StateMachine", "[Yap] Timeout during roles computation.");
+				GamerLogger.logStackTrace("StateMachine", te);
 				reInitialize();
 				return backingStateMachine.getRoles();
 			}
 			catch(NullPointerException ne){
-				System.err.println("NULL : computeRoles");
+				GamerLogger.logError("StateMachine", "[Yap] Null pointer exception during roles computation.");
+				GamerLogger.logStackTrace("StateMachine", ne);
 				reInitialize();
 				return backingStateMachine.getRoles();
 			}
 			catch(Exception e){
-				System.err.println("THREAD : computeRoles");
+				GamerLogger.logError("StateMachine", "[Yap] Exception during roles computation.");
+				GamerLogger.logStackTrace("StateMachine", e);
 				reInitialize();
 				return backingStateMachine.getRoles();
 			}
@@ -305,8 +344,8 @@ public class YapEngine{
 				else return false;
 			}
 			catch(Exception e){
-				e.printStackTrace();
-				System.err.println("isTerminal");
+				GamerLogger.logError("StateMachine", "[Yap] Exception during state termination computation.");
+				GamerLogger.logStackTrace("StateMachine", e);
 			}
 			return false;
 		}
@@ -322,28 +361,22 @@ public class YapEngine{
 				return executor.invokeAny(Arrays.asList(QUERYbIsTerminal), WaitForQuery, TU);
 			}
 			catch(TimeoutException te){
-				System.err.println("TIMEOUT : isTerminal");
+				GamerLogger.logError("StateMachine", "[Yap] Timeout during state termination computation.");
+				GamerLogger.logStackTrace("StateMachine", te);
 				reInitialize();
-				System.out.println("backingStateMachine : isTerminal");
-				boolean temp = backingStateMachine.isTerminal(machine);
-				System.out.println("TERMINAL :"+temp);
-				return temp;
+				return backingStateMachine.isTerminal(machine);
 			}
 			catch(NullPointerException ne){
-				System.err.println("NULL : isTerminal");
+				GamerLogger.logError("StateMachine", "[Yap] Null pointer exception during state termination computation.");
+				GamerLogger.logStackTrace("StateMachine", ne);
 				reInitialize();
-				System.out.println("backingStateMachine : isTerminal");
-				boolean temp = backingStateMachine.isTerminal(machine);
-				System.out.println("TERMINAL :"+temp);
-				return temp;
+				return backingStateMachine.isTerminal(machine);
 			}
 			catch(Exception e){
-				System.err.println("THREAD : isTerminal");
+				GamerLogger.logError("StateMachine", "[Yap] Exception during state termination computation.");
+				GamerLogger.logStackTrace("StateMachine", e);
 				reInitialize();
-				System.out.println("backingStateMachine : isTerminal");
-				boolean temp = backingStateMachine.isTerminal(machine);
-				System.out.println("TERMINAL :"+temp);
-				return temp;
+				return backingStateMachine.isTerminal(machine);
 			}
 		}
 	}
@@ -366,8 +399,8 @@ public class YapEngine{
 				return Integer.parseInt((String) engine.deterministicGoal("get_goal("+support.getFakeRole(role)+", S)", "[string(S)]") [0]);
 			}
 			catch(Exception e){
-				e.printStackTrace();
-				System.err.println("getGoal");
+				GamerLogger.logError("StateMachine", "[Yap] Exception during single role goal computation.");
+				GamerLogger.logStackTrace("StateMachine", e);
 			}
 			return 0;
 		}
@@ -384,42 +417,39 @@ public class YapEngine{
 				return Integer.parseInt(executor.invokeAny(Arrays.asList(QUERYsGetGoal), WaitForQuery, TU));
 			}
 			catch(TimeoutException te){
-				System.err.println("TIMEOUT : getGoal");
+				GamerLogger.logError("StateMachine", "[Yap] Timeout during single role goal computation.");
+				GamerLogger.logStackTrace("StateMachine", te);
 				reInitialize();
 				try{
-					System.out.println("backingStateMachine : getGoal");
-					int temp = backingStateMachine.getGoal(machine, role);
-					System.out.println("GOAL :"+temp);
-					return temp;
+					return backingStateMachine.getGoal(machine, role);
 				}
 				catch(GoalDefinitionException gde){
-					gde.printStackTrace();
+					GamerLogger.logError("StateMachine", "[Yap] Goal definition exception during single role goal computation.");
+					GamerLogger.logStackTrace("StateMachine", gde);
 				}
 			}
 			catch(NullPointerException ne){
-				System.err.println("NULL : getGoal");
+				GamerLogger.logError("StateMachine", "[Yap] Null pointer exception during single role goal computation.");
+				GamerLogger.logStackTrace("StateMachine", ne);
 				reInitialize();
 				try{
-					System.out.println("backingStateMachine : getGoal");
-					int temp = backingStateMachine.getGoal(machine, role);
-					System.out.println("GOAL :"+temp);
-					return temp;
+					return backingStateMachine.getGoal(machine, role);
 				}
 				catch(GoalDefinitionException gde){
-					gde.printStackTrace();
+					GamerLogger.logError("StateMachine", "[Yap] Goal definition exception during single role goal computation.");
+					GamerLogger.logStackTrace("StateMachine", gde);
 				}
 			}
 			catch(Exception e){
-				System.err.println("THREAD : getGoal");
+				GamerLogger.logError("StateMachine", "[Yap] Exception during single role goal computation.");
+				GamerLogger.logStackTrace("StateMachine", e);
 				reInitialize();
 				try{
-					System.out.println("backingStateMachine : getGoal");
-					int temp = backingStateMachine.getGoal(machine, role);
-					System.out.println("GOAL :"+temp);
-					return temp;
+					return backingStateMachine.getGoal(machine, role);
 				}
 				catch(GoalDefinitionException gde){
-					gde.printStackTrace();
+					GamerLogger.logError("StateMachine", "[Yap] Goal definition exception during single role goal computation.");
+					GamerLogger.logStackTrace("StateMachine", gde);
 				}
 			}
 			return 0;
@@ -445,8 +475,8 @@ public class YapEngine{
 				return support.askToMoves((String[]) engine.deterministicGoal("get_legal_moves("+support.getFakeRole(role)+", List), processList(List, LL), ipObjectTemplate('ArrayOfString',AS,_,[LL],_)", "[AS]") [0]);
 			}
 			catch(Exception e){
-				e.printStackTrace();
-				System.err.println("getLegalMoves");
+				GamerLogger.logError("StateMachine", "[Yap] Exception during single role legal moves computation.");
+				GamerLogger.logStackTrace("StateMachine", e);
 			}
 			return new LinkedList<Move>();
 		}
@@ -463,42 +493,39 @@ public class YapEngine{
 				return support.askToMoves(executor.invokeAny(Arrays.asList(QUERYaosGetLegalMoves), WaitForQuery, TU));
 			}
 			catch(TimeoutException te){
-				System.err.println("TIMEOUT : getLegalMoves");
+				GamerLogger.logError("StateMachine", "[Yap] Timeout during single role legal moves computation.");
+				GamerLogger.logStackTrace("StateMachine", te);
 				reInitialize();
 				try{
-					System.out.println("backingStateMachine : getLegalMoves");
-					List<Move> temp = backingStateMachine.getLegalMoves(machine, role);
-					System.out.println("LEGALMOVES :"+temp);
-					return temp;
+					return backingStateMachine.getLegalMoves(machine, role);
 				}
 				catch(MoveDefinitionException mde){
-					mde.printStackTrace();
+					GamerLogger.logError("StateMachine", "[Yap] Move definition exception during single role legal moves computation.");
+					GamerLogger.logStackTrace("StateMachine", mde);
 				}
 			}
 			catch(NullPointerException ne){
-				System.err.println("NULL : getLegalMoves");
+				GamerLogger.logError("StateMachine", "[Yap] Null pointer exception during single role legal moves computation.");
+				GamerLogger.logStackTrace("StateMachine", ne);
 				reInitialize();
 				try{
-					System.out.println("backingStateMachine : getLegalMoves");
-					List<Move> temp = backingStateMachine.getLegalMoves(machine, role);
-					System.out.println("LEGALMOVES :"+temp);
-					return temp;
+					return backingStateMachine.getLegalMoves(machine, role);
 				}
 				catch(MoveDefinitionException mde){
-					mde.printStackTrace();
+					GamerLogger.logError("StateMachine", "[Yap] Move definition exception during single role legal moves computation.");
+					GamerLogger.logStackTrace("StateMachine", mde);
 				}
 			}
 			catch(Exception e){
-				System.err.println("THREAD : getLegalMoves");
+				GamerLogger.logError("StateMachine", "[Yap] Exception during single role legal moves computation.");
+				GamerLogger.logStackTrace("StateMachine", e);
 				reInitialize();
 				try{
-					System.out.println("backingStateMachine : getLegalMoves");
-					List<Move> temp = backingStateMachine.getLegalMoves(machine, role);
-					System.out.println("LEGALMOVES :"+temp);
-					return temp;
+					return backingStateMachine.getLegalMoves(machine, role);
 				}
 				catch(MoveDefinitionException mde){
-					mde.printStackTrace();
+					GamerLogger.logError("StateMachine", "[Yap] Move definition exception during single role legal moves computation.");
+					GamerLogger.logStackTrace("StateMachine", mde);
 				}
 			}
 			return new LinkedList<Move>();
@@ -527,8 +554,8 @@ public class YapEngine{
 					return new MachineState(currentState);
 				}
 				catch(Exception e){
-					e.printStackTrace();
-					System.err.println("getNextState");
+					GamerLogger.logError("StateMachine", "[Yap] Exception during next state computation.");
+					GamerLogger.logStackTrace("StateMachine", e);
 				}
 			}
 			else
@@ -544,42 +571,42 @@ public class YapEngine{
 					else currentState = support.askToState(executor.invokeAny(Arrays.asList(QUERYaosGetNextState), WaitForQuery, TU));
 				}
 				catch(TimeoutException te){
-					System.err.println("TIMEOUT : getNextState");
+					GamerLogger.logError("StateMachine", "[Yap] Timeout during next state computation.");
+					GamerLogger.logStackTrace("StateMachine", te);
 					reInitialize();
 					try{
-						System.out.println("backingStateMachine : getNextState");
 						MachineState temp = backingStateMachine.getNextState(machine, moves);
-						System.out.println("NEW MachineState :"+temp);
 						return temp;
 					}
 					catch(TransitionDefinitionException tde){
-						tde.printStackTrace();
+						GamerLogger.logError("StateMachine", "[Yap] Transition definition exception during next state computation.");
+						GamerLogger.logStackTrace("StateMachine", tde);
 					}
 				}
 				catch(NullPointerException ne){
-					System.err.println("NULL : getNextState");
+					GamerLogger.logError("StateMachine", "[Yap] Null pointer exception during next state computation.");
+					GamerLogger.logStackTrace("StateMachine", ne);
 					reInitialize();
 					try{
-						System.out.println("backingStateMachine : getNextState");
 						MachineState temp = backingStateMachine.getNextState(machine, moves);
-						System.out.println("NEW MachineState :"+temp);
 						return temp;
 					}
 					catch(TransitionDefinitionException tde){
-						tde.printStackTrace();
+						GamerLogger.logError("StateMachine", "[Yap] Transition definition exception during next state computation.");
+						GamerLogger.logStackTrace("StateMachine", tde);
 					}
 				}
 				catch(Exception e){
-					System.err.println("THREAD : getNextState");
+					GamerLogger.logError("StateMachine", "[Yap] Exception during next state computation.");
+					GamerLogger.logStackTrace("StateMachine", e);
 					reInitialize();
 					try{
-						System.out.println("backingStateMachine : getNextState");
 						MachineState temp = backingStateMachine.getNextState(machine, moves);
-						System.out.println("NEW MachineState :"+temp);
 						return temp;
 					}
 					catch(TransitionDefinitionException tde){
-						tde.printStackTrace();
+						GamerLogger.logError("StateMachine", "[Yap] Transition definition exception during next state computation.");
+						GamerLogger.logStackTrace("StateMachine", tde);
 					}
 				}
 				return new MachineState(currentState);
@@ -588,7 +615,7 @@ public class YapEngine{
 		return machine;
 	}
 
-
+//// daquiiiiii: cambia tutte le system.out e riaggiungi il temp dove lo hai tolto. poi aggiungi il log di chi tra yap e prover risponde alla query!!!
 
 	/**
 	 * Compute the given MachineState in the Prolog side
@@ -618,7 +645,8 @@ public class YapEngine{
 					else currentState = machine.getContents();
 				}
 				catch(TimeoutException te){
-					System.err.println("TIMEOUT : computeState");
+					GamerLogger.logError("StateMachine", "[Yap] Timeout during state computation on prolog side.");
+					GamerLogger.logStackTrace("StateMachine", te);
 					reInitialize();
 				}
 				catch(NullPointerException ne){
@@ -672,7 +700,8 @@ public class YapEngine{
 				return support.askToMove(executor.invokeAny(Arrays.asList(QUERYsGetRandomMove), WaitForQuery, TU));
 			}
 			catch(TimeoutException te){
-				System.err.println("TIMEOUT : getRandomMove");
+				GamerLogger.logError("StateMachine", "[Yap] Timeout during random move computation.");
+				GamerLogger.logStackTrace("StateMachine", te);
 				reInitialize();
 				return null;
 			}
@@ -726,7 +755,8 @@ public class YapEngine{
 				return support.askToMoves(executor.invokeAny(Arrays.asList(QUERYaosGetRandomJointMove1), WaitForQuery, TU));
 			}
 			catch(TimeoutException te){
-				System.err.println("TIMEOUT : getRandomJointMove(_)");
+				GamerLogger.logError("StateMachine", "[Yap] Timeout while getting random joint move.");
+				GamerLogger.logStackTrace("StateMachine", te);
 				reInitialize();
 				return null;
 			}
@@ -780,7 +810,8 @@ public class YapEngine{
 				return support.askToMoves(executor.invokeAny(Arrays.asList(QUERYaosGetRandomJointMove2), WaitForQuery, TU));
 			}
 			catch(TimeoutException te){
-				System.err.println("TIMEOUT : getRandomJointMove(_,_,_)");
+				GamerLogger.logError("StateMachine", "[Yap] Timeout while computing random joint move with one fixed role move.");
+				GamerLogger.logStackTrace("StateMachine", te);
 				reInitialize();
 				return null;
 			}
@@ -834,7 +865,8 @@ public class YapEngine{
 				else currentState = support.askToState(executor.invokeAny(Arrays.asList(QUERYaosGetRandomNextState), WaitForQuery, TU));
 			}
 			catch(TimeoutException te){
-				System.err.println("TIMEOUT : getRandomNextState");
+				GamerLogger.logError("StateMachine", "[Yap] Timeout while computing a random next state given a fixed move for one role.");
+				GamerLogger.logStackTrace("StateMachine", te);
 				reInitialize();
 				return null;
 			}
@@ -892,7 +924,8 @@ public class YapEngine{
 				theDepth[0] = support.getPerformDepth();
 			}
 			catch(TimeoutException te){
-				System.err.println("TIMEOUT : performDepthCharge");
+				GamerLogger.logError("StateMachine", "[Yap] Timeout while performing depth charge.");
+				GamerLogger.logStackTrace("StateMachine", te);
 				reInitialize();
 				return null;
 			}
