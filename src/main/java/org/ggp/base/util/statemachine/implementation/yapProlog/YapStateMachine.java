@@ -101,6 +101,8 @@ public class YapStateMachine extends StateMachine {
 	{
 		return yapEngine.computeInitialStateGdl();
 	}
+
+
 	private ImmutableList<Role> computeRoles()
 	{
 		return ImmutableList.copyOf(yapEngine.computeRoles());

@@ -38,7 +38,7 @@ public final class SampleMontecarloYapGamer extends SampleYapGamer{
 		//StateMachine theMachine = getStateMachine();
 		YapStateMachine theMachine = getYapStateMachine();
 		long start = System.currentTimeMillis();
-		long finishBy = timeout - 2000;
+		long finishBy = timeout - 5000;
 
 		List<Move> moves = theMachine.getLegalMoves(getCurrentState(), getRole());
 		Move selection = moves.get(0);

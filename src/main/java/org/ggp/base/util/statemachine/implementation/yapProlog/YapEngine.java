@@ -120,7 +120,7 @@ public class YapEngine{
 	 */
 	public YapEngine(List<Gdl> description, boolean thread, boolean idb, StateMachine backingStateMachine)
 	{
-		System.out.println("Creazione YapEngine");
+		//System.out.println("Creazione YapEngine");
 		this.backingStateMachine = backingStateMachine;
 		THREAD = thread;
 		IDB = idb;
@@ -148,7 +148,7 @@ public class YapEngine{
 
 	/**
 	 * Initialize the backingStateMachine
-	 * usually : ProverStateMahine
+	 * usually : ProverStateMachine
 	 */
 	private void initializeBackingStateMachine(List<Gdl> description)
 	{
@@ -171,20 +171,28 @@ public class YapEngine{
 
 		try{
 			executor.invokeAny(Arrays.asList(bsmInit), 5000, TU);
+			GamerLogger.log("Responsibility", "PROVER(initialize)");
+			GamerLogger.log("StateMachine", "PROVER(initialize)");
 		}
 		catch(TimeoutException te){
 			GamerLogger.logError("StateMachine", "[Yap] Timeout during backing state machine initialization.");
 			GamerLogger.logStackTrace("StateMachine", te);
+			GamerLogger.log("Responsibility", "FAIL-PROVER(initialize)");
+			GamerLogger.log("StateMachine", "FAIL-PROVER(initialize)");
 			/////// TODO ADD THROW InititalizationException or something...to tell to StateMAchineGamer that there is a problem with
 			//state machine initialization
 		}
 		catch(NullPointerException ne){
 			GamerLogger.logError("StateMachine", "[Yap] Null pointer exception during backing state machine initialization.");
 			GamerLogger.logStackTrace("StateMachine", ne);
+			GamerLogger.log("Responsibility", "FAIL-PROVER(initialize)");
+			GamerLogger.log("StateMachine", "FAIL-PROVER(initialize)");
 		}
 		catch(Exception e){
 			GamerLogger.logError("StateMachine", "[Yap] Exception during backing state machine initialization.");
 			GamerLogger.logStackTrace("StateMachine", e);
+			GamerLogger.log("Responsibility", "FAIL-PROVER(initialize)");
+			GamerLogger.log("StateMachine", "FAIL-PROVER(initialize)");
 		}
 
 	}
@@ -222,6 +230,8 @@ public class YapEngine{
 	 */
 	private void reInitialize()
 	{
+		GamerLogger.log("Responsibility", "YAP(reInitialize)");
+		GamerLogger.log("StateMachine", "YAP(reInitialize)");
 		executor.shutdown();
 		engine.shutdown();
 
@@ -241,16 +251,20 @@ public class YapEngine{
 	 */
 	public MachineState computeInitialStateGdl()
 	{
-		System.out.println("COMPUTE_INITIAL_STATE_GDL");
+		//System.out.println("COMPUTE_INITIAL_STATE_GDL");
 
 		if(!THREAD)
 		{
 			try{
 				currentState = support.askToState((String[]) engine.deterministicGoal("initialize_state(List), processList(List, LL), ipObjectTemplate('ArrayOfString',AS,_,[LL],_)", "[AS]") [0]);
+				GamerLogger.log("Responsibility", "YAP(computeInitialStateGdl)");
+				GamerLogger.log("StateMachine", "YAP(computeInitialStateGdl)");
 			}
 			catch(Exception e){
 				GamerLogger.logError("StateMachine", "[Yap] Exception during initial state computation.");
 				GamerLogger.logStackTrace("StateMachine", e);
+				GamerLogger.log("Responsibility", "NOONE(computeInitialStateGdl)");
+				GamerLogger.log("StateMachine", "NOONE(computeInitialStateGdl)");
 			}
 			return new MachineState(currentState);
 		}
@@ -258,24 +272,31 @@ public class YapEngine{
 		{
 			try{
 				currentState = support.askToState(executor.invokeAny(Arrays.asList(QUERYaosComputeInitialStateGdl), WaitForQuery, TU));
-				GamerLogger.log("StateMachine", "[Yap] Initial state computed with YAP.");
+				GamerLogger.log("Responsibility", "YAP(computeInitialStateGdl)");
+				GamerLogger.log("StateMachine", "YAP(computeInitialStateGdl)");
 			}
 			catch(TimeoutException te){
 				GamerLogger.logError("StateMachine", "[Yap] Timeout during initial state computation.");
 				GamerLogger.logStackTrace("StateMachine", te);
-				GamerLogger.log("StateMachine", "[Yap] Initial state computed with Prover.");
+				GamerLogger.log("Responsibility", "PROVER(computeInitialStateGdl)");
+				GamerLogger.log("StateMachine", "PROVER(computeInitialStateGdl)");
 				reInitialize();
+				// TODO: IS THIS NECESSARY? TO CALL THE PROVER??? ISN'T IT ENOUGH TO REINITIALIZE YAP AND JUST ASK AGAIN???
 				return backingStateMachine.getInitialState();
 			}
 			catch(NullPointerException ne){
 				GamerLogger.logError("StateMachine", "[Yap] Null pointer exception during initial state computation.");
 				GamerLogger.logStackTrace("StateMachine", ne);
+				GamerLogger.log("Responsibility", "PROVER(computeInitialStateGdl)");
+				GamerLogger.log("StateMachine", "PROVER(computeInitialStateGdl)");
 				reInitialize();
 				return backingStateMachine.getInitialState();
 			}
 			catch(Exception e){
 				GamerLogger.logError("StateMachine", "[Yap] Exception during initial state computation.");
 				GamerLogger.logStackTrace("StateMachine", e);
+				GamerLogger.log("Responsibility", "PROVER(computeInitialStateGdl)");
+				GamerLogger.log("StateMachine", "PROVER(computeInitialStateGdl)");
 				reInitialize();
 				return backingStateMachine.getInitialState();
 			}
@@ -294,31 +315,40 @@ public class YapEngine{
 		{
 			roles = support.askToRoles((String[]) engine.deterministicGoal("get_roles(List), processList(List, LL), ipObjectTemplate('ArrayOfString',AS,_,[LL],_)", "[AS]") [0]);
 			fakeRoles = support.getFakeRoles(roles);
+			GamerLogger.log("Responsibility", "YAP(computeRoles)");
+			GamerLogger.log("StateMachine", "YAP(computeRoles)");
 			return roles;
 		}
 		else
 		{
 			try{
 				roles = support.askToRoles(executor.invokeAny(Arrays.asList(QUERYaosComputeRoles), WaitForQuery, TU));
-				GamerLogger.log("StateMachine", "[Yap] Roles computed with YAP.");
 				fakeRoles = support.getFakeRoles(roles);
+				GamerLogger.log("Responsibility", "YAP(computeRoles)");
+				GamerLogger.log("StateMachine", "YAP(computeRoles)");
 				return roles;
 			}
 			catch(TimeoutException te){
 				GamerLogger.logError("StateMachine", "[Yap] Timeout during roles computation.");
 				GamerLogger.logStackTrace("StateMachine", te);
+				GamerLogger.log("Responsibility", "PROVER(computeRoles)");
+				GamerLogger.log("StateMachine", "PROVER(computeRoles)");
 				reInitialize();
 				return backingStateMachine.getRoles();
 			}
 			catch(NullPointerException ne){
 				GamerLogger.logError("StateMachine", "[Yap] Null pointer exception during roles computation.");
 				GamerLogger.logStackTrace("StateMachine", ne);
+				GamerLogger.log("Responsibility", "PROVER(computeRoles)");
+				GamerLogger.log("StateMachine", "PROVER(computeRoles)");
 				reInitialize();
 				return backingStateMachine.getRoles();
 			}
 			catch(Exception e){
 				GamerLogger.logError("StateMachine", "[Yap] Exception during roles computation.");
 				GamerLogger.logStackTrace("StateMachine", e);
+				GamerLogger.log("Responsibility", "PROVER(computeRoles)");
+				GamerLogger.log("StateMachine", "PROVER(computeRoles)");
 				reInitialize();
 				return backingStateMachine.getRoles();
 			}
@@ -340,12 +370,21 @@ public class YapEngine{
 		{
 			try{
 				computeState(machine);
-				if(engine.deterministicGoal("is_terminal") == true) return true;
-				else return false;
+				boolean terminal;
+				if(engine.deterministicGoal("is_terminal") == true){
+					terminal = true;
+				}else{
+					terminal = false;
+				}
+				GamerLogger.log("Responsibility", "YAP(isTerminal)");
+				GamerLogger.log("StateMachine", "YAP(isTerminal)");
+				return terminal;
 			}
 			catch(Exception e){
 				GamerLogger.logError("StateMachine", "[Yap] Exception during state termination computation.");
 				GamerLogger.logStackTrace("StateMachine", e);
+				GamerLogger.log("Responsibility", "NOONE(isTerminal)");
+				GamerLogger.log("StateMachine", "NOONE(isTerminal)");
 			}
 			return false;
 		}
@@ -355,26 +394,41 @@ public class YapEngine{
 				if(!currentState.equals(machine.getContents()))
 				{
 					QUERYsComputeState.setSubGoal(""+support.getFakeMachineState(machine.getContents()));
-					if( !(executor.invokeAny(Arrays.asList(QUERYsComputeState), WaitForQuery, TU)).equals("d") ) System.err.println("ERROR : computeState");
-					else currentState = machine.getContents();
+					if( !(executor.invokeAny(Arrays.asList(QUERYsComputeState), WaitForQuery, TU)).equals("d") ){
+						GamerLogger.logError("StateMachine", "UNHANDLED ERROR : computeState");
+						GamerLogger.log("Responsibility", "FAIL-YAP(computeState) for isTerminal.");
+						GamerLogger.log("StateMachine", "FAIL-YAP(computeState) for isTerminal.");
+					}else{
+						currentState = machine.getContents();
+					}
 				}
-				return executor.invokeAny(Arrays.asList(QUERYbIsTerminal), WaitForQuery, TU);
+				boolean terminal;
+				terminal = executor.invokeAny(Arrays.asList(QUERYbIsTerminal), WaitForQuery, TU);
+				GamerLogger.log("Responsibility", "YAP(isTerminal)");
+				GamerLogger.log("StateMachine", "YAP(isTerminal)");
+				return terminal;
 			}
 			catch(TimeoutException te){
 				GamerLogger.logError("StateMachine", "[Yap] Timeout during state termination computation.");
 				GamerLogger.logStackTrace("StateMachine", te);
+				GamerLogger.log("Responsibility", "PROVER(isTerminal)");
+				GamerLogger.log("StateMachine", "PROVER(isTerminal)");
 				reInitialize();
 				return backingStateMachine.isTerminal(machine);
 			}
 			catch(NullPointerException ne){
 				GamerLogger.logError("StateMachine", "[Yap] Null pointer exception during state termination computation.");
 				GamerLogger.logStackTrace("StateMachine", ne);
+				GamerLogger.log("Responsibility", "PROVER(isTerminal)");
+				GamerLogger.log("StateMachine", "PROVER(isTerminal)");
 				reInitialize();
 				return backingStateMachine.isTerminal(machine);
 			}
 			catch(Exception e){
 				GamerLogger.logError("StateMachine", "[Yap] Exception during state termination computation.");
 				GamerLogger.logStackTrace("StateMachine", e);
+				GamerLogger.log("Responsibility", "PROVER(isTerminal)");
+				GamerLogger.log("StateMachine", "PROVER(isTerminal)");
 				reInitialize();
 				return backingStateMachine.isTerminal(machine);
 			}
@@ -396,11 +450,17 @@ public class YapEngine{
 		{
 			try{
 				computeState(machine);
-				return Integer.parseInt((String) engine.deterministicGoal("get_goal("+support.getFakeRole(role)+", S)", "[string(S)]") [0]);
+				int goal;
+				goal = Integer.parseInt((String) engine.deterministicGoal("get_goal("+support.getFakeRole(role)+", S)", "[string(S)]") [0]);
+				GamerLogger.log("Responsibility", "YAP(getGoal)");
+				GamerLogger.log("StateMachine", "YAP(getGoal)");
+				return goal;
 			}
 			catch(Exception e){
 				GamerLogger.logError("StateMachine", "[Yap] Exception during single role goal computation.");
 				GamerLogger.logStackTrace("StateMachine", e);
+				GamerLogger.log("Responsibility", "NOONE(getGoal)");
+				GamerLogger.log("StateMachine", "NOONE(getGoal)");
 			}
 			return 0;
 		}
@@ -411,21 +471,35 @@ public class YapEngine{
 				if(!currentState.equals(machine.getContents()))
 				{
 					QUERYsComputeState.setSubGoal(""+support.getFakeMachineState(machine.getContents()));
-					if( !(executor.invokeAny(Arrays.asList(QUERYsComputeState), WaitForQuery, TU)).equals("d") ) System.err.println("ERROR : computeState");
-					else currentState = machine.getContents();
+					if( !(executor.invokeAny(Arrays.asList(QUERYsComputeState), WaitForQuery, TU)).equals("d") ){
+						GamerLogger.logError("StateMachine", "UNHANDLED ERROR : computeState");
+						GamerLogger.log("Responsibility", "FAIL-YAP(computeState) for getGoal.");
+						GamerLogger.log("StateMachine", "FAIL-YAP(computeState) for getGoal.");
+					}else{
+						currentState = machine.getContents();
+					}
 				}
-				return Integer.parseInt(executor.invokeAny(Arrays.asList(QUERYsGetGoal), WaitForQuery, TU));
+				int goal;
+				goal = Integer.parseInt(executor.invokeAny(Arrays.asList(QUERYsGetGoal), WaitForQuery, TU));
+				GamerLogger.log("Responsibility", "YAP(getGoal)");
+				GamerLogger.log("StateMachine", "YAP(getGoal)");
+				return goal;
 			}
 			catch(TimeoutException te){
 				GamerLogger.logError("StateMachine", "[Yap] Timeout during single role goal computation.");
 				GamerLogger.logStackTrace("StateMachine", te);
 				reInitialize();
 				try{
-					return backingStateMachine.getGoal(machine, role);
+					int goal = backingStateMachine.getGoal(machine, role);
+					GamerLogger.log("Responsibility", "PROVER(getGoal)");
+					GamerLogger.log("StateMachine", "PROVER(getGoal)");
+					return goal;
 				}
 				catch(GoalDefinitionException gde){
 					GamerLogger.logError("StateMachine", "[Yap] Goal definition exception during single role goal computation.");
 					GamerLogger.logStackTrace("StateMachine", gde);
+					GamerLogger.log("Responsibility", "NOONE(getGoal)");
+					GamerLogger.log("StateMachine", "NOONE(getGoal)");
 				}
 			}
 			catch(NullPointerException ne){
@@ -433,11 +507,16 @@ public class YapEngine{
 				GamerLogger.logStackTrace("StateMachine", ne);
 				reInitialize();
 				try{
-					return backingStateMachine.getGoal(machine, role);
+					int goal = backingStateMachine.getGoal(machine, role);
+					GamerLogger.log("Responsibility", "PROVER(getGoal)");
+					GamerLogger.log("StateMachine", "PROVER(getGoal)");
+					return goal;
 				}
 				catch(GoalDefinitionException gde){
 					GamerLogger.logError("StateMachine", "[Yap] Goal definition exception during single role goal computation.");
 					GamerLogger.logStackTrace("StateMachine", gde);
+					GamerLogger.log("Responsibility", "NOONE(getGoal)");
+					GamerLogger.log("StateMachine", "NOONE(getGoal)");
 				}
 			}
 			catch(Exception e){
@@ -445,11 +524,16 @@ public class YapEngine{
 				GamerLogger.logStackTrace("StateMachine", e);
 				reInitialize();
 				try{
-					return backingStateMachine.getGoal(machine, role);
+					int goal = backingStateMachine.getGoal(machine, role);
+					GamerLogger.log("Responsibility", "PROVER(getGoal)");
+					GamerLogger.log("StateMachine", "PROVER(getGoal)");
+					return goal;
 				}
 				catch(GoalDefinitionException gde){
 					GamerLogger.logError("StateMachine", "[Yap] Goal definition exception during single role goal computation.");
 					GamerLogger.logStackTrace("StateMachine", gde);
+					GamerLogger.log("Responsibility", "NOONE(getGoal)");
+					GamerLogger.log("StateMachine", "NOONE(getGoal)");
 				}
 			}
 			return 0;
@@ -472,11 +556,16 @@ public class YapEngine{
 		{
 			try{
 				computeState(machine);
-				return support.askToMoves((String[]) engine.deterministicGoal("get_legal_moves("+support.getFakeRole(role)+", List), processList(List, LL), ipObjectTemplate('ArrayOfString',AS,_,[LL],_)", "[AS]") [0]);
+				List<Move> moves = support.askToMoves((String[]) engine.deterministicGoal("get_legal_moves("+support.getFakeRole(role)+", List), processList(List, LL), ipObjectTemplate('ArrayOfString',AS,_,[LL],_)", "[AS]") [0]);
+				GamerLogger.log("Responsibility", "YAP(getLegalMoves)");
+				GamerLogger.log("StateMachine", "YAP(getLegalMoves)");
+				return moves;
 			}
 			catch(Exception e){
 				GamerLogger.logError("StateMachine", "[Yap] Exception during single role legal moves computation.");
 				GamerLogger.logStackTrace("StateMachine", e);
+				GamerLogger.log("Responsibility", "NOONE(getLegalMoves)");
+				GamerLogger.log("StateMachine", "NOONE(getLegalMoves)");
 			}
 			return new LinkedList<Move>();
 		}
@@ -487,21 +576,34 @@ public class YapEngine{
 				if(!currentState.equals(machine.getContents()))
 				{
 					QUERYsComputeState.setSubGoal(""+support.getFakeMachineState(machine.getContents()));
-					if( !(executor.invokeAny(Arrays.asList(QUERYsComputeState), WaitForQuery, TU)).equals("d") ) System.err.println("ERROR : computeState");
-					else currentState = machine.getContents();
+					if( !(executor.invokeAny(Arrays.asList(QUERYsComputeState), WaitForQuery, TU)).equals("d") ){
+						GamerLogger.logError("StateMachine", "UNHANDLED ERROR : computeState");
+						GamerLogger.log("Responsibility", "FAIL-YAP(computeState) for getLegalMoves.");
+						GamerLogger.log("StateMachine", "FAIL-YAP(computeState) for getLegalMoves.");
+					}else{
+						currentState = machine.getContents();
+					}
 				}
-				return support.askToMoves(executor.invokeAny(Arrays.asList(QUERYaosGetLegalMoves), WaitForQuery, TU));
+				List<Move> moves = support.askToMoves(executor.invokeAny(Arrays.asList(QUERYaosGetLegalMoves), WaitForQuery, TU));
+				GamerLogger.log("Responsibility", "YAP(getLegalMoves)");
+				GamerLogger.log("StateMachine", "YAP(getLegalMoves)");
+				return moves;
 			}
 			catch(TimeoutException te){
 				GamerLogger.logError("StateMachine", "[Yap] Timeout during single role legal moves computation.");
 				GamerLogger.logStackTrace("StateMachine", te);
 				reInitialize();
 				try{
-					return backingStateMachine.getLegalMoves(machine, role);
+					List<Move> moves = backingStateMachine.getLegalMoves(machine, role);
+					GamerLogger.log("Responsibility", "PROVER(getLegalMoves)");
+					GamerLogger.log("StateMachine", "PROVER(getLegalMoves)");
+					return moves;
 				}
 				catch(MoveDefinitionException mde){
 					GamerLogger.logError("StateMachine", "[Yap] Move definition exception during single role legal moves computation.");
 					GamerLogger.logStackTrace("StateMachine", mde);
+					GamerLogger.log("Responsibility", "NOONE(getLegalMoves)");
+					GamerLogger.log("StateMachine", "NOONE(getLegalMoves)");
 				}
 			}
 			catch(NullPointerException ne){
@@ -509,11 +611,16 @@ public class YapEngine{
 				GamerLogger.logStackTrace("StateMachine", ne);
 				reInitialize();
 				try{
-					return backingStateMachine.getLegalMoves(machine, role);
+					List<Move> moves = backingStateMachine.getLegalMoves(machine, role);
+					GamerLogger.log("Responsibility", "PROVER(getLegalMoves)");
+					GamerLogger.log("StateMachine", "PROVER(getLegalMoves)");
+					return moves;
 				}
 				catch(MoveDefinitionException mde){
 					GamerLogger.logError("StateMachine", "[Yap] Move definition exception during single role legal moves computation.");
 					GamerLogger.logStackTrace("StateMachine", mde);
+					GamerLogger.log("Responsibility", "NOONE(getLegalMoves)");
+					GamerLogger.log("StateMachine", "NOONE(getLegalMoves)");
 				}
 			}
 			catch(Exception e){
@@ -521,11 +628,16 @@ public class YapEngine{
 				GamerLogger.logStackTrace("StateMachine", e);
 				reInitialize();
 				try{
-					return backingStateMachine.getLegalMoves(machine, role);
+					List<Move> moves = backingStateMachine.getLegalMoves(machine, role);
+					GamerLogger.log("Responsibility", "PROVER(getLegalMoves)");
+					GamerLogger.log("StateMachine", "PROVER(getLegalMoves)");
+					return moves;
 				}
 				catch(MoveDefinitionException mde){
 					GamerLogger.logError("StateMachine", "[Yap] Move definition exception during single role legal moves computation.");
 					GamerLogger.logStackTrace("StateMachine", mde);
+					GamerLogger.log("Responsibility", "NOONE(getLegalMoves)");
+					GamerLogger.log("StateMachine", "NOONE(getLegalMoves)");
 				}
 			}
 			return new LinkedList<Move>();
@@ -551,11 +663,15 @@ public class YapEngine{
 				try{
 					computeState(machine);
 					currentState = support.askToState((String[]) engine.deterministicGoal("get_next_state("+fakeRoles+", "+support.getFakeMoves(moves)+", List), processList(List, LL), ipObjectTemplate('ArrayOfString',AS,_,[LL],_)", "[AS]") [0]);
+					GamerLogger.log("Responsibility", "YAP(getNextState)");
+					GamerLogger.log("StateMachine", "YAP(getNextState)");
 					return new MachineState(currentState);
 				}
 				catch(Exception e){
 					GamerLogger.logError("StateMachine", "[Yap] Exception during next state computation.");
 					GamerLogger.logStackTrace("StateMachine", e);
+					GamerLogger.log("Responsibility", "NOONE(getNextState)");
+					GamerLogger.log("StateMachine", "NOONE(getNextState)");
 				}
 			}
 			else
@@ -565,10 +681,20 @@ public class YapEngine{
 					if(!currentState.equals(machine.getContents()))
 					{
 						QUERYsComputeState.setSubGoal(""+support.getFakeMachineState(machine.getContents()));
-						if( !(executor.invokeAny(Arrays.asList(QUERYsComputeState), WaitForQuery, TU)).equals("d") ) System.err.println("ERROR : computeState");
-						else currentState = support.askToState(executor.invokeAny(Arrays.asList(QUERYaosGetNextState), WaitForQuery, TU));
+						if( !(executor.invokeAny(Arrays.asList(QUERYsComputeState), WaitForQuery, TU)).equals("d") ){
+							GamerLogger.logError("StateMachine", "UNHANDLED ERROR : computeState");
+							GamerLogger.log("Responsibility", "FAIL-YAP(computeState) for getNextState.");
+							GamerLogger.log("StateMachine", "FAIL-YAP(computeState) for getNextState.");
+						}else{
+							currentState = support.askToState(executor.invokeAny(Arrays.asList(QUERYaosGetNextState), WaitForQuery, TU));
+							GamerLogger.log("Responsibility", "YAP(getNextState)");
+							GamerLogger.log("StateMachine", "YAP(getNextState)");
+						}
+					}else{
+						currentState = support.askToState(executor.invokeAny(Arrays.asList(QUERYaosGetNextState), WaitForQuery, TU));
+						GamerLogger.log("Responsibility", "YAP(getNextState)");
+						GamerLogger.log("StateMachine", "YAP(getNextState)");
 					}
-					else currentState = support.askToState(executor.invokeAny(Arrays.asList(QUERYaosGetNextState), WaitForQuery, TU));
 				}
 				catch(TimeoutException te){
 					GamerLogger.logError("StateMachine", "[Yap] Timeout during next state computation.");
@@ -576,11 +702,15 @@ public class YapEngine{
 					reInitialize();
 					try{
 						MachineState temp = backingStateMachine.getNextState(machine, moves);
+						GamerLogger.log("Responsibility", "PROVER(getNextState)");
+						GamerLogger.log("StateMachine", "PROVER(getNextState)");
 						return temp;
 					}
 					catch(TransitionDefinitionException tde){
 						GamerLogger.logError("StateMachine", "[Yap] Transition definition exception during next state computation.");
 						GamerLogger.logStackTrace("StateMachine", tde);
+						GamerLogger.log("Responsibility", "NOONE(getNextState)");
+						GamerLogger.log("StateMachine", "NOONE(getNextState)");
 					}
 				}
 				catch(NullPointerException ne){
@@ -589,11 +719,15 @@ public class YapEngine{
 					reInitialize();
 					try{
 						MachineState temp = backingStateMachine.getNextState(machine, moves);
+						GamerLogger.log("Responsibility", "PROVER(getNextState)");
+						GamerLogger.log("StateMachine", "PROVER(getNextState)");
 						return temp;
 					}
 					catch(TransitionDefinitionException tde){
 						GamerLogger.logError("StateMachine", "[Yap] Transition definition exception during next state computation.");
 						GamerLogger.logStackTrace("StateMachine", tde);
+						GamerLogger.log("Responsibility", "NOONE(getNextState)");
+						GamerLogger.log("StateMachine", "NOONE(getNextState)");
 					}
 				}
 				catch(Exception e){
@@ -602,11 +736,15 @@ public class YapEngine{
 					reInitialize();
 					try{
 						MachineState temp = backingStateMachine.getNextState(machine, moves);
+						GamerLogger.log("Responsibility", "PROVER(getNextState)");
+						GamerLogger.log("StateMachine", "PROVER(getNextState)");
 						return temp;
 					}
 					catch(TransitionDefinitionException tde){
 						GamerLogger.logError("StateMachine", "[Yap] Transition definition exception during next state computation.");
 						GamerLogger.logStackTrace("StateMachine", tde);
+						GamerLogger.log("Responsibility", "NOONE(getNextState)");
+						GamerLogger.log("StateMachine", "NOONE(getNextState)");
 					}
 				}
 				return new MachineState(currentState);
@@ -629,32 +767,58 @@ public class YapEngine{
 			if(!THREAD)
 			{
 				try{
-					if(!((String) engine.deterministicGoal("compute_state("+support.getFakeMachineState(machine.getContents())+", S)", "[string(S)]") [0]).equals("d")) System.err.println("ERROR : computeState");
-					else currentState = machine.getContents();
+					if(!((String) engine.deterministicGoal("compute_state("+support.getFakeMachineState(machine.getContents())+", S)", "[string(S)]") [0]).equals("d")){
+						GamerLogger.logError("StateMachine", "UNHANDLED ERROR : computeState");
+						GamerLogger.log("Responsibility", "NOONE(computeState)");
+						GamerLogger.log("StateMachine", "NOONE(computeState)");
+					}else{
+						currentState = machine.getContents();
+						GamerLogger.log("Responsibility", "YAP(computeState)");
+						GamerLogger.log("StateMachine", "YAP(computeState)");
+					}
 				}
 				catch(Exception e){
-					e.printStackTrace();
-					System.err.println("computeState");
+					GamerLogger.logError("StateMachine", "[Yap] exception during state computation on prolog side.");
+					GamerLogger.logStackTrace("StateMachine", e);
+					GamerLogger.log("Responsibility", "NOONE(computeState)");
+					GamerLogger.log("StateMachine", "NOONE(computeState)");
 				}
 			}
 			else
 			{
 				QUERYsComputeState.setSubGoal(""+support.getFakeMachineState(machine.getContents()));
 				try{
-					if( !(executor.invokeAny(Arrays.asList(QUERYsComputeState), WaitForQuery, TU)).equals("d") ) System.err.println("ERROR : computeState");
-					else currentState = machine.getContents();
+					if( !(executor.invokeAny(Arrays.asList(QUERYsComputeState), WaitForQuery, TU)).equals("d") ){
+						GamerLogger.logError("StateMachine", "UNHANDLED ERROR : computeState");
+						GamerLogger.log("Responsibility", "NOONE(computeState)");
+						GamerLogger.log("StateMachine", "NOONE(computeState)");
+						// SE SUCCEDE QUALCOSA E LO STATO NON VIENE COMPUTATO PROLOG E'IN UNO STATO INCONSISTENTE E IL METODO
+						// CHE HA CHIAMATO QUESTO METODO DARA' UNA RISPOSTA SBAGLIATA!!!!!!!!!!!!!!!!!!!!!!!
+					}else{
+						currentState = machine.getContents();
+						GamerLogger.log("Responsibility", "YAP(computeState)");
+						GamerLogger.log("StateMachine", "YAP(computeState)");
+					}
 				}
 				catch(TimeoutException te){
 					GamerLogger.logError("StateMachine", "[Yap] Timeout during state computation on prolog side.");
 					GamerLogger.logStackTrace("StateMachine", te);
+					GamerLogger.log("Responsibility", "NOONE(computeState)");
+					GamerLogger.log("StateMachine", "NOONE(computeState)");
 					reInitialize();
 				}
 				catch(NullPointerException ne){
-					System.err.println("NULL : computeState");
+					GamerLogger.logError("StateMachine", "[Yap] Null pointer exception during state computation on prolog side.");
+					GamerLogger.logStackTrace("StateMachine", ne);
+					GamerLogger.log("Responsibility", "NOONE(computeState)");
+					GamerLogger.log("StateMachine", "NOONE(computeState)");
 					reInitialize();
 				}
 				catch(Exception e){
-					System.err.println("THREAD : computeState");
+					GamerLogger.logError("StateMachine", "[Yap] Exception during state computation on prolog side.");
+					GamerLogger.logStackTrace("StateMachine", e);
+					GamerLogger.log("Responsibility", "NOONE(computeState)");
+					GamerLogger.log("StateMachine", "NOONE(computeState)");
 					reInitialize();
 				}
 			}
@@ -679,11 +843,16 @@ public class YapEngine{
 		{
 			try{
 				computeState(machine);
-				return support.askToMove((String) engine.deterministicGoal("get_random_move("+support.getFakeRole(role)+", S)", "[string(S)]") [0]);
+				Move move = support.askToMove((String) engine.deterministicGoal("get_random_move("+support.getFakeRole(role)+", S)", "[string(S)]") [0]);
+				GamerLogger.log("Responsibility", "YAP(getRandomMove)");
+				GamerLogger.log("StateMachine", "YAP(getRandomMove)");
+				return move;
 			}
 			catch(Exception e){
-				e.printStackTrace();
-				System.err.println("getRandomMove");
+				GamerLogger.logError("StateMachine", "[Yap] Exception during random move computation.");
+				GamerLogger.logStackTrace("StateMachine", e);
+				GamerLogger.log("Responsibility", "NOONE(getRandomMove)");
+				GamerLogger.log("StateMachine", "NOONE(getRandomMove)");
 			}
 			return null;
 		}
@@ -694,24 +863,40 @@ public class YapEngine{
 				if(!currentState.equals(machine.getContents()))
 				{
 					QUERYsComputeState.setSubGoal(""+support.getFakeMachineState(machine.getContents()));
-					if( !(executor.invokeAny(Arrays.asList(QUERYsComputeState), WaitForQuery, TU)).equals("d") ) System.err.println("ERROR : computeState");
-					else currentState = machine.getContents();
+					if( !(executor.invokeAny(Arrays.asList(QUERYsComputeState), WaitForQuery, TU)).equals("d") ){
+						GamerLogger.logError("StateMachine", "UNHANDLED ERROR : computeState");
+						GamerLogger.log("Responsibility", "FAIL-YAP(computeState) for getRandomMove.");
+						GamerLogger.log("StateMachine", "FAIL-YAP(computeState) for getRandomMove.");
+					}else{
+						currentState = machine.getContents();
+					}
 				}
-				return support.askToMove(executor.invokeAny(Arrays.asList(QUERYsGetRandomMove), WaitForQuery, TU));
+				Move move = support.askToMove(executor.invokeAny(Arrays.asList(QUERYsGetRandomMove), WaitForQuery, TU));
+				GamerLogger.log("Responsibility", "YAP(getRandomMove)");
+				GamerLogger.log("StateMachine", "YAP(getRandomMove)");
+				return move;
 			}
 			catch(TimeoutException te){
 				GamerLogger.logError("StateMachine", "[Yap] Timeout during random move computation.");
 				GamerLogger.logStackTrace("StateMachine", te);
+				GamerLogger.log("Responsibility", "NOONE(getRandomMove)");
+				GamerLogger.log("StateMachine", "NOONE(getRandomMove)");
 				reInitialize();
 				return null;
 			}
 			catch(NullPointerException ne){
-				System.err.println("NULL : getRandomMove");
+				GamerLogger.logError("StateMachine", "[Yap] Null pointer exception during random move computation.");
+				GamerLogger.logStackTrace("StateMachine", ne);
+				GamerLogger.log("Responsibility", "NOONE(getRandomMove)");
+				GamerLogger.log("StateMachine", "NOONE(getRandomMove)");
 				reInitialize();
 				return null;
 			}
 			catch(Exception e){
-				System.err.println("THREAD : getRandomMove");
+				GamerLogger.logError("StateMachine", "[Yap] Exception during random move computation.");
+				GamerLogger.logStackTrace("StateMachine", e);
+				GamerLogger.log("Responsibility", "NOONE(getRandomMove)");
+				GamerLogger.log("StateMachine", "NOONE(getRandomMove)");
 				reInitialize();
 				return null;
 			}
@@ -734,11 +919,16 @@ public class YapEngine{
 		{
 			try{
 				computeState(machine);
-				return support.askToMoves((String[]) engine.deterministicGoal("get_random_joint_move("+fakeRoles+", List), processList(List, LL), ipObjectTemplate('ArrayOfString',AS,_,[LL],_)", "[AS]") [0]);
+				List<Move> moves = support.askToMoves((String[]) engine.deterministicGoal("get_random_joint_move("+fakeRoles+", List), processList(List, LL), ipObjectTemplate('ArrayOfString',AS,_,[LL],_)", "[AS]") [0]);
+				GamerLogger.log("Responsibility", "YAP(getRandomJointMove(_))");
+				GamerLogger.log("StateMachine", "YAP(getRandomJointMove(_))");
+				return moves;
 			}
 			catch(Exception e){
-				e.printStackTrace();
-				System.err.println("getRandomJointMove(_)");
+				GamerLogger.logError("StateMachine", "[Yap] Exception while getting random joint move.");
+				GamerLogger.logStackTrace("StateMachine", e);
+				GamerLogger.log("Responsibility", "NOONE(getRandomJointMove(_))");
+				GamerLogger.log("StateMachine", "NOONE(getRandomJointMove(_))");
 			}
 			return null;
 		}
@@ -749,24 +939,40 @@ public class YapEngine{
 				if(!currentState.equals(machine.getContents()))
 				{
 					QUERYsComputeState.setSubGoal(""+support.getFakeMachineState(machine.getContents()));
-					if( !(executor.invokeAny(Arrays.asList(QUERYsComputeState), WaitForQuery, TU)).equals("d") ) System.err.println("ERROR : computeState");
-					else currentState = machine.getContents();
+					if( !(executor.invokeAny(Arrays.asList(QUERYsComputeState), WaitForQuery, TU)).equals("d") ){
+						GamerLogger.logError("StateMachine", "UNHANDLED ERROR : computeState");
+						GamerLogger.log("Responsibility", "FAIL-YAP(computeState) for getRandomJointMove(_).");
+						GamerLogger.log("StateMachine", "FAIL-YAP(computeState) for getRandomJointMove(_).");
+					}else{
+						currentState = machine.getContents();
+					}
 				}
-				return support.askToMoves(executor.invokeAny(Arrays.asList(QUERYaosGetRandomJointMove1), WaitForQuery, TU));
+				List<Move> moves = support.askToMoves(executor.invokeAny(Arrays.asList(QUERYaosGetRandomJointMove1), WaitForQuery, TU));
+				GamerLogger.log("Responsibility", "YAP(getRandomJointMove).");
+				GamerLogger.log("StateMachine", "YAP(getRandomJointMove).");
+				return moves;
 			}
 			catch(TimeoutException te){
 				GamerLogger.logError("StateMachine", "[Yap] Timeout while getting random joint move.");
 				GamerLogger.logStackTrace("StateMachine", te);
+				GamerLogger.log("Responsibility", "NOONE(getRandomJointMove(_))");
+				GamerLogger.log("StateMachine", "NOONE(getRandomJointMove(_))");
 				reInitialize();
 				return null;
 			}
 			catch(NullPointerException ne){
-				System.err.println("NULL : getRandomJointMove(_)");
+				GamerLogger.logError("StateMachine", "[Yap] Null pointer exception while getting random joint move.");
+				GamerLogger.logStackTrace("StateMachine", ne);
+				GamerLogger.log("Responsibility", "NOONE(getRandomJointMove(_))");
+				GamerLogger.log("StateMachine", "NOONE(getRandomJointMove(_))");
 				reInitialize();
 				return null;
 			}
 			catch(Exception e){
-				System.err.println("THREAD : getRandomJointMove(_)");
+				GamerLogger.logError("StateMachine", "[Yap] Exception while getting random joint move.");
+				GamerLogger.logStackTrace("StateMachine", e);
+				GamerLogger.log("Responsibility", "NOONE(getRandomJointMove(_))");
+				GamerLogger.log("StateMachine", "NOONE(getRandomJointMove(_))");
 				reInitialize();
 				return null;
 			}
@@ -789,11 +995,16 @@ public class YapEngine{
 		{
 			try{
 				computeState(machine);
-				return support.askToMoves((String[]) engine.deterministicGoal("get_random_joint_moveg("+fakeRoles+", "+support.getFakeRole(role)+", "+support.getFakeMove(move)+", List), processList(List, LL), ipObjectTemplate('ArrayOfString',AS,_,[LL],_)", "[AS]") [0]);
+				List<Move> moves = support.askToMoves((String[]) engine.deterministicGoal("get_random_joint_moveg("+fakeRoles+", "+support.getFakeRole(role)+", "+support.getFakeMove(move)+", List), processList(List, LL), ipObjectTemplate('ArrayOfString',AS,_,[LL],_)", "[AS]") [0]);
+				GamerLogger.log("Responsibility", "YAP(getRandomJointMove(_,_,_))");
+				GamerLogger.log("StateMachine", "YAP(getRandomJointMove(_,_,_))");
+				return moves;
 			}
 			catch(Exception e){
-				e.printStackTrace();
-				System.err.println("getRandomJointMove(_,_,_)");
+				GamerLogger.logError("StateMachine", "[Yap] Exception while computing random joint move with one fixed role move.");
+				GamerLogger.logStackTrace("StateMachine", e);
+				GamerLogger.log("Responsibility", "NOONE(getRandomJointMove(_,_,_))");
+				GamerLogger.log("StateMachine", "NOONE(getRandomJointMove(_,_,_))");
 			}
 			return null;
 		}
@@ -804,24 +1015,40 @@ public class YapEngine{
 				if(!currentState.equals(machine.getContents()))
 				{
 					QUERYsComputeState.setSubGoal(""+support.getFakeMachineState(machine.getContents()));
-					if( !(executor.invokeAny(Arrays.asList(QUERYsComputeState), WaitForQuery, TU)).equals("d") ) System.err.println("ERROR : computeState");
-					else currentState = machine.getContents();
+					if( !(executor.invokeAny(Arrays.asList(QUERYsComputeState), WaitForQuery, TU)).equals("d") ){
+						GamerLogger.logError("StateMachine", "UNHANDLED ERROR : computeState");
+						GamerLogger.log("Responsibility", "FAIL-YAP(computeState) for getRandomJointMove(_,_,_).");
+						GamerLogger.log("StateMachine", "FAIL-YAP(computeState) for getRandomJointMove(_,_,_).");
+					}else{
+						currentState = machine.getContents();
+					}
 				}
-				return support.askToMoves(executor.invokeAny(Arrays.asList(QUERYaosGetRandomJointMove2), WaitForQuery, TU));
+				List<Move> moves = support.askToMoves(executor.invokeAny(Arrays.asList(QUERYaosGetRandomJointMove2), WaitForQuery, TU));
+				GamerLogger.log("Responsibility", "YAP(getRandomJointMove(_,_,_))");
+				GamerLogger.log("StateMachine", "YAP(getRandomJointMove(_,_,_))");
+				return moves;
 			}
 			catch(TimeoutException te){
 				GamerLogger.logError("StateMachine", "[Yap] Timeout while computing random joint move with one fixed role move.");
 				GamerLogger.logStackTrace("StateMachine", te);
+				GamerLogger.log("Responsibility", "NOONE(getRandomJointMove(_,_,_))");
+				GamerLogger.log("StateMachine", "NOONE(getRandomJointMove(_,_,_))");
 				reInitialize();
 				return null;
 			}
 			catch(NullPointerException ne){
-				System.err.println("NULL : getRandomJointMove(_,_,_)");
+				GamerLogger.logError("StateMachine", "[Yap] Null pointer exception while computing random joint move with one fixed role move.");
+				GamerLogger.logStackTrace("StateMachine", ne);
+				GamerLogger.log("Responsibility", "NOONE(getRandomJointMove(_,_,_))");
+				GamerLogger.log("StateMachine", "NOONE(getRandomJointMove(_,_,_))");
 				reInitialize();
 				return null;
 			}
 			catch(Exception e){
-				System.err.println("THREAD : getRandomJointMove(_,_,_)");
+				GamerLogger.logError("StateMachine", "[Yap] Exception while computing random joint move with one fixed role move.");
+				GamerLogger.logStackTrace("StateMachine", e);
+				GamerLogger.log("Responsibility", "NOONE(getRandomJointMove(_,_,_))");
+				GamerLogger.log("StateMachine", "NOONE(getRandomJointMove(_,_,_))");
 				reInitialize();
 				return null;
 			}
@@ -845,11 +1072,15 @@ public class YapEngine{
 			try{
 				computeState(machine);
 				currentState = support.askToState((String[]) engine.deterministicGoal("get_random_next_state("+fakeRoles+", "+support.getFakeRole(role)+", "+support.getFakeMove(move)+", List), processList(List, LL), ipObjectTemplate('ArrayOfString',AS,_,[LL],_)", "[AS]") [0]);
+				GamerLogger.log("Responsibility", "YAP(getRandomNextState)");
+				GamerLogger.log("StateMachine", "YAP(getRandomNextState)");
 				return new MachineState(currentState);
 			}
 			catch(Exception e){
-				e.printStackTrace();
-				System.err.println("getRandomNextState");
+				GamerLogger.logError("StateMachine", "[Yap] Exception while computing a random next state given a fixed move for one role.");
+				GamerLogger.logStackTrace("StateMachine", e);
+				GamerLogger.log("Responsibility", "NOONE(getRandomNextState)");
+				GamerLogger.log("StateMachine", "NOONE(getRandomNextState)");
 			}
 		}
 		else
@@ -859,24 +1090,43 @@ public class YapEngine{
 				if(!currentState.equals(machine.getContents()))
 				{
 					QUERYsComputeState.setSubGoal(""+support.getFakeMachineState(machine.getContents()));
-					if( !(executor.invokeAny(Arrays.asList(QUERYsComputeState), WaitForQuery, TU)).equals("d") ) System.err.println("ERROR : computeState");
-					else currentState = support.askToState(executor.invokeAny(Arrays.asList(QUERYaosGetRandomNextState), WaitForQuery, TU));
+					if( !(executor.invokeAny(Arrays.asList(QUERYsComputeState), WaitForQuery, TU)).equals("d") ){
+						GamerLogger.logError("StateMachine", "UNHANDLED ERROR : computeState");
+						GamerLogger.log("Responsibility", "FAIL-YAP(computeState) for getRandomNextState.");
+						GamerLogger.log("StateMachine", "FAIL-YAP(computeState) for getRandomNextState.");
+					}else{
+						currentState = support.askToState(executor.invokeAny(Arrays.asList(QUERYaosGetRandomNextState), WaitForQuery, TU));
+						GamerLogger.log("Responsibility", "YAP(getRandomNextState)");
+						GamerLogger.log("StateMachine", "YAP(getRandomNextState)");
+
+					}
+				}else{
+					currentState = support.askToState(executor.invokeAny(Arrays.asList(QUERYaosGetRandomNextState), WaitForQuery, TU));
+					GamerLogger.log("Responsibility", "YAP(getRandomNextState)");
+					GamerLogger.log("StateMachine", "YAP(getRandomNextState)");
 				}
-				else currentState = support.askToState(executor.invokeAny(Arrays.asList(QUERYaosGetRandomNextState), WaitForQuery, TU));
 			}
 			catch(TimeoutException te){
 				GamerLogger.logError("StateMachine", "[Yap] Timeout while computing a random next state given a fixed move for one role.");
 				GamerLogger.logStackTrace("StateMachine", te);
+				GamerLogger.log("Responsibility", "NOONE(getRandomNextState)");
+				GamerLogger.log("StateMachine", "NOONE(getRandomNextState)");
 				reInitialize();
 				return null;
 			}
 			catch(NullPointerException ne){
-				System.err.println("NULL : getRandomNextState");
+				GamerLogger.logError("StateMachine", "[Yap] Null pointer exception while computing a random next state given a fixed move for one role.");
+				GamerLogger.logStackTrace("StateMachine", ne);
+				GamerLogger.log("Responsibility", "NOONE(getRandomNextState)");
+				GamerLogger.log("StateMachine", "NOONE(getRandomNextState)");
 				reInitialize();
 				return null;
 			}
 			catch(Exception e){
-				System.err.println("THREAD : getRandomNextState");
+				GamerLogger.logError("StateMachine", "[Yap] Exception while computing a random next state given a fixed move for one role.");
+				GamerLogger.logStackTrace("StateMachine", e);
+				GamerLogger.log("Responsibility", "NOONE(getRandomNextState)");
+				GamerLogger.log("StateMachine", "NOONE(getRandomNextState)");
 				reInitialize();
 				return null;
 			}
@@ -903,11 +1153,15 @@ public class YapEngine{
 			try{
 				computeState(machine);
 				currentState = support.askToState((String[]) engine.deterministicGoal("perform_depth_charge("+fakeRoles+", List), processList(List, LL), ipObjectTemplate('ArrayOfString',AS,_,[LL],_)", "[AS]") [0]);
+				GamerLogger.log("Responsibility", "YAP(performDepthCharge)");
+				GamerLogger.log("StateMachine", "YAP(performDepthCharge)");
 				return new MachineState(currentState);
 			}
 			catch(Exception e){
-				e.printStackTrace();
-				System.err.println("performDepthCharge");
+				GamerLogger.logError("StateMachine", "[Yap] Exception while performing depth charge.");
+				GamerLogger.logStackTrace("StateMachine", e);
+				GamerLogger.log("Responsibility", "NOONE(performDepthCharge)");
+				GamerLogger.log("StateMachine", "NOONE(performDepthCharge)");
 			}
 		}
 		else
@@ -917,25 +1171,43 @@ public class YapEngine{
 				if(!currentState.equals(machine.getContents()))
 				{
 					QUERYsComputeState.setSubGoal(""+support.getFakeMachineState(machine.getContents()));
-					if( !(executor.invokeAny(Arrays.asList(QUERYsComputeState), WaitForQuery, TU)).equals("d") ) System.err.println("ERROR : computeState");
-					else currentState = support.askToStatePerform(executor.invokeAny(Arrays.asList(QUERYaosPerformDepthCharge), WaitForQuery, TU));
+					if( !(executor.invokeAny(Arrays.asList(QUERYsComputeState), WaitForQuery, TU)).equals("d") ){
+						GamerLogger.logError("StateMachine", "UNHANDLED ERROR : computeState");
+						GamerLogger.log("Responsibility", "FAIL-YAP(computeState) for performDepthCharge.");
+						GamerLogger.log("StateMachine", "FAIL-YAP(computeState) for performDepthCharge.");
+					}else{
+						currentState = support.askToStatePerform(executor.invokeAny(Arrays.asList(QUERYaosPerformDepthCharge), WaitForQuery*10, TU));
+						GamerLogger.log("Responsibility", "YAP(performDepthCharge)");
+						GamerLogger.log("StateMachine", "YAP(performDepthCharge)");
+					}
+				}else{
+					currentState = support.askToStatePerform(executor.invokeAny(Arrays.asList(QUERYaosPerformDepthCharge), WaitForQuery*10, TU));
+					GamerLogger.log("Responsibility", "YAP(performDepthCharge)");
+					GamerLogger.log("StateMachine", "YAP(performDepthCharge)");
 				}
-				else currentState = support.askToStatePerform(executor.invokeAny(Arrays.asList(QUERYaosPerformDepthCharge), WaitForQuery, TU));
 				theDepth[0] = support.getPerformDepth();
 			}
 			catch(TimeoutException te){
 				GamerLogger.logError("StateMachine", "[Yap] Timeout while performing depth charge.");
 				GamerLogger.logStackTrace("StateMachine", te);
+				GamerLogger.log("Responsibility", "NOONE(performDepthCharge)");
+				GamerLogger.log("StateMachine", "NOONE(performDepthCharge)");
 				reInitialize();
 				return null;
 			}
 			catch(NullPointerException ne){
-				System.err.println("NULL : performDepthCharge");
+				GamerLogger.logError("StateMachine", "[Yap] Null pointer exception while performing depth charge.");
+				GamerLogger.logStackTrace("StateMachine", ne);
+				GamerLogger.log("Responsibility", "NOONE(performDepthCharge)");
+				GamerLogger.log("StateMachine", "NOONE(performDepthCharge)");
 				reInitialize();
 				return null;
 			}
 			catch(Exception e){
-				System.err.println("THREAD : performDepthCharge");
+				GamerLogger.logError("StateMachine", "[Yap] Exception while performing depth charge.");
+				GamerLogger.logStackTrace("StateMachine", e);
+				GamerLogger.log("Responsibility", "NOONE(performDepthCharge)");
+				GamerLogger.log("StateMachine", "NOONE(performDepthCharge)");
 				reInitialize();
 				return null;
 			}
@@ -964,7 +1236,8 @@ public class YapEngine{
 			return true;
 		}
 		catch(Exception e){
-			System.err.println("ERROR : flushAndWrite("+fileDescription+")");
+			GamerLogger.logError("StateMachine", "ERROR : flushAndWrite("+fileDescription+")");
+			GamerLogger.logStackTrace("StateMachine", e);
 			return false;
 		}
 	}

@@ -37,7 +37,7 @@ public class YapEngineSupport {
 	 */
 	public YapEngineSupport()
 	{
-		System.out.println("Creazione YapEngineSupport");
+		//System.out.println("Creazione YapEngineSupport");
 		yapMapping = new MappingYapFacilitator();
 
 		sentenceMapping = new HashMap<String, GdlSentence>();

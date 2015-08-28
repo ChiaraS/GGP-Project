@@ -13,7 +13,6 @@ import org.ggp.base.player.event.PlayerSentMessageEvent;
 import org.ggp.base.player.gamer.Gamer;
 import org.ggp.base.player.gamer.statemachine.random.RandomGamer;
 import org.ggp.base.player.request.factory.RequestFactory;
-import org.ggp.base.player.request.grammar.PlayRequest;
 import org.ggp.base.player.request.grammar.Request;
 import org.ggp.base.util.http.HttpReader;
 import org.ggp.base.util.http.HttpWriter;
@@ -119,9 +118,11 @@ public final class GamePlayer extends Thread implements Subject
 				HttpWriter.writeAsServer(connection, out);
 				connection.close();
 
+				/*
 				if(request instanceof PlayRequest){
 					GamerLogger.log("Stats", "MOVE_PROCESSING_TIME = " + (System.currentTimeMillis() - start));
 				}
+				*/
 
 				notifyObservers(new PlayerSentMessageEvent(out));
 				GamerLogger.log("GamePlayer", "[Sent at " + System.currentTimeMillis() + "] " + out, GamerLogger.LOG_LEVEL_DATA_DUMP);
