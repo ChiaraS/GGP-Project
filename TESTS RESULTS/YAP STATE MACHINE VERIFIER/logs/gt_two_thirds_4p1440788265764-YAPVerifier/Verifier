@@ -1,0 +1,4 @@
+LOG 1440788265828 [L3]: Testing on game gt_two_thirds_4p
+LOG 1440788265954 [L3]: Performing automatic consistency testing on org.ggp.base.util.statemachine.implementation.yapProlog.YapStateMachine using org.ggp.base.util.statemachine.implementation.prover.ProverStateMachine as a reference.
+LOG 1440788326323 [L3]: Completed automatic consistency testing on org.ggp.base.util.statemachine.implementation.yapProlog.YapStateMachine, w/ 113 rounds: all tests pass!
+

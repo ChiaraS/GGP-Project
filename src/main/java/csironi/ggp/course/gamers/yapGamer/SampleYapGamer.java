@@ -66,7 +66,7 @@ public abstract class SampleYapGamer extends StateMachineYapGamer{
 	@Override
 	public void stateMachineStop() {
 		// Sample gamers do no special cleanup when the match ends normally.
-		//////////
+		////////// TODO: ATTENTION!
 		ysm.stop();
 		//////////
 	}

@@ -1,0 +1,54 @@
+LOG 1440784801010 [L9]: <ERR> (in StateMachine) [Yap] Timeout during single role goal computation.
+LOG 1440784801013 [L9]: <ERR> (in StateMachine) java.util.concurrent.TimeoutException
+	at java.util.concurrent.AbstractExecutorService.doInvokeAny(AbstractExecutorService.java:182)
+	at java.util.concurrent.AbstractExecutorService.invokeAny(AbstractExecutorService.java:225)
+	at java.util.concurrent.Executors$DelegatedExecutorService.invokeAny(Executors.java:663)
+	at org.ggp.base.util.statemachine.implementation.yapProlog.YapEngine.getGoal(YapEngine.java:483)
+	at org.ggp.base.util.statemachine.implementation.yapProlog.YapStateMachine.getGoal(YapStateMachine.java:119)
+	at org.ggp.base.util.statemachine.verifier.StateMachineVerifier.checkMachineConsistency(StateMachineVerifier.java:147)
+	at csironi.ggp.course.YAPVerifier.main(YAPVerifier.java:89)
+LOG 1440784801641 [L9]: <ERR> (in StateMachine) [Yap] Timeout during single role goal computation.
+LOG 1440784801641 [L9]: <ERR> (in StateMachine) java.util.concurrent.TimeoutException
+	at java.util.concurrent.AbstractExecutorService.doInvokeAny(AbstractExecutorService.java:182)
+	at java.util.concurrent.AbstractExecutorService.invokeAny(AbstractExecutorService.java:225)
+	at java.util.concurrent.Executors$DelegatedExecutorService.invokeAny(Executors.java:663)
+	at org.ggp.base.util.statemachine.implementation.yapProlog.YapEngine.getGoal(YapEngine.java:483)
+	at org.ggp.base.util.statemachine.implementation.yapProlog.YapStateMachine.getGoal(YapStateMachine.java:119)
+	at org.ggp.base.util.statemachine.verifier.StateMachineVerifier.checkMachineConsistency(StateMachineVerifier.java:147)
+	at csironi.ggp.course.YAPVerifier.main(YAPVerifier.java:89)
+LOG 1440784820219 [L9]: <ERR> (in StateMachine) [Yap] Timeout during single role goal computation.
+LOG 1440784820221 [L9]: <ERR> (in StateMachine) java.util.concurrent.TimeoutException
+	at java.util.concurrent.AbstractExecutorService.doInvokeAny(AbstractExecutorService.java:182)
+	at java.util.concurrent.AbstractExecutorService.invokeAny(AbstractExecutorService.java:225)
+	at java.util.concurrent.Executors$DelegatedExecutorService.invokeAny(Executors.java:663)
+	at org.ggp.base.util.statemachine.implementation.yapProlog.YapEngine.getGoal(YapEngine.java:483)
+	at org.ggp.base.util.statemachine.implementation.yapProlog.YapStateMachine.getGoal(YapStateMachine.java:119)
+	at org.ggp.base.util.statemachine.verifier.StateMachineVerifier.checkMachineConsistency(StateMachineVerifier.java:147)
+	at csironi.ggp.course.YAPVerifier.main(YAPVerifier.java:89)
+LOG 1440784820844 [L9]: <ERR> (in StateMachine) [Yap] Timeout during single role goal computation.
+LOG 1440784820844 [L9]: <ERR> (in StateMachine) java.util.concurrent.TimeoutException
+	at java.util.concurrent.AbstractExecutorService.doInvokeAny(AbstractExecutorService.java:182)
+	at java.util.concurrent.AbstractExecutorService.invokeAny(AbstractExecutorService.java:225)
+	at java.util.concurrent.Executors$DelegatedExecutorService.invokeAny(Executors.java:663)
+	at org.ggp.base.util.statemachine.implementation.yapProlog.YapEngine.getGoal(YapEngine.java:483)
+	at org.ggp.base.util.statemachine.implementation.yapProlog.YapStateMachine.getGoal(YapStateMachine.java:119)
+	at org.ggp.base.util.statemachine.verifier.StateMachineVerifier.checkMachineConsistency(StateMachineVerifier.java:147)
+	at csironi.ggp.course.YAPVerifier.main(YAPVerifier.java:89)
+LOG 1440784839207 [L9]: <ERR> (in StateMachine) [Yap] Timeout during single role goal computation.
+LOG 1440784839241 [L9]: <ERR> (in StateMachine) java.util.concurrent.TimeoutException
+	at java.util.concurrent.AbstractExecutorService.doInvokeAny(AbstractExecutorService.java:182)
+	at java.util.concurrent.AbstractExecutorService.invokeAny(AbstractExecutorService.java:225)
+	at java.util.concurrent.Executors$DelegatedExecutorService.invokeAny(Executors.java:663)
+	at org.ggp.base.util.statemachine.implementation.yapProlog.YapEngine.getGoal(YapEngine.java:483)
+	at org.ggp.base.util.statemachine.implementation.yapProlog.YapStateMachine.getGoal(YapStateMachine.java:119)
+	at org.ggp.base.util.statemachine.verifier.StateMachineVerifier.checkMachineConsistency(StateMachineVerifier.java:147)
+	at csironi.ggp.course.YAPVerifier.main(YAPVerifier.java:89)
+LOG 1440784839868 [L9]: <ERR> (in StateMachine) [Yap] Timeout during single role goal computation.
+LOG 1440784839869 [L9]: <ERR> (in StateMachine) java.util.concurrent.TimeoutException
+	at java.util.concurrent.AbstractExecutorService.doInvokeAny(AbstractExecutorService.java:182)
+	at java.util.concurrent.AbstractExecutorService.invokeAny(AbstractExecutorService.java:225)
+	at java.util.concurrent.Executors$DelegatedExecutorService.invokeAny(Executors.java:663)
+	at org.ggp.base.util.statemachine.implementation.yapProlog.YapEngine.getGoal(YapEngine.java:483)
+	at org.ggp.base.util.statemachine.implementation.yapProlog.YapStateMachine.getGoal(YapStateMachine.java:119)
+	at org.ggp.base.util.statemachine.verifier.StateMachineVerifier.checkMachineConsistency(StateMachineVerifier.java:147)
+	at csironi.ggp.course.YAPVerifier.main(YAPVerifier.java:89)

@@ -1,0 +1,6 @@
+LOG 1440781589821 [L3]: Testing on game zhadu
+LOG 1440781589961 [L3]: Performing automatic consistency testing on org.ggp.base.util.statemachine.implementation.yapProlog.YapStateMachine using org.ggp.base.util.statemachine.implementation.prover.ProverStateMachine as a reference.
+LOG 1440781592929 [L3]: Inconsistency between machine #1 and ProverStateMachine over state [( true ( piece dark 1 h3 ) ), ( true ( piece light 2 a2 ) ), ( true ( piece light 4 a1 ) ), ( true ( piece dark 4 f ) ), ( true ( piece light 3 a3 ) ), ( true ( control light ) ), ( true ( piece dark 2 h2 ) ), ( true ( piece dark 123 h ) ), ( true ( piece light 123 a ) ), ( true ( piece dark 3 h1 ) ), ( true ( piece light 1 c ) ), ( true ( step 10 ) )] vs [( true ( piece light 2 a2 ) ), ( true ( piece dark 1 h3 ) ), ( true ( piece light 4 a1 ) ), ( true ( piece light 3 a3 ) ), ( true ( piece dark 4 f ) ), ( true ( control light ) ), ( true ( piece light 123 a ) ), ( true ( piece dark 123 h ) ), ( true ( piece dark 2 h2 ) ), ( true ( piece light 1 c ) ), ( true ( piece dark 3 h1 ) ), ( true ( step 10 ) )]
+LOG 1440781592961 [L3]: Machine #0 has move count = 13 for player light
+LOG 1440781593010 [L3]: Machine #1 has move count = 6 for player light
+

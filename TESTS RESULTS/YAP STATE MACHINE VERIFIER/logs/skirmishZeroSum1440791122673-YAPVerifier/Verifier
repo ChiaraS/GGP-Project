@@ -1,0 +1,4 @@
+LOG 1440791122686 [L3]: Testing on game skirmishZeroSum
+LOG 1440791122831 [L3]: Performing automatic consistency testing on org.ggp.base.util.statemachine.implementation.yapProlog.YapStateMachine using org.ggp.base.util.statemachine.implementation.prover.ProverStateMachine as a reference.
+LOG 1440791183039 [L3]: Completed automatic consistency testing on org.ggp.base.util.statemachine.implementation.yapProlog.YapStateMachine, w/ 3 rounds: all tests pass!
+

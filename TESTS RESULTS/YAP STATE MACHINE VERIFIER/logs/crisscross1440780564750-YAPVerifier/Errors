@@ -1,0 +1,9 @@
+LOG 1440780619853 [L9]: <ERR> (in StateMachine) [Yap] Timeout during next state computation.
+LOG 1440780619854 [L9]: <ERR> (in StateMachine) java.util.concurrent.TimeoutException
+	at java.util.concurrent.AbstractExecutorService.doInvokeAny(AbstractExecutorService.java:182)
+	at java.util.concurrent.AbstractExecutorService.invokeAny(AbstractExecutorService.java:225)
+	at java.util.concurrent.Executors$DelegatedExecutorService.invokeAny(Executors.java:663)
+	at org.ggp.base.util.statemachine.implementation.yapProlog.YapEngine.getNextState(YapEngine.java:694)
+	at org.ggp.base.util.statemachine.implementation.yapProlog.YapStateMachine.getNextState(YapStateMachine.java:175)
+	at org.ggp.base.util.statemachine.verifier.StateMachineVerifier.checkMachineConsistency(StateMachineVerifier.java:111)
+	at csironi.ggp.course.YAPVerifier.main(YAPVerifier.java:89)

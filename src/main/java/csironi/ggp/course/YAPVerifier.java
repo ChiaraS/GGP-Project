@@ -35,16 +35,16 @@ public class YAPVerifier {
 			if(args.length == 1){
 				try{
 					testTime = Long.parseLong(args[0]);
-					System.out.println("Running tests with the following time duration: " + testTime);
+					System.out.println("Running tests with the following time duration: " + testTime + "ms");
 				}catch(NumberFormatException nfe){
 					testTime = 10000L;
-					System.out.println("Inconsistent time value specification! Running tests with default time duration: " + testTime);
+					System.out.println("Inconsistent time value specification! Running tests with default time duration: " + testTime + "ms");
 				}
 			}else{
-				System.out.println("Inconsistent time value specification! Running tests with default time duration: " + testTime);
+				System.out.println("Inconsistent time value specification! Running tests with default time duration: " + testTime + "ms");
 			}
 		}else{
-			System.out.println("Running tests with default time duration: " + testTime);
+			System.out.println("Running tests with default time duration: " + testTime + "ms");
 		}
 
 		System.out.println();
@@ -67,7 +67,7 @@ public class YAPVerifier {
 
             GamerLogger.startFileLogging(fakeMatch, "YAPVerifier");
 
-            GamerLogger.log("YAPVerifier", "Testing on game " + gameKey);
+            GamerLogger.log("Verifier", "Testing on game " + gameKey);
 
             List<Gdl> description = theRepository.getGame(gameKey).getRules();
 
@@ -90,10 +90,13 @@ public class YAPVerifier {
             duration = System.currentTimeMillis() - start;
             rounds = StateMachineVerifier.lastRounds;
 
-            GamerLogger.log(FORMAT.PLAIN_FORMAT, "YAPVerifier", "");
+            GamerLogger.log(FORMAT.PLAIN_FORMAT, "Verifier", "");
 
             GamerLogger.stopFileLogging();
             GamerLogger.log(FORMAT.CSV_FORMAT, "YapVerifierTable", gameKey + ";" + rounds + ";" + duration + ";" + pass + ";");
+
+            theYapMachine.stop();
+
         }
 	}
 

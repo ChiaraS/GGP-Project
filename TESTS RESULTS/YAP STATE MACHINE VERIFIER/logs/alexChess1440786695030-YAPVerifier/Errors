@@ -1,0 +1,40 @@
+LOG 1440786695974 [L9]: <ERR> (in StateMachine) [Yap] Timeout during single role legal moves computation.
+LOG 1440786695987 [L9]: <ERR> (in StateMachine) java.util.concurrent.TimeoutException
+	at java.util.concurrent.AbstractExecutorService.doInvokeAny(AbstractExecutorService.java:182)
+	at java.util.concurrent.AbstractExecutorService.invokeAny(AbstractExecutorService.java:225)
+	at java.util.concurrent.Executors$DelegatedExecutorService.invokeAny(Executors.java:663)
+	at org.ggp.base.util.statemachine.implementation.yapProlog.YapEngine.getLegalMoves(YapEngine.java:587)
+	at org.ggp.base.util.statemachine.implementation.yapProlog.YapStateMachine.getLegalMoves(YapStateMachine.java:164)
+	at org.ggp.base.util.statemachine.verifier.StateMachineVerifier.checkMachineConsistency(StateMachineVerifier.java:88)
+	at csironi.ggp.course.YAPVerifier.main(YAPVerifier.java:89)
+LOG 1440786696622 [L9]: <ERR> (in StateMachine) [Yap] Exception during next state computation.
+LOG 1440786696634 [L9]: <ERR> (in StateMachine) java.util.concurrent.ExecutionException: java.lang.NullPointerException
+	at java.util.concurrent.FutureTask$Sync.innerGet(FutureTask.java:252)
+	at java.util.concurrent.FutureTask.get(FutureTask.java:111)
+	at java.util.concurrent.AbstractExecutorService.doInvokeAny(AbstractExecutorService.java:193)
+	at java.util.concurrent.AbstractExecutorService.invokeAny(AbstractExecutorService.java:225)
+	at java.util.concurrent.Executors$DelegatedExecutorService.invokeAny(Executors.java:663)
+	at org.ggp.base.util.statemachine.implementation.yapProlog.YapEngine.getNextState(YapEngine.java:694)
+	at org.ggp.base.util.statemachine.implementation.yapProlog.YapStateMachine.getNextState(YapStateMachine.java:175)
+	at org.ggp.base.util.statemachine.verifier.StateMachineVerifier.checkMachineConsistency(StateMachineVerifier.java:111)
+	at csironi.ggp.course.YAPVerifier.main(YAPVerifier.java:89)
+Caused by: java.lang.NullPointerException
+	at org.ggp.base.util.statemachine.implementation.yapProlog.YapEngine$QueryAOS.call(YapEngine.java:1391)
+	at org.ggp.base.util.statemachine.implementation.yapProlog.YapEngine$QueryAOS.call(YapEngine.java:1)
+	at java.util.concurrent.FutureTask$Sync.innerRun(FutureTask.java:334)
+	at java.util.concurrent.FutureTask.run(FutureTask.java:166)
+	at java.util.concurrent.Executors$RunnableAdapter.call(Executors.java:471)
+	at java.util.concurrent.FutureTask$Sync.innerRun(FutureTask.java:334)
+	at java.util.concurrent.FutureTask.run(FutureTask.java:166)
+	at java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1110)
+	at java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:603)
+	at java.lang.Thread.run(Thread.java:722)
+LOG 1440786697436 [L9]: <ERR> (in StateMachine) [Yap] Timeout during single role legal moves computation.
+LOG 1440786697438 [L9]: <ERR> (in StateMachine) java.util.concurrent.TimeoutException
+	at java.util.concurrent.AbstractExecutorService.doInvokeAny(AbstractExecutorService.java:182)
+	at java.util.concurrent.AbstractExecutorService.invokeAny(AbstractExecutorService.java:225)
+	at java.util.concurrent.Executors$DelegatedExecutorService.invokeAny(Executors.java:663)
+	at org.ggp.base.util.statemachine.implementation.yapProlog.YapEngine.getLegalMoves(YapEngine.java:587)
+	at org.ggp.base.util.statemachine.implementation.yapProlog.YapStateMachine.getLegalMoves(YapStateMachine.java:164)
+	at org.ggp.base.util.statemachine.verifier.StateMachineVerifier.checkMachineConsistency(StateMachineVerifier.java:88)
+	at csironi.ggp.course.YAPVerifier.main(YAPVerifier.java:89)

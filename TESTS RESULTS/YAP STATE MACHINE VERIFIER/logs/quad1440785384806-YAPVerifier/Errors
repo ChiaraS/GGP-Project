@@ -1,0 +1,18 @@
+LOG 1440785407340 [L9]: <ERR> (in StateMachine) [Yap] Timeout during single role goal computation.
+LOG 1440785407343 [L9]: <ERR> (in StateMachine) java.util.concurrent.TimeoutException
+	at java.util.concurrent.AbstractExecutorService.doInvokeAny(AbstractExecutorService.java:182)
+	at java.util.concurrent.AbstractExecutorService.invokeAny(AbstractExecutorService.java:225)
+	at java.util.concurrent.Executors$DelegatedExecutorService.invokeAny(Executors.java:663)
+	at org.ggp.base.util.statemachine.implementation.yapProlog.YapEngine.getGoal(YapEngine.java:483)
+	at org.ggp.base.util.statemachine.implementation.yapProlog.YapStateMachine.getGoal(YapStateMachine.java:119)
+	at org.ggp.base.util.statemachine.verifier.StateMachineVerifier.checkMachineConsistency(StateMachineVerifier.java:147)
+	at csironi.ggp.course.YAPVerifier.main(YAPVerifier.java:89)
+LOG 1440786031038 [L9]: <ERR> (in StateMachine) [Yap] Exception during single role goal computation.
+LOG 1440786031048 [L9]: <ERR> (in StateMachine) java.lang.NumberFormatException: For input string: ""
+	at java.lang.NumberFormatException.forInputString(NumberFormatException.java:65)
+	at java.lang.Integer.parseInt(Integer.java:504)
+	at java.lang.Integer.parseInt(Integer.java:527)
+	at org.ggp.base.util.statemachine.implementation.yapProlog.YapEngine.getGoal(YapEngine.java:483)
+	at org.ggp.base.util.statemachine.implementation.yapProlog.YapStateMachine.getGoal(YapStateMachine.java:119)
+	at org.ggp.base.util.statemachine.verifier.StateMachineVerifier.checkMachineConsistency(StateMachineVerifier.java:147)
+	at csironi.ggp.course.YAPVerifier.main(YAPVerifier.java:89)

@@ -1,0 +1,9 @@
+LOG 1440781714430 [L9]: <ERR> (in StateMachine) [Yap] Timeout during single role legal moves computation.
+LOG 1440781714431 [L9]: <ERR> (in StateMachine) java.util.concurrent.TimeoutException
+	at java.util.concurrent.AbstractExecutorService.doInvokeAny(AbstractExecutorService.java:182)
+	at java.util.concurrent.AbstractExecutorService.invokeAny(AbstractExecutorService.java:225)
+	at java.util.concurrent.Executors$DelegatedExecutorService.invokeAny(Executors.java:663)
+	at org.ggp.base.util.statemachine.implementation.yapProlog.YapEngine.getLegalMoves(YapEngine.java:587)
+	at org.ggp.base.util.statemachine.implementation.yapProlog.YapStateMachine.getLegalMoves(YapStateMachine.java:164)
+	at org.ggp.base.util.statemachine.verifier.StateMachineVerifier.checkMachineConsistency(StateMachineVerifier.java:88)
+	at csironi.ggp.course.YAPVerifier.main(YAPVerifier.java:89)

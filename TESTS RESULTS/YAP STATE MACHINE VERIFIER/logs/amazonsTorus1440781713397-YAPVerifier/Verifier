@@ -1,0 +1,6 @@
+LOG 1440781713404 [L3]: Testing on game amazonsTorus
+LOG 1440781713538 [L3]: Performing automatic consistency testing on org.ggp.base.util.statemachine.implementation.yapProlog.YapStateMachine using org.ggp.base.util.statemachine.implementation.prover.ProverStateMachine as a reference.
+LOG 1440781765384 [L3]: Inconsistency between machine #1 and ProverStateMachine over state [( true ( control black ) ), ( true ( location 1 7 black ) ), ( true ( location 7 1 white ) ), ( true ( location 4 3 arrow ) ), ( true ( location 7 10 black ) ), ( true ( location 1 4 white ) ), ( true ( location 4 10 black ) ), ( true ( location 4 7 white ) ), ( true ( location 10 7 black ) ), ( true ( location 10 4 white ) )] vs [( true ( location 4 3 arrow ) ), ( true ( location 4 7 white ) )]
+LOG 1440781768754 [L3]: Machine #0 has move count = 3297 for player black
+LOG 1440781768796 [L3]: Machine #1 has move count = 1 for player black
+
