@@ -16,7 +16,10 @@ import com.google.common.collect.ImmutableSet;
 public class MappingYapFacilitator {
 
 	// Prolog predicates we must not use
-	private static final ImmutableSet<String> EXISTING = ImmutableSet.of("is","nl","op","cd");
+	// Length 1:
+	private static final ImmutableSet<String> EXISTING_ONE = ImmutableSet.of("e");
+	// Length 2:
+	private static final ImmutableSet<String> EXISTING_TWO = ImmutableSet.of("is","nl","op","cd","gc","if","pi","sh");
 
 	// GDL keywords we must not translate
 	private static final ImmutableSet<String> KEYWORDS = ImmutableSet.of("init","true","next","role","does","goal","legal","terminal","base","input");
@@ -99,6 +102,9 @@ public class MappingYapFacilitator {
 			sbConstant.replace(0, 1, LOWERCASE[constantIndex]);
 			constantIndex++;
 
+			if(EXISTING_ONE.contains(sbConstant.toString())) // it's already a Prolog built-in predicate
+				return nextConstant();
+
 			return sbConstant;
 
 		} else { // 2-letters constants
@@ -109,7 +115,7 @@ public class MappingYapFacilitator {
 			sbConstant.replace(1, 2, LOWERCASE[constantIndex % LENGTH]); // the second one
 			constantIndex++;
 
-			if(EXISTING.contains(sbConstant.toString())) // it's already a Prolog built-in predicate
+			if(EXISTING_TWO.contains(sbConstant.toString())) // it's already a Prolog built-in predicate
 				return nextConstant();
 
 			else return sbConstant;
