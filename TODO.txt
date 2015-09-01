@@ -1,0 +1,74 @@
+v - TEST PROPNET CONSISTENCY VS PROVER
+- REFACTOR PROPNET STATE MACHINE CODE (REMOVE THE BUILDING TIME LIMITATION AND ADD IT TO AN EXTERNAL WRAPPING STATE MACHINE)
+- CHECK IN THE PROPNET STATE MACHINE IF ROLES ARE COMPUTED LIKE THIS: "roles = ImmutableList.copyOf(Role.computeRoles(description));"
+- RE-TEST REFACTORED PROPNET CONSISTENCY VS PROVER
+- COMPARE PROPNET SPEED (NODES/SEC) WITH PROPNET+CASH (AND THEN WITH PROVER)
+- SET UP YAP PROVER ON WINDOWS
+V - SET UP YAP PROVER ON SERVER
+V - TEST YAP PROVER CONSISTENCY VS PROVER
+- REFACTOR YAP STATE MACHINE CODE TO BE MORE MODULAR (!!!!!!!!! PROBLEM!: if there is no solution for a goal Inerprolog returns null as binding => nullPointerException is thrown when casting the element at position[0] of the bindings --> FIX THIS! MOREOVER: change the query to get the goal because atm it assumes that the goal always exists and it's only one! But not alway is true...find a way to get back all(if any) the goals and check if there is only one or if an exception has to be thrown! --> Same thing to check for other methods (i.e. what happens if there is nothing true in the next state?, what happens if there are no legal moves???????? MOREOVER: if initialization fails the current state (i.e. the one that should keep track of prolog state) of the state machine is null => whatever method is called next will throw a nullpointerexception when checking if it's the case to update the prolog state or not!))
+- RE-TEST REFACTORED YAP PROVER CONSISTENCY VS PROVER
+- PLAY WITH GDLFactory CLASS TO SEE IF IT'S USEFUL TO TRANSLATE FROM STRING TO GDL (DOES IT INCREASE OR DECREASE SPEED?)
+- MODIFY REFACTORED YAP PROVER CODE TO IMPROVE IT (E.G. YAPRenderer = GDLRenderer e YAPScrambler = MAppingGDLScrambler, check if it's faster with scrambling or without scrambling(without scrambling is it faster to use the renderer anyway or better gdl.toString) WHEN CHANGING PROLOG STATE: check if it's faster to retract and assert all facts on prolog or assert and retract only the diffs computed with java (i.e. prolog.retract(setDiff(currentState, nextState)), prolog.assert(setDiff(nextState, current state))))) --- tolgo dall'insieme di proposizioni che danno lo stato corrente le proposizioni che sono anche nell'insieme dello stato futuro e retraggo da prolog quelle rimanenti, poi tolgo dallo stato futuro le proposizioni che sono anche nello stato corrente e asserisco in prolog quelle rimanenti.
+- MAKE ALL PATH SPECIFICATIONS IN THE CODE PLATFORM-INDEPENDENT (e.g. USING FILE.SEPARATOR IN THE CLASS "FILE")
+- COMPARE YAP SPEED (NODES/SEC) WITH PROVER SPEED
+- COMPARE YAP SPEED (NODES/SEC) WITH PROPNET SPEED?
+- FIX THE COMMENTS FOR OVERRIDDEN METHODS IN PROPNET TO (NON-JAVADOC) COMMENTS (RICORDA CHE BASTA APRIRE IL COMMENTO CON /* E POI ANDARE A CAPO PER AVERE IL (NON-JAVADOC))
+(E.G. 	/* (non-Javadoc)
+	 * @see org.ggp.base.util.statemachine.StateMachine#getGoal(org.ggp.base.util.statemachine.MachineState, org.ggp.base.util.statemachine.Role)
+	 */
+)
+- FIX GAMER LOGGER LOGS (WHEN TO USE LOG, LOGERROR OR LOGSTACKTRACE?, CHECK THAT ALL EXCEPTION/ERRORS HAVE A LOGGGED MESSAGE, CHECK ALL CALLS TO GAMERLOGGER)
+- ADD LOGS FOR CSV IN GAMER LOGGER
+- WRITE CODE TO SET UP AND RUN EXPERIMENTS
+- SET UP VISUALIZATION OF CSV STATISTICS
+- CREATE HYBRID PROVER (HOW? IS IT BETTER TO CALL THE PROVER IF YAP FAILS OR FIRST RESET YAP AND TRY AGAIN TO ASK IT?)
+- IMPROVE PROPNET IMPLEMENTING WHOLE PLAYOUT IN STATE MACHINE AND IMPLEMENTING METHODS SUCH THAT TRANSLATIONS FROM PROPNET STATE TO MACHINESTATE ARE REDUCED
+- IMPROVE PROPNET WITH SUGGESTIONS FROM SANCHO'S BLOG OR FROM ITS CODE
+- IMPROVE YAP PROVER (E.G. RETURN PROLOG TERMS INSTEAD OF TRANSLATING THEM FIRST TO STRINGS ON PROLOG SIDE)
+- WHAT INFLUENCES PROPNET CONSTRUCTION SPEED? SOMETIMES IT BUILDS SLOW AND SOME TIMES FAST FOR SOME GAMES! --> FIND OUT WHY!
+
+
+
+
+
+
+
+
+
+
+- LOGGING FOR EACH PLAYER (log4j2) -> ALSO TO SAVE STATISTICS IN MACHINE READABLE FORMAT -> Switch routing with StructuredDataMEssage to routing with Markers
+- GRAPHICAL VISUALIZATION OF STATISTICS
+- COMPARE SINGLE PLAYER USING GAMER LOGGER WITH SINGLE PLAYER USING LO4J2 (COMPARE SPEED (NODES/S) -> COMPARE FOR ALL PROVERS??)
+- SET EXPERIMENTS -> CONFIGURATION OF GAMERS + CONFIGURATION OF MATCHES
+- PROPNET STATE MACHINE
+- GAME SERVER LOGGING
+- MCTS PARALLELIZATION
+- USE PROXY PLAYER (DON'T SEND BACK ONLY FINAL MOVE CHOICE, BUT ALSO INTERMEDIATE MOVE CHOICES USING THE "NOTIFY OBSERVERS" METHOD FROM THE GAMER WITH A "WORKING RESPONSE SELECTED EVENT" INSTEAD OF "GAMER SELECTED MOVE EVENT")
+
+- (ADAPTIVE TIMEOUT CHECK) when checking for timeout: since 1 smulation can take more than 10 seconds, for the first iteration check the timeout inside the iteration. Once you have a first value as indicator of the time that one iteration takes, modify the check for timeouts accordingly. (es: if the first iteration times out, checking during iteration allows the player to send a random move in time (or the most reasonable move if there is another way to compute it). if the iteration takes 1 second the you can check for timeout after 8-9 iterations (for example))
+- ridurre in controllo del timeout (una volta ogni ? iterazioni invece che dopo ogni iterazione)
+- Aggiungere un limite alla profonditá del playout per assicurare che ogni simulazione termini anche nel caso di un gioco illimitato (i.e. il game tree ha dei cammini infiniti) NB: GGP games terminano sempre => non ci sono cicli nel grafo. NB2: un GDL game puó essere rappresentato piú concisamente da un DAG (directed acyclic graph)
+- Aggiungere controllo globale del timeout (controllo durante le simulazioni se ho raggiunto il timeout)
+- Leggi paper e guarda codice Torsten
+- Implementare MCS e MCTS
+- Implementare propnet + capire codice state machine
+- Guardare come CADIAPLAYER gestisce timeout
+- Guardare come CADIAPLAYER gestisce YAP
+- Testare i player su giochi classici per GGP (othello, checkers,...)
+- Re-implementare minmax e alpha-beta unificando maxscore e minscore
+- Papers da leggere per GGP:
+	* Simultaneous move games (matrix representation) - Chiedere titolo!
+	* Libro GGP di Genesereth
+	* Efficient Grounding of Game Descriptions with Tabling (Computer Games 504)
+	* Cazenave - Combining nested MCS with UCT
+- Guaradre materiale corso Intelligent Search & Games
+
+PROPNET:
+
+- implementare metodi state machine su propnet
+- migliorare traduzione da GDL a PROPNET (eliminare nodi ridondanti, refactor della propnet per diminuire dimensioni, ecc... - fare i TODO elencati in GGP per lóttimizzazione della propnet)
+- migliorare struttura dati (occupare meno spazio, fare meno operazioni e velocizzare il procedimento sia di traduzione sia di reasoning)
+
+
+a state is defined by the perviously defined propositions. When all propositions except does are given a truth value, the game state is completely defined and can be used to reason on it. When, after reasoning, the truth value of the does propositions is assigned, it is possible to compute the next state (where all propositions will have atruth value except the does proposition)

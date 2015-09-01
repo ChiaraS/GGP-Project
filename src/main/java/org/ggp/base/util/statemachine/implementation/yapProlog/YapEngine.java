@@ -25,6 +25,7 @@ import org.ggp.base.util.statemachine.Role;
 import org.ggp.base.util.statemachine.StateMachine;
 import org.ggp.base.util.statemachine.exceptions.GoalDefinitionException;
 import org.ggp.base.util.statemachine.exceptions.MoveDefinitionException;
+import org.ggp.base.util.statemachine.exceptions.StateMachineException;
 import org.ggp.base.util.statemachine.exceptions.TransitionDefinitionException;
 import org.ggp.base.util.statemachine.implementation.yapProlog.transform.YapEngineSupport;
 
@@ -162,7 +163,12 @@ public class YapEngine{
 			@Override
 			public Boolean call()
 			{
-				backingStateMachine.initialize(rulessheet);
+				try {
+					backingStateMachine.initialize(rulessheet);
+				} catch (StateMachineException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
 				return true;
 			}
 		}

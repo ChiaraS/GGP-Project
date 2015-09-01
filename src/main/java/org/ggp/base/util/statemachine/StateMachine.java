@@ -14,6 +14,7 @@ import org.ggp.base.util.gdl.grammar.GdlSentence;
 import org.ggp.base.util.gdl.grammar.GdlTerm;
 import org.ggp.base.util.statemachine.exceptions.GoalDefinitionException;
 import org.ggp.base.util.statemachine.exceptions.MoveDefinitionException;
+import org.ggp.base.util.statemachine.exceptions.StateMachineException;
 import org.ggp.base.util.statemachine.exceptions.TransitionDefinitionException;
 
 import com.google.common.collect.ImmutableMap;
@@ -34,8 +35,13 @@ public abstract class StateMachine
 	 * <p>
 	 * This method should only be called once, and it should be called before any
 	 * other methods on the StateMachine.
+	 *
+	 * @throws StateMachineException when the initialization of the state machine fails,
+	 * so that whoever is using the state machine can take corrective actions, e.g. switch
+	 * to the use of another state machine or inform the game manager that the player is
+	 * not able to play anymore.
 	 */
-    public abstract void initialize(List<Gdl> description);
+    public abstract void initialize(List<Gdl> description) throws StateMachineException;
     /**
      * Returns the goal value for the given role in the given state. Goal values
      * are always between 0 and 100.
