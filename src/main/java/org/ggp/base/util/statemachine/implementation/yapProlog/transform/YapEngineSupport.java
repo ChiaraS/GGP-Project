@@ -57,7 +57,7 @@ public class YapEngineSupport {
 	 * Transforms the game description into the Yap Prolog syntax
 	 * Used to initialize the description file in [YapEngine(List<Gdl> description)]
 	 */
-	public StringBuffer toProlog(List<Gdl> description)
+	/*ublic StringBuffer toProlog(List<Gdl> description)
 	{
 		StringBuilder sb = new StringBuilder();
 
@@ -67,6 +67,20 @@ public class YapEngineSupport {
 		sb.delete(sb.length()-2, sb.length());
 
 		return new StringBuffer(sb);
+	}*/
+
+	/**
+	 * Transforms the game description into the Yap Prolog syntax
+	 * Used to initialize the description file in [YapEngine(List<Gdl> description)]
+	 */
+	public String toProlog(List<Gdl> description)
+	{
+		String yapDescription = "";
+
+		for(Gdl gdl : description)
+			yapDescription += YapRenderer.renderYap(gdl)+". \n";
+
+		return yapDescription;
 	}
 
 

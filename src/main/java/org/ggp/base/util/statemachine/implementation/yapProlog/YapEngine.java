@@ -25,7 +25,6 @@ import org.ggp.base.util.statemachine.Role;
 import org.ggp.base.util.statemachine.StateMachine;
 import org.ggp.base.util.statemachine.exceptions.GoalDefinitionException;
 import org.ggp.base.util.statemachine.exceptions.MoveDefinitionException;
-import org.ggp.base.util.statemachine.exceptions.StateMachineException;
 import org.ggp.base.util.statemachine.exceptions.TransitionDefinitionException;
 import org.ggp.base.util.statemachine.implementation.yapProlog.transform.YapEngineSupport;
 
@@ -132,7 +131,7 @@ public class YapEngine{
 
 		//YAPSubprocessEngineWindow yapseW = new YAPSubprocessEngineWindow(engine);
 
-		flushAndWrite(support.toProlog(description));
+		//flushAndWrite(support.toProlog(description));
 
 		if(IDB) engine.consultAbsolute(fileFunctionsIdb);
 		else engine.consultAbsolute(fileFunctions);
@@ -163,12 +162,12 @@ public class YapEngine{
 			@Override
 			public Boolean call()
 			{
-				try {
+				//try {
 					backingStateMachine.initialize(rulessheet);
-				} catch (StateMachineException e) {
+				//} catch (StateMachineException e) {
 					// TODO Auto-generated catch block
-					e.printStackTrace();
-				}
+				//	e.printStackTrace();
+				//}
 				return true;
 			}
 		}

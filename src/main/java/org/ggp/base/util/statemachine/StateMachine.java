@@ -41,7 +41,7 @@ public abstract class StateMachine
 	 * to the use of another state machine or inform the game manager that the player is
 	 * not able to play anymore.
 	 */
-    public abstract void initialize(List<Gdl> description) throws StateMachineException;
+    public abstract void initialize(List<Gdl> description) /*throws StateMachineException*/;
     /**
      * Returns the goal value for the given role in the given state. Goal values
      * are always between 0 and 100.

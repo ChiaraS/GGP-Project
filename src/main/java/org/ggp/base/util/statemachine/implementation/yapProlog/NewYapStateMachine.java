@@ -3,12 +3,12 @@
  */
 package org.ggp.base.util.statemachine.implementation.yapProlog;
 
+import java.io.BufferedWriter;
 import java.io.File;
-import java.io.FileOutputStream;
+import java.io.FileWriter;
 import java.io.IOException;
-import java.io.PrintStream;
+import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 import java.util.concurrent.Callable;
 
 import org.ggp.base.util.gdl.grammar.Gdl;
@@ -60,9 +60,8 @@ public class NewYapStateMachine extends StateMachine {
 	// The YapEngineSupport which handles the translations and the mapping
 	private YapEngineSupport support;
 
-	// File where to put the game description
+	// Path of the file where to put the game description
 	private String descriptionFilePath;
-	private File descriptionFile;
 
 	// File with all the predefined Prolog functions
 	private String functionsFilePath;
@@ -81,7 +80,15 @@ public class NewYapStateMachine extends StateMachine {
 
 	// The state in the Prolog side
 	// -> to avoid running "computeState(MachineState)" when it's useless
-	private Set<GdlSentence> currentState;
+	/**
+	 * This variable keeps track of the game state that currently is registered on
+	 * YAP Prolog side.
+	 * If null, it means that the game state on YAP Prolog side is unknown.
+	 *
+	 * This variable can be used to avoid running "computeState(MachineState)" on YAP
+	 * Prolog side when the game state registered on it is already the one we need.
+	 */
+	private MachineState currentYapState;
 
 	// The list of the roles
 	private List<String> fakeRoles;
@@ -112,18 +119,18 @@ public class NewYapStateMachine extends StateMachine {
 	 * @see org.ggp.base.util.statemachine.StateMachine#initialize(java.util.List)
 	 */
 	@Override
-	public void initialize(List<Gdl> description) throws StateMachineException{
+	public void initialize(List<Gdl> description)/* throws StateMachineException*/{
 		try{
 			// Create the bridge between Java and YAP Prolog, trying to start the YAP Prolog program.
 			this.yapProver = new YAPSubprocessEngine(this.yapCommand);
 
-			this.descriptionFile = new File(this.descriptionFilePath);
 			this.functionsFile = new File(this.functionsFilePath);
 			//this.functionsIdbFile = new File(this.functionsFileIdbPath);
 
 			this.support = new YapEngineSupport();
 
 			flushAndWrite(support.toProlog(description));
+
 
 			/*
 			 * NEEDED?
@@ -149,14 +156,20 @@ public class NewYapStateMachine extends StateMachine {
 			this.yapProver = null;
 
 			// Throw an exception.
-			throw new StateMachineException(e);
+			//throw new StateMachineException(e);
 		}
 	}
 
 	private MachineState computeInitialState()
 	{
-		currentState = support.askToState((String[]) yapProver.deterministicGoal("initialize_state(List), processList(List, LL), ipObjectTemplate('ArrayOfString',AS,_,[LL],_)", "[AS]") [0]);
-		return new MachineState(currentState);
+		Object[] bindings = yapProver.deterministicGoal("initialize_state(List), processList(List, LL), ipObjectTemplate('ArrayOfString',AS,_,[LL],_)", "[AS]");
+
+		// If bindings is null => the initial state is empty because there are no true propositions in the initial state.
+		if(bindings == null){
+			this.currentYapState = new MachineState(new HashSet<GdlSentence>());
+		}
+		currentYapState = new MachineState(support.askToState((String[]) yapProver.deterministicGoal("initialize_state(List), processList(List, LL), ipObjectTemplate('ArrayOfString',AS,_,[LL],_)", "[AS]") [0]));
+		return currentYapState;
 	}
 
 	private ImmutableList<Role> computeRoles()
@@ -171,7 +184,7 @@ public class NewYapStateMachine extends StateMachine {
 	 */
 	@Override
 	public int getGoal(MachineState state, Role role)
-			throws GoalDefinitionException, StateMachineException {
+			throws GoalDefinitionException/*, StateMachineException*/ {
 		computeState(state);
 		int goal;
 		goal = Integer.parseInt((String) yapProver.deterministicGoal("get_goal("+support.getFakeRole(role)+", S)", "[string(S)]") [0]);
@@ -231,18 +244,17 @@ public class NewYapStateMachine extends StateMachine {
 	 * @param string: the description of the game
 	 * @throws IOException
 	 */
-	private boolean flushAndWrite(StringBuffer string) throws IOException
-	{
-		FileOutputStream out;
-		PrintStream p;
+	private void flushAndWrite(String string) throws IOException{
 
-		out = new FileOutputStream(descriptionFile);
-		out.flush();
-		p = new PrintStream( out );
-		p.print(string);
-		p.close();
-		return true;
-
+		BufferedWriter out = null;
+		try{
+			out = new BufferedWriter(new FileWriter(this.descriptionFilePath));
+			out.write(string);
+		}finally{
+			if(out != null){
+				out.close();
+			}
+		}
 	}
 
 
@@ -263,15 +275,15 @@ public class NewYapStateMachine extends StateMachine {
 	 * Compute the given MachineState in the Prolog side
 	 * @throws StateMachineException
 	 */
-	private void computeState(MachineState state) throws StateMachineException {
-		if(!currentState.equals(state.getContents())){
+	private void computeState(MachineState state) /*throws StateMachineException*/{
+		if(!currentYapState.equals(state)){
 
 			if(!((String) yapProver.deterministicGoal("compute_state("+support.getFakeMachineState(state.getContents())+", S)", "[string(S)]") [0]).equals("d")){
 				//State computation failed on Yap prolog side
 				GamerLogger.logError("StateMachine", "[YAP] Computation of current state on YAP Prolog side failed!");
-				throw new StateMachineException("Computation on YAP Prolog side failed for state: " + state);
+				//throw new StateMachineException("Computation on YAP Prolog side failed for state: " + state);
 			}else{
-				this.currentState = state.getContents();
+				this.currentYapState = state;
 			}
 		}
 	}
