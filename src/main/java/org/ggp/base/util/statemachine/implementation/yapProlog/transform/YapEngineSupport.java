@@ -252,8 +252,9 @@ public class YapEngineSupport {
 	 * Translation Yap Prolog -> Gdl syntax
 	 * 		List<Role>
 	 * AFTER calling deterministicGoal
+	 * @throws SymbolFormatException
 	 */
-	public List<Role> askToRoles(String[] response)
+	public List<Role> askToRoles(String[] response) throws SymbolFormatException
 	{
 		List<Role> roles = new LinkedList<Role>();
 
@@ -264,21 +265,16 @@ public class YapEngineSupport {
 		return roles;
 	}
 
-	private Role mapRole(String fakeRole)
+	private Role mapRole(String fakeRole) throws SymbolFormatException
 	{
-		try{
-			if(!roleMapping.containsKey(fakeRole))
-			{
-				Role realRole = new Role((GdlConstant) GdlFactory.createTerm(toGdlConstant(fakeRole)));
-				roleMapping.put(fakeRole, realRole);
-				unroleMapping.put(realRole, fakeRole);
-			}
-			return roleMapping.get(fakeRole);
-
-		} catch (SymbolFormatException e) {
-			e.printStackTrace();
-			return null;
+		if(!roleMapping.containsKey(fakeRole))
+		{
+			Role realRole = new Role((GdlConstant) GdlFactory.createTerm(toGdlConstant(fakeRole)));
+			roleMapping.put(fakeRole, realRole);
+			unroleMapping.put(realRole, fakeRole);
 		}
+		return roleMapping.get(fakeRole);
+
 	}
 
 

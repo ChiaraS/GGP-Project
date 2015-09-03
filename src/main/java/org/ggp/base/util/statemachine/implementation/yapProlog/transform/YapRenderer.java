@@ -95,8 +95,8 @@ public class YapRenderer {
 	 */
 	protected static String renderConstant(GdlConstant constant)
 	{
-		//return MappingYapFacilitator.scrambleConstant(constant.getValue());
-		return constant.getValue();
+		return MappingYapFacilitator.scrambleConstant(constant.getValue());
+		//return constant.getValue();
 	}
 
 	/**
@@ -104,9 +104,9 @@ public class YapRenderer {
 	 */
 	protected static String renderVariable(GdlVariable variable)
 	{
-		//return MappingYapFacilitator.scrambleVariable(variable.getName());
-		String newVariable = variable.getName();
-		return newVariable.substring(1, newVariable.length()).toUpperCase();
+		return MappingYapFacilitator.scrambleVariable(variable.getName());
+		//String newVariable = variable.getName();
+		//return newVariable.substring(1, newVariable.length()).toUpperCase();
 	}
 
 	protected static String renderFunction(GdlFunction function)

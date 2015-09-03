@@ -23,6 +23,7 @@ import org.ggp.base.util.statemachine.exceptions.MoveDefinitionException;
 import org.ggp.base.util.statemachine.exceptions.StateMachineException;
 import org.ggp.base.util.statemachine.exceptions.TransitionDefinitionException;
 import org.ggp.base.util.statemachine.implementation.yapProlog.transform.YapEngineSupport;
+import org.ggp.base.util.symbol.factory.exceptions.SymbolFormatException;
 
 import com.declarativa.interprolog.YAPSubprocessEngine;
 import com.google.common.collect.ImmutableList;
@@ -124,6 +125,7 @@ public class NewYapStateMachine extends StateMachine {
 			// Create the bridge between Java and YAP Prolog, trying to start the YAP Prolog program.
 			this.yapProver = new YAPSubprocessEngine(this.yapCommand);
 
+			////NEEDED???????
 			this.functionsFile = new File(this.functionsFilePath);
 			//this.functionsIdbFile = new File(this.functionsFileIdbPath);
 
@@ -137,7 +139,7 @@ public class NewYapStateMachine extends StateMachine {
 			 */
 			/*
 			if(IDB) engine.consultAbsolute(fileFunctionsIdb);
-			else */ this.yapProver.consultAbsolute(functionsFile);
+			else */ this.yapProver.consultAbsolute(new File(functionsFilePath));
 
 			initializeQueries();
 			randomizeProlog();
@@ -167,15 +169,22 @@ public class NewYapStateMachine extends StateMachine {
 		// If bindings is null => the initial state is empty because there are no true propositions in the initial state.
 		if(bindings == null){
 			this.currentYapState = new MachineState(new HashSet<GdlSentence>());
+		}else{
+			currentYapState = new MachineState(support.askToState((String[]) bindings[0]));
 		}
-		currentYapState = new MachineState(support.askToState((String[]) yapProver.deterministicGoal("initialize_state(List), processList(List, LL), ipObjectTemplate('ArrayOfString',AS,_,[LL],_)", "[AS]") [0]));
-		return currentYapState;
+
+		return currentYapState.clone();
 	}
 
-	private ImmutableList<Role> computeRoles()
+	private ImmutableList<Role> computeRoles() throws StateMachineException
 	{
-		List<Role> roles = support.askToRoles((String[]) yapProver.deterministicGoal("get_roles(List), processList(List, LL), ipObjectTemplate('ArrayOfString',AS,_,[LL],_)", "[AS]") [0]);
-		this.fakeRoles = support.getFakeRoles(roles);
+		try{
+			List<Role> roles = support.askToRoles((String[]) yapProver.deterministicGoal("get_roles(List), processList(List, LL), ipObjectTemplate('ArrayOfString',AS,_,[LL],_)", "[AS]") [0]);
+			this.fakeRoles = support.getFakeRoles(roles);
+		}catch(SymbolFormatException e){
+			this.fakeRoles = null;
+			throw new StateMachineException(e);
+		}
 		return ImmutableList.copyOf(roles);
 	}
 
