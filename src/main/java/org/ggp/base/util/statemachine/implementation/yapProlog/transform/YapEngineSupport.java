@@ -3,6 +3,7 @@
  */
 package org.ggp.base.util.statemachine.implementation.yapProlog.transform;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedList;
@@ -256,7 +257,7 @@ public class YapEngineSupport {
 	 */
 	public List<Role> askToRoles(String[] response) throws SymbolFormatException
 	{
-		List<Role> roles = new LinkedList<Role>();
+		List<Role> roles = new ArrayList<Role>();
 
 		for(String s : response)
 			roles.add(mapRole(s));

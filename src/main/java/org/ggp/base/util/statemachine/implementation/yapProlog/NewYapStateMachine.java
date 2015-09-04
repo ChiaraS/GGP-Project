@@ -7,9 +7,9 @@ import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
-import java.util.concurrent.Callable;
 
 import org.ggp.base.util.gdl.grammar.Gdl;
 import org.ggp.base.util.gdl.grammar.GdlSentence;
@@ -29,6 +29,14 @@ import com.declarativa.interprolog.YAPSubprocessEngine;
 import com.google.common.collect.ImmutableList;
 
 /**
+ * ATTENTION: if the initialization method fails do not query this state machine
+ * as its answers will not be consistent. (TODO: add a way to check if state
+ * machine is an inconsistent state and thus cannot answer queries).
+ *
+ * On the contrary, if any other method fails throwing the StateMachineException,
+ * it is possible to keep asking queries to the state machine since each method
+ * that fails also makes sure to leave the state machine in a consistent state.
+ *
  * @author C.Sironi
  *
  */
@@ -120,7 +128,7 @@ public class NewYapStateMachine extends StateMachine {
 	 * @see org.ggp.base.util.statemachine.StateMachine#initialize(java.util.List)
 	 */
 	@Override
-	public void initialize(List<Gdl> description)/* throws StateMachineException*/{
+	public void initialize(List<Gdl> description) throws StateMachineException{
 		try{
 			// Create the bridge between Java and YAP Prolog, trying to start the YAP Prolog program.
 			this.yapProver = new YAPSubprocessEngine(this.yapCommand);
@@ -141,7 +149,6 @@ public class NewYapStateMachine extends StateMachine {
 			if(IDB) engine.consultAbsolute(fileFunctionsIdb);
 			else */ this.yapProver.consultAbsolute(new File(functionsFilePath));
 
-			initializeQueries();
 			randomizeProlog();
 
 			// If creation succeeded, compute initial state and roles.
@@ -153,12 +160,19 @@ public class NewYapStateMachine extends StateMachine {
 			GamerLogger.logError("StateMachine", "[YAP] Exception during state machine initialization. Shutting down.");
 			GamerLogger.logStackTrace("StateMachine", e);
 
+			// Reset all the variables of the state machine to null to leave the state machine in a consistent
+			// state, since initialization failed.
+			this.roles = null;
+			this.fakeRoles = null;
+			this.currentYapState = null;
+			this.initialState = null;
 			// Shutdown Yap Prolog and remove the reference to it, as it is now unusable.
 			this.yapProver.shutdown();
 			this.yapProver = null;
 
+
 			// Throw an exception.
-			//throw new StateMachineException(e);
+			throw new StateMachineException(e);
 		}
 	}
 
@@ -179,7 +193,11 @@ public class NewYapStateMachine extends StateMachine {
 	private ImmutableList<Role> computeRoles() throws StateMachineException
 	{
 		try{
-			List<Role> roles = support.askToRoles((String[]) yapProver.deterministicGoal("get_roles(List), processList(List, LL), ipObjectTemplate('ArrayOfString',AS,_,[LL],_)", "[AS]") [0]);
+			List<Role> roles = new ArrayList<Role>();
+			Object[] bindings = yapProver.deterministicGoal("get_roles(List), processList(List, LL), ipObjectTemplate('ArrayOfString',AS,_,[LL],_)", "[AS]");
+			if(bindings != null){
+				roles = support.askToRoles((String[]) bindings[0]);
+			}
 			this.fakeRoles = support.getFakeRoles(roles);
 		}catch(SymbolFormatException e){
 			this.fakeRoles = null;
@@ -193,12 +211,32 @@ public class NewYapStateMachine extends StateMachine {
 	 */
 	@Override
 	public int getGoal(MachineState state, Role role)
-			throws GoalDefinitionException/*, StateMachineException*/ {
-		computeState(state);
+			throws GoalDefinitionException, StateMachineException {
+
+		updateYapState(state);
 		int goal;
-		goal = Integer.parseInt((String) yapProver.deterministicGoal("get_goal("+support.getFakeRole(role)+", S)", "[string(S)]") [0]);
-		GamerLogger.log("Responsibility", "YAP(getGoal)");
-		GamerLogger.log("StateMachine", "YAP(getGoal)");
+		Object[] bindings = yapProver.deterministicGoal("get_goal("+support.getFakeRole(role)+", List), processList(List, LL), ipObjectTemplate('ArrayOfString',AS,_,[LL],_)", "[AS]");
+
+		if(bindings == null){
+			GamerLogger.logError("StateMachine", "Got no goal when expecting one.");
+			throw new GoalDefinitionException(state, role);
+		}
+
+		String[] goals = (String[]) bindings[0];
+
+		if(goals.length != 1){
+			GamerLogger.logError("StateMachine", "Got goal results of size: " + goals.length + " when expecting size one.");
+			throw new GoalDefinitionException(state, role);
+		}
+
+		try{
+			goal = Integer.parseInt(goals[0]);
+		}catch(NumberFormatException ex){
+			GamerLogger.logError("StateMachine", "Got goal results that is not a number.");
+			GamerLogger.logStackTrace("StateMachine", ex);
+			throw new GoalDefinitionException(state, role, ex);
+		}
+
 		return goal;
 	}
 
@@ -206,9 +244,11 @@ public class NewYapStateMachine extends StateMachine {
 	 * @see org.ggp.base.util.statemachine.StateMachine#isTerminal(org.ggp.base.util.statemachine.MachineState)
 	 */
 	@Override
-	public boolean isTerminal(MachineState state) {
-		// TODO Auto-generated method stub
-		return false;
+	public boolean isTerminal(MachineState state) throws StateMachineException {
+
+		updateYapState(state);
+
+		return yapProver.deterministicGoal("is_terminal");
 	}
 
 	/* (non-Javadoc)
@@ -232,9 +272,27 @@ public class NewYapStateMachine extends StateMachine {
 	 */
 	@Override
 	public List<Move> getLegalMoves(MachineState state, Role role)
-			throws MoveDefinitionException {
-		// TODO Auto-generated method stub
-		return null;
+			throws MoveDefinitionException, StateMachineException {
+
+		updateYapState(state);
+
+		Object[] bindings = yapProver.deterministicGoal("get_legal_moves("+support.getFakeRole(role)+", List), processList(List, LL), ipObjectTemplate('ArrayOfString',AS,_,[LL],_)", "[AS]");
+
+		if(bindings == null){
+			GamerLogger.logError("StateMachine", "Got no legal moves when expecting at least one.");
+			throw new MoveDefinitionException(state, role);
+		}
+
+		String[] yapMoves = (String[]) bindings[0];
+
+		if(yapMoves.length < 1){
+			GamerLogger.logError("StateMachine", "Got no legal moves when expecting at least one.");
+			throw new MoveDefinitionException(state, role);
+		}
+
+		List<Move> moves = support.askToMoves(yapMoves);
+
+		return moves;
 	}
 
 	/* (non-Javadoc)
@@ -243,8 +301,26 @@ public class NewYapStateMachine extends StateMachine {
 	@Override
 	public MachineState getNextState(MachineState state, List<Move> moves)
 			throws TransitionDefinitionException {
-		// TODO Auto-generated method stub
-		return null;
+
+		updateYapState(state);
+
+		Object[] bindings = yapProver.deterministicGoal("get_legal_moves("+support.getFakeRole(role)+", List), processList(List, LL), ipObjectTemplate('ArrayOfString',AS,_,[LL],_)", "[AS]");
+
+		if(bindings == null){
+			GamerLogger.logError("StateMachine", "Got no legal moves when expecting at least one.");
+			throw new MoveDefinitionException(state, role);
+		}
+
+		String[] yapMoves = (String[]) bindings[0];
+
+		if(yapMoves.length < 1){
+			GamerLogger.logError("StateMachine", "Got no legal moves when expecting at least one.");
+			throw new MoveDefinitionException(state, role);
+		}
+
+		List<Move> moves = support.askToMoves(yapMoves);
+
+		return moves;
 	}
 
 	////////////////////////////////////////////////////////////////////////
@@ -276,7 +352,7 @@ public class NewYapStateMachine extends StateMachine {
 		int i = (int)Math.min(Math.random()*(30268), 30268)+1;
 		int j = (int)Math.min(Math.random()*(30307), 30307)+1;
 		int k = (int)Math.min(Math.random()*(30323), 30323)+1;
-		yapProver.realCommand("setrand(rand("+i+", "+j+", "+k+"))");
+		this.yapProver.realCommand("setrand(rand("+i+", "+j+", "+k+"))");
 	}
 
 
@@ -284,158 +360,22 @@ public class NewYapStateMachine extends StateMachine {
 	 * Compute the given MachineState in the Prolog side
 	 * @throws StateMachineException
 	 */
-	private void computeState(MachineState state) /*throws StateMachineException*/{
-		if(!currentYapState.equals(state)){
+	private void updateYapState(MachineState state) throws StateMachineException{
 
-			if(!((String) yapProver.deterministicGoal("compute_state("+support.getFakeMachineState(state.getContents())+", S)", "[string(S)]") [0]).equals("d")){
-				//State computation failed on Yap prolog side
+		if(currentYapState==null||!currentYapState.equals(state)){
+
+			boolean success = yapProver.deterministicGoal("update_state("+support.getFakeMachineState(state.getContents())+")");
+
+			// This should never happen, but you never know...
+			if(!success){
+				// State computation failed on Yap prolog side.
+				this.currentYapState = null;
 				GamerLogger.logError("StateMachine", "[YAP] Computation of current state on YAP Prolog side failed!");
-				//throw new StateMachineException("Computation on YAP Prolog side failed for state: " + state);
-			}else{
-				this.currentYapState = state;
+				throw new StateMachineException("Computation on YAP Prolog side failed for state: " + state);
 			}
+
+			this.currentYapState = state;
 		}
 	}
-
-	/**
-	 * Initialize the queries objects
-	 */
-	private void initializeQueries()
-	{
-		QUERYbIsTerminal = new QueryB();
-
-		QUERYsComputeState = new QueryS("compute_state(");
-		QUERYsGetGoal = new QueryS("get_goal(");
-
-		QUERYaosGetNextState = new QueryAOS("get_next_state(");
-		QUERYaosGetLegalMoves = new QueryAOS("get_legal_moves(");
-		QUERYaosComputeRoles = new QueryAOS(true, "get_roles(_l), processList(_l, _ll), ipObjectTemplate('ArrayOfString',_lll,_,[_ll],_)");
-		QUERYaosComputeInitialStateGdl = new QueryAOS(true, "initialize_state(_l), processList(_l, _ll), ipObjectTemplate('ArrayOfString',_lll,_,[_ll],_)");
-
-		QUERYsGetRandomMove = new QueryS("get_random_move(");
-		QUERYaosGetRandomJointMove1 = new QueryAOS("get_random_joint_move(");
-		QUERYaosGetRandomJointMove2 = new QueryAOS("get_random_joint_moveg(");
-		QUERYaosGetRandomNextState = new QueryAOS("get_random_next_state(");
-
-		QUERYaosPerformDepthCharge = new QueryAOS("perform_depth_charge(");
-	}
-
-	/**
-	 *  The queries objects used to call "deterministicGoal(_)"
-	 */
-	// boolean query
-	private static QueryB QUERYbIsTerminal; // to "isTerminal" method
-
-	// String queries
-	private static QueryS QUERYsComputeState; // to "computeState" method
-	private static QueryS QUERYsGetGoal; // to "getGoal" method
-
-	// ArrayOfString queries
-	private static QueryAOS QUERYaosGetNextState; // to "getNextState" method
-	private static QueryAOS QUERYaosGetLegalMoves; // to "getLegalMoves" method
-	private static QueryAOS QUERYaosComputeRoles; // to "computeRoles" method
-	private static QueryAOS QUERYaosComputeInitialStateGdl; // to "computeInitialStateGdl" method
-
-	// non-basic methods queries (Prolog methods)
-	private static QueryS QUERYsGetRandomMove; // to "getRandomMove" method
-	private static QueryAOS QUERYaosGetRandomJointMove1; // to "getRandomJointMove(_)" method
-	private static QueryAOS QUERYaosGetRandomJointMove2; // to "getRandomJointMove(_,_,_)" method
-	private static QueryAOS QUERYaosGetRandomNextState; // to"getRandomNextState" method
-	private static QueryAOS QUERYaosPerformDepthCharge; // to "performDepthCharge" method
-
-	/**
-	 * Query to Boolean
-	 */
-	public class QueryB implements Callable<Boolean>
-	{
-		private String goal;
-		public QueryB(){ goal = "is_terminal"; }
-
-		public void setGoal(String newG){ goal = newG; }
-
-		public String getGoal(){ return goal; }
-
-		@Override
-		public Boolean call()
-		{
-			if(yapProver.deterministicGoal(goal) == true) return true;
-			else return false;
-		}
-
-	}
-
-
-
-	/**
-	 *  Query to String
-	 */
-	public class QueryS implements Callable<String>
-	{
-		private String subGoal;
-		private static final String answer = "[string(_s)]";
-		private static final String endOfGoal = ", _s)";
-		private String beginingOfGoal;
-
-		public QueryS(){}
-		public QueryS(String g){ beginingOfGoal = g; }
-
-		public void setSubGoal(String newG){ subGoal = newG; }
-
-		public String getGoal(){ return beginingOfGoal+subGoal+endOfGoal; }
-
-		@Override
-		public String call()
-		{
-			return (String) yapProver.deterministicGoal(beginingOfGoal+subGoal+endOfGoal, answer) [0];
-		}
-
-	}
-
-
-
-	/**
-	 *  Query to ArrayOfString
-	 */
-	public class QueryAOS implements Callable<String[]>
-	{
-		private String goal;
-		private boolean full;
-		private String subGoal;
-		private static final String answer = "[_lll]";
-		private static final String endOfGoal = ", _l), processList(_l, _ll), ipObjectTemplate('ArrayOfString',_lll,_,[_ll],_)";
-		private String beginingOfGoal;
-
-		public QueryAOS(){}
-		public QueryAOS(String g)
-		{
-			beginingOfGoal = g;
-			full = false;
-		}
-		public QueryAOS(boolean b, String g)
-		{
-			if(b == true)
-			{
-				goal = g;
-				full = b;
-			}
-		}
-
-		public void setSubGoal(String newG){ subGoal = newG; }
-
-		public String getGoal()
-		{
-			if(full) return goal;
-			else return beginingOfGoal+subGoal+endOfGoal;
-		}
-
-		@Override
-		public String[] call()
-		{
-			if(full) return (String[]) yapProver.deterministicGoal(goal, answer) [0];
-			else return (String[]) yapProver.deterministicGoal(beginingOfGoal+subGoal+endOfGoal, answer) [0];
-		}
-
-	}
-	///////////////////////////////////////////////////////////////////////////////
 
 }

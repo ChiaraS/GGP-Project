@@ -16,6 +16,13 @@ public final class GoalDefinitionException extends Exception
 		this.role = role;
 	}
 
+	public GoalDefinitionException(MachineState state, Role role, Throwable cause)
+	{
+		super(cause);
+		this.state = state;
+		this.role = role;
+	}
+
 	public Role getRole()
 	{
 		return role;

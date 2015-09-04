@@ -27,6 +27,7 @@ import org.ggp.base.util.statemachine.exceptions.GoalDefinitionException;
 import org.ggp.base.util.statemachine.exceptions.MoveDefinitionException;
 import org.ggp.base.util.statemachine.exceptions.TransitionDefinitionException;
 import org.ggp.base.util.statemachine.implementation.yapProlog.transform.YapEngineSupport;
+import org.ggp.base.util.symbol.factory.exceptions.SymbolFormatException;
 
 import com.declarativa.interprolog.YAPSubprocessEngine;
 
@@ -318,7 +319,12 @@ public class YapEngine{
 	{
 		if(!THREAD)
 		{
-			roles = support.askToRoles((String[]) engine.deterministicGoal("get_roles(List), processList(List, LL), ipObjectTemplate('ArrayOfString',AS,_,[LL],_)", "[AS]") [0]);
+			try {
+				roles = support.askToRoles((String[]) engine.deterministicGoal("get_roles(List), processList(List, LL), ipObjectTemplate('ArrayOfString',AS,_,[LL],_)", "[AS]") [0]);
+			} catch (SymbolFormatException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
 			fakeRoles = support.getFakeRoles(roles);
 			GamerLogger.log("Responsibility", "YAP(computeRoles)");
 			GamerLogger.log("StateMachine", "YAP(computeRoles)");

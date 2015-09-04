@@ -27,8 +27,88 @@ V - TEST YAP PROVER CONSISTENCY VS PROVER
 - IMPROVE PROPNET WITH SUGGESTIONS FROM SANCHO'S BLOG OR FROM ITS CODE
 - IMPROVE YAP PROVER (E.G. RETURN PROLOG TERMS INSTEAD OF TRANSLATING THEM FIRST TO STRINGS ON PROLOG SIDE)
 - WHAT INFLUENCES PROPNET CONSTRUCTION SPEED? SOMETIMES IT BUILDS SLOW AND SOME TIMES FAST FOR SOME GAMES! --> FIND OUT WHY!
+- FIX EXCEPTION LOGGING: 1. FOR EACH EXCEPTION THAT IS THROWN, ADD THE MESSAGE THAT EXPLAINS THE EXCEPTION (throw new Exception("Explanation message!")) AND LOG THAT EXCEPTION HAS BEEN THROWN 2. FOR EACH EXCEPTION THAT IS THROWN BECAUSE OF ANOTHER EXCEPTION THAT HAS BEEN CAUGHT, ADD BOTH THE MESSAGE AND THE CAUSE (throw new Exception("Explanation message!", causeException)) 3. FOR EACH CAUGHT EXCEPTION (THAT WON'T CAUSE ANOTHER EXCEPTION TO BE THROWN), LOG THE PERSONAL ERROR MESSAGE (GamerLogger.logError("Personal mex")) AND THEN THE STACK TRACE (GamerLogger.logStackTrace()). SEE http://www.avajava.com/tutorials/lessons/how-do-i-chain-exceptions.html?page=1 FOR EXAMPLES ON THROWING CHAINED EXCEPTIONS.
 
 
+FIX YAP:
+- rename all variables in the description with _lowercaseLetter instead of UPPERCASELETTER (i.e. A --> _a)
+- PROBLEM!: if there is no solution for a goal Inerprolog returns null as binding => nullPointerException is thrown when casting the element at position[0] of the bindings --> FIX THIS!
+- MOREOVER: change the query to get the goal because atm it assumes that the goal always exists and it's only one! But not alway is true...find a way to get back all(if any) the goals and check if there is only one or if an exception has to be thrown! --> Same thing to check for other methods (i.e. what happens if there is nothing true in the next state?, what happens if there are no legal moves???????? - MOREOVER: if initialization fails the current state (i.e. the one that should keep track of prolog state) of the state machine is null => whatever method is called next will throw a nullpointerexception when checking if it's the case to update the prolog state or not!
+- RETURN PROLOG TERMS INSTEAD OF TRANSLATING THEM FIRST TO STRINGS ON PROLOG SIDE
+- FOR YAP STATE MACHINE USE AN EXTENSION OF MACHINESTATE THAT CAN CONVERT FROM NORMAL STATE TO PROLOG STATE?
+- CHECK IF IT'S FASTER TO TRANSLATE FROM GDL TO PROLOG SYNTAX USING A METHOD IN EACH GDL TERM CLASS LIKE toPrologSyntax()
+- CHECK IF IT'S FASTER WITH OR WITHOUT SCRAMBLING
+- CHECK HOW THE YAP STATE MACHINE COULD BE MADE FASTER (I.E. DIFFERENT STATE REPRESENTATION THAT DOESN'T NEED TRANSLATION => THE GAMER TAHT KNOWS THAT IT IS USING YAP STATE MACHINE MUST KNOW HOW TO DEAL WITH DIFFERENT STATE FORMAT + A MECHANISM IS NEEDED TO CONVERT FROM YAP STATE TO GGPBASE STATE WHEN STRICTLY NECESSARY (AND THIS WILL STILL SLOW DOWN PERFORMANCE A BIT))
+- AFTER REFACTORING TEST IF GT_TOW_THIRDS... GIVES ERROR FOR THE DEFINITION OF SUCC (FIX IT!)
+- ADD TO THE CODE THAT PARSES (AND OPTIONALLY SCRAMBLES) GDL INTO PROLOG A WAY TO CHECK IF A CONSTANT IN GDL HAS THE SAME NAME OF A PROLOG PREDICATE AND THUS MUST BE CHANGED (USE (*))
+- CHECK IF RECORD PREDICATES HALP MAKING YAP FASTER (YAP DOCUMENTATION 6.11)
+
+
+
+
+
+
+
+(*)FROM YAP DOCUMENTATION 6.10.2
+ listing
+Lists in the current output stream all the clauses for which source code is available (these include all clauses for dynamic predicates and clauses for static predicates compiled when source mode was on).
+
+listing(+P)
+Lists predicate P if its source code is available.
+
+portray_clause(+C)
+Write clause C as if written by listing/0.
+
+portray_clause(+S,+C)
+Write clause C on stream S as if written by listing/0.
+
+current_atom(A)
+Checks whether A is a currently defined atom. It is used to find all currently defined atoms by backtracking.
+
+current_predicate(F) [ISO]
+F is the predicate indicator for a currently defined user or library predicate. F is of the form Na/Ar, where the atom Na is the name of the predicate, and Ar its arity.
+
+current_predicate(A,P)
+Defines the relation: P is a currently defined predicate whose name is the atom A.
+
+system_predicate(A,P)
+Defines the relation: P is a built-in predicate whose name is the atom A.
+
+predicate_property(P,Prop) [ISO]
+For the predicates obeying the specification P unify Prop with a property of P. These properties may be:
+
+built_in
+true for built-in predicates,
+
+dynamic
+true if the predicate is dynamic
+
+static
+true if the predicate is static
+
+meta_predicate(M)
+true if the predicate has a meta_predicate declaration M.
+
+multifile
+true if the predicate was declared to be multifile
+
+imported_from(Mod)
+true if the predicate was imported from module Mod.
+
+exported
+true if the predicate is exported in the current module.
+
+public
+true if the predicate is public; note that all dynamic predicates are public.
+
+tabled
+true if the predicate is tabled; note that only static predicates can be tabled in YAP.
+
+source
+true if source for the predicate is available.
+
+number_of_clauses(ClauseCount)
+Number of clauses in the predicate definition. Always one if external or built-in. 
 
 
 

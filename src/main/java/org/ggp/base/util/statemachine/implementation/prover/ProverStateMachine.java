@@ -89,6 +89,7 @@ public class ProverStateMachine extends StateMachine
 
 		if (results.size() == 0)
 		{
+			GamerLogger.logError("StateMachine", "Got no legal moves when expecting at least one.");
 			throw new MoveDefinitionException(state, role);
 		}
 

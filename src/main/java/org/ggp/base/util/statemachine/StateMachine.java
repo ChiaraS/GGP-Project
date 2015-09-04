@@ -41,7 +41,7 @@ public abstract class StateMachine
 	 * to the use of another state machine or inform the game manager that the player is
 	 * not able to play anymore.
 	 */
-    public abstract void initialize(List<Gdl> description) /*throws StateMachineException*/;
+    public abstract void initialize(List<Gdl> description) throws StateMachineException;
     /**
      * Returns the goal value for the given role in the given state. Goal values
      * are always between 0 and 100.
@@ -50,13 +50,19 @@ public abstract class StateMachine
      * goal value for the given role in the given state. If this occurs when this
      * is called on a terminal state, this indicates an error in either the game
      * description or the StateMachine implementation.
+     * @throws StateMachineException if it was not possible to compute the goal value
+     * for the given role because of an error that occurred in the state machine and
+     * couldn't be handled.
      */
-    public abstract int getGoal(MachineState state, Role role) throws GoalDefinitionException;
+    public abstract int getGoal(MachineState state, Role role) throws GoalDefinitionException, StateMachineException;
     /**
      * Returns true if and only if the given state is a terminal state (i.e. the
      * game is over).
+     * @throws StateMachineException if it was not possible to determine if the current
+     * state is terminal because of an error that occurred in the state machine and
+     * couldn't be handled.
      */
-    public abstract boolean isTerminal(MachineState state);
+    public abstract boolean isTerminal(MachineState state) throws StateMachineException;
 
     /**
      * Returns a list of the roles in the game, in the same order as they
@@ -77,9 +83,12 @@ public abstract class StateMachine
      *
      * @throws MoveDefinitionException if the role has no legal moves. This indicates
      * an error in either the game description or the StateMachine implementation.
+     * @throws StateMachineException if it was not possible to compute the legal moves
+     * for the given role because of an error that occurred in the state machine and
+     * couldn't be handled.
      */
     // TODO: There are philosophical reasons for this to return Set<Move> rather than List<Move>.
-    public abstract List<Move> getLegalMoves(MachineState state, Role role) throws MoveDefinitionException;
+    public abstract List<Move> getLegalMoves(MachineState state, Role role) throws MoveDefinitionException, StateMachineException;
 
     /**
      * Returns the next state of the game given the current state and a joint move
