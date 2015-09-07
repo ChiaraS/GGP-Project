@@ -8,11 +8,9 @@ import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.List;
 
 import org.ggp.base.util.gdl.grammar.Gdl;
-import org.ggp.base.util.gdl.grammar.GdlSentence;
 import org.ggp.base.util.logging.GamerLogger;
 import org.ggp.base.util.statemachine.MachineState;
 import org.ggp.base.util.statemachine.Move;
@@ -74,7 +72,6 @@ public class NewYapStateMachine extends StateMachine {
 
 	// File with all the predefined Prolog functions
 	private String functionsFilePath;
-	private File functionsFile;
 
 	// Second file with all the predefined Prolog functions
 	// => using the Internal DataBase
@@ -134,7 +131,7 @@ public class NewYapStateMachine extends StateMachine {
 			this.yapProver = new YAPSubprocessEngine(this.yapCommand);
 
 			////NEEDED???????
-			this.functionsFile = new File(this.functionsFilePath);
+			//this.functionsFile = new File(this.functionsFilePath);
 			//this.functionsIdbFile = new File(this.functionsFileIdbPath);
 
 			this.support = new YapEngineSupport();
@@ -155,6 +152,8 @@ public class NewYapStateMachine extends StateMachine {
 			this.initialState = computeInitialState();
 			this.roles = computeRoles();
 
+		}catch(RuntimeException re){
+			throw re;
 		}catch(Exception e){
 			// Log the exception
 			GamerLogger.logError("StateMachine", "[YAP] Exception during state machine initialization. Shutting down.");
@@ -170,40 +169,51 @@ public class NewYapStateMachine extends StateMachine {
 			this.yapProver.shutdown();
 			this.yapProver = null;
 
-
 			// Throw an exception.
-			throw new StateMachineException(e);
+			throw new StateMachineException("State machine initialization failure.", e);
 		}
 	}
 
-	private MachineState computeInitialState()
+	private MachineState computeInitialState() throws StateMachineException
 	{
 		Object[] bindings = yapProver.deterministicGoal("initialize_state(List), processList(List, LL), ipObjectTemplate('ArrayOfString',AS,_,[LL],_)", "[AS]");
 
-		// If bindings is null => the initial state is empty because there are no true propositions in the initial state.
+		// If bindings is null => something went wrong on Yap Prolog side during the computation.
+		// Note that this should never happen, but an extra check won't hurt.
 		if(bindings == null){
-			this.currentYapState = new MachineState(new HashSet<GdlSentence>());
-		}else{
-			currentYapState = new MachineState(support.askToState((String[]) bindings[0]));
+			// State computation failed on Yap prolog side.
+			this.currentYapState = null;
+			GamerLogger.logError("StateMachine", "[YAP] Computation of initial state on Yap Prolog side failed.");
+			throw new StateMachineException("Computation of initial state on Yap Prolog side failed.");
 		}
+
+		// Compute the machine state using the Yap Prolog answer (note that it could be an empty array of strings in case
+		// no propositions are true in the initial state. In this case the content of the machine state will be an empty HashSet)
+		this.currentYapState = new MachineState(support.askToState((String[]) bindings[0]));
 
 		return currentYapState.clone();
 	}
 
-	private ImmutableList<Role> computeRoles() throws StateMachineException
-	{
+	private ImmutableList<Role> computeRoles() throws StateMachineException	{
+		List<Role> tmpRoles = new ArrayList<Role>();
+
 		try{
-			List<Role> roles = new ArrayList<Role>();
 			Object[] bindings = yapProver.deterministicGoal("get_roles(List), processList(List, LL), ipObjectTemplate('ArrayOfString',AS,_,[LL],_)", "[AS]");
-			if(bindings != null){
-				roles = support.askToRoles((String[]) bindings[0]);
+
+			if(bindings == null){
+				GamerLogger.logError("StateMachine", "[YAP] Got no results for the computation of the game roles, while expecting at least one role.");
+				throw new StateMachineException("Got no results for the computation of the game roles, while expecting at least one role.");
 			}
-			this.fakeRoles = support.getFakeRoles(roles);
+
+			tmpRoles = support.askToRoles((String[]) bindings[0]);
+
+			this.fakeRoles = support.getFakeRoles(tmpRoles);
+
 		}catch(SymbolFormatException e){
 			this.fakeRoles = null;
 			throw new StateMachineException(e);
 		}
-		return ImmutableList.copyOf(roles);
+		return ImmutableList.copyOf(tmpRoles);
 	}
 
 	/* (non-Javadoc)
@@ -218,21 +228,21 @@ public class NewYapStateMachine extends StateMachine {
 		Object[] bindings = yapProver.deterministicGoal("get_goal("+support.getFakeRole(role)+", List), processList(List, LL), ipObjectTemplate('ArrayOfString',AS,_,[LL],_)", "[AS]");
 
 		if(bindings == null){
-			GamerLogger.logError("StateMachine", "Got no goal when expecting one.");
+			GamerLogger.logError("StateMachine", "[YAP] Got no goal when expecting one.");
 			throw new GoalDefinitionException(state, role);
 		}
 
 		String[] goals = (String[]) bindings[0];
 
 		if(goals.length != 1){
-			GamerLogger.logError("StateMachine", "Got goal results of size: " + goals.length + " when expecting size one.");
+			GamerLogger.logError("StateMachine", "[YAP] Got goal results of size: " + goals.length + " when expecting size one.");
 			throw new GoalDefinitionException(state, role);
 		}
 
 		try{
 			goal = Integer.parseInt(goals[0]);
 		}catch(NumberFormatException ex){
-			GamerLogger.logError("StateMachine", "Got goal results that is not a number.");
+			GamerLogger.logError("StateMachine", "[YAP] Got goal results that is not a number.");
 			GamerLogger.logStackTrace("StateMachine", ex);
 			throw new GoalDefinitionException(state, role, ex);
 		}
@@ -279,14 +289,15 @@ public class NewYapStateMachine extends StateMachine {
 		Object[] bindings = yapProver.deterministicGoal("get_legal_moves("+support.getFakeRole(role)+", List), processList(List, LL), ipObjectTemplate('ArrayOfString',AS,_,[LL],_)", "[AS]");
 
 		if(bindings == null){
-			GamerLogger.logError("StateMachine", "Got no legal moves when expecting at least one.");
+			GamerLogger.logError("StateMachine", "[YAP] Got no legal moves when expecting at least one.");
 			throw new MoveDefinitionException(state, role);
 		}
 
 		String[] yapMoves = (String[]) bindings[0];
 
+		// Extra check, but this should never happen.
 		if(yapMoves.length < 1){
-			GamerLogger.logError("StateMachine", "Got no legal moves when expecting at least one.");
+			GamerLogger.logError("StateMachine", "[YAP] Got no legal moves when expecting at least one.");
 			throw new MoveDefinitionException(state, role);
 		}
 
@@ -300,27 +311,23 @@ public class NewYapStateMachine extends StateMachine {
 	 */
 	@Override
 	public MachineState getNextState(MachineState state, List<Move> moves)
-			throws TransitionDefinitionException {
+			throws TransitionDefinitionException, StateMachineException {
 
 		updateYapState(state);
 
-		Object[] bindings = yapProver.deterministicGoal("get_legal_moves("+support.getFakeRole(role)+", List), processList(List, LL), ipObjectTemplate('ArrayOfString',AS,_,[LL],_)", "[AS]");
+		// Get the next state and assert it on Yap Prolog side.
+		Object[] bindings = yapProver.deterministicGoal("get_next_state("+fakeRoles+", "+support.getFakeMoves(moves)+", List), processList(List, LL), ipObjectTemplate('ArrayOfString',AS,_,[LL],_)", "[AS]");
 
 		if(bindings == null){
-			GamerLogger.logError("StateMachine", "Got no legal moves when expecting at least one.");
-			throw new MoveDefinitionException(state, role);
+			GamerLogger.logError("StateMachine", "[YAP] Computation of next state on Yap Prolog side failed.");
+			throw new StateMachineException("Computation of next state on Yap Prolog side failed for moves " + moves + " in state " + state + ".");
 		}
 
-		String[] yapMoves = (String[]) bindings[0];
+		// Compute the machine state using the Yap Prolog answer (note that it could be an empty array of strings in case no
+		// propositions are true in the computed next state. In this case the content of the machine state will be an empty HashSet)
+		this.currentYapState = new MachineState(support.askToState((String[]) bindings[0]));
 
-		if(yapMoves.length < 1){
-			GamerLogger.logError("StateMachine", "Got no legal moves when expecting at least one.");
-			throw new MoveDefinitionException(state, role);
-		}
-
-		List<Move> moves = support.askToMoves(yapMoves);
-
-		return moves;
+		return currentYapState.clone();
 	}
 
 	////////////////////////////////////////////////////////////////////////
@@ -376,6 +383,10 @@ public class NewYapStateMachine extends StateMachine {
 
 			this.currentYapState = state;
 		}
+	}
+
+	public void shutdown(){
+		this.yapProver.shutdown();
 	}
 
 }

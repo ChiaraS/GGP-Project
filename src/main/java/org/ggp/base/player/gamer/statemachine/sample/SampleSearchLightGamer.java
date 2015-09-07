@@ -17,6 +17,7 @@ import org.ggp.base.util.statemachine.StateMachine;
 import org.ggp.base.util.statemachine.cache.CachedStateMachine;
 import org.ggp.base.util.statemachine.exceptions.GoalDefinitionException;
 import org.ggp.base.util.statemachine.exceptions.MoveDefinitionException;
+import org.ggp.base.util.statemachine.exceptions.StateMachineException;
 import org.ggp.base.util.statemachine.exceptions.TransitionDefinitionException;
 import org.ggp.base.util.statemachine.implementation.prover.ProverStateMachine;
 
@@ -64,9 +65,10 @@ public final class SampleSearchLightGamer extends StateMachineGamer
 	 * 	<li> If a move allows a 2 step forced loss avoid it </li>
 	 * 	<li> Otherwise select the move </li>
 	 * </ol>
+	 * @throws StateMachineException
 	 */
 	@Override
-	public Move stateMachineSelectMove(long timeout) throws TransitionDefinitionException, MoveDefinitionException, GoalDefinitionException
+	public Move stateMachineSelectMove(long timeout) throws TransitionDefinitionException, MoveDefinitionException, GoalDefinitionException, StateMachineException
 	{
 	    StateMachine theMachine = getStateMachine();
 		long start = System.currentTimeMillis();

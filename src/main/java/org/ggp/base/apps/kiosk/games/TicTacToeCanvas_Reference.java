@@ -10,6 +10,7 @@ import org.ggp.base.util.gdl.grammar.GdlFunction;
 import org.ggp.base.util.gdl.grammar.GdlSentence;
 import org.ggp.base.util.statemachine.Move;
 import org.ggp.base.util.statemachine.exceptions.MoveDefinitionException;
+import org.ggp.base.util.statemachine.exceptions.StateMachineException;
 
 
 /**
@@ -104,7 +105,7 @@ public class TicTacToeCanvas_Reference extends GameCanvas {
                     g.drawRect(xSpot+BORDER_SIZE/2, ySpot+BORDER_SIZE/2, width/3-BORDER_SIZE, height/3-BORDER_SIZE);
                 }
             }
-        } catch (MoveDefinitionException e) {
+        } catch (MoveDefinitionException | StateMachineException e) {
             ;
         }
     }

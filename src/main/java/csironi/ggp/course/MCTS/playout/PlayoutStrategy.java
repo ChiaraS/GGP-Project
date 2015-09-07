@@ -7,6 +7,7 @@ import java.util.List;
 
 import org.ggp.base.util.statemachine.exceptions.GoalDefinitionException;
 import org.ggp.base.util.statemachine.exceptions.MoveDefinitionException;
+import org.ggp.base.util.statemachine.exceptions.StateMachineException;
 import org.ggp.base.util.statemachine.exceptions.TransitionDefinitionException;
 
 import csironi.ggp.course.MCTS.MCTNode;
@@ -27,7 +28,8 @@ public interface PlayoutStrategy {
 	 * @throws MoveDefinitionException
 	 * @throws TransitionDefinitionException
 	 * @throws GoalDefinitionException
+	 * @throws StateMachineException
 	 */
-	public List<Integer> playout(MCTNode expandedNode) throws MoveDefinitionException, TransitionDefinitionException, GoalDefinitionException;
+	public List<Integer> playout(MCTNode expandedNode) throws MoveDefinitionException, TransitionDefinitionException, GoalDefinitionException, StateMachineException;
 
 }

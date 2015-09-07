@@ -8,12 +8,14 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.ggp.base.server.GameServer;
+import org.ggp.base.server.exception.GameServerException;
 import org.ggp.base.util.game.Game;
 import org.ggp.base.util.game.GameRepository;
 import org.ggp.base.util.gdl.factory.exceptions.GdlFormatException;
 import org.ggp.base.util.match.Match;
 import org.ggp.base.util.statemachine.Role;
 import org.ggp.base.util.statemachine.exceptions.GoalDefinitionException;
+import org.ggp.base.util.statemachine.exceptions.StateMachineException;
 import org.ggp.base.util.symbol.factory.exceptions.SymbolFormatException;
 
 /**
@@ -33,7 +35,7 @@ import org.ggp.base.util.symbol.factory.exceptions.SymbolFormatException;
  */
 public final class GameServerRunner
 {
-	public static void main(String[] args) throws IOException, SymbolFormatException, GdlFormatException, InterruptedException, GoalDefinitionException
+	public static void main(String[] args) throws IOException, SymbolFormatException, GdlFormatException, InterruptedException, GoalDefinitionException, GameServerException, StateMachineException
 	{
 		// Extract the desired configuration from the command line.
 		String tourneyName = args[0];

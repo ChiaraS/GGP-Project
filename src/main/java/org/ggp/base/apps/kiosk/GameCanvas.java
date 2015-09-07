@@ -23,6 +23,7 @@ import org.ggp.base.util.statemachine.Move;
 import org.ggp.base.util.statemachine.Role;
 import org.ggp.base.util.statemachine.StateMachine;
 import org.ggp.base.util.statemachine.exceptions.MoveDefinitionException;
+import org.ggp.base.util.statemachine.exceptions.StateMachineException;
 
 
 public abstract class GameCanvas extends JPanel implements Subject {
@@ -146,7 +147,7 @@ public abstract class GameCanvas extends JPanel implements Subject {
                 //submitWorkingMove(legalMoves.get(0));
             	submitFinalMove(legalMoves.get(0));
             }
-        } catch (MoveDefinitionException e) {
+        } catch (MoveDefinitionException | StateMachineException e) {
             submitWorkingMove(null);
         }
     }
@@ -214,7 +215,8 @@ public abstract class GameCanvas extends JPanel implements Subject {
                 }
             }
             return theMatches;
-        } catch (MoveDefinitionException e) {
+        // Not sure if dealing with StateMachineException like this won't cause any problem: keep an eye on it!
+        } catch (MoveDefinitionException | StateMachineException e) {
             // This can happen in games where the terminal state
             // has no legal moves defined for a player.
             //e.printStackTrace();

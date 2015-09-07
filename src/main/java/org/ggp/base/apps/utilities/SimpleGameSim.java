@@ -10,6 +10,7 @@ import org.ggp.base.server.GameServer;
 import org.ggp.base.server.event.ServerCompletedMatchEvent;
 import org.ggp.base.server.event.ServerNewGameStateEvent;
 import org.ggp.base.server.event.ServerNewMovesEvent;
+import org.ggp.base.server.exception.GameServerException;
 import org.ggp.base.util.crypto.BaseCryptography.EncodedKeyPair;
 import org.ggp.base.util.crypto.SignableJSON;
 import org.ggp.base.util.files.FileUtils;
@@ -42,7 +43,7 @@ public class SimpleGameSim {
     public static final boolean hideControlProposition = true;
     public static final boolean showCurrentState = false;
 
-    public static void main(String[] args) throws InterruptedException {
+    public static void main(String[] args) throws InterruptedException, GameServerException {
         final Game theGame = GameRepository.getDefaultRepository().getGame("nineBoardTicTacToe");
         final Match theMatch = new Match("simpleGameSim." + Match.getRandomString(5), -1, 0, 0, theGame);
         try {

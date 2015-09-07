@@ -1,5 +1,5 @@
 % Library :
-library_directory('C:\Users\c.sironi\BITBUCKET REPOS\GGP-Base\csironi\yapPrologFiles').
+library_directory('/home/csironi/YAPplayer/prologFiles').
 :- use_module(library(description)).
 :- use_module(library(random)).
 :- use_module(library(prandom)).
@@ -42,6 +42,14 @@ processList([_a|_l],[string(_s)|_ll]) :- term_to_atom(_a, _s), processList(_l, _
 % processString(_e, _e) :- atom(_e).
 processString(_e, _s) :- term_to_atom(_e, _s).
 
+%%%%%%%%%%%%%%%%%%%%%% OTHER USEFUL PREDICATES %%%%%%%%%%%%%%%%%%%%%%%
+
+/**
+ * If there is at least one solution, it will return the list with that solution,
+ * otherwise returns the empty list instead of failing!
+ */
+failsafe_bagof(_x, _y, _ll) :- bagof(_x,_y,_ll), !, remove_duplicates(_ll, _llll).
+failsafe_bagof(_x, _y, []).
 
 
 choose([], []).
@@ -55,20 +63,22 @@ perform_depth(_lr, _n, _l) :- get_random_joint_move(_lr, _ll), get_next_state(_l
 
 get_random_next_state(_l, _r, _m, _ll) :- get_random_joint_moveg(_l, _r, _m, _lll), get_next_state(_l, _lll, _ll).
 
-/**
- * 
- */
-% Not ok! What if bagof fails because next state has no true propositions? The asserted does
-% propositions won't be retracted and yap will be in an inconsistent state.
-%get_next_state(_l, _lll, _llll) :- add_does_clauses(_l, _lll), bagof(_x, next(_x), _ll), remove_duplicates(_ll, _llll), retractall(does(_,_)), computel(_llll).
-get_next_state(_l, _lll, _llll) :- add_does_clauses(_l, _lll), failsafe_bagof(_x, next(_x), _ll), remove_duplicates(_ll, _llll), retractall(does(_,_)), computel(_llll).
+%%%%%%%%%%%%%%%% PREDICATES COMPUTING THE NEXT STATE %%%%%%%%%%%%%%%%%
 
 /**
- * If there is at least one solution will return the list with that solution, otherwise returns the empty list instead of failing!
- Controlla che non sia un red cut!
+ * Computes the next state of the game given a joint move, then retracts the current state and asserts the new one.
+ * ATTENTION!: what if bagof fails because the next state has no true propositions? The asserted 'does' propositions won't be
+ * retracted and Yap Prolog will be in an inconsistent state.
  */
-failsafe_bagof(_x, _y, _ll) :- bagof(_x,_y,_ll), !, remove_duplicates(_ll, _llll).
-failsafe_bagof(_x, _y, []).
+% get_next_state(_l, _lll, _llll) :- add_does_clauses(_l, _lll), bagof(_x, next(_x), _ll), remove_duplicates(_ll, _llll), retractall(does(_,_)), computel(_llll).
+
+/**
+ * Computes the next state of the game given a joint move, then retracts the current state and asserts the new one.
+ * ATTENTION!: this predicate overcomes the previously mentioned problem by using the definition of 'failsafe_bagof',
+ * that never fails.
+ */
+get_next_state(_l, _lll, _llll) :- add_does_clauses(_l, _lll), failsafe_bagof(_x, next(_x), _ll), remove_duplicates(_ll, _llll), retractall(does(_,_)), update_state(_llll).
+
 
 
 get_random_joint_moveg([], _, _, []).
@@ -86,10 +96,10 @@ get_legal_moves(_p, _ll) :- bagof(_x, _p^legal(_p, _x), _l), remove_duplicates(_
 
 %%%%%%%%%%%%%%%%%%%% UPDATE PROLOG MACHINE STATE %%%%%%%%%%%%%%%%%%%%%%
 
-%compute_state(_l, _s) :- computel(_l), atom_concat('d', '', _s).
-%computel(_l) :- retractall(true(_)), add_true_clauses(_l).
+% compute_state(_l, _s) :- computel(_l), atom_concat('d', '', _s).
+% computel(_l) :- retractall(true(_)), add_true_clauses(_l).
 
-update_state(_l):-retractall(true(_)), add_true_clauses(_l);
+update_state(_l) :- retractall(true(_)), add_true_clauses(_l).
 
 %%%%%%%%%%%%%%%%% CHECK IF CURRENT STATE IS TERMINAL %%%%%%%%%%%%%%%%%%
 
@@ -97,10 +107,10 @@ is_terminal :- terminal.
 
 %%%%%%%%%%%%%%%%%%%%% GET STATE GOAL FOR A ROLE %%%%%%%%%%%%%%%%%%%%%%%
 
-%get_goal(_p, _s) :- goal(_p, _n), atom_number(_s, _n).
-%get_goal(_p, '').
+% get_goal(_p, _s) :- goal(_p, _n), atom_number(_s, _n).
+% get_goal(_p, '').
 
-get_goal(_p, _l):-bagof(_n, _p^goal(_p, _n), _l).
+get_goal(_p, _l) :- bagof(_n, _p^goal(_p, _n), _l).
 
 %%%%%%%%%%%%%%%%%%%%% INITIAL STATE COMPUTATION %%%%%%%%%%%%%%%%%%%%%%%
 /**
@@ -115,15 +125,23 @@ get_goal(_p, _l):-bagof(_n, _p^goal(_p, _n), _l).
  * Computes the list _ll of propositions _x that are true in the initial state (init(_x)),
  * asserting them as true (true(_x)) on Yap Prolog side.
  * !ATTENTION: this definition of the predicate overcomes the previously mentioned problem.
+ * If there are no true clauses in the initial state this predicate fails.
  */
-initialize_state(_ll) :- retractall(true(_)), bagof(_x, init(_x), _l), remove_duplicates(_l, _ll), add_true_clauses(_ll).
+%initialize_state(_ll) :- retractall(true(_)), bagof(_x, init(_x), _l), remove_duplicates(_l, _ll), add_true_clauses(_ll).
+/**
+ * Computes the list _ll of propositions _x that are true in the initial state (init(_x)),
+ * asserting them as true (true(_x)) on Yap Prolog side.
+ * !ATTENTION: also this definition of the predicate overcomes the previously mentioned problem.
+ * Moreover, if there are no true clauses in the initial state this predicate, instead of failing, returns an empty list.
+ */
+initialize_state(_ll) :- failsafe_bagof(_x, init(_x), _l), remove_duplicates(_l, _ll), retractall(true(_)), add_true_clauses(_ll).
 
 %%%%%%%%%%%%%%%%%%%%%%%%%% ROLES COMPUTATION %%%%%%%%%%%%%%%%%%%%%%%%%%
 
 /**
  * Computes the roles in the game always in the same order (?).
  */
-get_roles(_ll) :- bagof(_x, role(_x), _l), remove_duplicates(_l, _ll).
+get_roles(_ll) :- failsafe_bagof(_x, role(_x), _l), remove_duplicates(_l, _ll).
 
 %%%%%%%%%%%%% EXTRA PREDICATES TO UNDERTSAND GDL GRAMMAR %%%%%%%%%%%%%%
 

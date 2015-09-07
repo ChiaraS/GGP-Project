@@ -11,6 +11,7 @@ import org.ggp.base.util.statemachine.Role;
 import org.ggp.base.util.statemachine.StateMachine;
 import org.ggp.base.util.statemachine.exceptions.GoalDefinitionException;
 import org.ggp.base.util.statemachine.exceptions.MoveDefinitionException;
+import org.ggp.base.util.statemachine.exceptions.StateMachineException;
 import org.ggp.base.util.statemachine.exceptions.TransitionDefinitionException;
 
 import com.google.common.collect.ImmutableList;
@@ -53,7 +54,7 @@ public final class CachedStateMachine extends StateMachine
 	}
 
 	@Override
-	public int getGoal(MachineState state, Role role) throws GoalDefinitionException
+	public int getGoal(MachineState state, Role role) throws GoalDefinitionException, StateMachineException
 	{
 		Entry entry = getEntry(state);
 		synchronized (entry)
@@ -68,7 +69,7 @@ public final class CachedStateMachine extends StateMachine
 	}
 
 	@Override
-	public List<Move> getLegalMoves(MachineState state, Role role) throws MoveDefinitionException
+	public List<Move> getLegalMoves(MachineState state, Role role) throws MoveDefinitionException, StateMachineException
 	{
 		Entry entry = getEntry(state);
 		synchronized (entry)
@@ -83,7 +84,7 @@ public final class CachedStateMachine extends StateMachine
 	}
 
 	@Override
-	public MachineState getNextState(MachineState state, List<Move> moves) throws TransitionDefinitionException
+	public MachineState getNextState(MachineState state, List<Move> moves) throws TransitionDefinitionException, StateMachineException
 	{
 		Entry entry = getEntry(state);
 		synchronized (entry)
@@ -98,7 +99,7 @@ public final class CachedStateMachine extends StateMachine
 	}
 
 	@Override
-	public boolean isTerminal(MachineState state)
+	public boolean isTerminal(MachineState state) throws StateMachineException
 	{
 		Entry entry = getEntry(state);
 		synchronized (entry)
@@ -124,7 +125,7 @@ public final class CachedStateMachine extends StateMachine
 	}
 
 	@Override
-	public void initialize(List<Gdl> description) {
+	public void initialize(List<Gdl> description) throws StateMachineException {
 		backingStateMachine.initialize(description);
 	}
 

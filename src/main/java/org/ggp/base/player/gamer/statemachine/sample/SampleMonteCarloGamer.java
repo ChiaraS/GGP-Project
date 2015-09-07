@@ -9,6 +9,7 @@ import org.ggp.base.util.statemachine.Move;
 import org.ggp.base.util.statemachine.StateMachine;
 import org.ggp.base.util.statemachine.exceptions.GoalDefinitionException;
 import org.ggp.base.util.statemachine.exceptions.MoveDefinitionException;
+import org.ggp.base.util.statemachine.exceptions.StateMachineException;
 import org.ggp.base.util.statemachine.exceptions.TransitionDefinitionException;
 
 /**
@@ -30,7 +31,7 @@ public final class SampleMonteCarloGamer extends SampleGamer
 	 * Employs a simple sample "Monte Carlo" algorithm.
 	 */
 	@Override
-	public Move stateMachineSelectMove(long timeout) throws TransitionDefinitionException, MoveDefinitionException, GoalDefinitionException
+	public Move stateMachineSelectMove(long timeout) throws TransitionDefinitionException, MoveDefinitionException, GoalDefinitionException, StateMachineException
 	{
 	    StateMachine theMachine = getStateMachine();
 		long start = System.currentTimeMillis();

@@ -10,8 +10,9 @@ import org.ggp.base.util.gdl.grammar.Gdl;
 import org.ggp.base.util.logging.GamerLogger;
 import org.ggp.base.util.logging.GamerLogger.FORMAT;
 import org.ggp.base.util.match.Match;
+import org.ggp.base.util.statemachine.exceptions.StateMachineException;
 import org.ggp.base.util.statemachine.implementation.prover.ProverStateMachine;
-import org.ggp.base.util.statemachine.implementation.yapProlog.YapStateMachine;
+import org.ggp.base.util.statemachine.implementation.yapProlog.NewYapStateMachine;
 import org.ggp.base.util.statemachine.verifier.StateMachineVerifier;
 
 /**
@@ -50,7 +51,7 @@ public class YAPVerifier {
 		System.out.println();
 
         ProverStateMachine theReference;
-        YapStateMachine theYapMachine;
+        NewYapStateMachine theYapMachine;
 
         GamerLogger.setSpilloverLogfile("YAPVerifierTable.csv");
         GamerLogger.log(FORMAT.CSV_FORMAT, "YAPVerifierTable", "Game key;Rounds;Test duration (ms);Pass;");
@@ -74,28 +75,32 @@ public class YAPVerifier {
             theReference = new ProverStateMachine();
 
             // Create the YAP state machine
-            theYapMachine = new YapStateMachine(new ProverStateMachine());
+            theYapMachine = new NewYapStateMachine();
 
             boolean pass = false;
             int rounds = -1;
             long duration = 0L;
 
+            System.out.println("Detected activation in game " + gameKey + ". Checking consistency: ");
+
             // Initialize the state machines
             theReference.initialize(description);
-          	theYapMachine.initialize(description);
-
-          	System.out.println("Detected activation in game " + gameKey + ". Checking consistency: ");
-            long start = System.currentTimeMillis();
-            pass = StateMachineVerifier.checkMachineConsistency(theReference, theYapMachine, testTime);
-            duration = System.currentTimeMillis() - start;
-            rounds = StateMachineVerifier.lastRounds;
+          	try {
+				theYapMachine.initialize(description);
+				long start = System.currentTimeMillis();
+				pass = StateMachineVerifier.checkMachineConsistency(theReference, theYapMachine, testTime);
+				duration = System.currentTimeMillis() - start;
+				rounds = StateMachineVerifier.lastRounds;
+			} catch (StateMachineException e) {
+				GamerLogger.log("Verifier", "State machine initialization failed. Impossible to test game " + gameKey);
+			}
 
             GamerLogger.log(FORMAT.PLAIN_FORMAT, "Verifier", "");
 
             GamerLogger.stopFileLogging();
             GamerLogger.log(FORMAT.CSV_FORMAT, "YapVerifierTable", gameKey + ";" + rounds + ";" + duration + ";" + pass + ";");
 
-            theYapMachine.stop();
+            theYapMachine.shutdown();
 
         }
 	}

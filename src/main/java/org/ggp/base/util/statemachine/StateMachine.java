@@ -98,8 +98,11 @@ public abstract class StateMachine
      * listed in the same order as roles are listed by {@link #getRoles()}.
      * @throws TransitionDefinitionException indicates an error in either the
      * game description or the StateMachine implementation.
+     * @throws StateMachineException if it was not possible to compute the next
+     * state for the given state and the given joint moves because of an error
+     * that occurred in the state machine and couldn't be handled.
      */
-    public abstract MachineState getNextState(MachineState state, List<Move> moves) throws TransitionDefinitionException;
+    public abstract MachineState getNextState(MachineState state, List<Move> moves) throws TransitionDefinitionException, StateMachineException;
 
     // The following methods are included in the abstract StateMachine base so
     // implementations which use alternative Role/Move/State representations
@@ -135,8 +138,14 @@ public abstract class StateMachine
     /** Override this to provide memory-saving destructive-next-state functionality.
      * <p>
      * CONTRACT: After calling this method, "state" should not be accessed.
+     *
+     * @throws TransitionDefinitionException indicates an error in either the
+     * game description or the StateMachine implementation.
+     * @throws StateMachineException if it was not possible to compute the next
+     * state destructively for the given state and the given joint moves because
+     * of an error that occurred in the state machine and couldn't be handled.
      */
-    public MachineState getNextStateDestructively(MachineState state, List<Move> moves) throws TransitionDefinitionException {
+    public MachineState getNextStateDestructively(MachineState state, List<Move> moves) throws TransitionDefinitionException, StateMachineException {
         return getNextState(state, moves);
     }
 
@@ -171,8 +180,14 @@ public abstract class StateMachine
      * If only one player has more than one legal move, then the number of
      * joint moves returned will equal the number of possible moves for that
      * player.
+     *
+     * @throws MoveDefinitionException if a role has no legal moves. This indicates
+     * an error in either the game description or the StateMachine implementation.
+     * @throws StateMachineException if it was not possible to compute the legal
+     * joint moves for the given state because of an error that occurred in the
+     * state machine and couldn't be handled.
      */
-    public List<List<Move>> getLegalJointMoves(MachineState state) throws MoveDefinitionException
+    public List<List<Move>> getLegalJointMoves(MachineState state) throws MoveDefinitionException, StateMachineException
     {
         List<List<Move>> legals = new ArrayList<List<Move>>();
         for (Role role : getRoles()) {
@@ -189,8 +204,15 @@ public abstract class StateMachine
      * Returns a list of every joint move possible in the given state in which
      * the given role makes the given move. This will be a subset of the list
      * of joint moves given by {@link #getLegalJointMoves(MachineState)}.
+     *
+     * @throws MoveDefinitionException if a role has no legal moves. This indicates
+     * an error in either the game description or the StateMachine implementation.
+     * @throws StateMachineException if it was not possible to compute the legal
+     * joint moves for the given state where the given role performs the given
+     * move because of an error that occurred in the state machine and couldn't
+     * be handled.
      */
-    public List<List<Move>> getLegalJointMoves(MachineState state, Role role, Move move) throws MoveDefinitionException
+    public List<List<Move>> getLegalJointMoves(MachineState state, Role role, Move move) throws MoveDefinitionException, StateMachineException
     {
         List<List<Move>> legals = new ArrayList<List<Move>>();
         for (Role r : getRoles()) {
@@ -214,8 +236,17 @@ public abstract class StateMachine
      * the given state. The list will contain one entry for every possible
      * joint move that could be played; as such, a single machine state could
      * be included multiple times.
+     *
+     * @throws MoveDefinitionException if a role has no legal moves. This indicates
+     * an error in either the game description or the StateMachine implementation.
+     * @throws TransitionDefinitionException indicates an error in either the
+     * game description or the StateMachine implementation.
+     * @throws StateMachineException if it was not possible to compute the list
+     * of all the possible next states that can be reached from the given state
+     * because of an error that occurred in the state machine and couldn't be
+     * handled.
      */
-    public List<MachineState> getNextStates(MachineState state) throws MoveDefinitionException, TransitionDefinitionException
+    public List<MachineState> getNextStates(MachineState state) throws MoveDefinitionException, TransitionDefinitionException, StateMachineException
     {
         List<MachineState> nextStates = new ArrayList<MachineState>();
         for (List<Move> move : getLegalJointMoves(state)) {
@@ -232,8 +263,16 @@ public abstract class StateMachine
      * <p>
      * If the given role is the only role with more than one legal move,
      * then each list of states in the map will only contain one state.
+     *
+     * @throws MoveDefinitionException if the role has no legal moves. This indicates
+     * an error in either the game description or the StateMachine implementation.
+     * @throws TransitionDefinitionException indicates an error in either the
+     * game description or the StateMachine implementation.
+     * @throws StateMachineException if it was not possible to compute the
+     * map with all the possible next states per role move because of an
+     * error that occurred in the state machine and couldn't be handled.
      */
-    public Map<Move, List<MachineState>> getNextStates(MachineState state, Role role) throws MoveDefinitionException, TransitionDefinitionException
+    public Map<Move, List<MachineState>> getNextStates(MachineState state, Role role) throws MoveDefinitionException, TransitionDefinitionException, StateMachineException
     {
         Map<Move, List<MachineState>> nextStates = new HashMap<Move, List<MachineState>>();
         Map<Role, Integer> roleIndices = getRoleIndices();
@@ -291,8 +330,11 @@ public abstract class StateMachine
      * goal value for any one role in the given state. If this occurs when this
      * is called on a terminal state, this indicates an error in either the game
      * description or the StateMachine implementation.
+     * @throws StateMachineException if it was not possible to compute the list
+     * with the goals for all the roles in the given state because of an error
+     * that occurred in the state machine and couldn't be handled.
      */
-    public List<Integer> getGoals(MachineState state) throws GoalDefinitionException {
+    public List<Integer> getGoals(MachineState state) throws GoalDefinitionException, StateMachineException {
         List<Integer> theGoals = new ArrayList<Integer>();
         for (Role r : getRoles()) {
             theGoals.add(getGoal(state, r));
@@ -303,8 +345,14 @@ public abstract class StateMachine
     /**
      * Returns a random joint move from among all the possible joint moves in
      * the given state.
+     *
+     * @throws MoveDefinitionException if a role has no legal moves. This indicates
+     * an error in either the game description or the StateMachine implementation.
+     * @throws StateMachineException if it was not possible to compute the random
+     * joint move in the given state because of an error that occurred in the state
+     * machine and couldn't be handled.
      */
-    public List<Move> getRandomJointMove(MachineState state) throws MoveDefinitionException
+    public List<Move> getRandomJointMove(MachineState state) throws MoveDefinitionException, StateMachineException
     {
         List<Move> random = new ArrayList<Move>();
         for (Role role : getRoles()) {
@@ -317,8 +365,14 @@ public abstract class StateMachine
     /**
      * Returns a random joint move from among all the possible joint moves in
      * the given state in which the given role makes the given move.
+     *
+     * @throws MoveDefinitionException if a role has no legal moves. This indicates
+     * an error in either the game description or the StateMachine implementation.
+     * @throws StateMachineException if it was not possible to compute a random
+     * joint move in the given state with the given role performing the given move
+     * because of an error that occurred in the state machine and couldn't be handled.
      */
-    public List<Move> getRandomJointMove(MachineState state, Role role, Move move) throws MoveDefinitionException
+    public List<Move> getRandomJointMove(MachineState state, Role role, Move move) throws MoveDefinitionException, StateMachineException
     {
         List<Move> random = new ArrayList<Move>();
         for (Role r : getRoles()) {
@@ -335,8 +389,14 @@ public abstract class StateMachine
     /**
      * Returns a random move from among the possible legal moves for the
      * given role in the given state.
+     *
+     * @throws MoveDefinitionException if the role has no legal moves. This indicates
+     * an error in either the game description or the StateMachine implementation.
+     * @throws StateMachineException if it was not possible to compute a
+     * random move for the given role in the given state because of an
+     * error that occurred in the state machine and couldn't be handled.
      */
-    public Move getRandomMove(MachineState state, Role role) throws MoveDefinitionException
+    public Move getRandomMove(MachineState state, Role role) throws MoveDefinitionException, StateMachineException
     {
         List<Move> legals = getLegalMoves(state, role);
         return legals.get(new Random().nextInt(legals.size()));
@@ -349,8 +409,16 @@ public abstract class StateMachine
      * The distribution among states is based on the possible joint moves.
      * This is not necessarily uniform among the possible states themselves,
      * as multiple joint moves may result in the same state.
+     *
+     * @throws MoveDefinitionException if a role has no legal moves. This indicates
+     * an error in either the game description or the StateMachine implementation.
+     * @throws TransitionDefinitionException indicates an error in either the
+     * game description or the StateMachine implementation.
+     * @throws StateMachineException if it was not possible to compute a random next
+     * state from the given state because of an error that occurred in the state
+     * machine and couldn't be handled.
      */
-    public MachineState getRandomNextState(MachineState state) throws MoveDefinitionException, TransitionDefinitionException
+    public MachineState getRandomNextState(MachineState state) throws MoveDefinitionException, TransitionDefinitionException, StateMachineException
     {
         List<Move> random = getRandomJointMove(state);
         return getNextState(state, random);
@@ -366,8 +434,16 @@ public abstract class StateMachine
      * <p>
      * If the given role is the only role with more than one legal move, then
      * there is only one possible next state for this method to return.
+     *
+     * @throws MoveDefinitionException if a role has no legal moves. This indicates
+     * an error in either the game description or the StateMachine implementation.
+     * @throws TransitionDefinitionException indicates an error in either the
+     * game description or the StateMachine implementation.
+     * @throws StateMachineException if it was not possible to compute the random
+     * next state because of an error that occurred in the state machine and
+     * couldn't be handled.
      */
-    public MachineState getRandomNextState(MachineState state, Role role, Move move) throws MoveDefinitionException, TransitionDefinitionException
+    public MachineState getRandomNextState(MachineState state, Role role, Move move) throws MoveDefinitionException, TransitionDefinitionException, StateMachineException
     {
         List<Move> random = getRandomJointMove(state, role, move);
         return getNextState(state, random);
@@ -379,8 +455,16 @@ public abstract class StateMachine
      *
      * @param theDepth an integer array, the 0th element of which will be set to
      * the number of state changes that were made to reach a terminal state.
+     *
+     * @throws TransitionDefinitionException indicates an error in either the
+     * game description or the StateMachine implementation.
+     * @throws MoveDefinitionException if a role has no legal moves. This indicates
+     * an error in either the game description or the StateMachine implementation.
+     * @throws StateMachineException if it was not possible to completely perform a
+     * playout of the game because of an error that occurred in the state machine and
+     * couldn't be handled.
      */
-    public MachineState performDepthCharge(MachineState state, final int[] theDepth) throws TransitionDefinitionException, MoveDefinitionException {
+    public MachineState performDepthCharge(MachineState state, final int[] theDepth) throws TransitionDefinitionException, MoveDefinitionException, StateMachineException {
         int nDepth = 0;
         while(!isTerminal(state)) {
             nDepth++;
@@ -391,7 +475,7 @@ public abstract class StateMachine
         return state;
     }
 
-    public void getAverageDiscountedScoresFromRepeatedDepthCharges(final MachineState state, final double[] avgScores, final double[] avgDepth, final double discountFactor, final int repetitions) throws TransitionDefinitionException, MoveDefinitionException, GoalDefinitionException {
+    public void getAverageDiscountedScoresFromRepeatedDepthCharges(final MachineState state, final double[] avgScores, final double[] avgDepth, final double discountFactor, final int repetitions) throws TransitionDefinitionException, MoveDefinitionException, GoalDefinitionException, StateMachineException {
     	avgDepth[0] = 0;
     	for (int j = 0; j < avgScores.length; j++) {
     		avgScores[j] = 0;

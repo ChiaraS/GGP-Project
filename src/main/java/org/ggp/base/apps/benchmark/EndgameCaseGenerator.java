@@ -15,6 +15,7 @@ import org.ggp.base.util.statemachine.Role;
 import org.ggp.base.util.statemachine.StateMachine;
 import org.ggp.base.util.statemachine.exceptions.GoalDefinitionException;
 import org.ggp.base.util.statemachine.exceptions.MoveDefinitionException;
+import org.ggp.base.util.statemachine.exceptions.StateMachineException;
 import org.ggp.base.util.statemachine.exceptions.TransitionDefinitionException;
 import org.ggp.base.util.statemachine.implementation.prover.ProverStateMachine;
 
@@ -35,11 +36,11 @@ import org.ggp.base.util.statemachine.implementation.prover.ProverStateMachine;
  * @author Sam Schreiber
  */
 public class EndgameCaseGenerator {
-	public static void main(String[] args) throws MoveDefinitionException, TransitionDefinitionException, GoalDefinitionException {
+	public static void main(String[] args) throws MoveDefinitionException, TransitionDefinitionException, GoalDefinitionException, StateMachineException {
 		generateTestCase("connectFour", 0, 5, 6, new ProverStateMachine());
 	}
 
-	public static void generateTestCase(String gameKey, int nRole, int nBackoff, int nMaxDepth, StateMachine theMachine) throws MoveDefinitionException, TransitionDefinitionException, GoalDefinitionException {
+	public static void generateTestCase(String gameKey, int nRole, int nBackoff, int nMaxDepth, StateMachine theMachine) throws MoveDefinitionException, TransitionDefinitionException, GoalDefinitionException, StateMachineException {
         // Load the game and create a state machine for it
 		Game theGame = GameRepository.getDefaultRepository().getGame(gameKey);
         theMachine.initialize(theGame.getRules());
@@ -118,7 +119,7 @@ public class EndgameCaseGenerator {
     }
 
 	// This is a traditional minimax solver.
-    private static Pair<Integer, Integer> minimax(StateMachine machine, int ourRoleIndex, Role ourRole, MachineState currentState, int depth) throws GoalDefinitionException, MoveDefinitionException, TransitionDefinitionException {
+    private static Pair<Integer, Integer> minimax(StateMachine machine, int ourRoleIndex, Role ourRole, MachineState currentState, int depth) throws GoalDefinitionException, MoveDefinitionException, TransitionDefinitionException, StateMachineException {
     	// If we've hit our max depth, return immediately, sending back
     	// no useful information about the final score.
     	if (depth < 0) {

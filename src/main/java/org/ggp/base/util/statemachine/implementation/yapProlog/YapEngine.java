@@ -25,6 +25,7 @@ import org.ggp.base.util.statemachine.Role;
 import org.ggp.base.util.statemachine.StateMachine;
 import org.ggp.base.util.statemachine.exceptions.GoalDefinitionException;
 import org.ggp.base.util.statemachine.exceptions.MoveDefinitionException;
+import org.ggp.base.util.statemachine.exceptions.StateMachineException;
 import org.ggp.base.util.statemachine.exceptions.TransitionDefinitionException;
 import org.ggp.base.util.statemachine.implementation.yapProlog.transform.YapEngineSupport;
 import org.ggp.base.util.symbol.factory.exceptions.SymbolFormatException;
@@ -161,7 +162,7 @@ public class YapEngine{
 				rulessheet = description;
 			}
 			@Override
-			public Boolean call()
+			public Boolean call() throws StateMachineException
 			{
 				//try {
 					backingStateMachine.initialize(rulessheet);
@@ -370,8 +371,9 @@ public class YapEngine{
 
 	/**
 	 * Returns TRUE if the state is terminal, FALSE otherwise
+	 * @throws StateMachineException
 	 */
-	public boolean isTerminal(MachineState machine)
+	public boolean isTerminal(MachineState machine) throws StateMachineException
 	{
 		//computeState(machine);
 
@@ -450,8 +452,9 @@ public class YapEngine{
 
 	/**
 	 * Returns the goal value for the given role in the given state
+	 * @throws StateMachineException
 	 */
-	public int getGoal(MachineState machine, Role role)
+	public int getGoal(MachineState machine, Role role) throws StateMachineException
 	{
 		//computeState(machine);
 
@@ -556,8 +559,9 @@ public class YapEngine{
 	/**
 	 * Returns a list containing every move that is legal for the given role in the
 	 * given state
+	 * @throws StateMachineException
 	 */
-	public List<Move> getLegalMoves(MachineState machine, Role role)
+	public List<Move> getLegalMoves(MachineState machine, Role role) throws StateMachineException
 	{
 		//computeState(machine);
 
@@ -660,8 +664,9 @@ public class YapEngine{
 	/**
 	 * Compute the next state for a given list of Move and a given list of Role
 	 * 	(in the same order)
+	 * @throws StateMachineException
 	 */
-	public MachineState getNextState(MachineState machine, List<Move> moves)
+	public MachineState getNextState(MachineState machine, List<Move> moves) throws StateMachineException
 	{
 		//computeState(machine);
 

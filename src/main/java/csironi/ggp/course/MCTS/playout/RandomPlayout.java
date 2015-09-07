@@ -12,6 +12,7 @@ import org.ggp.base.util.statemachine.Role;
 import org.ggp.base.util.statemachine.StateMachine;
 import org.ggp.base.util.statemachine.exceptions.GoalDefinitionException;
 import org.ggp.base.util.statemachine.exceptions.MoveDefinitionException;
+import org.ggp.base.util.statemachine.exceptions.StateMachineException;
 import org.ggp.base.util.statemachine.exceptions.TransitionDefinitionException;
 
 import csironi.ggp.course.MCTS.MCTNode;
@@ -47,7 +48,7 @@ public class RandomPlayout implements PlayoutStrategy {
 	 * @see csironi.ggp.course.MCTS.playout.PlayoutStrategy#playout(csironi.ggp.course.MCTS.MCTNode)
 	 */
 	@Override
-	public List<Integer> playout(MCTNode expandedNode) throws MoveDefinitionException, TransitionDefinitionException, GoalDefinitionException {
+	public List<Integer> playout(MCTNode expandedNode) throws MoveDefinitionException, TransitionDefinitionException, GoalDefinitionException, StateMachineException {
 
 
 		MachineState currentState = expandedNode.getState();
@@ -97,8 +98,9 @@ public class RandomPlayout implements PlayoutStrategy {
 	 * @throws GoalDefinitionException
 	 * @throws MoveDefinitionException
 	 * @throws TransitionDefinitionException
+	 * @throws StateMachineException
 	 */
-	private List<Integer> continuePlayout(MachineState state) throws GoalDefinitionException, MoveDefinitionException, TransitionDefinitionException{
+	private List<Integer> continuePlayout(MachineState state) throws GoalDefinitionException, MoveDefinitionException, TransitionDefinitionException, StateMachineException{
 
 		if(stateMachine.isTerminal(state)){
 			return stateMachine.getGoals(state);

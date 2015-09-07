@@ -20,12 +20,14 @@ import org.ggp.base.server.event.ServerNewMatchEvent;
 import org.ggp.base.server.event.ServerNewMovesEvent;
 import org.ggp.base.server.event.ServerTimeEvent;
 import org.ggp.base.server.event.ServerTimeoutEvent;
+import org.ggp.base.server.exception.GameServerException;
 import org.ggp.base.server.threads.AbortRequestThread;
 import org.ggp.base.server.threads.PlayRequestThread;
 import org.ggp.base.server.threads.PreviewRequestThread;
 import org.ggp.base.server.threads.RandomPlayRequestThread;
 import org.ggp.base.server.threads.StartRequestThread;
 import org.ggp.base.server.threads.StopRequestThread;
+import org.ggp.base.util.logging.GamerLogger;
 import org.ggp.base.util.match.Match;
 import org.ggp.base.util.match.MatchPublisher;
 import org.ggp.base.util.observer.Event;
@@ -37,6 +39,7 @@ import org.ggp.base.util.statemachine.Role;
 import org.ggp.base.util.statemachine.StateMachine;
 import org.ggp.base.util.statemachine.exceptions.GoalDefinitionException;
 import org.ggp.base.util.statemachine.exceptions.MoveDefinitionException;
+import org.ggp.base.util.statemachine.exceptions.StateMachineException;
 import org.ggp.base.util.statemachine.implementation.prover.ProverStateMachine;
 
 public final class GameServer extends Thread implements Subject
@@ -60,7 +63,7 @@ public final class GameServer extends Thread implements Subject
     private String spectatorServerKey;
     private boolean forceUsingEntireClock;
 
-    public GameServer(Match match, List<String> hosts, List<Integer> ports) {
+    public GameServer(Match match, List<String> hosts, List<Integer> ports) throws GameServerException {
         this.match = match;
 
         this.hosts = hosts;
@@ -73,7 +76,12 @@ public final class GameServer extends Thread implements Subject
         Arrays.fill(playerPlaysRandomly, Boolean.FALSE);
 
         stateMachine = new ProverStateMachine();
-        stateMachine.initialize(match.getGame().getRules());
+        try {
+			stateMachine.initialize(match.getGame().getRules());
+		} catch (StateMachineException e) {
+			GamerLogger.logError("GameServer", "Failed inititalization of state machine for current match.");
+			throw new GameServerException("Impossible to create the game server.", e);
+		}
         currentState = stateMachine.getInitialState();
         previousMoves = null;
 
@@ -101,7 +109,7 @@ public final class GameServer extends Thread implements Subject
         observers.add(observer);
     }
 
-    public List<Integer> getGoals() throws GoalDefinitionException {
+    public List<Integer> getGoals() throws GoalDefinitionException, StateMachineException {
         List<Integer> goals = new ArrayList<Integer>();
         for (Role role : stateMachine.getRoles()) {
             goals.add(stateMachine.getGoal(currentState, role));
@@ -255,7 +263,7 @@ public final class GameServer extends Thread implements Subject
     	return spectatorServerKey;
     }
 
-    private synchronized List<Move> sendPlayRequests() throws InterruptedException, MoveDefinitionException {
+    private synchronized List<Move> sendPlayRequests() throws InterruptedException, MoveDefinitionException, StateMachineException {
         List<PlayRequestThread> threads = new ArrayList<PlayRequestThread>(hosts.size());
         for (int i = 0; i < hosts.size(); i++) {
             List<Move> legalMoves = stateMachine.getLegalMoves(currentState, stateMachine.getRoles().get(i));

@@ -13,6 +13,7 @@ import org.ggp.base.player.GamePlayer;
 import org.ggp.base.player.gamer.Gamer;
 import org.ggp.base.server.GameServer;
 import org.ggp.base.server.event.ServerNewMovesEvent;
+import org.ggp.base.server.exception.GameServerException;
 import org.ggp.base.util.game.Game;
 import org.ggp.base.util.game.GameRepository;
 import org.ggp.base.util.gdl.grammar.Gdl;
@@ -125,7 +126,7 @@ public class PlayerTester {
     	return Game.createEphemeralGame("( " + newRulesheet.toString() + " )");
     }
 
-    public static boolean passesTest(String hostport, TestCase theCase) throws SymbolFormatException {
+    public static boolean passesTest(String hostport, TestCase theCase) throws SymbolFormatException, GameServerException{
     	final Game theGame = getMediasResGame(theCase.gameKey, theCase.theState);
     	final Match theMatch = new Match("playerTester." + Match.getRandomString(5), -1, theCase.nStartClock, theCase.nPlayClock, theGame);
 
@@ -180,7 +181,7 @@ public class PlayerTester {
         return passes;
     }
 
-    public static Map<String, Double> getBenchmarkScores(String hostport) throws SymbolFormatException {
+    public static Map<String, Double> getBenchmarkScores(String hostport) throws SymbolFormatException, GameServerException {
     	Map<String, Integer> nTestsBySuite = new HashMap<String, Integer>();
     	Map<String, Integer> nPassesBySuite = new HashMap<String, Integer>();
 
@@ -202,7 +203,7 @@ public class PlayerTester {
     	return benchmarkScores;
     }
 
-    public static Map<String, Double> getBenchmarkScores(Gamer aGamer) throws IOException, SymbolFormatException {
+    public static Map<String, Double> getBenchmarkScores(Gamer aGamer) throws IOException, SymbolFormatException, GameServerException {
     	GamePlayer player = new GamePlayer(3141, aGamer);
     	player.start();
     	Map<String, Double> theScores = getBenchmarkScores("127.0.0.1:3141");
@@ -210,7 +211,7 @@ public class PlayerTester {
    		return theScores;
     }
 
-    public static void main(String[] args) throws InterruptedException, SymbolFormatException, IOException {
+    public static void main(String[] args) throws InterruptedException, SymbolFormatException, IOException, GameServerException {
     	System.out.println("Benchmark score for random player: " + getBenchmarkScores(new CAlphaBetaGamer()));
     }
 }
