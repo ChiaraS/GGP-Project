@@ -91,6 +91,8 @@ public class StateMachineVerifier {
 				                    GamerLogger.log("Verifier", "Inconsistency between machine #" + i + " and ProverStateMachine over state " + theCurrentStates[0] + " vs " + theCurrentStates[i].getContents());
 				                    GamerLogger.log("Verifier", "Machine #" + 0 + " has move count = " + theMachines.get(0).getLegalMoves(theCurrentStates[0], theRole).size() + " for player " + theRole);
 				                    GamerLogger.log("Verifier", "Machine #" + i + " has move count = " + theMachines.get(i).getLegalMoves(theCurrentStates[i], theRole).size() + " for player " + theRole);
+				                    GamerLogger.log("Verifier", "Machine #" + 0 + " has legal moves = " + theMachines.get(0).getLegalMoves(theCurrentStates[0], theRole));
+				                    GamerLogger.log("Verifier", "Machine #" + i + " has legal moves = " + theMachines.get(i).getLegalMoves(theCurrentStates[i], theRole));
 				                    return false;
 				                }
 				            } catch(Exception e) {

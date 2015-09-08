@@ -51,7 +51,10 @@ processString(_e, _s) :- term_to_atom(_e, _s).
 failsafe_bagof(_x, _y, _ll) :- bagof(_x,_y,_ll), !, remove_duplicates(_ll, _llll).
 failsafe_bagof(_x, _y, []).
 
-
+/**
+ * Given a list of elements chooses randomly one of them. The index _i is picked randomly among
+ * all indexes (from 0 (included) to length (excluded)) and the element at position _i is returned.
+ */
 choose([], []).
 choose(_l, _e) :- length(_l, _le), random(0, _le, _i), nth0(_i, _l, _e).
 
@@ -88,7 +91,13 @@ get_random_joint_moveg([_p|_l], _r, _m, [_e|_lll]) :- get_random_joint_moveg(_l,
 get_random_joint_move([], []).
 get_random_joint_move([_p|_l], [_e|_lll]) :- get_random_joint_move(_l, _lll), get_legal_moves(_p, _ll), choose(_ll, _e).
 
-get_random_move(_p, _s) :- get_legal_moves(_p, _l), choose(_l, _e), processString(_e, _s).
+%%%%%%%%%%%%%%%%%% GET RANDOM MOVE FOR GIVEN ROLE %%%%%%%%%%%%%%%%%%%
+
+% get_random_move(_p, _s) :- get_legal_moves(_p, _l), choose(_l, _e), processString(_e, _s).
+% It's better to separate the computation of the goal from the processing of the result for java.
+
+% When using this predicate, remember to call also process_string(_m, _s) in the goal from java.
+get_random_move(_p, _m) :- get_legal_moves(_p, _l), choose(_l, _m).
 
 %%%%%%%%%%%%%%%%%%% GET LEGAL MOVES FOR ONE PLAYER %%%%%%%%%%%%%%%%%%%%
 
@@ -100,17 +109,6 @@ get_legal_moves(_p, _ll) :- bagof(_x, _p^legal(_p, _x), _l), remove_duplicates(_
 % computel(_l) :- retractall(true(_)), add_true_clauses(_l).
 
 update_state(_l) :- retractall(true(_)), add_true_clauses(_l).
-
-%%%%%%%%%%%%%%%%% CHECK IF CURRENT STATE IS TERMINAL %%%%%%%%%%%%%%%%%%
-
-is_terminal :- terminal.
-
-%%%%%%%%%%%%%%%%%%%%% GET STATE GOAL FOR A ROLE %%%%%%%%%%%%%%%%%%%%%%%
-
-% get_goal(_p, _s) :- goal(_p, _n), atom_number(_s, _n).
-% get_goal(_p, '').
-
-get_goal(_p, _l) :- bagof(_n, _p^goal(_p, _n), _l).
 
 %%%%%%%%%%%%%%%%%%%%% INITIAL STATE COMPUTATION %%%%%%%%%%%%%%%%%%%%%%%
 /**
@@ -142,6 +140,17 @@ initialize_state(_ll) :- failsafe_bagof(_x, init(_x), _l), remove_duplicates(_l,
  * Computes the roles in the game always in the same order (?).
  */
 get_roles(_ll) :- failsafe_bagof(_x, role(_x), _l), remove_duplicates(_l, _ll).
+
+%%%%%%%%%%%%%%%%% CHECK IF CURRENT STATE IS TERMINAL %%%%%%%%%%%%%%%%%%
+
+is_terminal :- terminal.
+
+%%%%%%%%%%%%%%%%%%%%% GET STATE GOAL FOR A ROLE %%%%%%%%%%%%%%%%%%%%%%%
+
+% get_goal(_p, _s) :- goal(_p, _n), atom_number(_s, _n).
+% get_goal(_p, '').
+
+get_goal(_p, _ll) :- bagof(_n, _p^goal(_p, _n), _l), remove_duplicates(_l, _ll).
 
 %%%%%%%%%%%%% EXTRA PREDICATES TO UNDERTSAND GDL GRAMMAR %%%%%%%%%%%%%%
 

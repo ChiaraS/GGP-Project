@@ -62,7 +62,7 @@ public class YAPVerifier {
 
             //if(!gameKey.equals("3pConnectFour") && !gameKey.equals("god")) continue;
 
-            //if(!gameKey.equals("mummymaze1p")) continue;
+            if(!gameKey.equals("zhadu")) continue;
 
             Match fakeMatch = new Match(gameKey + System.currentTimeMillis(), -1, -1, -1,theRepository.getGame(gameKey) );
 
