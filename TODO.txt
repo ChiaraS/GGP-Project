@@ -42,17 +42,18 @@ V - TEST YAP PROVER CONSISTENCY VS PROVER
 
 
 FIX YAP:
+- check consistency of yap state machine in both the case when distinct clauses are left in their place in rules and cases when the distinct clauses are moved to the end of every rule (the first case returns less legal moves in zhadu) - also check what happens if you use \== instead of \= to express the distinct clause in prolog (_x \= _y true if _x cannot unify in any way with _y, _x \== _y true if _x and _y are not strictly identical: first case can give less answers to a query, second case might give too many answers).
 - rename all variables in the description with _lowercaseLetter instead of UPPERCASELETTER (i.e. A --> _a)
-- PROBLEM!: if there is no solution for a goal Inerprolog returns null as binding => nullPointerException is thrown when casting the element at position[0] of the bindings --> FIX THIS!
-- MOREOVER: change the query to get the goal because atm it assumes that the goal always exists and it's only one! But not alway is true...find a way to get back all(if any) the goals and check if there is only one or if an exception has to be thrown! --> Same thing to check for other methods (i.e. what happens if there is nothing true in the next state?, what happens if there are no legal moves???????? - MOREOVER: if initialization fails the current state (i.e. the one that should keep track of prolog state) of the state machine is null => whatever method is called next will throw a nullpointerexception when checking if it's the case to update the prolog state or not!
+v- PROBLEM!: if there is no solution for a goal Inerprolog returns null as binding => nullPointerException is thrown when casting the element at position[0] of the bindings --> FIX THIS!
+v- MOREOVER: change the query to get the goal because atm it assumes that the goal always exists and it's only one! But not alway is true...find a way to get back all(if any) the goals and check if there is only one or if an exception has to be thrown! --> Same thing to check for other methods (i.e. what happens if there is nothing true in the next state?, what happens if there are no legal moves???????? - MOREOVER: if initialization fails the current state (i.e. the one that should keep track of prolog state) of the state machine is null => whatever method is called next will throw a nullpointerexception when checking if it's the case to update the prolog state or not!
 - RETURN PROLOG TERMS INSTEAD OF TRANSLATING THEM FIRST TO STRINGS ON PROLOG SIDE
 - FOR YAP STATE MACHINE USE AN EXTENSION OF MACHINESTATE THAT CAN CONVERT FROM NORMAL STATE TO PROLOG STATE?
 - CHECK IF IT'S FASTER TO TRANSLATE FROM GDL TO PROLOG SYNTAX USING A METHOD IN EACH GDL TERM CLASS LIKE toPrologSyntax()
 - CHECK IF IT'S FASTER WITH OR WITHOUT SCRAMBLING
 - CHECK HOW THE YAP STATE MACHINE COULD BE MADE FASTER (I.E. DIFFERENT STATE REPRESENTATION THAT DOESN'T NEED TRANSLATION => THE GAMER TAHT KNOWS THAT IT IS USING YAP STATE MACHINE MUST KNOW HOW TO DEAL WITH DIFFERENT STATE FORMAT + A MECHANISM IS NEEDED TO CONVERT FROM YAP STATE TO GGPBASE STATE WHEN STRICTLY NECESSARY (AND THIS WILL STILL SLOW DOWN PERFORMANCE A BIT))
-- AFTER REFACTORING TEST IF GT_TOW_THIRDS... GIVES ERROR FOR THE DEFINITION OF SUCC (FIX IT!)
+- AFTER REFACTORING TEST IF GT_TWO_THIRDS... GIVES ERROR FOR THE DEFINITION OF SUCC (FIX IT!)
 - ADD TO THE CODE THAT PARSES (AND OPTIONALLY SCRAMBLES) GDL INTO PROLOG A WAY TO CHECK IF A CONSTANT IN GDL HAS THE SAME NAME OF A PROLOG PREDICATE AND THUS MUST BE CHANGED (USE (*))
-- CHECK IF RECORD PREDICATES HALP MAKING YAP FASTER (YAP DOCUMENTATION 6.11)
+- CHECK IF RECORD PREDICATES HELP MAKING YAP FASTER (YAP DOCUMENTATION 6.11)
 
 
 

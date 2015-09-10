@@ -406,4 +406,12 @@ public class FailsafeStateMachine extends StateMachine
     public StateMachine getBackingMachine() {
         return theBackingMachine;
     }
+
+	@Override
+	public void shutdown() {
+		if(this.theBackingMachine != null){
+			this.theBackingMachine.shutdown();
+		}
+
+	}
 }

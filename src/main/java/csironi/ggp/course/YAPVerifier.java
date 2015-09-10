@@ -12,8 +12,9 @@ import org.ggp.base.util.logging.GamerLogger.FORMAT;
 import org.ggp.base.util.match.Match;
 import org.ggp.base.util.statemachine.exceptions.StateMachineException;
 import org.ggp.base.util.statemachine.implementation.prover.ProverStateMachine;
-import org.ggp.base.util.statemachine.implementation.yapProlog.NewYapStateMachine;
+import org.ggp.base.util.statemachine.implementation.yapProlog.YapStateMachine;
 import org.ggp.base.util.statemachine.verifier.StateMachineVerifier;
+
 
 /**
  * This class verifies the consistency of the YAP state machine wrt the prover state machine.
@@ -30,28 +31,41 @@ public class YAPVerifier {
 	public static void main(String[] args) throws InterruptedException{
 
 		long testTime = 10000L;
+		String gameToTest = null;
 
 		if (args.length != 0){
 
-			if(args.length == 1){
+			if(args.length <= 2){
+
 				try{
 					testTime = Long.parseLong(args[0]);
-					System.out.println("Running tests with the following time duration: " + testTime + "ms");
+					if(args.length == 2){
+						gameToTest = args[1];
+						System.out.println("Running test on game \"" + gameToTest + "\" with the following time duration: " + testTime + "ms.");
+					}else{
+						System.out.println("Running tests on ALL games with the following time duration: " + testTime + "ms.");
+					}
 				}catch(NumberFormatException nfe){
 					testTime = 10000L;
-					System.out.println("Inconsistent time value specification! Running tests with default time duration: " + testTime + "ms");
+					if(args.length == 2){
+						gameToTest = args[1];
+						System.out.println("Inconsistent time value specification! Running test on game \"" + gameToTest + "\" with the default time duration of " + testTime + "ms.");
+					}else{
+						System.out.println("Inconsistent time value specification! Running tests on ALL games with the default time duration of " + testTime + "ms.");
+					}
 				}
 			}else{
-				System.out.println("Inconsistent time value specification! Running tests with default time duration: " + testTime + "ms");
+				System.out.println("Expected a maximum of 2 arguments. Ignoring user specified parameters and running with default settings.");
+				System.out.println("Rnning tests on ALL games with default time duration of " + testTime + "ms");
 			}
 		}else{
-			System.out.println("Running tests with default time duration: " + testTime + "ms");
+			System.out.println("Running tests on ALL games with default time duration of " + testTime + "ms");
 		}
 
 		System.out.println();
 
         ProverStateMachine theReference;
-        NewYapStateMachine theYapMachine;
+        YapStateMachine theYapMachine;
 
         GamerLogger.setSpilloverLogfile("YAPVerifierTable.csv");
         GamerLogger.log(FORMAT.CSV_FORMAT, "YAPVerifierTable", "Game key;Rounds;Test duration (ms);Pass;");
@@ -62,7 +76,7 @@ public class YAPVerifier {
 
             //if(!gameKey.equals("3pConnectFour") && !gameKey.equals("god")) continue;
 
-            if(!gameKey.equals("zhadu")) continue;
+            if(gameToTest != null && !gameKey.equals(gameToTest)) continue;
 
             Match fakeMatch = new Match(gameKey + System.currentTimeMillis(), -1, -1, -1,theRepository.getGame(gameKey) );
 
@@ -75,7 +89,7 @@ public class YAPVerifier {
             theReference = new ProverStateMachine();
 
             // Create the YAP state machine
-            theYapMachine = new NewYapStateMachine();
+            theYapMachine = new YapStateMachine();
 
             boolean pass = false;
             int rounds = -1;

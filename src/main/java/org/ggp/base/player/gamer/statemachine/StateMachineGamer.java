@@ -257,6 +257,10 @@ public abstract class StateMachineGamer extends Gamer
 		{
 			GamerLogger.logStackTrace("GamePlayer", e);
 			throw new StoppingException(e);
+		}finally{
+			// Stop the state machine (if the state machine implementation needs
+			// to be stopped).
+			stateMachine.shutdown();
 		}
 	}
 
@@ -269,6 +273,10 @@ public abstract class StateMachineGamer extends Gamer
 		{
 			GamerLogger.logStackTrace("GamePlayer", e);
 			throw new AbortingException(e);
+		}finally{
+			// Stop the state machine (if the state machine implementation needs
+			// to be stopped).
+			stateMachine.shutdown();
 		}
 	}
 

@@ -99,7 +99,7 @@ public class YapEngine{
 	// Otherwise, use the "assert-retract" way
 	private static boolean IDB;
 
-	// The ExecutorService which kill a query object if timeout
+	// The ExecutorService which kills a query object if timeout
 	ExecutorService executor;
 
 	// The TimeUnit used to run "executor.invokeAny(_)"

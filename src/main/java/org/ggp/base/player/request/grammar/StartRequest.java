@@ -48,6 +48,7 @@ public final class StartRequest extends Request
 
         // Create the new match, and handle all of the associated logistics
         // in the gamer to indicate that we're starting a new match.
+        // TODO: the constructor of the match calls game.getRules() to get the game rules as GDL objects -> EXPENSIVE but has to be done once, but...
 		Match match = new Match(matchId, -1, startClock, playClock, game);
 
 		gamer.setMatch(match);
@@ -66,6 +67,7 @@ public final class StartRequest extends Request
 		// Finally, have the gamer begin metagaming.
 		try {
 			gamer.notifyObservers(new PlayerTimeEvent(gamer.getMatch().getStartClock() * 1000));
+			// TODO ...also metaGame calls game.getRules() to get the game description as GDL objects... -> double as EXPENSIVE! How to fix this?
 			gamer.metaGame(gamer.getMatch().getStartClock() * 1000 + receptionTime);
 		} catch (MetaGamingException e) {
 		    GamerLogger.logStackTrace("GamePlayer", e);

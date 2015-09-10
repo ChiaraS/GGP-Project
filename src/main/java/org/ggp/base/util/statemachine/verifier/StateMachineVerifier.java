@@ -28,12 +28,12 @@ public class StateMachineVerifier {
         theMachines.add(theReference);
         theMachines.add(theSubject);
 
-        GamerLogger.emitToConsole("Consistency checking: [");
+        System.out.print("Consistency checking: [");
         lastRounds = 0;
         while(true) {
             lastRounds++;
 
-            GamerLogger.emitToConsole(".");
+            System.out.print(".");
             MachineState[] theCurrentStates = new MachineState[theMachines.size()];
             for(int i = 0; i < theMachines.size(); i++) {
                 try {
@@ -169,7 +169,7 @@ public class StateMachineVerifier {
                 }
             }
         }
-        GamerLogger.emitToConsole("]\n");
+        System.out.println("]");
 
         GamerLogger.log("Verifier", "Completed automatic consistency testing on " + theSubject.getClass().getName() + ", w/ " + lastRounds + " rounds: all tests pass!");
         return true;

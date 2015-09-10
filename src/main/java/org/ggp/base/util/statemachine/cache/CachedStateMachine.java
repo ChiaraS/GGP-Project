@@ -140,4 +140,12 @@ public final class CachedStateMachine extends StateMachine
 		// TODO(schreib): Should this be cached as well?
 		return backingStateMachine.getInitialState();
 	}
+
+	@Override
+	public void shutdown() {
+		if(this.backingStateMachine != null){
+			this.backingStateMachine.shutdown();
+		}
+
+	}
 }

@@ -209,4 +209,13 @@ public class SamplePropNetStateMachine extends StateMachine {
 		}
 		return new MachineState(contents);
 	}
+
+	/*
+	 * (non-Javadoc)
+	 * @see org.ggp.base.util.statemachine.StateMachine#shutdown()
+	 */
+	@Override
+	public void shutdown() {
+		// Nothing needs to be done after finishing using this state machine.
+	}
 }

@@ -104,6 +104,14 @@ public abstract class StateMachine
      */
     public abstract MachineState getNextState(MachineState state, List<Move> moves) throws TransitionDefinitionException, StateMachineException;
 
+    /**
+     * This method should be called at the end of a match (stopped or aborted), so that
+     * the state machine can take care of everything (if anything) that needs to be done
+     * before the state machine won't be used anymore (i.e. the YapStateMahcine needs to
+     * shutdown YAP prolog).
+     */
+    public abstract void shutdown();
+
     // The following methods are included in the abstract StateMachine base so
     // implementations which use alternative Role/Move/State representations
     // can look up/compute what some Gdl corresponds to in their representation.

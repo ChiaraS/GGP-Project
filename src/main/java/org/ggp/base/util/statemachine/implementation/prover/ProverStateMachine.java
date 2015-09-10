@@ -123,4 +123,14 @@ public class ProverStateMachine extends StateMachine
 	{
 		return prover.prove(ProverQueryBuilder.getTerminalQuery(), ProverQueryBuilder.getContext(state));
 	}
+
+	/*
+	 * (non-Javadoc)
+	 * @see org.ggp.base.util.statemachine.StateMachine#shutdown()
+	 */
+	@Override
+	public void shutdown() {
+		// Does nothing cause for the prover state machine nothing needs to be
+		// done after finishing using the state machine.
+	}
 }
