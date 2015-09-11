@@ -10,7 +10,7 @@ import org.ggp.base.util.gdl.grammar.Gdl;
 import org.ggp.base.util.logging.GamerLogger;
 import org.ggp.base.util.logging.GamerLogger.FORMAT;
 import org.ggp.base.util.match.Match;
-import org.ggp.base.util.statemachine.exceptions.StateMachineException;
+import org.ggp.base.util.statemachine.exceptions.StateMachineInitializationException;
 import org.ggp.base.util.statemachine.implementation.prover.ProverStateMachine;
 import org.ggp.base.util.statemachine.implementation.yapProlog.YapStateMachine;
 import org.ggp.base.util.statemachine.verifier.StateMachineVerifier;
@@ -68,7 +68,7 @@ public class YAPVerifier {
         YapStateMachine theYapMachine;
 
         GamerLogger.setSpilloverLogfile("YAPVerifierTable.csv");
-        GamerLogger.log(FORMAT.CSV_FORMAT, "YAPVerifierTable", "Game key;Rounds;Test duration (ms);Pass;");
+        GamerLogger.log(FORMAT.CSV_FORMAT, "YAPVerifierTable", "Game key;Rounds;Test duration (ms);Pass;Exception;");
 
         GameRepository theRepository = GameRepository.getDefaultRepository();
         for(String gameKey : theRepository.getGameKeys()) {
@@ -89,11 +89,12 @@ public class YAPVerifier {
             theReference = new ProverStateMachine();
 
             // Create the YAP state machine
-            theYapMachine = new YapStateMachine();
+            theYapMachine = new YapStateMachine(500L);
 
             boolean pass = false;
             int rounds = -1;
             long duration = 0L;
+            String exception = "-";
 
             System.out.println("Detected activation in game " + gameKey + ". Checking consistency: ");
 
@@ -105,14 +106,15 @@ public class YAPVerifier {
 				pass = StateMachineVerifier.checkMachineConsistency(theReference, theYapMachine, testTime);
 				duration = System.currentTimeMillis() - start;
 				rounds = StateMachineVerifier.lastRounds;
-			} catch (StateMachineException e) {
+				exception = StateMachineVerifier.exception;
+			} catch (StateMachineInitializationException e) {
 				GamerLogger.log("Verifier", "State machine initialization failed. Impossible to test game " + gameKey);
 			}
 
             GamerLogger.log(FORMAT.PLAIN_FORMAT, "Verifier", "");
 
             GamerLogger.stopFileLogging();
-            GamerLogger.log(FORMAT.CSV_FORMAT, "YapVerifierTable", gameKey + ";" + rounds + ";" + duration + ";" + pass + ";");
+            GamerLogger.log(FORMAT.CSV_FORMAT, "YapVerifierTable", gameKey + ";" + rounds + ";" + duration + ";" + pass + ";" + exception + ";");
 
             theYapMachine.shutdown();
 

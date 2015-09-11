@@ -26,6 +26,7 @@ import org.ggp.base.util.statemachine.StateMachine;
 import org.ggp.base.util.statemachine.exceptions.GoalDefinitionException;
 import org.ggp.base.util.statemachine.exceptions.MoveDefinitionException;
 import org.ggp.base.util.statemachine.exceptions.StateMachineException;
+import org.ggp.base.util.statemachine.exceptions.StateMachineInitializationException;
 import org.ggp.base.util.statemachine.exceptions.TransitionDefinitionException;
 import org.ggp.base.util.statemachine.implementation.yapProlog.transform.YapEngineSupport;
 import org.ggp.base.util.symbol.factory.exceptions.SymbolFormatException;
@@ -162,7 +163,7 @@ public class YapEngine{
 				rulessheet = description;
 			}
 			@Override
-			public Boolean call() throws StateMachineException
+			public Boolean call() throws StateMachineInitializationException
 			{
 				//try {
 					backingStateMachine.initialize(rulessheet);

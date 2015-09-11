@@ -27,8 +27,7 @@ public class TimesafeYapStateMachine extends StateMachine {
 	}
 
 	@Override
-	public void initialize(List<Gdl> description) throws StateMachineException {
-		this.yapStateMachine.
+	public void initialize(List<Gdl> description) {
 
 	}
 

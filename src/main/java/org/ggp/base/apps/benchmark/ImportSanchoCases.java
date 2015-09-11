@@ -12,6 +12,7 @@ import org.ggp.base.util.statemachine.StateMachine;
 import org.ggp.base.util.statemachine.exceptions.GoalDefinitionException;
 import org.ggp.base.util.statemachine.exceptions.MoveDefinitionException;
 import org.ggp.base.util.statemachine.exceptions.StateMachineException;
+import org.ggp.base.util.statemachine.exceptions.StateMachineInitializationException;
 import org.ggp.base.util.statemachine.exceptions.TransitionDefinitionException;
 import org.ggp.base.util.statemachine.implementation.prover.ProverStateMachine;
 import org.ggp.base.util.symbol.factory.exceptions.SymbolFormatException;
@@ -51,7 +52,7 @@ public class ImportSanchoCases {
 		}
 	}
 
-	public static void convertSanchoTestCases(String testCasesURL) throws MoveDefinitionException, TransitionDefinitionException, GoalDefinitionException, JSONException, IOException, SymbolFormatException, StateMachineException {
+	public static void convertSanchoTestCases(String testCasesURL) throws MoveDefinitionException, TransitionDefinitionException, GoalDefinitionException, JSONException, IOException, SymbolFormatException, StateMachineInitializationException, StateMachineException {
 		JSONObject theCases = RemoteResourceLoader.loadJSON(testCasesURL);
 		JSONArray theCasesArr = theCases.getJSONArray("cases");
 		for (int i = 0; i < theCasesArr.length(); i++) {

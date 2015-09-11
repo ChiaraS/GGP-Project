@@ -8,7 +8,10 @@ import org.ggp.base.util.statemachine.MachineState;
 import org.ggp.base.util.statemachine.Move;
 import org.ggp.base.util.statemachine.Role;
 import org.ggp.base.util.statemachine.StateMachine;
+import org.ggp.base.util.statemachine.exceptions.GoalDefinitionException;
+import org.ggp.base.util.statemachine.exceptions.MoveDefinitionException;
 import org.ggp.base.util.statemachine.exceptions.StateMachineException;
+import org.ggp.base.util.statemachine.exceptions.TransitionDefinitionException;
 
 
 public class StateMachineVerifier {
@@ -18,6 +21,10 @@ public class StateMachineVerifier {
 	 * for logging purposes. Absolutely not therad safe! Nor a god programming practice.
 	 */
 	public static int lastRounds;
+	/**
+	 * Same as before, this parameter tells if the test failed because of an exception of the tested state machine.
+	 */
+	public static String exception;
 
     public static boolean checkMachineConsistency(StateMachine theReference, StateMachine theSubject, long timeToSpend) {
         long startTime = System.currentTimeMillis();
@@ -30,18 +37,14 @@ public class StateMachineVerifier {
 
         System.out.print("Consistency checking: [");
         lastRounds = 0;
+        exception = "-";
         while(true) {
             lastRounds++;
 
             System.out.print(".");
             MachineState[] theCurrentStates = new MachineState[theMachines.size()];
             for(int i = 0; i < theMachines.size(); i++) {
-                try {
                     theCurrentStates[i] = theMachines.get(i).getInitialState();
-                } catch(Exception e) {
-                    GamerLogger.log("Verifier", "Machine #" + i + " failed to generate an initial state!");
-                    return false;
-                }
             }
 
             //AGGIUNTA
@@ -87,12 +90,29 @@ public class StateMachineVerifier {
 				            	}*/
 				            	//FINE AGGIUNTA
 
-				                if(!(theMachines.get(i).getLegalMoves(theCurrentStates[i], theRole).size() == theMachines.get(0).getLegalMoves(theCurrentStates[0], theRole).size())) {
+				            	List<Move> referenceMoves = theMachines.get(0).getLegalMoves(theCurrentStates[0], theRole);
+				            	List<Move> subjectMoves = null;
+
+				            	try{
+				            		subjectMoves = theMachines.get(i).getLegalMoves(theCurrentStates[i], theRole);
+				            	}catch(StateMachineException sme){
+				            		GamerLogger.log("Verifier", "Machine #" + i + " failed computation of legal moves for state " + theCurrentStates[i] + " and role " + theRole + ".");
+				            		GamerLogger.logStackTrace("Verifier", sme);
+				            		exception = "STATE MACHINE";
+				            		return false;
+				            	}catch(MoveDefinitionException mde){
+				            		GamerLogger.log("Verifier", "Machine #" + i + " failed computation legal moves for state " + theCurrentStates[i] + " and role " + theRole + ".");
+				            		GamerLogger.logStackTrace("Verifier", mde);
+				            		exception = "MOVE DEFINITION";
+				            		return false;
+				            	}
+
+				                if(!(subjectMoves.size() == referenceMoves.size())) {
 				                    GamerLogger.log("Verifier", "Inconsistency between machine #" + i + " and ProverStateMachine over state " + theCurrentStates[0] + " vs " + theCurrentStates[i].getContents());
-				                    GamerLogger.log("Verifier", "Machine #" + 0 + " has move count = " + theMachines.get(0).getLegalMoves(theCurrentStates[0], theRole).size() + " for player " + theRole);
-				                    GamerLogger.log("Verifier", "Machine #" + i + " has move count = " + theMachines.get(i).getLegalMoves(theCurrentStates[i], theRole).size() + " for player " + theRole);
-				                    GamerLogger.log("Verifier", "Machine #" + 0 + " has legal moves = " + theMachines.get(0).getLegalMoves(theCurrentStates[0], theRole));
-				                    GamerLogger.log("Verifier", "Machine #" + i + " has legal moves = " + theMachines.get(i).getLegalMoves(theCurrentStates[i], theRole));
+				                    GamerLogger.log("Verifier", "Machine #" + 0 + " has move count = " + referenceMoves.size() + " for player " + theRole);
+				                    GamerLogger.log("Verifier", "Machine #" + i + " has move count = " + subjectMoves.size() + " for player " + theRole);
+				                    GamerLogger.log("Verifier", "Machine #" + 0 + " has legal moves = " + referenceMoves);
+				                    GamerLogger.log("Verifier", "Machine #" + i + " has legal moves = " + subjectMoves);
 				                    return false;
 				                }
 				            } catch(Exception e) {
@@ -119,12 +139,18 @@ public class StateMachineVerifier {
 				            	//FINE AGGIUNTA
 
 
-				            } catch(Exception e) {
+				            } catch(StateMachineException sme) {
 				            	//AGGIUNTA
 				            	//System.out.println("ECCEZIONE " + e.getMessage());
 				            	//FINE AGGIUNTA
 				            	GamerLogger.log("Verifier", "Machine #" + i + " failed computation of next state for state " + theCurrentStates[i] + " and joint move " + theJointMove + ".");
-				                GamerLogger.logStackTrace("Verifier", e);
+				                GamerLogger.logStackTrace("Verifier", sme);
+				                exception = "STATE MACHINE";
+				                return false;
+				            }catch(TransitionDefinitionException tse){
+				            	GamerLogger.log("Verifier", "Machine #" + i + " failed computation of next state for state " + theCurrentStates[i] + " and joint move " + theJointMove + ".");
+				                GamerLogger.logStackTrace("Verifier", tse);
+				                exception = "TRANSITION DEFINITION";
 				                return false;
 				            }
 				        }
@@ -146,26 +172,44 @@ public class StateMachineVerifier {
 					    GamerLogger.log("Verifier", "Inconsistency between machine #" + i + " and ProverStateMachine over terminal-ness of state " + theCurrentStates[0] + " vs " + theCurrentStates[i]);
 					    return false;
 					}
-				} catch (StateMachineException e1) {
-					GamerLogger.log("Verifier", "Error for machine #" + i + " while checking terminality of state " + theCurrentStates[i]);
+				} catch (StateMachineException sme) {
+					GamerLogger.log("Verifier", "Machine #" + i + " failed the check for terminality of state " + theCurrentStates[i]);
+					GamerLogger.logStackTrace("Verifier", sme);
+					exception = "STATE MACHINE";
 					return false;
 				}
                 for(Role theRole : theMachines.get(0).getRoles()) {
+
+                	int referenceGoal = -1;
+                	int subjectGoal = -2;
+
                     try {
-                        theMachines.get(0).getGoal(theCurrentStates[0], theRole);
+                        referenceGoal = theMachines.get(0).getGoal(theCurrentStates[0], theRole);
                     } catch(Exception e) {
+                    	GamerLogger.log("Verifier", "Reference state machine threw exception when computing a goal.");
+                    	GamerLogger.logStackTrace("Verifier", e);
                         continue;
                     }
 
                     try {
-                        if(theMachines.get(i).getGoal(theCurrentStates[i], theRole) != theMachines.get(0).getGoal(theCurrentStates[0], theRole)) {
-                            GamerLogger.log("Verifier", "Inconsistency between machine #" + i + " and ProverStateMachine over goal value for " + theRole + " of state " + theCurrentStates[0] + ": " + theMachines.get(i).getGoal(theCurrentStates[i], theRole) + " vs " + theMachines.get(0).getGoal(theCurrentStates[0], theRole));
-                            return false;
-                        }
-                    } catch(Exception e) {
-                        GamerLogger.log("Verifier", "Inconsistency between machine #" + i + " and ProverStateMachine over goal-ness of state " + theCurrentStates[0] + " vs " + theCurrentStates[i]);
+                        subjectGoal = theMachines.get(i).getGoal(theCurrentStates[i], theRole);
+                    } catch(StateMachineException sme) {
+    					GamerLogger.log("Verifier", "Machine #" + i + " failed the computation of the goal for role " + theRole + " in state " + theCurrentStates[i]);
+    					GamerLogger.logStackTrace("Verifier", sme);
+    					exception = "STATE MACHINE";
+    					return false;
+                    } catch(GoalDefinitionException gde) {
+    					GamerLogger.log("Verifier", "Machine #" + i + " failed the computation of the goal for role " + theRole + " in state " + theCurrentStates[i]);
+    					GamerLogger.logStackTrace("Verifier", gde);
+    					exception = "GOAL DEFINITION";
+    					return false;
+                    }
+
+                    if(subjectGoal != referenceGoal) {
+                    	GamerLogger.log("Verifier", "Inconsistency between machine #" + i + " and ProverStateMachine over goal value for " + theRole + " of state " + theCurrentStates[0] + ": " + subjectGoal + " vs " + referenceGoal);
                         return false;
                     }
+
                 }
             }
         }

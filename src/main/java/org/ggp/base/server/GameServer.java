@@ -40,6 +40,7 @@ import org.ggp.base.util.statemachine.StateMachine;
 import org.ggp.base.util.statemachine.exceptions.GoalDefinitionException;
 import org.ggp.base.util.statemachine.exceptions.MoveDefinitionException;
 import org.ggp.base.util.statemachine.exceptions.StateMachineException;
+import org.ggp.base.util.statemachine.exceptions.StateMachineInitializationException;
 import org.ggp.base.util.statemachine.implementation.prover.ProverStateMachine;
 
 public final class GameServer extends Thread implements Subject
@@ -78,7 +79,7 @@ public final class GameServer extends Thread implements Subject
         stateMachine = new ProverStateMachine();
         try {
 			stateMachine.initialize(match.getGame().getRules());
-		} catch (StateMachineException e) {
+		} catch (StateMachineInitializationException e) {
 			GamerLogger.logError("GameServer", "Failed inititalization of state machine for current match.");
 			throw new GameServerException("Impossible to create the game server.", e);
 		}

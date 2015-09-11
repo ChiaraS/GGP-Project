@@ -37,7 +37,7 @@ import org.ggp.base.util.presence.PlayerPresence;
 import org.ggp.base.util.presence.PlayerPresenceManager.InvalidHostportException;
 import org.ggp.base.util.statemachine.Role;
 import org.ggp.base.util.statemachine.StateMachine;
-import org.ggp.base.util.statemachine.exceptions.StateMachineException;
+import org.ggp.base.util.statemachine.exceptions.StateMachineInitializationException;
 import org.ggp.base.util.statemachine.implementation.prover.ProverStateMachine;
 import org.ggp.base.util.ui.GameSelector;
 import org.ggp.base.util.ui.JLabelBold;
@@ -215,7 +215,7 @@ public final class Server extends JPanel implements ActionListener
             StateMachine stateMachine = new ProverStateMachine();
             try {
 				stateMachine.initialize(theGame.getRules());
-			} catch (StateMachineException e1) {
+			} catch (StateMachineInitializationException e1) {
 				e1.printStackTrace();
 				return;
 			}

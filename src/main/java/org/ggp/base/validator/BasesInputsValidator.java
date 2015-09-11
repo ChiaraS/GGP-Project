@@ -21,6 +21,7 @@ import org.ggp.base.util.statemachine.Role;
 import org.ggp.base.util.statemachine.StateMachine;
 import org.ggp.base.util.statemachine.exceptions.MoveDefinitionException;
 import org.ggp.base.util.statemachine.exceptions.StateMachineException;
+import org.ggp.base.util.statemachine.exceptions.StateMachineInitializationException;
 import org.ggp.base.util.statemachine.exceptions.TransitionDefinitionException;
 import org.ggp.base.util.statemachine.implementation.prover.ProverStateMachine;
 
@@ -106,7 +107,9 @@ public class BasesInputsValidator implements GameValidator {
 					state = initialState;
 				}
 			}
-		} catch(StateMachineException sme){
+		} catch(StateMachineInitializationException smie){
+			throw new ValidatorException("Ran into a state machine initialization exception while simulating: " + smie);
+		} catch (StateMachineException sme) {
 			throw new ValidatorException("Ran into a state machine exception while simulating: " + sme);
 		} catch (MoveDefinitionException mde) {
 			throw new ValidatorException("Could not find legal moves while simulating: " + mde);

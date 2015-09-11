@@ -8,6 +8,7 @@ import org.ggp.base.util.statemachine.StateMachine;
 import org.ggp.base.util.statemachine.exceptions.GoalDefinitionException;
 import org.ggp.base.util.statemachine.exceptions.MoveDefinitionException;
 import org.ggp.base.util.statemachine.exceptions.StateMachineException;
+import org.ggp.base.util.statemachine.exceptions.StateMachineInitializationException;
 import org.ggp.base.util.statemachine.exceptions.TransitionDefinitionException;
 import org.ggp.base.util.statemachine.implementation.prover.ProverStateMachine;
 
@@ -30,8 +31,8 @@ public final class SimulationValidator implements GameValidator
 			StateMachine stateMachine = new ProverStateMachine();
 			try {
 				stateMachine.initialize(theGame.getRules());
-			} catch (StateMachineException sme) {
-				throw new ValidatorException("Ran into a state machine exception while initializing state machine: " + sme);
+			} catch (StateMachineInitializationException sme) {
+				throw new ValidatorException("Ran into a state machine initialization exception: " + sme);
 			}
 
 			MachineState state = stateMachine.getInitialState();

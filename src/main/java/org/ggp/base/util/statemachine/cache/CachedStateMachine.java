@@ -12,6 +12,7 @@ import org.ggp.base.util.statemachine.StateMachine;
 import org.ggp.base.util.statemachine.exceptions.GoalDefinitionException;
 import org.ggp.base.util.statemachine.exceptions.MoveDefinitionException;
 import org.ggp.base.util.statemachine.exceptions.StateMachineException;
+import org.ggp.base.util.statemachine.exceptions.StateMachineInitializationException;
 import org.ggp.base.util.statemachine.exceptions.TransitionDefinitionException;
 
 import com.google.common.collect.ImmutableList;
@@ -125,7 +126,7 @@ public final class CachedStateMachine extends StateMachine
 	}
 
 	@Override
-	public void initialize(List<Gdl> description) throws StateMachineException {
+	public void initialize(List<Gdl> description) throws StateMachineInitializationException {
 		backingStateMachine.initialize(description);
 	}
 

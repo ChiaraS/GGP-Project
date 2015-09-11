@@ -17,6 +17,7 @@ import org.ggp.base.util.statemachine.Role;
 import org.ggp.base.util.statemachine.exceptions.GoalDefinitionException;
 import org.ggp.base.util.statemachine.exceptions.MoveDefinitionException;
 import org.ggp.base.util.statemachine.exceptions.StateMachineException;
+import org.ggp.base.util.statemachine.exceptions.StateMachineInitializationException;
 import org.ggp.base.util.statemachine.exceptions.TransitionDefinitionException;
 import org.ggp.base.util.statemachine.implementation.yapProlog.YapStateMachine;
 import org.ggp.base.util.statemachine.implementation.yapProlog.transform.YapRenderer;
@@ -56,7 +57,7 @@ public class ProvaYap {
 
 		try {
 			machine.initialize(gdlDescription);
-		} catch (StateMachineException e) {
+		} catch (StateMachineInitializationException e) {
 			GamerLogger.logError("ProvaStepByStep", "Inititlaization failed!");
 			GamerLogger.logStackTrace("ProvaStepByStep", e);
 			return;

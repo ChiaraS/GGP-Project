@@ -1,7 +1,11 @@
 package org.ggp.base.util.statemachine.implementation.yapProlog.prover;
 
+import java.io.BufferedWriter;
 import java.io.File;
+import java.io.FileWriter;
+import java.io.IOException;
 import java.util.Arrays;
+import java.util.Random;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
@@ -10,8 +14,6 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
 import org.ggp.base.util.logging.GamerLogger;
-import org.ggp.base.util.statemachine.exceptions.StateMachineException;
-import org.ggp.base.util.statemachine.implementation.yapProlog.transform.YapEngineSupport;
 
 import com.declarativa.interprolog.YAPSubprocessEngine;
 
@@ -42,6 +44,8 @@ import com.declarativa.interprolog.YAPSubprocessEngine;
  */
 public class YapProver {
 
+	// CLASSES REPRESENTING DIFFERENT TYPES OF QUERIES THAT CAN BE ASKED TO YAP PROLOG
+
 	/**
 	 * Class that represents a query that returns some result in the form of a binding.
 	 *
@@ -50,19 +54,41 @@ public class YapProver {
 	 */
 	public class CallableBindingsQuery implements Callable<Object[]>{
 
+		/**
+		 * String representing the goal of the query with Yap Prolog format.
+		 */
 		private String goal;
+
+		/**
+		 * String representing the prolog name(s) of the variable(s) that
+		 * Yap Prolog must return to java in the binding(s).
+		 */
 		private String resVar;
 
-		public CallableBindingsQuery(String goal, String resVar){
-			this.goal = goal;
-			this.resVar = resVar;
+		/**
+		 * Constructor that initializes this query object as an empty query.
+		 */
+		public CallableBindingsQuery(){
+			this.goal = null;
+			this.resVar = null;
 		}
 
+		/**
+		 * Method that sets goal and return variables names for this query.
+		 *
+		 * @param goal the prolog format goal to be asked to Yap.
+		 * @param resVar the prolog names of the variable that Yap must return
+		 * to java as a result of this query.
+		 */
 		public void setQuery(String goal, String resVar){
 			this.goal = goal;
 			this.resVar = resVar;
 		}
 
+		/*
+		 * (non-Javadoc)
+		 * @see java.util.concurrent.Callable#call()
+		 */
 		@Override
 		public Object[] call() throws Exception {
 			return yapProver.deterministicGoal(goal,resVar);
@@ -78,16 +104,31 @@ public class YapProver {
 	 */
 	public class CallableYesNoQuery implements Callable<Boolean>{
 
+		/**
+		 * String representing the goal of the query with Yap Prolog format.
+		 */
 		private String goal;
 
-		public CallableYesNoQuery(String goal){
-			this.goal = goal;
+		/**
+		 * Constructor that initializes this query object as an empty query.
+		 */
+		public CallableYesNoQuery(){
+			this.goal = null;
 		}
 
+		/**
+		 * Method that sets the goal for this query.
+		 *
+		 * @param goal the prolog format goal to be asked to Yap.
+		 */
 		public void setQuery(String goal){
 			this.goal = goal;
 		}
 
+		/*
+		 * (non-Javadoc)
+		 * @see java.util.concurrent.Callable#call()
+		 */
 		@Override
 		public Boolean call() throws Exception {
 			return yapProver.deterministicGoal(this.goal);
@@ -95,22 +136,40 @@ public class YapProver {
 
 	}
 
+	// VARIABLES NEEDED TO INITIALIZE YAP PROLOG AS A STATE MACHINE REPRESENTING THE CURRENT GAME
+	// AND VARIABLES NEEDED TO START THE EXECUTION OF PROLOG
+
+	/**
+	 * Description of the game that this Yap Prolog prover must reason on.
+	 * The description must have the prolog syntax and will be written as
+	 * is on a prolog (.pl) file.
+	 */
+	private String description;
+
+	/**
+	 *  Path of the file where to put the game description.
+	 */
+	private String descriptionFilePath;
+
+	/**
+	 *  Path of the file with all the predefined Prolog functions.
+	 */
+	private String functionsFilePath;
 
 	/**
 	 * Command that this class must use to run Yap.
 	 */
 	private String yapCommand;
 
+	// THE OBJECT REPRESENTING THE YAP ENGINE TO BE CALLED TO ANSWER QUERIES
+
 	/**
 	 * Yap engine that this class must use to answer queries.
 	 */
 	private YAPSubprocessEngine yapProver;
 
-	// Path of the file where to put the game description
-	private String descriptionFilePath;
 
-	// File with all the predefined Prolog functions
-	private String functionsFilePath;
+	// VARIABLES NEEDED TO CONTROL THE EXECUTION TIME OF THE QUERIES
 
 	/**
 	 * This fake Yap Prolog prover must wait for this amount of time for the underlying
@@ -125,75 +184,244 @@ public class YapProver {
 	 */
 	private ExecutorService executor;
 
+	// VARIABLES REPRESENTING THE QUERY OBJECTS USED TO ASK QUERIES TO YAP AS THREADS'TASKS
+
+	/**
+	 * Callable query that returns a binding to its result(s).
+	 */
 	private CallableBindingsQuery bindingsQuery;
 
+	/**
+	 * Callable query that returns true when it succeeds, false otherwise.
+	 */
 	private CallableYesNoQuery yesNoQuery;
 
+	// CONSTRUCTORS
 
-	public YapProver() {
-		// TODO Auto-generated constructor stub
-		flushAndWrite(support.toProlog(description));
+	/**
+	 * Constructor that sets the game description to the given game description,
+	 * the waiting time for a query to a non-positive value (i.e. this class
+	 * will wait indefinitely for the answer of the query) and all other parameters
+	 * to default values (the default values for the file paths and the prolog
+	 * execution command are defined for linux GoGeneral server).
+	 *
+	 * @param description the game description with prolog syntax.
+	 * @throws YapProverException to signal that something went wrong during initialization
+	 * of the Yap Prover and thus it cannot be started and used.
+	 */
+	public YapProver(String description) throws YapProverException {
+		this(description, "/home/csironi/YAPplayer/prologFiles/description.pl", "/home/csironi/YAPplayer/prologFiles/prologFunctions.pl", "/home/csironi/CadiaplayerInstallation/Yap/bin/yap", 0L);
 	}
 
-	public void start(){
+	/**
+	 * Constructor that sets the game description and the waiting time for
+	 * the queries to the given values and all other parameters to the default
+	 * values for the linux GoGeneral server.
+	 *
+	 * @param description the game description with prolog syntax.
+	 * @param waitingTime the maximum time to wait for a query.
+	 * @throws YapProverException to signal that something went wrong during initialization
+	 * of the Yap Prover and thus it cannot be started and used.
+	 */
+	public YapProver(String description, long waitingTime) throws YapProverException {
+		this(description, "/home/csironi/YAPplayer/prologFiles/description.pl", "/home/csironi/YAPplayer/prologFiles/prologFunctions.pl", "/home/csironi/CadiaplayerInstallation/Yap/bin/yap", waitingTime);
+	}
 
-		//try{
+	/**
+	 * Constructor that sets the game description to the given game description,
+	 * the waiting time for a query to a non-positive value (i.e. this class
+	 * will wait indefinitely for the answer of the query) and all other parameters
+	 * to the given values.
+	 *
+	 * @param description  the game description with prolog syntax.
+	 * @param descriptionFilePath path of the file where to put the game description.
+	 * @param functionsFilePath path of the file with all the predefined Prolog functions.
+	 * @param yapCommand command that this class must use to run Yap.
+	 * @throws YapProverException to signal that something went wrong during initialization
+	 * of the Yap Prover and thus it cannot be started and used.
+	 */
+	public YapProver(String description, String descriptionFilePath, String functionsFilePath, String yapCommand) throws YapProverException {
+		this(description, descriptionFilePath, functionsFilePath, yapCommand, 0L);
+	}
+
+	/**
+	 * Constructor that sets all the parameters to the given values.
+	 *
+	 * @param description the game description with prolog syntax.
+	 * @param descriptionFilePath path of the file where to put the game description.
+	 * @param functionsFilePath path of the file with all the predefined Prolog functions.
+	 * @param yapCommand command that this class must use to run Yap.
+	 * @param waitingTime the maximum time to wait for a query.
+	 * @throws YapProverException to signal that something went wrong during initialization
+	 * of the Yap Prover and thus it cannot be started and used.
+	 */
+	public YapProver(String description, String descriptionFilePath, String functionsFilePath, String yapCommand, long waitingTime) throws YapProverException{
+		this.description = description;
+		this.descriptionFilePath = descriptionFilePath;
+		this.functionsFilePath = functionsFilePath;
+		this.yapCommand = yapCommand;
+		this.waitingTime = waitingTime;
+
+		// Write game description to a file
+		try {
+			writeDescription(this.description);
+		} catch (IOException e) {
+			// Log the exception
+			GamerLogger.logError("StateMachine", "[YapProver] Exception during initialization of Yap Prover.");
+			GamerLogger.logStackTrace("StateMachine", e);
+			// Throw a new exception.
+			throw new YapProverException("Initialization of Yap Prover failed.", e);
+		}
+		this.startup();
+	}
+
+	// METHODS TO START, SHUTDOWN OR RESET THE YAP PROVER
+
+	/**
+	 * This method starts the Yap Prover running an instance of the actual Yap Prolog
+	 * program, setting it up to reason on the given game description. If a positive
+	 * waiting time is set, this method also makes sure to prepare the executor to
+	 * manage queries that might need to be interrupted.
+	 *
+	 * @throws YapProverException if something goes wrong when starting up the real
+	 * Yap Prover and thus this java Yap Prover cannot be used.
+	 */
+	public void startup() throws YapProverException{
+
+		try{
+
 			// Create the bridge between Java and YAP Prolog, trying to start the YAP Prolog program.
 			this.yapProver = new YAPSubprocessEngine(this.yapCommand);
 
-			this.executor = Executors.newSingleThreadExecutor();
-
+			// Tell to Yap Prolog to consult the file with the functions definitions
+			// (the game description will also be consulted since it is referenced in
+			// the functions file.)
 			this.yapProver.consultAbsolute(new File(functionsFilePath));
 
-			randomizeProlog();
+			// Not needed for now since the state machine is not calling
+			// any query that uses random numbers.
+			//this.randomizeProlog();
 
-		}catch(RuntimeException re){
-			throw re;
-		}catch(Exception e){
+			// If a positive waiting time has been defined, also create the executor
+			// that will take care of stopping the queries that are taking too long
+			// and create the callable objects that represent the queries.
+			if(this.waitingTime > 0){
+				this.executor = Executors.newSingleThreadExecutor();
+				this.bindingsQuery = new CallableBindingsQuery();
+				this.yesNoQuery = new CallableYesNoQuery();
+			}else{
+				this.executor = null;
+				this.bindingsQuery = null;
+				this.yesNoQuery = null;
+			}
+		}catch(RuntimeException e){
 			// Log the exception
-			GamerLogger.logError("StateMachine", "[YAP] Exception during state machine initialization. Shutting down.");
+			GamerLogger.logError("StateMachine", "[YapProver] Exception during startup of Yap Prover. Shutting down.");
 			GamerLogger.logStackTrace("StateMachine", e);
 
-			// Reset all the variables of the state machine to null to leave the state machine in a consistent
-			// state, since initialization failed.
-			this.roles = null;
-			this.fakeRoles = null;
-			this.currentYapState = null;
-			this.initialState = null;
-			// Shutdown Yap Prolog and remove the reference to it, as it is now unusable.
-			this.yapProver.shutdown();
-			this.yapProver = null;
-			// Shutdown the executor
-			this.executor.shutdownNow();
-			this.executor = null;
+			this.shutdown();
 
 			// Throw an exception.
-			throw new StateMachineException("State machine initialization failure.", e);
+			throw new YapProverException("Startup of Yap Prover failed.", e);
 		}
 
 	}
 
+	/**
+	 * This method shuts down this Yap Prover, making sure that the real Yap Prover program
+	 * is also stopped and that the query executor is shutdown as well and all its tasks are
+	 * asked to interrupt (note that we can't be 100% sure that they will interrupt immediatly
+	 * or ever interrupt).
+	 */
 	public void shutdown(){
-		this.yapProver.shutdown();
-		this.executor.shutdownNow();
-		// If the executor gives any concurrency problem use this instruction
-		// to wait for all threads to actually die and if they don't do something
-		// to deal with it (i.e. throw exception or log this as it is probably a
-		// programming fault since all the query threads are supposed to terminate
-		// after interruption).
-		//this.executor.awaitTermination(timeout, unit);
-		this.yapProver = null;
-		this.executor = null;
+		if(this.executor != null){
+			// Shutdown the executor and remove the reference to it.
+			this.executor.shutdownNow();
+			// If the executor gives any concurrency problem use this instruction
+			// to wait for all threads to actually die and if they don't do something
+			// to deal with it (i.e. throw exception or log this as it is probably a
+			// programming fault since all the query threads are supposed to terminate
+			// after interruption).
+			//this.executor.awaitTermination(timeout, unit);
+			this.executor = null;
+		}
+
+		if(this.yapProver != null){
+			// Shutdown Yap Prolog and remove the reference to it, as it is now unusable.
+			this.yapProver.shutdown();
+			this.yapProver = null;
+		}
+
+		// Remove the reference to the callable query objects (note that the last one
+		// of them that has been called might still be running --> it should quit soon
+		// anyway if it has been programmed properly).
 		this.bindingsQuery = null;
 		this.yesNoQuery = null;
 	}
 
-	public void restart(){
+	/**
+	 * This method shuts down the Yap Prover and then starts it again.
+	 *
+	 * @throws YapProverException if something goes wrong when starting
+	 * the Yap Prover again.
+	 */
+	public void restart() throws YapProverException{
 		this.shutdown();
-		this.start();
+		this.startup();
 	}
 
+	/**
+	 *	Write the game description on a prolog file.
+	 *
+	 * @param string the description of the game.
+	 * @throws IOException if an I/O error occurs when writing.
+	 */
+	private void writeDescription(String string) throws IOException{
 
+		BufferedWriter out = null;
+		try{
+			out = new BufferedWriter(new FileWriter(this.descriptionFilePath));
+			out.write(string);
+		}finally{
+			if(out != null){
+				out.close();
+			}
+		}
+	}
+
+	private Random random = new Random();
+
+	/**
+	 * Change the Prolog random number generator
+	 * using the Java random number generator
+	 */
+	private void randomizeProlog()
+	{
+		/*
+		int i = (int)Math.min(Math.random()*(30268), 30268)+1;
+		int j = (int)Math.min(Math.random()*(30307), 30307)+1;
+		int k = (int)Math.min(Math.random()*(30323), 30323)+1;
+		*/
+		int i = this.random.nextInt(30268)+1;
+		int j = this.random.nextInt(30306)+1;
+		int k = this.random.nextInt(30322)+1;
+		this.yapProver.realCommand("setrand(rand("+i+", "+j+", "+k+"))");
+	}
+
+	/**
+	 * This method performs a query on the real Yap Prolog program, eturning any result
+	 * returned by the query.
+	 *
+	 * @param goal string representing the goal of the query with Yap Prolog format.
+	 * @param resVar String representing the prolog name(s) of the variable(s) that
+	 * Yap Prolog must return to java in the binding(s).
+	 * @return the bindings containing the result(s) of the query to Yap Prolog (NOTE
+	 * that prolog might compute that the query has no results and so the bindings
+	 * will be empty).
+	 * @throws YapProverException if something went wrong during the query and no answer
+	 * from Yap Prolog was received at all (either because of a timeout or because of
+	 * another exception).
+	 */
 	public Object[] askQueryResults(String goal, String resVar) throws YapProverException{
 
 		Object[] bindings = null;
@@ -210,15 +438,23 @@ public class YapProver {
 			} catch (InterruptedException | ExecutionException
 					| TimeoutException e) {
 				// If something went wrong or timeout has been reached, then throw an exception.
-				GamerLogger.logError("StateMachine", "[YapProver] Computation of query result on Yap Prolog side failed.");
+				GamerLogger.logError("StateMachine", "[YapProver] Impossible to complete the computation of query result on Yap Prolog side.");
 				GamerLogger.logStackTrace("StateMachine", e);
 				this.restart();
-				throw new YapProverException("Computation of query \"" + goal + "\" with result variables \"" + resVar + "\" on Yap Prolog side failed.", e);
+				throw new YapProverException("Computation of query \"" + goal + "\" with result variables \"" + resVar + "\" on Yap Prolog side couldn't be completed.", e);
 			}
 		// If no positive waiting time has been set just wait indefinitely.
 		}else{
-			// TODO: also catch runtime exceptions of interprolog here and rethrow yapProverException???
-			bindings = this.yapProver.deterministicGoal(goal, resVar);
+			try{
+				bindings = this.yapProver.deterministicGoal(goal, resVar);
+			// Catch all possible exceptions of Interprolog and re-throw them as a YapPrologException
+			// to signal that something went wrong and the query couldn't be answered.
+			}catch(RuntimeException e){
+				GamerLogger.logError("StateMachine", "[YapProver] Impossible to complete the computation of query result on Yap Prolog side.");
+				GamerLogger.logStackTrace("StateMachine", e);
+				this.restart();
+				throw new YapProverException("Computation of query \"" + goal + "\" with result variables \"" + resVar + "\" on Yap Prolog side couldn't be completed.", e);
+			}
 		}
 
 		return bindings;
@@ -241,17 +477,23 @@ public class YapProver {
 			} catch (InterruptedException | ExecutionException
 					| TimeoutException e) {
 				// If something went wrong or timeout has been reached, then throw an exception.
-				GamerLogger.logError("StateMachine", "[YapProver] Computation of yes/no query on Yap Prolog side failed.");
+				GamerLogger.logError("StateMachine", "[YapProver] Impossible to complete the computation of yes/no query on Yap Prolog side.");
 				GamerLogger.logStackTrace("StateMachine", e);
 				this.restart();
-				throw new YapProverException("Computation of yes/no query \"" + goal + "\" on Yap Prolog side failed.", e);
+				throw new YapProverException("Computation of yes/no query \"" + goal + "\" on Yap Prolog side couldn't be completed.", e);
 			}
 		// If no positive waiting time has been set just wait indefinitely.
 		}else{
-			// TODO: also catch runtime exceptions of interprolog here and rethrow yapProverException???
-			// Direi che ha senso visto che questa classe fa da filtro tra la state machine e yap: la state
-			// machine nn dovrebbe sapere neanche dellésistenza dle vero yap
-			success = this.yapProver.deterministicGoal(goal);
+			try{
+				success = this.yapProver.deterministicGoal(goal);
+			// Catch all possible exceptions of Interprolog and re-throw them as a YapPrologException
+			// to signal that something went wrong and the query couldn't be answered.
+			}catch(RuntimeException e){
+				GamerLogger.logError("StateMachine", "[YapProver] Impossible to complete the computation of yes/no query on Yap Prolog side.");
+				GamerLogger.logStackTrace("StateMachine", e);
+				this.restart();
+				throw new YapProverException("Computation of yes/no query \"" + goal + "\" on Yap Prolog side couldn't be completed.", e);
+			}
 		}
 
 		return success;
