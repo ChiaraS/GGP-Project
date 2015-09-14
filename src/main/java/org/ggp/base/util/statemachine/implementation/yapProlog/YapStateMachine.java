@@ -33,19 +33,25 @@ import com.google.common.collect.ImmutableList;
  * This state machine represents game states in YAP prolog and uses YAP prolog to
  * reason on the game rules, translated from the GDL description into prolog syntax.
  *
- * ATTENTION: if the initialization method fails do not query this state machine
- * as its answers will not be consistent. (TODO: add a way to check if state
+ * ATTENTION:
+ * if the initialization method fails throwing the StateMachineInitializationException
+ * do not query this state machine as its answers will not be consistent.
+ * (TODO: add a way to check if state
  * machine is in an inconsistent state and thus cannot answer queries).
- *
- * ATTENTION: if the initialization method succeeds YAP prolog will be running, so
- * when you stop using this state machine, remember to shut it down. In case the
- * state machine is being used by a StateMachineGamer, it will already take care
- * of calling the shutdown method whenever the match it is playing is aborted or
- * stopped.
- *
  * On the contrary, if any other method fails throwing the StateMachineException,
  * it is possible to keep asking queries to the state machine since each method
  * that fails also makes sure to leave the state machine in a consistent state.
+ *
+ * ATTENTION:
+ * if the initialization method succeeds YAP prolog will be running, so when you
+ * stop using this state machine, remember to shut it down. In case the state
+ * machine is being used by a StateMachineGamer, it will already take care of
+ * calling the shutdown method whenever the match it is playing is aborted or
+ * stopped.
+ * Moreover, even if the initialization method fails, Yap Prolog might be running,
+ * because the initialization failed after starting Yap Prolog (e.g. while computing
+ * the initial state or the roles). In this case, if you don't want to use this state
+ * machine, remember to shut it down.
  *
  * ! A LOT OF ATTENTION WHEN MODIFYING THE CODE OF THIS CLASS: all the methods
  * that can be interrupted because they call deterministicGoal on Yap Prolog
@@ -123,10 +129,18 @@ public class YapStateMachine extends StateMachine {
 
 	public YapStateMachine(long waitingTime){
 		this.waitingTime = waitingTime;
+		this.yapProver = null;
+		this.currentYapState = null;
+		this.fakeRoles = null;
+		this.initialState = null;
+		this.roles = null;
+		this.support = null;
 	}
 
 	/* (non-Javadoc)
 	 * @see org.ggp.base.util.statemachine.StateMachine#initialize(java.util.List)
+	 *
+	 * NOTE:
 	 */
 	@Override
 	public void initialize(List<Gdl> description) throws StateMachineInitializationException{
@@ -138,15 +152,30 @@ public class YapStateMachine extends StateMachine {
 			try{
 				// Create the interface with the Yap Prover.
 				this.yapProver = new YapProver(this.support.toProlog(description), this.waitingTime);
-
-				// If creation succeeded, compute initial state and roles.
-				this.initialState = computeInitialState();
-				this.roles = computeRoles();
-			}catch(YapProverException | StateMachineException e){
-				GamerLogger.logError("StateMachine", "[YAP] Exception during state machine initialization. Shutting down.");
+			}catch(YapProverException e){
+				GamerLogger.logError("StateMachine", "[YAP] Exception during state machine initialization. Yap Prover creation and startup failed!");
 				GamerLogger.logStackTrace("StateMachine", e);
-				this.shutdown();
-				throw new StateMachineInitializationException("State machine initialization failed.", e);
+				this.yapProver = null;
+				throw new StateMachineInitializationException("State machine initialization failed. Impossible to create and start up Yap Prover.", e);
+			}
+
+			// If creation succeeded, compute initial state...
+			try{
+				this.initialState = computeInitialState();
+			}catch(StateMachineException e){
+				GamerLogger.logError("StateMachine", "[YAP] Exception during state machine initialization. Initial state computation failed!");
+				GamerLogger.logStackTrace("StateMachine", e);
+				this.initialState = null;
+				throw new StateMachineInitializationException("State machine initialization failed. Impossible to compute initial state.", e);
+			}
+			// ...and roles.
+			try{
+				this.roles = computeRoles();
+			}catch(StateMachineException e){
+				GamerLogger.logError("StateMachine", "[YAP] Exception during state machine initialization. Roles computation failed!");
+				GamerLogger.logStackTrace("StateMachine", e);
+				this.roles = null;
+				throw new StateMachineInitializationException("State machine initialization failed. Impossible to compute roles.", e);
 			}
 	}
 

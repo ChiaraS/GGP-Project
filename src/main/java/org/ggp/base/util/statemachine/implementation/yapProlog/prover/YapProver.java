@@ -19,14 +19,17 @@ import com.declarativa.interprolog.YAPSubprocessEngine;
 
 /**
  * This class acts like an interface between the state machine and Yap Prolog.
- * When the state machine uses this class it's like it is using Yap Prolog
- * without having to take care of starting it or dealing with it when it is
- * not responding.
  * The state machine can call this class as if it was the real Yap Prolog prover
- * without worrying about the details of setting it up.
+ * without worrying about the details of setting it up and resetting it when a
+ * query cannot be computed (i.e. if the real Yap Prolog is not responding if it
+ * is taking to long to respond, etc...).
  *
  * This class is a sort of fake Yap Prolog prover that asks the real Yap Prolog
  * prover to answer queries.
+ *
+ * NOTE: when done using this class, the shutdown method must be called to
+ * "inform" this class that it will not be used anymore, so it can shutdown
+ * also the real Yap Prover.
  *
  * ATTENTION: this class is not thread safe when waitingTime is set with a positive
  * value. If more than one thread calls the same method of this class at the same
@@ -161,6 +164,13 @@ public class YapProver {
 	 */
 	private String yapCommand;
 
+	/**
+	 * True if this Yap Prolog class is ready to answer queries, false otherwise.
+	 * This parameter is needed to check if Yap prolog is ready or needs to be
+	 * started up before asking a query.
+	 */
+	private boolean isReady;
+
 	// THE OBJECT REPRESENTING THE YAP ENGINE TO BE CALLED TO ANSWER QUERIES
 
 	/**
@@ -197,6 +207,7 @@ public class YapProver {
 	private CallableYesNoQuery yesNoQuery;
 
 	// CONSTRUCTORS
+	// NOTE: if the constructor fails, this Yap Prover cannot be used.
 
 	/**
 	 * Constructor that sets the game description to the given game description,
@@ -261,6 +272,11 @@ public class YapProver {
 		this.functionsFilePath = functionsFilePath;
 		this.yapCommand = yapCommand;
 		this.waitingTime = waitingTime;
+		this.executor = null;
+		this.bindingsQuery = null;
+		this.yesNoQuery = null;
+
+		this.isReady = false;
 
 		// Write game description to a file
 		try {
@@ -270,8 +286,22 @@ public class YapProver {
 			GamerLogger.logError("StateMachine", "[YapProver] Exception during initialization of Yap Prover.");
 			GamerLogger.logStackTrace("StateMachine", e);
 			// Throw a new exception.
-			throw new YapProverException("Initialization of Yap Prover failed.", e);
+			throw new YapProverException("Creation of Yap Prover failed.", e);
 		}
+
+		// Note: if the startup fails the first time, it's highly likely that there is something
+		// wrong with the YAP execution command (this.yapCommand), or something wrong with the
+		// installation of Yap Prolog or with the functions file being consulted (i.e. is because
+		// of a programming/installing error, not an unpredictable cause). This is why we
+		// included the first startup in the constructor of the class, and if it fails we assume
+		// that this class won't be usable ever, so we shut it down.
+		// On the contrary, if it succeeds, we assume it's highly likely to always succeed (or at
+		// most it will fail for an unpredictable cause not likely to happen always), thus whenever
+		// it fails before asking a query, we just throw an exception saying that the query couldn't
+		// be computed and we'll try to start it up again next time we receive a query.
+		// Feel free to remove this from here if you want to ignore this check and just try every
+		// time to start up Yap Prolog. The fact that startup failed the first time might also be
+		// just a coincidence.
 		this.startup();
 	}
 
@@ -286,7 +316,7 @@ public class YapProver {
 	 * @throws YapProverException if something goes wrong when starting up the real
 	 * Yap Prover and thus this java Yap Prover cannot be used.
 	 */
-	public void startup() throws YapProverException{
+	private void startup() throws YapProverException{
 
 		try{
 
@@ -309,18 +339,14 @@ public class YapProver {
 				this.executor = Executors.newSingleThreadExecutor();
 				this.bindingsQuery = new CallableBindingsQuery();
 				this.yesNoQuery = new CallableYesNoQuery();
-			}else{
-				this.executor = null;
-				this.bindingsQuery = null;
-				this.yesNoQuery = null;
 			}
+
+			this.isReady = true;
 		}catch(RuntimeException e){
 			// Log the exception
 			GamerLogger.logError("StateMachine", "[YapProver] Exception during startup of Yap Prover. Shutting down.");
 			GamerLogger.logStackTrace("StateMachine", e);
-
 			this.shutdown();
-
 			// Throw an exception.
 			throw new YapProverException("Startup of Yap Prover failed.", e);
 		}
@@ -330,7 +356,7 @@ public class YapProver {
 	/**
 	 * This method shuts down this Yap Prover, making sure that the real Yap Prover program
 	 * is also stopped and that the query executor is shutdown as well and all its tasks are
-	 * asked to interrupt (note that we can't be 100% sure that they will interrupt immediatly
+	 * asked to interrupt (note that we can't be 100% sure that they will interrupt immediately
 	 * or ever interrupt).
 	 */
 	public void shutdown(){
@@ -357,17 +383,8 @@ public class YapProver {
 		// anyway if it has been programmed properly).
 		this.bindingsQuery = null;
 		this.yesNoQuery = null;
-	}
 
-	/**
-	 * This method shuts down the Yap Prover and then starts it again.
-	 *
-	 * @throws YapProverException if something goes wrong when starting
-	 * the Yap Prover again.
-	 */
-	public void restart() throws YapProverException{
-		this.shutdown();
-		this.startup();
+		this.isReady = false;
 	}
 
 	/**
@@ -409,7 +426,7 @@ public class YapProver {
 	}
 
 	/**
-	 * This method performs a query on the real Yap Prolog program, eturning any result
+	 * This method performs a query on the real Yap Prolog program, returning any result
 	 * returned by the query.
 	 *
 	 * @param goal string representing the goal of the query with Yap Prolog format.
@@ -420,9 +437,24 @@ public class YapProver {
 	 * will be empty).
 	 * @throws YapProverException if something went wrong during the query and no answer
 	 * from Yap Prolog was received at all (either because of a timeout or because of
-	 * another exception).
+	 * another exception). In this case Yap Prolog needs restarting to be able to answer
+	 * another query correctly.
 	 */
 	public Object[] askQueryResults(String goal, String resVar) throws YapProverException{
+
+		// Check if the YapSubprocessEngine is ready to answer queries or if we have to start it again
+		// because it was shutdown during the previous query because of an error.
+		// If startup fails, just throw an exception to say that the computation of the query failed.
+		// The startup method takes care of shutting everything down if it fails.
+		if(! this.isReady){
+			try{
+				this.startup();
+			}catch(YapProverException e){
+				GamerLogger.logError("StateMachine", "[YapProver] Impossible to complete the computation of query result on Yap Prolog side.");
+				GamerLogger.logStackTrace("StateMachine", e);
+				throw new YapProverException("Computation of query \"" + goal + "\" with result variables \"" + resVar + "\" on Yap Prolog side couldn't be completed.", e);
+			}
+		}
 
 		Object[] bindings = null;
 
@@ -440,7 +472,7 @@ public class YapProver {
 				// If something went wrong or timeout has been reached, then throw an exception.
 				GamerLogger.logError("StateMachine", "[YapProver] Impossible to complete the computation of query result on Yap Prolog side.");
 				GamerLogger.logStackTrace("StateMachine", e);
-				this.restart();
+				this.shutdown();
 				throw new YapProverException("Computation of query \"" + goal + "\" with result variables \"" + resVar + "\" on Yap Prolog side couldn't be completed.", e);
 			}
 		// If no positive waiting time has been set just wait indefinitely.
@@ -452,7 +484,7 @@ public class YapProver {
 			}catch(RuntimeException e){
 				GamerLogger.logError("StateMachine", "[YapProver] Impossible to complete the computation of query result on Yap Prolog side.");
 				GamerLogger.logStackTrace("StateMachine", e);
-				this.restart();
+				this.shutdown();
 				throw new YapProverException("Computation of query \"" + goal + "\" with result variables \"" + resVar + "\" on Yap Prolog side couldn't be completed.", e);
 			}
 		}
@@ -461,7 +493,32 @@ public class YapProver {
 
 	}
 
+	/**
+	 * This method performs a query on the real Yap Prolog program, checking if it succeeded
+	 * or failed.
+	 *
+	 * @param goal string representing the goal of the query with Yap Prolog format.
+	 * @return true if the goal succeeded, false otherwise.
+	 * @throws YapProverException if something went wrong during the query and no answer
+	 * from Yap Prolog was received at all (either because of a timeout or because of
+	 * another exception). In this case Yap Prolog needs restarting to be able to answer
+	 * another query correctly.
+	 */
 	public boolean askQuerySuccess(String goal) throws YapProverException{
+
+		// Check if the YapSubprocessEngine is ready to answer queries or if we have to start it again
+		// because it was shutdown during the previous query because of an error.
+		// If startup fails, just throw an exception to say that the computation of the query failed.
+		// The startup method takes care of shutting everything down if it fails.
+		if(! this.isReady){
+			try{
+				this.startup();
+			}catch(YapProverException e){
+				GamerLogger.logError("StateMachine", "[YapProver] Impossible to complete the computation of yes/no query on Yap Prolog side.");
+				GamerLogger.logStackTrace("StateMachine", e);
+				throw new YapProverException("Computation of yes/no query \"" + goal + "\" on Yap Prolog side couldn't be completed.", e);
+			}
+		}
 
 		boolean success = false;
 
@@ -479,7 +536,7 @@ public class YapProver {
 				// If something went wrong or timeout has been reached, then throw an exception.
 				GamerLogger.logError("StateMachine", "[YapProver] Impossible to complete the computation of yes/no query on Yap Prolog side.");
 				GamerLogger.logStackTrace("StateMachine", e);
-				this.restart();
+				this.shutdown();
 				throw new YapProverException("Computation of yes/no query \"" + goal + "\" on Yap Prolog side couldn't be completed.", e);
 			}
 		// If no positive waiting time has been set just wait indefinitely.
@@ -491,13 +548,17 @@ public class YapProver {
 			}catch(RuntimeException e){
 				GamerLogger.logError("StateMachine", "[YapProver] Impossible to complete the computation of yes/no query on Yap Prolog side.");
 				GamerLogger.logStackTrace("StateMachine", e);
-				this.restart();
+				this.shutdown();
 				throw new YapProverException("Computation of yes/no query \"" + goal + "\" on Yap Prolog side couldn't be completed.", e);
 			}
 		}
 
 		return success;
 
+	}
+
+	public boolean isReady(){
+		return this.isReady();
 	}
 
 }
