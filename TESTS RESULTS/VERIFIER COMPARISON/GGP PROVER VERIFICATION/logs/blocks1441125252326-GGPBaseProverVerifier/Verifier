@@ -1,0 +1,4 @@
+LOG 1441125252328 [L3]: Testing on game blocks
+LOG 1441125252329 [L3]: Performing automatic consistency testing on org.ggp.base.util.statemachine.implementation.prover.ProverStateMachine using org.ggp.base.util.statemachine.implementation.prover.ProverStateMachine as a reference.
+LOG 1441125312330 [L3]: Completed automatic consistency testing on org.ggp.base.util.statemachine.implementation.prover.ProverStateMachine, w/ 42258 rounds: all tests pass!
+

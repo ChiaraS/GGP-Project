@@ -1,0 +1,4 @@
+LOG 1441121698183 [L3]: Testing on game zhadu
+LOG 1441121698191 [L3]: Performing automatic consistency testing on org.ggp.base.util.statemachine.implementation.prover.ProverStateMachine using org.ggp.base.util.statemachine.implementation.prover.ProverStateMachine as a reference.
+LOG 1441121758247 [L3]: Completed automatic consistency testing on org.ggp.base.util.statemachine.implementation.prover.ProverStateMachine, w/ 10 rounds: all tests pass!
+

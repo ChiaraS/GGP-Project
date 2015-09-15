@@ -1,0 +1,4 @@
+LOG 1441120437374 [L3]: Testing on game chickentoetictac
+LOG 1441120437382 [L3]: Performing automatic consistency testing on org.ggp.base.util.statemachine.implementation.prover.ProverStateMachine using org.ggp.base.util.statemachine.implementation.prover.ProverStateMachine as a reference.
+LOG 1441120497383 [L3]: Completed automatic consistency testing on org.ggp.base.util.statemachine.implementation.prover.ProverStateMachine, w/ 9264 rounds: all tests pass!
+

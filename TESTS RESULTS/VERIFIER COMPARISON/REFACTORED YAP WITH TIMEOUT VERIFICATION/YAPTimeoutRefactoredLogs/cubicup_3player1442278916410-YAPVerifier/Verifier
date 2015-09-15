@@ -1,0 +1,4 @@
+LOG 1442278916418 [L3]: Testing on game cubicup_3player
+LOG 1442278916554 [L3]: Performing automatic consistency testing on org.ggp.base.util.statemachine.implementation.yapProlog.YapStateMachine using org.ggp.base.util.statemachine.implementation.prover.ProverStateMachine as a reference.
+LOG 1442279096893 [L3]: Completed automatic consistency testing on org.ggp.base.util.statemachine.implementation.yapProlog.YapStateMachine, w/ 6 rounds: all tests pass!
+

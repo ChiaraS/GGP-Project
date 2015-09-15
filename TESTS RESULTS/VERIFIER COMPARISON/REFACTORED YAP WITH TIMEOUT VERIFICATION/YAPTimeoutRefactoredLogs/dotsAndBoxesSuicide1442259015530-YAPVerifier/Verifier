@@ -1,0 +1,4 @@
+LOG 1442259015535 [L3]: Testing on game dotsAndBoxesSuicide
+LOG 1442259015667 [L3]: Performing automatic consistency testing on org.ggp.base.util.statemachine.implementation.yapProlog.YapStateMachine using org.ggp.base.util.statemachine.implementation.prover.ProverStateMachine as a reference.
+LOG 1442259195870 [L3]: Completed automatic consistency testing on org.ggp.base.util.statemachine.implementation.yapProlog.YapStateMachine, w/ 12 rounds: all tests pass!
+

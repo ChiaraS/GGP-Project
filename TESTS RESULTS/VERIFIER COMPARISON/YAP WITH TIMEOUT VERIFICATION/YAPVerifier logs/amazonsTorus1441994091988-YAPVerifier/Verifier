@@ -1,0 +1,18 @@
+LOG 1441994091996 [L3]: Testing on game amazonsTorus
+LOG 1441994092130 [L3]: Performing automatic consistency testing on org.ggp.base.util.statemachine.implementation.yapProlog.YapStateMachine using org.ggp.base.util.statemachine.implementation.prover.ProverStateMachine as a reference.
+LOG 1441994125132 [L3]: Machine #1 failed computation of legal moves for state [( true ( location 10 7 black ) ), ( true ( location 1 4 white ) ), ( true ( location 4 10 black ) ), ( true ( location 7 1 white ) ), ( true ( location 1 7 black ) ), ( true ( location 4 1 white ) ), ( true ( control white ) ), ( true ( location 7 10 black ) ), ( true ( location 10 4 white ) )] and role white.
+LOG 1441994125133 [L9]: <ERR> org.ggp.base.util.statemachine.exceptions.StateMachineException: Impossible to compute legal moves for role "white" in state [( true ( location 10 7 black ) ), ( true ( location 1 4 white ) ), ( true ( location 4 10 black ) ), ( true ( location 7 1 white ) ), ( true ( location 1 7 black ) ), ( true ( location 4 1 white ) ), ( true ( control white ) ), ( true ( location 7 10 black ) ), ( true ( location 10 4 white ) )].
+	at org.ggp.base.util.statemachine.implementation.yapProlog.YapStateMachine.getLegalMoves(YapStateMachine.java:328)
+	at org.ggp.base.util.statemachine.verifier.StateMachineVerifier.checkMachineConsistency(StateMachineVerifier.java:97)
+	at csironi.ggp.course.YAPVerifier.main(YAPVerifier.java:106)
+Caused by: org.ggp.base.util.statemachine.implementation.yapProlog.prover.YapProverException: Computation of query "get_legal_moves(a, List), processList(List, LL), ipObjectTemplate('ArrayOfString',AS,_,[LL],_)" with result variables "[AS]" on Yap Prolog side couldn't be completed.
+	at org.ggp.base.util.statemachine.implementation.yapProlog.prover.YapProver.askQueryResults(YapProver.java:444)
+	at org.ggp.base.util.statemachine.implementation.yapProlog.YapStateMachine.getLegalMoves(YapStateMachine.java:324)
+	... 2 more
+Caused by: java.util.concurrent.TimeoutException
+	at java.util.concurrent.AbstractExecutorService.doInvokeAny(AbstractExecutorService.java:182)
+	at java.util.concurrent.AbstractExecutorService.invokeAny(AbstractExecutorService.java:225)
+	at java.util.concurrent.Executors$DelegatedExecutorService.invokeAny(Executors.java:663)
+	at org.ggp.base.util.statemachine.implementation.yapProlog.prover.YapProver.askQueryResults(YapProver.java:437)
+	... 3 more
+

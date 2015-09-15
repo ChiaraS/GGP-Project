@@ -1,0 +1,4 @@
+LOG 1441999874743 [L3]: Testing on game amazonsTorus_10x10
+LOG 1441999874874 [L3]: Performing automatic consistency testing on org.ggp.base.util.statemachine.implementation.yapProlog.YapStateMachine using org.ggp.base.util.statemachine.implementation.prover.ProverStateMachine as a reference.
+LOG 1441999934918 [L3]: Completed automatic consistency testing on org.ggp.base.util.statemachine.implementation.yapProlog.YapStateMachine, w/ 2 rounds: all tests pass!
+

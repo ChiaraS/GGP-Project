@@ -1,0 +1,9 @@
+java -jar GGPBaseProverVerifier.jar [durationTimeOfEachTestInMilliseconds]
+
+You can specify no parameters or the [durationTimeOfEachTestInMilliseconds]
+
+e.g:
+
+java -jar GGPBaseProverVerifier.jar
+
+java -jar GGPBaseProverVerifier.jar 60000

@@ -1,0 +1,35 @@
+LOG 1441998428004 [L9]: <ERR> (in StateMachine) [YapProver] Impossible to complete the computation of query result on Yap Prolog side.
+LOG 1441998428008 [L9]: <ERR> (in StateMachine) java.util.concurrent.TimeoutException
+	at java.util.concurrent.AbstractExecutorService.doInvokeAny(AbstractExecutorService.java:182)
+	at java.util.concurrent.AbstractExecutorService.invokeAny(AbstractExecutorService.java:225)
+	at java.util.concurrent.Executors$DelegatedExecutorService.invokeAny(Executors.java:663)
+	at org.ggp.base.util.statemachine.implementation.yapProlog.prover.YapProver.askQueryResults(YapProver.java:437)
+	at org.ggp.base.util.statemachine.implementation.yapProlog.YapStateMachine.getLegalMoves(YapStateMachine.java:324)
+	at org.ggp.base.util.statemachine.verifier.StateMachineVerifier.checkMachineConsistency(StateMachineVerifier.java:97)
+	at csironi.ggp.course.YAPVerifier.main(YAPVerifier.java:106)
+LOG 1441998428048 [L9]: <ERR> (in StateMachine) [YAP] Exception during legal moves computation.
+LOG 1441998428049 [L9]: <ERR> (in StateMachine) org.ggp.base.util.statemachine.implementation.yapProlog.prover.YapProverException: Computation of query "get_legal_moves(au, List), processList(List, LL), ipObjectTemplate('ArrayOfString',AS,_,[LL],_)" with result variables "[AS]" on Yap Prolog side couldn't be completed.
+	at org.ggp.base.util.statemachine.implementation.yapProlog.prover.YapProver.askQueryResults(YapProver.java:444)
+	at org.ggp.base.util.statemachine.implementation.yapProlog.YapStateMachine.getLegalMoves(YapStateMachine.java:324)
+	at org.ggp.base.util.statemachine.verifier.StateMachineVerifier.checkMachineConsistency(StateMachineVerifier.java:97)
+	at csironi.ggp.course.YAPVerifier.main(YAPVerifier.java:106)
+Caused by: java.util.concurrent.TimeoutException
+	at java.util.concurrent.AbstractExecutorService.doInvokeAny(AbstractExecutorService.java:182)
+	at java.util.concurrent.AbstractExecutorService.invokeAny(AbstractExecutorService.java:225)
+	at java.util.concurrent.Executors$DelegatedExecutorService.invokeAny(Executors.java:663)
+	at org.ggp.base.util.statemachine.implementation.yapProlog.prover.YapProver.askQueryResults(YapProver.java:437)
+	... 3 more
+LOG 1441998428050 [L9]: <ERR> (in Verifier) org.ggp.base.util.statemachine.exceptions.StateMachineException: Impossible to compute legal moves for role "white" in state [( true ( piece wpb b 2 ) ), ( true ( piece wpc c 2 ) ), ( true ( piece bbf f 8 ) ), ( true ( piece bpc c 7 ) ), ( true ( piece bpf f 7 ) ), ( true ( piece wng g 1 ) ), ( true ( piece bpa a 7 ) ), ( true ( piece bbc c 8 ) ), ( true ( piece wq d 1 ) ), ( true ( piece bph h 7 ) ), ( true ( piece bpg g 7 ) ), ( true ( piece wbc c 1 ) ), ( true ( piece bng g 8 ) ), ( true ( piece wra a 1 ) ), ( true ( piece wk e 1 ) ), ( true ( piece wrh h 1 ) ), ( true ( piece bpd d 7 ) ), ( true ( piece bra a 8 ) ), ( true ( piece wph h 2 ) ), ( true ( piece wpf f 2 ) ), ( true ( control white ) ), ( true ( piece wpg g 2 ) ), ( true ( piece bpb b 7 ) ), ( true ( piece wpe e 2 ) ), ( true ( piece wnb b 1 ) ), ( true ( piece bk e 8 ) ), ( true ( piece wbf f 1 ) ), ( true ( piece bq d 8 ) ), ( true ( piece brh h 8 ) ), ( true ( piece wpa a 2 ) ), ( true ( step 1 ) ), ( true ( piece bpe e 7 ) ), ( true ( piece wpd d 2 ) ), ( true ( piece bnb b 8 ) )].
+	at org.ggp.base.util.statemachine.implementation.yapProlog.YapStateMachine.getLegalMoves(YapStateMachine.java:328)
+	at org.ggp.base.util.statemachine.verifier.StateMachineVerifier.checkMachineConsistency(StateMachineVerifier.java:97)
+	at csironi.ggp.course.YAPVerifier.main(YAPVerifier.java:106)
+Caused by: org.ggp.base.util.statemachine.implementation.yapProlog.prover.YapProverException: Computation of query "get_legal_moves(au, List), processList(List, LL), ipObjectTemplate('ArrayOfString',AS,_,[LL],_)" with result variables "[AS]" on Yap Prolog side couldn't be completed.
+	at org.ggp.base.util.statemachine.implementation.yapProlog.prover.YapProver.askQueryResults(YapProver.java:444)
+	at org.ggp.base.util.statemachine.implementation.yapProlog.YapStateMachine.getLegalMoves(YapStateMachine.java:324)
+	... 2 more
+Caused by: java.util.concurrent.TimeoutException
+	at java.util.concurrent.AbstractExecutorService.doInvokeAny(AbstractExecutorService.java:182)
+	at java.util.concurrent.AbstractExecutorService.invokeAny(AbstractExecutorService.java:225)
+	at java.util.concurrent.Executors$DelegatedExecutorService.invokeAny(Executors.java:663)
+	at org.ggp.base.util.statemachine.implementation.yapProlog.prover.YapProver.askQueryResults(YapProver.java:437)
+	... 3 more

@@ -1,0 +1,4 @@
+LOG 1442273675267 [L3]: Testing on game checkers-mustjump-torus
+LOG 1442273675419 [L3]: Performing automatic consistency testing on org.ggp.base.util.statemachine.implementation.yapProlog.YapStateMachine using org.ggp.base.util.statemachine.implementation.prover.ProverStateMachine as a reference.
+LOG 1442273855577 [L3]: Completed automatic consistency testing on org.ggp.base.util.statemachine.implementation.yapProlog.YapStateMachine, w/ 15 rounds: all tests pass!
+

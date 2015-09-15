@@ -1,0 +1,6 @@
+LOG 1442003178509 [L3]: Started logging to files at: Fri Sep 11 22:26:18 CEST 2015
+LOG 1442003178509 [L3]: Game rules: [( role red ), ( role white ), ( role blue ), ( init off ), ( init red ), ( init dim ), ( init start ), ( trans off a on ), ( trans on a on ), ( trans on b off ), ( trans off b off ), ( trans red c green ), ( trans green c green ), ( trans green d red ), ( trans red d red ), ( trans dim e bright ), ( trans bright e bright ), ( trans bright f dim ), ( trans dim f dim ), ( trans2 start end ), ( legal red a ), ( legal red b ), ( legal white c ), ( legal white d ), ( legal blue e ), ( legal blue f ), ( <= ( goal red 100 ) ( true on ) ), ( <= ( goal red 0 ) ( true off ) ), ( <= ( goal white 100 ) ( true green ) ), ( <= ( goal white 0 ) ( true red ) ), ( <= ( goal blue 100 ) ( true bright ) ), ( <= ( goal blue 0 ) ( true dim ) ), ( <= terminal ( true end ) ), ( <= ( next ?q ) ( trans2 ?p ?q ) ( true ?p ) ), ( <= ( next ?q ) ( trans ?p ?a ?q ) ( does ?player ?a ) ( true ?p ) )]
+LOG 1442003178510 [L3]: Start clock: -1
+LOG 1442003178510 [L3]: Play clock: -1
+LOG 1442003238719 [L3]: Stopped logging to files at: Fri Sep 11 22:27:18 CEST 2015
+LOG 1442003238719 [L3]: LOG SEALED

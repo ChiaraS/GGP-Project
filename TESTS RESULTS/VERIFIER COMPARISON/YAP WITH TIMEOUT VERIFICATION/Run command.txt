@@ -1,0 +1,11 @@
+java -jar TimeoutYAPVerifier.jar [durationTimeOfEachTestInMilliseconds] [keyOfTheGameToTest]
+
+You can specify no parameters, both or only the [durationTimeOfEachTestInMilliseconds]
+
+e.g:
+
+java -jar TimeoutYAPVerifier.jar
+
+java -jar TimeoutYAPVerifier.jar 600000
+
+java -jar TimeoutYAPVerifier.jar 600000 zhadu

@@ -1,0 +1,4 @@
+LOG 1442281576674 [L3]: Testing on game lightsOnSimul4
+LOG 1442281576807 [L3]: Performing automatic consistency testing on org.ggp.base.util.statemachine.implementation.yapProlog.YapStateMachine using org.ggp.base.util.statemachine.implementation.prover.ProverStateMachine as a reference.
+LOG 1442281756972 [L3]: Completed automatic consistency testing on org.ggp.base.util.statemachine.implementation.yapProlog.YapStateMachine, w/ 137 rounds: all tests pass!
+

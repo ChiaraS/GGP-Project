@@ -1,0 +1,4 @@
+LOG 1441125900885 [L3]: Testing on game lightsOnSimultaneous
+LOG 1441125900887 [L3]: Performing automatic consistency testing on org.ggp.base.util.statemachine.implementation.prover.ProverStateMachine using org.ggp.base.util.statemachine.implementation.prover.ProverStateMachine as a reference.
+LOG 1441125960888 [L3]: Completed automatic consistency testing on org.ggp.base.util.statemachine.implementation.prover.ProverStateMachine, w/ 1768 rounds: all tests pass!
+

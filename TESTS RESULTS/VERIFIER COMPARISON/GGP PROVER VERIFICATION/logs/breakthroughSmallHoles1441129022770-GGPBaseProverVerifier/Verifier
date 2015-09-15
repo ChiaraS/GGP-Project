@@ -1,0 +1,4 @@
+LOG 1441129022777 [L3]: Testing on game breakthroughSmallHoles
+LOG 1441129022779 [L3]: Performing automatic consistency testing on org.ggp.base.util.statemachine.implementation.prover.ProverStateMachine using org.ggp.base.util.statemachine.implementation.prover.ProverStateMachine as a reference.
+LOG 1441129082782 [L3]: Completed automatic consistency testing on org.ggp.base.util.statemachine.implementation.prover.ProverStateMachine, w/ 377 rounds: all tests pass!
+

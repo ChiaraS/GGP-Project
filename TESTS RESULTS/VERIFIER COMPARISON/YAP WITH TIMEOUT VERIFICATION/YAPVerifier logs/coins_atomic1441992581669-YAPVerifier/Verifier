@@ -1,0 +1,4 @@
+LOG 1441992581863 [L3]: Testing on game coins_atomic
+LOG 1441992582189 [L3]: Performing automatic consistency testing on org.ggp.base.util.statemachine.implementation.yapProlog.YapStateMachine using org.ggp.base.util.statemachine.implementation.prover.ProverStateMachine as a reference.
+LOG 1441992642291 [L3]: Completed automatic consistency testing on org.ggp.base.util.statemachine.implementation.yapProlog.YapStateMachine, w/ 89 rounds: all tests pass!
+

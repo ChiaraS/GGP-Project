@@ -1,0 +1,4 @@
+LOG 1441127701953 [L3]: Testing on game maze
+LOG 1441127701954 [L3]: Performing automatic consistency testing on org.ggp.base.util.statemachine.implementation.prover.ProverStateMachine using org.ggp.base.util.statemachine.implementation.prover.ProverStateMachine as a reference.
+LOG 1441127761955 [L3]: Completed automatic consistency testing on org.ggp.base.util.statemachine.implementation.prover.ProverStateMachine, w/ 26220 rounds: all tests pass!
+

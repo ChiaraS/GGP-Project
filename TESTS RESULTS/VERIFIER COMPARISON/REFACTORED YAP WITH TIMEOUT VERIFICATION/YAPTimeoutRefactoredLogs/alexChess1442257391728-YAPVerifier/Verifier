@@ -1,0 +1,18 @@
+LOG 1442257391783 [L3]: Testing on game alexChess
+LOG 1442257391961 [L3]: Performing automatic consistency testing on org.ggp.base.util.statemachine.implementation.yapProlog.YapStateMachine using org.ggp.base.util.statemachine.implementation.prover.ProverStateMachine as a reference.
+LOG 1442257392886 [L3]: Machine #1 failed computation of legal moves for state [( true ( piece wng g 1 ) ), ( true ( piece wpb b 2 ) ), ( true ( piece bpa a 7 ) ), ( true ( piece bpb b 7 ) ), ( true ( piece wbf f 1 ) ), ( true ( piece wpa a 2 ) ), ( true ( piece bnb b 8 ) ), ( true ( piece bra a 8 ) ), ( true ( piece bbf f 8 ) ), ( true ( piece wpg g 2 ) ), ( true ( piece bpd d 7 ) ), ( true ( piece bq d 8 ) ), ( true ( piece bpf f 7 ) ), ( true ( piece bpc c 7 ) ), ( true ( piece brh h 8 ) ), ( true ( piece wpe e 2 ) ), ( true ( piece wbc c 1 ) ), ( true ( piece wpf f 2 ) ), ( true ( piece bpe e 7 ) ), ( true ( piece wq d 1 ) ), ( true ( piece wpd d 2 ) ), ( true ( piece wnb b 1 ) ), ( true ( step 1 ) ), ( true ( piece bk e 8 ) ), ( true ( piece wrh h 1 ) ), ( true ( piece wph h 2 ) ), ( true ( piece bbc c 8 ) ), ( true ( piece bph h 7 ) ), ( true ( piece wra a 1 ) ), ( true ( piece wpc c 2 ) ), ( true ( piece wk e 1 ) ), ( true ( control white ) ), ( true ( piece bpg g 7 ) ), ( true ( piece bng g 8 ) )] and role white.
+LOG 1442257392886 [L9]: <ERR> org.ggp.base.util.statemachine.exceptions.StateMachineException: Impossible to compute legal moves for role "white" in state [( true ( piece wng g 1 ) ), ( true ( piece wpb b 2 ) ), ( true ( piece bpa a 7 ) ), ( true ( piece bpb b 7 ) ), ( true ( piece wbf f 1 ) ), ( true ( piece wpa a 2 ) ), ( true ( piece bnb b 8 ) ), ( true ( piece bra a 8 ) ), ( true ( piece bbf f 8 ) ), ( true ( piece wpg g 2 ) ), ( true ( piece bpd d 7 ) ), ( true ( piece bq d 8 ) ), ( true ( piece bpf f 7 ) ), ( true ( piece bpc c 7 ) ), ( true ( piece brh h 8 ) ), ( true ( piece wpe e 2 ) ), ( true ( piece wbc c 1 ) ), ( true ( piece wpf f 2 ) ), ( true ( piece bpe e 7 ) ), ( true ( piece wq d 1 ) ), ( true ( piece wpd d 2 ) ), ( true ( piece wnb b 1 ) ), ( true ( step 1 ) ), ( true ( piece bk e 8 ) ), ( true ( piece wrh h 1 ) ), ( true ( piece wph h 2 ) ), ( true ( piece bbc c 8 ) ), ( true ( piece bph h 7 ) ), ( true ( piece wra a 1 ) ), ( true ( piece wpc c 2 ) ), ( true ( piece wk e 1 ) ), ( true ( control white ) ), ( true ( piece bpg g 7 ) ), ( true ( piece bng g 8 ) )].
+	at org.ggp.base.util.statemachine.implementation.yapProlog.YapStateMachine.getLegalMoves(YapStateMachine.java:357)
+	at org.ggp.base.util.statemachine.verifier.StateMachineVerifier.checkMachineConsistency(StateMachineVerifier.java:97)
+	at csironi.ggp.course.YAPVerifier.main(YAPVerifier.java:106)
+Caused by: org.ggp.base.util.statemachine.implementation.yapProlog.prover.YapProverException: Computation of query "get_legal_moves(au, List), processList(List, LL), ipObjectTemplate('ArrayOfString',AS,_,[LL],_)" with result variables "[AS]" on Yap Prolog side couldn't be completed.
+	at org.ggp.base.util.statemachine.implementation.yapProlog.prover.YapProver.askQueryResults(YapProver.java:476)
+	at org.ggp.base.util.statemachine.implementation.yapProlog.YapStateMachine.getLegalMoves(YapStateMachine.java:353)
+	... 2 more
+Caused by: java.util.concurrent.TimeoutException
+	at java.util.concurrent.AbstractExecutorService.doInvokeAny(AbstractExecutorService.java:182)
+	at java.util.concurrent.AbstractExecutorService.invokeAny(AbstractExecutorService.java:225)
+	at java.util.concurrent.Executors$DelegatedExecutorService.invokeAny(Executors.java:663)
+	at org.ggp.base.util.statemachine.implementation.yapProlog.prover.YapProver.askQueryResults(YapProver.java:469)
+	... 3 more
+

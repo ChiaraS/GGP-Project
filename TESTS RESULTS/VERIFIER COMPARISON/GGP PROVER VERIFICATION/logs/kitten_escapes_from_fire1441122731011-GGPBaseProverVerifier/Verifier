@@ -1,0 +1,4 @@
+LOG 1441122731017 [L3]: Testing on game kitten_escapes_from_fire
+LOG 1441122731019 [L3]: Performing automatic consistency testing on org.ggp.base.util.statemachine.implementation.prover.ProverStateMachine using org.ggp.base.util.statemachine.implementation.prover.ProverStateMachine as a reference.
+LOG 1441122791020 [L3]: Completed automatic consistency testing on org.ggp.base.util.statemachine.implementation.prover.ProverStateMachine, w/ 6636 rounds: all tests pass!
+

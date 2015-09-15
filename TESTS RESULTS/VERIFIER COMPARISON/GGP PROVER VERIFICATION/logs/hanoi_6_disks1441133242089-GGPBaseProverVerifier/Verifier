@@ -1,0 +1,4 @@
+LOG 1441133242095 [L3]: Testing on game hanoi_6_disks
+LOG 1441133242096 [L3]: Performing automatic consistency testing on org.ggp.base.util.statemachine.implementation.prover.ProverStateMachine using org.ggp.base.util.statemachine.implementation.prover.ProverStateMachine as a reference.
+LOG 1441133302097 [L3]: Completed automatic consistency testing on org.ggp.base.util.statemachine.implementation.prover.ProverStateMachine, w/ 22189 rounds: all tests pass!
+

@@ -1,0 +1,4 @@
+LOG 1442250087934 [L3]: Testing on game snakeAssemblit
+LOG 1442250088075 [L3]: Performing automatic consistency testing on org.ggp.base.util.statemachine.implementation.yapProlog.YapStateMachine using org.ggp.base.util.statemachine.implementation.prover.ProverStateMachine as a reference.
+LOG 1442250268300 [L3]: Completed automatic consistency testing on org.ggp.base.util.statemachine.implementation.yapProlog.YapStateMachine, w/ 89 rounds: all tests pass!
+

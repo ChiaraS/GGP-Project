@@ -1,0 +1,4 @@
+LOG 1442264455396 [L3]: Testing on game knightwar
+LOG 1442264455527 [L3]: Performing automatic consistency testing on org.ggp.base.util.statemachine.implementation.yapProlog.YapStateMachine using org.ggp.base.util.statemachine.implementation.prover.ProverStateMachine as a reference.
+LOG 1442264635610 [L3]: Completed automatic consistency testing on org.ggp.base.util.statemachine.implementation.yapProlog.YapStateMachine, w/ 41 rounds: all tests pass!
+

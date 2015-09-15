@@ -454,4 +454,54 @@ public class YapStateMachine extends StateMachine {
 		this.currentYapState = null;
 	}
 
+
+	// METHODS USED BY AN EXTERNAL CLASS TO FIX THE STATE OF THE STATE MACHINE IN CASE INITIALIZATION
+	// FAILS WITH A RECOVERABLE FAILURE (I.E. INITIALIZATION OF YAP PROVER SUCCEEDED BUT SOMETHING ELSE
+	// FAILED).
+
+	/**
+	 * This method checks if the state machine is completely unusable because the initialization
+	 * of the Yap Prover failed or if it can still be used, probably with some fixing, because
+	 * the Yap Prover is working.
+	 *
+	 * This method is needed because initialization fails both if the Yap Prover fails to be started
+	 * and if the initial state and/or the roles fail to be computed. This is because if this state
+	 * machine is the only one being used, it cannot give correct answers if one of the previously
+	 * mentioned actions fails. However, if some external class has a way to check what exactly
+	 * went wrong with initialization, it can fix it and still use this state machine.
+	 *
+	 * @return false if the state machine cannot be used at all because the Yap Prover failed to
+	 * start, true otherwise.
+	 */
+	public boolean isUsable(){
+		return this.yapProver != null;
+	}
+
+	/**
+	 * Sets the initial state of this state machine.
+	 *
+	 * CONTRACT: only use this method in case the computation of the initial state failed and you
+	 * want to still use this state machine passing it the initial state computed by another state
+	 * machine.
+	 *
+	 * @param state the initial state.
+	 */
+	public void setInitialState(MachineState state){
+		this.initialState = state;
+	}
+
+	/**
+	 * Sets the game roles of this state machine.
+	 *
+	 * CONTRACT: only use this method in case the computation of the game roles failed and you
+	 * want to still use this state machine passing it the game roles computed by another state
+	 * machine.
+	 *
+	 * @param roles the list of game roles.
+	 */
+	public void setRoles(List<Role> roles){
+		this.roles = ImmutableList.copyOf(roles);
+		this.fakeRoles = support.getFakeRoles(roles);
+	}
+
 }

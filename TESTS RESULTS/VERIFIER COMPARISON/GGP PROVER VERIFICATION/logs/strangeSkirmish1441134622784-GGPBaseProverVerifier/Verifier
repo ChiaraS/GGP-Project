@@ -1,0 +1,4 @@
+LOG 1441134622796 [L3]: Testing on game strangeSkirmish
+LOG 1441134622801 [L3]: Performing automatic consistency testing on org.ggp.base.util.statemachine.implementation.prover.ProverStateMachine using org.ggp.base.util.statemachine.implementation.prover.ProverStateMachine as a reference.
+LOG 1441134682860 [L3]: Completed automatic consistency testing on org.ggp.base.util.statemachine.implementation.prover.ProverStateMachine, w/ 7 rounds: all tests pass!
+

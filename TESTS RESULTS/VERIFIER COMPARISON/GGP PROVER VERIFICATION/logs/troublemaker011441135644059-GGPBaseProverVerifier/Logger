@@ -1,0 +1,6 @@
+LOG 1441135644060 [L3]: Started logging to files at: Tue Sep 01 21:27:24 CEST 2015
+LOG 1441135644061 [L3]: Game rules: [( role player ), ( init ( pos1 a ) ), ( init ( pos2 x ) ), ( <= ( legal player ( move1 ?n ) ) ( true ( pos1 ?m ) ) ( conn1 ?m ?n ) ), ( <= ( legal player ( move2 ?n ) ) ( true ( pos2 ?m ) ) ( conn2 ?m ?n ) ), ( <= ( next ( pos1 ?n ) ) ( does player ( move1 ?n ) ) ), ( <= ( next ( pos1 ?n ) ) ( true ( pos1 ?n ) ) ( does player ( move2 ?m ) ) ), ( <= ( next ( pos2 ?n ) ) ( does player ( move2 ?n ) ) ), ( <= ( next ( pos2 ?n ) ) ( true ( pos2 ?n ) ) ( does player ( move1 ?m ) ) ), ( <= terminal ( true ( pos1 c ) ) ( true ( pos2 z ) ) ), ( <= terminal ( true ( pos1 a ) ) ( true ( pos2 z ) ) ), ( <= terminal ( true ( pos1 c ) ) ( true ( pos2 x ) ) ), ( <= ( goal player 100 ) ( true ( pos1 c ) ) ( true ( pos2 z ) ) ), ( <= ( goal player 0 ) ( not ( true ( pos1 c ) ) ) ), ( <= ( goal player 0 ) ( not ( true ( pos2 z ) ) ) ), ( conn1 a b ), ( conn1 b c ), ( conn2 x y ), ( conn2 y z )]
+LOG 1441135644061 [L3]: Start clock: -1
+LOG 1441135644061 [L3]: Play clock: -1
+LOG 1441135704063 [L3]: Stopped logging to files at: Tue Sep 01 21:28:24 CEST 2015
+LOG 1441135704063 [L3]: LOG SEALED

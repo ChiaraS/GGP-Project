@@ -1,0 +1,4 @@
+LOG 1441136244452 [L3]: Testing on game stateSpaceSmall
+LOG 1441136244453 [L3]: Performing automatic consistency testing on org.ggp.base.util.statemachine.implementation.prover.ProverStateMachine using org.ggp.base.util.statemachine.implementation.prover.ProverStateMachine as a reference.
+LOG 1441136304454 [L3]: Completed automatic consistency testing on org.ggp.base.util.statemachine.implementation.prover.ProverStateMachine, w/ 58558 rounds: all tests pass!
+

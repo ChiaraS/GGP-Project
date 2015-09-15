@@ -1,0 +1,1471 @@
+LOG 1438354767661 [L3]: Testing on game coins_atomic
+LOG 1438354769327 [L3]: Propnet creation done. It took 1490ms.
+LOG 1438354769336 [L3]: Performing automatic consistency testing on org.ggp.base.util.statemachine.implementation.propnet.ForwardInterruptingPropNetStateMachine using org.ggp.base.util.statemachine.implementation.prover.ProverStateMachine as a reference.
+LOG 1438354779338 [L3]: Completed automatic consistency testing on org.ggp.base.util.statemachine.implementation.propnet.ForwardInterruptingPropNetStateMachine, w/ 399 rounds: all tests pass!
+
+LOG 1438354779338 [L3]: Testing on game 3pConnectFour
+LOG 1438354780233 [L3]: Propnet creation done. It took 869ms.
+LOG 1438354780235 [L3]: Performing automatic consistency testing on org.ggp.base.util.statemachine.implementation.propnet.ForwardInterruptingPropNetStateMachine using org.ggp.base.util.statemachine.implementation.prover.ProverStateMachine as a reference.
+LOG 1438354790237 [L3]: Completed automatic consistency testing on org.ggp.base.util.statemachine.implementation.propnet.ForwardInterruptingPropNetStateMachine, w/ 73 rounds: all tests pass!
+
+LOG 1438354790237 [L3]: Testing on game chickentoetictac
+LOG 1438354790345 [L3]: Propnet creation done. It took 96ms.
+LOG 1438354790346 [L3]: Performing automatic consistency testing on org.ggp.base.util.statemachine.implementation.propnet.ForwardInterruptingPropNetStateMachine using org.ggp.base.util.statemachine.implementation.prover.ProverStateMachine as a reference.
+LOG 1438354800347 [L3]: Completed automatic consistency testing on org.ggp.base.util.statemachine.implementation.propnet.ForwardInterruptingPropNetStateMachine, w/ 2127 rounds: all tests pass!
+
+LOG 1438354800348 [L3]: Testing on game gt_tinfoil
+LOG 1438354803085 [L3]: Propnet creation done. It took 2719ms.
+LOG 1438354803088 [L3]: Performing automatic consistency testing on org.ggp.base.util.statemachine.implementation.propnet.ForwardInterruptingPropNetStateMachine using org.ggp.base.util.statemachine.implementation.prover.ProverStateMachine as a reference.
+LOG 1438354813089 [L3]: Completed automatic consistency testing on org.ggp.base.util.statemachine.implementation.propnet.ForwardInterruptingPropNetStateMachine, w/ 3171 rounds: all tests pass!
+
+LOG 1438354813089 [L3]: Testing on game 4pttc
+LOG 1438354814938 [L3]: Propnet creation done. It took 1821ms.
+LOG 1438354814972 [L3]: Performing automatic consistency testing on org.ggp.base.util.statemachine.implementation.propnet.ForwardInterruptingPropNetStateMachine using org.ggp.base.util.statemachine.implementation.prover.ProverStateMachine as a reference.
+LOG 1438354824973 [L3]: Completed automatic consistency testing on org.ggp.base.util.statemachine.implementation.propnet.ForwardInterruptingPropNetStateMachine, w/ 91 rounds: all tests pass!
+
+LOG 1438354824974 [L3]: Testing on game checkersTorusNoKings
+LOG 1438354826287 [L3]: Propnet creation done. It took 1292ms.
+LOG 1438354826294 [L3]: Performing automatic consistency testing on org.ggp.base.util.statemachine.implementation.propnet.ForwardInterruptingPropNetStateMachine using org.ggp.base.util.statemachine.implementation.prover.ProverStateMachine as a reference.
+LOG 1438354836299 [L3]: Completed automatic consistency testing on org.ggp.base.util.statemachine.implementation.propnet.ForwardInterruptingPropNetStateMachine, w/ 35 rounds: all tests pass!
+
+LOG 1438354836299 [L3]: Testing on game crisscross
+LOG 1438354845551 [L3]: Propnet creation done. It took 9237ms.
+LOG 1438354845867 [L3]: Performing automatic consistency testing on org.ggp.base.util.statemachine.implementation.propnet.ForwardInterruptingPropNetStateMachine using org.ggp.base.util.statemachine.implementation.prover.ProverStateMachine as a reference.
+LOG 1438354855903 [L3]: Completed automatic consistency testing on org.ggp.base.util.statemachine.implementation.propnet.ForwardInterruptingPropNetStateMachine, w/ 7 rounds: all tests pass!
+
+LOG 1438354855903 [L3]: Testing on game cittaceot
+LOG 1438354856152 [L3]: Propnet creation done. It took 230ms.
+LOG 1438354856154 [L3]: Performing automatic consistency testing on org.ggp.base.util.statemachine.implementation.propnet.ForwardInterruptingPropNetStateMachine using org.ggp.base.util.statemachine.implementation.prover.ProverStateMachine as a reference.
+LOG 1438354866156 [L3]: Completed automatic consistency testing on org.ggp.base.util.statemachine.implementation.propnet.ForwardInterruptingPropNetStateMachine, w/ 181 rounds: all tests pass!
+
+LOG 1438354866156 [L3]: Testing on game doubletictactoe
+LOG 1438354866227 [L3]: Propnet creation done. It took 64ms.
+LOG 1438354866228 [L3]: Performing automatic consistency testing on org.ggp.base.util.statemachine.implementation.propnet.ForwardInterruptingPropNetStateMachine using org.ggp.base.util.statemachine.implementation.prover.ProverStateMachine as a reference.
+LOG 1438354876230 [L3]: Completed automatic consistency testing on org.ggp.base.util.statemachine.implementation.propnet.ForwardInterruptingPropNetStateMachine, w/ 495 rounds: all tests pass!
+
+LOG 1438354876231 [L3]: Testing on game gt_coordination
+LOG 1438354876331 [L3]: Propnet creation done. It took 94ms.
+LOG 1438354876333 [L3]: Performing automatic consistency testing on org.ggp.base.util.statemachine.implementation.propnet.ForwardInterruptingPropNetStateMachine using org.ggp.base.util.statemachine.implementation.prover.ProverStateMachine as a reference.
+LOG 1438354886334 [L3]: Completed automatic consistency testing on org.ggp.base.util.statemachine.implementation.propnet.ForwardInterruptingPropNetStateMachine, w/ 1233 rounds: all tests pass!
+
+LOG 1438354886334 [L3]: Testing on game factoringMutuallyAssuredDestruction
+LOG 1438354886383 [L3]: Propnet creation done. It took 44ms.
+LOG 1438354886384 [L3]: Performing automatic consistency testing on org.ggp.base.util.statemachine.implementation.propnet.ForwardInterruptingPropNetStateMachine using org.ggp.base.util.statemachine.implementation.prover.ProverStateMachine as a reference.
+LOG 1438354896385 [L3]: Completed automatic consistency testing on org.ggp.base.util.statemachine.implementation.propnet.ForwardInterruptingPropNetStateMachine, w/ 961 rounds: all tests pass!
+
+LOG 1438354896385 [L3]: Testing on game englishDraughts
+LOG 1438354897244 [L3]: Propnet creation done. It took 849ms.
+LOG 1438354897249 [L3]: Performing automatic consistency testing on org.ggp.base.util.statemachine.implementation.propnet.ForwardInterruptingPropNetStateMachine using org.ggp.base.util.statemachine.implementation.prover.ProverStateMachine as a reference.
+LOG 1438354907256 [L3]: Completed automatic consistency testing on org.ggp.base.util.statemachine.implementation.propnet.ForwardInterruptingPropNetStateMachine, w/ 36 rounds: all tests pass!
+
+LOG 1438354907257 [L3]: Testing on game lightsOnParallel
+LOG 1438354907287 [L3]: Propnet creation done. It took 27ms.
+LOG 1438354907288 [L3]: Performing automatic consistency testing on org.ggp.base.util.statemachine.implementation.propnet.ForwardInterruptingPropNetStateMachine using org.ggp.base.util.statemachine.implementation.prover.ProverStateMachine as a reference.
+LOG 1438354917290 [L3]: Completed automatic consistency testing on org.ggp.base.util.statemachine.implementation.propnet.ForwardInterruptingPropNetStateMachine, w/ 738 rounds: all tests pass!
+
+LOG 1438354917290 [L3]: Testing on game wallmaze
+LOG 1438354918792 [L3]: Propnet creation done. It took 1494ms.
+LOG 1438354918806 [L3]: Performing automatic consistency testing on org.ggp.base.util.statemachine.implementation.propnet.ForwardInterruptingPropNetStateMachine using org.ggp.base.util.statemachine.implementation.prover.ProverStateMachine as a reference.
+LOG 1438354928808 [L3]: Completed automatic consistency testing on org.ggp.base.util.statemachine.implementation.propnet.ForwardInterruptingPropNetStateMachine, w/ 50 rounds: all tests pass!
+
+LOG 1438354928808 [L3]: Testing on game ad_game_2x2
+LOG 1438354930741 [L3]: Propnet creation done. It took 1926ms.
+LOG 1438354930748 [L3]: Performing automatic consistency testing on org.ggp.base.util.statemachine.implementation.propnet.ForwardInterruptingPropNetStateMachine using org.ggp.base.util.statemachine.implementation.prover.ProverStateMachine as a reference.
+LOG 1438354940750 [L3]: Completed automatic consistency testing on org.ggp.base.util.statemachine.implementation.propnet.ForwardInterruptingPropNetStateMachine, w/ 1411 rounds: all tests pass!
+
+LOG 1438354940751 [L3]: Testing on game blocks2player
+LOG 1438354940805 [L3]: Propnet creation done. It took 51ms.
+LOG 1438354940806 [L3]: Performing automatic consistency testing on org.ggp.base.util.statemachine.implementation.propnet.ForwardInterruptingPropNetStateMachine using org.ggp.base.util.statemachine.implementation.prover.ProverStateMachine as a reference.
+LOG 1438354950807 [L3]: Completed automatic consistency testing on org.ggp.base.util.statemachine.implementation.propnet.ForwardInterruptingPropNetStateMachine, w/ 1291 rounds: all tests pass!
+
+LOG 1438354950807 [L3]: Testing on game minichess
+LOG 1438354951016 [L3]: Propnet creation done. It took 203ms.
+LOG 1438354951019 [L3]: Performing automatic consistency testing on org.ggp.base.util.statemachine.implementation.propnet.ForwardInterruptingPropNetStateMachine using org.ggp.base.util.statemachine.implementation.prover.ProverStateMachine as a reference.
+LOG 1438354961021 [L3]: Completed automatic consistency testing on org.ggp.base.util.statemachine.implementation.propnet.ForwardInterruptingPropNetStateMachine, w/ 1610 rounds: all tests pass!
+
+LOG 1438354961021 [L3]: Testing on game ticTacHeaven
+LOG 1438354961168 [L3]: Propnet creation done. It took 140ms.
+LOG 1438354961171 [L3]: Performing automatic consistency testing on org.ggp.base.util.statemachine.implementation.propnet.ForwardInterruptingPropNetStateMachine using org.ggp.base.util.statemachine.implementation.prover.ProverStateMachine as a reference.
+LOG 1438354971177 [L3]: Completed automatic consistency testing on org.ggp.base.util.statemachine.implementation.propnet.ForwardInterruptingPropNetStateMachine, w/ 39 rounds: all tests pass!
+
+LOG 1438354971177 [L3]: Testing on game duplicateStateMedium
+LOG 1438354971238 [L3]: Propnet creation done. It took 46ms.
+LOG 1438354971239 [L3]: Performing automatic consistency testing on org.ggp.base.util.statemachine.implementation.propnet.ForwardInterruptingPropNetStateMachine using org.ggp.base.util.statemachine.implementation.prover.ProverStateMachine as a reference.
+LOG 1438354981240 [L3]: Completed automatic consistency testing on org.ggp.base.util.statemachine.implementation.propnet.ForwardInterruptingPropNetStateMachine, w/ 3569 rounds: all tests pass!
+
+LOG 1438354981240 [L3]: Testing on game untwistycomplex2
+LOG 1438354981260 [L3]: Propnet creation done. It took 17ms.
+LOG 1438354981260 [L3]: Performing automatic consistency testing on org.ggp.base.util.statemachine.implementation.propnet.ForwardInterruptingPropNetStateMachine using org.ggp.base.util.statemachine.implementation.prover.ProverStateMachine as a reference.
+LOG 1438354991261 [L3]: Completed automatic consistency testing on org.ggp.base.util.statemachine.implementation.propnet.ForwardInterruptingPropNetStateMachine, w/ 12004 rounds: all tests pass!
+
+LOG 1438354991261 [L3]: Testing on game golden_rectangle
+LOG 1438354991750 [L3]: Propnet creation done. It took 484ms.
+LOG 1438354991752 [L3]: Performing automatic consistency testing on org.ggp.base.util.statemachine.implementation.propnet.ForwardInterruptingPropNetStateMachine using org.ggp.base.util.statemachine.implementation.prover.ProverStateMachine as a reference.
+LOG 1438355001755 [L3]: Completed automatic consistency testing on org.ggp.base.util.statemachine.implementation.propnet.ForwardInterruptingPropNetStateMachine, w/ 40 rounds: all tests pass!
+
+LOG 1438355001755 [L3]: Testing on game hodgepodge
+LOG 1438355001814 [L3]: Propnet creation done. It took 56ms.
+LOG 1438355001814 [L3]: Performing automatic consistency testing on org.ggp.base.util.statemachine.implementation.propnet.ForwardInterruptingPropNetStateMachine using org.ggp.base.util.statemachine.implementation.prover.ProverStateMachine as a reference.
+LOG 1438355011815 [L3]: Completed automatic consistency testing on org.ggp.base.util.statemachine.implementation.propnet.ForwardInterruptingPropNetStateMachine, w/ 17542 rounds: all tests pass!
+
+LOG 1438355011815 [L3]: Testing on game chineseCheckers2
+LOG 1438355012034 [L3]: Propnet creation done. It took 213ms.
+LOG 1438355012036 [L3]: Performing automatic consistency testing on org.ggp.base.util.statemachine.implementation.propnet.ForwardInterruptingPropNetStateMachine using org.ggp.base.util.statemachine.implementation.prover.ProverStateMachine as a reference.
+LOG 1438355022037 [L3]: Completed automatic consistency testing on org.ggp.base.util.statemachine.implementation.propnet.ForwardInterruptingPropNetStateMachine, w/ 225 rounds: all tests pass!
+
+LOG 1438355022038 [L3]: Testing on game zhadu
+LOG 1438355023969 [L3]: Propnet creation done. It took 1925ms.
+LOG 1438355023996 [L3]: Performing automatic consistency testing on org.ggp.base.util.statemachine.implementation.propnet.ForwardInterruptingPropNetStateMachine using org.ggp.base.util.statemachine.implementation.prover.ProverStateMachine as a reference.
+LOG 1438355034201 [L3]: Completed automatic consistency testing on org.ggp.base.util.statemachine.implementation.propnet.ForwardInterruptingPropNetStateMachine, w/ 4 rounds: all tests pass!
+
+LOG 1438355034202 [L3]: Testing on game chineseCheckers1
+LOG 1438355034418 [L3]: Propnet creation done. It took 212ms.
+LOG 1438355034419 [L3]: Performing automatic consistency testing on org.ggp.base.util.statemachine.implementation.propnet.ForwardInterruptingPropNetStateMachine using org.ggp.base.util.statemachine.implementation.prover.ProverStateMachine as a reference.
+LOG 1438355044420 [L3]: Completed automatic consistency testing on org.ggp.base.util.statemachine.implementation.propnet.ForwardInterruptingPropNetStateMachine, w/ 406 rounds: all tests pass!
+
+LOG 1438355044421 [L3]: Testing on game amazons_10x10
+LOG 1438355050190 [L3]: Propnet creation done. It took 5765ms.
+LOG 1438355050219 [L3]: Performing automatic consistency testing on org.ggp.base.util.statemachine.implementation.propnet.ForwardInterruptingPropNetStateMachine using org.ggp.base.util.statemachine.implementation.prover.ProverStateMachine as a reference.
+LOG 1438355060242 [L3]: Completed automatic consistency testing on org.ggp.base.util.statemachine.implementation.propnet.ForwardInterruptingPropNetStateMachine, w/ 7 rounds: all tests pass!
+
+LOG 1438355060242 [L3]: Testing on game amazonsTorus
+LOG 1438355360818 [L3]: Propnet creation interrupted. Taking too long!
+LOG 1438355360819 [L9]: <ERR> java.lang.InterruptedException
+	at org.ggp.base.util.concurrency.ConcurrencyUtils.checkForInterruption(ConcurrencyUtils.java:9)
+	at org.ggp.base.util.propnet.factory.ForwardInterruptingPropNetFactory.addSentenceForm(ForwardInterruptingPropNetFactory.java:913)
+	at org.ggp.base.util.propnet.factory.ForwardInterruptingPropNetFactory.create(ForwardInterruptingPropNetFactory.java:212)
+	at org.ggp.base.util.propnet.factory.ForwardInterruptingPropNetFactory.create(ForwardInterruptingPropNetFactory.java:113)
+	at org.ggp.base.util.propnet.factory.ForwardInterruptingPropNetCreator.run(ForwardInterruptingPropNetCreator.java:46)
+LOG 1438355360819 [L3]: No propnet available. Impossible to test this game.
+
+LOG 1438355360819 [L3]: Testing on game brawl
+LOG 1438355368874 [L3]: Propnet creation done. It took 8047ms.
+LOG 1438355368948 [L3]: Performing automatic consistency testing on org.ggp.base.util.statemachine.implementation.propnet.ForwardInterruptingPropNetStateMachine using org.ggp.base.util.statemachine.implementation.prover.ProverStateMachine as a reference.
+LOG 1438355378957 [L3]: Completed automatic consistency testing on org.ggp.base.util.statemachine.implementation.propnet.ForwardInterruptingPropNetStateMachine, w/ 29 rounds: all tests pass!
+
+LOG 1438355378958 [L3]: Testing on game checkersBarrelNoKings
+LOG 1438355379937 [L3]: Propnet creation done. It took 974ms.
+LOG 1438355379944 [L3]: Performing automatic consistency testing on org.ggp.base.util.statemachine.implementation.propnet.ForwardInterruptingPropNetStateMachine using org.ggp.base.util.statemachine.implementation.prover.ProverStateMachine as a reference.
+LOG 1438355389947 [L3]: Completed automatic consistency testing on org.ggp.base.util.statemachine.implementation.propnet.ForwardInterruptingPropNetStateMachine, w/ 32 rounds: all tests pass!
+
+LOG 1438355389948 [L3]: Testing on game haystack
+LOG 1438355389955 [L3]: Propnet creation done. It took 6ms.
+LOG 1438355389956 [L3]: Performing automatic consistency testing on org.ggp.base.util.statemachine.implementation.propnet.ForwardInterruptingPropNetStateMachine using org.ggp.base.util.statemachine.implementation.prover.ProverStateMachine as a reference.
+LOG 1438355399957 [L3]: Completed automatic consistency testing on org.ggp.base.util.statemachine.implementation.propnet.ForwardInterruptingPropNetStateMachine, w/ 31721 rounds: all tests pass!
+
+LOG 1438355399957 [L3]: Testing on game sudokuGrade6E
+LOG 1438355400360 [L3]: Propnet creation done. It took 398ms.
+LOG 1438355400393 [L3]: Performing automatic consistency testing on org.ggp.base.util.statemachine.implementation.propnet.ForwardInterruptingPropNetStateMachine using org.ggp.base.util.statemachine.implementation.prover.ProverStateMachine as a reference.
+LOG 1438355410466 [L3]: Completed automatic consistency testing on org.ggp.base.util.statemachine.implementation.propnet.ForwardInterruptingPropNetStateMachine, w/ 2 rounds: all tests pass!
+
+LOG 1438355410467 [L3]: Testing on game chineseCheckers6
+LOG 1438355410743 [L3]: Propnet creation done. It took 270ms.
+LOG 1438355410747 [L3]: Performing automatic consistency testing on org.ggp.base.util.statemachine.implementation.propnet.ForwardInterruptingPropNetStateMachine using org.ggp.base.util.statemachine.implementation.prover.ProverStateMachine as a reference.
+LOG 1438355420748 [L3]: Completed automatic consistency testing on org.ggp.base.util.statemachine.implementation.propnet.ForwardInterruptingPropNetStateMachine, w/ 67 rounds: all tests pass!
+
+LOG 1438355420749 [L3]: Testing on game chineseCheckers4
+LOG 1438355421046 [L3]: Propnet creation done. It took 291ms.
+LOG 1438355421048 [L3]: Performing automatic consistency testing on org.ggp.base.util.statemachine.implementation.propnet.ForwardInterruptingPropNetStateMachine using org.ggp.base.util.statemachine.implementation.prover.ProverStateMachine as a reference.
+LOG 1438355431050 [L3]: Completed automatic consistency testing on org.ggp.base.util.statemachine.implementation.propnet.ForwardInterruptingPropNetStateMachine, w/ 68 rounds: all tests pass!
+
+LOG 1438355431050 [L3]: Testing on game chineseCheckers3
+LOG 1438355431341 [L3]: Propnet creation done. It took 285ms.
+LOG 1438355431343 [L3]: Performing automatic consistency testing on org.ggp.base.util.statemachine.implementation.propnet.ForwardInterruptingPropNetStateMachine using org.ggp.base.util.statemachine.implementation.prover.ProverStateMachine as a reference.
+LOG 1438355441345 [L3]: Completed automatic consistency testing on org.ggp.base.util.statemachine.implementation.propnet.ForwardInterruptingPropNetStateMachine, w/ 126 rounds: all tests pass!
+
+LOG 1438355441345 [L3]: Testing on game ticTacToeNoVars
+LOG 1438355441384 [L3]: Propnet creation done. It took 33ms.
+LOG 1438355441385 [L3]: Performing automatic consistency testing on org.ggp.base.util.statemachine.implementation.propnet.ForwardInterruptingPropNetStateMachine using org.ggp.base.util.statemachine.implementation.prover.ProverStateMachine as a reference.
+LOG 1438355451386 [L3]: Completed automatic consistency testing on org.ggp.base.util.statemachine.implementation.propnet.ForwardInterruptingPropNetStateMachine, w/ 1354 rounds: all tests pass!
+
+LOG 1438355451386 [L3]: Testing on game wargame02
+LOG 1438355461253 [L3]: Propnet creation done. It took 9857ms.
+LOG 1438355461274 [L3]: Performing automatic consistency testing on org.ggp.base.util.statemachine.implementation.propnet.ForwardInterruptingPropNetStateMachine using org.ggp.base.util.statemachine.implementation.prover.ProverStateMachine as a reference.
+LOG 1438355471278 [L3]: Completed automatic consistency testing on org.ggp.base.util.statemachine.implementation.propnet.ForwardInterruptingPropNetStateMachine, w/ 595 rounds: all tests pass!
+
+LOG 1438355471278 [L3]: Testing on game bomberman2p
+LOG 1438355471464 [L3]: Propnet creation done. It took 180ms.
+LOG 1438355471465 [L3]: Performing automatic consistency testing on org.ggp.base.util.statemachine.implementation.propnet.ForwardInterruptingPropNetStateMachine using org.ggp.base.util.statemachine.implementation.prover.ProverStateMachine as a reference.
+LOG 1438355481466 [L3]: Completed automatic consistency testing on org.ggp.base.util.statemachine.implementation.propnet.ForwardInterruptingPropNetStateMachine, w/ 477 rounds: all tests pass!
+
+LOG 1438355481467 [L3]: Testing on game quarto
+LOG 1438355488188 [L3]: Propnet creation done. It took 6716ms.
+LOG 1438355488236 [L3]: Performing automatic consistency testing on org.ggp.base.util.statemachine.implementation.propnet.ForwardInterruptingPropNetStateMachine using org.ggp.base.util.statemachine.implementation.prover.ProverStateMachine as a reference.
+LOG 1438355498242 [L3]: Completed automatic consistency testing on org.ggp.base.util.statemachine.implementation.propnet.ForwardInterruptingPropNetStateMachine, w/ 145 rounds: all tests pass!
+
+LOG 1438355498242 [L3]: Testing on game doubletoetictac
+LOG 1438355498283 [L3]: Propnet creation done. It took 38ms.
+LOG 1438355498286 [L3]: Performing automatic consistency testing on org.ggp.base.util.statemachine.implementation.propnet.ForwardInterruptingPropNetStateMachine using org.ggp.base.util.statemachine.implementation.prover.ProverStateMachine as a reference.
+LOG 1438355508288 [L3]: Completed automatic consistency testing on org.ggp.base.util.statemachine.implementation.propnet.ForwardInterruptingPropNetStateMachine, w/ 460 rounds: all tests pass!
+
+LOG 1438355508289 [L3]: Testing on game wargame03
+LOG 1438355517863 [L3]: Propnet creation done. It took 9568ms.
+LOG 1438355517878 [L3]: Performing automatic consistency testing on org.ggp.base.util.statemachine.implementation.propnet.ForwardInterruptingPropNetStateMachine using org.ggp.base.util.statemachine.implementation.prover.ProverStateMachine as a reference.
+LOG 1438355527880 [L3]: Completed automatic consistency testing on org.ggp.base.util.statemachine.implementation.propnet.ForwardInterruptingPropNetStateMachine, w/ 389 rounds: all tests pass!
+
+LOG 1438355527880 [L3]: Testing on game kitten_escapes_from_fire
+LOG 1438355527962 [L3]: Propnet creation done. It took 79ms.
+LOG 1438355527965 [L3]: Performing automatic consistency testing on org.ggp.base.util.statemachine.implementation.propnet.ForwardInterruptingPropNetStateMachine using org.ggp.base.util.statemachine.implementation.prover.ProverStateMachine as a reference.
+LOG 1438355537966 [L3]: Completed automatic consistency testing on org.ggp.base.util.statemachine.implementation.propnet.ForwardInterruptingPropNetStateMachine, w/ 1431 rounds: all tests pass!
+
+LOG 1438355537967 [L3]: Testing on game wargame01
+LOG 1438355547339 [L3]: Propnet creation done. It took 9366ms.
+LOG 1438355547347 [L3]: Performing automatic consistency testing on org.ggp.base.util.statemachine.implementation.propnet.ForwardInterruptingPropNetStateMachine using org.ggp.base.util.statemachine.implementation.prover.ProverStateMachine as a reference.
+LOG 1438355557349 [L3]: Completed automatic consistency testing on org.ggp.base.util.statemachine.implementation.propnet.ForwardInterruptingPropNetStateMachine, w/ 297 rounds: all tests pass!
+
+LOG 1438355557350 [L3]: Testing on game sudokuGrade6H
+LOG 1438355557713 [L3]: Propnet creation done. It took 359ms.
+LOG 1438355557741 [L3]: Performing automatic consistency testing on org.ggp.base.util.statemachine.implementation.propnet.ForwardInterruptingPropNetStateMachine using org.ggp.base.util.statemachine.implementation.prover.ProverStateMachine as a reference.
+LOG 1438355567862 [L3]: Completed automatic consistency testing on org.ggp.base.util.statemachine.implementation.propnet.ForwardInterruptingPropNetStateMachine, w/ 2 rounds: all tests pass!
+
+LOG 1438355567862 [L3]: Testing on game hanoi
+LOG 1438355567928 [L3]: Propnet creation done. It took 62ms.
+LOG 1438355567929 [L3]: Performing automatic consistency testing on org.ggp.base.util.statemachine.implementation.propnet.ForwardInterruptingPropNetStateMachine using org.ggp.base.util.statemachine.implementation.prover.ProverStateMachine as a reference.
+LOG 1438355577930 [L3]: Completed automatic consistency testing on org.ggp.base.util.statemachine.implementation.propnet.ForwardInterruptingPropNetStateMachine, w/ 895 rounds: all tests pass!
+
+LOG 1438355577930 [L3]: Testing on game sheepAndWolf
+LOG 1438355579013 [L3]: Propnet creation done. It took 1077ms.
+LOG 1438355579024 [L3]: Performing automatic consistency testing on org.ggp.base.util.statemachine.implementation.propnet.ForwardInterruptingPropNetStateMachine using org.ggp.base.util.statemachine.implementation.prover.ProverStateMachine as a reference.
+LOG 1438355589028 [L3]: Completed automatic consistency testing on org.ggp.base.util.statemachine.implementation.propnet.ForwardInterruptingPropNetStateMachine, w/ 64 rounds: all tests pass!
+
+LOG 1438355589029 [L3]: Testing on game mummyMaze2p_2007
+LOG 1438355589765 [L3]: Propnet creation done. It took 731ms.
+LOG 1438355589791 [L3]: Performing automatic consistency testing on org.ggp.base.util.statemachine.implementation.propnet.ForwardInterruptingPropNetStateMachine using org.ggp.base.util.statemachine.implementation.prover.ProverStateMachine as a reference.
+LOG 1438355599792 [L3]: Completed automatic consistency testing on org.ggp.base.util.statemachine.implementation.propnet.ForwardInterruptingPropNetStateMachine, w/ 94 rounds: all tests pass!
+
+LOG 1438355599792 [L3]: Testing on game snake_2009_big
+LOG 1438355600054 [L3]: Propnet creation done. It took 255ms.
+LOG 1438355600059 [L3]: Performing automatic consistency testing on org.ggp.base.util.statemachine.implementation.propnet.ForwardInterruptingPropNetStateMachine using org.ggp.base.util.statemachine.implementation.prover.ProverStateMachine as a reference.
+LOG 1438355610061 [L3]: Completed automatic consistency testing on org.ggp.base.util.statemachine.implementation.propnet.ForwardInterruptingPropNetStateMachine, w/ 62 rounds: all tests pass!
+
+LOG 1438355610061 [L3]: Testing on game ticTacToeLargeSuicide
+LOG 1438355610099 [L3]: Propnet creation done. It took 35ms.
+LOG 1438355610100 [L3]: Performing automatic consistency testing on org.ggp.base.util.statemachine.implementation.propnet.ForwardInterruptingPropNetStateMachine using org.ggp.base.util.statemachine.implementation.prover.ProverStateMachine as a reference.
+LOG 1438355620101 [L3]: Completed automatic consistency testing on org.ggp.base.util.statemachine.implementation.propnet.ForwardInterruptingPropNetStateMachine, w/ 202 rounds: all tests pass!
+
+LOG 1438355620101 [L3]: Testing on game gt_staghunt
+LOG 1438355620178 [L3]: Propnet creation done. It took 74ms.
+LOG 1438355620180 [L3]: Performing automatic consistency testing on org.ggp.base.util.statemachine.implementation.propnet.ForwardInterruptingPropNetStateMachine using org.ggp.base.util.statemachine.implementation.prover.ProverStateMachine as a reference.
+LOG 1438355630181 [L3]: Completed automatic consistency testing on org.ggp.base.util.statemachine.implementation.propnet.ForwardInterruptingPropNetStateMachine, w/ 1084 rounds: all tests pass!
+
+LOG 1438355630181 [L3]: Testing on game survival
+LOG 1438355630188 [L3]: Propnet creation done. It took 5ms.
+LOG 1438355630188 [L3]: Performing automatic consistency testing on org.ggp.base.util.statemachine.implementation.propnet.ForwardInterruptingPropNetStateMachine using org.ggp.base.util.statemachine.implementation.prover.ProverStateMachine as a reference.
+LOG 1438355640189 [L3]: Completed automatic consistency testing on org.ggp.base.util.statemachine.implementation.propnet.ForwardInterruptingPropNetStateMachine, w/ 64031 rounds: all tests pass!
+
+LOG 1438355640189 [L3]: Testing on game ticblock
+LOG 1438355640271 [L3]: Propnet creation done. It took 78ms.
+LOG 1438355640272 [L3]: Performing automatic consistency testing on org.ggp.base.util.statemachine.implementation.propnet.ForwardInterruptingPropNetStateMachine using org.ggp.base.util.statemachine.implementation.prover.ProverStateMachine as a reference.
+LOG 1438355650273 [L3]: Completed automatic consistency testing on org.ggp.base.util.statemachine.implementation.propnet.ForwardInterruptingPropNetStateMachine, w/ 309 rounds: all tests pass!
+
+LOG 1438355650274 [L3]: Testing on game colonelBlottoVariant2
+LOG 1438355652389 [L3]: Propnet creation done. It took 2112ms.
+LOG 1438355652397 [L3]: Performing automatic consistency testing on org.ggp.base.util.statemachine.implementation.propnet.ForwardInterruptingPropNetStateMachine using org.ggp.base.util.statemachine.implementation.prover.ProverStateMachine as a reference.
+LOG 1438355662416 [L3]: Completed automatic consistency testing on org.ggp.base.util.statemachine.implementation.propnet.ForwardInterruptingPropNetStateMachine, w/ 2736 rounds: all tests pass!
+
+LOG 1438355662417 [L3]: Testing on game sudokuGrade1
+LOG 1438355662772 [L3]: Propnet creation done. It took 351ms.
+LOG 1438355662780 [L3]: Performing automatic consistency testing on org.ggp.base.util.statemachine.implementation.propnet.ForwardInterruptingPropNetStateMachine using org.ggp.base.util.statemachine.implementation.prover.ProverStateMachine as a reference.
+LOG 1438355672825 [L3]: Completed automatic consistency testing on org.ggp.base.util.statemachine.implementation.propnet.ForwardInterruptingPropNetStateMachine, w/ 3 rounds: all tests pass!
+
+LOG 1438355672825 [L3]: Testing on game sudokuGrade2
+LOG 1438355673185 [L3]: Propnet creation done. It took 355ms.
+LOG 1438355673192 [L3]: Performing automatic consistency testing on org.ggp.base.util.statemachine.implementation.propnet.ForwardInterruptingPropNetStateMachine using org.ggp.base.util.statemachine.implementation.prover.ProverStateMachine as a reference.
+LOG 1438355683313 [L3]: Completed automatic consistency testing on org.ggp.base.util.statemachine.implementation.propnet.ForwardInterruptingPropNetStateMachine, w/ 2 rounds: all tests pass!
+
+LOG 1438355683313 [L3]: Testing on game sudokuGrade3
+LOG 1438355683666 [L3]: Propnet creation done. It took 349ms.
+LOG 1438355683674 [L3]: Performing automatic consistency testing on org.ggp.base.util.statemachine.implementation.propnet.ForwardInterruptingPropNetStateMachine using org.ggp.base.util.statemachine.implementation.prover.ProverStateMachine as a reference.
+LOG 1438355693773 [L3]: Completed automatic consistency testing on org.ggp.base.util.statemachine.implementation.propnet.ForwardInterruptingPropNetStateMachine, w/ 2 rounds: all tests pass!
+
+LOG 1438355693773 [L3]: Testing on game god
+LOG 1438355993777 [L3]: Propnet creation interrupted. Taking too long!
+LOG 1438355993778 [L9]: <ERR> java.lang.InterruptedException
+	at org.ggp.base.util.concurrency.ConcurrencyUtils.checkForInterruption(ConcurrencyUtils.java:9)
+	at org.ggp.base.util.propnet.factory.ForwardInterruptingPropNetFactory.addSentenceForm(ForwardInterruptingPropNetFactory.java:913)
+	at org.ggp.base.util.propnet.factory.ForwardInterruptingPropNetFactory.create(ForwardInterruptingPropNetFactory.java:212)
+	at org.ggp.base.util.propnet.factory.ForwardInterruptingPropNetFactory.create(ForwardInterruptingPropNetFactory.java:113)
+	at org.ggp.base.util.propnet.factory.ForwardInterruptingPropNetCreator.run(ForwardInterruptingPropNetCreator.java:46)
+LOG 1438355993778 [L3]: No propnet available. Impossible to test this game.
+
+LOG 1438355993779 [L3]: Testing on game duplicateStateLarge
+LOG 1438355993891 [L3]: Propnet creation done. It took 83ms.
+LOG 1438355993892 [L3]: Performing automatic consistency testing on org.ggp.base.util.statemachine.implementation.propnet.ForwardInterruptingPropNetStateMachine using org.ggp.base.util.statemachine.implementation.prover.ProverStateMachine as a reference.
+LOG 1438356018491 [L3]: Completed automatic consistency testing on org.ggp.base.util.statemachine.implementation.propnet.ForwardInterruptingPropNetStateMachine, w/ 360 rounds: all tests pass!
+
+LOG 1438356018492 [L3]: Testing on game sudokuGrade4
+LOG 1438356018848 [L3]: Propnet creation done. It took 352ms.
+LOG 1438356018856 [L3]: Performing automatic consistency testing on org.ggp.base.util.statemachine.implementation.propnet.ForwardInterruptingPropNetStateMachine using org.ggp.base.util.statemachine.implementation.prover.ProverStateMachine as a reference.
+LOG 1438356028969 [L3]: Completed automatic consistency testing on org.ggp.base.util.statemachine.implementation.propnet.ForwardInterruptingPropNetStateMachine, w/ 2 rounds: all tests pass!
+
+LOG 1438356028970 [L3]: Testing on game snakeAssemblit
+LOG 1438356031352 [L3]: Propnet creation done. It took 2375ms.
+LOG 1438356031416 [L3]: Performing automatic consistency testing on org.ggp.base.util.statemachine.implementation.propnet.ForwardInterruptingPropNetStateMachine using org.ggp.base.util.statemachine.implementation.prover.ProverStateMachine as a reference.
+LOG 1438356041423 [L3]: Completed automatic consistency testing on org.ggp.base.util.statemachine.implementation.propnet.ForwardInterruptingPropNetStateMachine, w/ 72 rounds: all tests pass!
+
+LOG 1438356041423 [L3]: Testing on game sudokuGrade5
+LOG 1438356041780 [L3]: Propnet creation done. It took 352ms.
+LOG 1438356041817 [L3]: Performing automatic consistency testing on org.ggp.base.util.statemachine.implementation.propnet.ForwardInterruptingPropNetStateMachine using org.ggp.base.util.statemachine.implementation.prover.ProverStateMachine as a reference.
+LOG 1438356051892 [L3]: Completed automatic consistency testing on org.ggp.base.util.statemachine.implementation.propnet.ForwardInterruptingPropNetStateMachine, w/ 2 rounds: all tests pass!
+
+LOG 1438356051893 [L3]: Testing on game racer4
+LOG 1438356091094 [L3]: Propnet creation done. It took 39194ms.
+LOG 1438356092388 [L3]: Performing automatic consistency testing on org.ggp.base.util.statemachine.implementation.propnet.ForwardInterruptingPropNetStateMachine using org.ggp.base.util.statemachine.implementation.prover.ProverStateMachine as a reference.
+LOG 1438356102413 [L3]: Completed automatic consistency testing on org.ggp.base.util.statemachine.implementation.propnet.ForwardInterruptingPropNetStateMachine, w/ 13 rounds: all tests pass!
+
+LOG 1438356102414 [L3]: Testing on game gt_attrition
+LOG 1438356107127 [L3]: Propnet creation done. It took 4710ms.
+LOG 1438356107154 [L3]: Performing automatic consistency testing on org.ggp.base.util.statemachine.implementation.propnet.ForwardInterruptingPropNetStateMachine using org.ggp.base.util.statemachine.implementation.prover.ProverStateMachine as a reference.
+LOG 1438356117155 [L3]: Completed automatic consistency testing on org.ggp.base.util.statemachine.implementation.propnet.ForwardInterruptingPropNetStateMachine, w/ 52 rounds: all tests pass!
+
+LOG 1438356117156 [L3]: Testing on game knightazons
+LOG 1438356215057 [L3]: Propnet creation done. It took 97898ms.
+LOG 1438356216070 [L3]: Performing automatic consistency testing on org.ggp.base.util.statemachine.implementation.propnet.ForwardInterruptingPropNetStateMachine using org.ggp.base.util.statemachine.implementation.prover.ProverStateMachine as a reference.
+LOG 1438356226176 [L3]: Completed automatic consistency testing on org.ggp.base.util.statemachine.implementation.propnet.ForwardInterruptingPropNetStateMachine, w/ 1 rounds: all tests pass!
+
+LOG 1438356226177 [L3]: Testing on game sum15
+LOG 1438356226202 [L3]: Propnet creation done. It took 23ms.
+LOG 1438356226203 [L3]: Performing automatic consistency testing on org.ggp.base.util.statemachine.implementation.propnet.ForwardInterruptingPropNetStateMachine using org.ggp.base.util.statemachine.implementation.prover.ProverStateMachine as a reference.
+LOG 1438356236212 [L3]: Completed automatic consistency testing on org.ggp.base.util.statemachine.implementation.propnet.ForwardInterruptingPropNetStateMachine, w/ 1901 rounds: all tests pass!
+
+LOG 1438356236212 [L3]: Testing on game gt_ultimatum
+LOG 1438356236817 [L3]: Propnet creation done. It took 601ms.
+LOG 1438356236822 [L3]: Performing automatic consistency testing on org.ggp.base.util.statemachine.implementation.propnet.ForwardInterruptingPropNetStateMachine using org.ggp.base.util.statemachine.implementation.prover.ProverStateMachine as a reference.
+LOG 1438356246823 [L3]: Completed automatic consistency testing on org.ggp.base.util.statemachine.implementation.propnet.ForwardInterruptingPropNetStateMachine, w/ 752 rounds: all tests pass!
+
+LOG 1438356246823 [L3]: Testing on game tttcc4
+LOG 1438356264281 [L3]: Propnet creation done. It took 17451ms.
+LOG 1438356264433 [L3]: Performing automatic consistency testing on org.ggp.base.util.statemachine.implementation.propnet.ForwardInterruptingPropNetStateMachine using org.ggp.base.util.statemachine.implementation.prover.ProverStateMachine as a reference.
+LOG 1438356274453 [L3]: Completed automatic consistency testing on org.ggp.base.util.statemachine.implementation.propnet.ForwardInterruptingPropNetStateMachine, w/ 9 rounds: all tests pass!
+
+LOG 1438356274454 [L3]: Testing on game dotsAndBoxes
+LOG 1438356274668 [L3]: Propnet creation done. It took 210ms.
+LOG 1438356274670 [L3]: Performing automatic consistency testing on org.ggp.base.util.statemachine.implementation.propnet.ForwardInterruptingPropNetStateMachine using org.ggp.base.util.statemachine.implementation.prover.ProverStateMachine as a reference.
+LOG 1438356284677 [L3]: Completed automatic consistency testing on org.ggp.base.util.statemachine.implementation.propnet.ForwardInterruptingPropNetStateMachine, w/ 31 rounds: all tests pass!
+
+LOG 1438356284677 [L3]: Testing on game quad_5x5
+LOG 1438356287633 [L3]: Propnet creation done. It took 2951ms.
+LOG 1438356287634 [L3]: Performing automatic consistency testing on org.ggp.base.util.statemachine.implementation.propnet.ForwardInterruptingPropNetStateMachine using org.ggp.base.util.statemachine.implementation.prover.ProverStateMachine as a reference.
+LOG 1438356297750 [L3]: Completed automatic consistency testing on org.ggp.base.util.statemachine.implementation.propnet.ForwardInterruptingPropNetStateMachine, w/ 7 rounds: all tests pass!
+
+LOG 1438356297750 [L3]: Testing on game 3pttc
+LOG 1438356298367 [L3]: Propnet creation done. It took 613ms.
+LOG 1438356298373 [L3]: Performing automatic consistency testing on org.ggp.base.util.statemachine.implementation.propnet.ForwardInterruptingPropNetStateMachine using org.ggp.base.util.statemachine.implementation.prover.ProverStateMachine as a reference.
+LOG 1438356308374 [L3]: Completed automatic consistency testing on org.ggp.base.util.statemachine.implementation.propnet.ForwardInterruptingPropNetStateMachine, w/ 117 rounds: all tests pass!
+
+LOG 1438356308375 [L3]: Testing on game knightThrough
+LOG 1438356312377 [L3]: Propnet creation done. It took 3999ms.
+LOG 1438356312396 [L3]: Performing automatic consistency testing on org.ggp.base.util.statemachine.implementation.propnet.ForwardInterruptingPropNetStateMachine using org.ggp.base.util.statemachine.implementation.prover.ProverStateMachine as a reference.
+LOG 1438356322399 [L3]: Completed automatic consistency testing on org.ggp.base.util.statemachine.implementation.propnet.ForwardInterruptingPropNetStateMachine, w/ 76 rounds: all tests pass!
+
+LOG 1438356322400 [L3]: Testing on game blocksWorldParallel
+LOG 1438356322538 [L3]: Propnet creation done. It took 134ms.
+LOG 1438356322540 [L3]: Performing automatic consistency testing on org.ggp.base.util.statemachine.implementation.propnet.ForwardInterruptingPropNetStateMachine using org.ggp.base.util.statemachine.implementation.prover.ProverStateMachine as a reference.
+LOG 1438356332543 [L3]: Completed automatic consistency testing on org.ggp.base.util.statemachine.implementation.propnet.ForwardInterruptingPropNetStateMachine, w/ 761 rounds: all tests pass!
+
+LOG 1438356332543 [L3]: Testing on game kalaha5x2x3
+LOG 1438356333385 [L3]: Propnet creation done. It took 836ms.
+LOG 1438356333399 [L3]: Performing automatic consistency testing on org.ggp.base.util.statemachine.implementation.propnet.ForwardInterruptingPropNetStateMachine using org.ggp.base.util.statemachine.implementation.prover.ProverStateMachine as a reference.
+LOG 1438356343400 [L3]: Completed automatic consistency testing on org.ggp.base.util.statemachine.implementation.propnet.ForwardInterruptingPropNetStateMachine, w/ 62 rounds: all tests pass!
+
+LOG 1438356343400 [L3]: Testing on game pancakes
+LOG 1438356343733 [L3]: Propnet creation done. It took 329ms.
+LOG 1438356343737 [L3]: Performing automatic consistency testing on org.ggp.base.util.statemachine.implementation.propnet.ForwardInterruptingPropNetStateMachine using org.ggp.base.util.statemachine.implementation.prover.ProverStateMachine as a reference.
+LOG 1438356353738 [L3]: Completed automatic consistency testing on org.ggp.base.util.statemachine.implementation.propnet.ForwardInterruptingPropNetStateMachine, w/ 570 rounds: all tests pass!
+
+LOG 1438356353738 [L3]: Testing on game breakthroughWalls
+LOG 1438356354400 [L3]: Propnet creation done. It took 658ms.
+LOG 1438356354407 [L3]: Performing automatic consistency testing on org.ggp.base.util.statemachine.implementation.propnet.ForwardInterruptingPropNetStateMachine using org.ggp.base.util.statemachine.implementation.prover.ProverStateMachine as a reference.
+LOG 1438356364410 [L3]: Completed automatic consistency testing on org.ggp.base.util.statemachine.implementation.propnet.ForwardInterruptingPropNetStateMachine, w/ 24 rounds: all tests pass!
+
+LOG 1438356364411 [L3]: Testing on game kalaha6x2x4
+LOG 1438356366232 [L3]: Propnet creation done. It took 1816ms.
+LOG 1438356366259 [L3]: Performing automatic consistency testing on org.ggp.base.util.statemachine.implementation.propnet.ForwardInterruptingPropNetStateMachine using org.ggp.base.util.statemachine.implementation.prover.ProverStateMachine as a reference.
+LOG 1438356376260 [L3]: Completed automatic consistency testing on org.ggp.base.util.statemachine.implementation.propnet.ForwardInterruptingPropNetStateMachine, w/ 26 rounds: all tests pass!
+
+LOG 1438356376261 [L3]: Testing on game roshambo2
+LOG 1438356376300 [L3]: Propnet creation done. It took 37ms.
+LOG 1438356376301 [L3]: Performing automatic consistency testing on org.ggp.base.util.statemachine.implementation.propnet.ForwardInterruptingPropNetStateMachine using org.ggp.base.util.statemachine.implementation.prover.ProverStateMachine as a reference.
+LOG 1438356386302 [L3]: Completed automatic consistency testing on org.ggp.base.util.statemachine.implementation.propnet.ForwardInterruptingPropNetStateMachine, w/ 5315 rounds: all tests pass!
+
+LOG 1438356386302 [L3]: Testing on game checkers-mustjump
+LOG 1438356398697 [L3]: Propnet creation done. It took 12381ms.
+LOG 1438356398773 [L3]: Performing automatic consistency testing on org.ggp.base.util.statemachine.implementation.propnet.ForwardInterruptingPropNetStateMachine using org.ggp.base.util.statemachine.implementation.prover.ProverStateMachine as a reference.
+LOG 1438356408787 [L3]: Completed automatic consistency testing on org.ggp.base.util.statemachine.implementation.propnet.ForwardInterruptingPropNetStateMachine, w/ 12 rounds: all tests pass!
+
+LOG 1438356408787 [L3]: Testing on game reversi
+LOG 1438356409889 [L3]: Propnet creation done. It took 1096ms.
+LOG 1438356409909 [L3]: Performing automatic consistency testing on org.ggp.base.util.statemachine.implementation.propnet.ForwardInterruptingPropNetStateMachine using org.ggp.base.util.statemachine.implementation.prover.ProverStateMachine as a reference.
+LOG 1438356419938 [L3]: Completed automatic consistency testing on org.ggp.base.util.statemachine.implementation.propnet.ForwardInterruptingPropNetStateMachine, w/ 2 rounds: all tests pass!
+
+LOG 1438356419939 [L3]: Testing on game cephalopodMicro
+LOG 1438356420801 [L3]: Propnet creation done. It took 854ms.
+LOG 1438356420807 [L3]: Performing automatic consistency testing on org.ggp.base.util.statemachine.implementation.propnet.ForwardInterruptingPropNetStateMachine using org.ggp.base.util.statemachine.implementation.prover.ProverStateMachine as a reference.
+LOG 1438356430842 [L3]: Completed automatic consistency testing on org.ggp.base.util.statemachine.implementation.propnet.ForwardInterruptingPropNetStateMachine, w/ 3 rounds: all tests pass!
+
+LOG 1438356430843 [L3]: Testing on game blockerParallel
+LOG 1438356430955 [L3]: Propnet creation done. It took 108ms.
+LOG 1438356430957 [L3]: Performing automatic consistency testing on org.ggp.base.util.statemachine.implementation.propnet.ForwardInterruptingPropNetStateMachine using org.ggp.base.util.statemachine.implementation.prover.ProverStateMachine as a reference.
+LOG 1438356440961 [L3]: Completed automatic consistency testing on org.ggp.base.util.statemachine.implementation.propnet.ForwardInterruptingPropNetStateMachine, w/ 364 rounds: all tests pass!
+
+LOG 1438356440961 [L3]: Testing on game chomp
+LOG 1438356441012 [L3]: Propnet creation done. It took 47ms.
+LOG 1438356441013 [L3]: Performing automatic consistency testing on org.ggp.base.util.statemachine.implementation.propnet.ForwardInterruptingPropNetStateMachine using org.ggp.base.util.statemachine.implementation.prover.ProverStateMachine as a reference.
+LOG 1438356451013 [L3]: Completed automatic consistency testing on org.ggp.base.util.statemachine.implementation.propnet.ForwardInterruptingPropNetStateMachine, w/ 1279 rounds: all tests pass!
+
+LOG 1438356451014 [L3]: Testing on game buttons
+LOG 1438356451024 [L3]: Propnet creation done. It took 8ms.
+LOG 1438356451024 [L3]: Performing automatic consistency testing on org.ggp.base.util.statemachine.implementation.propnet.ForwardInterruptingPropNetStateMachine using org.ggp.base.util.statemachine.implementation.prover.ProverStateMachine as a reference.
+LOG 1438356461025 [L3]: Completed automatic consistency testing on org.ggp.base.util.statemachine.implementation.propnet.ForwardInterruptingPropNetStateMachine, w/ 12553 rounds: all tests pass!
+
+LOG 1438356461025 [L3]: Testing on game blocks
+LOG 1438356461046 [L3]: Propnet creation done. It took 19ms.
+LOG 1438356461047 [L3]: Performing automatic consistency testing on org.ggp.base.util.statemachine.implementation.propnet.ForwardInterruptingPropNetStateMachine using org.ggp.base.util.statemachine.implementation.prover.ProverStateMachine as a reference.
+LOG 1438356471048 [L3]: Completed automatic consistency testing on org.ggp.base.util.statemachine.implementation.propnet.ForwardInterruptingPropNetStateMachine, w/ 10325 rounds: all tests pass!
+
+LOG 1438356471048 [L3]: Testing on game quartoSuicide
+LOG 1438356477448 [L3]: Propnet creation done. It took 6396ms.
+LOG 1438356477498 [L3]: Performing automatic consistency testing on org.ggp.base.util.statemachine.implementation.propnet.ForwardInterruptingPropNetStateMachine using org.ggp.base.util.statemachine.implementation.prover.ProverStateMachine as a reference.
+LOG 1438356487502 [L3]: Completed automatic consistency testing on org.ggp.base.util.statemachine.implementation.propnet.ForwardInterruptingPropNetStateMachine, w/ 133 rounds: all tests pass!
+
+LOG 1438356487502 [L3]: Testing on game breakthrough
+LOG 1438356487991 [L3]: Propnet creation done. It took 486ms.
+LOG 1438356487999 [L3]: Performing automatic consistency testing on org.ggp.base.util.statemachine.implementation.propnet.ForwardInterruptingPropNetStateMachine using org.ggp.base.util.statemachine.implementation.prover.ProverStateMachine as a reference.
+LOG 1438356498000 [L3]: Completed automatic consistency testing on org.ggp.base.util.statemachine.implementation.propnet.ForwardInterruptingPropNetStateMachine, w/ 24 rounds: all tests pass!
+
+LOG 1438356498000 [L3]: Testing on game ruleDepthLinear
+LOG 1438356498097 [L3]: Propnet creation done. It took 87ms.
+LOG 1438356498098 [L3]: Performing automatic consistency testing on org.ggp.base.util.statemachine.implementation.propnet.ForwardInterruptingPropNetStateMachine using org.ggp.base.util.statemachine.implementation.prover.ProverStateMachine as a reference.
+LOG 1438356508099 [L3]: Completed automatic consistency testing on org.ggp.base.util.statemachine.implementation.propnet.ForwardInterruptingPropNetStateMachine, w/ 37308 rounds: all tests pass!
+
+LOG 1438356508099 [L3]: Testing on game nineBoardTicTacToePie
+LOG 1438356508216 [L3]: Propnet creation done. It took 113ms.
+LOG 1438356508218 [L3]: Performing automatic consistency testing on org.ggp.base.util.statemachine.implementation.propnet.ForwardInterruptingPropNetStateMachine using org.ggp.base.util.statemachine.implementation.prover.ProverStateMachine as a reference.
+LOG 1438356518223 [L3]: Completed automatic consistency testing on org.ggp.base.util.statemachine.implementation.propnet.ForwardInterruptingPropNetStateMachine, w/ 51 rounds: all tests pass!
+
+LOG 1438356518223 [L3]: Testing on game quad
+LOG 1438356522339 [L3]: Propnet creation done. It took 4111ms.
+LOG 1438356522365 [L3]: Performing automatic consistency testing on org.ggp.base.util.statemachine.implementation.propnet.ForwardInterruptingPropNetStateMachine using org.ggp.base.util.statemachine.implementation.prover.ProverStateMachine as a reference.
+LOG 1438356535776 [L3]: Completed automatic consistency testing on org.ggp.base.util.statemachine.implementation.propnet.ForwardInterruptingPropNetStateMachine, w/ 1 rounds: all tests pass!
+
+LOG 1438356535776 [L3]: Testing on game amazonsSuicide
+LOG 1438356835780 [L3]: Propnet creation interrupted. Taking too long!
+LOG 1438356835782 [L9]: <ERR> java.lang.InterruptedException
+	at org.ggp.base.util.concurrency.ConcurrencyUtils.checkForInterruption(ConcurrencyUtils.java:9)
+	at org.ggp.base.util.propnet.factory.ForwardInterruptingPropNetFactory.addSentenceForm(ForwardInterruptingPropNetFactory.java:913)
+	at org.ggp.base.util.propnet.factory.ForwardInterruptingPropNetFactory.create(ForwardInterruptingPropNetFactory.java:212)
+	at org.ggp.base.util.propnet.factory.ForwardInterruptingPropNetFactory.create(ForwardInterruptingPropNetFactory.java:113)
+	at org.ggp.base.util.propnet.factory.ForwardInterruptingPropNetCreator.run(ForwardInterruptingPropNetCreator.java:46)
+LOG 1438356835782 [L3]: No propnet available. Impossible to test this game.
+
+LOG 1438356835782 [L3]: Testing on game gt_dollar
+LOG 1438356835820 [L3]: Propnet creation done. It took 35ms.
+LOG 1438356835820 [L3]: Performing automatic consistency testing on org.ggp.base.util.statemachine.implementation.propnet.ForwardInterruptingPropNetStateMachine using org.ggp.base.util.statemachine.implementation.prover.ProverStateMachine as a reference.
+LOG 1438356845821 [L3]: Completed automatic consistency testing on org.ggp.base.util.statemachine.implementation.propnet.ForwardInterruptingPropNetStateMachine, w/ 11667 rounds: all tests pass!
+
+LOG 1438356845821 [L3]: Testing on game guess
+LOG 1438356846166 [L3]: Propnet creation done. It took 341ms.
+LOG 1438356846170 [L3]: Performing automatic consistency testing on org.ggp.base.util.statemachine.implementation.propnet.ForwardInterruptingPropNetStateMachine using org.ggp.base.util.statemachine.implementation.prover.ProverStateMachine as a reference.
+LOG 1438356856174 [L3]: Completed automatic consistency testing on org.ggp.base.util.statemachine.implementation.propnet.ForwardInterruptingPropNetStateMachine, w/ 275 rounds: all tests pass!
+
+LOG 1438356856175 [L3]: Testing on game nineBoardTicTacToe
+LOG 1438356856269 [L3]: Propnet creation done. It took 91ms.
+LOG 1438356856271 [L3]: Performing automatic consistency testing on org.ggp.base.util.statemachine.implementation.propnet.ForwardInterruptingPropNetStateMachine using org.ggp.base.util.statemachine.implementation.prover.ProverStateMachine as a reference.
+LOG 1438356866272 [L3]: Completed automatic consistency testing on org.ggp.base.util.statemachine.implementation.propnet.ForwardInterruptingPropNetStateMachine, w/ 51 rounds: all tests pass!
+
+LOG 1438356866273 [L3]: Testing on game lightsOnSimultaneous
+LOG 1438356866307 [L3]: Propnet creation done. It took 32ms.
+LOG 1438356866308 [L3]: Performing automatic consistency testing on org.ggp.base.util.statemachine.implementation.propnet.ForwardInterruptingPropNetStateMachine using org.ggp.base.util.statemachine.implementation.prover.ProverStateMachine as a reference.
+LOG 1438356876310 [L3]: Completed automatic consistency testing on org.ggp.base.util.statemachine.implementation.propnet.ForwardInterruptingPropNetStateMachine, w/ 374 rounds: all tests pass!
+
+LOG 1438356876311 [L3]: Testing on game tron_10x10
+LOG 1438356876414 [L3]: Propnet creation done. It took 101ms.
+LOG 1438356876417 [L3]: Performing automatic consistency testing on org.ggp.base.util.statemachine.implementation.propnet.ForwardInterruptingPropNetStateMachine using org.ggp.base.util.statemachine.implementation.prover.ProverStateMachine as a reference.
+LOG 1438356886418 [L3]: Completed automatic consistency testing on org.ggp.base.util.statemachine.implementation.propnet.ForwardInterruptingPropNetStateMachine, w/ 2547 rounds: all tests pass!
+
+LOG 1438356886419 [L3]: Testing on game ticTacToeParallel
+LOG 1438356886520 [L3]: Propnet creation done. It took 96ms.
+LOG 1438356886521 [L3]: Performing automatic consistency testing on org.ggp.base.util.statemachine.implementation.propnet.ForwardInterruptingPropNetStateMachine using org.ggp.base.util.statemachine.implementation.prover.ProverStateMachine as a reference.
+LOG 1438356896523 [L3]: Completed automatic consistency testing on org.ggp.base.util.statemachine.implementation.propnet.ForwardInterruptingPropNetStateMachine, w/ 675 rounds: all tests pass!
+
+LOG 1438356896523 [L3]: Testing on game speedChess
+LOG 1438356899933 [L3]: Propnet creation done. It took 3391ms.
+LOG 1438356899980 [L3]: Performing automatic consistency testing on org.ggp.base.util.statemachine.implementation.propnet.ForwardInterruptingPropNetStateMachine using org.ggp.base.util.statemachine.implementation.prover.ProverStateMachine as a reference.
+LOG 1438356910004 [L3]: Completed automatic consistency testing on org.ggp.base.util.statemachine.implementation.propnet.ForwardInterruptingPropNetStateMachine, w/ 4 rounds: all tests pass!
+
+LOG 1438356910004 [L3]: Testing on game eotcatcit
+LOG 1438356910033 [L3]: Propnet creation done. It took 27ms.
+LOG 1438356910033 [L3]: Performing automatic consistency testing on org.ggp.base.util.statemachine.implementation.propnet.ForwardInterruptingPropNetStateMachine using org.ggp.base.util.statemachine.implementation.prover.ProverStateMachine as a reference.
+LOG 1438356920034 [L3]: Completed automatic consistency testing on org.ggp.base.util.statemachine.implementation.propnet.ForwardInterruptingPropNetStateMachine, w/ 1403 rounds: all tests pass!
+
+LOG 1438356920035 [L3]: Testing on game chickentictactoe
+LOG 1438356920074 [L3]: Propnet creation done. It took 37ms.
+LOG 1438356920075 [L3]: Performing automatic consistency testing on org.ggp.base.util.statemachine.implementation.propnet.ForwardInterruptingPropNetStateMachine using org.ggp.base.util.statemachine.implementation.prover.ProverStateMachine as a reference.
+LOG 1438356930076 [L3]: Completed automatic consistency testing on org.ggp.base.util.statemachine.implementation.propnet.ForwardInterruptingPropNetStateMachine, w/ 1473 rounds: all tests pass!
+
+LOG 1438356930076 [L3]: Testing on game max_knights
+LOG 1438356930219 [L3]: Propnet creation done. It took 138ms.
+LOG 1438356930221 [L3]: Performing automatic consistency testing on org.ggp.base.util.statemachine.implementation.propnet.ForwardInterruptingPropNetStateMachine using org.ggp.base.util.statemachine.implementation.prover.ProverStateMachine as a reference.
+LOG 1438356940223 [L3]: Completed automatic consistency testing on org.ggp.base.util.statemachine.implementation.propnet.ForwardInterruptingPropNetStateMachine, w/ 775 rounds: all tests pass!
+
+LOG 1438356940224 [L3]: Testing on game alexChess
+LOG 1438357240253 [L3]: Propnet creation interrupted. Taking too long!
+LOG 1438357240255 [L9]: <ERR> java.lang.InterruptedException
+	at org.ggp.base.util.concurrency.ConcurrencyUtils.checkForInterruption(ConcurrencyUtils.java:9)
+	at org.ggp.base.util.propnet.factory.ForwardInterruptingPropNetFactory.addSentenceForm(ForwardInterruptingPropNetFactory.java:913)
+	at org.ggp.base.util.propnet.factory.ForwardInterruptingPropNetFactory.create(ForwardInterruptingPropNetFactory.java:212)
+	at org.ggp.base.util.propnet.factory.ForwardInterruptingPropNetFactory.create(ForwardInterruptingPropNetFactory.java:113)
+	at org.ggp.base.util.propnet.factory.ForwardInterruptingPropNetCreator.run(ForwardInterruptingPropNetCreator.java:46)
+LOG 1438357240255 [L3]: No propnet available. Impossible to test this game.
+
+LOG 1438357240255 [L3]: Testing on game gt_prisoner
+LOG 1438357240326 [L3]: Propnet creation done. It took 68ms.
+LOG 1438357240328 [L3]: Performing automatic consistency testing on org.ggp.base.util.statemachine.implementation.propnet.ForwardInterruptingPropNetStateMachine using org.ggp.base.util.statemachine.implementation.prover.ProverStateMachine as a reference.
+LOG 1438357250329 [L3]: Completed automatic consistency testing on org.ggp.base.util.statemachine.implementation.propnet.ForwardInterruptingPropNetStateMachine, w/ 986 rounds: all tests pass!
+
+LOG 1438357250329 [L3]: Testing on game pentagoSuicide
+LOG 1438357251162 [L3]: Propnet creation done. It took 826ms.
+LOG 1438357251164 [L3]: Performing automatic consistency testing on org.ggp.base.util.statemachine.implementation.propnet.ForwardInterruptingPropNetStateMachine using org.ggp.base.util.statemachine.implementation.prover.ProverStateMachine as a reference.
+LOG 1438357261165 [L3]: Completed automatic consistency testing on org.ggp.base.util.statemachine.implementation.propnet.ForwardInterruptingPropNetStateMachine, w/ 31 rounds: all tests pass!
+
+LOG 1438357261166 [L3]: Testing on game catcha_mouse
+LOG 1438357261267 [L3]: Propnet creation done. It took 96ms.
+LOG 1438357261270 [L3]: Performing automatic consistency testing on org.ggp.base.util.statemachine.implementation.propnet.ForwardInterruptingPropNetStateMachine using org.ggp.base.util.statemachine.implementation.prover.ProverStateMachine as a reference.
+LOG 1438357271271 [L3]: Completed automatic consistency testing on org.ggp.base.util.statemachine.implementation.propnet.ForwardInterruptingPropNetStateMachine, w/ 299 rounds: all tests pass!
+
+LOG 1438357271271 [L3]: Testing on game slidingpieces
+LOG 1438357271470 [L3]: Propnet creation done. It took 190ms.
+LOG 1438357271478 [L3]: Performing automatic consistency testing on org.ggp.base.util.statemachine.implementation.propnet.ForwardInterruptingPropNetStateMachine using org.ggp.base.util.statemachine.implementation.prover.ProverStateMachine as a reference.
+LOG 1438357281483 [L3]: Completed automatic consistency testing on org.ggp.base.util.statemachine.implementation.propnet.ForwardInterruptingPropNetStateMachine, w/ 13 rounds: all tests pass!
+
+LOG 1438357281483 [L3]: Testing on game gt_two_thirds_2p
+LOG 1438357316173 [L3]: Propnet creation done. It took 34684ms.
+LOG 1438357316189 [L3]: Performing automatic consistency testing on org.ggp.base.util.statemachine.implementation.propnet.ForwardInterruptingPropNetStateMachine using org.ggp.base.util.statemachine.implementation.prover.ProverStateMachine as a reference.
+LOG 1438357326190 [L3]: Completed automatic consistency testing on org.ggp.base.util.statemachine.implementation.propnet.ForwardInterruptingPropNetStateMachine, w/ 4473 rounds: all tests pass!
+
+LOG 1438357326190 [L3]: Testing on game checkersSmall
+LOG 1438357331381 [L3]: Propnet creation done. It took 5181ms.
+LOG 1438357331410 [L3]: Performing automatic consistency testing on org.ggp.base.util.statemachine.implementation.propnet.ForwardInterruptingPropNetStateMachine using org.ggp.base.util.statemachine.implementation.prover.ProverStateMachine as a reference.
+LOG 1438357341413 [L3]: Completed automatic consistency testing on org.ggp.base.util.statemachine.implementation.propnet.ForwardInterruptingPropNetStateMachine, w/ 14 rounds: all tests pass!
+
+LOG 1438357341414 [L3]: Testing on game checkersTiny
+LOG 1438357344420 [L3]: Propnet creation done. It took 2998ms.
+LOG 1438357344425 [L3]: Performing automatic consistency testing on org.ggp.base.util.statemachine.implementation.propnet.ForwardInterruptingPropNetStateMachine using org.ggp.base.util.statemachine.implementation.prover.ProverStateMachine as a reference.
+LOG 1438357354427 [L3]: Completed automatic consistency testing on org.ggp.base.util.statemachine.implementation.propnet.ForwardInterruptingPropNetStateMachine, w/ 29 rounds: all tests pass!
+
+LOG 1438357354428 [L3]: Testing on game aipsrovers01
+LOG 1438357354505 [L3]: Propnet creation done. It took 58ms.
+LOG 1438357354506 [L3]: Performing automatic consistency testing on org.ggp.base.util.statemachine.implementation.propnet.ForwardInterruptingPropNetStateMachine using org.ggp.base.util.statemachine.implementation.prover.ProverStateMachine as a reference.
+LOG 1438357364507 [L3]: Completed automatic consistency testing on org.ggp.base.util.statemachine.implementation.propnet.ForwardInterruptingPropNetStateMachine, w/ 339 rounds: all tests pass!
+
+LOG 1438357364507 [L3]: Testing on game amazons_8x8
+LOG 1438357366832 [L3]: Propnet creation done. It took 2322ms.
+LOG 1438357366851 [L3]: Performing automatic consistency testing on org.ggp.base.util.statemachine.implementation.propnet.ForwardInterruptingPropNetStateMachine using org.ggp.base.util.statemachine.implementation.prover.ProverStateMachine as a reference.
+LOG 1438357376854 [L3]: Completed automatic consistency testing on org.ggp.base.util.statemachine.implementation.propnet.ForwardInterruptingPropNetStateMachine, w/ 13 rounds: all tests pass!
+
+LOG 1438357376855 [L3]: Testing on game dotsAndBoxesSuicide
+LOG 1438357377056 [L3]: Propnet creation done. It took 198ms.
+LOG 1438357377057 [L3]: Performing automatic consistency testing on org.ggp.base.util.statemachine.implementation.propnet.ForwardInterruptingPropNetStateMachine using org.ggp.base.util.statemachine.implementation.prover.ProverStateMachine as a reference.
+LOG 1438357387063 [L3]: Completed automatic consistency testing on org.ggp.base.util.statemachine.implementation.propnet.ForwardInterruptingPropNetStateMachine, w/ 28 rounds: all tests pass!
+
+LOG 1438357387064 [L3]: Testing on game conn4
+LOG 1438357387154 [L3]: Propnet creation done. It took 86ms.
+LOG 1438357387156 [L3]: Performing automatic consistency testing on org.ggp.base.util.statemachine.implementation.propnet.ForwardInterruptingPropNetStateMachine using org.ggp.base.util.statemachine.implementation.prover.ProverStateMachine as a reference.
+LOG 1438357397157 [L3]: Completed automatic consistency testing on org.ggp.base.util.statemachine.implementation.propnet.ForwardInterruptingPropNetStateMachine, w/ 98 rounds: all tests pass!
+
+LOG 1438357397157 [L3]: Testing on game battle
+LOG 1438357398481 [L3]: Propnet creation done. It took 1316ms.
+LOG 1438357398521 [L3]: Performing automatic consistency testing on org.ggp.base.util.statemachine.implementation.propnet.ForwardInterruptingPropNetStateMachine using org.ggp.base.util.statemachine.implementation.prover.ProverStateMachine as a reference.
+LOG 1438357408542 [L3]: Completed automatic consistency testing on org.ggp.base.util.statemachine.implementation.propnet.ForwardInterruptingPropNetStateMachine, w/ 7 rounds: all tests pass!
+
+LOG 1438357408543 [L3]: Testing on game gt_centipede
+LOG 1438357408568 [L3]: Propnet creation done. It took 23ms.
+LOG 1438357408568 [L3]: Performing automatic consistency testing on org.ggp.base.util.statemachine.implementation.propnet.ForwardInterruptingPropNetStateMachine using org.ggp.base.util.statemachine.implementation.prover.ProverStateMachine as a reference.
+LOG 1438357418569 [L3]: Completed automatic consistency testing on org.ggp.base.util.statemachine.implementation.propnet.ForwardInterruptingPropNetStateMachine, w/ 16400 rounds: all tests pass!
+
+LOG 1438357418569 [L3]: Testing on game bunk_t
+LOG 1438357418603 [L3]: Propnet creation done. It took 30ms.
+LOG 1438357418604 [L3]: Performing automatic consistency testing on org.ggp.base.util.statemachine.implementation.propnet.ForwardInterruptingPropNetStateMachine using org.ggp.base.util.statemachine.implementation.prover.ProverStateMachine as a reference.
+LOG 1438357428605 [L3]: Completed automatic consistency testing on org.ggp.base.util.statemachine.implementation.propnet.ForwardInterruptingPropNetStateMachine, w/ 435 rounds: all tests pass!
+
+LOG 1438357428605 [L3]: Testing on game racer
+LOG 1438357449520 [L3]: Propnet creation done. It took 20910ms.
+LOG 1438357450272 [L3]: Performing automatic consistency testing on org.ggp.base.util.statemachine.implementation.propnet.ForwardInterruptingPropNetStateMachine using org.ggp.base.util.statemachine.implementation.prover.ProverStateMachine as a reference.
+LOG 1438357460316 [L3]: Completed automatic consistency testing on org.ggp.base.util.statemachine.implementation.propnet.ForwardInterruptingPropNetStateMachine, w/ 28 rounds: all tests pass!
+
+LOG 1438357460316 [L3]: Testing on game ghostMaze2p
+LOG 1438357460518 [L3]: Propnet creation done. It took 196ms.
+LOG 1438357460520 [L3]: Performing automatic consistency testing on org.ggp.base.util.statemachine.implementation.propnet.ForwardInterruptingPropNetStateMachine using org.ggp.base.util.statemachine.implementation.prover.ProverStateMachine as a reference.
+LOG 1438357470549 [L3]: Completed automatic consistency testing on org.ggp.base.util.statemachine.implementation.propnet.ForwardInterruptingPropNetStateMachine, w/ 157 rounds: all tests pass!
+
+LOG 1438357470550 [L3]: Testing on game skirmishFinal1
+LOG 1438357477381 [L3]: Propnet creation done. It took 6823ms.
+LOG 1438357477557 [L3]: Performing automatic consistency testing on org.ggp.base.util.statemachine.implementation.propnet.ForwardInterruptingPropNetStateMachine using org.ggp.base.util.statemachine.implementation.prover.ProverStateMachine as a reference.
+LOG 1438357487562 [L3]: Completed automatic consistency testing on org.ggp.base.util.statemachine.implementation.propnet.ForwardInterruptingPropNetStateMachine, w/ 4 rounds: all tests pass!
+
+LOG 1438357487563 [L3]: Testing on game gt_chicken
+LOG 1438357487641 [L3]: Propnet creation done. It took 75ms.
+LOG 1438357487642 [L3]: Performing automatic consistency testing on org.ggp.base.util.statemachine.implementation.propnet.ForwardInterruptingPropNetStateMachine using org.ggp.base.util.statemachine.implementation.prover.ProverStateMachine as a reference.
+LOG 1438357497643 [L3]: Completed automatic consistency testing on org.ggp.base.util.statemachine.implementation.propnet.ForwardInterruptingPropNetStateMachine, w/ 965 rounds: all tests pass!
+
+LOG 1438357497643 [L3]: Testing on game skirmishFinal2
+LOG 1438357504467 [L3]: Propnet creation done. It took 6818ms.
+LOG 1438357504620 [L3]: Performing automatic consistency testing on org.ggp.base.util.statemachine.implementation.propnet.ForwardInterruptingPropNetStateMachine using org.ggp.base.util.statemachine.implementation.prover.ProverStateMachine as a reference.
+LOG 1438357514630 [L3]: Completed automatic consistency testing on org.ggp.base.util.statemachine.implementation.propnet.ForwardInterruptingPropNetStateMachine, w/ 4 rounds: all tests pass!
+
+LOG 1438357514631 [L3]: Testing on game skirmishFinal3
+LOG 1438357521453 [L3]: Propnet creation done. It took 6817ms.
+LOG 1438357521608 [L3]: Performing automatic consistency testing on org.ggp.base.util.statemachine.implementation.propnet.ForwardInterruptingPropNetStateMachine using org.ggp.base.util.statemachine.implementation.prover.ProverStateMachine as a reference.
+LOG 1438357531631 [L3]: Completed automatic consistency testing on org.ggp.base.util.statemachine.implementation.propnet.ForwardInterruptingPropNetStateMachine, w/ 4 rounds: all tests pass!
+
+LOG 1438357531632 [L3]: Testing on game beatMania
+LOG 1438357531670 [L3]: Propnet creation done. It took 34ms.
+LOG 1438357531671 [L3]: Performing automatic consistency testing on org.ggp.base.util.statemachine.implementation.propnet.ForwardInterruptingPropNetStateMachine using org.ggp.base.util.statemachine.implementation.prover.ProverStateMachine as a reference.
+LOG 1438357541672 [L3]: Completed automatic consistency testing on org.ggp.base.util.statemachine.implementation.propnet.ForwardInterruptingPropNetStateMachine, w/ 397 rounds: all tests pass!
+
+LOG 1438357541672 [L3]: Testing on game snakeParallel
+LOG 1438357541732 [L3]: Propnet creation done. It took 56ms.
+LOG 1438357541733 [L3]: Performing automatic consistency testing on org.ggp.base.util.statemachine.implementation.propnet.ForwardInterruptingPropNetStateMachine using org.ggp.base.util.statemachine.implementation.prover.ProverStateMachine as a reference.
+LOG 1438357551734 [L3]: Completed automatic consistency testing on org.ggp.base.util.statemachine.implementation.propnet.ForwardInterruptingPropNetStateMachine, w/ 2536 rounds: all tests pass!
+
+LOG 1438357551734 [L3]: Testing on game maze
+LOG 1438357551748 [L3]: Propnet creation done. It took 12ms.
+LOG 1438357551748 [L3]: Performing automatic consistency testing on org.ggp.base.util.statemachine.implementation.propnet.ForwardInterruptingPropNetStateMachine using org.ggp.base.util.statemachine.implementation.prover.ProverStateMachine as a reference.
+LOG 1438357561749 [L3]: Completed automatic consistency testing on org.ggp.base.util.statemachine.implementation.propnet.ForwardInterruptingPropNetStateMachine, w/ 6865 rounds: all tests pass!
+
+LOG 1438357561749 [L3]: Testing on game pacman2p
+LOG 1438357564979 [L3]: Propnet creation done. It took 3221ms.
+LOG 1438357564994 [L3]: Performing automatic consistency testing on org.ggp.base.util.statemachine.implementation.propnet.ForwardInterruptingPropNetStateMachine using org.ggp.base.util.statemachine.implementation.prover.ProverStateMachine as a reference.
+LOG 1438357574995 [L3]: Completed automatic consistency testing on org.ggp.base.util.statemachine.implementation.propnet.ForwardInterruptingPropNetStateMachine, w/ 32 rounds: all tests pass!
+
+LOG 1438357574996 [L3]: Testing on game amazonsTorus_10x10
+LOG 1438357585173 [L3]: Propnet creation done. It took 10175ms.
+LOG 1438357585391 [L3]: Performing automatic consistency testing on org.ggp.base.util.statemachine.implementation.propnet.ForwardInterruptingPropNetStateMachine using org.ggp.base.util.statemachine.implementation.prover.ProverStateMachine as a reference.
+LOG 1438357595401 [L3]: Completed automatic consistency testing on org.ggp.base.util.statemachine.implementation.propnet.ForwardInterruptingPropNetStateMachine, w/ 3 rounds: all tests pass!
+
+LOG 1438357595402 [L3]: Testing on game skirmishNew
+LOG 1438357598976 [L3]: Propnet creation done. It took 3566ms.
+LOG 1438357599012 [L3]: Performing automatic consistency testing on org.ggp.base.util.statemachine.implementation.propnet.ForwardInterruptingPropNetStateMachine using org.ggp.base.util.statemachine.implementation.prover.ProverStateMachine as a reference.
+LOG 1438357609035 [L3]: Completed automatic consistency testing on org.ggp.base.util.statemachine.implementation.propnet.ForwardInterruptingPropNetStateMachine, w/ 5 rounds: all tests pass!
+
+LOG 1438357609035 [L3]: Testing on game gt_two_thirds_4p
+LOG 1438357824926 [L3]: Propnet creation done. It took 215873ms.
+LOG 1438357825093 [L3]: Performing automatic consistency testing on org.ggp.base.util.statemachine.implementation.propnet.ForwardInterruptingPropNetStateMachine using org.ggp.base.util.statemachine.implementation.prover.ProverStateMachine as a reference.
+LOG 1438357835095 [L3]: Completed automatic consistency testing on org.ggp.base.util.statemachine.implementation.propnet.ForwardInterruptingPropNetStateMachine, w/ 1275 rounds: all tests pass!
+
+LOG 1438357835095 [L3]: Testing on game brain_teaser_extended
+LOG 1438357835122 [L3]: Propnet creation done. It took 23ms.
+LOG 1438357835123 [L3]: Performing automatic consistency testing on org.ggp.base.util.statemachine.implementation.propnet.ForwardInterruptingPropNetStateMachine using org.ggp.base.util.statemachine.implementation.prover.ProverStateMachine as a reference.
+LOG 1438357845124 [L3]: Completed automatic consistency testing on org.ggp.base.util.statemachine.implementation.propnet.ForwardInterruptingPropNetStateMachine, w/ 959 rounds: all tests pass!
+
+LOG 1438357845124 [L3]: Testing on game slaughter
+LOG 1438358145141 [L3]: Propnet creation interrupted. Taking too long!
+LOG 1438358145143 [L9]: <ERR> java.lang.InterruptedException
+	at org.ggp.base.util.concurrency.ConcurrencyUtils.checkForInterruption(ConcurrencyUtils.java:9)
+	at org.ggp.base.util.propnet.factory.ForwardInterruptingPropNetFactory.optimizeAwayTrueAndFalse(ForwardInterruptingPropNetFactory.java:388)
+	at org.ggp.base.util.propnet.factory.ForwardInterruptingPropNetFactory.processTemporaryComponents(ForwardInterruptingPropNetFactory.java:373)
+	at org.ggp.base.util.propnet.factory.ForwardInterruptingPropNetFactory.create(ForwardInterruptingPropNetFactory.java:216)
+	at org.ggp.base.util.propnet.factory.ForwardInterruptingPropNetFactory.create(ForwardInterruptingPropNetFactory.java:113)
+	at org.ggp.base.util.propnet.factory.ForwardInterruptingPropNetCreator.run(ForwardInterruptingPropNetCreator.java:46)
+LOG 1438358145143 [L3]: No propnet available. Impossible to test this game.
+
+LOG 1438358145144 [L3]: Testing on game ticTacToe
+LOG 1438358145178 [L3]: Propnet creation done. It took 32ms.
+LOG 1438358145179 [L3]: Performing automatic consistency testing on org.ggp.base.util.statemachine.implementation.propnet.ForwardInterruptingPropNetStateMachine using org.ggp.base.util.statemachine.implementation.prover.ProverStateMachine as a reference.
+LOG 1438358155181 [L3]: Completed automatic consistency testing on org.ggp.base.util.statemachine.implementation.propnet.ForwardInterruptingPropNetStateMachine, w/ 1509 rounds: all tests pass!
+
+LOG 1438358155182 [L3]: Testing on game twisty-passages
+LOG 1438358155325 [L3]: Propnet creation done. It took 139ms.
+LOG 1438358155326 [L3]: Performing automatic consistency testing on org.ggp.base.util.statemachine.implementation.propnet.ForwardInterruptingPropNetStateMachine using org.ggp.base.util.statemachine.implementation.prover.ProverStateMachine as a reference.
+LOG 1438358165327 [L3]: Completed automatic consistency testing on org.ggp.base.util.statemachine.implementation.propnet.ForwardInterruptingPropNetStateMachine, w/ 71 rounds: all tests pass!
+
+LOG 1438358165327 [L3]: Testing on game ttcc4_2player
+LOG 1438358167028 [L3]: Propnet creation done. It took 1691ms.
+LOG 1438358167037 [L3]: Performing automatic consistency testing on org.ggp.base.util.statemachine.implementation.propnet.ForwardInterruptingPropNetStateMachine using org.ggp.base.util.statemachine.implementation.prover.ProverStateMachine as a reference.
+LOG 1438358177041 [L3]: Completed automatic consistency testing on org.ggp.base.util.statemachine.implementation.propnet.ForwardInterruptingPropNetStateMachine, w/ 46 rounds: all tests pass!
+
+LOG 1438358177042 [L3]: Testing on game snake_2008_tweaked
+LOG 1438358177245 [L3]: Propnet creation done. It took 200ms.
+LOG 1438358177249 [L3]: Performing automatic consistency testing on org.ggp.base.util.statemachine.implementation.propnet.ForwardInterruptingPropNetStateMachine using org.ggp.base.util.statemachine.implementation.prover.ProverStateMachine as a reference.
+LOG 1438358187250 [L3]: Completed automatic consistency testing on org.ggp.base.util.statemachine.implementation.propnet.ForwardInterruptingPropNetStateMachine, w/ 76 rounds: all tests pass!
+
+LOG 1438358187251 [L3]: Testing on game minichess-evilconjuncts
+LOG 1438358187469 [L3]: Propnet creation done. It took 215ms.
+LOG 1438358187471 [L3]: Performing automatic consistency testing on org.ggp.base.util.statemachine.implementation.propnet.ForwardInterruptingPropNetStateMachine using org.ggp.base.util.statemachine.implementation.prover.ProverStateMachine as a reference.
+LOG 1438358197480 [L3]: Completed automatic consistency testing on org.ggp.base.util.statemachine.implementation.propnet.ForwardInterruptingPropNetStateMachine, w/ 57 rounds: all tests pass!
+
+LOG 1438358197481 [L3]: Testing on game pacman3p
+LOG 1438358198097 [L3]: Propnet creation done. It took 610ms.
+LOG 1438358198100 [L3]: Performing automatic consistency testing on org.ggp.base.util.statemachine.implementation.propnet.ForwardInterruptingPropNetStateMachine using org.ggp.base.util.statemachine.implementation.prover.ProverStateMachine as a reference.
+LOG 1438358208101 [L3]: Completed automatic consistency testing on org.ggp.base.util.statemachine.implementation.propnet.ForwardInterruptingPropNetStateMachine, w/ 47 rounds: all tests pass!
+
+LOG 1438358208101 [L3]: Testing on game snake_2008
+LOG 1438358208300 [L3]: Propnet creation done. It took 195ms.
+LOG 1438358208305 [L3]: Performing automatic consistency testing on org.ggp.base.util.statemachine.implementation.propnet.ForwardInterruptingPropNetStateMachine using org.ggp.base.util.statemachine.implementation.prover.ProverStateMachine as a reference.
+LOG 1438358218311 [L3]: Completed automatic consistency testing on org.ggp.base.util.statemachine.implementation.propnet.ForwardInterruptingPropNetStateMachine, w/ 72 rounds: all tests pass!
+
+LOG 1438358218312 [L3]: Testing on game snake_2009
+LOG 1438358218514 [L3]: Propnet creation done. It took 199ms.
+LOG 1438358218519 [L3]: Performing automatic consistency testing on org.ggp.base.util.statemachine.implementation.propnet.ForwardInterruptingPropNetStateMachine using org.ggp.base.util.statemachine.implementation.prover.ProverStateMachine as a reference.
+LOG 1438358228521 [L3]: Completed automatic consistency testing on org.ggp.base.util.statemachine.implementation.propnet.ForwardInterruptingPropNetStateMachine, w/ 68 rounds: all tests pass!
+
+LOG 1438358228521 [L3]: Testing on game amazonsSuicide_10x10
+LOG 1438358233935 [L3]: Propnet creation done. It took 5411ms.
+LOG 1438358233970 [L3]: Performing automatic consistency testing on org.ggp.base.util.statemachine.implementation.propnet.ForwardInterruptingPropNetStateMachine using org.ggp.base.util.statemachine.implementation.prover.ProverStateMachine as a reference.
+LOG 1438358243978 [L3]: Completed automatic consistency testing on org.ggp.base.util.statemachine.implementation.propnet.ForwardInterruptingPropNetStateMachine, w/ 6 rounds: all tests pass!
+
+LOG 1438358243978 [L3]: Testing on game connectFourLarge
+LOG 1438358244096 [L3]: Propnet creation done. It took 115ms.
+LOG 1438358244098 [L3]: Performing automatic consistency testing on org.ggp.base.util.statemachine.implementation.propnet.ForwardInterruptingPropNetStateMachine using org.ggp.base.util.statemachine.implementation.prover.ProverStateMachine as a reference.
+LOG 1438358254101 [L3]: Completed automatic consistency testing on org.ggp.base.util.statemachine.implementation.propnet.ForwardInterruptingPropNetStateMachine, w/ 104 rounds: all tests pass!
+
+LOG 1438358254102 [L3]: Testing on game factoringImpossibleTurtleBrain
+LOG 1438358674035 [L3]: Propnet creation interrupted. Taking too long!
+LOG 1438358724036 [L9]: <ERR> java.lang.InterruptedException
+	at org.ggp.base.util.concurrency.ConcurrencyUtils.checkForInterruption(ConcurrencyUtils.java:9)
+	at org.ggp.base.util.propnet.factory.ForwardInterruptingPropNetFactory.addSentenceForm(ForwardInterruptingPropNetFactory.java:1090)
+	at org.ggp.base.util.propnet.factory.ForwardInterruptingPropNetFactory.create(ForwardInterruptingPropNetFactory.java:212)
+	at org.ggp.base.util.propnet.factory.ForwardInterruptingPropNetFactory.create(ForwardInterruptingPropNetFactory.java:113)
+	at org.ggp.base.util.propnet.factory.ForwardInterruptingPropNetCreator.run(ForwardInterruptingPropNetCreator.java:46)
+LOG 1438358724036 [L3]: No propnet available. Impossible to test this game.
+
+LOG 1438358724037 [L3]: Testing on game 4pffa
+LOG 1438358724368 [L3]: Propnet creation done. It took 327ms.
+LOG 1438358724372 [L3]: Performing automatic consistency testing on org.ggp.base.util.statemachine.implementation.propnet.ForwardInterruptingPropNetStateMachine using org.ggp.base.util.statemachine.implementation.prover.ProverStateMachine as a reference.
+LOG 1438358734374 [L3]: Completed automatic consistency testing on org.ggp.base.util.statemachine.implementation.propnet.ForwardInterruptingPropNetStateMachine, w/ 81 rounds: all tests pass!
+
+LOG 1438358734374 [L3]: Testing on game knightwar
+LOG 1438358734891 [L3]: Propnet creation done. It took 514ms.
+LOG 1438358734903 [L3]: Performing automatic consistency testing on org.ggp.base.util.statemachine.implementation.propnet.ForwardInterruptingPropNetStateMachine using org.ggp.base.util.statemachine.implementation.prover.ProverStateMachine as a reference.
+LOG 1438358744906 [L3]: Completed automatic consistency testing on org.ggp.base.util.statemachine.implementation.propnet.ForwardInterruptingPropNetStateMachine, w/ 359 rounds: all tests pass!
+
+LOG 1438358744906 [L3]: Testing on game 3pffa
+LOG 1438358745179 [L3]: Propnet creation done. It took 269ms.
+LOG 1438358745182 [L3]: Performing automatic consistency testing on org.ggp.base.util.statemachine.implementation.propnet.ForwardInterruptingPropNetStateMachine using org.ggp.base.util.statemachine.implementation.prover.ProverStateMachine as a reference.
+LOG 1438358755183 [L3]: Completed automatic consistency testing on org.ggp.base.util.statemachine.implementation.propnet.ForwardInterruptingPropNetStateMachine, w/ 133 rounds: all tests pass!
+
+LOG 1438358755184 [L3]: Testing on game onestep
+LOG 1438358755188 [L3]: Propnet creation done. It took 3ms.
+LOG 1438358755189 [L3]: Performing automatic consistency testing on org.ggp.base.util.statemachine.implementation.propnet.ForwardInterruptingPropNetStateMachine using org.ggp.base.util.statemachine.implementation.prover.ProverStateMachine as a reference.
+LOG 1438358765190 [L3]: Completed automatic consistency testing on org.ggp.base.util.statemachine.implementation.propnet.ForwardInterruptingPropNetStateMachine, w/ 74227 rounds: all tests pass!
+
+LOG 1438358765190 [L3]: Testing on game breakthroughSmallHoles
+LOG 1438358765264 [L3]: Propnet creation done. It took 70ms.
+LOG 1438358765265 [L3]: Performing automatic consistency testing on org.ggp.base.util.statemachine.implementation.propnet.ForwardInterruptingPropNetStateMachine using org.ggp.base.util.statemachine.implementation.prover.ProverStateMachine as a reference.
+LOG 1438358775267 [L3]: Completed automatic consistency testing on org.ggp.base.util.statemachine.implementation.propnet.ForwardInterruptingPropNetStateMachine, w/ 86 rounds: all tests pass!
+
+LOG 1438358775267 [L3]: Testing on game pegEuro
+LOG 1438358775923 [L3]: Propnet creation done. It took 650ms.
+LOG 1438358775927 [L3]: Performing automatic consistency testing on org.ggp.base.util.statemachine.implementation.propnet.ForwardInterruptingPropNetStateMachine using org.ggp.base.util.statemachine.implementation.prover.ProverStateMachine as a reference.
+LOG 1438358785930 [L3]: Completed automatic consistency testing on org.ggp.base.util.statemachine.implementation.propnet.ForwardInterruptingPropNetStateMachine, w/ 72 rounds: all tests pass!
+
+LOG 1438358785931 [L3]: Testing on game tictactoe_3player
+LOG 1438358786102 [L3]: Propnet creation done. It took 167ms.
+LOG 1438358786104 [L3]: Performing automatic consistency testing on org.ggp.base.util.statemachine.implementation.propnet.ForwardInterruptingPropNetStateMachine using org.ggp.base.util.statemachine.implementation.prover.ProverStateMachine as a reference.
+LOG 1438358796106 [L3]: Completed automatic consistency testing on org.ggp.base.util.statemachine.implementation.propnet.ForwardInterruptingPropNetStateMachine, w/ 157 rounds: all tests pass!
+
+LOG 1438358796106 [L3]: Testing on game knightmove
+LOG 1438358796360 [L3]: Propnet creation done. It took 250ms.
+LOG 1438358796362 [L3]: Performing automatic consistency testing on org.ggp.base.util.statemachine.implementation.propnet.ForwardInterruptingPropNetStateMachine using org.ggp.base.util.statemachine.implementation.prover.ProverStateMachine as a reference.
+LOG 1438358806363 [L3]: Completed automatic consistency testing on org.ggp.base.util.statemachine.implementation.propnet.ForwardInterruptingPropNetStateMachine, w/ 156 rounds: all tests pass!
+
+LOG 1438358806364 [L3]: Testing on game tictactoe2
+LOG 1438358806383 [L3]: Propnet creation done. It took 17ms.
+LOG 1438358806383 [L3]: Performing automatic consistency testing on org.ggp.base.util.statemachine.implementation.propnet.ForwardInterruptingPropNetStateMachine using org.ggp.base.util.statemachine.implementation.prover.ProverStateMachine as a reference.
+LOG 1438358816385 [L3]: Completed automatic consistency testing on org.ggp.base.util.statemachine.implementation.propnet.ForwardInterruptingPropNetStateMachine, w/ 1356 rounds: all tests pass!
+
+LOG 1438358816385 [L3]: Testing on game hex
+LOG 1438358817908 [L3]: Propnet creation done. It took 1518ms.
+LOG 1438358817976 [L3]: Performing automatic consistency testing on org.ggp.base.util.statemachine.implementation.propnet.ForwardInterruptingPropNetStateMachine using org.ggp.base.util.statemachine.implementation.prover.ProverStateMachine as a reference.
+LOG 1438358828008 [L3]: Completed automatic consistency testing on org.ggp.base.util.statemachine.implementation.propnet.ForwardInterruptingPropNetStateMachine, w/ 4 rounds: all tests pass!
+
+LOG 1438358828008 [L3]: Testing on game amazons
+LOG 1438359128752 [L3]: Propnet creation interrupted. Taking too long!
+LOG 1438359128753 [L9]: <ERR> java.lang.InterruptedException
+	at org.ggp.base.util.concurrency.ConcurrencyUtils.checkForInterruption(ConcurrencyUtils.java:9)
+	at org.ggp.base.util.propnet.factory.ForwardInterruptingPropNetFactory.create(ForwardInterruptingPropNetFactory.java:239)
+	at org.ggp.base.util.propnet.factory.ForwardInterruptingPropNetFactory.create(ForwardInterruptingPropNetFactory.java:113)
+	at org.ggp.base.util.propnet.factory.ForwardInterruptingPropNetCreator.run(ForwardInterruptingPropNetCreator.java:46)
+LOG 1438359128753 [L3]: No propnet available. Impossible to test this game.
+
+LOG 1438359128753 [L3]: Testing on game ttcc4_2player_small
+LOG 1438359130756 [L3]: Propnet creation done. It took 1996ms.
+LOG 1438359130772 [L3]: Performing automatic consistency testing on org.ggp.base.util.statemachine.implementation.propnet.ForwardInterruptingPropNetStateMachine using org.ggp.base.util.statemachine.implementation.prover.ProverStateMachine as a reference.
+LOG 1438359140775 [L3]: Completed automatic consistency testing on org.ggp.base.util.statemachine.implementation.propnet.ForwardInterruptingPropNetStateMachine, w/ 172 rounds: all tests pass!
+
+LOG 1438359140775 [L3]: Testing on game gt_two_thirds_6p
+LOG 1438359440795 [L3]: Propnet creation interrupted. Taking too long!
+LOG 1438359440797 [L9]: <ERR> java.lang.InterruptedException
+	at org.ggp.base.util.concurrency.ConcurrencyUtils.checkForInterruption(ConcurrencyUtils.java:9)
+	at org.ggp.base.util.gdl.model.assignments.FunctionInfoImpl.<init>(FunctionInfoImpl.java:41)
+	at org.ggp.base.util.gdl.model.assignments.FunctionInfoImpl.create(FunctionInfoImpl.java:119)
+	at org.ggp.base.util.gdl.model.assignments.AssignmentsImpl.getNumAssignmentsEstimate(AssignmentsImpl.java:561)
+	at org.ggp.base.util.gdl.transforms.CondensationIsolator.goodCondensationSetByHeuristic(CondensationIsolator.java:425)
+	at org.ggp.base.util.gdl.transforms.CondensationIsolator.getCondensationSet(CondensationIsolator.java:376)
+	at org.ggp.base.util.gdl.transforms.CondensationIsolator.run(CondensationIsolator.java:191)
+	at org.ggp.base.util.propnet.factory.ForwardInterruptingPropNetFactory.create(ForwardInterruptingPropNetFactory.java:126)
+	at org.ggp.base.util.propnet.factory.ForwardInterruptingPropNetFactory.create(ForwardInterruptingPropNetFactory.java:113)
+	at org.ggp.base.util.propnet.factory.ForwardInterruptingPropNetCreator.run(ForwardInterruptingPropNetCreator.java:46)
+LOG 1438359440797 [L3]: No propnet available. Impossible to test this game.
+
+LOG 1438359440797 [L3]: Testing on game eightPuzzle
+LOG 1438359440856 [L3]: Propnet creation done. It took 55ms.
+LOG 1438359440858 [L3]: Performing automatic consistency testing on org.ggp.base.util.statemachine.implementation.propnet.ForwardInterruptingPropNetStateMachine using org.ggp.base.util.statemachine.implementation.prover.ProverStateMachine as a reference.
+LOG 1438359450859 [L3]: Completed automatic consistency testing on org.ggp.base.util.statemachine.implementation.propnet.ForwardInterruptingPropNetStateMachine, w/ 202 rounds: all tests pass!
+
+LOG 1438359450859 [L3]: Testing on game choicethroughalt
+LOG 1438359455613 [L3]: Propnet creation done. It took 4748ms.
+LOG 1438359455654 [L3]: Performing automatic consistency testing on org.ggp.base.util.statemachine.implementation.propnet.ForwardInterruptingPropNetStateMachine using org.ggp.base.util.statemachine.implementation.prover.ProverStateMachine as a reference.
+LOG 1438359465659 [L3]: Completed automatic consistency testing on org.ggp.base.util.statemachine.implementation.propnet.ForwardInterruptingPropNetStateMachine, w/ 33 rounds: all tests pass!
+
+LOG 1438359465659 [L3]: Testing on game tictactoe_3d_6player
+LOG 1438359465920 [L3]: Propnet creation done. It took 254ms.
+LOG 1438359465923 [L3]: Performing automatic consistency testing on org.ggp.base.util.statemachine.implementation.propnet.ForwardInterruptingPropNetStateMachine using org.ggp.base.util.statemachine.implementation.prover.ProverStateMachine as a reference.
+LOG 1438359475924 [L3]: Completed automatic consistency testing on org.ggp.base.util.statemachine.implementation.propnet.ForwardInterruptingPropNetStateMachine, w/ 9 rounds: all tests pass!
+
+LOG 1438359475925 [L3]: Testing on game ttcc4
+LOG 1438359492357 [L3]: Propnet creation done. It took 16427ms.
+LOG 1438359492525 [L3]: Performing automatic consistency testing on org.ggp.base.util.statemachine.implementation.propnet.ForwardInterruptingPropNetStateMachine using org.ggp.base.util.statemachine.implementation.prover.ProverStateMachine as a reference.
+LOG 1438359502538 [L3]: Completed automatic consistency testing on org.ggp.base.util.statemachine.implementation.propnet.ForwardInterruptingPropNetStateMachine, w/ 9 rounds: all tests pass!
+
+LOG 1438359502538 [L3]: Testing on game majorities
+LOG 1438359502718 [L3]: Propnet creation done. It took 171ms.
+LOG 1438359502721 [L3]: Performing automatic consistency testing on org.ggp.base.util.statemachine.implementation.propnet.ForwardInterruptingPropNetStateMachine using org.ggp.base.util.statemachine.implementation.prover.ProverStateMachine as a reference.
+LOG 1438359512751 [L3]: Completed automatic consistency testing on org.ggp.base.util.statemachine.implementation.propnet.ForwardInterruptingPropNetStateMachine, w/ 6 rounds: all tests pass!
+
+LOG 1438359512751 [L3]: Testing on game knightsTour
+LOG 1438359512829 [L3]: Propnet creation done. It took 75ms.
+LOG 1438359512830 [L3]: Performing automatic consistency testing on org.ggp.base.util.statemachine.implementation.propnet.ForwardInterruptingPropNetStateMachine using org.ggp.base.util.statemachine.implementation.prover.ProverStateMachine as a reference.
+LOG 1438359522831 [L3]: Completed automatic consistency testing on org.ggp.base.util.statemachine.implementation.propnet.ForwardInterruptingPropNetStateMachine, w/ 8594 rounds: all tests pass!
+
+LOG 1438359522831 [L3]: Testing on game biddingTicTacToe
+LOG 1438359522976 [L3]: Propnet creation done. It took 140ms.
+LOG 1438359522978 [L3]: Performing automatic consistency testing on org.ggp.base.util.statemachine.implementation.propnet.ForwardInterruptingPropNetStateMachine using org.ggp.base.util.statemachine.implementation.prover.ProverStateMachine as a reference.
+LOG 1438359532979 [L3]: Completed automatic consistency testing on org.ggp.base.util.statemachine.implementation.propnet.ForwardInterruptingPropNetStateMachine, w/ 633 rounds: all tests pass!
+
+LOG 1438359532979 [L3]: Testing on game skirmish
+LOG 1438359537240 [L3]: Propnet creation done. It took 4254ms.
+LOG 1438359537327 [L3]: Performing automatic consistency testing on org.ggp.base.util.statemachine.implementation.propnet.ForwardInterruptingPropNetStateMachine using org.ggp.base.util.statemachine.implementation.prover.ProverStateMachine as a reference.
+LOG 1438359547394 [L3]: Completed automatic consistency testing on org.ggp.base.util.statemachine.implementation.propnet.ForwardInterruptingPropNetStateMachine, w/ 2 rounds: all tests pass!
+
+LOG 1438359547394 [L3]: Testing on game crossers3
+LOG 1438359569873 [L3]: Propnet creation done. It took 22471ms.
+LOG 1438359570110 [L3]: Performing automatic consistency testing on org.ggp.base.util.statemachine.implementation.propnet.ForwardInterruptingPropNetStateMachine using org.ggp.base.util.statemachine.implementation.prover.ProverStateMachine as a reference.
+LOG 1438359580117 [L3]: Completed automatic consistency testing on org.ggp.base.util.statemachine.implementation.propnet.ForwardInterruptingPropNetStateMachine, w/ 38 rounds: all tests pass!
+
+LOG 1438359580117 [L3]: Testing on game coins
+LOG 1438359580398 [L3]: Propnet creation done. It took 279ms.
+LOG 1438359580400 [L3]: Performing automatic consistency testing on org.ggp.base.util.statemachine.implementation.propnet.ForwardInterruptingPropNetStateMachine using org.ggp.base.util.statemachine.implementation.prover.ProverStateMachine as a reference.
+LOG 1438359590616 [L3]: Completed automatic consistency testing on org.ggp.base.util.statemachine.implementation.propnet.ForwardInterruptingPropNetStateMachine, w/ 386 rounds: all tests pass!
+
+LOG 1438359590616 [L3]: Testing on game checkers-newgoals
+LOG 1438359600293 [L3]: Propnet creation done. It took 9666ms.
+LOG 1438359600342 [L3]: Performing automatic consistency testing on org.ggp.base.util.statemachine.implementation.propnet.ForwardInterruptingPropNetStateMachine using org.ggp.base.util.statemachine.implementation.prover.ProverStateMachine as a reference.
+LOG 1438359610356 [L3]: Completed automatic consistency testing on org.ggp.base.util.statemachine.implementation.propnet.ForwardInterruptingPropNetStateMachine, w/ 7 rounds: all tests pass!
+
+LOG 1438359610356 [L3]: Testing on game pancakes6
+LOG 1438359610674 [L3]: Propnet creation done. It took 315ms.
+LOG 1438359610679 [L3]: Performing automatic consistency testing on org.ggp.base.util.statemachine.implementation.propnet.ForwardInterruptingPropNetStateMachine using org.ggp.base.util.statemachine.implementation.prover.ProverStateMachine as a reference.
+LOG 1438359620680 [L3]: Completed automatic consistency testing on org.ggp.base.util.statemachine.implementation.propnet.ForwardInterruptingPropNetStateMachine, w/ 548 rounds: all tests pass!
+
+LOG 1438359620680 [L3]: Testing on game cylinder-checkers
+LOG 1438359921244 [L3]: Propnet creation interrupted. Taking too long!
+LOG 1438359921245 [L9]: <ERR> java.lang.InterruptedException
+	at org.ggp.base.util.concurrency.ConcurrencyUtils.checkForInterruption(ConcurrencyUtils.java:9)
+	at org.ggp.base.util.propnet.factory.ForwardInterruptingPropNetFactory.addSentenceForm(ForwardInterruptingPropNetFactory.java:1090)
+	at org.ggp.base.util.propnet.factory.ForwardInterruptingPropNetFactory.create(ForwardInterruptingPropNetFactory.java:212)
+	at org.ggp.base.util.propnet.factory.ForwardInterruptingPropNetFactory.create(ForwardInterruptingPropNetFactory.java:113)
+	at org.ggp.base.util.propnet.factory.ForwardInterruptingPropNetCreator.run(ForwardInterruptingPropNetCreator.java:46)
+LOG 1438359961199 [L3]: No propnet available. Impossible to test this game.
+
+LOG 1438359961199 [L3]: Testing on game stateSpaceLarge
+LOG 1438359961259 [L3]: Propnet creation done. It took 43ms.
+LOG 1438359961260 [L3]: Performing automatic consistency testing on org.ggp.base.util.statemachine.implementation.propnet.ForwardInterruptingPropNetStateMachine using org.ggp.base.util.statemachine.implementation.prover.ProverStateMachine as a reference.
+LOG 1438359990755 [L3]: Completed automatic consistency testing on org.ggp.base.util.statemachine.implementation.propnet.ForwardInterruptingPropNetStateMachine, w/ 1315 rounds: all tests pass!
+
+LOG 1438359990756 [L3]: Testing on game hallway
+LOG 1438359996700 [L3]: Propnet creation done. It took 5937ms.
+LOG 1438359996883 [L3]: Performing automatic consistency testing on org.ggp.base.util.statemachine.implementation.propnet.ForwardInterruptingPropNetStateMachine using org.ggp.base.util.statemachine.implementation.prover.ProverStateMachine as a reference.
+LOG 1438360032680 [L3]: Completed automatic consistency testing on org.ggp.base.util.statemachine.implementation.propnet.ForwardInterruptingPropNetStateMachine, w/ 7 rounds: all tests pass!
+
+LOG 1438360032680 [L3]: Testing on game biddingTicTacToe_10coins
+LOG 1438360032932 [L3]: Propnet creation done. It took 249ms.
+LOG 1438360032934 [L3]: Performing automatic consistency testing on org.ggp.base.util.statemachine.implementation.propnet.ForwardInterruptingPropNetStateMachine using org.ggp.base.util.statemachine.implementation.prover.ProverStateMachine as a reference.
+LOG 1438360058056 [L3]: Completed automatic consistency testing on org.ggp.base.util.statemachine.implementation.propnet.ForwardInterruptingPropNetStateMachine, w/ 345 rounds: all tests pass!
+
+LOG 1438360058056 [L3]: Testing on game blockerSerial
+LOG 1438360058124 [L3]: Propnet creation done. It took 64ms.
+LOG 1438360058125 [L3]: Performing automatic consistency testing on org.ggp.base.util.statemachine.implementation.propnet.ForwardInterruptingPropNetStateMachine using org.ggp.base.util.statemachine.implementation.prover.ProverStateMachine as a reference.
+LOG 1438360093636 [L3]: Completed automatic consistency testing on org.ggp.base.util.statemachine.implementation.propnet.ForwardInterruptingPropNetStateMachine, w/ 174 rounds: all tests pass!
+
+LOG 1438360093636 [L3]: Testing on game firefighter
+LOG 1438360093658 [L3]: Propnet creation done. It took 18ms.
+LOG 1438360093659 [L3]: Performing automatic consistency testing on org.ggp.base.util.statemachine.implementation.propnet.ForwardInterruptingPropNetStateMachine using org.ggp.base.util.statemachine.implementation.prover.ProverStateMachine as a reference.
+LOG 1438360112590 [L3]: Completed automatic consistency testing on org.ggp.base.util.statemachine.implementation.propnet.ForwardInterruptingPropNetStateMachine, w/ 290 rounds: all tests pass!
+
+LOG 1438360112590 [L3]: Testing on game ttcc4_2player_alt
+LOG 1438360113863 [L3]: Propnet creation done. It took 1266ms.
+LOG 1438360113872 [L3]: Performing automatic consistency testing on org.ggp.base.util.statemachine.implementation.propnet.ForwardInterruptingPropNetStateMachine using org.ggp.base.util.statemachine.implementation.prover.ProverStateMachine as a reference.
+LOG 1438360151168 [L3]: Completed automatic consistency testing on org.ggp.base.util.statemachine.implementation.propnet.ForwardInterruptingPropNetStateMachine, w/ 43 rounds: all tests pass!
+
+LOG 1438360151168 [L3]: Testing on game chinook
+LOG 1438360152705 [L3]: Propnet creation done. It took 1527ms.
+LOG 1438360152717 [L3]: Performing automatic consistency testing on org.ggp.base.util.statemachine.implementation.propnet.ForwardInterruptingPropNetStateMachine using org.ggp.base.util.statemachine.implementation.prover.ProverStateMachine as a reference.
+LOG 1438360175224 [L3]: Completed automatic consistency testing on org.ggp.base.util.statemachine.implementation.propnet.ForwardInterruptingPropNetStateMachine, w/ 24 rounds: all tests pass!
+
+LOG 1438360175225 [L3]: Testing on game factoringMediumTurtleBrain
+LOG 1438360175274 [L3]: Propnet creation done. It took 45ms.
+LOG 1438360175276 [L3]: Performing automatic consistency testing on org.ggp.base.util.statemachine.implementation.propnet.ForwardInterruptingPropNetStateMachine using org.ggp.base.util.statemachine.implementation.prover.ProverStateMachine as a reference.
+LOG 1438360195844 [L3]: Completed automatic consistency testing on org.ggp.base.util.statemachine.implementation.propnet.ForwardInterruptingPropNetStateMachine, w/ 27 rounds: all tests pass!
+
+LOG 1438360195844 [L3]: Testing on game skirmishZeroSum
+LOG 1438360200045 [L3]: Propnet creation done. It took 4193ms.
+LOG 1438360200091 [L3]: Performing automatic consistency testing on org.ggp.base.util.statemachine.implementation.propnet.ForwardInterruptingPropNetStateMachine using org.ggp.base.util.statemachine.implementation.prover.ProverStateMachine as a reference.
+LOG 1438360225378 [L3]: Completed automatic consistency testing on org.ggp.base.util.statemachine.implementation.propnet.ForwardInterruptingPropNetStateMachine, w/ 2 rounds: all tests pass!
+
+LOG 1438360225378 [L3]: Testing on game numbertictactoe
+LOG 1438360225448 [L3]: Propnet creation done. It took 66ms.
+LOG 1438360225449 [L3]: Performing automatic consistency testing on org.ggp.base.util.statemachine.implementation.propnet.ForwardInterruptingPropNetStateMachine using org.ggp.base.util.statemachine.implementation.prover.ProverStateMachine as a reference.
+LOG 1438360256807 [L3]: Completed automatic consistency testing on org.ggp.base.util.statemachine.implementation.propnet.ForwardInterruptingPropNetStateMachine, w/ 503 rounds: all tests pass!
+
+LOG 1438360256807 [L3]: Testing on game connectFourLarger
+LOG 1438360257022 [L3]: Propnet creation done. It took 212ms.
+LOG 1438360257027 [L3]: Performing automatic consistency testing on org.ggp.base.util.statemachine.implementation.propnet.ForwardInterruptingPropNetStateMachine using org.ggp.base.util.statemachine.implementation.prover.ProverStateMachine as a reference.
+LOG 1438360283845 [L3]: Completed automatic consistency testing on org.ggp.base.util.statemachine.implementation.propnet.ForwardInterruptingPropNetStateMachine, w/ 32 rounds: all tests pass!
+
+LOG 1438360283845 [L3]: Testing on game dualConnect4
+LOG 1438360284047 [L3]: Propnet creation done. It took 195ms.
+LOG 1438360284049 [L3]: Performing automatic consistency testing on org.ggp.base.util.statemachine.implementation.propnet.ForwardInterruptingPropNetStateMachine using org.ggp.base.util.statemachine.implementation.prover.ProverStateMachine as a reference.
+LOG 1438360316450 [L3]: Completed automatic consistency testing on org.ggp.base.util.statemachine.implementation.propnet.ForwardInterruptingPropNetStateMachine, w/ 40 rounds: all tests pass!
+
+LOG 1438360316451 [L3]: Testing on game mummymaze1p
+LOG 1438360316481 [L3]: Propnet creation interrupted. Exception during creation!
+LOG 1438360316483 [L9]: <ERR> java.lang.NullPointerException
+	at org.ggp.base.util.gdl.model.SentenceDomainModelOptimizer.applyRuleHeadPropagation(SentenceDomainModelOptimizer.java:349)
+	at org.ggp.base.util.gdl.model.SentenceDomainModelOptimizer.propagateNeededConstants(SentenceDomainModelOptimizer.java:259)
+	at org.ggp.base.util.gdl.model.SentenceDomainModelOptimizer.removeUnneededConstants(SentenceDomainModelOptimizer.java:236)
+	at org.ggp.base.util.gdl.model.SentenceDomainModelOptimizer.restrictDomainsToUsefulValues(SentenceDomainModelOptimizer.java:77)
+	at org.ggp.base.util.gdl.transforms.CondensationIsolator.run(CondensationIsolator.java:170)
+	at org.ggp.base.util.propnet.factory.ForwardInterruptingPropNetFactory.create(ForwardInterruptingPropNetFactory.java:126)
+	at org.ggp.base.util.propnet.factory.ForwardInterruptingPropNetFactory.create(ForwardInterruptingPropNetFactory.java:113)
+	at org.ggp.base.util.propnet.factory.ForwardInterruptingPropNetCreator.run(ForwardInterruptingPropNetCreator.java:46)
+LOG 1438360316483 [L3]: No propnet available. Impossible to test this game.
+
+LOG 1438360316483 [L3]: Testing on game smallest_4player
+LOG 1438360316545 [L3]: Propnet creation done. It took 59ms.
+LOG 1438360316547 [L3]: Performing automatic consistency testing on org.ggp.base.util.statemachine.implementation.propnet.ForwardInterruptingPropNetStateMachine using org.ggp.base.util.statemachine.implementation.prover.ProverStateMachine as a reference.
+LOG 1438360335413 [L3]: Completed automatic consistency testing on org.ggp.base.util.statemachine.implementation.propnet.ForwardInterruptingPropNetStateMachine, w/ 397 rounds: all tests pass!
+
+LOG 1438360335414 [L3]: Testing on game switches
+LOG 1438360335422 [L3]: Propnet creation done. It took 6ms.
+LOG 1438360335423 [L3]: Performing automatic consistency testing on org.ggp.base.util.statemachine.implementation.propnet.ForwardInterruptingPropNetStateMachine using org.ggp.base.util.statemachine.implementation.prover.ProverStateMachine as a reference.
+LOG 1438360372765 [L3]: Completed automatic consistency testing on org.ggp.base.util.statemachine.implementation.propnet.ForwardInterruptingPropNetStateMachine, w/ 18210 rounds: all tests pass!
+
+LOG 1438360372766 [L3]: Testing on game endgame
+LOG 1438360374406 [L3]: Propnet creation done. It took 1637ms.
+LOG 1438360374426 [L3]: Performing automatic consistency testing on org.ggp.base.util.statemachine.implementation.propnet.ForwardInterruptingPropNetStateMachine using org.ggp.base.util.statemachine.implementation.prover.ProverStateMachine as a reference.
+LOG 1438360407950 [L3]: Completed automatic consistency testing on org.ggp.base.util.statemachine.implementation.propnet.ForwardInterruptingPropNetStateMachine, w/ 69 rounds: all tests pass!
+
+LOG 1438360407951 [L3]: Testing on game tpeg
+LOG 1438360408246 [L3]: Propnet creation done. It took 292ms.
+LOG 1438360408249 [L3]: Performing automatic consistency testing on org.ggp.base.util.statemachine.implementation.propnet.ForwardInterruptingPropNetStateMachine using org.ggp.base.util.statemachine.implementation.prover.ProverStateMachine as a reference.
+LOG 1438360432904 [L3]: Completed automatic consistency testing on org.ggp.base.util.statemachine.implementation.propnet.ForwardInterruptingPropNetStateMachine, w/ 128 rounds: all tests pass!
+
+LOG 1438360432904 [L3]: Testing on game connectFour
+LOG 1438360433002 [L3]: Propnet creation done. It took 95ms.
+LOG 1438360433003 [L3]: Performing automatic consistency testing on org.ggp.base.util.statemachine.implementation.propnet.ForwardInterruptingPropNetStateMachine using org.ggp.base.util.statemachine.implementation.prover.ProverStateMachine as a reference.
+LOG 1438360455056 [L3]: Completed automatic consistency testing on org.ggp.base.util.statemachine.implementation.propnet.ForwardInterruptingPropNetStateMachine, w/ 102 rounds: all tests pass!
+
+LOG 1438360455056 [L3]: Testing on game hexPie
+LOG 1438360456617 [L3]: Propnet creation done. It took 1556ms.
+LOG 1438360456686 [L3]: Performing automatic consistency testing on org.ggp.base.util.statemachine.implementation.propnet.ForwardInterruptingPropNetStateMachine using org.ggp.base.util.statemachine.implementation.prover.ProverStateMachine as a reference.
+LOG 1438360484692 [L3]: Completed automatic consistency testing on org.ggp.base.util.statemachine.implementation.propnet.ForwardInterruptingPropNetStateMachine, w/ 4 rounds: all tests pass!
+
+LOG 1438360484693 [L3]: Testing on game breakthroughSmall
+LOG 1438360484879 [L3]: Propnet creation done. It took 183ms.
+LOG 1438360484882 [L3]: Performing automatic consistency testing on org.ggp.base.util.statemachine.implementation.propnet.ForwardInterruptingPropNetStateMachine using org.ggp.base.util.statemachine.implementation.prover.ProverStateMachine as a reference.
+LOG 1438360507668 [L3]: Completed automatic consistency testing on org.ggp.base.util.statemachine.implementation.propnet.ForwardInterruptingPropNetStateMachine, w/ 62 rounds: all tests pass!
+
+LOG 1438360507668 [L3]: Testing on game double_tictactoe_dengji
+LOG 1438360507723 [L3]: Propnet creation done. It took 50ms.
+LOG 1438360507723 [L3]: Performing automatic consistency testing on org.ggp.base.util.statemachine.implementation.propnet.ForwardInterruptingPropNetStateMachine using org.ggp.base.util.statemachine.implementation.prover.ProverStateMachine as a reference.
+LOG 1438360530807 [L3]: Completed automatic consistency testing on org.ggp.base.util.statemachine.implementation.propnet.ForwardInterruptingPropNetStateMachine, w/ 178 rounds: all tests pass!
+
+LOG 1438360530807 [L3]: Testing on game breakthroughHoles
+LOG 1438360531246 [L3]: Propnet creation done. It took 436ms.
+LOG 1438360531253 [L3]: Performing automatic consistency testing on org.ggp.base.util.statemachine.implementation.propnet.ForwardInterruptingPropNetStateMachine using org.ggp.base.util.statemachine.implementation.prover.ProverStateMachine as a reference.
+LOG 1438360571804 [L3]: Completed automatic consistency testing on org.ggp.base.util.statemachine.implementation.propnet.ForwardInterruptingPropNetStateMachine, w/ 19 rounds: all tests pass!
+
+LOG 1438360571804 [L3]: Testing on game tictactoe_orthogonal
+LOG 1438360571838 [L3]: Propnet creation done. It took 32ms.
+LOG 1438360571838 [L3]: Performing automatic consistency testing on org.ggp.base.util.statemachine.implementation.propnet.ForwardInterruptingPropNetStateMachine using org.ggp.base.util.statemachine.implementation.prover.ProverStateMachine as a reference.
+LOG 1438360592111 [L3]: Completed automatic consistency testing on org.ggp.base.util.statemachine.implementation.propnet.ForwardInterruptingPropNetStateMachine, w/ 1039 rounds: all tests pass!
+
+LOG 1438360592111 [L3]: Testing on game connect5
+LOG 1438360592593 [L3]: Propnet creation done. It took 478ms.
+LOG 1438360592596 [L3]: Performing automatic consistency testing on org.ggp.base.util.statemachine.implementation.propnet.ForwardInterruptingPropNetStateMachine using org.ggp.base.util.statemachine.implementation.prover.ProverStateMachine as a reference.
+LOG 1438360626566 [L3]: Completed automatic consistency testing on org.ggp.base.util.statemachine.implementation.propnet.ForwardInterruptingPropNetStateMachine, w/ 23 rounds: all tests pass!
+
+LOG 1438360626566 [L3]: Testing on game connect4
+LOG 1438360626683 [L3]: Propnet creation done. It took 114ms.
+LOG 1438360626685 [L3]: Performing automatic consistency testing on org.ggp.base.util.statemachine.implementation.propnet.ForwardInterruptingPropNetStateMachine using org.ggp.base.util.statemachine.implementation.prover.ProverStateMachine as a reference.
+LOG 1438360649691 [L3]: Completed automatic consistency testing on org.ggp.base.util.statemachine.implementation.propnet.ForwardInterruptingPropNetStateMachine, w/ 35 rounds: all tests pass!
+
+LOG 1438360649692 [L3]: Testing on game merrills
+LOG 1438360968869 [L3]: Propnet creation interrupted. Taking too long!
+LOG 1438360968870 [L9]: <ERR> java.lang.InterruptedException
+	at org.ggp.base.util.concurrency.ConcurrencyUtils.checkForInterruption(ConcurrencyUtils.java:9)
+	at org.ggp.base.util.propnet.factory.ForwardInterruptingPropNetFactory.addSentenceForm(ForwardInterruptingPropNetFactory.java:913)
+	at org.ggp.base.util.propnet.factory.ForwardInterruptingPropNetFactory.create(ForwardInterruptingPropNetFactory.java:212)
+	at org.ggp.base.util.propnet.factory.ForwardInterruptingPropNetFactory.create(ForwardInterruptingPropNetFactory.java:113)
+	at org.ggp.base.util.propnet.factory.ForwardInterruptingPropNetCreator.run(ForwardInterruptingPropNetCreator.java:46)
+LOG 1438360968870 [L3]: No propnet available. Impossible to test this game.
+
+LOG 1438360968871 [L3]: Testing on game checkers-mustjump-torus
+LOG 1438361181563 [L3]: Propnet creation done. It took 212684ms.
+LOG 1438361181773 [L3]: Performing automatic consistency testing on org.ggp.base.util.statemachine.implementation.propnet.ForwardInterruptingPropNetStateMachine using org.ggp.base.util.statemachine.implementation.prover.ProverStateMachine as a reference.
+LOG 1438361214952 [L3]: Completed automatic consistency testing on org.ggp.base.util.statemachine.implementation.propnet.ForwardInterruptingPropNetStateMachine, w/ 3 rounds: all tests pass!
+
+LOG 1438361214952 [L3]: Testing on game cubicup
+LOG 1438361215414 [L3]: Propnet creation done. It took 458ms.
+LOG 1438361215441 [L3]: Performing automatic consistency testing on org.ggp.base.util.statemachine.implementation.propnet.ForwardInterruptingPropNetStateMachine using org.ggp.base.util.statemachine.implementation.prover.ProverStateMachine as a reference.
+LOG 1438361320619 [L3]: Completed automatic consistency testing on org.ggp.base.util.statemachine.implementation.propnet.ForwardInterruptingPropNetStateMachine, w/ 8 rounds: all tests pass!
+
+LOG 1438361320620 [L3]: Testing on game ticTacHeavenFC
+LOG 1438361320756 [L3]: Propnet creation done. It took 130ms.
+LOG 1438361320759 [L3]: Performing automatic consistency testing on org.ggp.base.util.statemachine.implementation.propnet.ForwardInterruptingPropNetStateMachine using org.ggp.base.util.statemachine.implementation.prover.ProverStateMachine as a reference.
+LOG 1438361362892 [L3]: Completed automatic consistency testing on org.ggp.base.util.statemachine.implementation.propnet.ForwardInterruptingPropNetStateMachine, w/ 22 rounds: all tests pass!
+
+LOG 1438361362892 [L3]: Testing on game pancakes88
+LOG 1438361495811 [L3]: Propnet creation done. It took 132915ms.
+LOG 1438361496144 [L3]: Performing automatic consistency testing on org.ggp.base.util.statemachine.implementation.propnet.ForwardInterruptingPropNetStateMachine using org.ggp.base.util.statemachine.implementation.prover.ProverStateMachine as a reference.
+LOG 1438361506149 [L3]: Completed automatic consistency testing on org.ggp.base.util.statemachine.implementation.propnet.ForwardInterruptingPropNetStateMachine, w/ 4 rounds: all tests pass!
+
+LOG 1438361506149 [L3]: Testing on game colonelBlotto
+LOG 1438361694180 [L3]: Propnet creation done. It took 188027ms.
+LOG 1438361694188 [L3]: Performing automatic consistency testing on org.ggp.base.util.statemachine.implementation.propnet.ForwardInterruptingPropNetStateMachine using org.ggp.base.util.statemachine.implementation.prover.ProverStateMachine as a reference.
+LOG 1438361736395 [L3]: Completed automatic consistency testing on org.ggp.base.util.statemachine.implementation.propnet.ForwardInterruptingPropNetStateMachine, w/ 571 rounds: all tests pass!
+
+LOG 1438361736396 [L3]: Testing on game circlesolitaire
+LOG 1438361736417 [L3]: Propnet creation done. It took 18ms.
+LOG 1438361736418 [L3]: Performing automatic consistency testing on org.ggp.base.util.statemachine.implementation.propnet.ForwardInterruptingPropNetStateMachine using org.ggp.base.util.statemachine.implementation.prover.ProverStateMachine as a reference.
+LOG 1438361849971 [L3]: Completed automatic consistency testing on org.ggp.base.util.statemachine.implementation.propnet.ForwardInterruptingPropNetStateMachine, w/ 1238 rounds: all tests pass!
+
+LOG 1438361849971 [L3]: Testing on game coloredtrails
+LOG 1438361850232 [L3]: Propnet creation done. It took 257ms.
+LOG 1438361850241 [L3]: Performing automatic consistency testing on org.ggp.base.util.statemachine.implementation.propnet.ForwardInterruptingPropNetStateMachine using org.ggp.base.util.statemachine.implementation.prover.ProverStateMachine as a reference.
+LOG 1438361921304 [L3]: Completed automatic consistency testing on org.ggp.base.util.statemachine.implementation.propnet.ForwardInterruptingPropNetStateMachine, w/ 556 rounds: all tests pass!
+
+LOG 1438361921304 [L3]: Testing on game pawnToQueen
+LOG 1438361922078 [L3]: Propnet creation done. It took 768ms.
+LOG 1438361922083 [L3]: Performing automatic consistency testing on org.ggp.base.util.statemachine.implementation.propnet.ForwardInterruptingPropNetStateMachine using org.ggp.base.util.statemachine.implementation.prover.ProverStateMachine as a reference.
+LOG 1438361957682 [L3]: Completed automatic consistency testing on org.ggp.base.util.statemachine.implementation.propnet.ForwardInterruptingPropNetStateMachine, w/ 4 rounds: all tests pass!
+
+LOG 1438361957683 [L3]: Testing on game quad_7x7
+LOG 1438361958491 [L3]: Propnet creation done. It took 804ms.
+LOG 1438361958497 [L3]: Performing automatic consistency testing on org.ggp.base.util.statemachine.implementation.propnet.ForwardInterruptingPropNetStateMachine using org.ggp.base.util.statemachine.implementation.prover.ProverStateMachine as a reference.
+LOG 1438362010288 [L3]: Completed automatic consistency testing on org.ggp.base.util.statemachine.implementation.propnet.ForwardInterruptingPropNetStateMachine, w/ 3 rounds: all tests pass!
+
+LOG 1438362010289 [L3]: Testing on game 2pffa
+LOG 1438362010521 [L3]: Propnet creation done. It took 229ms.
+LOG 1438362010523 [L3]: Performing automatic consistency testing on org.ggp.base.util.statemachine.implementation.propnet.ForwardInterruptingPropNetStateMachine using org.ggp.base.util.statemachine.implementation.prover.ProverStateMachine as a reference.
+LOG 1438362123981 [L3]: Completed automatic consistency testing on org.ggp.base.util.statemachine.implementation.propnet.ForwardInterruptingPropNetStateMachine, w/ 91 rounds: all tests pass!
+
+LOG 1438362123981 [L3]: Testing on game checkers-cylinder-mustjump
+LOG 1438362198773 [L3]: Propnet creation done. It took 74783ms.
+LOG 1438362198916 [L3]: Performing automatic consistency testing on org.ggp.base.util.statemachine.implementation.propnet.ForwardInterruptingPropNetStateMachine using org.ggp.base.util.statemachine.implementation.prover.ProverStateMachine as a reference.
+LOG 1438362239244 [L3]: Completed automatic consistency testing on org.ggp.base.util.statemachine.implementation.propnet.ForwardInterruptingPropNetStateMachine, w/ 6 rounds: all tests pass!
+
+LOG 1438362239245 [L3]: Testing on game racetrackcorridor
+LOG 1438362239454 [L3]: Propnet creation done. It took 204ms.
+LOG 1438362239456 [L3]: Performing automatic consistency testing on org.ggp.base.util.statemachine.implementation.propnet.ForwardInterruptingPropNetStateMachine using org.ggp.base.util.statemachine.implementation.prover.ProverStateMachine as a reference.
+LOG 1438362343283 [L3]: Completed automatic consistency testing on org.ggp.base.util.statemachine.implementation.propnet.ForwardInterruptingPropNetStateMachine, w/ 129 rounds: all tests pass!
+
+LOG 1438362343284 [L3]: Testing on game mummymaze2p
+LOG 1438362345130 [L3]: Propnet creation done. It took 1842ms.
+LOG 1438362345150 [L3]: Performing automatic consistency testing on org.ggp.base.util.statemachine.implementation.propnet.ForwardInterruptingPropNetStateMachine using org.ggp.base.util.statemachine.implementation.prover.ProverStateMachine as a reference.
+LOG 1438362403085 [L3]: Completed automatic consistency testing on org.ggp.base.util.statemachine.implementation.propnet.ForwardInterruptingPropNetStateMachine, w/ 25 rounds: all tests pass!
+
+LOG 1438362403085 [L3]: Testing on game lightsOut
+LOG 1438362403110 [L3]: Propnet creation done. It took 21ms.
+LOG 1438362403111 [L3]: Performing automatic consistency testing on org.ggp.base.util.statemachine.implementation.propnet.ForwardInterruptingPropNetStateMachine using org.ggp.base.util.statemachine.implementation.prover.ProverStateMachine as a reference.
+LOG 1438362517359 [L3]: Completed automatic consistency testing on org.ggp.base.util.statemachine.implementation.propnet.ForwardInterruptingPropNetStateMachine, w/ 141 rounds: all tests pass!
+
+LOG 1438362517360 [L3]: Testing on game snake2p
+LOG 1438362517398 [L3]: Propnet creation done. It took 34ms.
+LOG 1438362517399 [L3]: Performing automatic consistency testing on org.ggp.base.util.statemachine.implementation.propnet.ForwardInterruptingPropNetStateMachine using org.ggp.base.util.statemachine.implementation.prover.ProverStateMachine as a reference.
+LOG 1438362625990 [L3]: Completed automatic consistency testing on org.ggp.base.util.statemachine.implementation.propnet.ForwardInterruptingPropNetStateMachine, w/ 346 rounds: all tests pass!
+
+LOG 1438362625991 [L3]: Testing on game knightsTourLarge
+LOG 1438362626159 [L3]: Propnet creation done. It took 165ms.
+LOG 1438362626160 [L3]: Performing automatic consistency testing on org.ggp.base.util.statemachine.implementation.propnet.ForwardInterruptingPropNetStateMachine using org.ggp.base.util.statemachine.implementation.prover.ProverStateMachine as a reference.
+LOG 1438362663651 [L3]: Completed automatic consistency testing on org.ggp.base.util.statemachine.implementation.propnet.ForwardInterruptingPropNetStateMachine, w/ 3793 rounds: all tests pass!
+
+LOG 1438362663652 [L3]: Testing on game peg
+LOG 1438362664322 [L3]: Propnet creation done. It took 667ms.
+LOG 1438362664326 [L3]: Performing automatic consistency testing on org.ggp.base.util.statemachine.implementation.propnet.ForwardInterruptingPropNetStateMachine using org.ggp.base.util.statemachine.implementation.prover.ProverStateMachine as a reference.
+LOG 1438362704081 [L3]: Completed automatic consistency testing on org.ggp.base.util.statemachine.implementation.propnet.ForwardInterruptingPropNetStateMachine, w/ 48 rounds: all tests pass!
+
+LOG 1438362704082 [L3]: Testing on game blokbox_simple
+LOG 1438362707980 [L3]: Propnet creation done. It took 3892ms.
+LOG 1438362708098 [L3]: Performing automatic consistency testing on org.ggp.base.util.statemachine.implementation.propnet.ForwardInterruptingPropNetStateMachine using org.ggp.base.util.statemachine.implementation.prover.ProverStateMachine as a reference.
+LOG 1438362754136 [L3]: Completed automatic consistency testing on org.ggp.base.util.statemachine.implementation.propnet.ForwardInterruptingPropNetStateMachine, w/ 1 rounds: all tests pass!
+
+LOG 1438362754137 [L3]: Testing on game asteroids
+LOG 1438362754177 [L3]: Propnet creation done. It took 35ms.
+LOG 1438362754178 [L3]: Performing automatic consistency testing on org.ggp.base.util.statemachine.implementation.propnet.ForwardInterruptingPropNetStateMachine using org.ggp.base.util.statemachine.implementation.prover.ProverStateMachine as a reference.
+LOG 1438362789693 [L3]: Completed automatic consistency testing on org.ggp.base.util.statemachine.implementation.propnet.ForwardInterruptingPropNetStateMachine, w/ 97 rounds: all tests pass!
+
+LOG 1438362789693 [L3]: Testing on game hanoi_6_disks
+LOG 1438362789789 [L3]: Propnet creation done. It took 93ms.
+LOG 1438362789792 [L3]: Performing automatic consistency testing on org.ggp.base.util.statemachine.implementation.propnet.ForwardInterruptingPropNetStateMachine using org.ggp.base.util.statemachine.implementation.prover.ProverStateMachine as a reference.
+LOG 1438362879675 [L3]: Completed automatic consistency testing on org.ggp.base.util.statemachine.implementation.propnet.ForwardInterruptingPropNetStateMachine, w/ 3156 rounds: all tests pass!
+
+LOG 1438362879676 [L3]: Testing on game connectFourSimultaneous
+LOG 1438362879801 [L3]: Propnet creation done. It took 123ms.
+LOG 1438362879803 [L3]: Performing automatic consistency testing on org.ggp.base.util.statemachine.implementation.propnet.ForwardInterruptingPropNetStateMachine using org.ggp.base.util.statemachine.implementation.prover.ProverStateMachine as a reference.
+LOG 1438362943813 [L3]: Completed automatic consistency testing on org.ggp.base.util.statemachine.implementation.propnet.ForwardInterruptingPropNetStateMachine, w/ 51 rounds: all tests pass!
+
+LOG 1438362943813 [L3]: Testing on game pawnWhopping
+LOG 1438362943969 [L3]: Propnet creation done. It took 152ms.
+LOG 1438362943971 [L3]: Performing automatic consistency testing on org.ggp.base.util.statemachine.implementation.propnet.ForwardInterruptingPropNetStateMachine using org.ggp.base.util.statemachine.implementation.prover.ProverStateMachine as a reference.
+LOG 1438363001124 [L3]: Completed automatic consistency testing on org.ggp.base.util.statemachine.implementation.propnet.ForwardInterruptingPropNetStateMachine, w/ 30 rounds: all tests pass!
+
+LOG 1438363001124 [L3]: Testing on game tictactoe-init1
+LOG 1438363001150 [L3]: Propnet creation done. It took 24ms.
+LOG 1438363001151 [L3]: Performing automatic consistency testing on org.ggp.base.util.statemachine.implementation.propnet.ForwardInterruptingPropNetStateMachine using org.ggp.base.util.statemachine.implementation.prover.ProverStateMachine as a reference.
+LOG 1438363124884 [L3]: Completed automatic consistency testing on org.ggp.base.util.statemachine.implementation.propnet.ForwardInterruptingPropNetStateMachine, w/ 1592 rounds: all tests pass!
+
+LOG 1438363124885 [L3]: Testing on game tictactoe_3d_small_2player
+LOG 1438363124954 [L3]: Propnet creation done. It took 67ms.
+LOG 1438363124955 [L3]: Performing automatic consistency testing on org.ggp.base.util.statemachine.implementation.propnet.ForwardInterruptingPropNetStateMachine using org.ggp.base.util.statemachine.implementation.prover.ProverStateMachine as a reference.
+LOG 1438363232511 [L3]: Completed automatic consistency testing on org.ggp.base.util.statemachine.implementation.propnet.ForwardInterruptingPropNetStateMachine, w/ 135 rounds: all tests pass!
+
+LOG 1438363232512 [L3]: Testing on game escortLatch
+LOG 1438363232730 [L3]: Propnet creation done. It took 214ms.
+LOG 1438363232735 [L3]: Performing automatic consistency testing on org.ggp.base.util.statemachine.implementation.propnet.ForwardInterruptingPropNetStateMachine using org.ggp.base.util.statemachine.implementation.prover.ProverStateMachine as a reference.
+LOG 1438363300949 [L3]: Completed automatic consistency testing on org.ggp.base.util.statemachine.implementation.propnet.ForwardInterruptingPropNetStateMachine, w/ 22 rounds: all tests pass!
+
+LOG 1438363300949 [L3]: Testing on game lightsOn
+LOG 1438363300961 [L3]: Propnet creation done. It took 10ms.
+LOG 1438363300962 [L3]: Performing automatic consistency testing on org.ggp.base.util.statemachine.implementation.propnet.ForwardInterruptingPropNetStateMachine using org.ggp.base.util.statemachine.implementation.prover.ProverStateMachine as a reference.
+LOG 1438363319366 [L3]: Completed automatic consistency testing on org.ggp.base.util.statemachine.implementation.propnet.ForwardInterruptingPropNetStateMachine, w/ 1362 rounds: all tests pass!
+
+LOG 1438363319366 [L3]: Testing on game othello-comp2007
+LOG 1438363446873 [L3]: Propnet creation done. It took 127499ms.
+LOG 1438363447949 [L3]: Performing automatic consistency testing on org.ggp.base.util.statemachine.implementation.propnet.ForwardInterruptingPropNetStateMachine using org.ggp.base.util.statemachine.implementation.prover.ProverStateMachine as a reference.
+LOG 1438363486037 [L3]: Completed automatic consistency testing on org.ggp.base.util.statemachine.implementation.propnet.ForwardInterruptingPropNetStateMachine, w/ 1 rounds: all tests pass!
+
+LOG 1438363486037 [L3]: Testing on game ticTacToeLarge
+LOG 1438363486067 [L3]: Propnet creation done. It took 28ms.
+LOG 1438363486068 [L3]: Performing automatic consistency testing on org.ggp.base.util.statemachine.implementation.propnet.ForwardInterruptingPropNetStateMachine using org.ggp.base.util.statemachine.implementation.prover.ProverStateMachine as a reference.
+LOG 1438363554404 [L3]: Completed automatic consistency testing on org.ggp.base.util.statemachine.implementation.propnet.ForwardInterruptingPropNetStateMachine, w/ 55 rounds: all tests pass!
+
+LOG 1438363554405 [L3]: Testing on game cubicup_3player
+LOG 1438363555466 [L3]: Propnet creation done. It took 1057ms.
+LOG 1438363555536 [L3]: Performing automatic consistency testing on org.ggp.base.util.statemachine.implementation.propnet.ForwardInterruptingPropNetStateMachine using org.ggp.base.util.statemachine.implementation.prover.ProverStateMachine as a reference.
+LOG 1438363668475 [L3]: Completed automatic consistency testing on org.ggp.base.util.statemachine.implementation.propnet.ForwardInterruptingPropNetStateMachine, w/ 2 rounds: all tests pass!
+
+LOG 1438363668476 [L3]: Testing on game tictactoex9
+LOG 1438363668570 [L3]: Propnet creation done. It took 90ms.
+LOG 1438363668572 [L3]: Performing automatic consistency testing on org.ggp.base.util.statemachine.implementation.propnet.ForwardInterruptingPropNetStateMachine using org.ggp.base.util.statemachine.implementation.prover.ProverStateMachine as a reference.
+LOG 1438363783010 [L3]: Completed automatic consistency testing on org.ggp.base.util.statemachine.implementation.propnet.ForwardInterruptingPropNetStateMachine, w/ 35 rounds: all tests pass!
+
+LOG 1438363783010 [L3]: Testing on game ticTacToeSerial
+LOG 1438363783091 [L3]: Propnet creation done. It took 77ms.
+LOG 1438363783092 [L3]: Performing automatic consistency testing on org.ggp.base.util.statemachine.implementation.propnet.ForwardInterruptingPropNetStateMachine using org.ggp.base.util.statemachine.implementation.prover.ProverStateMachine as a reference.
+LOG 1438363893580 [L3]: Completed automatic consistency testing on org.ggp.base.util.statemachine.implementation.propnet.ForwardInterruptingPropNetStateMachine, w/ 109 rounds: all tests pass!
+
+LOG 1438363893581 [L3]: Testing on game qyshinsu
+LOG 1438363893968 [L3]: Propnet creation done. It took 378ms.
+LOG 1438363893972 [L3]: Performing automatic consistency testing on org.ggp.base.util.statemachine.implementation.propnet.ForwardInterruptingPropNetStateMachine using org.ggp.base.util.statemachine.implementation.prover.ProverStateMachine as a reference.
+LOG 1438363942035 [L3]: Completed automatic consistency testing on org.ggp.base.util.statemachine.implementation.propnet.ForwardInterruptingPropNetStateMachine, w/ 9 rounds: all tests pass!
+
+LOG 1438363942035 [L3]: Testing on game hitori
+LOG 1438364049323 [L3]: Propnet creation done. It took 107282ms.
+LOG 1438364049505 [L3]: Performing automatic consistency testing on org.ggp.base.util.statemachine.implementation.propnet.ForwardInterruptingPropNetStateMachine using org.ggp.base.util.statemachine.implementation.prover.ProverStateMachine as a reference.
+LOG 1438364081213 [L3]: Completed automatic consistency testing on org.ggp.base.util.statemachine.implementation.propnet.ForwardInterruptingPropNetStateMachine, w/ 2 rounds: all tests pass!
+
+LOG 1438364081214 [L3]: Testing on game knightfight
+LOG 1438364082474 [L3]: Propnet creation done. It took 1257ms.
+LOG 1438364082489 [L3]: Performing automatic consistency testing on org.ggp.base.util.statemachine.implementation.propnet.ForwardInterruptingPropNetStateMachine using org.ggp.base.util.statemachine.implementation.prover.ProverStateMachine as a reference.
+LOG 1438364125367 [L3]: Completed automatic consistency testing on org.ggp.base.util.statemachine.implementation.propnet.ForwardInterruptingPropNetStateMachine, w/ 296 rounds: all tests pass!
+
+LOG 1438364125368 [L3]: Testing on game skirmishHoles
+LOG 1438364157697 [L3]: Propnet creation done. It took 32323ms.
+LOG 1438364157892 [L3]: Performing automatic consistency testing on org.ggp.base.util.statemachine.implementation.propnet.ForwardInterruptingPropNetStateMachine using org.ggp.base.util.statemachine.implementation.prover.ProverStateMachine as a reference.
+LOG 1438364195441 [L3]: Completed automatic consistency testing on org.ggp.base.util.statemachine.implementation.propnet.ForwardInterruptingPropNetStateMachine, w/ 1 rounds: all tests pass!
+
+LOG 1438364195442 [L3]: Testing on game stateSpaceMedium
+LOG 1438364195466 [L3]: Propnet creation done. It took 19ms.
+LOG 1438364195467 [L3]: Performing automatic consistency testing on org.ggp.base.util.statemachine.implementation.propnet.ForwardInterruptingPropNetStateMachine using org.ggp.base.util.statemachine.implementation.prover.ProverStateMachine as a reference.
+LOG 1438364234088 [L3]: Completed automatic consistency testing on org.ggp.base.util.statemachine.implementation.propnet.ForwardInterruptingPropNetStateMachine, w/ 2012 rounds: all tests pass!
+
+LOG 1438364234088 [L3]: Testing on game eotcitcit
+LOG 1438364234134 [L3]: Propnet creation done. It took 43ms.
+LOG 1438364234135 [L3]: Performing automatic consistency testing on org.ggp.base.util.statemachine.implementation.propnet.ForwardInterruptingPropNetStateMachine using org.ggp.base.util.statemachine.implementation.prover.ProverStateMachine as a reference.
+LOG 1438364270643 [L3]: Completed automatic consistency testing on org.ggp.base.util.statemachine.implementation.propnet.ForwardInterruptingPropNetStateMachine, w/ 807 rounds: all tests pass!
+
+LOG 1438364270643 [L3]: Testing on game four_way_battle
+LOG 1438364271489 [L3]: Propnet creation done. It took 842ms.
+LOG 1438364271514 [L3]: Performing automatic consistency testing on org.ggp.base.util.statemachine.implementation.propnet.ForwardInterruptingPropNetStateMachine using org.ggp.base.util.statemachine.implementation.prover.ProverStateMachine as a reference.
+LOG 1438364307329 [L3]: Completed automatic consistency testing on org.ggp.base.util.statemachine.implementation.propnet.ForwardInterruptingPropNetStateMachine, w/ 10 rounds: all tests pass!
+
+LOG 1438364307329 [L3]: Testing on game connectFourSuicide
+LOG 1438364307425 [L3]: Propnet creation done. It took 93ms.
+LOG 1438364307426 [L3]: Performing automatic consistency testing on org.ggp.base.util.statemachine.implementation.propnet.ForwardInterruptingPropNetStateMachine using org.ggp.base.util.statemachine.implementation.prover.ProverStateMachine as a reference.
+LOG 1438364342488 [L3]: Completed automatic consistency testing on org.ggp.base.util.statemachine.implementation.propnet.ForwardInterruptingPropNetStateMachine, w/ 79 rounds: all tests pass!
+
+LOG 1438364342488 [L3]: Testing on game pentago
+LOG 1438364343058 [L3]: Propnet creation done. It took 567ms.
+LOG 1438364343061 [L3]: Performing automatic consistency testing on org.ggp.base.util.statemachine.implementation.propnet.ForwardInterruptingPropNetStateMachine using org.ggp.base.util.statemachine.implementation.prover.ProverStateMachine as a reference.
+LOG 1438364390915 [L3]: Completed automatic consistency testing on org.ggp.base.util.statemachine.implementation.propnet.ForwardInterruptingPropNetStateMachine, w/ 11 rounds: all tests pass!
+
+LOG 1438364390916 [L3]: Testing on game lightsOnSimul4
+LOG 1438364390993 [L3]: Propnet creation done. It took 75ms.
+LOG 1438364390993 [L3]: Performing automatic consistency testing on org.ggp.base.util.statemachine.implementation.propnet.ForwardInterruptingPropNetStateMachine using org.ggp.base.util.statemachine.implementation.prover.ProverStateMachine as a reference.
+LOG 1438364430986 [L3]: Completed automatic consistency testing on org.ggp.base.util.statemachine.implementation.propnet.ForwardInterruptingPropNetStateMachine, w/ 303 rounds: all tests pass!
+
+LOG 1438364430987 [L3]: Testing on game asteroidsParallel
+LOG 1438364431106 [L3]: Propnet creation done. It took 109ms.
+LOG 1438364431108 [L3]: Performing automatic consistency testing on org.ggp.base.util.statemachine.implementation.propnet.ForwardInterruptingPropNetStateMachine using org.ggp.base.util.statemachine.implementation.prover.ProverStateMachine as a reference.
+LOG 1438364467533 [L3]: Completed automatic consistency testing on org.ggp.base.util.statemachine.implementation.propnet.ForwardInterruptingPropNetStateMachine, w/ 158 rounds: all tests pass!
+
+LOG 1438364467534 [L3]: Testing on game strangeSkirmish
+LOG 1438364501130 [L3]: Propnet creation done. It took 33590ms.
+LOG 1438364501330 [L3]: Performing automatic consistency testing on org.ggp.base.util.statemachine.implementation.propnet.ForwardInterruptingPropNetStateMachine using org.ggp.base.util.statemachine.implementation.prover.ProverStateMachine as a reference.
+LOG 1438364539320 [L3]: Completed automatic consistency testing on org.ggp.base.util.statemachine.implementation.propnet.ForwardInterruptingPropNetStateMachine, w/ 1 rounds: all tests pass!
+
+LOG 1438364539321 [L3]: Testing on game kalaha_2009
+LOG 1438364809114 [L3]: Propnet creation done. It took 269777ms.
+LOG 1438364809285 [L3]: Performing automatic consistency testing on org.ggp.base.util.statemachine.implementation.propnet.ForwardInterruptingPropNetStateMachine using org.ggp.base.util.statemachine.implementation.prover.ProverStateMachine as a reference.
+LOG 1438364848337 [L3]: Completed automatic consistency testing on org.ggp.base.util.statemachine.implementation.propnet.ForwardInterruptingPropNetStateMachine, w/ 12 rounds: all tests pass!
+
+LOG 1438364848337 [L3]: Testing on game factoringEasyTurtleBrain
+LOG 1438364848359 [L3]: Propnet creation done. It took 19ms.
+LOG 1438364848360 [L3]: Performing automatic consistency testing on org.ggp.base.util.statemachine.implementation.propnet.ForwardInterruptingPropNetStateMachine using org.ggp.base.util.statemachine.implementation.prover.ProverStateMachine as a reference.
+LOG 1438364879462 [L3]: Completed automatic consistency testing on org.ggp.base.util.statemachine.implementation.propnet.ForwardInterruptingPropNetStateMachine, w/ 118 rounds: all tests pass!
+
+LOG 1438364879463 [L3]: Testing on game chess
+LOG 1438365208134 [L3]: Propnet creation interrupted. Taking too long!
+LOG 1438365208135 [L9]: <ERR> java.lang.InterruptedException
+	at org.ggp.base.util.concurrency.ConcurrencyUtils.checkForInterruption(ConcurrencyUtils.java:9)
+	at org.ggp.base.util.propnet.factory.ForwardInterruptingPropNetFactory.addSentenceForm(ForwardInterruptingPropNetFactory.java:1064)
+	at org.ggp.base.util.propnet.factory.ForwardInterruptingPropNetFactory.create(ForwardInterruptingPropNetFactory.java:212)
+	at org.ggp.base.util.propnet.factory.ForwardInterruptingPropNetFactory.create(ForwardInterruptingPropNetFactory.java:113)
+	at org.ggp.base.util.propnet.factory.ForwardInterruptingPropNetCreator.run(ForwardInterruptingPropNetCreator.java:46)
+LOG 1438365208136 [L3]: No propnet available. Impossible to test this game.
+
+LOG 1438365208136 [L3]: Testing on game colonelBlottoVariant
+LOG 1438365210233 [L3]: Propnet creation done. It took 2094ms.
+LOG 1438365210243 [L3]: Performing automatic consistency testing on org.ggp.base.util.statemachine.implementation.propnet.ForwardInterruptingPropNetStateMachine using org.ggp.base.util.statemachine.implementation.prover.ProverStateMachine as a reference.
+LOG 1438365248220 [L3]: Completed automatic consistency testing on org.ggp.base.util.statemachine.implementation.propnet.ForwardInterruptingPropNetStateMachine, w/ 44 rounds: all tests pass!
+
+LOG 1438365248221 [L3]: Testing on game blocker
+LOG 1438365248243 [L3]: Propnet creation done. It took 20ms.
+LOG 1438365248244 [L3]: Performing automatic consistency testing on org.ggp.base.util.statemachine.implementation.propnet.ForwardInterruptingPropNetStateMachine using org.ggp.base.util.statemachine.implementation.prover.ProverStateMachine as a reference.
+LOG 1438365283164 [L3]: Completed automatic consistency testing on org.ggp.base.util.statemachine.implementation.propnet.ForwardInterruptingPropNetStateMachine, w/ 873 rounds: all tests pass!
+
+LOG 1438365283165 [L3]: Testing on game ticTicToe
+LOG 1438365283214 [L3]: Propnet creation done. It took 47ms.
+LOG 1438365283215 [L3]: Performing automatic consistency testing on org.ggp.base.util.statemachine.implementation.propnet.ForwardInterruptingPropNetStateMachine using org.ggp.base.util.statemachine.implementation.prover.ProverStateMachine as a reference.
+LOG 1438365313537 [L3]: Completed automatic consistency testing on org.ggp.base.util.statemachine.implementation.propnet.ForwardInterruptingPropNetStateMachine, w/ 1032 rounds: all tests pass!
+
+LOG 1438365313537 [L3]: Testing on game sudoku
+LOG 1438365662038 [L3]: Propnet creation interrupted. Taking too long!
+LOG 1438365662040 [L9]: <ERR> java.lang.InterruptedException
+	at org.ggp.base.util.concurrency.ConcurrencyUtils.checkForInterruption(ConcurrencyUtils.java:9)
+	at org.ggp.base.util.reasoner.gdl.GdlChainingReasoner.getRuleResults(GdlChainingReasoner.java:78)
+	at org.ggp.base.util.gdl.transforms.ConstantCheckerFactory.addSentencesTrueByRulesDifferentially(ConstantCheckerFactory.java:66)
+	at org.ggp.base.util.gdl.transforms.ConstantCheckerFactory.createWithForwardChaining(ConstantCheckerFactory.java:43)
+	at org.ggp.base.util.gdl.transforms.CondensationIsolator.run(CondensationIsolator.java:172)
+	at org.ggp.base.util.propnet.factory.ForwardInterruptingPropNetFactory.create(ForwardInterruptingPropNetFactory.java:126)
+	at org.ggp.base.util.propnet.factory.ForwardInterruptingPropNetFactory.create(ForwardInterruptingPropNetFactory.java:113)
+	at org.ggp.base.util.propnet.factory.ForwardInterruptingPropNetCreator.run(ForwardInterruptingPropNetCreator.java:46)
+LOG 1438365662040 [L3]: No propnet available. Impossible to test this game.
+
+LOG 1438365662041 [L3]: Testing on game checkLines
+LOG 1438365662135 [L3]: Propnet creation done. It took 86ms.
+LOG 1438365662136 [L3]: Performing automatic consistency testing on org.ggp.base.util.statemachine.implementation.propnet.ForwardInterruptingPropNetStateMachine using org.ggp.base.util.statemachine.implementation.prover.ProverStateMachine as a reference.
+LOG 1438365690700 [L3]: Completed automatic consistency testing on org.ggp.base.util.statemachine.implementation.propnet.ForwardInterruptingPropNetStateMachine, w/ 150 rounds: all tests pass!
+
+LOG 1438365690701 [L3]: Testing on game toetictac
+LOG 1438365690717 [L3]: Propnet creation done. It took 14ms.
+LOG 1438365690718 [L3]: Performing automatic consistency testing on org.ggp.base.util.statemachine.implementation.propnet.ForwardInterruptingPropNetStateMachine using org.ggp.base.util.statemachine.implementation.prover.ProverStateMachine as a reference.
+LOG 1438365716661 [L3]: Completed automatic consistency testing on org.ggp.base.util.statemachine.implementation.propnet.ForwardInterruptingPropNetStateMachine, w/ 1058 rounds: all tests pass!
+
+LOG 1438365716662 [L3]: Testing on game checkers
+LOG 1438365750028 [L3]: Propnet creation done. It took 33358ms.
+LOG 1438365750064 [L3]: Performing automatic consistency testing on org.ggp.base.util.statemachine.implementation.propnet.ForwardInterruptingPropNetStateMachine using org.ggp.base.util.statemachine.implementation.prover.ProverStateMachine as a reference.
+LOG 1438365780434 [L3]: Completed automatic consistency testing on org.ggp.base.util.statemachine.implementation.propnet.ForwardInterruptingPropNetStateMachine, w/ 3 rounds: all tests pass!
+
+LOG 1438365780434 [L3]: Testing on game othelloHoles
+LOG 1438365955831 [L3]: Propnet creation done. It took 175391ms.
+LOG 1438365956965 [L3]: Performing automatic consistency testing on org.ggp.base.util.statemachine.implementation.propnet.ForwardInterruptingPropNetStateMachine using org.ggp.base.util.statemachine.implementation.prover.ProverStateMachine as a reference.
+LOG 1438365985740 [L3]: Completed automatic consistency testing on org.ggp.base.util.statemachine.implementation.propnet.ForwardInterruptingPropNetStateMachine, w/ 1 rounds: all tests pass!
+
+LOG 1438365985740 [L3]: Testing on game breakthroughSuicide
+LOG 1438365986225 [L3]: Propnet creation done. It took 482ms.
+LOG 1438365986232 [L3]: Performing automatic consistency testing on org.ggp.base.util.statemachine.implementation.propnet.ForwardInterruptingPropNetStateMachine using org.ggp.base.util.statemachine.implementation.prover.ProverStateMachine as a reference.
+LOG 1438366022198 [L3]: Completed automatic consistency testing on org.ggp.base.util.statemachine.implementation.propnet.ForwardInterruptingPropNetStateMachine, w/ 10 rounds: all tests pass!
+
+LOG 1438366022198 [L3]: Testing on game 2pffa_zerosum
+LOG 1438366022511 [L3]: Propnet creation done. It took 309ms.
+LOG 1438366022513 [L3]: Performing automatic consistency testing on org.ggp.base.util.statemachine.implementation.propnet.ForwardInterruptingPropNetStateMachine using org.ggp.base.util.statemachine.implementation.prover.ProverStateMachine as a reference.
+LOG 1438366052070 [L3]: Completed automatic consistency testing on org.ggp.base.util.statemachine.implementation.propnet.ForwardInterruptingPropNetStateMachine, w/ 94 rounds: all tests pass!
+
+LOG 1438366052071 [L3]: Testing on game troublemaker02
+LOG 1438366052081 [L3]: Propnet creation done. It took 8ms.
+LOG 1438366052082 [L3]: Performing automatic consistency testing on org.ggp.base.util.statemachine.implementation.propnet.ForwardInterruptingPropNetStateMachine using org.ggp.base.util.statemachine.implementation.prover.ProverStateMachine as a reference.
+LOG 1438366081935 [L3]: Completed automatic consistency testing on org.ggp.base.util.statemachine.implementation.propnet.ForwardInterruptingPropNetStateMachine, w/ 10499 rounds: all tests pass!
+
+LOG 1438366081936 [L3]: Testing on game 2pttc
+LOG 1438366082380 [L3]: Propnet creation done. It took 441ms.
+LOG 1438366082384 [L3]: Performing automatic consistency testing on org.ggp.base.util.statemachine.implementation.propnet.ForwardInterruptingPropNetStateMachine using org.ggp.base.util.statemachine.implementation.prover.ProverStateMachine as a reference.
+LOG 1438366113427 [L3]: Completed automatic consistency testing on org.ggp.base.util.statemachine.implementation.propnet.ForwardInterruptingPropNetStateMachine, w/ 97 rounds: all tests pass!
+
+LOG 1438366113427 [L3]: Testing on game nim3
+LOG 1438366113506 [L3]: Propnet creation done. It took 77ms.
+LOG 1438366113508 [L3]: Performing automatic consistency testing on org.ggp.base.util.statemachine.implementation.propnet.ForwardInterruptingPropNetStateMachine using org.ggp.base.util.statemachine.implementation.prover.ProverStateMachine as a reference.
+LOG 1438366145511 [L3]: Completed automatic consistency testing on org.ggp.base.util.statemachine.implementation.propnet.ForwardInterruptingPropNetStateMachine, w/ 879 rounds: all tests pass!
+
+LOG 1438366145511 [L3]: Testing on game troublemaker01
+LOG 1438366145520 [L3]: Propnet creation done. It took 7ms.
+LOG 1438366145520 [L3]: Performing automatic consistency testing on org.ggp.base.util.statemachine.implementation.propnet.ForwardInterruptingPropNetStateMachine using org.ggp.base.util.statemachine.implementation.prover.ProverStateMachine as a reference.
+LOG 1438366235276 [L3]: Completed automatic consistency testing on org.ggp.base.util.statemachine.implementation.propnet.ForwardInterruptingPropNetStateMachine, w/ 11321 rounds: all tests pass!
+
+LOG 1438366235277 [L3]: Testing on game nim2
+LOG 1438366235353 [L3]: Propnet creation done. It took 74ms.
+LOG 1438366235354 [L3]: Performing automatic consistency testing on org.ggp.base.util.statemachine.implementation.propnet.ForwardInterruptingPropNetStateMachine using org.ggp.base.util.statemachine.implementation.prover.ProverStateMachine as a reference.
+LOG 1438366277668 [L3]: Completed automatic consistency testing on org.ggp.base.util.statemachine.implementation.propnet.ForwardInterruptingPropNetStateMachine, w/ 1685 rounds: all tests pass!
+
+LOG 1438366277668 [L3]: Testing on game checkers-suicide-cylinder-mustjump
+LOG 1438366448637 [L3]: Propnet creation done. It took 170960ms.
+LOG 1438366448793 [L3]: Performing automatic consistency testing on org.ggp.base.util.statemachine.implementation.propnet.ForwardInterruptingPropNetStateMachine using org.ggp.base.util.statemachine.implementation.prover.ProverStateMachine as a reference.
+LOG 1438366481903 [L3]: Completed automatic consistency testing on org.ggp.base.util.statemachine.implementation.propnet.ForwardInterruptingPropNetStateMachine, w/ 7 rounds: all tests pass!
+
+LOG 1438366481904 [L3]: Testing on game nim4
+LOG 1438366481980 [L3]: Propnet creation done. It took 75ms.
+LOG 1438366481981 [L3]: Performing automatic consistency testing on org.ggp.base.util.statemachine.implementation.propnet.ForwardInterruptingPropNetStateMachine using org.ggp.base.util.statemachine.implementation.prover.ProverStateMachine as a reference.
+LOG 1438366520877 [L3]: Completed automatic consistency testing on org.ggp.base.util.statemachine.implementation.propnet.ForwardInterruptingPropNetStateMachine, w/ 834 rounds: all tests pass!
+
+LOG 1438366520878 [L3]: Testing on game duplicateStateSmall
+LOG 1438366520891 [L3]: Propnet creation done. It took 11ms.
+LOG 1438366520892 [L3]: Performing automatic consistency testing on org.ggp.base.util.statemachine.implementation.propnet.ForwardInterruptingPropNetStateMachine using org.ggp.base.util.statemachine.implementation.prover.ProverStateMachine as a reference.
+LOG 1438366555065 [L3]: Completed automatic consistency testing on org.ggp.base.util.statemachine.implementation.propnet.ForwardInterruptingPropNetStateMachine, w/ 6628 rounds: all tests pass!
+
+LOG 1438366555066 [L3]: Testing on game asteroidsSerial
+LOG 1438366555151 [L3]: Propnet creation done. It took 79ms.
+LOG 1438366555152 [L3]: Performing automatic consistency testing on org.ggp.base.util.statemachine.implementation.propnet.ForwardInterruptingPropNetStateMachine using org.ggp.base.util.statemachine.implementation.prover.ProverStateMachine as a reference.
+LOG 1438366593292 [L3]: Completed automatic consistency testing on org.ggp.base.util.statemachine.implementation.propnet.ForwardInterruptingPropNetStateMachine, w/ 75 rounds: all tests pass!
+
+LOG 1438366593293 [L3]: Testing on game tictactoe_3d_small_6player
+LOG 1438366593410 [L3]: Propnet creation done. It took 114ms.
+LOG 1438366593411 [L3]: Performing automatic consistency testing on org.ggp.base.util.statemachine.implementation.propnet.ForwardInterruptingPropNetStateMachine using org.ggp.base.util.statemachine.implementation.prover.ProverStateMachine as a reference.
+LOG 1438366696218 [L3]: Completed automatic consistency testing on org.ggp.base.util.statemachine.implementation.propnet.ForwardInterruptingPropNetStateMachine, w/ 29 rounds: all tests pass!
+
+LOG 1438366696218 [L3]: Testing on game incredible
+LOG 1438366696283 [L3]: Propnet creation done. It took 61ms.
+LOG 1438366696284 [L3]: Performing automatic consistency testing on org.ggp.base.util.statemachine.implementation.propnet.ForwardInterruptingPropNetStateMachine using org.ggp.base.util.statemachine.implementation.prover.ProverStateMachine as a reference.
+LOG 1438366733822 [L3]: Completed automatic consistency testing on org.ggp.base.util.statemachine.implementation.propnet.ForwardInterruptingPropNetStateMachine, w/ 329 rounds: all tests pass!
+
+LOG 1438366733822 [L3]: Testing on game othelloSuicide
+LOG 1438366842399 [L3]: Propnet creation done. It took 108573ms.
+LOG 1438366843534 [L3]: Performing automatic consistency testing on org.ggp.base.util.statemachine.implementation.propnet.ForwardInterruptingPropNetStateMachine using org.ggp.base.util.statemachine.implementation.prover.ProverStateMachine as a reference.
+LOG 1438366871210 [L3]: Completed automatic consistency testing on org.ggp.base.util.statemachine.implementation.propnet.ForwardInterruptingPropNetStateMachine, w/ 1 rounds: all tests pass!
+
+LOG 1438366871211 [L3]: Testing on game nim1
+LOG 1438366871289 [L3]: Propnet creation done. It took 76ms.
+LOG 1438366871291 [L3]: Performing automatic consistency testing on org.ggp.base.util.statemachine.implementation.propnet.ForwardInterruptingPropNetStateMachine using org.ggp.base.util.statemachine.implementation.prover.ProverStateMachine as a reference.
+LOG 1438366905623 [L3]: Completed automatic consistency testing on org.ggp.base.util.statemachine.implementation.propnet.ForwardInterruptingPropNetStateMachine, w/ 1843 rounds: all tests pass!
+
+LOG 1438366905624 [L3]: Testing on game stateSpaceSmall
+LOG 1438366905634 [L3]: Propnet creation done. It took 8ms.
+LOG 1438366905635 [L3]: Performing automatic consistency testing on org.ggp.base.util.statemachine.implementation.propnet.ForwardInterruptingPropNetStateMachine using org.ggp.base.util.statemachine.implementation.prover.ProverStateMachine as a reference.
+LOG 1438366943408 [L3]: Completed automatic consistency testing on org.ggp.base.util.statemachine.implementation.propnet.ForwardInterruptingPropNetStateMachine, w/ 8582 rounds: all tests pass!
+
+LOG 1438366943408 [L3]: Testing on game withConviction
+LOG 1438366943477 [L3]: Propnet creation done. It took 64ms.
+LOG 1438366943478 [L3]: Performing automatic consistency testing on org.ggp.base.util.statemachine.implementation.propnet.ForwardInterruptingPropNetStateMachine using org.ggp.base.util.statemachine.implementation.prover.ProverStateMachine as a reference.
+LOG 1438366972497 [L3]: Completed automatic consistency testing on org.ggp.base.util.statemachine.implementation.propnet.ForwardInterruptingPropNetStateMachine, w/ 47 rounds: all tests pass!
+
+LOG 1438366972498 [L3]: Testing on game crissrace
+LOG 1438367006664 [L3]: Propnet creation done. It took 34157ms.
+LOG 1438367007190 [L3]: Performing automatic consistency testing on org.ggp.base.util.statemachine.implementation.propnet.ForwardInterruptingPropNetStateMachine using org.ggp.base.util.statemachine.implementation.prover.ProverStateMachine as a reference.
+LOG 1438367017240 [L3]: Completed automatic consistency testing on org.ggp.base.util.statemachine.implementation.propnet.ForwardInterruptingPropNetStateMachine, w/ 5 rounds: all tests pass!
+
+LOG 1438367017241 [L3]: Testing on game blocksWorld
+LOG 1438367017260 [L3]: Propnet creation done. It took 17ms.
+LOG 1438367017260 [L3]: Performing automatic consistency testing on org.ggp.base.util.statemachine.implementation.propnet.ForwardInterruptingPropNetStateMachine using org.ggp.base.util.statemachine.implementation.prover.ProverStateMachine as a reference.
+LOG 1438367041970 [L3]: Completed automatic consistency testing on org.ggp.base.util.statemachine.implementation.propnet.ForwardInterruptingPropNetStateMachine, w/ 1701 rounds: all tests pass!
+
+LOG 1438367041971 [L3]: Testing on game tictactoe_3d_2player
+LOG 1438367042159 [L3]: Propnet creation done. It took 186ms.
+LOG 1438367042161 [L3]: Performing automatic consistency testing on org.ggp.base.util.statemachine.implementation.propnet.ForwardInterruptingPropNetStateMachine using org.ggp.base.util.statemachine.implementation.prover.ProverStateMachine as a reference.
+LOG 1438367072741 [L3]: Completed automatic consistency testing on org.ggp.base.util.statemachine.implementation.propnet.ForwardInterruptingPropNetStateMachine, w/ 17 rounds: all tests pass!
+
+LOG 1438367072741 [L3]: Testing on game hanoi7_bugfix
+LOG 1438367072922 [L3]: Propnet creation done. It took 177ms.
+LOG 1438367072926 [L3]: Performing automatic consistency testing on org.ggp.base.util.statemachine.implementation.propnet.ForwardInterruptingPropNetStateMachine using org.ggp.base.util.statemachine.implementation.prover.ProverStateMachine as a reference.
+LOG 1438367104841 [L3]: Completed automatic consistency testing on org.ggp.base.util.statemachine.implementation.propnet.ForwardInterruptingPropNetStateMachine, w/ 110 rounds: all tests pass!
+
+LOG 1438367104841 [L3]: Testing on game checkersTorus
+LOG 1438367106170 [L3]: Propnet creation done. It took 1323ms.
+LOG 1438367106182 [L3]: Performing automatic consistency testing on org.ggp.base.util.statemachine.implementation.propnet.ForwardInterruptingPropNetStateMachine using org.ggp.base.util.statemachine.implementation.prover.ProverStateMachine as a reference.
+LOG 1438367137638 [L3]: Completed automatic consistency testing on org.ggp.base.util.statemachine.implementation.propnet.ForwardInterruptingPropNetStateMachine, w/ 15 rounds: all tests pass!
+
+LOG 1438367137638 [L3]: Testing on game queens
+LOG 1438367138735 [L3]: Propnet creation done. It took 1091ms.
+LOG 1438367138775 [L3]: Performing automatic consistency testing on org.ggp.base.util.statemachine.implementation.propnet.ForwardInterruptingPropNetStateMachine using org.ggp.base.util.statemachine.implementation.prover.ProverStateMachine as a reference.
+LOG 1438367168058 [L3]: Completed automatic consistency testing on org.ggp.base.util.statemachine.implementation.propnet.ForwardInterruptingPropNetStateMachine, w/ 66 rounds: all tests pass!
+
+LOG 1438367168059 [L3]: Testing on game pearls
+LOG 1438367168066 [L3]: Propnet creation done. It took 6ms.
+LOG 1438367168066 [L3]: Performing automatic consistency testing on org.ggp.base.util.statemachine.implementation.propnet.ForwardInterruptingPropNetStateMachine using org.ggp.base.util.statemachine.implementation.prover.ProverStateMachine as a reference.
+LOG 1438367198415 [L3]: Completed automatic consistency testing on org.ggp.base.util.statemachine.implementation.propnet.ForwardInterruptingPropNetStateMachine, w/ 2164 rounds: all tests pass!
+
+LOG 1438367198416 [L3]: Testing on game blobwars
+LOG 1438367515680 [L3]: Propnet creation interrupted. Taking too long!
+LOG 1438367515683 [L9]: <ERR> java.lang.InterruptedException
+	at org.ggp.base.util.concurrency.ConcurrencyUtils.checkForInterruption(ConcurrencyUtils.java:9)
+	at org.ggp.base.util.gdl.model.assignments.FunctionInfoImpl.<init>(FunctionInfoImpl.java:41)
+	at org.ggp.base.util.gdl.model.assignments.FunctionInfoImpl.create(FunctionInfoImpl.java:119)
+	at org.ggp.base.util.gdl.model.assignments.AssignmentsImpl.getNumAssignmentsEstimate(AssignmentsImpl.java:561)
+	at org.ggp.base.util.gdl.transforms.CondensationIsolator.goodCondensationSetByHeuristic(CondensationIsolator.java:406)
+	at org.ggp.base.util.gdl.transforms.CondensationIsolator.getCondensationSet(CondensationIsolator.java:376)
+	at org.ggp.base.util.gdl.transforms.CondensationIsolator.run(CondensationIsolator.java:191)
+	at org.ggp.base.util.propnet.factory.ForwardInterruptingPropNetFactory.create(ForwardInterruptingPropNetFactory.java:126)
+	at org.ggp.base.util.propnet.factory.ForwardInterruptingPropNetFactory.create(ForwardInterruptingPropNetFactory.java:113)
+	at org.ggp.base.util.propnet.factory.ForwardInterruptingPropNetCreator.run(ForwardInterruptingPropNetCreator.java:46)
+LOG 1438367515683 [L3]: No propnet available. Impossible to test this game.
+
+LOG 1438367515683 [L3]: Testing on game simultaneousWin2
+LOG 1438367515718 [L3]: Propnet creation done. It took 31ms.
+LOG 1438367515719 [L3]: Performing automatic consistency testing on org.ggp.base.util.statemachine.implementation.propnet.ForwardInterruptingPropNetStateMachine using org.ggp.base.util.statemachine.implementation.prover.ProverStateMachine as a reference.
+LOG 1438367545091 [L3]: Completed automatic consistency testing on org.ggp.base.util.statemachine.implementation.propnet.ForwardInterruptingPropNetStateMachine, w/ 36 rounds: all tests pass!
+
+LOG 1438367545091 [L3]: Testing on game ruleDepthExponential
+LOG 1438367870646 [L3]: Propnet creation interrupted. Taking too long!
+LOG 1438367870648 [L9]: <ERR> java.lang.InterruptedException
+	at org.ggp.base.util.concurrency.ConcurrencyUtils.checkForInterruption(ConcurrencyUtils.java:9)
+	at org.ggp.base.util.propnet.factory.ForwardInterruptingPropNetFactory.addSentenceForm(ForwardInterruptingPropNetFactory.java:1064)
+	at org.ggp.base.util.propnet.factory.ForwardInterruptingPropNetFactory.create(ForwardInterruptingPropNetFactory.java:212)
+	at org.ggp.base.util.propnet.factory.ForwardInterruptingPropNetFactory.create(ForwardInterruptingPropNetFactory.java:113)
+	at org.ggp.base.util.propnet.factory.ForwardInterruptingPropNetCreator.run(ForwardInterruptingPropNetCreator.java:46)
+LOG 1438367870648 [L3]: No propnet available. Impossible to test this game.
+
+LOG 1438367870649 [L3]: Testing on game point_grab
+LOG 1438367870669 [L3]: Propnet creation done. It took 16ms.
+LOG 1438367870670 [L3]: Performing automatic consistency testing on org.ggp.base.util.statemachine.implementation.propnet.ForwardInterruptingPropNetStateMachine using org.ggp.base.util.statemachine.implementation.prover.ProverStateMachine as a reference.
+LOG 1438367963832 [L3]: Completed automatic consistency testing on org.ggp.base.util.statemachine.implementation.propnet.ForwardInterruptingPropNetStateMachine, w/ 763 rounds: all tests pass!
+
+LOG 1438367963833 [L3]: Testing on game factoringGeorgeForman
+LOG 1438367963844 [L3]: Propnet creation done. It took 10ms.
+LOG 1438367963845 [L3]: Performing automatic consistency testing on org.ggp.base.util.statemachine.implementation.propnet.ForwardInterruptingPropNetStateMachine using org.ggp.base.util.statemachine.implementation.prover.ProverStateMachine as a reference.
+LOG 1438368000165 [L3]: Completed automatic consistency testing on org.ggp.base.util.statemachine.implementation.propnet.ForwardInterruptingPropNetStateMachine, w/ 335 rounds: all tests pass!
+
+LOG 1438368000166 [L3]: Testing on game blocksWorldSerial
+LOG 1438368000226 [L3]: Propnet creation done. It took 54ms.
+LOG 1438368000226 [L3]: Performing automatic consistency testing on org.ggp.base.util.statemachine.implementation.propnet.ForwardInterruptingPropNetStateMachine using org.ggp.base.util.statemachine.implementation.prover.ProverStateMachine as a reference.
+LOG 1438368035850 [L3]: Completed automatic consistency testing on org.ggp.base.util.statemachine.implementation.propnet.ForwardInterruptingPropNetStateMachine, w/ 1411 rounds: all tests pass!
+

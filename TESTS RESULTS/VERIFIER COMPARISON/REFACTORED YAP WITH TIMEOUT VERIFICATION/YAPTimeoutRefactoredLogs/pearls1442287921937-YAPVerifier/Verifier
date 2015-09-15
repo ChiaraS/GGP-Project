@@ -1,0 +1,4 @@
+LOG 1442287921939 [L3]: Testing on game pearls
+LOG 1442287922070 [L3]: Performing automatic consistency testing on org.ggp.base.util.statemachine.implementation.yapProlog.YapStateMachine using org.ggp.base.util.statemachine.implementation.prover.ProverStateMachine as a reference.
+LOG 1442288102266 [L3]: Completed automatic consistency testing on org.ggp.base.util.statemachine.implementation.yapProlog.YapStateMachine, w/ 91 rounds: all tests pass!
+
