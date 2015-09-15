@@ -5,11 +5,27 @@ import java.util.concurrent.Callable;
 
 import org.ggp.base.util.game.GameRepository;
 import org.ggp.base.util.gdl.grammar.Gdl;
+import org.ggp.base.util.gdl.transforms.DistinctAndNotMover;
 import org.ggp.base.util.logging.GamerLogger;
 import org.ggp.base.util.logging.GamerLogger.FORMAT;
 import org.ggp.base.util.statemachine.implementation.propnet.ForwardInterruptingPropNetStateMachine;
 import org.ggp.base.util.statemachine.implementation.prover.ProverStateMachine;
 import org.ggp.base.util.statemachine.verifier.StateMachineVerifier;
+
+/**
+ * TODOOOOOO:
+ * 2. switcha alla prima versione funzionante della propnet, mergiala col master, implementa il
+ * test con MCS e runnalo sul server.
+ * 3. prova a sistemare yap prover usando DistinctAndNotMover.run(description) sulla game
+ * description per vedere se il verifier riesce a passare i test dove fallisce senza
+ * eccezione.
+ * 1. merge di yap prover refactored con il master
+ * 4. aggiungi un check del timeout anche all'aima prover
+ * 5. Va che dopo aver sistemato tutto e aver testato le varie velocità devi anche provare tutto
+ * con la cached state machine
+ */
+
+
 
 /**
  * This class verifies the consistency of the propnet state machine wrt the prover state machine.
@@ -56,7 +72,7 @@ public class PropnetVerifier {
         ForwardInterruptingPropNetStateMachine thePropNetMachine;
 
         GamerLogger.setSpilloverLogfile("PropnetVerifierTable.csv");
-        GamerLogger.log(FORMAT.CSV_FORMAT, "PropnetVerifierTable", "Game key;Construction Time (ms);Rounds;Test duration (ms);Pass;");
+        GamerLogger.log(FORMAT.CSV_FORMAT, "PropnetVerifierTable", "Game key;PropNet Construction Time (ms);Initialization time;Rounds;Test duration (ms);Pass;");
 
         GameRepository theRepository = GameRepository.getDefaultRepository();
         for(String gameKey : theRepository.getGameKeys()) {
