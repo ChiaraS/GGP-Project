@@ -60,6 +60,9 @@ public final class ForwardInterruptingOr extends ForwardInterruptingComponent
 	 */
 	@Override
 	public void propagateValue(boolean newValue){
+
+		//ConcurrencyUtils.checkForInterruption();
+
 		if(this.consistent){
 			// If this method is called, and this component was consistent with its input, it means that
 			// one of the inputs this component was consistent with changed value to newValue.

@@ -1,6 +1,7 @@
 package csironi.ggp.course;
 
 import java.util.List;
+import java.util.concurrent.Callable;
 
 import org.ggp.base.util.game.GameRepository;
 import org.ggp.base.util.gdl.grammar.Gdl;
@@ -102,6 +103,31 @@ public class PropnetVerifier {
             GamerLogger.setSpilloverLogfile("PropnetVerifierTable.csv");
             GamerLogger.log(FORMAT.CSV_FORMAT, "PropnetVerifierTable", gameKey + ";" + thePropNetMachine.getPropnetConstructionTime() + ";" + rounds + ";" + duration + ";" + pass + ";");
         }
+	}
+
+
+	public class PropnetInitializer implements Callable<Long>{
+
+		private List<Gdl> description;
+
+		private ForwardInterruptingPropNetStateMachine theMachine;
+
+		private long initializationTime;
+
+		public PropnetInitializer(List<Gdl> description, ForwardInterruptingPropNetStateMachine theMachine){
+			this.description = description;
+			this.theMachine = theMachine;
+			this.initializationTime = -1L;
+
+		}
+
+		@Override
+		public Long call() throws Exception {
+			long start = System.currentTimeMillis();
+			this.theMachine.initialize(this.description);
+			return System.currentTimeMillis() - start;
+
+		}
 	}
 
 }

@@ -25,12 +25,14 @@ import org.ggp.base.util.statemachine.exceptions.StateMachineInitializationExcep
 import org.ggp.base.util.statemachine.exceptions.TransitionDefinitionException;
 import org.ggp.base.util.statemachine.implementation.prover.query.ProverQueryBuilder;
 
+import com.google.common.collect.ImmutableList;
+
 
 public class ForwardInterruptingPropNetStateMachine extends StateMachine {
     /** The underlying proposition network  */
     private ForwardInterruptingPropNet propNet;
     /** The player roles */
-    private List<Role> roles;
+    private ImmutableList<Role> roles;
     /** The initial state */
     private MachineState initialState;
 
@@ -38,15 +40,17 @@ public class ForwardInterruptingPropNetStateMachine extends StateMachine {
 	 * Total time (in milliseconds) taken to construct the propnet.
 	 * If it is negative it means that the propnet didn't build in time.
 	 */
-	long propnetConstructionTime = -1L;
+	private long propnetConstructionTime = -1L;
 
     /**
      * Initializes the PropNetStateMachine. You should compute the topological
      * ordering here. Additionally you may compute the initial state here, at
      * your discretion.
+     *
+     * @throws StateMachineInitializationException
      */
     @Override
-    public void initialize(List<Gdl> description) {
+    public void initialize(List<Gdl> description) throws StateMachineInitializationException {
     	long startTime = System.currentTimeMillis();
 		// Create the propnet
     	try{
@@ -61,7 +65,7 @@ public class ForwardInterruptingPropNetStateMachine extends StateMachine {
 		GamerLogger.log("StateMachine", "[Propnet Creator] Propnet creation done. It took " + (this.propnetConstructionTime) + "ms.");
 
 		// Compute the roles
-   		this.roles = this.propNet.getRoles();
+   		this.roles = ImmutableList.copyOf(this.propNet.getRoles());
         // If it exists, set init proposition to true without propagating, so that when making
 		// the propnet consistent its value will be propagated so that the next state
 		// will correspond to the initial state.
@@ -86,6 +90,9 @@ public class ForwardInterruptingPropNetStateMachine extends StateMachine {
 			this.initialState = new MachineState(new HashSet<GdlSentence>());
 		}
     }
+
+
+
 
     /**
      * This method returns the next machine state. This state contains the set of all the base propositions
