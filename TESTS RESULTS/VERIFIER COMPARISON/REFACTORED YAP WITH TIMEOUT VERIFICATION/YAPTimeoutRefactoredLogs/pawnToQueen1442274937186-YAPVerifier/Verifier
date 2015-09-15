@@ -1,4 +1,0 @@
-LOG 1442274937194 [L3]: Testing on game pawnToQueen
-LOG 1442274937333 [L3]: Performing automatic consistency testing on org.ggp.base.util.statemachine.implementation.yapProlog.YapStateMachine using org.ggp.base.util.statemachine.implementation.prover.ProverStateMachine as a reference.
-LOG 1442275117593 [L3]: Completed automatic consistency testing on org.ggp.base.util.statemachine.implementation.yapProlog.YapStateMachine, w/ 43 rounds: all tests pass!
-

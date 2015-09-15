@@ -1,4 +1,0 @@
-LOG 1441120497419 [L3]: Testing on game gt_tinfoil
-LOG 1441120497429 [L3]: Performing automatic consistency testing on org.ggp.base.util.statemachine.implementation.prover.ProverStateMachine using org.ggp.base.util.statemachine.implementation.prover.ProverStateMachine as a reference.
-LOG 1441120557430 [L3]: Completed automatic consistency testing on org.ggp.base.util.statemachine.implementation.prover.ProverStateMachine, w/ 16473 rounds: all tests pass!
-

@@ -1,4 +1,0 @@
-LOG 1441122851053 [L3]: Testing on game sudokuGrade6H
-LOG 1441122851057 [L3]: Performing automatic consistency testing on org.ggp.base.util.statemachine.implementation.prover.ProverStateMachine using org.ggp.base.util.statemachine.implementation.prover.ProverStateMachine as a reference.
-LOG 1441122911106 [L3]: Completed automatic consistency testing on org.ggp.base.util.statemachine.implementation.prover.ProverStateMachine, w/ 7 rounds: all tests pass!
-

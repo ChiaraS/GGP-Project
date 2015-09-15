@@ -13,6 +13,7 @@ import org.ggp.base.util.statemachine.Move;
 import org.ggp.base.util.statemachine.StateMachine;
 import org.ggp.base.util.statemachine.exceptions.GoalDefinitionException;
 import org.ggp.base.util.statemachine.exceptions.MoveDefinitionException;
+import org.ggp.base.util.statemachine.exceptions.StateMachineException;
 import org.ggp.base.util.statemachine.exceptions.TransitionDefinitionException;
 
 /**
@@ -46,7 +47,7 @@ public class MCRandomActions extends SampleGamer {
 	@Override
 	public Move stateMachineSelectMove(long timeout)
 			throws TransitionDefinitionException, MoveDefinitionException,
-			GoalDefinitionException {
+			GoalDefinitionException, StateMachineException {
 
 		StateMachine theMachine = getStateMachine();
 		long start = System.currentTimeMillis();
@@ -112,7 +113,7 @@ public class MCRandomActions extends SampleGamer {
 
 	}
 
-	private int performPlayout(MachineState currentState, Move move) throws MoveDefinitionException, TransitionDefinitionException, GoalDefinitionException{
+	private int performPlayout(MachineState currentState, Move move) throws MoveDefinitionException, TransitionDefinitionException, GoalDefinitionException, StateMachineException{
 
 		StateMachine theMachine = getStateMachine();
 		MachineState nextState = theMachine.getRandomNextState(currentState, getRole(), move);

@@ -8,6 +8,7 @@ import org.ggp.base.util.statemachine.Role;
 import org.ggp.base.util.statemachine.StateMachine;
 import org.ggp.base.util.statemachine.exceptions.GoalDefinitionException;
 import org.ggp.base.util.statemachine.exceptions.MoveDefinitionException;
+import org.ggp.base.util.statemachine.exceptions.StateMachineException;
 import org.ggp.base.util.statemachine.exceptions.TransitionDefinitionException;
 
 /**
@@ -25,6 +26,6 @@ public abstract class EvaluationFunction {
 		this.stateMachine = stateMachine;
 	}
 
-	public abstract int eval(MachineState state, Role role) throws MoveDefinitionException, GoalDefinitionException, TransitionDefinitionException;
+	public abstract int eval(MachineState state, Role role) throws MoveDefinitionException, GoalDefinitionException, TransitionDefinitionException, StateMachineException;
 
 }

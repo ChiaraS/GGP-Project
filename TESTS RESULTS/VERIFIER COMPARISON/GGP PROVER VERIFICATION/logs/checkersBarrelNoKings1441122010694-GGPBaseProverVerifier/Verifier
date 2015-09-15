@@ -1,4 +1,0 @@
-LOG 1441122010711 [L3]: Testing on game checkersBarrelNoKings
-LOG 1441122010719 [L3]: Performing automatic consistency testing on org.ggp.base.util.statemachine.implementation.prover.ProverStateMachine using org.ggp.base.util.statemachine.implementation.prover.ProverStateMachine as a reference.
-LOG 1441122070723 [L3]: Completed automatic consistency testing on org.ggp.base.util.statemachine.implementation.prover.ProverStateMachine, w/ 149 rounds: all tests pass!
-

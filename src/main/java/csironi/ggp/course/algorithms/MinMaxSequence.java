@@ -12,6 +12,7 @@ import org.ggp.base.util.statemachine.Role;
 import org.ggp.base.util.statemachine.StateMachine;
 import org.ggp.base.util.statemachine.exceptions.GoalDefinitionException;
 import org.ggp.base.util.statemachine.exceptions.MoveDefinitionException;
+import org.ggp.base.util.statemachine.exceptions.StateMachineException;
 import org.ggp.base.util.statemachine.exceptions.TransitionDefinitionException;
 
 import csironi.ggp.course.utils.Pair;
@@ -42,7 +43,7 @@ public class MinMaxSequence extends SearchAlgorithm {
 
 	public List<Move> bestmove(MachineState state, Role role)
 			throws TransitionDefinitionException, MoveDefinitionException,
-			GoalDefinitionException {
+			GoalDefinitionException, StateMachineException {
 
 		log("Starting bestscore");
 
@@ -85,7 +86,7 @@ public class MinMaxSequence extends SearchAlgorithm {
 
 	private Pair<List<Move>, Integer> maxscore(MachineState state, Role role)
 			throws TransitionDefinitionException, MoveDefinitionException,
-			GoalDefinitionException{
+			GoalDefinitionException, StateMachineException{
 
 		log("Performing maxscore");
 
@@ -146,7 +147,7 @@ public class MinMaxSequence extends SearchAlgorithm {
 
 	private Pair<List<Move>, Integer> minscore(MachineState state, Role role, Move move)
 			throws TransitionDefinitionException, MoveDefinitionException,
-			GoalDefinitionException{
+			GoalDefinitionException, StateMachineException{
 
 		log("Performing minscore");
 

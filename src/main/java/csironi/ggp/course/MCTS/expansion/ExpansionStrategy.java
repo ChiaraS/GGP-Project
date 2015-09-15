@@ -4,6 +4,7 @@
 package csironi.ggp.course.MCTS.expansion;
 
 import org.ggp.base.util.statemachine.exceptions.MoveDefinitionException;
+import org.ggp.base.util.statemachine.exceptions.StateMachineException;
 import org.ggp.base.util.statemachine.exceptions.TransitionDefinitionException;
 
 import csironi.ggp.course.MCTS.MCTNode;
@@ -22,7 +23,8 @@ public interface ExpansionStrategy {
 	 * @return the child node of the nodeToExpand from where to start the play-out.
 	 * @throws MoveDefinitionException
 	 * @throws TransitionDefinitionException
+	 * @throws StateMachineException
 	 */
-	public MCTNode expand(MCTNode nodeToExpand) throws MoveDefinitionException, TransitionDefinitionException;
+	public MCTNode expand(MCTNode nodeToExpand) throws MoveDefinitionException, TransitionDefinitionException, StateMachineException;
 
 }

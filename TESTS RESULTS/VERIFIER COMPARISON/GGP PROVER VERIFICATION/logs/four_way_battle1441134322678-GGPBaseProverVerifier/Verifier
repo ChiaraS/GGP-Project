@@ -1,4 +1,0 @@
-LOG 1441134322684 [L3]: Testing on game four_way_battle
-LOG 1441134322686 [L3]: Performing automatic consistency testing on org.ggp.base.util.statemachine.implementation.prover.ProverStateMachine using org.ggp.base.util.statemachine.implementation.prover.ProverStateMachine as a reference.
-LOG 1441134382712 [L3]: Completed automatic consistency testing on org.ggp.base.util.statemachine.implementation.prover.ProverStateMachine, w/ 83 rounds: all tests pass!
-

@@ -1,4 +1,0 @@
-LOG 1442277112109 [L3]: Testing on game asteroids
-LOG 1442277112246 [L3]: Performing automatic consistency testing on org.ggp.base.util.statemachine.implementation.yapProlog.YapStateMachine using org.ggp.base.util.statemachine.implementation.prover.ProverStateMachine as a reference.
-LOG 1442277292391 [L3]: Completed automatic consistency testing on org.ggp.base.util.statemachine.implementation.yapProlog.YapStateMachine, w/ 25 rounds: all tests pass!
-

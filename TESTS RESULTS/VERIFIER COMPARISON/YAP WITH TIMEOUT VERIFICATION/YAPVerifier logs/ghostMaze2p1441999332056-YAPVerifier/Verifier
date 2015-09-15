@@ -1,4 +1,0 @@
-LOG 1441999332063 [L3]: Testing on game ghostMaze2p
-LOG 1441999332199 [L3]: Performing automatic consistency testing on org.ggp.base.util.statemachine.implementation.yapProlog.YapStateMachine using org.ggp.base.util.statemachine.implementation.prover.ProverStateMachine as a reference.
-LOG 1441999392224 [L3]: Completed automatic consistency testing on org.ggp.base.util.statemachine.implementation.yapProlog.YapStateMachine, w/ 6 rounds: all tests pass!
-

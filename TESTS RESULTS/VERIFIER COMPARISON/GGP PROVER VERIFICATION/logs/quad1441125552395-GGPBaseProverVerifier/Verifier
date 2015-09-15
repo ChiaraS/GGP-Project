@@ -1,4 +1,0 @@
-LOG 1441125552402 [L3]: Testing on game quad
-LOG 1441125552407 [L3]: Performing automatic consistency testing on org.ggp.base.util.statemachine.implementation.prover.ProverStateMachine using org.ggp.base.util.statemachine.implementation.prover.ProverStateMachine as a reference.
-LOG 1441125660442 [L3]: Completed automatic consistency testing on org.ggp.base.util.statemachine.implementation.prover.ProverStateMachine, w/ 1 rounds: all tests pass!
-

@@ -1,4 +1,0 @@
-LOG 1441131244790 [L3]: Testing on game endgame
-LOG 1441131244793 [L3]: Performing automatic consistency testing on org.ggp.base.util.statemachine.implementation.prover.ProverStateMachine using org.ggp.base.util.statemachine.implementation.prover.ProverStateMachine as a reference.
-LOG 1441131304796 [L3]: Completed automatic consistency testing on org.ggp.base.util.statemachine.implementation.prover.ProverStateMachine, w/ 520 rounds: all tests pass!
-

@@ -1,4 +1,0 @@
-LOG 1441133542149 [L3]: Testing on game escortLatch
-LOG 1441133542152 [L3]: Performing automatic consistency testing on org.ggp.base.util.statemachine.implementation.prover.ProverStateMachine using org.ggp.base.util.statemachine.implementation.prover.ProverStateMachine as a reference.
-LOG 1441133602159 [L3]: Completed automatic consistency testing on org.ggp.base.util.statemachine.implementation.prover.ProverStateMachine, w/ 151 rounds: all tests pass!
-

@@ -8,6 +8,7 @@ import org.ggp.base.util.statemachine.Role;
 import org.ggp.base.util.statemachine.StateMachine;
 import org.ggp.base.util.statemachine.exceptions.GoalDefinitionException;
 import org.ggp.base.util.statemachine.exceptions.MoveDefinitionException;
+import org.ggp.base.util.statemachine.exceptions.StateMachineException;
 
 /**
  * @author C.Sironi
@@ -28,7 +29,7 @@ public class EvalProximity extends EvaluationFunction {
 	 */
 	@Override
 	public int eval(MachineState state, Role role)
-			throws MoveDefinitionException {
+			throws MoveDefinitionException, StateMachineException {
 
 		int stateScore = 0;
 

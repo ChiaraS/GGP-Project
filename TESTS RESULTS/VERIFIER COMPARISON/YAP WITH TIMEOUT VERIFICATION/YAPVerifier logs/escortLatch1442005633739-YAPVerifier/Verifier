@@ -1,4 +1,0 @@
-LOG 1442005633748 [L3]: Testing on game escortLatch
-LOG 1442005633886 [L3]: Performing automatic consistency testing on org.ggp.base.util.statemachine.implementation.yapProlog.YapStateMachine using org.ggp.base.util.statemachine.implementation.prover.ProverStateMachine as a reference.
-LOG 1442005693900 [L3]: Completed automatic consistency testing on org.ggp.base.util.statemachine.implementation.yapProlog.YapStateMachine, w/ 4 rounds: all tests pass!
-

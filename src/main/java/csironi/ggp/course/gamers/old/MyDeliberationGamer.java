@@ -14,6 +14,7 @@ import org.ggp.base.util.statemachine.Role;
 import org.ggp.base.util.statemachine.StateMachine;
 import org.ggp.base.util.statemachine.exceptions.GoalDefinitionException;
 import org.ggp.base.util.statemachine.exceptions.MoveDefinitionException;
+import org.ggp.base.util.statemachine.exceptions.StateMachineException;
 import org.ggp.base.util.statemachine.exceptions.TransitionDefinitionException;
 
 /**
@@ -39,7 +40,7 @@ public class MyDeliberationGamer extends SampleGamer {
 	@Override
 	public Move stateMachineSelectMove(long timeout)
 			throws TransitionDefinitionException, MoveDefinitionException,
-			GoalDefinitionException {
+			GoalDefinitionException, StateMachineException {
 
 		long start = System.currentTimeMillis();
 
@@ -58,12 +59,13 @@ public class MyDeliberationGamer extends SampleGamer {
 	}
 
 	/**
+	 * @throws StateMachineException
 	 *
 	 *
 	 */
 	private Move bestmove(Role role, MachineState state)
 			throws TransitionDefinitionException, MoveDefinitionException,
-			GoalDefinitionException{
+			GoalDefinitionException, StateMachineException{
 
 		StateMachine stateMachine = getStateMachine();
 		List<Move> moves = stateMachine.getLegalMoves(state, role);
@@ -88,12 +90,13 @@ public class MyDeliberationGamer extends SampleGamer {
 	}
 
 	/**
+	 * @throws StateMachineException
 	 *
 	 *
 	 */
 	private int maxscore(Role role, MachineState state)
 			throws TransitionDefinitionException, MoveDefinitionException,
-			GoalDefinitionException{
+			GoalDefinitionException, StateMachineException{
 
 		StateMachine stateMachine = getStateMachine();
 

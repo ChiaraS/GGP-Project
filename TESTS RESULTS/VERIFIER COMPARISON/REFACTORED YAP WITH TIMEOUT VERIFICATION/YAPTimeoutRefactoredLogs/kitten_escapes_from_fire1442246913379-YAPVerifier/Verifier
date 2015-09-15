@@ -1,4 +1,0 @@
-LOG 1442246913384 [L3]: Testing on game kitten_escapes_from_fire
-LOG 1442246913515 [L3]: Performing automatic consistency testing on org.ggp.base.util.statemachine.implementation.yapProlog.YapStateMachine using org.ggp.base.util.statemachine.implementation.prover.ProverStateMachine as a reference.
-LOG 1442247093660 [L3]: Completed automatic consistency testing on org.ggp.base.util.statemachine.implementation.yapProlog.YapStateMachine, w/ 117 rounds: all tests pass!
-

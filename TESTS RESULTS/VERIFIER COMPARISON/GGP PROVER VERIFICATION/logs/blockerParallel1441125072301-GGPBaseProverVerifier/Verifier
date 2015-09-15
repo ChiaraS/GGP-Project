@@ -1,4 +1,0 @@
-LOG 1441125072308 [L3]: Testing on game blockerParallel
-LOG 1441125072310 [L3]: Performing automatic consistency testing on org.ggp.base.util.statemachine.implementation.prover.ProverStateMachine using org.ggp.base.util.statemachine.implementation.prover.ProverStateMachine as a reference.
-LOG 1441125132311 [L3]: Completed automatic consistency testing on org.ggp.base.util.statemachine.implementation.prover.ProverStateMachine, w/ 1615 rounds: all tests pass!
-

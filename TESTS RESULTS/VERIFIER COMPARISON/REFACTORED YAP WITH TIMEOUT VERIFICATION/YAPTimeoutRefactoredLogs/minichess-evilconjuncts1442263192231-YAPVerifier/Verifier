@@ -1,4 +1,0 @@
-LOG 1442263192668 [L3]: Testing on game minichess-evilconjuncts
-LOG 1442263192802 [L3]: Performing automatic consistency testing on org.ggp.base.util.statemachine.implementation.yapProlog.YapStateMachine using org.ggp.base.util.statemachine.implementation.prover.ProverStateMachine as a reference.
-LOG 1442263372840 [L3]: Completed automatic consistency testing on org.ggp.base.util.statemachine.implementation.yapProlog.YapStateMachine, w/ 69 rounds: all tests pass!
-

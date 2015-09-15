@@ -1,4 +1,0 @@
-LOG 1441129322836 [L3]: Testing on game hex
-LOG 1441129322838 [L3]: Performing automatic consistency testing on org.ggp.base.util.statemachine.implementation.prover.ProverStateMachine using org.ggp.base.util.statemachine.implementation.prover.ProverStateMachine as a reference.
-LOG 1441129382842 [L3]: Completed automatic consistency testing on org.ggp.base.util.statemachine.implementation.prover.ProverStateMachine, w/ 27 rounds: all tests pass!
-

@@ -19,6 +19,8 @@ import org.ggp.base.util.statemachine.Role;
 import org.ggp.base.util.statemachine.StateMachine;
 import org.ggp.base.util.statemachine.exceptions.GoalDefinitionException;
 import org.ggp.base.util.statemachine.exceptions.MoveDefinitionException;
+import org.ggp.base.util.statemachine.exceptions.StateMachineException;
+import org.ggp.base.util.statemachine.exceptions.StateMachineInitializationException;
 import org.ggp.base.util.statemachine.exceptions.TransitionDefinitionException;
 
 /**
@@ -61,8 +63,9 @@ public abstract class StateMachineYapGamer extends Gamer {
      * @throws TransitionDefinitionException
      * @throws MoveDefinitionException
      * @throws GoalDefinitionException
+     * @throws StateMachineException
      */
-    public abstract Move stateMachineSelectMove(long timeout) throws TransitionDefinitionException, MoveDefinitionException, GoalDefinitionException;
+    public abstract Move stateMachineSelectMove(long timeout) throws TransitionDefinitionException, MoveDefinitionException, GoalDefinitionException, StateMachineException;
 
     /**
      * Defines any actions that the player takes upon the game cleanly ending.
@@ -155,8 +158,9 @@ public abstract class StateMachineYapGamer extends Gamer {
      * A function that can be used when deserializing gamers, to bring a
      * state machine gamer back to the internal state that it has when it
      * arrives at a particular game state.
+     * @throws StateMachineInitializationException
      */
-	public final void resetStateFromMatch() {
+	public final void resetStateFromMatch() throws StateMachineInitializationException {
         stateMachine = getInitialStateMachine();
         stateMachine.initialize(getMatch().getGame().getRules());
         currentState = stateMachine.getMachineStateFromSentenceList(getMatch().getMostRecentState());

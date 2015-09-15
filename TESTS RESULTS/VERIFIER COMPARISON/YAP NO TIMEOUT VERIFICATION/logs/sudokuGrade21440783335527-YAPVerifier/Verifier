@@ -1,4 +1,0 @@
-LOG 1440783335532 [L3]: Testing on game sudokuGrade2
-LOG 1440783335670 [L3]: Performing automatic consistency testing on org.ggp.base.util.statemachine.implementation.yapProlog.YapStateMachine using org.ggp.base.util.statemachine.implementation.prover.ProverStateMachine as a reference.
-LOG 1440783395898 [L3]: Completed automatic consistency testing on org.ggp.base.util.statemachine.implementation.yapProlog.YapStateMachine, w/ 7 rounds: all tests pass!
-

@@ -1,4 +1,0 @@
-LOG 1441131964977 [L3]: Testing on game cubicup
-LOG 1441131964979 [L3]: Performing automatic consistency testing on org.ggp.base.util.statemachine.implementation.prover.ProverStateMachine using org.ggp.base.util.statemachine.implementation.prover.ProverStateMachine as a reference.
-LOG 1441132024986 [L3]: Completed automatic consistency testing on org.ggp.base.util.statemachine.implementation.prover.ProverStateMachine, w/ 61 rounds: all tests pass!
-

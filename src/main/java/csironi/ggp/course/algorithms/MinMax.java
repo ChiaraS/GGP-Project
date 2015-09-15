@@ -13,6 +13,7 @@ import org.ggp.base.util.statemachine.Role;
 import org.ggp.base.util.statemachine.StateMachine;
 import org.ggp.base.util.statemachine.exceptions.GoalDefinitionException;
 import org.ggp.base.util.statemachine.exceptions.MoveDefinitionException;
+import org.ggp.base.util.statemachine.exceptions.StateMachineException;
 import org.ggp.base.util.statemachine.exceptions.TransitionDefinitionException;
 
 import csironi.ggp.course.evalfunctions.EvaluationFunction;
@@ -34,7 +35,7 @@ public class MinMax extends SearchAlgorithm {
 
 	public Move bestmove(long finishBy, MachineState state, Role role, Boolean prune, int alpha, int beta, int limit, boolean shuffleTop, boolean shuffleInt, EvaluationFunction stateEval)
 			throws TransitionDefinitionException, MoveDefinitionException,
-			GoalDefinitionException {
+			GoalDefinitionException, StateMachineException {
 
 		log("\nStarting bestmove with depth limit " + limit);
 
@@ -292,7 +293,7 @@ public class MinMax extends SearchAlgorithm {
 
 	private int maxscore(long finishBy, MachineState state, Role role, int level, int limit, boolean shuffle, EvaluationFunction stateEval)
 			throws TransitionDefinitionException, MoveDefinitionException,
-			GoalDefinitionException{
+			GoalDefinitionException, StateMachineException{
 
 		if(System.currentTimeMillis() > finishBy){
 			log("Timeout detected.");
@@ -420,7 +421,7 @@ public class MinMax extends SearchAlgorithm {
 
 	private int minscore(long finishBy, MachineState state, Role role, Move move, int level, int limit, boolean shuffle, EvaluationFunction stateEval)
 			throws TransitionDefinitionException, MoveDefinitionException,
-			GoalDefinitionException{
+			GoalDefinitionException, StateMachineException{
 
 		log("Performing minscore");
 
@@ -459,7 +460,7 @@ public class MinMax extends SearchAlgorithm {
 
 	private int maxscore(long finishBy, MachineState state, Role role, int alpha, int beta, int level, int limit, boolean shuffle, EvaluationFunction stateEval)
 			throws TransitionDefinitionException, MoveDefinitionException,
-			GoalDefinitionException{
+			GoalDefinitionException, StateMachineException{
 
 		if(System.currentTimeMillis() > finishBy){
 			log("Timeout detected.");
@@ -595,7 +596,7 @@ public class MinMax extends SearchAlgorithm {
 
 	private int minscore(long finishBy, MachineState state, Role role, Move move, int alpha, int beta, int level, int limit, boolean shuffle, EvaluationFunction stateEval)
 			throws TransitionDefinitionException, MoveDefinitionException,
-			GoalDefinitionException{
+			GoalDefinitionException, StateMachineException{
 
 		log("Performing minscore");
 

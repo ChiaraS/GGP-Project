@@ -1,4 +1,0 @@
-LOG 1442243632948 [L3]: Testing on game golden_rectangle
-LOG 1442243633088 [L3]: Performing automatic consistency testing on org.ggp.base.util.statemachine.implementation.yapProlog.YapStateMachine using org.ggp.base.util.statemachine.implementation.prover.ProverStateMachine as a reference.
-LOG 1442243813318 [L3]: Completed automatic consistency testing on org.ggp.base.util.statemachine.implementation.yapProlog.YapStateMachine, w/ 24 rounds: all tests pass!
-

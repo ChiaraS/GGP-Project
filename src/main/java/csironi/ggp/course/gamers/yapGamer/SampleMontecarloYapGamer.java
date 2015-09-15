@@ -10,6 +10,7 @@ import org.ggp.base.util.statemachine.MachineState;
 import org.ggp.base.util.statemachine.Move;
 import org.ggp.base.util.statemachine.exceptions.GoalDefinitionException;
 import org.ggp.base.util.statemachine.exceptions.MoveDefinitionException;
+import org.ggp.base.util.statemachine.exceptions.StateMachineException;
 import org.ggp.base.util.statemachine.exceptions.TransitionDefinitionException;
 import org.ggp.base.util.statemachine.implementation.yapProlog.OldYapStateMachine;
 
@@ -31,9 +32,10 @@ public final class SampleMontecarloYapGamer extends SampleYapGamer{
 
 	/**
 	 * Employs a simple sample "Monte Carlo" algorithm.
+	 * @throws StateMachineException
 	 */
 	@Override
-	public Move stateMachineSelectMove(long timeout) throws TransitionDefinitionException, MoveDefinitionException, GoalDefinitionException
+	public Move stateMachineSelectMove(long timeout) throws TransitionDefinitionException, MoveDefinitionException, GoalDefinitionException, StateMachineException
 	{
 		//StateMachine theMachine = getStateMachine();
 		OldYapStateMachine theMachine = getYapStateMachine();

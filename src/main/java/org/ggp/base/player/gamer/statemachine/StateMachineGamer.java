@@ -51,8 +51,9 @@ public abstract class StateMachineGamer extends Gamer
      * @throws TransitionDefinitionException
      * @throws MoveDefinitionException
      * @throws GoalDefinitionException
+     * @throws StateMachineException
      */
-    public abstract void stateMachineMetaGame(long timeout) throws TransitionDefinitionException, MoveDefinitionException, GoalDefinitionException;
+    public abstract void stateMachineMetaGame(long timeout) throws TransitionDefinitionException, MoveDefinitionException, GoalDefinitionException, StateMachineException;
 
     /**
      * Defines the algorithm that the player uses to select their move.

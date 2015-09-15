@@ -1,6 +1,0 @@
-LOG 1442000936175 [L3]: Started logging to files at: Fri Sep 11 21:48:56 CEST 2015
-LOG 1442000936175 [L3]: Game rules: [( role white ), ( role black ), ( init o1 ), ( legal white a ), ( legal white b ), ( legal black a ), ( <= ( next o2 ) ( does white a ) ( true o1 ) ), ( <= ( next o3 ) ( does white b ) ( true o1 ) ), ( <= ( goal white 0 ) ( true o1 ) ), ( <= ( goal white 10 ) ( true o2 ) ), ( <= ( goal white 90 ) ( true o3 ) ), ( <= ( goal black 0 ) ( true o1 ) ), ( <= ( goal black 90 ) ( true o2 ) ), ( <= ( goal black 10 ) ( true o3 ) ), ( <= terminal ( true o2 ) ), ( <= terminal ( true o3 ) )]
-LOG 1442000936176 [L3]: Start clock: -1
-LOG 1442000936176 [L3]: Play clock: -1
-LOG 1442000996464 [L3]: Stopped logging to files at: Fri Sep 11 21:49:56 CEST 2015
-LOG 1442000996464 [L3]: LOG SEALED

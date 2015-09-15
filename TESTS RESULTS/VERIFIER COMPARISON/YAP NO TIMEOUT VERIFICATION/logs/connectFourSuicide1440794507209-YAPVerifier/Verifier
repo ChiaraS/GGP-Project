@@ -1,4 +1,0 @@
-LOG 1440794507212 [L3]: Testing on game connectFourSuicide
-LOG 1440794507345 [L3]: Performing automatic consistency testing on org.ggp.base.util.statemachine.implementation.yapProlog.YapStateMachine using org.ggp.base.util.statemachine.implementation.prover.ProverStateMachine as a reference.
-LOG 1440794567480 [L3]: Completed automatic consistency testing on org.ggp.base.util.statemachine.implementation.yapProlog.YapStateMachine, w/ 12 rounds: all tests pass!
-

@@ -14,12 +14,14 @@ import java.util.List;
 import org.ggp.base.player.GamePlayer;
 import org.ggp.base.player.gamer.Gamer;
 import org.ggp.base.server.GameServer;
+import org.ggp.base.server.exception.GameServerException;
 import org.ggp.base.util.game.Game;
 import org.ggp.base.util.game.GameRepository;
 import org.ggp.base.util.match.Match;
 import org.ggp.base.util.reflection.ProjectSearcher;
 import org.ggp.base.util.statemachine.Role;
 import org.ggp.base.util.statemachine.exceptions.GoalDefinitionException;
+import org.ggp.base.util.statemachine.exceptions.StateMachineException;
 
 /**
  * @author C.Sironi
@@ -154,9 +156,16 @@ public class Experiment {
 		match.setPlayerNamesFromHost(playerNames);
 
 		// Actually run the match, using the desired configuration.
-		GameServer server = new GameServer(match, hostNames, portNumbers);
-		server.start();
-		server.join();
+		GameServer server = null;
+		try {
+			server = new GameServer(match, hostNames, portNumbers);
+			server.start();
+			server.join();
+		} catch (GameServerException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+
 
 		// Open up the directory for this tournament.
 		// Create a "scores" file if none exists.
@@ -195,25 +204,34 @@ public class Experiment {
 
 
 		// Save the goals in the "/scores" file for the tournament.
-		bw = new BufferedWriter(new FileWriter(tourneyName + "/scores", true));
-		List<Integer> goals = server.getGoals();
-		String goalStr = "";
-		String playerStr = "";
-		for (int i = 0; i < goals.size(); i++)
-		{
-			Integer goal = server.getGoals().get(i);
-			goalStr += Integer.toString(goal);
-			playerStr += playerNames.get(i);
-			if (i != goals.size() - 1)
-			{
-				playerStr += ",";
-				goalStr += ",";
+		if(server != null){
+			try{
+				bw = new BufferedWriter(new FileWriter(tourneyName + "/scores", true));
+				List<Integer> goals = server.getGoals();
+				String goalStr = "";
+				String playerStr = "";
+				for (int i = 0; i < goals.size(); i++)
+				{
+					Integer goal = server.getGoals().get(i);
+					goalStr += Integer.toString(goal);
+					playerStr += playerNames.get(i);
+					if (i != goals.size() - 1)
+					{
+						playerStr += ",";
+						goalStr += ",";
+					}
+				}
+				bw.write("\n" + playerStr + "=" + goalStr);
+			}catch(StateMachineException e){
+				// TODO Auto-generated catch block
+				e.printStackTrace();
 			}
+
 		}
-		bw.write("\n" + playerStr + "=" + goalStr);
+
 		bw.flush();
 		bw.close();
-		
+
 		first.shutdown();
 		second.shutdown();
 

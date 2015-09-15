@@ -7,6 +7,7 @@ import java.util.List;
 
 import org.ggp.base.util.statemachine.exceptions.GoalDefinitionException;
 import org.ggp.base.util.statemachine.exceptions.MoveDefinitionException;
+import org.ggp.base.util.statemachine.exceptions.StateMachineException;
 import org.ggp.base.util.statemachine.exceptions.TransitionDefinitionException;
 
 import csironi.ggp.course.MCTS.MCTNode;
@@ -26,7 +27,8 @@ public interface SelectionStrategy {
 	 * @throws GoalDefinitionException
 	 * @throws MoveDefinitionException
 	 * @throws TransitionDefinitionException
+	 * @throws StateMachineException
 	 */
-	public List<Integer> select(MCTNode node) throws GoalDefinitionException, MoveDefinitionException, TransitionDefinitionException;
+	public List<Integer> select(MCTNode node) throws GoalDefinitionException, MoveDefinitionException, TransitionDefinitionException, StateMachineException;
 
 }

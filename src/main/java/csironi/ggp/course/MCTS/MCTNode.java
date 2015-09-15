@@ -12,6 +12,7 @@ import org.ggp.base.util.statemachine.Role;
 import org.ggp.base.util.statemachine.StateMachine;
 import org.ggp.base.util.statemachine.exceptions.GoalDefinitionException;
 import org.ggp.base.util.statemachine.exceptions.MoveDefinitionException;
+import org.ggp.base.util.statemachine.exceptions.StateMachineException;
 import org.ggp.base.util.statemachine.exceptions.TransitionDefinitionException;
 
 import csironi.ggp.course.MCTS.backpropagation.BackpropagationStrategy;
@@ -102,8 +103,9 @@ public class MCTNode implements BackpropagationStrategy {
 	 *
 	 * @throws MoveDefinitionException
 	 * @throws TransitionDefinitionException
+	 * @throws StateMachineException
 	 */
-	public void initializeChildren() throws MoveDefinitionException, TransitionDefinitionException{
+	public void initializeChildren() throws MoveDefinitionException, TransitionDefinitionException, StateMachineException{
 
 		// INITIALIZE ONLY SCORE AND VISITS! DON'T SIMULATE EACH MOVE
 
@@ -182,8 +184,9 @@ public class MCTNode implements BackpropagationStrategy {
 	 * @return the node added to the MCT
 	 * @throws MoveDefinitionException
 	 * @throws TransitionDefinitionException
+	 * @throws StateMachineException
 	 */
-	public MCTNode childFirstVisit(int index) throws MoveDefinitionException, TransitionDefinitionException{
+	public MCTNode childFirstVisit(int index) throws MoveDefinitionException, TransitionDefinitionException, StateMachineException{
 		MCTNode visitedChild = this.unvisitedChildren.remove(index);
 		visitedChild.initializeChildren();
 		this.visitedChildren.add(visitedChild);
@@ -194,7 +197,7 @@ public class MCTNode implements BackpropagationStrategy {
 		return this.visitedChildren.get(index);
 	}
 
-	public List<Integer> getTerminalGoals() throws GoalDefinitionException{
+	public List<Integer> getTerminalGoals() throws GoalDefinitionException, StateMachineException{
 		return this.stateMachine.getGoals(this.state);
 	}
 

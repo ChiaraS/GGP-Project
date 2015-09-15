@@ -1,4 +1,0 @@
-LOG 1441129142805 [L3]: Testing on game tictactoe_3player
-LOG 1441129142807 [L3]: Performing automatic consistency testing on org.ggp.base.util.statemachine.implementation.prover.ProverStateMachine using org.ggp.base.util.statemachine.implementation.prover.ProverStateMachine as a reference.
-LOG 1441129202809 [L3]: Completed automatic consistency testing on org.ggp.base.util.statemachine.implementation.prover.ProverStateMachine, w/ 774 rounds: all tests pass!
-

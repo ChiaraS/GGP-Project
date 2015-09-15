@@ -1,4 +1,0 @@
-LOG 1442269323694 [L3]: Testing on game biddingTicTacToe_10coins
-LOG 1442269323826 [L3]: Performing automatic consistency testing on org.ggp.base.util.statemachine.implementation.yapProlog.YapStateMachine using org.ggp.base.util.statemachine.implementation.prover.ProverStateMachine as a reference.
-LOG 1442269503993 [L3]: Completed automatic consistency testing on org.ggp.base.util.statemachine.implementation.yapProlog.YapStateMachine, w/ 48 rounds: all tests pass!
-

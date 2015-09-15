@@ -1,4 +1,0 @@
-LOG 1441132879653 [L3]: Testing on game lightsOut
-LOG 1441132879655 [L3]: Performing automatic consistency testing on org.ggp.base.util.statemachine.implementation.prover.ProverStateMachine using org.ggp.base.util.statemachine.implementation.prover.ProverStateMachine as a reference.
-LOG 1441132939658 [L3]: Completed automatic consistency testing on org.ggp.base.util.statemachine.implementation.prover.ProverStateMachine, w/ 939 rounds: all tests pass!
-

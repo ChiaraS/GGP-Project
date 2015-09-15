@@ -235,6 +235,9 @@ public class YapStateMachine extends StateMachine {
 		} catch (YapProverException e) {
 			GamerLogger.logError("StateMachine", "[YAP] Exception during game roles computation.");
 			GamerLogger.logStackTrace("StateMachine", e);
+			// Everytime a query fails throwing a YapProverException we cannot be sure about the state
+			// Yap Prolog is in (it's highly likely that it was reset so no state is currently set).
+			this.currentYapState = null;
 			throw new StateMachineException("Exception during game roles computation.", e);
 		}
 
@@ -274,6 +277,9 @@ public class YapStateMachine extends StateMachine {
 		} catch (YapProverException e) {
 			GamerLogger.logError("StateMachine", "[YAP] Exception during goal computation.");
 			GamerLogger.logStackTrace("StateMachine", e);
+			// Everytime a query fails throwing a YapProverException we cannot be sure about the state
+			// Yap Prolog is in (it's highly likely that it was reset so no state is currently set).
+			this.currentYapState = null;
 			throw new StateMachineException("Impossible to compute goal for role \"" + role + "\" in state " + state + ".", e);
 		}
 
@@ -316,6 +322,9 @@ public class YapStateMachine extends StateMachine {
 		} catch (YapProverException e) {
 			GamerLogger.logError("StateMachine", "[YAP] Exception during terminality computation.");
 			GamerLogger.logStackTrace("StateMachine", e);
+			// Everytime a query fails throwing a YapProverException we cannot be sure about the state
+			// Yap Prolog is in (it's highly likely that it was reset so no state is currently set).
+			this.currentYapState = null;
 			throw new StateMachineException("Impossible to compute terminality of state " + state + ".", e);
 		}
 
@@ -354,6 +363,9 @@ public class YapStateMachine extends StateMachine {
 		} catch (YapProverException e) {
 			GamerLogger.logError("StateMachine", "[YAP] Exception during legal moves computation.");
 			GamerLogger.logStackTrace("StateMachine", e);
+			// Everytime a query fails throwing a YapProverException we cannot be sure about the state
+			// Yap Prolog is in (it's highly likely that it was reset so no state is currently set).
+			this.currentYapState = null;
 			throw new StateMachineException("Impossible to compute legal moves for role \"" + role + "\" in state " + state + ".", e);
 		}
 

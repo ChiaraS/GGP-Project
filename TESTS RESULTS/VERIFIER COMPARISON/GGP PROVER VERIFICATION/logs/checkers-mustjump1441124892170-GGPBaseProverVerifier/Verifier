@@ -1,4 +1,0 @@
-LOG 1441124892195 [L3]: Testing on game checkers-mustjump
-LOG 1441124892205 [L3]: Performing automatic consistency testing on org.ggp.base.util.statemachine.implementation.prover.ProverStateMachine using org.ggp.base.util.statemachine.implementation.prover.ProverStateMachine as a reference.
-LOG 1441124952212 [L3]: Completed automatic consistency testing on org.ggp.base.util.statemachine.implementation.prover.ProverStateMachine, w/ 73 rounds: all tests pass!
-

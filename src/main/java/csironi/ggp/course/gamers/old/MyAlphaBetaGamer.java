@@ -18,6 +18,7 @@ import org.ggp.base.util.statemachine.Role;
 import org.ggp.base.util.statemachine.StateMachine;
 import org.ggp.base.util.statemachine.exceptions.GoalDefinitionException;
 import org.ggp.base.util.statemachine.exceptions.MoveDefinitionException;
+import org.ggp.base.util.statemachine.exceptions.StateMachineException;
 import org.ggp.base.util.statemachine.exceptions.TransitionDefinitionException;
 
 /**
@@ -41,7 +42,7 @@ public class MyAlphaBetaGamer extends SampleGamer {
 	@Override
 	public Move stateMachineSelectMove(long timeout)
 			throws TransitionDefinitionException, MoveDefinitionException,
-			GoalDefinitionException {
+			GoalDefinitionException, StateMachineException {
 		long start = System.currentTimeMillis();
 
 		StateMachine stateMachine = getStateMachine();
@@ -76,12 +77,13 @@ public class MyAlphaBetaGamer extends SampleGamer {
 	}
 
 	/**
+	 * @throws StateMachineException
 	 *
 	 *
 	 */
 	private Move bestmove(Role myRole, MachineState state)
 			throws TransitionDefinitionException, MoveDefinitionException,
-			GoalDefinitionException{
+			GoalDefinitionException, StateMachineException{
 
 		StateMachine stateMachine = getStateMachine();
 
@@ -140,12 +142,13 @@ public class MyAlphaBetaGamer extends SampleGamer {
 
 
 	/**
+	 * @throws StateMachineException
 	 *
 	 *
 	 */
 	private int minscore(MachineState state, Role myRole, Move myMove, int myIndex, int opponentIndex, int alpha, int beta)
 			throws TransitionDefinitionException, MoveDefinitionException,
-			GoalDefinitionException{
+			GoalDefinitionException, StateMachineException{
 
 		StateMachine stateMachine = getStateMachine();
 
@@ -189,12 +192,13 @@ public class MyAlphaBetaGamer extends SampleGamer {
 	}
 
 	/**
+	 * @throws StateMachineException
 	 *
 	 *
 	 */
 	private int maxscore(MachineState state, Role myRole, int myIndex, int opponentIndex, int alpha, int beta)
 			throws TransitionDefinitionException, MoveDefinitionException,
-			GoalDefinitionException{
+			GoalDefinitionException, StateMachineException{
 
 		StateMachine stateMachine = getStateMachine();
 
