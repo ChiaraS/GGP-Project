@@ -149,6 +149,10 @@ public class PropnetVerifier {
                 rounds = StateMachineVerifier.lastRounds;
                 constructionTime = thePropNetMachine.getPropnetConstructionTime();
 			} catch (ExecutionException | TimeoutException e) {
+				// Reset executor and initializer
+				executor.shutdownNow();
+				executor = Executors.newSingleThreadExecutor();
+				initializer = new PropnetInitializer();
 				initializationTime = -1L;
 				GamerLogger.log("Verifier", "State machine " + thePropNetMachine.getName() + " initialization failed, impossible to test this game. Cause: " + e.getMessage());
             	System.out.println("Skipping test on game " + gameKey + ". State machine initialization failed.");
