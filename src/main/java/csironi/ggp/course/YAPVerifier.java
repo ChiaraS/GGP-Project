@@ -11,7 +11,6 @@ import org.ggp.base.util.logging.GamerLogger;
 import org.ggp.base.util.logging.GamerLogger.FORMAT;
 import org.ggp.base.util.match.Match;
 import org.ggp.base.util.statemachine.exceptions.StateMachineInitializationException;
-import org.ggp.base.util.statemachine.hybrid.BackedYapStateMachine;
 import org.ggp.base.util.statemachine.implementation.prover.ProverStateMachine;
 import org.ggp.base.util.statemachine.implementation.yapProlog.YapStateMachine;
 import org.ggp.base.util.statemachine.verifier.StateMachineVerifier;
@@ -66,8 +65,8 @@ public class YAPVerifier {
 		System.out.println();
 
         ProverStateMachine theReference;
-        //YapStateMachine theYapMachine;
-        BackedYapStateMachine theYapMachine;
+        YapStateMachine theYapMachine;
+        //BackedYapStateMachine theYapMachine;
 
         GamerLogger.setSpilloverLogfile("YAPVerifierTable.csv");
         GamerLogger.log(FORMAT.CSV_FORMAT, "YAPVerifierTable", "Game key;Rounds;Test duration (ms);Pass;Exception;");
@@ -91,10 +90,10 @@ public class YAPVerifier {
             theReference = new ProverStateMachine();
 
             // Create the YAP state machine
-            //theYapMachine = new YapStateMachine(500L);
+            theYapMachine = new YapStateMachine(500L);
 
             // Create the BackedYapStateMachine
-            theYapMachine = new BackedYapStateMachine(new YapStateMachine(500L), new ProverStateMachine());
+            //theYapMachine = new BackedYapStateMachine(new YapStateMachine(500L), new ProverStateMachine());
 
             boolean pass = false;
             int rounds = -1;

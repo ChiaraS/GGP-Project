@@ -10,6 +10,7 @@ import java.util.Random;
 
 import org.ggp.base.util.game.GameRepository;
 import org.ggp.base.util.gdl.grammar.Gdl;
+import org.ggp.base.util.gdl.transforms.DistinctAndNotMover;
 import org.ggp.base.util.logging.GamerLogger;
 import org.ggp.base.util.statemachine.MachineState;
 import org.ggp.base.util.statemachine.Move;
@@ -19,6 +20,7 @@ import org.ggp.base.util.statemachine.exceptions.MoveDefinitionException;
 import org.ggp.base.util.statemachine.exceptions.StateMachineException;
 import org.ggp.base.util.statemachine.exceptions.StateMachineInitializationException;
 import org.ggp.base.util.statemachine.exceptions.TransitionDefinitionException;
+import org.ggp.base.util.statemachine.implementation.prover.ProverStateMachine;
 import org.ggp.base.util.statemachine.implementation.yapProlog.YapStateMachine;
 import org.ggp.base.util.statemachine.implementation.yapProlog.transform.YapRenderer;
 
@@ -32,13 +34,15 @@ public class ProvaYap {
 		GameRepository theRepository = GameRepository.getDefaultRepository();
         for(String gameKey : theRepository.getGameKeys()) {
             if(gameKey.contains("laikLee")) continue;
-            if(!gameKey.equals(args[0])) continue;
+            if(!gameKey.equals("zhadu")) continue;
             List<Gdl> description = theRepository.getGame(gameKey).getRules();
             try{
             	//provaYap(description);
             	//provaYap2(description);
             	//provaDescription(description);
-            	provaStepByStep(description);
+            	//provaStepByStep(description);
+            	//modifyDescription(description);
+            	checkDescriptionAfterProver(description);
             }catch(Exception e){
             	System.out.println("Error when testing game " + gameKey);
             	e.printStackTrace();
@@ -48,6 +52,18 @@ public class ProvaYap {
         }
 	}
 
+	private static void checkDescriptionAfterProver(List<Gdl> description){
+		System.out.println(description);
+		ProverStateMachine prover = new ProverStateMachine();
+		prover.initialize(description);
+		System.out.println(description);
+	}
+
+	private static void modifyDescription(List<Gdl> description){
+		System.out.println(description);
+		description = DistinctAndNotMover.run(description);
+		System.out.println(description);
+	}
 
 	private static void provaStepByStep(List<Gdl> gdlDescription){
 

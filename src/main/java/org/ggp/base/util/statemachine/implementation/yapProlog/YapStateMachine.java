@@ -7,6 +7,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.ggp.base.util.gdl.grammar.Gdl;
+import org.ggp.base.util.gdl.transforms.DistinctAndNotMover;
 import org.ggp.base.util.logging.GamerLogger;
 import org.ggp.base.util.statemachine.MachineState;
 import org.ggp.base.util.statemachine.Move;
@@ -145,38 +146,40 @@ public class YapStateMachine extends StateMachine {
 	@Override
 	public void initialize(List<Gdl> description) throws StateMachineInitializationException{
 
+		// Modify the description as for the GGP Base Prover
+		description = DistinctAndNotMover.run(description);
 
-			// Initialize the GDL <-> Prolog translator.
-			this.support = new YapEngineSupport();
+		// Initialize the GDL <-> Prolog translator.
+		this.support = new YapEngineSupport();
 
-			try{
-				// Create the interface with the Yap Prover.
-				this.yapProver = new YapProver(this.support.toProlog(description), this.waitingTime);
-			}catch(YapProverException e){
-				GamerLogger.logError("StateMachine", "[YAP] Exception during state machine initialization. Yap Prover creation and startup failed!");
-				GamerLogger.logStackTrace("StateMachine", e);
-				this.yapProver = null;
-				throw new StateMachineInitializationException("State machine initialization failed. Impossible to create and start up Yap Prover.", e);
-			}
+		try{
+			// Create the interface with the Yap Prover.
+			this.yapProver = new YapProver(this.support.toProlog(description), this.waitingTime);
+		}catch(YapProverException e){
+			GamerLogger.logError("StateMachine", "[YAP] Exception during state machine initialization. Yap Prover creation and startup failed!");
+			GamerLogger.logStackTrace("StateMachine", e);
+			this.yapProver = null;
+			throw new StateMachineInitializationException("State machine initialization failed. Impossible to create and start up Yap Prover.", e);
+		}
 
-			// If creation succeeded, compute initial state...
-			try{
-				this.initialState = computeInitialState();
-			}catch(StateMachineException e){
-				GamerLogger.logError("StateMachine", "[YAP] Exception during state machine initialization. Initial state computation failed!");
-				GamerLogger.logStackTrace("StateMachine", e);
-				this.initialState = null;
-				throw new StateMachineInitializationException("State machine initialization failed. Impossible to compute initial state.", e);
-			}
-			// ...and roles.
-			try{
-				this.roles = computeRoles();
-			}catch(StateMachineException e){
-				GamerLogger.logError("StateMachine", "[YAP] Exception during state machine initialization. Roles computation failed!");
-				GamerLogger.logStackTrace("StateMachine", e);
-				this.roles = null;
-				throw new StateMachineInitializationException("State machine initialization failed. Impossible to compute roles.", e);
-			}
+		// If creation succeeded, compute initial state...
+		try{
+			this.initialState = computeInitialState();
+		}catch(StateMachineException e){
+			GamerLogger.logError("StateMachine", "[YAP] Exception during state machine initialization. Initial state computation failed!");
+			GamerLogger.logStackTrace("StateMachine", e);
+			this.initialState = null;
+			throw new StateMachineInitializationException("State machine initialization failed. Impossible to compute initial state.", e);
+		}
+		// ...and roles.
+		try{
+			this.roles = computeRoles();
+		}catch(StateMachineException e){
+			GamerLogger.logError("StateMachine", "[YAP] Exception during state machine initialization. Roles computation failed!");
+			GamerLogger.logStackTrace("StateMachine", e);
+			this.roles = null;
+			throw new StateMachineInitializationException("State machine initialization failed. Impossible to compute roles.", e);
+		}
 	}
 
 	/**
