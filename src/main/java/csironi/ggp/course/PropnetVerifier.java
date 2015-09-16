@@ -1,13 +1,19 @@
 package csironi.ggp.course;
 
+import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 
 import org.ggp.base.util.game.GameRepository;
 import org.ggp.base.util.gdl.grammar.Gdl;
-import org.ggp.base.util.gdl.transforms.DistinctAndNotMover;
 import org.ggp.base.util.logging.GamerLogger;
 import org.ggp.base.util.logging.GamerLogger.FORMAT;
+import org.ggp.base.util.match.Match;
 import org.ggp.base.util.statemachine.implementation.propnet.ForwardInterruptingPropNetStateMachine;
 import org.ggp.base.util.statemachine.implementation.prover.ProverStateMachine;
 import org.ggp.base.util.statemachine.verifier.StateMachineVerifier;
@@ -42,19 +48,42 @@ public class PropnetVerifier {
 
 	public static void main(String[] args) throws InterruptedException{
 
-		long buildingTime = 300000L;
+		class PropnetInitializer implements Callable<Long>{
+
+			private List<Gdl> description;
+
+			private ForwardInterruptingPropNetStateMachine theMachine;
+
+			public void setInitializer(List<Gdl> description, ForwardInterruptingPropNetStateMachine theMachine){
+				this.description = description;
+				this.theMachine = theMachine;
+			}
+
+			@Override
+			public Long call() throws Exception {
+				long start = System.currentTimeMillis();
+				this.theMachine.initialize(this.description);
+				return System.currentTimeMillis() - start;
+
+			}
+		}
+
+		//long buildingTime = 300000L;
+		long maxInitializationTime = 300000L;
 		long testTime = 10000L;
 
 		if (args.length != 0){
 
 			if(args.length == 2){
 				try{
-					buildingTime = Long.parseLong(args[0]);
+					//buildingTime = Long.parseLong(args[0]);
+					maxInitializationTime = Long.parseLong(args[0]);
 					testTime = Long.parseLong(args[1]);
 					System.out.println("Running tests with the following settings:");
 				}catch(NumberFormatException nfe){
 					System.out.println("Inconsistent time values specification! Running tests with default settings:");
-					buildingTime = 300000L;
+					//buildingTime = 300000L;
+					maxInitializationTime = 300000L;
 					testTime = 10000L;
 				}
 			}else{
@@ -64,7 +93,9 @@ public class PropnetVerifier {
 			System.out.println("Running tests with default settings:");
 		}
 
-		System.out.println("Propnet building time: " + buildingTime);
+		//System.out.println("Propnet building time: " + buildingTime);
+		System.out.println("Propnet initialization time: " + maxInitializationTime);
+
 		System.out.println("Running time for each test: " + testTime);
 		System.out.println();
 
@@ -72,7 +103,10 @@ public class PropnetVerifier {
         ForwardInterruptingPropNetStateMachine thePropNetMachine;
 
         GamerLogger.setSpilloverLogfile("PropnetVerifierTable.csv");
-        GamerLogger.log(FORMAT.CSV_FORMAT, "PropnetVerifierTable", "Game key;PropNet Construction Time (ms);Initialization time;Rounds;Test duration (ms);Pass;");
+        GamerLogger.log(FORMAT.CSV_FORMAT, "PropnetVerifierTable", "Game key;Propnet Construction time (ms);Initialization time (ms);Rounds;Test duration (ms);Pass;");
+
+        ExecutorService executor = Executors.newSingleThreadExecutor();
+        PropnetInitializer initializer = new PropnetInitializer();
 
         GameRepository theRepository = GameRepository.getDefaultRepository();
         for(String gameKey : theRepository.getGameKeys()) {
@@ -82,12 +116,13 @@ public class PropnetVerifier {
 
             //if(!gameKey.equals("mummymaze1p")) continue;
 
-            GamerLogger.setSpilloverLogfile("PropnetVerifierLogs.log");
+            Match fakeMatch = new Match(gameKey + System.currentTimeMillis(), -1, -1, -1,theRepository.getGame(gameKey) );
 
-            GamerLogger.log("StateMachine", "Testing on game " + gameKey);
+            GamerLogger.startFileLogging(fakeMatch, "PropnetVerifier");
+
+            GamerLogger.log("Verifier", "Testing on game " + gameKey);
 
             List<Gdl> description = theRepository.getGame(gameKey).getRules();
-
 
             theReference = new ProverStateMachine();
 
@@ -96,54 +131,35 @@ public class PropnetVerifier {
 
             theReference.initialize(description);
 
-            boolean pass = false;
+            long constructionTime = -1L;
+            long initializationTime = -1L;
             int rounds = -1;
-            long duration = 0L;
+            long duration = -1L;
+            boolean pass = false;
 
             // Try to initialize the propnet state machine.
             // If initialization fails, skip the test.
-            try{fiiiixx
-            	thePropNetMachine.initialize(description);
+            initializer.setInitializer(description, thePropNetMachine);
+            try {
+            	initializationTime = executor.invokeAny(Arrays.asList(initializer), maxInitializationTime, TimeUnit.MILLISECONDS);
             	System.out.println("Detected activation in game " + gameKey + ". Checking consistency: ");
             	long start = System.currentTimeMillis();
                 pass = StateMachineVerifier.checkMachineConsistency(theReference, thePropNetMachine, testTime);
                 duration = System.currentTimeMillis() - start;
                 rounds = StateMachineVerifier.lastRounds;
-            }catch(Exception e){
-            	GamerLogger.log("StateMachine", "State machine " + thePropNetMachine.getName() + " initialization failed, impossible to test this game. Cause: " + e.getMessage());
+                constructionTime = thePropNetMachine.getPropnetConstructionTime();
+			} catch (ExecutionException | TimeoutException e) {
+				initializationTime = -1L;
+				GamerLogger.log("Verifier", "State machine " + thePropNetMachine.getName() + " initialization failed, impossible to test this game. Cause: " + e.getMessage());
             	System.out.println("Skipping test on game " + gameKey + ". State machine initialization failed.");
-            }
+			}
 
-            GamerLogger.log(FORMAT.PLAIN_FORMAT, "StateMachine", "");
+            GamerLogger.log(FORMAT.PLAIN_FORMAT, "Verifier", "");
 
-            GamerLogger.setSpilloverLogfile("PropnetVerifierTable.csv");
-            GamerLogger.log(FORMAT.CSV_FORMAT, "PropnetVerifierTable", gameKey + ";" + thePropNetMachine.getPropnetConstructionTime() + ";" + rounds + ";" + duration + ";" + pass + ";");
+            GamerLogger.stopFileLogging();
+
+            GamerLogger.log(FORMAT.CSV_FORMAT, "PropnetVerifierTable", gameKey + ";" + constructionTime + ";" + initializationTime + ";" + rounds + ";" + duration + ";" + pass + ";");
         }
-	}
-
-
-	public class PropnetInitializer implements Callable<Long>{
-
-		private List<Gdl> description;
-
-		private ForwardInterruptingPropNetStateMachine theMachine;
-
-		private long initializationTime;
-
-		public PropnetInitializer(List<Gdl> description, ForwardInterruptingPropNetStateMachine theMachine){
-			this.description = description;
-			this.theMachine = theMachine;
-			this.initializationTime = -1L;
-
-		}
-
-		@Override
-		public Long call() throws Exception {
-			long start = System.currentTimeMillis();
-			this.theMachine.initialize(this.description);
-			return System.currentTimeMillis() - start;
-
-		}
 	}
 
 }

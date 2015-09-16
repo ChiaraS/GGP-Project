@@ -77,7 +77,8 @@ public class ForwardInterruptingPropNetStateMachine extends StateMachine {
 	    }
 
 		// No need to set all other inputs to false because they already are.
-		// Impose consistency on the propnet.
+		// Impose consistency on the propnet (TODO REMARK: this method should also check
+	    // for interrupts -> is it safe to assume it will never get stuck indefinitely?).
 		this.propNet.imposeConsistency();
 		// The initial state can be computed by only setting the truth value of the INIT
 		// proposition to TRUE, and then computing the resulting next state paying attention that all the
