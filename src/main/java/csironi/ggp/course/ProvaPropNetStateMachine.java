@@ -5,7 +5,7 @@ import java.util.List;
 import org.ggp.base.util.game.Game;
 import org.ggp.base.util.gdl.grammar.Gdl;
 import org.ggp.base.util.statemachine.MachineState;
-import org.ggp.base.util.statemachine.implementation.propnet.ForwardInterruptingPropNetStateMachine;
+import org.ggp.base.util.statemachine.implementation.propnet.CheckFwdInterrPropNetStateMachine;
 
 public class ProvaPropNetStateMachine {
 
@@ -16,7 +16,7 @@ public class ProvaPropNetStateMachine {
 
 		List<Gdl> BeLList = BeLGame.getRules();
 
-		ForwardInterruptingPropNetStateMachine m = new ForwardInterruptingPropNetStateMachine(300000);
+		CheckFwdInterrPropNetStateMachine m = new CheckFwdInterrPropNetStateMachine(300000);
 		m.initialize(BeLList);
 
 		MachineState initialState = m.getInitialState();

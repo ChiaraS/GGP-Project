@@ -14,7 +14,7 @@ import org.ggp.base.util.statemachine.StateMachine;
 import org.ggp.base.util.statemachine.exceptions.GoalDefinitionException;
 import org.ggp.base.util.statemachine.exceptions.MoveDefinitionException;
 import org.ggp.base.util.statemachine.exceptions.TransitionDefinitionException;
-import org.ggp.base.util.statemachine.implementation.propnet.ForwardInterruptingPropNetStateMachine;
+import org.ggp.base.util.statemachine.implementation.propnet.CheckFwdInterrPropNetStateMachine;
 
 /**
  * @author C.Sironi
@@ -108,7 +108,7 @@ public class PropnetMCS extends SampleGamer {
 	 */
 	@Override
 	public StateMachine getInitialStateMachine(){
-		return new ForwardInterruptingPropNetStateMachine();
+		return new CheckFwdInterrPropNetStateMachine();
 	}
 
 }
