@@ -109,9 +109,11 @@ public class MappingYapFacilitator {
 
 		} else { // 2-letters constants
 
+			// TODO: what if constantIndex = 2*LENGHT?
 			if(constantIndex % LENGTH == 0) // the first letter of 2-letters constants
 				sbConstant.replace(0, 1, LOWERCASE[(constantIndex/LENGTH)-1]);
 
+			// TODO: what if constantIndex >= 2*LENGHT? How would this constant be substituted?
 			sbConstant.replace(1, 2, LOWERCASE[constantIndex % LENGTH]); // the second one
 			constantIndex++;
 
@@ -152,9 +154,11 @@ public class MappingYapFacilitator {
 
 		} else { // 2-letters variables
 
+			// TODO: same considerations as for the nextConstant() method
 			if(variableIndex % LENGTH == 0) // the first letter of 2-letters variables
 				sbVariable.replace(0, 1, UPPERCASE[(variableIndex/LENGTH)-1]);
 
+			// TODO: same considerations as for the nextConstant() method
 			sbVariable.replace(1, 2, LOWERCASE[variableIndex % LENGTH]); // the second one
 			variableIndex++;
 
