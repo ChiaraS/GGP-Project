@@ -114,7 +114,7 @@ public class PropnetVerifier {
 
             //if(!gameKey.equals("3pConnectFour") && !gameKey.equals("god")) continue;
 
-            //if(!gameKey.equals("mummymaze1p")) continue;
+            //if(!gameKey.equals("coins_atomic")) continue;
 
             Match fakeMatch = new Match(gameKey + System.currentTimeMillis(), -1, -1, -1,theRepository.getGame(gameKey) );
 
@@ -151,11 +151,20 @@ public class PropnetVerifier {
 			} catch (ExecutionException | TimeoutException e) {
 				// Reset executor and initializer
 				executor.shutdownNow();
+				// Wait for all tasks to be completed before continuing (needed to avoid any interrupted
+				// but still running task in the executor to write logs on the wrong file -> after executor
+				// shutdown the logging file might already have been changed when the still running tasks
+				// log a message).
+				if(!executor.isTerminated()){
+					// If not all tasks terminated, wait for a minute and then check again
+					executor.awaitTermination(1, TimeUnit.MINUTES);
+				}
 				executor = Executors.newSingleThreadExecutor();
 				initializer = new PropnetInitializer();
 				initializationTime = -1L;
-				GamerLogger.log("Verifier", "State machine " + thePropNetMachine.getName() + " initialization failed, impossible to test this game. Cause: " + e.getMessage());
-            	System.out.println("Skipping test on game " + gameKey + ". State machine initialization failed.");
+				GamerLogger.logError("Verifier", "State machine " + thePropNetMachine.getName() + " initialization failed, impossible to test this game. Cause: " + e.getMessage());
+            	GamerLogger.logStackTrace("Verifier", e);
+				System.out.println("Skipping test on game " + gameKey + ". State machine initialization failed.");
 			}
 
             GamerLogger.log(FORMAT.PLAIN_FORMAT, "Verifier", "");
@@ -164,6 +173,9 @@ public class PropnetVerifier {
 
             GamerLogger.log(FORMAT.CSV_FORMAT, "PropnetVerifierTable", gameKey + ";" + constructionTime + ";" + initializationTime + ";" + rounds + ";" + duration + ";" + pass + ";");
         }
+
+        // Otherwise this program will never stop
+        executor.shutdownNow();
 	}
 
 }
