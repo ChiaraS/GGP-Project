@@ -34,15 +34,17 @@ public class ProvaYap {
 		GameRepository theRepository = GameRepository.getDefaultRepository();
         for(String gameKey : theRepository.getGameKeys()) {
             if(gameKey.contains("laikLee")) continue;
-            if(!gameKey.equals("zhadu")) continue;
+            //if(!gameKey.equals("zhadu")) continue;
             List<Gdl> description = theRepository.getGame(gameKey).getRules();
             try{
+            	System.out.println("Testing game " + gameKey);
             	//provaYap(description);
             	//provaYap2(description);
             	//provaDescription(description);
             	//provaStepByStep(description);
             	//modifyDescription(description);
-            	checkDescriptionAfterProver(description);
+            	//checkDescriptionAfterProver(description);
+            	checkProcessingCost(description);
             }catch(Exception e){
             	System.out.println("Error when testing game " + gameKey);
             	e.printStackTrace();
@@ -50,6 +52,14 @@ public class ProvaYap {
             }
 
         }
+	}
+
+	private static void checkProcessingCost(List<Gdl> description){
+		long start = System.currentTimeMillis();
+		description = DistinctAndNotMover.run(description);
+		System.out.println("1 iteration: " + (System.currentTimeMillis() - start) + " ms");
+		description = DistinctAndNotMover.run(description);
+		System.out.println("2 iterations: " + (System.currentTimeMillis() - start) + " ms");
 	}
 
 	private static void checkDescriptionAfterProver(List<Gdl> description){

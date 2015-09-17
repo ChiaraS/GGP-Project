@@ -75,6 +75,14 @@ public class BackedYapStateMachine extends StateMachine {
 	public void initialize(List<Gdl> description)
 			throws StateMachineInitializationException {
 
+		// TODO: move the description processing here. If used singularly the two state machines
+		// both perform DistinctAndNotMover on the GDL description, but it might save time to compute
+		// it only once here (seems not to be saving much time, usually just 3-4 milliseconds).
+		// description = DistinctAndNotMover.run(description);
+		// If you move it here remember to leave the instruction also in both the state machines
+		// because they need it when running by themselves. Just find a way to tell them not to
+		// process the description anymore if it already has been outside of their code.
+
 		// Since the initialization of the prover state machine will always succeed we don't have to worry about
 		// it failing. However it is reasonable to assume that the initialization of the BackedYapStateMachine
 		// is also failed if the initialization of the machine that should act as a backup fails. Hence the
