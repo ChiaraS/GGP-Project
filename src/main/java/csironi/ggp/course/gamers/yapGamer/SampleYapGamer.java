@@ -11,8 +11,9 @@ import org.ggp.base.util.statemachine.StateMachine;
 import org.ggp.base.util.statemachine.exceptions.GoalDefinitionException;
 import org.ggp.base.util.statemachine.exceptions.MoveDefinitionException;
 import org.ggp.base.util.statemachine.exceptions.TransitionDefinitionException;
+import org.ggp.base.util.statemachine.hybrid.BackedYapStateMachine;
 import org.ggp.base.util.statemachine.implementation.prover.ProverStateMachine;
-import org.ggp.base.util.statemachine.implementation.yapProlog.OldYapStateMachine;
+import org.ggp.base.util.statemachine.implementation.yapProlog.YapStateMachine;
 
 /**
  * SampleGamer is a simplified version of the StateMachineGamer, dropping some
@@ -46,11 +47,11 @@ public abstract class SampleYapGamer extends StateMachineYapGamer{
 	@Override
 	public /*YapStateMachine*/ StateMachine getInitialStateMachine() {
 		//return new CachedStateMachine(new YapStateMachine());
-		ysm = new OldYapStateMachine(new ProverStateMachine());
+		ysm = new BackedYapStateMachine(new YapStateMachine(), new ProverStateMachine());
 		return ysm;
 	}
-	private OldYapStateMachine ysm;
-	public OldYapStateMachine getYapStateMachine()
+	private BackedYapStateMachine ysm;
+	public BackedYapStateMachine getYapStateMachine()
 	{
 		return ysm;
 	}
@@ -67,7 +68,7 @@ public abstract class SampleYapGamer extends StateMachineYapGamer{
 	public void stateMachineStop() {
 		// Sample gamers do no special cleanup when the match ends normally.
 		////////// TODO: ATTENTION!
-		ysm.stop();
+		ysm.shutdown();;
 		//////////
 	}
 
@@ -75,7 +76,7 @@ public abstract class SampleYapGamer extends StateMachineYapGamer{
 	public void stateMachineAbort() {
 		// Sample gamers do no special cleanup when the match ends abruptly.
 		//////////
-		ysm.abort();
+		ysm.shutdown();;
 		//////////
 	}
 

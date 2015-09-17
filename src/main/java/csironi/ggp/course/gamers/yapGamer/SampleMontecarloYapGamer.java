@@ -12,7 +12,7 @@ import org.ggp.base.util.statemachine.exceptions.GoalDefinitionException;
 import org.ggp.base.util.statemachine.exceptions.MoveDefinitionException;
 import org.ggp.base.util.statemachine.exceptions.StateMachineException;
 import org.ggp.base.util.statemachine.exceptions.TransitionDefinitionException;
-import org.ggp.base.util.statemachine.implementation.yapProlog.OldYapStateMachine;
+import org.ggp.base.util.statemachine.hybrid.BackedYapStateMachine;
 
 
 /**
@@ -38,7 +38,7 @@ public final class SampleMontecarloYapGamer extends SampleYapGamer{
 	public Move stateMachineSelectMove(long timeout) throws TransitionDefinitionException, MoveDefinitionException, GoalDefinitionException, StateMachineException
 	{
 		//StateMachine theMachine = getStateMachine();
-		OldYapStateMachine theMachine = getYapStateMachine();
+		BackedYapStateMachine theMachine = getYapStateMachine();
 		long start = System.currentTimeMillis();
 		long finishBy = timeout - 5000;
 
@@ -91,7 +91,7 @@ public final class SampleMontecarloYapGamer extends SampleYapGamer{
 
 	int performDepthChargeFromMove(MachineState theState, Move myMove) {
 		//StateMachine theMachine = getStateMachine();
-		OldYapStateMachine theMachine = getYapStateMachine();
+		BackedYapStateMachine theMachine = getYapStateMachine();
 		/*
 		try {
 			MachineState finalState = theMachine.performDepthCharge(theMachine.getRandomNextState(theState, getRole(), myMove), depth);
