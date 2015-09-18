@@ -186,7 +186,7 @@ public abstract class StateMachineGamer extends Gamer
 			// REMARK: it's not necessarily true that, if initialization is taking longer than the
 			// timeout, this method will throw an exception, it might keep running indefinitely,
 			// depending on how the method has been implemented.
-			stateMachine.initialize(getMatch().getGame().getRules(), timeout);
+			stateMachine.initialize(getMatch().getGame().getRules());
 			currentState = stateMachine.getInitialState();
 			role = stateMachine.getRoleFromConstant(getRoleName());
 			getMatch().appendState(currentState.getContents());
