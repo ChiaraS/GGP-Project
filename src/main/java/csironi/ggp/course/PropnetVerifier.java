@@ -7,7 +7,7 @@ import org.ggp.base.util.gdl.grammar.Gdl;
 import org.ggp.base.util.logging.GamerLogger;
 import org.ggp.base.util.logging.GamerLogger.FORMAT;
 import org.ggp.base.util.statemachine.exceptions.PropnetCreationException;
-import org.ggp.base.util.statemachine.implementation.propnet.CheckFwdInterrPropNetStateMachine;
+import org.ggp.base.util.statemachine.implementation.propnet.ForwardInterruptingPropNetStateMachine;
 import org.ggp.base.util.statemachine.implementation.prover.ProverStateMachine;
 import org.ggp.base.util.statemachine.verifier.StateMachineVerifier;
 
@@ -53,7 +53,7 @@ public class PropnetVerifier {
 		System.out.println();
 
         ProverStateMachine theReference;
-        CheckFwdInterrPropNetStateMachine thePropNetMachine;
+        ForwardInterruptingPropNetStateMachine thePropNetMachine;
 
         GamerLogger.setSpilloverLogfile("PropnetVerifierTable.csv");
         GamerLogger.log(FORMAT.CSV_FORMAT, "PropnetVerifierTable", "Game key;Construction Time (ms);Rounds;Test duration (ms);Pass;");
@@ -76,7 +76,7 @@ public class PropnetVerifier {
             theReference = new ProverStateMachine();
 
             // Create propnet state machine giving it 5 minutes to build the propnet
-            thePropNetMachine = new CheckFwdInterrPropNetStateMachine(buildingTime);
+            thePropNetMachine = new ForwardInterruptingPropNetStateMachine(buildingTime);
 
             theReference.initialize(description);
 
