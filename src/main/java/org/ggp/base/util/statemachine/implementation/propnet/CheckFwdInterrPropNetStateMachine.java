@@ -14,23 +14,25 @@ import org.ggp.base.util.logging.GamerLogger;
 import org.ggp.base.util.propnet.architecture.forwardInterrupting.ForwardInterruptingPropNet;
 import org.ggp.base.util.propnet.architecture.forwardInterrupting.components.ForwardInterruptingProposition;
 import org.ggp.base.util.propnet.architecture.forwardInterrupting.components.ForwardInterruptingTransition;
-import org.ggp.base.util.propnet.factory.ForwardInterruptingPropNetCreator;
+import org.ggp.base.util.propnet.factory.FwdInterrPropNetCreator;
 import org.ggp.base.util.statemachine.MachineState;
 import org.ggp.base.util.statemachine.Move;
 import org.ggp.base.util.statemachine.Role;
 import org.ggp.base.util.statemachine.StateMachine;
+import org.ggp.base.util.statemachine.exceptions.FwdInterrPropnetCreationException;
 import org.ggp.base.util.statemachine.exceptions.GoalDefinitionException;
 import org.ggp.base.util.statemachine.exceptions.MoveDefinitionException;
-import org.ggp.base.util.statemachine.exceptions.PropnetCreationException;
 import org.ggp.base.util.statemachine.exceptions.TransitionDefinitionException;
 import org.ggp.base.util.statemachine.implementation.prover.query.ProverQueryBuilder;
+
+import com.google.common.collect.ImmutableList;
 
 
 public class CheckFwdInterrPropNetStateMachine extends StateMachine {
     /** The underlying proposition network  */
     private ForwardInterruptingPropNet propNet;
     /** The player roles */
-    private List<Role> roles;
+    private ImmutableList<Role> roles;
     /** The initial state */
     private MachineState initialState;
 
@@ -41,7 +43,7 @@ public class CheckFwdInterrPropNetStateMachine extends StateMachine {
 	 * Total time (in milliseconds) taken to construct the propnet.
 	 * If it is negative it means that the propnet didn't build in time.
 	 */
-	long constructionTime = -1L;
+	private long constructionTime = -1L;
 
 	/**
 	 * Constructor that sets the maximum time (in milliseconds) that this state machine can spend to
@@ -70,7 +72,7 @@ public class CheckFwdInterrPropNetStateMachine extends StateMachine {
     @Override
     public void initialize(List<Gdl> description) {
 
-    	ForwardInterruptingPropNetCreator creator = new ForwardInterruptingPropNetCreator(description);
+    	FwdInterrPropNetCreator creator = new FwdInterrPropNetCreator(description);
     	// Try to create the propnet, if it takes too long stop the creation.
     	creator.start();
     	try{
@@ -78,7 +80,7 @@ public class CheckFwdInterrPropNetStateMachine extends StateMachine {
     	}catch (InterruptedException e) {
     		GamerLogger.logError("StateMachine", "[Propnet] Propnet creation interrupted! Terminating initialization!");
     		GamerLogger.logStackTrace("StateMachine", e);
-			throw new PropnetCreationException("Propnet creation interrupted by external action.");
+			throw new FwdInterrPropnetCreationException("Propnet creation interrupted by external action.");
 		}
 
     	// After 'maxPropnetCreationTime' milliseconds, if the creator thread is still alive it means
@@ -100,7 +102,7 @@ public class CheckFwdInterrPropNetStateMachine extends StateMachine {
     		this.propNet = null;
     		// Throw an exception to signal that something went wrong with propnet creation, more precisely
     		// the propnet was not constructed in time.
-    		throw new PropnetCreationException("Propnet creation interrupted, taking too long! " + this.maxPropnetCreationTime + "ms are not enough to build the propnet for the game.");
+    		throw new FwdInterrPropnetCreationException("Propnet creation interrupted, taking too long! " + this.maxPropnetCreationTime + "ms are not enough to build the propnet for the game.");
     	}else{
     		// If the creator is not alive, it might be because...
     		this.propNet = creator.getPropNet();
@@ -108,7 +110,7 @@ public class CheckFwdInterrPropNetStateMachine extends StateMachine {
     		// ...it finished creating the propnet, and thus we can use it to finish initializing
     		// the state machine...
     		if(this.propNet != null){
-	    		this.roles = this.propNet.getRoles();
+	    		this.roles = ImmutableList.copyOf(this.propNet.getRoles());
 		        // If it exists, set init proposition to true without propagating, so that when making
 		        // the propnet consistent its value will be propagated so that the next state
 		        // will correspond to the initial state.
@@ -138,7 +140,7 @@ public class CheckFwdInterrPropNetStateMachine extends StateMachine {
     		}else{
     			//...or it encountered an OutOfMemory error or some other error or Exception,
     			// and thus we have no propnet for this state machine.
-    			throw new PropnetCreationException("Propnet creation interrupted, an error or exception occurred during creation!");
+    			throw new FwdInterrPropnetCreationException("Propnet creation interrupted, an error or exception occurred during creation!");
     		}
 
     	}

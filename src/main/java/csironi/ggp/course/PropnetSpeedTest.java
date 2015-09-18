@@ -11,7 +11,7 @@ import org.ggp.base.util.logging.GamerLogger;
 import org.ggp.base.util.logging.GamerLogger.FORMAT;
 import org.ggp.base.util.match.Match;
 import org.ggp.base.util.statemachine.exceptions.PropnetCreationException;
-import org.ggp.base.util.statemachine.implementation.propnet.ForwardInterruptingPropNetStateMachine;
+import org.ggp.base.util.statemachine.implementation.propnet.CheckFwdInterrPropNetStateMachine;
 
 /**
  * @author C.Sironi
@@ -62,7 +62,7 @@ public class PropnetSpeedTest {
 
 		System.out.println();
 
-        ForwardInterruptingPropNetStateMachine thePropNetMachine;
+		CheckFwdInterrPropNetStateMachine thePropNetMachine;
 
         GamerLogger.setSpilloverLogfile("PropnetSpeedTestTable.csv");
         GamerLogger.log(FORMAT.CSV_FORMAT, "PropnetSpeedTestTable", "Game key;Construction Time (ms);Test Duration (ms);Succeeded Iterations;Failed Iterations;Visited Nodes;Iterations/second;Nodes/second;");
@@ -86,7 +86,7 @@ public class PropnetSpeedTest {
             List<Gdl> description = theRepository.getGame(gameKey).getRules();
 
             // Create propnet state machine giving it buildingTime milliseconds to build the propnet
-            thePropNetMachine = new ForwardInterruptingPropNetStateMachine(buildingTime);
+            thePropNetMachine = new CheckFwdInterrPropNetStateMachine(buildingTime);
 
             long testDuration = -1L;
             int succeededIterations = -1;
