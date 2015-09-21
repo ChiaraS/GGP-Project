@@ -1,7 +1,7 @@
-package org.ggp.base.util.propnet.architecture.components;
+package org.ggp.base.util.propnet.architecture.basic.components;
 
 import org.ggp.base.util.gdl.grammar.GdlSentence;
-import org.ggp.base.util.propnet.architecture.Component;
+import org.ggp.base.util.propnet.architecture.basic.Component;
 
 /**
  * The Proposition class is designed to represent named latches.
@@ -52,7 +52,7 @@ public final class Proposition extends Component
 	/**
 	 * Returns the current value of the Proposition.
 	 *
-	 * @see org.ggp.base.util.propnet.architecture.Component#getValue()
+	 * @see org.ggp.base.util.propnet.architecture.basic.Component#getValue()
 	 */
 	@Override
 	public boolean getValue()
@@ -72,7 +72,7 @@ public final class Proposition extends Component
 	}
 
 	/**
-	 * @see org.ggp.base.util.propnet.architecture.Component#toString()
+	 * @see org.ggp.base.util.propnet.architecture.basic.Component#toString()
 	 */
 	@Override
 	public String toString()

@@ -1,4 +1,4 @@
-package org.ggp.base.util.propnet.architecture;
+package org.ggp.base.util.propnet.architecture.basic;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -16,11 +16,11 @@ import org.ggp.base.util.gdl.grammar.GdlRelation;
 import org.ggp.base.util.gdl.grammar.GdlSentence;
 import org.ggp.base.util.gdl.grammar.GdlTerm;
 import org.ggp.base.util.logging.GamerLogger;
-import org.ggp.base.util.propnet.architecture.components.And;
-import org.ggp.base.util.propnet.architecture.components.Not;
-import org.ggp.base.util.propnet.architecture.components.Or;
-import org.ggp.base.util.propnet.architecture.components.Proposition;
-import org.ggp.base.util.propnet.architecture.components.Transition;
+import org.ggp.base.util.propnet.architecture.basic.components.And;
+import org.ggp.base.util.propnet.architecture.basic.components.Not;
+import org.ggp.base.util.propnet.architecture.basic.components.Or;
+import org.ggp.base.util.propnet.architecture.basic.components.Proposition;
+import org.ggp.base.util.propnet.architecture.basic.components.Transition;
 import org.ggp.base.util.statemachine.Role;
 
 

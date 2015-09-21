@@ -160,7 +160,10 @@ public abstract class StateMachineGamer extends Gamer
      * @throws StateMachineException
      */
 	public final void resetStateFromMatch() throws StateMachineInitializationException {
-        StateMachine tmp = getInitialStateMachine();
+        // The use of the tmp variable is needed to avoid substituting the current state machine
+		// with a new one before being certain that the new one will manage to initialize.
+		// If the new state machine fails initialization, the old state machine will still be available.
+		StateMachine tmp = getInitialStateMachine();
         tmp.initialize(getMatch().getGame().getRules());
         stateMachine = tmp;
         currentState = stateMachine.getMachineStateFromSentenceList(getMatch().getMostRecentState());
@@ -194,7 +197,7 @@ public abstract class StateMachineGamer extends Gamer
 		}
 		catch (Exception e)
 		{
-		    GamerLogger.logStackTrace("GamePlayer", e);
+			GamerLogger.logStackTrace("GamePlayer", e);
 			throw new MetaGamingException(e);
 		}
 	}

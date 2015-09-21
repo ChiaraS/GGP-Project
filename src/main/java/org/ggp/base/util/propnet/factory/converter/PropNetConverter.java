@@ -15,14 +15,14 @@ import org.ggp.base.util.gdl.grammar.GdlProposition;
 import org.ggp.base.util.gdl.grammar.GdlRelation;
 import org.ggp.base.util.gdl.grammar.GdlRule;
 import org.ggp.base.util.gdl.grammar.GdlSentence;
-import org.ggp.base.util.propnet.architecture.Component;
-import org.ggp.base.util.propnet.architecture.PropNet;
-import org.ggp.base.util.propnet.architecture.components.And;
-import org.ggp.base.util.propnet.architecture.components.Constant;
-import org.ggp.base.util.propnet.architecture.components.Not;
-import org.ggp.base.util.propnet.architecture.components.Or;
-import org.ggp.base.util.propnet.architecture.components.Proposition;
-import org.ggp.base.util.propnet.architecture.components.Transition;
+import org.ggp.base.util.propnet.architecture.basic.Component;
+import org.ggp.base.util.propnet.architecture.basic.PropNet;
+import org.ggp.base.util.propnet.architecture.basic.components.And;
+import org.ggp.base.util.propnet.architecture.basic.components.Constant;
+import org.ggp.base.util.propnet.architecture.basic.components.Not;
+import org.ggp.base.util.propnet.architecture.basic.components.Or;
+import org.ggp.base.util.propnet.architecture.basic.components.Proposition;
+import org.ggp.base.util.propnet.architecture.basic.components.Transition;
 import org.ggp.base.util.statemachine.Role;
 
 /**

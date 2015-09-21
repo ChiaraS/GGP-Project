@@ -48,7 +48,7 @@ public abstract class SampleGamer extends StateMachineGamer
 		return new CachedStateMachine(new ProverStateMachine());
 	}
 
-	// This is the defaul Sample Panel
+	// This is the default Sample Panel
 	@Override
 	public DetailPanel getDetailPanel() {
 		return new SimpleDetailPanel();

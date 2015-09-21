@@ -1,4 +1,4 @@
-package org.ggp.base.util.propnet.architecture;
+package org.ggp.base.util.propnet.architecture.basic;
 
 import java.io.Serializable;
 import java.util.HashSet;

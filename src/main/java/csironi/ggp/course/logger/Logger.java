@@ -19,7 +19,7 @@ import org.ggp.base.util.match.Match;
 
 /**
  * !!!!!!!!!!!!!!!!!!!! ADD A METHOD TO SET MANUALLY THE FILES TO SKIP (i.e. if i want to skip writing on file the
- * logs of the category Error or StateMAchine i should be able to do that!)
+ * logs of the category Error or StateMachine i should be able to do that!)
  *
  *
  *
@@ -51,6 +51,11 @@ import org.ggp.base.util.match.Match;
  * 3. If the logger has been set to write logs to file, then for each match it will create a different
  * directory and in this directory create a different log file for each log category. Then it will write each
  * log in the directory of the corresponding match, in the file corresponding to its category.
+ * (NOTE: in this case, if the logged message is an Error log (i.e. the logError method has been called), the
+ * message is written both in the corresponding file category and in the file with "Error" category => never
+ * use "Error" as a custom category name to avoid messy logs in the corresponding file!
+ * Moreover, when an Exception/Error object is logged with the method logStackTrace, the effect is the same as
+ * using the logError method, where the message is the stack trace of the Exception/Error object). *
  *
  * NOTE 1: with configuration 2. and 3., it is also possible to state which categories of logs we want to
  * display on the standard output/standard error besides writing them on a file. Whenever a message is logged

@@ -55,14 +55,7 @@ public final class StartRequest extends Request
 		gamer.setRoleName(roleName);
 		gamer.notifyObservers(new GamerNewMatchEvent(match, roleName));
 
-
-		/**
-		 * AGGIUNTA
-		 */
 		GamerLogger.startFileLogging(match, roleName.getValue());
-		/**
-		 * FINE AGGIUNTA
-		 */
 
 		// Finally, have the gamer begin metagaming.
 		try {
@@ -70,6 +63,7 @@ public final class StartRequest extends Request
 			// TODO ...also metaGame calls game.getRules() to get the game description as GDL objects... -> double as EXPENSIVE! How to fix this?
 			gamer.metaGame(gamer.getMatch().getStartClock() * 1000 + receptionTime);
 		} catch (MetaGamingException e) {
+			GamerLogger.logError("GamePlayer", "Something went wrong when metagaming: player unable to play!");
 		    GamerLogger.logStackTrace("GamePlayer", e);
 
 		    // Upon encountering an uncaught exception during metagaming,
@@ -77,6 +71,9 @@ public final class StartRequest extends Request
 		    // right now, and tell the server that we're busy.
 			gamer.setMatch(null);
 			gamer.setRoleName(null);
+
+			GamerLogger.stopFileLogging();
+
 			return "busy";
 		}
 
