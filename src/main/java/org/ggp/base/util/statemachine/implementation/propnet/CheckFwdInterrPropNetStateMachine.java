@@ -487,4 +487,11 @@ public class CheckFwdInterrPropNetStateMachine extends StateMachine {
 	public long getConstructionTime(){
 		return this.constructionTime;
 	}
+
+	@Override
+	public void shutdown() {
+		// TODO Auto-generated method stub
+		// No need to do anything
+
+	}
 }

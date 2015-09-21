@@ -4,6 +4,7 @@ import org.ggp.base.util.logging.GamerLogger;
 import org.ggp.base.util.statemachine.MachineState;
 import org.ggp.base.util.statemachine.StateMachine;
 import org.ggp.base.util.statemachine.exceptions.MoveDefinitionException;
+import org.ggp.base.util.statemachine.exceptions.StateMachineException;
 import org.ggp.base.util.statemachine.exceptions.TransitionDefinitionException;
 
 public class StateMachineSpeedTest {
@@ -33,7 +34,7 @@ public class StateMachineSpeedTest {
 				theMachine.performDepthCharge(initialState, lastIterationVisitedNodes);
 				succeededIterations++;
 				visitedNodes += lastIterationVisitedNodes[0];
-			} catch (TransitionDefinitionException | MoveDefinitionException e) {
+			} catch (TransitionDefinitionException | MoveDefinitionException | StateMachineException e) {
 				GamerLogger.logError("SMSpeedTest", "Exception during iteration!");
 				GamerLogger.logStackTrace("SMSpeedTest", e);
 				failedIterations++;

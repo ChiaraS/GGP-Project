@@ -411,4 +411,13 @@ public class ForwardInterruptingPropNetStateMachine extends StateMachine {
 	public long getPropnetConstructionTime(){
 		return this.propnetConstructionTime;
 	}
+
+
+
+
+	@Override
+	public void shutdown() {
+		// TODO Auto-generated method stub
+		// No need to do anything
+	}
 }
