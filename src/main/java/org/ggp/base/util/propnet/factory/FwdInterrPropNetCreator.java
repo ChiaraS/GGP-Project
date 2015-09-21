@@ -6,6 +6,15 @@ import org.ggp.base.util.gdl.grammar.Gdl;
 import org.ggp.base.util.logging.GamerLogger;
 import org.ggp.base.util.propnet.architecture.forwardInterrupting.ForwardInterruptingPropNet;
 
+/**
+ * This class is used to run the creation of the propnet in a separate thread that can be
+ * interrupted if taking too long. This class is used only by the CheckFwdInterrPropnetStateMachine
+ * that internally checks during initialization that the building time of the propnet doesn't
+ * exceed the given time limit.
+ *
+ * @author C.Sironi
+ *
+ */
 public class FwdInterrPropNetCreator extends Thread {
 
 	/**

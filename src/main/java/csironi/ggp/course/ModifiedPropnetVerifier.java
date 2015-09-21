@@ -19,32 +19,17 @@ import org.ggp.base.util.statemachine.implementation.prover.ProverStateMachine;
 import org.ggp.base.util.statemachine.verifier.StateMachineVerifier;
 
 /**
- * TODOOOOOO:
- * 2. switcha alla prima versione funzionante della propnet, mergiala col master, implementa il
- * test con MCS e runnalo sul server.
- * 3. prova a sistemare yap prover usando DistinctAndNotMover.run(description) sulla game
- * description per vedere se il verifier riesce a passare i test dove fallisce senza
- * eccezione.
- * 1. merge di yap prover refactored con il master
- * 4. aggiungi un check del timeout anche all'aima prover
- * 5. Va che dopo aver sistemato tutto e aver testato le varie velocità devi anche provare tutto
- * con la cached state machine
- */
-
-
-
-/**
  * This class verifies the consistency of the propnet state machine wrt the prover state machine.
  *
- * It is possible to specify as main arguments the time in milliseconds that the propnet state machine must use to
- * build the propnet and the time in milliseconds that each test must take to run. If nothing or something
- * inconsistent is specified, 5 mins is used as default value for the propnet building time and 10 seconds is used
- * as default value for each test duration time.
+ * It is possible to specify as main arguments the time in milliseconds that the state machine has to initialize
+ * and the time in milliseconds that each test must take to run. If nothing or something inconsistent is specified,
+ * 5 mins is used as default value for the state machine initialization time and 10 seconds is used as default
+ * value for each test's duration time.
  *
  * @author C.Sironi
  *
  */
-public class PropnetVerifier {
+public class ModifiedPropnetVerifier {
 
 	public static void main(String[] args) throws InterruptedException{
 
@@ -103,7 +88,7 @@ public class PropnetVerifier {
         ForwardInterruptingPropNetStateMachine thePropNetMachine;
 
         GamerLogger.setSpilloverLogfile("PropnetVerifierTable.csv");
-        GamerLogger.log(FORMAT.CSV_FORMAT, "PropnetVerifierTable", "Game key;Propnet Construction time (ms);Initialization time (ms);Rounds;Test duration (ms);Pass;");
+        GamerLogger.log(FORMAT.CSV_FORMAT, "PropnetVerifierTable", "Game key;Initialization time (ms);Propnet Construction time (ms);Rounds;Test duration (ms);Pass;");
 
         ExecutorService executor = Executors.newSingleThreadExecutor();
         PropnetInitializer initializer = new PropnetInitializer();
@@ -140,6 +125,9 @@ public class PropnetVerifier {
             // Try to initialize the propnet state machine.
             // If initialization fails, skip the test.
             initializer.setInitializer(description, thePropNetMachine);
+
+            long initStart = System.currentTimeMillis();
+
             try {
             	initializationTime = executor.invokeAny(Arrays.asList(initializer), maxInitializationTime, TimeUnit.MILLISECONDS);
             	System.out.println("Detected activation in game " + gameKey + ". Checking consistency: ");
@@ -161,8 +149,10 @@ public class PropnetVerifier {
 				}
 				executor = Executors.newSingleThreadExecutor();
 				initializer = new PropnetInitializer();
-				initializationTime = -1L;
-				GamerLogger.logError("Verifier", "State machine " + thePropNetMachine.getName() + " initialization failed, impossible to test this game. Cause: " + e.getMessage());
+				// Check anyway how much time was spent for initialization (this tells us exactly how much
+				// extra time the propnet creation took to realize it had been interrupted and stop execution.
+				initializationTime = System.currentTimeMillis() - initStart;
+				GamerLogger.logError("Verifier", "State machine " + thePropNetMachine.getName() + " initialization failed, impossible to test this game. Cause: [" + e.getClass().getSimpleName() + "] " + e.getMessage() );
             	GamerLogger.logStackTrace("Verifier", e);
 				System.out.println("Skipping test on game " + gameKey + ". State machine initialization failed.");
 			}
@@ -171,7 +161,7 @@ public class PropnetVerifier {
 
             GamerLogger.stopFileLogging();
 
-            GamerLogger.log(FORMAT.CSV_FORMAT, "PropnetVerifierTable", gameKey + ";" + constructionTime + ";" + initializationTime + ";" + rounds + ";" + duration + ";" + pass + ";");
+            GamerLogger.log(FORMAT.CSV_FORMAT, "PropnetVerifierTable", gameKey + ";" + initializationTime + ";" + constructionTime + ";" + rounds + ";" + duration + ";" + pass + ";");
         }
 
         // Otherwise this program will never stop

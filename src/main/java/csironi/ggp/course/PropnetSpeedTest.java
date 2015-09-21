@@ -10,7 +10,7 @@ import org.ggp.base.util.gdl.grammar.Gdl;
 import org.ggp.base.util.logging.GamerLogger;
 import org.ggp.base.util.logging.GamerLogger.FORMAT;
 import org.ggp.base.util.match.Match;
-import org.ggp.base.util.statemachine.exceptions.PropnetCreationException;
+import org.ggp.base.util.statemachine.exceptions.StateMachineInitializationException;
 import org.ggp.base.util.statemachine.implementation.propnet.CheckFwdInterrPropNetStateMachine;
 
 /**
@@ -109,8 +109,8 @@ public class PropnetSpeedTest {
                 visitedNodes = StateMachineSpeedTest.visitedNodes;
                 iterationsPerSecond = ((double) succeededIterations * 1000)/((double) testDuration);
                 nodesPerSecond = ((double) visitedNodes * 1000)/((double) testDuration);
-            }catch(PropnetCreationException re){
-            	GamerLogger.log("SMSpeedTest", "No propnet available. Impossible to test its speed in this game. Cause: " + re.getMessage());
+            }catch(StateMachineInitializationException e){
+            	GamerLogger.log("SMSpeedTest", "No propnet available. Impossible to test its speed in this game. Cause: " + e.getMessage());
             	System.out.println("Skipping test on game " + gameKey + ". No propnet available.");
             }
 

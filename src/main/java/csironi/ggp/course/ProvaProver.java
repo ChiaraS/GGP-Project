@@ -17,6 +17,13 @@ import org.ggp.base.util.symbol.factory.SymbolFactory;
 import org.ggp.base.util.symbol.factory.exceptions.SymbolFormatException;
 import org.ggp.base.util.symbol.grammar.SymbolList;
 
+/**
+ * This class reproduces a situation where the GGP Base Prover fails to compute
+ * the goals of a player (player x) in a terminal state of the game "quad_7x7".
+ *
+ * @author C.Sironi
+ *
+ */
 public class ProvaProver {
 
 	public static void main(String args[]) throws SymbolFormatException, GdlFormatException, GoalDefinitionException {

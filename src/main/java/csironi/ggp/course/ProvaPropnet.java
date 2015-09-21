@@ -16,6 +16,7 @@ import org.ggp.base.util.propnet.architecture.forwardInterrupting.ForwardInterru
 import org.ggp.base.util.propnet.factory.ForwardInterruptingPropNetFactory;
 import org.ggp.base.util.statemachine.MachineState;
 import org.ggp.base.util.statemachine.Move;
+import org.ggp.base.util.statemachine.exceptions.StateMachineInitializationException;
 import org.ggp.base.util.statemachine.implementation.propnet.CheckFwdInterrPropNetStateMachine;
 import org.ggp.base.util.statemachine.implementation.prover.ProverStateMachine;
 
@@ -40,6 +41,17 @@ public class ProvaPropnet {
 
 	}
 
+	/**
+	 * This method, given the GDL description, builds the corresponding propnet,
+	 * prints its .dot representation and saves it in a file, both before and after
+	 * imposing the consistency on the values of the components of the propnet.
+	 *
+	 * NOTE that this method doesn't check the propnet building time. It will
+	 * wait indefinitely for the propnet to build.
+	 *
+	 * @param description the GDL description of the game.
+	 * @param gameName the key of the game, used to reate the .dot files names.
+	 */
 	public static void printPropnet(String description, String gameName){
 		Game game = Game.createEphemeralGame(description);
 
@@ -50,7 +62,8 @@ public class ProvaPropnet {
 		try {
 			propNet = ForwardInterruptingPropNetFactory.create(list, true);
 		} catch (InterruptedException e) {
-			System.out.println("Uh oh");
+			System.out.println("Something went wrong with the creation of the propnet!");
+			e.printStackTrace();
 		}
 
 		String string = null;
@@ -89,6 +102,9 @@ public class ProvaPropnet {
 
 	}
 
+	/**
+	 * This method experiments with the propnet of the game Buttons and Lights.
+	 */
 	public static void prova(){
 		/*
 
@@ -192,7 +208,8 @@ public class ProvaPropnet {
 		try {
 			BeLPropNet = ForwardInterruptingPropNetFactory.create(BeLList, true);
 		} catch (InterruptedException e) {
-			System.out.println("Uh oh");
+			System.out.println("Something went wrong with the creation of the propnet!");
+			e.printStackTrace();
 		}
 
 		String BeLString = null;
@@ -244,6 +261,17 @@ public class ProvaPropnet {
 
 	}
 
+	/**
+	 * This method performs one complete simulation from root to terminal state of the given game,
+	 * using both the ProverStateMachine and the CheckFwdInterrPropnetStateMachine. For each step
+	 * it prints the content of the states computed by both the state machines and also saves the
+	 * propnet state in a .dot format, so that it will be possible to check how the values of the
+	 * propositions in the propnet changed at every step.
+	 *
+	 * @param game the GDL game description.
+	 * @param maxPropnetCreationTime the maximum time that the propnet state machine has available
+	 * to build the propnet.
+	 */
 	public static void provaGame(String game, long maxPropnetCreationTime){
 
         ProverStateMachine theReference;
@@ -261,7 +289,12 @@ public class ProvaPropnet {
             thePropNetMachine = new CheckFwdInterrPropNetStateMachine(maxPropnetCreationTime);
 
             theReference.initialize(description);
-            thePropNetMachine.initialize(description);
+            try {
+				thePropNetMachine.initialize(description);
+			} catch (StateMachineInitializationException e) {
+				System.out.println("Something went wrong with the creation of the propnet!");
+				e.printStackTrace();
+			}
 
             ForwardInterruptingPropNet propnet = thePropNetMachine.getPropNet();
 
@@ -303,11 +336,13 @@ public class ProvaPropnet {
 	                proverState = theReference.getInitialState();
 	            } catch(Exception e) {
 	                GamerLogger.log("StateMachine", "Prover machine failed to generate an initial state!");
+	                e.printStackTrace();
 	            }
 	    		try {
 	                propnetState = thePropNetMachine.getInitialState();
 	            } catch(Exception e) {
 	                GamerLogger.log("StateMachine", "Propnet machine failed to generate an initial state!");
+	                e.printStackTrace();
 	            }
 
 	    		System.out.println("PROVER INITIAL STATE");
@@ -324,12 +359,14 @@ public class ProvaPropnet {
 	    				jointMove = theReference.getRandomJointMove(proverState);
 	                    proverState = theReference.getNextState(proverState, jointMove);
 	                } catch(Exception e) {
-	                    GamerLogger.log("StateMachine", "Prover machine failed to generate an initial state!");
+	                    GamerLogger.log("StateMachine", "Prover machine failed to generate the next state!");
+	                    e.printStackTrace();
 	                }
 	        		try {
 	                    propnetState = thePropNetMachine.getNextState(propnetState, jointMove);
 	                } catch(Exception e) {
-	                    GamerLogger.log("StateMachine", "Propnet machine failed to generate an initial state!");
+	                    GamerLogger.log("StateMachine", "Propnet machine failed to generate the next state!");
+	                    e.printStackTrace();
 	                }
 	        		System.out.println("PROVER STATE");
 	        		System.out.println(proverState);
@@ -365,6 +402,11 @@ public class ProvaPropnet {
 	}
 
 
+	/**
+	 * This method prints all the game keys in the GGP Base repository on a file,
+	 * pointing out among them the games that will be considered in the tests (the
+	 * ones that do not contain the word "likeLee").
+	 */
 	public static void printKeys(){
 		GamerLogger.setSpilloverLogfile("GameKeys");
 

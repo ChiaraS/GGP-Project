@@ -19,9 +19,9 @@ import org.ggp.base.util.statemachine.MachineState;
 import org.ggp.base.util.statemachine.Move;
 import org.ggp.base.util.statemachine.Role;
 import org.ggp.base.util.statemachine.StateMachine;
-import org.ggp.base.util.statemachine.exceptions.FwdInterrPropnetCreationException;
 import org.ggp.base.util.statemachine.exceptions.GoalDefinitionException;
 import org.ggp.base.util.statemachine.exceptions.MoveDefinitionException;
+import org.ggp.base.util.statemachine.exceptions.StateMachineInitializationException;
 import org.ggp.base.util.statemachine.exceptions.TransitionDefinitionException;
 import org.ggp.base.util.statemachine.implementation.prover.query.ProverQueryBuilder;
 
@@ -68,9 +68,14 @@ public class CheckFwdInterrPropNetStateMachine extends StateMachine {
      * Initializes the PropNetStateMachine. You should compute the topological
      * ordering here. Additionally you may compute the initial state here, at
      * your discretion.
+     *
+     */
+    /*
+     * (non-Javadoc)
+     * @see org.ggp.base.util.statemachine.StateMachine#initialize(java.util.List)
      */
     @Override
-    public void initialize(List<Gdl> description) {
+    public void initialize(List<Gdl> description) throws StateMachineInitializationException {
 
     	FwdInterrPropNetCreator creator = new FwdInterrPropNetCreator(description);
     	// Try to create the propnet, if it takes too long stop the creation.
@@ -80,7 +85,7 @@ public class CheckFwdInterrPropNetStateMachine extends StateMachine {
     	}catch (InterruptedException e) {
     		GamerLogger.logError("StateMachine", "[Propnet] Propnet creation interrupted! Terminating initialization!");
     		GamerLogger.logStackTrace("StateMachine", e);
-			throw new FwdInterrPropnetCreationException("Propnet creation interrupted by external action.");
+			throw new StateMachineInitializationException("Propnet creation interrupted by external action.", e);
 		}
 
     	// After 'maxPropnetCreationTime' milliseconds, if the creator thread is still alive it means
@@ -102,7 +107,7 @@ public class CheckFwdInterrPropNetStateMachine extends StateMachine {
     		this.propNet = null;
     		// Throw an exception to signal that something went wrong with propnet creation, more precisely
     		// the propnet was not constructed in time.
-    		throw new FwdInterrPropnetCreationException("Propnet creation interrupted, taking too long! " + this.maxPropnetCreationTime + "ms are not enough to build the propnet for the game.");
+    		throw new StateMachineInitializationException("Propnet creation interrupted, taking too long! " + this.maxPropnetCreationTime + "ms are not enough to build the propnet for the game.");
     	}else{
     		// If the creator is not alive, it might be because...
     		this.propNet = creator.getPropNet();
@@ -140,7 +145,7 @@ public class CheckFwdInterrPropNetStateMachine extends StateMachine {
     		}else{
     			//...or it encountered an OutOfMemory error or some other error or Exception,
     			// and thus we have no propnet for this state machine.
-    			throw new FwdInterrPropnetCreationException("Propnet creation interrupted, an error or exception occurred during creation!");
+    			throw new StateMachineInitializationException("Propnet creation interrupted, an error or exception occurred during creation!");
     		}
 
     	}

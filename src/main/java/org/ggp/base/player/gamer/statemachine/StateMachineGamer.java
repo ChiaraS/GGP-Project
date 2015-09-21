@@ -180,12 +180,6 @@ public abstract class StateMachineGamer extends Gamer
 		try
 		{
 			stateMachine = getInitialStateMachine();
-			// Takes as input also the time by which the state machine must finish initialization.
-			// If this method throws an exception it means something went wrong with initialization
-			// (e.g. initialization didn't finish in time).
-			// REMARK: it's not necessarily true that, if initialization is taking longer than the
-			// timeout, this method will throw an exception, it might keep running indefinitely,
-			// depending on how the method has been implemented.
 			stateMachine.initialize(getMatch().getGame().getRules());
 			currentState = stateMachine.getInitialState();
 			role = stateMachine.getRoleFromConstant(getRoleName());
