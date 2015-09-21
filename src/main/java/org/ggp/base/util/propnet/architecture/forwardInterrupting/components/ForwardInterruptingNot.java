@@ -58,6 +58,9 @@ public final class ForwardInterruptingNot extends ForwardInterruptingComponent
 	 */
 	@Override
 	public void propagateValue(boolean newValue){
+
+		//ConcurrencyUtils.checkForInterruption();
+
 		if(this.consistent){
 			// If the new value of the input of this NOT is the same as the value of this NOT component, it means that
 			// this component must negate it, changing its value, and thus it has to inform all its outputs about this

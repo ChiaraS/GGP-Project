@@ -156,6 +156,9 @@ public final class ForwardInterruptingProposition extends ForwardInterruptingCom
 	 */
 	@Override
 	public void propagateValue(boolean newValue){
+
+		//ConcurrencyUtils.checkForInterruption();
+
 		// If this method is called, and this component was consistent with its input, it means that
 		// the single input this component was consistent with changed value to newValue.
 		// Assume that if this method is called then newValue is different from the current value

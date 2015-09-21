@@ -14,136 +14,86 @@ import org.ggp.base.util.logging.GamerLogger;
 import org.ggp.base.util.propnet.architecture.forwardInterrupting.ForwardInterruptingPropNet;
 import org.ggp.base.util.propnet.architecture.forwardInterrupting.components.ForwardInterruptingProposition;
 import org.ggp.base.util.propnet.architecture.forwardInterrupting.components.ForwardInterruptingTransition;
-import org.ggp.base.util.propnet.factory.ForwardInterruptingPropNetCreator;
+import org.ggp.base.util.propnet.factory.ForwardInterruptingPropNetFactory;
 import org.ggp.base.util.statemachine.MachineState;
 import org.ggp.base.util.statemachine.Move;
 import org.ggp.base.util.statemachine.Role;
 import org.ggp.base.util.statemachine.StateMachine;
 import org.ggp.base.util.statemachine.exceptions.GoalDefinitionException;
 import org.ggp.base.util.statemachine.exceptions.MoveDefinitionException;
-import org.ggp.base.util.statemachine.exceptions.PropnetCreationException;
+import org.ggp.base.util.statemachine.exceptions.StateMachineInitializationException;
 import org.ggp.base.util.statemachine.exceptions.TransitionDefinitionException;
 import org.ggp.base.util.statemachine.implementation.prover.query.ProverQueryBuilder;
+
+import com.google.common.collect.ImmutableList;
 
 
 public class ForwardInterruptingPropNetStateMachine extends StateMachine {
     /** The underlying proposition network  */
     private ForwardInterruptingPropNet propNet;
     /** The player roles */
-    private List<Role> roles;
+    private ImmutableList<Role> roles;
     /** The initial state */
     private MachineState initialState;
-
-    /** The maximum time (in milliseconds) that this state machine can spend to create the propnet */
-    private long maxPropnetCreationTime;
 
     /**
 	 * Total time (in milliseconds) taken to construct the propnet.
 	 * If it is negative it means that the propnet didn't build in time.
 	 */
-	long constructionTime = -1L;
-
-	/**
-	 * Constructor that sets the maximum time (in milliseconds) that this state machine can spend to
-	 * create the propnet to the default value of 5 minutes.
-	 */
-	public ForwardInterruptingPropNetStateMachine(){
-    	this(300000L);
-    }
-
-	/**
-	 * Constructor that sets the maximum time (in milliseconds) that this state machine can spend to
-	 * create the propnet to the given time value.
-	 *
-	 * @param maxPropnetCreationTime the maximum time (in milliseconds) that this state machine can spend to
-	 * create the propnet.
-	 */
-    public ForwardInterruptingPropNetStateMachine(long maxPropnetCreationTime){
-    	this.maxPropnetCreationTime = maxPropnetCreationTime;
-    }
+	private long propnetConstructionTime = -1L;
 
     /**
      * Initializes the PropNetStateMachine. You should compute the topological
      * ordering here. Additionally you may compute the initial state here, at
      * your discretion.
+     *
+     * @throws StateMachineInitializationException
      */
     @Override
-    public void initialize(List<Gdl> description) {
-
-    	ForwardInterruptingPropNetCreator creator = new ForwardInterruptingPropNetCreator(description);
-    	// Try to create the propnet, if it takes too long stop the creation.
-    	creator.start();
+    public void initialize(List<Gdl> description) throws StateMachineInitializationException {
+    	long startTime = System.currentTimeMillis();
+		// Create the propnet
     	try{
-    		creator.join(maxPropnetCreationTime);
-    	}catch (InterruptedException e) {
-    		GamerLogger.logError("StateMachine", "[Propnet] Propnet creation interrupted! Terminating initialization!");
+    		this.propNet = ForwardInterruptingPropNetFactory.create(description);
+    	}catch(InterruptedException e){
+    		GamerLogger.logError("StateMachine", "[Propnet] Propnet creation interrupted!");
     		GamerLogger.logStackTrace("StateMachine", e);
-			throw new PropnetCreationException("Propnet creation interrupted by external action.");
-		}
-
-    	// After 'maxPropnetCreationTime' milliseconds, if the creator thread is still alive it means
-    	// that it is still busy creating the propnet and thus must be interrupted.
-    	if(creator.isAlive()){
-    		creator.interrupt();
-    		try{
-    			// Wait for the creator to actually stop running (needed only to have no problems with logging:
-    			// if both the state machine thread and the propnet creator thread try to write on the same log
-    			// file at the same time there might be an exception. Moreover, the time order of the logs might
-    			// not be respected in the file).
-    			creator.join();
-    		}catch(InterruptedException e){
-    			// Do nothing cause it is normal that I get this exception here
-    		}
-    		// Set again the propnet to null just to be sure.
-    		// The propnet set to null after initializing the state machine means that the propnet
-    		// couldn't be created.
-    		this.propNet = null;
-    		// Throw an exception to signal that something went wrong with propnet creation, more precisely
-    		// the propnet was not constructed in time.
-    		throw new PropnetCreationException("Propnet creation interrupted, taking too long! " + this.maxPropnetCreationTime + "ms are not enough to build the propnet for the game.");
-    	}else{
-    		// If the creator is not alive, it might be because...
-    		this.propNet = creator.getPropNet();
-
-    		// ...it finished creating the propnet, and thus we can use it to finish initializing
-    		// the state machine...
-    		if(this.propNet != null){
-	    		this.roles = this.propNet.getRoles();
-		        // If it exists, set init proposition to true without propagating, so that when making
-		        // the propnet consistent its value will be propagated so that the next state
-		        // will correspond to the initial state.
-	    		// REMARK: if there is not TRUE proposition in the initial state, the INIT proposition
-	    		// will not exist.
-	    		ForwardInterruptingProposition init = this.propNet.getInitProposition();
-	    		if(init != null){
-	    			this.propNet.getInitProposition().setValue(true);
-	    		}
-
-		        // No need to set all other inputs to false because they already are.
-		        // Impose consistency on the propnet.
-		        this.propNet.imposeConsistency();
-		        // The initial state can be computed by only setting the truth value of the INIT
-		        // proposition to TRUE, and then computing the resulting next state.
-		        // Given that the INIT proposition has already been set to TRUE (without propagation)
-		        // before imposing consistency and all other input propositions are set to FALSE at
-		        // this moment, it is possible to use the computeNextState() method to compute the
-		        // initial state.
-		        // If there is no init proposition we can just set the initial state to the state with
-		        // empty content.
-		        if(init != null){
-		        	this.initialState = this.computeInitialState();
-		        }else{
-		        	this.initialState = new MachineState(new HashSet<GdlSentence>());
-		        }
-    		}else{
-    			//...or it encountered an OutOfMemory error or some other error or Exception,
-    			// and thus we have no propnet for this state machine.
-    			throw new PropnetCreationException("Propnet creation interrupted, an error or exception occurred during creation!");
-    		}
-
+    		throw new StateMachineInitializationException(e);
     	}
-    	this.constructionTime = creator.getConstructionTime();
+    	// Compute the time taken to construct the propnet
+    	this.propnetConstructionTime = System.currentTimeMillis() - startTime;
+		GamerLogger.log("StateMachine", "[Propnet Creator] Propnet creation done. It took " + (this.propnetConstructionTime) + "ms.");
+
+		// Compute the roles
+   		this.roles = ImmutableList.copyOf(this.propNet.getRoles());
+        // If it exists, set init proposition to true without propagating, so that when making
+		// the propnet consistent its value will be propagated so that the next state
+		// will correspond to the initial state.
+	    // REMARK: if there is not TRUE proposition in the initial state, the INIT proposition
+	    // will not exist.
+	    ForwardInterruptingProposition init = this.propNet.getInitProposition();
+	    if(init != null){
+	    	this.propNet.getInitProposition().setValue(true);
+	    }
+
+		// No need to set all other inputs to false because they already are.
+		// Impose consistency on the propnet (TODO REMARK: this method should also check
+	    // for interrupts -> is it safe to assume it will never get stuck indefinitely?).
+		this.propNet.imposeConsistency();
+		// The initial state can be computed by only setting the truth value of the INIT
+		// proposition to TRUE, and then computing the resulting next state paying attention that all the
+		// base propositions that result being TRUE are also depending on the INIT proposition value.
+		// If there is no init proposition we can just set the initial state to the state with
+		// empty content.
+		if(init != null){
+		   	this.initialState = this.computeInitialState();
+		}else{
+			this.initialState = new MachineState(new HashSet<GdlSentence>());
+		}
     }
+
+
+
 
     /**
      * This method returns the next machine state. This state contains the set of all the base propositions
@@ -445,25 +395,6 @@ public class ForwardInterruptingPropNetStateMachine extends StateMachine {
 	}
 
 	/**
-	 * Set method for the 'maxPropnetCreationTime' parameter.
-	 *
-	 * @param maxPropnetCreationTime The maximum time (in milliseconds) that this state machine can
-	 * spend to create the propnet.
-	 */
-	public void setMaxPropnetCreationTime(long maxPropnetCreationTime){
-		this.maxPropnetCreationTime = maxPropnetCreationTime;
-	}
-
-	/**
-	 * Get method for the 'maxPropnetCreationTime' parameter.
-	 *
-	 * @return The maximum time (in milliseconds) that this state machine can spend to create the propnet.
-	 */
-	public long getMaxPropnetCreationTime(){
-		return this.maxPropnetCreationTime;
-	}
-
-	/**
 	 * Get method for the 'propNet' parameter.
 	 *
 	 * @return The proposition network.
@@ -477,7 +408,7 @@ public class ForwardInterruptingPropNetStateMachine extends StateMachine {
 	 *
 	 * @return the actual construction time of the propnet, -1 if it has not been created in time.
 	 */
-	public long getConstructionTime(){
-		return this.constructionTime;
+	public long getPropnetConstructionTime(){
+		return this.propnetConstructionTime;
 	}
 }

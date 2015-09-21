@@ -52,6 +52,7 @@ public final class ForwardInterruptingConstant extends ForwardInterruptingCompon
 	 */
 	@Override
 	public void propagateValue(boolean newValue){
+		//ConcurrencyUtils.checkForInterruption();
 	}
 
 	/**

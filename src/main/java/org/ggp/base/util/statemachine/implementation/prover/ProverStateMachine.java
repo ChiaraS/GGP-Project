@@ -117,9 +117,14 @@ public class ProverStateMachine extends StateMachine
 		return roles;
 	}
 
+	/*
+	 * (non-Javadoc)
+	 * @see org.ggp.base.util.statemachine.StateMachine#isTerminal(org.ggp.base.util.statemachine.MachineState)
+	 */
 	@Override
 	public boolean isTerminal(MachineState state)
 	{
 		return prover.prove(ProverQueryBuilder.getTerminalQuery(), ProverQueryBuilder.getContext(state));
 	}
+
 }

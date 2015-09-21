@@ -98,6 +98,11 @@ public final class ForwardInterruptingTransition extends ForwardInterruptingComp
 	@Override
 	public void propagateValue(boolean newValue){
 
+		// If the thread calling this method has been interrupted we must stop the execution and throw an
+		// InterruptedException otherwise we risk having the PropnetStateMachine trying to impose consistency
+		// forever if it gets stuck in a loop of continuously flipping values.
+		//ConcurrencyUtils.checkForInterruption();
+
 	}
 
 	/**

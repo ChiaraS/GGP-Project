@@ -14,6 +14,7 @@ import org.ggp.base.util.gdl.grammar.GdlSentence;
 import org.ggp.base.util.gdl.grammar.GdlTerm;
 import org.ggp.base.util.statemachine.exceptions.GoalDefinitionException;
 import org.ggp.base.util.statemachine.exceptions.MoveDefinitionException;
+import org.ggp.base.util.statemachine.exceptions.StateMachineInitializationException;
 import org.ggp.base.util.statemachine.exceptions.TransitionDefinitionException;
 
 import com.google.common.collect.ImmutableMap;
@@ -35,7 +36,7 @@ public abstract class StateMachine
 	 * This method should only be called once, and it should be called before any
 	 * other methods on the StateMachine.
 	 */
-    public abstract void initialize(List<Gdl> description);
+    public abstract void initialize(List<Gdl> description) throws StateMachineInitializationException;
     /**
      * Returns the goal value for the given role in the given state. Goal values
      * are always between 0 and 100.
