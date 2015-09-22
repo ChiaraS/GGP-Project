@@ -6,7 +6,7 @@ import org.ggp.base.util.game.Game;
 import org.ggp.base.util.gdl.grammar.Gdl;
 import org.ggp.base.util.statemachine.MachineState;
 import org.ggp.base.util.statemachine.exceptions.StateMachineInitializationException;
-import org.ggp.base.util.statemachine.implementation.propnet.CheckFwdInterrPropNetStateMachine;
+import org.ggp.base.util.statemachine.implementation.propnet.CheckFwdInterrPropnetStateMachine;
 
 /**
  * This class checks if, given the GDL game description, the propnet state machine
@@ -23,7 +23,7 @@ public class ProvaPropnetStateMachine {
 
 		List<Gdl> BeLList = BeLGame.getRules();
 
-		CheckFwdInterrPropNetStateMachine m = new CheckFwdInterrPropNetStateMachine(300000);
+		CheckFwdInterrPropnetStateMachine m = new CheckFwdInterrPropnetStateMachine(300000);
 		m.initialize(BeLList);
 
 		MachineState initialState = m.getInitialState();

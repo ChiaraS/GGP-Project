@@ -1,4 +1,4 @@
-package csironi.ggp.course;
+package csironi.ggp.course.speedtester;
 
 import org.ggp.base.util.logging.GamerLogger;
 import org.ggp.base.util.statemachine.MachineState;

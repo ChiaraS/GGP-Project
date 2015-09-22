@@ -17,7 +17,7 @@ import org.ggp.base.util.propnet.factory.ForwardInterruptingPropNetFactory;
 import org.ggp.base.util.statemachine.MachineState;
 import org.ggp.base.util.statemachine.Move;
 import org.ggp.base.util.statemachine.exceptions.StateMachineInitializationException;
-import org.ggp.base.util.statemachine.implementation.propnet.CheckFwdInterrPropNetStateMachine;
+import org.ggp.base.util.statemachine.implementation.propnet.CheckFwdInterrPropnetStateMachine;
 import org.ggp.base.util.statemachine.implementation.prover.ProverStateMachine;
 
 /**
@@ -275,7 +275,7 @@ public class ProvaPropnet {
 	public static void provaGame(String game, long maxPropnetCreationTime){
 
         ProverStateMachine theReference;
-        CheckFwdInterrPropNetStateMachine thePropNetMachine;
+        CheckFwdInterrPropnetStateMachine thePropNetMachine;
 
         GameRepository theRepository = GameRepository.getDefaultRepository();
         for(String gameKey : theRepository.getGameKeys()) {
@@ -286,7 +286,7 @@ public class ProvaPropnet {
             List<Gdl> description = theRepository.getGame(gameKey).getRules();
 
             theReference = new ProverStateMachine();
-            thePropNetMachine = new CheckFwdInterrPropNetStateMachine(maxPropnetCreationTime);
+            thePropNetMachine = new CheckFwdInterrPropnetStateMachine(maxPropnetCreationTime);
 
             theReference.initialize(description);
             try {

@@ -28,7 +28,7 @@ import org.ggp.base.util.statemachine.implementation.prover.query.ProverQueryBui
 import com.google.common.collect.ImmutableList;
 
 
-public class ForwardInterruptingPropNetStateMachine extends StateMachine {
+public class FwdInterrPropnetStateMachine extends StateMachine {
     /** The underlying proposition network  */
     private ForwardInterruptingPropNet propNet;
     /** The player roles */

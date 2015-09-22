@@ -28,7 +28,7 @@ import org.ggp.base.util.statemachine.implementation.prover.query.ProverQueryBui
 import com.google.common.collect.ImmutableList;
 
 
-public class CheckFwdInterrPropNetStateMachine extends StateMachine {
+public class CheckFwdInterrPropnetStateMachine extends StateMachine {
     /** The underlying proposition network  */
     private ForwardInterruptingPropNet propNet;
     /** The player roles */
@@ -49,7 +49,7 @@ public class CheckFwdInterrPropNetStateMachine extends StateMachine {
 	 * Constructor that sets the maximum time (in milliseconds) that this state machine can spend to
 	 * create the propnet to the default value of 5 minutes.
 	 */
-	public CheckFwdInterrPropNetStateMachine(){
+	public CheckFwdInterrPropnetStateMachine(){
     	this(300000L);
     }
 
@@ -60,7 +60,7 @@ public class CheckFwdInterrPropNetStateMachine extends StateMachine {
 	 * @param maxPropnetCreationTime the maximum time (in milliseconds) that this state machine can spend to
 	 * create the propnet.
 	 */
-    public CheckFwdInterrPropNetStateMachine(long maxPropnetCreationTime){
+    public CheckFwdInterrPropnetStateMachine(long maxPropnetCreationTime){
     	this.maxPropnetCreationTime = maxPropnetCreationTime;
     }
 

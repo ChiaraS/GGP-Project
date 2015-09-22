@@ -1,13 +1,99 @@
-!!! GUARDA COSA FA CADIAPLAYER CON ZHADU --> PER CASO SPOSTA ALLA FINE DEL GOAL LE DISTINCT? O SI IMPALLA? Funziona se uso =/= ????
+- COMPARE PROPNET SPEED (NODES/SEC) WITH PROPNET+CASH (AND THEN WITH PROVER)
+- SET UP YAP PROVER ON WINDOWS
+- PLAY WITH GDLFactory CLASS TO SEE IF IT'S USEFUL TO TRANSLATE FROM STRING TO GDL (DOES IT INCREASE OR DECREASE SPEED?)
+- MODIFY REFACTORED YAP PROVER CODE TO IMPROVE IT (E.G. YAPRenderer = GDLRenderer e YAPScrambler = MAppingGDLScrambler, check if it's faster with scrambling or without scrambling(without scrambling is it faster to use the renderer anyway or better gdl.toString) WHEN CHANGING PROLOG STATE: check if it's faster to retract and assert all facts on prolog or assert and retract only the diffs computed with java (i.e. prolog.retract(setDiff(currentState, nextState)), prolog.assert(setDiff(nextState, current state))))) --- tolgo dall'insieme di proposizioni che danno lo stato corrente le proposizioni che sono anche nell'insieme dello stato futuro e retraggo da prolog quelle rimanenti, poi tolgo dallo stato futuro le proposizioni che sono anche nello stato corrente e asserisco in prolog quelle rimanenti.
+- MAKE ALL PATH SPECIFICATIONS IN THE CODE PLATFORM-INDEPENDENT (e.g. USING FILE.SEPARATOR IN THE CLASS "FILE")
+- COMPARE YAP SPEED (NODES/SEC) WITH PROVER SPEED
+- COMPARE YAP SPEED (NODES/SEC) WITH PROPNET SPEED?
+- FIX THE COMMENTS FOR OVERRIDDEN METHODS IN PROPNET TO (NON-JAVADOC) COMMENTS (RICORDA CHE BASTA APRIRE IL COMMENTO CON /* E POI ANDARE A CAPO PER AVERE IL (NON-JAVADOC))
+(E.G. 	/* (non-Javadoc)
+	 * @see org.ggp.base.util.statemachine.StateMachine#getGoal(org.ggp.base.util.statemachine.MachineState, org.ggp.base.util.statemachine.Role)
+	 */)
+- FIX GAMER LOGGER LOGS (WHEN TO USE LOG, LOGERROR OR LOGSTACKTRACE?, CHECK THAT ALL EXCEPTION/ERRORS HAVE A LOGGGED MESSAGE, CHECK ALL CALLS TO GAMERLOGGER)
+- WRITE CODE TO SET UP AND RUN EXPERIMENTS
+- SET UP VISUALIZATION OF CSV STATISTICS
+- CREATE HYBRID PROVER (HOW? IS IT BETTER TO CALL THE PROVER IF YAP FAILS OR FIRST RESET YAP AND TRY AGAIN TO ASK IT?)
+- IMPROVE PROPNET IMPLEMENTING WHOLE PLAYOUT IN STATE MACHINE AND IMPLEMENTING METHODS SUCH THAT TRANSLATIONS FROM PROPNET STATE TO MACHINESTATE ARE REDUCED
+- IMPROVE PROPNET WITH SUGGESTIONS FROM SANCHO'S BLOG OR FROM ITS CODE
+- IMPROVE YAP PROVER (E.G. RETURN PROLOG TERMS INSTEAD OF TRANSLATING THEM FIRST TO STRINGS ON PROLOG SIDE)
+- WHAT INFLUENCES PROPNET CONSTRUCTION SPEED? SOMETIMES IT BUILDS SLOW AND SOME TIMES FAST FOR SOME GAMES! --> FIND OUT WHY!
+- FIX EXCEPTION LOGGING: 1. FOR EACH EXCEPTION THAT IS THROWN, ADD THE MESSAGE THAT EXPLAINS THE EXCEPTION (throw new Exception("Explanation message!")) AND LOG THAT EXCEPTION HAS BEEN THROWN 2. FOR EACH EXCEPTION THAT IS THROWN BECAUSE OF ANOTHER EXCEPTION THAT HAS BEEN CAUGHT, ADD BOTH THE MESSAGE AND THE CAUSE (throw new Exception("Explanation message!", causeException)) 3. FOR EACH CAUGHT EXCEPTION (THAT WON'T CAUSE ANOTHER EXCEPTION TO BE THROWN), LOG THE PERSONAL ERROR MESSAGE (GamerLogger.logError("Personal mex")) AND THEN THE STACK TRACE (GamerLogger.logStackTrace()). SEE http://www.avajava.com/tutorials/lessons/how-do-i-chain-exceptions.html?page=1 FOR EXAMPLES ON THROWING CHAINED EXCEPTIONS.
 
-check amazons torus
-
-PER IMPLEMENTARE LA YAPSTATEMACHINE BACKED DAL GGPBASEPROVER SPOSTA IL RESET DELLA CLASSE CHE LANCIA ECCEZIONE NEL CHIMANTE DI TALE CLASSE E NON NELLA CLASSE STESSA PRIMA DI LANCIARE ECCEZIONE (I.E. INITIALIZE LANCIA ECCEZIONE SE QUALCOSA VA STORTO MA NN RESETTA NE CANCELLA NULLA, COSI IL CHIAMNTE SE NN SA CHE FARE RESETTA E CANCELLA, ALTRIMENTI PUO CHIEDERE A UN ALTRA STATE MACHINE DI CALCOLARE LO STATO INIZIALE E SETTARLO NELLA STATE MACHINE CHE HA FALLITO INIZIALIZZAZIONE).
 
 
 
 
-PROVISSIMAAAAAAAAA: CAMBIA IL COMANDO PER LANCIARE YAP PROLOG AGGIUNGENDO NOHUP E TUTTO IL RESTO PER VEDERE SE RIESCI A DISCONNETTERTI DAL SERVER LASCIANDO CHE YAP, CHIAMATO DA JAVA, NON SI INTERROMPA
+
+
+
+
+
+
+- The refactored propnet state machine doesn't give a time limit to the duration of its initialization. It always waits until the full propnet has been created (getting stuck indefinitely if the creation gets stuck in some sort of loop). Moreover, when (and if) the propnet has been created, the state machine initialization method also waits until the consistency of the values has been imposed over all the propositions (also getting stuck indefinitely if this operation gets stuck in some sort of loop).
+Both the creation of the propnet and the imposition of consistency might take a lot (or even an infinite amount) of time. For this reason they should be interruptible and thus in their code they should check from time to time if they have been interrupted (otherwise they might keep running forever anyway). Moreover, since when playing a game we don't care how much time these two operations take singularly, as long as their total time doesn't exceed the time available for initializing, it makes sense not to check the two operations separately but to just check from outside of the state machine that the initialization method of the propnet state machine doesn't take more than the available time, interrupting it if necessary. That's why it has been chosen to leave this check to be performed from the outside of the propnet state machine, so that the propnet state machine itself doesn't have to worry about checking a timeout for the initialization and every other state mahcine that uses the propnet state mahcine as a sub-state mahcine can freely choose when and how to stop initialization.
+
+TODO: in the refactored propnet, it should be added the interruption check also in the method that imposes consistency.
+HOWEVER, we can probably assume that, if the creation of the propnet ends in time and thus doesn't get stuck forever somewhere, also the imposition of consistency will not get stuck and finish sooner or later. So we could avoid adding the interruption check to it if we give it enought time to finish before the timeout, since we know it is not gonna get stuck. --> Not totally fair and safe! What if this assumption is not true? What if the imposition of consistency really takes extremely long to finish and we exceed the timeout? Do we like it being not so safe or better to have it safer affecting a bit the speed?
+
+
+/**
++ * TODOOOOOO:
++ * 2. switcha alla prima versione funzionante della propnet, mergiala col master, implementa il
++ * test con MCS e runnalo sul server.
++ * 3. prova a sistemare yap prover usando DistinctAndNotMover.run(description) sulla game
++ * description per vedere se il verifier riesce a passare i test dove fallisce senza
++ * eccezione.
++ * 1. merge di yap prover refactored con il master
++ * 4. aggiungi un check del timeout anche all'aima prover
++ * 5. Va che dopo aver sistemato tutto e aver testato le varie velocitá devi anche provare tutto
++ * con la cached state machine
+
+
+
+SUMMARY
+
+1. YAP:	v - Test if YapSM works better after processing the GDL description (using YAPVerifier).
+	v - If yes, add the processing also to the BackedYapStateMachine so that this processing won't be repeated twice (once for Yap and once for Prover).
+	v - If not, nevermind, restore YapSM as it was before.
+	v - Merge everything in the master.
+	- Test BackedYapStateMachine speed, without and with cash.
+	- Check if it is faster to scramble(a) or not to scramble(b).
+	- If (a), check if code is ok and fix the problem when there are more words to substitute than possible combination of 1 or 2 letters.
+	- If (b), modify the code not to scramble anymore, taking care of changing in the description the words that interfere with yap prolog reasoning
+	  (e.g.: succ, ++,...).
+
+2. PROPNET: 	- Finish refactoring the propnet and run the test with the PropnetVerifier.
+		- Rename the propnet that has the internal timeout check and then merge the modified propnet in it
+		- Test the propnet speed without and with cash.
+		- Add the interruption check in the "impose consistency" method(remember that this check will not only affect
+		  the initialization time but also the value propagation during all the execution of the propnet machine).
+		- Test the new propnet speed without and with cash.
+		- If it's not much slower: merge everything in the master.
+		- If it is much slower: remove the interruption check, but only temporarily, cause if the propnet really gets stuck often you have to put it back!
+		- Whatever the fastest is, merge it back into master.
+
+3. PROVER:	- Test the speed without and with cash.
+		x - Branch project.
+		x - Add a timeout check also to the AimaProver (create FakeAimaProver that takes care of interrupting the AimaProver and recreate it?).
+		x - Verify it?
+		x - Test the speed without and with cash.
+		x - Merge everything in the master.
+
+4. HYBRID: 	- Create the hybrid state machine that tries to initialize the propnet and if it fails checks which one among yap+prover and prover is faster
+		ATTENTION: before deciding on the behaviour of this state machine, check the results of the verifier and also of the speed tests. 
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -17,35 +103,20 @@ PROVISSIMAAAAAAAAA: CAMBIA IL COMANDO PER LANCIARE YAP PROLOG AGGIUNGENDO NOHUP 
 
 
 v - TEST PROPNET CONSISTENCY VS PROVER
-- REFACTOR PROPNET STATE MACHINE CODE (REMOVE THE BUILDING TIME LIMITATION AND ADD IT TO AN EXTERNAL WRAPPING STATE MACHINE)
-- CHECK IN THE PROPNET STATE MACHINE IF ROLES ARE COMPUTED LIKE THIS: "roles = ImmutableList.copyOf(Role.computeRoles(description));"
-- RE-TEST REFACTORED PROPNET CONSISTENCY VS PROVER
-- COMPARE PROPNET SPEED (NODES/SEC) WITH PROPNET+CASH (AND THEN WITH PROVER)
-- SET UP YAP PROVER ON WINDOWS
+v - REFACTOR PROPNET STATE MACHINE CODE (REMOVE THE BUILDING TIME LIMITATION AND ADD IT TO AN EXTERNAL WRAPPING STATE MACHINE)
+v - CHECK IN THE PROPNET STATE MACHINE IF ROLES ARE COMPUTED LIKE THIS: "roles = ImmutableList.copyOf(Role.computeRoles(description));"
+v - RE-TEST REFACTORED PROPNET CONSISTENCY VS PROVER
 V - SET UP YAP PROVER ON SERVER
 V - TEST YAP PROVER CONSISTENCY VS PROVER
-- REFACTOR YAP STATE MACHINE CODE TO BE MORE MODULAR (!!!!!!!!! PROBLEM!: if there is no solution for a goal Inerprolog returns null as binding => nullPointerException is thrown when casting the element at position[0] of the bindings --> FIX THIS! MOREOVER: change the query to get the goal because atm it assumes that the goal always exists and it's only one! But not alway is true...find a way to get back all(if any) the goals and check if there is only one or if an exception has to be thrown! --> Same thing to check for other methods (i.e. what happens if there is nothing true in the next state?, what happens if there are no legal moves???????? MOREOVER: if initialization fails the current state (i.e. the one that should keep track of prolog state) of the state machine is null => whatever method is called next will throw a nullpointerexception when checking if it's the case to update the prolog state or not!))
-- RE-TEST REFACTORED YAP PROVER CONSISTENCY VS PROVER
-- PLAY WITH GDLFactory CLASS TO SEE IF IT'S USEFUL TO TRANSLATE FROM STRING TO GDL (DOES IT INCREASE OR DECREASE SPEED?)
-- MODIFY REFACTORED YAP PROVER CODE TO IMPROVE IT (E.G. YAPRenderer = GDLRenderer e YAPScrambler = MAppingGDLScrambler, check if it's faster with scrambling or without scrambling(without scrambling is it faster to use the renderer anyway or better gdl.toString) WHEN CHANGING PROLOG STATE: check if it's faster to retract and assert all facts on prolog or assert and retract only the diffs computed with java (i.e. prolog.retract(setDiff(currentState, nextState)), prolog.assert(setDiff(nextState, current state))))) --- tolgo dall'insieme di proposizioni che danno lo stato corrente le proposizioni che sono anche nell'insieme dello stato futuro e retraggo da prolog quelle rimanenti, poi tolgo dallo stato futuro le proposizioni che sono anche nello stato corrente e asserisco in prolog quelle rimanenti.
-- MAKE ALL PATH SPECIFICATIONS IN THE CODE PLATFORM-INDEPENDENT (e.g. USING FILE.SEPARATOR IN THE CLASS "FILE")
-- COMPARE YAP SPEED (NODES/SEC) WITH PROVER SPEED
-- COMPARE YAP SPEED (NODES/SEC) WITH PROPNET SPEED?
-- FIX THE COMMENTS FOR OVERRIDDEN METHODS IN PROPNET TO (NON-JAVADOC) COMMENTS (RICORDA CHE BASTA APRIRE IL COMMENTO CON /* E POI ANDARE A CAPO PER AVERE IL (NON-JAVADOC))
-(E.G. 	/* (non-Javadoc)
-	 * @see org.ggp.base.util.statemachine.StateMachine#getGoal(org.ggp.base.util.statemachine.MachineState, org.ggp.base.util.statemachine.Role)
-	 */
-)
-- FIX GAMER LOGGER LOGS (WHEN TO USE LOG, LOGERROR OR LOGSTACKTRACE?, CHECK THAT ALL EXCEPTION/ERRORS HAVE A LOGGGED MESSAGE, CHECK ALL CALLS TO GAMERLOGGER)
-- ADD LOGS FOR CSV IN GAMER LOGGER
-- WRITE CODE TO SET UP AND RUN EXPERIMENTS
-- SET UP VISUALIZATION OF CSV STATISTICS
-- CREATE HYBRID PROVER (HOW? IS IT BETTER TO CALL THE PROVER IF YAP FAILS OR FIRST RESET YAP AND TRY AGAIN TO ASK IT?)
-- IMPROVE PROPNET IMPLEMENTING WHOLE PLAYOUT IN STATE MACHINE AND IMPLEMENTING METHODS SUCH THAT TRANSLATIONS FROM PROPNET STATE TO MACHINESTATE ARE REDUCED
-- IMPROVE PROPNET WITH SUGGESTIONS FROM SANCHO'S BLOG OR FROM ITS CODE
-- IMPROVE YAP PROVER (E.G. RETURN PROLOG TERMS INSTEAD OF TRANSLATING THEM FIRST TO STRINGS ON PROLOG SIDE)
-- WHAT INFLUENCES PROPNET CONSTRUCTION SPEED? SOMETIMES IT BUILDS SLOW AND SOME TIMES FAST FOR SOME GAMES! --> FIND OUT WHY!
-- FIX EXCEPTION LOGGING: 1. FOR EACH EXCEPTION THAT IS THROWN, ADD THE MESSAGE THAT EXPLAINS THE EXCEPTION (throw new Exception("Explanation message!")) AND LOG THAT EXCEPTION HAS BEEN THROWN 2. FOR EACH EXCEPTION THAT IS THROWN BECAUSE OF ANOTHER EXCEPTION THAT HAS BEEN CAUGHT, ADD BOTH THE MESSAGE AND THE CAUSE (throw new Exception("Explanation message!", causeException)) 3. FOR EACH CAUGHT EXCEPTION (THAT WON'T CAUSE ANOTHER EXCEPTION TO BE THROWN), LOG THE PERSONAL ERROR MESSAGE (GamerLogger.logError("Personal mex")) AND THEN THE STACK TRACE (GamerLogger.logStackTrace()). SEE http://www.avajava.com/tutorials/lessons/how-do-i-chain-exceptions.html?page=1 FOR EXAMPLES ON THROWING CHAINED EXCEPTIONS.
+v - REFACTOR YAP STATE MACHINE CODE TO BE MORE MODULAR (!!!!!!!!! PROBLEM!: if there is no solution for a goal Inerprolog returns null as binding => nullPointerException is thrown when casting the element at position[0] of the bindings --> FIX THIS! MOREOVER: change the query to get the goal because atm it assumes that the goal always exists and it's only     one! But not always is true...find a way to get back all(if any) the goals and check if there is only one or if an exception has to be thrown! --> Same thing to check for other     methods (i.e. what happens if there is nothing true in the next state?, what happens if there are no legal moves???????? MOREOVER: if initialization fails the current state (i.e.     the one that should keep track of prolog state) of the state machine is null => whatever method is called next will throw a nullpointerexception when checking if it's the case to    update the prolog state or not!))
+v - RE-TEST REFACTORED YAP PROVER CONSISTENCY VS PROVER
+v - PER IMPLEMENTARE LA YAPSTATEMACHINE BACKED DAL GGPBASEPROVER SPOSTA IL RESET DELLA CLASSE CHE LANCIA ECCEZIONE NEL CHIMANTE DI TALE CLASSE E NON NELLA CLASSE STESSA PRIMA DI LANCIARE ECCEZIONE (I.E. INITIALIZE LANCIA ECCEZIONE SE QUALCOSA VA STORTO MA NN RESETTA NE CANCELLA NULLA, COSI IL CHIAMNTE SE NN SA CHE FARE RESETTA E CANCELLA, ALTRIMENTI PUO CHIEDERE A UN ALTRA STATE MACHINE DI CALCOLARE LO STATO INIZIALE E SETTARLO NELLA STATE MACHINE CHE HA FALLITO INIZIALIZZAZIONE).
+v - PROVISSIMAAAAAAAAA: CAMBIA IL COMANDO PER LANCIARE YAP PROLOG AGGIUNGENDO NOHUP E TUTTO IL RESTO PER VEDERE SE RIESCI A DISCONNETTERTI DAL SERVER LASCIANDO CHE YAP, CHIAMATO DA JAVA, NON SI INTERROMPA --> NON FUNZIONA!
+v - ADD LOGS FOR CSV IN GAMER LOGGER
+
+
+
+
 
 
 FIX YAP:

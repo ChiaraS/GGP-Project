@@ -1,4 +1,4 @@
-package csironi.ggp.course;
+package csironi.ggp.course.verifiers;
 
 import java.util.Arrays;
 import java.util.List;
@@ -14,17 +14,22 @@ import org.ggp.base.util.gdl.grammar.Gdl;
 import org.ggp.base.util.logging.GamerLogger;
 import org.ggp.base.util.logging.GamerLogger.FORMAT;
 import org.ggp.base.util.match.Match;
-import org.ggp.base.util.statemachine.implementation.propnet.ForwardInterruptingPropNetStateMachine;
+import org.ggp.base.util.statemachine.implementation.propnet.FwdInterrPropnetStateMachine;
 import org.ggp.base.util.statemachine.implementation.prover.ProverStateMachine;
 import org.ggp.base.util.statemachine.verifier.StateMachineVerifier;
 
 /**
- * This class verifies the consistency of the propnet state machine wrt the prover state machine.
+ * This class verifies the consistency of the propnet state machine (with no internal check of the propnet building
+ * time) wrt the prover state machine.
  *
- * It is possible to specify as main arguments the time in milliseconds that the state machine has to initialize
- * and the time in milliseconds that each test must take to run. If nothing or something inconsistent is specified,
- * 5 mins is used as default value for the state machine initialization time and 10 seconds is used as default
- * value for each test's duration time.
+ * It is possible to specify the following combinations of main arguments:
+ *
+ * 1. [keyOfGameToTest]
+ * 2. [maximumPropnetBuildingTime(ms)] [maximumTestDuration(ms)]
+ * 3. [maximumPropnetBuildingTime(ms)] [maximumTestDuration(ms)] [keyOfGameToTest]
+ *
+ * If nothing or something inconsistent is specified, 5 mins is used as default value for the propnet
+ * building time and 10 seconds is used as default value for each test duration time.
  *
  * @author C.Sironi
  *
@@ -37,9 +42,9 @@ public class ModifiedPropnetVerifier {
 
 			private List<Gdl> description;
 
-			private ForwardInterruptingPropNetStateMachine theMachine;
+			private FwdInterrPropnetStateMachine theMachine;
 
-			public void setInitializer(List<Gdl> description, ForwardInterruptingPropNetStateMachine theMachine){
+			public void setInitializer(List<Gdl> description, FwdInterrPropnetStateMachine theMachine){
 				this.description = description;
 				this.theMachine = theMachine;
 			}
@@ -85,7 +90,7 @@ public class ModifiedPropnetVerifier {
 		System.out.println();
 
         ProverStateMachine theReference;
-        ForwardInterruptingPropNetStateMachine thePropNetMachine;
+        FwdInterrPropnetStateMachine thePropNetMachine;
 
         GamerLogger.setSpilloverLogfile("PropnetVerifierTable.csv");
         GamerLogger.log(FORMAT.CSV_FORMAT, "PropnetVerifierTable", "Game key;Initialization time (ms);Propnet Construction time (ms);Rounds;Test duration (ms);Pass;");
@@ -112,7 +117,7 @@ public class ModifiedPropnetVerifier {
             theReference = new ProverStateMachine();
 
             // Create propnet state machine giving it 5 minutes to build the propnet
-            thePropNetMachine = new ForwardInterruptingPropNetStateMachine();
+            thePropNetMachine = new FwdInterrPropnetStateMachine();
 
             theReference.initialize(description);
 

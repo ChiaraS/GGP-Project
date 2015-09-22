@@ -1,7 +1,7 @@
 /**
  *
  */
-package csironi.ggp.course;
+package csironi.ggp.course.verifiers;
 
 import java.util.List;
 
