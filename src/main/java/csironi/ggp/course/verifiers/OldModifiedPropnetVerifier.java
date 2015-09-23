@@ -34,7 +34,7 @@ import org.ggp.base.util.statemachine.verifier.StateMachineVerifier;
  * @author C.Sironi
  *
  */
-public class ModifiedPropnetVerifier {
+public class OldModifiedPropnetVerifier {
 
 	public static void main(String[] args) throws InterruptedException{
 
@@ -139,7 +139,7 @@ public class ModifiedPropnetVerifier {
             	long start = System.currentTimeMillis();
                 pass = StateMachineVerifier.checkMachineConsistency(theReference, thePropNetMachine, testTime);
                 duration = System.currentTimeMillis() - start;
-                rounds = StateMachineVerifier.lastRounds;
+                //rounds = StateMachineVerifier.lastRounds;
                 constructionTime = thePropNetMachine.getPropnetConstructionTime();
 			} catch (ExecutionException | TimeoutException e) {
 				// Reset executor and initializer

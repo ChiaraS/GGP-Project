@@ -3,17 +3,23 @@
  */
 package csironi.ggp.course.verifiers;
 
-import java.util.List;
-
 import org.ggp.base.util.game.GameRepository;
-import org.ggp.base.util.gdl.grammar.Gdl;
-import org.ggp.base.util.logging.GamerLogger;
-import org.ggp.base.util.logging.GamerLogger.FORMAT;
-import org.ggp.base.util.match.Match;
-import org.ggp.base.util.statemachine.implementation.prover.ProverStateMachine;
-import org.ggp.base.util.statemachine.verifier.StateMachineVerifier;
 
 /**
+ * This class verifies the consistency of the prover state machine wrt the prover state machine.
+ * This test has been created only to have a comparison of the number of rounds that can be played
+ * when changing the subject state machine wrt using the prover state machine both as subject and
+ * as reference state machine.
+ *
+ * It is possible to specify the following combinations of main arguments:
+ *
+ * 1. [keyOfGameToTest]
+ * 2. [maximumTestDuration(ms)]
+ * 3. [maximumTestDuration(ms)] [keyOfGameToTest]
+ *
+ * If nothing or something inconsistent is specified, 5 mins is used as default value for the propnet
+ * building time and 10 seconds is used as default value for each test duration time.
+ *
  * @author C.Sironi
  *
  */
@@ -21,41 +27,68 @@ public class GGPBaseProverVerifier {
 
 	public static void main(String[] args) throws InterruptedException{
 
+		/*********************** Parse main arguments ****************************/
+
 		long testTime = 10000L;
+		String gameToTest = null;
 
 		if (args.length != 0){
 
 			if(args.length == 1){
+				// Check if it's a number
 				try{
 					testTime = Long.parseLong(args[0]);
-					System.out.println("Running tests with the following time duration: " + testTime + "ms");
 				}catch(NumberFormatException nfe){
 					testTime = 10000L;
-					System.out.println("Inconsistent time value specification! Running tests with default time duration: " + testTime + "ms");
+					gameToTest = args[0];
 				}
+			}else if(args.length == 2){
+				try{
+					testTime = Long.parseLong(args[0]);
+				}catch(NumberFormatException nfe){
+					System.out.println("Inconsistent test duration specification! Using default value.");
+					testTime = 10000L;
+				}
+				gameToTest = args[1];
 			}else{
-				System.out.println("Inconsistent time value specification! Running tests with default time duration: " + testTime + "ms");
+				System.out.println("Inconsistent number of main arguments! Ignoring them.");
 			}
-		}else{
-			System.out.println("Running tests with default time duration: " + testTime + "ms");
 		}
 
+		if(gameToTest == null){
+			System.out.println("Running tests on ALL games with the following time setting:");
+		}else{
+			System.out.println("Running tests on game " + gameToTest + " with the following time setting:");
+		}
+
+		System.out.println("Running time for each test: " + testTime + "ms");
 		System.out.println();
+
+
+		/*********************** Perform all the tests ****************************/
+
+
+
+
+		/*
 
         ProverStateMachine theReference;
         ProverStateMachine theOtherMachine;
 
         GamerLogger.setSpilloverLogfile("GGPBaseProverVerifierTable.csv");
         GamerLogger.log(FORMAT.CSV_FORMAT, "GGPBaseProverVerifierTable", "Game key;Rounds;Test duration (ms);Pass;");
+		 */
 
-        GameRepository theRepository = GameRepository.getDefaultRepository();
+		GameRepository theRepository = GameRepository.getDefaultRepository();
         for(String gameKey : theRepository.getGameKeys()) {
             if(gameKey.contains("laikLee")) continue;
 
-            //if(!gameKey.equals("3pConnectFour") && !gameKey.equals("god")) continue;
+            // TODO: change code so that if there is only one game to test we won't run through the whole sequence of keys.
+            if(gameToTest != null && !gameKey.equals(gameToTest)) continue;
 
-            //if(!gameKey.equals("mummymaze1p")) continue;
+            System.out.println("Detected activation in game " + gameKey + ".");
 
+            /*
             Match fakeMatch = new Match(gameKey + System.currentTimeMillis(), -1, -1, -1,theRepository.getGame(gameKey) );
 
             GamerLogger.startFileLogging(fakeMatch, "GGPBaseProverVerifier");
@@ -87,6 +120,8 @@ public class GGPBaseProverVerifier {
 
             GamerLogger.stopFileLogging();
             GamerLogger.log(FORMAT.CSV_FORMAT, "GGPBaseProverVerifierTable", gameKey + ";" + rounds + ";" + duration + ";" + pass + ";");
+
+			*/
 
         }
 	}

@@ -19,11 +19,11 @@ import org.ggp.base.util.statemachine.implementation.prover.ProverStateMachine;
  * It is possible to specify the following combinations of main arguments:
  *
  * 1. [keyOfGameToTest]
- * 2. [maximumPropnetBuildingTime(ms)] [maximumTestDuration(ms)]
- * 3. [maximumPropnetBuildingTime(ms)] [maximumTestDuration(ms)] [keyOfGameToTest]
+ * 2. [maximumInitializationTime(ms)] [maximumTestDuration(ms)]
+ * 3. [maximumInitializationTime(ms)] [maximumTestDuration(ms)] [keyOfGameToTest]
  *
- * If nothing or something inconsistent is specified, 5 mins is used as default value for the propnet
- * building time and 10 seconds is used as default value for each test duration time.
+ * If nothing or something inconsistent is specified, 5 mins is used as default value for the propnet state machine
+ * initialization time and 10 seconds is used as default value for each test duration time.
  *
  * @author C.Sironi
  *

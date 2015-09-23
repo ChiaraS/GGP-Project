@@ -87,10 +87,11 @@ public class InitializationControlStateMachine extends StateMachine {
 		}finally{
 			// Reset executor and initializer
 			executor.shutdownNow();
-			// Wait for all tasks to be completed before continuing (needed to avoid any interrupted
-			// but still running task in the executor to write logs on the wrong file -> after executor
-			// shutdown the logging file might already have been changed when the still running tasks
-			// log a message).
+
+			// TODO: ACTUALLY WE COULD AVOID THE TERMINATION CHECK: if the initialization succeeded then the task will
+			// be already terminated, if it failed this state machine cannot be used anyway, so if the task takes a
+			// while to figure out it had been interrupted we don't care (except that it might still try to log something
+			// and create a conflict with the rest of the code and some logs might get lost).
 			if(!executor.isTerminated()){
 				// If not all tasks terminated, wait for a minute and then check again
 				try {
@@ -100,6 +101,7 @@ public class InitializationControlStateMachine extends StateMachine {
 					GamerLogger.logStackTrace("StateMachine", e);
 				}
 			}
+
 			executor = null;
 			initializer = null;
 		}

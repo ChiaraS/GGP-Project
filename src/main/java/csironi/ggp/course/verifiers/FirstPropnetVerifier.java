@@ -84,6 +84,7 @@ public class FirstPropnetVerifier {
         for(String gameKey : theRepository.getGameKeys()) {
             if(gameKey.contains("laikLee")) continue;
 
+            // TODO: change code so that if there is only one game to test we won't run through the whole sequence of keys.
             if(gameToTest != null && !gameKey.equals(gameToTest)) continue;
 
             System.out.println("Detected activation in game " + gameKey + ".");
