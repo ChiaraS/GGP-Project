@@ -1,6 +1,3 @@
-/**
- *
- */
 package csironi.ggp.course.speedtester;
 
 import java.util.List;
@@ -10,17 +7,17 @@ import org.ggp.base.util.gdl.grammar.Gdl;
 import org.ggp.base.util.logging.GamerLogger;
 import org.ggp.base.util.logging.GamerLogger.FORMAT;
 import org.ggp.base.util.match.Match;
+import org.ggp.base.util.statemachine.InitializationControlStateMachine;
 import org.ggp.base.util.statemachine.StateMachine;
 import org.ggp.base.util.statemachine.cache.CachedStateMachine;
 import org.ggp.base.util.statemachine.exceptions.StateMachineInitializationException;
-import org.ggp.base.util.statemachine.implementation.propnet.CheckFwdInterrPropnetStateMachine;
+import org.ggp.base.util.statemachine.implementation.propnet.FwdInterrPropnetStateMachine;
 
 //TODO: merge all speed tests together in a single class since their code is similar.
 
 /**
- * This class checks the speed (nodes/second, iterations/second) of the propnet state machine (the one
- * that checks internally during initialization that the building time of the propnet doesn't exceed a
- * given threshold).
+ * This class checks the speed (nodes/second, iterations/second) of the propnet state machine (with no
+ * internal check of the propnet building time).
  * This is done by performing Monte Carlo simulations from the initial state of the given game for the
  * specified amount of time.
  *
@@ -28,14 +25,14 @@ import org.ggp.base.util.statemachine.implementation.propnet.CheckFwdInterrPropn
  *
  * 1. [withCache]
  * 2. [withCache] [keyOfGameToTest]
- * 3. [withCache] [maximumPropnetBuildingTime] [maximumTestDuration]
- * 4. [withCache] [maximumPropnetBuildingTime] [maximumTestDuration] [keyOfGameToTest]
+ * 3. [withCache] [maximumInitializationTime] [maximumTestDuration]
+ * 4. [withCache] [maximumInitializationTime] [maximumTestDuration] [keyOfGameToTest]
  *
  * where:
  * [withCache] = true if the propnet state machine must be provided with a cache for its results, false
- * 				 otherwise (DEFAULT: false).
- * [maximumPropnetBuildingTime] = time in milliseconds that the propnet state machine has available to
- * 								  build the propnet (DEFAULT: 300000ms - 5mins).
+ * 				otherwise (DEFAULT: false).
+ * [maximumInitializationTime] = maximum time in milliseconds that should be spent to initialize the
+ * 								 propnet state machine (DEFAULT: 300000ms - 5mins).
  * [maximumTestDuration] = duration of each test in millisecond (DEFAULT: 60000ms - 1min).
  * [keyOfGameToTest] = key of the game to be tested (DEFAULT: null (i.e. all games)).
  *
@@ -45,16 +42,14 @@ import org.ggp.base.util.statemachine.implementation.propnet.CheckFwdInterrPropn
  * @author C.Sironi
  *
  */
-public class FirstPropnetSpeedTest {
+public class ModifiedPropnetSpeedTest {
 
 	public static void main(String[] args) {
 
-
 		/*********************** Parse main arguments ****************************/
 
-
 		boolean withCache = false;
-		long buildingTime = 300000L;
+		long givenInitTime = 300000L;
 		long testTime = 60000L;
 		String gameToTest = null;
 
@@ -69,10 +64,10 @@ public class FirstPropnetSpeedTest {
 				}
 				if(args.length == 3 || args.length == 4){
 					try{
-						buildingTime = Long.parseLong(args[1]);
+						givenInitTime = Long.parseLong(args[1]);
 					}catch(NumberFormatException nfe){
 						System.out.println("Inconsistent propnet maximum building time specification! Using default value.");
-						buildingTime = 300000L;
+						givenInitTime = 300000L;
 					}
 					try{
 						testTime = Long.parseLong(args[2]);
@@ -98,25 +93,23 @@ public class FirstPropnetSpeedTest {
 		}else{
 			System.out.println("Running tests on game " + gameToTest + " with the following time settings:");
 		}
-		System.out.println("Propnet building time: " + buildingTime + "ms");
+		System.out.println("Propnet building time: " + givenInitTime + "ms");
 		System.out.println("Running time for each test: " + testTime + "ms");
 		System.out.println();
 
 
 		/*********************** Perform all the tests ****************************/
 
-
-		CheckFwdInterrPropnetStateMachine thePropnetMachine;
 		StateMachine theSubject;
+		FwdInterrPropnetStateMachine thePropnetMachine;
 
-		String type = "FirstPropnet";
-
+		String type = "InitSafeModifiedPropnet";
 		if(withCache){
 			type = "Cached" + type;
 		}
 
 		GamerLogger.setSpilloverLogfile(type + "SpeedTestTable.csv");
-		GamerLogger.log(FORMAT.CSV_FORMAT, type + "SpeedTestTable", "Game key;Initialization Time (ms);Construction Time (ms);Test Duration (ms);Succeeded Iterations;Failed Iterations;Visited Nodes;Iterations/second;Nodes/second;");
+	    GamerLogger.log(FORMAT.CSV_FORMAT, type + "SpeedTestTable", "Game key;Initialization Time (ms);Construction Time (ms);Test Duration (ms);Succeeded Iterations;Failed Iterations;Visited Nodes;Iterations/second;Nodes/second;");
 
         GameRepository theRepository = GameRepository.getDefaultRepository();
         for(String gameKey : theRepository.getGameKeys()) {
@@ -129,18 +122,18 @@ public class FirstPropnetSpeedTest {
 
             Match fakeMatch = new Match(gameKey + "." + System.currentTimeMillis(), -1, -1, -1,theRepository.getGame(gameKey) );
 
-           	GamerLogger.startFileLogging(fakeMatch, type + "SpeedTester");
+            GamerLogger.startFileLogging(fakeMatch, type + "SpeedTester");
 
             GamerLogger.log("SMSpeedTest", "Testing on game " + gameKey);
 
             List<Gdl> description = theRepository.getGame(gameKey).getRules();
 
-            // Create propnet state machine giving it buildingTime milliseconds to build the propnet
-            theSubject = thePropnetMachine = new CheckFwdInterrPropnetStateMachine(buildingTime);
-
+            // Create the propnet state machine and wrap it with the state machine that controls initialization
+            thePropnetMachine = new FwdInterrPropnetStateMachine();
+            theSubject = new InitializationControlStateMachine(thePropnetMachine, givenInitTime);
             // If the propnet state machine must be provided with a cache, create the cached state machine
             if(withCache){
-            	theSubject = new CachedStateMachine(thePropnetMachine);
+            	theSubject = new CachedStateMachine(theSubject);
             }
 
             long initializationTime;
@@ -156,9 +149,11 @@ public class FirstPropnetSpeedTest {
         	long initStart = System.currentTimeMillis();
             try{
             	theSubject.initialize(description);
+
             	initializationTime = System.currentTimeMillis() - initStart;
 
             	System.out.println("Propnet creation succeeded. Checking speed.");
+
             	StateMachineSpeedTest.testSpeed(theSubject, testTime);
 
             	testDuration = StateMachineSpeedTest.exactTimeSpent;

@@ -230,4 +230,21 @@ public class BackedYapStateMachine extends StateMachine {
 		}
 	}
 
+	/*
+	 * (non-Javadoc)
+	 * @see org.ggp.base.util.statemachine.StateMachine#getName()
+	 */
+	@Override
+    public String getName() {
+		String mainMachineName = "null";
+		String backupMachineName = "null";
+        if(this.mainMachine != null){
+            mainMachineName = this.mainMachine.getName();
+        }
+        if(this.backupMachine != null){
+        	backupMachineName = this.backupMachine.getName();
+        }
+        return "Backed(" + mainMachineName + ", " + backupMachineName + ")";
+    }
+
 }

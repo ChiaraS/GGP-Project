@@ -10,20 +10,39 @@ import org.ggp.base.util.gdl.grammar.Gdl;
 import org.ggp.base.util.logging.GamerLogger;
 import org.ggp.base.util.logging.GamerLogger.FORMAT;
 import org.ggp.base.util.match.Match;
+import org.ggp.base.util.statemachine.StateMachine;
 import org.ggp.base.util.statemachine.exceptions.StateMachineInitializationException;
 import org.ggp.base.util.statemachine.hybrid.BackedYapStateMachine;
 import org.ggp.base.util.statemachine.implementation.prover.ProverStateMachine;
 import org.ggp.base.util.statemachine.implementation.yapProlog.YapStateMachine;
-import org.ggp.base.util.statemachine.verifier.StateMachineVerifier;
+
+// TODO: merge all verifiers together in a single class since their code is similar.
 
 
 /**
  * This class verifies the consistency of the YAP state machine wrt the prover state machine.
  *
- * It is possible to specify as main argument the time in milliseconds that each test must take to run.
- * If nothing or something inconsistent is specified, 10 seconds is used as default value for each test
- * duration time. Moreover, it is possible to specify as main argument also the key of one game so that
- * the test will be performed only on that game. If not specified, the test will run for each game.
+ * It is possible to specify the following combinations of main arguments:
+ *
+ * 1. [backed]
+ * 2. [backed] [keyOfGameToTest]
+ * 3. [backed] [queryWaitingTime] [maximumTestDuration]
+ * 4. [backed] [queryWaitingTime] [maximumTestDuration] [keyOfGameToTest]
+ *
+ * where:
+ * [backed] = true if the Yap state machine must be backed by the GGP Base prover state machine
+ * 			  when the Yap prover doesn't answer to a query in time, false otherwise (DEFAULT:
+ * 			  false).
+ * [queryWaitingTime] = maximum time in milliseconds that the Yap state machine must wait for
+ * 						getting the result of a query from Yap prolog (DEFAULT: 500ms).
+ * 						ATTENTION: it's better to never run the tests with this parameter set to
+ * 						0ms, as this will cause the state machine to wait indefinitely and thus
+ * 						the program will get stuck if Yap prolog doesn't answer.
+ * [maximumTestDuration] = duration of each test in millisecond (DEFAULT: 60000ms - 1min).
+ * [keyOfGameToTest] = key of the game to be tested (DEFAULT: null (i.e. all games)).
+ *
+ * If nothing or something inconsistent is specified for any of the parameters, the default value
+ * will be used.
  *
  * @author C.Sironi
  *
@@ -32,58 +51,84 @@ public class YAPVerifier {
 
 	public static void main(String[] args) throws InterruptedException{
 
-		long testTime = 10000L;
+
+		/*********************** Parse main arguments ****************************/
+
+		boolean backed = false;
+		long queryWaitingTime = 500L;
+		long testTime = 60000L;
 		String gameToTest = null;
 
 		if (args.length != 0){
 
-			if(args.length <= 2){
+			if(args.length <= 4){
 
-				try{
-					testTime = Long.parseLong(args[0]);
-					if(args.length == 2){
-						gameToTest = args[1];
-						System.out.println("Running test on game \"" + gameToTest + "\" with the following time duration: " + testTime + "ms.");
-					}else{
-						System.out.println("Running tests on ALL games with the following time duration: " + testTime + "ms.");
+				backed = Boolean.parseBoolean(args[0]);
+
+				if(args.length == 4 || args.length == 2){
+					gameToTest = args[args.length-1];
+				}
+				if(args.length == 3 || args.length == 4){
+					try{
+						queryWaitingTime = Long.parseLong(args[1]);
+					}catch(NumberFormatException nfe){
+						System.out.println("Inconsistent query maximum waiting time specification! Using default value.");
+						queryWaitingTime = 500L;
 					}
-				}catch(NumberFormatException nfe){
-					testTime = 10000L;
-					if(args.length == 2){
-						gameToTest = args[1];
-						System.out.println("Inconsistent time value specification! Running test on game \"" + gameToTest + "\" with the default time duration of " + testTime + "ms.");
-					}else{
-						System.out.println("Inconsistent time value specification! Running tests on ALL games with the default time duration of " + testTime + "ms.");
+					try{
+						testTime = Long.parseLong(args[2]);
+					}catch(NumberFormatException nfe){
+						System.out.println("Inconsistent test duration specification! Using default value.");
+						testTime = 60000L;
 					}
 				}
-			}else{
-				System.out.println("Expected a maximum of 2 arguments. Ignoring user specified parameters and running with default settings.");
-				System.out.println("Rnning tests on ALL games with default time duration of " + testTime + "ms");
+			}else{ // Too many arguments, using default
+				System.out.println("Inconsistent number of main arguments! Ignoring them.");
 			}
-		}else{
-			System.out.println("Running tests on ALL games with default time duration of " + testTime + "ms");
 		}
 
+		if(backed){
+			System.out.println("Testing consistency of the YAP state machine backed by the GGP Base prover.");
+		}else{
+			System.out.println("Testing consistency of the YAP state machine.");
+		}
+
+		if(gameToTest == null){
+			System.out.println("Running tests on ALL games with the following time settings:");
+		}else{
+			System.out.println("Running tests on game " + gameToTest + " with the following time settings:");
+		}
+		System.out.println("Waiting time for a query result: " + queryWaitingTime + "ms");
+		System.out.println("Running time for each test: " + testTime + "ms");
 		System.out.println();
 
-        ProverStateMachine theReference;
-        //YapStateMachine theYapMachine;
-        BackedYapStateMachine theYapMachine;
 
-        GamerLogger.setSpilloverLogfile("YAPVerifierTable.csv");
-        GamerLogger.log(FORMAT.CSV_FORMAT, "YAPVerifierTable", "Game key;Rounds;Test duration (ms);Pass;Exception;");
+		/*********************** Perform all the tests ****************************/
+
+
+        ProverStateMachine theReference;
+        StateMachine theSubject;
+
+        String type = "YAP";
+        if(backed){
+        	type = "Backed" + type;
+        }
+
+        GamerLogger.setSpilloverLogfile(type + "VerifierTable.csv");
+        GamerLogger.log(FORMAT.CSV_FORMAT, type + "VerifierTable", "Game key;Initialization time (ms);Rounds;Completed rounds;Test duration (ms);Subject exception;Other exceptions;Pass;");
 
         GameRepository theRepository = GameRepository.getDefaultRepository();
         for(String gameKey : theRepository.getGameKeys()) {
             if(gameKey.contains("laikLee")) continue;
 
-            //if(!gameKey.equals("3pConnectFour") && !gameKey.equals("god")) continue;
-
+            // TODO: change code so that if there is only one game to test we won't run through the whole sequence of keys.
             if(gameToTest != null && !gameKey.equals(gameToTest)) continue;
+
+            System.out.println("Detected activation in game " + gameKey + ".");
 
             Match fakeMatch = new Match(gameKey + System.currentTimeMillis(), -1, -1, -1,theRepository.getGame(gameKey) );
 
-            GamerLogger.startFileLogging(fakeMatch, "YAPVerifier");
+            GamerLogger.startFileLogging(fakeMatch, type + "Verifier");
 
             GamerLogger.log("Verifier", "Testing on game " + gameKey);
 
@@ -92,37 +137,52 @@ public class YAPVerifier {
             theReference = new ProverStateMachine();
 
             // Create the YAP state machine
-            //theYapMachine = new YapStateMachine(500L);
+            theSubject = new YapStateMachine(queryWaitingTime);
 
-            // Create the BackedYapStateMachine
-            theYapMachine = new BackedYapStateMachine(new YapStateMachine(500L), new ProverStateMachine());
+            if(backed){
+            	// Create the BackedYapStateMachine
+            	theSubject = new BackedYapStateMachine((YapStateMachine)theSubject, new ProverStateMachine());
+            }
 
-            boolean pass = false;
-            int rounds = -1;
-            long duration = 0L;
-            String exception = "-";
-
-            System.out.println("Detected activation in game " + gameKey + ". Checking consistency: ");
-
-            // Initialize the state machines
             theReference.initialize(description);
+
+            long initializationTime;
+            int rounds = -1;
+            int completedRounds = -1;
+            long testDuration = -1L;
+            boolean pass = false;
+            String exception = "-";
+            int otherExceptions = -1;
+
+            long initStart = System.currentTimeMillis();
+
+            // Try to initialize the yap state machine.
+            // If initialization fails, skip the test.
           	try {
-				theYapMachine.initialize(description);
-				long start = System.currentTimeMillis();
-				pass = StateMachineVerifier.checkMachineConsistency(theReference, theYapMachine, testTime);
-				duration = System.currentTimeMillis() - start;
-				rounds = StateMachineVerifier.lastRounds;
-				exception = StateMachineVerifier.exception;
+				theSubject.initialize(description);
+				initializationTime = System.currentTimeMillis() - initStart;
+				System.out.println(type + " state machine initialization succeeded. Checking consistency.");
+				long testStart = System.currentTimeMillis();
+                pass = ExtendedStateMachineVerifier.checkMachineConsistency(theReference, theSubject, testTime);
+                testDuration = System.currentTimeMillis() - testStart;
+                rounds = ExtendedStateMachineVerifier.lastRounds;
+                completedRounds = ExtendedStateMachineVerifier.completedRounds;
+                exception = ExtendedStateMachineVerifier.exception;
+                otherExceptions = ExtendedStateMachineVerifier.otherExceptions;
 			} catch (StateMachineInitializationException e) {
-				GamerLogger.log("Verifier", "State machine initialization failed. Impossible to test game " + gameKey);
+				initializationTime = System.currentTimeMillis() - initStart;
+            	GamerLogger.logError("Verifier", "State machine " + theSubject.getName() + " initialization failed, impossible to test this game. Cause: [" + e.getClass().getSimpleName() + "] " + e.getMessage() );
+            	GamerLogger.logStackTrace("Verifier", e);
+            	System.out.println("Skipping test on game " + gameKey + ". State machine initialization failed.");
 			}
 
             GamerLogger.log(FORMAT.PLAIN_FORMAT, "Verifier", "");
 
             GamerLogger.stopFileLogging();
-            GamerLogger.log(FORMAT.CSV_FORMAT, "YapVerifierTable", gameKey + ";" + rounds + ";" + duration + ";" + pass + ";" + exception + ";");
 
-            theYapMachine.shutdown();
+            GamerLogger.log(FORMAT.CSV_FORMAT, type + "VerifierTable", gameKey + ";" + initializationTime + ";" + rounds +  ";"  + completedRounds + ";"  + testDuration + ";"  + exception + ";"  + otherExceptions + ";" + pass + ";");
+
+            theSubject.shutdown();
 
         }
 	}

@@ -5,7 +5,6 @@ import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.util.Arrays;
-import java.util.Random;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
@@ -406,24 +405,25 @@ public class YapProver {
 		}
 	}
 
-	private Random random = new Random();
+	//private Random random = new Random();
 
 	/**
 	 * Change the Prolog random number generator
 	 * using the Java random number generator
 	 */
+	/*
 	private void randomizeProlog()
 	{
-		/*
-		int i = (int)Math.min(Math.random()*(30268), 30268)+1;
-		int j = (int)Math.min(Math.random()*(30307), 30307)+1;
-		int k = (int)Math.min(Math.random()*(30323), 30323)+1;
-		*/
+
+		//int i = (int)Math.min(Math.random()*(30268), 30268)+1;
+		//int j = (int)Math.min(Math.random()*(30307), 30307)+1;
+		//int k = (int)Math.min(Math.random()*(30323), 30323)+1;
+
 		int i = this.random.nextInt(30268)+1;
 		int j = this.random.nextInt(30306)+1;
 		int k = this.random.nextInt(30322)+1;
 		this.yapProver.realCommand("setrand(rand("+i+", "+j+", "+k+"))");
-	}
+	}*/
 
 	/**
 	 * This method performs a query on the real Yap Prolog program, returning any result

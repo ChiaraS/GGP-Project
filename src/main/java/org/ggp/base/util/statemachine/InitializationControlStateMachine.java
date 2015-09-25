@@ -83,6 +83,9 @@ public class InitializationControlStateMachine extends StateMachine {
 			executor.invokeAny(Arrays.asList(initializer), initTime, TimeUnit.MILLISECONDS);
 		} catch (InterruptedException | ExecutionException | TimeoutException e) {
 			GamerLogger.logError("StateMachine", "[INIT CONTROL] Impossible to initialize the state machine in the given amount of time.");
+			if(this.theRealMachine != null){
+				this.theRealMachine.shutdown();
+			}
 			throw new StateMachineInitializationException("Initialization of state machine failed!", e);
 		}finally{
 			// Reset executor and initializer
@@ -164,12 +167,17 @@ public class InitializationControlStateMachine extends StateMachine {
 	 */
 	@Override
 	public void shutdown() {
-		this.theRealMachine.shutdown();
+		if(this.theRealMachine != null){
+			this.theRealMachine.shutdown();
+		}
 	}
 
 	@Override
-	public String getName(){
-		return "INIT_CONTROL(" + this.theRealMachine.getName() + ")";
-	}
+    public String getName() {
+        if(this.theRealMachine != null) {
+            return "InitializationSafe(" + this.theRealMachine.getName() + ")";
+        }
+        return "InitializationSafe(null)";
+    }
 
 }

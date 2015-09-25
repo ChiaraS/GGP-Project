@@ -3,10 +3,20 @@
  */
 package csironi.ggp.course.verifiers;
 
+import java.util.List;
+
 import org.ggp.base.util.game.GameRepository;
+import org.ggp.base.util.gdl.grammar.Gdl;
+import org.ggp.base.util.logging.GamerLogger;
+import org.ggp.base.util.logging.GamerLogger.FORMAT;
+import org.ggp.base.util.match.Match;
+import org.ggp.base.util.statemachine.implementation.prover.ProverStateMachine;
+
+//TODO: merge all verifiers together in a single class since their code is similar.
 
 /**
- * This class verifies the consistency of the prover state machine wrt the prover state machine.
+ * This class verifies the consistency of the GGP Base prover state machine wrt the GGP Base prover
+ * state machine.
  * This test has been created only to have a comparison of the number of rounds that can be played
  * when changing the subject state machine wrt using the prover state machine both as subject and
  * as reference state machine.
@@ -14,11 +24,15 @@ import org.ggp.base.util.game.GameRepository;
  * It is possible to specify the following combinations of main arguments:
  *
  * 1. [keyOfGameToTest]
- * 2. [maximumTestDuration(ms)]
- * 3. [maximumTestDuration(ms)] [keyOfGameToTest]
+ * 2. [maximumTestDuration]
+ * 3. [maximumTestDuration] [keyOfGameToTest]
  *
- * If nothing or something inconsistent is specified, 5 mins is used as default value for the propnet
- * building time and 10 seconds is used as default value for each test duration time.
+ * where:
+ * [maximumTestDuration] = duration of each test in millisecond (DEFAULT: 60000ms - 1min).
+ * [keyOfGameToTest] = key of the game to be tested (DEFAULT: null (i.e. all games)).
+ *
+ * If nothing or something inconsistent is specified for any of the parameters, the default value
+ * will be used.
  *
  * @author C.Sironi
  *
@@ -27,9 +41,11 @@ public class GGPBaseProverVerifier {
 
 	public static void main(String[] args) throws InterruptedException{
 
+
 		/*********************** Parse main arguments ****************************/
 
-		long testTime = 10000L;
+
+		long testTime = 60000L;
 		String gameToTest = null;
 
 		if (args.length != 0){
@@ -39,7 +55,7 @@ public class GGPBaseProverVerifier {
 				try{
 					testTime = Long.parseLong(args[0]);
 				}catch(NumberFormatException nfe){
-					testTime = 10000L;
+					testTime = 60000L;
 					gameToTest = args[0];
 				}
 			}else if(args.length == 2){
@@ -47,7 +63,7 @@ public class GGPBaseProverVerifier {
 					testTime = Long.parseLong(args[0]);
 				}catch(NumberFormatException nfe){
 					System.out.println("Inconsistent test duration specification! Using default value.");
-					testTime = 10000L;
+					testTime = 60000L;
 				}
 				gameToTest = args[1];
 			}else{
@@ -67,17 +83,11 @@ public class GGPBaseProverVerifier {
 
 		/*********************** Perform all the tests ****************************/
 
-
-
-
-		/*
-
-        ProverStateMachine theReference;
-        ProverStateMachine theOtherMachine;
+		ProverStateMachine theReference;
+        ProverStateMachine theProverMachine;
 
         GamerLogger.setSpilloverLogfile("GGPBaseProverVerifierTable.csv");
-        GamerLogger.log(FORMAT.CSV_FORMAT, "GGPBaseProverVerifierTable", "Game key;Rounds;Test duration (ms);Pass;");
-		 */
+        GamerLogger.log(FORMAT.CSV_FORMAT, "GGPBaseProverVerifierTable", "Game key;Initialization time (ms);Rounds;Completed rounds;Test duration (ms);Subject exception;Other exceptions;Pass;");
 
 		GameRepository theRepository = GameRepository.getDefaultRepository();
         for(String gameKey : theRepository.getGameKeys()) {
@@ -88,7 +98,6 @@ public class GGPBaseProverVerifier {
 
             System.out.println("Detected activation in game " + gameKey + ".");
 
-            /*
             Match fakeMatch = new Match(gameKey + System.currentTimeMillis(), -1, -1, -1,theRepository.getGame(gameKey) );
 
             GamerLogger.startFileLogging(fakeMatch, "GGPBaseProverVerifier");
@@ -99,32 +108,38 @@ public class GGPBaseProverVerifier {
 
             theReference = new ProverStateMachine();
 
-            // Create the YAP state machine
-            theOtherMachine = new ProverStateMachine();
+            // Create the second prover state machine
+            theProverMachine = new ProverStateMachine();
 
-            boolean pass = false;
-            int rounds = -1;
-            long duration = 0L;
+            long initializationTime;
+            int rounds;
+            int completedRounds;
+            long testDuration;
+            boolean pass;
+            String exception;
+            int otherExceptions;
 
             // Initialize the state machines
             theReference.initialize(description);
-          	theOtherMachine.initialize(description);
 
-          	System.out.println("Detected activation in game " + gameKey + ". Checking consistency: ");
-            long start = System.currentTimeMillis();
-            pass = StateMachineVerifier.checkMachineConsistency(theReference, theOtherMachine, testTime);
-            duration = System.currentTimeMillis() - start;
-            rounds = StateMachineVerifier.lastRounds;
+            long initStart = System.currentTimeMillis();
+            theProverMachine.initialize(description);
+            initializationTime = System.currentTimeMillis() - initStart;
+
+          	System.out.println("Prover state machine initialization succeeded. Checking consistency.");
+            long testStart = System.currentTimeMillis();
+            pass = ExtendedStateMachineVerifier.checkMachineConsistency(theReference, theProverMachine, testTime);
+            testDuration = System.currentTimeMillis() - testStart;
+            rounds = ExtendedStateMachineVerifier.lastRounds;
+            completedRounds = ExtendedStateMachineVerifier.completedRounds;
+            exception = ExtendedStateMachineVerifier.exception;
+            otherExceptions = ExtendedStateMachineVerifier.otherExceptions;
 
             GamerLogger.log(FORMAT.PLAIN_FORMAT, "Verifier", "");
 
             GamerLogger.stopFileLogging();
-            GamerLogger.log(FORMAT.CSV_FORMAT, "GGPBaseProverVerifierTable", gameKey + ";" + rounds + ";" + duration + ";" + pass + ";");
 
-			*/
-
+            GamerLogger.log(FORMAT.CSV_FORMAT, "GGPBaseProverVerifierTable", gameKey + ";" + initializationTime + ";" + rounds +  ";"  + completedRounds + ";" + testDuration + ";"  + exception + ";"  + otherExceptions + ";" + pass + ";");
         }
 	}
-
-
 }

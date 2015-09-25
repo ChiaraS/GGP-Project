@@ -12,18 +12,26 @@ import org.ggp.base.util.statemachine.exceptions.StateMachineInitializationExcep
 import org.ggp.base.util.statemachine.implementation.propnet.FwdInterrPropnetStateMachine;
 import org.ggp.base.util.statemachine.implementation.prover.ProverStateMachine;
 
+//TODO: merge all verifiers together in a single class since their code is similar.
+
 /**
- * This class verifies the consistency of the propnet state machine (with no internal check of the propnet building
- * time) wrt the prover state machine.
+ * This class verifies the consistency of the propnet state machine (with no internal check of the
+ * propnet building time) wrt the prover state machine.
  *
  * It is possible to specify the following combinations of main arguments:
  *
  * 1. [keyOfGameToTest]
- * 2. [maximumInitializationTime(ms)] [maximumTestDuration(ms)]
- * 3. [maximumInitializationTime(ms)] [maximumTestDuration(ms)] [keyOfGameToTest]
+ * 2. [maximumInitializationTime] [maximumTestDuration]
+ * 3. [maximumInitializationTime] [maximumTestDuration] [keyOfGameToTest]
  *
- * If nothing or something inconsistent is specified, 5 mins is used as default value for the propnet state machine
- * initialization time and 10 seconds is used as default value for each test duration time.
+ * where:
+ * [maximumInitializationTime] = maximum time in milliseconds that should be spent to initialize
+ * 								 the propnet state machine (DEFAULT: 300000ms - 5mins).
+ * [maximumTestDuration] = duration of each test in millisecond (DEFAULT: 60000ms - 1min).
+ * [keyOfGameToTest] = key of the game to be tested (DEFAULT: null (i.e. all games)).
+ *
+ * If nothing or something inconsistent is specified for any of the parameters, the default value will
+ * be used.
  *
  * @author C.Sironi
  *
@@ -32,10 +40,12 @@ public class ModifiedPropnetVerifier {
 
 	public static void main(String[] args) throws InterruptedException{
 
+
 		/*********************** Parse main arguments ****************************/
 
+
 		long givenInitTime = 300000L;
-		long testTime = 10000L;
+		long testTime = 60000L;
 		String gameToTest = null;
 
 		if (args.length != 0 && args.length <= 3){
@@ -53,7 +63,7 @@ public class ModifiedPropnetVerifier {
 					testTime = Long.parseLong(args[1]);
 				}catch(NumberFormatException nfe){
 					System.out.println("Inconsistent test duration specification! Using default value.");
-					testTime = 10000L;
+					testTime = 60000L;
 				}
 			}
 		}else if(args.length > 3){
@@ -72,9 +82,10 @@ public class ModifiedPropnetVerifier {
 
 		/*********************** Perform all the tests ****************************/
 
+
 		ProverStateMachine theReference;
-        InitializationControlStateMachine thePropNetMachine;
-        FwdInterrPropnetStateMachine theHiddenMachine;
+        InitializationControlStateMachine thePropnetMachine;
+        FwdInterrPropnetStateMachine theHiddenPropnetMachine;
 
         GamerLogger.setSpilloverLogfile("ModifiedPropnetVerifierTable.csv");
         GamerLogger.log(FORMAT.CSV_FORMAT, "ModifiedPropnetVerifierTable", "Game key;Initialization time (ms);Construction time (ms);Rounds;Completed rounds;Test duration (ms);Subject exception;Other exceptions;Pass;");
@@ -83,6 +94,7 @@ public class ModifiedPropnetVerifier {
         for(String gameKey : theRepository.getGameKeys()) {
             if(gameKey.contains("laikLee")) continue;
 
+            // TODO: change code so that if there is only one game to test we won't run through the whole sequence of keys.
             if(gameToTest != null && !gameKey.equals(gameToTest)) continue;
 
             System.out.println("Detected activation in game " + gameKey + ".");
@@ -98,8 +110,8 @@ public class ModifiedPropnetVerifier {
             theReference = new ProverStateMachine();
 
             // Create the propnet state machine and wrap it with the state machine that controls initialization
-            theHiddenMachine = new FwdInterrPropnetStateMachine();
-            thePropNetMachine = new InitializationControlStateMachine(theHiddenMachine, givenInitTime);
+            theHiddenPropnetMachine = new FwdInterrPropnetStateMachine();
+            thePropnetMachine = new InitializationControlStateMachine(theHiddenPropnetMachine, givenInitTime);
 
             theReference.initialize(description);
 
@@ -116,19 +128,19 @@ public class ModifiedPropnetVerifier {
             // Try to initialize the propnet state machine.
             // If initialization fails, skip the test.
             try{
-            	thePropNetMachine.initialize(description);
+            	thePropnetMachine.initialize(description);
             	initializationTime = System.currentTimeMillis() - initStart;
             	System.out.println("Propnet creation succeeded. Checking consistency.");
             	long testStart = System.currentTimeMillis();
-                pass = ExtendedStateMachineVerifier.checkMachineConsistency(theReference, thePropNetMachine, testTime);
+                pass = ExtendedStateMachineVerifier.checkMachineConsistency(theReference, thePropnetMachine, testTime);
                 testDuration = System.currentTimeMillis() - testStart;
                 rounds = ExtendedStateMachineVerifier.lastRounds;
                 completedRounds = ExtendedStateMachineVerifier.completedRounds;
                 exception = ExtendedStateMachineVerifier.exception;
                 otherExceptions = ExtendedStateMachineVerifier.otherExceptions;
-			}catch (StateMachineInitializationException e){
+			}catch(StateMachineInitializationException e){
 				initializationTime = System.currentTimeMillis() - initStart;
-				GamerLogger.logError("Verifier", "State machine " + thePropNetMachine.getName() + " initialization failed, impossible to test this game. Cause: [" + e.getClass().getSimpleName() + "] " + e.getMessage() );
+				GamerLogger.logError("Verifier", "State machine " + thePropnetMachine.getName() + " initialization failed, impossible to test this game. Cause: [" + e.getClass().getSimpleName() + "] " + e.getMessage() );
             	GamerLogger.logStackTrace("Verifier", e);
 				System.out.println("Skipping test on game " + gameKey + ". State machine initialization failed, no propnet available.");
 			}
@@ -137,8 +149,7 @@ public class ModifiedPropnetVerifier {
 
             GamerLogger.stopFileLogging();
 
-            GamerLogger.log(FORMAT.CSV_FORMAT, "PropnetVerifierTable", gameKey + ";" + initializationTime + ";" + theHiddenMachine.getPropnetConstructionTime() + ";" + rounds + ";" + completedRounds + ";" + testDuration + ";"  + exception + ";"  + otherExceptions + ";" + pass + ";");
+            GamerLogger.log(FORMAT.CSV_FORMAT, "ModifiedPropnetVerifierTable", gameKey + ";" + initializationTime + ";" + theHiddenPropnetMachine.getPropnetConstructionTime() + ";" + rounds + ";" + completedRounds + ";" + testDuration + ";"  + exception + ";"  + otherExceptions + ";" + pass + ";");
         }
 	}
-
 }

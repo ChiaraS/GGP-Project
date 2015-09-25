@@ -102,7 +102,9 @@ public final class GamePlayer extends Thread implements Subject
 			try {
 				Socket connection = listener.accept();
 
+				/*
 				long start = System.currentTimeMillis();
+				*/
 
 				String in = HttpReader.readAsServer(connection);
 				if (in.length() == 0) {

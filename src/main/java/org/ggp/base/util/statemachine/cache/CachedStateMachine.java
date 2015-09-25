@@ -147,6 +147,13 @@ public final class CachedStateMachine extends StateMachine
 		if(this.backingStateMachine != null){
 			this.backingStateMachine.shutdown();
 		}
-
 	}
+
+	@Override
+    public String getName() {
+        if(this.backingStateMachine != null) {
+            return "Cache(" + this.backingStateMachine.getName() + ")";
+        }
+        return "Cache(null)";
+    }
 }

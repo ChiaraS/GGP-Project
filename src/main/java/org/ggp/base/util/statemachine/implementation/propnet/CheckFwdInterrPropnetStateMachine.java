@@ -484,7 +484,7 @@ public class CheckFwdInterrPropnetStateMachine extends StateMachine {
 	 *
 	 * @return the actual construction time of the propnet, -1 if it has not been created in time.
 	 */
-	public long getConstructionTime(){
+	public long getPropnetConstructionTime(){
 		return this.constructionTime;
 	}
 

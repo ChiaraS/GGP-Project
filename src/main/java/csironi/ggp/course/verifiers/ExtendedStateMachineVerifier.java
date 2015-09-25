@@ -79,7 +79,8 @@ public class ExtendedStateMachineVerifier {
         theMachines.add(theReference);
         theMachines.add(theSubject);
 
-        System.out.print("Consistency checking: [");
+        //System.out.print("Consistency checking: [");
+
         // Reset global variables
         lastRounds = 0;
         completedRounds = 0;
@@ -91,7 +92,7 @@ public class ExtendedStateMachineVerifier {
         	try {
         		lastRounds++;
 
-        		System.out.print(".");
+        		//System.out.print(".");
 
             	MachineState[] theCurrentStates = new MachineState[theMachines.size()];
             	for(int i = 0; i < theMachines.size(); i++) {
@@ -289,7 +290,7 @@ public class ExtendedStateMachineVerifier {
 
         	completedRounds++;
         }
-        System.out.println("]");
+        //System.out.println("]");
 
         GamerLogger.log("Verifier", "Completed automatic consistency testing on " + theSubject.getClass().getName() + ", w/ " + lastRounds + " rounds: all tests pass!");
         return true;

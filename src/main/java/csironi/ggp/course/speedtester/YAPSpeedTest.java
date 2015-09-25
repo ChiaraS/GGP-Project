@@ -13,39 +13,46 @@ import org.ggp.base.util.match.Match;
 import org.ggp.base.util.statemachine.StateMachine;
 import org.ggp.base.util.statemachine.cache.CachedStateMachine;
 import org.ggp.base.util.statemachine.exceptions.StateMachineInitializationException;
-import org.ggp.base.util.statemachine.implementation.propnet.CheckFwdInterrPropnetStateMachine;
+import org.ggp.base.util.statemachine.hybrid.BackedYapStateMachine;
+import org.ggp.base.util.statemachine.implementation.prover.ProverStateMachine;
+import org.ggp.base.util.statemachine.implementation.yapProlog.YapStateMachine;
 
 //TODO: merge all speed tests together in a single class since their code is similar.
 
 /**
- * This class checks the speed (nodes/second, iterations/second) of the propnet state machine (the one
- * that checks internally during initialization that the building time of the propnet doesn't exceed a
- * given threshold).
+ * This class checks the speed (nodes/second, iterations/second) of the Yap state machine.
  * This is done by performing Monte Carlo simulations from the initial state of the given game for the
  * specified amount of time.
  *
  * It is possible to specify the following combinations of main arguments:
  *
- * 1. [withCache]
- * 2. [withCache] [keyOfGameToTest]
- * 3. [withCache] [maximumPropnetBuildingTime] [maximumTestDuration]
- * 4. [withCache] [maximumPropnetBuildingTime] [maximumTestDuration] [keyOfGameToTest]
+ * where:
+ * 1. [withCache] [backed]
+ * 2. [withCache] [backed] [keyOfGameToTest]
+ * 3. [withCache] [backed] [queryWaitingTime] [maximumTestDuration]
+ * 4. [withCache] [backed] [queryWaitingTime] [maximumTestDuration] [keyOfGameToTest]
  *
  * where:
- * [withCache] = true if the propnet state machine must be provided with a cache for its results, false
+ * [withCache] = true if the Yap state machine must be provided with a cache for its results, false
  * 				 otherwise (DEFAULT: false).
- * [maximumPropnetBuildingTime] = time in milliseconds that the propnet state machine has available to
- * 								  build the propnet (DEFAULT: 300000ms - 5mins).
+ * [backed] = true if the Yap state machine must be backed by the GGP Base prover state machine
+ * 			  when the Yap prover doesn't answer to a query in time, false otherwise (DEFAULT:
+ * 			  false).
+ * [queryWaitingTime] = maximum time in milliseconds that the Yap state machine must wait for
+ * 						getting the result of a query from Yap prolog (DEFAULT: 500ms).
+ * 						ATTENTION: it's better to never run the tests with this parameter set to
+ * 						0ms, as this will cause the state machine to wait indefinitely and thus
+ * 						the program will get stuck if Yap prolog doesn't answer.
  * [maximumTestDuration] = duration of each test in millisecond (DEFAULT: 60000ms - 1min).
  * [keyOfGameToTest] = key of the game to be tested (DEFAULT: null (i.e. all games)).
  *
- * If nothing or something inconsistent is specified for any of the parameters, the default value will
- * be used.
+ * If nothing or something inconsistent is specified for any of the parameters, the default value
+ * will be used.
  *
  * @author C.Sironi
  *
  */
-public class FirstPropnetSpeedTest {
+public class YAPSpeedTest {
 
 	public static void main(String[] args) {
 
@@ -54,28 +61,30 @@ public class FirstPropnetSpeedTest {
 
 
 		boolean withCache = false;
-		long buildingTime = 300000L;
+		boolean backed = false;
+		long queryWaitingTime = 500L;
 		long testTime = 60000L;
 		String gameToTest = null;
 
-		if(args.length != 0){ // At least one argument is specified and the first argument is either true or false
+		if(args.length != 0){ // At least one argument is specified and the first two argument are true or false
 
-			if (args.length <= 4){
+			if (args.length > 1 && args.length <= 4){
 
 				withCache = Boolean.parseBoolean(args[0]);
+				backed = Boolean.parseBoolean(args[1]);
 
-				if(args.length == 4 || args.length == 2){
+				if(args.length == 3 || args.length == 5){
 					gameToTest = args[args.length-1];
 				}
-				if(args.length == 3 || args.length == 4){
+				if(args.length == 4 || args.length == 5){
 					try{
-						buildingTime = Long.parseLong(args[1]);
+						queryWaitingTime = Long.parseLong(args[2]);
 					}catch(NumberFormatException nfe){
-						System.out.println("Inconsistent propnet maximum building time specification! Using default value.");
-						buildingTime = 300000L;
+						System.out.println("Inconsistent query maximum waiting time specification! Using default value.");
+						queryWaitingTime = 500L;
 					}
 					try{
-						testTime = Long.parseLong(args[2]);
+						testTime = Long.parseLong(args[3]);
 					}catch(NumberFormatException nfe){
 						System.out.println("Inconsistent test duration specification! Using default value.");
 						testTime = 60000L;
@@ -87,10 +96,15 @@ public class FirstPropnetSpeedTest {
 
 		} // else use default values
 
+		String machineType = "YAP state machine";
+		if(backed){
+			machineType += " backed by the GGP Base prover";
+		}
+
 		if(withCache){
-			System.out.println("Testing speed of the propnet state machine with cache.");
+			System.out.println("Testing speed of the " + machineType + " with cache.");
 		}else{
-			System.out.println("Testing speed of the propnet state machine with no cache.");
+			System.out.println("Testing speed of the " + machineType + " with no cache.");
 		}
 
 		if(gameToTest == null){
@@ -98,7 +112,7 @@ public class FirstPropnetSpeedTest {
 		}else{
 			System.out.println("Running tests on game " + gameToTest + " with the following time settings:");
 		}
-		System.out.println("Propnet building time: " + buildingTime + "ms");
+		System.out.println("Waiting time for a query result: " + queryWaitingTime + "ms");
 		System.out.println("Running time for each test: " + testTime + "ms");
 		System.out.println();
 
@@ -106,17 +120,19 @@ public class FirstPropnetSpeedTest {
 		/*********************** Perform all the tests ****************************/
 
 
-		CheckFwdInterrPropnetStateMachine thePropnetMachine;
 		StateMachine theSubject;
 
-		String type = "FirstPropnet";
+		String type = "YAP";
 
+		if(backed){
+			type = "Backed" + type;
+		}
 		if(withCache){
 			type = "Cached" + type;
 		}
 
 		GamerLogger.setSpilloverLogfile(type + "SpeedTestTable.csv");
-		GamerLogger.log(FORMAT.CSV_FORMAT, type + "SpeedTestTable", "Game key;Initialization Time (ms);Construction Time (ms);Test Duration (ms);Succeeded Iterations;Failed Iterations;Visited Nodes;Iterations/second;Nodes/second;");
+		GamerLogger.log(FORMAT.CSV_FORMAT, type + "SpeedTestTable", "Game key;Initialization Time (ms);Test Duration (ms);Succeeded Iterations;Failed Iterations;Visited Nodes;Iterations/second;Nodes/second;");
 
         GameRepository theRepository = GameRepository.getDefaultRepository();
         for(String gameKey : theRepository.getGameKeys()) {
@@ -135,12 +151,16 @@ public class FirstPropnetSpeedTest {
 
             List<Gdl> description = theRepository.getGame(gameKey).getRules();
 
-            // Create propnet state machine giving it buildingTime milliseconds to build the propnet
-            theSubject = thePropnetMachine = new CheckFwdInterrPropnetStateMachine(buildingTime);
+            // Create Yap state machine giving it queryWaitingTime milliseconds to wait for the result of a query
+            theSubject = new YapStateMachine(queryWaitingTime);
 
-            // If the propnet state machine must be provided with a cache, create the cached state machine
+            if(backed){
+            	// Create the BackedYapStateMachine
+            	theSubject = new BackedYapStateMachine((YapStateMachine)theSubject, new ProverStateMachine());
+            }
+            // If the Yap state machine must be provided with a cache, create the cached state machine
             if(withCache){
-            	theSubject = new CachedStateMachine(thePropnetMachine);
+            	theSubject = new CachedStateMachine(theSubject);
             }
 
             long initializationTime;
@@ -151,14 +171,14 @@ public class FirstPropnetSpeedTest {
             double iterationsPerSecond = -1;
             double nodesPerSecond = -1;
 
-            // Try to initialize the propnet state machine.
+            // Try to initialize the Yap state machine.
             // If initialization fails, skip the test.
         	long initStart = System.currentTimeMillis();
             try{
             	theSubject.initialize(description);
             	initializationTime = System.currentTimeMillis() - initStart;
 
-            	System.out.println("Propnet creation succeeded. Checking speed.");
+            	System.out.println(type + " state machine initialization succeeded. Checking speed.");
             	StateMachineSpeedTest.testSpeed(theSubject, testTime);
 
             	testDuration = StateMachineSpeedTest.exactTimeSpent;
@@ -171,14 +191,16 @@ public class FirstPropnetSpeedTest {
             	initializationTime = System.currentTimeMillis() - initStart;
             	GamerLogger.logError("SMSpeedTest", "State machine " + theSubject.getName() + " initialization failed, impossible to test this game. Cause: [" + e.getClass().getSimpleName() + "] " + e.getMessage() );
             	GamerLogger.logStackTrace("SMSpeedTest", e);
-            	System.out.println("Skipping test on game " + gameKey + ". No propnet available.");
+            	System.out.println("Skipping test on game " + gameKey + ". State machine initialization failed.");
             }
 
             GamerLogger.log(FORMAT.PLAIN_FORMAT, "SMSpeedTest", "");
 
             GamerLogger.stopFileLogging();
 
-            GamerLogger.log(FORMAT.CSV_FORMAT, type + "SpeedTestTable", gameKey + ";" + initializationTime + ";" + thePropnetMachine.getPropnetConstructionTime() + ";" + testDuration + ";" + succeededIterations + ";" + failedIterations + ";" + visitedNodes + ";" + iterationsPerSecond + ";" + nodesPerSecond + ";");
+            GamerLogger.log(FORMAT.CSV_FORMAT, type + "SpeedTestTable", gameKey + ";" + initializationTime + ";" + testDuration + ";" + succeededIterations + ";" + failedIterations + ";" + visitedNodes + ";" + iterationsPerSecond + ";" + nodesPerSecond + ";");
+
+            theSubject.shutdown();
         }
 	}
 }
