@@ -1,6 +1,3 @@
-/**
- *
- */
 package csironi.ggp.course.speedtester;
 
 import java.util.List;
@@ -13,36 +10,28 @@ import org.ggp.base.util.match.Match;
 import org.ggp.base.util.statemachine.StateMachine;
 import org.ggp.base.util.statemachine.cache.CachedStateMachine;
 import org.ggp.base.util.statemachine.exceptions.StateMachineInitializationException;
-import org.ggp.base.util.statemachine.hybrid.BackedYapStateMachine;
+import org.ggp.base.util.statemachine.implementation.firstYapProlog.FirstYapStateMachine;
 import org.ggp.base.util.statemachine.implementation.prover.ProverStateMachine;
-import org.ggp.base.util.statemachine.implementation.yapProlog.YapStateMachine;
 
-//TODO: merge all speed tests together in a single class since their code is similar.
 
 /**
- * This class checks the speed (nodes/second, iterations/second) of the Yap state machine.
+ * This class checks the speed (nodes/second, iterations/second) of the first implementation of the
+ * Yap state machine (Louis'implementation). The java version of the method that performs Monte Carlo
+ * simulations is used, not the corresponding implementation in prolog.
  * This is done by performing Monte Carlo simulations from the initial state of the given game for the
  * specified amount of time.
  *
  * It is possible to specify the following combinations of main arguments:
  *
  * where:
- * 1. [withCache] [backed]
- * 2. [withCache] [backed] [keyOfGameToTest]
- * 3. [withCache] [backed] [queryWaitingTime] [maximumTestDuration]
- * 4. [withCache] [backed] [queryWaitingTime] [maximumTestDuration] [keyOfGameToTest]
+ * 1. [withCache]
+ * 2. [withCache] [keyOfGameToTest]
+ * 3. [withCache] [maximumTestDuration]
+ * 4. [withCache] [maximumTestDuration] [keyOfGameToTest]
  *
  * where:
  * [withCache] = true if the Yap state machine must be provided with a cache for its results, false
  * 				 otherwise (DEFAULT: false).
- * [backed] = true if the Yap state machine must be backed by the GGP Base prover state machine
- * 			  when the Yap prover doesn't answer to a query in time, false otherwise (DEFAULT:
- * 			  false).
- * [queryWaitingTime] = maximum time in milliseconds that the Yap state machine must wait for
- * 						getting the result of a query from Yap prolog (DEFAULT: 500ms).
- * 						ATTENTION: it's better to never run the tests with this parameter set to
- * 						0ms, as this will cause the state machine to wait indefinitely and thus
- * 						the program will get stuck if Yap prolog doesn't answer.
  * [maximumTestDuration] = duration of each test in millisecond (DEFAULT: 60000ms - 1min).
  * [keyOfGameToTest] = key of the game to be tested (DEFAULT: null (i.e. all games)).
  *
@@ -52,7 +41,7 @@ import org.ggp.base.util.statemachine.implementation.yapProlog.YapStateMachine;
  * @author C.Sironi
  *
  */
-public class YAPSpeedTest {
+public class FirstYAPSpeedTest {
 
 	public static void main(String[] args) {
 
@@ -61,50 +50,42 @@ public class YAPSpeedTest {
 
 
 		boolean withCache = false;
-		boolean backed = false;
-		long queryWaitingTime = 500L;
 		long testTime = 60000L;
 		String gameToTest = null;
 
-		if(args.length != 0){ // At least one argument is specified and the first two arguments are true or false
+		if (args.length != 0){ // At least one argument is specified and the first argument is either true or false
 
-			if (args.length > 1 && args.length <= 5){
+			if(args.length <= 3){
 
 				withCache = Boolean.parseBoolean(args[0]);
-				backed = Boolean.parseBoolean(args[1]);
 
-				if(args.length == 3 || args.length == 5){
-					gameToTest = args[args.length-1];
-				}
-				if(args.length == 4 || args.length == 5){
+				if(args.length == 2){
+					// Check if the second argument is a number, thus the maximum test duration..
 					try{
-						queryWaitingTime = Long.parseLong(args[2]);
+						testTime = Long.parseLong(args[1]);
 					}catch(NumberFormatException nfe){
-						System.out.println("Inconsistent query maximum waiting time specification! Using default value.");
-						queryWaitingTime = 500L;
+						// ...and if not, it is probably the key of the game to test.
+						testTime = 60000L;
+						gameToTest = args[1];
 					}
+				}else if(args.length == 3){
 					try{
-						testTime = Long.parseLong(args[3]);
+						testTime = Long.parseLong(args[1]);
 					}catch(NumberFormatException nfe){
 						System.out.println("Inconsistent test duration specification! Using default value.");
 						testTime = 60000L;
 					}
+					gameToTest = args[2];
 				}
-			}else{ // Too many arguments, using default
+			}else{
 				System.out.println("Inconsistent number of main arguments! Ignoring them.");
 			}
-
-		} // else use default values
-
-		String machineType = "YAP state machine";
-		if(backed){
-			machineType += " backed by the GGP Base prover";
 		}
 
 		if(withCache){
-			System.out.println("Testing speed of the " + machineType + " with cache.");
+			System.out.println("Testing speed of the first YAP state machine with cache.");
 		}else{
-			System.out.println("Testing speed of the " + machineType + " with no cache.");
+			System.out.println("Testing speed of the first YAP state machine with no cache.");
 		}
 
 		if(gameToTest == null){
@@ -112,7 +93,6 @@ public class YAPSpeedTest {
 		}else{
 			System.out.println("Running tests on game " + gameToTest + " with the following time settings:");
 		}
-		System.out.println("Waiting time for a query result: " + queryWaitingTime + "ms");
 		System.out.println("Running time for each test: " + testTime + "ms");
 		System.out.println();
 
@@ -122,11 +102,8 @@ public class YAPSpeedTest {
 
 		StateMachine theSubject;
 
-		String type = "YAP";
+		String type = "FirstYAP";
 
-		if(backed){
-			type = "Backed" + type;
-		}
 		if(withCache){
 			type = "Cached" + type;
 		}
@@ -151,13 +128,9 @@ public class YAPSpeedTest {
 
             List<Gdl> description = theRepository.getGame(gameKey).getRules();
 
-            // Create Yap state machine giving it queryWaitingTime milliseconds to wait for the result of a query
-            theSubject = new YapStateMachine(queryWaitingTime);
+            // Create Yap state machine giving it the state machine it must use as backup
+            theSubject = new FirstYapStateMachine(new ProverStateMachine());
 
-            if(backed){
-            	// Create the BackedYapStateMachine
-            	theSubject = new BackedYapStateMachine((YapStateMachine)theSubject, new ProverStateMachine());
-            }
             // If the Yap state machine must be provided with a cache, create the cached state machine
             if(withCache){
             	theSubject = new CachedStateMachine(theSubject);
@@ -203,4 +176,5 @@ public class YAPSpeedTest {
             theSubject.shutdown();
         }
 	}
+
 }
