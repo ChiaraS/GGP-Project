@@ -1,3 +1,17 @@
+HOW TO MANAGE THREADS AND INTERRUPTIBLE METHODS:
+1. How to interrupt a thread: call the interrupt() method on the instance of the thread you want to interrupt. Note that this doesn't imply that the thread will stop immediately, moreover, it doesn't even guarantee that the thread will stop at all. The interrupt() method just asks the thread to stop, but wheather the thread will actually stop and when, depends on how the code executed by the thread has been implemented. To make sure that sooner or later the thread will stop the execution, all the code in the thread (i.e. also all the methods used in the thread) should include from time to time a check that controls if the executing thread has been interrupted (note that for a method that doesn't take very long to execute it is possible to skip this check, interruption will just be delayed by a very small amount of time, the execution time of such method). If the code detects that the thread has been interrupted it should stop execution (performing some final operations if necessary for the execution to stop cleanely).
+2. How to detect if the thread executing the current code has been interrupted: use the following instruction "Thread.currentThread().isInterrupted()". This will return true if the thread has been interrupted. Note that this method won't affect the value of the interrupted status of the thread, so if the same instruction will be called somewhere else in the code run by the thread it will still return true if the thread has been interrupted (there are other ways to check for interruption that reset to false the value of the interrupted status even if the thread is still being interrupted).
+3. What to do if the thread has been interrupted (i.e. Thread.currentThread().isInterrupted() returns true):
+ 	a. if the check is inside the run method of the thread:
+	   just stop the execution performing some final operations, if necessary, for the execution to stop  cleanely
+	b. if the check is inside of a method called by the run() method (or one of its subcalls):
+	   there are two paths to follow:
+		- if the method cannot compute a consistent result or leave the program in a consistent statebefore interrupting, then it must throw an InterruptedException to signal this to its caller. In this way also the caller will know about the interruption and deal with it (i.e. stopping asap, leaving the program ina  consistent state).
+		- if the method can return a consistent result or leave the program in a consistent state even if it cannot complete its execution it can just return normally
+		  This case can happen when, for example, the method is computing the nodes per second that can be visited in a tree (it can compute the nodes per second 		  depending on the number of nodes visited so far and the time spent visiting the tree so far). In this case, the code that was calling this method should also 		  check for interruption, otherwise it won't notice the interruption and continue the execution normally using the result returned by the method.
+
+
+
 - RE-RUN YAP SPEED TESTS WITHOUT NOHUP
 
 

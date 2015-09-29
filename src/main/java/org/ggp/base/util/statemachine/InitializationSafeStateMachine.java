@@ -30,7 +30,7 @@ import org.ggp.base.util.statemachine.exceptions.TransitionDefinitionException;
  * @author C.Sironi
  *
  */
-public class InitializationControlStateMachine extends StateMachine {
+public class InitializationSafeStateMachine extends StateMachine {
 
 	/**
 	 * This class calls the initialization method of the given state machine.
@@ -64,7 +64,7 @@ public class InitializationControlStateMachine extends StateMachine {
 	private long initTime;
 
 
-	public InitializationControlStateMachine(StateMachine theRealMachine, long initTime) {
+	public InitializationSafeStateMachine(StateMachine theRealMachine, long initTime) {
 		this.theRealMachine = theRealMachine;
 		this.initTime = initTime;
 	}
@@ -117,6 +117,8 @@ public class InitializationControlStateMachine extends StateMachine {
 	@Override
 	public int getGoal(MachineState state, Role role)
 			throws GoalDefinitionException, StateMachineException {
+		// We do not check if the real state machine is null, because if initialization succeeded this
+		// cannot happen and if initialization failed this state machine is not supposed to be used.
 		return this.theRealMachine.getGoal(state, role);
 	}
 

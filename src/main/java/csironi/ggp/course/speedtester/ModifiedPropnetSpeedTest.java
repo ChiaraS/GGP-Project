@@ -7,7 +7,7 @@ import org.ggp.base.util.gdl.grammar.Gdl;
 import org.ggp.base.util.logging.GamerLogger;
 import org.ggp.base.util.logging.GamerLogger.FORMAT;
 import org.ggp.base.util.match.Match;
-import org.ggp.base.util.statemachine.InitializationControlStateMachine;
+import org.ggp.base.util.statemachine.InitializationSafeStateMachine;
 import org.ggp.base.util.statemachine.StateMachine;
 import org.ggp.base.util.statemachine.cache.CachedStateMachine;
 import org.ggp.base.util.statemachine.exceptions.StateMachineInitializationException;
@@ -130,7 +130,7 @@ public class ModifiedPropnetSpeedTest {
 
             // Create the propnet state machine and wrap it with the state machine that controls initialization
             thePropnetMachine = new FwdInterrPropnetStateMachine();
-            theSubject = new InitializationControlStateMachine(thePropnetMachine, givenInitTime);
+            theSubject = new InitializationSafeStateMachine(thePropnetMachine, givenInitTime);
             // If the propnet state machine must be provided with a cache, create the cached state machine
             if(withCache){
             	theSubject = new CachedStateMachine(theSubject);

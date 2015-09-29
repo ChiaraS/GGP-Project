@@ -147,7 +147,7 @@ public class BackedYapStateMachine extends StateMachine {
 	 */
 	@Override
 	public int getGoal(MachineState state, Role role)
-			throws GoalDefinitionException, StateMachineException {
+			throws GoalDefinitionException/*, StateMachineException*/ {
 
 		if(this.mainMachine != null){
 			try{
@@ -165,7 +165,7 @@ public class BackedYapStateMachine extends StateMachine {
 	 * @see org.ggp.base.util.statemachine.StateMachine#isTerminal(org.ggp.base.util.statemachine.MachineState)
 	 */
 	@Override
-	public boolean isTerminal(MachineState state) throws StateMachineException {
+	public boolean isTerminal(MachineState state) /*throws StateMachineException*/ {
 
 		if(this.mainMachine != null){
 			try{
@@ -184,7 +184,7 @@ public class BackedYapStateMachine extends StateMachine {
 	 */
 	@Override
 	public List<Move> getLegalMoves(MachineState state, Role role)
-			throws MoveDefinitionException, StateMachineException {
+			throws MoveDefinitionException/*, StateMachineException*/ {
 
 		if(this.mainMachine != null){
 			try{
@@ -203,7 +203,7 @@ public class BackedYapStateMachine extends StateMachine {
 	 */
 	@Override
 	public MachineState getNextState(MachineState state, List<Move> moves)
-			throws TransitionDefinitionException, StateMachineException {
+			throws TransitionDefinitionException/*, StateMachineException*/ {
 
 		if(this.mainMachine != null){
 			try{

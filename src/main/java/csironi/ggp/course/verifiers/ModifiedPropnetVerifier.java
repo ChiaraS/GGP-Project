@@ -7,7 +7,7 @@ import org.ggp.base.util.gdl.grammar.Gdl;
 import org.ggp.base.util.logging.GamerLogger;
 import org.ggp.base.util.logging.GamerLogger.FORMAT;
 import org.ggp.base.util.match.Match;
-import org.ggp.base.util.statemachine.InitializationControlStateMachine;
+import org.ggp.base.util.statemachine.InitializationSafeStateMachine;
 import org.ggp.base.util.statemachine.exceptions.StateMachineInitializationException;
 import org.ggp.base.util.statemachine.implementation.propnet.FwdInterrPropnetStateMachine;
 import org.ggp.base.util.statemachine.implementation.prover.ProverStateMachine;
@@ -84,7 +84,7 @@ public class ModifiedPropnetVerifier {
 
 
 		ProverStateMachine theReference;
-        InitializationControlStateMachine thePropnetMachine;
+        InitializationSafeStateMachine thePropnetMachine;
         FwdInterrPropnetStateMachine theHiddenPropnetMachine;
 
         GamerLogger.setSpilloverLogfile("ModifiedPropnetVerifierTable.csv");
@@ -111,7 +111,7 @@ public class ModifiedPropnetVerifier {
 
             // Create the propnet state machine and wrap it with the state machine that controls initialization
             theHiddenPropnetMachine = new FwdInterrPropnetStateMachine();
-            thePropnetMachine = new InitializationControlStateMachine(theHiddenPropnetMachine, givenInitTime);
+            thePropnetMachine = new InitializationSafeStateMachine(theHiddenPropnetMachine, givenInitTime);
 
             theReference.initialize(description);
 

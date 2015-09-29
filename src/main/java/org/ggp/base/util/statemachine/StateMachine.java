@@ -8,6 +8,7 @@ import java.util.Map;
 import java.util.Random;
 import java.util.Set;
 
+import org.ggp.base.util.concurrency.ConcurrencyUtils;
 import org.ggp.base.util.gdl.grammar.Gdl;
 import org.ggp.base.util.gdl.grammar.GdlConstant;
 import org.ggp.base.util.gdl.grammar.GdlSentence;
@@ -40,7 +41,8 @@ public abstract class StateMachine
 	 * @throws StateMachineInitializationException when the initialization of the state machine fails,
 	 * so that whoever is using the state machine can take corrective actions, e.g. switch
 	 * to the use of another state machine or inform the game manager that the player is
-	 * not able to play anymore.
+	 * not able to play anymore. If this method throws this exception the state machine should NOT be
+	 * used!
 	 */
     public abstract void initialize(List<Gdl> description) throws StateMachineInitializationException;
     /**
@@ -478,6 +480,44 @@ public abstract class StateMachine
         while(!isTerminal(state)) {
             nDepth++;
             state = getNextStateDestructively(state, getRandomJointMove(state));
+        }
+        if(theDepth != null)
+            theDepth[0] = nDepth;
+        return state;
+    }
+
+    /**
+     * Like performDepthCharge() method, but this one checks after visiting each node
+     * if it has been interrupted (throwing the InterruptedException). If so it makes
+     * sure that the array theDepth contains the currently reached depth and returns
+     * null as terminal state.
+     *
+     * @param theDepth an integer array, the 0th element of which will be set to
+     * the number of state changes that were made until the current visited state.
+     *
+     * @throws TransitionDefinitionException indicates an error in either the
+     * game description or the StateMachine implementation.
+     * @throws MoveDefinitionException if a role has no legal moves. This indicates
+     * an error in either the game description or the StateMachine implementation.
+     * @throws StateMachineException if it was not possible to completely perform a
+     * playout of the game because of an error that occurred in the state machine and
+     * couldn't be handled.
+     * @throws InterruptedException if the thread running this method has been interrupted.
+     */
+    public MachineState interruptiblePerformDepthCharge(MachineState state, final int[] theDepth) throws TransitionDefinitionException, MoveDefinitionException, StateMachineException {
+        int nDepth = 0;
+        while(!isTerminal(state)) {
+            nDepth++;
+            state = getNextStateDestructively(state, getRandomJointMove(state));
+            try {
+				ConcurrencyUtils.checkForInterruption();
+			} catch (InterruptedException e) {
+				// This method can return a consistent result even if it has not completed execution
+				// so the InterruptedException is not re-thrown
+				if(theDepth != null)
+		            theDepth[0] = nDepth;
+		        return null;
+			}
         }
         if(theDepth != null)
             theDepth[0] = nDepth;
