@@ -40,7 +40,7 @@ public class SamplePropNetStateMachine extends StateMachine {
      * your discretion.
      */
     @Override
-    public void initialize(List<Gdl> description) {
+    public void initialize(List<Gdl> description, long timeout) {
         try {
 			propNet = OptimizingPropNetFactory.create(description);
 	        roles = propNet.getRoles();

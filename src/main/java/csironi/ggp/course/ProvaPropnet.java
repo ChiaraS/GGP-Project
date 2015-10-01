@@ -288,9 +288,9 @@ public class ProvaPropnet {
             theReference = new ProverStateMachine();
             thePropNetMachine = new CheckFwdInterrPropnetStateMachine(maxPropnetCreationTime);
 
-            theReference.initialize(description);
+            theReference.initialize(description, Long.MAX_VALUE);
             try {
-				thePropNetMachine.initialize(description);
+				thePropNetMachine.initialize(description, Long.MAX_VALUE);
 			} catch (StateMachineInitializationException e) {
 				System.out.println("Something went wrong with the creation of the propnet!");
 				e.printStackTrace();

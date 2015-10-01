@@ -56,7 +56,7 @@ public class ModifiedPropnetVerifier {
 				try{
 					givenInitTime = Long.parseLong(args[0]);
 				}catch(NumberFormatException nfe){
-					System.out.println("Inconsistent propnet maximum building time specification! Using default value.");
+					System.out.println("Inconsistent maximum initialization time specification! Using default value.");
 					givenInitTime = 300000L;
 				}
 				try{
@@ -111,9 +111,9 @@ public class ModifiedPropnetVerifier {
 
             // Create the propnet state machine and wrap it with the state machine that controls initialization
             theHiddenPropnetMachine = new FwdInterrPropnetStateMachine();
-            thePropnetMachine = new InitializationSafeStateMachine(theHiddenPropnetMachine, givenInitTime);
+            thePropnetMachine = new InitializationSafeStateMachine(theHiddenPropnetMachine);
 
-            theReference.initialize(description);
+            theReference.initialize(description, Long.MAX_VALUE);
 
             long initializationTime;
             int rounds = -1;
@@ -128,7 +128,7 @@ public class ModifiedPropnetVerifier {
             // Try to initialize the propnet state machine.
             // If initialization fails, skip the test.
             try{
-            	thePropnetMachine.initialize(description);
+            	thePropnetMachine.initialize(description, initStart + givenInitTime);
             	initializationTime = System.currentTimeMillis() - initStart;
             	System.out.println("Propnet creation succeeded. Checking consistency.");
             	long testStart = System.currentTimeMillis();

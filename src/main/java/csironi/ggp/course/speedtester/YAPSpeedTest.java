@@ -175,7 +175,7 @@ public class YAPSpeedTest {
             // If initialization fails, skip the test.
         	long initStart = System.currentTimeMillis();
             try{
-            	theSubject.initialize(description);
+            	theSubject.initialize(description, Long.MAX_VALUE);
             	initializationTime = System.currentTimeMillis() - initStart;
 
             	System.out.println(type + " state machine initialization succeeded. Checking speed.");

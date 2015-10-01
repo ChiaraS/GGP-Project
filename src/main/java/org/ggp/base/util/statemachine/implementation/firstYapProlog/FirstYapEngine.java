@@ -108,7 +108,7 @@ public class FirstYapEngine {
 
 		executor = Executors.newSingleThreadExecutor();
 
-		initializeBackingStateMachine(description);
+		initializeBackingStateMachine(description, Long.MAX_VALUE);
 	}
 
 
@@ -117,7 +117,7 @@ public class FirstYapEngine {
 	 * Initialize the backingStateMachine
 	 * usually : ProverStateMahine
 	 */
-	private void initializeBackingStateMachine(List<Gdl> description)
+	private void initializeBackingStateMachine(List<Gdl> description, long timeout)
 	{
 		class BackingSMInitialize implements Callable<Boolean>
 		{
@@ -129,7 +129,7 @@ public class FirstYapEngine {
 			@Override
 			public Boolean call() throws StateMachineInitializationException
 			{
-				backingStateMachine.initialize(rulessheet);
+				backingStateMachine.initialize(rulessheet, Long.MAX_VALUE);
 				return true;
 			}
 		}
@@ -146,6 +146,11 @@ public class FirstYapEngine {
 		catch(NullPointerException ne){
 			System.err.println("backingStateMachine INITIALIZE NullPointer");
 			ne.printStackTrace();
+		}
+		catch(InterruptedException ie){
+			System.err.println("backingStateMachine INITIALIZE Interrupted");
+			ie.printStackTrace();
+			Thread.currentThread().interrupt();
 		}
 		catch(Exception e){
 			System.err.println("backingStateMachine INITIALIZE __");
@@ -224,6 +229,12 @@ public class FirstYapEngine {
 			try{
 				currentState = support.askToState(executor.invokeAny(Arrays.asList(QUERYaosComputeInitialStateGdl), WaitForQuery, TU));
 			}
+			catch(InterruptedException ie){
+				System.err.println("INTERRUPTED : computeInitalStateGdl");
+				reInitialize();
+				Thread.currentThread().interrupt();
+				return backingStateMachine.getInitialState();
+			}
 			catch(TimeoutException te){
 				System.err.println("TIMEOUT : computeInitalStateGdl");
 				reInitialize();
@@ -262,6 +273,12 @@ public class FirstYapEngine {
 				roles = support.askToRoles(executor.invokeAny(Arrays.asList(QUERYaosComputeRoles), WaitForQuery, TU));
 				fakeRoles = support.getFakeRoles(roles);
 				return roles;
+			}
+			catch(InterruptedException ie){
+				System.err.println("INTERRUPTED : computeRoles");
+				reInitialize();
+				Thread.currentThread().interrupt();
+				return backingStateMachine.getRoles();
 			}
 			catch(TimeoutException te){
 				System.err.println("TIMEOUT : computeRoles");
@@ -316,6 +333,15 @@ public class FirstYapEngine {
 					else currentState = machine.getContents();
 				}
 				return executor.invokeAny(Arrays.asList(QUERYbIsTerminal), WaitForQuery, TU);
+			}
+			catch(InterruptedException ie){
+				System.err.println("INTERRUPTED : isTerminal");
+				reInitialize();
+				System.out.println("backingStateMachine : isTerminal");
+				boolean temp = backingStateMachine.isTerminal(machine);
+				System.out.println("TERMINAL :"+temp);
+				Thread.currentThread().interrupt();
+				return temp;
 			}
 			catch(TimeoutException te){
 				System.err.println("TIMEOUT : isTerminal");
@@ -379,6 +405,20 @@ public class FirstYapEngine {
 					else currentState = machine.getContents();
 				}
 				return Integer.parseInt(executor.invokeAny(Arrays.asList(QUERYsGetGoal), WaitForQuery, TU));
+			}
+			catch(InterruptedException ie){
+				System.err.println("INTERRUPTED : getGoal");
+				reInitialize();
+				try{
+					System.out.println("backingStateMachine : getGoal");
+					int temp = backingStateMachine.getGoal(machine, role);
+					System.out.println("GOAL :"+temp);
+					return temp;
+				}
+				catch(GoalDefinitionException gde){
+					gde.printStackTrace();
+				}
+				Thread.currentThread().interrupt();
 			}
 			catch(TimeoutException te){
 				System.err.println("TIMEOUT : getGoal");
@@ -459,6 +499,20 @@ public class FirstYapEngine {
 					else currentState = machine.getContents();
 				}
 				return support.askToMoves(executor.invokeAny(Arrays.asList(QUERYaosGetLegalMoves), WaitForQuery, TU));
+			}
+			catch(InterruptedException ie){
+				System.err.println("INTERRUPTED : getLegalMoves");
+				reInitialize();
+				try{
+					System.out.println("backingStateMachine : getLegalMoves");
+					List<Move> temp = backingStateMachine.getLegalMoves(machine, role);
+					System.out.println("LEGALMOVES :"+temp);
+					return temp;
+				}
+				catch(MoveDefinitionException mde){
+					mde.printStackTrace();
+				}
+				Thread.currentThread().interrupt();
 			}
 			catch(TimeoutException te){
 				System.err.println("TIMEOUT : getLegalMoves");
@@ -542,6 +596,20 @@ public class FirstYapEngine {
 					}
 					else currentState = support.askToState(executor.invokeAny(Arrays.asList(QUERYaosGetNextState), WaitForQuery, TU));
 				}
+				catch(InterruptedException ie){
+					System.err.println("INTERRUPTED : getNextState");
+					reInitialize();
+					try{
+						System.out.println("backingStateMachine : getNextState");
+						MachineState temp = backingStateMachine.getNextState(machine, moves);
+						System.out.println("NEW MachineState :"+temp);
+						return temp;
+					}
+					catch(TransitionDefinitionException tde){
+						tde.printStackTrace();
+					}
+					Thread.currentThread().interrupt();
+				}
 				catch(TimeoutException te){
 					System.err.println("TIMEOUT : getNextState");
 					reInitialize();
@@ -616,6 +684,11 @@ public class FirstYapEngine {
 					if( !(executor.invokeAny(Arrays.asList(QUERYsComputeState), WaitForQuery, TU)).equals("d") ) System.err.println("ERROR : computeState");
 					else currentState = machine.getContents();
 				}
+				catch(InterruptedException ie){
+					System.err.println("INTERRUPTED : computeState");
+					reInitialize();
+					Thread.currentThread().interrupt();
+				}
 				catch(TimeoutException te){
 					System.err.println("TIMEOUT : computeState");
 					reInitialize();
@@ -669,6 +742,12 @@ public class FirstYapEngine {
 					else currentState = machine.getContents();
 				}
 				return support.askToMove(executor.invokeAny(Arrays.asList(QUERYsGetRandomMove), WaitForQuery, TU));
+			}
+			catch(InterruptedException ie){
+				System.err.println("INTERRUPTED : getRandomMove");
+				reInitialize();
+				Thread.currentThread().interrupt();
+				return null;
 			}
 			catch(TimeoutException te){
 				System.err.println("TIMEOUT : getRandomMove");
@@ -724,6 +803,12 @@ public class FirstYapEngine {
 				}
 				return support.askToMoves(executor.invokeAny(Arrays.asList(QUERYaosGetRandomJointMove1), WaitForQuery, TU));
 			}
+			catch(InterruptedException ie){
+				System.err.println("INTERRUPTED : getRandomJointMove(_)");
+				reInitialize();
+				Thread.currentThread().interrupt();
+				return null;
+			}
 			catch(TimeoutException te){
 				System.err.println("TIMEOUT : getRandomJointMove(_)");
 				reInitialize();
@@ -778,6 +863,12 @@ public class FirstYapEngine {
 				}
 				return support.askToMoves(executor.invokeAny(Arrays.asList(QUERYaosGetRandomJointMove2), WaitForQuery, TU));
 			}
+			catch(InterruptedException ie){
+				System.err.println("INTERRUPTED : getRandomJointMove(_,_,_)");
+				reInitialize();
+				Thread.currentThread().interrupt();
+				return null;
+			}
 			catch(TimeoutException te){
 				System.err.println("TIMEOUT : getRandomJointMove(_,_,_)");
 				reInitialize();
@@ -831,6 +922,12 @@ public class FirstYapEngine {
 					else currentState = support.askToState(executor.invokeAny(Arrays.asList(QUERYaosGetRandomNextState), WaitForQuery, TU));
 				}
 				else currentState = support.askToState(executor.invokeAny(Arrays.asList(QUERYaosGetRandomNextState), WaitForQuery, TU));
+			}
+			catch(InterruptedException ie){
+				System.err.println("INTERRUPTED : getRandomNextState");
+				reInitialize();
+				Thread.currentThread().interrupt();
+				return null;
 			}
 			catch(TimeoutException te){
 				System.err.println("TIMEOUT : getRandomNextState");
@@ -889,6 +986,12 @@ public class FirstYapEngine {
 				}
 				else currentState = support.askToStatePerform(executor.invokeAny(Arrays.asList(QUERYaosPerformDepthCharge), WaitForQuery, TU));
 				theDepth[0] = support.getPerformDepth();
+			}
+			catch(InterruptedException ie){
+				System.err.println("INTERRUPTED : performDepthCharge");
+				reInitialize();
+				Thread.currentThread().interrupt();
+				return null;
 			}
 			catch(TimeoutException te){
 				System.err.println("TIMEOUT : performDepthCharge");

@@ -25,8 +25,8 @@ import org.ggp.base.util.statemachine.verifier.StateMachineVerifier;
  * It is possible to specify the following combinations of main arguments:
  *
  * 1. [keyOfGameToTest]
- * 2. [maximumPropnetBuildingTime(ms)] [maximumTestDuration(ms)]
- * 3. [maximumPropnetBuildingTime(ms)] [maximumTestDuration(ms)] [keyOfGameToTest]
+ * 2. [maxInitializationTime(ms)] [maximumTestDuration(ms)]
+ * 3. [maxInitializationTime(ms)] [maximumTestDuration(ms)] [keyOfGameToTest]
  *
  * If nothing or something inconsistent is specified, 5 mins is used as default value for the propnet
  * building time and 10 seconds is used as default value for each test duration time.
@@ -52,7 +52,7 @@ public class OldModifiedPropnetVerifier {
 			@Override
 			public Long call() throws Exception {
 				long start = System.currentTimeMillis();
-				this.theMachine.initialize(this.description);
+				this.theMachine.initialize(this.description, Long.MAX_VALUE);
 				return System.currentTimeMillis() - start;
 
 			}
@@ -119,7 +119,7 @@ public class OldModifiedPropnetVerifier {
             // Create propnet state machine giving it 5 minutes to build the propnet
             thePropNetMachine = new FwdInterrPropnetStateMachine();
 
-            theReference.initialize(description);
+            theReference.initialize(description, Long.MAX_VALUE);
 
             long constructionTime = -1L;
             long initializationTime = -1L;
@@ -141,16 +141,24 @@ public class OldModifiedPropnetVerifier {
                 duration = System.currentTimeMillis() - start;
                 //rounds = StateMachineVerifier.lastRounds;
                 constructionTime = thePropNetMachine.getPropnetConstructionTime();
-			} catch (ExecutionException | TimeoutException e) {
+			}catch(InterruptedException ie){
+				Thread.currentThread().interrupt();
+				executor.shutdownNow();
+			}catch (ExecutionException | TimeoutException e) {
 				// Reset executor and initializer
 				executor.shutdownNow();
 				// Wait for all tasks to be completed before continuing (needed to avoid any interrupted
 				// but still running task in the executor to write logs on the wrong file -> after executor
 				// shutdown the logging file might already have been changed when the still running tasks
 				// log a message).
-				if(!executor.isTerminated()){
+
+				while(!executor.isTerminated()){
 					// If not all tasks terminated, wait for a minute and then check again
-					executor.awaitTermination(1, TimeUnit.MINUTES);
+					try{
+						executor.awaitTermination(1, TimeUnit.MINUTES);
+					}catch(InterruptedException ie){
+						Thread.currentThread().interrupt();
+					}
 				}
 				executor = Executors.newSingleThreadExecutor();
 				initializer = new PropnetInitializer();

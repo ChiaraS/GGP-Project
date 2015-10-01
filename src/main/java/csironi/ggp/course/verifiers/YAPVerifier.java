@@ -144,7 +144,7 @@ public class YAPVerifier {
             	theSubject = new BackedYapStateMachine((YapStateMachine)theSubject, new ProverStateMachine());
             }
 
-            theReference.initialize(description);
+            theReference.initialize(description, Long.MAX_VALUE);
 
             long initializationTime;
             int rounds = -1;
@@ -159,7 +159,7 @@ public class YAPVerifier {
             // Try to initialize the yap state machine.
             // If initialization fails, skip the test.
           	try {
-				theSubject.initialize(description);
+				theSubject.initialize(description, Long.MAX_VALUE);
 				initializationTime = System.currentTimeMillis() - initStart;
 				System.out.println(type + " state machine initialization succeeded. Checking consistency.");
 				long testStart = System.currentTimeMillis();

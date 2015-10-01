@@ -72,8 +72,7 @@ public class BackedYapStateMachine extends StateMachine {
 	 * @see org.ggp.base.util.statemachine.StateMachine#initialize(java.util.List)
 	 */
 	@Override
-	public void initialize(List<Gdl> description)
-			throws StateMachineInitializationException {
+	public void initialize(List<Gdl> description, long timeout){
 
 		// TODO: move the description processing here. If used singularly the two state machines
 		// both perform DistinctAndNotMover on the GDL description, but it might save time to compute
@@ -89,7 +88,7 @@ public class BackedYapStateMachine extends StateMachine {
 		// commented code throwing such exception. Uncomment the code in case the ProverStateMachine code will be
 		// changed to let the initialization also throw an exception.
 		//try{
-		this.backupMachine.initialize(description);
+		this.backupMachine.initialize(description, timeout);
 		//}catch(StateMachineInitializationException e){
 		//	GamerLogger.logError("StateMachine", "[BACKED YAP] Impossible to create a backed yap state machine because the initialization of backup machine failed!");
 		//	GamerLogger.logStackTrace("StateMachine", e);
@@ -97,7 +96,7 @@ public class BackedYapStateMachine extends StateMachine {
 		//}
 
 		try{
-			this.mainMachine.initialize(description);
+			this.mainMachine.initialize(description, timeout);
 		}catch(StateMachineInitializationException e){
 			if(this.mainMachine.isUsable()){
 
@@ -113,6 +112,7 @@ public class BackedYapStateMachine extends StateMachine {
 			}else{
 				GamerLogger.logError("StateMachine", "[BACKED YAP] Initialization of the main state machine failed. Using only backup state machine!");
 				GamerLogger.logStackTrace("StateMachine", e);
+				this.mainMachine.shutdown();
 				this.mainMachine = null;
 			}
 		}

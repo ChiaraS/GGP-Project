@@ -162,7 +162,7 @@ public abstract class StateMachineYapGamer extends Gamer {
      */
 	public final void resetStateFromMatch() throws StateMachineInitializationException {
         stateMachine = getInitialStateMachine();
-        stateMachine.initialize(getMatch().getGame().getRules());
+        stateMachine.initialize(getMatch().getGame().getRules(), Long.MAX_VALUE);
         currentState = stateMachine.getMachineStateFromSentenceList(getMatch().getMostRecentState());
         role = stateMachine.getRoleFromConstant(getRoleName());
 	}
@@ -185,7 +185,7 @@ public abstract class StateMachineYapGamer extends Gamer {
 		try
 		{
 			stateMachine = getInitialStateMachine();
-			stateMachine.initialize(getMatch().getGame().getRules());
+			stateMachine.initialize(getMatch().getGame().getRules(), timeout);
 			currentState = stateMachine.getInitialState();
 			role = stateMachine.getRoleFromConstant(getRoleName());
 			getMatch().appendState(currentState.getContents());

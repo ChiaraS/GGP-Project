@@ -120,10 +120,10 @@ public class GGPBaseProverVerifier {
             int otherExceptions;
 
             // Initialize the state machines
-            theReference.initialize(description);
+            theReference.initialize(description, Long.MAX_VALUE);
 
             long initStart = System.currentTimeMillis();
-            theProverMachine.initialize(description);
+            theProverMachine.initialize(description, Long.MAX_VALUE);
             initializationTime = System.currentTimeMillis() - initStart;
 
           	System.out.println("Prover state machine initialization succeeded. Checking consistency.");

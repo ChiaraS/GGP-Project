@@ -24,7 +24,7 @@ public class ProvaPropnetStateMachine {
 		List<Gdl> BeLList = BeLGame.getRules();
 
 		CheckFwdInterrPropnetStateMachine m = new CheckFwdInterrPropnetStateMachine(300000);
-		m.initialize(BeLList);
+		m.initialize(BeLList, Long.MAX_VALUE);
 
 		MachineState initialState = m.getInitialState();
 

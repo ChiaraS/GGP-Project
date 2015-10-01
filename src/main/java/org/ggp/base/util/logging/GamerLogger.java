@@ -135,6 +135,8 @@ public class GamerLogger {
         if(suppressLoggerOutput)
             return;
 
+        toFile += Thread.currentThread().getId();
+
         // When we're not writing to a particular directory, and we're not spilling over into
         // a general logfile, write directly to the standard output unless it is really unimportant.
         if(!writeLogsToFile && spilloverLogfile == null) {

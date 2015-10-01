@@ -30,7 +30,7 @@ public final class SimulationValidator implements GameValidator
 		for (int i = 0; i < numSimulations; i++) {
 			StateMachine stateMachine = new ProverStateMachine();
 			try {
-				stateMachine.initialize(theGame.getRules());
+				stateMachine.initialize(theGame.getRules(), Long.MAX_VALUE);
 			} catch (StateMachineInitializationException sme) {
 				throw new ValidatorException("Ran into a state machine initialization exception: " + sme);
 			}

@@ -145,7 +145,7 @@ public class GGPBaseProverSpeedTest {
             long initStart = System.currentTimeMillis();
             try {
 
-            	theSubject.initialize(description);
+            	theSubject.initialize(description, Long.MAX_VALUE);
 
 				initializationTime = System.currentTimeMillis() - initStart;
 

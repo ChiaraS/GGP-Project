@@ -41,13 +41,22 @@ public class FailsafeStateMachine extends StateMachine
     }
 
     @Override
-    public synchronized void initialize(List<Gdl> description) {
+    public synchronized void initialize(List<Gdl> description, long timeout) {
+
+    	// NOTE: it has been chosen to try and initialize the initial state machine until timeout is reached,
+    	// then try and initialize the other one if the initial one fails. However other techniques could be
+    	// used (e.g. give half of the time to the first state machine and if it doesn't initialize in time
+    	// try with the next).
+
         this.gameDescription = description;
 
-        if(attemptLoadingInitialMachine())
+        if(attemptLoadingInitialMachine(timeout))
             return;
 
         GamerLogger.logError("StateMachine", "Failsafe Machine: failed to load initial state machine. Falling back...");
+
+        // Giving the timeout to the ProverStateMachine is irrelevant since it will ignore it,
+        // but remember to change this if you change the backup machine.
         if(attemptLoadingProverMachine())
             return;
 
@@ -71,9 +80,9 @@ public class FailsafeStateMachine extends StateMachine
         GamerLogger.logError("StateMachine", "Failsafe Machine: online failure for regular prover. Cannot recover.");
     }
 
-    private boolean attemptLoadingInitialMachine() {
+    private boolean attemptLoadingInitialMachine(long timeout) {
         try {
-            theBackingMachine.initialize(gameDescription);
+            theBackingMachine.initialize(gameDescription, timeout);
             GamerLogger.log("StateMachine", "Failsafe Machine: successfully activated initial state machine for use!");
             return true;
         } catch(Exception e1) {
@@ -87,7 +96,7 @@ public class FailsafeStateMachine extends StateMachine
     private boolean attemptLoadingProverMachine() {
         try {
             StateMachine theStateMachine = new ProverStateMachine();
-            theStateMachine.initialize(gameDescription);
+            theStateMachine.initialize(gameDescription, Long.MAX_VALUE);
             theBackingMachine = theStateMachine;
             GamerLogger.log("StateMachine", "Failsafe Machine: successfully loaded traditional prover.");
             return true;

@@ -467,14 +467,24 @@ public class YapProver {
 			try {
 				// Try to query Yap Prolog and wait for an answer till timeout has been reached.
 				bindings = this.executor.invokeAny(Arrays.asList(this.bindingsQuery),this.waitingTime, TimeUnit.MILLISECONDS);
-			} catch (InterruptedException | ExecutionException
+			} catch (ExecutionException
 					| TimeoutException e) {
 				// If something went wrong or timeout has been reached, then throw an exception.
 				GamerLogger.logError("StateMachine", "[YapProver] Impossible to complete the computation of query result on Yap Prolog side.");
 				GamerLogger.logStackTrace("StateMachine", e);
 				this.shutdown();
 				throw new YapProverException("Computation of query \"" + goal + "\" with result variables \"" + resVar + "\" on Yap Prolog side couldn't be completed.", e);
+			} catch (InterruptedException e) {
+				// If the thread using this Yap Prover has been interrupted, still throw an exception
+				// cause the query couldn't be computed, but also re-set the interrupted status of the
+				// current thread to "true" so that also the callers of this method know that they have
+				// to interrupt.
+				GamerLogger.logError("StateMachine", "[YapProver] Impossible to complete the computation of query result on Yap Prolog side.");
+				GamerLogger.logStackTrace("StateMachine", e);
+				this.shutdown();
+				throw new YapProverException("Computation of query \"" + goal + "\" with result variables \"" + resVar + "\" on Yap Prolog side couldn't be completed.", e);
 			}
+
 		// If no positive waiting time has been set just wait indefinitely.
 		}else{
 			try{
@@ -485,6 +495,7 @@ public class YapProver {
 				GamerLogger.logError("StateMachine", "[YapProver] Impossible to complete the computation of query result on Yap Prolog side.");
 				GamerLogger.logStackTrace("StateMachine", e);
 				this.shutdown();
+				Thread.currentThread().interrupt();
 				throw new YapProverException("Computation of query \"" + goal + "\" with result variables \"" + resVar + "\" on Yap Prolog side couldn't be completed.", e);
 			}
 		}
@@ -531,14 +542,26 @@ public class YapProver {
 			try {
 				// Try to query Yap Prolog and wait for an answer till timeout has been reached.
 				success = this.executor.invokeAny(Arrays.asList(this.yesNoQuery),this.waitingTime, TimeUnit.MILLISECONDS);
-			} catch (InterruptedException | ExecutionException
+			} catch (ExecutionException
 					| TimeoutException e) {
 				// If something went wrong or timeout has been reached, then throw an exception.
 				GamerLogger.logError("StateMachine", "[YapProver] Impossible to complete the computation of yes/no query on Yap Prolog side.");
 				GamerLogger.logStackTrace("StateMachine", e);
 				this.shutdown();
 				throw new YapProverException("Computation of yes/no query \"" + goal + "\" on Yap Prolog side couldn't be completed.", e);
+			} catch (InterruptedException e) {
+				// If the thread using this Yap Prover has been interrupted, still throw an exception
+				// cause the query couldn't be computed, but also re-set the interrupted status of the
+				// current thread to "true" so that also the callers of this method know that they have
+				// to interrupt.
+				GamerLogger.logError("StateMachine", "[YapProver] Impossible to complete the computation of yes/no query on Yap Prolog side.");
+				GamerLogger.logStackTrace("StateMachine", e);
+				this.shutdown();
+				Thread.currentThread().interrupt();
+				throw new YapProverException("Computation of yes/no query \"" + goal + "\" on Yap Prolog side couldn't be completed.", e);
+
 			}
+
 		// If no positive waiting time has been set just wait indefinitely.
 		}else{
 			try{

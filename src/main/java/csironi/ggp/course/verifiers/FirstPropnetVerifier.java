@@ -111,7 +111,7 @@ public class FirstPropnetVerifier {
             // Create propnet state machine giving it buildingTime milliseconds to build the propnet
             thePropnetMachine = new CheckFwdInterrPropnetStateMachine(buildingTime);
 
-            theReference.initialize(description);
+            theReference.initialize(description, Long.MAX_VALUE);
 
             long initializationTime;
             int rounds = -1;
@@ -126,7 +126,7 @@ public class FirstPropnetVerifier {
             // Try to initialize the propnet state machine.
             // If initialization fails, skip the test.
             try{
-            	thePropnetMachine.initialize(description);
+            	thePropnetMachine.initialize(description, Long.MAX_VALUE);
             	initializationTime = System.currentTimeMillis() - initStart;
             	System.out.println("Propnet creation succeeded. Checking consistency.");
             	long testStart = System.currentTimeMillis();

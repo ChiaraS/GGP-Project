@@ -78,7 +78,7 @@ public final class GameServer extends Thread implements Subject
 
         stateMachine = new ProverStateMachine();
         try {
-			stateMachine.initialize(match.getGame().getRules());
+			stateMachine.initialize(match.getGame().getRules(), Long.MAX_VALUE);
 		} catch (StateMachineInitializationException e) {
 			GamerLogger.logError("GameServer", "Failed inititalization of state machine for current match.");
 			throw new GameServerException("Impossible to create the game server.", e);

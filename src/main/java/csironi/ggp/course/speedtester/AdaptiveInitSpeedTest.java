@@ -1,3 +1,6 @@
+/**
+ *
+ */
 package csironi.ggp.course.speedtester;
 
 import java.util.List;
@@ -7,42 +10,49 @@ import org.ggp.base.util.gdl.grammar.Gdl;
 import org.ggp.base.util.logging.GamerLogger;
 import org.ggp.base.util.logging.GamerLogger.FORMAT;
 import org.ggp.base.util.match.Match;
-import org.ggp.base.util.statemachine.InitializationSafeStateMachine;
 import org.ggp.base.util.statemachine.StateMachine;
 import org.ggp.base.util.statemachine.cache.CachedStateMachine;
 import org.ggp.base.util.statemachine.exceptions.StateMachineInitializationException;
+import org.ggp.base.util.statemachine.hybrid.AdaptiveInitializationStateMachine;
+import org.ggp.base.util.statemachine.hybrid.BackedYapStateMachine;
 import org.ggp.base.util.statemachine.implementation.propnet.FwdInterrPropnetStateMachine;
+import org.ggp.base.util.statemachine.implementation.prover.ProverStateMachine;
+import org.ggp.base.util.statemachine.implementation.yapProlog.YapStateMachine;
 
 //TODO: merge all speed tests together in a single class since their code is similar.
 
 /**
- * This class checks the speed (nodes/second, iterations/second) of the propnet state machine (with no
- * internal check of the propnet building time).
- * This is done by performing Monte Carlo simulations from the initial state of the given game for the
- * specified amount of time.
- *
- * It is possible to specify the following combinations of main arguments:
- *
- * 1. [withCache]
- * 2. [withCache] [keyOfGameToTest]
- * 3. [withCache] [givenInitTime] [maximumTestDuration]
- * 4. [withCache] [givenInitTime] [maximumTestDuration] [keyOfGameToTest]
- *
- * where:
- * [withCache] = true if the propnet state machine must be provided with a cache for its results, false
- * 				otherwise (DEFAULT: false).
- * [givenInitTime] = maximum time in milliseconds that should be spent to initialize the
- * 								 propnet state machine (DEFAULT: 300000ms - 5mins).
- * [maximumTestDuration] = duration of each test in millisecond (DEFAULT: 60000ms - 1min).
- * [keyOfGameToTest] = key of the game to be tested (DEFAULT: null (i.e. all games)).
- *
- * If nothing or something inconsistent is specified for any of the parameters, the default value will
- * be used.
- *
- * @author C.Sironi
- *
- */
-public class ModifiedPropnetSpeedTest {
+* This class checks the speed (nodes/second, iterations/second) of the AdaptiveInitializationStateMachine
+* (i.e. the one that selects which of the given state machines to use as real state machine depending
+* on which one is faster for the given game).
+* This is done by performing Monte Carlo simulations from the initial state of the given game for the
+* specified amount of time.
+*
+* It is possible to specify the following combinations of main arguments:
+*
+* 1. [withCache]
+* 2. [withCache] [keyOfGameToTest]
+* 3. [withCache] [givenInitTime] [safetyMargin] [maximumTestDuration]
+* 4. [withCache] [givenInitTime] [safetyMargin] [maximumTestDuration] [keyOfGameToTest]
+*
+* where:
+* [withCache] = true if the state machine must be provided with a cache for its results, false
+* 				otherwise (DEFAULT: false).
+* [givenInitTime] = maximum time in milliseconds that should be spent to initialize the
+* 					state machine (DEFAULT: 300000ms - 5mins).
+* [safetyMargin] = the time (in milliseconds) that the state machine should subtract from the
+* 				   [givenInitTime] to be more sure to be able to finish initialization in time.
+* 				   (DEFAULT: 0L, i.e. wait all the [givenInitTime]).
+* [maximumTestDuration] = duration of each test in millisecond (DEFAULT: 60000ms - 1min).
+* [keyOfGameToTest] = key of the game to be tested (DEFAULT: null (i.e. all games)).
+*
+* If nothing or something inconsistent is specified for any of the parameters, the default value will
+* be used.
+*
+* @author C.Sironi
+*
+*/
+public class AdaptiveInitSpeedTest {
 
 	public static void main(String[] args) {
 
@@ -50,19 +60,20 @@ public class ModifiedPropnetSpeedTest {
 
 		boolean withCache = false;
 		long givenInitTime = 300000L;
+		long safetyMargin = 0L;
 		long testTime = 60000L;
 		String gameToTest = null;
 
 		if(args.length != 0){ // At least one argument is specified and the first argument is either true or false
 
-			if (args.length <= 4){
+			if (args.length <= 5){
 
 				withCache = Boolean.parseBoolean(args[0]);
 
-				if(args.length == 4 || args.length == 2){
+				if(args.length == 5 || args.length == 2){
 					gameToTest = args[args.length-1];
 				}
-				if(args.length == 3 || args.length == 4){
+				if(args.length == 4 || args.length == 5){
 					try{
 						givenInitTime = Long.parseLong(args[1]);
 					}catch(NumberFormatException nfe){
@@ -70,7 +81,13 @@ public class ModifiedPropnetSpeedTest {
 						givenInitTime = 300000L;
 					}
 					try{
-						testTime = Long.parseLong(args[2]);
+						safetyMargin = Long.parseLong(args[2]);
+					}catch(NumberFormatException nfe){
+						System.out.println("Inconsistent Adaptive Initialization state machine safety margin specification! Using default value.");
+						safetyMargin = 0L;
+					}
+					try{
+						testTime = Long.parseLong(args[3]);
 					}catch(NumberFormatException nfe){
 						System.out.println("Inconsistent test duration specification! Using default value.");
 						testTime = 60000L;
@@ -83,9 +100,9 @@ public class ModifiedPropnetSpeedTest {
 		} // else use default values
 
 		if(withCache){
-			System.out.println("Testing speed of the propnet state machine with cache.");
+			System.out.println("Testing speed of the Adaptive Initialization state machine with cache.");
 		}else{
-			System.out.println("Testing speed of the propnet state machine with no cache.");
+			System.out.println("Testing speed of the Adaptive Initialization state machine with no cache.");
 		}
 
 		if(gameToTest == null){
@@ -93,23 +110,24 @@ public class ModifiedPropnetSpeedTest {
 		}else{
 			System.out.println("Running tests on game " + gameToTest + " with the following time settings:");
 		}
-		System.out.println("Propnet building time: " + givenInitTime + "ms");
+		System.out.println("State machine maximum initialization time: " + givenInitTime + "ms");
+		System.out.println("Safety margin for the state machine initialization time: " + safetyMargin + "ms");
 		System.out.println("Running time for each test: " + testTime + "ms");
 		System.out.println();
 
 
 		/*********************** Perform all the tests ****************************/
 
-		StateMachine theSubject;
-		FwdInterrPropnetStateMachine thePropnetMachine;
 
-		String type = "InitSafeModifiedPropnet";
+		StateMachine theSubject;
+
+		String type = "AdaptiveInit";
 		if(withCache){
 			type = "Cached" + type;
 		}
 
 		GamerLogger.setSpilloverLogfile(type + "SpeedTestTable.csv");
-	    GamerLogger.log(FORMAT.CSV_FORMAT, type + "SpeedTestTable", "Game key;Initialization Time (ms);Construction Time (ms);Test Duration (ms);Succeeded Iterations;Failed Iterations;Visited Nodes;Iterations/second;Nodes/second;");
+	    GamerLogger.log(FORMAT.CSV_FORMAT, type + "SpeedTestTable", "Game key;Initialization Time (ms);Test Duration (ms);Succeeded Iterations;Failed Iterations;Visited Nodes;Iterations/second;Nodes/second;SelectedStateMachine");
 
         GameRepository theRepository = GameRepository.getDefaultRepository();
         for(String gameKey : theRepository.getGameKeys()) {
@@ -128,10 +146,13 @@ public class ModifiedPropnetSpeedTest {
 
             List<Gdl> description = theRepository.getGame(gameKey).getRules();
 
-            // Create the propnet state machine and wrap it with the state machine that controls initialization
-            thePropnetMachine = new FwdInterrPropnetStateMachine();
-            theSubject = new InitializationSafeStateMachine(thePropnetMachine);
-            // If the propnet state machine must be provided with a cache, create the cached state machine
+            StateMachine[] theMachines = new StateMachine[3];
+            theMachines[0] = new FwdInterrPropnetStateMachine();
+            theMachines[1] = new BackedYapStateMachine(new YapStateMachine(500L), new ProverStateMachine());
+            theMachines[2] = new ProverStateMachine();
+            // Create the state machine giving it the sub-state machine that it has to check
+            theSubject = new AdaptiveInitializationStateMachine(theMachines, safetyMargin);
+            // If the state machine must be provided with a cache, create the cached state machine
             if(withCache){
             	theSubject = new CachedStateMachine(theSubject);
             }
@@ -173,7 +194,10 @@ public class ModifiedPropnetSpeedTest {
 
             GamerLogger.stopFileLogging();
 
-            GamerLogger.log(FORMAT.CSV_FORMAT, type + "SpeedTestTable", gameKey + ";" + initializationTime + ";" + thePropnetMachine.getPropnetConstructionTime() + ";" + testDuration + ";" + succeededIterations + ";" + failedIterations + ";" + visitedNodes + ";" + iterationsPerSecond + ";" + nodesPerSecond + ";");
+            GamerLogger.log(FORMAT.CSV_FORMAT, type + "SpeedTestTable", gameKey + ";" + initializationTime + ";" + testDuration + ";" + succeededIterations + ";" + failedIterations + ";" + visitedNodes + ";" + iterationsPerSecond + ";" + nodesPerSecond + ";" + theSubject.getName());
+
+            theSubject.shutdown();
         }
 	}
+
 }

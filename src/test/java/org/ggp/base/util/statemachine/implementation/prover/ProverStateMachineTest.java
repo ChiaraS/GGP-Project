@@ -30,7 +30,7 @@ public class ProverStateMachineTest extends Assert {
     @Test
     public void testProverOnTicTacToe() throws Exception {
         List<Gdl> ticTacToeDesc = new TestGameRepository().getGame("ticTacToe").getRules();
-        sm.initialize(ticTacToeDesc);
+        sm.initialize(ticTacToeDesc, Long.MAX_VALUE);
         MachineState state = sm.getInitialState();
         assertFalse(sm.isTerminal(state));
         GdlConstant X_PLAYER = GdlPool.getConstant("xplayer");
@@ -87,7 +87,7 @@ public class ProverStateMachineTest extends Assert {
     @Test
     public void testCase1A() throws Exception {
         List<Gdl> desc = new TestGameRepository().getGame("test_case_1a").getRules();
-        sm.initialize(desc);
+        sm.initialize(desc, Long.MAX_VALUE);
         MachineState state = sm.getInitialState();
         Role you = new Role(GdlPool.getConstant("you"));
         assertFalse(sm.isTerminal(state));
@@ -102,7 +102,7 @@ public class ProverStateMachineTest extends Assert {
     @Test
     public void testCase3C() throws Exception {
         List<Gdl> desc = new TestGameRepository().getGame("test_case_3c").getRules();
-        sm.initialize(desc);
+        sm.initialize(desc, Long.MAX_VALUE);
         MachineState state = sm.getInitialState();
         Role xplayer = new Role(GdlPool.getConstant("xplayer"));
         assertFalse(sm.isTerminal(state));
@@ -117,7 +117,7 @@ public class ProverStateMachineTest extends Assert {
     @Test
     public void testCase5A() throws Exception {
         List<Gdl> desc = new TestGameRepository().getGame("test_case_5a").getRules();
-        sm.initialize(desc);
+        sm.initialize(desc, Long.MAX_VALUE);
         MachineState state = sm.getInitialState();
         Role you = new Role(GdlPool.getConstant("you"));
         assertFalse(sm.isTerminal(state));
@@ -132,7 +132,7 @@ public class ProverStateMachineTest extends Assert {
     @Test
     public void testCase5B() throws Exception {
         List<Gdl> desc = new TestGameRepository().getGame("test_case_5b").getRules();
-        sm.initialize(desc);
+        sm.initialize(desc, Long.MAX_VALUE);
         MachineState state = sm.getInitialState();
         Role you = new Role(GdlPool.getConstant("you"));
         assertFalse(sm.isTerminal(state));
@@ -145,7 +145,7 @@ public class ProverStateMachineTest extends Assert {
     @Test
     public void testCase5C() throws Exception {
         List<Gdl> desc = new TestGameRepository().getGame("test_case_5c").getRules();
-        sm.initialize(desc);
+        sm.initialize(desc, Long.MAX_VALUE);
         MachineState state = sm.getInitialState();
         Role you = new Role(GdlPool.getConstant("you"));
         assertFalse(sm.isTerminal(state));
@@ -160,7 +160,7 @@ public class ProverStateMachineTest extends Assert {
     @Test
     public void testCase5D() throws Exception {
         List<Gdl> desc = new TestGameRepository().getGame("test_case_5d").getRules();
-        sm.initialize(desc);
+        sm.initialize(desc, Long.MAX_VALUE);
         MachineState state = sm.getInitialState();
         Role you = new Role(GdlPool.getConstant("you"));
         assertFalse(sm.isTerminal(state));
@@ -175,7 +175,7 @@ public class ProverStateMachineTest extends Assert {
     @Test
     public void testCase5E() throws Exception {
         List<Gdl> desc = new TestGameRepository().getGame("test_case_5e").getRules();
-        sm.initialize(desc);
+        sm.initialize(desc, Long.MAX_VALUE);
         MachineState state = sm.getInitialState();
         Role robot = new Role(GdlPool.getConstant("robot"));
         assertFalse(sm.isTerminal(state));
@@ -195,7 +195,7 @@ public class ProverStateMachineTest extends Assert {
     @Test
     public void testDistinctAtBeginningOfRule() throws Exception {
         List<Gdl> desc = new TestGameRepository().getGame("test_distinct_beginning_rule").getRules();
-        sm.initialize(desc);
+        sm.initialize(desc, Long.MAX_VALUE);
         MachineState state = sm.getInitialState();
         Role you = new Role(GdlPool.getConstant("you"));
         assertFalse(sm.isTerminal(state));

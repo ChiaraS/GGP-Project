@@ -89,7 +89,7 @@ public class FirstYapStateMachine extends StateMachine{
 	 * other methods on the StateMachine.
 	 */
 	@Override
-	public void initialize(List<Gdl> description)
+	public void initialize(List<Gdl> description, long timeout)
 	{
 		yapEngine = new FirstYapEngine(description, THREAD, IDB, backingStateMachine);
 		initialState = computeInitialState();

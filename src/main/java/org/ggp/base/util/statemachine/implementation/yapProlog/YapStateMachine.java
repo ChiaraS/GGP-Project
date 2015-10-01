@@ -125,7 +125,7 @@ public class YapStateMachine extends StateMachine {
 	// CONSTRUCTORS
 
 	public YapStateMachine(){
-		this(0L);
+		this(500L);
 	}
 
 	public YapStateMachine(long waitingTime){
@@ -144,7 +144,7 @@ public class YapStateMachine extends StateMachine {
 	 * NOTE:
 	 */
 	@Override
-	public void initialize(List<Gdl> description) throws StateMachineInitializationException{
+	public void initialize(List<Gdl> description, long timeout) throws StateMachineInitializationException{
 
 		// Modify the description as for the GGP Base Prover
 		description = DistinctAndNotMover.run(description);
@@ -457,9 +457,16 @@ public class YapStateMachine extends StateMachine {
 
 	/**
 	 * This method shuts down the Yap Prover.
-	 * To be called when this state machine won't be used anymore to make sure that
+	 * To be called ALWAYS when this state machine won't be used anymore to make sure that
 	 * the fake Yap Prover will stop all running tasks and also the external Yap Prolog
 	 * program.
+	 *
+	 * This method can also be called whenever we need to stop the external Yap Prolog
+	 * program temporarily. The reason why we need to do this is the following: when the
+	 * state machine is initialized by a certain thread, the external Yap Prolog program
+	 * that is started will be linked to such thread, so whenever that thread is interrupted
+	 * also the YAP program must be interrupted or the thread might get stuck forever or an
+	 * instance of the external Yap Prolog program will keep running.
 	 */
 	@Override
 	public void shutdown(){

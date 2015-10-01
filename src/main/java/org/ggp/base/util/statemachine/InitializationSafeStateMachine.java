@@ -22,10 +22,14 @@ import org.ggp.base.util.statemachine.exceptions.TransitionDefinitionException;
 
 /**
  * This state machine initializes the internal state machine in the given time limit.
+ * Makes sense to use this state machine to initialize other state machine whose
+ * initialization method ignores the timeout parameter. If you use it for state
+ * machines that already check the timeout limit then this state machine will be
+ * redundant.
  *
  * For now it is only useful to impose a limit on the initialization time of the
- * FwdInterrPropnetStateMachine so that we can use it in the tests when we want to
- * wrap it externally with the CachedStateMachine.
+ * FwdInterrPropnetStateMachine so that we can use it in the tests or when we want
+ * to wrap it externally with the CachedStateMachine.
  *
  * @author C.Sironi
  *
@@ -41,13 +45,16 @@ public class InitializationSafeStateMachine extends StateMachine {
 
 		private List<Gdl> description;
 
-		public Initializer(List<Gdl> description){
+		private long timeout;
+
+		public Initializer(List<Gdl> description, long timeout){
 			this.description = description;
+			this.timeout = timeout;
 		}
 
 		@Override
 		public Boolean call() throws Exception {
-			theRealMachine.initialize(description);
+			theRealMachine.initialize(description, timeout);
 			return true;
 
 		}
@@ -58,34 +65,40 @@ public class InitializationSafeStateMachine extends StateMachine {
 	 */
 	private StateMachine theRealMachine;
 
-	/**
-	 * The time (in milliseconds) that this state machine has available to initialize the internal state machine.
-	 */
-	private long initTime;
-
-
-	public InitializationSafeStateMachine(StateMachine theRealMachine, long initTime) {
+	public InitializationSafeStateMachine(StateMachine theRealMachine) {
 		this.theRealMachine = theRealMachine;
-		this.initTime = initTime;
 	}
 
 	/* (non-Javadoc)
 	 * @see org.ggp.base.util.statemachine.StateMachine#initialize(java.util.List)
 	 */
 	@Override
-	public void initialize(List<Gdl> description)
+	public void initialize(List<Gdl> description, long timeout)
 			throws StateMachineInitializationException {
 
 		ExecutorService executor = Executors.newSingleThreadExecutor();
-		Initializer initializer = new Initializer(description);
+		Initializer initializer = new Initializer(description, timeout);
+
+		long initTime = timeout - System.currentTimeMillis();
+
+		if(initTime <= 0){
+			throw new StateMachineInitializationException("Initialization of state machine failed! No time available to complete initialization!");
+		}
 
 		try {
 			executor.invokeAny(Arrays.asList(initializer), initTime, TimeUnit.MILLISECONDS);
-		} catch (InterruptedException | ExecutionException | TimeoutException e) {
-			GamerLogger.logError("StateMachine", "[INIT CONTROL] Impossible to initialize the state machine in the given amount of time.");
+		} catch (ExecutionException | TimeoutException e) {
+			GamerLogger.logError("StateMachine", "[INIT SAFE] Impossible to initialize the state machine in the given amount of time.");
 			if(this.theRealMachine != null){
 				this.theRealMachine.shutdown();
 			}
+			throw new StateMachineInitializationException("Initialization of state machine failed!", e);
+		} catch (InterruptedException e) {
+			GamerLogger.logError("StateMachine", "[INIT SAFE] Impossible to initialize the state machine in the given amount of time.");
+			if(this.theRealMachine != null){
+				this.theRealMachine.shutdown();
+			}
+			Thread.currentThread().interrupt();
 			throw new StateMachineInitializationException("Initialization of state machine failed!", e);
 		}finally{
 			// Reset executor and initializer
@@ -95,13 +108,18 @@ public class InitializationSafeStateMachine extends StateMachine {
 			// be already terminated, if it failed this state machine cannot be used anyway, so if the task takes a
 			// while to figure out it had been interrupted we don't care (except that it might still try to log something
 			// and create a conflict with the rest of the code and some logs might get lost).
-			if(!executor.isTerminated()){
+			while(!executor.isTerminated()){
 				// If not all tasks terminated, wait for a minute and then check again
 				try {
 					executor.awaitTermination(1, TimeUnit.MINUTES);
-				} catch (InterruptedException e) {
-					GamerLogger.logError("StateMachine", "[INIT CONTROL] Interrupted while waiting for termination of executor.");
+				} catch (InterruptedException e) { // If this exception is thrown it means the thread that is executing the initialization
+					// of the InitializationSafeStateMachine has been interrupted. If we do nothing this state machine will be stuck in the
+					// while loop anyway until all tasks in the executor have terminated, thus we break out of the loop throwing a new exception.
+					// What happens to the still running tasks in the executor? Who will make sure they terminate?
+					GamerLogger.logError("StateMachine", "[INIT SAFE] Interrupted while waiting for termination of executor.");
 					GamerLogger.logStackTrace("StateMachine", e);
+					Thread.currentThread().interrupt();
+					throw new StateMachineInitializationException("Initialization of state machine failed!", e);
 				}
 			}
 

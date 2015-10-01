@@ -164,7 +164,8 @@ public abstract class StateMachineGamer extends Gamer
 		// with a new one before being certain that the new one will manage to initialize.
 		// If the new state machine fails initialization, the old state machine will still be available.
 		StateMachine tmp = getInitialStateMachine();
-        tmp.initialize(getMatch().getGame().getRules());
+		// We don't have a timeout for this operation so we give to the state machine the maximum amount of time for initialization
+        tmp.initialize(getMatch().getGame().getRules(), Long.MAX_VALUE);
         stateMachine = tmp;
         currentState = stateMachine.getMachineStateFromSentenceList(getMatch().getMostRecentState());
         role = stateMachine.getRoleFromConstant(getRoleName());
@@ -188,7 +189,7 @@ public abstract class StateMachineGamer extends Gamer
 		try
 		{
 			stateMachine = getInitialStateMachine();
-			stateMachine.initialize(getMatch().getGame().getRules());
+			stateMachine.initialize(getMatch().getGame().getRules(), timeout);
 			currentState = stateMachine.getInitialState();
 			role = stateMachine.getRoleFromConstant(getRoleName());
 			getMatch().appendState(currentState.getContents());

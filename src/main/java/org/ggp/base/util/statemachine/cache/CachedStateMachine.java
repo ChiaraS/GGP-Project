@@ -126,8 +126,8 @@ public final class CachedStateMachine extends StateMachine
 	}
 
 	@Override
-	public void initialize(List<Gdl> description) throws StateMachineInitializationException {
-		backingStateMachine.initialize(description);
+	public void initialize(List<Gdl> description, long timeout) throws StateMachineInitializationException {
+		backingStateMachine.initialize(description, timeout);
 	}
 
 	@Override

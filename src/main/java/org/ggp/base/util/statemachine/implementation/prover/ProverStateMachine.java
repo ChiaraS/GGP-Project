@@ -39,7 +39,7 @@ public class ProverStateMachine extends StateMachine
 	}
 
 	@Override
-	public void initialize(List<Gdl> description)
+	public void initialize(List<Gdl> description, long timeout)
 	{
 		prover = new AimaProver(description);
 		roles = ImmutableList.copyOf(Role.computeRoles(description));

@@ -1,6 +1,9 @@
 package org.ggp.base.util.statemachine.hybrid;
 
 import java.util.List;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
 
 import org.ggp.base.util.gdl.grammar.Gdl;
 import org.ggp.base.util.logging.GamerLogger;
@@ -24,20 +27,20 @@ import org.ggp.base.util.statemachine.exceptions.TransitionDefinitionException;
  * the fastest state machine fails to answer to a query, the state machine immediately after
  * that one could be queried.
  * For now this has not been done because this class is used only to test the fastest state
- * machine between the one based on the Propnet, the one based on YAP and the one based on the
- * GGP Base Prover and all of them are supposed never to fail answering a query by throwing the
- * StateMachineException.
+ * machine between the one based on the Propnet, the one based on YAP backed by the GGP Base
+ * Prover and the one based on the GGP Base Prover and all of them are supposed never to fail
+ * answering a query by throwing the StateMachineException.
  * On the other hand, if any of the state machines fails to answer to a query by throwing one
  * among the GoalDefinitionException, TransitionDefinitionException or MoveDefinitionException,
  * also all the other state machines will throw the same exception for the same query, since this
  * failure doesn't depend on the implementation of the state machine, but on the definition of
  * the GDL description or the inappropriate use of the state machine.
- * Moreover, if it turns out that the YAP state machine is faster than the GGP Base prover state
- * machine for a certain game, it's useless to ask to the GGP Base prover state machine to answer
- * to a query if the YAP state machine fails, because the YAP state machine is already backed up
- * by the GGP Base prover state machine internally.
+ * Moreover, if it turns out that the backed YAP state machine is faster than the GGP Base prover
+ * state machine for a certain game, it's useless to ask to the GGP Base prover state machine to
+ * answer to a query if the YAP state machine fails, because the YAP state machine is already
+ * backed up by the GGP Base prover state machine internally.
  *
- * NOTE that this class can be used with an arbitrary number of state machines
+ * NOTE that this class can be used with an arbitrary number of state machines.
  *
  * @author C.Sironi
  *
@@ -67,6 +70,12 @@ public class AdaptiveInitializationStateMachine extends StateMachine {
 		private StateMachine theMachine;
 
 		/**
+		 * The time by when the state machine initialized by this StateMachineTester must
+		 * finish initialization.
+		 */
+		private long timeout;
+
+		/**
 		 * True if the result of the test (i.e. the speed in nodes/second of the state
 		 * machine) has been computed correctly (e.g. the initialization didn't fail,
 		 * the thread stopped correctly,...)
@@ -83,9 +92,10 @@ public class AdaptiveInitializationStateMachine extends StateMachine {
 		 */
 		private double nodesPerSecond;
 
-		public StateMachineTester(List<Gdl> description, StateMachine theMachine){
+		public StateMachineTester(List<Gdl> description, StateMachine theMachine, long timeout){
 			this.description = description;
 			this.theMachine = theMachine;
+			this.timeout = timeout;
 			//this.testSuccess = false;
 			this.initSuccess = false;
 			this.nodesPerSecond = 0;
@@ -117,7 +127,7 @@ public class AdaptiveInitializationStateMachine extends StateMachine {
 		@Override
 		public void run(){
 			try {
-				this.theMachine.initialize(description);
+				this.theMachine.initialize(description, timeout);
 
 				this.initSuccess = true;
 
@@ -131,20 +141,9 @@ public class AdaptiveInitializationStateMachine extends StateMachine {
 
 				while(!Thread.currentThread().isInterrupted()){
 
-					try {
-						theMachine.interruptiblePerformDepthCharge(initialState, lastIterationVisitedNodes);
-						totalVisitedNodes += lastIterationVisitedNodes[0];
-					} catch (TransitionDefinitionException
-							| MoveDefinitionException | StateMachineException e) {
-						GamerLogger.logError("StateMachineTester-" + this.theMachine.getName(), "Monte Carlo iteration failed. Discarding its results.");
-						GamerLogger.logStackTrace("StateMachineTester-" + this.theMachine.getName(), e);
-					}catch (Exception e) { // Keep all other exception separate from the typical exceptions of the state machine (even if now they are all dealt with in the same way)
-						GamerLogger.logError("StateMachineTester-" + this.theMachine.getName(), "Monte Carlo iteration failed. Discarding its results.");
-						GamerLogger.logStackTrace("StateMachineTester-" + this.theMachine.getName(), e);
-					}catch (Error e) {
-						GamerLogger.logError("StateMachineTester-" + this.theMachine.getName(), "Monte Carlo iteration failed. Discarding its results.");
-						GamerLogger.logStackTrace("StateMachineTester-" + this.theMachine.getName(), e);
-					}
+					theMachine.interruptiblePerformDepthCharge(initialState, lastIterationVisitedNodes);
+					totalVisitedNodes += lastIterationVisitedNodes[0];
+
 				}
 
 				long totalTime = System.currentTimeMillis() - startTime;
@@ -156,13 +155,13 @@ public class AdaptiveInitializationStateMachine extends StateMachine {
 			} catch (StateMachineInitializationException e) {
 				// Note that since probably there are other threads of the same type running, this thread must write logs
 				// on its personal log file or it will create conflicts with other threads trying to log on the same file.
-				// We assume that the file name is unique for this thread since it doesn't make sense to give to the
-				// AdaptiveInitializationStateMachine the same state machine to check twice. If you want to give the same
-				// state machine twice because the two instances have for example different settings remember to change the
-				// name of the log file so that it will be unique for each thread.
-				GamerLogger.logError("StateMachineTester-" + this.theMachine.getName(), "Initialization of the state machine failed. Cannot test its speed.");
+				// We could assume that the file name is unique for this thread if we used in it the name of the state
+				// machine being tested. However, it is possible that you want to give two instances of the same state
+				// machine twice because the two instances have, for example, different settings. So to be safe the name
+				// of the log file will also include the unique id of the thread testing the state machine.
+				GamerLogger.logError("StateMachineTester" + this.theMachine.getName(), "Initialization of the state machine failed. Cannot test its speed.");
 				GamerLogger.logStackTrace("StateMachineTester-" + this.theMachine.getName(), e);
-				//this.testSuccess = false;
+				this.theMachine.shutdown();
 				this.initSuccess = false;
 			}
 		}
@@ -179,33 +178,112 @@ public class AdaptiveInitializationStateMachine extends StateMachine {
 	private StateMachine[] allTheMachines;
 
 	/**
-	 * Time by when this state machine must have completed initialization
+	 * Time (in millisecond) that this state machine should keep as a safety margin, meaning that this
+	 * state machine should aim at finishing initialization by (timeout - safteyMargin), so that
+	 * if it takes safetyMargin extra milliseconds to initialize, it will still be in time.
 	 */
-	private long initializeBy;
+	private long safetyMargin;
 
-	public AdaptiveInitializationStateMachine(StateMachine[] allTheMachines, long initializeBy) {
+	public AdaptiveInitializationStateMachine(StateMachine[] allTheMachines) {
 
-		if(this.allTheMachines == null || this.allTheMachines.length < 2){
+		this(allTheMachines, 0L);
+
+	}
+
+	public AdaptiveInitializationStateMachine(StateMachine[] allTheMachines, long safetyMargin) {
+
+		if(allTheMachines == null || allTheMachines.length < 2){
 			throw new IllegalArgumentException("Expected at least two state machines to compare in this AdaptiveInitializationStateMachine.");
 		}
 
 		this.theFastestMachine = null;
 		this.allTheMachines = allTheMachines;
-		this.initializeBy = initializeBy;
+		this.safetyMargin = safetyMargin;
 	}
 
 	@Override
-	public void initialize(List<Gdl> description)
+	public void initialize(List<Gdl> description, long timeout)
 			throws StateMachineInitializationException {
+
+		long initializeBy = timeout - safetyMargin;
+
+		// Create the executor as a pool with the number of threads that equals the number of state machines to test.
+		ExecutorService executor = Executors.newFixedThreadPool(this.allTheMachines.length);
 
 		StateMachineTester[] testers = new StateMachineTester[allTheMachines.length];
 
-		// TODO: If I only have one state machine I could avoid testing its speed, but if I do that I have no method
-		// that checks for its initialization to be time limited --> separate initialization from speed check????????
 		for(int i = 0; i < allTheMachines.length; i++){
-			testers[i] = new StateMachineTester(description, this.allTheMachines[i]);
+			// If the state machines being tested also have a check for the timeout during initialization,
+			// give them the same timeout this state machine is using, i.e. the one with the safety margin.
+			testers[i] = new StateMachineTester(description, this.allTheMachines[i], initializeBy);
+			executor.execute(testers[i]);
 		}
 
+		// Shutdown executor to tell it not to accept any more task to execute.
+		// Note that this doesn't interrupt previously started tasks.
+		executor.shutdown();
+
+		// Tell the executor to wait until all currently running tasks have completed execution or the timeout has elapsed.
+		// We should wait until the initializeBy timeout elapsed and then interrupt the tasks that are checking the speed.
+		// However, since it is possible that all of them already failed initializing the state machines way earlier than
+		// initializeBy time is reached, it is useless to keep waiting, that is why we use the awaitTermination method with
+		// the timeout so that we wait for the given amount of time before interrupting the tasks unless they all terminated
+		// and we can already proceed with the execution.
+		boolean allTasksTerminated = false;
+		try {
+			allTasksTerminated = executor.awaitTermination(initializeBy - System.currentTimeMillis(), TimeUnit.MILLISECONDS);
+		} catch (InterruptedException e) {
+			GamerLogger.logError("StateMachine", "[ADAPTIVE_INIT] Initialization interrupted before completion.");
+			GamerLogger.logStackTrace("StateMachine", e);
+			Thread.currentThread().interrupt();
+			throw new StateMachineInitializationException("State machine initialization failed. Impossible to initialize the AdaptiveInitializationStateMachine!");
+		}
+
+		// Here the available time has elapsed, so we must interrupt the threads that are still running (or they will go on
+		// checking the speed forever).
+		if(!allTasksTerminated){
+			executor.shutdownNow(); // This instruction interrupts all threads.
+		}
+		// Wait for all threads to actually terminate
+		while(!executor.isTerminated()){
+			// If not all tasks terminated, wait for a minute and then check again
+			try {
+				executor.awaitTermination(1, TimeUnit.MINUTES);
+			} catch (InterruptedException e) {// If this exception is thrown it means the thread that is executing the initialization
+				// of the InitializationSafeStateMachine has been interrupted. If we do nothing this state machine will be stuck in the
+				// while loop anyway until all tasks in the executor have terminated, thus we break out of the loop throwing a new exception.
+				// What happens to the still running tasks in the executor? Who will make sure they terminate?
+				GamerLogger.logError("StateMachine", "[ADAPTIVE_INIT] Initialization interrupted before completion.");
+				GamerLogger.logStackTrace("StateMachine", e);
+				Thread.currentThread().interrupt();
+				throw new StateMachineInitializationException("State machine initialization failed. Impossible to initialize the AdaptiveInitializationStateMachine!");
+			}
+		}
+
+		// Check which state machine has the maximum nodes/second value.
+		double maxSpeed = -1.0;
+		for(StateMachineTester tester : testers){
+			// If initialization failed, don't even check
+			if(tester.initSuccess){
+				double currentMachineSpeed = tester.getNodesPerSecond();
+				if(currentMachineSpeed > maxSpeed){
+					maxSpeed = currentMachineSpeed;
+					this.theFastestMachine = tester.getTheMachine();
+				}
+			}
+		}
+
+		this.shutdownOtherMachines();
+
+		this.allTheMachines = null; // Maybe this will free some memory
+
+		// If no state machine is available, throw an exception to say it's impossible to complete initialization
+		// (this happens only if all of the given state machines failed initialization, if there is at least a state
+		// machine for which initialization succeeded then that one will be selected even if its speed is 0 or very slow)
+		if(this.theFastestMachine == null){
+			GamerLogger.logError("StateMachine", "[ADAPTIVE_INIT] Impossible to initialize the state machine. Initialization of all given sub-machines failed.");
+			throw new StateMachineInitializationException("State machine initialization failed. Impossible to initialize any of the given sub-machines.");
+		}
 	}
 
 	@Override
@@ -243,11 +321,24 @@ public class AdaptiveInitializationStateMachine extends StateMachine {
 
 	@Override
 	public void shutdown() {
+
 		if(this.theFastestMachine != null){
 			this.theFastestMachine.shutdown();
 		}
 
+		if(this.allTheMachines != null){
+			shutdownOtherMachines();
+		}
 	}
+
+	private void shutdownOtherMachines(){
+		for(StateMachine machine : this.allTheMachines){
+			if(machine != null && machine != this.theFastestMachine){
+				machine.shutdown();
+			}
+		}
+	}
+
 
 	@Override
 	public String getName(){
@@ -257,6 +348,10 @@ public class AdaptiveInitializationStateMachine extends StateMachine {
 		}else{
 			return "ADAPTIVE_INIT(null)";
 		}
+	}
+
+	public StateMachine getFastestMachine(){
+		return this.theFastestMachine;
 	}
 
 }

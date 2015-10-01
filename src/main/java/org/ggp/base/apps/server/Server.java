@@ -214,7 +214,7 @@ public final class Server extends JPanel implements ActionListener
 
             StateMachine stateMachine = new ProverStateMachine();
             try {
-				stateMachine.initialize(theGame.getRules());
+				stateMachine.initialize(theGame.getRules(), Long.MAX_VALUE);
 			} catch (StateMachineInitializationException e1) {
 				e1.printStackTrace();
 				return;

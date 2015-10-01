@@ -38,13 +38,26 @@ public abstract class StateMachine
 	 * This method should only be called once, and it should be called before any
 	 * other methods on the StateMachine.
 	 *
+	 * @param descriptiom GDL description of the game that this state machine should reason on.
+	 * @param timeout the time by when this state machine must finish initialization (feel free to
+	 * ignore it in your state machine implementation of the initialize() method if your state
+	 * machine doesn't have a timeout managing mechanism. E.g. the GGP Base prover doesn't have one,
+	 * but other state machines need it to avoid getting blocked forever in the initialization phase,
+	 * like the propnet state machine that might take forever to build the propnet).
+	 * Moreover, if you don't care about how long the state machine will take to initialize (e.g. if
+	 * you are running a test and not playing a real time game) you can just give as input for the
+	 * timeout the maximum value (Long.MAX_VALUE). Note that in this case some state machines that
+	 * risk getting stuck forever might take a very long time before stopping initialization (i.e.
+	 * until Long.MAX_VALUE time is reached).
+	 *
 	 * @throws StateMachineInitializationException when the initialization of the state machine fails,
 	 * so that whoever is using the state machine can take corrective actions, e.g. switch
 	 * to the use of another state machine or inform the game manager that the player is
 	 * not able to play anymore. If this method throws this exception the state machine should NOT be
-	 * used!
+	 * used! Moreover, before discarding the state machine, make sure to shut it down (i.e. call the
+	 * shutdown() method on it).
 	 */
-    public abstract void initialize(List<Gdl> description) throws StateMachineInitializationException;
+    public abstract void initialize(List<Gdl> description, long timeout) throws StateMachineInitializationException;
     /**
      * Returns the goal value for the given role in the given state. Goal values
      * are always between 0 and 100.
@@ -108,10 +121,26 @@ public abstract class StateMachine
     public abstract MachineState getNextState(MachineState state, List<Move> moves) throws TransitionDefinitionException, StateMachineException;
 
     /**
-     * This method should be called at the end of a match (stopped or aborted), so that
-     * the state machine can take care of everything (if anything) that needs to be done
-     * before the state machine won't be used anymore (i.e. the YapStateMahcine needs to
-     * shutdown YAP prolog).
+     * This method must allow to turn off the state machine (maybe temporarily), i.e.
+     * perform all needed actions to leave the state machine in a consistent state but
+     * not active anymore and not performing any operation (some sort of standby).
+     * Most of the state machines don't need to do anything as they can be considered always
+     * in standby, waiting for queries to be asked. However there might be a state machine that
+     * performs some internal tasks or runs internal commands (e.g. the YapStateMachine is
+     * always running an instance of the external Yap Prolog program).
+     * This method should be called, for example, at the end of a match (stopped or aborted),
+     * so that the state machine can take care of everything (if anything) that needs to be
+     * done before the state machine won't be used anymore (e.g. the YapStateMahcine needs to
+     * shutdown YAP prolog). Moreover this method should be called every time we want the state
+     * machine to stop running (for example if the thread using the state machine quits/is
+     * interrupted, it must put the state machine in standby or it might never really interrupt
+     * because the state machine will still be running tasks/external commands)
+     *
+     * Note that this method must NOT leave the state machine in an inconsistent state. If we want
+     * to use the state machine again we must be able to do so by just querying it.
+     *
+     * For now this method makes sense only for the YapProverStateMachine, that internally executes
+     * an external instance of the Yap prolog program.
      */
     public abstract void shutdown();
 
@@ -488,37 +517,37 @@ public abstract class StateMachine
 
     /**
      * Like performDepthCharge() method, but this one checks after visiting each node
-     * if it has been interrupted (throwing the InterruptedException). If so it makes
-     * sure that the array theDepth contains the currently reached depth and returns
-     * null as terminal state.
+     * if it has been interrupted. If so it makes sure that the array theDepth contains
+     * the currently reached depth and returns null as terminal state.
+     * Moreover, when any other exception is thrown while visiting the nodes, the number
+     * of nodes visited so far (nDepth) is returned and the exception is not re-thrown,
+     * since this method is only used to check the amount of nodes that the state machine
+     * can visit in a certain amount of time. Also in this case null will be returned as
+     * terminal state.
      *
+     * @param state the state from where to start the simulation.
      * @param theDepth an integer array, the 0th element of which will be set to
      * the number of state changes that were made until the current visited state.
      *
-     * @throws TransitionDefinitionException indicates an error in either the
-     * game description or the StateMachine implementation.
-     * @throws MoveDefinitionException if a role has no legal moves. This indicates
-     * an error in either the game description or the StateMachine implementation.
-     * @throws StateMachineException if it was not possible to completely perform a
-     * playout of the game because of an error that occurred in the state machine and
-     * couldn't be handled.
-     * @throws InterruptedException if the thread running this method has been interrupted.
      */
-    public MachineState interruptiblePerformDepthCharge(MachineState state, final int[] theDepth) throws TransitionDefinitionException, MoveDefinitionException, StateMachineException {
+    public MachineState interruptiblePerformDepthCharge(MachineState state, final int[] theDepth) /*throws TransitionDefinitionException, MoveDefinitionException, StateMachineException*/ {
         int nDepth = 0;
-        while(!isTerminal(state)) {
-            nDepth++;
-            state = getNextStateDestructively(state, getRandomJointMove(state));
-            try {
+        try {
+	        while(!isTerminal(state)) {
+
+	            state = getNextStateDestructively(state, getRandomJointMove(state));
+
+	            nDepth++;
+
 				ConcurrencyUtils.checkForInterruption();
-			} catch (InterruptedException e) {
-				// This method can return a consistent result even if it has not completed execution
-				// so the InterruptedException is not re-thrown
-				if(theDepth != null)
-		            theDepth[0] = nDepth;
-		        return null;
 			}
-        }
+        } catch (InterruptedException | StateMachineException | TransitionDefinitionException | MoveDefinitionException e) {
+			// This method can return a consistent result even if it has not completed execution
+			// so the InterruptedException is not re-thrown
+			if(theDepth != null)
+	            theDepth[0] = nDepth;
+	        return null;
+		}
         if(theDepth != null)
             theDepth[0] = nDepth;
         return state;

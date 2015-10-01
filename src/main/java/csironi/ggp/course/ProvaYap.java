@@ -26,6 +26,7 @@ import org.ggp.base.util.statemachine.implementation.yapProlog.transform.YapRend
 
 import com.declarativa.interprolog.YAPSubprocessEngine;
 
+@SuppressWarnings("unused")
 public class ProvaYap {
 
 
@@ -65,7 +66,7 @@ public class ProvaYap {
 	private static void checkDescriptionAfterProver(List<Gdl> description){
 		System.out.println(description);
 		ProverStateMachine prover = new ProverStateMachine();
-		prover.initialize(description);
+		prover.initialize(description, Long.MAX_VALUE);
 		System.out.println(description);
 	}
 
@@ -82,7 +83,7 @@ public class ProvaYap {
 		YapStateMachine machine = new YapStateMachine();
 
 		try {
-			machine.initialize(gdlDescription);
+			machine.initialize(gdlDescription,  Long.MAX_VALUE);
 		} catch (StateMachineInitializationException e) {
 			GamerLogger.logError("ProvaStepByStep", "Inititlaization failed!");
 			GamerLogger.logStackTrace("ProvaStepByStep", e);

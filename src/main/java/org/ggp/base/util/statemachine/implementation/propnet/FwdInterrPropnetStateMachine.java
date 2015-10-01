@@ -50,7 +50,7 @@ public class FwdInterrPropnetStateMachine extends StateMachine {
      * @throws StateMachineInitializationException
      */
     @Override
-    public void initialize(List<Gdl> description) throws StateMachineInitializationException {
+    public void initialize(List<Gdl> description, long timeout) throws StateMachineInitializationException {
     	long startTime = System.currentTimeMillis();
 		// Create the propnet
     	try{

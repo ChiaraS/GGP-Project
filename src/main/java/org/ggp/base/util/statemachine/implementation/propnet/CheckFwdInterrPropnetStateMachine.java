@@ -69,13 +69,16 @@ public class CheckFwdInterrPropnetStateMachine extends StateMachine {
      * ordering here. Additionally you may compute the initial state here, at
      * your discretion.
      *
+     * This state machine doesn't care about the timeout for initialization,
+     * just makes sure to build the propnet in the given amount of time.
+     *
      */
     /*
      * (non-Javadoc)
      * @see org.ggp.base.util.statemachine.StateMachine#initialize(java.util.List)
      */
     @Override
-    public void initialize(List<Gdl> description) throws StateMachineInitializationException {
+    public void initialize(List<Gdl> description, long timeout) throws StateMachineInitializationException {
 
     	FwdInterrPropNetCreator creator = new FwdInterrPropNetCreator(description);
     	// Try to create the propnet, if it takes too long stop the creation.
