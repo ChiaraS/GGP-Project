@@ -42,10 +42,10 @@ public class ProvaYap {
             	//provaYap(description);
             	//provaYap2(description);
             	//provaDescription(description);
-            	//provaStepByStep(description);
+            	provaStepByStep(description);
             	//modifyDescription(description);
             	//checkDescriptionAfterProver(description);
-            	checkProcessingCost(description);
+            	//checkProcessingCost(description);
             }catch(Exception e){
             	System.out.println("Error when testing game " + gameKey);
             	e.printStackTrace();
@@ -78,30 +78,43 @@ public class ProvaYap {
 
 	private static void provaStepByStep(List<Gdl> gdlDescription){
 
+
 		GamerLogger.setSpilloverLogfile("ProvaStepByStep.log");
+
+		System.out.println("Starting provaStepByStep");
 
 		YapStateMachine machine = new YapStateMachine();
 
+		long start = System.currentTimeMillis();
 		try {
 			machine.initialize(gdlDescription,  Long.MAX_VALUE);
+			System.out.println("INITIALIZE: " + (System.currentTimeMillis() - start) + "ms.");
 		} catch (StateMachineInitializationException e) {
+			System.out.println("INITIALIZE: " + (System.currentTimeMillis() - start) + "ms.");
 			GamerLogger.logError("ProvaStepByStep", "Inititlaization failed!");
 			GamerLogger.logStackTrace("ProvaStepByStep", e);
 			return;
 		}
 
+		start = System.currentTimeMillis();
 		MachineState currentState = machine.getInitialState();
+		System.out.println("GET_INITIAL_STATE: " + (System.currentTimeMillis() - start) + "ms.");
 
 		GamerLogger.log("ProvaStepByStep", "Initial state: " + currentState.toString());
 
+		start = System.currentTimeMillis();
 		List<Role> roles = machine.getRoles();
+		System.out.println("GET_ROLES: " + (System.currentTimeMillis() - start) + "ms.");
 
 		GamerLogger.log("ProvaStepByStep", "Roles: " + roles.toString());
 
 		boolean terminal;
+		start = System.currentTimeMillis();
 		try {
 			terminal = machine.isTerminal(currentState);
+			System.out.println("IS_TERMINAL: " + (System.currentTimeMillis() - start) + "ms.");
 		} catch (StateMachineException e) {
+			System.out.println("IS_TERMINAL: " + (System.currentTimeMillis() - start) + "ms.");
 			GamerLogger.logError("ProvaStepByStep", "isTerminal failed!");
 			GamerLogger.logStackTrace("ProvaStepByStep", e);
 			return;
@@ -113,13 +126,17 @@ public class ProvaYap {
 
 			for(Role r : roles){
 				List<Move> moves;
+				start = System.currentTimeMillis();
 				try {
 					moves = machine.getLegalMoves(currentState, r);
+					System.out.println("GET_LEGAL_MOVES: " + (System.currentTimeMillis() - start) + "ms.");
 				} catch (MoveDefinitionException e) {
+					System.out.println("GET_LEGAL_MOVES: " + (System.currentTimeMillis() - start) + "ms.");
 					GamerLogger.logError("ProvaStepByStep", "getLegalMoves failed for role \"" + r + "\" with a MoveDefinitionException!");
 					GamerLogger.logStackTrace("ProvaStepByStep", e);
 					return;
 				} catch (StateMachineException e) {
+					System.out.println("GET_LEGAL_MOVES: " + (System.currentTimeMillis() - start) + "ms.");
 					GamerLogger.logError("ProvaStepByStep", "getLegalMoves failed for role \"" + r + "\" with a StateMachineException!");
 					GamerLogger.logStackTrace("ProvaStepByStep", e);
 					return;
@@ -131,13 +148,17 @@ public class ProvaYap {
 
 			GamerLogger.log("ProvaStepByStep", "Chosen joint move: " + jointMove.toString());
 
+			start = System.currentTimeMillis();
 			try {
 				currentState = machine.getNextState(currentState, jointMove);
+				System.out.println("GET_NEXT_STATE: " + (System.currentTimeMillis() - start) + "ms.");
 			} catch (TransitionDefinitionException e) {
+				System.out.println("GET_NEXT_STATE: " + (System.currentTimeMillis() - start) + "ms.");
 				GamerLogger.logError("ProvaStepByStep", "getNextState failed with a TransitionDefinitionException!");
 				GamerLogger.logStackTrace("ProvaStepByStep", e);
 				return;
 			} catch (StateMachineException e) {
+				System.out.println("GET_NEXT_STATE: " + (System.currentTimeMillis() - start) + "ms.");
 				GamerLogger.logError("ProvaStepByStep", "getNextState failed with a StateMachineException!");
 				GamerLogger.logStackTrace("ProvaStepByStep", e);
 				return;
@@ -145,9 +166,12 @@ public class ProvaYap {
 
 			GamerLogger.log("ProvaStepByStep", "Current state: " + currentState.toString());
 
+			start = System.currentTimeMillis();
 			try {
 				terminal = machine.isTerminal(currentState);
+				System.out.println("IS_TERMINAL: " + (System.currentTimeMillis() - start) + "ms.");
 			} catch (StateMachineException e) {
+				System.out.println("IS_TERMINAL: " + (System.currentTimeMillis() - start) + "ms.");
 				GamerLogger.logError("ProvaStepByStep", "isTerminal failed!");
 				GamerLogger.logStackTrace("ProvaStepByStep", e);
 				return;
@@ -157,13 +181,17 @@ public class ProvaYap {
 
 		for(Role r : roles){
 			int goal;
+			start = System.currentTimeMillis();
 			try {
 				goal = machine.getGoal(currentState, r);
+				System.out.println("GET_GOAL: " + (System.currentTimeMillis() - start) + "ms.");
 			} catch (GoalDefinitionException e) {
+				System.out.println("GET_GOAL: " + (System.currentTimeMillis() - start) + "ms.");
 				GamerLogger.logError("ProvaStepByStep", "getGoal failed for role \"" + r + "\"with a GoalDefinitionException!");
 				GamerLogger.logStackTrace("ProvaStepByStep", e);
 				return;
 			} catch (StateMachineException e) {
+				System.out.println("GET_GOAL: " + (System.currentTimeMillis() - start) + "ms.");
 				GamerLogger.logError("ProvaStepByStep", "getGoal failed for role \"" + r + "\"with a StateMachineException!");
 				GamerLogger.logStackTrace("ProvaStepByStep", e);
 				return;

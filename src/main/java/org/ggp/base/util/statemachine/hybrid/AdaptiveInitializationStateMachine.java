@@ -1,5 +1,7 @@
 package org.ggp.base.util.statemachine.hybrid;
 
+import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -42,6 +44,10 @@ import org.ggp.base.util.statemachine.exceptions.TransitionDefinitionException;
  *
  * NOTE that this class can be used with an arbitrary number of state machines.
  *
+ * IMPORTANT NOTE: this class can be used only with sub-state machines that correctly handle thread
+ * interruption. If even only one of them doesn't then this state machine might take an infinite
+ * amount of time to initialize or not be able to return consistent results when queried.
+ *
  * @author C.Sironi
  *
  */
@@ -78,7 +84,7 @@ public class AdaptiveInitializationStateMachine extends StateMachine {
 		/**
 		 * True if the result of the test (i.e. the speed in nodes/second of the state
 		 * machine) has been computed correctly (e.g. the initialization didn't fail,
-		 * the thread stopped correctly,...)
+		 * the thread stopped correctly,...).
 		 */
 		//private boolean testSuccess;
 
@@ -88,7 +94,7 @@ public class AdaptiveInitializationStateMachine extends StateMachine {
 		private boolean initSuccess;
 
 		/**
-		 * The number of nodes per second that this state machine can visit
+		 * The number of nodes per second that this state machine can visit.
 		 */
 		private double nodesPerSecond;
 
@@ -98,7 +104,7 @@ public class AdaptiveInitializationStateMachine extends StateMachine {
 			this.timeout = timeout;
 			//this.testSuccess = false;
 			this.initSuccess = false;
-			this.nodesPerSecond = 0;
+			this.nodesPerSecond = 0.0;
 		}
 
 
@@ -127,7 +133,12 @@ public class AdaptiveInitializationStateMachine extends StateMachine {
 		@Override
 		public void run(){
 			try {
+
+				//System.out.println("[DEBUG-T] [" + getCurrentDate() + "] Initializing submachine.");
+
 				this.theMachine.initialize(description, timeout);
+
+				//System.out.println("[DEBUG-T] [" + getCurrentDate() + "] Done initializing submachine.");
 
 				this.initSuccess = true;
 
@@ -139,12 +150,16 @@ public class AdaptiveInitializationStateMachine extends StateMachine {
 
 				long startTime = System.currentTimeMillis();
 
+				//System.out.println("[DEBUG-T] [" + getCurrentDate() + "] Starting speed tests.");
+
 				while(!Thread.currentThread().isInterrupted()){
 
 					theMachine.interruptiblePerformDepthCharge(initialState, lastIterationVisitedNodes);
 					totalVisitedNodes += lastIterationVisitedNodes[0];
 
 				}
+
+				//System.out.println("[DEBUG-T] [" + getCurrentDate() + "] Speed test done.");
 
 				long totalTime = System.currentTimeMillis() - startTime;
 				if(totalTime > 0){
@@ -153,13 +168,17 @@ public class AdaptiveInitializationStateMachine extends StateMachine {
 				//this.testSuccess = true;
 
 			} catch (StateMachineInitializationException e) {
+
+				//System.out.println("[DEBUG-T] [" + getCurrentDate() + "] Failed initializing submachine.");
+
 				// Note that since probably there are other threads of the same type running, this thread must write logs
 				// on its personal log file or it will create conflicts with other threads trying to log on the same file.
 				// We could assume that the file name is unique for this thread if we used in it the name of the state
 				// machine being tested. However, it is possible that you want to give two instances of the same state
 				// machine twice because the two instances have, for example, different settings. So to be safe the name
-				// of the log file will also include the unique id of the thread testing the state machine.
-				GamerLogger.logError("StateMachineTester" + this.theMachine.getName(), "Initialization of the state machine failed. Cannot test its speed.");
+				// of the log file will also include the unique id of the thread testing the state machine --> the GamerLogger
+				// will take care of this.
+				GamerLogger.logError("StateMachineTester-" + this.theMachine.getName(), "Initialization of the state machine failed. Cannot test its speed.");
 				GamerLogger.logStackTrace("StateMachineTester-" + this.theMachine.getName(), e);
 				this.theMachine.shutdown();
 				this.initSuccess = false;
@@ -205,7 +224,20 @@ public class AdaptiveInitializationStateMachine extends StateMachine {
 	public void initialize(List<Gdl> description, long timeout)
 			throws StateMachineInitializationException {
 
+		//System.out.println("[DEBUG] [" + this.getCurrentDate() + "] Starting initialization.");
+
 		long initializeBy = timeout - safetyMargin;
+
+		long currentTime = System.currentTimeMillis();
+
+		//System.out.println("[DEBUG] [" + this.getCurrentDate() + "] We have " + (timeout - currentTime) + "ms to initialize the state machine subtracting a safety margin of " + safetyMargin + "ms.");
+
+		GamerLogger.log("StateMachine", "Available time for initialization: " + (timeout - currentTime) + "ms from which a safety margin of " + safetyMargin + "ms must be subtracted.");
+
+		if(initializeBy <= currentTime){
+			GamerLogger.logError("StateMachine", "Impossible to initialize the state machine in " + (timeout - currentTime) + "ms respecting the safety margin of " + safetyMargin + "ms.");
+			throw new StateMachineInitializationException("Initialization failed. Impossible to initialize the state machine in " + (timeout - currentTime) + "ms respecting the safety margin of " + safetyMargin + "ms.");
+		}
 
 		// Create the executor as a pool with the number of threads that equals the number of state machines to test.
 		ExecutorService executor = Executors.newFixedThreadPool(this.allTheMachines.length);
@@ -213,11 +245,19 @@ public class AdaptiveInitializationStateMachine extends StateMachine {
 		StateMachineTester[] testers = new StateMachineTester[allTheMachines.length];
 
 		for(int i = 0; i < allTheMachines.length; i++){
+
+			//System.out.println("[DEBUG] [" + this.getCurrentDate() + "] Creating tester for state machine " + this.allTheMachines[i].getName() + ".");
+
 			// If the state machines being tested also have a check for the timeout during initialization,
 			// give them the same timeout this state machine is using, i.e. the one with the safety margin.
 			testers[i] = new StateMachineTester(description, this.allTheMachines[i], initializeBy);
+
+			//System.out.println("[DEBUG] [" + this.getCurrentDate() + "] Starting tester.");
+
 			executor.execute(testers[i]);
 		}
+
+		//System.out.println("[DEBUG] [" + this.getCurrentDate() + "] Closing executor.");
 
 		// Shutdown executor to tell it not to accept any more task to execute.
 		// Note that this doesn't interrupt previously started tasks.
@@ -231,21 +271,32 @@ public class AdaptiveInitializationStateMachine extends StateMachine {
 		// and we can already proceed with the execution.
 		boolean allTasksTerminated = false;
 		try {
+
+			//System.out.println("[DEBUG] [" + this.getCurrentDate() + "] Waiting for timeout to elapse.");
+
 			allTasksTerminated = executor.awaitTermination(initializeBy - System.currentTimeMillis(), TimeUnit.MILLISECONDS);
+
+			//System.out.println("[DEBUG] [" + this.getCurrentDate() + "] All task terminated? " + allTasksTerminated);
+
 		} catch (InterruptedException e) {
+			executor.shutdownNow(); // Interrupt everything
 			GamerLogger.logError("StateMachine", "[ADAPTIVE_INIT] Initialization interrupted before completion.");
 			GamerLogger.logStackTrace("StateMachine", e);
 			Thread.currentThread().interrupt();
-			throw new StateMachineInitializationException("State machine initialization failed. Impossible to initialize the AdaptiveInitializationStateMachine!");
+			throw new StateMachineInitializationException("State machine initialization failed. Initialization interrupted before completion (while running speed tests).");
 		}
+
+		//System.out.println("[DEBUG] [" + this.getCurrentDate() + "] Interrupting executor's tasks.");
 
 		// Here the available time has elapsed, so we must interrupt the threads that are still running (or they will go on
 		// checking the speed forever).
-		if(!allTasksTerminated){
-			executor.shutdownNow(); // This instruction interrupts all threads.
-		}
+		executor.shutdownNow(); // This instruction interrupts all threads.
+
 		// Wait for all threads to actually terminate
 		while(!executor.isTerminated()){
+
+			//System.out.println("[DEBUG] [" + this.getCurrentDate() + "] Waiting for termination.");
+
 			// If not all tasks terminated, wait for a minute and then check again
 			try {
 				executor.awaitTermination(1, TimeUnit.MINUTES);
@@ -253,25 +304,39 @@ public class AdaptiveInitializationStateMachine extends StateMachine {
 				// of the InitializationSafeStateMachine has been interrupted. If we do nothing this state machine will be stuck in the
 				// while loop anyway until all tasks in the executor have terminated, thus we break out of the loop throwing a new exception.
 				// What happens to the still running tasks in the executor? Who will make sure they terminate?
-				GamerLogger.logError("StateMachine", "[ADAPTIVE_INIT] Initialization interrupted before completion.");
+				GamerLogger.logError("StateMachine", "[ADAPTIVE_INIT] Initialization interrupted before completion (while waiting for all tasks to interrupt).");
 				GamerLogger.logStackTrace("StateMachine", e);
 				Thread.currentThread().interrupt();
 				throw new StateMachineInitializationException("State machine initialization failed. Impossible to initialize the AdaptiveInitializationStateMachine!");
 			}
 		}
 
+		if(executor.isTerminated()){
+			//System.out.println("[DEBUG] [" + this.getCurrentDate() + "] All tasks terminated. Looking for faster machine.");
+		}else{
+			//System.out.println("[DEBUG] [" + this.getCurrentDate() + "] Some tasks still running. Looking for faster machine anyway.");
+		}
+
 		// Check which state machine has the maximum nodes/second value.
 		double maxSpeed = -1.0;
 		for(StateMachineTester tester : testers){
+
+			//System.out.println("[DEBUG] [" + this.getCurrentDate() + "] State machine: " + tester.getTheMachine().getName() +".");
+
+			//System.out.println("[DEBUG] [" + this.getCurrentDate() + "] Success: " + tester.initSucceeded() +".");
+
 			// If initialization failed, don't even check
-			if(tester.initSuccess){
+			if(tester.initSucceeded()){
 				double currentMachineSpeed = tester.getNodesPerSecond();
+				//System.out.println("[DEBUG] [" + this.getCurrentDate() + "] Nodes per second: " + tester.getNodesPerSecond() +".");
 				if(currentMachineSpeed > maxSpeed){
 					maxSpeed = currentMachineSpeed;
 					this.theFastestMachine = tester.getTheMachine();
 				}
 			}
 		}
+
+		//System.out.println("[DEBUG] [" + this.getCurrentDate() + "] Shutting down other machines.");
 
 		this.shutdownOtherMachines();
 
@@ -284,6 +349,8 @@ public class AdaptiveInitializationStateMachine extends StateMachine {
 			GamerLogger.logError("StateMachine", "[ADAPTIVE_INIT] Impossible to initialize the state machine. Initialization of all given sub-machines failed.");
 			throw new StateMachineInitializationException("State machine initialization failed. Impossible to initialize any of the given sub-machines.");
 		}
+
+		//System.out.println("[DEBUG] [" + this.getCurrentDate() + "] Fastest machine: " + (this.theFastestMachine == null ? "null" : this.theFastestMachine.getName()) + ".");
 	}
 
 	@Override
@@ -352,6 +419,14 @@ public class AdaptiveInitializationStateMachine extends StateMachine {
 
 	public StateMachine getFastestMachine(){
 		return this.theFastestMachine;
+	}
+
+
+	private String getCurrentDate(){
+		SimpleDateFormat sdfDate = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS");
+	    Date now = new Date();
+	    String strDate = sdfDate.format(now);
+	    return strDate;
 	}
 
 }

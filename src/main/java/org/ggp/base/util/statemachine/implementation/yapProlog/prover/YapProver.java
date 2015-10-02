@@ -46,6 +46,10 @@ import com.declarativa.interprolog.YAPSubprocessEngine;
  */
 public class YapProver {
 
+	private static String LINUX_DESCRIPTION_FILE_PATH = "/home/csironi/YAPplayer/prologFiles/description.pl";
+	private static String LINUX_FUNCTIONS_FILE_PATH = "/home/csironi/YAPplayer/prologFiles/prologFunctions.pl";
+	private static String LINUX_YAP_COMMAND = "/home/csironi/CadiaplayerInstallation/Yap/bin/yap";
+
 	// CLASSES REPRESENTING DIFFERENT TYPES OF QUERIES THAT CAN BE ASKED TO YAP PROLOG
 
 	/**
@@ -220,7 +224,7 @@ public class YapProver {
 	 * of the Yap Prover and thus it cannot be started and used.
 	 */
 	public YapProver(String description) throws YapProverException {
-		this(description, "/home/csironi/YAPplayer/prologFiles/description.pl", "/home/csironi/YAPplayer/prologFiles/prologFunctions.pl", "/home/csironi/CadiaplayerInstallation/Yap/bin/yap", 0L);
+		this(description, 0L);
 	}
 
 	/**
@@ -234,7 +238,7 @@ public class YapProver {
 	 * of the Yap Prover and thus it cannot be started and used.
 	 */
 	public YapProver(String description, long waitingTime) throws YapProverException {
-		this(description, "/home/csironi/YAPplayer/prologFiles/description.pl", "/home/csironi/YAPplayer/prologFiles/prologFunctions.pl", "/home/csironi/CadiaplayerInstallation/Yap/bin/yap", waitingTime);
+		this(description, LINUX_DESCRIPTION_FILE_PATH, LINUX_FUNCTIONS_FILE_PATH, LINUX_YAP_COMMAND, waitingTime);
 	}
 
 	/**
@@ -482,6 +486,7 @@ public class YapProver {
 				GamerLogger.logError("StateMachine", "[YapProver] Impossible to complete the computation of query result on Yap Prolog side.");
 				GamerLogger.logStackTrace("StateMachine", e);
 				this.shutdown();
+				Thread.currentThread().interrupt();
 				throw new YapProverException("Computation of query \"" + goal + "\" with result variables \"" + resVar + "\" on Yap Prolog side couldn't be completed.", e);
 			}
 
@@ -495,7 +500,6 @@ public class YapProver {
 				GamerLogger.logError("StateMachine", "[YapProver] Impossible to complete the computation of query result on Yap Prolog side.");
 				GamerLogger.logStackTrace("StateMachine", e);
 				this.shutdown();
-				Thread.currentThread().interrupt();
 				throw new YapProverException("Computation of query \"" + goal + "\" with result variables \"" + resVar + "\" on Yap Prolog side couldn't be completed.", e);
 			}
 		}

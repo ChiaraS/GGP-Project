@@ -150,7 +150,7 @@ public class AdaptiveInitSpeedTest {
             theMachines[0] = new FwdInterrPropnetStateMachine();
             theMachines[1] = new BackedYapStateMachine(new YapStateMachine(500L), new ProverStateMachine());
             theMachines[2] = new ProverStateMachine();
-            // Create the state machine giving it the sub-state machine that it has to check
+            // Create the state machine giving it the sub-state machines that it has to check
             theSubject = new AdaptiveInitializationStateMachine(theMachines, safetyMargin);
             // If the state machine must be provided with a cache, create the cached state machine
             if(withCache){
@@ -165,7 +165,7 @@ public class AdaptiveInitSpeedTest {
             double iterationsPerSecond = -1;
             double nodesPerSecond = -1;
 
-            // Try to initialize the propnet state machine.
+            // Try to initialize the state machine.
             // If initialization fails, skip the test.
         	long initStart = System.currentTimeMillis();
             try{

@@ -194,9 +194,18 @@ public class YapStateMachine extends StateMachine {
 	private MachineState computeInitialState() throws StateMachineException
 	{
 		Object[] bindings;
+
+		//long cancStart = System.currentTimeMillis();
+
 		try {
 			bindings = this.yapProver.askQueryResults("initialize_state(List), processList(List, LL), ipObjectTemplate('ArrayOfString',AS,_,[LL],_)", "[AS]");
+
+			//System.out.println("YAP-COMPUTE_INITIAL_STATE: " + (System.currentTimeMillis() - cancStart) + "ms");
+
 		} catch (YapProverException e) {
+
+			//System.out.println("YAP-COMPUTE_INITIAL_STATE: " + (System.currentTimeMillis() - cancStart) + "ms");
+
 			this.currentYapState = null;
 			GamerLogger.logError("StateMachine", "[YAP] Exception during initial state computation.");
 			GamerLogger.logStackTrace("StateMachine", e);
@@ -233,9 +242,18 @@ public class YapStateMachine extends StateMachine {
 	private ImmutableList<Role> computeRoles() throws StateMachineException	{
 
 		Object[] bindings;
+
+		//long cancStart = System.currentTimeMillis();
+
 		try {
 			bindings = this.yapProver.askQueryResults("get_roles(List), processList(List, LL), ipObjectTemplate('ArrayOfString',AS,_,[LL],_)", "[AS]");
+
+			//System.out.println("YAP-COMPUTE_ROLES: " + (System.currentTimeMillis() - cancStart) + "ms");
+
 		} catch (YapProverException e) {
+
+			//System.out.println("YAP-COMPUTE_ROLES: " + (System.currentTimeMillis() - cancStart) + "ms");
+
 			GamerLogger.logError("StateMachine", "[YAP] Exception during game roles computation.");
 			GamerLogger.logStackTrace("StateMachine", e);
 			// Everytime a query fails throwing a YapProverException we cannot be sure about the state
@@ -275,9 +293,18 @@ public class YapStateMachine extends StateMachine {
 		updateYapState(state);
 
 		Object[] bindings = null;
+
+		//long cancStart = System.currentTimeMillis();
+
 		try {
 			bindings = this.yapProver.askQueryResults("get_goal("+support.getFakeRole(role)+", List), processList(List, LL), ipObjectTemplate('ArrayOfString',AS,_,[LL],_)", "[AS]");
+
+			//System.out.println("YAP-GET_GOAL: " + (System.currentTimeMillis() - cancStart) + "ms");
+
 		} catch (YapProverException e) {
+
+			//System.out.println("YAP-GET_GOAL: " + (System.currentTimeMillis() - cancStart) + "ms");
+
 			GamerLogger.logError("StateMachine", "[YAP] Exception during goal computation.");
 			GamerLogger.logStackTrace("StateMachine", e);
 			// Everytime a query fails throwing a YapProverException we cannot be sure about the state
@@ -320,9 +347,18 @@ public class YapStateMachine extends StateMachine {
 		updateYapState(state);
 
 		boolean terminal = false;
+
+		//long cancStart = System.currentTimeMillis();
+
 		try {
 			terminal = this.yapProver.askQuerySuccess("is_terminal");
+
+			//System.out.println("YAP-IS_TERMINAL: " + (System.currentTimeMillis() - cancStart) + "ms");
+
 		} catch (YapProverException e) {
+
+			//System.out.println("YAP-IS_TERMINAL: " + (System.currentTimeMillis() - cancStart) + "ms");
+
 			GamerLogger.logError("StateMachine", "[YAP] Exception during terminality computation.");
 			GamerLogger.logStackTrace("StateMachine", e);
 			// Everytime a query fails throwing a YapProverException we cannot be sure about the state
@@ -361,9 +397,18 @@ public class YapStateMachine extends StateMachine {
 		updateYapState(state);
 
 		Object[] bindings = null;
+
+		//long cancStart = System.currentTimeMillis();
+
 		try {
 			bindings = this.yapProver.askQueryResults("get_legal_moves("+support.getFakeRole(role)+", List), processList(List, LL), ipObjectTemplate('ArrayOfString',AS,_,[LL],_)", "[AS]");
+
+			//System.out.println("YAP-GET_LEGAL_MOVES: " + (System.currentTimeMillis() - cancStart) + "ms");
+
 		} catch (YapProverException e) {
+
+			//System.out.println("YAP-GET_LEGAL_MOVES: " + (System.currentTimeMillis() - cancStart) + "ms");
+
 			GamerLogger.logError("StateMachine", "[YAP] Exception during legal moves computation.");
 			GamerLogger.logStackTrace("StateMachine", e);
 			// Everytime a query fails throwing a YapProverException we cannot be sure about the state
@@ -401,9 +446,18 @@ public class YapStateMachine extends StateMachine {
 
 		// Get the next state and assert it on Yap Prolog side.
 		Object[] bindings = null;
+
+		//long cancStart = System.currentTimeMillis();
+
 		try {
 			bindings = this.yapProver.askQueryResults("get_next_state("+fakeRoles+", "+support.getFakeMoves(moves)+", List), processList(List, LL), ipObjectTemplate('ArrayOfString',AS,_,[LL],_)", "[AS]");
+
+			//System.out.println("YAP-GET_NEXT_STATE: " + (System.currentTimeMillis() - cancStart) + "ms");
+
 		} catch (YapProverException e) {
+
+			//System.out.println("YAP-GET_NEXT_STATE: " + (System.currentTimeMillis() - cancStart) + "ms");
+
 			GamerLogger.logError("StateMachine", "[YAP] Exception during next state computation.");
 			GamerLogger.logStackTrace("StateMachine", e);
 			this.currentYapState = null;
@@ -434,9 +488,18 @@ public class YapStateMachine extends StateMachine {
 
 			boolean success = false;
 
+			//long cancStart = System.currentTimeMillis();
+
 			try {
-				success = this.yapProver.askQuerySuccess("update_state("+support.getFakeMachineState(state.getContents())+")");
+				List<String> fakeState = support.getFakeMachineState(state.getContents());
+				success = this.yapProver.askQuerySuccess("update_state("+ fakeState +")");
+
+				//System.out.println("YAP-UPDATE_YAP_STATE: " + (System.currentTimeMillis() - cancStart) + "ms");
+
 			} catch (YapProverException e) {
+
+				//System.out.println("YAP-UPDATE_YAP_STATE: " + (System.currentTimeMillis() - cancStart) + "ms");
+
 				this.currentYapState = null;
 				GamerLogger.logError("StateMachine", "[YAP] Exception during prolog state update.");
 				GamerLogger.logStackTrace("StateMahcine", e);
