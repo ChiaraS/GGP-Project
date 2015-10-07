@@ -1,4 +1,4 @@
-package org.ggp.base.util.statemachine.implementation.yapProlog.prover;
+package org.ggp.base.util.statemachine.implementation.prolog.prover;
 
 import java.io.BufferedWriter;
 import java.io.File;
@@ -13,7 +13,9 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
 import org.ggp.base.util.logging.GamerLogger;
+import org.ggp.base.util.statemachine.implementation.yapProlog.prover.YapProverException;
 
+import com.declarativa.interprolog.SubprocessEngine;
 import com.declarativa.interprolog.YAPSubprocessEngine;
 
 /**
@@ -44,11 +46,27 @@ import com.declarativa.interprolog.YAPSubprocessEngine;
  * @author C.Sironi
  *
  */
-public class YapProver {
+public class PrologProver {
+
+	public enum PROLOG_TYPE{
+    	YAP, SWI, XSB
+    }
+
+	private final PROLOG_TYPE prologType;
+
+	private static boolean LINUX = true;
 
 	private static String LINUX_DESCRIPTION_FILE_PATH = "/home/csironi/YAPplayer/prologFiles/description.pl";
 	private static String LINUX_FUNCTIONS_FILE_PATH = "/home/csironi/YAPplayer/prologFiles/prologFunctions.pl";
 	private static String LINUX_YAP_COMMAND = "/home/csironi/CadiaplayerInstallation/OldYap/bin/yap";
+	private static String LINUX_XSB_COMMAND = "?";
+	private static String LINUX_SWI_COMMAND = "?";
+
+	private static String WINDOWS_DESCRIPTION_FILE_PATH = "C:\\Users\\c.sironi\\BITBUCKET REPOS\\GGP-Base\\csironi\\linuxPrologFiles\\description.pl";
+	private static String WINDOWS_FUNCTIONS_FILE_PATH = "C:\\Users\\c.sironi\\BITBUCKET REPOS\\GGP-Base\\csironi\\linuxPrologFiles\\prologFunctions.pl";
+	private static String WINDOWS_YAP_COMMAND = "C:\\YapInstallation\\Yap64\\bin\\yap";
+	private static String WINDOWS_XSB_COMMAND = "?";
+	private static String WINDOWS_SWI_COMMAND = "?";
 
 	// CLASSES REPRESENTING DIFFERENT TYPES OF QUERIES THAT CAN BE ASKED TO YAP PROLOG
 
@@ -97,7 +115,7 @@ public class YapProver {
 		 */
 		@Override
 		public Object[] call() throws Exception {
-			return yapProver.deterministicGoal(goal,resVar);
+			return prologProver.deterministicGoal(goal,resVar);
 		}
 
 	}
@@ -137,7 +155,7 @@ public class YapProver {
 		 */
 		@Override
 		public Boolean call() throws Exception {
-			return yapProver.deterministicGoal(this.goal);
+			return prologProver.deterministicGoal(this.goal);
 		}
 
 	}
@@ -165,7 +183,7 @@ public class YapProver {
 	/**
 	 * Command that this class must use to run Yap.
 	 */
-	private String yapCommand;
+	private String prologCommand;
 
 	/**
 	 * True if this Yap Prolog class is ready to answer queries, false otherwise.
@@ -177,9 +195,9 @@ public class YapProver {
 	// THE OBJECT REPRESENTING THE YAP ENGINE TO BE CALLED TO ANSWER QUERIES
 
 	/**
-	 * Yap engine that this class must use to answer queries.
+	 * Prolog engine that this class must use to answer queries.
 	 */
-	private YAPSubprocessEngine yapProver;
+	private SubprocessEngine prologProver;
 
 
 	// VARIABLES NEEDED TO CONTROL THE EXECUTION TIME OF THE QUERIES
@@ -223,8 +241,8 @@ public class YapProver {
 	 * @throws YapProverException to signal that something went wrong during initialization
 	 * of the Yap Prover and thus it cannot be started and used.
 	 */
-	public YapProver(String description) throws YapProverException {
-		this(description, 0L);
+	public PrologProver(String description) throws ProverException {
+		this(description, 0L, PROLOG_TYPE.YAP);
 	}
 
 	/**
@@ -237,8 +255,8 @@ public class YapProver {
 	 * @throws YapProverException to signal that something went wrong during initialization
 	 * of the Yap Prover and thus it cannot be started and used.
 	 */
-	public YapProver(String description, long waitingTime) throws YapProverException {
-		this(description, LINUX_DESCRIPTION_FILE_PATH, LINUX_FUNCTIONS_FILE_PATH, LINUX_YAP_COMMAND, waitingTime);
+	public PrologProver(String description, long waitingTime) throws ProverException {
+		this(description, PROLOG_TYPE.YAP, waitingTime);
 	}
 
 	/**
@@ -254,8 +272,8 @@ public class YapProver {
 	 * @throws YapProverException to signal that something went wrong during initialization
 	 * of the Yap Prover and thus it cannot be started and used.
 	 */
-	public YapProver(String description, String descriptionFilePath, String functionsFilePath, String yapCommand) throws YapProverException {
-		this(description, descriptionFilePath, functionsFilePath, yapCommand, 0L);
+	public PrologProver(String description, PROLOG_TYPE prologType) throws ProverException {
+		this(description, prologType, 0L);
 	}
 
 	/**
@@ -269,11 +287,30 @@ public class YapProver {
 	 * @throws YapProverException to signal that something went wrong during initialization
 	 * of the Yap Prover and thus it cannot be started and used.
 	 */
-	public YapProver(String description, String descriptionFilePath, String functionsFilePath, String yapCommand, long waitingTime) throws YapProverException{
+	public PrologProver(String description, PROLOG_TYPE prologType, long waitingTime) throws ProverException{
 		this.description = description;
-		this.descriptionFilePath = descriptionFilePath;
-		this.functionsFilePath = functionsFilePath;
-		this.yapCommand = yapCommand;
+
+
+
+		switch(prologType){
+		case YAP:
+			this.descriptionFilePath = descriptionFilePath;
+			this.functionsFilePath = functionsFilePath;
+			this.yapCommand = yapCommand;
+			break;
+		case SWI:
+			this.descriptionFilePath = descriptionFilePath;
+			this.functionsFilePath = functionsFilePath;
+			this.yapCommand = yapCommand;
+			break;
+		case XSB:
+			this.descriptionFilePath = descriptionFilePath;
+			this.functionsFilePath = functionsFilePath;
+			this.yapCommand = yapCommand;
+			break;
+		}
+
+
 		this.waitingTime = waitingTime;
 		this.executor = null;
 		this.bindingsQuery = null;

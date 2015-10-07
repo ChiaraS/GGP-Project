@@ -1,3 +1,34 @@
+RUN CADIA WITH CORRECT PARENTHESIS
+
+UNINSTALL CENTOS 5 LAST FROM VM
+
+INSTALL CENTOS 6.7 ON VM
+
+INSTALL YAP 6.2.0 ON VM
+
+TRY YAP SPEED TEST WITH YAP 6.2.0 ON VM
+
+IF DOESN'T WORK, UNINSTALL CENTOS 6.7 AND RE INSTALL IT, THEN INSTALL YAP 6.2.3 AND RUN SPEED TESTS
+OTHERWISE UNINSTALL CENTOS 5.11 OLD GCC AND INSTALL SECOND VM OF CENTOS 6.7 THEN INSTALL YAP 6.2.3 AND RUN SPEED TESTS
+
+MODIFY THE YAPPROVER TO ACCEPT THE USE OF XSB PROLOG AND SWI PROLOG
+
+RUN SPEED TESTS WITH THESE!
+
+SWITCH TO NEWER INTERPROLOG EVEN IF DOESN'T SUPPORT YAP AND TEST SPEED AGAIN
+
+
+
+
+
+
+
+
+
+
+
+
+
 HOW TO MANAGE THREADS AND INTERRUPTIBLE METHODS:
 1. How to interrupt a thread: call the interrupt() method on the instance of the thread you want to interrupt. Note that this doesn't imply that the thread will stop immediately, moreover, it doesn't even guarantee that the thread will stop at all. The interrupt() method just asks the thread to stop, but wheather the thread will actually stop and when, depends on how the code executed by the thread has been implemented. To make sure that sooner or later the thread will stop the execution, all the code in the thread (i.e. also all the methods used in the thread) should include from time to time a check that controls if the executing thread has been interrupted (note that for a method that doesn't take very long to execute it is possible to skip this check, interruption will just be delayed by a very small amount of time, the execution time of such method). If the code detects that the thread has been interrupted it should stop execution (performing some final operations if necessary for the execution to stop cleanely).
 2. How to detect if the thread executing the current code has been interrupted: use the following instruction "Thread.currentThread().isInterrupted()". This will return true if the thread has been interrupted. Note that this method won't affect the value of the interrupted status of the thread, so if the same instruction will be called somewhere else in the code run by the thread it will still return true if the thread has been interrupted (there are other ways to check for interruption that reset to false the value of the interrupted status even if the thread is still being interrupted).
