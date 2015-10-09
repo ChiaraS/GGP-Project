@@ -43,6 +43,12 @@ HOW TO MANAGE THREADS AND INTERRUPTIBLE METHODS:
 
 
 
+IMPROVE YAP STATE MACHINE:
+	1. Try to use XSB prolog instead, with XSBSubprocessEngine or NativeEngine (needs also the prolog function file to be adapted and it must be checked that everyting complies with the XSB syntax) -> If only using XSB prolog you can switch to newest version of Interprolog library.
+	2. Instead of using interprolog, use JPL interface (should work for SWI prolog, not sure for other types of prolog).
+
+
+
 - RE-RUN YAP SPEED TESTS WITHOUT NOHUP
 
 

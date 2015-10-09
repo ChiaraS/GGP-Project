@@ -54,16 +54,6 @@ import com.google.common.collect.ImmutableList;
  * the initial state or the roles). In this case, if you don't want to use this state
  * machine, remember to shut it down.
  *
- * ! A LOT OF ATTENTION WHEN MODIFYING THE CODE OF THIS CLASS: all the methods
- * that can be interrupted because they call deterministicGoal on Yap Prolog
- * must not modify any instance variable of this class because if a method is
- * interrupted then the caller will probably call the restart() method, but if
- * the method takes a while before stopping it might still be able to modify
- * some instance variable that has already been reset by the restart() method!
- * If you really want to do that, then access to variables must be synchronized
- * (i.e. a method that modifies a variable locks it till it's done), but this
- * will probably impact performance!
- *
  * @author C.Sironi
  *
  */

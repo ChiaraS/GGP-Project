@@ -40,15 +40,17 @@ import com.declarativa.interprolog.YAPSubprocessEngine;
  * problems also when the query thread exceeds the timeout, because before starting
  * another query with another thread the query object will be re-initialized causing
  * no conflicts.
+ * NOTE that this class won't be thread safe in general since all queries are asked to
+ * the same underlying prolog program.
  *
  * @author C.Sironi
  *
  */
 public class YapProver {
 
-	private static String LINUX_DESCRIPTION_FILE_PATH = "/home/csironi/YAPplayer/prologFiles/description.pl";
-	private static String LINUX_FUNCTIONS_FILE_PATH = "/home/csironi/YAPplayer/prologFiles/prologFunctions.pl";
-	private static String LINUX_YAP_COMMAND = "/home/csironi/CadiaplayerInstallation/OldYap/bin/yap";
+	private static String LINUX_DESCRIPTION_FILE_PATH = "/home/csironi/PrologPlayer/prologFiles/description.pl";
+	private static String LINUX_FUNCTIONS_FILE_PATH = "/home/csironi/PrologPlayer/prologFiles/prologFunctions.pl";
+	private static String LINUX_YAP_COMMAND = "/home/csironi/CadiaplayerInstallation/Yap/bin/yap";
 
 	// CLASSES REPRESENTING DIFFERENT TYPES OF QUERIES THAT CAN BE ASKED TO YAP PROLOG
 

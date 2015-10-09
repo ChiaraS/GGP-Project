@@ -1,3 +1,6 @@
+/**
+ *
+ */
 package csironi.ggp.course.speedtester;
 
 import java.util.List;

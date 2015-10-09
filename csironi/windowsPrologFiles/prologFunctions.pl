@@ -1,5 +1,5 @@
 % Library :
-library_directory('/home/csironi/PrologPlayer/prologFiles').
+library_directory('C:\Users\c.sironi\BITBUCKET REPOS\GGP-Base\csironi\windowsPrologFiles').
 :- use_module(library(description)).
 :- use_module(library(random)).
 :- use_module(library(prandom)).
