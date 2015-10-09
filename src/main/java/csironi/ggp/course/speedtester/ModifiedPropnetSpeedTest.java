@@ -10,11 +10,11 @@ import org.ggp.base.util.gdl.grammar.Gdl;
 import org.ggp.base.util.logging.GamerLogger;
 import org.ggp.base.util.logging.GamerLogger.FORMAT;
 import org.ggp.base.util.match.Match;
-import org.ggp.base.util.statemachine.InitializationSafeStateMachine;
 import org.ggp.base.util.statemachine.StateMachine;
 import org.ggp.base.util.statemachine.cache.CachedStateMachine;
 import org.ggp.base.util.statemachine.exceptions.StateMachineInitializationException;
 import org.ggp.base.util.statemachine.implementation.propnet.FwdInterrPropnetStateMachine;
+import org.ggp.base.util.statemachine.safe.InitializationSafeStateMachine;
 
 //TODO: merge all speed tests together in a single class since their code is similar.
 

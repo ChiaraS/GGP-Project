@@ -36,6 +36,9 @@ public class FwdInterrPropnetStateMachine extends StateMachine {
     /** The initial state */
     private MachineState initialState;
 
+    /** The currently set move */
+    private List<GdlSentence> currentMove;
+
     /**
 	 * Total time (in milliseconds) taken to construct the propnet.
 	 * If it is negative it means that the propnet didn't build in time.
@@ -74,7 +77,11 @@ public class FwdInterrPropnetStateMachine extends StateMachine {
 	    ForwardInterruptingProposition init = this.propNet.getInitProposition();
 	    if(init != null){
 	    	this.propNet.getInitProposition().setValue(true);
+
 	    }
+
+	    // Set that there is no joint move currently set to false
+	    this.currentMove = new ArrayList<GdlSentence>();
 
 		// No need to set all other inputs to false because they already are.
 		// Impose consistency on the propnet (TODO REMARK: this method should also check
@@ -379,8 +386,25 @@ public class FwdInterrPropnetStateMachine extends StateMachine {
 		// Transform the moves into 'does' propositions (the correct order should be kept).
 		List<GdlSentence> movesToDoes = this.toDoes(moves);
 
-		for(ForwardInterruptingProposition input : this.propNet.getInputPropositions().values()){
-			input.setAndPropagateValue(movesToDoes.contains(input.getName()));
+		// Check if the currently set move is different and we have to change it,
+		// or if it's the same so we have nothing to do.
+		if(!movesToDoes.equals(this.currentMove)){
+
+			// Get all input propositions
+			Map<GdlSentence, ForwardInterruptingProposition> inputPropositions = this.propNet.getInputPropositions();
+			// First set to true the input propositions of the given move...
+			for(GdlSentence gdlMove: movesToDoes){
+				inputPropositions.get(gdlMove).setAndPropagateValue(true);
+			}
+
+			// Then set to false all the input propositions of the previous move
+			for(int i = 0; i < this.currentMove.size(); i++){
+				if(this.currentMove.get(i)!=movesToDoes.get(i)){
+					inputPropositions.get(this.currentMove.get(i)).setAndPropagateValue(false);
+				}
+			}
+
+			this.currentMove = movesToDoes;
 		}
 
 		// Set to false also the INIT proposition, if it exists.
