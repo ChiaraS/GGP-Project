@@ -5,6 +5,7 @@
 	<classpathentry kind="src" path="src/test/java"/>
 	<classpathentry exported="true" kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
 	<classpathentry kind="con" path="org.eclipse.jdt.USER_LIBRARY/Interprolog"/>
+	<classpathentry kind="con" path="org.eclipse.jdt.USER_LIBRARY/Lucene-core-4.8.1"/>
 	<classpathentry exported="true" kind="lib" path="lib/JUnit/junit-4.11.jar"/>
 	<classpathentry exported="true" kind="lib" path="lib/JUnit/hamcrest-core-1.3.jar"/>
 	<classpathentry exported="true" kind="lib" path="lib/Guava/guava-14.0.1.jar" sourcepath="lib/Guava/guava-14.0.1-sources.jar"/>

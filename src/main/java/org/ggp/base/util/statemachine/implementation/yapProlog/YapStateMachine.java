@@ -492,7 +492,7 @@ public class YapStateMachine extends StateMachine {
 
 				this.currentYapState = null;
 				GamerLogger.logError("StateMachine", "[YAP] Exception during prolog state update.");
-				GamerLogger.logStackTrace("StateMahcine", e);
+				GamerLogger.logStackTrace("StateMachine", e);
 				throw new StateMachineException("State update on YAP Prolog side failed for state: " + state, e);
 			}
 
