@@ -19,7 +19,10 @@ SWITCH TO NEWER INTERPROLOG EVEN IF DOESN'T SUPPORT YAP AND TEST SPEED AGAIN
 
 
 
-
+PROPNET IMPROVEMENTS
+- Represent states as array of bits, each of wich corresponds to a base prop and is =1 if the prop is true in the state, =0 otherwise
+- represent moves as arrays of bits, each of wich corresponds to a does prop and is =1 if the prop is true in the joinmove, =0 otherwise
+- use internal representatio of state that doesn't always translate to gdl list (i.e. translate only the move when you have to send it back)
 
 
 
@@ -34,7 +37,7 @@ HOW TO MANAGE THREADS AND INTERRUPTIBLE METHODS:
 2. How to detect if the thread executing the current code has been interrupted: use the following instruction "Thread.currentThread().isInterrupted()". This will return true if the thread has been interrupted. Note that this method won't affect the value of the interrupted status of the thread, so if the same instruction will be called somewhere else in the code run by the thread it will still return true if the thread has been interrupted (there are other ways to check for interruption that reset to false the value of the interrupted status even if the thread is still being interrupted).
 3. What to do if the thread has been interrupted (i.e. Thread.currentThread().isInterrupted() returns true):
  	a. if the check is inside the run method of the thread:
-	   just stop the execution performing some final operations, if necessary, for the execution to stop  cleanely
+	   just stop the execution performing some final operations, if necessary, for the execution to stop cleanely
 	b. if the check is inside of a method called by the run() method (or one of its subcalls):
 	   there are two paths to follow:
 		- if the method cannot compute a consistent result or leave the program in a consistent statebefore interrupting, then it must throw an InterruptedException to signal this to its caller. In this way also the caller will know about the interruption and deal with it (i.e. stopping asap, leaving the program ina  consistent state).

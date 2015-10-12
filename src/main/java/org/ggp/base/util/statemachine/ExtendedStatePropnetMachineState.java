@@ -12,21 +12,21 @@ import org.ggp.base.util.gdl.grammar.GdlSentence;
  * @author C.Sironi
  *
  */
-public class BitPropnetMachineState extends MachineState {
+public class ExtendedStatePropnetMachineState extends MachineState {
 
 	private OpenBitSet basePropThruthValue;
 
 	/**
 	 *
 	 */
-	public BitPropnetMachineState() {
+	public ExtendedStatePropnetMachineState() {
 		// TODO Auto-generated constructor stub
 	}
 
 	/**
 	 * @param contents
 	 */
-	public BitPropnetMachineState(Set<GdlSentence> contents) {
+	public ExtendedStatePropnetMachineState(Set<GdlSentence> contents) {
 		super(contents);
 		// TODO Auto-generated constructor stub
 	}

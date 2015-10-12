@@ -11,10 +11,10 @@ import org.ggp.base.util.gdl.grammar.GdlConstant;
 import org.ggp.base.util.gdl.grammar.GdlRelation;
 import org.ggp.base.util.gdl.grammar.GdlSentence;
 import org.ggp.base.util.logging.GamerLogger;
-import org.ggp.base.util.propnet.architecture.forwardInterrupting.ForwardInterruptingPropNet;
-import org.ggp.base.util.propnet.architecture.forwardInterrupting.components.ForwardInterruptingProposition;
-import org.ggp.base.util.propnet.architecture.forwardInterrupting.components.ForwardInterruptingTransition;
-import org.ggp.base.util.propnet.factory.ForwardInterruptingPropNetFactory;
+import org.ggp.base.util.propnet.architecture.extendedState.ExtendedStatePropNet;
+import org.ggp.base.util.propnet.architecture.extendedState.components.ExtendedStateProposition;
+import org.ggp.base.util.propnet.architecture.extendedState.components.ExtendedStateTransition;
+import org.ggp.base.util.propnet.factory.ExtendedStatePropNetFactory;
 import org.ggp.base.util.statemachine.MachineState;
 import org.ggp.base.util.statemachine.Move;
 import org.ggp.base.util.statemachine.Role;
@@ -27,10 +27,9 @@ import org.ggp.base.util.statemachine.implementation.prover.query.ProverQueryBui
 
 import com.google.common.collect.ImmutableList;
 
-
-public class FwdInterrPropnetStateMachine extends StateMachine {
+public class ExtendedStatePropnetStateMachine extends StateMachine {
     /** The underlying proposition network  */
-    private ForwardInterruptingPropNet propNet;
+    private ExtendedStatePropNet propNet;
     /** The player roles */
     private ImmutableList<Role> roles;
     /** The initial state */
@@ -57,7 +56,7 @@ public class FwdInterrPropnetStateMachine extends StateMachine {
     	long startTime = System.currentTimeMillis();
 		// Create the propnet
     	try{
-    		this.propNet = ForwardInterruptingPropNetFactory.create(description);
+    		this.propNet = ExtendedStatePropNetFactory.create(description);
     	}catch(InterruptedException e){
     		GamerLogger.logError("StateMachine", "[Propnet] Propnet creation interrupted!");
     		GamerLogger.logStackTrace("StateMachine", e);
@@ -74,7 +73,7 @@ public class FwdInterrPropnetStateMachine extends StateMachine {
 		// will correspond to the initial state.
 	    // REMARK: if there is not TRUE proposition in the initial state, the INIT proposition
 	    // will not exist.
-	    ForwardInterruptingProposition init = this.propNet.getInitProposition();
+	    ExtendedStateProposition init = this.propNet.getInitProposition();
 	    if(init != null){
 	    	this.propNet.getInitProposition().setValue(true);
 
@@ -122,10 +121,10 @@ public class FwdInterrPropnetStateMachine extends StateMachine {
 
     	// Add to the initial machine state all the base propositions that are connected to a true transition
     	// whose value also depends on the value of the INIT proposition.
-		for (ForwardInterruptingProposition p : this.propNet.getBasePropositions().values()){
+		for (ExtendedStateProposition p : this.propNet.getBasePropositions().values()){
 			// Get the transition (We can be sure that when getting the single input of a base proposition we get a
 			// transition, right?)
-			ForwardInterruptingTransition transition = ((ForwardInterruptingTransition) p.getSingleInput());
+			ExtendedStateTransition transition = ((ExtendedStateTransition) p.getSingleInput());
 			if (transition.getValue() && transition.isDependingOnInit()){
 				contents.add(p.getName());
 			}
@@ -154,7 +153,7 @@ public class FwdInterrPropnetStateMachine extends StateMachine {
 
     	// For all the base propositions that are true, add the corresponding proposition to the
     	// next machine state.
-		for (ForwardInterruptingProposition p : this.propNet.getBasePropositions().values()){
+		for (ExtendedStateProposition p : this.propNet.getBasePropositions().values()){
 			if (p.getSingleInput().getValue()){
 				contents.add(p.getName());
 			}
@@ -187,12 +186,12 @@ public class FwdInterrPropnetStateMachine extends StateMachine {
 		this.markBases(state);
 
 		// Get all goal propositions for the given role.
-		Set<ForwardInterruptingProposition> goalPropsForRole = this.propNet.getGoalPropositions().get(role);
+		Set<ExtendedStateProposition> goalPropsForRole = this.propNet.getGoalPropositions().get(role);
 
-		ForwardInterruptingProposition trueGoal = null;
+		ExtendedStateProposition trueGoal = null;
 
 		// Check all the goal propositions that are true for the role. If there is more than one throw an exception.
-		for(ForwardInterruptingProposition goalProp : goalPropsForRole){
+		for(ExtendedStateProposition goalProp : goalPropsForRole){
 			if(goalProp.getValue()){
 				if(trueGoal != null){
 					GamerLogger.logError("StateMachine", "[Propnet] Got more than one true goal in state " + state + " for role " + role + ".");
@@ -232,11 +231,11 @@ public class FwdInterrPropnetStateMachine extends StateMachine {
 		this.markBases(state);
 
 		// Retrieve all legal propositions for the given role.
-		Set<ForwardInterruptingProposition> legalPropsForRole = this.propNet.getLegalPropositions().get(role);
+		Set<ExtendedStateProposition> legalPropsForRole = this.propNet.getLegalPropositions().get(role);
 
 		// Create the list of legal moves.
 		List<Move> legalMovesForRole = new ArrayList<Move>();
-		for(ForwardInterruptingProposition legalProp : legalPropsForRole){
+		for(ExtendedStateProposition legalProp : legalPropsForRole){
 			if(legalProp.getValue()){
 				legalMovesForRole.add(getMoveFromProposition(legalProp));
 			}
@@ -333,7 +332,7 @@ public class FwdInterrPropnetStateMachine extends StateMachine {
 	 * @param p the proposition to be transformed into a move.
 	 * @return the legal move corresponding to the given proposition.
 	 */
-	public static Move getMoveFromProposition(ForwardInterruptingProposition p){
+	public static Move getMoveFromProposition(ExtendedStateProposition p){
 		return new Move(p.getName().get(1));
 	}
 
@@ -342,7 +341,7 @@ public class FwdInterrPropnetStateMachine extends StateMachine {
 	 * @param goalProposition
 	 * @return the integer value of the goal proposition
 	 */
-    private int getGoalValue(ForwardInterruptingProposition goalProposition){
+    private int getGoalValue(ExtendedStateProposition goalProposition){
 		GdlRelation relation = (GdlRelation) goalProposition.getName();
 		GdlConstant constant = (GdlConstant) relation.get(1);
 		return Integer.parseInt(constant.toString());
@@ -361,7 +360,7 @@ public class FwdInterrPropnetStateMachine extends StateMachine {
     	//FINE AGGIUNTA
 
 		Set<GdlSentence> contents = state.getContents();
-		for(ForwardInterruptingProposition base : this.propNet.getBasePropositions().values()){
+		for(ExtendedStateProposition base : this.propNet.getBasePropositions().values()){
 			base.setAndPropagateValue(contents.contains(base.getName()));
 		}
 	}
@@ -391,7 +390,7 @@ public class FwdInterrPropnetStateMachine extends StateMachine {
 		if(!movesToDoes.equals(this.currentMove)){
 
 			// Get all input propositions
-			Map<GdlSentence, ForwardInterruptingProposition> inputPropositions = this.propNet.getInputPropositions();
+			Map<GdlSentence, ExtendedStateProposition> inputPropositions = this.propNet.getInputPropositions();
 			// First set to true the input propositions of the given move...
 			for(GdlSentence gdlMove: movesToDoes){
 				inputPropositions.get(gdlMove).setAndPropagateValue(true);
@@ -412,7 +411,7 @@ public class FwdInterrPropnetStateMachine extends StateMachine {
 		// the setting of the INIT proposition to FALSE could be done only once after computing the
 		// initial state.
 
-		ForwardInterruptingProposition init = this.propNet.getInitProposition();
+		ExtendedStateProposition init = this.propNet.getInitProposition();
 		if(init != null){
 			this.propNet.getInitProposition().setAndPropagateValue(false);
 		}
@@ -423,7 +422,7 @@ public class FwdInterrPropnetStateMachine extends StateMachine {
 	 *
 	 * @return The proposition network.
 	 */
-	public ForwardInterruptingPropNet getPropNet(){
+	public ExtendedStatePropNet getPropNet(){
 		return this.propNet;
 	}
 
