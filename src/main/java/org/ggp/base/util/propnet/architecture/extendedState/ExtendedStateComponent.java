@@ -13,7 +13,12 @@ import java.util.Set;
 public abstract class ExtendedStateComponent implements Serializable
 {
 
-    /** The inputs to the component. */
+    /**
+	 *
+	 */
+	private static final long serialVersionUID = -3451961734636633811L;
+
+	/** The inputs to the component. */
     private final Set<ExtendedStateComponent> inputs;
     /** The outputs of the component. */
     private final Set<ExtendedStateComponent> outputs;

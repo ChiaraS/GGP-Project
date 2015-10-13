@@ -14,13 +14,14 @@ import org.ggp.base.util.gdl.grammar.GdlSentence;
  */
 public class ExtendedStatePropnetMachineState extends MachineState {
 
-	private OpenBitSet basePropThruthValue;
+	private OpenBitSet basePropsTruthValue;
 
 	/**
 	 *
 	 */
 	public ExtendedStatePropnetMachineState() {
-		// TODO Auto-generated constructor stub
+		super();
+		this.basePropsTruthValue = null;
 	}
 
 	/**
@@ -28,7 +29,35 @@ public class ExtendedStatePropnetMachineState extends MachineState {
 	 */
 	public ExtendedStatePropnetMachineState(Set<GdlSentence> contents) {
 		super(contents);
-		// TODO Auto-generated constructor stub
+		this.basePropsTruthValue = null;
 	}
+
+	/**
+	 * @param contents
+	 */
+	public ExtendedStatePropnetMachineState(Set<GdlSentence> contents, OpenBitSet basePropsTruthValue) {
+		super(contents);
+		this.basePropsTruthValue = basePropsTruthValue;
+	}
+
+	public OpenBitSet getBasePropsTruthValue(){
+		return this.basePropsTruthValue;
+	}
+
+	@Override
+	public boolean equals(Object o)
+    {
+        if ((o != null) && (o instanceof MachineState)){
+        	if(o instanceof ExtendedStatePropnetMachineState){
+        		ExtendedStatePropnetMachineState state = (ExtendedStatePropnetMachineState) o;
+        		return state.getBasePropsTruthValue().equals(this.getBasePropsTruthValue());
+        	}else{
+        		MachineState state = (MachineState) o;
+        		return state.getContents().equals(this.getContents());
+        	}
+        }
+
+        return false;
+    }
 
 }

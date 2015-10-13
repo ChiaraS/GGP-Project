@@ -1,5 +1,9 @@
 package org.ggp.base.util.propnet.architecture.extendedState.components;
 
+import java.util.Set;
+
+import org.apache.lucene.util.OpenBitSet;
+import org.ggp.base.util.gdl.grammar.GdlSentence;
 import org.ggp.base.util.propnet.architecture.extendedState.ExtendedStateComponent;
 
 /**
@@ -8,6 +12,22 @@ import org.ggp.base.util.propnet.architecture.extendedState.ExtendedStateCompone
 @SuppressWarnings("serial")
 public final class ExtendedStateTransition extends ExtendedStateComponent
 {
+	/**
+	 * The truth values of the base propositions in the next state, given the currently set state in the propnet.
+	 */
+	private OpenBitSet nextState;
+
+	/**
+	 * The GdlSentences that are true in the next state, given the currently set state in the propnet.
+	 */
+	private Set<GdlSentence> nextStateContent;
+
+	/**
+	 * Index that the base proposition this transition outputs to has in the bits array
+	 * representing the next state in the propnet.
+	 */
+	private int nextPropositionIndex;
+
 	/**
 	 * TRUE if this transition's value also depends on the value of the INIT proposition,
 	 * FALSE otherwise.
@@ -52,6 +72,18 @@ public final class ExtendedStateTransition extends ExtendedStateComponent
 		return this.dependingOnInit;
 	}
 
+	public void setNextPropositionIndex(int index){
+		this.nextPropositionIndex = index;
+	}
+
+	public void setNextStateReference(OpenBitSet nextState){
+		this.nextState = nextState;
+	}
+
+	public void setNextStateContent(Set<GdlSentence> nextStateContent){
+		this.nextStateContent = nextStateContent;
+	}
+
 	/**
 	 * Constructor that initializes to FALSE the fact that the value of this transition
 	 * depends on the INIT proposition.
@@ -88,15 +120,31 @@ public final class ExtendedStateTransition extends ExtendedStateComponent
 	 */
 	@Override
 	public void imposeConsistency(){
+		if(this.getValue()){
+			this.nextState.fastSet(this.nextPropositionIndex);
+			this.nextStateContent.add(((ExtendedStateProposition) this.getSingleInput()).getName());
+		}else{
+			this.nextState.fastClear(this.nextPropositionIndex);
+			this.nextStateContent.remove(((ExtendedStateProposition) this.getSingleInput()).getName());
+		}
 		this.consistent = true;
 	}
 
 	/**
-	 * This method does nothing since a transition is supposed to propagate its value only in the next step.
-	 *  @see org.ggp.base.util.propnet.architecture.ExtendedState.ExtendedStateComponent#propagateConsistency()
+	 * This method just updates the corresponding value for the propositions in the next state.
+	 * It does not propagate, since a transition is supposed to propagate its value only in the next step.
+	 * @see org.ggp.base.util.propnet.architecture.ExtendedState.ExtendedStateComponent#propagateConsistency()
 	 */
 	@Override
 	public void propagateValue(boolean newValue){
+
+		if(newValue){
+			this.nextState.fastSet(this.nextPropositionIndex);
+			this.nextStateContent.add(((ExtendedStateProposition) this.getSingleInput()).getName());
+		}else{
+			this.nextState.fastClear(this.nextPropositionIndex);
+			this.nextStateContent.remove(((ExtendedStateProposition) this.getSingleInput()).getName());
+		}
 
 		// If the thread calling this method has been interrupted we must stop the execution and throw an
 		// InterruptedException otherwise we risk having the PropnetStateMachine trying to impose consistency

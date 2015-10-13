@@ -8,6 +8,7 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.util.List;
 
+import org.apache.lucene.util.OpenBitSet;
 import org.ggp.base.util.game.Game;
 import org.ggp.base.util.game.GameRepository;
 import org.ggp.base.util.gdl.grammar.Gdl;
@@ -30,7 +31,7 @@ public class ProvaPropnet {
 
 		//provaGame("amazonsTorus", 300000);
 
-		provaGame("snake_2009_big", 300000);
+		//provaGame("snake_2009_big", 300000);
 
 		//printKeys();
 
@@ -39,6 +40,80 @@ public class ProvaPropnet {
 
 		//printPropnet(description, "gt_two_thirds_2p");
 
+		provaOpenbitset();
+
+	}
+
+
+	public static void provaOpenbitset(){
+
+		OpenBitSet bits = new OpenBitSet(20);
+
+		System.out.println("Instantiation values:");
+
+		for(int i = 0; i < bits.size(); i++){
+			if(bits.fastGet(i)){
+				System.out.print("1 ");
+			}else{
+				System.out.print("0 ");
+			}
+		}
+
+		System.out.println();
+		System.out.println("Total true bits: " + bits.cardinality());
+
+		bits.fastSet(2);
+		bits.fastSet(5);
+		bits.fastSet(8);
+		bits.fastSet(11);
+		bits.fastSet(14);
+		bits.fastSet(17);
+		bits.fastSet(20);
+		bits.fastSet(14);
+
+
+		System.out.println();
+		System.out.println("Initialization values:");
+
+		for(int i = 0; i < bits.size(); i++){
+			if(bits.fastGet(i)){
+				System.out.print("1 ");
+			}else{
+				System.out.print("0 ");
+			}
+		}
+
+		System.out.println();
+		System.out.println("Total true bits: " + bits.cardinality());
+
+
+		System.out.println();
+		System.out.println("The 15th bit is " + bits.fastGet(14) + ".");
+
+		System.out.println();
+		System.out.println("All the values:");
+
+		for(int i = 0; i < bits.size(); i++){
+			if(bits.fastGet(i)){
+				System.out.print("1 ");
+			}else{
+				System.out.print("0 ");
+			}
+		}
+
+		bits.fastClear(bits.nextSetBit(0));
+		bits.fastClear(2);
+
+		System.out.println();
+		System.out.println("All the values:");
+
+		for(int i = 0; i < bits.size(); i++){
+			if(bits.fastGet(i)){
+				System.out.print("1 ");
+			}else{
+				System.out.print("0 ");
+			}
+		}
 	}
 
 	/**

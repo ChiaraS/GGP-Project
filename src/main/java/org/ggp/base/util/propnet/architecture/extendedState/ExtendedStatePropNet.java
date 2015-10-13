@@ -9,6 +9,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import org.apache.lucene.util.OpenBitSet;
 import org.ggp.base.util.gdl.grammar.GdlConstant;
 import org.ggp.base.util.gdl.grammar.GdlPool;
 import org.ggp.base.util.gdl.grammar.GdlProposition;
@@ -76,6 +77,9 @@ public final class ExtendedStatePropNet
 	/** References to every BaseProposition in the PropNet, indexed by name. */
 	private final Map<GdlSentence, ExtendedStateProposition> basePropositions;
 
+	/** References to every BaseProposition in the PropNet as array */
+	private final ExtendedStateProposition[] basePropositionsArray;
+
 	/** References to every InputProposition in the PropNet, indexed by name. */
 	private final Map<GdlSentence, ExtendedStateProposition> inputPropositions;
 
@@ -97,6 +101,19 @@ public final class ExtendedStatePropNet
 	/** A helper list of all of the roles. */
 	private final List<Role> roles;
 
+	/** The truth values of the base propositions in the next state, given the currently set state in the propnet. */
+	private OpenBitSet nextState;
+
+	/** The GdlSentences that are true in the next state, given the currently set state in the propnet. */
+	private Set<GdlSentence> nextStateContents;
+
+	/**
+	 * Array containing one bit for each base proposition.
+	 * This bit is true if the base proposition's value in the initial state depends on the INIT proposition,
+	 * false otherwise.	 *
+	 */
+	private OpenBitSet dependOnInit;
+
 	public void addComponent(ExtendedStateComponent c)
 	{
 		components.add(c);
@@ -117,6 +134,7 @@ public final class ExtendedStatePropNet
 		this.components = components;
 		this.propositions = recordPropositions();
 		this.basePropositions = recordBasePropositions();
+		this.basePropositionsArray = recordBasePropositionsArray();
 		this.inputPropositions = recordInputPropositions();
 		this.legalPropositions = recordLegalPropositions();
 		this.goalPropositions = recordGoalPropositions();
@@ -128,6 +146,18 @@ public final class ExtendedStatePropNet
 	public List<Role> getRoles()
 	{
 	    return roles;
+	}
+
+	public OpenBitSet getNextState(){
+		return this.nextState;
+	}
+
+	public Set<GdlSentence> getNextStateContents(){
+		return this.nextStateContents;
+	}
+
+	public OpenBitSet getDependOnInit(){
+		return this.dependOnInit;
 	}
 
 	public Map<ExtendedStateProposition, ExtendedStateProposition> getLegalInputMap()
@@ -161,12 +191,21 @@ public final class ExtendedStatePropNet
 	/**
 	 * Getter method.
 	 *
-	 * @return References to every BaseProposition in the PropNet, indexed by
-	 *         name.
+	 * @return References to every BaseProposition in the PropNet in a fixed order
 	 */
 	public Map<GdlSentence, ExtendedStateProposition> getBasePropositions()
 	{
 		return basePropositions;
+	}
+
+	/**
+	 * Getter method.
+	 *
+	 * @return References to every BaseProposition in the PropNet in a fixed order
+	 */
+	public ExtendedStateProposition[] getBasePropositionsArray()
+	{
+		return this.basePropositionsArray;
 	}
 
 	/**
@@ -298,13 +337,44 @@ public final class ExtendedStatePropNet
 		    if (proposition.getInputs().size() != 1)
 		        continue;
 
-			ExtendedStateComponent component = proposition.getSingleInput();
+		    ExtendedStateComponent component = proposition.getSingleInput();
 			if (component instanceof ExtendedStateTransition) {
 				basePropositions.put(proposition.getName(), proposition);
 			}
 		}
 
 		return basePropositions;
+	}
+
+	/**
+	 * Builds an array containing all the base propositions in the propnet in a fixed order.
+	 * It also gives to each transition a reference to the array of bits representing the next
+	 * state so that each transition can update the corresponding bit every time its value changes.
+	 *
+	 * @return An array of BasePropositions in the PropNet.
+	 */
+	private ExtendedStateProposition[] recordBasePropositionsArray()
+	{
+		ExtendedStateProposition[] basePropositionsArray = new ExtendedStateProposition[this.basePropositions.values().size()];
+		this.nextState = new OpenBitSet(this.basePropositions.values().size());
+		this.dependOnInit = new OpenBitSet(this.basePropositions.values().size());
+		this.nextStateContents = new HashSet<GdlSentence>();
+
+		int i = 0;
+		for (ExtendedStateProposition baseProp : this.basePropositions.values()) {
+
+			basePropositionsArray[i] = baseProp;
+			ExtendedStateTransition transition = (ExtendedStateTransition) baseProp.getSingleInput();
+			transition.setNextPropositionIndex(i);
+			transition.setNextStateReference(this.nextState);
+			transition.setNextStateContent(this.nextStateContents);
+			if(transition.isDependingOnInit()){
+				this.dependOnInit.fastSet(i);
+			}
+
+		}
+
+		return basePropositionsArray;
 	}
 
 	/**

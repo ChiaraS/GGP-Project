@@ -1,7 +1,5 @@
 package org.ggp.base.util.statemachine.hybrid;
 
-import java.text.SimpleDateFormat;
-import java.util.Date;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -269,12 +267,12 @@ public class AdaptiveInitializationStateMachine extends StateMachine {
 		// initializeBy time is reached, it is useless to keep waiting, that is why we use the awaitTermination method with
 		// the timeout so that we wait for the given amount of time before interrupting the tasks unless they all terminated
 		// and we can already proceed with the execution.
-		boolean allTasksTerminated = false;
+		//boolean allTasksTerminated = false;
 		try {
 
 			//System.out.println("[DEBUG] [" + this.getCurrentDate() + "] Waiting for timeout to elapse.");
 
-			allTasksTerminated = executor.awaitTermination(initializeBy - System.currentTimeMillis(), TimeUnit.MILLISECONDS);
+			/*allTasksTerminated =*/ executor.awaitTermination(initializeBy - System.currentTimeMillis(), TimeUnit.MILLISECONDS);
 
 			//System.out.println("[DEBUG] [" + this.getCurrentDate() + "] All task terminated? " + allTasksTerminated);
 
@@ -422,11 +420,13 @@ public class AdaptiveInitializationStateMachine extends StateMachine {
 	}
 
 
+	/*
 	private String getCurrentDate(){
 		SimpleDateFormat sdfDate = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS");
 	    Date now = new Date();
 	    String strDate = sdfDate.format(now);
 	    return strDate;
 	}
+	*/
 
 }

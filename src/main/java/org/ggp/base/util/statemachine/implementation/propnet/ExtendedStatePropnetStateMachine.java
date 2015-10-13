@@ -6,6 +6,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import org.apache.lucene.util.OpenBitSet;
 import org.ggp.base.util.gdl.grammar.Gdl;
 import org.ggp.base.util.gdl.grammar.GdlConstant;
 import org.ggp.base.util.gdl.grammar.GdlRelation;
@@ -15,6 +16,7 @@ import org.ggp.base.util.propnet.architecture.extendedState.ExtendedStatePropNet
 import org.ggp.base.util.propnet.architecture.extendedState.components.ExtendedStateProposition;
 import org.ggp.base.util.propnet.architecture.extendedState.components.ExtendedStateTransition;
 import org.ggp.base.util.propnet.factory.ExtendedStatePropNetFactory;
+import org.ggp.base.util.statemachine.ExtendedStatePropnetMachineState;
 import org.ggp.base.util.statemachine.MachineState;
 import org.ggp.base.util.statemachine.Move;
 import org.ggp.base.util.statemachine.Role;
@@ -37,6 +39,9 @@ public class ExtendedStatePropnetStateMachine extends StateMachine {
 
     /** The currently set move */
     private List<GdlSentence> currentMove;
+
+    /** The currently set state */
+    private OpenBitSet currentState;
 
     /**
 	 * Total time (in milliseconds) taken to construct the propnet.
@@ -82,6 +87,12 @@ public class ExtendedStatePropnetStateMachine extends StateMachine {
 	    // Set that there is no joint move currently set to true
 	    this.currentMove = new ArrayList<GdlSentence>();
 
+	    // Set that the currently set state is empty, i.e. all base propositions are set to false
+	    // (because they are initialized like this). Moreover, this won't change after imposing
+	    // consistency, since base propositions don't need to change their value to be consistent
+	    // with their input because the transitions propagate their value only in the next staep.
+	    this.currentState = new OpenBitSet(this.propNet.getBasePropositionsArray().length);
+
 		// No need to set all other inputs to false because they already are.
 		// Impose consistency on the propnet (TODO REMARK: this method should also check
 	    // for interrupts -> is it safe to assume it will never get stuck indefinitely?).
@@ -102,14 +113,14 @@ public class ExtendedStatePropnetStateMachine extends StateMachine {
 
 
     /**
-     * This method returns the next machine state. This state contains the set of all the base propositions
+     * This method returns the initial machine state. This state contains the set of all the base propositions
      * that will become true in the next state, given the current state of the propnet, with both
      * base and input proposition marked and their value propagated.
      *
      * !REMARK: this method computes the next state but doesn't advance the propnet state. The propnet
      * will still be in the current state.
 	 *
-     * @return the next state.
+     * @return the initial state.
      */
     private MachineState computeInitialState(){
 
@@ -117,20 +128,22 @@ public class ExtendedStatePropnetStateMachine extends StateMachine {
     	//System.out.println("COMPUTING INIT STATE");
     	//FINE AGGIUNTA
 
-    	Set<GdlSentence> contents = new HashSet<GdlSentence>();
+    	Set<GdlSentence> contents = new HashSet<GdlSentence>(this.propNet.getNextStateContents());
 
     	// Add to the initial machine state all the base propositions that are connected to a true transition
     	// whose value also depends on the value of the INIT proposition.
-		for (ExtendedStateProposition p : this.propNet.getBasePropositions().values()){
-			// Get the transition (We can be sure that when getting the single input of a base proposition we get a
-			// transition, right?)
-			ExtendedStateTransition transition = ((ExtendedStateTransition) p.getSingleInput());
-			if (transition.getValue() && transition.isDependingOnInit()){
-				contents.add(p.getName());
+    	Map<GdlSentence, ExtendedStateProposition> basePropositions = this.propNet.getBasePropositions();
+		for (GdlSentence s : contents){
+			if(!((ExtendedStateTransition) basePropositions.get(s).getSingleInput()).isDependingOnInit()){
+				contents.remove(s);
 			}
 		}
 
-		return new MachineState(contents);
+		OpenBitSet basePropsTruthValue = this.propNet.getNextState().clone();
+
+		basePropsTruthValue.and(this.propNet.getDependOnInit());
+
+		return new ExtendedStatePropnetMachineState(contents, basePropsTruthValue);
     }
 
     /**
@@ -337,6 +350,32 @@ public class ExtendedStatePropnetStateMachine extends StateMachine {
 	}
 
 	/**
+	 * Takes as input a MachineState and returns a machine state extended with the bit array
+	 * representing the truth value in the state for each base proposition.
+	 *
+	 * @param state a machine state.
+	 * @return a machine state extended with the bit array representing the truth value in
+	 * the state for each base proposition.
+	 */
+	public ExtendedStatePropnetMachineState stateToExtendedState(MachineState state){
+		if(state != null){
+			ExtendedStateProposition[] baseProps = this.propNet.getBasePropositionsArray();
+			OpenBitSet basePropsTruthValue = new OpenBitSet(baseProps.length);
+			Set<GdlSentence> contents = state.getContents();
+			if(!contents.isEmpty()){
+				for(int i = 0; i < baseProps.length; i++){
+					if(contents.contains(baseProps[i].getName())){
+						basePropsTruthValue.fastSet(i);
+					}
+				}
+			}
+			return new ExtendedStatePropnetMachineState(new HashSet<GdlSentence>(contents), basePropsTruthValue);
+		}
+
+		return null;
+	}
+
+	/**
 	 * Helper method for parsing the value of a goal proposition
 	 * @param goalProposition
 	 * @return the integer value of the goal proposition
@@ -353,16 +392,24 @@ public class ExtendedStatePropnetStateMachine extends StateMachine {
      *
      * @param state the machine state to be set in the propnet.
      */
-	private void markBases(MachineState state){
+	private void markBases(ExtendedStatePropnetMachineState state){
 
 		//AGGIUNTA
     	//System.out.println("MARKING BASES");
     	//FINE AGGIUNTA
 
-		Set<GdlSentence> contents = state.getContents();
-		for(ExtendedStateProposition base : this.propNet.getBasePropositions().values()){
-			base.setAndPropagateValue(contents.contains(base.getName()));
+		// This will set to 1 only the propositions that must change value
+		this.currentState.xor(state.getBasePropsTruthValue());
+
+		ExtendedStateProposition[] basePropositions = this.propNet.getBasePropositionsArray();
+
+		int indexToFlip = this.currentState.nextSetBit(0);
+		while(indexToFlip != -1){
+			basePropositions[indexToFlip].flipValue();
+			indexToFlip = this.currentState.nextSetBit(indexToFlip+1);
 		}
+
+		this.currentState = state.getBasePropsTruthValue().clone();
 	}
 
 	/**

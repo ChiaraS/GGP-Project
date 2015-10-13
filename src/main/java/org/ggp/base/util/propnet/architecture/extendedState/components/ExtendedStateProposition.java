@@ -86,16 +86,24 @@ public final class ExtendedStateProposition extends ExtendedStateComponent
 		// If it changes, propagate it. And if this proposition has inputs and is consistent with its inputs,
 		// then a change of value makes it inconsistent.
 		if(value != this.value){
-			this.value = value;
-			// Memorize that this proposition became inconsistent before propagating, so if the value gets
-			// propagated again to this proposition it won't be updated again.
-			if(this.isConsistent() && this.hasInput() && !this.isBase()){
-				this.consistent = false;
-			}
-			for(ExtendedStateComponent c : this.getOutputs()){
-				c.propagateValue(this.value);
-			}
+			this.flipValue();
+		}
+	}
 
+	/**
+	 * This method flips the current proposition value, propagating the change to its outputs.
+	 * Note that if this is not a base proposition, it will become inconsistent with it inputs!
+	 */
+	public void flipValue(){
+		this.value = !this.value;
+		// If it is not a base proposition and it has inputs, memorize that this proposition became
+		// inconsistent before propagating, so if the value gets propagated again to this proposition
+		// it won't be updated again.
+		if(this.isConsistent() && this.hasInput() && !this.isBase()){
+			this.consistent = false;
+		}
+		for(ExtendedStateComponent c : this.getOutputs()){
+			c.propagateValue(this.value);
 		}
 	}
 
