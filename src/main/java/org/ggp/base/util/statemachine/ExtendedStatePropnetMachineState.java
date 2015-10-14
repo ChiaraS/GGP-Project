@@ -60,4 +60,18 @@ public class ExtendedStatePropnetMachineState extends MachineState {
         return false;
     }
 
+	@Override
+	public String toString(){
+		String state = "[";
+		for(int i = 0; i < this.basePropsTruthValue.size(); i++){
+			if(this.basePropsTruthValue.fastGet(i)){
+				state +=("1");
+			}else{
+				state +=("0");
+			}
+		}
+
+		return super.toString() + "\n" + state + "]";
+	}
+
 }

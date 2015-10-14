@@ -122,10 +122,10 @@ public final class ExtendedStateTransition extends ExtendedStateComponent
 	public void imposeConsistency(){
 		if(this.getValue()){
 			this.nextState.fastSet(this.nextPropositionIndex);
-			this.nextStateContent.add(((ExtendedStateProposition) this.getSingleInput()).getName());
+			this.nextStateContent.add(((ExtendedStateProposition) this.getSingleOutput()).getName());
 		}else{
 			this.nextState.fastClear(this.nextPropositionIndex);
-			this.nextStateContent.remove(((ExtendedStateProposition) this.getSingleInput()).getName());
+			this.nextStateContent.remove(((ExtendedStateProposition) this.getSingleOutput()).getName());
 		}
 		this.consistent = true;
 	}
@@ -140,10 +140,10 @@ public final class ExtendedStateTransition extends ExtendedStateComponent
 
 		if(newValue){
 			this.nextState.fastSet(this.nextPropositionIndex);
-			this.nextStateContent.add(((ExtendedStateProposition) this.getSingleInput()).getName());
+			this.nextStateContent.add(((ExtendedStateProposition) this.getSingleOutput()).getName());
 		}else{
 			this.nextState.fastClear(this.nextPropositionIndex);
-			this.nextStateContent.remove(((ExtendedStateProposition) this.getSingleInput()).getName());
+			this.nextStateContent.remove(((ExtendedStateProposition) this.getSingleOutput()).getName());
 		}
 
 		// If the thread calling this method has been interrupted we must stop the execution and throw an

@@ -131,17 +131,17 @@ public class ExtendedStateMachineVerifier {
 					            		exception = "STATE MACHINE";
 					            		return false;
 					            	}catch(MoveDefinitionException mde){
-					            		GamerLogger.log("Verifier", "Machine #" + i + " failed computation legal moves for state " + theCurrentStates[i] + " and role " + theRole + ".");
+					            		GamerLogger.log("Verifier", "Machine #" + i + " failed computation of legal moves for state " + theCurrentStates[i] + " and role " + theRole + ".");
 					            		GamerLogger.logStackTrace("Verifier", mde);
 					            		exception = "MOVE DEFINITION";
 					            		return false;
 					            	}catch(Exception ex){
-					            		GamerLogger.log("Verifier", "Machine #" + i + " failed computation legal moves for state " + theCurrentStates[i] + " and role " + theRole + ".");
+					            		GamerLogger.log("Verifier", "Machine #" + i + " failed computation of legal moves for state " + theCurrentStates[i] + " and role " + theRole + ".");
 					            		GamerLogger.logStackTrace("Verifier", ex);
 					            		exception = "EXCEPTION";
 					            		return false;
 					            	}catch(Error er){
-					            		GamerLogger.log("Verifier", "Machine #" + i + " failed computation legal moves for state " + theCurrentStates[i] + " and role " + theRole + ".");
+					            		GamerLogger.log("Verifier", "Machine #" + i + " failed computation of legal moves for state " + theCurrentStates[i] + " and role " + theRole + ".");
 					            		GamerLogger.logStackTrace("Verifier", er);
 					            		exception = "ERROR";
 					            		return false;

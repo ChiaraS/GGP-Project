@@ -2,6 +2,7 @@ package org.ggp.base.util.statemachine.implementation.propnet;
 
 import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -133,9 +134,11 @@ public class ExtendedStatePropnetStateMachine extends StateMachine {
     	// Add to the initial machine state all the base propositions that are connected to a true transition
     	// whose value also depends on the value of the INIT proposition.
     	Map<GdlSentence, ExtendedStateProposition> basePropositions = this.propNet.getBasePropositions();
-		for (GdlSentence s : contents){
-			if(!((ExtendedStateTransition) basePropositions.get(s).getSingleInput()).isDependingOnInit()){
-				contents.remove(s);
+
+    	Iterator<GdlSentence> iterator = contents.iterator();
+		while(iterator.hasNext()){
+			if(!((ExtendedStateTransition) basePropositions.get(iterator.next()).getSingleInput()).isDependingOnInit()){
+				iterator.remove();
 			}
 		}
 
@@ -162,31 +165,42 @@ public class ExtendedStatePropnetStateMachine extends StateMachine {
     	//System.out.println("COMPUTING NEXT STATE");
     	//FINE AGGIUNTA
 
-    	Set<GdlSentence> contents = new HashSet<GdlSentence>();
-
-    	// For all the base propositions that are true, add the corresponding proposition to the
-    	// next machine state.
-		for (ExtendedStateProposition p : this.propNet.getBasePropositions().values()){
-			if (p.getSingleInput().getValue()){
-				contents.add(p.getName());
-			}
-		}
-
-		return new MachineState(contents);
+		return new ExtendedStatePropnetMachineState(new HashSet<GdlSentence>(this.propNet.getNextStateContents()), this.propNet.getNextState().clone());
     }
 
 	/**
 	 * Computes if the state is terminal. Should return the value
 	 * of the terminal proposition for the state.
+	 * If the state is not an extended propnet state, it is first transformed into one.
+	 * Note that a new instance of state will be created and the one passed as parameter
+	 * won't be modified.
+	 *
+	 * @state a machine state.
+	 * @return true if the state is terminal, false otherwise.
 	 */
 	@Override
 	public boolean isTerminal(MachineState state) {
+		if(!(state instanceof ExtendedStatePropnetMachineState)){
+			state = this.stateToExtendedState(state);
+		}
+		return this.isTerminal((ExtendedStatePropnetMachineState)state);
+	}
+
+	/**
+	 * Computes if the state is terminal. Should return the value
+	 * of the terminal proposition for the state.
+	 *
+	 * @state a machine state.
+	 * @return true if the state is terminal, false otherwise.
+	 */
+	public boolean isTerminal(ExtendedStatePropnetMachineState state) {
 		this.markBases(state);
 		return this.propNet.getTerminalProposition().getValue();
 	}
 
 	/**
-	 * Computes the goal for a role in the current state.
+	 * Computes the goal for a role in the given state.
+	 * If the state is not an extended propnet state, it is first transformed into one.
 	 * Should return the value of the goal proposition that
 	 * is true for that role. If there is not exactly one goal
 	 * proposition true for that role, then you should throw a
@@ -194,6 +208,23 @@ public class ExtendedStatePropnetStateMachine extends StateMachine {
 	 */
 	@Override
 	public int getGoal(MachineState state, Role role)
+	throws GoalDefinitionException {
+		if(!(state instanceof ExtendedStatePropnetMachineState)){
+			state = this.stateToExtendedState(state);
+		}
+
+		return this.getGoal((ExtendedStatePropnetMachineState) state, role);
+
+	}
+
+	/**
+	 * Computes the goal for a role in the given state.
+	 * Should return the value of the goal proposition that
+	 * is true for that role. If there is not exactly one goal
+	 * proposition true for that role, then you should throw a
+	 * GoalDefinitionException because the goal is ill-defined.
+	 */
+	public int getGoal(ExtendedStatePropnetMachineState state, Role role)
 	throws GoalDefinitionException {
 		// Mark base propositions according to state.
 		this.markBases(state);
@@ -236,9 +267,23 @@ public class ExtendedStatePropnetStateMachine extends StateMachine {
 
 	/**
 	 * Computes the legal moves for role in state.
+	 * If the state is not an extended propnet state, it is first transformed into one.
 	 */
 	@Override
 	public List<Move> getLegalMoves(MachineState state, Role role)
+	throws MoveDefinitionException {
+
+		if(!(state instanceof ExtendedStatePropnetMachineState)){
+			state = this.stateToExtendedState(state);
+		}
+
+		return this.getLegalMoves((ExtendedStatePropnetMachineState) state, role);
+	}
+
+	/**
+	 * Computes the legal moves for role in state.
+	 */
+	public List<Move> getLegalMoves(ExtendedStatePropnetMachineState state, Role role)
 	throws MoveDefinitionException {
 		// Mark base propositions according to state.
 		this.markBases(state);
@@ -264,9 +309,24 @@ public class ExtendedStatePropnetStateMachine extends StateMachine {
 
 	/**
 	 * Computes the next state given a state and the list of moves.
+	 * If the state is not an extended propnet state, it is first transformed into one.
 	 */
 	@Override
 	public MachineState getNextState(MachineState state, List<Move> moves)
+	throws TransitionDefinitionException {
+
+		if(!(state instanceof ExtendedStatePropnetMachineState)){
+			state = this.stateToExtendedState(state);
+		}
+
+		// Compute next state for each base proposition from the corresponding transition.
+		return this.getNextState((ExtendedStatePropnetMachineState) state, moves);
+	}
+
+	/**
+	 * Computes the next state given a state and the list of moves.
+	 */
+	public MachineState getNextState(ExtendedStatePropnetMachineState state, List<Move> moves)
 	throws TransitionDefinitionException {
 		// Mark base propositions according to state.
 		this.markBases(state);

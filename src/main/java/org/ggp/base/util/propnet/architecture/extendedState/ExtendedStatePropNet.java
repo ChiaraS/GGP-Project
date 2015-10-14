@@ -372,6 +372,7 @@ public final class ExtendedStatePropNet
 				this.dependOnInit.fastSet(i);
 			}
 
+			i++;
 		}
 
 		return basePropositionsArray;
