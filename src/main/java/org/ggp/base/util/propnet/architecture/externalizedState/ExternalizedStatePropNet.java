@@ -1,4 +1,4 @@
-package org.ggp.base.util.propnet.architecture.forwardInterrupting;
+package org.ggp.base.util.propnet.architecture.externalizedState;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -16,95 +16,49 @@ import org.ggp.base.util.gdl.grammar.GdlRelation;
 import org.ggp.base.util.gdl.grammar.GdlSentence;
 import org.ggp.base.util.gdl.grammar.GdlTerm;
 import org.ggp.base.util.logging.GamerLogger;
-import org.ggp.base.util.propnet.architecture.forwardInterrupting.components.ForwardInterruptingAnd;
-import org.ggp.base.util.propnet.architecture.forwardInterrupting.components.ForwardInterruptingNot;
-import org.ggp.base.util.propnet.architecture.forwardInterrupting.components.ForwardInterruptingOr;
-import org.ggp.base.util.propnet.architecture.forwardInterrupting.components.ForwardInterruptingProposition;
-import org.ggp.base.util.propnet.architecture.forwardInterrupting.components.ForwardInterruptingTransition;
+import org.ggp.base.util.propnet.architecture.externalizedState.components.ExternalizedStateAnd;
+import org.ggp.base.util.propnet.architecture.externalizedState.components.ExternalizedStateNot;
+import org.ggp.base.util.propnet.architecture.externalizedState.components.ExternalizedStateOr;
+import org.ggp.base.util.propnet.architecture.externalizedState.components.ExternalizedStateProposition;
+import org.ggp.base.util.propnet.architecture.externalizedState.components.ExternalizedStateTransition;
 import org.ggp.base.util.statemachine.Role;
 
+public class ExternalizedStatePropNet {
 
-/**
- * The PropNet class is designed to represent Propositional Networks.
- *
- * A propositional network (also known as a "propnet") is a way of representing
- * a game as a logic circuit. States of the game are represented by assignments
- * of TRUE or FALSE to "base" propositions, each of which represents a single
- * fact that can be true about the state of the game. For example, in a game of
- * Tic-Tac-Toe, the fact (cell 1 1 x) indicates that the cell (1,1) has an 'x'
- * in it. That fact would correspond to a base proposition, which would be set
- * to TRUE to indicate that the fact is true in the current state of the game.
- * Likewise, the base corresponding to the fact (cell 1 1 o) would be false,
- * because in that state of the game there isn't an 'o' in the cell (1,1).
- *
- * A state of the game is uniquely determined by the assignment of truth values
- * to the base propositions in the propositional network. Every assignment of
- * truth values to base propositions corresponds to exactly one unique state of
- * the game.
- *
- * Given the values of the base propositions, you can use the connections in
- * the network (AND gates, OR gates, NOT gates) to determine the truth values
- * of other propositions. For example, you can determine whether the terminal
- * proposition is true: if that proposition is true, the game is over when it
- * reaches this state. Otherwise, if it is false, the game isn't over. You can
- * also determine the value of the goal propositions, which represent facts
- * like (goal xplayer 100). If that proposition is true, then that fact is true
- * in this state of the game, which means that xplayer has 100 points.
- *
- * You can also use a propositional network to determine the next state of the
- * game, given the current state and the moves for each player. First, you set
- * the input propositions which correspond to each move to TRUE. Once that has
- * been done, you can determine the truth value of the transitions. Each base
- * proposition has a "transition" component going into it. This transition has
- * the truth value that its base will take on in the next state of the game.
- *
- * For further information about propositional networks, see:
- *
- * "Decomposition of Games for Efficient Reasoning" by Eric Schkufza.
- * "Factoring General Games using Propositional Automata" by Evan Cox et al.
- *
- * @author Sam Schreiber
- */
-
-public final class ForwardInterruptingPropNet
-{
 	/** References to every component in the PropNet. */
-	private final Set<ForwardInterruptingComponent> components;
+	private final Set<ExternalizedStateComponent> components;
 
 	/** References to every Proposition in the PropNet. */
-	private final Set<ForwardInterruptingProposition> propositions;
+	private final Set<ExternalizedStateProposition> propositions;
 
-	/** References to every BaseProposition in the PropNet, indexed by name. */
-	private final Map<GdlSentence, ForwardInterruptingProposition> basePropositions;
-
-	/** References to every Transition in the PropNet, indexed by name. */
-	private final Map<GdlSentence, ForwardInterruptingTransition> transitions;
+	/** References to every BaseProposition in the PropNet. */
+	private final List<GdlSentence, ExternalizedStateProposition> basePropositions;
 
 	/** References to every InputProposition in the PropNet, indexed by name. */
-	private final Map<GdlSentence, ForwardInterruptingProposition> inputPropositions;
+	private final Map<GdlSentence, ExternalizedStateProposition> inputPropositions;
 
 	/** References to every LegalProposition in the PropNet, indexed by role. */
-	private final Map<Role, Set<ForwardInterruptingProposition>> legalPropositions;
+	private final Map<Role, Set<ExternalizedStateProposition>> legalPropositions;
 
 	/** References to every GoalProposition in the PropNet, indexed by role. */
-	private final Map<Role, Set<ForwardInterruptingProposition>> goalPropositions;
+	private final Map<Role, Set<ExternalizedStateProposition>> goalPropositions;
 
 	/** A reference to the single, unique, InitProposition. */
-	private final ForwardInterruptingProposition initProposition;
+	private final ExternalizedStateProposition initProposition;
 
 	/** A reference to the single, unique, TerminalProposition. */
-	private final ForwardInterruptingProposition terminalProposition;
+	private final ExternalizedStateProposition terminalProposition;
 
 	/** A helper mapping between input/legal propositions. */
-	private final Map<ForwardInterruptingProposition, ForwardInterruptingProposition> legalInputMap;
+	private final Map<ExternalizedStateProposition, ExternalizedStateProposition> legalInputMap;
 
 	/** A helper list of all of the roles. */
 	private final List<Role> roles;
 
-	public void addComponent(ForwardInterruptingComponent c)
+	public void addComponent(ExternalizedStateComponent c)
 	{
 		components.add(c);
-		if (c instanceof ForwardInterruptingProposition) propositions.add((ForwardInterruptingProposition)c);
+		if (c instanceof ExternalizedStateProposition) propositions.add((ExternalizedStateProposition)c);
 	}
 
 	/**
@@ -114,14 +68,13 @@ public final class ForwardInterruptingPropNet
 	 * @param components
 	 *            A list of Components.
 	 */
-	public ForwardInterruptingPropNet(List<Role> roles, Set<ForwardInterruptingComponent> components)
+	public ExternalizedStatePropNet(List<Role> roles, Set<ExternalizedStateComponent> components)
 	{
 
 	    this.roles = roles;
 		this.components = components;
 		this.propositions = recordPropositions();
 		this.basePropositions = recordBasePropositions();
-		this.transitions = recordTransitions();
 		this.inputPropositions = recordInputPropositions();
 		this.legalPropositions = recordLegalPropositions();
 		this.goalPropositions = recordGoalPropositions();
@@ -135,26 +88,26 @@ public final class ForwardInterruptingPropNet
 	    return roles;
 	}
 
-	public Map<ForwardInterruptingProposition, ForwardInterruptingProposition> getLegalInputMap()
+	public Map<ExternalizedStateProposition, ExternalizedStateProposition> getLegalInputMap()
 	{
 		return legalInputMap;
 	}
 
-	private Map<ForwardInterruptingProposition, ForwardInterruptingProposition> makeLegalInputMap() {
-		Map<ForwardInterruptingProposition, ForwardInterruptingProposition> legalInputMap = new HashMap<ForwardInterruptingProposition, ForwardInterruptingProposition>();
+	private Map<ExternalizedStateProposition, ExternalizedStateProposition> makeLegalInputMap() {
+		Map<ExternalizedStateProposition, ExternalizedStateProposition> legalInputMap = new HashMap<ExternalizedStateProposition, ExternalizedStateProposition>();
 		// Create a mapping from Body->Input.
-		Map<List<GdlTerm>, ForwardInterruptingProposition> inputPropsByBody = new HashMap<List<GdlTerm>, ForwardInterruptingProposition>();
-		for(ForwardInterruptingProposition inputProp : inputPropositions.values()) {
+		Map<List<GdlTerm>, ExternalizedStateProposition> inputPropsByBody = new HashMap<List<GdlTerm>, ExternalizedStateProposition>();
+		for(ExternalizedStateProposition inputProp : inputPropositions.values()) {
 			List<GdlTerm> inputPropBody = (inputProp.getName()).getBody();
 			inputPropsByBody.put(inputPropBody, inputProp);
 		}
 		// Use that mapping to map Input->Legal and Legal->Input
 		// based on having the same Body proposition.
-		for(Set<ForwardInterruptingProposition> legalProps : legalPropositions.values()) {
-			for(ForwardInterruptingProposition legalProp : legalProps) {
+		for(Set<ExternalizedStateProposition> legalProps : legalPropositions.values()) {
+			for(ExternalizedStateProposition legalProp : legalProps) {
 				List<GdlTerm> legalPropBody = (legalProp.getName()).getBody();
 				if (inputPropsByBody.containsKey(legalPropBody)) {
-					ForwardInterruptingProposition inputProp = inputPropsByBody.get(legalPropBody);
+					ExternalizedStateProposition inputProp = inputPropsByBody.get(legalPropBody);
     				legalInputMap.put(inputProp, legalProp);
     				legalInputMap.put(legalProp, inputProp);
 				}
@@ -169,7 +122,7 @@ public final class ForwardInterruptingPropNet
 	 * @return References to every BaseProposition in the PropNet, indexed by
 	 *         name.
 	 */
-	public Map<GdlSentence, ForwardInterruptingProposition> getBasePropositions()
+	public Map<GdlSentence, ExternalizedStateProposition> getBasePropositions()
 	{
 		return basePropositions;
 	}
@@ -179,7 +132,7 @@ public final class ForwardInterruptingPropNet
 	 *
 	 * @return References to every Component in the PropNet.
 	 */
-	public Set<ForwardInterruptingComponent> getComponents()
+	public Set<ExternalizedStateComponent> getComponents()
 	{
 		return components;
 	}
@@ -190,7 +143,7 @@ public final class ForwardInterruptingPropNet
 	 * @return References to every GoalProposition in the PropNet, indexed by
 	 *         player name.
 	 */
-	public Map<Role, Set<ForwardInterruptingProposition>> getGoalPropositions()
+	public Map<Role, Set<ExternalizedStateProposition>> getGoalPropositions()
 	{
 		return goalPropositions;
 	}
@@ -200,7 +153,7 @@ public final class ForwardInterruptingPropNet
 	 *
 	 * @return
 	 */
-	public ForwardInterruptingProposition getInitProposition()
+	public ExternalizedStateProposition getInitProposition()
 	{
 		return initProposition;
 	}
@@ -211,7 +164,7 @@ public final class ForwardInterruptingPropNet
 	 * @return References to every InputProposition in the PropNet, indexed by
 	 *         name.
 	 */
-	public Map<GdlSentence, ForwardInterruptingProposition> getInputPropositions()
+	public Map<GdlSentence, ExternalizedStateProposition> getInputPropositions()
 	{
 		return inputPropositions;
 	}
@@ -222,7 +175,7 @@ public final class ForwardInterruptingPropNet
 	 * @return References to every LegalProposition in the PropNet, indexed by
 	 *         player name.
 	 */
-	public Map<Role, Set<ForwardInterruptingProposition>> getLegalPropositions()
+	public Map<Role, Set<ExternalizedStateProposition>> getLegalPropositions()
 	{
 		return legalPropositions;
 	}
@@ -232,7 +185,7 @@ public final class ForwardInterruptingPropNet
 	 *
 	 * @return References to every Proposition in the PropNet.
 	 */
-	public Set<ForwardInterruptingProposition> getPropositions()
+	public Set<ExternalizedStateProposition> getPropositions()
 	{
 		return propositions;
 	}
@@ -242,7 +195,7 @@ public final class ForwardInterruptingPropNet
 	 *
 	 * @return A reference to the single, unique, TerminalProposition.
 	 */
-	public ForwardInterruptingProposition getTerminalProposition()
+	public ExternalizedStateProposition getTerminalProposition()
 	{
 		return terminalProposition;
 	}
@@ -258,7 +211,7 @@ public final class ForwardInterruptingPropNet
 		StringBuilder sb = new StringBuilder();
 
 		sb.append("digraph propNet\n{\n");
-		for ( ForwardInterruptingComponent component : components )
+		for ( ExternalizedStateComponent component : components )
 		{
 			sb.append("\t" + component.toString() + "\n");
 		}
@@ -295,33 +248,21 @@ public final class ForwardInterruptingPropNet
 	 *
 	 * @return An index over the BasePropositions in the PropNet.
 	 */
-	private Map<GdlSentence, ForwardInterruptingProposition> recordBasePropositions()
+	private Map<GdlSentence, ExternalizedStateProposition> recordBasePropositions()
 	{
-		Map<GdlSentence, ForwardInterruptingProposition> basePropositions = new HashMap<GdlSentence, ForwardInterruptingProposition>();
-		for (ForwardInterruptingProposition proposition : propositions) {
+		Map<GdlSentence, ExternalizedStateProposition> basePropositions = new HashMap<GdlSentence, ExternalizedStateProposition>();
+		for (ExternalizedStateProposition proposition : propositions) {
 		    // Skip all propositions without exactly one input.
 		    if (proposition.getInputs().size() != 1)
 		        continue;
 
-			ForwardInterruptingComponent component = proposition.getSingleInput();
-			if (component instanceof ForwardInterruptingTransition) {
+			ExternalizedStateComponent component = proposition.getSingleInput();
+			if (component instanceof ExternalizedStateTransition) {
 				basePropositions.put(proposition.getName(), proposition);
 			}
 		}
 
 		return basePropositions;
-	}
-
-	private Map<GdlSentence, ForwardInterruptingTransition> recordTransitions()
-	{
-		Map<GdlSentence, ForwardInterruptingTransition> transitions = new HashMap<GdlSentence, ForwardInterruptingTransition>();
-		for (ForwardInterruptingComponent component : components) {
-		    if (component instanceof ForwardInterruptingTransition) {
-				transitions.put(((ForwardInterruptingProposition)component.getSingleOutput()).getName(), (ForwardInterruptingTransition) component);
-			}
-		}
-
-		return transitions;
 	}
 
 	/**
@@ -334,10 +275,10 @@ public final class ForwardInterruptingPropNet
 	 *
 	 * @return An index over the GoalPropositions in the PropNet.
 	 */
-	private Map<Role, Set<ForwardInterruptingProposition>> recordGoalPropositions()
+	private Map<Role, Set<ExternalizedStateProposition>> recordGoalPropositions()
 	{
-		Map<Role, Set<ForwardInterruptingProposition>> goalPropositions = new HashMap<Role, Set<ForwardInterruptingProposition>>();
-		for (ForwardInterruptingProposition proposition : propositions)
+		Map<Role, Set<ExternalizedStateProposition>> goalPropositions = new HashMap<Role, Set<ExternalizedStateProposition>>();
+		for (ExternalizedStateProposition proposition : propositions)
 		{
 		    // Skip all propositions that aren't GdlRelations.
 		    if (!(proposition.getName() instanceof GdlRelation))
@@ -349,7 +290,7 @@ public final class ForwardInterruptingPropNet
 
 			Role theRole = new Role((GdlConstant) relation.get(0));
 			if (!goalPropositions.containsKey(theRole)) {
-				goalPropositions.put(theRole, new HashSet<ForwardInterruptingProposition>());
+				goalPropositions.put(theRole, new HashSet<ExternalizedStateProposition>());
 			}
 			goalPropositions.get(theRole).add(proposition);
 		}
@@ -362,9 +303,9 @@ public final class ForwardInterruptingPropNet
 	 *
 	 * @return A reference to the single, unique, InitProposition.
 	 */
-	private ForwardInterruptingProposition recordInitProposition()
+	private ExternalizedStateProposition recordInitProposition()
 	{
-		for (ForwardInterruptingProposition proposition : propositions)
+		for (ExternalizedStateProposition proposition : propositions)
 		{
 		    // Skip all propositions that aren't GdlPropositions.
 			if (!(proposition.getName() instanceof GdlProposition))
@@ -383,10 +324,10 @@ public final class ForwardInterruptingPropNet
 	 *
 	 * @return An index over the InputPropositions in the PropNet.
 	 */
-	private Map<GdlSentence, ForwardInterruptingProposition> recordInputPropositions()
+	private Map<GdlSentence, ExternalizedStateProposition> recordInputPropositions()
 	{
-		Map<GdlSentence, ForwardInterruptingProposition> inputPropositions = new HashMap<GdlSentence, ForwardInterruptingProposition>();
-		for (ForwardInterruptingProposition proposition : propositions)
+		Map<GdlSentence, ExternalizedStateProposition> inputPropositions = new HashMap<GdlSentence, ExternalizedStateProposition>();
+		for (ExternalizedStateProposition proposition : propositions)
 		{
 		    // Skip all propositions that aren't GdlFunctions.
 			if (!(proposition.getName() instanceof GdlRelation))
@@ -406,10 +347,10 @@ public final class ForwardInterruptingPropNet
 	 *
 	 * @return An index over the LegalPropositions in the PropNet.
 	 */
-	private Map<Role, Set<ForwardInterruptingProposition>> recordLegalPropositions()
+	private Map<Role, Set<ExternalizedStateProposition>> recordLegalPropositions()
 	{
-		Map<Role, Set<ForwardInterruptingProposition>> legalPropositions = new HashMap<Role, Set<ForwardInterruptingProposition>>();
-		for (ForwardInterruptingProposition proposition : propositions)
+		Map<Role, Set<ExternalizedStateProposition>> legalPropositions = new HashMap<Role, Set<ExternalizedStateProposition>>();
+		for (ExternalizedStateProposition proposition : propositions)
 		{
 		    // Skip all propositions that aren't GdlRelations.
 			if (!(proposition.getName() instanceof GdlRelation))
@@ -420,7 +361,7 @@ public final class ForwardInterruptingPropNet
 				GdlConstant name = (GdlConstant) relation.get(0);
 				Role r = new Role(name);
 				if (!legalPropositions.containsKey(r)) {
-					legalPropositions.put(r, new HashSet<ForwardInterruptingProposition>());
+					legalPropositions.put(r, new HashSet<ExternalizedStateProposition>());
 				}
 				legalPropositions.get(r).add(proposition);
 			}
@@ -434,13 +375,13 @@ public final class ForwardInterruptingPropNet
 	 *
 	 * @return An index over Propositions in the PropNet.
 	 */
-	private Set<ForwardInterruptingProposition> recordPropositions()
+	private Set<ExternalizedStateProposition> recordPropositions()
 	{
-		Set<ForwardInterruptingProposition> propositions = new HashSet<ForwardInterruptingProposition>();
-		for (ForwardInterruptingComponent component : components)
+		Set<ExternalizedStateProposition> propositions = new HashSet<ExternalizedStateProposition>();
+		for (ExternalizedStateComponent component : components)
 		{
-			if (component instanceof ForwardInterruptingProposition) {
-				propositions.add((ForwardInterruptingProposition) component);
+			if (component instanceof ExternalizedStateProposition) {
+				propositions.add((ExternalizedStateProposition) component);
 			}
 		}
 		return propositions;
@@ -451,9 +392,9 @@ public final class ForwardInterruptingPropNet
 	 *
 	 * @return A reference to the single, unqiue, TerminalProposition.
 	 */
-	private ForwardInterruptingProposition recordTerminalProposition()
+	private ExternalizedStateProposition recordTerminalProposition()
 	{
-		for ( ForwardInterruptingProposition proposition : propositions )
+		for ( ExternalizedStateProposition proposition : propositions )
 		{
 			if ( proposition.getName() instanceof GdlProposition )
 			{
@@ -474,29 +415,17 @@ public final class ForwardInterruptingPropNet
 
 	public int getNumAnds() {
 		int andCount = 0;
-		for(ForwardInterruptingComponent c : components) {
-			if(c instanceof ForwardInterruptingAnd)
+		for(ExternalizedStateComponent c : components) {
+			if(c instanceof ExternalizedStateAnd)
 				andCount++;
 		}
 		return andCount;
 	}
 
-	public int getNumBases() {
-		return this.basePropositions.values().size();
-	}
-
-	public int getNumTransitions() {
-		return this.transitions.values().size();
-	}
-
-	public int getNumInputs() {
-		return this.inputPropositions.values().size();
-	}
-
 	public int getNumOrs() {
 		int orCount = 0;
-		for(ForwardInterruptingComponent c : components) {
-			if(c instanceof ForwardInterruptingOr)
+		for(ExternalizedStateComponent c : components) {
+			if(c instanceof ExternalizedStateOr)
 				orCount++;
 		}
 		return orCount;
@@ -504,8 +433,8 @@ public final class ForwardInterruptingPropNet
 
 	public int getNumNots() {
 		int notCount = 0;
-		for(ForwardInterruptingComponent c : components) {
-			if(c instanceof ForwardInterruptingNot)
+		for(ExternalizedStateComponent c : components) {
+			if(c instanceof ExternalizedStateNot)
 				notCount++;
 		}
 		return notCount;
@@ -513,7 +442,7 @@ public final class ForwardInterruptingPropNet
 
 	public int getNumLinks() {
 		int linkCount = 0;
-		for(ForwardInterruptingComponent c : components) {
+		for(ExternalizedStateComponent c : components) {
 			linkCount += c.getOutputs().size();
 		}
 		return linkCount;
@@ -528,19 +457,19 @@ public final class ForwardInterruptingPropNet
 	 *
 	 * The INIT and terminal components cannot be removed.
 	 */
-	public void removeComponent(ForwardInterruptingComponent c) {
+	public void removeComponent(ExternalizedStateComponent c) {
 
 
 		//Go through all the collections it could appear in
-		if(c instanceof ForwardInterruptingProposition) {
-			ForwardInterruptingProposition p = (ForwardInterruptingProposition) c;
+		if(c instanceof ExternalizedStateProposition) {
+			ExternalizedStateProposition p = (ExternalizedStateProposition) c;
 			GdlSentence name = p.getName();
 			if(basePropositions.containsKey(name)) {
 				basePropositions.remove(name);
 			} else if(inputPropositions.containsKey(name)) {
 				inputPropositions.remove(name);
 				//The map goes both ways...
-				ForwardInterruptingProposition partner = legalInputMap.get(p);
+				ExternalizedStateProposition partner = legalInputMap.get(p);
 				if(partner != null) {
 					legalInputMap.remove(partner);
 					legalInputMap.remove(p);
@@ -550,17 +479,17 @@ public final class ForwardInterruptingPropNet
 			} else if(name == GdlPool.getProposition(GdlPool.getConstant("terminal"))) {
 				throw new RuntimeException("The terminal component cannot be removed.");
 			} else {
-				for(Set<ForwardInterruptingProposition> propositions : legalPropositions.values()) {
+				for(Set<ExternalizedStateProposition> propositions : legalPropositions.values()) {
 					if(propositions.contains(p)) {
 						propositions.remove(p);
-						ForwardInterruptingProposition partner = legalInputMap.get(p);
+						ExternalizedStateProposition partner = legalInputMap.get(p);
 						if(partner != null) {
 							legalInputMap.remove(partner);
 							legalInputMap.remove(p);
 						}
 					}
 				}
-				for(Set<ForwardInterruptingProposition> propositions : goalPropositions.values()) {
+				for(Set<ExternalizedStateProposition> propositions : goalPropositions.values()) {
 					propositions.remove(p);
 				}
 			}
@@ -569,9 +498,9 @@ public final class ForwardInterruptingPropNet
 		components.remove(c);
 
 		//Remove all the local links to the component
-		for(ForwardInterruptingComponent parent : c.getInputs())
+		for(ExternalizedStateComponent parent : c.getInputs())
 			parent.removeOutput(c);
-		for(ForwardInterruptingComponent child : c.getOutputs())
+		for(ExternalizedStateComponent child : c.getOutputs())
 			child.removeInput(c);
 		//These are actually unnecessary...
 		//c.removeAllInputs();
@@ -588,7 +517,7 @@ public final class ForwardInterruptingPropNet
 	 */
 	public void imposeConsistency(){
 		//TODO: detect endlessly flipping values to stop computation and avoid getting stuck here
-		for(ForwardInterruptingComponent component: this.components){
+		for(ExternalizedStateComponent component: this.components){
 			component.imposeConsistency();
 		}
 	}
@@ -599,8 +528,9 @@ public final class ForwardInterruptingPropNet
 	 * This method exists to be used to reset the propnet if something weird seems to happen with its values.
 	 */
 	public void resetValues(){
-		for(ForwardInterruptingComponent component: this.components){
+		for(ExternalizedStateComponent component: this.components){
 			component.resetValue();
 		}
 	}
+
 }

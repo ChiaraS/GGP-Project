@@ -346,6 +346,7 @@ public final class ExtendedStatePropNet
 		return basePropositions;
 	}
 
+
 	/**
 	 * Builds an array containing all the base propositions in the propnet in a fixed order.
 	 * It also gives to each transition a reference to the array of bits representing the next
@@ -560,6 +561,8 @@ public final class ExtendedStatePropNet
 		}
 		return linkCount;
 	}
+
+
 
 	/**
 	 * Removes a component from the propnet. Be very careful when using

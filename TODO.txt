@@ -1,3 +1,19 @@
+STAMPA GLI INPUT DI ZHADU PRIMA E DOPO AVER RIMOSSO GLI UNREACHABLE E CONTROLLA SE SONO STATI RIMOSSI QUELLI CHE NON SONO MAI LEGALI!
+
+CRECA ESEMPIO IN CUI VENGONO RIMOSSE LE BASE E CONTROLLA SE SONO QUELLE CHE NON DIVENTANO MAI VERE PERCHE NESSUNA NEXT É SODDISFATTA
+
+
+
+
+
+
+
+
+
+
+
+
+
 RUN CADIA WITH CORRECT PARENTHESIS
 
 UNINSTALL CENTOS 5 LAST FROM VM
@@ -18,6 +34,8 @@ RUN SPEED TESTS WITH THESE!
 SWITCH TO NEWER INTERPROLOG EVEN IF DOESN'T SUPPORT YAP AND TEST SPEED AGAIN
 
 
+
+controla se sancho ha modificato i metodi della propnet factory (remove init, remove anon, remove base and inputs)
 
 PROPNET IMPROVEMENTS
 - Represent states as array of bits, each of wich corresponds to a base prop and is =1 if the prop is true in the state, =0 otherwise

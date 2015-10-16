@@ -72,6 +72,10 @@ public class ExtendedStatePropnetStateMachine extends StateMachine {
     	this.propnetConstructionTime = System.currentTimeMillis() - startTime;
 		GamerLogger.log("StateMachine", "[Propnet Creator] Propnet creation done. It took " + (this.propnetConstructionTime) + "ms.");
 
+		ExtendedStatePropNetFactory.removeAnonymousPropositions(this.propNet);
+
+		GamerLogger.log("StateMachine", "[Propnet Creator] Removed anonymous propositions.");
+
 		// Compute the roles
    		this.roles = ImmutableList.copyOf(this.propNet.getRoles());
         // If it exists, set init proposition to true without propagating, so that when making

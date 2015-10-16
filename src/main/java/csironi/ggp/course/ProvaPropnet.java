@@ -6,7 +6,10 @@ package csironi.ggp.course;
 import java.io.BufferedWriter;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.util.Collection;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import org.apache.lucene.util.OpenBitSet;
 import org.ggp.base.util.game.Game;
@@ -15,6 +18,8 @@ import org.ggp.base.util.gdl.grammar.Gdl;
 import org.ggp.base.util.logging.GamerLogger;
 import org.ggp.base.util.propnet.architecture.extendedState.ExtendedStatePropNet;
 import org.ggp.base.util.propnet.architecture.forwardInterrupting.ForwardInterruptingPropNet;
+import org.ggp.base.util.propnet.architecture.forwardInterrupting.components.ForwardInterruptingProposition;
+import org.ggp.base.util.propnet.architecture.forwardInterrupting.components.ForwardInterruptingTransition;
 import org.ggp.base.util.propnet.factory.ForwardInterruptingPropNetFactory;
 import org.ggp.base.util.statemachine.MachineState;
 import org.ggp.base.util.statemachine.Move;
@@ -40,11 +45,13 @@ public class ProvaPropnet {
 
 		//String description = "( ( role player1 ) ( role player2 ) ( <= ( base ( guessed ?player ?number ) ) ( role ?player ) ( guessableNumber ?number ) ) ( <= ( input ?player ( guess ?number ) ) ( role ?player ) ( guessableNumber ?number ) ) ( <= ( legal ?player ( guess ?number ) ) ( role ?player ) ( guessableNumber ?number ) ) ( <= ( next ( guessed ?player ?number ) ) ( does ?player ( guess ?number ) ) ) ( <= ( total ?number ) ( true ( guessed player1 ?n1 ) ) ( true ( guessed player2 ?n2 ) ) ( sum ?n1 ?n2 ?number ) ) ( <= ( twoThirdsAverage ?out ) ( total ?total ) ( times3 ?out ?total ) ) ( <= ( twoThirdsAverage ?out ) ( total ?total ) ( succ ?total ?tp1 ) ( times3 ?out ?tp1 ) ) ( <= ( twoThirdsAverage ?out ) ( total ?total ) ( succ ?tm1 ?total ) ( times3 ?out ?tm1 ) ) ( <= ( closeness ?player ?score ) ( true ( guessed ?player ?guess ) ) ( twoThirdsAverage ?result ) ( absDiff ?result ?guess ?score ) ) ( <= ( notClosest ?player ) ( closeness ?player ?score ) ( closeness ?otherPlayer ?lowerScore ) ( distinct ?player ?otherPlayer ) ( lt ?lowerScore ?score ) ) ( <= ( closest ?player ) ( role ?player ) ( not ( notClosest ?player ) ) ) ( <= ( goal player1 100 ) ( closest player1 ) ( notClosest player2 ) ) ( <= ( goal player2 100 ) ( notClosest player1 ) ( closest player2 ) ) ( <= ( goal ?player 50 ) ( role ?player ) ( closest player1 ) ( closest player2 ) ) ( <= ( goal ?player 0 ) ( notClosest ?player ) ) ( <= terminal ( true ( guessed ?player ?number ) ) ) ( <= ( absDiff ?x ?x 0 ) ( anyNumber ?x ) ) ( <= ( absDiff ?x ?y ?z ) ( lt ?y ?x ) ( succ ?xm1 ?x ) ( absDiff ?xm1 ?y ?zm1 ) ( succ ?zm1 ?z ) ) ( <= ( absDiff ?x ?y ?z ) ( lt ?x ?y ) ( succ ?ym1 ?y ) ( absDiff ?x ?ym1 ?zm1 ) ( succ ?zm1 ?z ) ) ( <= ( sum ?x 0 ?x ) ( anyNumber ?x ) ) ( <= ( sum ?x ?y ?z ) ( succ ?ym1 ?y ) ( sum ?x ?ym1 ?zm1 ) ( succ ?zm1 ?z ) ) ( times3 0 0 ) ( <= ( times3 ?x ?y ) ( succ ?ym1 ?y ) ( succ ?ym2 ?ym1 ) ( succ ?ym3 ?ym2 ) ( times3 ?xm1 ?ym3 ) ( succ ?xm1 ?x ) ) ( <= ( lt ?x ?y ) ( lte ?x ?y ) ( distinct ?x ?y ) ) ( <= ( lte ?x ?x ) ( anyNumber ?x ) ) ( <= ( lte ?x ?y ) ( succ ?ym1 ?y ) ( lte ?x ?ym1 ) ) ( anyNumber 0 ) (<= ( anyNumber ?n ) ( succ ?m ?n ) ) ( <= ( guessableNumber ?number ) ( lte ?number 3 ) ) ( succ 0 1 ) ( succ 1 2 ) ( succ 2 3 ) ( succ 3 4 ) ( succ 4 5 ) ( succ 5 6 ) ( succ 6 7 ) )";
 
-		printPropnet("ticTacToe");
+		printPropnetImprovements("zhadu");
+
+		//printPropnet("ticTacToe");
 
 		//provaOpenbitset();
 
-		provaGameExtendedPropnet("coins_atomic");
+		//provaGameExtendedPropnet("coins_atomic");
 
 	}
 
@@ -233,6 +240,157 @@ public class ProvaPropnet {
         } catch (IOException e) {
             e.printStackTrace();
         }
+
+	}
+
+	/**
+	 * This method, given the GDL description, builds the corresponding propnet,
+	 * prints its .dot representation and saves it in a file, both before and after
+	 * imposing the consistency on the values of the components of the propnet.
+	 *
+	 * NOTE that this method doesn't check the propnet building time. It will
+	 * wait indefinitely for the propnet to build.
+	 *
+	 * @param description the GDL description of the game.
+	 * @param gameName the key of the game, used to reate the .dot files names.
+	 */
+	public static void printPropnetImprovements(String gameKey){
+
+		GameRepository theRepository = GameRepository.getDefaultRepository();
+
+		List<Gdl> description = theRepository.getGame(gameKey).getRules();
+
+		ForwardInterruptingPropNet propNet = null;
+
+		try {
+			propNet = ForwardInterruptingPropNetFactory.create(description, true);
+			System.out.println("Propnet has " +propNet.getNumBases() + " bases; "+propNet.getNumTransitions()+" transitions; "+propNet.getNumInputs()+" inputs");
+		} catch (InterruptedException e) {
+			System.out.println("Something went wrong with the creation of the propnet!");
+			e.printStackTrace();
+			return;
+		}
+
+		String string = null;
+
+		if(propNet != null){
+
+			string = propNet.toString();
+		}
+
+		//System.out.println(string);
+
+		/*
+		// SAVE TO FILE
+		try{
+    		// Write propnet to file
+            BufferedWriter out = new BufferedWriter(new FileWriter(gameKey + "Propnet.dot", false));
+            out.write(string);
+            out.close();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        */
+
+		long startTime;
+		if(propNet != null){
+			System.out.println("Removing amomymous props");
+			startTime = System.currentTimeMillis();
+			ForwardInterruptingPropNetFactory.removeAnonymousPropositions(propNet);
+			System.out.println("Done removing amomymous props; took " + (System.currentTimeMillis() - startTime) + "ms, propnet has " + propNet.getComponents().size() + " components and " + propNet.getNumLinks() + " links");
+			System.out.println("Propnet has " +propNet.getNumAnds()+" ands; "+propNet.getNumOrs()+" ors; "+propNet.getNumNots()+" nots");
+			System.out.println("Propnet has " +propNet.getNumBases() + " bases; "+propNet.getNumTransitions()+" transitions; "+propNet.getNumInputs()+" inputs");
+			string = propNet.toString();
+		}
+
+		/*
+		// SAVE TO FILE
+		try{
+    		// Write propnet to file
+            BufferedWriter out = new BufferedWriter(new FileWriter(gameKey + "AnonPropnet.dot", false));
+            out.write(string);
+            out.close();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        */
+
+		if(propNet != null){
+			System.out.println("Removing init props");
+			startTime = System.currentTimeMillis();
+			ForwardInterruptingPropNetFactory.removeInits(propNet);
+			System.out.println("Done removing init props; took " + (System.currentTimeMillis() - startTime) + "ms, propnet has " + propNet.getComponents().size() + " components and " + propNet.getNumLinks() + " links");
+			System.out.println("Propnet has " +propNet.getNumAnds()+" ands; "+propNet.getNumOrs()+" ors; "+propNet.getNumNots()+" nots");
+			System.out.println("Propnet has " +propNet.getNumBases() + " bases; "+propNet.getNumTransitions()+" transitions; "+propNet.getNumInputs()+" inputs");
+			string = propNet.toString();
+		}
+
+
+		// SAVE TO FILE
+		try{
+    		// Write propnet to file
+            BufferedWriter out = new BufferedWriter(new FileWriter(gameKey + "NoInitPropnet.dot", false));
+            out.write(string);
+            out.close();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+
+		if(propNet != null){
+			System.out.println("Removing unreachable bases and inputs.");
+			startTime = System.currentTimeMillis();
+			Collection<ForwardInterruptingProposition> baseProps = propNet.getBasePropositions().values();
+
+			Set<ForwardInterruptingProposition> basesTrueByInit = new HashSet<ForwardInterruptingProposition>();
+
+			for(ForwardInterruptingProposition p : baseProps){
+				if(((ForwardInterruptingTransition)p.getSingleInput()).isDependingOnInit()){
+					basesTrueByInit.add(p);
+				}
+			}
+
+			try {
+				ForwardInterruptingPropNetFactory.removeUnreachableBasesAndInputs(propNet, basesTrueByInit);
+			} catch (InterruptedException e) {
+				System.out.println("Something went wrong with the removal of unreachable bases and inputs!");
+				e.printStackTrace();
+				return;
+			}
+			System.out.println("Done removing unreachable bases and inputs; took " + (System.currentTimeMillis() - startTime) + "ms, propnet has " + propNet.getComponents().size() + " components and " + propNet.getNumLinks() + " links");
+			System.out.println("Propnet has " +propNet.getNumAnds()+" ands; "+propNet.getNumOrs()+" ors; "+propNet.getNumNots()+" nots");
+			System.out.println("Propnet has " +propNet.getNumBases() + " bases; "+propNet.getNumTransitions()+" transitions; "+propNet.getNumInputs()+" inputs");
+			string = propNet.toString();
+		}
+
+
+		// SAVE TO FILE
+		try{
+    		// Write propnet to file
+            BufferedWriter out = new BufferedWriter(new FileWriter(gameKey + "NoUnreachablePropnet.dot", false));
+            out.write(string);
+            out.close();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+
+		if(propNet != null){
+			propNet.imposeConsistency();
+			string = propNet.toString();
+		}
+
+		/*
+		// SAVE TO FILE
+		try{
+    		// Write propnet to file
+            BufferedWriter out = new BufferedWriter(new FileWriter(gameKey + "InitPropnet.dot", false));
+            out.write(string);
+            out.close();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        */
 
 	}
 

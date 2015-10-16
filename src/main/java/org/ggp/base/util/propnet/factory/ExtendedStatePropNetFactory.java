@@ -114,6 +114,7 @@ public class ExtendedStatePropNetFactory {
 
 	public static ExtendedStatePropNet create(List<Gdl> description, boolean verbose) throws InterruptedException {
 		System.out.println("Building propnet...");
+		//GamerLogger.log("PropnetFactory", "Building propnet...");
 
 		long startTime = System.currentTimeMillis();
 
@@ -129,6 +130,15 @@ public class ExtendedStatePropNetFactory {
 			for(Gdl gdl : description)
 				System.out.println(gdl);
 
+		/*
+		if(verbose){
+			String gdlString = "";
+			for(Gdl gdl : description)
+				gdlString += gdl + "\n";
+			GamerLogger.log("PropnetFactory", gdlString);
+		}
+		*/
+
 		//We want to start with a rule graph and follow the rule graph.
 		//Start by finding general information about the game
 		SentenceDomainModel model = SentenceDomainModelFactory.createWithCartesianDomains(description);
@@ -137,12 +147,16 @@ public class ExtendedStatePropNetFactory {
 		//could be useful.
 		model = SentenceDomainModelOptimizer.restrictDomainsToUsefulValues(model);
 
-		if(verbose)
+		if(verbose){
 			System.out.println("Setting constants...");
+			//GamerLogger.log("PropnetFactory", "Setting constants...");
+		}
 
 		ConstantChecker constantChecker = ConstantCheckerFactory.createWithForwardChaining(model);
-		if(verbose)
-			System.out.println("Done setting constants");
+		if(verbose){
+			System.out.println("Done setting constants.");
+			//GamerLogger.log("PropnetFactory", "Done setting constants.");
+		}
 
 		Set<String> sentenceFormNames = SentenceForms.getNames(model.getSentenceForms());
 		boolean usingBase = sentenceFormNames.contains("base");
@@ -157,11 +171,14 @@ public class ExtendedStatePropNetFactory {
 		if(verbose) {
 			System.out.print("Computing topological ordering... ");
 			System.out.flush();
+			//GamerLogger.log("PropnetFactory", "Computing topological ordering... ");
 		}
 		ConcurrencyUtils.checkForInterruption();
 		List<SentenceForm> topologicalOrdering = getTopologicalOrdering(model.getSentenceForms(), dependencyGraph, usingBase, usingInput);
-		if(verbose)
+		if(verbose){
 			System.out.println("done");
+			//GamerLogger.log("PropnetFactory", "done");
+		}
 
 		List<Role> roles = Role.computeRoles(description);
 		Map<GdlSentence, ExtendedStateComponent> components = new HashMap<GdlSentence, ExtendedStateComponent>();
@@ -176,10 +193,13 @@ public class ExtendedStatePropNetFactory {
 			if(verbose) {
 				System.out.print("Adding sentence form " + form);
 				System.out.flush();
+				//GamerLogger.log("PropnetFactory", "Adding sentence form " + form);
 			}
 			if(constantChecker.isConstantForm(form)) {
-				if(verbose)
+				if(verbose){
 					System.out.println(" (constant)");
+					//GamerLogger.log("PropnetFactory", " (constant)");
+				}
 				//Only add it if it's important
 				if(form.getName().equals(LEGAL)
 						|| form.getName().equals(GOAL)
@@ -195,23 +215,29 @@ public class ExtendedStatePropNetFactory {
 					}
 				}
 
-				if(verbose)
+				if(verbose){
 					System.out.println("Checking whether " + form + " is a functional constant...");
+					//GamerLogger.log("PropnetFactory", "Checking whether " + form + " is a functional constant...");
+				}
 				addConstantsToFunctionInfo(form, constantChecker, functionInfoMap);
 				addFormToCompletedValues(form, completedSentenceFormValues, constantChecker);
 
 				continue;
 			}
-			if(verbose)
+			if(verbose){
 				System.out.println();
+				//GamerLogger.log(GamerLogger.FORMAT.PLAIN_FORMAT, "PropnetFactory", "");
+			}
 			//TODO: Adjust "recursive forms" appropriately
 			//Add a temporary sentence form thingy? ...
 			Map<GdlSentence, ExtendedStateComponent> temporaryComponents = new HashMap<GdlSentence, ExtendedStateComponent>();
 			Map<GdlSentence, ExtendedStateComponent> temporaryNegations = new HashMap<GdlSentence, ExtendedStateComponent>();
 			addSentenceForm(form, model, components, negations, trueComponent, falseComponent, usingBase, usingInput, Collections.singleton(form), temporaryComponents, temporaryNegations, functionInfoMap, constantChecker, completedSentenceFormValues);
 			//TODO: Pass these over groups of multiple sentence forms
-			if(verbose && !temporaryComponents.isEmpty())
+			if(verbose && !temporaryComponents.isEmpty()){
 				System.out.println("Processing temporary components...");
+				//GamerLogger.log("PropnetFactory", "Processing temporary components...");
+			}
 			processTemporaryComponents(temporaryComponents, temporaryNegations, components, negations, trueComponent, falseComponent);
 			addFormToCompletedValues(form, completedSentenceFormValues, components);
 			//if(verbose)
@@ -219,25 +245,33 @@ public class ExtendedStatePropNetFactory {
 				//System.out.println("  "+completedSentenceFormValues.get(form).size() + " components added");
 		}
 		//Connect "next" to "true"
-		if(verbose)
+		if(verbose){
 			System.out.println("Adding transitions...");
+			//GamerLogger.log("PropnetFactory", "Adding transitions...");
+		}
 		addTransitions(components);
 		//Set up "init" proposition
-		if(verbose)
+		if(verbose){
 			System.out.println("Setting up 'init' proposition...");
+			//GamerLogger.log("PropnetFactory", "Setting up 'init' proposition...");
+		}
 		setUpInit(components, trueComponent, falseComponent);
 		//Now we can safely...
 		removeUselessBasePropositions(components, negations, trueComponent, falseComponent);
-		if(verbose)
+		if(verbose){
 			System.out.println("Creating component set...");
+			//GamerLogger.log("PropnetFactory", "Creating component set...");
+		}
 		Set<ExtendedStateComponent> componentSet = new HashSet<ExtendedStateComponent>(components.values());
 		//Try saving some memory here...
 		components = null;
 		negations = null;
 		completeComponentSet(componentSet);
 		ConcurrencyUtils.checkForInterruption();
-		if(verbose)
+		if(verbose){
 			System.out.println("Initializing propnet object...");
+			//GamerLogger.log("PropnetFactory", "Initializing propnet object...");
+		}
 		//Make it look the same as the PropNetFactory results, until we decide
 		//how we want it to look
 		normalizePropositions(componentSet);
@@ -245,6 +279,8 @@ public class ExtendedStatePropNetFactory {
 		if(verbose) {
 			System.out.println("Done setting up propnet; took " + (System.currentTimeMillis() - startTime) + "ms, has " + componentSet.size() + " components and " + propnet.getNumLinks() + " links");
 			System.out.println("Propnet has " +propnet.getNumAnds()+" ands; "+propnet.getNumOrs()+" ors; "+propnet.getNumNots()+" nots");
+			//GamerLogger.log("PropnetFactory", "Done setting up propnet; took " + (System.currentTimeMillis() - startTime) + "ms, has " + componentSet.size() + " components and " + propnet.getNumLinks() + " links.");
+			//GamerLogger.log("PropnetFactory", "Propnet has " +propnet.getNumAnds()+" ands; "+propnet.getNumOrs()+" ors; "+propnet.getNumNots()+" nots");
 		}
 		//System.out.println(propnet);
 		return propnet;
@@ -377,6 +413,21 @@ public class ExtendedStatePropNetFactory {
 	/**
 	 * Components and negations may be null, if e.g. this is a post-optimization.
 	 * TrueComponent and falseComponent are required.
+	 *
+	 * Checks for both the TRUE and the FALSE component if they have non essential
+	 * children. If they do, the non essential children are "removed". Since this
+	 * process might add some new children both to the TRUE and FALSE component,
+	 * the process is repeated until both the TRUE and FALSE component are left
+	 * with no non essential children.
+	 *
+	 * NON ESSENTIAL CHILD:
+	 * - if it is not a transition and...
+	 * 	-- ...it has children (the TRUE (or FALSE in case of a not) component can be
+	 * 		connected directly to them).
+	 * 	-- ...or it is not a proposition (in this case it also has no children so it
+	 * 		is useless to keep a connective gate with no outputs).
+	 * 	-- ...or it is a proposition that is not one of the standard GDL propositions
+	 * 		(LEGAL, INIT, GOAL, TERMINAL).
 	 *
 	 * Doesn't actually work that way... shoot. Need something that will remove the
 	 * component from the propnet entirely.
@@ -513,6 +564,17 @@ public class ExtendedStatePropNetFactory {
 		return name.getName() == GdlPool.LEGAL || name.getName() == GdlPool.GOAL;
 	}
 
+	/**
+	 * For each output of the TRUE component:
+	 * -
+	 *
+	 *
+	 * @param components
+	 * @param negations
+	 * @param pn
+	 * @param trueComponent
+	 * @param falseComponent
+	 */
 	private static void optimizeAwayTrue(
 			Map<GdlSentence, ExtendedStateComponent> components, Map<GdlSentence, ExtendedStateComponent> negations, ExtendedStatePropNet pn, ExtendedStateComponent trueComponent,
 			ExtendedStateComponent falseComponent) {
@@ -1265,6 +1327,24 @@ public class ExtendedStatePropNetFactory {
 	 * appropriately. This method may remove base and input propositions that are
 	 * shown to be always false (or, in the case of base propositions, those that
 	 * are always true).
+	 *
+	 * For each component this method iteratively checks which values it can assume
+	 * during the game, depending on the values it's inputs can assume during the
+	 * game.
+	 * More precisely, for each component it checks which values it can assume in
+	 * the initial state (NONE, TRUE, FALSE, BOTH), sets that all his children can
+	 * also assume that value and puts the children in the stack of components to be
+	 * checked, i.e. check which value they can assume and repeat the process with
+	 * their children.
+	 * Once this check is over, i.e. we know for all components the values that they
+	 * can assume during the game, this method replaces the inputs of each always TRUE
+	 * component with a TRUE constant and the inputs of each always FALSE component
+	 * with a FALSE constant.
+	 *
+	 * NOTE: it also makes sure to set correctly all inputs and outputs of the modified
+	 * components.
+	 * NOTE: this method might leave the propnet with more than only one TRUE constant
+	 * and FALSE constant.
 	 *
 	 * @param basesTrueByInit The set of base propositions that are true on the
 	 * first turn of the game.
