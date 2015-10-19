@@ -151,5 +151,7 @@ public class ModifiedPropnetVerifier {
 
             GamerLogger.log(FORMAT.CSV_FORMAT, "ModifiedPropnetVerifierTable", gameKey + ";" + initializationTime + ";" + theHiddenPropnetMachine.getPropnetConstructionTime() + ";" + rounds + ";" + completedRounds + ";" + testDuration + ";"  + exception + ";"  + otherExceptions + ";" + pass + ";");
         }
+
+        System.out.println();
 	}
 }

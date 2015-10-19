@@ -196,6 +196,10 @@ public class InitializationSafeStateMachine extends StateMachine {
 		}
 	}
 
+	public StateMachine getTheRealMachine() {
+		return this.theRealMachine;
+    }
+
 	@Override
     public String getName() {
         if(this.theRealMachine != null) {

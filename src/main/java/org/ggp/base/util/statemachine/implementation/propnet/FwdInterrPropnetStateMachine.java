@@ -1,6 +1,7 @@
 package org.ggp.base.util.statemachine.implementation.propnet;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -57,7 +58,7 @@ public class FwdInterrPropnetStateMachine extends StateMachine {
     	long startTime = System.currentTimeMillis();
 		// Create the propnet
     	try{
-    		this.propNet = ForwardInterruptingPropNetFactory.create(description);
+    		this.propNet = ForwardInterruptingPropNetFactory.create(description, true);
     	}catch(InterruptedException e){
     		GamerLogger.logError("StateMachine", "[Propnet] Propnet creation interrupted!");
     		GamerLogger.logStackTrace("StateMachine", e);
@@ -66,6 +67,42 @@ public class FwdInterrPropnetStateMachine extends StateMachine {
     	// Compute the time taken to construct the propnet
     	this.propnetConstructionTime = System.currentTimeMillis() - startTime;
 		GamerLogger.log("StateMachine", "[Propnet Creator] Propnet creation done. It took " + (this.propnetConstructionTime) + "ms.");
+
+
+
+
+
+
+		GamerLogger.log("StateMachine", "Removing unreachable bases and inputs.");
+		startTime = System.currentTimeMillis();
+		Collection<ForwardInterruptingProposition> baseProps = this.propNet.getBasePropositions().values();
+
+		Set<ForwardInterruptingProposition> basesTrueByInit = new HashSet<ForwardInterruptingProposition>();
+
+		for(ForwardInterruptingProposition p : baseProps){
+			if(((ForwardInterruptingTransition)p.getSingleInput()).isDependingOnInit()){
+				basesTrueByInit.add(p);
+			}
+		}
+
+		try {
+			ForwardInterruptingPropNetFactory.removeUnreachableBasesAndInputs(this.propNet, basesTrueByInit);
+			System.out.println("Done removing unreachable bases and inputs; took " + (System.currentTimeMillis() - startTime) + "ms, propnet has " + propNet.getComponents().size() + " components and " + propNet.getNumLinks() + " links");
+			System.out.println("Propnet has " +propNet.getNumAnds()+" ands; "+propNet.getNumOrs()+" ors; "+propNet.getNumNots()+" nots");
+			System.out.println("Propnet has " +propNet.getNumBases() + " bases; "+propNet.getNumTransitions()+" transitions; "+propNet.getNumInputs()+" inputs");
+
+		} catch (InterruptedException e) {
+			System.out.println("Something went wrong with the removal of unreachable bases and inputs!");
+			e.printStackTrace();
+			return;
+		}
+
+
+
+
+
+
+
 
 		// Compute the roles
    		this.roles = ImmutableList.copyOf(this.propNet.getRoles());
@@ -196,6 +233,7 @@ public class FwdInterrPropnetStateMachine extends StateMachine {
 			if(goalProp.getValue()){
 				if(trueGoal != null){
 					GamerLogger.logError("StateMachine", "[Propnet] Got more than one true goal in state " + state + " for role " + role + ".");
+					GamerLogger.logError("StateMachine", "[Propnet] True goals = " + trueGoal.getName() + ", " + goalProp.getName() + ".");
 					throw new GoalDefinitionException(state, role);
 				}else{
 					trueGoal = goalProp;

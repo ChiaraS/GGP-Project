@@ -246,6 +246,7 @@ public class ForwardInterruptingPropNetFactory {
 		if(verbose) {
 			System.out.println("Done setting up propnet; took " + (System.currentTimeMillis() - startTime) + "ms, has " + componentSet.size() + " components and " + propnet.getNumLinks() + " links");
 			System.out.println("Propnet has " +propnet.getNumAnds()+" ands; "+propnet.getNumOrs()+" ors; "+propnet.getNumNots()+" nots");
+			System.out.println("Propnet has " +propnet.getNumBases() + " bases; "+propnet.getNumTransitions()+" transitions; "+propnet.getNumInputs()+" inputs");
 		}
 		//System.out.println(propnet);
 		return propnet;
@@ -1400,6 +1401,32 @@ public class ForwardInterruptingPropNetFactory {
 	            	//Don't bother trying to remove this
 	            	continue;
 	            }
+
+
+
+
+	            /*
+	            if(c instanceof ForwardInterruptingProposition){
+					System.out.println("(PROPOSITION=" + ((ForwardInterruptingProposition) c).getName() + ", NUM OUTPUTS=" + c.getOutputs().size() + ", TYPE=" + type + ")");
+				}else if(c instanceof ForwardInterruptingTransition){
+					System.out.println("(TRANSITION, NUM OUTPUTS=" + c.getOutputs().size() + ", VALUE=" + c.getValue() + ")");
+				}else if(c instanceof ForwardInterruptingConstant){
+					System.out.println("(CONSTANT, NUM OUTPUTS=" + c.getOutputs().size() + ", VALUE=" + c.getValue() + ")");
+				}else if(c instanceof ForwardInterruptingAnd){
+					System.out.println("(AND, NUM OUTPUTS=" + c.getOutputs().size() + ", NUM INPUTS=" + c.getInputs().size() + ", VALUE=" + c.getValue() + ")");
+				}else if(c instanceof ForwardInterruptingOr){
+					System.out.println("(OR, NUM OUTPUTS=" + c.getOutputs().size() + ", NUM INPUTS=" + c.getInputs().size() + ", VALUE=" + c.getValue() + ")");
+				}else if(c instanceof ForwardInterruptingNot){
+					System.out.println("(NOT, NUM OUTPUTS=" + c.getOutputs().size() + ", NUM INPUTS=" + c.getInputs().size() + ", VALUE=" + c.getValue() + ")");
+				}*/
+
+
+
+
+
+
+
+
 	            //Disconnect from inputs
 	            for(ForwardInterruptingComponent input : c.getInputs()) {
 	                input.removeOutput(c);
