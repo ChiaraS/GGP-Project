@@ -66,6 +66,17 @@ public final class ForwardInterruptingConstant extends ForwardInterruptingCompon
 		this.consistent = false;
 	}
 
+	@Override
+	public String getType() {
+		String s;
+		if(this.value){
+			s = "TRUE ";
+		}else{
+			s = "FALSE ";
+		}
+		return s + "CONSTANT";
+	}
+
 	/**
 	 * @see org.ggp.base.util.propnet.architecture.forwardInterrupting.ForwardInterruptingComponent#toString()
 	 */

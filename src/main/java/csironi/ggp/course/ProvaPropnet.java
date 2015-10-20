@@ -43,6 +43,8 @@ public class ProvaPropnet {
 
 	public static void main(String []args){
 
+		checkPropnetStructure("ticTacToe");
+
 		//provaGame2("ad_game_2x2", 300000);
 
 		//provaGame("snake_2009_big", 300000);
@@ -74,8 +76,34 @@ public class ProvaPropnet {
 
 		//provaGameExtendedPropnet("coins_atomic");
 
-		printPropnetImprovements("ad_game_2x2");
+		//printPropnetImprovements("ad_game_2x2");
 
+	}
+
+
+	public static void checkPropnetStructure(String gameKey){
+		GameRepository theRepository = GameRepository.getDefaultRepository();
+
+		List<Gdl> description = theRepository.getGame(gameKey).getRules();
+
+		ForwardInterruptingPropNet propNet = null;
+
+		long startTime = System.currentTimeMillis();
+
+		try {
+			propNet = ForwardInterruptingPropNetFactory.create(description, false);
+			System.out.println("Done initializing propnet; took " + (System.currentTimeMillis() - startTime) + "ms, propnet has " + propNet.getComponents().size() + " components and " + propNet.getNumLinks() + " links");
+			System.out.println("Propnet has " +propNet.getNumAnds()+" ands; "+propNet.getNumOrs()+" ors; "+propNet.getNumNots()+" nots");
+			System.out.println("Propnet has " +propNet.getNumBases() + " bases; "+propNet.getNumTransitions()+" transitions; "+propNet.getNumInputs()+" inputs");
+		} catch (InterruptedException e) {
+			System.out.println("Something went wrong with the creation of the propnet!");
+			e.printStackTrace();
+			return;
+		}
+
+		GamerLogger.setSpilloverLogfile("ProponetStructureCheck.log");
+
+		ForwardInterruptingPropNetFactory.checkPropnetStructure(propNet);
 	}
 
 
@@ -351,9 +379,9 @@ public class ProvaPropnet {
             e.printStackTrace();
         }
 
+/*
 
-
-/*		if(propNet != null){
+		if(propNet != null){
 			System.out.println("Removing amomymous props");
 			startTime = System.currentTimeMillis();
 			ForwardInterruptingPropNetFactory.removeAnonymousPropositions(propNet);
@@ -423,6 +451,8 @@ public class ProvaPropnet {
 
 			//System.out.println("]");
 
+			System.out.println();
+
 			startTime = System.currentTimeMillis();
 			try {
 				ForwardInterruptingPropNetFactory.removeUnreachableBasesAndInputs(propNet, basesTrueByInit);
@@ -431,6 +461,8 @@ public class ProvaPropnet {
 				e.printStackTrace();
 				return;
 			}
+
+			System.out.println();
 			System.out.println("Done removing unreachable bases and inputs; took " + (System.currentTimeMillis() - startTime) + "ms, propnet has " + propNet.getComponents().size() + " components and " + propNet.getNumLinks() + " links");
 			System.out.println("Propnet has " +propNet.getNumAnds()+" ands; "+propNet.getNumOrs()+" ors; "+propNet.getNumNots()+" nots");
 			System.out.println("Propnet has " +propNet.getNumBases() + " bases; "+propNet.getNumTransitions()+" transitions; "+propNet.getNumInputs()+" inputs");

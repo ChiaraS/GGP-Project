@@ -116,6 +116,11 @@ public final class ForwardInterruptingTransition extends ForwardInterruptingComp
 		this.consistent = false;
 	}
 
+	@Override
+	public String getType() {
+		return "TRANSITION";
+	}
+
 	/**
 	 * @see org.ggp.base.util.propnet.architecture.forwardInterrupting.ForwardInterruptingComponent#toString()
 	 */

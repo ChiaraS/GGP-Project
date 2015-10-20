@@ -88,6 +88,7 @@ public class CheckFwdInterrPropnetStateMachine extends StateMachine {
     	}catch (InterruptedException e) {
     		GamerLogger.logError("StateMachine", "[Propnet] Propnet creation interrupted! Terminating initialization!");
     		GamerLogger.logStackTrace("StateMachine", e);
+    		Thread.currentThread().interrupt();
 			throw new StateMachineInitializationException("Propnet creation interrupted by external action.", e);
 		}
 
@@ -102,7 +103,10 @@ public class CheckFwdInterrPropnetStateMachine extends StateMachine {
     			// not be respected in the file).
     			creator.join();
     		}catch(InterruptedException e){
-    			// Do nothing cause it is normal that I get this exception here
+    			GamerLogger.logError("StateMachine", "[Propnet] Propnet creation interrupted! Terminating initialization!");
+        		GamerLogger.logStackTrace("StateMachine", e);
+        		Thread.currentThread().interrupt();
+    			throw new StateMachineInitializationException("Propnet creation interrupted by external action.", e);
     		}
     		// Set again the propnet to null just to be sure.
     		// The propnet set to null after initializing the state machine means that the propnet

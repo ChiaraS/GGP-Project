@@ -173,6 +173,8 @@ public abstract class ForwardInterruptingComponent implements Serializable
      */
     public abstract void resetValue();
 
+    public abstract String getType();
+
     /**
      * Returns a representation of the Component in .dot format.
      *

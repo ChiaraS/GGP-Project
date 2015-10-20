@@ -92,6 +92,11 @@ public final class ForwardInterruptingOr extends ForwardInterruptingComponent
 		this.consistent = false;
 	}
 
+	@Override
+	public String getType() {
+		return "OR";
+	}
+
 	/**
 	 * @see org.ggp.base.util.propnet.architecture.forwardInterrupting.ForwardInterruptingComponent#toString()
 	 */

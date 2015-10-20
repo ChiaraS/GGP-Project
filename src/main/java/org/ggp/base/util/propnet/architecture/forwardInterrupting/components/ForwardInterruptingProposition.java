@@ -1,5 +1,6 @@
 package org.ggp.base.util.propnet.architecture.forwardInterrupting.components;
 
+import org.ggp.base.util.gdl.grammar.GdlRelation;
 import org.ggp.base.util.gdl.grammar.GdlSentence;
 import org.ggp.base.util.propnet.architecture.forwardInterrupting.ForwardInterruptingComponent;
 
@@ -108,6 +109,18 @@ public final class ForwardInterruptingProposition extends ForwardInterruptingCom
 		return (this.getInputs().size() == 1 && this.getSingleInput() instanceof ForwardInterruptingTransition);
 	}
 
+	public boolean isInput(){
+		// It's input only if its name is a GdlRelation.
+		if (this.getName() instanceof GdlRelation){
+			GdlRelation relation = (GdlRelation) this.getName();
+			if (relation.getName().getValue().equals("does")) {
+				return true;
+			}
+		}
+
+		return false;
+	}
+
 	/**
 	 * Checks if this proposition has any input.
 	 *
@@ -178,6 +191,12 @@ public final class ForwardInterruptingProposition extends ForwardInterruptingCom
 	public void resetValue(){
 		this.value = false;
 		this.consistent = false;
+	}
+
+
+	@Override
+	public String getType() {
+		return "PROPOSITION(" + this.getName() + ")";
 	}
 
 	/**

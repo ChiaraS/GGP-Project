@@ -58,7 +58,7 @@ public class FwdInterrPropnetStateMachine extends StateMachine {
     	long startTime = System.currentTimeMillis();
 		// Create the propnet
     	try{
-    		this.propNet = ForwardInterruptingPropNetFactory.create(description, true);
+    		this.propNet = ForwardInterruptingPropNetFactory.create(description);
     	}catch(InterruptedException e){
     		GamerLogger.logError("StateMachine", "[Propnet] Propnet creation interrupted!");
     		GamerLogger.logStackTrace("StateMachine", e);
@@ -87,14 +87,14 @@ public class FwdInterrPropnetStateMachine extends StateMachine {
 
 		try {
 			ForwardInterruptingPropNetFactory.removeUnreachableBasesAndInputs(this.propNet, basesTrueByInit);
-			System.out.println("Done removing unreachable bases and inputs; took " + (System.currentTimeMillis() - startTime) + "ms, propnet has " + propNet.getComponents().size() + " components and " + propNet.getNumLinks() + " links");
-			System.out.println("Propnet has " +propNet.getNumAnds()+" ands; "+propNet.getNumOrs()+" ors; "+propNet.getNumNots()+" nots");
-			System.out.println("Propnet has " +propNet.getNumBases() + " bases; "+propNet.getNumTransitions()+" transitions; "+propNet.getNumInputs()+" inputs");
+			//System.out.println("Done removing unreachable bases and inputs; took " + (System.currentTimeMillis() - startTime) + "ms, propnet has " + propNet.getComponents().size() + " components and " + propNet.getNumLinks() + " links");
+			//System.out.println("Propnet has " +propNet.getNumAnds()+" ands; "+propNet.getNumOrs()+" ors; "+propNet.getNumNots()+" nots");
+			//System.out.println("Propnet has " +propNet.getNumBases() + " bases; "+propNet.getNumTransitions()+" transitions; "+propNet.getNumInputs()+" inputs");
 
 		} catch (InterruptedException e) {
-			System.out.println("Something went wrong with the removal of unreachable bases and inputs!");
-			e.printStackTrace();
-			return;
+			GamerLogger.logError("StateMachine", "[Propnet] Removal of unreachable bases and inputs interrupted!");
+    		GamerLogger.logStackTrace("StateMachine", e);
+    		throw new StateMachineInitializationException(e);
 		}
 
 

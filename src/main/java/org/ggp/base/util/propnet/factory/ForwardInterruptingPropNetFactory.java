@@ -46,6 +46,7 @@ import org.ggp.base.util.gdl.transforms.DeORer;
 import org.ggp.base.util.gdl.transforms.GdlCleaner;
 import org.ggp.base.util.gdl.transforms.Relationizer;
 import org.ggp.base.util.gdl.transforms.VariableConstrainer;
+import org.ggp.base.util.logging.GamerLogger;
 import org.ggp.base.util.propnet.architecture.forwardInterrupting.ForwardInterruptingComponent;
 import org.ggp.base.util.propnet.architecture.forwardInterrupting.ForwardInterruptingPropNet;
 import org.ggp.base.util.propnet.architecture.forwardInterrupting.components.ForwardInterruptingAnd;
@@ -1404,23 +1405,23 @@ public class ForwardInterruptingPropNetFactory {
 
 
 
+/*
 
-	            /*
 	            if(c instanceof ForwardInterruptingProposition){
 					System.out.println("(PROPOSITION=" + ((ForwardInterruptingProposition) c).getName() + ", NUM OUTPUTS=" + c.getOutputs().size() + ", TYPE=" + type + ")");
 				}else if(c instanceof ForwardInterruptingTransition){
-					System.out.println("(TRANSITION, NUM OUTPUTS=" + c.getOutputs().size() + ", VALUE=" + c.getValue() + ")");
+					System.out.println("(TRANSITION, NUM OUTPUTS=" + c.getOutputs().size() + ", TYPE=" + type + ")");
 				}else if(c instanceof ForwardInterruptingConstant){
-					System.out.println("(CONSTANT, NUM OUTPUTS=" + c.getOutputs().size() + ", VALUE=" + c.getValue() + ")");
+					System.out.println("(CONSTANT, NUM OUTPUTS=" + c.getOutputs().size() + ", TYPE=" + type + ")");
 				}else if(c instanceof ForwardInterruptingAnd){
-					System.out.println("(AND, NUM OUTPUTS=" + c.getOutputs().size() + ", NUM INPUTS=" + c.getInputs().size() + ", VALUE=" + c.getValue() + ")");
+					System.out.println("(AND, NUM OUTPUTS=" + c.getOutputs().size() + ", NUM INPUTS=" + c.getInputs().size() + ", TYPE=" + type + ")");
 				}else if(c instanceof ForwardInterruptingOr){
-					System.out.println("(OR, NUM OUTPUTS=" + c.getOutputs().size() + ", NUM INPUTS=" + c.getInputs().size() + ", VALUE=" + c.getValue() + ")");
+					System.out.println("(OR, NUM OUTPUTS=" + c.getOutputs().size() + ", NUM INPUTS=" + c.getInputs().size() + ", TYPE=" + type + ")");
 				}else if(c instanceof ForwardInterruptingNot){
-					System.out.println("(NOT, NUM OUTPUTS=" + c.getOutputs().size() + ", NUM INPUTS=" + c.getInputs().size() + ", VALUE=" + c.getValue() + ")");
-				}*/
+					System.out.println("(NOT, NUM OUTPUTS=" + c.getOutputs().size() + ", NUM INPUTS=" + c.getInputs().size() + ", TYPE=" + type + ")");
+				}
 
-
+*/
 
 
 
@@ -1564,4 +1565,164 @@ public class ForwardInterruptingPropNetFactory {
 			System.out.println("Should be replacing " + p + " with false, but should do that in the OPNF, really; better equipped to do that there");
 		}
 	}
+
+
+
+
+
+
+	public static boolean checkPropnetStructure(ForwardInterruptingPropNet pn){
+
+		boolean propnetOk = true;
+
+		for(ForwardInterruptingComponent c : pn.getComponents()){
+
+			/* NOT FEASIBLE TO CHECK THIS IN A REASONABLE AMOUNT OF TIME FOR MOST GAMES:
+
+			// Check that every input of the component references back the component as output
+			for(ForwardInterruptingComponent in : c.getInputs()){
+				boolean correctInputReferences = false;
+				for(ForwardInterruptingComponent inout : in.getOutputs()){
+					if(inout == c){
+						correctInputReferences = true;
+						break;
+					}
+				}
+				if(!correctInputReferences){
+					GamerLogger.log("PropStructureChecker", "Component " + c.getType() + " is not referenced back by its input " + in.getType() + ".");
+					propnetOk = false;
+				}
+			}
+
+			// Check that every output of the component references back the component as input
+			for(ForwardInterruptingComponent out : c.getOutputs()){
+				boolean correctOutputReferences = false;
+				for(ForwardInterruptingComponent outin : out.getInputs()){
+					if(outin == c){
+						correctOutputReferences = true;
+						break;
+					}
+				}
+				if(!correctOutputReferences){
+					GamerLogger.log("PropStructureChecker", "Component " + c.getType() + " is not referenced back by its output " + out.getType() + ".");
+					propnetOk = false;
+				}
+			}
+			*/
+
+			// Check for each type of component if it has the correct inputs and outputs
+			if(c instanceof ForwardInterruptingProposition){
+
+				if(c.getInputs().size() > 1){
+					GamerLogger.log("PropStructureChecker", "Component " + c.getType() + " has too many inputs: " + c.getInputs().size());
+					propnetOk = false;
+				}else if(c.getInputs().size() == 0){
+					if(!(((ForwardInterruptingProposition) c).isInput())){
+						String s = ((ForwardInterruptingProposition) c).getName().toString();
+						if(!(s.equals("init"))){
+							GamerLogger.log("PropStructureChecker", "The non-input component " + c.getType() + " has no inputs!");
+							propnetOk = false;
+						}
+					}
+				}else if(c.getInputs().size() == 1){
+					if(((ForwardInterruptingProposition) c).isInput()){
+						GamerLogger.log("PropStructureChecker", "The input component " + c.getType() + " has an input: " + c.getSingleInput().getType());
+						propnetOk = false;
+					}
+				}else{
+					GamerLogger.log("PropStructureChecker", "The component " + c.getType() + " has a negative number of inputs: IMPOSSIBLE!");
+					propnetOk = false;
+				}
+
+			}else if(c instanceof ForwardInterruptingTransition){
+
+				if(c.getInputs().size() != 1){
+					GamerLogger.log("PropStructureChecker", "The component " + c.getType() + " doesn't have one and only one input. It has " + c.getInputs().size() + " inputs.");
+					propnetOk = false;
+				}
+
+				if(c.getOutputs().size() != 1){
+					GamerLogger.log("PropStructureChecker", "The component " + c.getType() + " doesn't have one and only one output. It has " + c.getOutputs().size() + " outputs.");
+					propnetOk = false;
+				}else if(!(c.getSingleOutput() instanceof ForwardInterruptingProposition)){
+					GamerLogger.log("PropStructureChecker", "The component " + c.getType() + " doesn't have a proposition as output. It has " + c.getSingleOutput().getType() + " as output.");
+					propnetOk = false;
+				}else if(!(((ForwardInterruptingProposition) c.getSingleOutput()).isBase())){
+					GamerLogger.log("PropStructureChecker", "The component " + c.getType() + " doesn't have a base proposition as output. It has " + c.getSingleOutput().getType() + " as output.");
+					propnetOk = false;
+				}
+
+			}else if(c instanceof ForwardInterruptingConstant){
+
+				if(c.getInputs().size() != 0){
+					GamerLogger.log("PropStructureChecker", "The component " + c.getType() + " has " + c.getInputs().size() + " inputs.");
+					propnetOk = false;
+				}
+
+			}else if(c instanceof ForwardInterruptingAnd){
+
+				if(c.getInputs().size() == 1){
+					GamerLogger.log("PropStructureChecker", "The component " + c.getType() + " is unnecessary since it only has one input: " + c.getSingleInput().getType() + ".");
+					propnetOk = false;
+				}else if(c.getInputs().size() == 0){
+					GamerLogger.log("PropStructureChecker", "The component " + c.getType() + " has no inputs: should be connected to a constant proposition.");
+					propnetOk = false;
+				}else if(c.getInputs().size() < 0){
+					GamerLogger.log("PropStructureChecker", "The component " + c.getType() + " has a negative number of inputs: IMPOSSIBLE!");
+					propnetOk = false;
+				}
+
+				if(c.getOutputs().size() < 1){
+					GamerLogger.log("PropStructureChecker", "The component " + c.getType() + " is unnecessary since it has no outputs!");
+					propnetOk = false;
+				}
+
+			}else if(c instanceof ForwardInterruptingOr){
+
+				if(c.getInputs().size() == 1){
+					GamerLogger.log("PropStructureChecker", "The component " + c.getType() + " is unnecessary since it only has one input: " + c.getSingleInput().getType() + ".");
+					propnetOk = false;
+				}else if(c.getInputs().size() == 0){
+					GamerLogger.log("PropStructureChecker", "The component " + c.getType() + " has no inputs: should be connected to a constant proposition.");
+					propnetOk = false;
+
+					String s = "[ ";
+					for(ForwardInterruptingComponent cc : c.getOutputs()){
+						s += cc.getType();
+						s += " ";
+					}
+					s += "]";
+
+					GamerLogger.log("PropStructureChecker", "Children: " + s);
+
+
+				}else if(c.getInputs().size() < 0){
+					GamerLogger.log("PropStructureChecker", "The component " + c.getType() + " has a negative number of inputs: IMPOSSIBLE!");
+					propnetOk = false;
+				}
+
+				if(c.getOutputs().size() < 1){
+					GamerLogger.log("PropStructureChecker", "The component " + c.getType() + " is unnecessary since it has no outputs!");
+					propnetOk = false;
+				}
+
+			}else if(c instanceof ForwardInterruptingNot){
+
+				if(c.getInputs().size() > 1){
+					GamerLogger.log("PropStructureChecker", "The component " + c.getType() + " has too many inputs: " + c.getInputs().size());
+					propnetOk = false;
+				}else if(c.getInputs().size() == 0){
+					GamerLogger.log("PropStructureChecker", "The component " + c.getType() + " has no inputs: should be connected to a constant proposition!");
+					propnetOk = false;
+				}else if(c.getInputs().size() < 0){
+					GamerLogger.log("PropStructureChecker", "The component " + c.getType() + " has a negative number of inputs: IMPOSSIBLE!");
+					propnetOk = false;
+				}
+			}
+
+		}
+		return propnetOk;
+	}
+
+
 }

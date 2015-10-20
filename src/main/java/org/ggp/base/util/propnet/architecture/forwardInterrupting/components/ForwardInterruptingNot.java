@@ -85,6 +85,11 @@ public final class ForwardInterruptingNot extends ForwardInterruptingComponent
 		this.consistent = false;
 	}
 
+	@Override
+	public String getType() {
+		return "NOT";
+	}
+
 	/**
 	 * @see org.ggp.base.util.propnet.architecture.forwardInterrupting.ForwardInterruptingComponent#toString()
 	 */

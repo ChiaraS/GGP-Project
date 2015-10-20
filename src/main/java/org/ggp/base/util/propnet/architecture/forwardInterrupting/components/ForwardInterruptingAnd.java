@@ -101,4 +101,9 @@ public final class ForwardInterruptingAnd extends ForwardInterruptingComponent
 		return toDot("invhouse", "grey", "AND " + this.trueInputs);
 	}
 
+	@Override
+	public String getType() {
+		return "AND";
+	}
+
 }
