@@ -43,7 +43,7 @@ public class ProvaPropnet {
 
 	public static void main(String []args){
 
-		checkPropnetStructure("ticTacToe");
+		//checkPropnetStructure("ticTacToe");
 
 		//provaGame2("ad_game_2x2", 300000);
 
@@ -72,11 +72,11 @@ public class ProvaPropnet {
 */
 		//printPropnet("ticTacToe");
 
-		//provaOpenbitset();
+		provaOpenbitset();
 
 		//provaGameExtendedPropnet("coins_atomic");
 
-		//printPropnetImprovements("ad_game_2x2");
+		//printPropnetImprovements("gt_two_thirds_2p");
 
 	}
 
@@ -177,13 +177,14 @@ public class ProvaPropnet {
 			}
 		}
 
-		OpenBitSet a = new OpenBitSet(20);
+		OpenBitSet a = new OpenBitSet(120);
 		a.fastSet(0);
 		a.fastSet(1);
 		a.fastSet(4);
 		a.fastSet(5);
 		a.fastSet(8);
 		a.fastSet(9);
+		a.fastSet(80);
 
 		System.out.println();
 		System.out.println();
@@ -217,14 +218,14 @@ public class ProvaPropnet {
 			}
 		}
 
-		a.and(b);
+		b.xor(a);
 
 		System.out.println();
 		System.out.println();
 		System.out.print("A = ");
 
-		for(int i = 0; i < a.size(); i++){
-			if(a.fastGet(i)){
+		for(int i = 0; i < b.size(); i++){
+			if(b.fastGet(i)){
 				System.out.print("1");
 			}else{
 				System.out.print("0");

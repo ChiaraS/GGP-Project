@@ -11,9 +11,7 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Queue;
 import java.util.Set;
-import java.util.Stack;
 
-import org.ggp.base.util.Pair;
 import org.ggp.base.util.concurrency.ConcurrencyUtils;
 import org.ggp.base.util.gdl.GdlUtils;
 import org.ggp.base.util.gdl.grammar.Gdl;
@@ -46,24 +44,18 @@ import org.ggp.base.util.gdl.transforms.DeORer;
 import org.ggp.base.util.gdl.transforms.GdlCleaner;
 import org.ggp.base.util.gdl.transforms.Relationizer;
 import org.ggp.base.util.gdl.transforms.VariableConstrainer;
-import org.ggp.base.util.logging.GamerLogger;
-import org.ggp.base.util.propnet.architecture.forwardInterrupting.ForwardInterruptingComponent;
-import org.ggp.base.util.propnet.architecture.forwardInterrupting.ForwardInterruptingPropNet;
-import org.ggp.base.util.propnet.architecture.forwardInterrupting.components.ForwardInterruptingAnd;
-import org.ggp.base.util.propnet.architecture.forwardInterrupting.components.ForwardInterruptingConstant;
-import org.ggp.base.util.propnet.architecture.forwardInterrupting.components.ForwardInterruptingNot;
-import org.ggp.base.util.propnet.architecture.forwardInterrupting.components.ForwardInterruptingOr;
-import org.ggp.base.util.propnet.architecture.forwardInterrupting.components.ForwardInterruptingProposition;
-import org.ggp.base.util.propnet.architecture.forwardInterrupting.components.ForwardInterruptingTransition;
+import org.ggp.base.util.propnet.architecture.externalizedState.ExternalizedStateComponent;
+import org.ggp.base.util.propnet.architecture.externalizedState.ExternalizedStatePropNet;
+import org.ggp.base.util.propnet.architecture.externalizedState.components.ExternalizedStateAnd;
+import org.ggp.base.util.propnet.architecture.externalizedState.components.ExternalizedStateConstant;
+import org.ggp.base.util.propnet.architecture.externalizedState.components.ExternalizedStateNot;
+import org.ggp.base.util.propnet.architecture.externalizedState.components.ExternalizedStateOr;
+import org.ggp.base.util.propnet.architecture.externalizedState.components.ExternalizedStateProposition;
+import org.ggp.base.util.propnet.architecture.externalizedState.components.ExternalizedStateTransition;
 import org.ggp.base.util.statemachine.Role;
 
-import com.google.common.collect.HashMultiset;
-import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
-import com.google.common.collect.Maps;
 import com.google.common.collect.Multimap;
-import com.google.common.collect.Multiset;
-
 
 /*
  * A propnet factory meant to optimize the propnet before it's even built,
@@ -90,7 +82,18 @@ import com.google.common.collect.Multiset;
  *   if multithreading).
  *
  */
-public class ForwardInterruptingPropNetFactory {
+/**
+ * This class creates the propnet and provides extra methods to polish it after creation.
+ * This class is a refinement/modification of the ExternalizedStatePropNetFactory and creates
+ * a propnet with a faster structure. Some of the methods that it provides to polish the propnet
+ * after creation are taken (and sometimes improved) from the ExternalizedStatePropNetFactory,
+ * while some others have been implemented from scratch.
+ *
+ * @author C.Sironi
+ *
+ */
+public class ExternalizedStatePropnetFactory {
+
 	static final private GdlConstant LEGAL = GdlPool.getConstant("legal");
 	static final private GdlConstant NEXT = GdlPool.getConstant("next");
 	static final private GdlConstant TRUE = GdlPool.getConstant("true");
@@ -110,11 +113,11 @@ public class ForwardInterruptingPropNetFactory {
 	 * @throws InterruptedException if the thread is interrupted during
 	 * PropNet creation.
 	 */
-	public static ForwardInterruptingPropNet create(List<Gdl> description) throws InterruptedException {
+	public static ExternalizedStatePropNet create(List<Gdl> description) throws InterruptedException {
 		return create(description, false);
 	}
 
-	public static ForwardInterruptingPropNet create(List<Gdl> description, boolean verbose) throws InterruptedException {
+	public static ExternalizedStatePropNet create(List<Gdl> description, boolean verbose) throws InterruptedException {
 		System.out.println("Building propnet...");
 
 		long startTime = System.currentTimeMillis();
@@ -166,10 +169,10 @@ public class ForwardInterruptingPropNetFactory {
 			System.out.println("done");
 
 		List<Role> roles = Role.computeRoles(description);
-		Map<GdlSentence, ForwardInterruptingComponent> components = new HashMap<GdlSentence, ForwardInterruptingComponent>();
-		Map<GdlSentence, ForwardInterruptingComponent> negations = new HashMap<GdlSentence, ForwardInterruptingComponent>();
-		ForwardInterruptingConstant trueComponent = new ForwardInterruptingConstant(true);
-		ForwardInterruptingConstant falseComponent = new ForwardInterruptingConstant(false);
+		Map<GdlSentence, ExternalizedStateComponent> components = new HashMap<GdlSentence, ExternalizedStateComponent>();
+		Map<GdlSentence, ExternalizedStateComponent> negations = new HashMap<GdlSentence, ExternalizedStateComponent>();
+		ExternalizedStateConstant trueComponent = new ExternalizedStateConstant(true);
+		ExternalizedStateConstant falseComponent = new ExternalizedStateConstant(false);
 		Map<SentenceForm, FunctionInfo> functionInfoMap = new HashMap<SentenceForm, FunctionInfo>();
 		Map<SentenceForm, Collection<GdlSentence>> completedSentenceFormValues = new HashMap<SentenceForm, Collection<GdlSentence>>();
 		for(SentenceForm form : topologicalOrdering) {
@@ -190,7 +193,7 @@ public class ForwardInterruptingPropNetFactory {
 						|| form.getName().equals(TERMINAL)) {
 					//Add it
 					for (GdlSentence trueSentence : constantChecker.getTrueSentences(form)) {
-						ForwardInterruptingProposition trueProp = new ForwardInterruptingProposition(trueSentence);
+						ExternalizedStateProposition trueProp = new ExternalizedStateProposition(trueSentence);
 						trueProp.addInput(trueComponent);
 						trueComponent.addOutput(trueProp);
 						components.put(trueSentence, trueComponent);
@@ -208,8 +211,8 @@ public class ForwardInterruptingPropNetFactory {
 				System.out.println();
 			//TODO: Adjust "recursive forms" appropriately
 			//Add a temporary sentence form thingy? ...
-			Map<GdlSentence, ForwardInterruptingComponent> temporaryComponents = new HashMap<GdlSentence, ForwardInterruptingComponent>();
-			Map<GdlSentence, ForwardInterruptingComponent> temporaryNegations = new HashMap<GdlSentence, ForwardInterruptingComponent>();
+			Map<GdlSentence, ExternalizedStateComponent> temporaryComponents = new HashMap<GdlSentence, ExternalizedStateComponent>();
+			Map<GdlSentence, ExternalizedStateComponent> temporaryNegations = new HashMap<GdlSentence, ExternalizedStateComponent>();
 			addSentenceForm(form, model, components, negations, trueComponent, falseComponent, usingBase, usingInput, Collections.singleton(form), temporaryComponents, temporaryNegations, functionInfoMap, constantChecker, completedSentenceFormValues);
 			//TODO: Pass these over groups of multiple sentence forms
 			if(verbose && !temporaryComponents.isEmpty())
@@ -232,7 +235,7 @@ public class ForwardInterruptingPropNetFactory {
 		removeUselessBasePropositions(components, negations, trueComponent, falseComponent);
 		if(verbose)
 			System.out.println("Creating component set...");
-		Set<ForwardInterruptingComponent> componentSet = new HashSet<ForwardInterruptingComponent>(components.values());
+		Set<ExternalizedStateComponent> componentSet = new HashSet<ExternalizedStateComponent>(components.values());
 		//Try saving some memory here...
 		components = null;
 		negations = null;
@@ -243,7 +246,7 @@ public class ForwardInterruptingPropNetFactory {
 		//Make it look the same as the PropNetFactory results, until we decide
 		//how we want it to look
 		normalizePropositions(componentSet);
-		ForwardInterruptingPropNet propnet = new ForwardInterruptingPropNet(roles, componentSet);
+		ExternalizedStatePropNet propnet = new ExternalizedStatePropNet(roles, componentSet);
 		if(verbose) {
 			System.out.println("Done setting up propnet; took " + (System.currentTimeMillis() - startTime) + "ms, has " + componentSet.size() + " components and " + propnet.getNumLinks() + " links");
 			System.out.println("Propnet has " +propnet.getNumAnds()+" ands; "+propnet.getNumOrs()+" ors; "+propnet.getNumNots()+" nots");
@@ -255,12 +258,12 @@ public class ForwardInterruptingPropNetFactory {
 
 
 	private static void removeUselessBasePropositions(
-			Map<GdlSentence, ForwardInterruptingComponent> components, Map<GdlSentence, ForwardInterruptingComponent> negations, ForwardInterruptingConstant trueComponent,
-			ForwardInterruptingConstant falseComponent) throws InterruptedException {
+			Map<GdlSentence, ExternalizedStateComponent> components, Map<GdlSentence, ExternalizedStateComponent> negations, ExternalizedStateConstant trueComponent,
+			ExternalizedStateConstant falseComponent) throws InterruptedException {
 		boolean changedSomething = false;
-		for(Entry<GdlSentence, ForwardInterruptingComponent> entry : components.entrySet()) {
+		for(Entry<GdlSentence, ExternalizedStateComponent> entry : components.entrySet()) {
 			if(entry.getKey().getName() == TRUE) {
-				ForwardInterruptingComponent comp = entry.getValue();
+				ExternalizedStateComponent comp = entry.getValue();
 				if(comp.getInputs().size() == 0) {
 					comp.addInput(falseComponent);
 					falseComponent.addOutput(comp);
@@ -274,6 +277,7 @@ public class ForwardInterruptingPropNetFactory {
 		optimizeAwayTrueAndFalse(components, negations, trueComponent, falseComponent);
 	}
 
+
 	/**
 	 * Changes the propositions contained in the propnet so that they correspond
 	 * to the outputs of the PropNetFactory. This is for consistency and for
@@ -282,10 +286,10 @@ public class ForwardInterruptingPropNetFactory {
 	 *
 	 * @param componentSet
 	 */
-	private static void normalizePropositions(Set<ForwardInterruptingComponent> componentSet) {
-		for(ForwardInterruptingComponent component : componentSet) {
-			if(component instanceof ForwardInterruptingProposition) {
-				ForwardInterruptingProposition p = (ForwardInterruptingProposition) component;
+	private static void normalizePropositions(Set<ExternalizedStateComponent> componentSet) {
+		for(ExternalizedStateComponent component : componentSet) {
+			if(component instanceof ExternalizedStateProposition) {
+				ExternalizedStateProposition p = (ExternalizedStateProposition) component;
 				GdlSentence sentence = p.getName();
 				if(sentence instanceof GdlRelation) {
 					GdlRelation relation = (GdlRelation) sentence;
@@ -311,7 +315,7 @@ public class ForwardInterruptingPropNetFactory {
 	private static void addFormToCompletedValues(
 			SentenceForm form,
 			Map<SentenceForm, Collection<GdlSentence>> completedSentenceFormValues,
-			Map<GdlSentence, ForwardInterruptingComponent> components) throws InterruptedException {
+			Map<GdlSentence, ExternalizedStateComponent> components) throws InterruptedException {
 		//Kind of inefficient. Could do better by collecting these as we go,
 		//then adding them back into the CSFV map once the sentence forms are complete.
 		//completedSentenceFormValues.put(form, new ArrayList<GdlSentence>());
@@ -332,13 +336,12 @@ public class ForwardInterruptingPropNetFactory {
 		functionInfoMap.put(form, FunctionInfoImpl.create(form, constantChecker));
 	}
 
-
 	private static void processTemporaryComponents(
-			Map<GdlSentence, ForwardInterruptingComponent> temporaryComponents,
-			Map<GdlSentence, ForwardInterruptingComponent> temporaryNegations,
-			Map<GdlSentence, ForwardInterruptingComponent> components,
-			Map<GdlSentence, ForwardInterruptingComponent> negations, ForwardInterruptingComponent trueComponent,
-			ForwardInterruptingComponent falseComponent) throws InterruptedException {
+			Map<GdlSentence, ExternalizedStateComponent> temporaryComponents,
+			Map<GdlSentence, ExternalizedStateComponent> temporaryNegations,
+			Map<GdlSentence, ExternalizedStateComponent> components,
+			Map<GdlSentence, ExternalizedStateComponent> negations, ExternalizedStateComponent trueComponent,
+			ExternalizedStateComponent falseComponent) throws InterruptedException {
 		//For each component in temporary components, we want to "put it back"
 		//into the main components section.
 		//We also want to do optimization here...
@@ -350,12 +353,12 @@ public class ForwardInterruptingPropNetFactory {
 		//is necessarily FALSE and should be replaced by the false
 		//component.
 		for(GdlSentence sentence : temporaryComponents.keySet()) {
-			ForwardInterruptingComponent tempComp = temporaryComponents.get(sentence);
-			ForwardInterruptingComponent realComp = components.get(sentence);
+			ExternalizedStateComponent tempComp = temporaryComponents.get(sentence);
+			ExternalizedStateComponent realComp = components.get(sentence);
 			if(realComp == null) {
 				realComp = falseComponent;
 			}
-			for(ForwardInterruptingComponent output : tempComp.getOutputs()) {
+			for(ExternalizedStateComponent output : tempComp.getOutputs()) {
 				//Disconnect
 				output.removeInput(tempComp);
 				//tempComp.removeOutput(output); //do at end
@@ -377,6 +380,7 @@ public class ForwardInterruptingPropNetFactory {
 		}
 	}
 
+
 	/**
 	 * Components and negations may be null, if e.g. this is a post-optimization.
 	 * TrueComponent and falseComponent are required.
@@ -385,7 +389,7 @@ public class ForwardInterruptingPropNetFactory {
 	 * component from the propnet entirely.
 	 * @throws InterruptedException
 	 */
-	private static void optimizeAwayTrueAndFalse(Map<GdlSentence, ForwardInterruptingComponent> components, Map<GdlSentence, ForwardInterruptingComponent> negations, ForwardInterruptingComponent trueComponent, ForwardInterruptingComponent falseComponent) throws InterruptedException {
+	private static void optimizeAwayTrueAndFalse(Map<GdlSentence, ExternalizedStateComponent> components, Map<GdlSentence, ExternalizedStateComponent> negations, ExternalizedStateComponent trueComponent, ExternalizedStateComponent falseComponent) throws InterruptedException {
 	    while(hasNonessentialChildren(trueComponent) || hasNonessentialChildren(falseComponent)) {
 	    	ConcurrencyUtils.checkForInterruption();
             optimizeAwayTrue(components, negations, null, trueComponent, falseComponent);
@@ -393,30 +397,25 @@ public class ForwardInterruptingPropNetFactory {
         }
 	}
 
-	private static void optimizeAwayTrueAndFalse(ForwardInterruptingPropNet pn, ForwardInterruptingComponent trueComponent, ForwardInterruptingComponent falseComponent) {
-	    while(hasNonessentialChildren(trueComponent) || hasNonessentialChildren(falseComponent)) {
-	        optimizeAwayTrue(null, null, pn, trueComponent, falseComponent);
-	        optimizeAwayFalse(null, null, pn, trueComponent, falseComponent);
-	    }
-	}
+
 
 	//TODO: Create a version with just a set of components that we can share with post-optimizations
 	private static void optimizeAwayFalse(
-			Map<GdlSentence, ForwardInterruptingComponent> components, Map<GdlSentence, ForwardInterruptingComponent> negations, ForwardInterruptingPropNet pn, ForwardInterruptingComponent trueComponent,
-			ForwardInterruptingComponent falseComponent) {
+			Map<GdlSentence, ExternalizedStateComponent> components, Map<GdlSentence, ExternalizedStateComponent> negations, ExternalizedStatePropNet pn, ExternalizedStateComponent trueComponent,
+			ExternalizedStateComponent falseComponent) {
         assert((components != null && negations != null) || pn != null);
         assert((components == null && negations == null) || pn == null);
-        for (ForwardInterruptingComponent output : Lists.newArrayList(falseComponent.getOutputs())) {
-        	if (isEssentialProposition(output) || output instanceof ForwardInterruptingTransition) {
+        for (ExternalizedStateComponent output : Lists.newArrayList(falseComponent.getOutputs())) {
+        	if (isEssentialProposition(output) || output instanceof ExternalizedStateTransition) {
         		//Since this is the false constant, there are a few "essential" types
         		//we don't actually want to keep around.
         		if (!isLegalOrGoalProposition(output)) {
         			continue;
         		}
 	    	}
-			if(output instanceof ForwardInterruptingProposition) {
+			if(output instanceof ExternalizedStateProposition) {
 				//Move its outputs to be outputs of false
-				for(ForwardInterruptingComponent child : output.getOutputs()) {
+				for(ExternalizedStateComponent child : output.getOutputs()) {
 					//Disconnect
 					child.removeInput(output);
 					//output.removeOutput(child); //do at end
@@ -427,7 +426,7 @@ public class ForwardInterruptingPropNetFactory {
 				output.removeAllOutputs();
 
 				if(!isEssentialProposition(output)) {
-					ForwardInterruptingProposition prop = (ForwardInterruptingProposition) output;
+					ExternalizedStateProposition prop = (ExternalizedStateProposition) output;
 					//Remove the proposition entirely
 					falseComponent.removeOutput(output);
 					output.removeInput(falseComponent);
@@ -439,32 +438,32 @@ public class ForwardInterruptingPropNetFactory {
 					    pn.removeComponent(output);
 					}
 				}
-			} else if(output instanceof ForwardInterruptingAnd) {
-				ForwardInterruptingAnd and = (ForwardInterruptingAnd) output;
+			} else if(output instanceof ExternalizedStateAnd) {
+				ExternalizedStateAnd and = (ExternalizedStateAnd) output;
 				//Attach children of and to falseComponent
-				for(ForwardInterruptingComponent child : and.getOutputs()) {
+				for(ExternalizedStateComponent child : and.getOutputs()) {
 					child.addInput(falseComponent);
 					falseComponent.addOutput(child);
 					child.removeInput(and);
 				}
 				//Disconnect and completely
 				and.removeAllOutputs();
-				for(ForwardInterruptingComponent parent : and.getInputs())
+				for(ExternalizedStateComponent parent : and.getInputs())
 					parent.removeOutput(and);
 				and.removeAllInputs();
 				if(pn != null)
 				    pn.removeComponent(and);
-			} else if(output instanceof ForwardInterruptingOr) {
-				ForwardInterruptingOr or = (ForwardInterruptingOr) output;
+			} else if(output instanceof ExternalizedStateOr) {
+				ExternalizedStateOr or = (ExternalizedStateOr) output;
 				//Remove as input from or
 				or.removeInput(falseComponent);
 				falseComponent.removeOutput(or);
 				//If or has only one input, remove it
 				if(or.getInputs().size() == 1) {
-					ForwardInterruptingComponent in = or.getSingleInput();
+					ExternalizedStateComponent in = or.getSingleInput();
 					or.removeInput(in);
 					in.removeOutput(or);
-					for(ForwardInterruptingComponent out : or.getOutputs()) {
+					for(ExternalizedStateComponent out : or.getOutputs()) {
 						//Disconnect from and
 						out.removeInput(or);
 						//or.removeOutput(out); //do at end
@@ -481,13 +480,13 @@ public class ForwardInterruptingPropNetFactory {
 						pn.removeComponent(or);
 					}
 				}
-			} else if(output instanceof ForwardInterruptingNot) {
-				ForwardInterruptingNot not = (ForwardInterruptingNot) output;
+			} else if(output instanceof ExternalizedStateNot) {
+				ExternalizedStateNot not = (ExternalizedStateNot) output;
 				//Disconnect from falseComponent
 				not.removeInput(falseComponent);
 				falseComponent.removeOutput(not);
 				//Connect all children of the not to trueComponent
-				for(ForwardInterruptingComponent child : not.getOutputs()) {
+				for(ExternalizedStateComponent child : not.getOutputs()) {
 					//Disconnect
 					child.removeInput(not);
 					//not.removeOutput(child); //Do at end
@@ -498,7 +497,7 @@ public class ForwardInterruptingPropNetFactory {
 				not.removeAllOutputs();
 				if(pn != null)
 				    pn.removeComponent(not);
-			} else if(output instanceof ForwardInterruptingTransition) {
+			} else if(output instanceof ExternalizedStateTransition) {
 				//???
 				System.err.println("Fix optimizeAwayFalse's case for Transitions");
 			}
@@ -506,27 +505,31 @@ public class ForwardInterruptingPropNetFactory {
 	}
 
 
-	private static boolean isLegalOrGoalProposition(ForwardInterruptingComponent comp) {
-		if (!(comp instanceof ForwardInterruptingProposition)) {
+
+	private static boolean isLegalOrGoalProposition(ExternalizedStateComponent comp) {
+		if (!(comp instanceof ExternalizedStateProposition)) {
 			return false;
 		}
 
-		ForwardInterruptingProposition prop = (ForwardInterruptingProposition) comp;
+		ExternalizedStateProposition prop = (ExternalizedStateProposition) comp;
 		GdlSentence name = prop.getName();
 		return name.getName() == GdlPool.LEGAL || name.getName() == GdlPool.GOAL;
 	}
 
+
+
+
 	private static void optimizeAwayTrue(
-			Map<GdlSentence, ForwardInterruptingComponent> components, Map<GdlSentence, ForwardInterruptingComponent> negations, ForwardInterruptingPropNet pn, ForwardInterruptingComponent trueComponent,
-			ForwardInterruptingComponent falseComponent) {
+			Map<GdlSentence, ExternalizedStateComponent> components, Map<GdlSentence, ExternalizedStateComponent> negations, ExternalizedStatePropNet pn, ExternalizedStateComponent trueComponent,
+			ExternalizedStateComponent falseComponent) {
 	    assert((components != null && negations != null) || pn != null);
-	    for (ForwardInterruptingComponent output : Lists.newArrayList(trueComponent.getOutputs())) {
-	    	if (isEssentialProposition(output) || output instanceof ForwardInterruptingTransition) {
+	    for (ExternalizedStateComponent output : Lists.newArrayList(trueComponent.getOutputs())) {
+	    	if (isEssentialProposition(output) || output instanceof ExternalizedStateTransition) {
 	    		continue;
 	    	}
-			if(output instanceof ForwardInterruptingProposition) {
+			if(output instanceof ExternalizedStateProposition) {
 				//Move its outputs to be outputs of true
-				for(ForwardInterruptingComponent child : output.getOutputs()) {
+				for(ExternalizedStateComponent child : output.getOutputs()) {
 					//Disconnect
 					child.removeInput(output);
 					//output.removeOutput(child); //do at end
@@ -537,7 +540,7 @@ public class ForwardInterruptingPropNetFactory {
 				output.removeAllOutputs();
 
 				if(!isEssentialProposition(output)) {
-					ForwardInterruptingProposition prop = (ForwardInterruptingProposition) output;
+					ExternalizedStateProposition prop = (ExternalizedStateProposition) output;
 					//Remove the proposition entirely
 					trueComponent.removeOutput(output);
 					output.removeInput(trueComponent);
@@ -549,32 +552,32 @@ public class ForwardInterruptingPropNetFactory {
 					    pn.removeComponent(output);
 					}
 				}
-			} else if(output instanceof ForwardInterruptingOr) {
-				ForwardInterruptingOr or = (ForwardInterruptingOr) output;
+			} else if(output instanceof ExternalizedStateOr) {
+				ExternalizedStateOr or = (ExternalizedStateOr) output;
 				//Attach children of or to trueComponent
-				for(ForwardInterruptingComponent child : or.getOutputs()) {
+				for(ExternalizedStateComponent child : or.getOutputs()) {
 					child.addInput(trueComponent);
 					trueComponent.addOutput(child);
 					child.removeInput(or);
 				}
 				//Disconnect or completely
 				or.removeAllOutputs();
-				for(ForwardInterruptingComponent parent : or.getInputs())
+				for(ExternalizedStateComponent parent : or.getInputs())
 					parent.removeOutput(or);
 				or.removeAllInputs();
 				if(pn != null)
 				    pn.removeComponent(or);
-			} else if(output instanceof ForwardInterruptingAnd) {
-				ForwardInterruptingAnd and = (ForwardInterruptingAnd) output;
+			} else if(output instanceof ExternalizedStateAnd) {
+				ExternalizedStateAnd and = (ExternalizedStateAnd) output;
 				//Remove as input from and
 				and.removeInput(trueComponent);
 				trueComponent.removeOutput(and);
 				//If and has only one input, remove it
 				if(and.getInputs().size() == 1) {
-					ForwardInterruptingComponent in = and.getSingleInput();
+					ExternalizedStateComponent in = and.getSingleInput();
 					and.removeInput(in);
 					in.removeOutput(and);
-					for(ForwardInterruptingComponent out : and.getOutputs()) {
+					for(ExternalizedStateComponent out : and.getOutputs()) {
 						//Disconnect from and
 						out.removeInput(and);
 						//and.removeOutput(out); //do at end
@@ -591,13 +594,13 @@ public class ForwardInterruptingPropNetFactory {
 						pn.removeComponent(and);
 					}
 				}
-			} else if(output instanceof ForwardInterruptingNot) {
-				ForwardInterruptingNot not = (ForwardInterruptingNot) output;
+			} else if(output instanceof ExternalizedStateNot) {
+				ExternalizedStateNot not = (ExternalizedStateNot) output;
 				//Disconnect from trueComponent
 				not.removeInput(trueComponent);
 				trueComponent.removeOutput(not);
 				//Connect all children of the not to falseComponent
-				for(ForwardInterruptingComponent child : not.getOutputs()) {
+				for(ExternalizedStateComponent child : not.getOutputs()) {
 					//Disconnect
 					child.removeInput(not);
 					//not.removeOutput(child); //Do at end
@@ -608,7 +611,7 @@ public class ForwardInterruptingPropNetFactory {
 				not.removeAllOutputs();
 				if(pn != null)
 				    pn.removeComponent(not);
-			} else if(output instanceof ForwardInterruptingTransition) {
+			} else if(output instanceof ExternalizedStateTransition) {
 				//???
 				System.err.println("Fix optimizeAwayTrue's case for Transitions");
 			}
@@ -616,9 +619,9 @@ public class ForwardInterruptingPropNetFactory {
 	}
 
 
-	private static boolean hasNonessentialChildren(ForwardInterruptingComponent trueComponent) {
-		for(ForwardInterruptingComponent child : trueComponent.getOutputs()) {
-			if(child instanceof ForwardInterruptingTransition)
+	private static boolean hasNonessentialChildren(ExternalizedStateComponent trueComponent) {
+		for(ExternalizedStateComponent child : trueComponent.getOutputs()) {
+			if(child instanceof ExternalizedStateTransition)
 				continue;
 			if(!isEssentialProposition(child))
 				return true;
@@ -629,15 +632,14 @@ public class ForwardInterruptingPropNetFactory {
 		return false;
 	}
 
-
-	private static boolean isEssentialProposition(ForwardInterruptingComponent component) {
-		if(!(component instanceof ForwardInterruptingProposition))
+	private static boolean isEssentialProposition(ExternalizedStateComponent component) {
+		if(!(component instanceof ExternalizedStateProposition))
 			return false;
 
 		//We're looking for things that would be outputs of "true" or "false",
 		//but we would still want to keep as propositions to be read by the
 		//state machine
-		ForwardInterruptingProposition prop = (ForwardInterruptingProposition) component;
+		ExternalizedStateProposition prop = (ExternalizedStateProposition) component;
 		GdlConstant name = prop.getName().getName();
 
 		return name.equals(LEGAL) /*|| name.equals(NEXT)*/ || name.equals(GOAL)
@@ -645,43 +647,42 @@ public class ForwardInterruptingPropNetFactory {
 	}
 
 
-	private static void completeComponentSet(Set<ForwardInterruptingComponent> componentSet) {
-		Set<ForwardInterruptingComponent> newComponents = new HashSet<ForwardInterruptingComponent>();
-		Set<ForwardInterruptingComponent> componentsToTry = new HashSet<ForwardInterruptingComponent>(componentSet);
+	private static void completeComponentSet(Set<ExternalizedStateComponent> componentSet) {
+		Set<ExternalizedStateComponent> newComponents = new HashSet<ExternalizedStateComponent>();
+		Set<ExternalizedStateComponent> componentsToTry = new HashSet<ExternalizedStateComponent>(componentSet);
 		while(!componentsToTry.isEmpty()) {
-			for(ForwardInterruptingComponent c : componentsToTry) {
-				for(ForwardInterruptingComponent out : c.getOutputs()) {
+			for(ExternalizedStateComponent c : componentsToTry) {
+				for(ExternalizedStateComponent out : c.getOutputs()) {
 					if(!componentSet.contains(out))
 						newComponents.add(out);
 				}
-				for(ForwardInterruptingComponent in : c.getInputs()) {
+				for(ExternalizedStateComponent in : c.getInputs()) {
 					if(!componentSet.contains(in))
 						newComponents.add(in);
 				}
 			}
 			componentSet.addAll(newComponents);
 			componentsToTry = newComponents;
-			newComponents = new HashSet<ForwardInterruptingComponent>();
+			newComponents = new HashSet<ExternalizedStateComponent>();
 		}
 	}
 
-
-	private static void addTransitions(Map<GdlSentence, ForwardInterruptingComponent> components) {
-		for(Entry<GdlSentence, ForwardInterruptingComponent> entry : components.entrySet()) {
+	private static void addTransitions(Map<GdlSentence, ExternalizedStateComponent> components) {
+		for(Entry<GdlSentence, ExternalizedStateComponent> entry : components.entrySet()) {
 			GdlSentence sentence = entry.getKey();
 
 			if(sentence.getName().equals(NEXT)) {
 				//connect to true
 				GdlSentence trueSentence = GdlPool.getRelation(TRUE, sentence.getBody());
-				ForwardInterruptingComponent nextComponent = entry.getValue();
-				ForwardInterruptingComponent trueComponent = components.get(trueSentence);
+				ExternalizedStateComponent nextComponent = entry.getValue();
+				ExternalizedStateComponent trueComponent = components.get(trueSentence);
 				//There might be no true component (for example, because the bases
 				//told us so). If that's the case, don't have a transition.
 				if(trueComponent == null) {
 				    // Skipping transition to supposedly impossible 'trueSentence'
 				    continue;
 				}
-				ForwardInterruptingTransition transition = new ForwardInterruptingTransition();
+				ExternalizedStateTransition transition = new ExternalizedStateTransition();
 				transition.addInput(nextComponent);
 				nextComponent.addOutput(transition);
 				transition.addOutput(trueComponent);
@@ -690,27 +691,30 @@ public class ForwardInterruptingPropNetFactory {
 		}
 	}
 
+
+
+
 	//TODO: Replace with version using constantChecker only
 	//TODO: This can give problematic results if interpreted in
 	//the standard way (see test_case_3d)
-	private static void setUpInit(Map<GdlSentence, ForwardInterruptingComponent> components,
-			ForwardInterruptingConstant trueComponent, ForwardInterruptingConstant falseComponent) {
-		ForwardInterruptingProposition initProposition = new ForwardInterruptingProposition(GdlPool.getProposition(INIT_CAPS));
-		for(Entry<GdlSentence, ForwardInterruptingComponent> entry : components.entrySet()) {
+	private static void setUpInit(Map<GdlSentence, ExternalizedStateComponent> components,
+			ExternalizedStateConstant trueComponent, ExternalizedStateConstant falseComponent) {
+		ExternalizedStateProposition initProposition = new ExternalizedStateProposition(GdlPool.getProposition(INIT_CAPS));
+		for(Entry<GdlSentence, ExternalizedStateComponent> entry : components.entrySet()) {
 			//Is this something that will be true?
 			if(entry.getValue() == trueComponent) {
 				if(entry.getKey().getName().equals(INIT)) {
 					//Find the corresponding true sentence
 					GdlSentence trueSentence = GdlPool.getRelation(TRUE, entry.getKey().getBody());
 					//System.out.println("True sentence from init: " + trueSentence);
-					ForwardInterruptingComponent trueSentenceComponent = components.get(trueSentence);
+					ExternalizedStateComponent trueSentenceComponent = components.get(trueSentence);
 					if(trueSentenceComponent.getInputs().isEmpty()) {
 						//Case where there is no transition input
 						//Add the transition input, connect to init, continue loop
 
 						// @author c.sironi: Also set to TRUE that fact that the value of this transition
 						// depends on the INIT proposition value.
-						ForwardInterruptingTransition transition = new ForwardInterruptingTransition(true);
+						ExternalizedStateTransition transition = new ExternalizedStateTransition(true);
 						//init goes into transition
 						transition.addInput(initProposition);
 						initProposition.addOutput(transition);
@@ -719,38 +723,42 @@ public class ForwardInterruptingPropNetFactory {
 						transition.addOutput(trueSentenceComponent);
 					} else {
 						//The transition already exists
-						ForwardInterruptingComponent transition = trueSentenceComponent.getSingleInput();
+						ExternalizedStateComponent transition = trueSentenceComponent.getSingleInput();
 
 						//We want to add init as a thing that precedes the transition
 						//Disconnect existing input
-						ForwardInterruptingComponent input = transition.getSingleInput();
+						ExternalizedStateComponent input = transition.getSingleInput();
 						//input and init go into or, or goes into transition
 						input.removeOutput(transition);
 						transition.removeInput(input);
-						List<ForwardInterruptingComponent> orInputs = new ArrayList<ForwardInterruptingComponent>(2);
+						List<ExternalizedStateComponent> orInputs = new ArrayList<ExternalizedStateComponent>(2);
 						orInputs.add(input);
 						orInputs.add(initProposition);
 						orify(orInputs, transition, falseComponent);
 						// @author c.sironi: Also set to TRUE that fact that the value of this transition
 						// depends on the INIT proposition value.
-						((ForwardInterruptingTransition) transition).setDependingOnInit(true);
+						((ExternalizedStateTransition) transition).setDependingOnInit(true);
 					}
 				}
 			}
 		}
 	}
 
+
+
+
+
 	/**
 	 * Adds an or gate connecting the inputs to produce the output.
 	 * Handles special optimization cases like a true/false input.
 	 */
-	private static void orify(Collection<ForwardInterruptingComponent> inputs, ForwardInterruptingComponent output, ForwardInterruptingConstant falseProp) {
+	private static void orify(Collection<ExternalizedStateComponent> inputs, ExternalizedStateComponent output, ExternalizedStateConstant falseProp) {
 		//TODO: Look for already-existing ors with the same inputs?
 		//Or can this be handled with a GDL transformation?
 
 		//Special case: An input is the true constant
-		for(ForwardInterruptingComponent in : inputs) {
-			if(in instanceof ForwardInterruptingConstant && in.getValue()) {
+		for(ExternalizedStateComponent in : inputs) {
+			if(in instanceof ExternalizedStateConstant && in.getValue()) {
 				//True constant: connect that to the component, done
 				in.addOutput(output);
 				output.addInput(in);
@@ -763,9 +771,9 @@ public class ForwardInterruptingPropNetFactory {
 		//What if that "or" gate has multiple outputs? Could that happen?
 
 		//For reals... just skip over any false constants
-		ForwardInterruptingOr or = new ForwardInterruptingOr();
-		for(ForwardInterruptingComponent in : inputs) {
-			if(!(in instanceof ForwardInterruptingConstant)) {
+		ExternalizedStateOr or = new ExternalizedStateOr();
+		for(ExternalizedStateComponent in : inputs) {
+			if(!(in instanceof ExternalizedStateConstant)) {
 				in.addOutput(or);
 				or.addInput(in);
 			}
@@ -779,7 +787,7 @@ public class ForwardInterruptingPropNetFactory {
 		}
 		//If there's just one, on the other hand, don't use the or gate
 		if(or.getInputs().size() == 1) {
-			ForwardInterruptingComponent in = or.getSingleInput();
+			ExternalizedStateComponent in = or.getSingleInput();
 			in.removeOutput(or);
 			or.removeInput(in);
 			in.addOutput(output);
@@ -789,6 +797,10 @@ public class ForwardInterruptingPropNetFactory {
 		or.addOutput(output);
 		output.addInput(or);
 	}
+
+
+
+
 
 	//TODO: This code is currently used by multiple classes, so perhaps it should be
 	//factored out into the SentenceModel.
@@ -838,13 +850,15 @@ public class ForwardInterruptingPropNetFactory {
 		return ordering;
 	}
 
+
+
 	private static void addSentenceForm(SentenceForm form, SentenceDomainModel model,
-			Map<GdlSentence, ForwardInterruptingComponent> components,
-			Map<GdlSentence, ForwardInterruptingComponent> negations,
-			ForwardInterruptingConstant trueComponent, ForwardInterruptingConstant falseComponent,
+			Map<GdlSentence, ExternalizedStateComponent> components,
+			Map<GdlSentence, ExternalizedStateComponent> negations,
+			ExternalizedStateConstant trueComponent, ExternalizedStateConstant falseComponent,
 			boolean usingBase, boolean usingInput,
 			Set<SentenceForm> recursionForms,
-			Map<GdlSentence, ForwardInterruptingComponent> temporaryComponents, Map<GdlSentence, ForwardInterruptingComponent> temporaryNegations,
+			Map<GdlSentence, ExternalizedStateComponent> temporaryComponents, Map<GdlSentence, ExternalizedStateComponent> temporaryNegations,
 			Map<SentenceForm, FunctionInfo> functionInfoMap, ConstantChecker constantChecker,
 			Map<SentenceForm, Collection<GdlSentence>> completedSentenceFormValues) throws InterruptedException {
 		//This is the meat of it (along with the entire Assignments class).
@@ -862,7 +876,7 @@ public class ForwardInterruptingPropNetFactory {
 			if(alwaysTrueSentence.getName().equals(LEGAL)
 					|| alwaysTrueSentence.getName().equals(NEXT)
 					|| alwaysTrueSentence.getName().equals(GOAL)) {
-				ForwardInterruptingProposition prop = new ForwardInterruptingProposition(alwaysTrueSentence);
+				ExternalizedStateProposition prop = new ExternalizedStateProposition(alwaysTrueSentence);
 				//Attach to true
 				trueComponent.addOutput(prop);
 				prop.addInput(trueComponent);
@@ -881,7 +895,7 @@ public class ForwardInterruptingPropNetFactory {
 			SentenceForm inputForm = form.withName(INPUT);
 			for (GdlSentence inputSentence : constantChecker.getTrueSentences(inputForm)) {
 				GdlSentence doesSentence = GdlPool.getRelation(DOES, inputSentence.getBody());
-				ForwardInterruptingProposition prop = new ForwardInterruptingProposition(doesSentence);
+				ExternalizedStateProposition prop = new ExternalizedStateProposition(doesSentence);
 				components.put(doesSentence, prop);
 			}
 			return;
@@ -890,13 +904,13 @@ public class ForwardInterruptingPropNetFactory {
 			SentenceForm baseForm = form.withName(BASE);
 			for (GdlSentence baseSentence : constantChecker.getTrueSentences(baseForm)) {
 				GdlSentence trueSentence = GdlPool.getRelation(TRUE, baseSentence.getBody());
-				ForwardInterruptingProposition prop = new ForwardInterruptingProposition(trueSentence);
+				ExternalizedStateProposition prop = new ExternalizedStateProposition(trueSentence);
 				components.put(trueSentence, prop);
 			}
 			return;
 		}
 
-		Map<GdlSentence, Set<ForwardInterruptingComponent>> inputsToOr = new HashMap<GdlSentence, Set<ForwardInterruptingComponent>>();
+		Map<GdlSentence, Set<ExternalizedStateComponent>> inputsToOr = new HashMap<GdlSentence, Set<ExternalizedStateComponent>>();
 		for(GdlRule rule : rules) {
 			Assignments assignments = AssignmentsFactory.getAssignmentsForRule(rule, model, functionInfoMap, completedSentenceFormValues);
 
@@ -917,7 +931,7 @@ public class ForwardInterruptingPropNetFactory {
 				GdlSentence sentence = CommonTransforms.replaceVariables(rule.getHead(), assignment);
 
 				//Now we go through the conjuncts as before, but we wait to hook them up.
-				List<ForwardInterruptingComponent> componentsToConnect = new ArrayList<ForwardInterruptingComponent>(rule.arity());
+				List<ExternalizedStateComponent> componentsToConnect = new ArrayList<ExternalizedStateComponent>(rule.arity());
 				for(GdlLiteral literal : rule.getBody()) {
 					if(literal instanceof GdlSentence) {
 						//Get the sentence post-substitutions
@@ -934,7 +948,7 @@ public class ForwardInterruptingPropNetFactory {
 							continue;
 						}
 
-						ForwardInterruptingComponent conj = components.get(transformed);
+						ExternalizedStateComponent conj = components.get(transformed);
 						//If conj is null and this is a sentence form we're still handling,
 						//hook up to a temporary sentence form
 						if(conj == null) {
@@ -942,7 +956,7 @@ public class ForwardInterruptingPropNetFactory {
 						}
 						if(conj == null && SentenceModelUtils.inSentenceFormGroup(transformed, recursionForms)) {
 							//Set up a temporary component
-							ForwardInterruptingProposition tempProp = new ForwardInterruptingProposition(transformed);
+							ExternalizedStateProposition tempProp = new ExternalizedStateProposition(transformed);
 							temporaryComponents.put(transformed, tempProp);
 							conj = tempProp;
 						}
@@ -974,7 +988,7 @@ public class ForwardInterruptingPropNetFactory {
 							continue;
 						}
 
-						ForwardInterruptingComponent conj = negations.get(transformed);
+						ExternalizedStateComponent conj = negations.get(transformed);
 						if(isThisConstant(conj, falseComponent)) {
 							//We need to change one of the variables inside
 							List<GdlVariable> varsInConjunct = getVarsInConjunct(internal);
@@ -988,20 +1002,20 @@ public class ForwardInterruptingPropNetFactory {
 						}
 						//Check for the recursive case:
 						if(conj == null && SentenceModelUtils.inSentenceFormGroup(transformed, recursionForms)) {
-							ForwardInterruptingComponent positive = components.get(transformed);
+							ExternalizedStateComponent positive = components.get(transformed);
 							if(positive == null) {
 								positive = temporaryComponents.get(transformed);
 							}
 							if(positive == null) {
 								//Make the temporary proposition
-								ForwardInterruptingProposition tempProp = new ForwardInterruptingProposition(transformed);
+								ExternalizedStateProposition tempProp = new ExternalizedStateProposition(transformed);
 								temporaryComponents.put(transformed, tempProp);
 								positive = tempProp;
 							}
 							//Positive is now set and in temporaryComponents
 							//Evidently, wasn't in temporaryNegations
 							//So we add the "not" gate and set it in temporaryNegations
-							ForwardInterruptingNot not = new ForwardInterruptingNot();
+							ExternalizedStateNot not = new ExternalizedStateNot();
 							//Add positive as input
 							not.addInput(positive);
 							positive.addOutput(not);
@@ -1009,7 +1023,7 @@ public class ForwardInterruptingPropNetFactory {
 							conj = not;
 						}
 						if(conj == null) {
-							ForwardInterruptingComponent positive = components.get(transformed);
+							ExternalizedStateComponent positive = components.get(transformed);
 							//No, because then that will be attached to "negations", which could be bad
 
 							if(positive == null) {
@@ -1022,14 +1036,14 @@ public class ForwardInterruptingPropNetFactory {
 
 							//Check if we're sharing a component with another sentence with a negation
 							//(i.e. look for "nots" in our outputs and use those instead)
-							ForwardInterruptingNot existingNotOutput = getNotOutput(positive);
+							ExternalizedStateNot existingNotOutput = getNotOutput(positive);
 							if(existingNotOutput != null) {
 								componentsToConnect.add(existingNotOutput);
 								negations.put(transformed, existingNotOutput);
 								continue; //to the next conjunct
 							}
 
-							ForwardInterruptingNot not = new ForwardInterruptingNot();
+							ExternalizedStateNot not = new ExternalizedStateNot();
 							not.addInput(positive);
 							positive.addOutput(not);
 							negations.put(transformed, not);
@@ -1044,12 +1058,12 @@ public class ForwardInterruptingPropNetFactory {
 				}
 				if(!componentsToConnect.contains(null)) {
 					//Connect all the components
-					ForwardInterruptingProposition andComponent = new ForwardInterruptingProposition(TEMP);
+					ExternalizedStateProposition andComponent = new ExternalizedStateProposition(TEMP);
 
 					andify(componentsToConnect, andComponent, trueComponent);
 					if(!isThisConstant(andComponent, falseComponent)) {
 						if(!inputsToOr.containsKey(sentence))
-							inputsToOr.put(sentence, new HashSet<ForwardInterruptingComponent>());
+							inputsToOr.put(sentence, new HashSet<ExternalizedStateComponent>());
 						inputsToOr.get(sentence).add(andComponent);
 						//We'll want to make sure at least one of the non-constant
 						//components is changing
@@ -1062,14 +1076,14 @@ public class ForwardInterruptingPropNetFactory {
 		}
 
 		//At the end, we hook up the conjuncts
-		for(Entry<GdlSentence, Set<ForwardInterruptingComponent>> entry : inputsToOr.entrySet()) {
+		for(Entry<GdlSentence, Set<ExternalizedStateComponent>> entry : inputsToOr.entrySet()) {
 			ConcurrencyUtils.checkForInterruption();
 
 			GdlSentence sentence = entry.getKey();
-			Set<ForwardInterruptingComponent> inputs = entry.getValue();
-			Set<ForwardInterruptingComponent> realInputs = new HashSet<ForwardInterruptingComponent>();
-			for(ForwardInterruptingComponent input : inputs) {
-				if(input instanceof ForwardInterruptingConstant || input.getInputs().size() == 0) {
+			Set<ExternalizedStateComponent> inputs = entry.getValue();
+			Set<ExternalizedStateComponent> realInputs = new HashSet<ExternalizedStateComponent>();
+			for(ExternalizedStateComponent input : inputs) {
+				if(input instanceof ExternalizedStateConstant || input.getInputs().size() == 0) {
 					realInputs.add(input);
 				} else {
 					realInputs.add(input.getSingleInput());
@@ -1078,7 +1092,7 @@ public class ForwardInterruptingPropNetFactory {
 				}
 			}
 
-			ForwardInterruptingProposition prop = new ForwardInterruptingProposition(sentence);
+			ExternalizedStateProposition prop = new ExternalizedStateProposition(sentence);
 			orify(realInputs, prop, falseComponent);
 			components.put(sentence, prop);
 		}
@@ -1091,12 +1105,14 @@ public class ForwardInterruptingPropNetFactory {
 			for(GdlSentence sentence : model.getDomain(form)) {
 				ConcurrencyUtils.checkForInterruption();
 
-				ForwardInterruptingProposition prop = new ForwardInterruptingProposition(sentence);
+				ExternalizedStateProposition prop = new ExternalizedStateProposition(sentence);
 				components.put(sentence, prop);
 			}
 		}
 
 	}
+
+
 
 
 	private static Set<GdlVariable> getVarsInLiveConjuncts(
@@ -1116,17 +1132,17 @@ public class ForwardInterruptingPropNetFactory {
 		return result;
 	}
 
-	private static boolean isThisConstant(ForwardInterruptingComponent conj, ForwardInterruptingConstant constantComponent) {
+	private static boolean isThisConstant(ExternalizedStateComponent conj, ExternalizedStateConstant constantComponent) {
 		if(conj == constantComponent)
 			return true;
-		return (conj instanceof ForwardInterruptingProposition && conj.getInputs().size() == 1 && conj.getSingleInput() == constantComponent);
+		return (conj instanceof ExternalizedStateProposition && conj.getInputs().size() == 1 && conj.getSingleInput() == constantComponent);
 	}
 
 
-	private static ForwardInterruptingNot getNotOutput(ForwardInterruptingComponent positive) {
-		for(ForwardInterruptingComponent c : positive.getOutputs()) {
-			if(c instanceof ForwardInterruptingNot) {
-				return (ForwardInterruptingNot) c;
+	private static ExternalizedStateNot getNotOutput(ExternalizedStateComponent positive) {
+		for(ExternalizedStateComponent c : positive.getOutputs()) {
+			if(c instanceof ExternalizedStateNot) {
+				return (ExternalizedStateNot) c;
 			}
 		}
 		return null;
@@ -1138,10 +1154,11 @@ public class ForwardInterruptingPropNetFactory {
 	}
 
 
-	private static void andify(List<ForwardInterruptingComponent> inputs, ForwardInterruptingComponent output, ForwardInterruptingConstant trueProp) {
+
+	private static void andify(List<ExternalizedStateComponent> inputs, ExternalizedStateComponent output, ExternalizedStateConstant trueProp) {
 		//Special case: If the inputs include false, connect false to thisComponent
-		for(ForwardInterruptingComponent c : inputs) {
-			if(c instanceof ForwardInterruptingConstant && !c.getValue()) {
+		for(ExternalizedStateComponent c : inputs) {
+			if(c instanceof ExternalizedStateConstant && !c.getValue()) {
 				//Connect false (c) to the output
 				output.addInput(c);
 				c.addOutput(output);
@@ -1150,9 +1167,9 @@ public class ForwardInterruptingPropNetFactory {
 		}
 
 		//For reals... just skip over any true constants
-		ForwardInterruptingAnd and = new ForwardInterruptingAnd();
-		for(ForwardInterruptingComponent in : inputs) {
-			if(!(in instanceof ForwardInterruptingConstant)) {
+		ExternalizedStateAnd and = new ExternalizedStateAnd();
+		for(ExternalizedStateComponent in : inputs) {
+			if(!(in instanceof ExternalizedStateConstant)) {
 				in.addOutput(and);
 				and.addInput(in);
 			}
@@ -1166,7 +1183,7 @@ public class ForwardInterruptingPropNetFactory {
 		}
 		//If there's just one, on the other hand, don't use the and gate
 		if(and.getInputs().size() == 1) {
-			ForwardInterruptingComponent in = and.getSingleInput();
+			ExternalizedStateComponent in = and.getSingleInput();
 			in.removeOutput(and);
 			and.removeInput(in);
 			in.addOutput(output);
@@ -1175,556 +1192,6 @@ public class ForwardInterruptingPropNetFactory {
 		}
 		and.addOutput(output);
 		output.addInput(and);
-	}
-
-	/**
-	 * Represents the "type" of a node with respect to which truth
-	 * values it is capable of having: true, false, either value,
-	 * or neither value. Used by
-	 * {@link ForwardInterruptingPropNetFactory#removeUnreachableBasesAndInputs(ForwardInterruptingPropNet, Set)}.
-	 */
-	private static enum Type { NEITHER(false, false),
-						TRUE(true, false),
-						FALSE(false, true),
-						BOTH(true, true);
-		private final boolean hasTrue;
-		private final boolean hasFalse;
-
-		Type(boolean hasTrue, boolean hasFalse) {
-			this.hasTrue = hasTrue;
-			this.hasFalse = hasFalse;
-		}
-
-		public boolean includes(Type other) {
-			switch (other) {
-			case BOTH:
-				return hasTrue && hasFalse;
-			case FALSE:
-				return hasFalse;
-			case NEITHER:
-				return true;
-			case TRUE:
-				return hasTrue;
-			}
-			throw new RuntimeException();
-		}
-
-		public Type with(Type otherType) {
-			if (otherType == null) {
-				otherType = NEITHER;
-			}
-			switch (otherType) {
-			case BOTH:
-				return BOTH;
-			case NEITHER:
-				return this;
-			case TRUE:
-				if (hasFalse) {
-					return BOTH;
-				} else {
-					return TRUE;
-				}
-			case FALSE:
-				if (hasTrue) {
-					return BOTH;
-				} else {
-					return FALSE;
-				}
-			}
-			throw new RuntimeException();
-		}
-
-		public Type minus(Type other) {
-			switch (other) {
-			case BOTH:
-				return NEITHER;
-			case TRUE:
-				return hasFalse ? FALSE : NEITHER;
-			case FALSE:
-				return hasTrue ? TRUE : NEITHER;
-			case NEITHER:
-				return this;
-			}
-			throw new RuntimeException();
-		}
-
-		public Type opposite() {
-			switch (this) {
-			case TRUE:
-				return FALSE;
-			case FALSE:
-				return TRUE;
-			case NEITHER:
-			case BOTH:
-				return this;
-			}
-			throw new RuntimeException();
-		}
-	}
-
-	/**
-	 * Removes from the propnet all components that are discovered through type
-	 * inference to only ever be true or false, replacing them with their values
-	 * appropriately. This method may remove base and input propositions that are
-	 * shown to be always false (or, in the case of base propositions, those that
-	 * are always true).
-	 *
-	 * @param basesTrueByInit The set of base propositions that are true on the
-	 * first turn of the game.
-	 */
-	public static void removeUnreachableBasesAndInputs(ForwardInterruptingPropNet pn, Set<ForwardInterruptingProposition> basesTrueByInit) throws InterruptedException {
-		//If this doesn't contain a component, that's the equivalent of Type.NEITHER
-		Map<ForwardInterruptingComponent, Type> reachability = Maps.newHashMap();
-		//Keep track of the number of true inputs to AND gates and false inputs to
-		//OR gates.
-		Multiset<ForwardInterruptingComponent> numTrueInputs = HashMultiset.create();
-		Multiset<ForwardInterruptingComponent> numFalseInputs = HashMultiset.create();
-		Stack<Pair<ForwardInterruptingComponent, Type>> toAdd = new Stack<Pair<ForwardInterruptingComponent, Type>>();
-
-		//It's easier here if we get just the one-way version of the map
-		Map<ForwardInterruptingProposition, ForwardInterruptingProposition> legalsToInputs = Maps.newHashMap();
-		for (ForwardInterruptingProposition legalProp : Iterables.concat(pn.getLegalPropositions().values())) {
-			ForwardInterruptingProposition inputProp = pn.getLegalInputMap().get(legalProp);
-			if (inputProp != null) {
-				legalsToInputs.put(legalProp, inputProp);
-			}
-		}
-
-		//All constants have their values
-		for (ForwardInterruptingComponent c : pn.getComponents()) {
-			ConcurrencyUtils.checkForInterruption();
-			if (c instanceof ForwardInterruptingConstant) {
-				if (c.getValue()) {
-					toAdd.add(Pair.of(c, Type.TRUE));
-				} else {
-					toAdd.add(Pair.of(c, Type.FALSE));
-				}
-			}
-		}
-
-		//Every input can be false (we assume that no player will have just one move allowed all game)
-        for(ForwardInterruptingProposition p : pn.getInputPropositions().values()) {
-        	toAdd.add(Pair.of((ForwardInterruptingComponent) p, Type.FALSE));
-        }
-	    //Every base with "init" can be true, every base without "init" can be false
-	    for(ForwardInterruptingProposition baseProp : pn.getBasePropositions().values()) {
-            if (basesTrueByInit.contains(baseProp)) {
-            	toAdd.add(Pair.of((ForwardInterruptingComponent) baseProp, Type.TRUE));
-            } else {
-            	toAdd.add(Pair.of((ForwardInterruptingComponent) baseProp, Type.FALSE));
-            }
-	    }
-	    //Keep INIT, for those who use it
-	    ForwardInterruptingProposition initProposition = pn.getInitProposition();
-
-	    if(initProposition != null){
-    	toAdd.add(Pair.of((ForwardInterruptingComponent) initProposition, Type.BOTH));
-	    }
-
-    	while (!toAdd.isEmpty()) {
-			ConcurrencyUtils.checkForInterruption();
-    		Pair<ForwardInterruptingComponent, Type> curEntry = toAdd.pop();
-    		ForwardInterruptingComponent curComp = curEntry.left;
-    		Type newInputType = curEntry.right;
-    		Type oldType = reachability.get(curComp);
-    		if (oldType == null) {
-    			oldType = Type.NEITHER;
-    		}
-
-    		//We want to send only the new addition to our children,
-    		//for consistency in our parent-true and parent-false
-    		//counts.
-    		//Make sure we don't double-apply a type.
-
-    		Type typeToAdd = Type.NEITHER; // Any new values that we discover we can have this iteration.
-    		if (curComp instanceof ForwardInterruptingProposition) {
-    			typeToAdd = newInputType;
-    		} else if (curComp instanceof ForwardInterruptingTransition) {
-    			typeToAdd = newInputType;
-    		} else if (curComp instanceof ForwardInterruptingConstant) {
-    			typeToAdd = newInputType;
-    		} else if (curComp instanceof ForwardInterruptingNot) {
-    			typeToAdd = newInputType.opposite();
-    		} else if (curComp instanceof ForwardInterruptingAnd) {
-    			if (newInputType.hasTrue) {
-    				numTrueInputs.add(curComp);
-    				if (numTrueInputs.count(curComp) == curComp.getInputs().size()) {
-    					typeToAdd = Type.TRUE;
-    				}
-    			}
-    			if (newInputType.hasFalse) {
-    				typeToAdd = typeToAdd.with(Type.FALSE);
-    			}
-    		} else if (curComp instanceof ForwardInterruptingOr) {
-    			if (newInputType.hasFalse) {
-    				numFalseInputs.add(curComp);
-    				if (numFalseInputs.count(curComp) == curComp.getInputs().size()) {
-    					typeToAdd = Type.FALSE;
-    				}
-    			}
-    			if (newInputType.hasTrue) {
-    				typeToAdd = typeToAdd.with(Type.TRUE);
-    			}
-    		} else {
-    			throw new RuntimeException("Unhandled component type " + curComp.getClass());
-    		}
-
-    		if (oldType.includes(typeToAdd)) {
-    			//We don't know anything new about curComp
-    			continue;
-    		}
-    		reachability.put(curComp, typeToAdd.with(oldType));
-    		typeToAdd = typeToAdd.minus(oldType);
-    		if (typeToAdd == Type.NEITHER) {
-    			throw new RuntimeException("Something's messed up here");
-    		}
-
-    		//Add all our children to the stack
-    		for (ForwardInterruptingComponent output : curComp.getOutputs()) {
-    			toAdd.add(Pair.of(output, typeToAdd));
-    		}
-			if (legalsToInputs.containsKey(curComp)) {
-				ForwardInterruptingProposition inputProp = legalsToInputs.get(curComp);
-				if (inputProp == null) {
-					throw new IllegalStateException();
-				}
-				toAdd.add(Pair.of((ForwardInterruptingComponent) inputProp, typeToAdd));
-			}
-    	}
-
-    	ForwardInterruptingConstant trueConst = new ForwardInterruptingConstant(true);
-    	ForwardInterruptingConstant falseConst = new ForwardInterruptingConstant(false);
-	    pn.addComponent(trueConst);
-	    pn.addComponent(falseConst);
-	    //Make them the input of all false/true components
-	    for(Entry<ForwardInterruptingComponent, Type> entry : reachability.entrySet()) {
-	        Type type = entry.getValue();
-	        if(type == Type.TRUE || type == Type.FALSE) {
-	            ForwardInterruptingComponent c = entry.getKey();
-	            if (c instanceof ForwardInterruptingConstant) {
-	            	//Don't bother trying to remove this
-	            	continue;
-	            }
-
-
-
-/*
-
-	            if(c instanceof ForwardInterruptingProposition){
-					System.out.println("(PROPOSITION=" + ((ForwardInterruptingProposition) c).getName() + ", NUM OUTPUTS=" + c.getOutputs().size() + ", TYPE=" + type + ")");
-				}else if(c instanceof ForwardInterruptingTransition){
-					System.out.println("(TRANSITION, NUM OUTPUTS=" + c.getOutputs().size() + ", TYPE=" + type + ")");
-				}else if(c instanceof ForwardInterruptingConstant){
-					System.out.println("(CONSTANT, NUM OUTPUTS=" + c.getOutputs().size() + ", TYPE=" + type + ")");
-				}else if(c instanceof ForwardInterruptingAnd){
-					System.out.println("(AND, NUM OUTPUTS=" + c.getOutputs().size() + ", NUM INPUTS=" + c.getInputs().size() + ", TYPE=" + type + ")");
-				}else if(c instanceof ForwardInterruptingOr){
-					System.out.println("(OR, NUM OUTPUTS=" + c.getOutputs().size() + ", NUM INPUTS=" + c.getInputs().size() + ", TYPE=" + type + ")");
-				}else if(c instanceof ForwardInterruptingNot){
-					System.out.println("(NOT, NUM OUTPUTS=" + c.getOutputs().size() + ", NUM INPUTS=" + c.getInputs().size() + ", TYPE=" + type + ")");
-				}
-
-*/
-
-
-
-
-
-
-	            //Disconnect from inputs
-	            for(ForwardInterruptingComponent input : c.getInputs()) {
-	                input.removeOutput(c);
-	            }
-	            c.removeAllInputs();
-	            if(type == Type.TRUE ^ (c instanceof ForwardInterruptingNot)) {
-	                c.addInput(trueConst);
-	                trueConst.addOutput(c);
-	            } else {
-                    c.addInput(falseConst);
-                    falseConst.addOutput(c);
-	            }
-	        }
-	    }
-
-	    optimizeAwayTrueAndFalse(pn, trueConst, falseConst);
-	}
-
-    /**
-	 * Optimizes an already-existing propnet by removing useless leaves.
-	 * These are components that have no outputs, but have no special
-	 * meaning in GDL that requires them to stay.
-	 *
-	 * TODO: Currently fails on propnets with cycles.
-	 * @param pn
-	 */
-	public static void lopUselessLeaves(ForwardInterruptingPropNet pn) {
-		//Approach: Collect useful propositions based on a backwards
-		//search from goal/legal/terminal (passing through transitions)
-		Set<ForwardInterruptingComponent> usefulComponents = new HashSet<ForwardInterruptingComponent>();
-		//TODO: Also try with queue?
-		Stack<ForwardInterruptingComponent> toAdd = new Stack<ForwardInterruptingComponent>();
-		toAdd.add(pn.getTerminalProposition());
-		usefulComponents.add(pn.getInitProposition()); //Can't remove it...
-		for(Set<ForwardInterruptingProposition> goalProps : pn.getGoalPropositions().values())
-			toAdd.addAll(goalProps);
-		for(Set<ForwardInterruptingProposition> legalProps : pn.getLegalPropositions().values())
-			toAdd.addAll(legalProps);
-		while(!toAdd.isEmpty()) {
-			ForwardInterruptingComponent curComp = toAdd.pop();
-			if(usefulComponents.contains(curComp))
-				//We've already added it
-				continue;
-			usefulComponents.add(curComp);
-			toAdd.addAll(curComp.getInputs());
-		}
-
-		//Remove the components not marked as useful
-		List<ForwardInterruptingComponent> allComponents = new ArrayList<ForwardInterruptingComponent>(pn.getComponents());
-		for(ForwardInterruptingComponent c : allComponents) {
-			if(!usefulComponents.contains(c))
-				pn.removeComponent(c);
-		}
-	}
-
-	/**
-	 * Optimizes an already-existing propnet by removing propositions
-	 * of the form (init ?x). Does NOT remove the proposition "INIT".
-	 * @param pn
-	 */
-	public static void removeInits(ForwardInterruptingPropNet pn) {
-		List<ForwardInterruptingProposition> toRemove = new ArrayList<ForwardInterruptingProposition>();
-		for(ForwardInterruptingProposition p : pn.getPropositions()) {
-			if(p.getName() instanceof GdlRelation) {
-				GdlRelation relation = (GdlRelation) p.getName();
-				if(relation.getName() == INIT) {
-					toRemove.add(p);
-				}
-			}
-		}
-
-		for(ForwardInterruptingProposition p : toRemove) {
-			pn.removeComponent(p);
-		}
-	}
-
-	/**
-	 * Potentially optimizes an already-existing propnet by removing propositions
-	 * with no special meaning. The inputs and outputs of those propositions
-	 * are connected to one another. This is unlikely to improve performance
-	 * unless values of every single component are stored (outside the
-	 * propnet).
-	 *
-	 * @param pn
-	 */
-	public static void removeAnonymousPropositions(ForwardInterruptingPropNet pn) {
-		List<ForwardInterruptingProposition> toSplice = new ArrayList<ForwardInterruptingProposition>();
-		List<ForwardInterruptingProposition> toReplaceWithFalse = new ArrayList<ForwardInterruptingProposition>();
-		for(ForwardInterruptingProposition p : pn.getPropositions()) {
-			//If it's important, continue to the next proposition
-			if(p.getInputs().size() == 1 && p.getSingleInput() instanceof ForwardInterruptingTransition)
-				//It's a base proposition
-				continue;
-			GdlSentence sentence = p.getName();
-			if(sentence instanceof GdlProposition) {
-				if(sentence.getName() == TERMINAL || sentence.getName() == INIT_CAPS)
-					continue;
-			} else {
-				GdlRelation relation = (GdlRelation) sentence;
-				GdlConstant name = relation.getName();
-				if(name == LEGAL || name == GOAL || name == DOES
-						|| name == INIT)
-					continue;
-			}
-			if(p.getInputs().size() < 1) {
-				//Needs to be handled separately...
-				//because this is an always-false true proposition
-				//and it might have and gates as outputs
-				toReplaceWithFalse.add(p);
-				continue;
-			}
-			if(p.getInputs().size() != 1)
-				System.err.println("Might have falsely declared " + p.getName() + " to be unimportant?");
-			//Not important
-			//System.out.println("Removing " + p);
-			toSplice.add(p);
-		}
-		for(ForwardInterruptingProposition p : toSplice) {
-			//Get the inputs and outputs...
-			Set<ForwardInterruptingComponent> inputs = p.getInputs();
-			Set<ForwardInterruptingComponent> outputs = p.getOutputs();
-			//Remove the proposition...
-			pn.removeComponent(p);
-			//And splice the inputs and outputs back together
-			if(inputs.size() > 1)
-				System.err.println("Programmer made a bad assumption here... might lead to trouble?");
-			for(ForwardInterruptingComponent input : inputs) {
-				for(ForwardInterruptingComponent output : outputs) {
-					input.addOutput(output);
-					output.addInput(input);
-				}
-			}
-		}
-		for(ForwardInterruptingProposition p : toReplaceWithFalse) {
-			System.out.println("Should be replacing " + p + " with false, but should do that in the OPNF, really; better equipped to do that there");
-		}
-	}
-
-
-
-
-
-
-	public static boolean checkPropnetStructure(ForwardInterruptingPropNet pn){
-
-		boolean propnetOk = true;
-
-		for(ForwardInterruptingComponent c : pn.getComponents()){
-
-			/* NOT FEASIBLE TO CHECK THIS IN A REASONABLE AMOUNT OF TIME FOR MOST GAMES:
-
-			// Check that every input of the component references back the component as output
-			for(ForwardInterruptingComponent in : c.getInputs()){
-				boolean correctInputReferences = false;
-				for(ForwardInterruptingComponent inout : in.getOutputs()){
-					if(inout == c){
-						correctInputReferences = true;
-						break;
-					}
-				}
-				if(!correctInputReferences){
-					GamerLogger.log("PropStructureChecker", "Component " + c.getType() + " is not referenced back by its input " + in.getType() + ".");
-					propnetOk = false;
-				}
-			}
-
-			// Check that every output of the component references back the component as input
-			for(ForwardInterruptingComponent out : c.getOutputs()){
-				boolean correctOutputReferences = false;
-				for(ForwardInterruptingComponent outin : out.getInputs()){
-					if(outin == c){
-						correctOutputReferences = true;
-						break;
-					}
-				}
-				if(!correctOutputReferences){
-					GamerLogger.log("PropStructureChecker", "Component " + c.getType() + " is not referenced back by its output " + out.getType() + ".");
-					propnetOk = false;
-				}
-			}
-			*/
-
-			// Check for each type of component if it has the correct inputs and outputs
-			if(c instanceof ForwardInterruptingProposition){
-
-				if(c.getInputs().size() > 1){
-					GamerLogger.log("PropStructureChecker", "Component " + c.getType() + " has too many inputs: " + c.getInputs().size());
-					propnetOk = false;
-				}else if(c.getInputs().size() == 0){
-					if(!(((ForwardInterruptingProposition) c).isInput())){
-						String s = ((ForwardInterruptingProposition) c).getName().toString();
-						if(!(s.equals("init"))){
-							GamerLogger.log("PropStructureChecker", "The non-input component " + c.getType() + " has no inputs!");
-							propnetOk = false;
-						}
-					}
-				}else if(c.getInputs().size() == 1){
-					if(((ForwardInterruptingProposition) c).isInput()){
-						GamerLogger.log("PropStructureChecker", "The input component " + c.getType() + " has an input: " + c.getSingleInput().getType());
-						propnetOk = false;
-					}
-				}else{
-					GamerLogger.log("PropStructureChecker", "The component " + c.getType() + " has a negative number of inputs: IMPOSSIBLE!");
-					propnetOk = false;
-				}
-
-			}else if(c instanceof ForwardInterruptingTransition){
-
-				if(c.getInputs().size() != 1){
-					GamerLogger.log("PropStructureChecker", "The component " + c.getType() + " doesn't have one and only one input. It has " + c.getInputs().size() + " inputs.");
-					propnetOk = false;
-				}
-
-				if(c.getOutputs().size() != 1){
-					GamerLogger.log("PropStructureChecker", "The component " + c.getType() + " doesn't have one and only one output. It has " + c.getOutputs().size() + " outputs.");
-					propnetOk = false;
-				}else if(!(c.getSingleOutput() instanceof ForwardInterruptingProposition)){
-					GamerLogger.log("PropStructureChecker", "The component " + c.getType() + " doesn't have a proposition as output. It has " + c.getSingleOutput().getType() + " as output.");
-					propnetOk = false;
-				}else if(!(((ForwardInterruptingProposition) c.getSingleOutput()).isBase())){
-					GamerLogger.log("PropStructureChecker", "The component " + c.getType() + " doesn't have a base proposition as output. It has " + c.getSingleOutput().getType() + " as output.");
-					propnetOk = false;
-				}
-
-			}else if(c instanceof ForwardInterruptingConstant){
-
-				if(c.getInputs().size() != 0){
-					GamerLogger.log("PropStructureChecker", "The component " + c.getType() + " has " + c.getInputs().size() + " inputs.");
-					propnetOk = false;
-				}
-
-			}else if(c instanceof ForwardInterruptingAnd){
-
-				if(c.getInputs().size() == 1){
-					GamerLogger.log("PropStructureChecker", "The component " + c.getType() + " is unnecessary since it only has one input: " + c.getSingleInput().getType() + ".");
-					propnetOk = false;
-				}else if(c.getInputs().size() == 0){
-					GamerLogger.log("PropStructureChecker", "The component " + c.getType() + " has no inputs: should be connected to a constant proposition.");
-					propnetOk = false;
-				}else if(c.getInputs().size() < 0){
-					GamerLogger.log("PropStructureChecker", "The component " + c.getType() + " has a negative number of inputs: IMPOSSIBLE!");
-					propnetOk = false;
-				}
-
-				if(c.getOutputs().size() < 1){
-					GamerLogger.log("PropStructureChecker", "The component " + c.getType() + " is unnecessary since it has no outputs!");
-					propnetOk = false;
-				}
-
-			}else if(c instanceof ForwardInterruptingOr){
-
-				if(c.getInputs().size() == 1){
-					GamerLogger.log("PropStructureChecker", "The component " + c.getType() + " is unnecessary since it only has one input: " + c.getSingleInput().getType() + ".");
-					propnetOk = false;
-				}else if(c.getInputs().size() == 0){
-					GamerLogger.log("PropStructureChecker", "The component " + c.getType() + " has no inputs: should be connected to a constant proposition.");
-					propnetOk = false;
-
-					String s = "[ ";
-					for(ForwardInterruptingComponent cc : c.getOutputs()){
-						s += cc.getType();
-						s += " ";
-					}
-					s += "]";
-
-					GamerLogger.log("PropStructureChecker", "Children: " + s);
-
-
-				}else if(c.getInputs().size() < 0){
-					GamerLogger.log("PropStructureChecker", "The component " + c.getType() + " has a negative number of inputs: IMPOSSIBLE!");
-					propnetOk = false;
-				}
-
-				if(c.getOutputs().size() < 1){
-					GamerLogger.log("PropStructureChecker", "The component " + c.getType() + " is unnecessary since it has no outputs!");
-					propnetOk = false;
-				}
-
-			}else if(c instanceof ForwardInterruptingNot){
-
-				if(c.getInputs().size() > 1){
-					GamerLogger.log("PropStructureChecker", "The component " + c.getType() + " has too many inputs: " + c.getInputs().size());
-					propnetOk = false;
-				}else if(c.getInputs().size() == 0){
-					GamerLogger.log("PropStructureChecker", "The component " + c.getType() + " has no inputs: should be connected to a constant proposition!");
-					propnetOk = false;
-				}else if(c.getInputs().size() < 0){
-					GamerLogger.log("PropStructureChecker", "The component " + c.getType() + " has a negative number of inputs: IMPOSSIBLE!");
-					propnetOk = false;
-				}
-			}
-
-		}
-		return propnetOk;
 	}
 
 
