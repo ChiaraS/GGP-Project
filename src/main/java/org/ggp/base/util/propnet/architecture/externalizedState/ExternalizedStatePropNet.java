@@ -28,20 +28,70 @@ public class ExternalizedStatePropNet {
 	/** References to every component in the PropNet. */
 	private final Set<ExternalizedStateComponent> components;
 
+	/** A helper list of all of the roles. */
+	private final List<Role> roles;
+
 	/** References to every Proposition in the PropNet. */
 	private final Set<ExternalizedStateProposition> propositions;
 
-	/** References to every BaseProposition in the PropNet. */
-	private final List<GdlSentence, ExternalizedStateProposition> basePropositions;
+	/**
+	 * References to every BaseProposition in the PropNet.
+	 * Corresponds to the current state in the ExternalPropnetState class.
+	 * This list and the current and next state in the ExternalPropnetState class all
+	 * have the elements in the same order.
+	 */
+	private final List<ExternalizedStateProposition> basePropositions;
 
-	/** References to every InputProposition in the PropNet, indexed by name. */
-	private final Map<GdlSentence, ExternalizedStateProposition> inputPropositions;
+	/**
+	 * References to every InputProposition in the PropNet, ordered by role.
+	 * Roles are in the same order as in the roles list.
+	 * The order is the same as the values of the currentJointMove in the ExternalPropnetState class.
+	 */
+	private final List<ExternalizedStateProposition> inputPropositions;
+
+	/**
+	 * List of all the goals that corresponds to a goal proposition, grouped by role
+	 * and listed in the same order as the role propositions values in the ExternalPropnetState class.
+	 */
+	private final List<Integer> goalValues;
+
+
+
+	/**
+	 * Getter method.
+	 *
+	 * @return references to every BaseProposition in the PropNet in the correct order.
+	 */
+	public List<ExternalizedStateProposition> getBasePropositions(){
+		return this.basePropositions;
+	}
+
+	/**
+	 * Getter method.
+	 *
+	 * @return References to every InputProposition in the PropNet, in the correct order.
+	 */
+	public List<ExternalizedStateProposition> getInputPropositions()
+	{
+		return this.inputPropositions;
+	}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 	/** References to every LegalProposition in the PropNet, indexed by role. */
 	private final Map<Role, Set<ExternalizedStateProposition>> legalPropositions;
-
-	/** References to every GoalProposition in the PropNet, indexed by role. */
-	private final Map<Role, Set<ExternalizedStateProposition>> goalPropositions;
 
 	/** A reference to the single, unique, InitProposition. */
 	private final ExternalizedStateProposition initProposition;
@@ -52,8 +102,7 @@ public class ExternalizedStatePropNet {
 	/** A helper mapping between input/legal propositions. */
 	private final Map<ExternalizedStateProposition, ExternalizedStateProposition> legalInputMap;
 
-	/** A helper list of all of the roles. */
-	private final List<Role> roles;
+
 
 	public void addComponent(ExternalizedStateComponent c)
 	{
@@ -116,16 +165,7 @@ public class ExternalizedStatePropNet {
 		return legalInputMap;
 	}
 
-	/**
-	 * Getter method.
-	 *
-	 * @return References to every BaseProposition in the PropNet, indexed by
-	 *         name.
-	 */
-	public Map<GdlSentence, ExternalizedStateProposition> getBasePropositions()
-	{
-		return basePropositions;
-	}
+
 
 	/**
 	 * Getter method.
@@ -158,16 +198,7 @@ public class ExternalizedStatePropNet {
 		return initProposition;
 	}
 
-	/**
-	 * Getter method.
-	 *
-	 * @return References to every InputProposition in the PropNet, indexed by
-	 *         name.
-	 */
-	public Map<GdlSentence, ExternalizedStateProposition> getInputPropositions()
-	{
-		return inputPropositions;
-	}
+
 
 	/**
 	 * Getter method.
