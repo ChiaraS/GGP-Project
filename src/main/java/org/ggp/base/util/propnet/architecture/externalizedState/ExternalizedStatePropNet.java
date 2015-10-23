@@ -16,6 +16,7 @@ import org.ggp.base.util.gdl.grammar.GdlRelation;
 import org.ggp.base.util.gdl.grammar.GdlSentence;
 import org.ggp.base.util.gdl.grammar.GdlTerm;
 import org.ggp.base.util.logging.GamerLogger;
+import org.ggp.base.util.propnet.architecture.extendedState.components.ExtendedStateProposition;
 import org.ggp.base.util.propnet.architecture.externalizedState.components.ExternalizedStateAnd;
 import org.ggp.base.util.propnet.architecture.externalizedState.components.ExternalizedStateNot;
 import org.ggp.base.util.propnet.architecture.externalizedState.components.ExternalizedStateOr;
@@ -53,7 +54,7 @@ public class ExternalizedStatePropNet {
 	 * List of all the goals that corresponds to a goal proposition, grouped by role
 	 * and listed in the same order as the role propositions values in the ExternalPropnetState class.
 	 */
-	private final List<Integer> goalValues;
+	private final List<Integer>[] goalValues;
 
 
 
@@ -76,7 +77,27 @@ public class ExternalizedStatePropNet {
 		return this.inputPropositions;
 	}
 
+	public List<Integer> getGoals(int index){
+		return this.goalValues[index];
+	}
 
+
+
+
+
+
+
+
+	/**
+	 * Helper method for parsing the value of a goal proposition
+	 * @param goalProposition
+	 * @return the integer value of the goal proposition
+	 */
+    private int getGoalValue(ExtendedStateProposition goalProposition){
+		GdlRelation relation = (GdlRelation) goalProposition.getName();
+		GdlConstant constant = (GdlConstant) relation.get(1);
+		return Integer.parseInt(constant.toString());
+	}
 
 
 

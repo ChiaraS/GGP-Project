@@ -15,6 +15,28 @@ public class ExternalPropnetState {
 	 */
 	private OpenBitSet currentJointMove;
 
+	/**
+	 *  List containing for each role the index that its first goal proposition
+	 *  has in the otherComponnets array. This array contains one element more
+	 *  that gives the first index of a non-goal proposition in the otherComponents
+	 *  arrray.
+	 */
+	private int[] firstGoalIndices;
+
+	/**
+	 *  List containing for each role the index that its first legal proposition
+	 *  has in the otherComponnets array. This array contains one element more
+	 *  that gives the first index of a non-legal proposition in the otherComponents
+	 *  arrray.
+	 */
+	private int[] firstLegalIndices;
+
+	/** Currently set values for the GOALS, grouped by role. */
+	private OpenBitSet[] goals;
+
+	/** Currently set values for the LEGAL propositions, grouped by role */
+	private OpenBitSet[] legals;
+
 	/** Currently set values of the AND and OR gates.
 	 *
 	 * Each integer in the array corresponds to a gate in the propnet.
@@ -25,16 +47,6 @@ public class ExternalPropnetState {
 	 * being set to 1.
 	 */
 	private int[] andOrGatesValues;
-
-	/** Index that the first LEGAL proposition of each role has in the OpenbitSet 'otherComponents'
-	 *
-	 * Since they will be grouped by role, knowing the first index also tells us where all other
-	 * legal propositions for the role are.
-	 */
-	private int[] firstLegalPropositionIndex;
-
-	private int[] firstGoalPropositionIndex;
-
 
 	/** Currently set values of all the components not yet included in the previous parameters.
 	 *
@@ -50,8 +62,47 @@ public class ExternalPropnetState {
 		return this.currentState;
 	}
 
+	public OpenBitSet getNextState(){
+		return this.nextState;
+	}
+
 	public OpenBitSet getCurrentJointMove(){
 		return this.currentJointMove;
+	}
+
+	public int[] getFirstGoalIndices(){
+		return this.firstGoalIndices;
+	}
+
+	public int[] getFirstLegalIndices(){
+		return this.firstLegalIndices;
+	}
+
+	/*
+	public OpenBitSet[] getGoals(){
+		return this.goals;
+	}
+
+	public OpenBitSet getGoals(int role){
+		return this.goals[role];
+	}
+
+	public OpenBitSet[] getLegals(){
+		return this.legals;
+	}
+
+	public OpenBitSet getLegals(int role){
+		return this.legals[role];
+	}
+
+	*/
+
+	public boolean isTerminal(){
+		return this.otherComponents.fastGet(0);
+	}
+
+	public OpenBitSet getOtherComponents(){
+		return this.otherComponents;
 	}
 
 

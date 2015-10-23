@@ -22,19 +22,25 @@ public abstract class ExternalizedStateComponent implements Serializable
     private final Set<ExternalizedStateComponent> outputs;
 
     /**
+     * The index of the component in the propnet state that contains
+     * the truth values of every component.
+     */
+    private int index;
+
+    /**
      * Creates a new Component with no inputs or outputs.
      */
     public ExternalizedStateComponent()
     {
         this.inputs = new HashSet<ExternalizedStateComponent>();
         this.outputs = new HashSet<ExternalizedStateComponent>();
+        this.index = -1;
     }
 
     /**
      * Adds a new input.
      *
-     * @param input
-     *            A new input.
+     * @param input a new input.
      */
     public void addInput(ExternalizedStateComponent input)
     {
@@ -99,8 +105,7 @@ public abstract class ExternalizedStateComponent implements Serializable
      *
      * @return The outputs of the component.
      */
-    public Set<ExternalizedStateComponent> getOutputs()
-    {
+    public Set<ExternalizedStateComponent> getOutputs(){
         return outputs;
     }
 
@@ -111,9 +116,31 @@ public abstract class ExternalizedStateComponent implements Serializable
      *
      * @return The single output to the component.
      */
-    public ExternalizedStateComponent getSingleOutput() {
+    public ExternalizedStateComponent getSingleOutput(){
         assert outputs.size() == 1;
         return outputs.iterator().next();
+    }
+
+    /**
+     * Sets the index that the truth value of this component
+     * has in the propnet state.
+     *
+     * @param index the index in the propnet state where this
+     * component can find its truth value.
+     */
+    public void setIndex(int index){
+    	this.index = index;
+    }
+
+    /**
+     * Returns the index that the truth value of this component
+     * has in the propnet state.
+     *
+     * @return the index in the propnet state where this
+     * component can find its truth value.
+     */
+    public int getIndex(){
+    	return this.index;
     }
 
     /**

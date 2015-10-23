@@ -1,6 +1,5 @@
 package org.ggp.base.util.propnet.architecture.externalizedState.components;
 
-import org.ggp.base.util.gdl.grammar.GdlRelation;
 import org.ggp.base.util.gdl.grammar.GdlSentence;
 import org.ggp.base.util.propnet.architecture.externalizedState.ExternalizedStateComponent;
 
@@ -8,10 +7,23 @@ import org.ggp.base.util.propnet.architecture.externalizedState.ExternalizedStat
  * The Proposition class is designed to represent named latches.
  */
 @SuppressWarnings("serial")
-public final class ExternalizedStateProposition extends ExternalizedStateComponent
-{
+public final class ExternalizedStateProposition extends ExternalizedStateComponent{
+
+	/**
+	 * Enumeration of all possible types of propositions.
+	 *
+	 * @author C.Sironi
+	 *
+	 */
+	public enum PROP_TYPE{
+    	BASE, INPUT, LEGAL, GOAL, TERMINAL, OTHER
+    }
+
 	/** The name of the Proposition. */
 	private GdlSentence name;
+
+	/** The type of the proposition */
+	private PROP_TYPE propType;
 
 	/**
 	 * Creates a new Proposition with name <tt>name</tt>.
@@ -19,8 +31,7 @@ public final class ExternalizedStateProposition extends ExternalizedStateCompone
 	 * @param name
 	 *            The name of the Proposition.
 	 */
-	public ExternalizedStateProposition(GdlSentence name)
-	{
+	public ExternalizedStateProposition(GdlSentence name){
 		this.name = name;
 	}
 
@@ -29,8 +40,7 @@ public final class ExternalizedStateProposition extends ExternalizedStateCompone
 	 *
 	 * @return The name of the Proposition.
 	 */
-	public GdlSentence getName()
-	{
+	public GdlSentence getName(){
 		return name;
 	}
 
@@ -42,8 +52,7 @@ public final class ExternalizedStateProposition extends ExternalizedStateCompone
      *
      * @return The name of the Proposition.
      */
-    public void setName(GdlSentence newName)
-    {
+    public void setName(GdlSentence newName){
         name = newName;
     }
 
@@ -53,25 +62,22 @@ public final class ExternalizedStateProposition extends ExternalizedStateCompone
 	 * @return TRUE if this is a base proposition, FALSE otherwise.
 	 */
 	public boolean isBase(){
-		return (this.getInputs().size() == 1 && this.getSingleInput() instanceof ExternalizedStateTransition);
+		return this.isBase;
 	}
 
+	/**
+	 * Checks if this is an input proposition.
+	 *
+	 * @return TRUE if this is an input proposition, FALSE otherwise.
+	 */
 	public boolean isInput(){
-		// It's input only if its name is a GdlRelation.
-		if (this.getName() instanceof GdlRelation){
-			GdlRelation relation = (GdlRelation) this.getName();
-			if (relation.getName().getValue().equals("does")) {
-				return true;
-			}
-		}
-
-		return false;
+		return this.isInput;
 	}
 
 	/**
 	 * Checks if this proposition has any input.
 	 *
-	 * !REMARK: a proposition that has no inputs is not necessarily an input proposition (e.g. the init proposition
+	 * !REMARK: a proposition that has no inputs is not necessarily an input proposition (e.g. the INIT proposition
 	 * has no inputs but is not an input proposition), thus the use of this method is not sufficient to detect
 	 * an input proposition.
 	 *
@@ -92,6 +98,6 @@ public final class ExternalizedStateProposition extends ExternalizedStateCompone
 	@Override
 	public String toString()
 	{
-		return toDot("circle", value ? "red" : "white", name.toString() + this.getValue());
+		return toDot("circle", value ? "red" : "white", name.toString());
 	}
 }
