@@ -4,6 +4,8 @@ import java.io.Serializable;
 import java.util.HashSet;
 import java.util.Set;
 
+import org.ggp.base.util.propnet.state.ExternalPropnetState;
+
 /**
  * The root class of the Component hierarchy, which is designed to represent
  * nodes in a PropNet. The general contract of derived classes is to override
@@ -25,7 +27,7 @@ public abstract class ExternalizedStateComponent implements Serializable
      * The index of the component in the propnet state that contains
      * the truth values of every component.
      */
-    private int index;
+    protected int index;
 
     /**
      * Creates a new Component with no inputs or outputs.
@@ -149,7 +151,9 @@ public abstract class ExternalizedStateComponent implements Serializable
      *
      * @return the type of the component.
      */
-    public abstract String getType();
+    public abstract String getComponentType();
+
+    public abstract void updateValue(boolean newInputValue, ExternalPropnetState propnetState);
 
     /**
      * Returns a representation of the Component in .dot format.

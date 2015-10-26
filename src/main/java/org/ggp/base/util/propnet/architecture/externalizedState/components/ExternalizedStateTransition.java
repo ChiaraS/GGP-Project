@@ -1,6 +1,7 @@
 package org.ggp.base.util.propnet.architecture.externalizedState.components;
 
 import org.ggp.base.util.propnet.architecture.externalizedState.ExternalizedStateComponent;
+import org.ggp.base.util.propnet.state.ExternalPropnetState;
 
 /**
  * The Transition class is designed to represent pass-through gates.
@@ -8,23 +9,6 @@ import org.ggp.base.util.propnet.architecture.externalizedState.ExternalizedStat
 @SuppressWarnings("serial")
 public final class ExternalizedStateTransition extends ExternalizedStateComponent
 {
-
-	/**
-	 * Constructor that initializes to FALSE the fact that the value of this transition
-	 * depends on the INIT proposition.
-	 */
-	public ExternalizedStateTransition(){
-		this(false);
-	}
-
-	/**
-	 * Constructor that initializes the fact that the value of this transition depends
-	 * on the INIT proposition according to the given value.
-	 */
-	public ExternalizedStateTransition(boolean dependingOnInit){
-		super();
-		this.dependingOnInit = dependingOnInit;
-	}
 
 	/**
 	 * TRUE if this transition's value also depends on the value of the INIT proposition,
@@ -52,6 +36,23 @@ public final class ExternalizedStateTransition extends ExternalizedStateComponen
 	private boolean dependingOnInit;
 
 	/**
+	 * Constructor that initializes to FALSE the fact that the value of this transition
+	 * depends on the INIT proposition.
+	 */
+	public ExternalizedStateTransition(){
+		this(false);
+	}
+
+	/**
+	 * Constructor that initializes the fact that the value of this transition depends
+	 * on the INIT proposition according to the given value.
+	 */
+	public ExternalizedStateTransition(boolean dependingOnInit){
+		super();
+		this.dependingOnInit = dependingOnInit;
+	}
+
+	/**
 	 * Setter for the 'dependsOnInit' variable.
 	 *
 	 * @param dependsOnInit the value to be assigned to the 'dependsOnInit' variable.
@@ -75,8 +76,18 @@ public final class ExternalizedStateTransition extends ExternalizedStateComponen
 	 * @see org.ggp.base.util.propnet.architecture.externalizedState.ExternalizedStateComponent#getType()
 	 */
 	@Override
-	public String getType() {
+	public String getComponentType() {
 		return "TRANSITION";
+	}
+
+	@Override
+	public void updateValue(boolean newInputValue, ExternalPropnetState propnetState) {
+		propnetState.flipTransitionValue(this.index);
+
+		// If the thread calling this method has been interrupted we must stop the execution and throw an
+		// InterruptedException otherwise we risk having the PropnetStateMachine trying to impose consistency
+		// forever if it gets stuck in a loop of continuously flipping values.
+		//ConcurrencyUtils.checkForInterruption();
 	}
 
 	/*
@@ -88,4 +99,5 @@ public final class ExternalizedStateTransition extends ExternalizedStateComponen
 	{
 		return toDot("box", "grey", "TRANSITION ");
 	}
+
 }

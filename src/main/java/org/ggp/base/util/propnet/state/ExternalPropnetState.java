@@ -57,6 +57,11 @@ public class ExternalPropnetState {
 	 */
 	private OpenBitSet otherComponents;
 
+	public ExternalPropnetState(OpenBitSet initialState, OpenBitSet nextState, OpenBitSet currentJointMove, int[] firstGoalIndices, int[] firstLegalIndices, int[] andOrGatesValues, OpenBitSet otherComponents){
+		init!!!
+
+	}
+
 
 	public OpenBitSet getCurrentState(){
 		return this.currentState;
@@ -103,6 +108,34 @@ public class ExternalPropnetState {
 
 	public OpenBitSet getOtherComponents(){
 		return this.otherComponents;
+	}
+
+	public void flipBaseValue(int index){
+		this.currentState.fastFlip(index);
+	}
+
+	public void flipTransitionValue(int index){
+		this.nextState.fastFlip(index);
+	}
+
+	public void flipInputValue(int index){
+		this.currentJointMove.fastFlip(index);
+	}
+
+	public void flipOtherValue(int index){
+		this.otherComponents.fastFlip(index);
+	}
+
+	public void incrementTrueInputs(int index){
+		this.andOrGatesValues[index]++;
+	}
+
+	public void decrementTrueInputs(int index){
+		this.andOrGatesValues[index]--;
+	}
+
+	public boolean getGateValue(int index){
+		return this.andOrGatesValues[index] < 0;
 	}
 
 

@@ -72,14 +72,27 @@ public class ProvaPropnet {
 */
 		//printPropnet("ticTacToe");
 
-		provaOpenbitset();
+		//provaOpenbitset();
 
+		provaOverflow();
 		//provaGameExtendedPropnet("coins_atomic");
 
 		//printPropnetImprovements("gt_two_thirds_2p");
 
 	}
 
+	public static void provaOverflow(){
+		int n = Integer.MAX_VALUE-3;
+
+		n = -3;
+
+		for(int i = 0; i < 32; i++){
+			System.out.print(n&1);
+			n = n >> 1;
+		}
+
+
+	}
 
 	public static void checkPropnetStructure(String gameKey){
 		GameRepository theRepository = GameRepository.getDefaultRepository();

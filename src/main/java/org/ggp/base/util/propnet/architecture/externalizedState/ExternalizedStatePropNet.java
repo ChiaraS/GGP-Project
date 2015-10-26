@@ -3,12 +3,14 @@ package org.ggp.base.util.propnet.architecture.externalizedState;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.OutputStreamWriter;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import org.apache.lucene.util.OpenBitSet;
 import org.ggp.base.util.gdl.grammar.GdlConstant;
 import org.ggp.base.util.gdl.grammar.GdlPool;
 import org.ggp.base.util.gdl.grammar.GdlProposition;
@@ -18,10 +20,13 @@ import org.ggp.base.util.gdl.grammar.GdlTerm;
 import org.ggp.base.util.logging.GamerLogger;
 import org.ggp.base.util.propnet.architecture.extendedState.components.ExtendedStateProposition;
 import org.ggp.base.util.propnet.architecture.externalizedState.components.ExternalizedStateAnd;
+import org.ggp.base.util.propnet.architecture.externalizedState.components.ExternalizedStateConstant;
 import org.ggp.base.util.propnet.architecture.externalizedState.components.ExternalizedStateNot;
 import org.ggp.base.util.propnet.architecture.externalizedState.components.ExternalizedStateOr;
 import org.ggp.base.util.propnet.architecture.externalizedState.components.ExternalizedStateProposition;
+import org.ggp.base.util.propnet.architecture.externalizedState.components.ExternalizedStateProposition.PROP_TYPE;
 import org.ggp.base.util.propnet.architecture.externalizedState.components.ExternalizedStateTransition;
+import org.ggp.base.util.propnet.state.ExternalPropnetState;
 import org.ggp.base.util.statemachine.Role;
 
 public class ExternalizedStatePropNet {
@@ -34,6 +39,12 @@ public class ExternalizedStatePropNet {
 
 	/** References to every Proposition in the PropNet. */
 	private final Set<ExternalizedStateProposition> propositions;
+
+	/** Reference to the single TRUE constant in the propnet */
+	private ExternalizedStateConstant trueConstant;
+
+	/** Reference to the single FALSE constant in the prpnet */
+	private ExternalizedStateConstant falseConstant;
 
 	/**
 	 * References to every BaseProposition in the PropNet.
@@ -48,14 +59,280 @@ public class ExternalizedStatePropNet {
 	 * Roles are in the same order as in the roles list.
 	 * The order is the same as the values of the currentJointMove in the ExternalPropnetState class.
 	 */
-	private final List<ExternalizedStateProposition> inputPropositions;
+	private List<ExternalizedStateProposition> inputPropositions;
+
+	/**
+	 * References to every input proposition in the PropNet, grouped by role.
+	 * The order of the input propositions for every role is the same as the order of the legal
+	 * propositions for the same role.
+	 */
+	private final Map<Role, ArrayList<ExternalizedStateProposition>> inputsPerRole;
+
+	/**
+	 * References to every legal proposition in the PropNet, grouped by role.
+	 * The order of the legal propositions for every role is the same as the order of the input
+	 * propositions for the same role.
+	 */
+	private final Map<Role, ArrayList<ExternalizedStateProposition>> legalsPerRole;
+
+	/** A reference to the single, unique, InitProposition. */
+	private ExternalizedStateProposition initProposition;
+
+	/** A reference to the single, unique, TerminalProposition. */
+	private ExternalizedStateProposition terminalProposition;
+
+	private List<ExternalizedStateComponent> andOrGates;
 
 	/**
 	 * List of all the goals that corresponds to a goal proposition, grouped by role
 	 * and listed in the same order as the role propositions values in the ExternalPropnetState class.
 	 */
-	private final List<Integer>[] goalValues;
+	private int[][] goalValues;
 
+	/** References to every GoalProposition in the PropNet, indexed by role. */
+	private final Map<Role, List<ExternalizedStateProposition>> goalPropositions;
+
+	private ExternalPropnetState initialPropnetState;
+
+	/**
+	 * Creates a new PropNet from a list of Components.
+	 *
+	 * @param components
+	 *            A list of Components.
+	 */
+	public ExternalizedStatePropNet(List<Role> roles, Set<ExternalizedStateComponent> components)
+	{
+	    this.roles = roles;
+		this.components = components;
+		this.propositions = new HashSet<ExternalizedStateProposition>();
+		this.basePropositions = new ArrayList<ExternalizedStateProposition>();
+
+		this.inputsPerRole = new HashMap<Role, ArrayList<ExternalizedStateProposition>>();
+		this.legalsPerRole = new HashMap<Role, ArrayList<ExternalizedStateProposition>>();
+		Map<Role, Map<List<GdlTerm>, Integer>> moveIndices = new HashMap<Role, Map<List<GdlTerm>, Integer>>();
+		Map<Role, Integer> currentIndices = new HashMap<Role, Integer>();
+
+		this.goalPropositions = new HashMap<Role, List<ExternalizedStateProposition>>();
+
+		for(Role r : this.roles){
+			this.inputsPerRole.put(r, new ArrayList<ExternalizedStateProposition>());
+			this.legalsPerRole.put(r, new ArrayList<ExternalizedStateProposition>());
+			moveIndices.put(r, new HashMap<List<GdlTerm>, Integer>());
+			currentIndices.put(r, new Integer(0));
+			this.goalPropositions.put(r, new ArrayList<ExternalizedStateProposition>());
+		}
+
+		this.andOrGates = new ArrayList<ExternalizedStateComponent>();
+
+
+
+		for(ExternalizedStateComponent c : this.components){
+			if(c instanceof ExternalizedStateConstant){
+				if(((ExternalizedStateConstant) c).getValue()){
+					if(this.trueConstant == null){
+						this.trueConstant = (ExternalizedStateConstant) c;
+					}else{
+						throw new RuntimeException("Found more than only one TRUE constant in the propnet!");
+					}
+				}else{
+					if(this.falseConstant == null){
+						this.falseConstant = (ExternalizedStateConstant) c;
+					}else{
+						throw new RuntimeException("Found more than only one FALSE constant in the propnet!");
+					}
+				}
+			}else if(c instanceof ExternalizedStateProposition){
+
+				ExternalizedStateProposition p = (ExternalizedStateProposition) c;
+				this.propositions.add(p);
+
+				// Check if it's a base.
+			    if(p.getInputs().size() == 1 && p.getSingleInput() instanceof ExternalizedStateTransition){
+			    	this.basePropositions.add(p);
+			    	// Set that the type of this proposition is BASE
+			    	p.setPropositionType(PROP_TYPE.BASE);
+			    // Check if it's an input or legal
+				}else if(p.getName() instanceof GdlRelation){
+					GdlRelation relation = (GdlRelation) p.getName();
+					if (relation.getName().getValue().equals("does")) {
+
+						GdlConstant name = (GdlConstant) relation.get(0);
+						Role r = new Role(name);
+						List<GdlTerm> gdlMove = p.getName().getBody();
+						Integer index = moveIndices.get(r).get(gdlMove);
+
+						// The index for this move and role exist already.
+						if(index != null){
+							// Put the input proposition in the correct position.
+							// The corresponding legal proposition is already in the correct
+							// place in the legal propositions array for the role.
+							inputsPerRole.get(r).set(index.intValue(), p);
+						}else{
+							// First add the index for this move.
+							index = currentIndices.remove(r);
+							moveIndices.get(r).put(gdlMove, new Integer(index.intValue()));
+							this.inputsPerRole.get(r).add(p);
+							this.legalsPerRole.get(r).add(null);
+							currentIndices.put(r, new Integer(index.intValue() + 1));
+						}
+
+						// Set that the type of this proposition is INPUT
+						p.setPropositionType(PROP_TYPE.INPUT);
+
+					}else if(relation.getName().getValue().equals("legal")){
+
+						GdlConstant name = (GdlConstant) relation.get(0);
+						Role r = new Role(name);
+						List<GdlTerm> gdlMove = p.getName().getBody();
+						Integer index = moveIndices.get(r).get(gdlMove);
+
+						// The index for this move and role exist already.
+						if(index != null){
+							// Put the input proposition in the correct position.
+							// The corresponding legal proposition is already in the correct
+							// place in the legal propositions array for the role.
+							legalsPerRole.get(r).set(index.intValue(), p);
+						}else{
+							// First add the index for this move.
+							index = currentIndices.remove(r);
+							moveIndices.get(r).put(gdlMove, new Integer(index.intValue()));
+							this.legalsPerRole.get(r).add(p);
+							this.inputsPerRole.get(r).add(null);
+							currentIndices.put(r, new Integer(index.intValue() + 1));
+						}
+
+						// Set that the type of this proposition is INPUT
+						p.setPropositionType(PROP_TYPE.LEGAL);
+					}else if(relation.getName().getValue().equals("goal")){
+						Role r = new Role((GdlConstant) relation.get(0));
+						this.goalPropositions.get(r).add(p);
+						p.setPropositionType(PROP_TYPE.GOAL);
+					}
+				}else if(p.getName() instanceof GdlProposition){
+
+					GdlConstant constant = ((GdlProposition) p.getName()).getName();
+
+					if(constant.getValue().equals("terminal")){
+						this.terminalProposition = p;
+						p.setPropositionType(PROP_TYPE.TERMINAL);
+					}else if (constant.getValue().toUpperCase().equals("INIT")){
+						this.initProposition = p;
+						p.setPropositionType(PROP_TYPE.INIT);
+					}
+				}else{
+					p.setPropositionType(PROP_TYPE.OTHER);
+				}
+			}else if(c instanceof ExternalizedStateTransition){
+
+			}else if(c instanceof ExternalizedStateNot){
+
+			}else if(c instanceof ExternalizedStateAnd){
+				this.andOrGates.add(c);
+			}else if(c instanceof ExternalizedStateOr){
+				this.andOrGates.add(c);
+			}else{
+				throw new RuntimeException("Unhandled component type " + c.getClass());
+			}
+		}
+	}
+
+
+	public void initializePropnet(){
+		OpenBitSet initialState = new OpenBitSet(this.basePropositions.size());
+		OpenBitSet nextState = new OpenBitSet(this.basePropositions.size());
+
+		// TODO: this assumes that the propnet contains the exact same number of base propositions and
+		// transitions, thus when removing a base proposition always make sure to also remove the
+		// corresponding transition.
+		for(int i = 0; i < this.basePropositions.size(); i++){
+			ExternalizedStateProposition p = this.basePropositions.get(i);
+			p.setIndex(i);
+			p.getSingleInput().setIndex(i);
+			// If it's a base proposition true in the initial state, set it to true in the bit array
+			// representing the initial state
+			if(((ExternalizedStateTransition) p.getSingleInput()).isDependingOnInit()){
+				initialState.set(i);
+			}
+		}
+
+		this.inputPropositions = new ArrayList<ExternalizedStateProposition>();
+		int i = 0;
+		for(Role r : this.roles){
+			for(ExternalizedStateProposition p : this.inputsPerRole.get(r)){
+				this.inputPropositions.add(p);
+				p.setIndex(i);
+				i++;
+			}
+		}
+
+		OpenBitSet currentJointMove = new OpenBitSet(this.inputPropositions.size());
+
+		this.terminalProposition.setIndex(0);
+
+		int[] firstGoalIndices = new int[this.roles.size()+1];
+
+		i = 1;
+
+		this.goalValues = new int[this.roles.size()][];
+		int j;
+		for(j = 0; j < this.roles.size(); j++){
+			firstGoalIndices[j] = i;
+			Role r = this.roles.get(j);
+			List<ExternalizedStateProposition> goalsForRole = this.goalPropositions.get(r);
+			this.goalValues[j] = new int[goalsForRole.size()];
+			for(int k = 0; k < goalsForRole.size(); k++){
+				GdlRelation relation = (GdlRelation) goalsForRole.get(k).getName();
+				GdlConstant constant = (GdlConstant) relation.get(1);
+				this.goalValues[j][k] = Integer.parseInt(constant.toString());
+				goalsForRole.get(k).setIndex(i);
+				i++;
+			}
+		}
+		firstGoalIndices[j] = i;
+
+		int[] firstLegalIndices = new int[this.roles.size()+1];
+
+		for(j = 0; j < this.roles.size(); j++){
+			firstLegalIndices[j] = i;
+			Role r = this.roles.get(j);
+			List<ExternalizedStateProposition> legalsForRole = this.legalsPerRole.get(r);
+			for(int k = 0; k < legalsForRole.size(); k++){
+				legalsForRole.get(k).setIndex(i);
+				i++;
+			}
+		}
+		firstLegalIndices[j] = i;
+
+		for(ExternalizedStateComponent c : this.components){
+			if(c instanceof ExternalizedStateProposition){
+				if(((ExternalizedStateProposition) c).getPropositionType() == PROP_TYPE.OTHER ||
+						((ExternalizedStateProposition) c).getPropositionType() == PROP_TYPE.INIT){
+					((ExternalizedStateProposition) c).setIndex(i);
+					i++;
+				}
+			}else if(c instanceof ExternalizedStateNot){
+				((ExternalizedStateNot) c).setIndex(i);
+				i++;
+			}
+		}
+
+		OpenBitSet otherComponents = new OpenBitSet(i);
+
+		int l = 0;
+		int[] andOrGatesValues = new int[this.andOrGates.size()];
+		for(ExternalizedStateComponent c : this.andOrGates){
+			if(c instanceof ExternalizedStateAnd){
+				andOrGatesValues[l] = Integer.MAX_VALUE - c.getInputs().size() + 1;
+			}else if(c instanceof ExternalizedStateOr){
+				andOrGatesValues[l] = Integer.MAX_VALUE;
+			}
+			c.setIndex(l);
+			l++;
+		}
+
+		this.initialPropnetState = new ExternalPropnetState(initialState, nextState, currentJointMove, firstGoalIndices, firstLegalIndices, andOrGatesValues, otherComponents);
+
+	}
 
 
 	/**
@@ -77,7 +354,7 @@ public class ExternalizedStatePropNet {
 		return this.inputPropositions;
 	}
 
-	public List<Integer> getGoals(int index){
+	public Integer[] getGoals(int index){
 		return this.goalValues[index];
 	}
 
@@ -114,11 +391,6 @@ public class ExternalizedStatePropNet {
 	/** References to every LegalProposition in the PropNet, indexed by role. */
 	private final Map<Role, Set<ExternalizedStateProposition>> legalPropositions;
 
-	/** A reference to the single, unique, InitProposition. */
-	private final ExternalizedStateProposition initProposition;
-
-	/** A reference to the single, unique, TerminalProposition. */
-	private final ExternalizedStateProposition terminalProposition;
 
 	/** A helper mapping between input/legal propositions. */
 	private final Map<ExternalizedStateProposition, ExternalizedStateProposition> legalInputMap;
@@ -138,7 +410,7 @@ public class ExternalizedStatePropNet {
 	 * @param components
 	 *            A list of Components.
 	 */
-	public ExternalizedStatePropNet(List<Role> roles, Set<ExternalizedStateComponent> components)
+	/*public ExternalizedStatePropNet(List<Role> roles, Set<ExternalizedStateComponent> components)
 	{
 
 	    this.roles = roles;
@@ -151,7 +423,7 @@ public class ExternalizedStatePropNet {
 		this.initProposition = recordInitProposition();
 		this.terminalProposition = recordTerminalProposition();
 		this.legalInputMap = makeLegalInputMap();
-	}
+	}*/
 
 	public List<Role> getRoles()
 	{

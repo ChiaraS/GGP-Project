@@ -47,7 +47,6 @@ public class ExternalPropnetStateMachine extends StateMachine {
     private ExternalPropnetMachineState initialState;
 
 
-
     /**
 	 * Total time (in milliseconds) taken to construct the propnet.
 	 * If it is negative it means that the propnet didn't build in time.
@@ -242,7 +241,7 @@ public class ExternalPropnetStateMachine extends StateMachine {
 			}
 		}
 
-		return this.propNet.getGoals(role.getIndex()).get(trueGoalIndex-firstGoalIndices[role.getIndex()]);
+		return this.propNet.getGoals(role.getIndex())[trueGoalIndex-firstGoalIndices[role.getIndex()]];
 
 	}
 
@@ -538,7 +537,7 @@ public class ExternalPropnetStateMachine extends StateMachine {
 			// Change the base propositions that have to do so.
 			int indexToFlip = bitsToFlip.nextSetBit(0);
 			while(indexToFlip != -1){
-				basePropositions.get(indexToFlip).flipValue(this.propnetState);
+				basePropositions.get(indexToFlip).updateValue(state.getTruthValues().get(indexToFlip), this.propnetState);
 				indexToFlip = bitsToFlip.nextSetBit(indexToFlip+1);
 			}
 		}
@@ -622,7 +621,7 @@ public class ExternalPropnetStateMachine extends StateMachine {
 			// Change the input propositions that have to do so.
 			int indexToFlip = bitsToFlip.nextSetBit(0);
 			while(indexToFlip != -1){
-				inputPropositions.get(indexToFlip).flipValue(this.propnetState);
+				inputPropositions.get(indexToFlip).updateValue(newJointMove.get(indexToFlip), this.propnetState);
 				indexToFlip = bitsToFlip.nextSetBit(indexToFlip+1);
 			}
 		}

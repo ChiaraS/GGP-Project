@@ -1,6 +1,7 @@
 package org.ggp.base.util.propnet.architecture.externalizedState.components;
 
 import org.ggp.base.util.propnet.architecture.externalizedState.ExternalizedStateComponent;
+import org.ggp.base.util.propnet.state.ExternalPropnetState;
 
 /**
  * The Constant class is designed to represent nodes with fixed logical values.
@@ -21,8 +22,7 @@ public final class ExternalizedStateConstant extends ExternalizedStateComponent
 	 * @param value
 	 *            The value of the Constant.
 	 */
-	public ExternalizedStateConstant(boolean value)
-	{
+	public ExternalizedStateConstant(boolean value){
 		this.value = value;
 	}
 
@@ -37,7 +37,7 @@ public final class ExternalizedStateConstant extends ExternalizedStateComponent
 	}
 
 	@Override
-	public String getType() {
+	public String getComponentType() {
 		String s;
 		if(this.value){
 			s = "TRUE ";
@@ -48,6 +48,17 @@ public final class ExternalizedStateConstant extends ExternalizedStateComponent
 	}
 
 	/**
+	 * This method on a constant should never be used, since a constant is supposed not to have inputs
+	 * that can change its value.
+	 *
+	 * @see org.ggp.base.util.propnet.architecture.ExtendedState.ExtendedStateComponent#propagateConsistency()
+	 */
+	@Override
+	public void updateValue(boolean newInputValue, ExternalPropnetState propnetState) {
+		//ConcurrencyUtils.checkForInterruption();
+	}
+
+	/**
 	 * @see org.ggp.base.util.propnet.architecture.ExternalizedState.ExternalizedStateComponent#toString()
 	 */
 	@Override
@@ -55,4 +66,5 @@ public final class ExternalizedStateConstant extends ExternalizedStateComponent
 	{
 		return toDot("doublecircle", "grey", Boolean.toString(value).toUpperCase());
 	}
+
 }

@@ -2,6 +2,7 @@ package org.ggp.base.util.propnet.architecture.externalizedState.components;
 
 import org.ggp.base.util.gdl.grammar.GdlSentence;
 import org.ggp.base.util.propnet.architecture.externalizedState.ExternalizedStateComponent;
+import org.ggp.base.util.propnet.state.ExternalPropnetState;
 
 /**
  * The Proposition class is designed to represent named latches.
@@ -16,7 +17,7 @@ public final class ExternalizedStateProposition extends ExternalizedStateCompone
 	 *
 	 */
 	public enum PROP_TYPE{
-    	BASE, INPUT, LEGAL, GOAL, TERMINAL, OTHER
+    	BASE, INPUT, LEGAL, GOAL, TERMINAL, INIT, OTHER
     }
 
 	/** The name of the Proposition. */
@@ -56,13 +57,40 @@ public final class ExternalizedStateProposition extends ExternalizedStateCompone
         name = newName;
     }
 
+	@Override
+	public void updateValue(boolean newInputValue, ExternalPropnetState propnetState){
+
+		//ConcurrencyUtils.checkForInterruption();
+
+		// If this method is called, and this component was consistent with its input, it means that
+		// the single input this component was consistent with changed value to newValue.
+		// Assume that if this method is called then newValue is different from the current value,
+		// so it must be flipped.
+		switch(propType){
+		case BASE:
+			propnetState.flipBaseValue(this.index);
+			break;
+		case INPUT:
+			propnetState.flipInputValue(this.index);
+			break;
+		default:
+			propnetState.flipOtherValue(this.index);
+			break;
+		}
+
+		// Since the value of this proposition changed, the new value must be propagated to its outputs.
+		for(ExternalizedStateComponent c: this.getOutputs()){
+			c.updateValue(newInputValue, propnetState);
+		}
+	}
+
 	/**
 	 * Checks if this is a base proposition.
 	 *
 	 * @return TRUE if this is a base proposition, FALSE otherwise.
 	 */
 	public boolean isBase(){
-		return this.isBase;
+		return this.propType == PROP_TYPE.BASE;
 	}
 
 	/**
@@ -71,7 +99,7 @@ public final class ExternalizedStateProposition extends ExternalizedStateCompone
 	 * @return TRUE if this is an input proposition, FALSE otherwise.
 	 */
 	public boolean isInput(){
-		return this.isInput;
+		return this.propType == PROP_TYPE.INPUT;
 	}
 
 	/**
@@ -88,8 +116,16 @@ public final class ExternalizedStateProposition extends ExternalizedStateCompone
 	}
 
 	@Override
-	public String getType() {
+	public String getComponentType() {
 		return "PROPOSITION(" + this.getName() + ")";
+	}
+
+	public void setPropositionType(PROP_TYPE propType){
+		this.propType = propType;
+	}
+
+	public PROP_TYPE getPropositionType(){
+		return this.propType;
 	}
 
 	/**
@@ -98,6 +134,6 @@ public final class ExternalizedStateProposition extends ExternalizedStateCompone
 	@Override
 	public String toString()
 	{
-		return toDot("circle", value ? "red" : "white", name.toString());
+		return toDot("circle", "white", name.toString());
 	}
 }
