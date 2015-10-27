@@ -2,7 +2,6 @@ package org.ggp.base.util.statemachine.implementation.propnet;
 
 import java.util.ArrayList;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -11,13 +10,9 @@ import org.apache.lucene.util.OpenBitSet;
 import org.ggp.base.util.gdl.grammar.Gdl;
 import org.ggp.base.util.gdl.grammar.GdlSentence;
 import org.ggp.base.util.logging.GamerLogger;
-import org.ggp.base.util.propnet.architecture.extendedState.components.ExtendedStateProposition;
-import org.ggp.base.util.propnet.architecture.extendedState.components.ExtendedStateTransition;
 import org.ggp.base.util.propnet.architecture.externalizedState.ExternalizedStatePropNet;
 import org.ggp.base.util.propnet.architecture.externalizedState.components.ExternalizedStateProposition;
-import org.ggp.base.util.propnet.factory.ExternalizedStatePropnetFactory;
 import org.ggp.base.util.propnet.state.ExternalPropnetState;
-import org.ggp.base.util.statemachine.ExtendedStatePropnetMachineState;
 import org.ggp.base.util.statemachine.ExternalPropnetMachineState;
 import org.ggp.base.util.statemachine.ExternalPropnetMove;
 import org.ggp.base.util.statemachine.ExternalPropnetRole;
@@ -53,6 +48,11 @@ public class ExternalPropnetStateMachine extends StateMachine {
 	 */
 	private long propnetConstructionTime = -1L;
 
+	public ExternalPropnetStateMachine(ExternalizedStatePropNet propNet, ExternalPropnetState propnetState){
+		this.propNet = propNet;
+		this.propnetState = propnetState;
+	}
+
     /**
      * Initializes the PropNetStateMachine. You should compute the topological
      * ordering here. Additionally you may compute the initial state here, at
@@ -62,94 +62,13 @@ public class ExternalPropnetStateMachine extends StateMachine {
      */
     @Override
     public void initialize(List<Gdl> description, long timeout) throws StateMachineInitializationException {
-    	long startTime = System.currentTimeMillis();
-		// Create the propnet
-    	try{
-    		this.propNet = ExternalizedStatePropnetFactory.create(description);
-    	}catch(InterruptedException e){
-    		GamerLogger.logError("StateMachine", "[Propnet] Propnet creation interrupted!");
-    		GamerLogger.logStackTrace("StateMachine", e);
-    		throw new StateMachineInitializationException(e);
+    	if(this.propNet != null && this.propnetState != null){
+    		this.roles = ImmutableList.copyOf(this.propNet.getRoles());
+    		this.initialState = new ExternalPropnetMachineState(this.propnetState.getCurrentState().clone());
+    	}else{
+    		GamerLogger.log("StateMachine", "[ExternalPropnet] State machine initialized with at least one among the propnet structure and the propnet state set to null. Impossible to reason on the game!");
+    		throw new StateMachineInitializationException("Null parameter passed during instantiaton of the state mahcine: cannot reason on the game with null propnet or null propnet state.");
     	}
-    	// Compute the time taken to construct the propnet
-    	this.propnetConstructionTime = System.currentTimeMillis() - startTime;
-		GamerLogger.log("StateMachine", "[Propnet Creator] Propnet creation done. It took " + (this.propnetConstructionTime) + "ms.");
-
-		// Compute the roles
-   		this.roles = ImmutableList.copyOf(this.propNet.getRoles());
-        // If it exists, set init proposition to true without propagating, so that when making
-		// the propnet consistent its value will be propagated so that the next state
-		// will correspond to the initial state.
-	    // REMARK: if there is not TRUE proposition in the initial state, the INIT proposition
-	    // will not exist.
-	    ExtendedStateProposition init = this.propNet.getInitProposition();
-	    if(init != null){
-	    	this.propNet.getInitProposition().setValue(true);
-
-	    }
-
-	    // Set that there is no joint move currently set to true
-	    this.currentMove = new ArrayList<GdlSentence>();
-
-	    // Set that the currently set state is empty, i.e. all base propositions are set to false
-	    // (because they are initialized like this). Moreover, this won't change after imposing
-	    // consistency, since base propositions don't need to change their value to be consistent
-	    // with their input because the transitions propagate their value only in the next staep.
-	    this.currentState = new OpenBitSet(this.propNet.getBasePropositionsArray().length);
-
-		// No need to set all other inputs to false because they already are.
-		// Impose consistency on the propnet (TODO REMARK: this method should also check
-	    // for interrupts -> is it safe to assume it will never get stuck indefinitely?).
-		this.propNet.imposeConsistency();
-		// The initial state can be computed by only setting the truth value of the INIT
-		// proposition to TRUE, and then computing the resulting next state paying attention that all the
-		// base propositions that result being TRUE are also depending on the INIT proposition value.
-		// If there is no init proposition we can just set the initial state to the state with
-		// empty content.
-		if(init != null){
-		   	this.initialState = this.computeInitialState();
-		}else{
-			this.initialState = new MachineState(new HashSet<GdlSentence>());
-		}
-    }
-
-
-
-
-    /**
-     * This method returns the initial machine state. This state contains the set of all the base propositions
-     * that will become true in the next state, given the current state of the propnet, with both
-     * base and input proposition marked and their value propagated.
-     *
-     * !REMARK: this method computes the next state but doesn't advance the propnet state. The propnet
-     * will still be in the current state.
-	 *
-     * @return the initial state.
-     */
-    private MachineState computeInitialState(){
-
-    	//AGGIUNTA
-    	//System.out.println("COMPUTING INIT STATE");
-    	//FINE AGGIUNTA
-
-    	Set<GdlSentence> contents = new HashSet<GdlSentence>(this.propNet.getNextStateContents());
-
-    	// Add to the initial machine state all the base propositions that are connected to a true transition
-    	// whose value also depends on the value of the INIT proposition.
-    	Map<GdlSentence, ExtendedStateProposition> basePropositions = this.propNet.getBasePropositions();
-
-    	Iterator<GdlSentence> iterator = contents.iterator();
-		while(iterator.hasNext()){
-			if(!((ExtendedStateTransition) basePropositions.get(iterator.next()).getSingleInput()).isDependingOnInit()){
-				iterator.remove();
-			}
-		}
-
-		OpenBitSet basePropsTruthValue = this.propNet.getNextState().clone();
-
-		basePropsTruthValue.and(this.propNet.getDependOnInit());
-
-		return new ExtendedStatePropnetMachineState(contents, basePropsTruthValue);
     }
 
 	/**
@@ -241,7 +160,7 @@ public class ExternalPropnetStateMachine extends StateMachine {
 			}
 		}
 
-		return this.propNet.getGoals(role.getIndex())[trueGoalIndex-firstGoalIndices[role.getIndex()]];
+		return this.propNet.getGoalValues().get(this.externalRoleToRole(role)).get(trueGoalIndex-firstGoalIndices[role.getIndex()]);
 
 	}
 
@@ -591,15 +510,11 @@ public class ExternalPropnetStateMachine extends StateMachine {
      *
      * This method iterates over the input propositions flipping the vales that changed in the new move.
      *
-     * !REMARK: also the INIT proposition can be considered as a special case of INPUT proposition,
-     * thus when marking the input propositions to compute a subsequent state different from the
-     * initial one, make sure that the INIT proposition is also set to FALSE.
-     *
      * @param moves the moves to be set as performed in the propnet.
      *
      * TODO: instead of using a Move object just use an array of int.
      */
-	private void markInputs(List<ExternalPropnetMove> moves){
+	private void markInputs2(List<ExternalPropnetMove> moves){
 
 		// Clone the currently set move to avoid modifying it here.
 		OpenBitSet bitsToFlip = this.propnetState.getCurrentJointMove().clone();
@@ -633,15 +548,12 @@ public class ExternalPropnetStateMachine extends StateMachine {
      *
      * First it sets the input propositions that became true and then the ones that became false.
      *
-     * !REMARK: also the INIT proposition can be considered as a special case of INPUT proposition,
-     * thus when marking the input propositions to compute a subsequent state different from the
-     * initial one, make sure that the INIT proposition is also set to FALSE.
      *
      * @param moves the moves to be set as performed in the propnet.
      *
      * TODO: instead of using a Move object just use an array of int.
      */
-	private void markInputs2(List<ExternalPropnetMove> moves){
+	private void markInputs(List<ExternalPropnetMove> moves){
 
 		// Get the currently set move
 		OpenBitSet currentJointMove = this.propnetState.getCurrentJointMove();

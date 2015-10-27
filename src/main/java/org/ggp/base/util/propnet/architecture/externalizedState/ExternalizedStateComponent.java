@@ -30,6 +30,20 @@ public abstract class ExternalizedStateComponent implements Serializable
     protected int index;
 
     /**
+     * Parameter needed when computing consistent truth values for all the
+     * components in the propNet. If TRUE it means that the component's value
+     * is consistent with the current value of its inputs (if any) and thus
+     * if an input component signals that its value has changed this component
+     * must take care of updating as well and inform its outputs in case its
+     * value also changed.
+     *
+     * TODO: the value of this parameter doesn't depend on the component itself
+     * but on its value in the propnetState, so it should be better to remove it
+     * from here and store it somewhere else.
+     */
+    protected boolean isConsistent;
+
+    /**
      * Creates a new Component with no inputs or outputs.
      */
     public ExternalizedStateComponent()
@@ -37,6 +51,7 @@ public abstract class ExternalizedStateComponent implements Serializable
         this.inputs = new HashSet<ExternalizedStateComponent>();
         this.outputs = new HashSet<ExternalizedStateComponent>();
         this.index = -1;
+        this.isConsistent = false;
     }
 
     /**
@@ -153,6 +168,9 @@ public abstract class ExternalizedStateComponent implements Serializable
      */
     public abstract String getComponentType();
 
+
+    public abstract boolean getValue(ExternalPropnetState propnetState);
+
     public abstract void updateValue(boolean newInputValue, ExternalPropnetState propnetState);
 
     /**
@@ -186,5 +204,9 @@ public abstract class ExternalizedStateComponent implements Serializable
 
         return sb.toString();
     }
+
+    public abstract void imposeConsistency(ExternalPropnetState propnetState);
+
+    public abstract void propagateConsistency(boolean newInputValue, ExternalPropnetState propnetState);
 
 }

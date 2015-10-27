@@ -16,6 +16,8 @@ import org.ggp.base.util.game.Game;
 import org.ggp.base.util.game.GameRepository;
 import org.ggp.base.util.gdl.grammar.Gdl;
 import org.ggp.base.util.logging.GamerLogger;
+import org.ggp.base.util.propnet.architecture.externalizedState.ExternalizedStateComponent;
+import org.ggp.base.util.propnet.architecture.externalizedState.components.ExternalizedStateConstant;
 import org.ggp.base.util.propnet.architecture.forwardInterrupting.ForwardInterruptingComponent;
 import org.ggp.base.util.propnet.architecture.forwardInterrupting.ForwardInterruptingPropNet;
 import org.ggp.base.util.propnet.architecture.forwardInterrupting.components.ForwardInterruptingAnd;
@@ -74,11 +76,66 @@ public class ProvaPropnet {
 
 		//provaOpenbitset();
 
-		provaOverflow();
+		provaUgualeUguale();
+		//provaOverflow();
 		//provaGameExtendedPropnet("coins_atomic");
 
 		//printPropnetImprovements("gt_two_thirds_2p");
 
+	}
+
+	public static void provaUgualeUguale(){
+		ExternalizedStateConstant trueConstant = new ExternalizedStateConstant(true);
+		ExternalizedStateComponent trueComponent = trueConstant;
+
+		System.out.println(trueConstant == trueComponent);
+
+
+		int[] a = new int[5];
+
+		a[0] = 2;
+		a[1] = 4;
+		a[2] = 6;
+		a[3] = 8;
+		a[4] = 10;
+
+		int[] b = a.clone();
+
+		System.out.print("a = [ ");
+		for(int i = 0; i < a.length; i++){
+			System.out.print(a[i] + " ");
+		}
+		System.out.println("]");
+
+		System.out.println();
+
+		System.out.print("b = [ ");
+		for(int i = 0; i < b.length; i++){
+			System.out.print(b[i] + " ");
+		}
+		System.out.println("]");
+
+		a[0] = 2;
+		a[1] = 3;
+		a[2] = 6;
+		a[3] = 7;
+		a[4] = 10;
+
+		System.out.println();
+
+		System.out.print("a = [ ");
+		for(int i = 0; i < a.length; i++){
+			System.out.print(a[i] + " ");
+		}
+		System.out.println("]");
+
+		System.out.println();
+
+		System.out.print("b = [ ");
+		for(int i = 0; i < b.length; i++){
+			System.out.print(b[i] + " ");
+		}
+		System.out.println("]");
 	}
 
 	public static void provaOverflow(){

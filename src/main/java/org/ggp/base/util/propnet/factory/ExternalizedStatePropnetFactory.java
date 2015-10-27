@@ -400,9 +400,9 @@ public class ExternalizedStatePropnetFactory {
 
 
 	//TODO: Create a version with just a set of components that we can share with post-optimizations
-	private static void optimizeAwayFalse(
-			Map<GdlSentence, ExternalizedStateComponent> components, Map<GdlSentence, ExternalizedStateComponent> negations, ExternalizedStatePropNet pn, ExternalizedStateComponent trueComponent,
-			ExternalizedStateComponent falseComponent) {
+	private static void optimizeAwayFalse(Map<GdlSentence, ExternalizedStateComponent> components,
+			Map<GdlSentence, ExternalizedStateComponent> negations, ExternalizedStatePropNet pn,
+			ExternalizedStateComponent trueComponent, ExternalizedStateComponent falseComponent) {
         assert((components != null && negations != null) || pn != null);
         assert((components == null && negations == null) || pn == null);
         for (ExternalizedStateComponent output : Lists.newArrayList(falseComponent.getOutputs())) {
@@ -758,7 +758,7 @@ public class ExternalizedStatePropnetFactory {
 
 		//Special case: An input is the true constant
 		for(ExternalizedStateComponent in : inputs) {
-			if(in instanceof ExternalizedStateConstant && in.getValue()) {
+			if(in instanceof ExternalizedStateConstant && ((ExternalizedStateConstant) in).getValue()) {
 				//True constant: connect that to the component, done
 				in.addOutput(output);
 				output.addInput(in);
@@ -1158,7 +1158,7 @@ public class ExternalizedStatePropnetFactory {
 	private static void andify(List<ExternalizedStateComponent> inputs, ExternalizedStateComponent output, ExternalizedStateConstant trueProp) {
 		//Special case: If the inputs include false, connect false to thisComponent
 		for(ExternalizedStateComponent c : inputs) {
-			if(c instanceof ExternalizedStateConstant && !c.getValue()) {
+			if(c instanceof ExternalizedStateConstant && !((ExternalizedStateConstant)c).getValue()) {
 				//Connect false (c) to the output
 				output.addInput(c);
 				c.addOutput(output);

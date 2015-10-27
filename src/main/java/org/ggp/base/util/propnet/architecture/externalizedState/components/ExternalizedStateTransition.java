@@ -100,4 +100,39 @@ public final class ExternalizedStateTransition extends ExternalizedStateComponen
 		return toDot("box", "grey", "TRANSITION ");
 	}
 
+	@Override
+	public boolean getValue(ExternalPropnetState propnetState) {
+		return propnetState.getTransitionValue(this.index);
+	}
+
+	@Override
+	public void imposeConsistency(ExternalPropnetState propnetState) {
+		if(this.getInputs().size() == 1){
+			if(this.getSingleInput().getValue(propnetState) != this.getValue(propnetState)){
+				propnetState.flipTransitionValue(this.index);
+				this.isConsistent = true;
+			}else{
+				this.isConsistent = true;
+			}
+		}else{
+			if(this.getInputs().size() == 0)
+				throw new IllegalStateException("Detected transition with no inputs in the propnet!");
+			else
+				throw new IllegalStateException("Detected transition with more than one input in the propnet!");
+		}
+	}
+
+	@Override
+	public void propagateConsistency(boolean newInputValue, ExternalPropnetState propnetState) {
+		if(this.isConsistent){
+			propnetState.flipTransitionValue(this.index);
+
+			// If the thread calling this method has been interrupted we must stop the execution and throw an
+			// InterruptedException otherwise we risk having the PropnetStateMachine trying to impose consistency
+			// forever if it gets stuck in a loop of continuously flipping values.
+			//ConcurrencyUtils.checkForInterruption();
+		}
+
+	}
+
 }

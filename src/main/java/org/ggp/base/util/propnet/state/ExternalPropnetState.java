@@ -31,12 +31,6 @@ public class ExternalPropnetState {
 	 */
 	private int[] firstLegalIndices;
 
-	/** Currently set values for the GOALS, grouped by role. */
-	private OpenBitSet[] goals;
-
-	/** Currently set values for the LEGAL propositions, grouped by role */
-	private OpenBitSet[] legals;
-
 	/** Currently set values of the AND and OR gates.
 	 *
 	 * Each integer in the array corresponds to a gate in the propnet.
@@ -57,11 +51,20 @@ public class ExternalPropnetState {
 	 */
 	private OpenBitSet otherComponents;
 
-	public ExternalPropnetState(OpenBitSet initialState, OpenBitSet nextState, OpenBitSet currentJointMove, int[] firstGoalIndices, int[] firstLegalIndices, int[] andOrGatesValues, OpenBitSet otherComponents){
-		init!!!
+	/***************************************** Constructor ******************************************/
 
+	public ExternalPropnetState(OpenBitSet currentState, OpenBitSet nextState, OpenBitSet currentJointMove,
+			int[] firstGoalIndices, int[] firstLegalIndices, int[] andOrGatesValues, OpenBitSet otherComponents){
+		this.currentState = currentState;
+		this.nextState = nextState;
+		this.currentJointMove = currentJointMove;
+		this.firstGoalIndices = firstGoalIndices;
+		this.firstLegalIndices = firstLegalIndices;
+		this.andOrGatesValues = andOrGatesValues;
+		this.otherComponents = otherComponents;
 	}
 
+	/***************** Getters for part of the state values (used by the state machine) ******************/
 
 	public OpenBitSet getCurrentState(){
 		return this.currentState;
@@ -102,13 +105,15 @@ public class ExternalPropnetState {
 
 	*/
 
+	public OpenBitSet getOtherComponents(){
+		return this.otherComponents;
+	}
+
 	public boolean isTerminal(){
 		return this.otherComponents.fastGet(0);
 	}
 
-	public OpenBitSet getOtherComponents(){
-		return this.otherComponents;
-	}
+	/******************* Methods to change single components values (used by components) ********************/
 
 	public void flipBaseValue(int index){
 		this.currentState.fastFlip(index);
@@ -126,6 +131,10 @@ public class ExternalPropnetState {
 		this.otherComponents.fastFlip(index);
 	}
 
+	public void incrementTrueInputs(int index, int increment){
+		this.andOrGatesValues[index] += increment;
+	}
+
 	public void incrementTrueInputs(int index){
 		this.andOrGatesValues[index]++;
 	}
@@ -134,10 +143,37 @@ public class ExternalPropnetState {
 		this.andOrGatesValues[index]--;
 	}
 
+	/******************** Methods to get single component values (used by components) ********************/
+
+	public boolean getBaseValue(int index){
+		return this.currentState.fastGet(index);
+	}
+
+	public boolean getTransitionValue(int index){
+		return this.nextState.fastGet(index);
+	}
+
+	public boolean getInputValue(int index){
+		return this.currentJointMove.fastGet(index);
+	}
+
+	public boolean getOtherValue(int index){
+		return this.otherComponents.fastGet(index);
+	}
+
 	public boolean getGateValue(int index){
 		return this.andOrGatesValues[index] < 0;
 	}
 
+	/******************************************* Clone method ********************************************/
 
+	/**
+	 * This method is used to clone this external state for every new thread
+	 * that wants to use the propnet with this state.
+	 */
+	@Override
+	public ExternalPropnetState clone(){
+		return new ExternalPropnetState(this.currentState.clone(), this.nextState.clone(), this.currentJointMove.clone(), this.firstGoalIndices, this.firstLegalIndices, this.andOrGatesValues.clone(), this.otherComponents.clone());
+	}
 
 }

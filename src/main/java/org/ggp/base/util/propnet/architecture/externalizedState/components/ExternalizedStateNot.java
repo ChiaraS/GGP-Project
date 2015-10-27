@@ -39,4 +39,44 @@ public final class ExternalizedStateNot extends ExternalizedStateComponent
 	{
 		return toDot("invtriangle", "grey", "NOT ");
 	}
+
+	@Override
+	public boolean getValue(ExternalPropnetState propnetState) {
+		return propnetState.getOtherValue(this.index);
+	}
+
+	@Override
+	public void imposeConsistency(ExternalPropnetState propnetState) {
+		if(this.getInputs().size() == 0){
+			throw new IllegalStateException("Detected a NOT component with no inputs in the propnet!");
+		}else if(this.getInputs().size() > 1){
+			throw new IllegalStateException("Detected a NOT component with more than one input in the propnet!");
+		}else{
+			boolean inputValue = this.getSingleInput().getValue(propnetState);
+			if(!inputValue != this.getValue(propnetState)){ // This value to be consistent must be the negation of its input
+				propnetState.flipOtherValue(this.index);
+				this.isConsistent = true;
+				for(ExternalizedStateComponent c : this.getOutputs()){
+					c.propagateConsistency(!inputValue, propnetState);
+				}
+			}else{
+				this.isConsistent = true;
+			}
+		}
+	}
+
+	@Override
+	public void propagateConsistency(boolean newInputValue, ExternalPropnetState propnetState) {
+		if(this.isConsistent){
+			//ConcurrencyUtils.checkForInterruption();
+
+			// If this method is called it means that the value of the single input of this NOT component
+			// has flipped, thus also the value of this component must flip and be propagated to the
+			// outputs of this component.
+			propnetState.flipOtherValue(this.index);
+			for(ExternalizedStateComponent c: this.getOutputs()){
+				c.propagateConsistency(!newInputValue, propnetState);
+			}
+		}
+	}
 }

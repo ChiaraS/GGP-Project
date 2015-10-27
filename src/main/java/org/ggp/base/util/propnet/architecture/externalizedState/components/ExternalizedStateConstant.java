@@ -26,18 +26,12 @@ public final class ExternalizedStateConstant extends ExternalizedStateComponent
 		this.value = value;
 	}
 
-	/**
-	 * Returns the value that the constant was initialized to.
-	 *
-	 * @see org.ggp.base.util.propnet.architecture.ExternalizedState.ExternalizedStateComponent#getValue()
-	 */
-	public boolean getValue()
-	{
-		return value;
+	public boolean getValue(){
+		return this.value;
 	}
 
 	@Override
-	public String getComponentType() {
+	public String getComponentType(){
 		String s;
 		if(this.value){
 			s = "TRUE ";
@@ -65,6 +59,26 @@ public final class ExternalizedStateConstant extends ExternalizedStateComponent
 	public String toString()
 	{
 		return toDot("doublecircle", "grey", Boolean.toString(value).toUpperCase());
+	}
+
+	/**
+	 * Returns the value that the constant was initialized to.
+	 *
+	 * @see org.ggp.base.util.propnet.architecture.externalizedState.ExternalizedStateComponent#getValue(org.ggp.base.util.propnet.state.ExternalPropnetState)
+	 */
+	@Override
+	public boolean getValue(ExternalPropnetState propnetState){
+		return this.value;
+	}
+
+	@Override
+	public void imposeConsistency(ExternalPropnetState propnetState) {
+		this.isConsistent = true;
+	}
+
+	@Override
+	public void propagateConsistency(boolean newInputValue, ExternalPropnetState propnetState) {
+		throw new IllegalStateException("A costant proposition should have no inputs that can call the propagateConsistency() method!");
 	}
 
 }

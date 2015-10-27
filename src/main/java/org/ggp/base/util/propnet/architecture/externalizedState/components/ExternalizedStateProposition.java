@@ -33,6 +33,7 @@ public final class ExternalizedStateProposition extends ExternalizedStateCompone
 	 *            The name of the Proposition.
 	 */
 	public ExternalizedStateProposition(GdlSentence name){
+		super();
 		this.name = name;
 	}
 
@@ -84,37 +85,6 @@ public final class ExternalizedStateProposition extends ExternalizedStateCompone
 		}
 	}
 
-	/**
-	 * Checks if this is a base proposition.
-	 *
-	 * @return TRUE if this is a base proposition, FALSE otherwise.
-	 */
-	public boolean isBase(){
-		return this.propType == PROP_TYPE.BASE;
-	}
-
-	/**
-	 * Checks if this is an input proposition.
-	 *
-	 * @return TRUE if this is an input proposition, FALSE otherwise.
-	 */
-	public boolean isInput(){
-		return this.propType == PROP_TYPE.INPUT;
-	}
-
-	/**
-	 * Checks if this proposition has any input.
-	 *
-	 * !REMARK: a proposition that has no inputs is not necessarily an input proposition (e.g. the INIT proposition
-	 * has no inputs but is not an input proposition), thus the use of this method is not sufficient to detect
-	 * an input proposition.
-	 *
-	 * @return TRUE if this proposition has at least one input, FALSE otherwise.
-	 */
-	public boolean hasInput(){
-		return (this.getInputs().size() != 0);
-	}
-
 	@Override
 	public String getComponentType() {
 		return "PROPOSITION(" + this.getName() + ")";
@@ -135,5 +105,72 @@ public final class ExternalizedStateProposition extends ExternalizedStateCompone
 	public String toString()
 	{
 		return toDot("circle", "white", name.toString());
+	}
+
+	@Override
+	public boolean getValue(ExternalPropnetState propnetState) {
+		switch(propType){
+		case BASE:
+			return propnetState.getBaseValue(this.index);
+		case INPUT:
+			return propnetState.getInputValue(this.index);
+		default:
+			return propnetState.getOtherValue(this.index);
+		}
+	}
+
+	@Override
+	public void imposeConsistency(ExternalPropnetState propnetState) {
+		switch(propType){
+		case BASE:
+		case INPUT:
+			this.isConsistent = true;
+			break;
+		default:
+			if(this.getInputs().size() == 0){
+				this.isConsistent = true;
+			}else if(this.getInputs().size() == 1){
+				// Note that if we are here we are sure it is not a base, so it must
+				// change its value according to the value of its input.
+				boolean currentPropValue = this.getValue(propnetState);
+				if(this.getSingleInput().getValue(propnetState) != currentPropValue){
+					propnetState.flipOtherValue(this.index);
+					this.isConsistent = true;
+					for(ExternalizedStateComponent c : this.getOutputs()){
+						c.propagateConsistency(!currentPropValue, propnetState);
+					}
+				}else{
+					this.isConsistent = true;
+				}
+			}else if(this.getInputs().size() > 1){
+				throw new IllegalStateException("Detected a propNet proposition with more than one input!");
+			}
+			break;
+		}
+	}
+
+	@Override
+	public void propagateConsistency(boolean newInputValue, ExternalPropnetState propnetState) {
+		if(this.isConsistent){
+			//ConcurrencyUtils.checkForInterruption();
+
+			// If this method is called, and this component was consistent with its input, it means that
+			// the single input this component was consistent with changed value to newValue.
+			// Assume that if this method is called then newValue is different from the current value,
+			// so it must be flipped.
+			switch(propType){
+			case BASE:
+			case INPUT:
+				throw new IllegalStateException("A base or input proposition should have no inputs that can call the propagateConsistency() method!");
+			default:
+				propnetState.flipOtherValue(this.index);
+				break;
+			}
+
+			// Since the value of this proposition changed, the new value must be propagated to its outputs.
+			for(ExternalizedStateComponent c: this.getOutputs()){
+				c.propagateConsistency(newInputValue, propnetState);
+			}
+		}
 	}
 }
