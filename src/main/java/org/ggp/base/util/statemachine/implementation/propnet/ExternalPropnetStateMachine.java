@@ -603,18 +603,6 @@ public class ExternalPropnetStateMachine extends StateMachine {
 		return this.propNet;
 	}
 
-	/**
-	 * Get method for the propnet construction time.
-	 *
-	 * @return the actual construction time of the propnet, -1 if it has not been created in time.
-	 */
-	public long getPropnetConstructionTime(){
-		return this.propnetConstructionTime;
-	}
-
-
-
-
 	@Override
 	public void shutdown() {
 		// TODO Auto-generated method stub

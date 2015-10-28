@@ -1578,6 +1578,8 @@ public class ForwardInterruptingPropNetFactory {
 
 		boolean propnetOk = true;
 
+		Map<GdlSentence, Integer> propNumbers = new HashMap<GdlSentence, Integer>();
+
 		for(ForwardInterruptingComponent c : pn.getComponents()){
 
 			/* NOT FEASIBLE TO CHECK THIS IN A REASONABLE AMOUNT OF TIME FOR MOST GAMES:
@@ -1615,6 +1617,16 @@ public class ForwardInterruptingPropNetFactory {
 
 			// Check for each type of component if it has the correct inputs and outputs
 			if(c instanceof ForwardInterruptingProposition){
+
+				ForwardInterruptingProposition p = (ForwardInterruptingProposition) c;
+
+				Integer count = propNumbers.get(p.getName());
+
+				if(count == null){
+					propNumbers.put(p.getName(), new Integer(1));
+				}else{
+					propNumbers.put(p.getName(), new Integer(count.intValue() + 1));
+				}
 
 				if(c.getInputs().size() > 1){
 					GamerLogger.log("PropStructureChecker", "Component " + c.getType() + " has too many inputs: " + c.getInputs().size());
@@ -1724,8 +1736,15 @@ public class ForwardInterruptingPropNetFactory {
 			}
 
 		}
+
+		/* Doesn't work because of the anon proposition with the same name
+		for(Entry<GdlSentence, Integer> e : propNumbers.entrySet()){
+			if(e.getValue().intValue() != 1 ){
+				propnetOk = false;
+				GamerLogger.log("PropStructureChecker", "There are " + e.getValue().intValue() + " propositions with name " + e.getKey() + " .");
+			}
+		}
+		*/
 		return propnetOk;
 	}
-
-
 }

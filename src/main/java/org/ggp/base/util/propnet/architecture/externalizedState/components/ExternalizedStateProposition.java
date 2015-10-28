@@ -87,7 +87,7 @@ public final class ExternalizedStateProposition extends ExternalizedStateCompone
 
 	@Override
 	public String getComponentType() {
-		return "PROPOSITION(" + this.getName() + ")";
+		return this.propType +  "_PROPOSITION(" + this.getName() + ")";
 	}
 
 	public void setPropositionType(PROP_TYPE propType){

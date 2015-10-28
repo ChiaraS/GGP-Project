@@ -28,22 +28,42 @@ import org.ggp.base.util.statemachine.Role;
  * 	  truth value that's consistent with the value of its inputs). Note that this
  * 	  state will be memorized externally and not in each component of the propNet.
  *
+ * This class tries to create the propNet. If it fails (i.e. gets interrupted before
+ * the propNet has been completely created), the propnet and its external state will
+ * be set to null. If it manages to build the propnet in time, it will try to
+ * incrementally optimize it until it is interrupted. In this case, when it will be
+ * interrupted, the propNet parameter will be set to the last completed optimization
+ * of the propnet, so that it can be used and won't be in an inconsistent state.
+ * The propnet state will also be initialized accordingly.
+ *
  * @author C.Sironi
  *
  */
-public class ExternalStatePropnetCreationManager {
+public class ExternalStatePropnetCreationManager extends Thread{
+
+	private List<Gdl> description;
+
+	private long timeout;
 
 	private ExternalizedStatePropNet propNet;
 
 	private long propNetConstructionTime;
 
+	private long totalInitTime;
+
 	private ExternalPropnetState initialPropnetState;
 
-	public ExternalStatePropnetCreationManager() {
-		// TODO Auto-generated constructor stub
+	public ExternalStatePropnetCreationManager(List<Gdl> description, long timeout) {
+		this.description = description;
+		this.timeout = timeout;
 	}
 
-	public void createOptimizeInitializePropnet(List<Gdl> description, long timeout){
+	@Override
+	public void run(){
+
+		// TODO: use the timeout to decide if it is worth trying another optimization
+		// or if there probably is not enough time and we don't want to risk taking too
+		// long to interrupt in case the time was not enough.
 
 		// 1. Create the propnet.
 		long startTime = System.currentTimeMillis();
@@ -51,17 +71,50 @@ public class ExternalStatePropnetCreationManager {
     	try{
     		this.propNet = ExternalizedStatePropnetFactory.create(description);
     	}catch(InterruptedException e){
-    		/* TODO
-    		GamerLogger.logError("StateMachine", "[Propnet] Propnet creation interrupted!");
-    		GamerLogger.logStackTrace("StateMachine", e);
-    		throw new StateMachineInitializationException(e);
-    		*/
+    		GamerLogger.logError("PropnetManager", "Propnet creation interrupted!");
+    		GamerLogger.logStackTrace("PropnetManager", e);
+    		this.propNet = null;
+    		this.initialPropnetState = null;
+    		this.propNetConstructionTime = -1;
+    		this.totalInitTime = System.currentTimeMillis() - startTime;
+    		return;
     	}
     	// Compute the time taken to construct the propnet
     	this.propNetConstructionTime = System.currentTimeMillis() - startTime;
-		GamerLogger.log("StateMachine", "[Propnet Creator] Propnet creation done. It took " + (this.propNetConstructionTime) + "ms.");
+		GamerLogger.log("StateMachine", "[Propnet Creator] Propnet creation done. It took " + this.propNetConstructionTime + "ms.");
 
+		System.out.println("Propnet has: " + this.propNet.getSize() + " COMPONENTS, " + this.propNet.getNumPropositions() + " PROPOSITIONS, " + this.propNet.getNumLinks() + " LINKS.");
+		System.out.println("Propnet has: " + this.propNet.getNumAnds() + " ANDS, " + this.propNet.getNumOrs() + " ORS, " + this.propNet.getNumNots() + " NOTS.");
+		System.out.println("Propnet has: " + this.propNet.getNumBases() + " BASES, " + this.propNet.getNumTransitions() + " TRANSITIONS.");
+		System.out.println("Propnet has: " + this.propNet.getNumInputs() + " INPUTS, " + this.propNet.getNumLegals() + " LEGALS.");
+		System.out.println("Propnet has: " + this.propNet.getNumGoals() + " GOALS.");
+		System.out.println("Propnet has: " + this.propNet.getNumInits() + " INITS, " + this.propNet.getNumTerminals() + " TERMINALS.");
+
+
+
+
+		/* Check if manager has been interrupted between creation and initialization of the propnet.
+		 * In this case the propnet structure has been completely created but there is no time for
+		 * initialization of the corresponding state. Use this check or not? If not it means that
+		 * whenever the manager gets interrupted, if there is a completed version of the propnet
+		 * structure available the corresponding state will for sure be initialized so the propnet
+		 * can be used. Note that there is a tradeoff between having the guarantee that whenever a
+		 * propnet structure is available we also have the corresponding state and having guarantee
+		 * taht the player will not time out while getting ready to play.
+		try{
+			ConcurrencyUtils.checkForInterruption();
+		}catch(InterruptedException e){
+			GamerLogger.logError("PropnetManager", "Manager interrupted before ropnet state initialization!");
+    		GamerLogger.logStackTrace("PropnetManager", e);
+    		this.propNet = null;
+    		this.initialPropnetState = null;
+    		this.propNetConstructionTime = -1;
+    		return;
+		}
+		*/
 		this.computeInitialPropNetState();
+
+		this.totalInitTime = System.currentTimeMillis() - startTime;
 	}
 
 	/**
@@ -181,6 +234,10 @@ public class ExternalStatePropnetCreationManager {
 
 	public long getPropnetConstructionTime(){
 		return this.propNetConstructionTime;
+	}
+
+	public long getTotalInitTime(){
+		return this.totalInitTime;
 	}
 
 	public ExternalPropnetState getInitialPropnetState(){

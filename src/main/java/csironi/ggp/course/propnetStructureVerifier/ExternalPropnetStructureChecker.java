@@ -1,6 +1,3 @@
-/**
- *
- */
 package csironi.ggp.course.propnetStructureVerifier;
 
 import java.util.List;
@@ -11,9 +8,8 @@ import org.ggp.base.util.gdl.grammar.Gdl;
 import org.ggp.base.util.logging.GamerLogger;
 import org.ggp.base.util.logging.GamerLogger.FORMAT;
 import org.ggp.base.util.match.Match;
-import org.ggp.base.util.propnet.architecture.forwardInterrupting.ForwardInterruptingPropNet;
-import org.ggp.base.util.propnet.factory.ForwardInterruptingPropNetFactory;
-import org.ggp.base.util.propnet.factory.FwdInterrPropNetCreator;
+import org.ggp.base.util.propnet.architecture.externalizedState.ExternalizedStatePropNet;
+import org.ggp.base.util.propnet.factory.ExternalizedStatePropnetFactory;
 
 /**
  * This class checks if the structure of the propnet is consistent (e.g. there are no gates with no input,
@@ -26,8 +22,8 @@ import org.ggp.base.util.propnet.factory.FwdInterrPropNetCreator;
  * 3. [maximumPropnetConstructionTime] [maximumTestDuration] [keyOfGameToTest]
  *
  * where:
- * [maximumPropnetConstructionTime] = time in milliseconds that is available to build and initialize
- * 									   the propnet (DEFAULT: 420000ms - 7mins).
+ * [maximumPropnetConstructionTime] = time in milliseconds that is available to build the propnet
+ * 										(DEFAULT: 420000ms - 7mins).
  * [maximumTestDuration] = duration of each test in millisecond (DEFAULT: 60000ms - 1min).
  * [keyOfGameToTest] = key of the game to be tested (DEFAULT: null (i.e. all games)).
  *
@@ -37,7 +33,7 @@ import org.ggp.base.util.propnet.factory.FwdInterrPropNetCreator;
  * @author C.Sironi
  *
  */
-public class PropnetStructureChecker {
+public class ExternalPropnetStructureChecker {
 
 	public static void main(String[] args){
 
@@ -66,14 +62,14 @@ public class PropnetStructureChecker {
 			/*********************************************************************************/
 
 
-			GamerLogger.setSpilloverLogfile(game + "PropnetStructureCheckerTable.csv");
-		    GamerLogger.log(FORMAT.CSV_FORMAT, game + "PropnetStructureCheckerTable.csv", "Game key;Construction Time (ms);Check Duration (ms);Pass;");
+			GamerLogger.setSpilloverLogfile(game + "ExternalPropnetStructureCheckerTable.csv");
+		    GamerLogger.log(FORMAT.CSV_FORMAT, game + "ExternalPropnetStructureCheckerTable.csv", "Game key;Construction Time (ms);Check Duration (ms);Pass;");
 
 		    if(game.equals("ALL")){
 		    	GameRepository theRepository = GameRepository.getDefaultRepository();
 		        for(String gameKey : theRepository.getGameKeys()) {
 		            if(gameKey.contains("laikLee")) continue;
-		            GamerLogger.log(FORMAT.CSV_FORMAT, game + "PropnetStructureCheckerTable.csv", checkPropnetStructure(gameKey, maxPropnetConstructionTime));
+		            GamerLogger.log(FORMAT.CSV_FORMAT, game + "ExternalPropnetStructureCheckerTable.csv", checkPropnetStructure(gameKey, maxPropnetConstructionTime));
 		            System.out.println();
 		        }
 
@@ -83,7 +79,7 @@ public class PropnetStructureChecker {
 				if(theGame == null){
 					System.out.println("Impossible to find the game with key " + game + ". Skipping test.");
 				}else{
-					GamerLogger.log(FORMAT.CSV_FORMAT, game + "PropnetStructureCheckerTable.csv", checkPropnetStructure(game, maxPropnetConstructionTime));
+					GamerLogger.log(FORMAT.CSV_FORMAT, game + "ExternalPropnetStructureCheckerTable.csv", checkPropnetStructure(game, maxPropnetConstructionTime));
 				}
 			}
 		}
@@ -97,13 +93,13 @@ public class PropnetStructureChecker {
 
 		System.out.println("Checking game " + gameKey + ".");
 
-		ForwardInterruptingPropNet propNet = null;
+		ExternalizedStatePropNet propNet = null;
 
-		FwdInterrPropNetCreator creator = new FwdInterrPropNetCreator(description);
+		ExternalPropnetCreator creator = new ExternalPropnetCreator(description);
 
 		Match fakeMatch = new Match(gameKey + "." + System.currentTimeMillis(), -1, -1, -1,theRepository.getGame(gameKey) );
 
-        GamerLogger.startFileLogging(fakeMatch, "PropnetStructureChecker");
+        GamerLogger.startFileLogging(fakeMatch, "ExternalPropnetStructureChecker");
 
     	// Try to create the propnet, if it takes too long stop the creation.
     	creator.start();
@@ -140,17 +136,19 @@ public class PropnetStructureChecker {
     		return gameKey + ";" + creator.getConstructionTime() + ";-1;FALSE;";
     	}else{
 
-    		System.out.println("Checking...");
-
     		System.out.println("Propnet has: " + propNet.getSize() + " COMPONENTS, " + propNet.getNumPropositions() + " PROPOSITIONS, " + propNet.getNumConstants() + " CONSTANTS, " + propNet.getNumLinks() + " LINKS.");
     		System.out.println("Propnet has: " + propNet.getNumAnds() + " ANDS, " + propNet.getNumOrs() + " ORS, " + propNet.getNumNots() + " NOTS.");
     		System.out.println("Propnet has: " + propNet.getNumBases() + " BASES, " + propNet.getNumTransitions() + " TRANSITIONS.");
     		System.out.println("Propnet has: " + propNet.getNumInputs() + " INPUTS, " + propNet.getNumLegals() + " LEGALS.");
     		System.out.println("Propnet has: " + propNet.getNumGoals() + " GOALS.");
+    		System.out.println("Propnet has: " + propNet.getNumOthers() + " OTHER PROPOSITIONS.");
+    		System.out.println("Propnet has: " + propNet.getNumInits() + " INITS, " + propNet.getNumTerminals() + " TERMINALS.");
+
+    		System.out.println("Checking...");
 
     		long checkDuration = System.currentTimeMillis();
 
-    		boolean pass = ForwardInterruptingPropNetFactory.checkPropnetStructure(propNet);
+    		boolean pass = ExternalizedStatePropnetFactory.checkPropnetStructure(propNet);
 
     		checkDuration = System.currentTimeMillis() - checkDuration;
 

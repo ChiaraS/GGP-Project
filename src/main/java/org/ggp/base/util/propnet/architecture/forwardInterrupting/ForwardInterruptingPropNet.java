@@ -17,6 +17,7 @@ import org.ggp.base.util.gdl.grammar.GdlSentence;
 import org.ggp.base.util.gdl.grammar.GdlTerm;
 import org.ggp.base.util.logging.GamerLogger;
 import org.ggp.base.util.propnet.architecture.forwardInterrupting.components.ForwardInterruptingAnd;
+import org.ggp.base.util.propnet.architecture.forwardInterrupting.components.ForwardInterruptingConstant;
 import org.ggp.base.util.propnet.architecture.forwardInterrupting.components.ForwardInterruptingNot;
 import org.ggp.base.util.propnet.architecture.forwardInterrupting.components.ForwardInterruptingOr;
 import org.ggp.base.util.propnet.architecture.forwardInterrupting.components.ForwardInterruptingProposition;
@@ -472,6 +473,17 @@ public final class ForwardInterruptingPropNet
 		return components.size();
 	}
 
+
+    /**
+     * Computes the number of propositions in the propNet.
+     *
+     * @return  the number of propositions in the propNet.
+     */
+	public int getNumPropositions(){
+		return this.propositions.size();
+	}
+
+
 	public int getNumAnds() {
 		int andCount = 0;
 		for(ForwardInterruptingComponent c : components) {
@@ -481,8 +493,33 @@ public final class ForwardInterruptingPropNet
 		return andCount;
 	}
 
+	public int getNumConstants() {
+		int cCount = 0;
+		for(ForwardInterruptingComponent c : components) {
+			if(c instanceof ForwardInterruptingConstant)
+				cCount++;
+		}
+		return cCount;
+	}
+
 	public int getNumBases() {
 		return this.basePropositions.values().size();
+	}
+
+	public int getNumLegals() {
+		int num = 0;
+		for(Role r : this.roles){
+			num += this.legalPropositions.get(r).size();
+		}
+		return num;
+	}
+
+	public int getNumGoals() {
+		int num = 0;
+		for(Role r : this.roles){
+			num += this.goalPropositions.get(r).size();
+		}
+		return num;
 	}
 
 	public int getNumTransitions() {
