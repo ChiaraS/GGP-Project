@@ -114,13 +114,8 @@ public class ExternalPropnetStructureChecker {
     			// file at the same time there might be an exception. Moreover, the time order of the logs might
     			// not be respected in the file).
     			creator.join();
-    			// Set again the propnet to null just to be sure.
-        		// The propnet set to null after initializing the state machine means that the propnet
-        		// couldn't be created.
-        		propNet = null;
-        	}else{
-        		propNet = creator.getPropNet();
         	}
+        	propNet = creator.getPropNet();
     	}catch (InterruptedException e) {
     		GamerLogger.logError("StateMachine", "[PropnetStructureChecker] Propnet creation interrupted by external action! Terminating initialization!");
     		GamerLogger.logStackTrace("StateMachine", e);
