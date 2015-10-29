@@ -102,7 +102,7 @@ public final class ExternalizedStateAnd extends ExternalizedStateComponent{
 			boolean newGateValue = propnetState.getGateValue(this.index);
 			if(newGateValue != oldGateValue){
 				for(ExternalizedStateComponent c: this.getOutputs()){
-					c.updateValue(newGateValue, propnetState);
+					c.propagateConsistency(newGateValue, propnetState);
 				}
 			}
 		}

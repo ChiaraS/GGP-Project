@@ -87,6 +87,8 @@ public class ExtendedStateMachineVerifier {
         exception = "-";
         otherExceptions = 0;
         while(true) {
+
+        	//System.out.println();
             // If something goes wrong in this try block it means the test cannot continue on this iteration
         	// and the test will skip to the next iteration.
         	try {
@@ -97,7 +99,13 @@ public class ExtendedStateMachineVerifier {
             	MachineState[] theCurrentStates = new MachineState[theMachines.size()];
             	for(int i = 0; i < theMachines.size(); i++) {
             		theCurrentStates[i] = theMachines.get(i).getInitialState();
+            		//System.out.println("Getting initial state of machine " + i);
+            		//if(i == 0){
+            			//System.out.println(theCurrentStates[i].getContents());
+            		//}
             	}
+
+
 
 				while(!theMachines.get(0).isTerminal(theCurrentStates[0])) {
 
@@ -125,6 +133,7 @@ public class ExtendedStateMachineVerifier {
 					            		// is not a null pointer exception and since this test fails when the computation of the
 					            		// next state fails, we can be sure that theCurrentStates[i] will exist.
 					            		subjectMoves = theMachines.get(i).getLegalMoves(theCurrentStates[i], theRole);
+					            		//System.out.println("Getting legal moves for machine " + i);
 					            	}catch(StateMachineException sme){
 					            		GamerLogger.log("Verifier", "Machine #" + i + " failed computation of legal moves for state " + theCurrentStates[i] + " and role " + theRole + ".");
 					            		GamerLogger.logStackTrace("Verifier", sme);
@@ -155,6 +164,7 @@ public class ExtendedStateMachineVerifier {
 					                    GamerLogger.log("Verifier", "Machine #" + i + " has legal moves = " + subjectMoves);
 					                    return false;
 					                }
+					                //System.out.println("Machines have same number of moves.");
 					            }catch(Exception e) {
 					            	GamerLogger.log("Verifier", "Failed to check consistency of legal moves of role " + theRole + " in state " + theCurrentStates[0] + ". Skipping to next role (if any)!");
 					                GamerLogger.logStackTrace("Verifier", e);
@@ -186,6 +196,7 @@ public class ExtendedStateMachineVerifier {
 				    for(int i = 1; i < theMachines.size(); i++) {
 			            try {
 			                theCurrentStates[i] = theMachines.get(i).getNextState(theCurrentStates[i], theJointMove);
+			                //System.out.println("Getting next state of machine " + i);
 			            } catch(StateMachineException sme) {
 			            	GamerLogger.log("Verifier", "Machine #" + i + " failed computation of next state for state " + theCurrentStates[i] + " and joint move " + theJointMove + ".");
 			                GamerLogger.logStackTrace("Verifier", sme);
@@ -220,6 +231,7 @@ public class ExtendedStateMachineVerifier {
 							GamerLogger.log("Verifier", "Inconsistency between machine #" + i + " and ProverStateMachine over terminal-ness of state " + theCurrentStates[0] + " vs " + theCurrentStates[i]);
 							return false;
 						}
+						//System.out.println("Correct terminality detection.");
 					}catch(StateMachineException sme){
 						GamerLogger.log("Verifier", "Machine #" + i + " failed the check for terminality of state " + theCurrentStates[i]);
 						GamerLogger.logStackTrace("Verifier", sme);
@@ -247,6 +259,7 @@ public class ExtendedStateMachineVerifier {
 
 	                    try{
 	                        subjectGoal = theMachines.get(i).getGoal(theCurrentStates[i], theRole);
+	                        //System.out.println("Getting goals of machine " + i);
 	                    }catch(StateMachineException sme) {
 	    					GamerLogger.log("Verifier", "Machine #" + i + " failed the computation of the goal for role " + theRole + " in state " + theCurrentStates[i]);
 	    					GamerLogger.logStackTrace("Verifier", sme);

@@ -107,18 +107,28 @@ public class ExternalizedStatePropNet {
 	/**
 	 * Creates a new PropNet from a list of Components.
 	 *
-	 * Also checks if a gate or a proposition has no inputs and if so connects it to the FALSE component
+	 * TODO: Also checks if a gate or a proposition has no inputs and if so connects it to the FALSE component
 	 * (TRUE component if it is a NOT).
 	 * Note: if a BASE proposition has no input it won't be detected as base proposition, so can be
 	 * treated as any other proposition and connected to FALSE.
 	 * Note: an INPUT proposition must be excluded from this check as it is normal for it not to have any
 	 * input.
 	 *
+	 * ATTENTION: the algorithm that detects an input/legal propositions and puts it in the corresponding map
+	 * if and only if it has its legal/input counterpart works only if for each different move there is at
+	 * most only one input proposition and at most only one legal proposition. (Note that with move we intend
+	 * the list of GdlTerms that come after the keyword 'does' in an input proposition or after the keyword
+	 * 'legal' in a legal proposition: e.g. (xplayer (mark 1 1)).
+	 *
 	 * @param components
 	 *            A list of Components.
 	 */
-	public ExternalizedStatePropNet(List<Role> roles, Set<ExternalizedStateComponent> components)
-	{
+	public ExternalizedStatePropNet(List<Role> roles, Set<ExternalizedStateComponent> components){
+
+		//System.out.println();
+
+		//long start = System.currentTimeMillis();
+
 	    this.roles = roles;
 
 	    //for(Role r : roles){
@@ -133,8 +143,10 @@ public class ExternalizedStatePropNet {
 		//Map<Role, List<ExternalizedStateProposition>> inputsPerRole = new HashMap<Role, List<ExternalizedStateProposition>>();
 		//Map<Role, List<ExternalizedStateProposition>> legalsPerRole = new HashMap<Role, List<ExternalizedStateProposition>>();
 
-		Map<Role, Map<List<GdlTerm>, Integer>> moveIndices = new HashMap<Role, Map<List<GdlTerm>, Integer>>();
-		Map<Role, Integer> currentIndices = new HashMap<Role, Integer>();
+		//Map<Role, Map<List<GdlTerm>, Integer>> moveIndices = new HashMap<Role, Map<List<GdlTerm>, Integer>>();
+		//Map<Role, Integer> currentIndices = new HashMap<Role, Integer>();
+		Map<List<GdlTerm>, ExternalizedStateProposition> possibleInputs = new HashMap<List<GdlTerm>, ExternalizedStateProposition>();
+		Map<List<GdlTerm>, ExternalizedStateProposition> possibleLegals = new HashMap<List<GdlTerm>, ExternalizedStateProposition>();
 
 		this.goalsPerRole = new HashMap<Role, List<ExternalizedStateProposition>>();
 		this.goalValues = new HashMap<Role, List<Integer>>();
@@ -145,8 +157,8 @@ public class ExternalizedStatePropNet {
 			//inputsPerRole.put(r, new ArrayList<ExternalizedStateProposition>());
 			//legalsPerRole.put(r, new ArrayList<ExternalizedStateProposition>());
 
-			moveIndices.put(r, new HashMap<List<GdlTerm>, Integer>());
-			currentIndices.put(r, new Integer(0));
+			//moveIndices.put(r, new HashMap<List<GdlTerm>, Integer>());
+			//currentIndices.put(r, new Integer(0));
 			this.goalsPerRole.put(r, new ArrayList<ExternalizedStateProposition>());
 			this.goalValues.put(r, new ArrayList<Integer>());
 		}
@@ -184,74 +196,49 @@ public class ExternalizedStatePropNet {
 			    // Check if it's an input or legal
 				}else if(p.getName() instanceof GdlRelation){
 					GdlRelation relation = (GdlRelation) p.getName();
-					if(relation.getName().getValue().equals("does")){
+					if(relation.getName().getValue().equals("does")){ // Possible input
 
-						GdlConstant name = (GdlConstant) relation.get(0);
-						Role r = new Role(name);
-						if(this.roles.contains(r)){
-							//System.out.println(name);
-							List<GdlTerm> gdlMove = p.getName().getBody();
-							//System.out.println(gdlMove);
-							Integer index = moveIndices.get(r).get(gdlMove);
+						// Get the GDL move corresponding to this proposition
+						List<GdlTerm> gdlMove = p.getName().getBody();
 
-							// The index for this move and role exist already.
-							if(index != null){
-								//System.out.println(index);
-								// Put the input proposition in the correct position.
-								// The corresponding legal proposition is already in the correct
-								// place in the legal propositions array for the role.
-								inputsPerRole.get(r).set(index.intValue(), p);
-							}else{
-								// First add the index for this move.
-								index = currentIndices.remove(r);
-								//System.out.println(index);
-								moveIndices.get(r).put(gdlMove, new Integer(index.intValue()));
+						// Check if we already found its corresponding legal
+						ExternalizedStateProposition correspondingLegal = possibleLegals.remove(gdlMove);
 
-								this.inputsPerRole.get(r).add(p);
-								this.legalsPerRole.get(r).add(null);
-								//inputsPerRole.get(r).add(p);
-								//legalsPerRole.get(r).add(null);
-
-								currentIndices.put(r, new Integer(index.intValue() + 1));
+						if(correspondingLegal == null){
+							possibleInputs.put(gdlMove, p);
+						}else{
+							GdlConstant name = (GdlConstant) relation.get(0);
+							Role r = new Role(name);
+							if(this.roles.contains(r)){
+								p.setPropositionType(PROP_TYPE.INPUT);
+								inputsPerRole.get(r).add(p);
+								correspondingLegal.setPropositionType(PROP_TYPE.LEGAL);
+								legalsPerRole.get(r).add(correspondingLegal);
 							}
-
-							// Set that the type of this proposition is INPUT
-							p.setPropositionType(PROP_TYPE.INPUT);
 						}
 
-					}else if(relation.getName().getValue().equals("legal")){
+					}else if(relation.getName().getValue().equals("legal")){ // Possible legal move
 
-						GdlConstant name = (GdlConstant) relation.get(0);
-						Role r = new Role(name);
-						if(this.roles.contains(r)){
-							//System.out.println(name);
-							List<GdlTerm> gdlMove = p.getName().getBody();
-							//System.out.println(gdlMove);
-							Integer index = moveIndices.get(r).get(gdlMove);
+						// Get the GDL move corresponding to this proposition
+						List<GdlTerm> gdlMove = p.getName().getBody();
 
-							// The index for this move and role exist already.
-							if(index != null){
-								//System.out.println(index);
-								// Put the input proposition in the correct position.
-								// The corresponding legal proposition is already in the correct
-								// place in the legal propositions array for the role.
-								legalsPerRole.get(r).set(index.intValue(), p);
-							}else{
-								// First add the index for this move.
-								index = currentIndices.remove(r);
-								//System.out.println(index);
-								moveIndices.get(r).put(gdlMove, new Integer(index.intValue()));
+						// Check if we already found its corresponding input
+						ExternalizedStateProposition correspondingInput = possibleInputs.remove(gdlMove);
 
-								this.legalsPerRole.get(r).add(p);
-								this.inputsPerRole.get(r).add(null);
-								//legalsPerRole.get(r).add(p);
-								//inputsPerRole.get(r).add(null);
-
-								currentIndices.put(r, new Integer(index.intValue() + 1));
+						if(correspondingInput == null){
+							// Note: here we don't check if the role is valid. We could, but it
+							// will be checked anyway later if this move will be removed. And if
+							// it won't be removed we don't care if the role is valid.
+							possibleLegals.put(gdlMove, p);
+						}else{
+							GdlConstant name = (GdlConstant) relation.get(0);
+							Role r = new Role(name);
+							if(this.roles.contains(r)){
+								p.setPropositionType(PROP_TYPE.LEGAL);
+								legalsPerRole.get(r).add(p);
+								correspondingInput.setPropositionType(PROP_TYPE.INPUT);
+								inputsPerRole.get(r).add(correspondingInput);
 							}
-
-							// Set that the type of this proposition is INPUT
-							p.setPropositionType(PROP_TYPE.LEGAL);
 						}
 					}else if(relation.getName().getValue().equals("goal")){
 						GdlConstant name = (GdlConstant) relation.get(0);
@@ -296,6 +283,26 @@ public class ExternalizedStatePropNet {
 			}
 		}
 
+		//System.out.println("Iteration over components: " + (System.currentTimeMillis() - start) + "ms");
+		//start = System.currentTimeMillis();
+
+		// If a constant is null, create and add it to the propnet
+		// Note that the constant must also be added to the components. However it will
+		// not be associated with an index when the propnet state will be created, its
+		// index will always be set to -1 since the propnet state will not include its
+		// value. The constant will store its fixed value internally.
+		if(this.trueConstant == null){
+			this.trueConstant = new ExternalizedStateConstant(true);
+			this.components.add(this.trueConstant);
+		}
+		if(this.falseConstant == null){
+			this.falseConstant = new ExternalizedStateConstant(false);
+			this.components.add(this.falseConstant);
+		}
+
+		//System.out.println("Check constants: " + (System.currentTimeMillis() - start) + "ms");
+		//start = System.currentTimeMillis();
+
 		/*
 		 * This part of code will remove from the map of INPUTs the ones that have no LEGAL counterpart
 		 * and remove from the map of LEGALs the ones that have no INPUT counterpart.
@@ -303,7 +310,7 @@ public class ExternalizedStatePropNet {
 		 * elements in the map will be removed.
 		 * After being removed, the propositions will be considered as OTHER propositions.
 		 */
-		for(Role r : this.roles){
+		/*for(Role r : this.roles){
 			List<ExternalizedStateProposition> roleInputs = this.inputsPerRole.get(r);
 			List<ExternalizedStateProposition> roleLegals = this.legalsPerRole.get(r);
 
@@ -332,6 +339,11 @@ public class ExternalizedStatePropNet {
 			}
 		}
 
+		System.out.println("Fix legal inputs: " + (System.currentTimeMillis() - start) + "ms");
+		start = System.currentTimeMillis();
+
+		*/
+
 
 		this.inputPropositions = new ArrayList<ExternalizedStateProposition>();
 		this.legalPropositions = new ArrayList<ExternalizedStateProposition>();
@@ -353,6 +365,8 @@ public class ExternalizedStatePropNet {
 			}
 			*/
 		}
+
+		//System.out.println("Unify legals and unify inputs: " + (System.currentTimeMillis() - start) + "ms");
 	}
 
 	/**

@@ -4,9 +4,11 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Random;
 import java.util.Set;
 
 import org.apache.lucene.util.OpenBitSet;
+import org.ggp.base.util.concurrency.ConcurrencyUtils;
 import org.ggp.base.util.gdl.grammar.Gdl;
 import org.ggp.base.util.gdl.grammar.GdlSentence;
 import org.ggp.base.util.logging.GamerLogger;
@@ -22,6 +24,7 @@ import org.ggp.base.util.statemachine.Role;
 import org.ggp.base.util.statemachine.StateMachine;
 import org.ggp.base.util.statemachine.exceptions.GoalDefinitionException;
 import org.ggp.base.util.statemachine.exceptions.MoveDefinitionException;
+import org.ggp.base.util.statemachine.exceptions.StateMachineException;
 import org.ggp.base.util.statemachine.exceptions.StateMachineInitializationException;
 import org.ggp.base.util.statemachine.exceptions.TransitionDefinitionException;
 import org.ggp.base.util.statemachine.implementation.prover.query.ProverQueryBuilder;
@@ -40,13 +43,6 @@ public class ExternalPropnetStateMachine extends StateMachine {
     private ImmutableList<Role> roles;
     /** The initial state */
     private ExternalPropnetMachineState initialState;
-
-
-    /**
-	 * Total time (in milliseconds) taken to construct the propnet.
-	 * If it is negative it means that the propnet didn't build in time.
-	 */
-	private long propnetConstructionTime = -1L;
 
 	public ExternalPropnetStateMachine(ExternalizedStatePropNet propNet, ExternalPropnetState propnetState){
 		this.propNet = propNet;
@@ -146,13 +142,14 @@ public class ExternalPropnetStateMachine extends StateMachine {
 
 		int trueGoalIndex = otherComponents.nextSetBit(firstGoalIndices[role.getIndex()]);
 
-		if(trueGoalIndex >= firstGoalIndices[role.getIndex()+1]){ // No true goal for current role
+		if(trueGoalIndex >= firstGoalIndices[role.getIndex()+1] || trueGoalIndex == -1){ // No true goal for current role
 			MachineState standardState = this.externalStateToState(state);
 			Role standardRole = this.externalRoleToRole(role);
 			GamerLogger.logError("StateMachine", "[Propnet] Got no true goal in state " + standardState + " for role " + standardRole + ".");
 			throw new GoalDefinitionException(standardState, standardRole);
 		}else if(trueGoalIndex < (firstGoalIndices[role.getIndex()+1]-1)){ // If it's not the last goal proposition check if there are any other true goal propositions for the role
-			if(otherComponents.nextSetBit(trueGoalIndex+1) < firstGoalIndices[role.getIndex()+1]){
+			int nextTrueGoalIndex =	otherComponents.nextSetBit(trueGoalIndex+1);
+			if(nextTrueGoalIndex < firstGoalIndices[role.getIndex()+1] && nextTrueGoalIndex != -1){
 				MachineState standardState = this.externalStateToState(state);
 				Role standardRole = this.externalRoleToRole(role);
 				GamerLogger.logError("StateMachine", "[Propnet] Got more than one true goal in state " + standardState + " for role " + standardRole + ".");
@@ -170,6 +167,27 @@ public class ExternalPropnetStateMachine extends StateMachine {
 	 */
 	@Override
 	public MachineState getInitialState() {
+
+		/*
+		if(this.initialState == null){
+			System.out.println("Null initial state.");
+		}else{
+			OpenBitSet state = this.initialState.getTruthValues();
+			System.out.print("[ ");
+			for(int i = 0; i < state.size(); i++){
+
+				if(state.fastGet(i)){
+					System.out.print("1");
+				}else{
+					System.out.print("0");
+				}
+
+			}
+			System.out.println(" ]");
+		}
+		*/
+
+
 		return this.externalStateToState(this.initialState);
 	}
 
@@ -213,8 +231,9 @@ public class ExternalPropnetStateMachine extends StateMachine {
 
 		int trueLegalIndex = otherComponents.nextSetBit(firstLegalIndices[role.getIndex()]);
 
-		while(trueLegalIndex < firstLegalIndices[role.getIndex()+1]){
+		while(trueLegalIndex < firstLegalIndices[role.getIndex()+1] && trueLegalIndex != -1){
 			legalMoves.add(new ExternalPropnetMove(trueLegalIndex - firstLegalIndices[0]));
+			trueLegalIndex = otherComponents.nextSetBit(trueLegalIndex+1);
 		}
 
 		// If there are no legal moves for the role in this state throw an exception.
@@ -358,7 +377,7 @@ public class ExternalPropnetStateMachine extends StateMachine {
 			int setIndex = basePropsTruthValues.nextSetBit(0);
 			while(setIndex != -1){
 				contents.add(baseProps.get(setIndex).getName());
-				setIndex = basePropsTruthValues.nextSetBit(setIndex);
+				setIndex = basePropsTruthValues.nextSetBit(setIndex+1);
 			}
 
 			return new MachineState(contents);
@@ -608,4 +627,111 @@ public class ExternalPropnetStateMachine extends StateMachine {
 		// TODO Auto-generated method stub
 		// No need to do anything
 	}
+
+
+	/***************** Extra methods to replace the ones offered by the StateMahcine *****************/
+
+    /**
+     * Returns a terminal state derived from repeatedly making random joint moves
+     * until reaching the end of the game.
+     *
+     * @param theDepth an integer array, the 0th element of which will be set to
+     * the number of state changes that were made to reach a terminal state.
+     *
+     * @throws TransitionDefinitionException indicates an error in either the
+     * game description or the StateMachine implementation.
+     * @throws MoveDefinitionException if a role has no legal moves. This indicates
+     * an error in either the game description or the StateMachine implementation.
+     * @throws StateMachineException if it was not possible to completely perform a
+     * playout of the game because of an error that occurred in the state machine and
+     * couldn't be handled.
+     */
+    public ExternalPropnetMachineState performDepthCharge(ExternalPropnetMachineState state, final int[] theDepth) throws TransitionDefinitionException, MoveDefinitionException, StateMachineException {
+        int nDepth = 0;
+        while(!isTerminal(state)) {
+            nDepth++;
+            state = getNextState(state, getRandomJointMove(state));
+        }
+        if(theDepth != null)
+            theDepth[0] = nDepth;
+        return state;
+    }
+
+    /**
+     * Like performDepthCharge() method, but this one checks after visiting each node
+     * if it has been interrupted. If so it makes sure that the array theDepth contains
+     * the currently reached depth and returns null as terminal state.
+     * Moreover, when any other exception is thrown while visiting the nodes, the number
+     * of nodes visited so far (nDepth) is returned and the exception is not re-thrown,
+     * since this method is only used to check the amount of nodes that the state machine
+     * can visit in a certain amount of time. Also in this case null will be returned as
+     * terminal state.
+     *
+     * @param state the state from where to start the simulation.
+     * @param theDepth an integer array, the 0th element of which will be set to
+     * the number of state changes that were made until the current visited state.
+     *
+     */
+    public ExternalPropnetMachineState interruptiblePerformDepthCharge(ExternalPropnetMachineState state, final int[] theDepth) /*throws TransitionDefinitionException, MoveDefinitionException, StateMachineException*/ {
+        int nDepth = 0;
+        try {
+	        while(!isTerminal(state)) {
+
+	            state = getNextState(state, getRandomJointMove(state));
+
+	            nDepth++;
+
+				ConcurrencyUtils.checkForInterruption();
+			}
+        } catch (InterruptedException | StateMachineException | TransitionDefinitionException | MoveDefinitionException e) {
+			// This method can return a consistent result even if it has not completed execution
+			// so the InterruptedException is not re-thrown
+			if(theDepth != null)
+	            theDepth[0] = nDepth;
+	        return null;
+		}
+        if(theDepth != null)
+            theDepth[0] = nDepth;
+        return state;
+    }
+
+    /**
+     * Returns a random joint move from among all the possible joint moves in
+     * the given state.
+     *
+     * @throws MoveDefinitionException if a role has no legal moves. This indicates
+     * an error in either the game description or the StateMachine implementation.
+     * @throws StateMachineException if it was not possible to compute the random
+     * joint move in the given state because of an error that occurred in the state
+     * machine and couldn't be handled.
+     */
+    public List<ExternalPropnetMove> getRandomJointMove(ExternalPropnetMachineState state) throws MoveDefinitionException, StateMachineException
+    {
+        List<ExternalPropnetMove> random = new ArrayList<ExternalPropnetMove>();
+        for(int i = 0; i < this.roles.size();i++) {
+            random.add(getRandomMove(state, new ExternalPropnetRole(i)));
+        }
+
+        return random;
+    }
+
+    /**
+     * Returns a random move from among the possible legal moves for the
+     * given role in the given state.
+     *
+     * @throws MoveDefinitionException if the role has no legal moves. This indicates
+     * an error in either the game description or the StateMachine implementation.
+     * @throws StateMachineException if it was not possible to compute a
+     * random move for the given role in the given state because of an
+     * error that occurred in the state machine and couldn't be handled.
+     */
+    public ExternalPropnetMove getRandomMove(ExternalPropnetMachineState state, ExternalPropnetRole role) throws MoveDefinitionException, StateMachineException
+    {
+        List<ExternalPropnetMove> legals = getLegalMoves(state, role);
+        return legals.get(new Random().nextInt(legals.size()));
+    }
+
+
+
+
 }

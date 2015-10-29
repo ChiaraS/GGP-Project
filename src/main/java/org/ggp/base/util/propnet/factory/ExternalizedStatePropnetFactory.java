@@ -1196,18 +1196,20 @@ public class ExternalizedStatePropnetFactory {
 		output.addInput(and);
 	}
 
+
 	public static void fixInputlessComponents(ExternalizedStatePropNet pn){
 		// TODO: ricorda che se aggiungi la costante false devi aggiungerla anche nei componenti e dove serve!!!!!
 		// Stessa cosa quando rimuovi qualcosa
-		if(pn.getFalseConstant() == null){
+	/*	if(pn.getFalseConstant() == null){
 			pn.setFalseConstant(new ExternalizedStateConstant(false));
 		}
 		ExternalizedStateConstant falseConstant = pn.getFalseConstant();
 
 		if(p.getInputs().size() == 0 && p.getPropositionType() != PROP_TYPE.INPUT && p.getPropositionType() != PROP_TYPE.BASE){
 
-	    }
+	    }*/
 	}
+
 
 	public static boolean checkPropnetStructure(ExternalizedStatePropNet pn){
 

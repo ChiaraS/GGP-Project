@@ -83,13 +83,14 @@ public class ExternalStatePropnetCreationManager extends Thread{
     	this.propNetConstructionTime = System.currentTimeMillis() - startTime;
 		GamerLogger.log("StateMachine", "[Propnet Creator] Propnet creation done. It took " + this.propNetConstructionTime + "ms.");
 
+		/*
 		System.out.println("Propnet has: " + this.propNet.getSize() + " COMPONENTS, " + this.propNet.getNumPropositions() + " PROPOSITIONS, " + this.propNet.getNumLinks() + " LINKS.");
 		System.out.println("Propnet has: " + this.propNet.getNumAnds() + " ANDS, " + this.propNet.getNumOrs() + " ORS, " + this.propNet.getNumNots() + " NOTS.");
 		System.out.println("Propnet has: " + this.propNet.getNumBases() + " BASES, " + this.propNet.getNumTransitions() + " TRANSITIONS.");
 		System.out.println("Propnet has: " + this.propNet.getNumInputs() + " INPUTS, " + this.propNet.getNumLegals() + " LEGALS.");
 		System.out.println("Propnet has: " + this.propNet.getNumGoals() + " GOALS.");
 		System.out.println("Propnet has: " + this.propNet.getNumInits() + " INITS, " + this.propNet.getNumTerminals() + " TERMINALS.");
-
+		*/
 
 
 
@@ -241,6 +242,9 @@ public class ExternalStatePropnetCreationManager extends Thread{
 	}
 
 	public ExternalPropnetState getInitialPropnetState(){
+		if(this.initialPropnetState == null){
+			return null;
+		}
 		return this.initialPropnetState.clone();
 	}
 

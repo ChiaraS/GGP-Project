@@ -130,7 +130,7 @@ public class ExternalPropnetStructureChecker {
     		System.out.println("Impossible to check game " + gameKey + ". Propnet didn't build in time.");
     		return gameKey + ";" + creator.getConstructionTime() + ";-1;FALSE;";
     	}else{
-
+    		/*
     		System.out.println("Propnet has: " + propNet.getSize() + " COMPONENTS, " + propNet.getNumPropositions() + " PROPOSITIONS, " + propNet.getNumConstants() + " CONSTANTS, " + propNet.getNumLinks() + " LINKS.");
     		System.out.println("Propnet has: " + propNet.getNumAnds() + " ANDS, " + propNet.getNumOrs() + " ORS, " + propNet.getNumNots() + " NOTS.");
     		System.out.println("Propnet has: " + propNet.getNumBases() + " BASES, " + propNet.getNumTransitions() + " TRANSITIONS.");
@@ -138,7 +138,7 @@ public class ExternalPropnetStructureChecker {
     		System.out.println("Propnet has: " + propNet.getNumGoals() + " GOALS.");
     		System.out.println("Propnet has: " + propNet.getNumOthers() + " OTHER PROPOSITIONS.");
     		System.out.println("Propnet has: " + propNet.getNumInits() + " INITS, " + propNet.getNumTerminals() + " TERMINALS.");
-
+			*/
     		System.out.println("Checking...");
 
     		long checkDuration = System.currentTimeMillis();

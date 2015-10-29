@@ -143,6 +143,8 @@ public class PropnetStructureChecker {
     		System.out.println("Propnet has: " + propNet.getNumInputs() + " INPUTS, " + propNet.getNumLegals() + " LEGALS.");
     		System.out.println("Propnet has: " + propNet.getNumGoals() + " GOALS.");
 
+
+
     		long checkDuration = System.currentTimeMillis();
 
     		boolean pass = ForwardInterruptingPropNetFactory.checkPropnetStructure(propNet);

@@ -148,15 +148,16 @@ public class ExternalPropnetVerifier {
   			  // If the thread didn't terminate, wait for a minute and then check again
   			  try{
   				  executor.awaitTermination(1, TimeUnit.MINUTES);
-  			  }catch(InterruptedException e) {// If this exception is thrown it means the thread that is executing the verification
-  				// of the state machine has been interrupted. If we do nothing this state machine could be stuck in the
-  				// while loop anyway until all tasks in the executor have terminated, thus we break out of the loop and return.
-  				// What happens to the still running tasks in the executor? Who will make sure they terminate?
-  				GamerLogger.logError("Verifier", "State mahcine verification interrupted. Test on game "+ gameKey +" won't be completed.");
-    			GamerLogger.logStackTrace("Verifier", e);
-    			GamerLogger.stopFileLogging();
-    			Thread.currentThread().interrupt();
-    			return;
+  			  }catch(InterruptedException e) {
+  				  // If this exception is thrown it means the thread that is executing the verification
+  				  // of the state machine has been interrupted. If we do nothing this state machine could be stuck in the
+  				  // while loop anyway until all tasks in the executor have terminated, thus we break out of the loop and return.
+  				  // What happens to the still running tasks in the executor? Who will make sure they terminate?
+  				  GamerLogger.logError("Verifier", "State machine verification interrupted. Test on game "+ gameKey +" won't be completed.");
+  				  GamerLogger.logStackTrace("Verifier", e);
+  				  GamerLogger.stopFileLogging();
+  				  Thread.currentThread().interrupt();
+  				  return;
   			  }
   		  }
 
