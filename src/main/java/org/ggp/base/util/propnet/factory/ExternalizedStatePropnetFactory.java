@@ -248,7 +248,7 @@ public class ExternalizedStatePropnetFactory {
 		//Make it look the same as the PropNetFactory results, until we decide
 		//how we want it to look
 		normalizePropositions(componentSet);
-		ExternalizedStatePropNet propnet = new ExternalizedStatePropNet(roles, componentSet);
+		ExternalizedStatePropNet propnet = new ExternalizedStatePropNet(roles, componentSet, trueComponent, falseComponent);
 		if(verbose) {
 			System.out.println("Done setting up propnet; took " + (System.currentTimeMillis() - startTime) + "ms, has " + componentSet.size() + " components and " + propnet.getNumLinks() + " links");
 			System.out.println("Propnet has " +propnet.getNumAnds()+" ands; "+propnet.getNumOrs()+" ors; "+propnet.getNumNots()+" nots");
@@ -398,8 +398,6 @@ public class ExternalizedStatePropnetFactory {
             optimizeAwayFalse(components, negations, null, trueComponent, falseComponent);
         }
 	}
-
-
 
 	//TODO: Create a version with just a set of components that we can share with post-optimizations
 	private static void optimizeAwayFalse(Map<GdlSentence, ExternalizedStateComponent> components,
@@ -1197,18 +1195,215 @@ public class ExternalizedStatePropnetFactory {
 	}
 
 
-	public static void fixInputlessComponents(ExternalizedStatePropNet pn){
-		// TODO: ricorda che se aggiungi la costante false devi aggiungerla anche nei componenti e dove serve!!!!!
-		// Stessa cosa quando rimuovi qualcosa
-	/*	if(pn.getFalseConstant() == null){
-			pn.setFalseConstant(new ExternalizedStateConstant(false));
+	/**
+	 * This method checks every component in the propnet looking for the ones that have no input.
+	 * Except input propositions and constants, all components in the propnet are supposed to have
+	 * at least an input. If one that has no inputs is detected it is connected to a constant
+	 * (either TRUE or FALSE).
+	 *
+	 * Note that not for every input-less component we know what to do. The behavior of the propnet
+	 * has been tested to be consistent when we connect the input-less components as follows:
+	 *
+	 * - OR: connect to FALSE.
+	 * - PROPOSITION (other than INPUT): connect to FALSE (Note that this includes also the INIT
+	 * proposition. Since we don't ever use it in the propnet, it's ok to always set it to false).
+	 *
+	 * For other components we are not exactly sure. The following is an hypothesis, but has not been
+	 * tested, since in the test repository there are no games that lead to a propnet with these types
+	 * of input-less components:
+	 *
+	 * - AND: connect to FALSE.
+	 * - NOT: connect to TRUE.
+	 * - TRANSITION:  connect to FALSE.
+	 *
+	 * For components for which we are not sure, if there is one of them with no inputs we throw an exception
+	 *
+	 * IMPORTANT NOTE: as it is, the propnet works correctly on all games in the repository even if this method
+	 * is never run. This is because the propnet for such games is meant to work when all the input-less components
+	 * are set to false (and we have the exetrnal propnet state that initializes such components' default truth
+	 * value to false).
+	 * However is not impossible that there will be a game that will have input-less components that will require
+	 * a different initialization value. Whenever this will happen there are two ways to fix the problem:
+	 * 1. Set here the correct input constant for each input-less component.
+	 * 2. Change the default initialization value in the external propnet state (having no inputs, each input-less
+	 * component will then keep the same truth value for the whole game).
+	 *
+	 * This said, it must be noticed that, to correctly run the removeUnreachableBasesAndInputs method, this method
+	 * is required to be run first!	 *
+	 *
+	 * @param pn the propNet to fix.
+	 * @param trueConstant
+	 * @param falseConstant
+	 */
+	public static void fixInputlessComponents(ExternalizedStatePropNet pn, ExternalizedStateConstant trueConstant, ExternalizedStateConstant falseConstant){
+
+		assert(trueConstant != null && falseConstant != null);
+
+		for(ExternalizedStateComponent c : pn.getComponents()){
+			if(c.getInputs().size() == 0){
+				if(c instanceof ExternalizedStateProposition){
+					if(((ExternalizedStateProposition) c).getPropositionType() != PROP_TYPE.INPUT){
+						c.addInput(falseConstant);
+						falseConstant.addOutput(c);
+					}
+				}else if(c instanceof ExternalizedStateOr){
+					c.addInput(falseConstant);
+					falseConstant.addOutput(c);
+				}else if(c instanceof ExternalizedStateAnd){
+					throw new RuntimeException("Unhandled input-less component type: NOT");
+				}else if(c instanceof ExternalizedStateTransition){
+					throw new RuntimeException("Unhandled input-less component type: NOT");
+				}else if(c instanceof ExternalizedStateNot){
+					throw new RuntimeException("Unhandled input-less component type: NOT");
+				}
+			}
 		}
-		ExternalizedStateConstant falseConstant = pn.getFalseConstant();
 
-		if(p.getInputs().size() == 0 && p.getPropositionType() != PROP_TYPE.INPUT && p.getPropositionType() != PROP_TYPE.BASE){
+		// TODO
+		// Now we can remove the (unnecessary) components that are always true or false.
+		//optimizeAwayTrueAndFalse()
 
-	    }*/
 	}
+
+	////////FIX
+	private static void optimizeAwayTrueAndFalse2(ExternalizedStatePropNet pn, ExternalizedStateComponent trueComponent, ExternalizedStateComponent falseComponent) {
+
+		Set<ExternalizedStateComponent> toCheckTrue = new HashSet<ExternalizedStateComponent>(trueComponent.getOutputs());
+		Set<ExternalizedStateComponent> toCheckFalse = new HashSet<ExternalizedStateComponent>(falseComponent.getOutputs());
+
+		while(!(toCheckTrue.isEmpty() && toCheckFalse.isEmpty())){
+
+		}
+
+		while(hasNonessentialChildren(trueComponent) || hasNonessentialChildren(falseComponent)) {
+	        optimizeAwayTrue(null, null, pn, trueComponent, falseComponent);
+	        optimizeAwayFalse(null, null, pn, trueComponent, falseComponent);
+	    }
+	}
+
+	/*
+	//TODO: Create a version with just a set of components that we can share with post-optimizations
+	private static void optimizeAwayFalse2(ExternalizedStatePropNet pn, ExternalizedStateComponent trueComponent, ExternalizedStateComponent falseComponent) {
+
+        for (ExternalizedStateComponent output : Lists.newArrayList(falseComponent.getOutputs())) {
+        	if (isEssentialProposition(output) || output instanceof ExternalizedStateTransition) {
+        		//Since this is the false constant, there are a few "essential" types
+        		//we don't actually want to keep around.
+        		if (!isLegalOrGoalProposition(output)) {
+        			continue;
+        		}
+	    	}
+			if(output instanceof ExternalizedStateProposition) {
+				//Move its outputs to be outputs of false
+				for(ExternalizedStateComponent child : output.getOutputs()) {
+					//Disconnect
+					child.removeInput(output);
+					//output.removeOutput(child); //do at end
+					//Reconnect; will get children before returning, if nonessential
+					falseComponent.addOutput(child);
+					child.addInput(falseComponent);
+				}
+				output.removeAllOutputs();
+
+				if(!isEssentialProposition(output)) {
+					ExternalizedStateProposition prop = (ExternalizedStateProposition) output;
+					//Remove the proposition entirely
+					falseComponent.removeOutput(output);
+					output.removeInput(falseComponent);
+					//Update its location to the trueComponent in our map
+					if(components != null) {
+					    components.put(prop.getName(), falseComponent);
+					    negations.put(prop.getName(), trueComponent);
+					} else {
+					    pn.removeComponent(output);
+					}
+				}
+			} else if(output instanceof ExternalizedStateAnd) {
+				ExternalizedStateAnd and = (ExternalizedStateAnd) output;
+				//Attach children of and to falseComponent
+				for(ExternalizedStateComponent child : and.getOutputs()) {
+					child.addInput(falseComponent);
+					falseComponent.addOutput(child);
+					child.removeInput(and);
+				}
+				//Disconnect and completely
+				and.removeAllOutputs();
+				for(ExternalizedStateComponent parent : and.getInputs())
+					parent.removeOutput(and);
+				and.removeAllInputs();
+				if(pn != null)
+				    pn.removeComponent(and);
+			} else if(output instanceof ExternalizedStateOr) {
+				ExternalizedStateOr or = (ExternalizedStateOr) output;
+				//Remove as input from or
+				or.removeInput(falseComponent);
+				falseComponent.removeOutput(or);
+				//If or has only one input, remove it
+				if(or.getInputs().size() == 1) {
+					ExternalizedStateComponent in = or.getSingleInput();
+					or.removeInput(in);
+					in.removeOutput(or);
+					for(ExternalizedStateComponent out : or.getOutputs()) {
+						//Disconnect from and
+						out.removeInput(or);
+						//or.removeOutput(out); //do at end
+						//Connect directly to the new input
+						out.addInput(in);
+						in.addOutput(out);
+					}
+					or.removeAllOutputs();
+					if (pn != null) {
+					    pn.removeComponent(or);
+					}
+				} else if (or.getInputs().size() == 0) {
+					if (pn != null) {
+						pn.removeComponent(or);
+					}
+				}
+			} else if(output instanceof ExternalizedStateNot) {
+				ExternalizedStateNot not = (ExternalizedStateNot) output;
+				//Disconnect from falseComponent
+				not.removeInput(falseComponent);
+				falseComponent.removeOutput(not);
+				//Connect all children of the not to trueComponent
+				for(ExternalizedStateComponent child : not.getOutputs()) {
+					//Disconnect
+					child.removeInput(not);
+					//not.removeOutput(child); //Do at end
+					//Connect to trueComponent
+					child.addInput(trueComponent);
+					trueComponent.addOutput(child);
+				}
+				not.removeAllOutputs();
+				if(pn != null)
+				    pn.removeComponent(not);
+			} else if(output instanceof ExternalizedStateTransition) {
+				//???
+				System.err.println("Fix optimizeAwayFalse's case for Transitions");
+			}
+		}
+	}*/
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 	public static boolean checkPropnetStructure(ExternalizedStatePropNet pn){

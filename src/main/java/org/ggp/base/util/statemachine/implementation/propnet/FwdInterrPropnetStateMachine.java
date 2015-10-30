@@ -69,6 +69,15 @@ public class FwdInterrPropnetStateMachine extends StateMachine {
 		GamerLogger.log("StateMachine", "[Propnet Creator] Propnet creation done. It took " + (this.propnetConstructionTime) + "ms.");
 
 
+		System.out.println("Propnet has: " + propNet.getSize() + " COMPONENTS, " + propNet.getNumPropositions() + " PROPOSITIONS, " + propNet.getNumConstants() + " CONSTANTS, " + propNet.getNumLinks() + " LINKS.");
+		System.out.println("Propnet has: " + propNet.getNumAnds() + " ANDS, " + propNet.getNumOrs() + " ORS, " + propNet.getNumNots() + " NOTS.");
+		System.out.println("Propnet has: " + propNet.getNumBases() + " BASES, " + propNet.getNumTransitions() + " TRANSITIONS.");
+		System.out.println("Propnet has: " + propNet.getNumInputs() + " INPUTS, " + propNet.getNumLegals() + " LEGALS.");
+		System.out.println("Propnet has: " + propNet.getNumGoals() + " GOALS.");
+		//System.out.println("Propnet has: " + propNet.getNumOthers() + " OTHER PROPOSITIONS.");
+		//System.out.println("Propnet has: " + propNet.getNumInits() + " INITS, " + propNet.getNumTerminals() + " TERMINALS.");
+
+
 
 
 
@@ -90,6 +99,14 @@ public class FwdInterrPropnetStateMachine extends StateMachine {
 			//System.out.println("Done removing unreachable bases and inputs; took " + (System.currentTimeMillis() - startTime) + "ms, propnet has " + propNet.getComponents().size() + " components and " + propNet.getNumLinks() + " links");
 			//System.out.println("Propnet has " +propNet.getNumAnds()+" ands; "+propNet.getNumOrs()+" ors; "+propNet.getNumNots()+" nots");
 			//System.out.println("Propnet has " +propNet.getNumBases() + " bases; "+propNet.getNumTransitions()+" transitions; "+propNet.getNumInputs()+" inputs");
+
+			System.out.println("Done removing unreachable bases and inputs; took " + (System.currentTimeMillis() - startTime) + "ms.");
+			System.out.println("Propnet has: " + propNet.getSize() + " COMPONENTS, " + propNet.getNumPropositions() + " PROPOSITIONS, " + propNet.getNumConstants() + " CONSTANTS, " + propNet.getNumLinks() + " LINKS.");
+			System.out.println("Propnet has: " + propNet.getNumAnds() + " ANDS, " + propNet.getNumOrs() + " ORS, " + propNet.getNumNots() + " NOTS.");
+			System.out.println("Propnet has: " + propNet.getNumBases() + " BASES, " + propNet.getNumTransitions() + " TRANSITIONS.");
+			System.out.println("Propnet has: " + propNet.getNumInputs() + " INPUTS, " + propNet.getNumLegals() + " LEGALS.");
+			System.out.println("Propnet has: " + propNet.getNumGoals() + " GOALS.");
+
 
 		} catch (InterruptedException e) {
 			GamerLogger.logError("StateMachine", "[Propnet] Removal of unreachable bases and inputs interrupted!");
