@@ -1,4 +1,4 @@
-package org.ggp.base.util.propnet.architecture.externalizedState;
+package org.ggp.base.util.propnet.architecture.separateExtendedState.dynamic;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -8,7 +8,6 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Map.Entry;
 import java.util.Set;
 
 import org.ggp.base.util.gdl.grammar.GdlConstant;
@@ -16,40 +15,39 @@ import org.ggp.base.util.gdl.grammar.GdlProposition;
 import org.ggp.base.util.gdl.grammar.GdlRelation;
 import org.ggp.base.util.gdl.grammar.GdlTerm;
 import org.ggp.base.util.logging.GamerLogger;
-import org.ggp.base.util.propnet.architecture.externalizedState.components.ExternalizedStateAnd;
-import org.ggp.base.util.propnet.architecture.externalizedState.components.ExternalizedStateConstant;
-import org.ggp.base.util.propnet.architecture.externalizedState.components.ExternalizedStateNot;
-import org.ggp.base.util.propnet.architecture.externalizedState.components.ExternalizedStateOr;
-import org.ggp.base.util.propnet.architecture.externalizedState.components.ExternalizedStateProposition;
-import org.ggp.base.util.propnet.architecture.externalizedState.components.ExternalizedStateTransition;
+import org.ggp.base.util.propnet.architecture.separateExtendedState.dynamic.components.DynamicAnd;
+import org.ggp.base.util.propnet.architecture.separateExtendedState.dynamic.components.DynamicConstant;
+import org.ggp.base.util.propnet.architecture.separateExtendedState.dynamic.components.DynamicNot;
+import org.ggp.base.util.propnet.architecture.separateExtendedState.dynamic.components.DynamicOr;
+import org.ggp.base.util.propnet.architecture.separateExtendedState.dynamic.components.DynamicProposition;
+import org.ggp.base.util.propnet.architecture.separateExtendedState.dynamic.components.DynamicTransition;
 import org.ggp.base.util.propnet.utils.PROP_TYPE;
 import org.ggp.base.util.statemachine.Role;
 
-public class ExternalizedStatePropNet {
+public class DynamicPropNet {
 
 	/********************************** Parameters **********************************/
 
 	/** References to every component in the PropNet. */
-	private final Set<ExternalizedStateComponent> components;
-
+	private final Set<DynamicComponent> components;
 
 	/** References to every Proposition in the PropNet. */
-	private final Set<ExternalizedStateProposition> propositions;
+	private final Set<DynamicProposition> propositions;
 
 	/** A helper list of all of the roles. */
 	private final List<Role> roles;
 
 	/** Reference to the single TRUE constant in the propnet */
-	private ExternalizedStateConstant trueConstant;
+	private DynamicConstant trueConstant;
 
 	/** Reference to the single FALSE constant in the prpnet */
-	private ExternalizedStateConstant falseConstant;
+	private DynamicConstant falseConstant;
 
 	/** A reference to the single, unique, InitProposition. */
-	//private ExternalizedStateProposition initProposition;
+	//private DynamicProposition initProposition;
 
 	/** A reference to the single, unique, TerminalProposition. */
-	private ExternalizedStateProposition terminalProposition;
+	private DynamicProposition terminalProposition;
 
 	/**
 	 * References to every BaseProposition in the PropNet.
@@ -57,38 +55,38 @@ public class ExternalizedStatePropNet {
 	 * This list and the current and next state in the ExternalPropnetState class all
 	 * have the elements in the same order.
 	 */
-	private final List<ExternalizedStateProposition> basePropositions;
+	private final List<DynamicProposition> basePropositions;
 
 	/**
 	 * References to every InputProposition in the PropNet, ordered by role.
 	 * Roles are in the same order as in the roles list.
 	 * The order is the same as the values of the currentJointMove in the ExternalPropnetState class.
 	 */
-	private List<ExternalizedStateProposition> inputPropositions;
+	private List<DynamicProposition> inputPropositions;
 
 	/**
 	 * References to every LegalProposition in the PropNet, ordered by role.
 	 * Roles are in the same order as in the roles list.
 	 * The order is the same as the values of the inputPropositions list.
 	 */
-	private List<ExternalizedStateProposition> legalPropositions;
+	private List<DynamicProposition> legalPropositions;
 
 	/**
 	 * References to every input proposition in the PropNet, grouped by role.
 	 * The order of the input propositions for every role is the same as the order of the legal
 	 * propositions for the same role.
 	 */
-	private final Map<Role, List<ExternalizedStateProposition>> inputsPerRole;
+	private final Map<Role, List<DynamicProposition>> inputsPerRole;
 
 	/**
 	 * References to every legal proposition in the PropNet, grouped by role.
 	 * The order of the legal propositions for every role is the same as the order of the input
 	 * propositions for the same role.
 	 */
-	private final Map<Role, List<ExternalizedStateProposition>> legalsPerRole;
+	private final Map<Role, List<DynamicProposition>> legalsPerRole;
 
 	/** References to every GoalProposition in the PropNet, indexed by role. */
-	private final Map<Role, List<ExternalizedStateProposition>> goalsPerRole;
+	private final Map<Role, List<DynamicProposition>> goalsPerRole;
 
 	/**
 	 * List of all the goals that corresponds to a goal proposition, grouped by role
@@ -99,7 +97,7 @@ public class ExternalizedStatePropNet {
 	/**
 	 * List of all the AND and OR gates.
 	 */
-	private List<ExternalizedStateComponent> andOrGates;
+	private List<DynamicComponent> andOrGates;
 
 
 
@@ -124,7 +122,7 @@ public class ExternalizedStatePropNet {
 	 * @param components
 	 *            A list of Components.
 	 */
-	public ExternalizedStatePropNet(List<Role> roles, Set<ExternalizedStateComponent> components, ExternalizedStateConstant trueConstant, ExternalizedStateConstant falseConstant){
+	public DynamicPropNet(List<Role> roles, Set<DynamicComponent> components, DynamicConstant trueConstant, DynamicConstant falseConstant){
 
 		//System.out.println();
 
@@ -141,63 +139,53 @@ public class ExternalizedStatePropNet {
 		this.components.add(trueConstant);
 		this.components.add(falseConstant);
 
-		this.propositions = new HashSet<ExternalizedStateProposition>();
-		this.basePropositions = new ArrayList<ExternalizedStateProposition>();
+		this.propositions = new HashSet<DynamicProposition>();
+		this.basePropositions = new ArrayList<DynamicProposition>();
 
-		this.inputsPerRole = new HashMap<Role, List<ExternalizedStateProposition>>();
-		this.legalsPerRole = new HashMap<Role, List<ExternalizedStateProposition>>();
-		//Map<Role, List<ExternalizedStateProposition>> inputsPerRole = new HashMap<Role, List<ExternalizedStateProposition>>();
-		//Map<Role, List<ExternalizedStateProposition>> legalsPerRole = new HashMap<Role, List<ExternalizedStateProposition>>();
+		this.inputsPerRole = new HashMap<Role, List<DynamicProposition>>();
+		this.legalsPerRole = new HashMap<Role, List<DynamicProposition>>();
+		//Map<Role, List<DynamicProposition>> inputsPerRole = new HashMap<Role, List<DynamicProposition>>();
+		//Map<Role, List<DynamicProposition>> legalsPerRole = new HashMap<Role, List<DynamicProposition>>();
 
 		//Map<Role, Map<List<GdlTerm>, Integer>> moveIndices = new HashMap<Role, Map<List<GdlTerm>, Integer>>();
 		//Map<Role, Integer> currentIndices = new HashMap<Role, Integer>();
 
 		/* ALG1 -START
-		Map<List<GdlTerm>, ExternalizedStateProposition> possibleInputs = new HashMap<List<GdlTerm>, ExternalizedStateProposition>();
-		Map<List<GdlTerm>, ExternalizedStateProposition> possibleLegals = new HashMap<List<GdlTerm>, ExternalizedStateProposition>();
+		Map<List<GdlTerm>, DynamicProposition> possibleInputs = new HashMap<List<GdlTerm>, DynamicProposition>();
+		Map<List<GdlTerm>, DynamicProposition> possibleLegals = new HashMap<List<GdlTerm>, DynamicProposition>();
 		ALG2 - END */
 
-		/* ALG2 - START
-		Map<Role, Map<List<GdlTerm>, ExternalizedStateProposition>> possibleInputs = new HashMap<Role, Map<List<GdlTerm>, ExternalizedStateProposition>>();
-		Map<Role, Map<List<GdlTerm>, ExternalizedStateProposition>> possibleLegals = new HashMap<Role, Map<List<GdlTerm>, ExternalizedStateProposition>>();
-		ALG2 - END */
+		/* ALG2 - START */
+		Map<Role, Map<List<GdlTerm>, DynamicProposition>> possibleInputs = new HashMap<Role, Map<List<GdlTerm>, DynamicProposition>>();
+		Map<Role, Map<List<GdlTerm>, DynamicProposition>> possibleLegals = new HashMap<Role, Map<List<GdlTerm>, DynamicProposition>>();
+		/* ALG2 - END */
 
-		/* ALG3 - START */
-		Map<Role, Map<List<GdlTerm>, ExternalizedStateProposition>> possibleInputs = new HashMap<Role, Map<List<GdlTerm>, ExternalizedStateProposition>>();
-		Map<Role, Map<List<GdlTerm>, ExternalizedStateProposition>> possibleLegals = new HashMap<Role, Map<List<GdlTerm>, ExternalizedStateProposition>>();
-		/* ALG3 - END */
-
-		this.goalsPerRole = new HashMap<Role, List<ExternalizedStateProposition>>();
+		this.goalsPerRole = new HashMap<Role, List<DynamicProposition>>();
 		this.goalValues = new HashMap<Role, List<Integer>>();
 
 		for(Role r : this.roles){
-			this.inputsPerRole.put(r, new ArrayList<ExternalizedStateProposition>());
-			this.legalsPerRole.put(r, new ArrayList<ExternalizedStateProposition>());
-			//inputsPerRole.put(r, new ArrayList<ExternalizedStateProposition>());
-			//legalsPerRole.put(r, new ArrayList<ExternalizedStateProposition>());
+			this.inputsPerRole.put(r, new ArrayList<DynamicProposition>());
+			this.legalsPerRole.put(r, new ArrayList<DynamicProposition>());
+			//inputsPerRole.put(r, new ArrayList<DynamicProposition>());
+			//legalsPerRole.put(r, new ArrayList<DynamicProposition>());
 
 			//moveIndices.put(r, new HashMap<List<GdlTerm>, Integer>());
 			//currentIndices.put(r, new Integer(0));
 
-			/* ALG2 - START
-			possibleInputs.put(r, new HashMap<List<GdlTerm>, ExternalizedStateProposition>());
-			possibleLegals.put(r, new HashMap<List<GdlTerm>, ExternalizedStateProposition>());
-			ALG2 - END */
+			/* ALG2 - START */
+			possibleInputs.put(r, new HashMap<List<GdlTerm>, DynamicProposition>());
+			possibleLegals.put(r, new HashMap<List<GdlTerm>, DynamicProposition>());
+			/* ALG2 - END */
 
-			/* ALG3 - START */
-			possibleInputs.put(r, new HashMap<List<GdlTerm>, ExternalizedStateProposition>());
-			possibleLegals.put(r, new HashMap<List<GdlTerm>, ExternalizedStateProposition>());
-			/* ALG3 - END */
-
-			this.goalsPerRole.put(r, new ArrayList<ExternalizedStateProposition>());
+			this.goalsPerRole.put(r, new ArrayList<DynamicProposition>());
 			this.goalValues.put(r, new ArrayList<Integer>());
 		}
 
-		this.andOrGates = new ArrayList<ExternalizedStateComponent>();
+		this.andOrGates = new ArrayList<DynamicComponent>();
 
-		for(ExternalizedStateComponent c : this.components){
-			if(c instanceof ExternalizedStateConstant){
-				if(((ExternalizedStateConstant) c).getValue()){
+		for(DynamicComponent c : this.components){
+			if(c instanceof DynamicConstant){
+				if(((DynamicConstant) c).getValue()){
 					if(this.trueConstant != c){
 						throw new RuntimeException("Found more than only one TRUE constant in the propnet!");
 					}
@@ -206,16 +194,16 @@ public class ExternalizedStatePropNet {
 						throw new RuntimeException("Found more than only one FALSE constant in the propnet!");
 					}
 				}
-			}else if(c instanceof ExternalizedStateProposition){
+			}else if(c instanceof DynamicProposition){
 
-				ExternalizedStateProposition p = (ExternalizedStateProposition) c;
+				DynamicProposition p = (DynamicProposition) c;
 				this.propositions.add(p);
 				// So that if the following code doesn't detect it as a special type
 				// of proposition, its type won't be null.
 				p.setPropositionType(PROP_TYPE.OTHER);
 
 				// Check if it's a base.
-			    if(p.getInputs().size() == 1 && p.getSingleInput() instanceof ExternalizedStateTransition){
+			    if(p.getInputs().size() == 1 && p.getSingleInput() instanceof DynamicTransition){
 			    	this.basePropositions.add(p);
 			    	// Set that the type of this proposition is BASE
 			    	p.setPropositionType(PROP_TYPE.BASE);
@@ -224,7 +212,7 @@ public class ExternalizedStatePropNet {
 					GdlRelation relation = (GdlRelation) p.getName();
 					if(relation.getName().getValue().equals("does")){ // Possible input
 
-						/* ALG3 - START */
+						/* ALG2 - START */
 						// Get the GDL move corresponding to this proposition
 						List<GdlTerm> gdlMove = p.getName().getBody();
 						// Get the role performing the move
@@ -232,31 +220,14 @@ public class ExternalizedStatePropNet {
 						Role r = new Role(name);
 
 						// Get the map of possible legals for the role
-						Map<List<GdlTerm>, ExternalizedStateProposition> possibleInputsPerRole = possibleInputs.get(r);
-
-						// If we have no map, r is not a relevant role, so we just classify the proposition as an OTHER proposition...
-						if(possibleInputsPerRole != null){
-							//...otherwise we put this proposition in the map of possible inputs.
-							possibleInputsPerRole.put(gdlMove, p);
-						}
-						/* ALG3 - END */
-
-						/* ALG2 - START
-						// Get the GDL move corresponding to this proposition
-						List<GdlTerm> gdlMove = p.getName().getBody();
-						// Get the role performing the move
-						GdlConstant name = (GdlConstant) relation.get(0);
-						Role r = new Role(name);
-
-						// Get the map of possible legals for the role
-						Map<List<GdlTerm>, ExternalizedStateProposition> possibleLegalsPerRole = possibleLegals.get(r);
+						Map<List<GdlTerm>, DynamicProposition> possibleLegalsPerRole = possibleLegals.get(r);
 
 						// If we have no map, r is not a relevant role, so we just classify the proposition as an OTHER proposition...
 						if(possibleLegalsPerRole != null){
 							//...otherwise we check if we already found its corresponding legal (if it exists).
 							// If we found it, we remove it from the list of 'possible' legals since we will put it in the
 							// list of 'actual' legals.
-							ExternalizedStateProposition correspondingLegal = possibleLegalsPerRole.remove(gdlMove);
+							DynamicProposition correspondingLegal = possibleLegalsPerRole.remove(gdlMove);
 							// If we haven't found it yet, add the input to the possible inputs list.
 							if(correspondingLegal == null){
 								possibleInputs.get(r).put(gdlMove, p);
@@ -267,14 +238,14 @@ public class ExternalizedStatePropNet {
 								legalsPerRole.get(r).add(correspondingLegal);
 							}
 						}
-						 ALG2 - END */
+						/* ALG2 - END */
 
 						/* ALG1 - START
 						// Get the GDL move corresponding to this proposition
 						List<GdlTerm> gdlMove = p.getName().getBody();
 
 						// Check if we already found its corresponding legal
-						ExternalizedStateProposition correspondingLegal = possibleLegals.remove(gdlMove);
+						DynamicProposition correspondingLegal = possibleLegals.remove(gdlMove);
 
 						if(correspondingLegal == null){
 							possibleInputs.put(gdlMove, p);
@@ -292,7 +263,7 @@ public class ExternalizedStatePropNet {
 
 					}else if(relation.getName().getValue().equals("legal")){ // Possible legal move
 
-						/* ALG3 - START */
+						/* ALG2 - START */
 						// Get the GDL move corresponding to this proposition
 						List<GdlTerm> gdlMove = p.getName().getBody();
 						// Get the role performing the move
@@ -300,31 +271,14 @@ public class ExternalizedStatePropNet {
 						Role r = new Role(name);
 
 						// Get the map of possible inputs for the role
-						Map<List<GdlTerm>, ExternalizedStateProposition> possibleLegalsPerRole = possibleLegals.get(r);
-
-						// If we have no map, r is not a relevant role, so we just classify the proposition as an OTHER proposition...
-						if(possibleLegalsPerRole != null){
-							//...otherwise we put this proposition in the map of possible legals.
-							possibleLegals.get(r).put(gdlMove, p);
-						}
-						/* ALG3 - END */
-
-						/* ALG2 - START
-						// Get the GDL move corresponding to this proposition
-						List<GdlTerm> gdlMove = p.getName().getBody();
-						// Get the role performing the move
-						GdlConstant name = (GdlConstant) relation.get(0);
-						Role r = new Role(name);
-
-						// Get the map of possible inputs for the role
-						Map<List<GdlTerm>, ExternalizedStateProposition> possibleInputsPerRole = possibleInputs.get(r);
+						Map<List<GdlTerm>, DynamicProposition> possibleInputsPerRole = possibleInputs.get(r);
 
 						// If we have no map, r is not a relevant role, so we just classify the proposition as an OTHER proposition...
 						if(possibleInputsPerRole != null){
 							//...otherwise we check if we already found its corresponding legal (if it exists).
 							// If we found it, we remove it from the list of 'possible' legals since we will put it in the
 							// list of 'actual' legals.
-							ExternalizedStateProposition correspondingInput = possibleInputsPerRole.remove(gdlMove);
+							DynamicProposition correspondingInput = possibleInputsPerRole.remove(gdlMove);
 							// If we haven't found it yet, add the input to the possible inputs list.
 							if(correspondingInput == null){
 								possibleLegals.get(r).put(gdlMove, p);
@@ -335,14 +289,14 @@ public class ExternalizedStatePropNet {
 								inputsPerRole.get(r).add(correspondingInput);
 							}
 						}
-						ALG2 - END */
+						/* ALG2 - END */
 
-						/* ALG1 - START
+						/* ALG2 - START
 						// Get the GDL move corresponding to this proposition
 						List<GdlTerm> gdlMove = p.getName().getBody();
 
 						// Check if we already found its corresponding input
-						ExternalizedStateProposition correspondingInput = possibleInputs.remove(gdlMove);
+						DynamicProposition correspondingInput = possibleInputs.remove(gdlMove);
 
 						if(correspondingInput == null){
 							// Note: here we don't check if the role is valid. We could, but it
@@ -359,7 +313,7 @@ public class ExternalizedStatePropNet {
 								inputsPerRole.get(r).add(correspondingInput);
 							}
 						}
-						ALG1 - END */
+						ALG2 - END */
 					}else if(relation.getName().getValue().equals("goal")){
 						GdlConstant name = (GdlConstant) relation.get(0);
 						//System.out.println(name);
@@ -393,13 +347,13 @@ public class ExternalizedStatePropNet {
 					// input-less proposition. Uncomment this to keep it! If you want to keep it also pay attention when
 					// using some propnet optimization methods as they might remove it anyway.
 				}
-			}else if(c instanceof ExternalizedStateTransition){
+			}else if(c instanceof DynamicTransition){
 
-			}else if(c instanceof ExternalizedStateNot){
+			}else if(c instanceof DynamicNot){
 
-			}else if(c instanceof ExternalizedStateAnd){
+			}else if(c instanceof DynamicAnd){
 				this.andOrGates.add(c);
-			}else if(c instanceof ExternalizedStateOr){
+			}else if(c instanceof DynamicOr){
 				this.andOrGates.add(c);
 			}else{
 				throw new RuntimeException("Unhandled component type " + c.getClass());
@@ -415,11 +369,11 @@ public class ExternalizedStatePropNet {
 		// index will always be set to -1 since the propnet state will not include its
 		// value. The constant will store its fixed value internally.
 		if(this.trueConstant == null){
-			this.trueConstant = new ExternalizedStateConstant(true);
+			this.trueConstant = new DynamicConstant(true);
 			this.components.add(this.trueConstant);
 		}
 		if(this.falseConstant == null){
-			this.falseConstant = new ExternalizedStateConstant(false);
+			this.falseConstant = new DynamicConstant(false);
 			this.components.add(this.falseConstant);
 		}
 
@@ -434,8 +388,8 @@ public class ExternalizedStatePropNet {
 		 * After being removed, the propositions will be considered as OTHER propositions.
 		 */
 		/*for(Role r : this.roles){
-			List<ExternalizedStateProposition> roleInputs = this.inputsPerRole.get(r);
-			List<ExternalizedStateProposition> roleLegals = this.legalsPerRole.get(r);
+			List<DynamicProposition> roleInputs = this.inputsPerRole.get(r);
+			List<DynamicProposition> roleLegals = this.legalsPerRole.get(r);
 
 			int i = roleInputs.indexOf(null);
 
@@ -468,43 +422,23 @@ public class ExternalizedStatePropNet {
 		*/
 
 
-		this.inputPropositions = new ArrayList<ExternalizedStateProposition>();
-		this.legalPropositions = new ArrayList<ExternalizedStateProposition>();
+		this.inputPropositions = new ArrayList<DynamicProposition>();
+		this.legalPropositions = new ArrayList<DynamicProposition>();
 
 		//int x = 0;
 		for(Role r : this.roles){
 
-			/* ALG3 - START */
-			Map<List<GdlTerm>,ExternalizedStateProposition> possibleLegalsPerRole = possibleLegals.get(r);
-			Map<List<GdlTerm>,ExternalizedStateProposition> possibleInputsPerRole = possibleInputs.get(r);
-			for(Entry<List<GdlTerm>,ExternalizedStateProposition> legalEntry : possibleLegalsPerRole.entrySet()){
-				// TODO: PROVA CON GET INVECE DI REMOVE
-				/*ALG4 - START */ // ALG4 is exactly the same as ALG3, except this one line
-				ExternalizedStateProposition input = possibleInputsPerRole.get(legalEntry.getKey());
-				/*ALG4 - END */
-				/*ALG3 - START
-				ExternalizedStateProposition input = possibleInputsPerRole.remove(legalEntry.getKey());
-				ALG3 - END */
-				if(input != null){
-					this.inputsPerRole.get(r).add(input);
-					input.setPropositionType(PROP_TYPE.INPUT);
-					this.legalsPerRole.get(r).add(legalEntry.getValue());
-					legalEntry.getValue().setPropositionType(PROP_TYPE.LEGAL);
-				}
-			}
-			/* ALG3 - END */
-
-			for(ExternalizedStateProposition p : this.inputsPerRole.get(r)){
+			for(DynamicProposition p : this.inputsPerRole.get(r)){
 				this.inputPropositions.add(p);
 			}
-			for(ExternalizedStateProposition p : this.legalsPerRole.get(r)){
+			for(DynamicProposition p : this.legalsPerRole.get(r)){
 				this.legalPropositions.add(p);
 			}
 			/*
-			for(ExternalizedStateProposition p : inputsPerRole.get(r)){
+			for(DynamicProposition p : inputsPerRole.get(r)){
 				this.inputPropositions.add(p);
 			}
-			for(ExternalizedStateProposition p : legalsPerRole.get(r)){
+			for(DynamicProposition p : legalsPerRole.get(r)){
 				this.legalPropositions.add(p);
 			}
 			*/
@@ -516,7 +450,7 @@ public class ExternalizedStatePropNet {
 	 * @param goalProposition
 	 * @return the integer value of the goal proposition
 	 */
-    private int getGoalValue(ExternalizedStateProposition goalProposition){
+    private int getGoalValue(DynamicProposition goalProposition){
 		GdlRelation relation = (GdlRelation) goalProposition.getName();
 		GdlConstant constant = (GdlConstant) relation.get(1);
 		return Integer.parseInt(constant.toString());
@@ -530,7 +464,7 @@ public class ExternalizedStatePropNet {
 	 *
 	 * @return References to every Component in the PropNet.
 	 */
-	public Set<ExternalizedStateComponent> getComponents(){
+	public Set<DynamicComponent> getComponents(){
 		return components;
 	}
 
@@ -539,7 +473,7 @@ public class ExternalizedStatePropNet {
 	 *
 	 * @return References to every Proposition in the PropNet.
 	 */
-	public Set<ExternalizedStateProposition> getPropositions(){
+	public Set<DynamicProposition> getPropositions(){
 		return propositions;
 	}
 
@@ -557,7 +491,7 @@ public class ExternalizedStatePropNet {
 	 *
 	 * @return the single TRUE constant in the propNet.
 	 */
-	public ExternalizedStateConstant getTrueConstant(){
+	public DynamicConstant getTrueConstant(){
 		return this.trueConstant;
 	}
 
@@ -566,7 +500,7 @@ public class ExternalizedStatePropNet {
 	 *
 	 * @return the single FALSE constant in the propNet.
 	 */
-	public ExternalizedStateConstant getFalseConstant(){
+	public DynamicConstant getFalseConstant(){
 		return this.falseConstant;
 	}
 
@@ -576,7 +510,7 @@ public class ExternalizedStatePropNet {
 	 * @return A reference to the single, unique, InitProposition.
 	 */
 	/*
-	public ExternalizedStateProposition getInitProposition(){
+	public DynamicProposition getInitProposition(){
 		return initProposition;
 	}
 	*/
@@ -586,7 +520,7 @@ public class ExternalizedStatePropNet {
 	 *
 	 * @return A reference to the single, unique, TerminalProposition.
 	 */
-	public ExternalizedStateProposition getTerminalProposition(){
+	public DynamicProposition getTerminalProposition(){
 		return terminalProposition;
 	}
 
@@ -595,7 +529,7 @@ public class ExternalizedStatePropNet {
 	 *
 	 * @return references to every BaseProposition in the PropNet in the correct order.
 	 */
-	public List<ExternalizedStateProposition> getBasePropositions(){
+	public List<DynamicProposition> getBasePropositions(){
 		return this.basePropositions;
 	}
 
@@ -605,7 +539,7 @@ public class ExternalizedStatePropNet {
 	 * @return References to every InputProposition in the PropNet, grouped by role
 	 * and ordered.
 	 */
-	public List<ExternalizedStateProposition> getInputPropositions(){
+	public List<DynamicProposition> getInputPropositions(){
 		return this.inputPropositions;
 	}
 
@@ -615,7 +549,7 @@ public class ExternalizedStatePropNet {
 	 * @return References to every InputProposition in the PropNet, grouped by role
 	 * and ordered.
 	 */
-	public List<ExternalizedStateProposition> getLegalPropositions(){
+	public List<DynamicProposition> getLegalPropositions(){
 		return this.legalPropositions;
 	}
 
@@ -625,7 +559,7 @@ public class ExternalizedStatePropNet {
 	 * @return References to every InputProposition in the PropNet, indexed by
 	 *         player name and ordered.
 	 */
-	public Map<Role, List<ExternalizedStateProposition>> getInputsPerRole(){
+	public Map<Role, List<DynamicProposition>> getInputsPerRole(){
 		return this.inputsPerRole;
 	}
 
@@ -635,7 +569,7 @@ public class ExternalizedStatePropNet {
 	 * @return References to every LegalProposition in the PropNet, indexed by
 	 *         player name and ordered.
 	 */
-	public Map<Role, List<ExternalizedStateProposition>> getLegalsPerRole(){
+	public Map<Role, List<DynamicProposition>> getLegalsPerRole(){
 		return this.legalsPerRole;
 	}
 
@@ -645,7 +579,7 @@ public class ExternalizedStatePropNet {
 	 * @return References to every GoalProposition in the PropNet, indexed by
 	 *         player name.
 	 */
-	public Map<Role, List<ExternalizedStateProposition>> getGoalsPerRole(){
+	public Map<Role, List<DynamicProposition>> getGoalsPerRole(){
 		return this.goalsPerRole;
 	}
 
@@ -664,23 +598,23 @@ public class ExternalizedStatePropNet {
 	 *
 	 * @return References to every AND and OR gate in the PropNet.
 	 */
-	public List<ExternalizedStateComponent> getAndOrGates(){
+	public List<DynamicComponent> getAndOrGates(){
 		return this.andOrGates;
 	}
 
 	/** References to every LegalProposition in the PropNet, indexed by role. */
-//	private final Map<Role, Set<ExternalizedStateProposition>> legalPropositions;
+//	private final Map<Role, Set<DynamicProposition>> legalPropositions;
 
 
 	/** A helper mapping between input/legal propositions. */
-//	private final Map<ExternalizedStateProposition, ExternalizedStateProposition> legalInputMap;
+//	private final Map<DynamicProposition, DynamicProposition> legalInputMap;
 
 
 /*
-	public void addComponent(ExternalizedStateComponent c)
+	public void addComponent(DynamicComponent c)
 	{
 		components.add(c);
-		if (c instanceof ExternalizedStateProposition) propositions.add((ExternalizedStateProposition)c);
+		if (c instanceof DynamicProposition) propositions.add((DynamicProposition)c);
 	}
 */
 	/**
@@ -690,7 +624,7 @@ public class ExternalizedStatePropNet {
 	 * @param components
 	 *            A list of Components.
 	 */
-	/*public ExternalizedStatePropNet(List<Role> roles, Set<ExternalizedStateComponent> components)
+	/*public DynamicPropNet(List<Role> roles, Set<DynamicComponent> components)
 	{
 
 	    this.roles = roles;
@@ -707,27 +641,27 @@ public class ExternalizedStatePropNet {
 
 
 /*
-	public Map<ExternalizedStateProposition, ExternalizedStateProposition> getLegalInputMap()
+	public Map<DynamicProposition, DynamicProposition> getLegalInputMap()
 	{
 		return legalInputMap;
 	}
 */
 	/*
-	private Map<ExternalizedStateProposition, ExternalizedStateProposition> makeLegalInputMap() {
-		Map<ExternalizedStateProposition, ExternalizedStateProposition> legalInputMap = new HashMap<ExternalizedStateProposition, ExternalizedStateProposition>();
+	private Map<DynamicProposition, DynamicProposition> makeLegalInputMap() {
+		Map<DynamicProposition, DynamicProposition> legalInputMap = new HashMap<DynamicProposition, DynamicProposition>();
 		// Create a mapping from Body->Input.
-		Map<List<GdlTerm>, ExternalizedStateProposition> inputPropsByBody = new HashMap<List<GdlTerm>, ExternalizedStateProposition>();
-		for(ExternalizedStateProposition inputProp : inputPropositions.values()) {
+		Map<List<GdlTerm>, DynamicProposition> inputPropsByBody = new HashMap<List<GdlTerm>, DynamicProposition>();
+		for(DynamicProposition inputProp : inputPropositions.values()) {
 			List<GdlTerm> inputPropBody = (inputProp.getName()).getBody();
 			inputPropsByBody.put(inputPropBody, inputProp);
 		}
 		// Use that mapping to map Input->Legal and Legal->Input
 		// based on having the same Body proposition.
-		for(Set<ExternalizedStateProposition> legalProps : legalPropositions.values()) {
-			for(ExternalizedStateProposition legalProp : legalProps) {
+		for(Set<DynamicProposition> legalProps : legalPropositions.values()) {
+			for(DynamicProposition legalProp : legalProps) {
 				List<GdlTerm> legalPropBody = (legalProp.getName()).getBody();
 				if (inputPropsByBody.containsKey(legalPropBody)) {
-					ExternalizedStateProposition inputProp = inputPropsByBody.get(legalPropBody);
+					DynamicProposition inputProp = inputPropsByBody.get(legalPropBody);
     				legalInputMap.put(inputProp, legalProp);
     				legalInputMap.put(legalProp, inputProp);
 				}
@@ -744,7 +678,7 @@ public class ExternalizedStatePropNet {
 	 * @return References to every LegalProposition in the PropNet, indexed by
 	 *         player name.
 	 */
-	/*public Map<Role, Set<ExternalizedStateProposition>> getLegalPropositions()
+	/*public Map<Role, Set<DynamicProposition>> getLegalPropositions()
 	{
 		return legalPropositions;
 	}
@@ -760,7 +694,7 @@ public class ExternalizedStatePropNet {
 		StringBuilder sb = new StringBuilder();
 
 		sb.append("digraph propNet\n{\n");
-		for (ExternalizedStateComponent component : components){
+		for (DynamicComponent component : components){
 			sb.append("\t" + component.toString() + "\n");
 		}
 		sb.append("}");
@@ -796,16 +730,16 @@ public class ExternalizedStatePropNet {
 	 *
 	 * @return An index over the BasePropositions in the PropNet.
 	 */
-	/*private Map<GdlSentence, ExternalizedStateProposition> recordBasePropositions()
+	/*private Map<GdlSentence, DynamicProposition> recordBasePropositions()
 	{
-		Map<GdlSentence, ExternalizedStateProposition> basePropositions = new HashMap<GdlSentence, ExternalizedStateProposition>();
-		for (ExternalizedStateProposition proposition : propositions) {
+		Map<GdlSentence, DynamicProposition> basePropositions = new HashMap<GdlSentence, DynamicProposition>();
+		for (DynamicProposition proposition : propositions) {
 		    // Skip all propositions without exactly one input.
 		    if (proposition.getInputs().size() != 1)
 		        continue;
 
-			ExternalizedStateComponent component = proposition.getSingleInput();
-			if (component instanceof ExternalizedStateTransition) {
+			DynamicComponent component = proposition.getSingleInput();
+			if (component instanceof DynamicTransition) {
 				basePropositions.put(proposition.getName(), proposition);
 			}
 		}
@@ -823,10 +757,10 @@ public class ExternalizedStatePropNet {
 	 *
 	 * @return An index over the GoalPropositions in the PropNet.
 	 */
-	/*private Map<Role, Set<ExternalizedStateProposition>> recordGoalPropositions()
+	/*private Map<Role, Set<DynamicProposition>> recordGoalPropositions()
 	{
-		Map<Role, Set<ExternalizedStateProposition>> goalPropositions = new HashMap<Role, Set<ExternalizedStateProposition>>();
-		for (ExternalizedStateProposition proposition : propositions)
+		Map<Role, Set<DynamicProposition>> goalPropositions = new HashMap<Role, Set<DynamicProposition>>();
+		for (DynamicProposition proposition : propositions)
 		{
 		    // Skip all propositions that aren't GdlRelations.
 		    if (!(proposition.getName() instanceof GdlRelation))
@@ -838,7 +772,7 @@ public class ExternalizedStatePropNet {
 
 			Role theRole = new Role((GdlConstant) relation.get(0));
 			if (!goalPropositions.containsKey(theRole)) {
-				goalPropositions.put(theRole, new HashSet<ExternalizedStateProposition>());
+				goalPropositions.put(theRole, new HashSet<DynamicProposition>());
 			}
 			goalPropositions.get(theRole).add(proposition);
 		}
@@ -851,9 +785,9 @@ public class ExternalizedStatePropNet {
 	 *
 	 * @return A reference to the single, unique, InitProposition.
 	 */
-/*	private ExternalizedStateProposition recordInitProposition()
+/*	private DynamicProposition recordInitProposition()
 	{
-		for (ExternalizedStateProposition proposition : propositions)
+		for (DynamicProposition proposition : propositions)
 		{
 		    // Skip all propositions that aren't GdlPropositions.
 			if (!(proposition.getName() instanceof GdlProposition))
@@ -872,10 +806,10 @@ public class ExternalizedStatePropNet {
 	 *
 	 * @return An index over the InputPropositions in the PropNet.
 	 */
-/*	private Map<GdlSentence, ExternalizedStateProposition> recordInputPropositions()
+/*	private Map<GdlSentence, DynamicProposition> recordInputPropositions()
 	{
-		Map<GdlSentence, ExternalizedStateProposition> inputPropositions = new HashMap<GdlSentence, ExternalizedStateProposition>();
-		for (ExternalizedStateProposition proposition : propositions)
+		Map<GdlSentence, DynamicProposition> inputPropositions = new HashMap<GdlSentence, DynamicProposition>();
+		for (DynamicProposition proposition : propositions)
 		{
 		    // Skip all propositions that aren't GdlFunctions.
 			if (!(proposition.getName() instanceof GdlRelation))
@@ -895,10 +829,10 @@ public class ExternalizedStatePropNet {
 	 *
 	 * @return An index over the LegalPropositions in the PropNet.
 	 */
-/*	private Map<Role, Set<ExternalizedStateProposition>> recordLegalPropositions()
+/*	private Map<Role, Set<DynamicProposition>> recordLegalPropositions()
 	{
-		Map<Role, Set<ExternalizedStateProposition>> legalPropositions = new HashMap<Role, Set<ExternalizedStateProposition>>();
-		for (ExternalizedStateProposition proposition : propositions)
+		Map<Role, Set<DynamicProposition>> legalPropositions = new HashMap<Role, Set<DynamicProposition>>();
+		for (DynamicProposition proposition : propositions)
 		{
 		    // Skip all propositions that aren't GdlRelations.
 			if (!(proposition.getName() instanceof GdlRelation))
@@ -909,7 +843,7 @@ public class ExternalizedStatePropNet {
 				GdlConstant name = (GdlConstant) relation.get(0);
 				Role r = new Role(name);
 				if (!legalPropositions.containsKey(r)) {
-					legalPropositions.put(r, new HashSet<ExternalizedStateProposition>());
+					legalPropositions.put(r, new HashSet<DynamicProposition>());
 				}
 				legalPropositions.get(r).add(proposition);
 			}
@@ -923,13 +857,13 @@ public class ExternalizedStatePropNet {
 	 *
 	 * @return An index over Propositions in the PropNet.
 	 */
-/*	private Set<ExternalizedStateProposition> recordPropositions()
+/*	private Set<DynamicProposition> recordPropositions()
 	{
-		Set<ExternalizedStateProposition> propositions = new HashSet<ExternalizedStateProposition>();
-		for (ExternalizedStateComponent component : components)
+		Set<DynamicProposition> propositions = new HashSet<DynamicProposition>();
+		for (DynamicComponent component : components)
 		{
-			if (component instanceof ExternalizedStateProposition) {
-				propositions.add((ExternalizedStateProposition) component);
+			if (component instanceof DynamicProposition) {
+				propositions.add((DynamicProposition) component);
 			}
 		}
 		return propositions;
@@ -940,9 +874,9 @@ public class ExternalizedStatePropNet {
 	 *
 	 * @return A reference to the single, unqiue, TerminalProposition.
 	 */
-/*	private ExternalizedStateProposition recordTerminalProposition()
+/*	private DynamicProposition recordTerminalProposition()
 	{
-		for ( ExternalizedStateProposition proposition : propositions )
+		for ( DynamicProposition proposition : propositions )
 		{
 			if ( proposition.getName() instanceof GdlProposition )
 			{
@@ -983,8 +917,8 @@ public class ExternalizedStatePropNet {
 	 */
 	public int getNumAnds(){
 		int andCount = 0;
-		for(ExternalizedStateComponent c : this.andOrGates){
-			if(c instanceof ExternalizedStateAnd)
+		for(DynamicComponent c : this.andOrGates){
+			if(c instanceof DynamicAnd)
 				andCount++;
 		}
 		return andCount;
@@ -997,8 +931,8 @@ public class ExternalizedStatePropNet {
 	 */
 	public int getNumOrs(){
 		int orCount = 0;
-		for(ExternalizedStateComponent c : this.andOrGates){
-			if(c instanceof ExternalizedStateOr)
+		for(DynamicComponent c : this.andOrGates){
+			if(c instanceof DynamicOr)
 				orCount++;
 		}
 		return orCount;
@@ -1011,8 +945,8 @@ public class ExternalizedStatePropNet {
 	 */
 	public int getNumNots(){
 		int notCount = 0;
-		for(ExternalizedStateComponent c : this.components){
-			if(c instanceof ExternalizedStateNot)
+		for(DynamicComponent c : this.components){
+			if(c instanceof DynamicNot)
 				notCount++;
 		}
 		return notCount;
@@ -1025,7 +959,7 @@ public class ExternalizedStatePropNet {
 	 */
 	public int getNumLinks(){
 		int linkCount = 0;
-		for(ExternalizedStateComponent c : this.components){
+		for(DynamicComponent c : this.components){
 			linkCount += c.getOutputs().size();
 		}
 		return linkCount;
@@ -1038,8 +972,8 @@ public class ExternalizedStatePropNet {
 	 */
 	public int getNumBases(){
 		int basesCount = 0;
-		for(ExternalizedStateComponent c : this.components){
-			if(c instanceof ExternalizedStateProposition && ((ExternalizedStateProposition)c).getPropositionType() == PROP_TYPE.BASE)
+		for(DynamicComponent c : this.components){
+			if(c instanceof DynamicProposition && ((DynamicProposition)c).getPropositionType() == PROP_TYPE.BASE)
 				basesCount++;
 		}
 		return basesCount;
@@ -1052,8 +986,8 @@ public class ExternalizedStatePropNet {
 	 */
 	public int getNumInputs(){
 		int inputsCount = 0;
-		for(ExternalizedStateComponent c : this.components){
-			if(c instanceof ExternalizedStateProposition && ((ExternalizedStateProposition)c).getPropositionType() == PROP_TYPE.INPUT)
+		for(DynamicComponent c : this.components){
+			if(c instanceof DynamicProposition && ((DynamicProposition)c).getPropositionType() == PROP_TYPE.INPUT)
 				inputsCount++;
 		}
 		return inputsCount;
@@ -1066,8 +1000,8 @@ public class ExternalizedStatePropNet {
 	 */
 	public int getNumGoals(){
 		int goalsCount = 0;
-		for(ExternalizedStateComponent c : this.components){
-			if(c instanceof ExternalizedStateProposition && ((ExternalizedStateProposition)c).getPropositionType() == PROP_TYPE.GOAL)
+		for(DynamicComponent c : this.components){
+			if(c instanceof DynamicProposition && ((DynamicProposition)c).getPropositionType() == PROP_TYPE.GOAL)
 				goalsCount++;
 		}
 		return goalsCount;
@@ -1080,8 +1014,8 @@ public class ExternalizedStatePropNet {
 	 */
 	public int getNumLegals(){
 		int legalsCount = 0;
-		for(ExternalizedStateComponent c : this.components){
-			if(c instanceof ExternalizedStateProposition && ((ExternalizedStateProposition)c).getPropositionType() == PROP_TYPE.LEGAL)
+		for(DynamicComponent c : this.components){
+			if(c instanceof DynamicProposition && ((DynamicProposition)c).getPropositionType() == PROP_TYPE.LEGAL)
 				legalsCount++;
 		}
 		return legalsCount;
@@ -1094,8 +1028,8 @@ public class ExternalizedStatePropNet {
 	 */
 	public int getNumOthers(){
 		int othersCount = 0;
-		for(ExternalizedStateComponent c : this.components){
-			if(c instanceof ExternalizedStateProposition && ((ExternalizedStateProposition)c).getPropositionType() == PROP_TYPE.OTHER)
+		for(DynamicComponent c : this.components){
+			if(c instanceof DynamicProposition && ((DynamicProposition)c).getPropositionType() == PROP_TYPE.OTHER)
 				othersCount++;
 		}
 		return othersCount;
@@ -1108,8 +1042,8 @@ public class ExternalizedStatePropNet {
 	 */
 	public int getNumInits(){
 		int initsCount = 0;
-		for(ExternalizedStateComponent c : this.components){
-			if(c instanceof ExternalizedStateProposition && ((ExternalizedStateProposition)c).getPropositionType() == PROP_TYPE.INIT)
+		for(DynamicComponent c : this.components){
+			if(c instanceof DynamicProposition && ((DynamicProposition)c).getPropositionType() == PROP_TYPE.INIT)
 				initsCount++;
 		}
 		return initsCount;
@@ -1122,8 +1056,8 @@ public class ExternalizedStatePropNet {
 	 */
 	public int getNumTerminals(){
 		int terminalsCount = 0;
-		for(ExternalizedStateComponent c : this.components){
-			if(c instanceof ExternalizedStateProposition && ((ExternalizedStateProposition)c).getPropositionType() == PROP_TYPE.TERMINAL)
+		for(DynamicComponent c : this.components){
+			if(c instanceof DynamicProposition && ((DynamicProposition)c).getPropositionType() == PROP_TYPE.TERMINAL)
 				terminalsCount++;
 		}
 		return terminalsCount;
@@ -1136,8 +1070,8 @@ public class ExternalizedStatePropNet {
 	 */
 	public int getNumTransitions(){
 		int transitionsCount = 0;
-		for(ExternalizedStateComponent c : this.components){
-			if(c instanceof ExternalizedStateTransition)
+		for(DynamicComponent c : this.components){
+			if(c instanceof DynamicTransition)
 				transitionsCount++;
 		}
 		return transitionsCount;
@@ -1150,8 +1084,8 @@ public class ExternalizedStatePropNet {
 	 */
 	public int getNumConstants(){
 		int constantsCount = 0;
-		for(ExternalizedStateComponent c : this.components){
-			if(c instanceof ExternalizedStateConstant)
+		for(DynamicComponent c : this.components){
+			if(c instanceof DynamicConstant)
 				constantsCount++;
 		}
 		return constantsCount;
@@ -1180,12 +1114,12 @@ public class ExternalizedStatePropNet {
 	 * implementation of the state machine uses it to determine which
 	 * base propositions are true in the initial state).
 	 */
-	public void removeComponent(ExternalizedStateComponent c) {
+	public void removeComponent(DynamicComponent c) {
 
 
 		//Go through all the collections it could appear in
-		if(c instanceof ExternalizedStateProposition) {
-			ExternalizedStateProposition p = (ExternalizedStateProposition) c;
+		if(c instanceof DynamicProposition) {
+			DynamicProposition p = (DynamicProposition) c;
 
 			Role r;
 
@@ -1208,7 +1142,7 @@ public class ExternalizedStatePropNet {
 			case GOAL:
 				// Find the role for this goal
 				r = new Role((GdlConstant) ((GdlRelation) p.getName()).get(0));
-				List<ExternalizedStateProposition> goals = this.goalsPerRole.get(r);
+				List<DynamicProposition> goals = this.goalsPerRole.get(r);
 				int index = goals.indexOf(p);
 				this.goalValues.get(r).remove(index);
 				break;
@@ -1227,21 +1161,21 @@ public class ExternalizedStatePropNet {
 			}
 
 			this.propositions.remove(p);
-		}else if(c instanceof ExternalizedStateConstant){
+		}else if(c instanceof DynamicConstant){
 			if(this.trueConstant == c){
 				this.trueConstant = null;
 			}else if(this.falseConstant == c){
 				this.falseConstant = null;
 			}
-		}else if(c instanceof ExternalizedStateAnd || c instanceof ExternalizedStateOr){
+		}else if(c instanceof DynamicAnd || c instanceof DynamicOr){
 			this.andOrGates.remove(c);
 		}
 		components.remove(c);
 
 		//Remove all the local links to the component
-		for(ExternalizedStateComponent parent : c.getInputs())
+		for(DynamicComponent parent : c.getInputs())
 			parent.removeOutput(c);
-		for(ExternalizedStateComponent child : c.getOutputs())
+		for(DynamicComponent child : c.getOutputs())
 			child.removeInput(c);
 		//These are actually unnecessary...
 		//c.removeAllInputs();

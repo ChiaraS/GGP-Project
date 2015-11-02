@@ -12,10 +12,10 @@ import org.ggp.base.util.propnet.architecture.externalizedState.components.Exter
 import org.ggp.base.util.propnet.architecture.externalizedState.components.ExternalizedStateNot;
 import org.ggp.base.util.propnet.architecture.externalizedState.components.ExternalizedStateOr;
 import org.ggp.base.util.propnet.architecture.externalizedState.components.ExternalizedStateProposition;
-import org.ggp.base.util.propnet.architecture.externalizedState.components.ExternalizedStateProposition.PROP_TYPE;
 import org.ggp.base.util.propnet.architecture.externalizedState.components.ExternalizedStateTransition;
 import org.ggp.base.util.propnet.factory.ExternalizedStatePropnetFactory;
 import org.ggp.base.util.propnet.state.ExternalPropnetState;
+import org.ggp.base.util.propnet.utils.PROP_TYPE;
 import org.ggp.base.util.statemachine.Role;
 
 /**

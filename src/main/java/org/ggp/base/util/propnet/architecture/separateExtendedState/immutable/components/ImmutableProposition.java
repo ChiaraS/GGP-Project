@@ -1,7 +1,7 @@
-package org.ggp.base.util.propnet.architecture.externalizedState.components;
+package org.ggp.base.util.propnet.architecture.separateExtendedState.immutable.components;
 
 import org.ggp.base.util.gdl.grammar.GdlSentence;
-import org.ggp.base.util.propnet.architecture.externalizedState.ExternalizedStateComponent;
+import org.ggp.base.util.propnet.architecture.separateExtendedState.immutable.ImmutableComponent;
 import org.ggp.base.util.propnet.state.ExternalPropnetState;
 import org.ggp.base.util.propnet.utils.PROP_TYPE;
 
@@ -9,7 +9,7 @@ import org.ggp.base.util.propnet.utils.PROP_TYPE;
  * The Proposition class is designed to represent named latches.
  */
 @SuppressWarnings("serial")
-public final class ExternalizedStateProposition extends ExternalizedStateComponent{
+public final class ImmutableProposition extends ImmutableComponent{
 
 	/** The name of the Proposition. */
 	private GdlSentence name;
@@ -23,8 +23,9 @@ public final class ExternalizedStateProposition extends ExternalizedStateCompone
 	 * @param name
 	 *            The name of the Proposition.
 	 */
-	public ExternalizedStateProposition(GdlSentence name){
-		super();
+	public ImmutableProposition(ImmutableComponent[] components,
+			int structureIndex, int[] inputsIndices, int[] outputsIndices, GdlSentence name) {
+		super(components, structureIndex, inputsIndices, outputsIndices);
 		this.name = name;
 	}
 
@@ -60,25 +61,25 @@ public final class ExternalizedStateProposition extends ExternalizedStateCompone
 		// so it must be flipped.
 		switch(propType){
 		case BASE:
-			propnetState.flipBaseValue(this.index);
+			propnetState.flipBaseValue(this.stateIndex);
 			break;
 		case INPUT:
-			propnetState.flipInputValue(this.index);
+			propnetState.flipInputValue(this.stateIndex);
 			break;
 		default:
-			propnetState.flipOtherValue(this.index);
+			propnetState.flipOtherValue(this.stateIndex);
 			break;
 		}
 
 		// Since the value of this proposition changed, the new value must be propagated to its outputs.
-		for(ExternalizedStateComponent c: this.getOutputs()){
-			c.updateValue(newInputValue, propnetState);
+		for(int i : this.outputsIndices){
+			this.components[i].updateValue(newInputValue, propnetState);
 		}
 	}
 
 	@Override
 	public String getComponentType() {
-		return this.propType +  "_PROPOSITION(" + this.getName() + ")";
+		return this.propType +  " I_PROPOSITION(" + this.getName() + ")";
 	}
 
 	public void setPropositionType(PROP_TYPE propType){
@@ -90,11 +91,10 @@ public final class ExternalizedStateProposition extends ExternalizedStateCompone
 	}
 
 	/**
-	 * @see org.ggp.base.util.propnet.architecture.ExternalizedState.ExternalizedStateComponent#toString()
+	 * @see org.ggp.base.util.propnet.architecture.Immutable.ImmutableComponent#toString()
 	 */
 	@Override
-	public String toString()
-	{
+	public String toString(){
 		return toDot("circle", "white", name.toString());
 	}
 
@@ -102,11 +102,11 @@ public final class ExternalizedStateProposition extends ExternalizedStateCompone
 	public boolean getValue(ExternalPropnetState propnetState) {
 		switch(propType){
 		case BASE:
-			return propnetState.getBaseValue(this.index);
+			return propnetState.getBaseValue(this.stateIndex);
 		case INPUT:
-			return propnetState.getInputValue(this.index);
+			return propnetState.getInputValue(this.stateIndex);
 		default:
-			return propnetState.getOtherValue(this.index);
+			return propnetState.getOtherValue(this.stateIndex);
 		}
 	}
 
@@ -118,22 +118,22 @@ public final class ExternalizedStateProposition extends ExternalizedStateCompone
 			this.isConsistent = true;
 			break;
 		default:
-			if(this.getInputs().size() == 0){
+			if(this.inputsIndices.length == 0){
 				this.isConsistent = true;
-			}else if(this.getInputs().size() == 1){
+			}else if(this.inputsIndices.length == 1){
 				// Note that if we are here we are sure it is not a base, so it must
 				// change its value according to the value of its input.
 				boolean currentPropValue = this.getValue(propnetState);
-				if(this.getSingleInput().getValue(propnetState) != currentPropValue){
-					propnetState.flipOtherValue(this.index);
+				if(this.components[this.inputsIndices[0]].getValue(propnetState) != currentPropValue){
+					propnetState.flipOtherValue(this.stateIndex);
 					this.isConsistent = true;
-					for(ExternalizedStateComponent c : this.getOutputs()){
-						c.propagateConsistency(!currentPropValue, propnetState);
+					for(int i : this.outputsIndices){
+						this.components[i].propagateConsistency(!currentPropValue, propnetState);
 					}
 				}else{
 					this.isConsistent = true;
 				}
-			}else if(this.getInputs().size() > 1){
+			}else if(this.inputsIndices.length > 1){
 				throw new IllegalStateException("Detected a propNet proposition with more than one input!");
 			}
 			break;
@@ -154,13 +154,13 @@ public final class ExternalizedStateProposition extends ExternalizedStateCompone
 			case INPUT:
 				throw new IllegalStateException("A base or input proposition should have no inputs that can call the propagateConsistency() method!");
 			default:
-				propnetState.flipOtherValue(this.index);
+				propnetState.flipOtherValue(this.stateIndex);
 				break;
 			}
 
 			// Since the value of this proposition changed, the new value must be propagated to its outputs.
-			for(ExternalizedStateComponent c: this.getOutputs()){
-				c.propagateConsistency(newInputValue, propnetState);
+			for(int i : this.outputsIndices){
+				this.components[i].propagateConsistency(newInputValue, propnetState);
 			}
 		}
 	}
