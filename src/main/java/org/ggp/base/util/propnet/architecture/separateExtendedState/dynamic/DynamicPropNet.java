@@ -89,19 +89,9 @@ public class DynamicPropNet {
 	private final Map<Role, List<DynamicProposition>> goalsPerRole;
 
 	/**
-	 * List of all the goals that corresponds to a goal proposition, grouped by role
-	 * and listed in the same order as the role propositions values in the ExternalPropnetState class.
+	 * Number of AND and OR gates in the propnet.
 	 */
-	private Map<Role, List<Integer>> goalValues;
-
-	/**
-	 * List of all the AND and OR gates.
-	 */
-	private List<DynamicComponent> andOrGates;
-
-
-
-
+	private int andOrGatesNumber;
 
 	/**
 	 * Creates a new PropNet from a list of Components.
@@ -147,6 +137,8 @@ public class DynamicPropNet {
 		//Map<Role, List<DynamicProposition>> inputsPerRole = new HashMap<Role, List<DynamicProposition>>();
 		//Map<Role, List<DynamicProposition>> legalsPerRole = new HashMap<Role, List<DynamicProposition>>();
 
+		this.andOrGatesNumber = 0;
+
 		//Map<Role, Map<List<GdlTerm>, Integer>> moveIndices = new HashMap<Role, Map<List<GdlTerm>, Integer>>();
 		//Map<Role, Integer> currentIndices = new HashMap<Role, Integer>();
 
@@ -161,7 +153,6 @@ public class DynamicPropNet {
 		/* ALG2 - END */
 
 		this.goalsPerRole = new HashMap<Role, List<DynamicProposition>>();
-		this.goalValues = new HashMap<Role, List<Integer>>();
 
 		for(Role r : this.roles){
 			this.inputsPerRole.put(r, new ArrayList<DynamicProposition>());
@@ -178,12 +169,10 @@ public class DynamicPropNet {
 			/* ALG2 - END */
 
 			this.goalsPerRole.put(r, new ArrayList<DynamicProposition>());
-			this.goalValues.put(r, new ArrayList<Integer>());
 		}
 
-		this.andOrGates = new ArrayList<DynamicComponent>();
-
 		for(DynamicComponent c : this.components){
+
 			if(c instanceof DynamicConstant){
 				if(((DynamicConstant) c).getValue()){
 					if(this.trueConstant != c){
@@ -320,7 +309,6 @@ public class DynamicPropNet {
 						Role r = new Role(name);
 						if(this.roles.contains(r)){
 							this.goalsPerRole.get(r).add(p);
-							this.goalValues.get(r).add(this.getGoalValue(p));
 							p.setPropositionType(PROP_TYPE.GOAL);
 						}
 					}
@@ -352,9 +340,9 @@ public class DynamicPropNet {
 			}else if(c instanceof DynamicNot){
 
 			}else if(c instanceof DynamicAnd){
-				this.andOrGates.add(c);
+				this.andOrGatesNumber++;
 			}else if(c instanceof DynamicOr){
-				this.andOrGates.add(c);
+				this.andOrGatesNumber++;
 			}else{
 				throw new RuntimeException("Unhandled component type " + c.getClass());
 			}
@@ -450,7 +438,7 @@ public class DynamicPropNet {
 	 * @param goalProposition
 	 * @return the integer value of the goal proposition
 	 */
-    private int getGoalValue(DynamicProposition goalProposition){
+    public int getGoalValue(DynamicProposition goalProposition){
 		GdlRelation relation = (GdlRelation) goalProposition.getName();
 		GdlConstant constant = (GdlConstant) relation.get(1);
 		return Integer.parseInt(constant.toString());
@@ -586,20 +574,10 @@ public class DynamicPropNet {
 	/**
 	 * Getter method.
 	 *
-	 * @return The goal values corresponding to each goal proposition, divided by role
-	 * 		   and in the same order as the goalsPerRole propositions.
+	 * @return The number of AND and OR gates in the PropNet.
 	 */
-	public Map<Role, List<Integer>> getGoalValues(){
-		return this.goalValues;
-	}
-
-	/**
-	 * Getter method.
-	 *
-	 * @return References to every AND and OR gate in the PropNet.
-	 */
-	public List<DynamicComponent> getAndOrGates(){
-		return this.andOrGates;
+	public int getAndOrGatesNumber(){
+		return this.andOrGatesNumber;
 	}
 
 	/** References to every LegalProposition in the PropNet, indexed by role. */
@@ -917,7 +895,7 @@ public class DynamicPropNet {
 	 */
 	public int getNumAnds(){
 		int andCount = 0;
-		for(DynamicComponent c : this.andOrGates){
+		for(DynamicComponent c : this.components){
 			if(c instanceof DynamicAnd)
 				andCount++;
 		}
@@ -931,7 +909,7 @@ public class DynamicPropNet {
 	 */
 	public int getNumOrs(){
 		int orCount = 0;
-		for(DynamicComponent c : this.andOrGates){
+		for(DynamicComponent c : this.components){
 			if(c instanceof DynamicOr)
 				orCount++;
 		}
@@ -1116,6 +1094,9 @@ public class DynamicPropNet {
 	 */
 	public void removeComponent(DynamicComponent c) {
 
+		// TODO: CHECK
+
+		boolean found = components.remove(c);
 
 		//Go through all the collections it could appear in
 		if(c instanceof DynamicProposition) {
@@ -1130,21 +1111,19 @@ public class DynamicPropNet {
 			case INPUT:
 				this.inputPropositions.remove(p);
 				// Find the role for this input
-				//r = new Role((GdlConstant) ((GdlRelation) p.getName()).get(0));
-				//this.inputsPerRole.get(r).remove(p);
+				r = new Role((GdlConstant) ((GdlRelation) p.getName()).get(0));
+				this.inputsPerRole.get(r).remove(p);
 				break;
 			case LEGAL:
 				this.legalPropositions.remove(p);
 				// Find the role for this legal
-				//r = new Role((GdlConstant) ((GdlRelation) p.getName()).get(0));
-				//this.legalsPerRole.get(r).remove(p);
+				r = new Role((GdlConstant) ((GdlRelation) p.getName()).get(0));
+				this.legalsPerRole.get(r).remove(p);
 				break;
 			case GOAL:
 				// Find the role for this goal
 				r = new Role((GdlConstant) ((GdlRelation) p.getName()).get(0));
-				List<DynamicProposition> goals = this.goalsPerRole.get(r);
-				int index = goals.indexOf(p);
-				this.goalValues.get(r).remove(index);
+				this.goalsPerRole.get(r).remove(p);
 				break;
 			case TERMINAL:
 				if(this.terminalProposition == p){
@@ -1168,9 +1147,10 @@ public class DynamicPropNet {
 				this.falseConstant = null;
 			}
 		}else if(c instanceof DynamicAnd || c instanceof DynamicOr){
-			this.andOrGates.remove(c);
+			if(found){
+				this.andOrGatesNumber--;
+			}
 		}
-		components.remove(c);
 
 		//Remove all the local links to the component
 		for(DynamicComponent parent : c.getInputs())
@@ -1181,4 +1161,8 @@ public class DynamicPropNet {
 		//c.removeAllInputs();
 		//c.removeAllOutputs();
 	}
+
+
+
+
 }

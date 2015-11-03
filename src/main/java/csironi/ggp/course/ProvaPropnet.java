@@ -76,12 +76,34 @@ public class ProvaPropnet {
 
 		//provaOpenbitset();
 
-		provaUgualeUguale();
+		provaInsiemi();
+		//provaUgualeUguale();
 		//provaOverflow();
 		//provaGameExtendedPropnet("coins_atomic");
 
 		//printPropnetImprovements("gt_two_thirds_2p");
 
+	}
+
+	public static void provaInsiemi(){
+		Set<Integer> set1 = new HashSet<Integer>();
+		for(int i = 0; i < 20; i++){
+			set1.add(new Integer(i));
+		}
+
+		System.out.print("S1 = {");
+		for(Integer i : set1){
+			System.out.print(" " + i.intValue());
+		}
+		System.out.println(" }");
+
+		System.out.println();
+
+		System.out.print("S1 = {");
+		for(Integer i : set1){
+			System.out.print(" " + i.intValue());
+		}
+		System.out.println(" }");
 	}
 
 	public static void provaUgualeUguale(){

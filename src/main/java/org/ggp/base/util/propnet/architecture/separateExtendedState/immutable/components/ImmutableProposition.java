@@ -23,10 +23,10 @@ public final class ImmutableProposition extends ImmutableComponent{
 	 * @param name
 	 *            The name of the Proposition.
 	 */
-	public ImmutableProposition(ImmutableComponent[] components,
-			int structureIndex, int[] inputsIndices, int[] outputsIndices, GdlSentence name) {
-		super(components, structureIndex, inputsIndices, outputsIndices);
+	public ImmutableProposition(GdlSentence name, PROP_TYPE propType) {
+		super();
 		this.name = name;
+		this.propType = propType;
 	}
 
 	/**
@@ -72,8 +72,8 @@ public final class ImmutableProposition extends ImmutableComponent{
 		}
 
 		// Since the value of this proposition changed, the new value must be propagated to its outputs.
-		for(int i : this.outputsIndices){
-			this.components[i].updateValue(newInputValue, propnetState);
+		for(ImmutableComponent o : this.getOutputs()){
+			o.updateValue(newInputValue, propnetState);
 		}
 	}
 
@@ -118,22 +118,22 @@ public final class ImmutableProposition extends ImmutableComponent{
 			this.isConsistent = true;
 			break;
 		default:
-			if(this.inputsIndices.length == 0){
+			if(this.getInputs().length == 0){
 				this.isConsistent = true;
-			}else if(this.inputsIndices.length == 1){
+			}else if(this.getInputs().length == 1){
 				// Note that if we are here we are sure it is not a base, so it must
 				// change its value according to the value of its input.
 				boolean currentPropValue = this.getValue(propnetState);
-				if(this.components[this.inputsIndices[0]].getValue(propnetState) != currentPropValue){
+				if(this.getSingleInput().getValue(propnetState) != currentPropValue){
 					propnetState.flipOtherValue(this.stateIndex);
 					this.isConsistent = true;
-					for(int i : this.outputsIndices){
-						this.components[i].propagateConsistency(!currentPropValue, propnetState);
+					for(ImmutableComponent o : this.getOutputs()){
+						o.propagateConsistency(!currentPropValue, propnetState);
 					}
 				}else{
 					this.isConsistent = true;
 				}
-			}else if(this.inputsIndices.length > 1){
+			}else if(this.getInputs().length > 1){
 				throw new IllegalStateException("Detected a propNet proposition with more than one input!");
 			}
 			break;
@@ -159,8 +159,8 @@ public final class ImmutableProposition extends ImmutableComponent{
 			}
 
 			// Since the value of this proposition changed, the new value must be propagated to its outputs.
-			for(int i : this.outputsIndices){
-				this.components[i].propagateConsistency(newInputValue, propnetState);
+			for(ImmutableComponent o : this.getOutputs()){
+				o.propagateConsistency(newInputValue, propnetState);
 			}
 		}
 	}

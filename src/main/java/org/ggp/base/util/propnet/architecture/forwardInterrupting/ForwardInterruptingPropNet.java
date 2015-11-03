@@ -69,6 +69,16 @@ import org.ggp.base.util.statemachine.Role;
 
 public final class ForwardInterruptingPropNet
 {
+
+	private final long initTime;
+
+	public long getInitTime(){
+		return this.initTime;
+	}
+
+
+
+
 	/** References to every component in the PropNet. */
 	private final Set<ForwardInterruptingComponent> components;
 
@@ -117,6 +127,7 @@ public final class ForwardInterruptingPropNet
 	 */
 	public ForwardInterruptingPropNet(List<Role> roles, Set<ForwardInterruptingComponent> components)
 	{
+		long start = System.currentTimeMillis();
 
 	    this.roles = roles;
 		this.components = components;
@@ -129,6 +140,8 @@ public final class ForwardInterruptingPropNet
 		this.initProposition = recordInitProposition();
 		this.terminalProposition = recordTerminalProposition();
 		this.legalInputMap = makeLegalInputMap();
+
+		this.initTime = System.currentTimeMillis() - start;
 	}
 
 	public List<Role> getRoles()

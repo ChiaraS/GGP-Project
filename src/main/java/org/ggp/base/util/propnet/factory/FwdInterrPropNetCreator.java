@@ -93,9 +93,13 @@ public class FwdInterrPropNetCreator extends Thread {
 	}
 
 
-
-
-
+	public long getInitTime(){
+		if(this.propNet == null){
+			return -1L;
+		}else{
+			return this.propNet.getInitTime();
+		}
+	}
 
 
 }

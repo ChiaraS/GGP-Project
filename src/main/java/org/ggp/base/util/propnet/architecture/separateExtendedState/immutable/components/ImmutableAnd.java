@@ -9,11 +9,6 @@ import org.ggp.base.util.propnet.state.ExternalPropnetState;
 @SuppressWarnings("serial")
 public final class ImmutableAnd extends ImmutableComponent{
 
-	public ImmutableAnd(ImmutableComponent[] components, int structureIndex,
-			int[] inputsIndices, int[] outputsIndices) {
-		super(components, structureIndex, inputsIndices, outputsIndices);
-	}
-
 	@Override
 	public String getComponentType() {
 		return "I_AND";
@@ -40,8 +35,8 @@ public final class ImmutableAnd extends ImmutableComponent{
 		// consistent, they have to change as well
 		boolean newGateValue = propnetState.getGateValue(this.stateIndex);
 		if(newGateValue != oldGateValue){
-			for(int i : this.outputsIndices){
-				this.components[i].updateValue(newGateValue, propnetState);
+			for(ImmutableComponent o : this.getOutputs()){
+				o.updateValue(newGateValue, propnetState);
 			}
 		}
 	}
@@ -65,8 +60,8 @@ public final class ImmutableAnd extends ImmutableComponent{
 		boolean oldGateValue = this.getValue(propnetState);
 		// Compute the number of inputs that are true for this AND component
 		int trueInputs = 0;
-		for(int i : this.inputsIndices){
-			if(this.components[i].getValue(propnetState)){
+		for(ImmutableComponent i : this.getInputs()){
+			if(i.getValue(propnetState)){
 				trueInputs++;
 			}
 		}
@@ -81,8 +76,8 @@ public final class ImmutableAnd extends ImmutableComponent{
 		// If the value of the component changed, inform the consistent outputs
 		// that they have to change as well
 		if(currentGateValue != oldGateValue){
-			for(int i : this.outputsIndices){
-				this.components[i].propagateConsistency(currentGateValue, propnetState);
+			for(ImmutableComponent o : this.getOutputs()){
+				o.propagateConsistency(currentGateValue, propnetState);
 			}
 		}
 	}
@@ -105,8 +100,8 @@ public final class ImmutableAnd extends ImmutableComponent{
 			// consistent, they have to change as well
 			boolean newGateValue = propnetState.getGateValue(this.stateIndex);
 			if(newGateValue != oldGateValue){
-				for(int i :  this.outputsIndices){
-					this.components[i].propagateConsistency(newGateValue, propnetState);
+				for(ImmutableComponent o : this.getOutputs()){
+					o.propagateConsistency(newGateValue, propnetState);
 				}
 			}
 		}

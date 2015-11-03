@@ -2,6 +2,8 @@ package org.ggp.base.util.propnet.architecture.separateExtendedState.dynamic.com
 
 import org.ggp.base.util.gdl.grammar.GdlSentence;
 import org.ggp.base.util.propnet.architecture.separateExtendedState.dynamic.DynamicComponent;
+import org.ggp.base.util.propnet.architecture.separateExtendedState.immutable.ImmutableComponent;
+import org.ggp.base.util.propnet.architecture.separateExtendedState.immutable.components.ImmutableProposition;
 import org.ggp.base.util.propnet.utils.PROP_TYPE;
 
 /**
@@ -67,6 +69,11 @@ public final class DynamicProposition extends DynamicComponent{
 	@Override
 	public String toString(){
 		return toDot("circle", "white", name.toString());
+	}
+
+	@Override
+	public ImmutableComponent getImmutableClone() {
+		return new ImmutableProposition(this.name, this.propType);
 	}
 
 }

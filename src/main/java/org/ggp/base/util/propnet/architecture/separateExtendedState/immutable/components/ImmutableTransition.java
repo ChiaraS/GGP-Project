@@ -38,9 +38,8 @@ public final class ImmutableTransition extends ImmutableComponent{
 	 * Constructor that initializes the fact that the value of this transition depends
 	 * on the INIT proposition according to the given value.
 	 */
-	public ImmutableTransition(ImmutableComponent[] components,
-			int structureIndex, int[] inputsIndices, int[] outputsIndices, boolean dependingOnInit) {
-		super(components, structureIndex, inputsIndices, outputsIndices);
+	public ImmutableTransition(boolean dependingOnInit) {
+		super();
 		this.dependingOnInit = dependingOnInit;
 	}
 
@@ -89,15 +88,15 @@ public final class ImmutableTransition extends ImmutableComponent{
 
 	@Override
 	public void imposeConsistency(ExternalPropnetState propnetState) {
-		if(this.inputsIndices.length == 1){
-			if(this.components[this.inputsIndices[0]].getValue(propnetState) != this.getValue(propnetState)){
+		if(this.getInputs().length == 1){
+			if(this.getSingleInput().getValue(propnetState) != this.getValue(propnetState)){
 				propnetState.flipTransitionValue(this.stateIndex);
 				this.isConsistent = true;
 			}else{
 				this.isConsistent = true;
 			}
 		}else{
-			if(this.inputsIndices.length == 0)
+			if(this.getInputs().length == 0)
 				throw new IllegalStateException("Detected transition with no inputs in the propnet!");
 			else
 				throw new IllegalStateException("Detected transition with more than one input in the propnet!");

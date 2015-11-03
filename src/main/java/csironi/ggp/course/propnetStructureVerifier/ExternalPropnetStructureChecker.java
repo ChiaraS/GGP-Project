@@ -63,7 +63,7 @@ public class ExternalPropnetStructureChecker {
 
 
 			GamerLogger.setSpilloverLogfile(game + "ExternalPropnetStructureCheckerTable.csv");
-		    GamerLogger.log(FORMAT.CSV_FORMAT, game + "ExternalPropnetStructureCheckerTable.csv", "Game key;Construction Time (ms);Check Duration (ms);Pass;");
+		    GamerLogger.log(FORMAT.CSV_FORMAT, game + "ExternalPropnetStructureCheckerTable.csv", "Game key;Construction Time (ms);Init Time (ms);Check Duration (ms);Pass;");
 
 		    if(game.equals("ALL")){
 		    	GameRepository theRepository = GameRepository.getDefaultRepository();
@@ -122,13 +122,13 @@ public class ExternalPropnetStructureChecker {
     		Thread.currentThread().interrupt();
     		GamerLogger.stopFileLogging();
     		System.out.println("Impossible to check game " + gameKey + ". Procedure interrupted.");
-			return gameKey + ";-1;-1;FALSE;";
+			return gameKey + ";-1;-1;-1;FALSE;";
 		}
 
     	if(propNet == null){
     		GamerLogger.stopFileLogging();
     		System.out.println("Impossible to check game " + gameKey + ". Propnet didn't build in time.");
-    		return gameKey + ";" + creator.getConstructionTime() + ";-1;FALSE;";
+    		return gameKey + ";" + creator.getConstructionTime() + ";" + creator.getInitTime() + ";-1;FALSE;";
     	}else{
     		/*
     		System.out.println("Propnet has: " + propNet.getSize() + " COMPONENTS, " + propNet.getNumPropositions() + " PROPOSITIONS, " + propNet.getNumConstants() + " CONSTANTS, " + propNet.getNumLinks() + " LINKS.");
@@ -151,7 +151,7 @@ public class ExternalPropnetStructureChecker {
 
     		System.out.println("Done checking game " + gameKey + ".");
 
-    		return gameKey + ";" + creator.getConstructionTime() + ";" + checkDuration + ";" + pass + ";";
+    		return gameKey + ";" + creator.getConstructionTime() + ";" + creator.getInitTime() + ";" + checkDuration + ";" + pass + ";";
     	}
 	}
 

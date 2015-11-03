@@ -18,22 +18,10 @@ public abstract class ImmutableComponent implements Serializable{
 	 */
 	private static final long serialVersionUID = 85773622157362907L;
 
-	/** The array of all the components in the propnet */
-	protected final ImmutableComponent[] components;
-
 	/** The inputs to the component. */
-    //private final ImmutableComponent[] inputs;
+    private ImmutableComponent[] inputs;
     /** The outputs of the component. */
-    //private final ImmutableComponent[] outputs;
-
-	/** Indices of all the inputs of this component in the components array */
-	protected final int[] inputsIndices;
-
-	/** Indices of all the inputs of this component in the components array */
-	protected final int[] outputsIndices;
-
-	/** Index of this component in the components array */
-	protected final int structureIndex;
+    private ImmutableComponent[] outputs;
 
     /**
      * The index of the component in the propnet state that contains
@@ -59,24 +47,67 @@ public abstract class ImmutableComponent implements Serializable{
      * Creates a new Component with the given structure index, inputs and outputs
      * indices and setting the given array of components.
      */
-    public ImmutableComponent(ImmutableComponent[] components, int structureIndex, int[] inputsIndices, int[] outputsIndices){
-    	this.components = components;
-    	this.structureIndex = structureIndex;
-    	this.inputsIndices = inputsIndices;
-    	this.outputsIndices = outputsIndices;
+    public ImmutableComponent(){
+    	this.inputs = new ImmutableComponent[0];
+    	this.outputs = new ImmutableComponent[0];
         this.stateIndex = -1;
         this.isConsistent = false;
     }
 
     /**
-     * Returns the index that this component has in the array of
-     * propnet components.
+     * Sets the inputs of this component.
      *
-     * @return the index in the propnet state where this
-     * component can find its truth value.
+     * @param inputs the inputs of this component.
      */
-    public int getStrictureIndex(){
-    	return this.structureIndex;
+    public void setInputs(ImmutableComponent[] inputs){
+    	this.inputs = inputs;
+    }
+
+    /**
+     * Gets the inputs of this component.
+     *
+     * @return the inputs of this component.
+     */
+    public ImmutableComponent[] getInputs(){
+    	return this.inputs;
+    }
+
+    /**
+     * Gets the single input of this component.
+     *
+     * @return the single input of this component.
+     */
+    public ImmutableComponent getSingleInput(){
+    	assert this.inputs.length == 1;
+        return this.inputs[0];
+    }
+
+    /**
+     * Sets the outputs of this component.
+     *
+     * @param outputs the outputs of this component.
+     */
+    public void setOutputs(ImmutableComponent[] outputs){
+    	this.outputs = outputs;
+    }
+
+    /**
+     * Gets the outputs of this component.
+     *
+     * @return the outputs of this component.
+     */
+    public ImmutableComponent[] getOutputs(){
+    	return this.outputs;
+    }
+
+    /**
+     * Gets the single output of this component.
+     *
+     * @return the single output of this component.
+     */
+    public ImmutableComponent getSingleOutput(){
+    	assert this.outputs.length == 1;
+        return this.outputs[0];
     }
 
     /**
@@ -137,8 +168,8 @@ public abstract class ImmutableComponent implements Serializable{
         StringBuilder sb = new StringBuilder();
 
         sb.append("\"@" + Integer.toHexString(hashCode()) + "\"[shape=" + shape + ", style= filled, fillcolor=" + fillcolor + ", label=\"" + label + "\"]; ");
-        for ( int i : this.outputsIndices ){
-            sb.append("\"@" + Integer.toHexString(hashCode()) + "\"->" + "\"@" + Integer.toHexString(this.components[i].hashCode()) + "\"; ");
+        for ( ImmutableComponent o : this.outputs ){
+            sb.append("\"@" + Integer.toHexString(hashCode()) + "\"->" + "\"@" + Integer.toHexString(o.hashCode()) + "\"; ");
         }
 
         return sb.toString();

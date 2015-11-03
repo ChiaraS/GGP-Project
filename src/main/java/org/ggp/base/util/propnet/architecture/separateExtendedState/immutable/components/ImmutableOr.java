@@ -7,12 +7,7 @@ import org.ggp.base.util.propnet.state.ExternalPropnetState;
  * The Or class is designed to represent logical OR gates.
  */
 @SuppressWarnings("serial")
-public final class ImmutableOr extends ImmutableComponent
-{
-	public ImmutableOr(ImmutableComponent[] components, int structureIndex,
-			int[] inputsIndices, int[] outputsIndices){
-		super(components, structureIndex, inputsIndices, outputsIndices);
-	}
+public final class ImmutableOr extends ImmutableComponent{
 
 	/**
 	 *  @see org.ggp.base.util.propnet.architecture.ExtendedState.ExtendedStateComponent#propagateConsistency()
@@ -35,8 +30,8 @@ public final class ImmutableOr extends ImmutableComponent
 		// consistent, they have to change as well
 		boolean newGateValue = propnetState.getGateValue(this.stateIndex);
 		if(newGateValue != oldGateValue){
-			for(int i : this.outputsIndices){
-				this.components[i].updateValue(newGateValue, propnetState);
+			for(ImmutableComponent o : this.getOutputs()){
+				o.updateValue(newGateValue, propnetState);
 			}
 		}
 
@@ -66,8 +61,8 @@ public final class ImmutableOr extends ImmutableComponent
 		boolean oldGateValue = this.getValue(propnetState);
 		// Compute the number of inputs that are true for this OR component
 		int trueInputs = 0;
-		for(int i : this.inputsIndices){
-			if(this.components[i].getValue(propnetState)){
+		for(ImmutableComponent i : this.getInputs()){
+			if(i.getValue(propnetState)){
 				trueInputs++;
 			}
 		}
@@ -81,8 +76,8 @@ public final class ImmutableOr extends ImmutableComponent
 		// If the value of the component changed, inform the consistent outputs
 		// that they have to change as well
 		if(newGateValue != oldGateValue){
-			for(int i : this.outputsIndices){
-				this.components[i].propagateConsistency(newGateValue, propnetState);
+			for(ImmutableComponent o : this.getOutputs()){
+				o.propagateConsistency(newGateValue, propnetState);
 			}
 		}
 	}
@@ -105,8 +100,8 @@ public final class ImmutableOr extends ImmutableComponent
 			// consistent, they have to change as well
 			boolean newGateValue = propnetState.getGateValue(this.stateIndex);
 			if(newGateValue != oldGateValue){
-				for(int i : this.outputsIndices){
-					this.components[i].propagateConsistency(newGateValue, propnetState);
+				for(ImmutableComponent o : this.getOutputs()){
+					o.propagateConsistency(newGateValue, propnetState);
 				}
 			}
 		}

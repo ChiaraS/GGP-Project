@@ -5,7 +5,6 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.LinkedHashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -46,14 +45,14 @@ import org.ggp.base.util.gdl.transforms.GdlCleaner;
 import org.ggp.base.util.gdl.transforms.Relationizer;
 import org.ggp.base.util.gdl.transforms.VariableConstrainer;
 import org.ggp.base.util.logging.GamerLogger;
-import org.ggp.base.util.propnet.architecture.externalizedState.ExternalizedStateComponent;
-import org.ggp.base.util.propnet.architecture.externalizedState.ExternalizedStatePropNet;
-import org.ggp.base.util.propnet.architecture.externalizedState.components.ExternalizedStateAnd;
-import org.ggp.base.util.propnet.architecture.externalizedState.components.ExternalizedStateConstant;
-import org.ggp.base.util.propnet.architecture.externalizedState.components.ExternalizedStateNot;
-import org.ggp.base.util.propnet.architecture.externalizedState.components.ExternalizedStateOr;
-import org.ggp.base.util.propnet.architecture.externalizedState.components.ExternalizedStateProposition;
-import org.ggp.base.util.propnet.architecture.externalizedState.components.ExternalizedStateTransition;
+import org.ggp.base.util.propnet.architecture.separateExtendedState.dynamic.DynamicComponent;
+import org.ggp.base.util.propnet.architecture.separateExtendedState.dynamic.DynamicPropNet;
+import org.ggp.base.util.propnet.architecture.separateExtendedState.dynamic.components.DynamicAnd;
+import org.ggp.base.util.propnet.architecture.separateExtendedState.dynamic.components.DynamicConstant;
+import org.ggp.base.util.propnet.architecture.separateExtendedState.dynamic.components.DynamicNot;
+import org.ggp.base.util.propnet.architecture.separateExtendedState.dynamic.components.DynamicOr;
+import org.ggp.base.util.propnet.architecture.separateExtendedState.dynamic.components.DynamicProposition;
+import org.ggp.base.util.propnet.architecture.separateExtendedState.dynamic.components.DynamicTransition;
 import org.ggp.base.util.propnet.utils.PROP_TYPE;
 import org.ggp.base.util.statemachine.Role;
 
@@ -87,15 +86,15 @@ import com.google.common.collect.Multimap;
  */
 /**
  * This class creates the propnet and provides extra methods to polish it after creation.
- * This class is a refinement/modification of the ExternalizedStatePropNetFactory and creates
+ * This class is a refinement/modification of the DynamicPropNetFactory and creates
  * a propnet with a faster structure. Some of the methods that it provides to polish the propnet
- * after creation are taken (and sometimes improved) from the ExternalizedStatePropNetFactory,
+ * after creation are taken (and sometimes improved) from the DynamicPropNetFactory,
  * while some others have been implemented from scratch.
  *
  * @author C.Sironi
  *
  */
-public class ExternalizedStatePropnetFactory {
+public class DynamicPropNetFactory {
 
 	static final private GdlConstant LEGAL = GdlPool.getConstant("legal");
 	static final private GdlConstant NEXT = GdlPool.getConstant("next");
@@ -116,11 +115,11 @@ public class ExternalizedStatePropnetFactory {
 	 * @throws InterruptedException if the thread is interrupted during
 	 * PropNet creation.
 	 */
-	public static ExternalizedStatePropNet create(List<Gdl> description) throws InterruptedException {
+	public static DynamicPropNet create(List<Gdl> description) throws InterruptedException {
 		return create(description, false);
 	}
 
-	public static ExternalizedStatePropNet create(List<Gdl> description, boolean verbose) throws InterruptedException {
+	public static DynamicPropNet create(List<Gdl> description, boolean verbose) throws InterruptedException {
 		System.out.println("Building propnet...");
 
 		long startTime = System.currentTimeMillis();
@@ -172,10 +171,10 @@ public class ExternalizedStatePropnetFactory {
 			System.out.println("done");
 
 		List<Role> roles = Role.computeRoles(description);
-		Map<GdlSentence, ExternalizedStateComponent> components = new HashMap<GdlSentence, ExternalizedStateComponent>();
-		Map<GdlSentence, ExternalizedStateComponent> negations = new HashMap<GdlSentence, ExternalizedStateComponent>();
-		ExternalizedStateConstant trueComponent = new ExternalizedStateConstant(true);
-		ExternalizedStateConstant falseComponent = new ExternalizedStateConstant(false);
+		Map<GdlSentence, DynamicComponent> components = new HashMap<GdlSentence, DynamicComponent>();
+		Map<GdlSentence, DynamicComponent> negations = new HashMap<GdlSentence, DynamicComponent>();
+		DynamicConstant trueComponent = new DynamicConstant(true);
+		DynamicConstant falseComponent = new DynamicConstant(false);
 		Map<SentenceForm, FunctionInfo> functionInfoMap = new HashMap<SentenceForm, FunctionInfo>();
 		Map<SentenceForm, Collection<GdlSentence>> completedSentenceFormValues = new HashMap<SentenceForm, Collection<GdlSentence>>();
 		for(SentenceForm form : topologicalOrdering) {
@@ -196,7 +195,7 @@ public class ExternalizedStatePropnetFactory {
 						|| form.getName().equals(TERMINAL)) {
 					//Add it
 					for (GdlSentence trueSentence : constantChecker.getTrueSentences(form)) {
-						ExternalizedStateProposition trueProp = new ExternalizedStateProposition(trueSentence);
+						DynamicProposition trueProp = new DynamicProposition(trueSentence);
 						trueProp.addInput(trueComponent);
 						trueComponent.addOutput(trueProp);
 						components.put(trueSentence, trueComponent);
@@ -214,8 +213,8 @@ public class ExternalizedStatePropnetFactory {
 				System.out.println();
 			//TODO: Adjust "recursive forms" appropriately
 			//Add a temporary sentence form thingy? ...
-			Map<GdlSentence, ExternalizedStateComponent> temporaryComponents = new HashMap<GdlSentence, ExternalizedStateComponent>();
-			Map<GdlSentence, ExternalizedStateComponent> temporaryNegations = new HashMap<GdlSentence, ExternalizedStateComponent>();
+			Map<GdlSentence, DynamicComponent> temporaryComponents = new HashMap<GdlSentence, DynamicComponent>();
+			Map<GdlSentence, DynamicComponent> temporaryNegations = new HashMap<GdlSentence, DynamicComponent>();
 			addSentenceForm(form, model, components, negations, trueComponent, falseComponent, usingBase, usingInput, Collections.singleton(form), temporaryComponents, temporaryNegations, functionInfoMap, constantChecker, completedSentenceFormValues);
 			//TODO: Pass these over groups of multiple sentence forms
 			if(verbose && !temporaryComponents.isEmpty())
@@ -238,7 +237,7 @@ public class ExternalizedStatePropnetFactory {
 		removeUselessBasePropositions(components, negations, trueComponent, falseComponent);
 		if(verbose)
 			System.out.println("Creating component set...");
-		Set<ExternalizedStateComponent> componentSet = new LinkedHashSet<ExternalizedStateComponent>(components.values());
+		Set<DynamicComponent> componentSet = new HashSet<DynamicComponent>(components.values());
 		//Try saving some memory here...
 		components = null;
 		negations = null;
@@ -249,7 +248,7 @@ public class ExternalizedStatePropnetFactory {
 		//Make it look the same as the PropNetFactory results, until we decide
 		//how we want it to look
 		normalizePropositions(componentSet);
-		ExternalizedStatePropNet propnet = new ExternalizedStatePropNet(roles, componentSet, trueComponent, falseComponent);
+		DynamicPropNet propnet = new DynamicPropNet(roles, componentSet, trueComponent, falseComponent);
 		if(verbose) {
 			System.out.println("Done setting up propnet; took " + (System.currentTimeMillis() - startTime) + "ms, has " + componentSet.size() + " components and " + propnet.getNumLinks() + " links");
 			System.out.println("Propnet has " +propnet.getNumAnds()+" ands; "+propnet.getNumOrs()+" ors; "+propnet.getNumNots()+" nots");
@@ -261,12 +260,12 @@ public class ExternalizedStatePropnetFactory {
 
 
 	private static void removeUselessBasePropositions(
-			Map<GdlSentence, ExternalizedStateComponent> components, Map<GdlSentence, ExternalizedStateComponent> negations, ExternalizedStateConstant trueComponent,
-			ExternalizedStateConstant falseComponent) throws InterruptedException {
+			Map<GdlSentence, DynamicComponent> components, Map<GdlSentence, DynamicComponent> negations, DynamicConstant trueComponent,
+			DynamicConstant falseComponent) throws InterruptedException {
 		boolean changedSomething = false;
-		for(Entry<GdlSentence, ExternalizedStateComponent> entry : components.entrySet()) {
+		for(Entry<GdlSentence, DynamicComponent> entry : components.entrySet()) {
 			if(entry.getKey().getName() == TRUE) {
-				ExternalizedStateComponent comp = entry.getValue();
+				DynamicComponent comp = entry.getValue();
 				if(comp.getInputs().size() == 0) {
 					comp.addInput(falseComponent);
 					falseComponent.addOutput(comp);
@@ -289,10 +288,10 @@ public class ExternalizedStatePropnetFactory {
 	 *
 	 * @param componentSet
 	 */
-	private static void normalizePropositions(Set<ExternalizedStateComponent> componentSet) {
-		for(ExternalizedStateComponent component : componentSet) {
-			if(component instanceof ExternalizedStateProposition) {
-				ExternalizedStateProposition p = (ExternalizedStateProposition) component;
+	private static void normalizePropositions(Set<DynamicComponent> componentSet) {
+		for(DynamicComponent component : componentSet) {
+			if(component instanceof DynamicProposition) {
+				DynamicProposition p = (DynamicProposition) component;
 				GdlSentence sentence = p.getName();
 				if(sentence instanceof GdlRelation) {
 					GdlRelation relation = (GdlRelation) sentence;
@@ -318,7 +317,7 @@ public class ExternalizedStatePropnetFactory {
 	private static void addFormToCompletedValues(
 			SentenceForm form,
 			Map<SentenceForm, Collection<GdlSentence>> completedSentenceFormValues,
-			Map<GdlSentence, ExternalizedStateComponent> components) throws InterruptedException {
+			Map<GdlSentence, DynamicComponent> components) throws InterruptedException {
 		//Kind of inefficient. Could do better by collecting these as we go,
 		//then adding them back into the CSFV map once the sentence forms are complete.
 		//completedSentenceFormValues.put(form, new ArrayList<GdlSentence>());
@@ -340,11 +339,11 @@ public class ExternalizedStatePropnetFactory {
 	}
 
 	private static void processTemporaryComponents(
-			Map<GdlSentence, ExternalizedStateComponent> temporaryComponents,
-			Map<GdlSentence, ExternalizedStateComponent> temporaryNegations,
-			Map<GdlSentence, ExternalizedStateComponent> components,
-			Map<GdlSentence, ExternalizedStateComponent> negations, ExternalizedStateComponent trueComponent,
-			ExternalizedStateComponent falseComponent) throws InterruptedException {
+			Map<GdlSentence, DynamicComponent> temporaryComponents,
+			Map<GdlSentence, DynamicComponent> temporaryNegations,
+			Map<GdlSentence, DynamicComponent> components,
+			Map<GdlSentence, DynamicComponent> negations, DynamicComponent trueComponent,
+			DynamicComponent falseComponent) throws InterruptedException {
 		//For each component in temporary components, we want to "put it back"
 		//into the main components section.
 		//We also want to do optimization here...
@@ -356,12 +355,12 @@ public class ExternalizedStatePropnetFactory {
 		//is necessarily FALSE and should be replaced by the false
 		//component.
 		for(GdlSentence sentence : temporaryComponents.keySet()) {
-			ExternalizedStateComponent tempComp = temporaryComponents.get(sentence);
-			ExternalizedStateComponent realComp = components.get(sentence);
+			DynamicComponent tempComp = temporaryComponents.get(sentence);
+			DynamicComponent realComp = components.get(sentence);
 			if(realComp == null) {
 				realComp = falseComponent;
 			}
-			for(ExternalizedStateComponent output : tempComp.getOutputs()) {
+			for(DynamicComponent output : tempComp.getOutputs()) {
 				//Disconnect
 				output.removeInput(tempComp);
 				//tempComp.removeOutput(output); //do at end
@@ -392,7 +391,7 @@ public class ExternalizedStatePropnetFactory {
 	 * component from the propnet entirely.
 	 * @throws InterruptedException
 	 */
-	private static void optimizeAwayTrueAndFalse(Map<GdlSentence, ExternalizedStateComponent> components, Map<GdlSentence, ExternalizedStateComponent> negations, ExternalizedStateComponent trueComponent, ExternalizedStateComponent falseComponent) throws InterruptedException {
+	private static void optimizeAwayTrueAndFalse(Map<GdlSentence, DynamicComponent> components, Map<GdlSentence, DynamicComponent> negations, DynamicComponent trueComponent, DynamicComponent falseComponent) throws InterruptedException {
 	    while(hasNonessentialChildren(trueComponent) || hasNonessentialChildren(falseComponent)) {
 	    	ConcurrencyUtils.checkForInterruption();
             optimizeAwayTrue(components, negations, null, trueComponent, falseComponent);
@@ -401,22 +400,22 @@ public class ExternalizedStatePropnetFactory {
 	}
 
 	//TODO: Create a version with just a set of components that we can share with post-optimizations
-	private static void optimizeAwayFalse(Map<GdlSentence, ExternalizedStateComponent> components,
-			Map<GdlSentence, ExternalizedStateComponent> negations, ExternalizedStatePropNet pn,
-			ExternalizedStateComponent trueComponent, ExternalizedStateComponent falseComponent) {
+	private static void optimizeAwayFalse(Map<GdlSentence, DynamicComponent> components,
+			Map<GdlSentence, DynamicComponent> negations, DynamicPropNet pn,
+			DynamicComponent trueComponent, DynamicComponent falseComponent) {
         assert((components != null && negations != null) || pn != null);
         assert((components == null && negations == null) || pn == null);
-        for (ExternalizedStateComponent output : Lists.newArrayList(falseComponent.getOutputs())) {
-        	if (isEssentialProposition(output) || output instanceof ExternalizedStateTransition) {
+        for (DynamicComponent output : Lists.newArrayList(falseComponent.getOutputs())) {
+        	if (isEssentialProposition(output) || output instanceof DynamicTransition) {
         		//Since this is the false constant, there are a few "essential" types
         		//we don't actually want to keep around.
         		if (!isLegalOrGoalProposition(output)) {
         			continue;
         		}
 	    	}
-			if(output instanceof ExternalizedStateProposition) {
+			if(output instanceof DynamicProposition) {
 				//Move its outputs to be outputs of false
-				for(ExternalizedStateComponent child : output.getOutputs()) {
+				for(DynamicComponent child : output.getOutputs()) {
 					//Disconnect
 					child.removeInput(output);
 					//output.removeOutput(child); //do at end
@@ -427,7 +426,7 @@ public class ExternalizedStatePropnetFactory {
 				output.removeAllOutputs();
 
 				if(!isEssentialProposition(output)) {
-					ExternalizedStateProposition prop = (ExternalizedStateProposition) output;
+					DynamicProposition prop = (DynamicProposition) output;
 					//Remove the proposition entirely
 					falseComponent.removeOutput(output);
 					output.removeInput(falseComponent);
@@ -439,32 +438,32 @@ public class ExternalizedStatePropnetFactory {
 					    pn.removeComponent(output);
 					}
 				}
-			} else if(output instanceof ExternalizedStateAnd) {
-				ExternalizedStateAnd and = (ExternalizedStateAnd) output;
+			} else if(output instanceof DynamicAnd) {
+				DynamicAnd and = (DynamicAnd) output;
 				//Attach children of and to falseComponent
-				for(ExternalizedStateComponent child : and.getOutputs()) {
+				for(DynamicComponent child : and.getOutputs()) {
 					child.addInput(falseComponent);
 					falseComponent.addOutput(child);
 					child.removeInput(and);
 				}
 				//Disconnect and completely
 				and.removeAllOutputs();
-				for(ExternalizedStateComponent parent : and.getInputs())
+				for(DynamicComponent parent : and.getInputs())
 					parent.removeOutput(and);
 				and.removeAllInputs();
 				if(pn != null)
 				    pn.removeComponent(and);
-			} else if(output instanceof ExternalizedStateOr) {
-				ExternalizedStateOr or = (ExternalizedStateOr) output;
+			} else if(output instanceof DynamicOr) {
+				DynamicOr or = (DynamicOr) output;
 				//Remove as input from or
 				or.removeInput(falseComponent);
 				falseComponent.removeOutput(or);
 				//If or has only one input, remove it
 				if(or.getInputs().size() == 1) {
-					ExternalizedStateComponent in = or.getSingleInput();
+					DynamicComponent in = or.getSingleInput();
 					or.removeInput(in);
 					in.removeOutput(or);
-					for(ExternalizedStateComponent out : or.getOutputs()) {
+					for(DynamicComponent out : or.getOutputs()) {
 						//Disconnect from and
 						out.removeInput(or);
 						//or.removeOutput(out); //do at end
@@ -481,13 +480,13 @@ public class ExternalizedStatePropnetFactory {
 						pn.removeComponent(or);
 					}
 				}
-			} else if(output instanceof ExternalizedStateNot) {
-				ExternalizedStateNot not = (ExternalizedStateNot) output;
+			} else if(output instanceof DynamicNot) {
+				DynamicNot not = (DynamicNot) output;
 				//Disconnect from falseComponent
 				not.removeInput(falseComponent);
 				falseComponent.removeOutput(not);
 				//Connect all children of the not to trueComponent
-				for(ExternalizedStateComponent child : not.getOutputs()) {
+				for(DynamicComponent child : not.getOutputs()) {
 					//Disconnect
 					child.removeInput(not);
 					//not.removeOutput(child); //Do at end
@@ -498,7 +497,7 @@ public class ExternalizedStatePropnetFactory {
 				not.removeAllOutputs();
 				if(pn != null)
 				    pn.removeComponent(not);
-			} else if(output instanceof ExternalizedStateTransition) {
+			} else if(output instanceof DynamicTransition) {
 				//???
 				System.err.println("Fix optimizeAwayFalse's case for Transitions");
 			}
@@ -507,12 +506,12 @@ public class ExternalizedStatePropnetFactory {
 
 
 
-	private static boolean isLegalOrGoalProposition(ExternalizedStateComponent comp) {
-		if (!(comp instanceof ExternalizedStateProposition)) {
+	private static boolean isLegalOrGoalProposition(DynamicComponent comp) {
+		if (!(comp instanceof DynamicProposition)) {
 			return false;
 		}
 
-		ExternalizedStateProposition prop = (ExternalizedStateProposition) comp;
+		DynamicProposition prop = (DynamicProposition) comp;
 		GdlSentence name = prop.getName();
 		return name.getName() == GdlPool.LEGAL || name.getName() == GdlPool.GOAL;
 	}
@@ -521,16 +520,16 @@ public class ExternalizedStatePropnetFactory {
 
 
 	private static void optimizeAwayTrue(
-			Map<GdlSentence, ExternalizedStateComponent> components, Map<GdlSentence, ExternalizedStateComponent> negations, ExternalizedStatePropNet pn, ExternalizedStateComponent trueComponent,
-			ExternalizedStateComponent falseComponent) {
+			Map<GdlSentence, DynamicComponent> components, Map<GdlSentence, DynamicComponent> negations, DynamicPropNet pn, DynamicComponent trueComponent,
+			DynamicComponent falseComponent) {
 	    assert((components != null && negations != null) || pn != null);
-	    for (ExternalizedStateComponent output : Lists.newArrayList(trueComponent.getOutputs())) {
-	    	if (isEssentialProposition(output) || output instanceof ExternalizedStateTransition) {
+	    for (DynamicComponent output : Lists.newArrayList(trueComponent.getOutputs())) {
+	    	if (isEssentialProposition(output) || output instanceof DynamicTransition) {
 	    		continue;
 	    	}
-			if(output instanceof ExternalizedStateProposition) {
+			if(output instanceof DynamicProposition) {
 				//Move its outputs to be outputs of true
-				for(ExternalizedStateComponent child : output.getOutputs()) {
+				for(DynamicComponent child : output.getOutputs()) {
 					//Disconnect
 					child.removeInput(output);
 					//output.removeOutput(child); //do at end
@@ -541,7 +540,7 @@ public class ExternalizedStatePropnetFactory {
 				output.removeAllOutputs();
 
 				if(!isEssentialProposition(output)) {
-					ExternalizedStateProposition prop = (ExternalizedStateProposition) output;
+					DynamicProposition prop = (DynamicProposition) output;
 					//Remove the proposition entirely
 					trueComponent.removeOutput(output);
 					output.removeInput(trueComponent);
@@ -553,32 +552,32 @@ public class ExternalizedStatePropnetFactory {
 					    pn.removeComponent(output);
 					}
 				}
-			} else if(output instanceof ExternalizedStateOr) {
-				ExternalizedStateOr or = (ExternalizedStateOr) output;
+			} else if(output instanceof DynamicOr) {
+				DynamicOr or = (DynamicOr) output;
 				//Attach children of or to trueComponent
-				for(ExternalizedStateComponent child : or.getOutputs()) {
+				for(DynamicComponent child : or.getOutputs()) {
 					child.addInput(trueComponent);
 					trueComponent.addOutput(child);
 					child.removeInput(or);
 				}
 				//Disconnect or completely
 				or.removeAllOutputs();
-				for(ExternalizedStateComponent parent : or.getInputs())
+				for(DynamicComponent parent : or.getInputs())
 					parent.removeOutput(or);
 				or.removeAllInputs();
 				if(pn != null)
 				    pn.removeComponent(or);
-			} else if(output instanceof ExternalizedStateAnd) {
-				ExternalizedStateAnd and = (ExternalizedStateAnd) output;
+			} else if(output instanceof DynamicAnd) {
+				DynamicAnd and = (DynamicAnd) output;
 				//Remove as input from and
 				and.removeInput(trueComponent);
 				trueComponent.removeOutput(and);
 				//If and has only one input, remove it
 				if(and.getInputs().size() == 1) {
-					ExternalizedStateComponent in = and.getSingleInput();
+					DynamicComponent in = and.getSingleInput();
 					and.removeInput(in);
 					in.removeOutput(and);
-					for(ExternalizedStateComponent out : and.getOutputs()) {
+					for(DynamicComponent out : and.getOutputs()) {
 						//Disconnect from and
 						out.removeInput(and);
 						//and.removeOutput(out); //do at end
@@ -595,13 +594,13 @@ public class ExternalizedStatePropnetFactory {
 						pn.removeComponent(and);
 					}
 				}
-			} else if(output instanceof ExternalizedStateNot) {
-				ExternalizedStateNot not = (ExternalizedStateNot) output;
+			} else if(output instanceof DynamicNot) {
+				DynamicNot not = (DynamicNot) output;
 				//Disconnect from trueComponent
 				not.removeInput(trueComponent);
 				trueComponent.removeOutput(not);
 				//Connect all children of the not to falseComponent
-				for(ExternalizedStateComponent child : not.getOutputs()) {
+				for(DynamicComponent child : not.getOutputs()) {
 					//Disconnect
 					child.removeInput(not);
 					//not.removeOutput(child); //Do at end
@@ -612,7 +611,7 @@ public class ExternalizedStatePropnetFactory {
 				not.removeAllOutputs();
 				if(pn != null)
 				    pn.removeComponent(not);
-			} else if(output instanceof ExternalizedStateTransition) {
+			} else if(output instanceof DynamicTransition) {
 				//???
 				System.err.println("Fix optimizeAwayTrue's case for Transitions");
 			}
@@ -620,9 +619,9 @@ public class ExternalizedStatePropnetFactory {
 	}
 
 
-	private static boolean hasNonessentialChildren(ExternalizedStateComponent trueComponent) {
-		for(ExternalizedStateComponent child : trueComponent.getOutputs()) {
-			if(child instanceof ExternalizedStateTransition)
+	private static boolean hasNonessentialChildren(DynamicComponent trueComponent) {
+		for(DynamicComponent child : trueComponent.getOutputs()) {
+			if(child instanceof DynamicTransition)
 				continue;
 			if(!isEssentialProposition(child))
 				return true;
@@ -633,14 +632,14 @@ public class ExternalizedStatePropnetFactory {
 		return false;
 	}
 
-	private static boolean isEssentialProposition(ExternalizedStateComponent component) {
-		if(!(component instanceof ExternalizedStateProposition))
+	private static boolean isEssentialProposition(DynamicComponent component) {
+		if(!(component instanceof DynamicProposition))
 			return false;
 
 		//We're looking for things that would be outputs of "true" or "false",
 		//but we would still want to keep as propositions to be read by the
 		//state machine
-		ExternalizedStateProposition prop = (ExternalizedStateProposition) component;
+		DynamicProposition prop = (DynamicProposition) component;
 		GdlConstant name = prop.getName().getName();
 
 		return name.equals(LEGAL) /*|| name.equals(NEXT)*/ || name.equals(GOAL)
@@ -648,42 +647,42 @@ public class ExternalizedStatePropnetFactory {
 	}
 
 
-	private static void completeComponentSet(Set<ExternalizedStateComponent> componentSet) {
-		Set<ExternalizedStateComponent> newComponents = new HashSet<ExternalizedStateComponent>();
-		Set<ExternalizedStateComponent> componentsToTry = new HashSet<ExternalizedStateComponent>(componentSet);
+	private static void completeComponentSet(Set<DynamicComponent> componentSet) {
+		Set<DynamicComponent> newComponents = new HashSet<DynamicComponent>();
+		Set<DynamicComponent> componentsToTry = new HashSet<DynamicComponent>(componentSet);
 		while(!componentsToTry.isEmpty()) {
-			for(ExternalizedStateComponent c : componentsToTry) {
-				for(ExternalizedStateComponent out : c.getOutputs()) {
+			for(DynamicComponent c : componentsToTry) {
+				for(DynamicComponent out : c.getOutputs()) {
 					if(!componentSet.contains(out))
 						newComponents.add(out);
 				}
-				for(ExternalizedStateComponent in : c.getInputs()) {
+				for(DynamicComponent in : c.getInputs()) {
 					if(!componentSet.contains(in))
 						newComponents.add(in);
 				}
 			}
 			componentSet.addAll(newComponents);
 			componentsToTry = newComponents;
-			newComponents = new HashSet<ExternalizedStateComponent>();
+			newComponents = new HashSet<DynamicComponent>();
 		}
 	}
 
-	private static void addTransitions(Map<GdlSentence, ExternalizedStateComponent> components) {
-		for(Entry<GdlSentence, ExternalizedStateComponent> entry : components.entrySet()) {
+	private static void addTransitions(Map<GdlSentence, DynamicComponent> components) {
+		for(Entry<GdlSentence, DynamicComponent> entry : components.entrySet()) {
 			GdlSentence sentence = entry.getKey();
 
 			if(sentence.getName().equals(NEXT)) {
 				//connect to true
 				GdlSentence trueSentence = GdlPool.getRelation(TRUE, sentence.getBody());
-				ExternalizedStateComponent nextComponent = entry.getValue();
-				ExternalizedStateComponent trueComponent = components.get(trueSentence);
+				DynamicComponent nextComponent = entry.getValue();
+				DynamicComponent trueComponent = components.get(trueSentence);
 				//There might be no true component (for example, because the bases
 				//told us so). If that's the case, don't have a transition.
 				if(trueComponent == null) {
 				    // Skipping transition to supposedly impossible 'trueSentence'
 				    continue;
 				}
-				ExternalizedStateTransition transition = new ExternalizedStateTransition();
+				DynamicTransition transition = new DynamicTransition();
 				transition.addInput(nextComponent);
 				nextComponent.addOutput(transition);
 				transition.addOutput(trueComponent);
@@ -698,24 +697,24 @@ public class ExternalizedStatePropnetFactory {
 	//TODO: Replace with version using constantChecker only
 	//TODO: This can give problematic results if interpreted in
 	//the standard way (see test_case_3d)
-	private static void setUpInit(Map<GdlSentence, ExternalizedStateComponent> components,
-			ExternalizedStateConstant trueComponent, ExternalizedStateConstant falseComponent) {
-		ExternalizedStateProposition initProposition = new ExternalizedStateProposition(GdlPool.getProposition(INIT_CAPS));
-		for(Entry<GdlSentence, ExternalizedStateComponent> entry : components.entrySet()) {
+	private static void setUpInit(Map<GdlSentence, DynamicComponent> components,
+			DynamicConstant trueComponent, DynamicConstant falseComponent) {
+		DynamicProposition initProposition = new DynamicProposition(GdlPool.getProposition(INIT_CAPS));
+		for(Entry<GdlSentence, DynamicComponent> entry : components.entrySet()) {
 			//Is this something that will be true?
 			if(entry.getValue() == trueComponent) {
 				if(entry.getKey().getName().equals(INIT)) {
 					//Find the corresponding true sentence
 					GdlSentence trueSentence = GdlPool.getRelation(TRUE, entry.getKey().getBody());
 					//System.out.println("True sentence from init: " + trueSentence);
-					ExternalizedStateComponent trueSentenceComponent = components.get(trueSentence);
+					DynamicComponent trueSentenceComponent = components.get(trueSentence);
 					if(trueSentenceComponent.getInputs().isEmpty()) {
 						//Case where there is no transition input
 						//Add the transition input, connect to init, continue loop
 
 						// @author c.sironi: Also set to TRUE that fact that the value of this transition
 						// depends on the INIT proposition value.
-						ExternalizedStateTransition transition = new ExternalizedStateTransition(true);
+						DynamicTransition transition = new DynamicTransition(true);
 						//init goes into transition
 						transition.addInput(initProposition);
 						initProposition.addOutput(transition);
@@ -724,21 +723,21 @@ public class ExternalizedStatePropnetFactory {
 						transition.addOutput(trueSentenceComponent);
 					} else {
 						//The transition already exists
-						ExternalizedStateComponent transition = trueSentenceComponent.getSingleInput();
+						DynamicComponent transition = trueSentenceComponent.getSingleInput();
 
 						//We want to add init as a thing that precedes the transition
 						//Disconnect existing input
-						ExternalizedStateComponent input = transition.getSingleInput();
+						DynamicComponent input = transition.getSingleInput();
 						//input and init go into or, or goes into transition
 						input.removeOutput(transition);
 						transition.removeInput(input);
-						List<ExternalizedStateComponent> orInputs = new ArrayList<ExternalizedStateComponent>(2);
+						List<DynamicComponent> orInputs = new ArrayList<DynamicComponent>(2);
 						orInputs.add(input);
 						orInputs.add(initProposition);
 						orify(orInputs, transition, falseComponent);
 						// @author c.sironi: Also set to TRUE that fact that the value of this transition
 						// depends on the INIT proposition value.
-						((ExternalizedStateTransition) transition).setDependingOnInit(true);
+						((DynamicTransition) transition).setDependingOnInit(true);
 					}
 				}
 			}
@@ -753,13 +752,13 @@ public class ExternalizedStatePropnetFactory {
 	 * Adds an or gate connecting the inputs to produce the output.
 	 * Handles special optimization cases like a true/false input.
 	 */
-	private static void orify(Collection<ExternalizedStateComponent> inputs, ExternalizedStateComponent output, ExternalizedStateConstant falseProp) {
+	private static void orify(Collection<DynamicComponent> inputs, DynamicComponent output, DynamicConstant falseProp) {
 		//TODO: Look for already-existing ors with the same inputs?
 		//Or can this be handled with a GDL transformation?
 
 		//Special case: An input is the true constant
-		for(ExternalizedStateComponent in : inputs) {
-			if(in instanceof ExternalizedStateConstant && ((ExternalizedStateConstant) in).getValue()) {
+		for(DynamicComponent in : inputs) {
+			if(in instanceof DynamicConstant && ((DynamicConstant) in).getValue()) {
 				//True constant: connect that to the component, done
 				in.addOutput(output);
 				output.addInput(in);
@@ -772,9 +771,9 @@ public class ExternalizedStatePropnetFactory {
 		//What if that "or" gate has multiple outputs? Could that happen?
 
 		//For reals... just skip over any false constants
-		ExternalizedStateOr or = new ExternalizedStateOr();
-		for(ExternalizedStateComponent in : inputs) {
-			if(!(in instanceof ExternalizedStateConstant)) {
+		DynamicOr or = new DynamicOr();
+		for(DynamicComponent in : inputs) {
+			if(!(in instanceof DynamicConstant)) {
 				in.addOutput(or);
 				or.addInput(in);
 			}
@@ -788,7 +787,7 @@ public class ExternalizedStatePropnetFactory {
 		}
 		//If there's just one, on the other hand, don't use the or gate
 		if(or.getInputs().size() == 1) {
-			ExternalizedStateComponent in = or.getSingleInput();
+			DynamicComponent in = or.getSingleInput();
 			in.removeOutput(or);
 			or.removeInput(in);
 			in.addOutput(output);
@@ -854,12 +853,12 @@ public class ExternalizedStatePropnetFactory {
 
 
 	private static void addSentenceForm(SentenceForm form, SentenceDomainModel model,
-			Map<GdlSentence, ExternalizedStateComponent> components,
-			Map<GdlSentence, ExternalizedStateComponent> negations,
-			ExternalizedStateConstant trueComponent, ExternalizedStateConstant falseComponent,
+			Map<GdlSentence, DynamicComponent> components,
+			Map<GdlSentence, DynamicComponent> negations,
+			DynamicConstant trueComponent, DynamicConstant falseComponent,
 			boolean usingBase, boolean usingInput,
 			Set<SentenceForm> recursionForms,
-			Map<GdlSentence, ExternalizedStateComponent> temporaryComponents, Map<GdlSentence, ExternalizedStateComponent> temporaryNegations,
+			Map<GdlSentence, DynamicComponent> temporaryComponents, Map<GdlSentence, DynamicComponent> temporaryNegations,
 			Map<SentenceForm, FunctionInfo> functionInfoMap, ConstantChecker constantChecker,
 			Map<SentenceForm, Collection<GdlSentence>> completedSentenceFormValues) throws InterruptedException {
 		//This is the meat of it (along with the entire Assignments class).
@@ -877,7 +876,7 @@ public class ExternalizedStatePropnetFactory {
 			if(alwaysTrueSentence.getName().equals(LEGAL)
 					|| alwaysTrueSentence.getName().equals(NEXT)
 					|| alwaysTrueSentence.getName().equals(GOAL)) {
-				ExternalizedStateProposition prop = new ExternalizedStateProposition(alwaysTrueSentence);
+				DynamicProposition prop = new DynamicProposition(alwaysTrueSentence);
 				//Attach to true
 				trueComponent.addOutput(prop);
 				prop.addInput(trueComponent);
@@ -896,7 +895,7 @@ public class ExternalizedStatePropnetFactory {
 			SentenceForm inputForm = form.withName(INPUT);
 			for (GdlSentence inputSentence : constantChecker.getTrueSentences(inputForm)) {
 				GdlSentence doesSentence = GdlPool.getRelation(DOES, inputSentence.getBody());
-				ExternalizedStateProposition prop = new ExternalizedStateProposition(doesSentence);
+				DynamicProposition prop = new DynamicProposition(doesSentence);
 				components.put(doesSentence, prop);
 			}
 			return;
@@ -905,13 +904,13 @@ public class ExternalizedStatePropnetFactory {
 			SentenceForm baseForm = form.withName(BASE);
 			for (GdlSentence baseSentence : constantChecker.getTrueSentences(baseForm)) {
 				GdlSentence trueSentence = GdlPool.getRelation(TRUE, baseSentence.getBody());
-				ExternalizedStateProposition prop = new ExternalizedStateProposition(trueSentence);
+				DynamicProposition prop = new DynamicProposition(trueSentence);
 				components.put(trueSentence, prop);
 			}
 			return;
 		}
 
-		Map<GdlSentence, Set<ExternalizedStateComponent>> inputsToOr = new HashMap<GdlSentence, Set<ExternalizedStateComponent>>();
+		Map<GdlSentence, Set<DynamicComponent>> inputsToOr = new HashMap<GdlSentence, Set<DynamicComponent>>();
 		for(GdlRule rule : rules) {
 			Assignments assignments = AssignmentsFactory.getAssignmentsForRule(rule, model, functionInfoMap, completedSentenceFormValues);
 
@@ -932,7 +931,7 @@ public class ExternalizedStatePropnetFactory {
 				GdlSentence sentence = CommonTransforms.replaceVariables(rule.getHead(), assignment);
 
 				//Now we go through the conjuncts as before, but we wait to hook them up.
-				List<ExternalizedStateComponent> componentsToConnect = new ArrayList<ExternalizedStateComponent>(rule.arity());
+				List<DynamicComponent> componentsToConnect = new ArrayList<DynamicComponent>(rule.arity());
 				for(GdlLiteral literal : rule.getBody()) {
 					if(literal instanceof GdlSentence) {
 						//Get the sentence post-substitutions
@@ -949,7 +948,7 @@ public class ExternalizedStatePropnetFactory {
 							continue;
 						}
 
-						ExternalizedStateComponent conj = components.get(transformed);
+						DynamicComponent conj = components.get(transformed);
 						//If conj is null and this is a sentence form we're still handling,
 						//hook up to a temporary sentence form
 						if(conj == null) {
@@ -957,7 +956,7 @@ public class ExternalizedStatePropnetFactory {
 						}
 						if(conj == null && SentenceModelUtils.inSentenceFormGroup(transformed, recursionForms)) {
 							//Set up a temporary component
-							ExternalizedStateProposition tempProp = new ExternalizedStateProposition(transformed);
+							DynamicProposition tempProp = new DynamicProposition(transformed);
 							temporaryComponents.put(transformed, tempProp);
 							conj = tempProp;
 						}
@@ -989,7 +988,7 @@ public class ExternalizedStatePropnetFactory {
 							continue;
 						}
 
-						ExternalizedStateComponent conj = negations.get(transformed);
+						DynamicComponent conj = negations.get(transformed);
 						if(isThisConstant(conj, falseComponent)) {
 							//We need to change one of the variables inside
 							List<GdlVariable> varsInConjunct = getVarsInConjunct(internal);
@@ -1003,20 +1002,20 @@ public class ExternalizedStatePropnetFactory {
 						}
 						//Check for the recursive case:
 						if(conj == null && SentenceModelUtils.inSentenceFormGroup(transformed, recursionForms)) {
-							ExternalizedStateComponent positive = components.get(transformed);
+							DynamicComponent positive = components.get(transformed);
 							if(positive == null) {
 								positive = temporaryComponents.get(transformed);
 							}
 							if(positive == null) {
 								//Make the temporary proposition
-								ExternalizedStateProposition tempProp = new ExternalizedStateProposition(transformed);
+								DynamicProposition tempProp = new DynamicProposition(transformed);
 								temporaryComponents.put(transformed, tempProp);
 								positive = tempProp;
 							}
 							//Positive is now set and in temporaryComponents
 							//Evidently, wasn't in temporaryNegations
 							//So we add the "not" gate and set it in temporaryNegations
-							ExternalizedStateNot not = new ExternalizedStateNot();
+							DynamicNot not = new DynamicNot();
 							//Add positive as input
 							not.addInput(positive);
 							positive.addOutput(not);
@@ -1024,7 +1023,7 @@ public class ExternalizedStatePropnetFactory {
 							conj = not;
 						}
 						if(conj == null) {
-							ExternalizedStateComponent positive = components.get(transformed);
+							DynamicComponent positive = components.get(transformed);
 							//No, because then that will be attached to "negations", which could be bad
 
 							if(positive == null) {
@@ -1037,14 +1036,14 @@ public class ExternalizedStatePropnetFactory {
 
 							//Check if we're sharing a component with another sentence with a negation
 							//(i.e. look for "nots" in our outputs and use those instead)
-							ExternalizedStateNot existingNotOutput = getNotOutput(positive);
+							DynamicNot existingNotOutput = getNotOutput(positive);
 							if(existingNotOutput != null) {
 								componentsToConnect.add(existingNotOutput);
 								negations.put(transformed, existingNotOutput);
 								continue; //to the next conjunct
 							}
 
-							ExternalizedStateNot not = new ExternalizedStateNot();
+							DynamicNot not = new DynamicNot();
 							not.addInput(positive);
 							positive.addOutput(not);
 							negations.put(transformed, not);
@@ -1059,12 +1058,12 @@ public class ExternalizedStatePropnetFactory {
 				}
 				if(!componentsToConnect.contains(null)) {
 					//Connect all the components
-					ExternalizedStateProposition andComponent = new ExternalizedStateProposition(TEMP);
+					DynamicProposition andComponent = new DynamicProposition(TEMP);
 
 					andify(componentsToConnect, andComponent, trueComponent);
 					if(!isThisConstant(andComponent, falseComponent)) {
 						if(!inputsToOr.containsKey(sentence))
-							inputsToOr.put(sentence, new HashSet<ExternalizedStateComponent>());
+							inputsToOr.put(sentence, new HashSet<DynamicComponent>());
 						inputsToOr.get(sentence).add(andComponent);
 						//We'll want to make sure at least one of the non-constant
 						//components is changing
@@ -1077,14 +1076,14 @@ public class ExternalizedStatePropnetFactory {
 		}
 
 		//At the end, we hook up the conjuncts
-		for(Entry<GdlSentence, Set<ExternalizedStateComponent>> entry : inputsToOr.entrySet()) {
+		for(Entry<GdlSentence, Set<DynamicComponent>> entry : inputsToOr.entrySet()) {
 			ConcurrencyUtils.checkForInterruption();
 
 			GdlSentence sentence = entry.getKey();
-			Set<ExternalizedStateComponent> inputs = entry.getValue();
-			Set<ExternalizedStateComponent> realInputs = new HashSet<ExternalizedStateComponent>();
-			for(ExternalizedStateComponent input : inputs) {
-				if(input instanceof ExternalizedStateConstant || input.getInputs().size() == 0) {
+			Set<DynamicComponent> inputs = entry.getValue();
+			Set<DynamicComponent> realInputs = new HashSet<DynamicComponent>();
+			for(DynamicComponent input : inputs) {
+				if(input instanceof DynamicConstant || input.getInputs().size() == 0) {
 					realInputs.add(input);
 				} else {
 					realInputs.add(input.getSingleInput());
@@ -1093,7 +1092,7 @@ public class ExternalizedStatePropnetFactory {
 				}
 			}
 
-			ExternalizedStateProposition prop = new ExternalizedStateProposition(sentence);
+			DynamicProposition prop = new DynamicProposition(sentence);
 			orify(realInputs, prop, falseComponent);
 			components.put(sentence, prop);
 		}
@@ -1106,7 +1105,7 @@ public class ExternalizedStatePropnetFactory {
 			for(GdlSentence sentence : model.getDomain(form)) {
 				ConcurrencyUtils.checkForInterruption();
 
-				ExternalizedStateProposition prop = new ExternalizedStateProposition(sentence);
+				DynamicProposition prop = new DynamicProposition(sentence);
 				components.put(sentence, prop);
 			}
 		}
@@ -1133,17 +1132,17 @@ public class ExternalizedStatePropnetFactory {
 		return result;
 	}
 
-	private static boolean isThisConstant(ExternalizedStateComponent conj, ExternalizedStateConstant constantComponent) {
+	private static boolean isThisConstant(DynamicComponent conj, DynamicConstant constantComponent) {
 		if(conj == constantComponent)
 			return true;
-		return (conj instanceof ExternalizedStateProposition && conj.getInputs().size() == 1 && conj.getSingleInput() == constantComponent);
+		return (conj instanceof DynamicProposition && conj.getInputs().size() == 1 && conj.getSingleInput() == constantComponent);
 	}
 
 
-	private static ExternalizedStateNot getNotOutput(ExternalizedStateComponent positive) {
-		for(ExternalizedStateComponent c : positive.getOutputs()) {
-			if(c instanceof ExternalizedStateNot) {
-				return (ExternalizedStateNot) c;
+	private static DynamicNot getNotOutput(DynamicComponent positive) {
+		for(DynamicComponent c : positive.getOutputs()) {
+			if(c instanceof DynamicNot) {
+				return (DynamicNot) c;
 			}
 		}
 		return null;
@@ -1156,10 +1155,10 @@ public class ExternalizedStatePropnetFactory {
 
 
 
-	private static void andify(List<ExternalizedStateComponent> inputs, ExternalizedStateComponent output, ExternalizedStateConstant trueProp) {
+	private static void andify(List<DynamicComponent> inputs, DynamicComponent output, DynamicConstant trueProp) {
 		//Special case: If the inputs include false, connect false to thisComponent
-		for(ExternalizedStateComponent c : inputs) {
-			if(c instanceof ExternalizedStateConstant && !((ExternalizedStateConstant)c).getValue()) {
+		for(DynamicComponent c : inputs) {
+			if(c instanceof DynamicConstant && !((DynamicConstant)c).getValue()) {
 				//Connect false (c) to the output
 				output.addInput(c);
 				c.addOutput(output);
@@ -1168,9 +1167,9 @@ public class ExternalizedStatePropnetFactory {
 		}
 
 		//For reals... just skip over any true constants
-		ExternalizedStateAnd and = new ExternalizedStateAnd();
-		for(ExternalizedStateComponent in : inputs) {
-			if(!(in instanceof ExternalizedStateConstant)) {
+		DynamicAnd and = new DynamicAnd();
+		for(DynamicComponent in : inputs) {
+			if(!(in instanceof DynamicConstant)) {
 				in.addOutput(and);
 				and.addInput(in);
 			}
@@ -1184,7 +1183,7 @@ public class ExternalizedStatePropnetFactory {
 		}
 		//If there's just one, on the other hand, don't use the and gate
 		if(and.getInputs().size() == 1) {
-			ExternalizedStateComponent in = and.getSingleInput();
+			DynamicComponent in = and.getSingleInput();
 			in.removeOutput(and);
 			and.removeInput(in);
 			in.addOutput(output);
@@ -1236,25 +1235,25 @@ public class ExternalizedStatePropnetFactory {
 	 * @param trueConstant
 	 * @param falseConstant
 	 */
-	public static void fixInputlessComponents(ExternalizedStatePropNet pn, ExternalizedStateConstant trueConstant, ExternalizedStateConstant falseConstant){
+	public static void fixInputlessComponents(DynamicPropNet pn, DynamicConstant trueConstant, DynamicConstant falseConstant){
 
 		assert(trueConstant != null && falseConstant != null);
 
-		for(ExternalizedStateComponent c : pn.getComponents()){
+		for(DynamicComponent c : pn.getComponents()){
 			if(c.getInputs().size() == 0){
-				if(c instanceof ExternalizedStateProposition){
-					if(((ExternalizedStateProposition) c).getPropositionType() != PROP_TYPE.INPUT){
+				if(c instanceof DynamicProposition){
+					if(((DynamicProposition) c).getPropositionType() != PROP_TYPE.INPUT){
 						c.addInput(falseConstant);
 						falseConstant.addOutput(c);
 					}
-				}else if(c instanceof ExternalizedStateOr){
+				}else if(c instanceof DynamicOr){
 					c.addInput(falseConstant);
 					falseConstant.addOutput(c);
-				}else if(c instanceof ExternalizedStateAnd){
+				}else if(c instanceof DynamicAnd){
 					throw new RuntimeException("Unhandled input-less component type: NOT");
-				}else if(c instanceof ExternalizedStateTransition){
+				}else if(c instanceof DynamicTransition){
 					throw new RuntimeException("Unhandled input-less component type: NOT");
-				}else if(c instanceof ExternalizedStateNot){
+				}else if(c instanceof DynamicNot){
 					throw new RuntimeException("Unhandled input-less component type: NOT");
 				}
 			}
@@ -1267,10 +1266,10 @@ public class ExternalizedStatePropnetFactory {
 	}
 
 	////////FIX
-	private static void optimizeAwayTrueAndFalse2(ExternalizedStatePropNet pn, ExternalizedStateComponent trueComponent, ExternalizedStateComponent falseComponent) {
+	private static void optimizeAwayTrueAndFalse2(DynamicPropNet pn, DynamicComponent trueComponent, DynamicComponent falseComponent) {
 
-		Set<ExternalizedStateComponent> toCheckTrue = new HashSet<ExternalizedStateComponent>(trueComponent.getOutputs());
-		Set<ExternalizedStateComponent> toCheckFalse = new HashSet<ExternalizedStateComponent>(falseComponent.getOutputs());
+		Set<DynamicComponent> toCheckTrue = new HashSet<DynamicComponent>(trueComponent.getOutputs());
+		Set<DynamicComponent> toCheckFalse = new HashSet<DynamicComponent>(falseComponent.getOutputs());
 
 		while(!(toCheckTrue.isEmpty() && toCheckFalse.isEmpty())){
 
@@ -1284,19 +1283,19 @@ public class ExternalizedStatePropnetFactory {
 
 	/*
 	//TODO: Create a version with just a set of components that we can share with post-optimizations
-	private static void optimizeAwayFalse2(ExternalizedStatePropNet pn, ExternalizedStateComponent trueComponent, ExternalizedStateComponent falseComponent) {
+	private static void optimizeAwayFalse2(DynamicPropNet pn, DynamicComponent trueComponent, DynamicComponent falseComponent) {
 
-        for (ExternalizedStateComponent output : Lists.newArrayList(falseComponent.getOutputs())) {
-        	if (isEssentialProposition(output) || output instanceof ExternalizedStateTransition) {
+        for (DynamicComponent output : Lists.newArrayList(falseComponent.getOutputs())) {
+        	if (isEssentialProposition(output) || output instanceof DynamicTransition) {
         		//Since this is the false constant, there are a few "essential" types
         		//we don't actually want to keep around.
         		if (!isLegalOrGoalProposition(output)) {
         			continue;
         		}
 	    	}
-			if(output instanceof ExternalizedStateProposition) {
+			if(output instanceof DynamicProposition) {
 				//Move its outputs to be outputs of false
-				for(ExternalizedStateComponent child : output.getOutputs()) {
+				for(DynamicComponent child : output.getOutputs()) {
 					//Disconnect
 					child.removeInput(output);
 					//output.removeOutput(child); //do at end
@@ -1307,7 +1306,7 @@ public class ExternalizedStatePropnetFactory {
 				output.removeAllOutputs();
 
 				if(!isEssentialProposition(output)) {
-					ExternalizedStateProposition prop = (ExternalizedStateProposition) output;
+					DynamicProposition prop = (DynamicProposition) output;
 					//Remove the proposition entirely
 					falseComponent.removeOutput(output);
 					output.removeInput(falseComponent);
@@ -1319,32 +1318,32 @@ public class ExternalizedStatePropnetFactory {
 					    pn.removeComponent(output);
 					}
 				}
-			} else if(output instanceof ExternalizedStateAnd) {
-				ExternalizedStateAnd and = (ExternalizedStateAnd) output;
+			} else if(output instanceof DynamicAnd) {
+				DynamicAnd and = (DynamicAnd) output;
 				//Attach children of and to falseComponent
-				for(ExternalizedStateComponent child : and.getOutputs()) {
+				for(DynamicComponent child : and.getOutputs()) {
 					child.addInput(falseComponent);
 					falseComponent.addOutput(child);
 					child.removeInput(and);
 				}
 				//Disconnect and completely
 				and.removeAllOutputs();
-				for(ExternalizedStateComponent parent : and.getInputs())
+				for(DynamicComponent parent : and.getInputs())
 					parent.removeOutput(and);
 				and.removeAllInputs();
 				if(pn != null)
 				    pn.removeComponent(and);
-			} else if(output instanceof ExternalizedStateOr) {
-				ExternalizedStateOr or = (ExternalizedStateOr) output;
+			} else if(output instanceof DynamicOr) {
+				DynamicOr or = (DynamicOr) output;
 				//Remove as input from or
 				or.removeInput(falseComponent);
 				falseComponent.removeOutput(or);
 				//If or has only one input, remove it
 				if(or.getInputs().size() == 1) {
-					ExternalizedStateComponent in = or.getSingleInput();
+					DynamicComponent in = or.getSingleInput();
 					or.removeInput(in);
 					in.removeOutput(or);
-					for(ExternalizedStateComponent out : or.getOutputs()) {
+					for(DynamicComponent out : or.getOutputs()) {
 						//Disconnect from and
 						out.removeInput(or);
 						//or.removeOutput(out); //do at end
@@ -1361,13 +1360,13 @@ public class ExternalizedStatePropnetFactory {
 						pn.removeComponent(or);
 					}
 				}
-			} else if(output instanceof ExternalizedStateNot) {
-				ExternalizedStateNot not = (ExternalizedStateNot) output;
+			} else if(output instanceof DynamicNot) {
+				DynamicNot not = (DynamicNot) output;
 				//Disconnect from falseComponent
 				not.removeInput(falseComponent);
 				falseComponent.removeOutput(not);
 				//Connect all children of the not to trueComponent
-				for(ExternalizedStateComponent child : not.getOutputs()) {
+				for(DynamicComponent child : not.getOutputs()) {
 					//Disconnect
 					child.removeInput(not);
 					//not.removeOutput(child); //Do at end
@@ -1378,7 +1377,7 @@ public class ExternalizedStatePropnetFactory {
 				not.removeAllOutputs();
 				if(pn != null)
 				    pn.removeComponent(not);
-			} else if(output instanceof ExternalizedStateTransition) {
+			} else if(output instanceof DynamicTransition) {
 				//???
 				System.err.println("Fix optimizeAwayFalse's case for Transitions");
 			}
@@ -1407,13 +1406,13 @@ public class ExternalizedStatePropnetFactory {
 
 
 
-	public static boolean checkPropnetStructure(ExternalizedStatePropNet pn){
+	public static boolean checkPropnetStructure(DynamicPropNet pn){
 
 		boolean propnetOk = true;
 
 		Map<GdlSentence, Integer> propNumbers = new HashMap<GdlSentence, Integer>();
 
-		for(ExternalizedStateComponent c : pn.getComponents()){
+		for(DynamicComponent c : pn.getComponents()){
 
 			/* NOT FEASIBLE TO CHECK THIS IN A REASONABLE AMOUNT OF TIME FOR MOST GAMES:
 
@@ -1449,9 +1448,9 @@ public class ExternalizedStatePropnetFactory {
 			*/
 
 			// Check for each type of component if it has the correct inputs and outputs
-			if(c instanceof ExternalizedStateProposition){
+			if(c instanceof DynamicProposition){
 
-				ExternalizedStateProposition p = (ExternalizedStateProposition) c;
+				DynamicProposition p = (DynamicProposition) c;
 
 				Integer count;
 				switch(p.getPropositionType()){
@@ -1472,7 +1471,7 @@ public class ExternalizedStatePropnetFactory {
 					if(p.getInputs().size() != 1){
 						GamerLogger.log("PropStructureChecker", "Component " + p.getComponentType() + " has wrong number of inputs: " + p.getInputs().size());
 						propnetOk = false;
-					}else if(!(p.getSingleInput() instanceof ExternalizedStateTransition)){
+					}else if(!(p.getSingleInput() instanceof DynamicTransition)){
 						GamerLogger.log("PropStructureChecker", "Component " + p.getComponentType() + " has no TRANSITION as input but " + p.getSingleInput().getClass().getName());
 						propnetOk = false;
 					}
@@ -1526,7 +1525,7 @@ public class ExternalizedStatePropnetFactory {
 					propnetOk = false;
 					break;
 				}
-			}else if(c instanceof ExternalizedStateTransition){
+			}else if(c instanceof DynamicTransition){
 
 				if(c.getInputs().size() != 1){
 					GamerLogger.log("PropStructureChecker", "The component " + c.getComponentType() + " doesn't have one and only one input. It has " + c.getInputs().size() + " inputs.");
@@ -1536,22 +1535,22 @@ public class ExternalizedStatePropnetFactory {
 				if(c.getOutputs().size() != 1){
 					GamerLogger.log("PropStructureChecker", "The component " + c.getComponentType() + " doesn't have one and only one output. It has " + c.getOutputs().size() + " outputs.");
 					propnetOk = false;
-				}else if(!(c.getSingleOutput() instanceof ExternalizedStateProposition)){
+				}else if(!(c.getSingleOutput() instanceof DynamicProposition)){
 					GamerLogger.log("PropStructureChecker", "The component " + c.getComponentType() + " doesn't have a proposition as output. It has " + c.getSingleOutput().getComponentType() + " as output.");
 					propnetOk = false;
-				}else if(((ExternalizedStateProposition) c.getSingleOutput()).getPropositionType() != PROP_TYPE.BASE){
+				}else if(((DynamicProposition) c.getSingleOutput()).getPropositionType() != PROP_TYPE.BASE){
 					GamerLogger.log("PropStructureChecker", "The component " + c.getComponentType() + " doesn't have a base proposition as output. It has " + c.getSingleOutput().getComponentType() + " as output.");
 					propnetOk = false;
 				}
 
-			}else if(c instanceof ExternalizedStateConstant){
+			}else if(c instanceof DynamicConstant){
 
 				if(c.getInputs().size() != 0){
 					GamerLogger.log("PropStructureChecker", "The component " + c.getComponentType() + " has " + c.getInputs().size() + " inputs.");
 					propnetOk = false;
 				}
 
-			}else if(c instanceof ExternalizedStateAnd){
+			}else if(c instanceof DynamicAnd){
 
 				if(c.getInputs().size() == 1){
 					GamerLogger.log("PropStructureChecker", "The component " + c.getComponentType() + " is unnecessary since it only has one input: " + c.getSingleInput().getComponentType() + ".");
@@ -1566,7 +1565,7 @@ public class ExternalizedStatePropnetFactory {
 					propnetOk = false;
 				}
 
-			}else if(c instanceof ExternalizedStateOr){
+			}else if(c instanceof DynamicOr){
 
 				if(c.getInputs().size() == 1){
 					GamerLogger.log("PropStructureChecker", "The component " + c.getComponentType() + " is unnecessary since it only has one input: " + c.getSingleInput().getComponentType() + ".");
@@ -1577,7 +1576,7 @@ public class ExternalizedStatePropnetFactory {
 
 					/*
 					String s = "[ ";
-					for(ExternalizedStateComponent cc : c.getOutputs()){
+					for(DynamicComponent cc : c.getOutputs()){
 						s += cc.getType();
 						s += " ";
 					}
@@ -1591,7 +1590,7 @@ public class ExternalizedStatePropnetFactory {
 					propnetOk = false;
 				}
 
-			}else if(c instanceof ExternalizedStateNot){
+			}else if(c instanceof DynamicNot){
 
 				if(c.getInputs().size() > 1){
 					GamerLogger.log("PropStructureChecker", "The component " + c.getComponentType() + " has too many inputs: " + c.getInputs().size());
@@ -1611,8 +1610,8 @@ public class ExternalizedStatePropnetFactory {
 		}
 
 		// Check if there is a legal not corresponding to an input or viceversa
-		List<ExternalizedStateProposition> inputs = pn.getInputPropositions();
-		List<ExternalizedStateProposition> legals = pn.getLegalPropositions();
+		List<DynamicProposition> inputs = pn.getInputPropositions();
+		List<DynamicProposition> legals = pn.getLegalPropositions();
 
 		if(inputs.size() != legals.size()){
 			propnetOk = false;
@@ -1634,3 +1633,4 @@ public class ExternalizedStatePropnetFactory {
 	}
 
 }
+

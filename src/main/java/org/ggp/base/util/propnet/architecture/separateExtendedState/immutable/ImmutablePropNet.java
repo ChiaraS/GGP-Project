@@ -34,6 +34,16 @@ public class ImmutablePropNet {
 	 */
 	private final int[][] goalValues;
 
+	/********************************** Constructor *********************************/
+
+	public ImmutablePropNet(ImmutableComponent[] components, Role[] roles, ImmutableProposition[] basePropositions, ImmutableProposition[] inputPropositions, int[][] goalValues){
+		this.components = components;
+		this.roles = roles;
+		this.basePropositions = basePropositions;
+		this.inputPropositions = inputPropositions;
+		this.goalValues = goalValues;
+
+	}
 
 	/****************************** Setters and getters *****************************/
 
@@ -74,7 +84,5 @@ public class ImmutablePropNet {
 	public int[][] getGoalValues(){
 		return this.goalValues;
 	}
-
-
 
 }

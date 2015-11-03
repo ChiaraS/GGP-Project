@@ -67,7 +67,7 @@ public class PropnetStructureChecker {
 
 
 			GamerLogger.setSpilloverLogfile(game + "PropnetStructureCheckerTable.csv");
-		    GamerLogger.log(FORMAT.CSV_FORMAT, game + "PropnetStructureCheckerTable.csv", "Game key;Construction Time (ms);Check Duration (ms);Pass;");
+		    GamerLogger.log(FORMAT.CSV_FORMAT, game + "PropnetStructureCheckerTable.csv", "Game key;Construction Time (ms);Init Time (ms);Check Duration (ms);Pass;");
 
 		    if(game.equals("ALL")){
 		    	GameRepository theRepository = GameRepository.getDefaultRepository();
@@ -126,22 +126,24 @@ public class PropnetStructureChecker {
     		Thread.currentThread().interrupt();
     		GamerLogger.stopFileLogging();
     		System.out.println("Impossible to check game " + gameKey + ". Procedure interrupted.");
-			return gameKey + ";-1;-1;FALSE;";
+			return gameKey + ";-1;-1;-1;FALSE;";
 		}
 
     	if(propNet == null){
     		GamerLogger.stopFileLogging();
     		System.out.println("Impossible to check game " + gameKey + ". Propnet didn't build in time.");
-    		return gameKey + ";" + creator.getConstructionTime() + ";-1;FALSE;";
+    		return gameKey + ";" + creator.getConstructionTime() + ";" + creator.getInitTime() + ";-1;FALSE;";
     	}else{
 
     		System.out.println("Checking...");
 
+    		/*
     		System.out.println("Propnet has: " + propNet.getSize() + " COMPONENTS, " + propNet.getNumPropositions() + " PROPOSITIONS, " + propNet.getNumConstants() + " CONSTANTS, " + propNet.getNumLinks() + " LINKS.");
     		System.out.println("Propnet has: " + propNet.getNumAnds() + " ANDS, " + propNet.getNumOrs() + " ORS, " + propNet.getNumNots() + " NOTS.");
     		System.out.println("Propnet has: " + propNet.getNumBases() + " BASES, " + propNet.getNumTransitions() + " TRANSITIONS.");
     		System.out.println("Propnet has: " + propNet.getNumInputs() + " INPUTS, " + propNet.getNumLegals() + " LEGALS.");
     		System.out.println("Propnet has: " + propNet.getNumGoals() + " GOALS.");
+    		*/
 
 
 
@@ -155,7 +157,7 @@ public class PropnetStructureChecker {
 
     		System.out.println("Done checking game " + gameKey + ".");
 
-    		return gameKey + ";" + creator.getConstructionTime() + ";" + checkDuration + ";" + pass + ";";
+    		return gameKey + ";" + creator.getConstructionTime() + ";" + creator.getInitTime() + ";" + checkDuration + ";" + pass + ";";
     	}
 	}
 

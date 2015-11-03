@@ -4,6 +4,8 @@ import java.io.Serializable;
 import java.util.HashSet;
 import java.util.Set;
 
+import org.ggp.base.util.propnet.architecture.separateExtendedState.immutable.ImmutableComponent;
+
 
 /**
  * The root class of the Component hierarchy, which is designed to represent
@@ -178,5 +180,7 @@ public abstract class DynamicComponent implements Serializable
 
         return sb.toString();
     }
+
+    public abstract ImmutableComponent getImmutableClone();
 
 }

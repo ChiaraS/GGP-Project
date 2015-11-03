@@ -22,9 +22,8 @@ public final class ImmutableConstant extends ImmutableComponent{
 	 * @param value
 	 *            The value of the Constant.
 	 */
-	public ImmutableConstant(ImmutableComponent[] components,
-			int structureIndex, int[] inputsIndices, int[] outputsIndices, boolean value) {
-		super(components, structureIndex, inputsIndices, outputsIndices);
+	public ImmutableConstant(boolean value) {
+		super();
 		this.value = value;
 	}
 

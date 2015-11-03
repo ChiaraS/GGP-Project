@@ -1,6 +1,8 @@
 package org.ggp.base.util.propnet.architecture.separateExtendedState.dynamic.components;
 
 import org.ggp.base.util.propnet.architecture.separateExtendedState.dynamic.DynamicComponent;
+import org.ggp.base.util.propnet.architecture.separateExtendedState.immutable.ImmutableComponent;
+import org.ggp.base.util.propnet.architecture.separateExtendedState.immutable.components.ImmutableTransition;
 
 /**
  * The Transition class is designed to represent pass-through gates.
@@ -85,6 +87,11 @@ public final class DynamicTransition extends DynamicComponent{
 	@Override
 	public String toString(){
 		return toDot("box", "grey", "TRANSITION");
+	}
+
+	@Override
+	public ImmutableComponent getImmutableClone() {
+		return new ImmutableTransition(this.dependingOnInit);
 	}
 
 }

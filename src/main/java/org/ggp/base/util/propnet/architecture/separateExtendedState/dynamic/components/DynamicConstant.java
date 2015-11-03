@@ -1,6 +1,8 @@
 package org.ggp.base.util.propnet.architecture.separateExtendedState.dynamic.components;
 
 import org.ggp.base.util.propnet.architecture.separateExtendedState.dynamic.DynamicComponent;
+import org.ggp.base.util.propnet.architecture.separateExtendedState.immutable.ImmutableComponent;
+import org.ggp.base.util.propnet.architecture.separateExtendedState.immutable.components.ImmutableConstant;
 
 
 /**
@@ -46,6 +48,11 @@ public final class DynamicConstant extends DynamicComponent{
 	@Override
 	public String toString(){
 		return toDot("doublecircle", "grey", Boolean.toString(value).toUpperCase());
+	}
+
+	@Override
+	public ImmutableComponent getImmutableClone() {
+		return new ImmutableConstant(this.value);
 	}
 
 }

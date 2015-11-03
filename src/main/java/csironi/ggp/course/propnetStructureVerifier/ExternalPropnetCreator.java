@@ -90,4 +90,12 @@ public class ExternalPropnetCreator extends Thread {
 	public long getConstructionTime(){
 		return this.constructionTime;
 	}
+
+	public long getInitTime(){
+		if(this.propNet == null){
+			return -1L;
+		}else{
+			return this.propNet.getInitTime();
+		}
+	}
 }

@@ -8,7 +8,6 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Map.Entry;
 import java.util.Set;
 
 import org.ggp.base.util.gdl.grammar.GdlConstant;
@@ -28,6 +27,12 @@ import org.ggp.base.util.statemachine.Role;
 public class ExternalizedStatePropNet {
 
 	/********************************** Parameters **********************************/
+
+	private final long initTime;
+
+	public long getInitTime(){
+		return this.initTime;
+	}
 
 	/** References to every component in the PropNet. */
 	private final Set<ExternalizedStateComponent> components;
@@ -126,9 +131,24 @@ public class ExternalizedStatePropNet {
 	 */
 	public ExternalizedStatePropNet(List<Role> roles, Set<ExternalizedStateComponent> components, ExternalizedStateConstant trueConstant, ExternalizedStateConstant falseConstant){
 
+		/*
+		 * ALGORITHMS TO FIND INPUT AND LEGALS:
+		 *
+		 * - ALG1: keeps 2 moves maps, one with pairs (GDLMove, correspondingLegalProp), and one with pairs (GDLMove, correspondingInputProp).
+		 * 		   Whenever we find a legal or input proposition, if the corresponding input or legal proposition has already been found,
+		 * 		   we add both propositions in the same position of the legalsPerRole and InputsPerRole maps, otherwise we add the pair
+		 * 		   (GDLMove, correspondingProp) to the moves map and wait until we find the corresponding proposition.
+		 * - ALG2: same as the previous one, but the maps of moves are divided per role.
+		 * - ALG3: memorizes in two maps all the propositions that can be input or legal, indexed by GDLMove. At the end, for each legal
+		 * 		   proposition checks if the corresponding input proposition exists. If yes they are both added to the same position of the
+		 * 		   legalsPerRole and InputsPerRole maps, otherwise they are not classified as input/legal propositions. This algorithm removes
+		 * 		   input propositions from the possibleInputs map as soon as they are added to the inputsPerRole map.
+		 * - ALG4: same as ALG3, but it doesn't remove input propositions from the possibleInputs map when they are added to the inputsPerRole
+		 * 		   map.
+		 */
 		//System.out.println();
 
-		//long start = System.currentTimeMillis();
+		long start = System.currentTimeMillis();
 
 	    this.roles = roles;
 
@@ -155,17 +175,17 @@ public class ExternalizedStatePropNet {
 		/* ALG1 -START
 		Map<List<GdlTerm>, ExternalizedStateProposition> possibleInputs = new HashMap<List<GdlTerm>, ExternalizedStateProposition>();
 		Map<List<GdlTerm>, ExternalizedStateProposition> possibleLegals = new HashMap<List<GdlTerm>, ExternalizedStateProposition>();
-		ALG2 - END */
+		ALG1 - END */
 
-		/* ALG2 - START
+		/* ALG2 - START */
 		Map<Role, Map<List<GdlTerm>, ExternalizedStateProposition>> possibleInputs = new HashMap<Role, Map<List<GdlTerm>, ExternalizedStateProposition>>();
 		Map<Role, Map<List<GdlTerm>, ExternalizedStateProposition>> possibleLegals = new HashMap<Role, Map<List<GdlTerm>, ExternalizedStateProposition>>();
-		ALG2 - END */
+		/* ALG2 - END */
 
-		/* ALG3 - START */
+		/* ALG3 - START
 		Map<Role, Map<List<GdlTerm>, ExternalizedStateProposition>> possibleInputs = new HashMap<Role, Map<List<GdlTerm>, ExternalizedStateProposition>>();
 		Map<Role, Map<List<GdlTerm>, ExternalizedStateProposition>> possibleLegals = new HashMap<Role, Map<List<GdlTerm>, ExternalizedStateProposition>>();
-		/* ALG3 - END */
+		 ALG3 - END */
 
 		this.goalsPerRole = new HashMap<Role, List<ExternalizedStateProposition>>();
 		this.goalValues = new HashMap<Role, List<Integer>>();
@@ -179,15 +199,15 @@ public class ExternalizedStatePropNet {
 			//moveIndices.put(r, new HashMap<List<GdlTerm>, Integer>());
 			//currentIndices.put(r, new Integer(0));
 
-			/* ALG2 - START
+			/* ALG2 - START */
 			possibleInputs.put(r, new HashMap<List<GdlTerm>, ExternalizedStateProposition>());
 			possibleLegals.put(r, new HashMap<List<GdlTerm>, ExternalizedStateProposition>());
-			ALG2 - END */
+			/* ALG2 - END */
 
-			/* ALG3 - START */
+			/* ALG3 - START
 			possibleInputs.put(r, new HashMap<List<GdlTerm>, ExternalizedStateProposition>());
 			possibleLegals.put(r, new HashMap<List<GdlTerm>, ExternalizedStateProposition>());
-			/* ALG3 - END */
+			 ALG3 - END */
 
 			this.goalsPerRole.put(r, new ArrayList<ExternalizedStateProposition>());
 			this.goalValues.put(r, new ArrayList<Integer>());
@@ -224,7 +244,7 @@ public class ExternalizedStatePropNet {
 					GdlRelation relation = (GdlRelation) p.getName();
 					if(relation.getName().getValue().equals("does")){ // Possible input
 
-						/* ALG3 - START */
+						/* ALG3 - START
 						// Get the GDL move corresponding to this proposition
 						List<GdlTerm> gdlMove = p.getName().getBody();
 						// Get the role performing the move
@@ -239,9 +259,9 @@ public class ExternalizedStatePropNet {
 							//...otherwise we put this proposition in the map of possible inputs.
 							possibleInputsPerRole.put(gdlMove, p);
 						}
-						/* ALG3 - END */
+						 ALG3 - END */
 
-						/* ALG2 - START
+						/* ALG2 - START */
 						// Get the GDL move corresponding to this proposition
 						List<GdlTerm> gdlMove = p.getName().getBody();
 						// Get the role performing the move
@@ -267,7 +287,7 @@ public class ExternalizedStatePropNet {
 								legalsPerRole.get(r).add(correspondingLegal);
 							}
 						}
-						 ALG2 - END */
+						/* ALG2 - END */
 
 						/* ALG1 - START
 						// Get the GDL move corresponding to this proposition
@@ -292,7 +312,7 @@ public class ExternalizedStatePropNet {
 
 					}else if(relation.getName().getValue().equals("legal")){ // Possible legal move
 
-						/* ALG3 - START */
+						/* ALG3 - START
 						// Get the GDL move corresponding to this proposition
 						List<GdlTerm> gdlMove = p.getName().getBody();
 						// Get the role performing the move
@@ -307,9 +327,9 @@ public class ExternalizedStatePropNet {
 							//...otherwise we put this proposition in the map of possible legals.
 							possibleLegals.get(r).put(gdlMove, p);
 						}
-						/* ALG3 - END */
+						 ALG3 - END */
 
-						/* ALG2 - START
+						/* ALG2 - START */
 						// Get the GDL move corresponding to this proposition
 						List<GdlTerm> gdlMove = p.getName().getBody();
 						// Get the role performing the move
@@ -335,7 +355,7 @@ public class ExternalizedStatePropNet {
 								inputsPerRole.get(r).add(correspondingInput);
 							}
 						}
-						ALG2 - END */
+						/* ALG2 - END */
 
 						/* ALG1 - START
 						// Get the GDL move corresponding to this proposition
@@ -414,14 +434,14 @@ public class ExternalizedStatePropNet {
 		// not be associated with an index when the propnet state will be created, its
 		// index will always be set to -1 since the propnet state will not include its
 		// value. The constant will store its fixed value internally.
-		if(this.trueConstant == null){
+		/*if(this.trueConstant == null){
 			this.trueConstant = new ExternalizedStateConstant(true);
 			this.components.add(this.trueConstant);
 		}
 		if(this.falseConstant == null){
 			this.falseConstant = new ExternalizedStateConstant(false);
 			this.components.add(this.falseConstant);
-		}
+		}*/
 
 		//System.out.println("Check constants: " + (System.currentTimeMillis() - start) + "ms");
 		//start = System.currentTimeMillis();
@@ -474,25 +494,25 @@ public class ExternalizedStatePropNet {
 		//int x = 0;
 		for(Role r : this.roles){
 
-			/* ALG3 - START */
+			/* ALG3 - START
 			Map<List<GdlTerm>,ExternalizedStateProposition> possibleLegalsPerRole = possibleLegals.get(r);
 			Map<List<GdlTerm>,ExternalizedStateProposition> possibleInputsPerRole = possibleInputs.get(r);
-			for(Entry<List<GdlTerm>,ExternalizedStateProposition> legalEntry : possibleLegalsPerRole.entrySet()){
+			for(Entry<List<GdlTerm>,ExternalizedStateProposition> legalEntry : possibleLegalsPerRole.entrySet()){ */
 				// TODO: PROVA CON GET INVECE DI REMOVE
 				/*ALG4 - START */ // ALG4 is exactly the same as ALG3, except this one line
-				ExternalizedStateProposition input = possibleInputsPerRole.get(legalEntry.getKey());
+				//ExternalizedStateProposition input = possibleInputsPerRole.get(legalEntry.getKey());
 				/*ALG4 - END */
-				/*ALG3 - START
-				ExternalizedStateProposition input = possibleInputsPerRole.remove(legalEntry.getKey());
-				ALG3 - END */
-				if(input != null){
+				/*ALG3 - START */
+				//ExternalizedStateProposition input = possibleInputsPerRole.remove(legalEntry.getKey());
+				/*ALG3 - END */
+			/*	if(input != null){
 					this.inputsPerRole.get(r).add(input);
 					input.setPropositionType(PROP_TYPE.INPUT);
 					this.legalsPerRole.get(r).add(legalEntry.getValue());
 					legalEntry.getValue().setPropositionType(PROP_TYPE.LEGAL);
 				}
 			}
-			/* ALG3 - END */
+			 ALG3 - END */
 
 			for(ExternalizedStateProposition p : this.inputsPerRole.get(r)){
 				this.inputPropositions.add(p);
@@ -509,6 +529,8 @@ public class ExternalizedStatePropNet {
 			}
 			*/
 		}
+
+		this.initTime = System.currentTimeMillis() - start;
 	}
 
 	/**
