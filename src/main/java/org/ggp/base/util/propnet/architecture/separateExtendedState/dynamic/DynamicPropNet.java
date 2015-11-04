@@ -8,6 +8,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Set;
 
 import org.ggp.base.util.gdl.grammar.GdlConstant;
@@ -142,15 +143,11 @@ public class DynamicPropNet {
 		//Map<Role, Map<List<GdlTerm>, Integer>> moveIndices = new HashMap<Role, Map<List<GdlTerm>, Integer>>();
 		//Map<Role, Integer> currentIndices = new HashMap<Role, Integer>();
 
-		/* ALG1 -START
-		Map<List<GdlTerm>, DynamicProposition> possibleInputs = new HashMap<List<GdlTerm>, DynamicProposition>();
-		Map<List<GdlTerm>, DynamicProposition> possibleLegals = new HashMap<List<GdlTerm>, DynamicProposition>();
-		ALG2 - END */
-
-		/* ALG2 - START */
+		/* ALG3 - START */
 		Map<Role, Map<List<GdlTerm>, DynamicProposition>> possibleInputs = new HashMap<Role, Map<List<GdlTerm>, DynamicProposition>>();
 		Map<Role, Map<List<GdlTerm>, DynamicProposition>> possibleLegals = new HashMap<Role, Map<List<GdlTerm>, DynamicProposition>>();
-		/* ALG2 - END */
+		/* ALG3 - END */
+
 
 		this.goalsPerRole = new HashMap<Role, List<DynamicProposition>>();
 
@@ -163,10 +160,10 @@ public class DynamicPropNet {
 			//moveIndices.put(r, new HashMap<List<GdlTerm>, Integer>());
 			//currentIndices.put(r, new Integer(0));
 
-			/* ALG2 - START */
+			/* ALG3 - START */
 			possibleInputs.put(r, new HashMap<List<GdlTerm>, DynamicProposition>());
 			possibleLegals.put(r, new HashMap<List<GdlTerm>, DynamicProposition>());
-			/* ALG2 - END */
+			/* ALG3 - END */
 
 			this.goalsPerRole.put(r, new ArrayList<DynamicProposition>());
 		}
@@ -201,7 +198,7 @@ public class DynamicPropNet {
 					GdlRelation relation = (GdlRelation) p.getName();
 					if(relation.getName().getValue().equals("does")){ // Possible input
 
-						/* ALG2 - START */
+						/* ALG3 - START */
 						// Get the GDL move corresponding to this proposition
 						List<GdlTerm> gdlMove = p.getName().getBody();
 						// Get the role performing the move
@@ -209,50 +206,18 @@ public class DynamicPropNet {
 						Role r = new Role(name);
 
 						// Get the map of possible legals for the role
-						Map<List<GdlTerm>, DynamicProposition> possibleLegalsPerRole = possibleLegals.get(r);
+						Map<List<GdlTerm>, DynamicProposition> possibleInputsPerRole = possibleInputs.get(r);
 
 						// If we have no map, r is not a relevant role, so we just classify the proposition as an OTHER proposition...
-						if(possibleLegalsPerRole != null){
-							//...otherwise we check if we already found its corresponding legal (if it exists).
-							// If we found it, we remove it from the list of 'possible' legals since we will put it in the
-							// list of 'actual' legals.
-							DynamicProposition correspondingLegal = possibleLegalsPerRole.remove(gdlMove);
-							// If we haven't found it yet, add the input to the possible inputs list.
-							if(correspondingLegal == null){
-								possibleInputs.get(r).put(gdlMove, p);
-							}else{
-								p.setPropositionType(PROP_TYPE.INPUT);
-								inputsPerRole.get(r).add(p);
-								correspondingLegal.setPropositionType(PROP_TYPE.LEGAL);
-								legalsPerRole.get(r).add(correspondingLegal);
-							}
+						if(possibleInputsPerRole != null){
+							//...otherwise we put this proposition in the map of possible inputs.
+							possibleInputsPerRole.put(gdlMove, p);
 						}
-						/* ALG2 - END */
-
-						/* ALG1 - START
-						// Get the GDL move corresponding to this proposition
-						List<GdlTerm> gdlMove = p.getName().getBody();
-
-						// Check if we already found its corresponding legal
-						DynamicProposition correspondingLegal = possibleLegals.remove(gdlMove);
-
-						if(correspondingLegal == null){
-							possibleInputs.put(gdlMove, p);
-						}else{
-							GdlConstant name = (GdlConstant) relation.get(0);
-							Role r = new Role(name);
-							if(this.roles.contains(r)){
-								p.setPropositionType(PROP_TYPE.INPUT);
-								inputsPerRole.get(r).add(p);
-								correspondingLegal.setPropositionType(PROP_TYPE.LEGAL);
-								legalsPerRole.get(r).add(correspondingLegal);
-							}
-						}
-						ALG1 - END */
+						/* ALG3 - END */
 
 					}else if(relation.getName().getValue().equals("legal")){ // Possible legal move
 
-						/* ALG2 - START */
+						/* ALG3 - START */
 						// Get the GDL move corresponding to this proposition
 						List<GdlTerm> gdlMove = p.getName().getBody();
 						// Get the role performing the move
@@ -260,49 +225,15 @@ public class DynamicPropNet {
 						Role r = new Role(name);
 
 						// Get the map of possible inputs for the role
-						Map<List<GdlTerm>, DynamicProposition> possibleInputsPerRole = possibleInputs.get(r);
+						Map<List<GdlTerm>, DynamicProposition> possibleLegalsPerRole = possibleLegals.get(r);
 
 						// If we have no map, r is not a relevant role, so we just classify the proposition as an OTHER proposition...
-						if(possibleInputsPerRole != null){
-							//...otherwise we check if we already found its corresponding legal (if it exists).
-							// If we found it, we remove it from the list of 'possible' legals since we will put it in the
-							// list of 'actual' legals.
-							DynamicProposition correspondingInput = possibleInputsPerRole.remove(gdlMove);
-							// If we haven't found it yet, add the input to the possible inputs list.
-							if(correspondingInput == null){
-								possibleLegals.get(r).put(gdlMove, p);
-							}else{
-								p.setPropositionType(PROP_TYPE.LEGAL);
-								legalsPerRole.get(r).add(p);
-								correspondingInput.setPropositionType(PROP_TYPE.INPUT);
-								inputsPerRole.get(r).add(correspondingInput);
-							}
+						if(possibleLegalsPerRole != null){
+							//...otherwise we put this proposition in the map of possible legals.
+							possibleLegals.get(r).put(gdlMove, p);
 						}
-						/* ALG2 - END */
+						/* ALG3 - END */
 
-						/* ALG2 - START
-						// Get the GDL move corresponding to this proposition
-						List<GdlTerm> gdlMove = p.getName().getBody();
-
-						// Check if we already found its corresponding input
-						DynamicProposition correspondingInput = possibleInputs.remove(gdlMove);
-
-						if(correspondingInput == null){
-							// Note: here we don't check if the role is valid. We could, but it
-							// will be checked anyway later if this move will be removed. And if
-							// it won't be removed we don't care if the role is valid.
-							possibleLegals.put(gdlMove, p);
-						}else{
-							GdlConstant name = (GdlConstant) relation.get(0);
-							Role r = new Role(name);
-							if(this.roles.contains(r)){
-								p.setPropositionType(PROP_TYPE.LEGAL);
-								legalsPerRole.get(r).add(p);
-								correspondingInput.setPropositionType(PROP_TYPE.INPUT);
-								inputsPerRole.get(r).add(correspondingInput);
-							}
-						}
-						ALG2 - END */
 					}else if(relation.getName().getValue().equals("goal")){
 						GdlConstant name = (GdlConstant) relation.get(0);
 						//System.out.println(name);
@@ -356,14 +287,14 @@ public class DynamicPropNet {
 		// not be associated with an index when the propnet state will be created, its
 		// index will always be set to -1 since the propnet state will not include its
 		// value. The constant will store its fixed value internally.
-		if(this.trueConstant == null){
+		/*if(this.trueConstant == null){
 			this.trueConstant = new DynamicConstant(true);
 			this.components.add(this.trueConstant);
 		}
 		if(this.falseConstant == null){
 			this.falseConstant = new DynamicConstant(false);
 			this.components.add(this.falseConstant);
-		}
+		}*/
 
 		//System.out.println("Check constants: " + (System.currentTimeMillis() - start) + "ms");
 		//start = System.currentTimeMillis();
@@ -415,6 +346,21 @@ public class DynamicPropNet {
 
 		//int x = 0;
 		for(Role r : this.roles){
+
+			/* ALG3 - START */
+			Map<List<GdlTerm>,DynamicProposition> possibleLegalsPerRole = possibleLegals.get(r);
+			Map<List<GdlTerm>,DynamicProposition> possibleInputsPerRole = possibleInputs.get(r);
+			for(Entry<List<GdlTerm>,DynamicProposition> legalEntry : possibleLegalsPerRole.entrySet()){
+				// TODO: PROVA CON GET INVECE DI REMOVE
+				DynamicProposition input = possibleInputsPerRole.remove(legalEntry.getKey());
+
+				if(input != null){
+					this.inputsPerRole.get(r).add(input);
+					input.setPropositionType(PROP_TYPE.INPUT);
+					this.legalsPerRole.get(r).add(legalEntry.getValue());
+					legalEntry.getValue().setPropositionType(PROP_TYPE.LEGAL);
+				}
+			}
 
 			for(DynamicProposition p : this.inputsPerRole.get(r)){
 				this.inputPropositions.add(p);

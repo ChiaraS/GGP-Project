@@ -18,14 +18,12 @@ import org.ggp.base.util.propnet.factory.ExternalizedStatePropnetFactory;
  * It is possible to specify the following combinations of main arguments:
  *
  * 1. [keyOfGameToTest]
- * 2. [maximumPropnetConstructionTime] [maximumTestDuration]
- * 3. [maximumPropnetConstructionTime] [maximumTestDuration] [keyOfGameToTest]
+ * 2. [keyOfGameToTest] [maximumPropnetConstructionTime]
  *
  * where:
- * [maximumPropnetConstructionTime] = time in milliseconds that is available to build the propnet
- * 										(DEFAULT: 420000ms - 7mins).
- * [maximumTestDuration] = duration of each test in millisecond (DEFAULT: 60000ms - 1min).
  * [keyOfGameToTest] = key of the game to be tested (DEFAULT: null (i.e. all games)).
+ * [maximumPropnetConstructionTime] = time in milliseconds that is available to build the propnet
+ * 										(DEFAULT: 360000ms - 6mins).
  *
  * If nothing or something inconsistent is specified for any of the parameters, the default value will
  * be used.

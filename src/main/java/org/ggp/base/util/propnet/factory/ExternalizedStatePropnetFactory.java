@@ -5,7 +5,6 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.LinkedHashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -238,7 +237,8 @@ public class ExternalizedStatePropnetFactory {
 		removeUselessBasePropositions(components, negations, trueComponent, falseComponent);
 		if(verbose)
 			System.out.println("Creating component set...");
-		Set<ExternalizedStateComponent> componentSet = new LinkedHashSet<ExternalizedStateComponent>(components.values());
+		Set<ExternalizedStateComponent> componentSet = new HashSet<ExternalizedStateComponent>(components.values());
+		//Set<ExternalizedStateComponent> componentSet = new LinkedHashSet<ExternalizedStateComponent>(components.values());
 		//Try saving some memory here...
 		components = null;
 		negations = null;

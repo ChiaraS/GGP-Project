@@ -41,19 +41,19 @@ public abstract class DynamicComponent implements Serializable
      *
      * @param input a new input.
      */
-    public void addInput(DynamicComponent input)
+    public boolean addInput(DynamicComponent input)
     {
-        inputs.add(input);
+        return inputs.add(input);
     }
 
-    public void removeInput(DynamicComponent input)
+    public boolean removeInput(DynamicComponent input)
     {
-    	inputs.remove(input);
+    	return inputs.remove(input);
     }
 
-    public void removeOutput(DynamicComponent output)
+    public boolean removeOutput(DynamicComponent output)
     {
-    	outputs.remove(output);
+    	return outputs.remove(output);
     }
 
     public void removeAllInputs()
@@ -72,9 +72,9 @@ public abstract class DynamicComponent implements Serializable
      * @param output
      *            A new output.
      */
-    public void addOutput(DynamicComponent output)
+    public boolean addOutput(DynamicComponent output)
     {
-        outputs.add(output);
+    	return outputs.add(output);
     }
 
     /**

@@ -5,6 +5,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedHashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -1266,19 +1267,124 @@ public class DynamicPropNetFactory {
 	}
 
 	////////FIX
-	private static void optimizeAwayTrueAndFalse2(DynamicPropNet pn, DynamicComponent trueComponent, DynamicComponent falseComponent) {
+	private static void optimizeAwayTrueAndFalse2(DynamicPropNet pn, DynamicComponent trueComponent, DynamicComponent falseComponent){
 
-		Set<DynamicComponent> toCheckTrue = new HashSet<DynamicComponent>(trueComponent.getOutputs());
-		Set<DynamicComponent> toCheckFalse = new HashSet<DynamicComponent>(falseComponent.getOutputs());
+		Set<DynamicComponent> toCheckT = new LinkedHashSet<DynamicComponent>(trueComponent.getOutputs());
+		Set<DynamicComponent> toCheckF = new LinkedHashSet<DynamicComponent>(falseComponent.getOutputs());
 
-		while(!(toCheckTrue.isEmpty() && toCheckFalse.isEmpty())){
-
+		while(!(toCheckT.isEmpty() && toCheckF.isEmpty())){
+			optimizeAwayTrue2(pn, trueComponent, falseComponent, toCheckT, toCheckF);
+			//optimizeAwayFalse2(pn, trueComponent, falseComponent, toCheckT, toCheckF);
 		}
 
-		while(hasNonessentialChildren(trueComponent) || hasNonessentialChildren(falseComponent)) {
-	        optimizeAwayTrue(null, null, pn, trueComponent, falseComponent);
-	        optimizeAwayFalse(null, null, pn, trueComponent, falseComponent);
-	    }
+	}
+
+	private static void optimizeAwayTrue2(DynamicPropNet pn, DynamicComponent trueComponent, DynamicComponent falseComponent, Set<DynamicComponent> toCheckT, Set<DynamicComponent> toCheckF){
+
+		Set<DynamicComponent> toCheckNextT;
+
+		while(!(toCheckT.isEmpty())){
+
+			toCheckNextT = new HashSet<DynamicComponent>();
+
+			for(DynamicComponent c : toCheckT){
+				if(c instanceof DynamicConstant){
+					throw new RuntimeException("Found a constant component having TRUE as input! Something is wrong with the propnet structure!");
+				}else if(c instanceof DynamicAnd){
+					if(c.getInputs().size() > 1){
+						// One input of AND is TRUE, but since there are other inputs, the output of
+						// AND depends entirely on them => true can be removed as input
+						trueComponent.removeOutput(c);
+						c.removeInput(trueComponent);
+					}else{
+						// TRUE is the only input of this AND gate => the output of the gate is TRUE as well
+						// and the gate can be removed, setting TRUE as input of all its outputs
+						trueComponent.removeOutput(c);
+						c.removeInput(trueComponent);
+						for(DynamicComponent o : c.getOutputs()){
+							o.removeInput(c);
+							o.addInput(trueComponent);
+							// If this component is not an output of TRUE yet, we add it to the set of components
+							// to be checked in the next step. If it is already an output of TRUE it means that it
+							// will be checked in this step already or that it has been already added to be checked
+							// next.
+							if(trueComponent.addOutput(o)){
+								toCheckNextT.add(o);
+							}
+						}
+						c.removeAllOutputs();
+						pn.removeComponent(c);
+					}
+				}else if(c instanceof DynamicOr){
+					// It means that the output of this OR is always TRUE, no matter the other inputs.
+					for(DynamicComponent i : c.getInputs()){
+						i.removeOutput(c);
+					}
+					c.removeAllInputs();
+					for(DynamicComponent o : c.getOutputs()){
+						o.removeInput(c);
+						o.addInput(trueComponent);
+						if(trueComponent.addOutput(o)){
+							toCheckNextT.add(o);
+						}
+					}
+					c.removeAllOutputs();
+					pn.removeComponent(c);
+				}else if(c instanceof DynamicNot){
+					trueComponent.removeOutput(c);
+					c.removeInput(trueComponent);
+					for(DynamicComponent o : c.getOutputs()){
+						o.removeInput(c);
+						o.addInput(falseComponent);
+						falseComponent.addOutput(o);
+						toCheckF.add(o);
+					}
+					c.removeAllOutputs();
+					pn.removeComponent(c);
+				}else if(c instanceof DynamicTransition){
+					// It must neve happen that a transition has no output.
+					// This method assumes that whenever a base proposition is removed/disconnected
+					// from its transition also the transition disappears from the propnet (i.e. if
+					// the base proposition is removed, it doesn't exist in the current state, so
+					// it cannot be true or fals also in future states -> the transition value has no
+					// meaning).
+					if(c.getOutputs().size() == 0){
+						throw new RuntimeException("Found a transition with no output! Something is wrong with the propnet structure!");
+					}
+					// ...else do nothing: cannot remove a transition from the propnet unless its corresponding
+					// base is proved to be always TRUE or FALSEa nd thus gets removed togheter with the transition.
+				}else if(c instanceof DynamicProposition){
+					DynamicProposition p = (DynamicProposition) c;
+					switch(p.getPropositionType()){
+					case BASE:
+						throw new RuntimeException("Base propositions cannot have TRUE as input, but only transitions! When connecting a base to TRUE remember to transform it into an OTHER proposition!");
+					case INPUT:
+						throw new RuntimeException("Input propositions cannot have an input! When connecting an input to TRUE remember to transform it into an OTHER proposition!");
+					case OTHER:
+						trueComponent.removeOutput(c);
+						c.removeInput(trueComponent);
+						for(DynamicComponent o : c.getOutputs()){
+							o.removeInput(c);
+							o.addInput(trueComponent);
+							// If this component is not an output of TRUE yet, we add it to the set of components
+							// to be checked in the next step. If it is already an output of TRUE it means that it
+							// will be checked in this step already or that it has been already added to be checked
+							// next.
+							if(trueComponent.addOutput(o)){
+								toCheckNextT.add(o);
+							}
+						}
+						c.removeAllOutputs();
+						pn.removeComponent(c);
+						break;
+					default:
+						break;
+					}
+				}
+			}
+			toCheckT = toCheckNextT;
+		}
+
 	}
 
 	/*

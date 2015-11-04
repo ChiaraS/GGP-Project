@@ -7,7 +7,6 @@ import java.util.Set;
 import org.apache.lucene.util.OpenBitSet;
 import org.ggp.base.util.gdl.grammar.Gdl;
 import org.ggp.base.util.logging.GamerLogger;
-import org.ggp.base.util.propnet.architecture.externalizedState.ExternalizedStatePropNet;
 import org.ggp.base.util.propnet.architecture.separateExtendedState.dynamic.DynamicComponent;
 import org.ggp.base.util.propnet.architecture.separateExtendedState.dynamic.DynamicPropNet;
 import org.ggp.base.util.propnet.architecture.separateExtendedState.dynamic.components.DynamicProposition;
@@ -55,7 +54,7 @@ public class SeparatePropnetCreationManager extends Thread{
 	 */
 	private DynamicPropNet dynamicPropNet;
 
-	private long propNetConstructionTime;
+	private long propNetConstructionTime = -1L;
 
 	private long totalInitTime;
 
@@ -82,6 +81,8 @@ public class SeparatePropnetCreationManager extends Thread{
 
 	@Override
 	public void run(){
+
+		//try{
 
 		// TODO: use the timeout to decide if it is worth trying another optimization
 		// or if there probably is not enough time and we don't want to risk taking too
@@ -135,9 +136,14 @@ public class SeparatePropnetCreationManager extends Thread{
     		return;
 		}
 		*/
-		this.computeInitialPropNetState();
+		this.computeSeparatePropAutomata();
 
 		this.totalInitTime = System.currentTimeMillis() - startTime;
+
+		//}catch(Exception e){
+		//	System.out.println("ECCEZIONE!");
+		//	e.printStackTrace();
+		//}
 	}
 
 	/**
@@ -170,6 +176,7 @@ public class SeparatePropnetCreationManager extends Thread{
 			int i = 0;
 			for(Role r : this.dynamicPropNet.getRoles()){
 				roles[i] = new Role(r.getName());
+				i++;
 			}
 
 			// 3. TAKE CARE OF BASES AND TRANSITIONS
@@ -247,7 +254,10 @@ public class SeparatePropnetCreationManager extends Thread{
 			for(j = 0; j < roles.length; j++){
 				firstGoalIndices[j] = i;
 				List<DynamicProposition> goals = goalsPerRole.get(roles[j]);
-				goalValues[j] = new int[goals.size()];
+
+				int goalsize = goals.size();
+
+				goalValues[j] = new int[goalsize];
 				int k = 0;
 				for(DynamicProposition roleGoal : goals){
 					immutableComponents[roleGoal.getStructureIndex()].setStateIndex(i);
@@ -325,7 +335,7 @@ public class SeparatePropnetCreationManager extends Thread{
 
 	}
 
-	public ImmutableComponent[] dynamicToImmutableComponents(Set<DynamicComponent> dynamicComponents){
+	private ImmutableComponent[] dynamicToImmutableComponents(Set<DynamicComponent> dynamicComponents){
 
 		ImmutableComponent[] immutableComponents = new ImmutableComponent[dynamicComponents.size()];
 
@@ -345,6 +355,7 @@ public class SeparatePropnetCreationManager extends Thread{
 			int index = 0;
 			for(DynamicComponent i : c.getInputs()){
 				immutableInputs[index] = immutableComponents[i.getStructureIndex()];
+				index++;
 			}
 
 			immutableComponents[c.getStructureIndex()].setInputs(immutableInputs);
@@ -355,6 +366,7 @@ public class SeparatePropnetCreationManager extends Thread{
 			index = 0;
 			for(DynamicComponent i : c.getOutputs()){
 				immutableOutputs[index] = immutableComponents[i.getStructureIndex()];
+				index++;
 			}
 
 			immutableComponents[c.getStructureIndex()].setOutputs(immutableOutputs);
@@ -368,8 +380,15 @@ public class SeparatePropnetCreationManager extends Thread{
 	 *
 	 * @return the object representing the structure of the propnet.
 	 */
-	public ExternalizedStatePropNet getPropnet(){
-		return this.propNet;
+	public ImmutablePropNet getImmutablePropnet(){
+		return this.immutablePropnet;
+	}
+
+	public ExternalPropnetState getInitialPropnetState(){
+		if(this.initialPropnetState == null){
+			return null;
+		}
+		return this.initialPropnetState.clone();
 	}
 
 	public long getPropnetConstructionTime(){
@@ -378,13 +397,6 @@ public class SeparatePropnetCreationManager extends Thread{
 
 	public long getTotalInitTime(){
 		return this.totalInitTime;
-	}
-
-	public ExternalPropnetState getInitialPropnetState(){
-		if(this.initialPropnetState == null){
-			return null;
-		}
-		return this.initialPropnetState.clone();
 	}
 
 }

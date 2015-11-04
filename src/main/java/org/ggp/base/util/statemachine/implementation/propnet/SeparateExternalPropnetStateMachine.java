@@ -58,7 +58,8 @@ public class SeparateExternalPropnetStateMachine extends StateMachine {
     @Override
     public void initialize(List<Gdl> description, long timeout) throws StateMachineInitializationException {
     	if(this.propNet != null && this.propnetState != null){
-    		for(int i = 0; i < this.propNet.getRoles().length; i++){
+    		this.roles = new ExternalPropnetRole[this.propNet.getRoles().length];
+    		for(int i = 0; i < this.roles.length; i++){
     			this.roles[i] = new ExternalPropnetRole(i);
     		}
     		this.initialState = new ExternalPropnetMachineState(this.propnetState.getCurrentState().clone());
