@@ -5,7 +5,6 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.LinkedHashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -1230,13 +1229,16 @@ public class DynamicPropNetFactory {
 	 * component will then keep the same truth value for the whole game).
 	 *
 	 * This said, it must be noticed that, to correctly run the removeUnreachableBasesAndInputs method, this method
-	 * is required to be run first!	 *
+	 * is required to be run first!
 	 *
 	 * @param pn the propNet to fix.
 	 * @param trueConstant
 	 * @param falseConstant
 	 */
-	public static void fixInputlessComponents(DynamicPropNet pn, DynamicConstant trueConstant, DynamicConstant falseConstant){
+	public static void fixInputlessComponents(DynamicPropNet pn){
+
+		DynamicConstant trueConstant = pn.getTrueConstant();
+		DynamicConstant falseConstant = pn.getFalseConstant();
 
 		assert(trueConstant != null && falseConstant != null);
 
@@ -1246,40 +1248,161 @@ public class DynamicPropNetFactory {
 					if(((DynamicProposition) c).getPropositionType() != PROP_TYPE.INPUT){
 						c.addInput(falseConstant);
 						falseConstant.addOutput(c);
+
+						//System.out.println("Adding to false: " + c.getComponentType());
+
+
 					}
 				}else if(c instanceof DynamicOr){
 					c.addInput(falseConstant);
 					falseConstant.addOutput(c);
+
+					//System.out.println("Adding to false: " + c.getComponentType());
+
 				}else if(c instanceof DynamicAnd){
-					throw new RuntimeException("Unhandled input-less component type: NOT");
+					throw new RuntimeException("Unhandled input-less component type: AND");
 				}else if(c instanceof DynamicTransition){
-					throw new RuntimeException("Unhandled input-less component type: NOT");
+					throw new RuntimeException("Unhandled input-less component type: TRANSITION");
 				}else if(c instanceof DynamicNot){
 					throw new RuntimeException("Unhandled input-less component type: NOT");
 				}
 			}
 		}
 
-		// TODO
 		// Now we can remove the (unnecessary) components that are always true or false.
-		//optimizeAwayTrueAndFalse()
+		optimizeAwayTrueAndFalse2(pn, trueConstant, falseConstant);
 
 	}
 
-	////////FIX
-	private static void optimizeAwayTrueAndFalse2(DynamicPropNet pn, DynamicComponent trueComponent, DynamicComponent falseComponent){
+	/**
+	 * This method is another version of the optimizeAwayTrueAndFalse() method. This method has been implemented
+	 * to be used during propnet optimization AFTER its creation, while the other method deals with the propnet
+	 * during creation.
+	 *
+	 * This method removes from the propnet non-essential components that have the TRUE constant or the FALSE
+	 * constant as one of their inputs.
+	 *
+	 * This method deals with components as follows:
+	 *
+	 * COMPONENTS WITH TRUE INPUT:
+	 * - AND: if TRUE is the only input => all its outputs are true. The AND gate is removed and all its outputs
+	 * 		  are connected to true.
+	 * 		  Otherwise TRUE is removed as input of AND since its output only depends on the values of its other
+	 * 		  inputs.
+	 * - OR: if one of the inputs of OR is true it means that the output of OR is always true, so the component
+	 * 		 is removed from the propnet and all its outputs are connected to TRUE.
+	 * - NOT: if the single input of NOT is TRUE it means that its output is always false. NOT is removed from the
+	 * 		  propnet and all its outputs are connected to FALSE.
+	 * - TRANSITION: a transition is always assumed to have a BASE proposition as output, so it cannot be removed
+	 * 				 from the propnet, unless the corresponding BASE proposition is also proved to be always TRUE
+	 * 				 and gets removed. Nothing is done for a transition connected to TRUE (unless it has no base
+	 * 				 as output. In this case an exception is thrown).
+	 * - CONSTANT: an exception is thrown, since a constant cannot have an input, especially not another constant.
+	 * - PROPOSITIONS:
+	 * 	-- GOAL, LEGAL, INIT, TERMINAL: this propositions are needed for the correct functioning of the propnet as
+	 * 									they give essential informations on the game, so they are never removed.
+	 * 									(NOTE that if you decide not to use the INIT proposition in the propnet, you
+	 * 									can connect it to false and change its type to OTHER. Also NOTE that a legal
+	 * 									being always TRUE doesn't mean that the corresponding input will always be
+	 * 									true, if the player has other legal moves it might choose to play one of them).
+	 * 	-- BASE, INPUT: an exception is thrown, since base proposition are assumed to always and only have transitions
+	 * 					as input and input proposition are assumed to NEVER have inputs.
+	 * 	-- OTHER: if a proposition is always true all its outputs will be always true, so the proposition is removed
+	 * 			  from the propnet (since it's not giving relevant informations on the game) and all its outputs are
+	 * 			  connected to TRUE.
+	 *
+	 * COMPONENTS WITH FALSE INPUT:
+	 * - AND: if one of the inputs of AND is false it means that the output of AND is always false, so the component
+	 * 		  is removed from the propnet and all its outputs are connected to FALSE.
+	 * - OR: if FALSE is the only input => all its outputs are FALSE. The OR gate is removed and all its outputs
+	 * 		  are connected to FALSE.
+	 * 		  Otherwise FALSE is removed as input of OR since its output only depends on the values of its other
+	 * 		  inputs.
+	 * - NOT: if the single input of NOT is FALSE it means that its output is always TRUE. NOT is removed from the
+	 * 		  propnet and all its outputs are connected to TRUE.
+	 * - TRANSITION: a transition is always assumed to have a BASE proposition as output, so it cannot be removed
+	 * 				 from the propnet, unless the corresponding BASE proposition is also proved to be always FALSE
+	 * 				 and gets removed. Nothing is done for a transition connected to FALSE (unless it has no base
+	 * 				 as output. In this case an exception is thrown).
+	 * - CONSTANT: an exception is thrown, since a constant cannot have an input, especially not another constant.
+	 * - PROPOSITIONS:
+	 * 	-- LEGAL, INIT, TERMINAL: this propositions are needed for the correct functioning of the propnet as they give
+	 * 							  essential informations on the game, so they are never removed.
+	 * 							  (NOTE that if you decide not to use the INIT proposition in the propnet, you can
+	 * 							  connect it to false and change its type to OTHER).
+	 * 	-- BASE, INPUT: an exception is thrown, since base proposition are assumed to always and only have transitions
+	 * 					as input and input proposition are assumed to NEVER have inputs.
+	 * 	-- OTHER: if a proposition is always false all its outputs will be always false, so the proposition is removed
+	 * 			  from the propnet (since it's not giving relevant informations on the game) and all its outputs are
+	 * 			  connected to FALSE.
+	 * 	-- GOAL: if a goal is always false it is removed from the propnet and all its outputs are connected to FALSE.
+	 * 	 		 It is safe to remove an always false goal, since we will never need to use it in any state, it will
+	 * 			 never be returned.
+	 *
+	 * The method will iterate over the outputs of TRUE and FALSE until none of them can be removed or modified
+	 * anymore.
+	 *
+	 * NOTE: this method works if some assumptions are made on the structure of the propnet:
+	 * 1. The number of transitions and base propositions in the propnet is the same and they are in a 1-to-1
+	 * 	  relation (each transition is connected to one and only one base proposition and vice versa). This means
+	 * 	  that all the methods that modify the structure of the propnet must keep this assumption true if this
+	 *    method is going to be called next. For example, if a method detects that a base proposition is always
+	 *    true/false and wants to connect it to the true/false component, then it must remove the corresponding
+	 *    transition since it is not needed anymore to determine the truth value of the base proposition in the
+	 *    next step. Moreover, the BASE proposition in this case "looses" the state of BASE proposition and becomes
+	 *    just as any OTHER proposition, thus its type must be changed from BASE to OTHER (or this method will
+	 *    complain as a BASE is not expected to have a constant as input but only a transition).
+	 *    Also note that a base being always true/false means that there is no need anymore for the corresponding
+	 *    transition, but a transition being always true/false doesn't necessarily mean that the corresponding
+	 *    base is always true/false. If you are not using the INIT proposition, for example, a base might be always
+	 *    true/false for the whole game, except in the first state (thus if an extra check is needed to detect when
+	 *    a base is always true/false. Just checking the value of its transition is not sufficient).
+	 * 2. An input proposition can never be always TRUE. This means that we assume that no player can have one and
+	 * 	  only one legal move throughout the game, or in other words, every input proposition can become false sooner
+	 * 	  or later. On the contrary, it is feasible for an input proposition to always be false throughout the game
+	 * 	  (for example if the corresponding legal is always false).
+	 * 3. The number of legal and base propositions in the propnet is the same and they are in a 1-to-1 relation
+	 * 	  (each legal proposition is related to one and only one input proposition and vice versa). This means that
+	 * 	  all the methods that modify the structure of the propnet must keep this assumption true if this method is
+	 * 	  going to be called next. For example, if a method detects that an input proposition is always false and
+	 * 	  wants to connect it to the false component, then it must also deal with the corresponding legal proposition.
+	 * 	  As a legal it is not needed anymore to determine if the value of the base proposition in the next step can
+	 *    be true (we already know it will always be false). In this case the legal looses its importance as a LEGAL
+	 *    proposition, but since it might have outputs it cannot be directly removed from the propnet, so it should be
+	 *    classified as any OTHER proposition and also be connected to the FALSE component (this method will take care
+	 *    of removing it). Moreover, the input proposition in this case "looses" the state of INPUT proposition as well
+	 *    and becomes just as any OTHER proposition, thus its type must be changed from INPUT to OTHER (or this method
+	 *    will complain as aN INPUT is not expected to have any input).
+	 *
+	 * NOTE that this method will also remove the init propositions connected to true, so there is no need for an
+	 * extra method to do that (like in the ExtendedStatePropNetFactory).
+	 *
+	 *
+	 * @param pn
+	 * @param trueConstant
+	 * @param falseConstant
+	 */
+	private static void optimizeAwayTrueAndFalse2(DynamicPropNet pn, DynamicComponent trueConstant, DynamicComponent falseConstant){
 
-		Set<DynamicComponent> toCheckT = new LinkedHashSet<DynamicComponent>(trueComponent.getOutputs());
-		Set<DynamicComponent> toCheckF = new LinkedHashSet<DynamicComponent>(falseComponent.getOutputs());
+		Set<DynamicComponent> toCheckT = new HashSet<DynamicComponent>(trueConstant.getOutputs());
+		Set<DynamicComponent> toCheckF = new HashSet<DynamicComponent>(falseConstant.getOutputs());
+
+		//System.out.println("Otputs of true to check: " + toCheckT.size());
+		//System.out.println("Otputs of false to check: " + toCheckF.size());
+
 
 		while(!(toCheckT.isEmpty() && toCheckF.isEmpty())){
-			optimizeAwayTrue2(pn, trueComponent, falseComponent, toCheckT, toCheckF);
-			//optimizeAwayFalse2(pn, trueComponent, falseComponent, toCheckT, toCheckF);
+			toCheckT = optimizeAwayTrue2(pn, trueConstant, falseConstant, toCheckT, toCheckF);
+			toCheckF = optimizeAwayFalse2(pn, trueConstant, falseConstant, toCheckT, toCheckF);
+
+			//System.out.println("Otputs of true to check: " + toCheckT.size());
+			//System.out.println("Otputs of false to check: " + toCheckF.size());
+
 		}
 
 	}
 
-	private static void optimizeAwayTrue2(DynamicPropNet pn, DynamicComponent trueComponent, DynamicComponent falseComponent, Set<DynamicComponent> toCheckT, Set<DynamicComponent> toCheckF){
+	private static Set<DynamicComponent> optimizeAwayTrue2(DynamicPropNet pn, DynamicComponent trueConstant, DynamicComponent falseConstant, Set<DynamicComponent> toCheckT, Set<DynamicComponent> toCheckF){
 
 		Set<DynamicComponent> toCheckNextT;
 
@@ -1294,21 +1417,21 @@ public class DynamicPropNetFactory {
 					if(c.getInputs().size() > 1){
 						// One input of AND is TRUE, but since there are other inputs, the output of
 						// AND depends entirely on them => true can be removed as input
-						trueComponent.removeOutput(c);
-						c.removeInput(trueComponent);
+						trueConstant.removeOutput(c);
+						c.removeInput(trueConstant);
 					}else{
 						// TRUE is the only input of this AND gate => the output of the gate is TRUE as well
 						// and the gate can be removed, setting TRUE as input of all its outputs
-						trueComponent.removeOutput(c);
-						c.removeInput(trueComponent);
+						trueConstant.removeOutput(c);
+						c.removeInput(trueConstant);
 						for(DynamicComponent o : c.getOutputs()){
 							o.removeInput(c);
-							o.addInput(trueComponent);
+							o.addInput(trueConstant);
 							// If this component is not an output of TRUE yet, we add it to the set of components
 							// to be checked in the next step. If it is already an output of TRUE it means that it
 							// will be checked in this step already or that it has been already added to be checked
 							// next.
-							if(trueComponent.addOutput(o)){
+							if(trueConstant.addOutput(o)){
 								toCheckNextT.add(o);
 							}
 						}
@@ -1323,36 +1446,36 @@ public class DynamicPropNetFactory {
 					c.removeAllInputs();
 					for(DynamicComponent o : c.getOutputs()){
 						o.removeInput(c);
-						o.addInput(trueComponent);
-						if(trueComponent.addOutput(o)){
+						o.addInput(trueConstant);
+						if(trueConstant.addOutput(o)){
 							toCheckNextT.add(o);
 						}
 					}
 					c.removeAllOutputs();
 					pn.removeComponent(c);
 				}else if(c instanceof DynamicNot){
-					trueComponent.removeOutput(c);
-					c.removeInput(trueComponent);
+					trueConstant.removeOutput(c);
+					c.removeInput(trueConstant);
 					for(DynamicComponent o : c.getOutputs()){
 						o.removeInput(c);
-						o.addInput(falseComponent);
-						falseComponent.addOutput(o);
+						o.addInput(falseConstant);
+						falseConstant.addOutput(o);
 						toCheckF.add(o);
 					}
 					c.removeAllOutputs();
 					pn.removeComponent(c);
 				}else if(c instanceof DynamicTransition){
-					// It must neve happen that a transition has no output.
+					// It must never happen that a transition has no output.
 					// This method assumes that whenever a base proposition is removed/disconnected
 					// from its transition also the transition disappears from the propnet (i.e. if
 					// the base proposition is removed, it doesn't exist in the current state, so
-					// it cannot be true or fals also in future states -> the transition value has no
+					// it cannot be true or false also in future states -> the transition value has no
 					// meaning).
 					if(c.getOutputs().size() == 0){
 						throw new RuntimeException("Found a transition with no output! Something is wrong with the propnet structure!");
 					}
 					// ...else do nothing: cannot remove a transition from the propnet unless its corresponding
-					// base is proved to be always TRUE or FALSEa nd thus gets removed togheter with the transition.
+					// base is proved to be always TRUE or FALSE and thus gets removed together with the transition.
 				}else if(c instanceof DynamicProposition){
 					DynamicProposition p = (DynamicProposition) c;
 					switch(p.getPropositionType()){
@@ -1361,16 +1484,16 @@ public class DynamicPropNetFactory {
 					case INPUT:
 						throw new RuntimeException("Input propositions cannot have an input! When connecting an input to TRUE remember to transform it into an OTHER proposition!");
 					case OTHER:
-						trueComponent.removeOutput(c);
-						c.removeInput(trueComponent);
+						trueConstant.removeOutput(c);
+						c.removeInput(trueConstant);
 						for(DynamicComponent o : c.getOutputs()){
 							o.removeInput(c);
-							o.addInput(trueComponent);
+							o.addInput(trueConstant);
 							// If this component is not an output of TRUE yet, we add it to the set of components
 							// to be checked in the next step. If it is already an output of TRUE it means that it
-							// will be checked in this step already or that it has been already added to be checked
-							// next.
-							if(trueComponent.addOutput(o)){
+							// will already be checked in this step or that it has been already added to be checked
+							// next or that it has already been checked that it cannot be removed.
+							if(trueConstant.addOutput(o)){
 								toCheckNextT.add(o);
 							}
 						}
@@ -1382,113 +1505,144 @@ public class DynamicPropNetFactory {
 					}
 				}
 			}
+
+			//System.out.println("To check next true: " + toCheckNextT.size());
+
 			toCheckT = toCheckNextT;
 		}
 
+		return toCheckT;
 	}
 
-	/*
-	//TODO: Create a version with just a set of components that we can share with post-optimizations
-	private static void optimizeAwayFalse2(DynamicPropNet pn, DynamicComponent trueComponent, DynamicComponent falseComponent) {
+	/**
+	 * Checks all inputs of FALSE removing the ones that are useless until no more useless components are left.
+	 *
+	 * @param pn the propnet.
+	 * @param trueConstant
+	 * @param falseConstant
+	 * @param toCheckT the outputs of TRUE that still must be checked to see if they can be removed. This collection
+	 * is needed in case this method adds an output to the TRUE constant. In this case it must add it also to this
+	 * collection to tell to the optimizeAwayTrue2() method to also check that component when removing useless always
+	 * true components.
+	 * @param toCheckF the outputs of FALSE that this method must checked to see if they can be removed. If an output
+	 * of false cannot be removed it will be permanently removed from this list. An output will be either kept or removed
+	 * until this collection will be empty.
+	 * @return reference to the new collection containing the outputs of FALSE that still must be checked to see if they
+	 * can be removed. After running this method this collection is empty, but new components might be added to it by the
+	 * optimizeAwayTrue2() method.
+	 */
+	private static Set<DynamicComponent> optimizeAwayFalse2(DynamicPropNet pn, DynamicComponent trueConstant, DynamicComponent falseConstant,  Set<DynamicComponent> toCheckT, Set<DynamicComponent> toCheckF) {
 
-        for (DynamicComponent output : Lists.newArrayList(falseComponent.getOutputs())) {
-        	if (isEssentialProposition(output) || output instanceof DynamicTransition) {
-        		//Since this is the false constant, there are a few "essential" types
-        		//we don't actually want to keep around.
-        		if (!isLegalOrGoalProposition(output)) {
-        			continue;
-        		}
-	    	}
-			if(output instanceof DynamicProposition) {
-				//Move its outputs to be outputs of false
-				for(DynamicComponent child : output.getOutputs()) {
-					//Disconnect
-					child.removeInput(output);
-					//output.removeOutput(child); //do at end
-					//Reconnect; will get children before returning, if nonessential
-					falseComponent.addOutput(child);
-					child.addInput(falseComponent);
-				}
-				output.removeAllOutputs();
+		Set<DynamicComponent> toCheckNextF;
 
-				if(!isEssentialProposition(output)) {
-					DynamicProposition prop = (DynamicProposition) output;
-					//Remove the proposition entirely
-					falseComponent.removeOutput(output);
-					output.removeInput(falseComponent);
-					//Update its location to the trueComponent in our map
-					if(components != null) {
-					    components.put(prop.getName(), falseComponent);
-					    negations.put(prop.getName(), trueComponent);
-					} else {
-					    pn.removeComponent(output);
+		while(!(toCheckF.isEmpty())){
+
+			toCheckNextF = new HashSet<DynamicComponent>();
+
+			for(DynamicComponent c : toCheckF){
+				if(c instanceof DynamicConstant){
+					throw new RuntimeException("Found a constant component having FALSE as input! Something is wrong with the propnet structure!");
+				}else if(c instanceof DynamicAnd){
+					// It means that the output of this AND is always FALSE, no matter the other inputs.
+					for(DynamicComponent i : c.getInputs()){
+						i.removeOutput(c);
+					}
+					c.removeAllInputs();
+					for(DynamicComponent o : c.getOutputs()){
+						o.removeInput(c);
+						o.addInput(falseConstant);
+						if(falseConstant.addOutput(o)){
+							toCheckNextF.add(o);
+						}
+					}
+					c.removeAllOutputs();
+					pn.removeComponent(c);
+				}else if(c instanceof DynamicOr){
+					if(c.getInputs().size() > 1){
+						// One input of OR is FALSE, but since there are other inputs, the output of
+						// OR depends entirely on them => FALSE can be removed as input
+						falseConstant.removeOutput(c);
+						c.removeInput(falseConstant);
+					}else{
+						// FALSE is the only input of this OR gate => the output of the gate is FALSE as well
+						// and the gate can be removed, setting FALSE as input of all its outputs
+						falseConstant.removeOutput(c);
+						c.removeInput(falseConstant);
+						for(DynamicComponent o : c.getOutputs()){
+							o.removeInput(c);
+							o.addInput(falseConstant);
+							// If this component is not an output of TRUE yet, we add it to the set of components
+							// to be checked in the next step. If it is already an output of TRUE it means that it
+							// will be checked in this step already or that it has been already added to be checked
+							// next.
+							if(falseConstant.addOutput(o)){
+								toCheckNextF.add(o);
+							}
+						}
+						c.removeAllOutputs();
+						pn.removeComponent(c);
+					}
+				}else if(c instanceof DynamicNot){
+					falseConstant.removeOutput(c);
+					c.removeInput(falseConstant);
+					for(DynamicComponent o : c.getOutputs()){
+						o.removeInput(c);
+						o.addInput(trueConstant);
+						trueConstant.addOutput(o);
+						toCheckT.add(o);
+					}
+					c.removeAllOutputs();
+					pn.removeComponent(c);
+				}else if(c instanceof DynamicTransition){
+					// It must never happen that a transition has no output.
+					// This method assumes that whenever a base proposition is removed/disconnected
+					// from its transition also the transition disappears from the propnet (i.e. if
+					// the base proposition is removed, it doesn't exist in the current state, so
+					// it cannot be true or false also in future states -> the transition value has no
+					// meaning).
+					if(c.getOutputs().size() == 0){
+						throw new RuntimeException("Found a transition with no output! Something is wrong with the propnet structure!");
+					}
+					// ...else do nothing: cannot remove a transition from the propnet unless its corresponding
+					// base is proved to be always TRUE or FALSE and thus gets removed together with the transition.
+				}else if(c instanceof DynamicProposition){
+					DynamicProposition p = (DynamicProposition) c;
+					switch(p.getPropositionType()){
+					case BASE:
+						throw new RuntimeException("Base propositions cannot have FALSE as input, but only transitions! When connecting a base to TRUE remember to transform it into an OTHER proposition!");
+					case INPUT:
+						throw new RuntimeException("Input propositions cannot have an input! When connecting an input to FALSE remember to transform it into an OTHER proposition!");
+					case GOAL: // If a goal is always false we don't need it, we can remove it from the propnet as any OTHER proposition.
+					case OTHER:
+						falseConstant.removeOutput(c);
+						c.removeInput(falseConstant);
+						for(DynamicComponent o : c.getOutputs()){
+							o.removeInput(c);
+							o.addInput(falseConstant);
+							// If this component is not an output of FALSE yet, we add it to the set of components
+							// to be checked in the next step. If it is already an output of TRUE it means that it
+							// will be already checked in this step or that it has been already added to be checked
+							// next or that it has already been checked that it cannot be removed.
+							if(falseConstant.addOutput(o)){
+								toCheckNextF.add(o);
+							}
+						}
+						c.removeAllOutputs();
+						pn.removeComponent(c);
+						break;
+					default:
+						break;
 					}
 				}
-			} else if(output instanceof DynamicAnd) {
-				DynamicAnd and = (DynamicAnd) output;
-				//Attach children of and to falseComponent
-				for(DynamicComponent child : and.getOutputs()) {
-					child.addInput(falseComponent);
-					falseComponent.addOutput(child);
-					child.removeInput(and);
-				}
-				//Disconnect and completely
-				and.removeAllOutputs();
-				for(DynamicComponent parent : and.getInputs())
-					parent.removeOutput(and);
-				and.removeAllInputs();
-				if(pn != null)
-				    pn.removeComponent(and);
-			} else if(output instanceof DynamicOr) {
-				DynamicOr or = (DynamicOr) output;
-				//Remove as input from or
-				or.removeInput(falseComponent);
-				falseComponent.removeOutput(or);
-				//If or has only one input, remove it
-				if(or.getInputs().size() == 1) {
-					DynamicComponent in = or.getSingleInput();
-					or.removeInput(in);
-					in.removeOutput(or);
-					for(DynamicComponent out : or.getOutputs()) {
-						//Disconnect from and
-						out.removeInput(or);
-						//or.removeOutput(out); //do at end
-						//Connect directly to the new input
-						out.addInput(in);
-						in.addOutput(out);
-					}
-					or.removeAllOutputs();
-					if (pn != null) {
-					    pn.removeComponent(or);
-					}
-				} else if (or.getInputs().size() == 0) {
-					if (pn != null) {
-						pn.removeComponent(or);
-					}
-				}
-			} else if(output instanceof DynamicNot) {
-				DynamicNot not = (DynamicNot) output;
-				//Disconnect from falseComponent
-				not.removeInput(falseComponent);
-				falseComponent.removeOutput(not);
-				//Connect all children of the not to trueComponent
-				for(DynamicComponent child : not.getOutputs()) {
-					//Disconnect
-					child.removeInput(not);
-					//not.removeOutput(child); //Do at end
-					//Connect to trueComponent
-					child.addInput(trueComponent);
-					trueComponent.addOutput(child);
-				}
-				not.removeAllOutputs();
-				if(pn != null)
-				    pn.removeComponent(not);
-			} else if(output instanceof DynamicTransition) {
-				//???
-				System.err.println("Fix optimizeAwayFalse's case for Transitions");
 			}
+
+			//System.out.println("To check next false: " + toCheckNextF.size());
+
+			toCheckF = toCheckNextF;
 		}
-	}*/
+
+		return toCheckF;
+	}
 
 
 
@@ -1520,38 +1674,38 @@ public class DynamicPropNetFactory {
 
 		for(DynamicComponent c : pn.getComponents()){
 
-			/* NOT FEASIBLE TO CHECK THIS IN A REASONABLE AMOUNT OF TIME FOR MOST GAMES:
+			/* NOT FEASIBLE TO CHECK THIS IN A REASONABLE AMOUNT OF TIME FOR MOST GAMES: */
 
 			// Check that every input of the component references back the component as output
-			for(ForwardInterruptingComponent in : c.getInputs()){
+			for(DynamicComponent in : c.getInputs()){
 				boolean correctInputReferences = false;
-				for(ForwardInterruptingComponent inout : in.getOutputs()){
+				for(DynamicComponent inout : in.getOutputs()){
 					if(inout == c){
 						correctInputReferences = true;
 						break;
 					}
 				}
 				if(!correctInputReferences){
-					GamerLogger.log("PropStructureChecker", "Component " + c.getType() + " is not referenced back by its input " + in.getType() + ".");
+					GamerLogger.log("PropStructureChecker", "Component " + c.getComponentType() + " is not referenced back by its input " + in.getComponentType() + ".");
 					propnetOk = false;
 				}
 			}
 
 			// Check that every output of the component references back the component as input
-			for(ForwardInterruptingComponent out : c.getOutputs()){
+			for(DynamicComponent out : c.getOutputs()){
 				boolean correctOutputReferences = false;
-				for(ForwardInterruptingComponent outin : out.getInputs()){
+				for(DynamicComponent outin : out.getInputs()){
 					if(outin == c){
 						correctOutputReferences = true;
 						break;
 					}
 				}
 				if(!correctOutputReferences){
-					GamerLogger.log("PropStructureChecker", "Component " + c.getType() + " is not referenced back by its output " + out.getType() + ".");
+					GamerLogger.log("PropStructureChecker", "Component " + c.getComponentType() + " is not referenced back by its output " + out.getComponentType() + ".");
 					propnetOk = false;
 				}
 			}
-			*/
+
 
 			// Check for each type of component if it has the correct inputs and outputs
 			if(c instanceof DynamicProposition){

@@ -116,6 +116,15 @@ public class DynamicPropNet {
 	public DynamicPropNet(List<Role> roles, Set<DynamicComponent> components, DynamicConstant trueConstant, DynamicConstant falseConstant){
 
 		//System.out.println();
+		//System.out.println(trueConstant.getComponentType());
+		//System.out.println(falseConstant.getComponentType());
+
+		//System.out.println(trueConstant.getValue());
+		//System.out.println(falseConstant.getValue());
+
+		//for(DynamicComponent c : trueConstant.getOutputs()){
+		//	System.out.println(c.getComponentType());
+		//}
 
 		//long start = System.currentTimeMillis();
 
@@ -266,6 +275,9 @@ public class DynamicPropNet {
 					// input-less proposition. Uncomment this to keep it! If you want to keep it also pay attention when
 					// using some propnet optimization methods as they might remove it anyway.
 				}
+
+			    //System.out.println("["+c.getComponentType()+"]");
+
 			}else if(c instanceof DynamicTransition){
 
 			}else if(c instanceof DynamicNot){

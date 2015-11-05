@@ -1415,38 +1415,38 @@ public class ExternalizedStatePropnetFactory {
 
 		for(ExternalizedStateComponent c : pn.getComponents()){
 
-			/* NOT FEASIBLE TO CHECK THIS IN A REASONABLE AMOUNT OF TIME FOR MOST GAMES:
+			/* NOT FEASIBLE TO CHECK THIS IN A REASONABLE AMOUNT OF TIME FOR MOST GAMES:*/
 
 			// Check that every input of the component references back the component as output
-			for(ForwardInterruptingComponent in : c.getInputs()){
+			for(ExternalizedStateComponent in : c.getInputs()){
 				boolean correctInputReferences = false;
-				for(ForwardInterruptingComponent inout : in.getOutputs()){
+				for(ExternalizedStateComponent inout : in.getOutputs()){
 					if(inout == c){
 						correctInputReferences = true;
 						break;
 					}
 				}
 				if(!correctInputReferences){
-					GamerLogger.log("PropStructureChecker", "Component " + c.getType() + " is not referenced back by its input " + in.getType() + ".");
+					GamerLogger.log("PropStructureChecker", "Component " + c.getComponentType() + " is not referenced back by its input " + in.getComponentType() + ".");
 					propnetOk = false;
 				}
 			}
 
 			// Check that every output of the component references back the component as input
-			for(ForwardInterruptingComponent out : c.getOutputs()){
+			for(ExternalizedStateComponent out : c.getOutputs()){
 				boolean correctOutputReferences = false;
-				for(ForwardInterruptingComponent outin : out.getInputs()){
+				for(ExternalizedStateComponent outin : out.getInputs()){
 					if(outin == c){
 						correctOutputReferences = true;
 						break;
 					}
 				}
 				if(!correctOutputReferences){
-					GamerLogger.log("PropStructureChecker", "Component " + c.getType() + " is not referenced back by its output " + out.getType() + ".");
+					GamerLogger.log("PropStructureChecker", "Component " + c.getComponentType() + " is not referenced back by its output " + out.getComponentType() + ".");
 					propnetOk = false;
 				}
 			}
-			*/
+
 
 			// Check for each type of component if it has the correct inputs and outputs
 			if(c instanceof ExternalizedStateProposition){

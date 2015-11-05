@@ -58,7 +58,7 @@ public class SeparatePropnetSpeedTest {
 
 		/*********************** Parse main arguments ****************************/
 
-		boolean withTranslation = true;
+		boolean withTranslation = false;
 		boolean withCache = false;
 		long givenInitTime = 420000L;
 		long testTime = 60000L;

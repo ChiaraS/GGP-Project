@@ -136,6 +136,18 @@ public class SeparatePropnetCreationManager extends Thread{
     		return;
 		}
 		*/
+
+		/***************************************** OPTIMIZATIONS ******************************************/
+
+		/** 1. FIX INPUTLESS COMPONENT:
+		 *  set to true or false the input of input-less components that are not supposed to have no input
+		 *  and then remove components that are useless (e.g. always true or false).
+		 */
+		DynamicPropNetFactory.fixInputlessComponents(this.dynamicPropNet);
+
+
+		/************************ PROPNET EXTERNAL COMPLETE STATE INITIALIZATION **************************/
+
 		this.computeSeparatePropAutomata();
 
 		this.totalInitTime = System.currentTimeMillis() - startTime;
@@ -364,7 +376,13 @@ public class SeparatePropnetCreationManager extends Thread{
 			int numOutputs = c.getOutputs().size();
 			ImmutableComponent[] immutableOutputs = new ImmutableComponent[numOutputs];
 			index = 0;
+
+			//System.out.println("Connecting outputs of " + c.getComponentType());
+
 			for(DynamicComponent i : c.getOutputs()){
+
+				//System.out.println("Output: " + i.getComponentType());
+
 				immutableOutputs[index] = immutableComponents[i.getStructureIndex()];
 				index++;
 			}
