@@ -1275,6 +1275,53 @@ public class DynamicPropNetFactory {
 	}
 
 	/**
+	 * This method removes from the propnet the propositions that have no particular meaning in the game
+	 * (i.e. all propositions with type OTHER, otherwise defined anonymous propositions). More precisely,
+	 * it connects their single input (if they have one) with each of their outputs.
+	 *
+	 * NOTE: if the anonymous proposition has no input it cannot be removed. When an OTHER proposition has
+	 * no input it means that it is always false. Since it might have a gate as output, we cannot simply
+	 * remove it from the propnet, but we must connect FALSE as its input and take care of removing it with
+	 * the optimizeAwayTrueAndFalse2() method. If an anonymous proposition with no input is found, this method
+	 * does nothing. To deal with such propositions you can call the fixInputlessComponents() method (either
+	 * before or after this method).
+	 *
+	 * NOTE: if the fixInputlessComponents() has been called before this method, no anonymous proposition will
+	 * be inputless.
+	 *
+	 * @param pn
+	 */
+	public static void removeAnonymousPropositions(DynamicPropNet pn){
+
+		List<DynamicProposition> toRemove = new ArrayList<DynamicProposition>();
+
+		for(DynamicProposition p : pn.getPropositions()){
+			if(p.getPropositionType() == PROP_TYPE.OTHER){
+				if(p.getInputs().size() > 1){
+					throw new RuntimeException("Found a proposition having more than one input! Something is wrong with the propnet structure!");
+				}
+
+				if(p.getInputs().size() == 1){
+					DynamicComponent i = p.getSingleInput();
+					i.removeOutput(p);
+					p.removeInput(i);
+					for(DynamicComponent o : p.getOutputs()){
+						o.removeInput(p);
+						o.addInput(i);
+						i.addOutput(o);
+					}
+					p.removeAllOutputs();
+					toRemove.add(p);
+				}
+			}
+		}
+
+		for(DynamicProposition p : toRemove){
+			pn.removeComponent(p);
+		}
+	}
+
+	/**
 	 * This method is another version of the optimizeAwayTrueAndFalse() method. This method has been implemented
 	 * to be used during propnet optimization AFTER its creation, while the other method deals with the propnet
 	 * during creation.

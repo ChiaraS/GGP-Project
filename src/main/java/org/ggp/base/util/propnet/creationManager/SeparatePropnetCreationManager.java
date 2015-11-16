@@ -106,6 +106,8 @@ public class SeparatePropnetCreationManager extends Thread{
     	this.propNetConstructionTime = System.currentTimeMillis() - startTime;
 		GamerLogger.log("StateMachine", "[Propnet Creator] Propnet creation done. It took " + this.propNetConstructionTime + "ms.");
 
+		//System.out.println("Propnet has: " + this.dynamicPropNet.getSize() + " COMPONENTS");
+
 		/*
 		System.out.println("Propnet has: " + this.propNet.getSize() + " COMPONENTS, " + this.propNet.getNumPropositions() + " PROPOSITIONS, " + this.propNet.getNumLinks() + " LINKS.");
 		System.out.println("Propnet has: " + this.propNet.getNumAnds() + " ANDS, " + this.propNet.getNumOrs() + " ORS, " + this.propNet.getNumNots() + " NOTS.");
@@ -144,6 +146,16 @@ public class SeparatePropnetCreationManager extends Thread{
 		 *  and then remove components that are useless (e.g. always true or false).
 		 */
 		DynamicPropNetFactory.fixInputlessComponents(this.dynamicPropNet);
+
+		//System.out.println("Propnet has: " + this.dynamicPropNet.getSize() + " COMPONENTS");
+
+		/** 2. REMOVE ANONYMOUS PROPOSITIONS:
+		 *  find and remove all the propositions that have no particular GDL meaning (i.e. the ones that have
+		 *  type OTHER). Before removing them connect their single input to each of their outputs.
+		 */
+		DynamicPropNetFactory.removeAnonymousPropositions(this.dynamicPropNet);
+
+		//System.out.println("Propnet has: " + this.dynamicPropNet.getSize() + " COMPONENTS");
 
 
 		/************************ PROPNET EXTERNAL COMPLETE STATE INITIALIZATION **************************/
