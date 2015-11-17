@@ -11,7 +11,9 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Queue;
 import java.util.Set;
+import java.util.Stack;
 
+import org.ggp.base.util.Pair;
 import org.ggp.base.util.concurrency.ConcurrencyUtils;
 import org.ggp.base.util.gdl.GdlUtils;
 import org.ggp.base.util.gdl.grammar.Gdl;
@@ -56,8 +58,11 @@ import org.ggp.base.util.propnet.architecture.separateExtendedState.dynamic.comp
 import org.ggp.base.util.propnet.utils.PROP_TYPE;
 import org.ggp.base.util.statemachine.Role;
 
+import com.google.common.collect.HashMultiset;
 import com.google.common.collect.Lists;
+import com.google.common.collect.Maps;
 import com.google.common.collect.Multimap;
+import com.google.common.collect.Multiset;
 
 /*
  * A propnet factory meant to optimize the propnet before it's even built,
@@ -1289,6 +1294,9 @@ public class DynamicPropNetFactory {
 	 * NOTE: if the fixInputlessComponents() has been called before this method, no anonymous proposition will
 	 * be inputless.
 	 *
+	 * NOTE: if the proposition has no outputs it is removed anyway and its input will be connected to no new
+	 * output.
+	 *
 	 * @param pn
 	 */
 	public static void removeAnonymousPropositions(DynamicPropNet pn){
@@ -1319,6 +1327,310 @@ public class DynamicPropNetFactory {
 		for(DynamicProposition p : toRemove){
 			pn.removeComponent(p);
 		}
+	}
+
+	/**
+	 * Represents the "type" of a node with respect to which truth
+	 * values it is capable of having: true, false, either value,
+	 * or neither value. Used by
+	 * {@link DynamicPropNetFactory#removeConstantValueComponents(DynamicPropNet)}.
+	 */
+	private static enum Type { NEITHER(false, false),
+						TRUE(true, false),
+						FALSE(false, true),
+						BOTH(true, true);
+		private final boolean hasTrue;
+		private final boolean hasFalse;
+
+		Type(boolean hasTrue, boolean hasFalse) {
+			this.hasTrue = hasTrue;
+			this.hasFalse = hasFalse;
+		}
+
+		public boolean includes(Type other) {
+			switch (other) {
+			case BOTH:
+				return hasTrue && hasFalse;
+			case FALSE:
+				return hasFalse;
+			case NEITHER:
+				return true;
+			case TRUE:
+				return hasTrue;
+			}
+			throw new RuntimeException();
+		}
+
+		public Type with(Type otherType) {
+			if (otherType == null) {
+				otherType = NEITHER;
+			}
+			switch (otherType) {
+			case BOTH:
+				return BOTH;
+			case NEITHER:
+				return this;
+			case TRUE:
+				if (hasFalse) {
+					return BOTH;
+				} else {
+					return TRUE;
+				}
+			case FALSE:
+				if (hasTrue) {
+					return BOTH;
+				} else {
+					return FALSE;
+				}
+			}
+			throw new RuntimeException();
+		}
+
+		public Type minus(Type other) {
+			switch (other) {
+			case BOTH:
+				return NEITHER;
+			case TRUE:
+				return hasFalse ? FALSE : NEITHER;
+			case FALSE:
+				return hasTrue ? TRUE : NEITHER;
+			case NEITHER:
+				return this;
+			}
+			throw new RuntimeException();
+		}
+
+		public Type opposite() {
+			switch (this) {
+			case TRUE:
+				return FALSE;
+			case FALSE:
+				return TRUE;
+			case NEITHER:
+			case BOTH:
+				return this;
+			}
+			throw new RuntimeException();
+		}
+	}
+
+	/**
+	 * Removes from the propnet all components that are discovered through type
+	 * inference to only ever be true or false, replacing them with their values
+	 * appropriately. This method may remove base and input propositions that are
+	 * shown to be always false (or, in the case of base propositions, those that
+	 * are always true).
+	 *
+	 * For each component this method iteratively checks which values it can assume
+	 * during the game, depending on the values it's inputs can assume during the
+	 * game.
+	 * More precisely, for each component it checks which values it can assume in
+	 * the initial state (NONE, TRUE, FALSE, BOTH), sets that all his children can
+	 * also assume that value and puts the children in the stack of components to be
+	 * checked, i.e. check which value they can assume and repeat the process with
+	 * their children.
+	 * Once this check is over, i.e. we know for all components the values that they
+	 * can assume during the game, this method replaces the inputs of each always TRUE
+	 * component with a TRUE constant and the inputs of each always FALSE component
+	 * with a FALSE constant.
+	 *
+	 * NOTE: it also makes sure to set correctly all inputs and outputs of the modified
+	 * components.
+	 *
+	 * CONTRACT: the effects of this method are guaranteed to be the expected ones
+	 * ONLY if the fixInputlessComponents() method has been called on the propnet
+	 * first. Otherwise, if there are input-less components other than the constants
+	 * and the input propositions, this method will ignore some of the truth values
+	 * that some components might have (e.g. it might not find out that a component
+	 * can be both true and false and just assume that it is constant, either always
+	 * true or always false).
+	 *
+	 * @param pn
+	 * @throws InterruptedException
+	 */
+	public static void removeConstantValueComponents(DynamicPropNet pn) throws InterruptedException{
+
+		DynamicConstant trueConstant = pn.getTrueConstant();
+		DynamicConstant falseConstant = pn.getFalseConstant();
+
+		//If this doesn't contain a component, that's the equivalent of Type.NEITHER
+		Map<DynamicComponent, Type> reachability = Maps.newHashMap();
+		//Keep track of the number of true inputs to AND gates and false inputs to
+		//OR gates.
+		Multiset<DynamicComponent> numTrueInputs = HashMultiset.create();
+		Multiset<DynamicComponent> numFalseInputs = HashMultiset.create();
+		Stack<Pair<DynamicComponent, Type>> toAdd = new Stack<Pair<DynamicComponent, Type>>();
+
+		List<DynamicProposition> legals = pn.getLegalPropositions();
+		List<DynamicProposition> inputs = pn.getInputPropositions();
+
+		//All constants have their values
+		toAdd.add(Pair.of((DynamicComponent)trueConstant, Type.TRUE));
+		toAdd.add(Pair.of((DynamicComponent)falseConstant, Type.FALSE));
+
+		//Every input can be false (we assume that no player will have just one move allowed all game)
+        for(DynamicProposition p : pn.getInputPropositions()) {
+        	toAdd.add(Pair.of((DynamicComponent) p, Type.FALSE));
+        }
+	    //Every base with "init" can be true, every base without "init" can be false
+	    for(DynamicProposition baseProp : pn.getBasePropositions()) {
+	    	DynamicTransition t = (DynamicTransition) baseProp.getSingleInput();
+	    	if(t.isDependingOnInit()){
+	    		toAdd.add(Pair.of((DynamicComponent) baseProp, Type.TRUE));
+	    	}else{
+            	toAdd.add(Pair.of((DynamicComponent) baseProp, Type.FALSE));
+            }
+	    }
+	    //There is no INIT proposition. This proposition is treated as any OTHER proposition
+	    //==> no need for the following instructions
+	    //DynamicProposition initProposition = pn.getInitProposition();
+    	//toAdd.add(Pair.of((DynamicComponent) initProposition, Type.BOTH));
+
+    	while (!toAdd.isEmpty()) {
+			ConcurrencyUtils.checkForInterruption();
+    		Pair<DynamicComponent, Type> curEntry = toAdd.pop();
+    		DynamicComponent curComp = curEntry.left;
+    		Type newInputType = curEntry.right;
+    		Type oldType = reachability.get(curComp);
+    		if (oldType == null) {
+    			oldType = Type.NEITHER;
+    		}
+
+    		//We want to send only the new addition to our children,
+    		//for consistency in our parent-true and parent-false
+    		//counts.
+    		//Make sure we don't double-apply a type.
+
+    		Type typeToAdd = Type.NEITHER; // Any new values that we discover we can have this iteration.
+    		if (curComp instanceof DynamicProposition) {
+    			typeToAdd = newInputType;
+    		} else if (curComp instanceof DynamicTransition) {
+    			typeToAdd = newInputType;
+    		} else if (curComp instanceof DynamicConstant) {
+    			typeToAdd = newInputType;
+    		} else if (curComp instanceof DynamicNot) {
+    			typeToAdd = newInputType.opposite();
+    		} else if (curComp instanceof DynamicAnd) {
+    			if (newInputType.hasTrue) {
+    				numTrueInputs.add(curComp);
+    				if (numTrueInputs.count(curComp) == curComp.getInputs().size()) {
+    					typeToAdd = Type.TRUE;
+    				}
+    			}
+    			if (newInputType.hasFalse) {
+    				typeToAdd = typeToAdd.with(Type.FALSE);
+    			}
+    		} else if (curComp instanceof DynamicOr) {
+    			if (newInputType.hasFalse) {
+    				numFalseInputs.add(curComp);
+    				if (numFalseInputs.count(curComp) == curComp.getInputs().size()) {
+    					typeToAdd = Type.FALSE;
+    				}
+    			}
+    			if (newInputType.hasTrue) {
+    				typeToAdd = typeToAdd.with(Type.TRUE);
+    			}
+    		} else {
+    			throw new RuntimeException("Unhandled component type " + curComp.getClass());
+    		}
+
+    		if (oldType.includes(typeToAdd)) {
+    			//We don't know anything new about curComp
+    			continue;
+    		}
+    		reachability.put(curComp, typeToAdd.with(oldType));
+    		typeToAdd = typeToAdd.minus(oldType);
+    		if (typeToAdd == Type.NEITHER) {
+    			throw new RuntimeException("Something's messed up here");
+    		}
+
+    		//Add all our children to the stack
+    		for (DynamicComponent output : curComp.getOutputs()) {
+    			toAdd.add(Pair.of(output, typeToAdd));
+    		}
+    		// If it's a legal, we must propagate the value to the corresponding input
+			if(curComp instanceof DynamicProposition && ((DynamicProposition)curComp).getPropositionType() == PROP_TYPE.LEGAL){
+				int index = legals.indexOf(curComp);
+				if(index == -1){
+					throw new RuntimeException("Found a non-indexed legal proposition! Something must have gone wrong with the propnet initialization!");
+				}
+				toAdd.add(Pair.of((DynamicComponent) inputs.get(index), typeToAdd));
+			}
+    	}
+
+    	Set<DynamicComponent> toRemove = new HashSet<DynamicComponent>();
+    	Set<DynamicProposition> toConvert = new HashSet<DynamicProposition>();
+
+	    //Make them the input of all false/true components
+	    for(Entry<DynamicComponent, Type> entry : reachability.entrySet()) {
+	        Type type = entry.getValue();
+	        if(type == Type.TRUE || type == Type.FALSE) {
+	        	DynamicComponent c = entry.getKey();
+
+	        	if (c instanceof DynamicConstant) {
+	            	//Skip the constants since we don't need to connect them to a constant value.
+	            	continue;
+	            }
+
+	        	// If it is a base or input proposition also record that the proposition must be converted into
+	        	// an OTHER proposition and the corresponding transition or legal must be removed from the propnet
+	        	if(c instanceof DynamicProposition){
+	        		DynamicProposition p = (DynamicProposition) c;
+	        		switch(p.getPropositionType()){
+	        		case BASE:
+	        			toRemove.add(p.getSingleInput());
+	        			toConvert.add(p);
+	        			break;
+	        		case INPUT:
+	        			if(type == Type.TRUE){
+	    					throw new RuntimeException("Detected an input proposition always TRUE, when assuming that it is impossible to find one!");
+	        			}
+	        			int index = inputs.indexOf(p);
+	        			if(index == -1){
+	    					throw new RuntimeException("Found a non-indexed input proposition! Something must have gone wrong with the propnet initialization!");
+	        			}
+	        			toRemove.add(legals.get(index));
+	        			toConvert.add(p);
+	        			break;
+	        		default:
+	        			break;
+	        		}
+	        	}
+
+	        	for(DynamicComponent i : c.getInputs()){
+	        		i.removeOutput(c);
+	        	}
+	        	c.removeAllInputs();
+
+	        	if(type == Type.TRUE ^ c instanceof DynamicNot){
+        			c.addInput(trueConstant);
+        			trueConstant.addOutput(c);
+        		}else{
+        			c.addInput(falseConstant);
+        			falseConstant.addOutput(c);
+        		}
+	        }
+	    }
+
+	    // Remove all useless transitions and legal propositions from the propnet
+	    for(DynamicComponent c : toRemove){
+	    	pn.removeComponent(c);
+	    }
+
+	    for(DynamicProposition p : toConvert){
+	    	pn.convertToOther(p);
+	    }
+
+	    optimizeAwayTrueAndFalse2(pn, trueConstant, falseConstant);
+	}
+
+	/**
+	 * This method checks if any of the output-less components can be removed from the propnet.
+	 *
+	 * @param pn
+	 */
+	public static void removeOutputlessComponents(DynamicPropNet pn){
+
 	}
 
 	/**

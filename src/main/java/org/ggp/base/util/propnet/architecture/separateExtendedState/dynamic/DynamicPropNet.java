@@ -1052,8 +1052,6 @@ public class DynamicPropNet {
 	 */
 	public void removeComponent(DynamicComponent c) {
 
-		// TODO: CHECK
-
 		boolean found = components.remove(c);
 
 		//Go through all the collections it could appear in
@@ -1120,7 +1118,52 @@ public class DynamicPropNet {
 		//c.removeAllOutputs();
 	}
 
+	/**
+	 * This method transforms the given proposition into an OTHER proposition.
+	 * This means that it will change its type to OTHER and, if needed, remove
+	 * it from the collections containing that type of proposition (if any exists).
+	 *
+	 * @param p
+	 */
+	public void convertToOther(DynamicProposition p){
+		Role r;
 
+		switch(p.getPropositionType()){
+		case BASE:
+			this.basePropositions.remove(p);
+			break;
+		case INPUT:
+			this.inputPropositions.remove(p);
+			// Find the role for this input
+			r = new Role((GdlConstant) ((GdlRelation) p.getName()).get(0));
+			this.inputsPerRole.get(r).remove(p);
+			break;
+		/*case LEGAL:
+			this.legalPropositions.remove(p);
+			// Find the role for this legal
+			r = new Role((GdlConstant) ((GdlRelation) p.getName()).get(0));
+			this.legalsPerRole.get(r).remove(p);
+			break;
+		case GOAL:
+			// Find the role for this goal
+			r = new Role((GdlConstant) ((GdlRelation) p.getName()).get(0));
+			this.goalsPerRole.get(r).remove(p);
+			break;
+		case TERMINAL:
+			if(this.terminalProposition == p){
+				this.terminalProposition = null;
+			}
+			break;
+		case INIT:
+			//if(this.initProposition == p){
+			//	this.initProposition = null;
+			//}
+			break;
+			*/
+		default:
+			throw new RuntimeException("Trying to convert to an OTHER proposition a " + p.getPropositionType().toString() + " proposition. This type cannot be converted, if necessary, extend the code to do so!");
+		}
 
-
+		p.setPropositionType(PROP_TYPE.OTHER);
+	}
 }
