@@ -106,7 +106,7 @@ public class SeparatePropnetCreationManager extends Thread{
     	this.propNetConstructionTime = System.currentTimeMillis() - startTime;
 		GamerLogger.log("StateMachine", "[Propnet Creator] Propnet creation done. It took " + this.propNetConstructionTime + "ms.");
 
-		System.out.println("Propnet has: " + this.dynamicPropNet.getSize() + " COMPONENTS");
+		//System.out.println("Propnet has: " + this.dynamicPropNet.getSize() + " COMPONENTS");
 
 		/*
 		System.out.println("Propnet has: " + this.propNet.getSize() + " COMPONENTS, " + this.propNet.getNumPropositions() + " PROPOSITIONS, " + this.propNet.getNumLinks() + " LINKS.");
@@ -147,7 +147,7 @@ public class SeparatePropnetCreationManager extends Thread{
 		 */
 		DynamicPropNetFactory.fixInputlessComponents(this.dynamicPropNet);
 
-		System.out.println("Propnet has: " + this.dynamicPropNet.getSize() + " COMPONENTS");
+		//System.out.println("Propnet has: " + this.dynamicPropNet.getSize() + " COMPONENTS");
 
 		/** 2. REMOVE ANONYMOUS PROPOSITIONS:
 		 *  find and remove all the propositions that have no particular GDL meaning (i.e. the ones that have
@@ -155,9 +155,9 @@ public class SeparatePropnetCreationManager extends Thread{
 		 */
 		DynamicPropNetFactory.removeAnonymousPropositions(this.dynamicPropNet);
 
-		System.out.println("Propnet has: " + this.dynamicPropNet.getSize() + " COMPONENTS");
+		//System.out.println("Propnet has: " + this.dynamicPropNet.getSize() + " COMPONENTS");
 
-		/** 3. REMOVE USELESS COMPONNETS WITH CONSTANT VALUE:
+		/** 3. REMOVE USELESS COMPONENTS WITH CONSTANT VALUE:
 		 *  find all the components in the propnet that will always have the same value in all possible states
 		 *  of the game (i.e. always TRUE or always FALSE), then connect them to the TRUE/FALSE constant and
 		 *  optimize away the components that result in being useless.
@@ -172,7 +172,7 @@ public class SeparatePropnetCreationManager extends Thread{
     		return;
 		}
 
-		System.out.println("Propnet has: " + this.dynamicPropNet.getSize() + " COMPONENTS");
+		//System.out.println("Propnet has: " + this.dynamicPropNet.getSize() + " COMPONENTS");
 
 
 		/************************ PROPNET EXTERNAL COMPLETE STATE INITIALIZATION **************************/
