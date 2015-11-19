@@ -153,7 +153,7 @@ public class SeparatePropnetCreationManager extends Thread{
 		 *  find and remove all the propositions that have no particular GDL meaning (i.e. the ones that have
 		 *  type OTHER). Before removing them connect their single input to each of their outputs.
 		 */
-		DynamicPropNetFactory.removeAnonymousPropositions(this.dynamicPropNet);
+		//DynamicPropNetFactory.removeAnonymousPropositions(this.dynamicPropNet);
 
 		//System.out.println("Propnet has: " + this.dynamicPropNet.getSize() + " COMPONENTS");
 
@@ -162,6 +162,7 @@ public class SeparatePropnetCreationManager extends Thread{
 		 *  of the game (i.e. always TRUE or always FALSE), then connect them to the TRUE/FALSE constant and
 		 *  optimize away the components that result in being useless.
 		 */
+		/*
 		try {
 			DynamicPropNetFactory.removeConstantValueComponents(this.dynamicPropNet);
 		} catch (InterruptedException e) {
@@ -170,7 +171,7 @@ public class SeparatePropnetCreationManager extends Thread{
     		// Note that here the dynamic propnet is still consistent. The initial propnet state can
     		// be computed on the previous optimization by removing the following "return" statement.
     		return;
-		}
+		}*/
 
 		//System.out.println("Propnet has: " + this.dynamicPropNet.getSize() + " COMPONENTS");
 
@@ -444,6 +445,10 @@ public class SeparatePropnetCreationManager extends Thread{
 
 	public long getTotalInitTime(){
 		return this.totalInitTime;
+	}
+
+	public DynamicPropNet getDynamicPropnet(){
+		return this.dynamicPropNet;
 	}
 
 }

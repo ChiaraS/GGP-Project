@@ -1631,6 +1631,8 @@ public class DynamicPropNetFactory {
 	 */
 	public static void removeOutputlessComponents(DynamicPropNet pn){
 
+
+
 	}
 
 	/**
@@ -1736,6 +1738,9 @@ public class DynamicPropNetFactory {
 	 * NOTE that this method will also remove the init propositions connected to true, so there is no need for an
 	 * extra method to do that (like in the ExtendedStatePropNetFactory).
 	 *
+	 * NOTE: this method might create output-less components that can be removed in a further optimization since they
+	 * are useless (e.g. output-less gates, output-less OTHER propositions,...).
+	 *
 	 *
 	 * @param pn
 	 * @param trueConstant
@@ -1778,6 +1783,29 @@ public class DynamicPropNetFactory {
 						// AND depends entirely on them => true can be removed as input
 						trueConstant.removeOutput(c);
 						c.removeInput(trueConstant);
+
+						/* ADDITION */
+						// NOTE: if after removing the true constant as input the AND gate only has one input left
+						// it is useless to keep this gate. We can just connect the single input directly to every
+						// output of the gate.
+						// NOTE that if this method is called on a propnet that has no AND gates with only one input,
+						// the following code should ensure that also after the end of this method the propnet will
+						// have no AND gates with only one input.
+						if(c.getInputs().size() == 1){
+							DynamicComponent i = c.getSingleInput();
+							i.removeOutput(c);
+							c.removeAllInputs();
+							for(DynamicComponent o : c.getOutputs()){
+								o.removeInput(c);
+								i.addOutput(o);
+								o.addInput(i);
+							}
+							c.removeAllOutputs();
+							pn.removeComponent(c);
+						}
+
+						/* END OF ADDITION */
+
 					}else{
 						// TRUE is the only input of this AND gate => the output of the gate is TRUE as well
 						// and the gate can be removed, setting TRUE as input of all its outputs
@@ -1922,6 +1950,28 @@ public class DynamicPropNetFactory {
 						// OR depends entirely on them => FALSE can be removed as input
 						falseConstant.removeOutput(c);
 						c.removeInput(falseConstant);
+
+						/* ADDITION */
+						// NOTE: if after removing the false constant as input the OR gate only has one input left
+						// it is useless to keep this gate. We can just connect the single input directly to every
+						// output of the gate.
+						// NOTE that if this method is called on a propnet that has no OR gates with only one input,
+						// the following code should ensure that also after the end of this method the propnet will
+						// have no OR gates with only one input.
+						if(c.getInputs().size() == 1){
+							DynamicComponent i = c.getSingleInput();
+							i.removeOutput(c);
+							c.removeAllInputs();
+							for(DynamicComponent o : c.getOutputs()){
+								o.removeInput(c);
+								i.addOutput(o);
+								o.addInput(i);
+							}
+							c.removeAllOutputs();
+							pn.removeComponent(c);
+						}
+
+						/* END OF ADDITION */
 					}else{
 						// FALSE is the only input of this OR gate => the output of the gate is FALSE as well
 						// and the gate can be removed, setting FALSE as input of all its outputs
@@ -2033,7 +2083,7 @@ public class DynamicPropNetFactory {
 
 		for(DynamicComponent c : pn.getComponents()){
 
-			/* NOT FEASIBLE TO CHECK THIS IN A REASONABLE AMOUNT OF TIME FOR MOST GAMES: */
+			/* NOT FEASIBLE TO CHECK THIS IN A REASONABLE AMOUNT OF TIME FOR MOST GAMES:
 
 			// Check that every input of the component references back the component as output
 			for(DynamicComponent in : c.getInputs()){
@@ -2064,6 +2114,7 @@ public class DynamicPropNetFactory {
 					propnetOk = false;
 				}
 			}
+			*/
 
 
 			// Check for each type of component if it has the correct inputs and outputs
@@ -2089,7 +2140,7 @@ public class DynamicPropNetFactory {
 				case BASE:
 					if(p.getInputs().size() != 1){
 						GamerLogger.log("PropStructureChecker", "Component " + p.getComponentType() + " has wrong number of inputs: " + p.getInputs().size());
-						propnetOk = false;
+					propnetOk = false;
 					}else if(!(p.getSingleInput() instanceof DynamicTransition)){
 						GamerLogger.log("PropStructureChecker", "Component " + p.getComponentType() + " has no TRANSITION as input but " + p.getSingleInput().getClass().getName());
 						propnetOk = false;
@@ -2134,8 +2185,13 @@ public class DynamicPropNetFactory {
 					}
 					break;
 				case OTHER:
-					if(p.getInputs().size() != 1){
+					if(p.getInputs().size() > 1){
 						GamerLogger.log("PropStructureChecker", "Component " + p.getComponentType() + " has wrong number of inputs: " + p.getInputs().size());
+						propnetOk = false;
+					}
+
+					if(p.getOutputs().size() == 0){
+						GamerLogger.log("PropStructureChecker", "Component " + p.getComponentType() + " has no outputs and is useless.");
 						propnetOk = false;
 					}
 					break;
@@ -2216,6 +2272,11 @@ public class DynamicPropNetFactory {
 					propnetOk = false;
 				}else if(c.getInputs().size() == 0){
 					GamerLogger.log("PropStructureChecker", "The component " + c.getComponentType() + " has no inputs: should be connected to a constant proposition!");
+					propnetOk = false;
+				}
+
+				if(c.getOutputs().size() == 0){
+					GamerLogger.log("PropStructureChecker", "The component " + c.getComponentType() + " is unnecessary since it has no outputs!");
 					propnetOk = false;
 				}
 			}
