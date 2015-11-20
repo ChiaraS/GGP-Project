@@ -228,6 +228,11 @@ public class SeparatePropnetSpeedTest {
 
 	        	System.out.println("Propnet creation succeeded. Checking speed.");
 
+
+		        /***************************************/
+		        //System.gc();
+		        /***************************************/
+
 	        	if(withTranslation){
 	        		StateMachineSpeedTest.testSpeed(theSubject, testTime);
 	        	}else{

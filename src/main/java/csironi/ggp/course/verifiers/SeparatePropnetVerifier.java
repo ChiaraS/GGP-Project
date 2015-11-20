@@ -191,6 +191,11 @@ public class SeparatePropnetVerifier {
 	        	smInitTime = System.currentTimeMillis() - initStart;
 	        	System.out.println("Propnet creation succeeded. Checking consistency.");
 	        	long testStart = System.currentTimeMillis();
+
+		        /***************************************/
+		        //System.gc();
+		        /***************************************/
+
 	            pass = ExtendedStateMachineVerifier.checkMachineConsistency(theReference, thePropnetMachine, testTime);
 	            testDuration = System.currentTimeMillis() - testStart;
 	            rounds = ExtendedStateMachineVerifier.lastRounds;

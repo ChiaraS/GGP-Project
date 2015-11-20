@@ -1,5 +1,6 @@
-package org.ggp.base.util.propnet.creationManager;
+package csironi.ggp.course.pnoptchecker;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -23,6 +24,11 @@ import org.ggp.base.util.propnet.utils.PROP_TYPE;
 import org.ggp.base.util.statemachine.Role;
 
 /**
+ * This class is the same as org.ggp.base.util.propnet.creationManager.SeparatePropnetCreationManager.
+ * In addition this class creates logs after each propnet optimization that record the time taken to
+ * perform the optimization and the number of the different types of components left in the propnet
+ * after the optimization.
+ *
  * This class takes care of the followings:
  *
  * 1. Create the propNet structure;
@@ -43,20 +49,20 @@ import org.ggp.base.util.statemachine.Role;
  * @author C.Sironi
  *
  */
-public class SeparatePropnetCreationManager extends Thread{
+public class LoggingSeparatePropnetCreationManager extends Thread{
 
 	private List<Gdl> description;
 
-	private long timeout;
+	private String gameKey;
+
+	private String blankFields;
+
+	private List<String> logs;
 
 	/**
 	 * Propnet structure to be used in the optimization phase. Can be modified.
 	 */
 	private DynamicPropNet dynamicPropNet;
-
-	private long propNetConstructionTime = -1L;
-
-	private long totalInitTime;
 
 	/**
 	 * Essential propnet structure to be used in the game playing phase by the state
@@ -74,14 +80,19 @@ public class SeparatePropnetCreationManager extends Thread{
 	 */
 	private ExternalPropnetState initialPropnetState;
 
-	public SeparatePropnetCreationManager(List<Gdl> description, long timeout) {
+	public LoggingSeparatePropnetCreationManager(List<Gdl> description, String gameKey) {
 		this.description = description;
-		this.timeout = timeout;
+		this.gameKey = gameKey;
+		this.blankFields = ";;;;;;;;;;;;;;";
 	}
 
 	@Override
 	public void run(){
 
+		this.logs = new ArrayList<String>();
+
+		String s = this.gameKey + ";";
+		long totalTime = 0L;
 		//try{
 
 		// TODO: use the timeout to decide if it is worth trying another optimization
@@ -90,21 +101,45 @@ public class SeparatePropnetCreationManager extends Thread{
 
 		// 1. Create the propnet.
 		long startTime = System.currentTimeMillis();
+		long timeSpent;
 
+		s += "BUILD;";
     	try{
     		this.dynamicPropNet = DynamicPropNetFactory.create(description);
     	}catch(InterruptedException e){
+    		timeSpent = System.currentTimeMillis()-startTime;
+    		totalTime += timeSpent;
     		GamerLogger.logError("PropnetManager", "Propnet creation interrupted!");
     		GamerLogger.logStackTrace("PropnetManager", e);
     		this.dynamicPropNet = null;
     		this.initialPropnetState = null;
-    		this.propNetConstructionTime = -1;
-    		this.totalInitTime = System.currentTimeMillis() - startTime;
+    		this.logs.add(s+(timeSpent)+";"+this.blankFields);
+    		this.logs.add(this.gameKey+";"+"TOT TIME;"+totalTime+";"+this.blankFields);
     		return;
     	}
     	// Compute the time taken to construct the propnet
-    	this.propNetConstructionTime = System.currentTimeMillis() - startTime;
-		GamerLogger.log("StateMachine", "[Propnet Creator] Propnet creation done. It took " + this.propNetConstructionTime + "ms.");
+    	timeSpent = System.currentTimeMillis() - startTime;
+    	totalTime += timeSpent;
+
+		GamerLogger.log("StateMachine", "[Propnet Creator] Propnet creation done. It took " + timeSpent + "ms.");
+
+		s += timeSpent + ";";
+		s += this.dynamicPropNet.getSize() + ";";
+		s += this.dynamicPropNet.getNumLinks() + ";";
+		s += this.dynamicPropNet.getNumConstants() + ";";
+		s += this.dynamicPropNet.getNumAnds() + ";";
+		s += this.dynamicPropNet.getNumOrs() + ";";
+		s += this.dynamicPropNet.getNumNots() + ";";
+		s += this.dynamicPropNet.getNumTransitions() + ";";
+		s += this.dynamicPropNet.getNumBases() + ";";
+		s += this.dynamicPropNet.getNumLegals() + ";";
+		s += this.dynamicPropNet.getNumInputs() + ";";
+		s += this.dynamicPropNet.getNumInits() + ";";
+		s += this.dynamicPropNet.getNumGoals() + ";";
+		s += this.dynamicPropNet.getNumTerminals() + ";";
+		s += this.dynamicPropNet.getNumOthers() + ";";
+
+		this.logs.add(s);
 
 		//System.out.println("Propnet has: " + this.dynamicPropNet.getSize() + " COMPONENTS");
 
@@ -145,7 +180,34 @@ public class SeparatePropnetCreationManager extends Thread{
 		 *  set to true or false the input of input-less components that are not supposed to have no input
 		 *  and then remove components that are useless (e.g. always true or false).
 		 */
+
+		s = this.gameKey + ";";
+		s += "O1B;";
+		startTime = System.currentTimeMillis();
+
 		DynamicPropNetFactory.fixInputlessComponents(this.dynamicPropNet);
+
+		timeSpent = System.currentTimeMillis() - startTime;
+    	totalTime += timeSpent;
+
+		s += timeSpent + ";";
+		s += this.dynamicPropNet.getSize() + ";";
+		s += this.dynamicPropNet.getNumLinks() + ";";
+		s += this.dynamicPropNet.getNumConstants() + ";";
+		s += this.dynamicPropNet.getNumAnds() + ";";
+		s += this.dynamicPropNet.getNumOrs() + ";";
+		s += this.dynamicPropNet.getNumNots() + ";";
+		s += this.dynamicPropNet.getNumTransitions() + ";";
+		s += this.dynamicPropNet.getNumBases() + ";";
+		s += this.dynamicPropNet.getNumLegals() + ";";
+		s += this.dynamicPropNet.getNumInputs() + ";";
+		s += this.dynamicPropNet.getNumInits() + ";";
+		s += this.dynamicPropNet.getNumGoals() + ";";
+		s += this.dynamicPropNet.getNumTerminals() + ";";
+		s += this.dynamicPropNet.getNumOthers() + ";";
+
+		this.logs.add(s);
+
 
 		//System.out.println("Propnet has: " + this.dynamicPropNet.getSize() + " COMPONENTS");
 
@@ -153,7 +215,34 @@ public class SeparatePropnetCreationManager extends Thread{
 		 *  find and remove all the propositions that have no particular GDL meaning (i.e. the ones that have
 		 *  type OTHER). Before removing them connect their single input to each of their outputs.
 		 */
+
+		s = this.gameKey + ";";
+		s += "O2;";
+		startTime = System.currentTimeMillis();
+
 		DynamicPropNetFactory.removeAnonymousPropositions(this.dynamicPropNet);
+
+		timeSpent = System.currentTimeMillis() - startTime;
+    	totalTime += timeSpent;
+
+		s += timeSpent + ";";
+		s += this.dynamicPropNet.getSize() + ";";
+		s += this.dynamicPropNet.getNumLinks() + ";";
+		s += this.dynamicPropNet.getNumConstants() + ";";
+		s += this.dynamicPropNet.getNumAnds() + ";";
+		s += this.dynamicPropNet.getNumOrs() + ";";
+		s += this.dynamicPropNet.getNumNots() + ";";
+		s += this.dynamicPropNet.getNumTransitions() + ";";
+		s += this.dynamicPropNet.getNumBases() + ";";
+		s += this.dynamicPropNet.getNumLegals() + ";";
+		s += this.dynamicPropNet.getNumInputs() + ";";
+		s += this.dynamicPropNet.getNumInits() + ";";
+		s += this.dynamicPropNet.getNumGoals() + ";";
+		s += this.dynamicPropNet.getNumTerminals() + ";";
+		s += this.dynamicPropNet.getNumOthers() + ";";
+
+		this.logs.add(s);
+
 
 		//System.out.println("Propnet has: " + this.dynamicPropNet.getSize() + " COMPONENTS");
 
@@ -163,15 +252,42 @@ public class SeparatePropnetCreationManager extends Thread{
 		 *  optimize away the components that result in being useless.
 		 */
 
+		s = this.gameKey + ";";
+		s += "O3;";
+		startTime = System.currentTimeMillis();
+
 		try {
 			DynamicPropNetFactory.removeConstantValueComponents(this.dynamicPropNet);
 		} catch (InterruptedException e) {
-			GamerLogger.logError("PropnetManager", "Propnet optimization interrupted!");
+			timeSpent = System.currentTimeMillis()-startTime;
+    		totalTime += timeSpent;
+    		GamerLogger.logError("PropnetManager", "Propnet optimization interrupted!");
     		GamerLogger.logStackTrace("PropnetManager", e);
-    		// Note that here the dynamic propnet is still consistent. The initial propnet state can
-    		// be computed on the previous optimization by removing the following "return" statement.
+    		this.logs.add(s+(timeSpent)+";"+this.blankFields);
+    		this.logs.add(this.gameKey+";"+"TOT TIME;"+totalTime+";"+this.blankFields);
     		return;
 		}
+
+		timeSpent = System.currentTimeMillis() - startTime;
+    	totalTime += timeSpent;
+
+		s += timeSpent + ";";
+		s += this.dynamicPropNet.getSize() + ";";
+		s += this.dynamicPropNet.getNumLinks() + ";";
+		s += this.dynamicPropNet.getNumConstants() + ";";
+		s += this.dynamicPropNet.getNumAnds() + ";";
+		s += this.dynamicPropNet.getNumOrs() + ";";
+		s += this.dynamicPropNet.getNumNots() + ";";
+		s += this.dynamicPropNet.getNumTransitions() + ";";
+		s += this.dynamicPropNet.getNumBases() + ";";
+		s += this.dynamicPropNet.getNumLegals() + ";";
+		s += this.dynamicPropNet.getNumInputs() + ";";
+		s += this.dynamicPropNet.getNumInits() + ";";
+		s += this.dynamicPropNet.getNumGoals() + ";";
+		s += this.dynamicPropNet.getNumTerminals() + ";";
+		s += this.dynamicPropNet.getNumOthers() + ";";
+
+		this.logs.add(s);
 
 		//System.out.println("Propnet has: " + this.dynamicPropNet.getSize() + " COMPONENTS");
 
@@ -181,14 +297,53 @@ public class SeparatePropnetCreationManager extends Thread{
 		 *  has no outputs).
 		 */
 
-		//DynamicPropNetFactory.removeOutputlessComponents(this.dynamicPropNet);
+
+		s = this.gameKey + ";";
+		s += "O4;";
+		startTime = System.currentTimeMillis();
+
+		DynamicPropNetFactory.removeOutputlessComponents(this.dynamicPropNet);
+
+		timeSpent = System.currentTimeMillis() - startTime;
+    	totalTime += timeSpent;
+
+		s += timeSpent + ";";
+		s += this.dynamicPropNet.getSize() + ";";
+		s += this.dynamicPropNet.getNumLinks() + ";";
+		s += this.dynamicPropNet.getNumConstants() + ";";
+		s += this.dynamicPropNet.getNumAnds() + ";";
+		s += this.dynamicPropNet.getNumOrs() + ";";
+		s += this.dynamicPropNet.getNumNots() + ";";
+		s += this.dynamicPropNet.getNumTransitions() + ";";
+		s += this.dynamicPropNet.getNumBases() + ";";
+		s += this.dynamicPropNet.getNumLegals() + ";";
+		s += this.dynamicPropNet.getNumInputs() + ";";
+		s += this.dynamicPropNet.getNumInits() + ";";
+		s += this.dynamicPropNet.getNumGoals() + ";";
+		s += this.dynamicPropNet.getNumTerminals() + ";";
+		s += this.dynamicPropNet.getNumOthers() + ";";
+
+		this.logs.add(s);
 
 
-		/************************ PROPNET EXTERNAL COMPLETE STATE INITIALIZATION **************************/
+
+		/************************ PROPNET COMPLETE EXTERNAL STATE INITIALIZATION **************************/
+
+		s = this.gameKey + ";";
+		s += "INIT;";
+		startTime = System.currentTimeMillis();
 
 		this.computeSeparatePropAutomata();
 
-		this.totalInitTime = System.currentTimeMillis() - startTime;
+		timeSpent = System.currentTimeMillis() - startTime;
+    	totalTime += timeSpent;
+
+		s += timeSpent + ";";
+		s += this.blankFields;
+
+		this.logs.add(s);
+
+		this.logs.add(this.gameKey+";"+"TOT TIME;"+totalTime+";"+this.blankFields);
 
 		//}catch(Exception e){
 		//	System.out.println("ECCEZIONE!");
@@ -447,16 +602,12 @@ public class SeparatePropnetCreationManager extends Thread{
 		return this.initialPropnetState.clone();
 	}
 
-	public long getPropnetConstructionTime(){
-		return this.propNetConstructionTime;
-	}
-
-	public long getTotalInitTime(){
-		return this.totalInitTime;
-	}
-
 	public DynamicPropNet getDynamicPropnet(){
 		return this.dynamicPropNet;
+	}
+
+	public List<String> getLogs(){
+		return this.logs;
 	}
 
 }

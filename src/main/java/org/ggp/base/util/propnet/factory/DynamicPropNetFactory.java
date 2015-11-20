@@ -1631,6 +1631,42 @@ public class DynamicPropNetFactory {
 	 */
 	public static void removeOutputlessComponents(DynamicPropNet pn){
 
+		Set<DynamicComponent> toCheckNow = new HashSet<DynamicComponent>(pn.getComponents());
+		Set<DynamicComponent> toCheckNext;
+
+		while(!toCheckNow.isEmpty()){
+
+			toCheckNext = new HashSet<DynamicComponent>();
+
+			for(DynamicComponent c : toCheckNow){
+				// We can only remove output-less ANDs, ORs and NOTs...
+				if(c instanceof DynamicAnd || c instanceof DynamicOr || c instanceof DynamicNot){
+					if(c.getOutputs().size() == 0){
+						for(DynamicComponent i : c.getInputs()){
+							i.removeOutput(c);
+							toCheckNext.add(i);
+						}
+						c.removeAllInputs();
+						pn.removeComponent(c);
+					}
+				//...or OTHER propositions
+				}else if(c instanceof DynamicProposition){
+					DynamicProposition p = (DynamicProposition) c;
+					if(p.getPropositionType() == PROP_TYPE.OTHER){
+						if(p.getOutputs().size() == 0){
+							for(DynamicComponent i : p.getInputs()){
+								i.removeOutput(p);
+								toCheckNext.add(i);
+							}
+							p.removeAllInputs();
+							pn.removeComponent(p);
+						}
+					}
+				}
+			}
+
+			toCheckNow = toCheckNext;
+		}
 
 
 	}

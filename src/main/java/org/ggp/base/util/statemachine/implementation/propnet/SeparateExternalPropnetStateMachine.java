@@ -203,7 +203,7 @@ public class SeparateExternalPropnetStateMachine extends StateMachine {
 
 	/**
 	 * Computes the legal moves for role in state.
-	 * If the state is not an extended propnet state, it is first transformed into one.
+	 * Since the state is not an internal propnet state, it is first transformed into one.
 	 */
 	@Override
 	public List<Move> getLegalMoves(MachineState state, Role role)throws MoveDefinitionException {
