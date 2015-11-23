@@ -106,17 +106,28 @@ public class LoggingSeparatePropnetCreationManager extends Thread{
 		s += "BUILD;";
     	try{
     		this.dynamicPropNet = DynamicPropNetFactory.create(description);
-    	}catch(InterruptedException e){
+    	}catch(InterruptedException ie){
     		timeSpent = System.currentTimeMillis()-startTime;
     		totalTime += timeSpent;
     		GamerLogger.logError("PropnetManager", "Propnet creation interrupted!");
-    		GamerLogger.logStackTrace("PropnetManager", e);
+    		GamerLogger.logStackTrace("PropnetManager", ie);
+    		this.dynamicPropNet = null;
+    		this.initialPropnetState = null;
+    		this.logs.add(s+(timeSpent)+";"+this.blankFields);
+    		this.logs.add(this.gameKey+";"+"TOT TIME;"+totalTime+";"+this.blankFields);
+    		return;
+    	}catch(RuntimeException re){
+    		timeSpent = System.currentTimeMillis()-startTime;
+    		totalTime += timeSpent;
+    		GamerLogger.logError("PropnetManager", "Propnet creation interrupted!");
+    		GamerLogger.logStackTrace("PropnetManager", re);
     		this.dynamicPropNet = null;
     		this.initialPropnetState = null;
     		this.logs.add(s+(timeSpent)+";"+this.blankFields);
     		this.logs.add(this.gameKey+";"+"TOT TIME;"+totalTime+";"+this.blankFields);
     		return;
     	}
+
     	// Compute the time taken to construct the propnet
     	timeSpent = System.currentTimeMillis() - startTime;
     	totalTime += timeSpent;

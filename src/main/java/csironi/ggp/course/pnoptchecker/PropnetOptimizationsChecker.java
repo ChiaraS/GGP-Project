@@ -153,6 +153,8 @@ public class PropnetOptimizationsChecker {
 	        for(String s : logs){
 	        	GamerLogger.log(FORMAT.CSV_FORMAT, "PNOptCheckTable", s);
 	        }
+
+	        System.gc();
 	    }
 	}
 

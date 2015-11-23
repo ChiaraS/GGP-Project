@@ -14,7 +14,7 @@ import org.ggp.base.util.propnet.architecture.separateExtendedState.immutable.Im
 import org.ggp.base.util.propnet.creationManager.SeparatePropnetCreationManager;
 import org.ggp.base.util.propnet.state.ExternalPropnetState;
 import org.ggp.base.util.statemachine.StateMachine;
-import org.ggp.base.util.statemachine.cache.CachedStateMachine;
+import org.ggp.base.util.statemachine.cache.PnStateCachedStateMachine;
 import org.ggp.base.util.statemachine.exceptions.StateMachineInitializationException;
 import org.ggp.base.util.statemachine.implementation.propnet.SeparateExternalPropnetStateMachine;
 
@@ -119,6 +119,7 @@ public class SeparatePropnetSpeedTest {
 		/*********************** Perform all the tests ****************************/
 
 		StateMachine theSubject;
+		SeparateExternalPropnetStateMachine thePropnetMachine;
 
 		String type = "SeparatePN";
 		if(withTranslation){
@@ -203,11 +204,13 @@ public class SeparatePropnetSpeedTest {
 			// Create the state machine giving it the propnet and the propnet state.
 			// NOTE that if any of the two is null, it means that the propnet creation/initialization went wrong
 			// and this will be detected by the state machine during initialization.
-		    theSubject = new SeparateExternalPropnetStateMachine(propnet, propnetState);
+		    thePropnetMachine = new SeparateExternalPropnetStateMachine(propnet, propnetState);
 
 		    // For now the cache can be used only for the state machine that performs translation
-		    if(withTranslation && withCache){
-		    	theSubject = new CachedStateMachine(theSubject);
+		    if(withCache){
+		    	theSubject = new PnStateCachedStateMachine(thePropnetMachine);
+	        }else{
+	        	theSubject = thePropnetMachine;
 	        }
 
 	        long initializationTime;
@@ -257,6 +260,12 @@ public class SeparatePropnetSpeedTest {
 	        GamerLogger.stopFileLogging();
 
 	        GamerLogger.log(FORMAT.CSV_FORMAT, type + "SpeedTestTable", gameKey + ";" + manager.getTotalInitTime() + ";" + manager.getPropnetConstructionTime() + ";" + initializationTime + ";" + testDuration + ";" + succeededIterations + ";" + failedIterations + ";" + visitedNodes + ";" + iterationsPerSecond + ";" + nodesPerSecond + ";");
+
+	        /***************************************/
+	        //System.gc();
+	        //GdlPool.drainPool();
+	        /***************************************/
+
 	    }
 	}
 }

@@ -1,5 +1,6 @@
 package org.ggp.base.util.statemachine.cache;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -24,23 +25,7 @@ import com.google.common.collect.ImmutableList;
 public final class PnStateCachedStateMachine extends StateMachine
 {
 	private final SeparateExternalPropnetStateMachine backingStateMachine;
-	private final TtlCache<MachineState, Entry> externalStateTtlCache;
 	private final TtlCache<ExternalPropnetMachineState, PropnetEntry> internalStateTtlCache;
-
-	private final class Entry{
-		public Map<Role, Integer> goals;
-		public Map<Role, List<Move>> moves;
-		public Map<List<Move>, MachineState> nexts;
-		public Boolean terminal;
-
-		public Entry()
-		{
-			goals = new HashMap<Role, Integer>();
-			moves = new HashMap<Role, List<Move>>();
-			nexts = new HashMap<List<Move>, MachineState>();
-			terminal = null;
-		}
-	}
 
 	private final class PropnetEntry{
 
@@ -60,43 +45,32 @@ public final class PnStateCachedStateMachine extends StateMachine
 
 	public PnStateCachedStateMachine(SeparateExternalPropnetStateMachine backingStateMachine){
 		this.backingStateMachine = backingStateMachine;
-		externalStateTtlCache = new TtlCache<MachineState, Entry>(1);
-		internalStateTtlCache = new TtlCache<ExternalPropnetMachineState, PropnetEntry>(1);
+		this.internalStateTtlCache = new TtlCache<ExternalPropnetMachineState, PropnetEntry>(1);
 	}
 
-	private Entry getEntry(MachineState state){
-		if (!externalStateTtlCache.containsKey(state)){
-			externalStateTtlCache.put(state, new Entry());
-		}
-
-		return externalStateTtlCache.get(state);
+	@Override
+	public void initialize(List<Gdl> description, long timeout) throws StateMachineInitializationException {
+		backingStateMachine.initialize(description, timeout);
 	}
 
 	private PropnetEntry getPropnetEntry(ExternalPropnetMachineState state){
 		if (!internalStateTtlCache.containsKey(state)){
-			internalStateTtlCache.put(state, new PropnetEntry());
+			this.internalStateTtlCache.put(state, new PropnetEntry());
 		}
 
-		return internalStateTtlCache.get(state);
+		return this.internalStateTtlCache.get(state);
 	}
 
 	@Override
 	public int getGoal(MachineState state, Role role) throws GoalDefinitionException, StateMachineException{
-		Entry entry = getEntry(state);
-		synchronized (entry){
-			if (!entry.goals.containsKey(role)){
-				entry.goals.put(role, backingStateMachine.getGoal(state, role));
-			}
-
-			return entry.goals.get(role);
-		}
+		return this.getGoal(this.backingStateMachine.stateToExternalState(state), this.backingStateMachine.roleToExternalRole(role));
 	}
 
 	public int getGoal(ExternalPropnetMachineState state, ExternalPropnetRole role) throws GoalDefinitionException{
 		PropnetEntry entry = getPropnetEntry(state);
 		synchronized (entry){
 			if (!entry.goals.containsKey(role)){
-				entry.goals.put(role, backingStateMachine.getGoal(state, role));
+				entry.goals.put(role, this.backingStateMachine.getGoal(state, role));
 			}
 
 			return entry.goals.get(role);
@@ -105,21 +79,18 @@ public final class PnStateCachedStateMachine extends StateMachine
 
 	@Override
 	public List<Move> getLegalMoves(MachineState state, Role role) throws MoveDefinitionException, StateMachineException{
-		Entry entry = getEntry(state);
-		synchronized (entry){
-			if (!entry.moves.containsKey(role)){
-				entry.moves.put(role, ImmutableList.copyOf(backingStateMachine.getLegalMoves(state, role)));
-			}
-
-			return entry.moves.get(role);
+		List<Move> moves = new ArrayList<Move>();
+		for(ExternalPropnetMove m : this.getLegalMoves(this.backingStateMachine.stateToExternalState(state), this.backingStateMachine.roleToExternalRole(role))){
+			moves.add(this.backingStateMachine.externalMoveToMove(m));
 		}
+		return moves;
 	}
 
 	public List<ExternalPropnetMove> getLegalMoves(ExternalPropnetMachineState state, ExternalPropnetRole role) throws MoveDefinitionException, StateMachineException{
 		PropnetEntry entry = getPropnetEntry(state);
 		synchronized (entry){
 			if (!entry.moves.containsKey(role)){
-				entry.moves.put(role, ImmutableList.copyOf(backingStateMachine.getLegalMoves(state, role)));
+				entry.moves.put(role, ImmutableList.copyOf(this.backingStateMachine.getLegalMoves(state, role)));
 			}
 
 			return entry.moves.get(role);
@@ -128,21 +99,14 @@ public final class PnStateCachedStateMachine extends StateMachine
 
 	@Override
 	public MachineState getNextState(MachineState state, List<Move> moves) throws TransitionDefinitionException, StateMachineException{
-		Entry entry = getEntry(state);
-		synchronized (entry){
-			if (!entry.nexts.containsKey(moves)){
-				entry.nexts.put(moves, backingStateMachine.getNextState(state, moves));
-			}
-
-			return entry.nexts.get(moves);
-		}
+		return this.backingStateMachine.externalStateToState(this.getNextState(this.backingStateMachine.stateToExternalState(state), this.backingStateMachine.moveToExternalMove(moves)));
 	}
 
 	public ExternalPropnetMachineState getNextState(ExternalPropnetMachineState state, List<ExternalPropnetMove> moves) throws TransitionDefinitionException, StateMachineException{
 		PropnetEntry entry = getPropnetEntry(state);
 		synchronized (entry){
 			if (!entry.nexts.containsKey(moves)){
-				entry.nexts.put(moves, backingStateMachine.getNextState(state, moves));
+				entry.nexts.put(moves, this.backingStateMachine.getNextState(state, moves));
 			}
 
 			return entry.nexts.get(moves);
@@ -151,21 +115,14 @@ public final class PnStateCachedStateMachine extends StateMachine
 
 	@Override
 	public boolean isTerminal(MachineState state) throws StateMachineException{
-		Entry entry = getEntry(state);
-		synchronized (entry){
-			if (entry.terminal == null){
-				entry.terminal = backingStateMachine.isTerminal(state);
-			}
-
-			return entry.terminal;
-		}
+		return this.isTerminal(this.backingStateMachine.stateToExternalState(state));
 	}
 
 	public boolean isTerminal(ExternalPropnetMachineState state) throws StateMachineException{
 		PropnetEntry entry = getPropnetEntry(state);
 		synchronized (entry){
 			if (entry.terminal == null){
-				entry.terminal = backingStateMachine.isTerminal(state);
+				entry.terminal = this.backingStateMachine.isTerminal(state);
 			}
 
 			return entry.terminal;
@@ -177,27 +134,20 @@ public final class PnStateCachedStateMachine extends StateMachine
 		prune();
 	}
 
-	public void prune()
-	{
-		externalStateTtlCache.prune();
-		internalStateTtlCache.prune();
-	}
-
-	@Override
-	public void initialize(List<Gdl> description, long timeout) throws StateMachineInitializationException {
-		backingStateMachine.initialize(description, timeout);
+	public void prune(){
+		this.internalStateTtlCache.prune();
 	}
 
 	@Override
 	public List<Role> getRoles() {
 		// TODO(schreib): Should this be cached as well?
-		return backingStateMachine.getRoles();
+		return this.backingStateMachine.getRoles();
 	}
 
 	@Override
 	public MachineState getInitialState() {
 		// TODO(schreib): Should this be cached as well?
-		return backingStateMachine.getInitialState();
+		return this.backingStateMachine.getInitialState();
 	}
 
 	@Override
@@ -210,8 +160,8 @@ public final class PnStateCachedStateMachine extends StateMachine
 	@Override
     public String getName() {
         if(this.backingStateMachine != null) {
-            return "Cache(" + this.backingStateMachine.getName() + ")";
+            return "PnCache(" + this.backingStateMachine.getName() + ")";
         }
-        return "Cache(null)";
+        return "PnCache(null)";
     }
 }

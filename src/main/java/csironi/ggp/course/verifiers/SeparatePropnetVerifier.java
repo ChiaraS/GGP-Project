@@ -13,6 +13,8 @@ import org.ggp.base.util.match.Match;
 import org.ggp.base.util.propnet.architecture.separateExtendedState.immutable.ImmutablePropNet;
 import org.ggp.base.util.propnet.creationManager.SeparatePropnetCreationManager;
 import org.ggp.base.util.propnet.state.ExternalPropnetState;
+import org.ggp.base.util.statemachine.StateMachine;
+import org.ggp.base.util.statemachine.cache.PnStateCachedStateMachine;
 import org.ggp.base.util.statemachine.exceptions.StateMachineInitializationException;
 import org.ggp.base.util.statemachine.implementation.propnet.SeparateExternalPropnetStateMachine;
 import org.ggp.base.util.statemachine.implementation.prover.ProverStateMachine;
@@ -27,11 +29,14 @@ import org.ggp.base.util.statemachine.implementation.prover.ProverStateMachine;
 *
 * It is possible to specify the following combinations of main arguments:
 *
-* 1. [keyOfGameToTest]
-* 2. [maximumPropnetInitializationTime] [maximumTestDuration]
-* 3. [maximumPropnetInitializationTime] [maximumTestDuration] [keyOfGameToTest]
+* 1. [withCache]
+* 2. [withCache] [keyOfGameToTest]
+* 3. [withCache] [maximumPropnetInitializationTime] [maximumTestDuration]
+* 4. [withCache] [maximumPropnetInitializationTime] [maximumTestDuration] [keyOfGameToTest]
 *
 * where:
+* [withCache] = true if the propnet state machine must be provided with a cache for its results, false
+* 				otherwise (DEFAULT: false).
 * [maximumPropnetInitializationTime] = time in milliseconds that is available to build and initialize
 * 									   the propnet (DEFAULT: 420000ms - 7mins).
 * [maximumTestDuration] = duration of each test in millisecond (DEFAULT: 60000ms - 1min).
@@ -51,15 +56,19 @@ public class SeparatePropnetVerifier {
 		/*********************** Parse main arguments ****************************/
 
 
+		boolean withCache = false;
 		long initializationTime = 420000L;
 		long testTime = 60000L;
 		String gameToTest = null;
 
-		if (args.length != 0 && args.length <= 3){
-			if(args.length == 3 || args.length == 1){
+		if (args.length != 0 && args.length <= 4){
+
+			withCache = Boolean.parseBoolean(args[0]);
+
+			if(args.length == 4 || args.length == 2){
 				gameToTest = args[args.length-1];
 			}
-			if(args.length == 2 || args.length == 3){
+			if(args.length == 4 || args.length == 3){
 				try{
 					initializationTime = Long.parseLong(args[0]);
 				}catch(NumberFormatException nfe){
@@ -73,14 +82,19 @@ public class SeparatePropnetVerifier {
 					testTime = 60000L;
 				}
 			}
-		}else if(args.length > 3){
+		}else if(args.length > 4){
 			System.out.println("Inconsistent number of main arguments! Ignoring them.");
 		}
 
 		if(gameToTest == null){
-			System.out.println("Running tests on ALL games with the following time settings:");
+			System.out.println("Running tests on ALL games with the following settings:");
 		}else{
-			System.out.println("Running tests on game " + gameToTest + " with the following time settings:");
+			System.out.println("Running tests on game " + gameToTest + " with the following settings:");
+		}
+		if(withCache){
+			System.out.println("With cache: yes.");
+		}else{
+			System.out.println("With cache: no.");
 		}
 		System.out.println("Propnet building time: " + initializationTime + "ms");
 		System.out.println("Running time for each test: " + testTime + "ms");
@@ -92,6 +106,7 @@ public class SeparatePropnetVerifier {
 
 		ProverStateMachine theReference;
 		SeparateExternalPropnetStateMachine thePropnetMachine;
+		StateMachine theSubject;
 
 	    GamerLogger.setSpilloverLogfile("SeparatePropnetVerifierTable.csv");
 	    GamerLogger.log(FORMAT.CSV_FORMAT, "SeparatePropnetVerifierTable", "Game key;PN initialization time (ms);PN construction time (ms);SM initialization time;Rounds;Completed rounds;Test duration (ms);Subject exception;Other exceptions;Pass;");
@@ -172,6 +187,12 @@ public class SeparatePropnetVerifier {
 			// and this will be detected by the state machine during initialization.
 		    thePropnetMachine = new SeparateExternalPropnetStateMachine(propnet, propnetState);
 
+		    if(withCache){
+		    	theSubject = new PnStateCachedStateMachine(thePropnetMachine);
+		    }else{
+		    	theSubject = thePropnetMachine;
+		    }
+
 		    theReference.initialize(description, Long.MAX_VALUE);
 
 		    long smInitTime = -1L;
@@ -187,24 +208,24 @@ public class SeparatePropnetVerifier {
 	        // Try to initialize the propnet state machine.
 	        // If initialization fails, skip the test.
 	        try{
-	        	thePropnetMachine.initialize(description, Long.MAX_VALUE);
-	        	smInitTime = System.currentTimeMillis() - initStart;
-	        	System.out.println("Propnet creation succeeded. Checking consistency.");
-	        	long testStart = System.currentTimeMillis();
+	        	theSubject.initialize(description, Long.MAX_VALUE);
+		        smInitTime = System.currentTimeMillis() - initStart;
+		        System.out.println("Propnet creation succeeded. Checking consistency.");
+		        long testStart = System.currentTimeMillis();
 
 		        /***************************************/
-		        //System.gc();
-		        /***************************************/
+			    //System.gc();
+			    /***************************************/
 
-	            pass = ExtendedStateMachineVerifier.checkMachineConsistency(theReference, thePropnetMachine, testTime);
-	            testDuration = System.currentTimeMillis() - testStart;
-	            rounds = ExtendedStateMachineVerifier.lastRounds;
-	            completedRounds = ExtendedStateMachineVerifier.completedRounds;
-	            exception = ExtendedStateMachineVerifier.exception;
-	            otherExceptions = ExtendedStateMachineVerifier.otherExceptions;
+		        pass = ExtendedStateMachineVerifier.checkMachineConsistency(theReference, theSubject, testTime);
+		        testDuration = System.currentTimeMillis() - testStart;
+		        rounds = ExtendedStateMachineVerifier.lastRounds;
+		        completedRounds = ExtendedStateMachineVerifier.completedRounds;
+		        exception = ExtendedStateMachineVerifier.exception;
+		        otherExceptions = ExtendedStateMachineVerifier.otherExceptions;
 	        }catch(StateMachineInitializationException e){
 	      	  	smInitTime = System.currentTimeMillis() - initStart;
-	        	GamerLogger.logError("Verifier", "State machine " + thePropnetMachine.getName() + " initialization failed, impossible to test this game. Cause: [" + e.getClass().getSimpleName() + "] " + e.getMessage() );
+	        	GamerLogger.logError("Verifier", "State machine " + theSubject.getName() + " initialization failed, impossible to test this game. Cause: [" + e.getClass().getSimpleName() + "] " + e.getMessage() );
 	        	GamerLogger.logStackTrace("Verifier", e);
 	        	System.out.println("Skipping test on game " + gameKey + ". State machine initialization failed, no propnet available.");
 	        }
@@ -214,6 +235,11 @@ public class SeparatePropnetVerifier {
 	        GamerLogger.stopFileLogging();
 
 	        GamerLogger.log(FORMAT.CSV_FORMAT, "SeparatePropnetVerifierTable", gameKey + ";" + manager.getTotalInitTime() + ";" + manager.getPropnetConstructionTime() + ";" + smInitTime +  ";"  + rounds +  ";"  + completedRounds + ";"  + testDuration + ";"  + exception + ";"  + otherExceptions + ";" + pass + ";");
+
+	        /***************************************/
+	        //System.gc();
+	        //GdlPool.drainPool();
+	        /***************************************/
 	    }
 	}
 }

@@ -181,7 +181,7 @@ public class SeparatePropnetCreationManager extends Thread{
 		 *  has no outputs).
 		 */
 
-		//DynamicPropNetFactory.removeOutputlessComponents(this.dynamicPropNet);
+		DynamicPropNetFactory.removeOutputlessComponents(this.dynamicPropNet);
 
 
 		/************************ PROPNET EXTERNAL COMPLETE STATE INITIALIZATION **************************/
