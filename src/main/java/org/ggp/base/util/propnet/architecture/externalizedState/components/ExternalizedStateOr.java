@@ -1,7 +1,7 @@
 package org.ggp.base.util.propnet.architecture.externalizedState.components;
 
 import org.ggp.base.util.propnet.architecture.externalizedState.ExternalizedStateComponent;
-import org.ggp.base.util.propnet.state.ExternalPropnetState;
+import org.ggp.base.util.propnet.state.ImmutableSeparatePropnetState;
 
 /**
  * The Or class is designed to represent logical OR gates.
@@ -13,7 +13,7 @@ public final class ExternalizedStateOr extends ExternalizedStateComponent
 	 *  @see org.ggp.base.util.propnet.architecture.ExtendedState.ExtendedStateComponent#propagateConsistency()
 	 */
 	@Override
-	public void updateValue(boolean newInputValue, ExternalPropnetState propnetState){
+	public void updateValue(boolean newInputValue, ImmutableSeparatePropnetState propnetState){
 
 		//ConcurrencyUtils.checkForInterruption();
 
@@ -52,12 +52,12 @@ public final class ExternalizedStateOr extends ExternalizedStateComponent
 	}
 
 	@Override
-	public boolean getValue(ExternalPropnetState propnetState) {
+	public boolean getValue(ImmutableSeparatePropnetState propnetState) {
 		return propnetState.getGateValue(this.index);
 	}
 
 	@Override
-	public void imposeConsistency(ExternalPropnetState propnetState) {
+	public void imposeConsistency(ImmutableSeparatePropnetState propnetState) {
 		// Temporarily memorize current value
 		boolean oldGateValue = this.getValue(propnetState);
 		// Compute the number of inputs that are true for this OR component
@@ -85,7 +85,7 @@ public final class ExternalizedStateOr extends ExternalizedStateComponent
 	}
 
 	@Override
-	public void propagateConsistency(boolean newInputValue, ExternalPropnetState propnetState) {
+	public void propagateConsistency(boolean newInputValue, ImmutableSeparatePropnetState propnetState) {
 		if(this.isConsistent){
 			//ConcurrencyUtils.checkForInterruption();
 

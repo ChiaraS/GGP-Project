@@ -1,4 +1,4 @@
-package org.ggp.base.util.statemachine;
+package org.ggp.base.util.statemachine.inernalPropnetStructure;
 
 import java.io.Serializable;
 
@@ -6,19 +6,19 @@ import java.io.Serializable;
  * This class represents a role as the index it has in the ordered list of roles.
  */
 @SuppressWarnings("serial")
-public class ExternalPropnetRole implements Serializable{
+public class InternalPropnetRole implements Serializable{
 
     private final int index;
 
-    public ExternalPropnetRole(int index){
+    public InternalPropnetRole(int index){
         this.index = index;
     }
 
     @Override
     public boolean equals(Object o){
 
-        if ((o != null) && (o instanceof ExternalPropnetRole)){
-        	ExternalPropnetRole role = (ExternalPropnetRole) o;
+        if ((o != null) && (o instanceof InternalPropnetRole)){
+        	InternalPropnetRole role = (InternalPropnetRole) o;
             return this.index == role.getIndex();
         }
 

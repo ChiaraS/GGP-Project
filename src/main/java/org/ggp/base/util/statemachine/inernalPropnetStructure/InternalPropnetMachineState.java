@@ -1,4 +1,4 @@
-package org.ggp.base.util.statemachine;
+package org.ggp.base.util.statemachine.inernalPropnetStructure;
 
 import org.apache.lucene.util.OpenBitSet;
 
@@ -6,15 +6,15 @@ import org.apache.lucene.util.OpenBitSet;
  * @author C.Sironi
  *
  */
-public class ExternalPropnetMachineState{
+public class InternalPropnetMachineState{
 
 	private final OpenBitSet truthValues;
 
-	public ExternalPropnetMachineState(){
+	public InternalPropnetMachineState(){
 		this.truthValues = null;
 	}
 
-	public ExternalPropnetMachineState(OpenBitSet truthValues){
+	public InternalPropnetMachineState(OpenBitSet truthValues){
 		this.truthValues = truthValues;
 	}
 
@@ -23,8 +23,8 @@ public class ExternalPropnetMachineState{
 	}
 
 	@Override
-	public ExternalPropnetMachineState clone() {
-		return new ExternalPropnetMachineState(this.truthValues.clone());
+	public InternalPropnetMachineState clone() {
+		return new InternalPropnetMachineState(this.truthValues.clone());
 	}
 
 	/* Utility methods */
@@ -53,8 +53,8 @@ public class ExternalPropnetMachineState{
 
 	@Override
 	public boolean equals(Object o){
-		if ((o != null) && (o instanceof ExternalPropnetMachineState)){
-			ExternalPropnetMachineState state = (ExternalPropnetMachineState) o;
+		if ((o != null) && (o instanceof InternalPropnetMachineState)){
+			InternalPropnetMachineState state = (InternalPropnetMachineState) o;
 			if(this.truthValues == null){
 				return state.getTruthValues() == null;
 			}else{

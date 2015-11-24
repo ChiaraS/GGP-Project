@@ -1,7 +1,7 @@
 package org.ggp.base.util.propnet.architecture.separateExtendedState.immutable.components;
 
 import org.ggp.base.util.propnet.architecture.separateExtendedState.immutable.ImmutableComponent;
-import org.ggp.base.util.propnet.state.ExternalPropnetState;
+import org.ggp.base.util.propnet.state.ImmutableSeparatePropnetState;
 
 /**
  * The Constant class is designed to represent nodes with fixed logical values.
@@ -49,7 +49,7 @@ public final class ImmutableConstant extends ImmutableComponent{
 	 * @see org.ggp.base.util.propnet.architecture.ExtendedState.ExtendedStateComponent#propagateConsistency()
 	 */
 	@Override
-	public void updateValue(boolean newInputValue, ExternalPropnetState propnetState) {
+	public void updateValue(boolean newInputValue, ImmutableSeparatePropnetState propnetState) {
 		//ConcurrencyUtils.checkForInterruption();
 		throw new IllegalStateException("A costant proposition should have no inputs that can call the updateValue() method!");
 	}
@@ -65,20 +65,20 @@ public final class ImmutableConstant extends ImmutableComponent{
 	/**
 	 * Returns the value that the constant was initialized to.
 	 *
-	 * @see org.ggp.base.util.propnet.architecture.externalizedState.ImmutableComponent#getValue(org.ggp.base.util.propnet.state.ExternalPropnetState)
+	 * @see org.ggp.base.util.propnet.architecture.externalizedState.ImmutableComponent#getValue(org.ggp.base.util.propnet.state.ImmutableSeparatePropnetState)
 	 */
 	@Override
-	public boolean getValue(ExternalPropnetState propnetState){
+	public boolean getValue(ImmutableSeparatePropnetState propnetState){
 		return this.value;
 	}
 
 	@Override
-	public void imposeConsistency(ExternalPropnetState propnetState) {
+	public void imposeConsistency(ImmutableSeparatePropnetState propnetState) {
 		this.isConsistent = true;
 	}
 
 	@Override
-	public void propagateConsistency(boolean newInputValue, ExternalPropnetState propnetState) {
+	public void propagateConsistency(boolean newInputValue, ImmutableSeparatePropnetState propnetState) {
 		throw new IllegalStateException("A costant proposition should have no inputs that can call the propagateConsistency() method!");
 	}
 

@@ -1,7 +1,7 @@
 package org.ggp.base.util.propnet.architecture.externalizedState.components;
 
 import org.ggp.base.util.propnet.architecture.externalizedState.ExternalizedStateComponent;
-import org.ggp.base.util.propnet.state.ExternalPropnetState;
+import org.ggp.base.util.propnet.state.ImmutableSeparatePropnetState;
 
 /**
  * The Transition class is designed to represent pass-through gates.
@@ -81,7 +81,7 @@ public final class ExternalizedStateTransition extends ExternalizedStateComponen
 	}
 
 	@Override
-	public void updateValue(boolean newInputValue, ExternalPropnetState propnetState) {
+	public void updateValue(boolean newInputValue, ImmutableSeparatePropnetState propnetState) {
 		propnetState.flipTransitionValue(this.index);
 
 		// If the thread calling this method has been interrupted we must stop the execution and throw an
@@ -101,12 +101,12 @@ public final class ExternalizedStateTransition extends ExternalizedStateComponen
 	}
 
 	@Override
-	public boolean getValue(ExternalPropnetState propnetState) {
+	public boolean getValue(ImmutableSeparatePropnetState propnetState) {
 		return propnetState.getTransitionValue(this.index);
 	}
 
 	@Override
-	public void imposeConsistency(ExternalPropnetState propnetState) {
+	public void imposeConsistency(ImmutableSeparatePropnetState propnetState) {
 		if(this.getInputs().size() == 1){
 			if(this.getSingleInput().getValue(propnetState) != this.getValue(propnetState)){
 				propnetState.flipTransitionValue(this.index);
@@ -123,7 +123,7 @@ public final class ExternalizedStateTransition extends ExternalizedStateComponen
 	}
 
 	@Override
-	public void propagateConsistency(boolean newInputValue, ExternalPropnetState propnetState) {
+	public void propagateConsistency(boolean newInputValue, ImmutableSeparatePropnetState propnetState) {
 		if(this.isConsistent){
 			propnetState.flipTransitionValue(this.index);
 

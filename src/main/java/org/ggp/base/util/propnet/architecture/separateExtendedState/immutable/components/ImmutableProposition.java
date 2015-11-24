@@ -2,7 +2,7 @@ package org.ggp.base.util.propnet.architecture.separateExtendedState.immutable.c
 
 import org.ggp.base.util.gdl.grammar.GdlSentence;
 import org.ggp.base.util.propnet.architecture.separateExtendedState.immutable.ImmutableComponent;
-import org.ggp.base.util.propnet.state.ExternalPropnetState;
+import org.ggp.base.util.propnet.state.ImmutableSeparatePropnetState;
 import org.ggp.base.util.propnet.utils.PROP_TYPE;
 
 /**
@@ -51,7 +51,7 @@ public final class ImmutableProposition extends ImmutableComponent{
     }
 
 	@Override
-	public void updateValue(boolean newInputValue, ExternalPropnetState propnetState){
+	public void updateValue(boolean newInputValue, ImmutableSeparatePropnetState propnetState){
 
 		//ConcurrencyUtils.checkForInterruption();
 
@@ -99,7 +99,7 @@ public final class ImmutableProposition extends ImmutableComponent{
 	}
 
 	@Override
-	public boolean getValue(ExternalPropnetState propnetState) {
+	public boolean getValue(ImmutableSeparatePropnetState propnetState) {
 		switch(propType){
 		case BASE:
 			return propnetState.getBaseValue(this.stateIndex);
@@ -111,7 +111,7 @@ public final class ImmutableProposition extends ImmutableComponent{
 	}
 
 	@Override
-	public void imposeConsistency(ExternalPropnetState propnetState) {
+	public void imposeConsistency(ImmutableSeparatePropnetState propnetState) {
 		switch(propType){
 		case BASE:
 		case INPUT:
@@ -141,7 +141,7 @@ public final class ImmutableProposition extends ImmutableComponent{
 	}
 
 	@Override
-	public void propagateConsistency(boolean newInputValue, ExternalPropnetState propnetState) {
+	public void propagateConsistency(boolean newInputValue, ImmutableSeparatePropnetState propnetState) {
 		if(this.isConsistent){
 			//ConcurrencyUtils.checkForInterruption();
 

@@ -1,4 +1,4 @@
-package org.ggp.base.util.statemachine;
+package org.ggp.base.util.statemachine.inernalPropnetStructure;
 
 import java.io.Serializable;
 
@@ -15,17 +15,17 @@ import java.io.Serializable;
  * array.
  */
 @SuppressWarnings("serial")
-public class ExternalPropnetMove implements Serializable{
+public class InternalPropnetMove implements Serializable{
     private final int moveIndex;
 
-    public ExternalPropnetMove(int moveIndex){
+    public InternalPropnetMove(int moveIndex){
         this.moveIndex = moveIndex;
     }
 
     @Override
     public boolean equals(Object o){
-        if ((o != null) && (o instanceof ExternalPropnetMove)) {
-        	ExternalPropnetMove move = (ExternalPropnetMove) o;
+        if ((o != null) && (o instanceof InternalPropnetMove)) {
+        	InternalPropnetMove move = (InternalPropnetMove) o;
             return this.moveIndex == move.getIndex();
         }
 

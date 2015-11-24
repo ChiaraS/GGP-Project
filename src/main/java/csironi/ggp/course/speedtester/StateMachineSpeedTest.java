@@ -1,14 +1,14 @@
 package csironi.ggp.course.speedtester;
 
 import org.ggp.base.util.logging.GamerLogger;
-import org.ggp.base.util.statemachine.ExternalPropnetMachineState;
+import org.ggp.base.util.statemachine.InternalPropnetStateMachine;
 import org.ggp.base.util.statemachine.MachineState;
 import org.ggp.base.util.statemachine.StateMachine;
 import org.ggp.base.util.statemachine.exceptions.MoveDefinitionException;
 import org.ggp.base.util.statemachine.exceptions.StateMachineException;
 import org.ggp.base.util.statemachine.exceptions.TransitionDefinitionException;
 import org.ggp.base.util.statemachine.implementation.propnet.ExternalPropnetStateMachine;
-import org.ggp.base.util.statemachine.implementation.propnet.SeparateExternalPropnetStateMachine;
+import org.ggp.base.util.statemachine.inernalPropnetStructure.InternalPropnetMachineState;
 
 /**
  * This class computes the nodes visits and the Monte Carlo iterations that a state machine
@@ -89,7 +89,7 @@ public class StateMachineSpeedTest {
 
 		int[] lastIterationVisitedNodes = new int[1];
 
-		ExternalPropnetMachineState initialState = theMachine.getPropnetInitialState();
+		InternalPropnetMachineState initialState = theMachine.getPropnetInitialState();
 
 		long startTime = System.currentTimeMillis();
 
@@ -128,7 +128,7 @@ public class StateMachineSpeedTest {
 	 * @param theMachine the ExternalPropnetStateMachine to be tested.
 	 * @param timeToSpend the time during which to perform the Monte Carlo simulations.
 	 */
-	public static void testSeparatePNSpeed(SeparateExternalPropnetStateMachine theMachine, long timeToSpend){
+	public static void testSeparatePNSpeed(InternalPropnetStateMachine theMachine, long timeToSpend){
 
 		visitedNodes = 0;
 		succeededIterations = 0;
@@ -137,7 +137,7 @@ public class StateMachineSpeedTest {
 
 		int[] lastIterationVisitedNodes = new int[1];
 
-		ExternalPropnetMachineState initialState = theMachine.getPropnetInitialState();
+		InternalPropnetMachineState initialState = theMachine.getInternalInitialState();
 
 		long startTime = System.currentTimeMillis();
 

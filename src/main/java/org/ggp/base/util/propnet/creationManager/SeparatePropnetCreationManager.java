@@ -18,7 +18,7 @@ import org.ggp.base.util.propnet.architecture.separateExtendedState.immutable.co
 import org.ggp.base.util.propnet.architecture.separateExtendedState.immutable.components.ImmutableProposition;
 import org.ggp.base.util.propnet.architecture.separateExtendedState.immutable.components.ImmutableTransition;
 import org.ggp.base.util.propnet.factory.DynamicPropNetFactory;
-import org.ggp.base.util.propnet.state.ExternalPropnetState;
+import org.ggp.base.util.propnet.state.ImmutableSeparatePropnetState;
 import org.ggp.base.util.propnet.utils.PROP_TYPE;
 import org.ggp.base.util.statemachine.Role;
 
@@ -72,7 +72,7 @@ public class SeparatePropnetCreationManager extends Thread{
 	 * values. This state, together with the immutable propnet, allows the state machine
 	 * to reason on the game.
 	 */
-	private ExternalPropnetState initialPropnetState;
+	private ImmutableSeparatePropnetState initialPropnetState;
 
 	public SeparatePropnetCreationManager(List<Gdl> description, long timeout) {
 		this.description = description;
@@ -371,7 +371,7 @@ public class SeparatePropnetCreationManager extends Thread{
 
 			// Create the immutable propnet and the corresponding initial state
 
-			this.initialPropnetState = new ExternalPropnetState(initialState, nextState, currentJointMove, firstGoalIndices, firstLegalIndices, andOrGatesValues, otherComponents);
+			this.initialPropnetState = new ImmutableSeparatePropnetState(initialState, nextState, currentJointMove, firstGoalIndices, firstLegalIndices, andOrGatesValues, otherComponents);
 			this.immutablePropnet = new ImmutablePropNet(immutableComponents, roles, immutableBasePropositions, immutableInputPropositions, goalValues);
 
 			for(ImmutableComponent c : immutableComponents){
@@ -440,7 +440,7 @@ public class SeparatePropnetCreationManager extends Thread{
 		return this.immutablePropnet;
 	}
 
-	public ExternalPropnetState getInitialPropnetState(){
+	public ImmutableSeparatePropnetState getInitialPropnetState(){
 		if(this.initialPropnetState == null){
 			return null;
 		}

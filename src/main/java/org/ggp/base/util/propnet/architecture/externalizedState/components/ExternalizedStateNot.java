@@ -1,7 +1,7 @@
 package org.ggp.base.util.propnet.architecture.externalizedState.components;
 
 import org.ggp.base.util.propnet.architecture.externalizedState.ExternalizedStateComponent;
-import org.ggp.base.util.propnet.state.ExternalPropnetState;
+import org.ggp.base.util.propnet.state.ImmutableSeparatePropnetState;
 
 /**
  * The Not class is designed to represent logical NOT gates.
@@ -18,7 +18,7 @@ public final class ExternalizedStateNot extends ExternalizedStateComponent
 	 *  @see org.ggp.base.util.propnet.architecture.ExtendedState.ExtendedStateComponent#propagateConsistency()
 	 */
 	@Override
-	public void updateValue(boolean newInputValue, ExternalPropnetState propnetState){
+	public void updateValue(boolean newInputValue, ImmutableSeparatePropnetState propnetState){
 
 		//ConcurrencyUtils.checkForInterruption();
 
@@ -41,12 +41,12 @@ public final class ExternalizedStateNot extends ExternalizedStateComponent
 	}
 
 	@Override
-	public boolean getValue(ExternalPropnetState propnetState) {
+	public boolean getValue(ImmutableSeparatePropnetState propnetState) {
 		return propnetState.getOtherValue(this.index);
 	}
 
 	@Override
-	public void imposeConsistency(ExternalPropnetState propnetState) {
+	public void imposeConsistency(ImmutableSeparatePropnetState propnetState) {
 		if(this.getInputs().size() == 0){
 			throw new IllegalStateException("Detected a NOT component with no inputs in the propnet!");
 		}else if(this.getInputs().size() > 1){
@@ -66,7 +66,7 @@ public final class ExternalizedStateNot extends ExternalizedStateComponent
 	}
 
 	@Override
-	public void propagateConsistency(boolean newInputValue, ExternalPropnetState propnetState) {
+	public void propagateConsistency(boolean newInputValue, ImmutableSeparatePropnetState propnetState) {
 		if(this.isConsistent){
 			//ConcurrencyUtils.checkForInterruption();
 

@@ -6,46 +6,46 @@ import java.util.List;
 import java.util.Map;
 
 import org.ggp.base.util.gdl.grammar.Gdl;
-import org.ggp.base.util.statemachine.ExternalPropnetMachineState;
-import org.ggp.base.util.statemachine.ExternalPropnetMove;
-import org.ggp.base.util.statemachine.ExternalPropnetRole;
+import org.ggp.base.util.statemachine.InternalPropnetStateMachine;
 import org.ggp.base.util.statemachine.MachineState;
 import org.ggp.base.util.statemachine.Move;
 import org.ggp.base.util.statemachine.Role;
-import org.ggp.base.util.statemachine.StateMachine;
 import org.ggp.base.util.statemachine.exceptions.GoalDefinitionException;
 import org.ggp.base.util.statemachine.exceptions.MoveDefinitionException;
 import org.ggp.base.util.statemachine.exceptions.StateMachineException;
 import org.ggp.base.util.statemachine.exceptions.StateMachineInitializationException;
 import org.ggp.base.util.statemachine.exceptions.TransitionDefinitionException;
-import org.ggp.base.util.statemachine.implementation.propnet.SeparateExternalPropnetStateMachine;
+import org.ggp.base.util.statemachine.implementation.propnet.SeparateInternalPropnetStateMachine;
+import org.ggp.base.util.statemachine.inernalPropnetStructure.InternalPropnetMachineState;
+import org.ggp.base.util.statemachine.inernalPropnetStructure.InternalPropnetMove;
+import org.ggp.base.util.statemachine.inernalPropnetStructure.InternalPropnetRole;
 
 import com.google.common.collect.ImmutableList;
 
-public final class PnStateCachedStateMachine extends StateMachine
+public final class SeparateInternalPropnetCachedStateMachine extends InternalPropnetStateMachine
 {
-	private final SeparateExternalPropnetStateMachine backingStateMachine;
-	private final TtlCache<ExternalPropnetMachineState, PropnetEntry> internalStateTtlCache;
+	private final SeparateInternalPropnetStateMachine backingStateMachine;
+	private final TtlCache<InternalPropnetMachineState, PropnetEntry> internalStateTtlCache;
 
 	private final class PropnetEntry{
 
-		public Map<ExternalPropnetRole, Integer> goals;
-		public Map<ExternalPropnetRole, List<ExternalPropnetMove>> moves;
-		public Map<List<ExternalPropnetMove>, ExternalPropnetMachineState> nexts;
+		public Map<InternalPropnetRole, Integer> goals;
+		public Map<InternalPropnetRole, List<InternalPropnetMove>> moves;
+		public Map<List<InternalPropnetMove>, InternalPropnetMachineState> nexts;
 		public Boolean terminal;
 
 		public PropnetEntry()
 		{
-			goals = new HashMap<ExternalPropnetRole, Integer>();
-			moves = new HashMap<ExternalPropnetRole, List<ExternalPropnetMove>>();
-			nexts = new HashMap<List<ExternalPropnetMove>, ExternalPropnetMachineState>();
+			goals = new HashMap<InternalPropnetRole, Integer>();
+			moves = new HashMap<InternalPropnetRole, List<InternalPropnetMove>>();
+			nexts = new HashMap<List<InternalPropnetMove>, InternalPropnetMachineState>();
 			terminal = null;
 		}
 	}
 
-	public PnStateCachedStateMachine(SeparateExternalPropnetStateMachine backingStateMachine){
+	public SeparateInternalPropnetCachedStateMachine(SeparateInternalPropnetStateMachine backingStateMachine){
 		this.backingStateMachine = backingStateMachine;
-		this.internalStateTtlCache = new TtlCache<ExternalPropnetMachineState, PropnetEntry>(1);
+		this.internalStateTtlCache = new TtlCache<InternalPropnetMachineState, PropnetEntry>(1);
 	}
 
 	@Override
@@ -53,7 +53,7 @@ public final class PnStateCachedStateMachine extends StateMachine
 		backingStateMachine.initialize(description, timeout);
 	}
 
-	private PropnetEntry getPropnetEntry(ExternalPropnetMachineState state){
+	private PropnetEntry getPropnetEntry(InternalPropnetMachineState state){
 		if (!internalStateTtlCache.containsKey(state)){
 			this.internalStateTtlCache.put(state, new PropnetEntry());
 		}
@@ -66,7 +66,8 @@ public final class PnStateCachedStateMachine extends StateMachine
 		return this.getGoal(this.backingStateMachine.stateToExternalState(state), this.backingStateMachine.roleToExternalRole(role));
 	}
 
-	public int getGoal(ExternalPropnetMachineState state, ExternalPropnetRole role) throws GoalDefinitionException{
+	@Override
+	public int getGoal(InternalPropnetMachineState state, InternalPropnetRole role) throws GoalDefinitionException{
 		PropnetEntry entry = getPropnetEntry(state);
 		synchronized (entry){
 			if (!entry.goals.containsKey(role)){
@@ -80,17 +81,18 @@ public final class PnStateCachedStateMachine extends StateMachine
 	@Override
 	public List<Move> getLegalMoves(MachineState state, Role role) throws MoveDefinitionException, StateMachineException{
 		List<Move> moves = new ArrayList<Move>();
-		for(ExternalPropnetMove m : this.getLegalMoves(this.backingStateMachine.stateToExternalState(state), this.backingStateMachine.roleToExternalRole(role))){
+		for(InternalPropnetMove m : this.getInternalLegalMoves(this.backingStateMachine.stateToExternalState(state), this.backingStateMachine.roleToExternalRole(role))){
 			moves.add(this.backingStateMachine.externalMoveToMove(m));
 		}
 		return moves;
 	}
 
-	public List<ExternalPropnetMove> getLegalMoves(ExternalPropnetMachineState state, ExternalPropnetRole role) throws MoveDefinitionException, StateMachineException{
+	@Override
+	public List<InternalPropnetMove> getInternalLegalMoves(InternalPropnetMachineState state, InternalPropnetRole role) throws MoveDefinitionException{
 		PropnetEntry entry = getPropnetEntry(state);
 		synchronized (entry){
 			if (!entry.moves.containsKey(role)){
-				entry.moves.put(role, ImmutableList.copyOf(this.backingStateMachine.getLegalMoves(state, role)));
+				entry.moves.put(role, ImmutableList.copyOf(this.backingStateMachine.getInternalLegalMoves(state, role)));
 			}
 
 			return entry.moves.get(role);
@@ -99,14 +101,15 @@ public final class PnStateCachedStateMachine extends StateMachine
 
 	@Override
 	public MachineState getNextState(MachineState state, List<Move> moves) throws TransitionDefinitionException, StateMachineException{
-		return this.backingStateMachine.externalStateToState(this.getNextState(this.backingStateMachine.stateToExternalState(state), this.backingStateMachine.moveToExternalMove(moves)));
+		return this.backingStateMachine.externalStateToState(this.getInternalNextState(this.backingStateMachine.stateToExternalState(state), this.backingStateMachine.moveToExternalMove(moves)));
 	}
 
-	public ExternalPropnetMachineState getNextState(ExternalPropnetMachineState state, List<ExternalPropnetMove> moves) throws TransitionDefinitionException, StateMachineException{
+	@Override
+	public InternalPropnetMachineState getInternalNextState(InternalPropnetMachineState state, List<InternalPropnetMove> moves) throws TransitionDefinitionException{
 		PropnetEntry entry = getPropnetEntry(state);
 		synchronized (entry){
 			if (!entry.nexts.containsKey(moves)){
-				entry.nexts.put(moves, this.backingStateMachine.getNextState(state, moves));
+				entry.nexts.put(moves, this.backingStateMachine.getInternalNextState(state, moves));
 			}
 
 			return entry.nexts.get(moves);
@@ -118,7 +121,8 @@ public final class PnStateCachedStateMachine extends StateMachine
 		return this.isTerminal(this.backingStateMachine.stateToExternalState(state));
 	}
 
-	public boolean isTerminal(ExternalPropnetMachineState state) throws StateMachineException{
+	@Override
+	public boolean isTerminal(InternalPropnetMachineState state){
 		PropnetEntry entry = getPropnetEntry(state);
 		synchronized (entry){
 			if (entry.terminal == null){
@@ -151,6 +155,16 @@ public final class PnStateCachedStateMachine extends StateMachine
 	}
 
 	@Override
+	public InternalPropnetMachineState getInternalInitialState() {
+		return this.backingStateMachine.getInternalInitialState();
+	}
+
+	@Override
+	public InternalPropnetRole[] getInternalRoles() {
+		return this.backingStateMachine.getInternalRoles();
+	}
+
+	@Override
 	public void shutdown() {
 		if(this.backingStateMachine != null){
 			this.backingStateMachine.shutdown();
@@ -164,4 +178,5 @@ public final class PnStateCachedStateMachine extends StateMachine
         }
         return "PnCache(null)";
     }
+
 }

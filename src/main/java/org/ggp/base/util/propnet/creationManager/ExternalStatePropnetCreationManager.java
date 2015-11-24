@@ -14,7 +14,7 @@ import org.ggp.base.util.propnet.architecture.externalizedState.components.Exter
 import org.ggp.base.util.propnet.architecture.externalizedState.components.ExternalizedStateProposition;
 import org.ggp.base.util.propnet.architecture.externalizedState.components.ExternalizedStateTransition;
 import org.ggp.base.util.propnet.factory.ExternalizedStatePropnetFactory;
-import org.ggp.base.util.propnet.state.ExternalPropnetState;
+import org.ggp.base.util.propnet.state.ImmutableSeparatePropnetState;
 import org.ggp.base.util.propnet.utils.PROP_TYPE;
 import org.ggp.base.util.statemachine.Role;
 
@@ -51,7 +51,7 @@ public class ExternalStatePropnetCreationManager extends Thread{
 
 	private long totalInitTime;
 
-	private ExternalPropnetState initialPropnetState;
+	private ImmutableSeparatePropnetState initialPropnetState;
 
 	public ExternalStatePropnetCreationManager(List<Gdl> description, long timeout) {
 		this.description = description;
@@ -217,7 +217,7 @@ public class ExternalStatePropnetCreationManager extends Thread{
 			l++;
 		}
 
-		this.initialPropnetState = new ExternalPropnetState(initialState, nextState, currentJointMove, firstGoalIndices, firstLegalIndices, andOrGatesValues, otherComponents);
+		this.initialPropnetState = new ImmutableSeparatePropnetState(initialState, nextState, currentJointMove, firstGoalIndices, firstLegalIndices, andOrGatesValues, otherComponents);
 
 		for(ExternalizedStateComponent c : this.propNet.getComponents()){
 			c.imposeConsistency(this.initialPropnetState);
@@ -241,7 +241,7 @@ public class ExternalStatePropnetCreationManager extends Thread{
 		return this.totalInitTime;
 	}
 
-	public ExternalPropnetState getInitialPropnetState(){
+	public ImmutableSeparatePropnetState getInitialPropnetState(){
 		if(this.initialPropnetState == null){
 			return null;
 		}

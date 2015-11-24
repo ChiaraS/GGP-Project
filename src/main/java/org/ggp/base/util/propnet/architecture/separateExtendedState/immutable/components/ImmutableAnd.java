@@ -1,7 +1,7 @@
 package org.ggp.base.util.propnet.architecture.separateExtendedState.immutable.components;
 
 import org.ggp.base.util.propnet.architecture.separateExtendedState.immutable.ImmutableComponent;
-import org.ggp.base.util.propnet.state.ExternalPropnetState;
+import org.ggp.base.util.propnet.state.ImmutableSeparatePropnetState;
 
 /**
  * The And class is designed to represent logical AND gates.
@@ -18,7 +18,7 @@ public final class ImmutableAnd extends ImmutableComponent{
 	 *  @see org.ggp.base.util.propnet.architecture.ExtendedState.ExtendedStateComponent#propagateConsistency()
 	 */
 	@Override
-	public void updateValue(boolean newInputValue, ExternalPropnetState propnetState){
+	public void updateValue(boolean newInputValue, ImmutableSeparatePropnetState propnetState){
 
 		//ConcurrencyUtils.checkForInterruption();
 
@@ -50,12 +50,12 @@ public final class ImmutableAnd extends ImmutableComponent{
 	}
 
 	@Override
-	public boolean getValue(ExternalPropnetState propnetState) {
+	public boolean getValue(ImmutableSeparatePropnetState propnetState) {
 		return propnetState.getGateValue(this.stateIndex);
 	}
 
 	@Override
-	public void imposeConsistency(ExternalPropnetState propnetState) {
+	public void imposeConsistency(ImmutableSeparatePropnetState propnetState) {
 		// Temporarily memorize current value
 		boolean oldGateValue = this.getValue(propnetState);
 		// Compute the number of inputs that are true for this AND component
@@ -83,7 +83,7 @@ public final class ImmutableAnd extends ImmutableComponent{
 	}
 
 	@Override
-	public void propagateConsistency(boolean newInputValue, ExternalPropnetState propnetState) {
+	public void propagateConsistency(boolean newInputValue, ImmutableSeparatePropnetState propnetState) {
 		if(this.isConsistent){
 			//ConcurrencyUtils.checkForInterruption();
 

@@ -4,7 +4,7 @@ import java.io.Serializable;
 import java.util.HashSet;
 import java.util.Set;
 
-import org.ggp.base.util.propnet.state.ExternalPropnetState;
+import org.ggp.base.util.propnet.state.ImmutableSeparatePropnetState;
 
 /**
  * The root class of the Component hierarchy, which is designed to represent
@@ -169,9 +169,9 @@ public abstract class ExternalizedStateComponent implements Serializable
     public abstract String getComponentType();
 
 
-    public abstract boolean getValue(ExternalPropnetState propnetState);
+    public abstract boolean getValue(ImmutableSeparatePropnetState propnetState);
 
-    public abstract void updateValue(boolean newInputValue, ExternalPropnetState propnetState);
+    public abstract void updateValue(boolean newInputValue, ImmutableSeparatePropnetState propnetState);
 
     /**
      * Returns a representation of the Component in .dot format.
@@ -205,8 +205,8 @@ public abstract class ExternalizedStateComponent implements Serializable
         return sb.toString();
     }
 
-    public abstract void imposeConsistency(ExternalPropnetState propnetState);
+    public abstract void imposeConsistency(ImmutableSeparatePropnetState propnetState);
 
-    public abstract void propagateConsistency(boolean newInputValue, ExternalPropnetState propnetState);
+    public abstract void propagateConsistency(boolean newInputValue, ImmutableSeparatePropnetState propnetState);
 
 }

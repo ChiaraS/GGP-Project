@@ -1,7 +1,7 @@
 package org.ggp.base.util.propnet.architecture.separateExtendedState.immutable.components;
 
 import org.ggp.base.util.propnet.architecture.separateExtendedState.immutable.ImmutableComponent;
-import org.ggp.base.util.propnet.state.ExternalPropnetState;
+import org.ggp.base.util.propnet.state.ImmutableSeparatePropnetState;
 
 /**
  * The Transition class is designed to represent pass-through gates.
@@ -63,7 +63,7 @@ public final class ImmutableTransition extends ImmutableComponent{
 	}
 
 	@Override
-	public void updateValue(boolean newInputValue, ExternalPropnetState propnetState) {
+	public void updateValue(boolean newInputValue, ImmutableSeparatePropnetState propnetState) {
 		propnetState.flipTransitionValue(this.stateIndex);
 
 		// If the thread calling this method has been interrupted we must stop the execution and throw an
@@ -82,12 +82,12 @@ public final class ImmutableTransition extends ImmutableComponent{
 	}
 
 	@Override
-	public boolean getValue(ExternalPropnetState propnetState) {
+	public boolean getValue(ImmutableSeparatePropnetState propnetState) {
 		return propnetState.getTransitionValue(this.stateIndex);
 	}
 
 	@Override
-	public void imposeConsistency(ExternalPropnetState propnetState) {
+	public void imposeConsistency(ImmutableSeparatePropnetState propnetState) {
 		if(this.getInputs().length == 1){
 			if(this.getSingleInput().getValue(propnetState) != this.getValue(propnetState)){
 				propnetState.flipTransitionValue(this.stateIndex);
@@ -104,7 +104,7 @@ public final class ImmutableTransition extends ImmutableComponent{
 	}
 
 	@Override
-	public void propagateConsistency(boolean newInputValue, ExternalPropnetState propnetState) {
+	public void propagateConsistency(boolean newInputValue, ImmutableSeparatePropnetState propnetState) {
 		if(this.isConsistent){
 			propnetState.flipTransitionValue(this.stateIndex);
 

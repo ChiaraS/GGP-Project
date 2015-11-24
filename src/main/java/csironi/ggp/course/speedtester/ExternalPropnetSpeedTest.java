@@ -12,7 +12,7 @@ import org.ggp.base.util.logging.GamerLogger.FORMAT;
 import org.ggp.base.util.match.Match;
 import org.ggp.base.util.propnet.architecture.externalizedState.ExternalizedStatePropNet;
 import org.ggp.base.util.propnet.creationManager.ExternalStatePropnetCreationManager;
-import org.ggp.base.util.propnet.state.ExternalPropnetState;
+import org.ggp.base.util.propnet.state.ImmutableSeparatePropnetState;
 import org.ggp.base.util.statemachine.StateMachine;
 import org.ggp.base.util.statemachine.cache.CachedStateMachine;
 import org.ggp.base.util.statemachine.exceptions.StateMachineInitializationException;
@@ -196,7 +196,7 @@ public class ExternalPropnetSpeedTest {
 			// If we are here it means that the manager stopped running. We must check if it has created a usable propnet or not.
 
 			ExternalizedStatePropNet propnet = manager.getPropnet();
-			ExternalPropnetState propnetState = manager.getInitialPropnetState();
+			ImmutableSeparatePropnetState propnetState = manager.getInitialPropnetState();
 
 			// Create the state machine giving it the propnet and the propnet state.
 			// NOTE that if any of the two is null, it means that the propnet creation/initialization went wrong

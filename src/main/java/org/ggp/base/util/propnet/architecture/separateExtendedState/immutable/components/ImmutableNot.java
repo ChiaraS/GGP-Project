@@ -1,7 +1,7 @@
 package org.ggp.base.util.propnet.architecture.separateExtendedState.immutable.components;
 
 import org.ggp.base.util.propnet.architecture.separateExtendedState.immutable.ImmutableComponent;
-import org.ggp.base.util.propnet.state.ExternalPropnetState;
+import org.ggp.base.util.propnet.state.ImmutableSeparatePropnetState;
 
 /**
  * The Not class is designed to represent logical NOT gates.
@@ -18,7 +18,7 @@ public final class ImmutableNot extends ImmutableComponent{
 	 *  @see org.ggp.base.util.propnet.architecture.ExtendedState.ExtendedStateComponent#propagateConsistency()
 	 */
 	@Override
-	public void updateValue(boolean newInputValue, ExternalPropnetState propnetState){
+	public void updateValue(boolean newInputValue, ImmutableSeparatePropnetState propnetState){
 
 		//ConcurrencyUtils.checkForInterruption();
 
@@ -40,12 +40,12 @@ public final class ImmutableNot extends ImmutableComponent{
 	}
 
 	@Override
-	public boolean getValue(ExternalPropnetState propnetState){
+	public boolean getValue(ImmutableSeparatePropnetState propnetState){
 		return propnetState.getOtherValue(this.stateIndex);
 	}
 
 	@Override
-	public void imposeConsistency(ExternalPropnetState propnetState) {
+	public void imposeConsistency(ImmutableSeparatePropnetState propnetState) {
 		if(this.getInputs().length != 1){
 			throw new IllegalStateException("Wrong number of inputs for NOT component: it has " + this.getInputs().length + " inputs!");
 		}else{
@@ -63,7 +63,7 @@ public final class ImmutableNot extends ImmutableComponent{
 	}
 
 	@Override
-	public void propagateConsistency(boolean newInputValue, ExternalPropnetState propnetState) {
+	public void propagateConsistency(boolean newInputValue, ImmutableSeparatePropnetState propnetState) {
 		if(this.isConsistent){
 			//ConcurrencyUtils.checkForInterruption();
 

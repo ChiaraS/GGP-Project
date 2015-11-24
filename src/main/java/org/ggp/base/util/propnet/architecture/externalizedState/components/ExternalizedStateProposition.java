@@ -2,7 +2,7 @@ package org.ggp.base.util.propnet.architecture.externalizedState.components;
 
 import org.ggp.base.util.gdl.grammar.GdlSentence;
 import org.ggp.base.util.propnet.architecture.externalizedState.ExternalizedStateComponent;
-import org.ggp.base.util.propnet.state.ExternalPropnetState;
+import org.ggp.base.util.propnet.state.ImmutableSeparatePropnetState;
 import org.ggp.base.util.propnet.utils.PROP_TYPE;
 
 /**
@@ -50,7 +50,7 @@ public final class ExternalizedStateProposition extends ExternalizedStateCompone
     }
 
 	@Override
-	public void updateValue(boolean newInputValue, ExternalPropnetState propnetState){
+	public void updateValue(boolean newInputValue, ImmutableSeparatePropnetState propnetState){
 
 		//ConcurrencyUtils.checkForInterruption();
 
@@ -99,7 +99,7 @@ public final class ExternalizedStateProposition extends ExternalizedStateCompone
 	}
 
 	@Override
-	public boolean getValue(ExternalPropnetState propnetState) {
+	public boolean getValue(ImmutableSeparatePropnetState propnetState) {
 		switch(propType){
 		case BASE:
 			return propnetState.getBaseValue(this.index);
@@ -111,7 +111,7 @@ public final class ExternalizedStateProposition extends ExternalizedStateCompone
 	}
 
 	@Override
-	public void imposeConsistency(ExternalPropnetState propnetState) {
+	public void imposeConsistency(ImmutableSeparatePropnetState propnetState) {
 		switch(propType){
 		case BASE:
 		case INPUT:
@@ -141,7 +141,7 @@ public final class ExternalizedStateProposition extends ExternalizedStateCompone
 	}
 
 	@Override
-	public void propagateConsistency(boolean newInputValue, ExternalPropnetState propnetState) {
+	public void propagateConsistency(boolean newInputValue, ImmutableSeparatePropnetState propnetState) {
 		if(this.isConsistent){
 			//ConcurrencyUtils.checkForInterruption();
 

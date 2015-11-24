@@ -2,7 +2,7 @@ package org.ggp.base.util.propnet.architecture.separateExtendedState.immutable;
 
 import java.io.Serializable;
 
-import org.ggp.base.util.propnet.state.ExternalPropnetState;
+import org.ggp.base.util.propnet.state.ImmutableSeparatePropnetState;
 
 
 /**
@@ -140,9 +140,9 @@ public abstract class ImmutableComponent implements Serializable{
      */
     public abstract String getComponentType();
 
-    public abstract boolean getValue(ExternalPropnetState propnetState);
+    public abstract boolean getValue(ImmutableSeparatePropnetState propnetState);
 
-    public abstract void updateValue(boolean newInputValue, ExternalPropnetState propnetState);
+    public abstract void updateValue(boolean newInputValue, ImmutableSeparatePropnetState propnetState);
 
     /**
      * Returns a representation of the Component in .dot format.
@@ -175,8 +175,8 @@ public abstract class ImmutableComponent implements Serializable{
         return sb.toString();
     }
 
-    public abstract void imposeConsistency(ExternalPropnetState propnetState);
+    public abstract void imposeConsistency(ImmutableSeparatePropnetState propnetState);
 
-    public abstract void propagateConsistency(boolean newInputValue, ExternalPropnetState propnetState);
+    public abstract void propagateConsistency(boolean newInputValue, ImmutableSeparatePropnetState propnetState);
 
 }

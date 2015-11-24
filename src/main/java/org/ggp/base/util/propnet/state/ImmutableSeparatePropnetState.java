@@ -2,7 +2,7 @@ package org.ggp.base.util.propnet.state;
 
 import org.apache.lucene.util.OpenBitSet;
 
-public class ExternalPropnetState {
+public class ImmutableSeparatePropnetState {
 
 	/** Currently set values of the BASE propositions. */
 	private OpenBitSet currentState;
@@ -53,7 +53,7 @@ public class ExternalPropnetState {
 
 	/***************************************** Constructor ******************************************/
 
-	public ExternalPropnetState(OpenBitSet currentState, OpenBitSet nextState, OpenBitSet currentJointMove,
+	public ImmutableSeparatePropnetState(OpenBitSet currentState, OpenBitSet nextState, OpenBitSet currentJointMove,
 			int[] firstGoalIndices, int[] firstLegalIndices, int[] andOrGatesValues, OpenBitSet otherComponents){
 		this.currentState = currentState;
 		this.nextState = nextState;
@@ -172,8 +172,8 @@ public class ExternalPropnetState {
 	 * that wants to use the propnet with this state.
 	 */
 	@Override
-	public ExternalPropnetState clone(){
-		return new ExternalPropnetState(this.currentState.clone(), this.nextState.clone(), this.currentJointMove.clone(), this.firstGoalIndices, this.firstLegalIndices, this.andOrGatesValues.clone(), this.otherComponents.clone());
+	public ImmutableSeparatePropnetState clone(){
+		return new ImmutableSeparatePropnetState(this.currentState.clone(), this.nextState.clone(), this.currentJointMove.clone(), this.firstGoalIndices, this.firstLegalIndices, this.andOrGatesValues.clone(), this.otherComponents.clone());
 	}
 
 }

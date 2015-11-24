@@ -12,11 +12,12 @@ import org.ggp.base.util.logging.GamerLogger.FORMAT;
 import org.ggp.base.util.match.Match;
 import org.ggp.base.util.propnet.architecture.separateExtendedState.immutable.ImmutablePropNet;
 import org.ggp.base.util.propnet.creationManager.SeparatePropnetCreationManager;
-import org.ggp.base.util.propnet.state.ExternalPropnetState;
+import org.ggp.base.util.propnet.state.ImmutableSeparatePropnetState;
+import org.ggp.base.util.statemachine.InternalPropnetStateMachine;
 import org.ggp.base.util.statemachine.StateMachine;
-import org.ggp.base.util.statemachine.cache.PnStateCachedStateMachine;
+import org.ggp.base.util.statemachine.cache.SeparateInternalPropnetCachedStateMachine;
 import org.ggp.base.util.statemachine.exceptions.StateMachineInitializationException;
-import org.ggp.base.util.statemachine.implementation.propnet.SeparateExternalPropnetStateMachine;
+import org.ggp.base.util.statemachine.implementation.propnet.SeparateInternalPropnetStateMachine;
 
 //TODO: merge all speed tests together in a single class since their code is similar.
 
@@ -119,7 +120,7 @@ public class SeparatePropnetSpeedTest {
 		/*********************** Perform all the tests ****************************/
 
 		StateMachine theSubject;
-		SeparateExternalPropnetStateMachine thePropnetMachine;
+		InternalPropnetStateMachine thePropnetMachine;
 
 		String type = "SeparatePN";
 		if(withTranslation){
@@ -199,16 +200,16 @@ public class SeparatePropnetSpeedTest {
 			// If we are here it means that the manager stopped running. We must check if it has created a usable propnet or not.
 
 			ImmutablePropNet propnet = manager.getImmutablePropnet();
-			ExternalPropnetState propnetState = manager.getInitialPropnetState();
+			ImmutableSeparatePropnetState propnetState = manager.getInitialPropnetState();
 
 			// Create the state machine giving it the propnet and the propnet state.
 			// NOTE that if any of the two is null, it means that the propnet creation/initialization went wrong
 			// and this will be detected by the state machine during initialization.
-		    thePropnetMachine = new SeparateExternalPropnetStateMachine(propnet, propnetState);
+		    thePropnetMachine = new SeparateInternalPropnetStateMachine(propnet, propnetState);
 
 		    // For now the cache can be used only for the state machine that performs translation
 		    if(withCache){
-		    	theSubject = new PnStateCachedStateMachine(thePropnetMachine);
+		    	theSubject = new SeparateInternalPropnetCachedStateMachine((SeparateInternalPropnetStateMachine) thePropnetMachine);
 	        }else{
 	        	theSubject = thePropnetMachine;
 	        }
@@ -239,7 +240,7 @@ public class SeparatePropnetSpeedTest {
 	        	if(withTranslation){
 	        		StateMachineSpeedTest.testSpeed(theSubject, testTime);
 	        	}else{
-	        		StateMachineSpeedTest.testSeparatePNSpeed((SeparateExternalPropnetStateMachine) theSubject, testTime);
+	        		StateMachineSpeedTest.testSeparatePNSpeed((InternalPropnetStateMachine) theSubject, testTime);
 	        	}
 
 	        	testDuration = StateMachineSpeedTest.exactTimeSpent;
