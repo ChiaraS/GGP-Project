@@ -10,6 +10,9 @@ import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
 
 import org.apache.lucene.util.OpenBitSet;
 import org.ggp.base.util.game.Game;
@@ -26,15 +29,25 @@ import org.ggp.base.util.propnet.architecture.forwardInterrupting.components.For
 import org.ggp.base.util.propnet.architecture.forwardInterrupting.components.ForwardInterruptingOr;
 import org.ggp.base.util.propnet.architecture.forwardInterrupting.components.ForwardInterruptingProposition;
 import org.ggp.base.util.propnet.architecture.forwardInterrupting.components.ForwardInterruptingTransition;
+import org.ggp.base.util.propnet.architecture.separateExtendedState.dynamic.DynamicPropNet;
+import org.ggp.base.util.propnet.architecture.separateExtendedState.immutable.ImmutablePropNet;
+import org.ggp.base.util.propnet.creationManager.SeparatePropnetCreationManager;
 import org.ggp.base.util.propnet.factory.ForwardInterruptingPropNetFactory;
+import org.ggp.base.util.propnet.state.ImmutableSeparatePropnetState;
 import org.ggp.base.util.statemachine.MachineState;
 import org.ggp.base.util.statemachine.Move;
 import org.ggp.base.util.statemachine.exceptions.GoalDefinitionException;
+import org.ggp.base.util.statemachine.exceptions.MoveDefinitionException;
 import org.ggp.base.util.statemachine.exceptions.StateMachineException;
 import org.ggp.base.util.statemachine.exceptions.StateMachineInitializationException;
+import org.ggp.base.util.statemachine.exceptions.TransitionDefinitionException;
 import org.ggp.base.util.statemachine.implementation.propnet.CheckFwdInterrPropnetStateMachine;
 import org.ggp.base.util.statemachine.implementation.propnet.FwdInterrPropnetStateMachine;
+import org.ggp.base.util.statemachine.implementation.propnet.SeparateInternalPropnetStateMachine;
 import org.ggp.base.util.statemachine.implementation.prover.ProverStateMachine;
+import org.ggp.base.util.statemachine.inernalPropnetStructure.InternalPropnetMachineState;
+import org.ggp.base.util.statemachine.inernalPropnetStructure.InternalPropnetMove;
+import org.ggp.base.util.statemachine.inernalPropnetStructure.InternalPropnetRole;
 import org.ggp.base.util.statemachine.safe.InitializationSafeStateMachine;
 
 /**
@@ -43,7 +56,7 @@ import org.ggp.base.util.statemachine.safe.InitializationSafeStateMachine;
  */
 public class ProvaPropnet {
 
-	public static void main(String []args){
+	public static void main(String []args) throws MoveDefinitionException, TransitionDefinitionException, GoalDefinitionException{
 
 		//checkPropnetStructure("ticTacToe");
 
@@ -76,12 +89,102 @@ public class ProvaPropnet {
 
 		//provaOpenbitset();
 
-		provaInsiemi();
+		tryThis();
+		//provaInsiemi();
 		//provaUgualeUguale();
 		//provaOverflow();
 		//provaGameExtendedPropnet("coins_atomic");
 
 		//printPropnetImprovements("gt_two_thirds_2p");
+
+	}
+
+	public static void tryThis() throws MoveDefinitionException, TransitionDefinitionException, GoalDefinitionException{
+		String gdl = " ( ( role lp ) ( init f ) ( <= p ( true f ) ) ( <= p p ) ( legal p m ) ( <= terminal ( not (true f ) ) ) ) ";
+
+		Game g = Game.createEphemeralGame(gdl);
+
+		List<Gdl> description = g.getRules();
+
+        // Create the executor service that will run the propnet manager that creates the propnet
+        ExecutorService executor = Executors.newSingleThreadExecutor();
+
+        // Create the propnet creation manager
+        SeparatePropnetCreationManager manager = new SeparatePropnetCreationManager(description, Long.MAX_VALUE);
+
+  	  	// Start the manager
+  	  	executor.execute(manager);
+
+  	  	// Shutdown executor to tell it not to accept any more task to execute.
+		// Note that this doesn't interrupt previously started tasks.
+		executor.shutdown();
+
+		// Tell the executor to wait until the currently running task has completed execution or the timeout has elapsed.
+		try{
+			executor.awaitTermination(300000L, TimeUnit.MILLISECONDS);
+		}catch(InterruptedException e){ // The thread running the verifier has been interrupted => stop the test
+			executor.shutdownNow(); // Interrupt everything
+			e.printStackTrace();
+			Thread.currentThread().interrupt();
+			return;
+		}
+
+		// Here the available time has elapsed, so we must interrupt the thread if it is still running.
+		executor.shutdownNow();
+
+		// Wait for the thread to actually terminate
+		while(!executor.isTerminated()){
+
+			// If the thread didn't terminate, wait for a minute and then check again
+			try{
+				executor.awaitTermination(1, TimeUnit.MINUTES);
+			}catch(InterruptedException e) {
+				// If this exception is thrown it means the thread that is executing the verification
+				// of the state machine has been interrupted. If we do nothing this state machine could be stuck in the
+				// while loop anyway until all tasks in the executor have terminated, thus we break out of the loop and return.
+				// What happens to the still running tasks in the executor? Who will make sure they terminate?
+				e.printStackTrace();
+				Thread.currentThread().interrupt();
+				return;
+			}
+		}
+
+		// If we are here it means that the manager stopped running. We must check if it has created a usable propnet or not.
+
+		ImmutablePropNet propnet = manager.getImmutablePropnet();
+		ImmutableSeparatePropnetState propnetState = manager.getInitialPropnetState();
+
+		DynamicPropNet dp = manager.getDynamicPropnet();
+
+		System.out.println(dp.toString());
+
+
+
+		// Create the state machine giving it the propnet and the propnet state.
+		// NOTE that if any of the two is null, it means that the propnet creation/initialization went wrong
+		// and this will be detected by the state machine during initialization.
+		SeparateInternalPropnetStateMachine thePropnetMachine = new SeparateInternalPropnetStateMachine(propnet, propnetState);
+
+		InternalPropnetMachineState state = thePropnetMachine.getInternalInitialState();
+
+		System.out.println(state);
+
+		InternalPropnetRole[] roles = thePropnetMachine.getInternalRoles();
+
+		System.out.println(roles.length);
+		System.out.println(roles[0]);
+
+		System.out.println(thePropnetMachine.isTerminal(state));
+
+		List<InternalPropnetMove> m = thePropnetMachine.getInternalLegalMoves(state, roles[0]);
+		InternalPropnetMachineState next = thePropnetMachine.getInternalNextState(state, m);
+
+		System.out.println(next);
+
+		System.out.println(thePropnetMachine.isTerminal(next));
+		System.out.println(thePropnetMachine.getGoal(next, roles[0]));
+
+
 
 	}
 

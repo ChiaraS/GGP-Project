@@ -151,7 +151,7 @@ public class StateMachineSpeedTest {
 				GamerLogger.logError("SMSpeedTest", "Exception during iteration!");
 				GamerLogger.logStackTrace("SMSpeedTest", e);
 				failedIterations++;
-			}catch (Exception e) { // Keep all other exception separate from the typical exceptions of the state machine (even if now they are all dealt with in the same way)
+			}catch (Exception e) { // Keep all other exceptions separate from the typical exceptions of the state machine (even if now they are all dealt with in the same way)
 				GamerLogger.logError("SMSpeedTest", "Exception during iteration!");
 				GamerLogger.logStackTrace("SMSpeedTest", e);
 				failedIterations++;
