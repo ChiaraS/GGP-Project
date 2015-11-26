@@ -100,7 +100,7 @@ public class ProvaPropnet {
 	}
 
 	public static void tryThis() throws MoveDefinitionException, TransitionDefinitionException, GoalDefinitionException{
-		String gdl = " ( ( role lp ) ( init f ) ( <= p ( true f ) ) ( <= p p ) ( legal p m ) ( <= terminal ( not (true f ) ) ) ) ";
+		String gdl = " ( ( role lp ) ( init f ) ( <= p ( true f ) ) ( <= p p ) ( legal lp m ) ( <= terminal ( not ( true f ) ) ) ( <= ( goal lp 100 ) p ) ( <= ( goal lp 0 ) ( not p ) ) ) ";
 
 		Game g = Game.createEphemeralGame(gdl);
 

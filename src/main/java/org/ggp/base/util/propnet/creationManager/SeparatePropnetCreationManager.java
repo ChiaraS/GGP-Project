@@ -155,7 +155,7 @@ public class SeparatePropnetCreationManager extends Thread{
 		 */
 		DynamicPropNetFactory.removeAnonymousPropositions(this.dynamicPropNet);
 
-		//System.out.println("Propnet has: " + this.dynamicPropNet.getSize() + " COMPONENTS");
+		System.out.println("Propnet has: " + this.dynamicPropNet.getSize() + " COMPONENTS");
 
 		/** 3. REMOVE USELESS COMPONENTS WITH CONSTANT VALUE:
 		 *  find all the components in the propnet that will always have the same value in all possible states

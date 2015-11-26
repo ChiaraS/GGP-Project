@@ -7,6 +7,7 @@ import java.util.concurrent.TimeUnit;
 
 import org.ggp.base.util.game.GameRepository;
 import org.ggp.base.util.gdl.grammar.Gdl;
+import org.ggp.base.util.gdl.grammar.GdlPool;
 import org.ggp.base.util.logging.GamerLogger;
 import org.ggp.base.util.logging.GamerLogger.FORMAT;
 import org.ggp.base.util.match.Match;
@@ -234,7 +235,7 @@ public class SeparatePropnetSpeedTest {
 
 
 		        /***************************************/
-		        //System.gc();
+		        System.gc();
 		        /***************************************/
 
 	        	if(withTranslation){
@@ -263,8 +264,8 @@ public class SeparatePropnetSpeedTest {
 	        GamerLogger.log(FORMAT.CSV_FORMAT, type + "SpeedTestTable", gameKey + ";" + manager.getTotalInitTime() + ";" + manager.getPropnetConstructionTime() + ";" + initializationTime + ";" + testDuration + ";" + succeededIterations + ";" + failedIterations + ";" + visitedNodes + ";" + iterationsPerSecond + ";" + nodesPerSecond + ";");
 
 	        /***************************************/
-	        //System.gc();
-	        //GdlPool.drainPool();
+	        System.gc();
+	        GdlPool.drainPool();
 	        /***************************************/
 
 	    }
