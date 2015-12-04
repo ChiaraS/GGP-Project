@@ -1,5 +1,9 @@
 package org.ggp.base.util.propnet.architecture.separateExtendedState.immutable;
 
+import java.util.HashSet;
+import java.util.Set;
+
+import org.ggp.base.util.gdl.grammar.GdlSentence;
 import org.ggp.base.util.propnet.architecture.separateExtendedState.immutable.components.ImmutableProposition;
 import org.ggp.base.util.statemachine.Role;
 
@@ -34,15 +38,22 @@ public class ImmutablePropNet {
 	 */
 	private final int[][] goalValues;
 
+	/**
+	 * This set keeps track of the GDL propositions corresponding to base propositions that have
+	 * been removed because always true. These are needed when converting an internal representation
+	 * of a game state to the standard representation of GGP-Base.
+	 */
+	private final Set<GdlSentence> alwaysTrueBases;
+
 	/********************************** Constructor *********************************/
 
-	public ImmutablePropNet(ImmutableComponent[] components, Role[] roles, ImmutableProposition[] basePropositions, ImmutableProposition[] inputPropositions, int[][] goalValues){
+	public ImmutablePropNet(ImmutableComponent[] components, Role[] roles, ImmutableProposition[] basePropositions, ImmutableProposition[] inputPropositions, int[][] goalValues, Set<GdlSentence> alwaysTrueBases){
 		this.components = components;
 		this.roles = roles;
 		this.basePropositions = basePropositions;
 		this.inputPropositions = inputPropositions;
 		this.goalValues = goalValues;
-
+		this.alwaysTrueBases = alwaysTrueBases;
 	}
 
 	/****************************** Setters and getters *****************************/
@@ -50,7 +61,16 @@ public class ImmutablePropNet {
 	/**
 	 * Getter method.
 	 *
-	 * @return ordered list of roles.
+	 * @return ordered array of components.
+	 */
+	public ImmutableComponent[] getComponents(){
+	    return this.components;
+	}
+
+	/**
+	 * Getter method.
+	 *
+	 * @return ordered array of roles.
 	 */
 	public Role[] getRoles(){
 	    return roles;
@@ -68,7 +88,7 @@ public class ImmutablePropNet {
 	/**
 	 * Getter method.
 	 *
-	 * @return References to every InputProposition in the PropNet, grouped by role
+	 * @return references to every InputProposition in the PropNet, grouped by role
 	 * and ordered.
 	 */
 	public ImmutableProposition[] getInputPropositions(){
@@ -78,11 +98,21 @@ public class ImmutablePropNet {
 	/**
 	 * Getter method.
 	 *
-	 * @return The goal values corresponding to each goal proposition, divided by role
+	 * @return the goal values corresponding to each goal proposition, divided by role
 	 * 		   and in the same order as the goalsPerRole propositions.
 	 */
 	public int[][] getGoalValues(){
 		return this.goalValues;
+	}
+
+	/**
+	 * Getter method.
+	 *
+	 * @return a copy of the list with all the Gdl base propositions that are true in
+	 * every state and thus have been removed from the propnet.
+	 */
+	public Set<GdlSentence> getAlwaysTrueBases(){
+		return new HashSet<GdlSentence>(this.alwaysTrueBases);
 	}
 
 }

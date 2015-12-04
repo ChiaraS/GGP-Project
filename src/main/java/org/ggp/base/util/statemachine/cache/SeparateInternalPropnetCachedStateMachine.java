@@ -63,7 +63,7 @@ public final class SeparateInternalPropnetCachedStateMachine extends InternalPro
 
 	@Override
 	public int getGoal(MachineState state, Role role) throws GoalDefinitionException, StateMachineException{
-		return this.getGoal(this.backingStateMachine.stateToExternalState(state), this.backingStateMachine.roleToExternalRole(role));
+		return this.getGoal(this.backingStateMachine.stateToInternalState(state), this.backingStateMachine.roleToInternalRole(role));
 	}
 
 	@Override
@@ -81,8 +81,8 @@ public final class SeparateInternalPropnetCachedStateMachine extends InternalPro
 	@Override
 	public List<Move> getLegalMoves(MachineState state, Role role) throws MoveDefinitionException, StateMachineException{
 		List<Move> moves = new ArrayList<Move>();
-		for(InternalPropnetMove m : this.getInternalLegalMoves(this.backingStateMachine.stateToExternalState(state), this.backingStateMachine.roleToExternalRole(role))){
-			moves.add(this.backingStateMachine.externalMoveToMove(m));
+		for(InternalPropnetMove m : this.getInternalLegalMoves(this.backingStateMachine.stateToInternalState(state), this.backingStateMachine.roleToInternalRole(role))){
+			moves.add(this.backingStateMachine.internalMoveToMove(m));
 		}
 		return moves;
 	}
@@ -101,7 +101,7 @@ public final class SeparateInternalPropnetCachedStateMachine extends InternalPro
 
 	@Override
 	public MachineState getNextState(MachineState state, List<Move> moves) throws TransitionDefinitionException, StateMachineException{
-		return this.backingStateMachine.externalStateToState(this.getInternalNextState(this.backingStateMachine.stateToExternalState(state), this.backingStateMachine.moveToExternalMove(moves)));
+		return this.backingStateMachine.internalStateToState(this.getInternalNextState(this.backingStateMachine.stateToInternalState(state), this.backingStateMachine.movesToInternalMoves(moves)));
 	}
 
 	@Override
@@ -118,7 +118,7 @@ public final class SeparateInternalPropnetCachedStateMachine extends InternalPro
 
 	@Override
 	public boolean isTerminal(MachineState state) throws StateMachineException{
-		return this.isTerminal(this.backingStateMachine.stateToExternalState(state));
+		return this.isTerminal(this.backingStateMachine.stateToInternalState(state));
 	}
 
 	@Override
@@ -144,13 +144,13 @@ public final class SeparateInternalPropnetCachedStateMachine extends InternalPro
 
 	@Override
 	public List<Role> getRoles() {
-		// TODO(schreib): Should this be cached as well?
+		// TODO: Should this be cached as well?
 		return this.backingStateMachine.getRoles();
 	}
 
 	@Override
 	public MachineState getInitialState() {
-		// TODO(schreib): Should this be cached as well?
+		// TODO: Should this be cached as well?
 		return this.backingStateMachine.getInitialState();
 	}
 

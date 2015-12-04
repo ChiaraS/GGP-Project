@@ -1580,6 +1580,9 @@ public class DynamicPropNetFactory {
 	        		case BASE:
 	        			toRemove.add(p.getSingleInput());
 	        			toConvert.add(p);
+	        			if(type == Type.TRUE){
+	        				pn.addAlwaysTrueBase(p.getName());
+	        			}
 	        			break;
 	        		case INPUT:
 	        			if(type == Type.TRUE){
@@ -1667,8 +1670,6 @@ public class DynamicPropNetFactory {
 
 			toCheckNow = toCheckNext;
 		}
-
-
 	}
 
 	/**

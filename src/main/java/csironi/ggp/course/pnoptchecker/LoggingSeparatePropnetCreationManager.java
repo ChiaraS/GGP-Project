@@ -538,7 +538,7 @@ public class LoggingSeparatePropnetCreationManager extends Thread{
 			// Create the immutable propnet and the corresponding initial state
 
 			this.initialPropnetState = new ImmutableSeparatePropnetState(initialState, nextState, currentJointMove, firstGoalIndices, firstLegalIndices, andOrGatesValues, otherComponents);
-			this.immutablePropnet = new ImmutablePropNet(immutableComponents, roles, immutableBasePropositions, immutableInputPropositions, goalValues);
+			this.immutablePropnet = new ImmutablePropNet(immutableComponents, roles, immutableBasePropositions, immutableInputPropositions, goalValues, this.dynamicPropNet.getAlwaysTrueBases());
 
 			for(ImmutableComponent c : immutableComponents){
 				c.imposeConsistency(this.initialPropnetState);

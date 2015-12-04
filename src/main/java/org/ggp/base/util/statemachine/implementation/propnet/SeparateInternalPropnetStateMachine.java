@@ -1,7 +1,6 @@
 package org.ggp.base.util.statemachine.implementation.propnet;
 
 import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
@@ -82,7 +81,7 @@ public class SeparateInternalPropnetStateMachine extends InternalPropnetStateMac
 	 */
 	@Override
 	public boolean isTerminal(MachineState state) {
-		return this.isTerminal(this.stateToExternalState(state));
+		return this.isTerminal(this.stateToInternalState(state));
 	}
 
 	/**
@@ -118,7 +117,7 @@ public class SeparateInternalPropnetStateMachine extends InternalPropnetStateMac
 	 */
 	@Override
 	public int getGoal(MachineState state, Role role) throws GoalDefinitionException {
-		return this.getGoal(this.stateToExternalState(state), this.roleToExternalRole(role));
+		return this.getGoal(this.stateToInternalState(state), this.roleToInternalRole(role));
 	}
 
 	/**
@@ -144,15 +143,15 @@ public class SeparateInternalPropnetStateMachine extends InternalPropnetStateMac
 		int trueGoalIndex = otherComponents.nextSetBit(firstGoalIndices[role.getIndex()]);
 
 		if(trueGoalIndex >= firstGoalIndices[role.getIndex()+1] || trueGoalIndex == -1){ // No true goal for current role
-			MachineState standardState = this.externalStateToState(state);
-			Role standardRole = this.externalRoleToRole(role);
+			MachineState standardState = this.internalStateToState(state);
+			Role standardRole = this.internalRoleToRole(role);
 			GamerLogger.logError("StateMachine", "[Propnet] Got no true goal in state " + standardState + " for role " + standardRole + ".");
 			throw new GoalDefinitionException(standardState, standardRole);
 		}else if(trueGoalIndex < (firstGoalIndices[role.getIndex()+1]-1)){ // If it's not the last goal proposition check if there are any other true goal propositions for the role
 			int nextTrueGoalIndex =	otherComponents.nextSetBit(trueGoalIndex+1);
 			if(nextTrueGoalIndex < firstGoalIndices[role.getIndex()+1] && nextTrueGoalIndex != -1){
-				MachineState standardState = this.externalStateToState(state);
-				Role standardRole = this.externalRoleToRole(role);
+				MachineState standardState = this.internalStateToState(state);
+				Role standardRole = this.internalRoleToRole(role);
 				GamerLogger.logError("StateMachine", "[Propnet] Got more than one true goal in state " + standardState + " for role " + standardRole + ".");
 				throw new GoalDefinitionException(standardState, standardRole);
 			}
@@ -189,7 +188,7 @@ public class SeparateInternalPropnetStateMachine extends InternalPropnetStateMac
 		*/
 
 
-		return this.externalStateToState(this.initialState);
+		return this.internalStateToState(this.initialState);
 	}
 
 	/**
@@ -208,9 +207,9 @@ public class SeparateInternalPropnetStateMachine extends InternalPropnetStateMac
 	@Override
 	public List<Move> getLegalMoves(MachineState state, Role role)throws MoveDefinitionException {
 		List<Move> moves = new ArrayList<Move>();
-		InternalPropnetRole externalRole = this.roleToExternalRole(role);
-		for(InternalPropnetMove m : this.getInternalLegalMoves(this.stateToExternalState(state), externalRole)){
-			moves.add(this.externalMoveToMove(m));
+		InternalPropnetRole externalRole = this.roleToInternalRole(role);
+		for(InternalPropnetMove m : this.getInternalLegalMoves(this.stateToInternalState(state), externalRole)){
+			moves.add(this.internalMoveToMove(m));
 		}
 		return moves;
 	}
@@ -241,7 +240,7 @@ public class SeparateInternalPropnetStateMachine extends InternalPropnetStateMac
 
 		// If there are no legal moves for the role in this state throw an exception.
 		if(legalMoves.size() == 0){
-			throw new MoveDefinitionException(this.externalStateToState(state), this.externalRoleToRole(role));
+			throw new MoveDefinitionException(this.internalStateToState(state), this.internalRoleToRole(role));
 		}
 
 		return legalMoves;
@@ -253,7 +252,7 @@ public class SeparateInternalPropnetStateMachine extends InternalPropnetStateMac
 	 */
 	@Override
 	public MachineState getNextState(MachineState state, List<Move> moves)throws TransitionDefinitionException {
-		return this.externalStateToState(this.getInternalNextState(this.stateToExternalState(state), this.moveToExternalMove(moves)));
+		return this.internalStateToState(this.getInternalNextState(this.stateToInternalState(state), this.movesToInternalMoves(moves)));
 	}
 
 	/**
@@ -328,7 +327,7 @@ public class SeparateInternalPropnetStateMachine extends InternalPropnetStateMac
 	    	//System.out.println("i=" + i);
 	    	//FINE AGGIUNTA
 
-			doeses.add(ProverQueryBuilder.toDoes(this.externalRoleToRole(this.roles[i]), moves.get(i)));
+			doeses.add(ProverQueryBuilder.toDoes(this.internalRoleToRole(this.roles[i]), moves.get(i)));
 		}
 
 		//AGGIUNTA
@@ -361,8 +360,7 @@ public class SeparateInternalPropnetStateMachine extends InternalPropnetStateMac
 	 * @return a machine state extended with the bit array representing the truth value in
 	 * the state for each base proposition.
 	 */
-	// TODO IMPLEMENT
-	public InternalPropnetMachineState stateToExternalState(MachineState state){
+	public InternalPropnetMachineState stateToInternalState(MachineState state){
 		if(state != null){
 			ImmutableProposition[] baseProps = this.propNet.getBasePropositions();
 			OpenBitSet basePropsTruthValues = new OpenBitSet(baseProps.length);
@@ -380,12 +378,11 @@ public class SeparateInternalPropnetStateMachine extends InternalPropnetStateMac
 		return null;
 	}
 
-	// TODO: IMPLEMENT
-	public MachineState externalStateToState(InternalPropnetMachineState state){
+	public MachineState internalStateToState(InternalPropnetMachineState state){
 		if(state != null){
 			ImmutableProposition[] baseProps = this.propNet.getBasePropositions();
 			OpenBitSet basePropsTruthValues = state.getTruthValues();
-			Set<GdlSentence> contents = new HashSet<GdlSentence>();
+			Set<GdlSentence> contents = this.propNet.getAlwaysTrueBases();
 
 			int setIndex = basePropsTruthValues.nextSetBit(0);
 			while(setIndex != -1){
@@ -399,8 +396,7 @@ public class SeparateInternalPropnetStateMachine extends InternalPropnetStateMac
 		return null;
 	}
 
-	// TODO: IMPLEMENT
-	public Role externalRoleToRole(InternalPropnetRole role){
+	public Role internalRoleToRole(InternalPropnetRole role){
 		if(role != null){
 			return this.propNet.getRoles()[role.getIndex()];
 		}
@@ -408,8 +404,7 @@ public class SeparateInternalPropnetStateMachine extends InternalPropnetStateMac
 		return null;
 	}
 
-	// TODO: IMPLEMENT
-	public InternalPropnetRole roleToExternalRole(Role role){
+	public InternalPropnetRole roleToInternalRole(Role role){
 		if(role != null){
 			// TODO check if index is -1 -> should never happen if the role given as input is a valid role.
 			Role[] roles = this.propNet.getRoles();
@@ -423,13 +418,11 @@ public class SeparateInternalPropnetStateMachine extends InternalPropnetStateMac
 		return null;
 	}
 
-	// TODO: IMPLEMENT
-	public Move externalMoveToMove(InternalPropnetMove move){
+	public Move internalMoveToMove(InternalPropnetMove move){
 		return getMoveFromProposition(this.propNet.getInputPropositions()[move.getIndex()]);
 	}
 
-	// TODO: IMPLEMENT
-	public InternalPropnetMove moveToExternalMove(Move move){
+	public InternalPropnetMove moveToInternalMove(Move move){
 		List<Move> moveArray = new ArrayList<Move>();
 		moveArray.add(move);
 		GdlSentence moveToDoes = this.toDoes(moveArray).get(0);
@@ -451,8 +444,7 @@ public class SeparateInternalPropnetStateMachine extends InternalPropnetStateMac
 	 * @param roleIndex
 	 * @return
 	 */
-	// TODO: IMPLEMENT
-	public List<InternalPropnetMove> moveToExternalMove(List<Move> moves){
+	public List<InternalPropnetMove> movesToInternalMoves(List<Move> moves){
 
 		List<InternalPropnetMove> transformedMoves = new ArrayList<InternalPropnetMove>();
 		List<GdlSentence> movesToDoes = this.toDoes(moves);

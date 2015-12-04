@@ -56,7 +56,7 @@ import org.ggp.base.util.statemachine.safe.InitializationSafeStateMachine;
  */
 public class ProvaPropnet {
 
-	public static void main(String []args) throws MoveDefinitionException, TransitionDefinitionException, GoalDefinitionException{
+	public static void main(String []args) throws MoveDefinitionException, TransitionDefinitionException, GoalDefinitionException, StateMachineInitializationException{
 
 		//checkPropnetStructure("ticTacToe");
 
@@ -89,6 +89,7 @@ public class ProvaPropnet {
 
 		//provaOpenbitset();
 
+		//prova();
 		tryThis();
 		//provaInsiemi();
 		//provaUgualeUguale();
@@ -99,7 +100,7 @@ public class ProvaPropnet {
 
 	}
 
-	public static void tryThis() throws MoveDefinitionException, TransitionDefinitionException, GoalDefinitionException{
+	public static void tryThis() throws MoveDefinitionException, TransitionDefinitionException, GoalDefinitionException, StateMachineInitializationException{
 		String gdl = " ( ( role lp ) ( init f ) ( <= p ( true f ) ) ( <= p p ) ( legal lp m ) ( <= terminal ( not ( true f ) ) ) ( <= ( goal lp 100 ) p ) ( <= ( goal lp 0 ) ( not p ) ) ) ";
 
 		Game g = Game.createEphemeralGame(gdl);
@@ -158,12 +159,12 @@ public class ProvaPropnet {
 
 		System.out.println(dp.toString());
 
-
-
 		// Create the state machine giving it the propnet and the propnet state.
 		// NOTE that if any of the two is null, it means that the propnet creation/initialization went wrong
 		// and this will be detected by the state machine during initialization.
 		SeparateInternalPropnetStateMachine thePropnetMachine = new SeparateInternalPropnetStateMachine(propnet, propnetState);
+
+		thePropnetMachine.initialize(description, Long.MAX_VALUE);
 
 		InternalPropnetMachineState state = thePropnetMachine.getInternalInitialState();
 
@@ -836,7 +837,10 @@ public class ProvaPropnet {
 		}*/
 
 		//BUTTONS AND LIGHTS
-		String BeLdescription = "( ( role robot ) ( base p ) ( base q ) ( base r ) ( base 1 ) ( base 2 ) ( base 3 ) ( base 4 ) ( base 5 ) ( base 6 ) ( base 7 ) ( input robot a ) ( input robot b ) ( input robot c ) ( init 1 ) ( legal robot a ) ( legal robot b ) ( legal robot c ) ( <= ( next p ) ( does robot a ) ( not ( true p ) ) ) ( <= ( next p ) ( does robot b ) ( true q ) ) ( <= ( next p ) ( does robot c ) ( true p ) ) ( <= ( next q ) ( does robot a ) ( true q ) ) ( <= ( next q ) ( does robot b ) ( true p ) ) ( <= ( next q ) ( does robot c ) ( true r ) ) ( <= ( next r ) ( does robot a ) ( true r ) ) ( <= ( next r ) ( does robot b ) ( true r ) ) ( <= ( next r ) ( does robot c ) ( true q ) ) ( <= ( next ?y ) ( true ?x ) ( successor ?x ?y ) ) ( <= ( goal robot 100 ) ( true p ) ( true q ) ( true r ) ) ( <= ( goal robot 0 ) ( not ( true p ) ) ) ( <= ( goal robot 0 ) ( not ( true q ) ) ) ( <= ( goal robot 0 ) ( not ( true r ) ) ) ( <= terminal ( true p ) ( true q ) ( true r ) ) ( <= terminal ( true 7 ) ) ( successor 1 2 ) ( successor 2 3 ) ( successor 3 4 ) ( successor 4 5 ) ( successor 5 6 ) ( successor 6 7 ) )";
+		//String BeLdescription = "( ( role robot ) ( base p ) ( base q ) ( base r ) ( base 1 ) ( base 2 ) ( base 3 ) ( base 4 ) ( base 5 ) ( base 6 ) ( base 7 ) ( input robot a ) ( input robot b ) ( input robot c ) ( init 1 ) ( legal robot a ) ( legal robot b ) ( legal robot c ) ( <= ( next p ) ( does robot a ) ( not ( true p ) ) ) ( <= ( next p ) ( does robot b ) ( true q ) ) ( <= ( next p ) ( does robot c ) ( true p ) ) ( <= ( next q ) ( does robot a ) ( true q ) ) ( <= ( next q ) ( does robot b ) ( true p ) ) ( <= ( next q ) ( does robot c ) ( true r ) ) ( <= ( next r ) ( does robot a ) ( true r ) ) ( <= ( next r ) ( does robot b ) ( true r ) ) ( <= ( next r ) ( does robot c ) ( true q ) ) ( <= ( next ?y ) ( true ?x ) ( successor ?x ?y ) ) ( <= ( goal robot 100 ) ( true p ) ( true q ) ( true r ) ) ( <= ( goal robot 0 ) ( not ( true p ) ) ) ( <= ( goal robot 0 ) ( not ( true q ) ) ) ( <= ( goal robot 0 ) ( not ( true r ) ) ) ( <= terminal ( true p ) ( true q ) ( true r ) ) ( <= terminal ( true 7 ) ) ( successor 1 2 ) ( successor 2 3 ) ( successor 3 4 ) ( successor 4 5 ) ( successor 5 6 ) ( successor 6 7 ) )";
+
+		String BeLdescription = "((role player) (light p) (light q) (light r) (<= (legal player (switchOn ?x)) (not (true (on ?x))) (light ?x)) (<= (next (on ?x)) (does player (switchOn ?x))) (<= (next (on ?x)) (true (on ?x))) (<= terminal (true (on p)) (true (on q)) (true (on r))) (<= (goal player 100) (true (on p)) (true (on q)) (true (on r))))";
+
 
 		Game BeLGame = Game.createEphemeralGame(BeLdescription);
 

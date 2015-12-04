@@ -85,14 +85,14 @@ public final class GamePlayer extends Thread implements Subject
 	{
 
 		/**
-		 * AGGIUNTA: to avoid loosing logs between matches, set the name of the spill-over log file for this gamer.
+		 * START: to avoid loosing logs between matches, set the name of the spill-over log file for this gamer.
 		 * All logs that don't refer to a match will be written on that file for this gamer.
 		 */
 		String spilloverDirectory = "spilloverFiles";
 		new File(spilloverDirectory).mkdirs();
 		GamerLogger.setSpilloverLogfile(spilloverDirectory + "/" + System.currentTimeMillis() + "-" + this.gamer.getName());
 		/**
-		 * FINE AGGIUNTA
+		 * END
 		 */
 
 

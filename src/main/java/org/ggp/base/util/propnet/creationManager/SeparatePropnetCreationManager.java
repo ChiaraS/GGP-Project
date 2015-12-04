@@ -106,6 +106,8 @@ public class SeparatePropnetCreationManager extends Thread{
     	this.propNetConstructionTime = System.currentTimeMillis() - startTime;
 		GamerLogger.log("StateMachine", "[Propnet Creator] Propnet creation done. It took " + this.propNetConstructionTime + "ms.");
 
+
+		//System.out.println(this.dynamicPropNet.toString());
 		//System.out.println("Propnet has: " + this.dynamicPropNet.getSize() + " COMPONENTS");
 
 		/*
@@ -147,6 +149,16 @@ public class SeparatePropnetCreationManager extends Thread{
 		 */
 		DynamicPropNetFactory.fixInputlessComponents(this.dynamicPropNet);
 
+		/*
+		System.out.println("Propnet has: " + this.dynamicPropNet.getSize() + " COMPONENTS, " + this.dynamicPropNet.getNumPropositions() + " PROPOSITIONS, " + this.dynamicPropNet.getNumLinks() + " LINKS.");
+		System.out.println("Propnet has: " + this.dynamicPropNet.getNumAnds() + " ANDS, " + this.dynamicPropNet.getNumOrs() + " ORS, " + this.dynamicPropNet.getNumNots() + " NOTS.");
+		System.out.println("Propnet has: " + this.dynamicPropNet.getNumBases() + " BASES, " + this.dynamicPropNet.getNumTransitions() + " TRANSITIONS.");
+		System.out.println("Propnet has: " + this.dynamicPropNet.getNumInputs() + " INPUTS, " + this.dynamicPropNet.getNumLegals() + " LEGALS.");
+		System.out.println("Propnet has: " + this.dynamicPropNet.getNumGoals() + " GOALS.");
+		System.out.println("Propnet has: " + this.dynamicPropNet.getNumInits() + " INITS, " + this.dynamicPropNet.getNumTerminals() + " TERMINALS.");
+		*/
+
+		//System.out.println(this.dynamicPropNet.toString());
 		//System.out.println("Propnet has: " + this.dynamicPropNet.getSize() + " COMPONENTS");
 
 		/** 2. REMOVE ANONYMOUS PROPOSITIONS:
@@ -155,7 +167,17 @@ public class SeparatePropnetCreationManager extends Thread{
 		 */
 		DynamicPropNetFactory.removeAnonymousPropositions(this.dynamicPropNet);
 
-		System.out.println("Propnet has: " + this.dynamicPropNet.getSize() + " COMPONENTS");
+		/*
+		System.out.println("Propnet has: " + this.dynamicPropNet.getSize() + " COMPONENTS, " + this.dynamicPropNet.getNumPropositions() + " PROPOSITIONS, " + this.dynamicPropNet.getNumLinks() + " LINKS.");
+		System.out.println("Propnet has: " + this.dynamicPropNet.getNumAnds() + " ANDS, " + this.dynamicPropNet.getNumOrs() + " ORS, " + this.dynamicPropNet.getNumNots() + " NOTS.");
+		System.out.println("Propnet has: " + this.dynamicPropNet.getNumBases() + " BASES, " + this.dynamicPropNet.getNumTransitions() + " TRANSITIONS.");
+		System.out.println("Propnet has: " + this.dynamicPropNet.getNumInputs() + " INPUTS, " + this.dynamicPropNet.getNumLegals() + " LEGALS.");
+		System.out.println("Propnet has: " + this.dynamicPropNet.getNumGoals() + " GOALS.");
+		System.out.println("Propnet has: " + this.dynamicPropNet.getNumInits() + " INITS, " + this.dynamicPropNet.getNumTerminals() + " TERMINALS.");
+		*/
+
+		//System.out.println(this.dynamicPropNet.toString());
+		//System.out.println("Propnet has: " + this.dynamicPropNet.getSize() + " COMPONENTS");
 
 		/** 3. REMOVE USELESS COMPONENTS WITH CONSTANT VALUE:
 		 *  find all the components in the propnet that will always have the same value in all possible states
@@ -173,6 +195,16 @@ public class SeparatePropnetCreationManager extends Thread{
     		return;
 		}
 
+		/*
+		System.out.println("Propnet has: " + this.dynamicPropNet.getSize() + " COMPONENTS, " + this.dynamicPropNet.getNumPropositions() + " PROPOSITIONS, " + this.dynamicPropNet.getNumLinks() + " LINKS.");
+		System.out.println("Propnet has: " + this.dynamicPropNet.getNumAnds() + " ANDS, " + this.dynamicPropNet.getNumOrs() + " ORS, " + this.dynamicPropNet.getNumNots() + " NOTS.");
+		System.out.println("Propnet has: " + this.dynamicPropNet.getNumBases() + " BASES, " + this.dynamicPropNet.getNumTransitions() + " TRANSITIONS.");
+		System.out.println("Propnet has: " + this.dynamicPropNet.getNumInputs() + " INPUTS, " + this.dynamicPropNet.getNumLegals() + " LEGALS.");
+		System.out.println("Propnet has: " + this.dynamicPropNet.getNumGoals() + " GOALS.");
+		System.out.println("Propnet has: " + this.dynamicPropNet.getNumInits() + " INITS, " + this.dynamicPropNet.getNumTerminals() + " TERMINALS.");
+		*/
+
+		//System.out.println(this.dynamicPropNet.toString());
 		//System.out.println("Propnet has: " + this.dynamicPropNet.getSize() + " COMPONENTS");
 
 		/** 4. REMOVE OUTPUT-LESS COMPONENTS THAT ARE USELESS:
@@ -183,6 +215,16 @@ public class SeparatePropnetCreationManager extends Thread{
 
 		DynamicPropNetFactory.removeOutputlessComponents(this.dynamicPropNet);
 
+		/*
+		System.out.println("Propnet has: " + this.dynamicPropNet.getSize() + " COMPONENTS, " + this.dynamicPropNet.getNumPropositions() + " PROPOSITIONS, " + this.dynamicPropNet.getNumLinks() + " LINKS.");
+		System.out.println("Propnet has: " + this.dynamicPropNet.getNumAnds() + " ANDS, " + this.dynamicPropNet.getNumOrs() + " ORS, " + this.dynamicPropNet.getNumNots() + " NOTS.");
+		System.out.println("Propnet has: " + this.dynamicPropNet.getNumBases() + " BASES, " + this.dynamicPropNet.getNumTransitions() + " TRANSITIONS.");
+		System.out.println("Propnet has: " + this.dynamicPropNet.getNumInputs() + " INPUTS, " + this.dynamicPropNet.getNumLegals() + " LEGALS.");
+		System.out.println("Propnet has: " + this.dynamicPropNet.getNumGoals() + " GOALS.");
+		System.out.println("Propnet has: " + this.dynamicPropNet.getNumInits() + " INITS, " + this.dynamicPropNet.getNumTerminals() + " TERMINALS.");
+		*/
+
+		//System.out.println(this.dynamicPropNet.toString());
 
 		/************************ PROPNET EXTERNAL COMPLETE STATE INITIALIZATION **************************/
 
@@ -372,7 +414,7 @@ public class SeparatePropnetCreationManager extends Thread{
 			// Create the immutable propnet and the corresponding initial state
 
 			this.initialPropnetState = new ImmutableSeparatePropnetState(initialState, nextState, currentJointMove, firstGoalIndices, firstLegalIndices, andOrGatesValues, otherComponents);
-			this.immutablePropnet = new ImmutablePropNet(immutableComponents, roles, immutableBasePropositions, immutableInputPropositions, goalValues);
+			this.immutablePropnet = new ImmutablePropNet(immutableComponents, roles, immutableBasePropositions, immutableInputPropositions, goalValues, this.dynamicPropNet.getAlwaysTrueBases());
 
 			for(ImmutableComponent c : immutableComponents){
 				c.imposeConsistency(this.initialPropnetState);

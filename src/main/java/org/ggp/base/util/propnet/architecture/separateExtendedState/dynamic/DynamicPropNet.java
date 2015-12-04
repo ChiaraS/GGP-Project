@@ -12,8 +12,10 @@ import java.util.Map.Entry;
 import java.util.Set;
 
 import org.ggp.base.util.gdl.grammar.GdlConstant;
+import org.ggp.base.util.gdl.grammar.GdlPool;
 import org.ggp.base.util.gdl.grammar.GdlProposition;
 import org.ggp.base.util.gdl.grammar.GdlRelation;
+import org.ggp.base.util.gdl.grammar.GdlSentence;
 import org.ggp.base.util.gdl.grammar.GdlTerm;
 import org.ggp.base.util.logging.GamerLogger;
 import org.ggp.base.util.propnet.architecture.separateExtendedState.dynamic.components.DynamicAnd;
@@ -95,6 +97,13 @@ public class DynamicPropNet {
 	private int andOrGatesNumber;
 
 	/**
+	 * This set keeps track of the GDL propositions corresponding to base propositions that have
+	 * been removed because always true. These are needed when converting an internal representation
+	 * of a game state to the standard representation of GGP-Base.
+	 */
+	private Set<GdlSentence> alwaysTrueBases;
+
+	/**
 	 * Creates a new PropNet from a list of Components.
 	 *
 	 * TODO: Also checks if a gate or a proposition has no inputs and if so connects it to the FALSE component
@@ -148,6 +157,8 @@ public class DynamicPropNet {
 		//Map<Role, List<DynamicProposition>> legalsPerRole = new HashMap<Role, List<DynamicProposition>>();
 
 		this.andOrGatesNumber = 0;
+
+		this.alwaysTrueBases = new HashSet<GdlSentence>();
 
 		//Map<Role, Map<List<GdlTerm>, Integer>> moveIndices = new HashMap<Role, Map<List<GdlTerm>, Integer>>();
 		//Map<Role, Integer> currentIndices = new HashMap<Role, Integer>();
@@ -214,7 +225,7 @@ public class DynamicPropNet {
 						GdlConstant name = (GdlConstant) relation.get(0);
 						Role r = new Role(name);
 
-						// Get the map of possible legals for the role
+						// Get the map of possible inputs for the role
 						Map<List<GdlTerm>, DynamicProposition> possibleInputsPerRole = possibleInputs.get(r);
 
 						// If we have no map, r is not a relevant role, so we just classify the proposition as an OTHER proposition...
@@ -233,7 +244,7 @@ public class DynamicPropNet {
 						GdlConstant name = (GdlConstant) relation.get(0);
 						Role r = new Role(name);
 
-						// Get the map of possible inputs for the role
+						// Get the map of possible legals for the role
 						Map<List<GdlTerm>, DynamicProposition> possibleLegalsPerRole = possibleLegals.get(r);
 
 						// If we have no map, r is not a relevant role, so we just classify the proposition as an OTHER proposition...
@@ -363,15 +374,49 @@ public class DynamicPropNet {
 			Map<List<GdlTerm>,DynamicProposition> possibleLegalsPerRole = possibleLegals.get(r);
 			Map<List<GdlTerm>,DynamicProposition> possibleInputsPerRole = possibleInputs.get(r);
 			for(Entry<List<GdlTerm>,DynamicProposition> legalEntry : possibleLegalsPerRole.entrySet()){
-				// TODO: PROVA CON GET INVECE DI REMOVE
 				DynamicProposition input = possibleInputsPerRole.remove(legalEntry.getKey());
 
-				if(input != null){
-					this.inputsPerRole.get(r).add(input);
-					input.setPropositionType(PROP_TYPE.INPUT);
-					this.legalsPerRole.get(r).add(legalEntry.getValue());
-					legalEntry.getValue().setPropositionType(PROP_TYPE.LEGAL);
+				// If the legal has no corresponding input, we create the input proposition
+				// and add it to the propnet (note that it will have no input nor output so it won't
+				// influence the game, however we must create it because the corresponding legal might
+				// become true at a certain moment in the game and the player could choose to play the
+				// corresponding move. Also note that it's highly likely that the corresponding legal
+				// will never become true, however we cannot assume this here, but it will be detected
+				// later when the propnet will be optimized by the removeConstantValueComponents() method
+				// in the DynamicPropnetFactory).
+				if(input == null){
+					input = new DynamicProposition(GdlPool.getRelation(GdlPool.getConstant("does"), legalEntry.getValue().getName().getBody()));
+
+					/*System.out.println("INLEGAL:");
+
+					for(DynamicComponent i: legalEntry.getValue().getInputs()){
+						System.out.println("	- " + i.getComponentType());
+						for(DynamicComponent ii: i.getInputs()){
+							System.out.println("		- " + ii.getComponentType());
+						}
+					}
+					System.out.println("LEGAL = " + legalEntry.getValue().getName());
+
+					for(DynamicComponent o: legalEntry.getValue().getOutputs()){
+						System.out.println("	- " + o.getComponentType());
+						for(DynamicComponent oo: o.getOutputs()){
+							System.out.println("	- " + oo.getComponentType());
+						}
+					}
+
+
+					System.out.println("INPUT = " + input.getName()); */
+
+					this.components.add(input);
 				}
+
+				// Now we put both the legal and input in the correct
+				// list for the role in the same position
+				this.inputsPerRole.get(r).add(input);
+				input.setPropositionType(PROP_TYPE.INPUT);
+				this.legalsPerRole.get(r).add(legalEntry.getValue());
+				legalEntry.getValue().setPropositionType(PROP_TYPE.LEGAL);
+
 			}
 
 			for(DynamicProposition p : this.inputsPerRole.get(r)){
@@ -538,6 +583,26 @@ public class DynamicPropNet {
 		return this.andOrGatesNumber;
 	}
 
+	/**
+	 * Getter method.
+	 *
+	 * @return a copy of the list with all the Gdl base propositions that are true in
+	 * every state and thus have been removed from the propnet.
+	 */
+	public Set<GdlSentence> getAlwaysTrueBases(){
+		return new HashSet<GdlSentence>(this.alwaysTrueBases);
+	}
+
+	/**
+	 * Setter method.
+	 *
+	 * @param alwaysTrueBase the GDL representation of a base proposition that has been
+	 * detected as always having a TRUE value and so has been removed as base proposition
+	 * from the propnet.
+	 */
+	public void addAlwaysTrueBase(GdlSentence alwaysTrueBase){
+		this.alwaysTrueBases.add(alwaysTrueBase);
+	}
 	/** References to every LegalProposition in the PropNet, indexed by role. */
 //	private final Map<Role, Set<DynamicProposition>> legalPropositions;
 
