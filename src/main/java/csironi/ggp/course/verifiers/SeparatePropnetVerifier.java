@@ -70,13 +70,13 @@ public class SeparatePropnetVerifier {
 			}
 			if(args.length == 4 || args.length == 3){
 				try{
-					initializationTime = Long.parseLong(args[0]);
+					initializationTime = Long.parseLong(args[1]);
 				}catch(NumberFormatException nfe){
 					System.out.println("Inconsistent propnet maximum building time specification! Using default value.");
 					initializationTime = 420000L;
 				}
 				try{
-					testTime = Long.parseLong(args[1]);
+					testTime = Long.parseLong(args[2]);
 				}catch(NumberFormatException nfe){
 					System.out.println("Inconsistent test duration specification! Using default value.");
 					testTime = 60000L;
