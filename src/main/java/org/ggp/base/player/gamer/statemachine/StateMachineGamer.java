@@ -186,6 +186,8 @@ public abstract class StateMachineGamer extends Gamer
 	@Override
 	public final void metaGame(long timeout) throws MetaGamingException
 	{
+		this.metagamingTimeout = timeout;
+
 		try
 		{
 			stateMachine = getInitialStateMachine();
@@ -290,4 +292,17 @@ public abstract class StateMachineGamer extends Gamer
     private Role role;
     private MachineState currentState;
     private StateMachine stateMachine;
+
+    /**
+	 * C.Sironi: added parameter to memorize the meta-gaming timeout so that it can be used by the
+	 * method that sets the state machine (getInitialStateMachine()) before actually calling the
+	 * stateMahcineMetaGame() method. In this way the getInitialStateMachine() method can see if it
+	 * can build the propnet in time to return the PropNetStateMachine or if it must return the prover.
+	 */
+	private long metagamingTimeout;
+
+	public long getMetagamingTimeout(){
+		return this.metagamingTimeout;
+	}
+
 }
