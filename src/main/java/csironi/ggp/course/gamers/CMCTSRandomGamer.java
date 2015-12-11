@@ -17,7 +17,7 @@ import org.ggp.base.util.statemachine.exceptions.MoveDefinitionException;
 import org.ggp.base.util.statemachine.exceptions.StateMachineException;
 import org.ggp.base.util.statemachine.exceptions.TransitionDefinitionException;
 
-import csironi.ggp.course.MCTS.MCTSManager;
+import csironi.ggp.course.MCTS.MCTSController;
 import csironi.ggp.course.MCTS.expansion.RandomExpansion;
 import csironi.ggp.course.MCTS.finalMoveChioce.MaxAvgScoreMoveChoice;
 import csironi.ggp.course.MCTS.playout.RandomPlayout;
@@ -57,7 +57,7 @@ public class CMCTSRandomGamer extends SampleGamer {
 		if(moves.size() != 1){
 
 			//create only once!!!!
-			MCTSManager manager = new MCTSManager(new RandomSelection(new RandomExpansion(), new RandomPlayout(stateMachine)), new MaxAvgScoreMoveChoice());
+			MCTSController manager = new MCTSController(new RandomSelection(new RandomExpansion(), new RandomPlayout(stateMachine)), new MaxAvgScoreMoveChoice());
 
 			Role myRole = getRole();
 			Map<Role, Integer> roleIndexes = stateMachine.getRoleIndices();

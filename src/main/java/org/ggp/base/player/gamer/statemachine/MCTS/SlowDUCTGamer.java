@@ -32,16 +32,21 @@ public class SlowDUCTGamer extends StateMachineGamer {
 
 	/**
 	 * The player must complete the executions of methods with a timeout by the time
-	 * [timeout - safetyMargin] to increase the certainty of answering to the Game
+	 * [timeout - safetyMargin(ms)] to increase the certainty of answering to the Game
 	 * Manager in time.
 	 */
 	private long safetyMargin;
 
 	/**
+	 * The monte
+	 */
+
+	/**
 	 *
 	 */
-	public SlowDUCTGamer(long safetyMargin) {
-		this.safetyMargin = safetyMargin;
+	public SlowDUCTGamer() {
+		// TODO: change code so that the parameters can be set from outside.
+		this.safetyMargin = 1000L;
 	}
 
 	/* (non-Javadoc)
@@ -87,7 +92,7 @@ public class SlowDUCTGamer extends StateMachineGamer {
 			// terminated, we could wait for half of the time still available and check again. We cannot
 			// get the propnet before being sure that the manager has terminated, otherwise we risk getting
 			// one in an inconsistent state. Also the manager must be fixed so that if it gets interrupted
-			// while running an optimization it can return the propnet and its state.
+			// while running an optimization it can return the propnet and its state at the previous optimization.
 			if(executor.isTerminated()){
 
 				// If we are here it means that the manager stopped running. We must check if it has created a usable propnet or not.
@@ -112,7 +117,7 @@ public class SlowDUCTGamer extends StateMachineGamer {
 	public void stateMachineMetaGame(long timeout)
 			throws TransitionDefinitionException, MoveDefinitionException,
 			GoalDefinitionException, StateMachineException {
-		// TODO Auto-generated method stub
+		// Create the MCTS tree and start simulations
 
 	}
 

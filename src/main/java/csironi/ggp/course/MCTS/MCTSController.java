@@ -23,7 +23,7 @@ import csironi.ggp.course.MCTS.selection.SelectionStrategy;
  * @author C.Sironi
  *
  */
-public class MCTSManager {
+public class MCTSController {
 
 	/**
 	 * Strategy that the player uses to perform selection (e.g. random, UCT, ...).
@@ -43,7 +43,7 @@ public class MCTSManager {
 	 * @param finalMoveChoiceStrategy the strategy that the player uses at the end of its
 	 * turn to choose the move to be sent to the game manager.
 	 */
-	public MCTSManager(SelectionStrategy selectionStrategy, FinalMoveChoiceStrategy finalMoveChoiceStrategy) {
+	public MCTSController(SelectionStrategy selectionStrategy, FinalMoveChoiceStrategy finalMoveChoiceStrategy) {
 
 		this.selectionStrategy = selectionStrategy;
 
