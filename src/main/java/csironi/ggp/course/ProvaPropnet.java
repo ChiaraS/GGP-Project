@@ -90,7 +90,16 @@ public class ProvaPropnet {
 		//provaOpenbitset();
 
 		//prova();
-		tryThis();
+		//tryThis();
+
+		tryThisToo(new Object());
+
+		Object o = new Integer(4);
+
+		tryThisToo(o);
+
+		tryThisToo((Integer)o);
+
 		//provaInsiemi();
 		//provaUgualeUguale();
 		//provaOverflow();
@@ -99,6 +108,17 @@ public class ProvaPropnet {
 		//printPropnetImprovements("gt_two_thirds_2p");
 
 	}
+
+	public static void tryThisToo(Object o){
+		System.out.println("Object");
+	}
+
+	public static void tryThisToo(Integer i){
+		System.out.println("Integer");
+	}
+
+
+
 
 	public static void tryThis() throws MoveDefinitionException, TransitionDefinitionException, GoalDefinitionException, StateMachineInitializationException{
 		String gdl = " ( ( role lp ) ( init f ) ( <= p ( true f ) ) ( <= p p ) ( legal lp m ) ( <= terminal ( not ( true f ) ) ) ( <= ( goal lp 100 ) p ) ( <= ( goal lp 0 ) ( not p ) ) ) ";

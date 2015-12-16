@@ -9,6 +9,7 @@ import java.util.concurrent.TimeUnit;
 
 import org.ggp.base.player.gamer.exception.GamePreviewException;
 import org.ggp.base.player.gamer.statemachine.StateMachineGamer;
+import org.ggp.base.player.gamer.statemachine.MCTS.manager.MCTSManager;
 import org.ggp.base.util.game.Game;
 import org.ggp.base.util.logging.GamerLogger;
 import org.ggp.base.util.propnet.architecture.separateExtendedState.immutable.ImmutablePropNet;
@@ -25,6 +26,15 @@ import org.ggp.base.util.statemachine.implementation.propnet.SeparateInternalPro
 import org.ggp.base.util.statemachine.implementation.prover.ProverStateMachine;
 
 /**
+ * This player performs Decoupled UCT Monte Carlo Tree Search.
+ *
+ * At the beginning of each game it tries to build the propnet. If it builds it will use for the
+ * whole game the state machine based on the propnet itherwise it will use the cached prover.
+ *
+ * Depending on the chosen state machine it will perform DUCT using the corresponding tree structure
+ * (i.e. the one that uses internal propnet states to perform MCTS if the propnet managed to build,
+ * the one that uses standard states otherwise).
+ *
  * @author C.Sironi
  *
  */
@@ -38,8 +48,9 @@ public class SlowDUCTGamer extends StateMachineGamer {
 	private long safetyMargin;
 
 	/**
-	 * The monte
+	 * The class that takes care of performing monte carlo tree search.
 	 */
+	private MCTSManager mctsManager;
 
 	/**
 	 *
