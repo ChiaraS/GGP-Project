@@ -15,13 +15,13 @@ import org.ggp.base.util.statemachine.exceptions.MoveDefinitionException;
 import org.ggp.base.util.statemachine.exceptions.StateMachineException;
 import org.ggp.base.util.statemachine.exceptions.TransitionDefinitionException;
 
-import csironi.ggp.course.MCTS.backpropagation.BackpropagationStrategy;
+import csironi.ggp.course.MCTS.backpropagation.OldBackpropagationStrategy;
 
 /**
  * @author C.Sironi
  *
  */
-public class MCTNode implements BackpropagationStrategy {
+public class MCTNode implements OldBackpropagationStrategy {
 
 	/**
 	 * The state machine that answers queries about the states of the game.

@@ -11,7 +11,7 @@ import csironi.ggp.course.MCTS.MCTNode;
  * @author C.Sironi
  *
  */
-public interface FinalMoveChoiceStrategy {
+public interface OldFinalMoveChoiceStrategy {
 
 	/**
 	 * Given the root node of a Monte Carlo Tree after the search has been performed,

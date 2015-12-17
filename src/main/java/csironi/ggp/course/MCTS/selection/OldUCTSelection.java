@@ -12,17 +12,17 @@ import org.ggp.base.util.statemachine.exceptions.StateMachineException;
 import org.ggp.base.util.statemachine.exceptions.TransitionDefinitionException;
 
 import csironi.ggp.course.MCTS.MCTNode;
-import csironi.ggp.course.MCTS.expansion.ExpansionStrategy;
-import csironi.ggp.course.MCTS.playout.PlayoutStrategy;
+import csironi.ggp.course.MCTS.expansion.OldExpansionStrategy;
+import csironi.ggp.course.MCTS.playout.OldPlayoutStrategy;
 
 /**
  * @author C.Sironi
  *
  */
-public class UCTSelection implements SelectionStrategy {
+public class OldUCTSelection implements OldSelectionStrategy {
 
-	ExpansionStrategy expansionStrategy;
-	PlayoutStrategy playoutStrategy;
+	OldExpansionStrategy expansionStrategy;
+	OldPlayoutStrategy playoutStrategy;
 
 	Random random;
 
@@ -31,7 +31,7 @@ public class UCTSelection implements SelectionStrategy {
 	/**
 	 *
 	 */
-	public UCTSelection(ExpansionStrategy expansionStrategy, PlayoutStrategy playoutStrategy, double c) {
+	public OldUCTSelection(OldExpansionStrategy expansionStrategy, OldPlayoutStrategy playoutStrategy, double c) {
 		this.expansionStrategy = expansionStrategy;
 		this.playoutStrategy = playoutStrategy;
 		this.random = new Random();

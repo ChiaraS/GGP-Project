@@ -13,7 +13,7 @@ import csironi.ggp.course.MCTS.MCTNode;
  * @author C.Sironi
  *
  */
-public interface ExpansionStrategy {
+public interface OldExpansionStrategy {
 
 	/**
 	 * This method expands the given node, i.e. it chooses which child node(s) of the node to add to the

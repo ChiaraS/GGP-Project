@@ -21,7 +21,7 @@ import csironi.ggp.course.MCTS.MCTNode;
  * @author C.Sironi
  *
  */
-public class RandomPlayout implements PlayoutStrategy {
+public class OldRandomPlayout implements OldPlayoutStrategy {
 
 	/**
 	 * The state machine of the game that this strategy needs to get next states during play-out.
@@ -39,7 +39,7 @@ public class RandomPlayout implements PlayoutStrategy {
 	 * @param stateMachine the state machine of the game that this strategy needs to get
 	 * next states during play-out.
 	 */
-	public RandomPlayout(StateMachine stateMachine) {
+	public OldRandomPlayout(StateMachine stateMachine) {
 		this.stateMachine = stateMachine;
 		this.random = new Random();
 	}

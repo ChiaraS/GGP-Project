@@ -13,7 +13,7 @@ import csironi.ggp.course.MCTS.MCTNode;
  * @author C.Sironi
  *
  */
-public class MaxAvgScoreMoveChoice implements FinalMoveChoiceStrategy {
+public class OldMaxAvgScoreMoveChoice implements OldFinalMoveChoiceStrategy {
 
 	/* (non-Javadoc)
 	 * @see csironi.ggp.course.MCTS.finalMoveChioce.FinalMoveChoiceStrategy#chooseFinalMove(csironi.ggp.course.MCTS.MCTNode)

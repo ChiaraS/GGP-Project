@@ -15,14 +15,14 @@ import csironi.ggp.course.MCTS.MCTNode;
  * @author C.Sironi
  *
  */
-public class RandomExpansion implements ExpansionStrategy {
+public class OldRandomExpansion implements OldExpansionStrategy {
 
 	Random random;
 
 	/**
 	 * Contructor.
 	 */
-	public RandomExpansion() {
+	public OldRandomExpansion() {
 		this.random = new Random();
 	}
 

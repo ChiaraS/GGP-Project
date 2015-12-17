@@ -66,6 +66,28 @@ public abstract class InternalPropnetStateMachine extends StateMachine{
 	/***************** Extra methods to replace the ones offered by the StateMahcine *****************/
 
     /**
+     * Returns the goal values for each role in the given state. The goal values
+     * are listed in the same order the roles are listed in the game rules, which
+     * is the same order in which they're returned by {@link #getRoles()}.
+     *
+     * @throws GoalDefinitionException if there is no goal value or more than one
+     * goal value for any one role in the given state. If this occurs when this
+     * is called on a terminal state, this indicates an error in either the game
+     * description or the StateMachine implementation.
+     * @throws StateMachineException if it was not possible to compute the list
+     * with the goals for all the roles in the given state because of an error
+     * that occurred in the state machine and couldn't be handled.
+     */
+    public int[] getGoals(InternalPropnetMachineState state) throws GoalDefinitionException{
+    	InternalPropnetRole[] theRoles = this.getInternalRoles();
+    	int[] theGoals = new int[theRoles.length];
+        for (int i = 0; i < theRoles.length; i++) {
+            theGoals[i] = getGoal(state, theRoles[i]);
+        }
+        return theGoals;
+    }
+
+    /**
      * Returns a terminal state derived from repeatedly making random joint moves
      * until reaching the end of the game.
      *

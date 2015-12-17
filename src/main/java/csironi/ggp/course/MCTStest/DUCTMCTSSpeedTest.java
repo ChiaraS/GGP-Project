@@ -1,12 +1,20 @@
-package csironi.ggp.course.speedtester;
+package csironi.ggp.course.MCTStest;
 
 import java.util.List;
+import java.util.Random;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 
+import org.ggp.base.player.gamer.statemachine.MCTS.manager.InternalPropnetMCTSManager;
+import org.ggp.base.player.gamer.statemachine.MCTS.manager.strategies.backpropagation.StandardBackpropagation;
+import org.ggp.base.player.gamer.statemachine.MCTS.manager.strategies.expansion.RandomExpansion;
+import org.ggp.base.player.gamer.statemachine.MCTS.manager.strategies.movechoice.MaximumScoreChoice;
+import org.ggp.base.player.gamer.statemachine.MCTS.manager.strategies.playout.RandomPlayout;
+import org.ggp.base.player.gamer.statemachine.MCTS.manager.strategies.selection.DUCTSelection;
 import org.ggp.base.util.game.GameRepository;
 import org.ggp.base.util.gdl.grammar.Gdl;
+import org.ggp.base.util.gdl.grammar.GdlPool;
 import org.ggp.base.util.logging.GamerLogger;
 import org.ggp.base.util.logging.GamerLogger.FORMAT;
 import org.ggp.base.util.match.Match;
@@ -14,34 +22,20 @@ import org.ggp.base.util.propnet.architecture.separateExtendedState.immutable.Im
 import org.ggp.base.util.propnet.creationManager.SeparatePropnetCreationManager;
 import org.ggp.base.util.propnet.state.ImmutableSeparatePropnetState;
 import org.ggp.base.util.statemachine.InternalPropnetStateMachine;
-import org.ggp.base.util.statemachine.StateMachine;
-import org.ggp.base.util.statemachine.cache.SeparateInternalPropnetCachedStateMachine;
 import org.ggp.base.util.statemachine.exceptions.StateMachineInitializationException;
 import org.ggp.base.util.statemachine.implementation.propnet.SeparateInternalPropnetStateMachine;
 
-//TODO: merge all speed tests together in a single class since their code is similar.
-
 /**
-* This class checks the speed (nodes/second, iterations/second) of the propnet state machine that
-* memorizes externally the state of the propnet components and separates the dynamic version of the
-* propnet used during propnet optimization from the immutable version used at runtime to reason on
-* the game).
-* This is done by performing Monte Carlo simulations from the initial state of the given game for the
-* specified amount of time.
+* This class checks the speed (nodes/second, iterations/second) of the decoupled UCT MCTS player that
+* uses the separate propnet state machine.
 *
 * It is possible to specify the following combinations of main arguments:
 *
-* 1. [withTranslation] [withCache]
-* 2. [withTranslation] [withCache] [keyOfGameToTest]
-* 3. [withTranslation] [withCache] [givenInitTime] [maximumTestDuration]
-* 4. [withTranslation] [withCache] [givenInitTime] [maximumTestDuration] [keyOfGameToTest]
+* 1. [keyOfGameToTest]
+* 2. [givenInitTime] [maximumTestDuration]
+* 3. [givenInitTime] [maximumTestDuration] [keyOfGameToTest]
 *
 * where:
-* [withTranslation] = true if the speed test must be performed translating every time from the canonical
-* 					  representation of State, Move and Role to their internal representation in the
-* 					  propnet state machine and vice versa; false otherwise (DEFAULT: false).
-* [withCache] = true if the propnet state machine must be provided with a cache for its results, false
-* 				otherwise (DEFAULT: false).
 * [givenInitTime] = maximum time in milliseconds that should be spent to initialize the
 * 								 propnet state machine (DEFAULT: 420000ms - 7mins).
 * [maximumTestDuration] = duration of each test in millisecond (DEFAULT: 60000ms - 1min).
@@ -53,37 +47,32 @@ import org.ggp.base.util.statemachine.implementation.propnet.SeparateInternalPro
 * @author C.Sironi
 *
 */
-public class SeparatePropnetSpeedTest {
+public class DUCTMCTSSpeedTest {
 
 	public static void main(String[] args) {
 
 		/*********************** Parse main arguments ****************************/
 
-		boolean withTranslation = false;
-		boolean withCache = false;
 		long givenInitTime = 420000L;
 		long testTime = 60000L;
 		String gameToTest = null;
 
 		if(args.length != 0){ // At least one argument is specified and the first argument is either true or false
 
-			if (args.length <= 5 && args.length > 1){
+			if (args.length <= 3){
 
-				withTranslation = Boolean.parseBoolean(args[0]);
-				withCache = Boolean.parseBoolean(args[1]);
-
-				if(args.length == 3 || args.length == 5){
+				if(args.length == 3 || args.length == 1){
 					gameToTest = args[args.length-1];
 				}
-				if(args.length == 5 || args.length == 4){
+				if(args.length == 2 || args.length == 3){
 					try{
-						givenInitTime = Long.parseLong(args[2]);
+						givenInitTime = Long.parseLong(args[0]);
 					}catch(NumberFormatException nfe){
 						System.out.println("Inconsistent maximum initialization time specification! Using default value.");
 						givenInitTime = 420000L;
 					}
 					try{
-						testTime = Long.parseLong(args[3]);
+						testTime = Long.parseLong(args[1]);
 					}catch(NumberFormatException nfe){
 						System.out.println("Inconsistent test duration specification! Using default value.");
 						testTime = 60000L;
@@ -95,17 +84,7 @@ public class SeparatePropnetSpeedTest {
 
 		} // else use default values
 
-		if(withTranslation){
-			System.out.print("Testing speed of the propnet state machine with translation");
-		}else{
-			System.out.print("Testing speed of the propnet state machine with no translation");
-		}
-
-		if(withCache){
-			System.out.println(" and cache.");
-		}else{
-			System.out.println(" and no cache.");
-		}
+		System.out.println("Testing speed of DUCT/MCTS using the propnet state machine.");
 
 		if(gameToTest == null){
 			System.out.println("Running tests on ALL games with the following time settings:");
@@ -119,23 +98,16 @@ public class SeparatePropnetSpeedTest {
 
 		/*********************** Perform all the tests ****************************/
 
-		StateMachine theSubject;
 		InternalPropnetStateMachine thePropnetMachine;
 
-		String type = "SeparatePN";
-		if(withTranslation){
-			type = "Translating" + type;
-		}
-		if(withCache){
-			type = "Cached" + type;
-		}
-
-		GamerLogger.setSpilloverLogfile(type + "SpeedTestTable.csv");
-	    GamerLogger.log(FORMAT.CSV_FORMAT, type + "SpeedTestTable", "Game key;PN Initialization Time (ms);PN Construction Time (ms);SM initialization time;Test Duration (ms);Succeeded Iterations;Failed Iterations;Visited Nodes;Iterations/second;Nodes/second;");
+		GamerLogger.setSpilloverLogfile("DUCTMCTSSpeedTestTable.csv");
+	    GamerLogger.log(FORMAT.CSV_FORMAT, "DUCTMCTSSpeedTestTable", "Game key;PN Initialization Time (ms);PN Construction Time (ms);SM initialization time;Test Duration (ms);Iterations;Visited Nodes;Iterations/second;Nodes/second;");
 
 	    GameRepository theRepository = GameRepository.getDefaultRepository();
 	    for(String gameKey : theRepository.getGameKeys()) {
 	        if(gameKey.contains("laikLee")) continue;
+
+	        if(gameKey.equals("ticTacHeaven")) continue;
 
 	        // TODO: change code so that if there is only one game to test we won't run through the whole sequence of keys.
 	        if(gameToTest != null && !gameKey.equals(gameToTest)) continue;
@@ -144,9 +116,9 @@ public class SeparatePropnetSpeedTest {
 
 	        Match fakeMatch = new Match(gameKey + "." + System.currentTimeMillis(), -1, -1, -1,theRepository.getGame(gameKey) );
 
-	        GamerLogger.startFileLogging(fakeMatch, type + "SpeedTester");
+	        GamerLogger.startFileLogging(fakeMatch, "DUCTMCTSSpeedTester");
 
-	        GamerLogger.log("SMSpeedTest", "Testing on game " + gameKey);
+	        GamerLogger.log("DUCTMCTSSpeedTest", "Testing on game " + gameKey);
 
 	        List<Gdl> description = theRepository.getGame(gameKey).getRules();
 
@@ -166,10 +138,10 @@ public class SeparatePropnetSpeedTest {
 			// Tell the executor to wait until the currently running task has completed execution or the timeout has elapsed.
 			try{
 				executor.awaitTermination(givenInitTime, TimeUnit.MILLISECONDS);
-			}catch(InterruptedException e){ // The thread running the speed test has been interrupted => stop the test
+			}catch(InterruptedException e){ // The thread running the verifier has been interrupted => stop the test
 				executor.shutdownNow(); // Interrupt everything
-				GamerLogger.logError("SMSpeedTest", "State machine speed test interrupted. Test on game "+ gameKey +" won't be completed.");
-				GamerLogger.logStackTrace("SMSpeedTest", e);
+				GamerLogger.logError("DUCTMCTSSpeedTest", "DUCT/MCTS speed test interrupted. Test on game "+ gameKey +" won't be completed.");
+				GamerLogger.logStackTrace("DUCTMCTSSpeedTest", e);
 				GamerLogger.stopFileLogging();
 				Thread.currentThread().interrupt();
 				return;
@@ -185,12 +157,12 @@ public class SeparatePropnetSpeedTest {
 				try{
 					executor.awaitTermination(1, TimeUnit.MINUTES);
 				}catch(InterruptedException e) {
-					// If this exception is thrown it means the thread that is executing the verification
-					// of the state machine has been interrupted. If we do nothing this state machine could be stuck in the
+					// If this exception is thrown it means the thread that is executing the speed test
+					// of the DUCT/MCTS has been interrupted. If we do nothing this state machine could be stuck in the
 					// while loop anyway until all tasks in the executor have terminated, thus we break out of the loop and return.
 					// What happens to the still running tasks in the executor? Who will make sure they terminate?
-					GamerLogger.logError("SMSpeedTest", "State mahcine verification interrupted. Test on game "+ gameKey +" won't be completed.");
-					GamerLogger.logStackTrace("SMSpeedTest", e);
+					GamerLogger.logError("DUCTMCTSSpeedTest", "State mahcine verification interrupted. Test on game "+ gameKey +" won't be completed.");
+					GamerLogger.logStackTrace("DUCTMCTSSpeedTest", e);
 					GamerLogger.stopFileLogging();
 					Thread.currentThread().interrupt();
 					return;
@@ -207,17 +179,9 @@ public class SeparatePropnetSpeedTest {
 			// and this will be detected by the state machine during initialization.
 		    thePropnetMachine = new SeparateInternalPropnetStateMachine(propnet, propnetState);
 
-		    // For now the cache can be used only for the state machine that performs translation
-		    if(withCache){
-		    	theSubject = new SeparateInternalPropnetCachedStateMachine((SeparateInternalPropnetStateMachine) thePropnetMachine);
-	        }else{
-	        	theSubject = thePropnetMachine;
-	        }
-
 	        long initializationTime;
 	        long testDuration = -1L;
-	        int succeededIterations = -1;
-	        int failedIterations = -1;
+	        int iterations = -1;
 	        int visitedNodes = -1;
 	        double iterationsPerSecond = -1;
 	        double nodesPerSecond = -1;
@@ -226,7 +190,7 @@ public class SeparatePropnetSpeedTest {
 	        // If initialization fails, skip the test.
 	    	long initStart = System.currentTimeMillis();
 	        try{
-	        	theSubject.initialize(description, initStart + givenInitTime);
+	        	thePropnetMachine.initialize(description, initStart + givenInitTime);
 
 	        	initializationTime = System.currentTimeMillis() - initStart;
 
@@ -234,39 +198,53 @@ public class SeparatePropnetSpeedTest {
 
 
 		        /***************************************/
-		        //System.gc();
+		        System.gc();
 		        /***************************************/
 
-	        	if(withTranslation){
-	        		StateMachineSpeedTest.testSpeed(theSubject, testTime);
-	        	}else{
-	        		StateMachineSpeedTest.testSeparatePNSpeed((InternalPropnetStateMachine) theSubject, testTime);
-	        	}
+		        Random r = new Random();
+		        double c = 0.7;
 
-	        	testDuration = StateMachineSpeedTest.exactTimeSpent;
-	        	succeededIterations = StateMachineSpeedTest.succeededIterations;
-	     		failedIterations = StateMachineSpeedTest.failedIterations;
-	            visitedNodes = StateMachineSpeedTest.visitedNodes;
-	            iterationsPerSecond = ((double) succeededIterations * 1000)/((double) testDuration);
-	            nodesPerSecond = ((double) visitedNodes * 1000)/((double) testDuration);
+		        InternalPropnetMCTSManager MCTSmanager = new InternalPropnetMCTSManager(new DUCTSelection(r, c),
+		        		new RandomExpansion(r), new RandomPlayout(thePropnetMachine), new StandardBackpropagation(),
+		        		new MaximumScoreChoice(r), thePropnetMachine, thePropnetMachine.getInternalRoles()[0]);
+
+		        long testStart = System.currentTimeMillis();
+
+		        try{
+		        	MCTSmanager.getBestMove(thePropnetMachine.getInternalInitialState(), testStart + testTime);
+
+		        }catch(Exception e){
+		        	GamerLogger.logError("DUCTMCTSSpeedTest", "MCTS failed during execution. Impossible to continue the speed test. Cause: [" + e.getClass().getSimpleName() + "] " + e.getMessage() );
+		        	GamerLogger.logStackTrace("DUCTMCTSSpeedTest", e);
+		        	System.out.println("Stopping test on game " + gameKey + ". Exception during search execution.");
+		        }
+
+	        	testDuration = System.currentTimeMillis() - testStart;
+	        	iterations = MCTSmanager.getIterations();
+	        	visitedNodes = MCTSmanager.getVisitedNodes();
+	        	if(testDuration != 0){
+		        	iterationsPerSecond = ((double) iterations * 1000)/((double) testDuration);
+		        	nodesPerSecond = ((double) visitedNodes * 1000)/((double) testDuration);
+	        	}
 	        }catch(StateMachineInitializationException e){
 	        	initializationTime = System.currentTimeMillis() - initStart;
-	        	GamerLogger.logError("SMSpeedTest", "State machine " + theSubject.getName() + " initialization failed, impossible to test this game. Cause: [" + e.getClass().getSimpleName() + "] " + e.getMessage() );
-	        	GamerLogger.logStackTrace("SMSpeedTest", e);
+	        	GamerLogger.logError("DUCTMCTSSpeedTest", "State machine " + thePropnetMachine.getName() + " initialization failed, impossible to test this game. Cause: [" + e.getClass().getSimpleName() + "] " + e.getMessage() );
+	        	GamerLogger.logStackTrace("DUCTMCTSSpeedTest", e);
 	        	System.out.println("Skipping test on game " + gameKey + ". No propnet available.");
 	        }
 
-	        GamerLogger.log(FORMAT.PLAIN_FORMAT, "SMSpeedTest", "");
+	        GamerLogger.log(FORMAT.PLAIN_FORMAT, "DUCTMCTSSpeedTest", "");
 
 	        GamerLogger.stopFileLogging();
 
-	        GamerLogger.log(FORMAT.CSV_FORMAT, type + "SpeedTestTable", gameKey + ";" + manager.getTotalInitTime() + ";" + manager.getPropnetConstructionTime() + ";" + initializationTime + ";" + testDuration + ";" + succeededIterations + ";" + failedIterations + ";" + visitedNodes + ";" + iterationsPerSecond + ";" + nodesPerSecond + ";");
+	        GamerLogger.log(FORMAT.CSV_FORMAT, "DUCTMCTSSpeedTestTable", gameKey + ";" + manager.getTotalInitTime() + ";" + manager.getPropnetConstructionTime() + ";" + initializationTime + ";" + testDuration + ";" + iterations + ";" + visitedNodes + ";" + iterationsPerSecond + ";" + nodesPerSecond + ";");
 
 	        /***************************************/
-	        //System.gc();
-	        //GdlPool.drainPool();
+	        System.gc();
+	        GdlPool.drainPool();
 	        /***************************************/
 
 	    }
 	}
+
 }

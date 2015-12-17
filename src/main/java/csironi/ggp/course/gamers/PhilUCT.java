@@ -18,10 +18,10 @@ import org.ggp.base.util.statemachine.exceptions.StateMachineException;
 import org.ggp.base.util.statemachine.exceptions.TransitionDefinitionException;
 
 import csironi.ggp.course.MCTS.MCTSController;
-import csironi.ggp.course.MCTS.expansion.RandomExpansion;
-import csironi.ggp.course.MCTS.finalMoveChioce.MaxAvgScoreMoveChoice;
-import csironi.ggp.course.MCTS.playout.RandomPlayout;
-import csironi.ggp.course.MCTS.selection.UCTSelection;
+import csironi.ggp.course.MCTS.expansion.OldRandomExpansion;
+import csironi.ggp.course.MCTS.finalMoveChioce.OldMaxAvgScoreMoveChoice;
+import csironi.ggp.course.MCTS.playout.OldRandomPlayout;
+import csironi.ggp.course.MCTS.selection.OldUCTSelection;
 
 /**
  * @author C.Sironi
@@ -64,7 +64,7 @@ public class PhilUCT extends SampleGamer {
 		// otherwise return the only one available.
 		if(moves.size() != 1){
 
-			MCTSController manager = new MCTSController(new UCTSelection(new RandomExpansion(), new RandomPlayout(stateMachine), 1.0/Math.sqrt(2)), new MaxAvgScoreMoveChoice());
+			MCTSController manager = new MCTSController(new OldUCTSelection(new OldRandomExpansion(), new OldRandomPlayout(stateMachine), 1.0/Math.sqrt(2)), new OldMaxAvgScoreMoveChoice());
 
 			Role myRole = getRole();
 			Map<Role, Integer> roleIndexes = stateMachine.getRoleIndices();

@@ -16,7 +16,7 @@ import csironi.ggp.course.MCTS.MCTNode;
  * @author C.Sironi
  *
  */
-public interface PlayoutStrategy {
+public interface OldPlayoutStrategy {
 
 	/**
 	 * This methods performs a play-out starting from the given node until it reaches a terminal

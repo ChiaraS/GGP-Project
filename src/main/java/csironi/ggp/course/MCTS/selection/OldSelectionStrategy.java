@@ -16,7 +16,7 @@ import csironi.ggp.course.MCTS.MCTNode;
  * @author C.Sironi
  *
  */
-public interface SelectionStrategy {
+public interface OldSelectionStrategy {
 
 	/**
 	 * This method performs the selection of a child of the given node and decides when

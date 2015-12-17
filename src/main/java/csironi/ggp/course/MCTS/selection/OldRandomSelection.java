@@ -12,31 +12,31 @@ import org.ggp.base.util.statemachine.exceptions.StateMachineException;
 import org.ggp.base.util.statemachine.exceptions.TransitionDefinitionException;
 
 import csironi.ggp.course.MCTS.MCTNode;
-import csironi.ggp.course.MCTS.expansion.ExpansionStrategy;
-import csironi.ggp.course.MCTS.playout.PlayoutStrategy;
+import csironi.ggp.course.MCTS.expansion.OldExpansionStrategy;
+import csironi.ggp.course.MCTS.playout.OldPlayoutStrategy;
 
 /**
  * @author C.Sironi
  *
  */
-public class RandomSelection implements SelectionStrategy {
+public class OldRandomSelection implements OldSelectionStrategy {
 
 	/**
 	 * Strategy that the player uses to expand a node.
 	 */
-	ExpansionStrategy expansionStrategy;
+	OldExpansionStrategy expansionStrategy;
 
 	/**
 	 * Strategy that the player uses to perform play-out from a node.
 	 */
-	PlayoutStrategy playoutStrategy;
+	OldPlayoutStrategy playoutStrategy;
 
 	Random random;
 
 	/**
 	 *
 	 */
-	public RandomSelection(ExpansionStrategy expansionStrategy, PlayoutStrategy playoutStrategy) {
+	public OldRandomSelection(OldExpansionStrategy expansionStrategy, OldPlayoutStrategy playoutStrategy) {
 		this.expansionStrategy = expansionStrategy;
 		this.playoutStrategy = playoutStrategy;
 		this.random = new Random();

@@ -16,8 +16,8 @@ import org.ggp.base.util.statemachine.exceptions.MoveDefinitionException;
 import org.ggp.base.util.statemachine.exceptions.StateMachineException;
 import org.ggp.base.util.statemachine.exceptions.TransitionDefinitionException;
 
-import csironi.ggp.course.MCTS.finalMoveChioce.FinalMoveChoiceStrategy;
-import csironi.ggp.course.MCTS.selection.SelectionStrategy;
+import csironi.ggp.course.MCTS.finalMoveChioce.OldFinalMoveChoiceStrategy;
+import csironi.ggp.course.MCTS.selection.OldSelectionStrategy;
 
 /**
  * @author C.Sironi
@@ -28,13 +28,13 @@ public class MCTSController {
 	/**
 	 * Strategy that the player uses to perform selection (e.g. random, UCT, ...).
 	 */
-	SelectionStrategy selectionStrategy;
+	OldSelectionStrategy selectionStrategy;
 
 	/**
 	 * Strategy that the player uses at the end of its turn to choose the move to be sent to the game manager
 	 * (e.g. pick the action with highest number of visits, or the action with highest average score,...).
 	 */
-	FinalMoveChoiceStrategy finalMoveChoiceStrategy;
+	OldFinalMoveChoiceStrategy finalMoveChoiceStrategy;
 
 	/**
 	 * Constructor that initializes the selection and the final move choice strategies.
@@ -43,7 +43,7 @@ public class MCTSController {
 	 * @param finalMoveChoiceStrategy the strategy that the player uses at the end of its
 	 * turn to choose the move to be sent to the game manager.
 	 */
-	public MCTSController(SelectionStrategy selectionStrategy, FinalMoveChoiceStrategy finalMoveChoiceStrategy) {
+	public MCTSController(OldSelectionStrategy selectionStrategy, OldFinalMoveChoiceStrategy finalMoveChoiceStrategy) {
 
 		this.selectionStrategy = selectionStrategy;
 
