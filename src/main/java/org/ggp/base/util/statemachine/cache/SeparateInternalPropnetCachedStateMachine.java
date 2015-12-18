@@ -105,7 +105,7 @@ public final class SeparateInternalPropnetCachedStateMachine extends InternalPro
 	}
 
 	@Override
-	public InternalPropnetMachineState getInternalNextState(InternalPropnetMachineState state, List<InternalPropnetMove> moves) throws TransitionDefinitionException{
+	public InternalPropnetMachineState getInternalNextState(InternalPropnetMachineState state, List<InternalPropnetMove> moves){
 		PropnetEntry entry = getPropnetEntry(state);
 		synchronized (entry){
 			if (!entry.nexts.containsKey(moves)){

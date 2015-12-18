@@ -61,7 +61,7 @@ public abstract class InternalPropnetStateMachine extends StateMachine{
 	/**
 	 * Computes the next state given a state and the list of moves.
 	 */
-	public abstract InternalPropnetMachineState getInternalNextState(InternalPropnetMachineState state, List<InternalPropnetMove> moves) throws TransitionDefinitionException;
+	public abstract InternalPropnetMachineState getInternalNextState(InternalPropnetMachineState state, List<InternalPropnetMove> moves);
 
 	/***************** Extra methods to replace the ones offered by the StateMahcine *****************/
 
@@ -114,6 +114,34 @@ public abstract class InternalPropnetStateMachine extends StateMachine{
     }
 
     /**
+     * Returns a state derived from repeatedly making random joint moves
+     * until reaching the end of the game or the maximum given depth.
+     *
+     * @param theDepth an integer array, the 0th element of which will be set to
+     * the number of state changes that were made to reach the returned state.
+     * @param maxDepth the maximum depth of the tree that this method must explore.
+     *
+     * @throws TransitionDefinitionException indicates an error in either the
+     * game description or the StateMachine implementation.
+     * @throws MoveDefinitionException if a role has no legal moves. This indicates
+     * an error in either the game description or the StateMachine implementation.
+     * @throws StateMachineException if it was not possible to completely perform a
+     * playout of the game because of an error that occurred in the state machine and
+     * couldn't be handled.
+     */
+	public InternalPropnetMachineState performLimitedDepthCharge(InternalPropnetMachineState state, final int[] theDepth, int maxDepth) throws TransitionDefinitionException, MoveDefinitionException, StateMachineException {
+        int nDepth = 0;
+
+        while(nDepth < maxDepth && !isTerminal(state)) {
+            nDepth++;
+            state = getInternalNextState(state, getRandomJointMove(state));
+        }
+        if(theDepth != null)
+            theDepth[0] = nDepth;
+        return state;
+    }
+
+    /**
      * Like performDepthCharge() method, but this one checks after visiting each node
      * if it has been interrupted. If so it makes sure that the array theDepth contains
      * the currently reached depth and returns null as terminal state.
@@ -139,7 +167,7 @@ public abstract class InternalPropnetStateMachine extends StateMachine{
 
 				ConcurrencyUtils.checkForInterruption();
 			}
-        } catch (InterruptedException | TransitionDefinitionException | MoveDefinitionException e) {
+        } catch (InterruptedException | MoveDefinitionException e) {
 			// This method can return a consistent result even if it has not completed execution
 			// so the InterruptedException is not re-thrown
 			if(theDepth != null)

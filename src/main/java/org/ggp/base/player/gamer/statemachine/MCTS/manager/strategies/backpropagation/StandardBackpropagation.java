@@ -1,11 +1,8 @@
 package org.ggp.base.player.gamer.statemachine.MCTS.manager.strategies.backpropagation;
 
-import java.util.List;
-
-import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.DUCTActionsStatistics;
+import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.DUCTMove;
+import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.DUCTJointMove;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.InternalPropnetDUCTMCTreeNode;
-import org.ggp.base.util.logging.GamerLogger;
-import org.ggp.base.util.statemachine.inernalPropnetStructure.InternalPropnetMove;
 
 public class StandardBackpropagation implements BackpropagationStrategy {
 
@@ -14,22 +11,17 @@ public class StandardBackpropagation implements BackpropagationStrategy {
 	}
 
 	@Override
-	public void update(InternalPropnetDUCTMCTreeNode node, List<InternalPropnetMove> jointMove, int[] goals) {
+	public void update(InternalPropnetDUCTMCTreeNode node, DUCTJointMove ductJointMove, int[] goals) {
 
 		node.incrementTotVisits();
 
-		DUCTActionsStatistics[] stats = node.getActionsStatistics();
+		DUCTMove[][] actions = node.getActions();
 
-		for(int i = 0; i < stats.length; i++){
-			// Look for the index of the move of the player in the list of legal moves
-			int moveIndex = stats[i].getLegalMoves().indexOf(jointMove.get(i));
-			if(moveIndex == -1){
-				GamerLogger.log("MCTSManager", "MCTS selected a non-legal move for a player.");
-				throw new RuntimeException("MCTS selected a non-legal move for a player.");
-			}
+		int[] moveIndices = ductJointMove.getMovesIndices();
 
-			stats[i].getScores()[moveIndex] += goals[i];
-			stats[i].getVisits()[moveIndex]++;
+		for(int i = 0; i < actions.length; i++){
+			actions[i][moveIndices[i]].incrementScoreSum(goals[i]);
+			actions[i][moveIndices[i]].incrementVisits();
 		}
 
 	}

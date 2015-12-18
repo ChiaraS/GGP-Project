@@ -4,7 +4,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
 
-import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.DUCTActionsStatistics;
+import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.DUCTMove;
+import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.DUCTJointMove;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.InternalPropnetDUCTMCTreeNode;
 import org.ggp.base.util.statemachine.inernalPropnetStructure.InternalPropnetMove;
 
@@ -12,17 +13,23 @@ public class DUCTSelection implements SelectionStrategy {
 
 	private Random random;
 
+	private double uctOffset;
+
 	private double c;
 
-	public DUCTSelection(Random random, double c) {
+	public DUCTSelection(Random random, double uctOffset, double c) {
 		this.random = random;
+		this.uctOffset = uctOffset;
 		this.c = c;
 	}
 
 	@Override
-	public List<InternalPropnetMove> select(InternalPropnetDUCTMCTreeNode currentNode) {
+	public DUCTJointMove select(InternalPropnetDUCTMCTreeNode currentNode) {
+
+		DUCTMove[][] actionsStats = currentNode.getActions();
 
 		List<InternalPropnetMove> selectedJointMove = new ArrayList<InternalPropnetMove>();
+		int[] movesIndices = new int[actionsStats.length];
 
 		double maxDUCTvalue;
 		double DUCTvalue;
@@ -30,39 +37,40 @@ public class DUCTSelection implements SelectionStrategy {
 		int nodeVisits = currentNode.getTotVisits();
 
 		// For each role check the statistics and pick an action
-		for(DUCTActionsStatistics stats : currentNode.getActionsStatistics()){
+		for(int i = 0; i < actionsStats.length; i++){
 
-			List<Integer> selectedMovesIndices = new ArrayList<Integer>();
-
+			// Compute UCT value for all actions
 			maxDUCTvalue = -1;
 
-			List<InternalPropnetMove> legalMoves = stats.getLegalMoves();
-			int[] scores = stats.getScores();
-			int[] visits = stats.getVisits();
-
 			// For each legal action check the DUCTvalue
-			for(int i = 0; i < legalMoves.size(); i++){
-				// Compute the DUCT value
-				DUCTvalue = this.computeDUCTvalue(scores[i], visits[i], nodeVisits);
+			for(int j = 0; j < actionsStats[i].length; j++){
 
-				// If it's higher than the current maximum one, replace the max value and delete all best moves found so far
+				// Compute the DUCT value
+				DUCTvalue = this.computeDUCTvalue(actionsStats[i][j].getScoreSum(), actionsStats[i][j].getVisits(), nodeVisits);
+
+				actionsStats[i][j].setUct(DUCTvalue);
+
+				// If it's higher than the current maximum one, replace the max value
 				if(DUCTvalue > maxDUCTvalue){
 					maxDUCTvalue = DUCTvalue;
-					selectedMovesIndices.clear();
-					selectedMovesIndices.add(new Integer(i));
-				}else if(DUCTvalue == maxDUCTvalue){
-					selectedMovesIndices.add(new Integer(i));
 				}
 			}
 
-			if(selectedMovesIndices.size() > 1){
-				selectedJointMove.add(legalMoves.get(selectedMovesIndices.get(this.random.nextInt(selectedMovesIndices.size()))));
-			}else{
-				selectedJointMove.add(legalMoves.get(selectedMovesIndices.get(0)));
+			// Now that we have the maximum UCT value we can look for all actions that have their UCT value
+			// in the interval [maxDUCTvalue-offset, maxDUCTvalue]
+			List<Integer> selectedMovesIndices = new ArrayList<Integer>();
+
+			for(int j = 0; j < actionsStats[i].length; j++){
+				if(actionsStats[i][j].getUct() >= (maxDUCTvalue-this.uctOffset)){
+					selectedMovesIndices.add(new Integer(j));
+				}
 			}
+
+			movesIndices[i] = selectedMovesIndices.get(this.random.nextInt(selectedMovesIndices.size())).intValue();
+			selectedJointMove.add(actionsStats[i][movesIndices[i]].getTheMove());
 		}
 
-		return selectedJointMove;
+		return new DUCTJointMove(selectedJointMove, movesIndices);
 	}
 
 	private double computeDUCTvalue(int score, int actionVisits, int nodeVisits){

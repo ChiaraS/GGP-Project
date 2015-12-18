@@ -18,7 +18,6 @@ import org.ggp.base.util.statemachine.Role;
 import org.ggp.base.util.statemachine.exceptions.GoalDefinitionException;
 import org.ggp.base.util.statemachine.exceptions.MoveDefinitionException;
 import org.ggp.base.util.statemachine.exceptions.StateMachineInitializationException;
-import org.ggp.base.util.statemachine.exceptions.TransitionDefinitionException;
 import org.ggp.base.util.statemachine.implementation.prover.query.ProverQueryBuilder;
 import org.ggp.base.util.statemachine.inernalPropnetStructure.InternalPropnetMachineState;
 import org.ggp.base.util.statemachine.inernalPropnetStructure.InternalPropnetMove;
@@ -251,7 +250,7 @@ public class SeparateInternalPropnetStateMachine extends InternalPropnetStateMac
 	 * If the state is not an extended propnet state, it is first transformed into one.
 	 */
 	@Override
-	public MachineState getNextState(MachineState state, List<Move> moves)throws TransitionDefinitionException {
+	public MachineState getNextState(MachineState state, List<Move> moves){
 		return this.internalStateToState(this.getInternalNextState(this.stateToInternalState(state), this.movesToInternalMoves(moves)));
 	}
 
@@ -259,7 +258,7 @@ public class SeparateInternalPropnetStateMachine extends InternalPropnetStateMac
 	 * Computes the next state given a state and the list of moves.
 	 */
 	@Override
-	public InternalPropnetMachineState getInternalNextState(InternalPropnetMachineState state, List<InternalPropnetMove> moves) throws TransitionDefinitionException {
+	public InternalPropnetMachineState getInternalNextState(InternalPropnetMachineState state, List<InternalPropnetMove> moves){
 		// Mark base propositions according to state.
 		this.markBases(state);
 

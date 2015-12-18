@@ -107,7 +107,7 @@ public class DUCTMCTSSpeedTest {
 	    for(String gameKey : theRepository.getGameKeys()) {
 	        if(gameKey.contains("laikLee")) continue;
 
-	        if(gameKey.equals("ticTacHeaven")) continue;
+	        //if(gameKey.equals("ticTacHeaven")) continue;
 
 	        // TODO: change code so that if there is only one game to test we won't run through the whole sequence of keys.
 	        if(gameToTest != null && !gameKey.equals(gameToTest)) continue;

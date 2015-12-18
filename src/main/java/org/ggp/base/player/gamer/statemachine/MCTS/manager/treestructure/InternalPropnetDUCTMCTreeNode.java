@@ -1,21 +1,18 @@
 package org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure;
 
-import java.util.List;
-
-import org.ggp.base.util.statemachine.inernalPropnetStructure.InternalPropnetMove;
 
 
 public class InternalPropnetDUCTMCTreeNode{
 
 	/**
-	 * List of all possible joint moves that haven't been visited yet.
-	 */
-	private List<List<InternalPropnetMove>> unvisitedJointMoves;
-
-	/**
 	 * List of the actions' statistics for each role in the state corresponding to this node.
 	 */
-	private DUCTActionsStatistics[] actionsStatistics;
+	private DUCTMove[][] actions;
+
+	/**
+	 * Number of unexplored moves for each player.
+	 */
+	private int[] unexploredMovesCount;
 
 	/**
 	 * Goal for every role in the state (memorized only if the state corresponding to this tree node is terminal.
@@ -24,19 +21,24 @@ public class InternalPropnetDUCTMCTreeNode{
 
 	private int totVisits;
 
-	public InternalPropnetDUCTMCTreeNode(List<List<InternalPropnetMove>> unvisitedJointMoves, DUCTActionsStatistics[] actionsStatistics, int[] goals) {
-		this.unvisitedJointMoves = unvisitedJointMoves;
-		this.actionsStatistics = actionsStatistics;
+	public InternalPropnetDUCTMCTreeNode(DUCTMove[][] actions, int[] goals) {
+		this.actions = actions;
+		this.unexploredMovesCount = new int[actions.length];
+
+		for(int i = 0; i < actions.length; i++){
+			this.unexploredMovesCount[i] = actions[i].length;
+		}
+
 		this.goals = goals;
 		this.totVisits = 0;
 	}
 
-	public List<List<InternalPropnetMove>> getUnvisitedJointMoves(){
-		return this.unvisitedJointMoves;
+	public DUCTMove[][] getActions(){
+		return this.actions;
 	}
 
-	public DUCTActionsStatistics[] getActionsStatistics(){
-		return this.actionsStatistics;
+	public int[] getUnexploredMovesCount(){
+		return this.unexploredMovesCount;
 	}
 
 	public int[] getGoals(){
