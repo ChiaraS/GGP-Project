@@ -4,8 +4,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
 
-import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.DUCTMove;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.DUCTJointMove;
+import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.DUCTMove;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.InternalPropnetDUCTMCTreeNode;
 import org.ggp.base.util.statemachine.inernalPropnetStructure.InternalPropnetMove;
 
@@ -33,20 +33,20 @@ public class RandomExpansion implements ExpansionStrategy {
 	@Override
 	public DUCTJointMove expand(InternalPropnetDUCTMCTreeNode node){
 
-		DUCTMove[][] actions = node.getActions();
+		DUCTMove[][] moves = node.getMoves();
 		int[] unexploredMovesCount = node.getUnexploredMovesCount();
 
 		List<InternalPropnetMove> jointMove = new ArrayList<InternalPropnetMove>();
-		int[] movesIndices = new int[actions.length];
+		int[] movesIndices = new int[moves.length];
 
 		// For each role...
-		for(int i = 0; i < actions.length; i++){
-			// ...if all actions have been explored...
+		for(int i = 0; i < moves.length; i++){
+			// ...if all moves have been explored...
 			if(unexploredMovesCount[i] == 0){
 				// ...select a random one,...
-				movesIndices[i] = this.random.nextInt(actions[i].length);
-				jointMove.add(actions[i][movesIndices[i]].getTheMove());
-			}else{ // ...otherwise, if at least one action is still unexplored...
+				movesIndices[i] = this.random.nextInt(moves[i].length);
+				jointMove.add(moves[i][movesIndices[i]].getTheMove());
+			}else{ // ...otherwise, if at least one move is still unexplored...
 				//...select a random one among the unexplored ones.
 				int unexploredIndex = this.random.nextInt(unexploredMovesCount[i]);
 
@@ -54,13 +54,13 @@ public class RandomExpansion implements ExpansionStrategy {
 
 				while(unexploredIndex > -1){
 					moveIndex++;
-					if(actions[i][moveIndex].getVisits() == 0){
+					if(moves[i][moveIndex].getVisits() == 0){
 						unexploredIndex--;
 					}
 				}
 
 				movesIndices[i] = moveIndex;
-				jointMove.add(actions[i][movesIndices[i]].getTheMove());
+				jointMove.add(moves[i][movesIndices[i]].getTheMove());
 				unexploredMovesCount[i]--;
 			}
 		}

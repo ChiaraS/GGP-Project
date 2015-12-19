@@ -179,4 +179,39 @@ public final class SeparateInternalPropnetCachedStateMachine extends InternalPro
         return "PnCache(null)";
     }
 
+	@Override
+	public InternalPropnetMachineState stateToInternalState(MachineState state) {
+		return this.backingStateMachine.stateToInternalState(state);
+	}
+
+	@Override
+	public MachineState internalStateToState(InternalPropnetMachineState state) {
+		return this.backingStateMachine.internalStateToState(state);
+	}
+
+	@Override
+	public Role internalRoleToRole(InternalPropnetRole role) {
+		return this.backingStateMachine.internalRoleToRole(role);
+	}
+
+	@Override
+	public InternalPropnetRole roleToInternalRole(Role role) {
+		return this.backingStateMachine.roleToInternalRole(role);
+	}
+
+	@Override
+	public Move internalMoveToMove(InternalPropnetMove move) {
+		return this.backingStateMachine.internalMoveToMove(move);
+	}
+
+	@Override
+	public InternalPropnetMove moveToInternalMove(Move move) {
+		return this.backingStateMachine.moveToInternalMove(move);
+	}
+
+	@Override
+	public List<InternalPropnetMove> movesToInternalMoves(List<Move> moves) {
+		return this.backingStateMachine.movesToInternalMoves(moves);
+	}
+
 }

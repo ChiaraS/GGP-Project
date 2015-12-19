@@ -4,7 +4,7 @@ import java.util.List;
 
 import org.ggp.base.util.statemachine.inernalPropnetStructure.InternalPropnetMove;
 
-public class DUCTActionsStatistics{
+public class DUCTMovesStatistics{
 
 	private List<InternalPropnetMove> moves;
 
@@ -17,7 +17,7 @@ public class DUCTActionsStatistics{
 	// the value of all actions but just update this list every time you do back-propagation.
 	// private List<Integer> topMoveIndices;
 
-	public DUCTActionsStatistics(List<InternalPropnetMove> moves) {
+	public DUCTMovesStatistics(List<InternalPropnetMove> moves) {
 		this.moves = moves;
 		this.visits = new int[this.moves.size()];
 		this.scores = new int[this.moves.size()];

@@ -15,13 +15,13 @@ public class StandardBackpropagation implements BackpropagationStrategy {
 
 		node.incrementTotVisits();
 
-		DUCTMove[][] actions = node.getActions();
+		DUCTMove[][] moves = node.getMoves();
 
 		int[] moveIndices = ductJointMove.getMovesIndices();
 
-		for(int i = 0; i < actions.length; i++){
-			actions[i][moveIndices[i]].incrementScoreSum(goals[i]);
-			actions[i][moveIndices[i]].incrementVisits();
+		for(int i = 0; i < moves.length; i++){
+			moves[i][moveIndices[i]].incrementScoreSum(goals[i]);
+			moves[i][moveIndices[i]].incrementVisits();
 		}
 
 	}

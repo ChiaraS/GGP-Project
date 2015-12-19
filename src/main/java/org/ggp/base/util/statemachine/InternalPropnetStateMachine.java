@@ -63,6 +63,31 @@ public abstract class InternalPropnetStateMachine extends StateMachine{
 	 */
 	public abstract InternalPropnetMachineState getInternalNextState(InternalPropnetMachineState state, List<InternalPropnetMove> moves);
 
+
+	/************************************** Translation methods **************************************/
+
+	public abstract InternalPropnetMachineState stateToInternalState(MachineState state);
+
+	public abstract MachineState internalStateToState(InternalPropnetMachineState state);
+
+	public abstract Role internalRoleToRole(InternalPropnetRole role);
+
+	public abstract InternalPropnetRole roleToInternalRole(Role role);
+
+	public abstract Move internalMoveToMove(InternalPropnetMove move);
+
+	public abstract InternalPropnetMove moveToInternalMove(Move move);
+
+	/**
+	 * Useful when we need to translate a joint move. Faster than translating the moves one by one.
+	 *
+	 * @param move
+	 * @param roleIndex
+	 * @return
+	 */
+	public abstract List<InternalPropnetMove> movesToInternalMoves(List<Move> moves);
+
+
 	/***************** Extra methods to replace the ones offered by the StateMahcine *****************/
 
     /**

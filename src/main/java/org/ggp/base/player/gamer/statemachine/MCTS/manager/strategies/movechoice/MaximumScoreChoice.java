@@ -6,7 +6,6 @@ import java.util.Random;
 
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.DUCTMove;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.InternalPropnetDUCTMCTreeNode;
-import org.ggp.base.util.statemachine.inernalPropnetStructure.InternalPropnetMove;
 import org.ggp.base.util.statemachine.inernalPropnetStructure.InternalPropnetRole;
 
 public class MaximumScoreChoice implements MoveChoiceStrategy {
@@ -18,16 +17,16 @@ public class MaximumScoreChoice implements MoveChoiceStrategy {
 	}
 
 	@Override
-	public InternalPropnetMove chooseBestMove(InternalPropnetDUCTMCTreeNode initialNode, InternalPropnetRole myRole) {
+	public DUCTMove chooseBestMove(InternalPropnetDUCTMCTreeNode initialNode, InternalPropnetRole myRole) {
 
-		DUCTMove[] myMovesStats = initialNode.getActions()[myRole.getIndex()];
+		DUCTMove[] myMovesStats = initialNode.getMoves()[myRole.getIndex()];
 
 		List<Integer> chosenMovesIndices = new ArrayList<Integer>();
 
 		double maxAvgScore = -1;
 		double currentAvgScore;
 
-		// For each legal action check the average score
+		// For each legal move check the average score
 		for(int i = 0; i < myMovesStats.length; i++){
 			// Compute average score
 			currentAvgScore = (double) myMovesStats[i].getScoreSum() / ((double) myMovesStats[i].getVisits());
@@ -44,7 +43,7 @@ public class MaximumScoreChoice implements MoveChoiceStrategy {
 
 		int bestMoveIndex = chosenMovesIndices.get(this.random.nextInt(chosenMovesIndices.size()));
 
-		return myMovesStats[bestMoveIndex].getTheMove();
+		return myMovesStats[bestMoveIndex];
 	}
 
 }

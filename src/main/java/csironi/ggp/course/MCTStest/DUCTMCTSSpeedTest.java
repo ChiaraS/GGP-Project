@@ -12,6 +12,7 @@ import org.ggp.base.player.gamer.statemachine.MCTS.manager.strategies.expansion.
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.strategies.movechoice.MaximumScoreChoice;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.strategies.playout.RandomPlayout;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.strategies.selection.DUCTSelection;
+import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.DUCTMove;
 import org.ggp.base.util.game.GameRepository;
 import org.ggp.base.util.gdl.grammar.Gdl;
 import org.ggp.base.util.gdl.grammar.GdlPool;
@@ -22,6 +23,7 @@ import org.ggp.base.util.propnet.architecture.separateExtendedState.immutable.Im
 import org.ggp.base.util.propnet.creationManager.SeparatePropnetCreationManager;
 import org.ggp.base.util.propnet.state.ImmutableSeparatePropnetState;
 import org.ggp.base.util.statemachine.InternalPropnetStateMachine;
+import org.ggp.base.util.statemachine.Move;
 import org.ggp.base.util.statemachine.exceptions.StateMachineInitializationException;
 import org.ggp.base.util.statemachine.implementation.propnet.SeparateInternalPropnetStateMachine;
 
@@ -101,7 +103,7 @@ public class DUCTMCTSSpeedTest {
 		InternalPropnetStateMachine thePropnetMachine;
 
 		GamerLogger.setSpilloverLogfile("DUCTMCTSSpeedTestTable.csv");
-	    GamerLogger.log(FORMAT.CSV_FORMAT, "DUCTMCTSSpeedTestTable", "Game key;PN Initialization Time (ms);PN Construction Time (ms);SM initialization time;Test Duration (ms);Iterations;Visited Nodes;Iterations/second;Nodes/second;");
+	    GamerLogger.log(FORMAT.CSV_FORMAT, "DUCTMCTSSpeedTestTable", "Game key;PN Initialization Time (ms);PN Construction Time (ms);SM initialization time;Test Duration (ms);Iterations;Visited Nodes;Iterations/second;Nodes/second;Chosen move;Scores sum;Visits;AverageScore");
 
 	    GameRepository theRepository = GameRepository.getDefaultRepository();
 	    for(String gameKey : theRepository.getGameKeys()) {
@@ -185,6 +187,10 @@ public class DUCTMCTSSpeedTest {
 	        int visitedNodes = -1;
 	        double iterationsPerSecond = -1;
 	        double nodesPerSecond = -1;
+	        Move chosenMove = null;
+	        int scoresSum = -1;
+	        int visits = -1;
+	        double averageScore = -1;
 
 	        // Try to initialize the propnet state machine.
 	        // If initialization fails, skip the test.
@@ -203,16 +209,24 @@ public class DUCTMCTSSpeedTest {
 
 		        Random r = new Random();
 		        double c = 0.7;
+		        double uctOffset = 0.01;
+		        int gameStep = 1;
 
-		        InternalPropnetMCTSManager MCTSmanager = new InternalPropnetMCTSManager(new DUCTSelection(r, c),
+		        InternalPropnetMCTSManager MCTSmanager = new InternalPropnetMCTSManager(new DUCTSelection(r, uctOffset, c),
 		        		new RandomExpansion(r), new RandomPlayout(thePropnetMachine), new StandardBackpropagation(),
-		        		new MaximumScoreChoice(r), thePropnetMachine, thePropnetMachine.getInternalRoles()[0]);
+		        		new MaximumScoreChoice(r), thePropnetMachine, thePropnetMachine.getInternalRoles()[0], 2);
 
 		        long testStart = System.currentTimeMillis();
 
 		        try{
-		        	MCTSmanager.getBestMove(thePropnetMachine.getInternalInitialState(), testStart + testTime);
+		        	DUCTMove finalMove = MCTSmanager.getBestMove(thePropnetMachine.getInternalInitialState(), testStart + testTime, gameStep);
 
+		        	chosenMove = thePropnetMachine.internalMoveToMove(finalMove.getTheMove());
+		 	        scoresSum = finalMove.getScoreSum();
+		 	        visits = finalMove.getVisits();
+		 	        if(visits != 0){
+		 	        	averageScore = (double) scoresSum / (double) visits;
+		 	        }
 		        }catch(Exception e){
 		        	GamerLogger.logError("DUCTMCTSSpeedTest", "MCTS failed during execution. Impossible to continue the speed test. Cause: [" + e.getClass().getSimpleName() + "] " + e.getMessage() );
 		        	GamerLogger.logStackTrace("DUCTMCTSSpeedTest", e);
@@ -237,7 +251,7 @@ public class DUCTMCTSSpeedTest {
 
 	        GamerLogger.stopFileLogging();
 
-	        GamerLogger.log(FORMAT.CSV_FORMAT, "DUCTMCTSSpeedTestTable", gameKey + ";" + manager.getTotalInitTime() + ";" + manager.getPropnetConstructionTime() + ";" + initializationTime + ";" + testDuration + ";" + iterations + ";" + visitedNodes + ";" + iterationsPerSecond + ";" + nodesPerSecond + ";");
+	        GamerLogger.log(FORMAT.CSV_FORMAT, "DUCTMCTSSpeedTestTable", gameKey + ";" + manager.getTotalInitTime() + ";" + manager.getPropnetConstructionTime() + ";" + initializationTime + ";" + testDuration + ";" + iterations + ";" + visitedNodes + ";" + iterationsPerSecond + ";" + nodesPerSecond + ";" + chosenMove + ";" + scoresSum + ";" + visits + ";" + averageScore + ";");
 
 	        /***************************************/
 	        System.gc();

@@ -5,9 +5,9 @@ package org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure;
 public class InternalPropnetDUCTMCTreeNode{
 
 	/**
-	 * List of the actions' statistics for each role in the state corresponding to this node.
+	 * List of the moves' statistics for each role in the state corresponding to this node.
 	 */
-	private DUCTMove[][] actions;
+	private DUCTMove[][] moves;
 
 	/**
 	 * Number of unexplored moves for each player.
@@ -21,20 +21,26 @@ public class InternalPropnetDUCTMCTreeNode{
 
 	private int totVisits;
 
-	public InternalPropnetDUCTMCTreeNode(DUCTMove[][] actions, int[] goals) {
-		this.actions = actions;
-		this.unexploredMovesCount = new int[actions.length];
+	/**
+	 * Keeps track of the last game turn for which this node was visited.
+	 */
+	private int gameStepStamp;
 
-		for(int i = 0; i < actions.length; i++){
-			this.unexploredMovesCount[i] = actions[i].length;
+	public InternalPropnetDUCTMCTreeNode(DUCTMove[][] moves, int[] goals) {
+		this.moves = moves;
+		this.unexploredMovesCount = new int[moves.length];
+
+		for(int i = 0; i < moves.length; i++){
+			this.unexploredMovesCount[i] = moves[i].length;
 		}
 
 		this.goals = goals;
 		this.totVisits = 0;
+		this.gameStepStamp = -1;
 	}
 
-	public DUCTMove[][] getActions(){
-		return this.actions;
+	public DUCTMove[][] getMoves(){
+		return this.moves;
 	}
 
 	public int[] getUnexploredMovesCount(){
@@ -51,5 +57,13 @@ public class InternalPropnetDUCTMCTreeNode{
 
 	public void incrementTotVisits(){
 		this.totVisits++;
+	}
+
+	public int getGameStepStamp() {
+		return this.gameStepStamp;
+	}
+
+	public void setGameStepStamp(int gameStepStamp) {
+		this.gameStepStamp = gameStepStamp;
 	}
 }
