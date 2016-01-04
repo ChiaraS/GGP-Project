@@ -68,9 +68,14 @@ public class InternalPropnetMCTSManager extends MCTSManager {
 	private int iterations;
 
 	/**
-	 * Number of visited states.
+	 * Number of all visited states since the start of the search.
 	 */
 	private int visitedNodes;
+
+	/**
+	 * Number of visited nodes in the current iteration so far.
+	 */
+	private int currentIterationVisitedNodes;
 
 	/**
 	 *
@@ -78,7 +83,7 @@ public class InternalPropnetMCTSManager extends MCTSManager {
 	public InternalPropnetMCTSManager(SelectionStrategy selectionStrategy, ExpansionStrategy expansionStrategy,
 			PlayoutStrategy playoutStrategy, BackpropagationStrategy backpropagationStrategy,
 			MoveChoiceStrategy moveChoiceStrategy, InternalPropnetStateMachine theMachine,
-			InternalPropnetRole myRole, int gameStepOffset) {
+			InternalPropnetRole myRole, int gameStepOffset, int maxSearchDepth) {
 
 		this.selectionStrategy = selectionStrategy;
 		this.expansionStrategy = expansionStrategy;
@@ -88,6 +93,7 @@ public class InternalPropnetMCTSManager extends MCTSManager {
 		this.theMachine = theMachine;
 		this.myRole = myRole;
 		this.transpositionTable = new DUCTTranspositionTable(gameStepOffset);
+		this.maxSearchDepth = maxSearchDepth;
 	}
 
 	public DUCTMove getBestMove(InternalPropnetMachineState initialState, long timeout, int gameStep) throws MoveDefinitionException{
@@ -108,8 +114,10 @@ public class InternalPropnetMCTSManager extends MCTSManager {
 		}
 
 		while(System.currentTimeMillis() < timeout){
+			this.currentIterationVisitedNodes = 0;
 			this.search(initialState, initialNode);
 			this.iterations++;
+			this.visitedNodes += this.currentIterationVisitedNodes;
 
 			//System.out.println("Iteration: " + this.iterations);
 		}
@@ -119,12 +127,14 @@ public class InternalPropnetMCTSManager extends MCTSManager {
 
 	private int[] search(InternalPropnetMachineState currentState, InternalPropnetDUCTMCTreeNode currentNode) throws MoveDefinitionException{
 
+		int[] goals;
+
 		// Check if the state is terminal, and if so, return the final goals (saved in the node) for all players.
 		if(this.theMachine.isTerminal(currentState)){
 
 			//System.out.println("Reached terminal state.");
 
-			int[] goals = currentNode.getGoals();
+			goals = currentNode.getGoals();
 			// If a state in the tree is terminal, it must record the goals for every player.
 			// If it doesn't there must be a programming error.
 			if(goals == null){
@@ -135,68 +145,87 @@ public class InternalPropnetMCTSManager extends MCTSManager {
 		}
 
 		// If the state is not terminal, it can be visited (i.e. one of its moves explored) only if the depth limit has not been reached.
-
-		if(this.visitedNodes >= this.maxSearchDepth){
+		if(this.currentIterationVisitedNodes >= this.maxSearchDepth){
 			return this.getTieGoals();
 		}
 
-		this.visitedNodes++;
+		this.currentIterationVisitedNodes++;
 
-		//System.out.println("Node: " + this.visitedNodes);
+		//System.out.println("Node: " + this.currentIterationVisitedNodes);
+
+		DUCTJointMove ductJointMove;
+		InternalPropnetMachineState nextState;
+		InternalPropnetDUCTMCTreeNode nextNode;
 
 		// If the state is not terminal we must check if we have to expand it or if we have to continue the selection.
-		if(this.expansionStrategy.expansionRequired(currentNode)){
-			DUCTJointMove ductJointMove = this.expansionStrategy.expand(currentNode);
+		// Depending on what needs to be done, get the joint move to be expanded/selected.
+		boolean expansionRequired = this.expansionStrategy.expansionRequired(currentNode);
+		if(expansionRequired){
 
-			//System.out.println("Expanding move: " + jointMove);
+			//System.out.println("Expanding.");
 
-			InternalPropnetMachineState stateToAdd = this.theMachine.getInternalNextState(currentState, ductJointMove.getJointMove());
-			InternalPropnetDUCTMCTreeNode nodeToAdd = this.transpositionTable.getNode(stateToAdd);
-			if(nodeToAdd == null){
-				nodeToAdd = this.createNewNode(stateToAdd);
-				this.transpositionTable.putNode(stateToAdd, nodeToAdd);
-			}
+			ductJointMove = this.expansionStrategy.expand(currentNode);
+		}else{
+
+			//System.out.println("Selecting.");
+
+			ductJointMove = this.selectionStrategy.select(currentNode);
+		}
+
+		// Get the next state according to the joint move...
+		nextState = this.theMachine.getInternalNextState(currentState, ductJointMove.getJointMove());
+		// ...and get the corresponding MCT node from the transposition table.
+		nextNode = this.transpositionTable.getNode(nextState);
+
+		// If we cannot find such tree node we create it and add it to the table.
+		// NOTE: there are 3 situations when the next node might not be in the tree yet:
+		// 1. If we are expanding the current node, the chosen joint move will probably
+		// lead to an unexplored state (depends on the choice the expansion strategy makes
+		// and on the fact that the state might have been visited already from a different
+		// sequence of actions).
+		// 2. If the expansion doesn't look at unexplored joint moves to choose the joint
+		// move to expand, but only at unexplored single moves for each player, it might
+		// be that all single moves for each player have been explored already, but the
+		// selection picks a combination of them that has not been explored yet and the
+		// corresponding next state hasn't thus been added to the tree yet.
+		// 3. It might also be the case that the selection chooses a joint move whose
+		// corresponding state has been already visited in a previous run of the MCTS,
+		// but since the corresponding MCT node hasn't been visited in recent runs anymore
+		// it has been removed from the transposition table during the "cleaning" process.
+		if(nextNode == null){
+
+			//System.out.println("Adding new node to table: " + nextState);
+
+			nextNode = this.createNewNode(nextState);
+			this.transpositionTable.putNode(nextState, nextNode);
+		}
+
+		// Now that we have the MCT node, if we are expanding:
+		if(expansionRequired){
 			// No need to perform playout if the node is terminal, we just return the goals in the node.
 			// Otherwise we perform the playout.
-			int[] goals;
-			if(this.theMachine.isTerminal(stateToAdd)){
+			if(this.theMachine.isTerminal(nextState)){
 
-				System.out.println("Expanded state is terminal.");
+				//System.out.println("Expanded state is terminal.");
 
-				goals = nodeToAdd.getGoals();
+				goals = nextNode.getGoals();
 			}else{
-				// Check how many nodes can be visited after the current one. At this point "visitedNodes" can be at most equal
-				// to the "maxSearchDepth".
-				int availableDepth = this.maxSearchDepth - this.visitedNodes;
+				// Check how many nodes can be visited after the current one. At this point
+				// "currentIterationVisitedNodes" can be at most equal to the "maxSearchDepth".
+				int availableDepth = this.maxSearchDepth - this.currentIterationVisitedNodes;
 
 				int[] playoutVisitedNodes = new int[1];
-				// Note that if no depth is left for the playout, the playout itself will take care of returning the added
-				// state goal values (if any) or the default tie goal values.
-				goals = this.playoutStrategy.playout(stateToAdd, this.myRole, playoutVisitedNodes, availableDepth);
-				this.visitedNodes += playoutVisitedNodes[0];
+				// Note that if no depth is left for the playout, the playout itself will take care of
+				// returning the added-state goal values (if any) or the default tie goal values.
+				goals = this.playoutStrategy.playout(nextState, this.myRole, playoutVisitedNodes, availableDepth);
+				this.currentIterationVisitedNodes += playoutVisitedNodes[0];
 				//System.out.println("Node: " + this.visitedNodes);
 			}
-			this.backpropagationStrategy.update(currentNode, ductJointMove, goals);
-			return goals;
+		}else{
+			// Otherwise, if we are selecting:
+			goals = this.search(nextState, nextNode);
 		}
 
-		DUCTJointMove ductJointMove = this.selectionStrategy.select(currentNode);
-
-		//System.out.println("Selected move: " + jointMove);
-
-		InternalPropnetMachineState selectedState = this.theMachine.getInternalNextState(currentState, ductJointMove.getJointMove());
-		InternalPropnetDUCTMCTreeNode selectedNode = this.transpositionTable.getNode(selectedState);
-
-		// Get the node corresponding to the selected state. If we cannot find such tree node there must be
-		// something wrong in the implementation. The table records with no errors all the nodes corresponding
-		// to states already added to the tree. Since this method examines states already in the tree the
-		// corresponding tree node must be non-null.
-		if(selectedNode == null){
-			GamerLogger.logError("MCTSManager", "MCTS trying to perform selection on a state not yet in the tree.");
-			throw new RuntimeException("MCTS trying to perform selection on a state not yet in the tree.");
-		}
-
-		int[] goals = this.search(selectedState, selectedNode);
 		this.backpropagationStrategy.update(currentNode, ductJointMove, goals);
 		return goals;
 	}

@@ -214,7 +214,7 @@ public class DUCTMCTSSpeedTest {
 
 		        InternalPropnetMCTSManager MCTSmanager = new InternalPropnetMCTSManager(new DUCTSelection(r, uctOffset, c),
 		        		new RandomExpansion(r), new RandomPlayout(thePropnetMachine), new StandardBackpropagation(),
-		        		new MaximumScoreChoice(r), thePropnetMachine, thePropnetMachine.getInternalRoles()[0], 2);
+		        		new MaximumScoreChoice(r), thePropnetMachine, thePropnetMachine.getInternalRoles()[0], 2, 1000);
 
 		        long testStart = System.currentTimeMillis();
 

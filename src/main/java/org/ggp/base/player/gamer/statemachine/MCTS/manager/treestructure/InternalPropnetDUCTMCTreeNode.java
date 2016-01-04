@@ -28,11 +28,17 @@ public class InternalPropnetDUCTMCTreeNode{
 
 	public InternalPropnetDUCTMCTreeNode(DUCTMove[][] moves, int[] goals) {
 		this.moves = moves;
-		this.unexploredMovesCount = new int[moves.length];
 
-		for(int i = 0; i < moves.length; i++){
-			this.unexploredMovesCount[i] = moves[i].length;
+		// If this state has legal moves for the players (i.e. is not terminal),
+		// we keep track of the number of not yet visited moves for each player.
+		if(moves != null){
+			this.unexploredMovesCount = new int[moves.length];
+
+			for(int i = 0; i < moves.length; i++){
+				this.unexploredMovesCount[i] = moves[i].length;
+			}
 		}
+
 
 		this.goals = goals;
 		this.totVisits = 0;
