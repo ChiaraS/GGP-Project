@@ -98,6 +98,13 @@ public class InternalPropnetMCTSManager extends MCTSManager {
 
 	public DUCTMove getBestMove(InternalPropnetMachineState initialState, long timeout, int gameStep) throws MoveDefinitionException{
 
+
+
+		return this.moveChoiceStrategy.chooseBestMove(initialNode, this.myRole);
+	}
+
+	public void search(InternalPropnetMachineState initialState, long timeout, int gameStep)  throws MoveDefinitionException{
+
 		this.iterations = 0;
 		this.visitedNodes = 0;
 
@@ -115,17 +122,16 @@ public class InternalPropnetMCTSManager extends MCTSManager {
 
 		while(System.currentTimeMillis() < timeout){
 			this.currentIterationVisitedNodes = 0;
-			this.search(initialState, initialNode);
+			this.searchNext(initialState, initialNode);
 			this.iterations++;
 			this.visitedNodes += this.currentIterationVisitedNodes;
 
 			//System.out.println("Iteration: " + this.iterations);
 		}
 
-		return this.moveChoiceStrategy.chooseBestMove(initialNode, this.myRole);
 	}
 
-	private int[] search(InternalPropnetMachineState currentState, InternalPropnetDUCTMCTreeNode currentNode) throws MoveDefinitionException{
+	private int[] searchNext(InternalPropnetMachineState currentState, InternalPropnetDUCTMCTreeNode currentNode) {
 
 		int[] goals;
 
@@ -146,7 +152,23 @@ public class InternalPropnetMCTSManager extends MCTSManager {
 
 		// If the state is not terminal, it can be visited (i.e. one of its moves explored) only if the depth limit has not been reached.
 		if(this.currentIterationVisitedNodes >= this.maxSearchDepth){
-			return this.getTieGoals();
+
+			// The state is not terminal, but we have reached the depth limit.
+			// So we must return some goals. Try to return the goals of the non-terminal state
+			// and if they cannot be computed return default tie-goals.
+
+			// Try to get the goals of the state.
+			try{
+				goals = this.theMachine.getGoals(currentState);
+			}catch(GoalDefinitionException e){
+
+				GamerLogger.logError("MCTSManager", "Search interrupted (in the Monte Carlo tree) before reaching a treminal state. Impossible to compute real goals. Returning default tie goals.");
+				GamerLogger.logStackTrace("MCTSManager", e);
+				goals = this.getTieGoals();
+
+			}
+
+			return goals;
 		}
 
 		this.currentIterationVisitedNodes++;
@@ -223,14 +245,14 @@ public class InternalPropnetMCTSManager extends MCTSManager {
 			}
 		}else{
 			// Otherwise, if we are selecting:
-			goals = this.search(nextState, nextNode);
+			goals = this.searchNext(nextState, nextNode);
 		}
 
 		this.backpropagationStrategy.update(currentNode, ductJointMove, goals);
 		return goals;
 	}
 
-	private InternalPropnetDUCTMCTreeNode createNewNode(InternalPropnetMachineState state) throws MoveDefinitionException{
+	private !!!!/*FIX so that it doesn't throw exceptions!*/InternalPropnetDUCTMCTreeNode createNewNode(InternalPropnetMachineState state) /*throws MoveDefinitionException*/{
 		if(this.theMachine.isTerminal(state)){
 
 			int goals[];

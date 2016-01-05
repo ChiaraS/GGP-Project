@@ -3,13 +3,19 @@
  */
 package org.ggp.base.player.gamer.statemachine.MCTS;
 
+import java.util.Random;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 
 import org.ggp.base.player.gamer.exception.GamePreviewException;
 import org.ggp.base.player.gamer.statemachine.StateMachineGamer;
-import org.ggp.base.player.gamer.statemachine.MCTS.manager.MCTSManager;
+import org.ggp.base.player.gamer.statemachine.MCTS.manager.InternalPropnetMCTSManager;
+import org.ggp.base.player.gamer.statemachine.MCTS.manager.strategies.backpropagation.StandardBackpropagation;
+import org.ggp.base.player.gamer.statemachine.MCTS.manager.strategies.expansion.RandomExpansion;
+import org.ggp.base.player.gamer.statemachine.MCTS.manager.strategies.movechoice.MaximumScoreChoice;
+import org.ggp.base.player.gamer.statemachine.MCTS.manager.strategies.playout.RandomPlayout;
+import org.ggp.base.player.gamer.statemachine.MCTS.manager.strategies.selection.DUCTSelection;
 import org.ggp.base.util.game.Game;
 import org.ggp.base.util.logging.GamerLogger;
 import org.ggp.base.util.propnet.architecture.separateExtendedState.immutable.ImmutablePropNet;
@@ -24,6 +30,7 @@ import org.ggp.base.util.statemachine.exceptions.StateMachineException;
 import org.ggp.base.util.statemachine.exceptions.TransitionDefinitionException;
 import org.ggp.base.util.statemachine.implementation.propnet.SeparateInternalPropnetStateMachine;
 import org.ggp.base.util.statemachine.implementation.prover.ProverStateMachine;
+import org.ggp.base.util.statemachine.inernalPropnetStructure.InternalPropnetRole;
 
 /**
  * This player performs Decoupled UCT Monte Carlo Tree Search.
@@ -48,9 +55,24 @@ public class SlowDUCTGamer extends StateMachineGamer {
 	private long safetyMargin;
 
 	/**
-	 * The class that takes care of performing monte carlo tree search.
+	 * Game step. Keeps track of the current game step.
 	 */
-	private MCTSManager mctsManager;
+	private int gameStep;
+
+
+	/**
+	 * Parameters used by the mcts manager
+	 */
+	private double c;
+	private double uctOffset;
+	private int gameStepOffset;
+	private int maxSearchDepth;
+
+
+	/**
+	 * The class that takes care of performing Monte Carlo tree search.
+	 */
+	private InternalPropnetMCTSManager mctsManager;
 
 	/**
 	 *
@@ -58,6 +80,11 @@ public class SlowDUCTGamer extends StateMachineGamer {
 	public SlowDUCTGamer() {
 		// TODO: change code so that the parameters can be set from outside.
 		this.safetyMargin = 1000L;
+
+		this.c = 0.7;
+		this.uctOffset = 0.01;
+		this.gameStepOffset = 2;
+		this.maxSearchDepth = 1000;
 	}
 
 	/* (non-Javadoc)
@@ -128,7 +155,25 @@ public class SlowDUCTGamer extends StateMachineGamer {
 	public void stateMachineMetaGame(long timeout)
 			throws TransitionDefinitionException, MoveDefinitionException,
 			GoalDefinitionException, StateMachineException {
-		// Create the MCTS tree and start simulations
+
+		// For now the player can play only with the state machine based on the propnet.
+		// TODO: temporary solution! FIX!
+		// We throw an exception if the state machine based on the propnet couldn't be initialized.
+		if(!(this.getStateMachine() instanceof SeparateInternalPropnetStateMachine)){
+			throw new StateMachineException("Impossible to play without the state machine based on the propnet.");
+		}
+
+		this.gameStep = 0;
+
+		SeparateInternalPropnetStateMachine thePropnetMachine = (SeparateInternalPropnetStateMachine) this.getStateMachine();
+		Random r = new Random();
+		InternalPropnetRole myRole = thePropnetMachine.getInternalRoles()[thePropnetMachine.getRoleIndices().get(this.getRole())];
+
+		// Create the MCTS tree and start simulations.
+		this.mctsManager = new InternalPropnetMCTSManager(new DUCTSelection(r, uctOffset, c),
+	       		new RandomExpansion(r), new RandomPlayout(thePropnetMachine), new StandardBackpropagation(),
+	       		new MaximumScoreChoice(r), thePropnetMachine, myRole, gameStepOffset, maxSearchDepth);
+
 
 	}
 
