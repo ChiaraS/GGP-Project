@@ -237,4 +237,80 @@ public abstract class InternalPropnetStateMachine extends StateMachine{
         List<InternalPropnetMove> legals = getInternalLegalMoves(state, role);
         return legals.get(new Random().nextInt(legals.size()));
     }
+
+
+
+	public int[] getLossGoals(InternalPropnetRole myRole){
+		int[] goals;
+		int numRoles = this.getInternalRoles().length;
+		goals = new int[numRoles];
+		if(numRoles > 1){
+			for(int i = 0; i < goals.length; i++){
+				// Attention! Since this rounds the goals to the next integer, it might make a zero-sum game loose
+				// the property of being zero-sum. However, this doesn't influence our MCTS implementation since it
+				// does not assume that games are always zero-sum.
+				goals[i] = (int) Math.round(1.0 / ((double)numRoles-1.0));
+			}
+		}
+		goals[myRole.getIndex()] = 0;
+
+		return goals;
+	}
+
+	public int[] getTieGoals(){
+		int[] goals;
+		int numRoles = this.getInternalRoles().length;
+		goals = new int[numRoles];
+		for(int i = 0; i < goals.length; i++){
+			// Attention! Since this rounds the goals to the next integer, it might make a zero-sum game loose
+			// the property of being zero-sum. However, this doesn't influence our MCTS implementation.
+			goals[i] = (int) Math.round(1.0 / ((double)numRoles));
+		}
+
+		return goals;
+	}
+
+
+
+
+
+
+
+	/**
+     * Returns the goal values for each role in the given state. If and when a goal
+     * for a player cannot be computed in the state (either because of an error in
+     * the description or because the state is non-terminal and so goals haven't
+     * been defined), the corresponding goal value is set to a default tie value.
+     * The goal values are listed in the same order the roles are listed in the game
+     * rules, which is the same order in which they're returned by {@link #getRoles()}.
+     *
+     * This method is safe, meaning that it won't throw any GoalDefinitionException,
+     * but it will set default values for the goals when they cannot be computed.
+     *
+     * @param state the state for which to compute the goals.
+     */
+	/*
+    public int[] getSafeGoalsLoss(InternalPropnetMachineState state){
+    	InternalPropnetRole[] theRoles = this.getInternalRoles();
+    	int[] theGoals = new int[theRoles.length];
+        for (int i = 0; i < theRoles.length; i++) {
+            theGoals[i] = getGoal(state, theRoles[i]);
+        }
+        return theGoals;
+
+        int[] goals;
+		int numRoles = this.theMachine.getInternalRoles().length;
+		goals = new int[numRoles];
+		if(numRoles > 1){
+			for(int i = 0; i < goals.length; i++){
+				// Attention! Since this rounds the goals to the next integer, it might make a zero-sum game loose
+				// the property of being zero-sum. However, this doesn't influence our MCTS implementation since it
+				// does not assume that games are always zero-sum.
+				goals[i] = (int) Math.round(1.0 / ((double)numRoles-1.0));
+			}
+		}
+		goals[this.myRole.getIndex()] = 0;
+
+		return goals;
+    }*/
 }

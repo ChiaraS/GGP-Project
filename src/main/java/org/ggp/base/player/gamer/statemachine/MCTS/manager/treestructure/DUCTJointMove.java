@@ -29,4 +29,14 @@ public class DUCTJointMove {
 		return movesIndices;
 	}
 
+	@Override
+	public String toString(){
+		String s = "JointMove[";
+		for(int i = 0; i < this.movesIndices.length; i++){
+			s += "(I=" + movesIndices[i] + ", M=" + this.jointMove.get(i) +")";
+		}
+
+		return s;
+	}
+
 }

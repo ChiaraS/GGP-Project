@@ -50,14 +50,24 @@ public class DUCTTranspositionTable {
 	}
 
 	public void clean(int newGameStepStamp){
-		this.currentGameStepStamp = newGameStepStamp;
-		// Remove all nodes last accessed earlier than the game step (newGameStepStamp-GameStepOffset)
-		Iterator<Entry<InternalPropnetMachineState,InternalPropnetDUCTMCTreeNode>> iterator = this.transpositionTable.entrySet().iterator();
-		while(iterator.hasNext()){
-			Entry<InternalPropnetMachineState,InternalPropnetDUCTMCTreeNode> entry = iterator.next();
-			if(entry.getValue().getGameStepStamp() < (this.currentGameStepStamp-this.gameStepOffset)){
-				iterator.remove();
+
+		//System.out.println("Current TT game step: " + newGameStepStamp);
+		//System.out.println("Cleaning TT with game step: " + newGameStepStamp);
+		//System.out.println("Current TT size: " + this.transpositionTable.size());
+
+		// Clean the table only if the game-step stamp changed.
+		if(newGameStepStamp != this.currentGameStepStamp){
+			this.currentGameStepStamp = newGameStepStamp;
+			// Remove all nodes last accessed earlier than the game step (newGameStepStamp-gameStepOffset)
+			Iterator<Entry<InternalPropnetMachineState,InternalPropnetDUCTMCTreeNode>> iterator = this.transpositionTable.entrySet().iterator();
+			while(iterator.hasNext()){
+				Entry<InternalPropnetMachineState,InternalPropnetDUCTMCTreeNode> entry = iterator.next();
+				if(entry.getValue().getGameStepStamp() < (this.currentGameStepStamp-this.gameStepOffset)){
+					iterator.remove();
+				}
 			}
+
+			//System.out.println("TT size after cleaning: " + this.transpositionTable.size());
 		}
 	}
 

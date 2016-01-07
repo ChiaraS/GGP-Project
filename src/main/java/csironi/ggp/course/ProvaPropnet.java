@@ -19,6 +19,7 @@ import org.ggp.base.util.game.Game;
 import org.ggp.base.util.game.GameRepository;
 import org.ggp.base.util.gdl.grammar.Gdl;
 import org.ggp.base.util.logging.GamerLogger;
+import org.ggp.base.util.match.Match;
 import org.ggp.base.util.propnet.architecture.externalizedState.ExternalizedStateComponent;
 import org.ggp.base.util.propnet.architecture.externalizedState.components.ExternalizedStateConstant;
 import org.ggp.base.util.propnet.architecture.forwardInterrupting.ForwardInterruptingComponent;
@@ -34,6 +35,7 @@ import org.ggp.base.util.propnet.architecture.separateExtendedState.immutable.Im
 import org.ggp.base.util.propnet.creationManager.SeparatePropnetCreationManager;
 import org.ggp.base.util.propnet.factory.ForwardInterruptingPropNetFactory;
 import org.ggp.base.util.propnet.state.ImmutableSeparatePropnetState;
+import org.ggp.base.util.statemachine.InternalPropnetStateMachine;
 import org.ggp.base.util.statemachine.MachineState;
 import org.ggp.base.util.statemachine.Move;
 import org.ggp.base.util.statemachine.exceptions.GoalDefinitionException;
@@ -57,6 +59,10 @@ import org.ggp.base.util.statemachine.safe.InitializationSafeStateMachine;
 public class ProvaPropnet {
 
 	public static void main(String []args) throws MoveDefinitionException, TransitionDefinitionException, GoalDefinitionException, StateMachineInitializationException{
+
+		altraProva();
+
+		//printDynamicPropnet("onestep", 420000L);
 
 		//checkPropnetStructure("ticTacToe");
 
@@ -92,13 +98,13 @@ public class ProvaPropnet {
 		//prova();
 		//tryThis();
 
-		tryThisToo(new Object());
+		//tryThisToo(new Object());
 
-		Object o = new Integer(4);
+		//Object o = new Integer(4);
 
-		tryThisToo(o);
+		//tryThisToo(o);
 
-		tryThisToo((Integer)o);
+		//tryThisToo((Integer)o);
 
 		//provaInsiemi();
 		//provaUgualeUguale();
@@ -107,6 +113,214 @@ public class ProvaPropnet {
 
 		//printPropnetImprovements("gt_two_thirds_2p");
 
+	}
+
+
+	public static void printDynamicPropnet(String gameKey, long givenInitTime) throws StateMachineInitializationException{
+
+        System.out.println("Looking for game " + gameKey + "...");
+
+        GameRepository theRepository = GameRepository.getDefaultRepository();
+
+        Game theGame = theRepository.getGame(gameKey);
+
+        if(theGame == null){
+        	System.out.println("Couldn't find it. Impossible to build and print propnet.");
+        	return;
+        }
+
+        Match fakeMatch = new Match(gameKey + "." + System.currentTimeMillis(), -1, -1, -1,theRepository.getGame(gameKey));
+
+        GamerLogger.startFileLogging(fakeMatch, "DynamicPNPrinter");
+
+        GamerLogger.log("DynamicPNPrinter", "Building and printing propnet for game " + gameKey);
+
+        List<Gdl> description = theRepository.getGame(gameKey).getRules();
+
+        // Create the executor service that will run the propnet manager that creates the propnet
+        ExecutorService executor = Executors.newSingleThreadExecutor();
+
+        // Create the propnet creation manager
+        SeparatePropnetCreationManager manager = new SeparatePropnetCreationManager(description, System.currentTimeMillis() + givenInitTime);
+
+  	  	// Start the manager
+  	  	executor.execute(manager);
+
+  	  	// Shutdown executor to tell it not to accept any more task to execute.
+		// Note that this doesn't interrupt previously started tasks.
+		executor.shutdown();
+
+		// Tell the executor to wait until the currently running task has completed execution or the timeout has elapsed.
+		try{
+			executor.awaitTermination(givenInitTime, TimeUnit.MILLISECONDS);
+		}catch(InterruptedException e){ // The thread running the propnet creation and printing has been interrupted => stop
+			executor.shutdownNow(); // Interrupt everything
+			GamerLogger.logError("DynamicPNPrinter", "Propnet building and printing task for game " + gameKey + " interrupted.");
+			GamerLogger.logStackTrace("DynamicPNPrinter", e);
+			GamerLogger.stopFileLogging();
+			Thread.currentThread().interrupt();
+			return;
+		}
+
+		// Here the available time has elapsed, so we must interrupt the thread if it is still running.
+		executor.shutdownNow();
+
+		// Wait for the thread to actually terminate
+		while(!executor.isTerminated()){
+
+			// If the thread didn't terminate, wait for a minute and then check again
+			try{
+				executor.awaitTermination(1, TimeUnit.MINUTES);
+			}catch(InterruptedException e) {
+				// If this exception is thrown it means the thread that is executing the creatino and printing
+				// of the propnet has been interrupted. If we do nothing this method could be stuck in the
+				// while loop anyway until all tasks in the executor have terminated, thus we break out of the
+				// loop and return.
+				// What happens to the still running tasks in the executor? Who will make sure they terminate?
+				GamerLogger.logError("DynamicPNPrinter", "Propnet building and printing task for game " + gameKey + " interrupted.");
+				GamerLogger.logStackTrace("DynamicPNPrinter", e);
+				GamerLogger.stopFileLogging();
+				Thread.currentThread().interrupt();
+				return;
+			}
+		}
+
+		// If we are here it means that the manager stopped running. We must check if it has created a usable propnet or not.
+
+		DynamicPropNet dpropnet = manager.getDynamicPropnet();
+
+		if(dpropnet != null){
+			System.out.println(dpropnet.toString());
+		}
+
+		ImmutablePropNet ipropnet = manager.getImmutablePropnet();
+		ImmutableSeparatePropnetState propnetState = manager.getInitialPropnetState();
+
+		// Create the state machine giving it the propnet and the propnet state.
+		// NOTE that if any of the two is null, it means that the propnet creation/initialization went wrong
+		// and this will be detected by the state machine during initialization.
+		InternalPropnetStateMachine thePropnetMachine = new SeparateInternalPropnetStateMachine(ipropnet, propnetState);
+
+		thePropnetMachine.initialize(description, System.currentTimeMillis() + 60000L);
+
+
+	}
+
+	public static void altraProva(){
+
+		long l = Long.MAX_VALUE/2;
+
+		System.out.println(l);
+
+		double d = (double)l;
+
+		System.out.println(d);
+
+		System.out.println();
+
+		int i = Integer.MAX_VALUE;
+
+		System.out.println(i);
+
+		double d2 = (double)i;
+
+		System.out.println(d2);
+
+		System.out.println();
+
+		System.out.println(Double.MAX_VALUE);
+		System.out.println(Long.MAX_VALUE);
+		System.out.println(Integer.MAX_VALUE);
+
+
+		int score = 1942871190;
+		int moveVisits = 23724598;
+		int nodeVisits = 23724598;
+
+		System.out.println("score = " + score);
+		System.out.println("moveVisits = " + moveVisits);
+		System.out.println("nodeVisits = " + nodeVisits);
+
+		double dScore = (double) score;
+		double dMoveVisits = (double) moveVisits;
+		double dNodeVisits = (double) nodeVisits;
+
+		System.out.println();
+
+		System.out.println("dScore = " + dScore);
+		System.out.println("dMoveVisits = " + dMoveVisits);
+		System.out.println("dNodeVisits = " + dNodeVisits);
+
+		double avgScore = (double) score / ((double)(moveVisits * 100.0));
+		double dAvgScore = dScore / (dMoveVisits * 100.0);
+
+		System.out.println();
+
+		System.out.println("avgScore = " + avgScore);
+		System.out.println("dAvgScore = " + dAvgScore);
+
+		double c = 0.7;
+
+		System.out.println();
+
+		System.out.println("c = " + c);
+
+		double logNodeVisits = Math.log(nodeVisits);
+		double dLogNodeVisits = Math.log((double)nodeVisits);
+		double ddLogNodeVisits = Math.log(dNodeVisits);
+
+		System.out.println();
+		System.out.println("logNodeVisits = " + logNodeVisits);
+		System.out.println("dLogNodeVisits = " + dLogNodeVisits);
+		System.out.println("ddLogNodeVisits = " + ddLogNodeVisits);
+
+		double fraction = logNodeVisits / ((double)moveVisits);
+		double dFraction = logNodeVisits / dMoveVisits;
+
+		System.out.println();
+		System.out.println("fraction = " + fraction);
+		System.out.println("dFraction = " + dFraction);
+
+		double sqrt = Math.sqrt(fraction);
+
+		System.out.println();
+		System.out.println("sqrt = " + sqrt);
+
+		double exploration = c * sqrt;
+
+		System.out.println();
+		System.out.println("exploration = " + exploration);
+
+		double uct = avgScore + exploration;
+
+		System.out.println();
+		System.out.println("uct = " + uct);
+
+		double cAvgScore = ((double) score) / ((double)(moveVisits * 100.0));
+		//double exploration = this.c * (Math.sqrt(Math.log(nodeVisits)/(double)moveVisits));
+		//return  avgScore + exploration;
+
+
+
+	}
+
+	public static void altraProva2(){
+
+		System.out.println(Math.log(0));
+
+		System.out.println(Math.log(0)/40);
+
+		System.out.println(Math.log(0)/0);
+
+		System.out.println(Math.sqrt(Math.log(0)/40));
+
+		System.out.println(Math.sqrt(Math.log(0)/0));
+
+		System.out.println(0.7*(Math.sqrt(Math.log(0)/40)));
+
+		System.out.println((90.0 / (3.0 * 100)) + (0.7*(Math.sqrt(Math.log(0)/3.0))));
+
+		System.out.println((Math.sqrt(Math.log(0)/40)) >= (Math.sqrt(Math.log(0)/40)));
 	}
 
 	public static void tryThisToo(Object o){

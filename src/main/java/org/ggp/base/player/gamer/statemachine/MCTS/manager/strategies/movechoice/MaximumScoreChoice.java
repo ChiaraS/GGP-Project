@@ -31,11 +31,11 @@ public class MaximumScoreChoice implements MoveChoiceStrategy {
 		// For each legal move check the average score
 		for(int i = 0; i < myMovesStats.length; i++){
 
-			int visits =  myMovesStats[i].getVisits();
+			long visits =  myMovesStats[i].getVisits();
 
 			//System.out.println("Visits: " + visits);
 
-			int scoreSum = myMovesStats[i].getScoreSum();
+			double scoreSum = myMovesStats[i].getScoreSum();
 
 			//System.out.println("Score sum: " + scoreSum);
 
@@ -47,7 +47,7 @@ public class MaximumScoreChoice implements MoveChoiceStrategy {
 
 			}else{
 				// Compute average score
-				currentAvgScore = (double) scoreSum / ((double) visits);
+				currentAvgScore = scoreSum / ((double) visits);
 
 				//System.out.println("Computed average score: " + currentAvgScore);
 			}

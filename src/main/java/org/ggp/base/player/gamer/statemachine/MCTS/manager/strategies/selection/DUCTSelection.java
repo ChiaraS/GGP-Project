@@ -7,6 +7,7 @@ import java.util.Random;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.DUCTJointMove;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.DUCTMove;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.InternalPropnetDUCTMCTreeNode;
+import org.ggp.base.util.logging.GamerLogger;
 import org.ggp.base.util.statemachine.inernalPropnetStructure.InternalPropnetMove;
 
 public class DUCTSelection implements SelectionStrategy {
@@ -23,10 +24,25 @@ public class DUCTSelection implements SelectionStrategy {
 		this.c = c;
 	}
 
+
+	/*
+	 * (non-Javadoc)
+	 * @see org.ggp.base.player.gamer.statemachine.MCTS.manager.strategies.selection.SelectionStrategy#select(org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.InternalPropnetDUCTMCTreeNode)
+	 */
 	@Override
 	public DUCTJointMove select(InternalPropnetDUCTMCTreeNode currentNode) {
 
+		if(currentNode.isTerminal()){
+			GamerLogger.logError("MCTSManager", "Trying to perform selection on a terminal node.");
+			throw new RuntimeException("Trying to perform selection on a treminal node.");
+		}
+
 		DUCTMove[][] moves = currentNode.getMoves();
+
+		if(moves == null){
+			GamerLogger.logError("MCTSManager", "Trying to perform selection on a node with no legal moves.");
+			throw new RuntimeException("Trying to perform selection on a node with no legal moves.");
+		}
 
 		List<InternalPropnetMove> selectedJointMove = new ArrayList<InternalPropnetMove>();
 		int[] movesIndices = new int[moves.length];
@@ -34,7 +50,7 @@ public class DUCTSelection implements SelectionStrategy {
 		double maxDUCTvalue;
 		double DUCTvalue;
 
-		int nodeVisits = currentNode.getTotVisits();
+		long nodeVisits = currentNode.getTotVisits();
 
 		// For each role check the statistics and pick a move
 		for(int i = 0; i < moves.length; i++){
@@ -46,7 +62,7 @@ public class DUCTSelection implements SelectionStrategy {
 			for(int j = 0; j < moves[i].length; j++){
 
 				// Compute the DUCT value
-				DUCTvalue = this.computeDUCTvalue(moves[i][j].getScoreSum(), moves[i][j].getVisits(), nodeVisits);
+				DUCTvalue = this.computeDUCTvalue(moves[i][j].getScoreSum(), (double) moves[i][j].getVisits(), (double) nodeVisits);
 
 				moves[i][j].setUct(DUCTvalue);
 
@@ -66,6 +82,21 @@ public class DUCTSelection implements SelectionStrategy {
 				}
 			}
 
+			if(selectedMovesIndices.size() < 1){
+				System.out.println();
+				System.out.println();
+				System.out.println("!!!");
+				System.out.println("Analyzing player " + i + ".");
+				System.out.println("Moves for player: " + moves[i].length);
+				System.out.println("MaxDUCT: " + maxDUCTvalue);
+				System.out.println("DUCTOffset: " + this.uctOffset);
+				System.out.println("C constant: " + this.c);
+				System.out.println("THE NODE:");
+				System.out.println(currentNode);
+				System.out.println();
+				System.out.println();
+			}
+
 			movesIndices[i] = selectedMovesIndices.get(this.random.nextInt(selectedMovesIndices.size())).intValue();
 			selectedJointMove.add(moves[i][movesIndices[i]].getTheMove());
 		}
@@ -73,7 +104,7 @@ public class DUCTSelection implements SelectionStrategy {
 		return new DUCTJointMove(selectedJointMove, movesIndices);
 	}
 
-	private double computeDUCTvalue(int score, int moveVisits, int nodeVisits){
+	private double computeDUCTvalue(double score, double moveVisits, double nodeVisits){
 
 		// NOTE: this should never happen if we use this class together with the InternalPropnetMCTSManager
 		// because the selection phase in a node starts only after all moves have been expanded and visited
@@ -83,8 +114,8 @@ public class DUCTSelection implements SelectionStrategy {
 			return Double.MAX_VALUE;
 		}
 
-		double avgScore = (double) score / ((double)(moveVisits * 100));
-		double exploration = this.c * (Math.sqrt(Math.log(nodeVisits)/(double)moveVisits));
+		double avgScore = (score / moveVisits) / 100.0;
+		double exploration = this.c * (Math.sqrt(Math.log(nodeVisits)/moveVisits));
 		return  avgScore + exploration;
 
 	}

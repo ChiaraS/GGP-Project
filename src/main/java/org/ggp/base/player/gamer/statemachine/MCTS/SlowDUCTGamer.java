@@ -11,6 +11,7 @@ import java.util.concurrent.TimeUnit;
 import org.ggp.base.player.gamer.exception.GamePreviewException;
 import org.ggp.base.player.gamer.statemachine.StateMachineGamer;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.InternalPropnetMCTSManager;
+import org.ggp.base.player.gamer.statemachine.MCTS.manager.exceptions.MCTSException;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.strategies.backpropagation.StandardBackpropagation;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.strategies.expansion.RandomExpansion;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.strategies.movechoice.MaximumScoreChoice;
@@ -169,12 +170,20 @@ public class SlowDUCTGamer extends StateMachineGamer {
 		Random r = new Random();
 		InternalPropnetRole myRole = thePropnetMachine.getInternalRoles()[thePropnetMachine.getRoleIndices().get(this.getRole())];
 
-		// Create the MCTS tree and start simulations.
+		// Create the MCTS manager and start simulations.
 		this.mctsManager = new InternalPropnetMCTSManager(new DUCTSelection(r, uctOffset, c),
 	       		new RandomExpansion(r), new RandomPlayout(thePropnetMachine), new StandardBackpropagation(),
 	       		new MaximumScoreChoice(r), thePropnetMachine, myRole, gameStepOffset, maxSearchDepth);
 
-
+		//FIX!
+		// If search fails during metagame?? TODO: should i throw exception here and say i'm not able to play?
+		// If i don't it'll throw exception later anyway! better stop now?
+		try {
+			this.mctsManager.search(thePropnetMachine.getInternalInitialState(), timeout, gameStep);
+		} catch (MCTSException e) {
+			GamerLogger.logError("Gamer", "Exception during search while metagaming.");
+			GamerLogger.logStackTrace("Gamer", e);
+		}
 	}
 
 	/* (non-Javadoc)

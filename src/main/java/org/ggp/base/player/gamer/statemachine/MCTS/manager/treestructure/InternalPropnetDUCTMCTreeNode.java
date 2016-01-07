@@ -19,14 +19,20 @@ public class InternalPropnetDUCTMCTreeNode{
 	 */
 	private int[] goals;
 
-	private int totVisits;
+	/**
+	 * True if the state is terminal, false otherwise.
+	 */
+	private boolean terminal;
+
+	private long totVisits;
 
 	/**
 	 * Keeps track of the last game turn for which this node was visited.
 	 */
 	private int gameStepStamp;
 
-	public InternalPropnetDUCTMCTreeNode(DUCTMove[][] moves, int[] goals) {
+	public InternalPropnetDUCTMCTreeNode(DUCTMove[][] moves, int[] goals, boolean terminal) {
+
 		this.moves = moves;
 
 		// If this state has legal moves for the players (i.e. is not terminal),
@@ -41,7 +47,8 @@ public class InternalPropnetDUCTMCTreeNode{
 
 
 		this.goals = goals;
-		this.totVisits = 0;
+		this.terminal = terminal;
+		this.totVisits = 0L;
 		this.gameStepStamp = -1;
 	}
 
@@ -57,7 +64,11 @@ public class InternalPropnetDUCTMCTreeNode{
 		return this.goals;
 	}
 
-	public int getTotVisits(){
+	public boolean isTerminal(){
+		return this.terminal;
+	}
+
+	public long getTotVisits(){
 		return this.totVisits;
 	}
 
@@ -71,5 +82,67 @@ public class InternalPropnetDUCTMCTreeNode{
 
 	public void setGameStepStamp(int gameStepStamp) {
 		this.gameStepStamp = gameStepStamp;
+	}
+
+	@Override
+	public String toString(){
+
+		String s = "NODE[\n";
+		s += "  Moves[";
+		if(this.moves == null){
+			s += "null]\n";
+		}else{
+			for(int i = 0; i < this.moves.length; i++){
+				s += "\n    Role" + i +"[";
+				if(moves[i] == null){
+					s += "null]";
+				}else{
+					for(int j = 0; j < moves[i].length; j++){
+						s += "\n      " + moves[i][j].toString();
+					}
+					s += "\n    ]\n";
+				}
+			}
+			s += "  ]\n";
+		}
+
+
+		// Unexplored moves count
+		s += "  UnexploredMovesCount[";
+
+		if(this.unexploredMovesCount == null){
+			s += "null";
+		}else{
+			s += " ";
+			for(int i = 0; i < this.unexploredMovesCount.length; i++){
+				s += this.unexploredMovesCount[i] + " ";
+			}
+		}
+		s += "]\n";
+
+		// Goals
+		s += "  Goals[";
+		if(this.goals == null){
+			s += "null";
+		}else{
+			s += " ";
+			for(int i = 0; i < this.goals.length; i++){
+				s += this.goals[i] + " ";
+			}
+		}
+		s += "]\n";
+
+		// Terminal
+		s += "  Terminal=" + this.terminal + "\n";
+
+		// Tot visits
+		s += "  TotVisits=" + this.totVisits + "\n";
+
+		// Stamp
+		s += "  Stamp=" + this.gameStepStamp + "\n";
+
+		s += "]";
+
+		return s;
 	}
 }
