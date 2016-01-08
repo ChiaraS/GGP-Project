@@ -97,28 +97,96 @@ public class InternalPropnetMCTSManager extends MCTSManager {
 		this.maxSearchDepth = maxSearchDepth;
 	}
 
+	/**
+	 * This method takes care of performing the MCT search on the given state and then
+	 * returning the best move in such state.
+	 * First it prepares the manager for the search and then actually performs the search.
+	 * It also takes care of checking if the search can actually be performed on the given
+	 * state.
+	 *
+	 * Note that if there is no time to perform the search the method will just retrieve (or
+	 * create if it doesn't exist) the MCT node. Getting the node is useful because even if
+	 * there is no time for the search, the node corresponding to the given state might already
+	 * exist and contain some statistics that can later be used in the chooseBestMove() method.
+	 *
+	 * @param initialState the state from which to start the search.
+	 * @param timeout the time by when the method must return.
+	 * @param gameStep the game step currently being played.
+	 * @return the selected best move.
+	 * @throws MCTSException if the search cannot be performed on the state because the
+	 * state is either terminal or there is some problem with the computation of legal
+	 * moves (and thus corresponding statistics).
+	 */
 	public DUCTMove getBestMove(InternalPropnetMachineState initialState, long timeout, int gameStep) throws MCTSException{
 
-		//System.out.println("Start DUCT\\MCTS getting best move on root state " + initialState + " with role " + this.myRole + ".");
+		// If we already passes timeout throw an exception saying that the move cannot be computed.
+		InternalPropnetDUCTMCTreeNode initialNode = this.prepareForSearch(initialState, gameStep);
+
+		// We can be sure that the node is not null, but if it is terminal we cannot perform any search
+		// nor return any move.
+		// Note that the node being terminal might mean that the state is not terminal but legal moves
+		// couldn't be correctly computed for all roles.
+		if(initialNode.isTerminal()){
+			throw new MCTSException("Impossible to perform search and return a move using the given state as root.");
+		}
+
+		this.performSearch(initialState, initialNode, timeout);
 
 		//System.out.println();
-
-		InternalPropnetDUCTMCTreeNode initialNode = this.startSearch(initialState, timeout, gameStep);
 
 		//System.out.println();
 		//System.out.println();
 		//System.out.println("Selecting best move on node: ");
-		//System.out.println(initialNode);
+		//System.out.println(node);
 
 		return this.moveChoiceStrategy.chooseBestMove(initialNode, this.myRole);
 	}
 
-	public void search(InternalPropnetMachineState initialState, long timeout, int gameStep) throws MCTSException{
-		this.startSearch(initialState, timeout, gameStep);
+	/**
+	 * This method takes care of performing the MCT search on the given state.
+	 * First prepares the manager for the search and then actually performs the search.
+	 * It also takes care of checking if the search can actually be performed on the given state.
+	 *
+	 * Note that if there is no time to perform the search the method will just retrieve (or
+	 * create if it doesn't exist) the MCT node.
+	 *
+	 * @param initialState the state from which to start the search.
+	 * @param timeout the time by when the method must return.
+	 * @param gameStep the game step currently being played.
+	 * @throws MCTSException if the search cannot be performed on the state because the
+	 * state is either terminal or there is some problem with the computation of legal
+	 * moves (and thus corresponding statistics).
+	 */
+	public void search(InternalPropnetMachineState initialState, long timeout, int gameStep)  throws MCTSException{
+
+		// If we already passes timeout throw an exception saying that the move cannot be computed.
+		InternalPropnetDUCTMCTreeNode initialNode = this.prepareForSearch(initialState, gameStep);
+
+		// We can be sure that the node is not null, but if it is terminal we cannot perform any search.
+		// Note that the node being terminal might mean that the state is not terminal but legal moves
+		// couldn't be correctly computed for all roles.
+		if(initialNode.isTerminal()){
+			throw new MCTSException("Impossible to perform search using the given state as root.");
+		}
+
+		this.performSearch(initialState, initialNode, timeout);
+
 	}
 
-	private InternalPropnetDUCTMCTreeNode startSearch(InternalPropnetMachineState initialState, long timeout, int gameStep)  throws MCTSException{
-
+	/**
+	 * This method prepares the manager to perform MCTS from a given game state.
+	 * More precisely, resets the count of visited nodes and performed iterations,
+	 * cleans the transposition table according to the game step that is going to
+	 * be searched and gets (or creates if it doesn't exist yet) the tree node
+	 * corresponding to the given game state.
+	 *
+	 * @param initialState the state of the game to be used as starting state for
+	 * 					   to perform the search.
+	 * @param gameStep the current game step being played (needed to clean the transposition
+	 * 				   table and be used as time stamp for tree nodes).
+	 * @return the tree node corresponding to the given initial state.
+	 */
+	private InternalPropnetDUCTMCTreeNode prepareForSearch(InternalPropnetMachineState initialState, int gameStep){
 		this.iterations = 0;
 		this.visitedNodes = 0;
 
@@ -137,15 +205,18 @@ public class InternalPropnetMCTSManager extends MCTSManager {
 			this.transpositionTable.putNode(initialState, initialNode);
 		}
 
-		//System.out.println("Initial node: ");
-		//System.out.println(initialNode);
+		return initialNode;
+	}
 
-		// If the initial node to be used as a root to perform MCTS is terminal (or pseudo-terminal)
-		// the search cannot be performed, so an exception is thrown.
-		if(initialNode.isTerminal()){
-			throw new MCTSException("Impossible to perform search using the given state as root.");
-		}
-
+	/**
+	 * This method performs the Monte Carlo Tree Search.
+	 *
+	 * @param initialState the state from where to start the search.
+	 * @param initialNode the tree node corresponding to the state from where to start
+	 * 					  the search (making it the root of the currently searched tree).
+	 * @param timeout the time (in milliseconds) by when the search must end.
+	 */
+	private void performSearch(InternalPropnetMachineState initialState, InternalPropnetDUCTMCTreeNode initialNode, long timeout){
 		while(System.currentTimeMillis() < timeout){
 			this.currentIterationVisitedNodes = 0;
 			this.searchNext(initialState, initialNode);
@@ -154,11 +225,25 @@ public class InternalPropnetMCTSManager extends MCTSManager {
 
 			//System.out.println("Iteration: " + this.iterations);
 		}
-
-		return initialNode;
-
 	}
 
+	/**
+	 * This method performs the search on a single tree node.
+	 *
+	 * More precisely:
+	 * - If the node is terminal: stop the search and backpropagate the terminal goals.
+	 * - If the search depth limit has been reached: stop the search and backpropagate
+	 *   intermediate goals, if they exist, or default goals.
+	 * - If the node requires expansion: expand the node and backpropagate the goals
+	 *   obtained by performing a playout.
+	 * - In any other case: select the next node to visit and backpropagate the goals
+	 *   obtained by recursively calling this method.
+	 *
+	 * @param currentState the state being visited.
+	 * @param currentNode the tree node corresponding to the visited state.
+	 * @return the goals of all players, obtained by the current MCTS iteration and that
+	 *         must be backpropagated.
+	 */
 	private int[] searchNext(InternalPropnetMachineState currentState, InternalPropnetDUCTMCTreeNode currentNode) {
 
 		//System.out.println();
@@ -363,9 +448,9 @@ public class InternalPropnetMCTSManager extends MCTSManager {
 	 * encountered, it will be treated as terminal even if the corresponding state isn't.
 	 * This choice has been made because without complete joint moves it is not possible
 	 * to explore any further state from here. Thus the node will memorize the legal moves
-	 * that could be computed, the fact that the node is terminal (EVEN IF THE STATE ISN'T)
-	 * and the goals for the players in the state (assigning default values if they cannot
-	 * be computed).
+	 * that could be computed (TODO: they are not necessary atm, remove them?), the fact
+	 * that the node is terminal (EVEN IF THE STATE ISN'T) and the goals for the players
+	 * in the state (assigning default values if they cannot be computed).
 	 *
 	 * @param state the state for which to crate the tree node.
 	 * @return the tree node corresponding to the state.

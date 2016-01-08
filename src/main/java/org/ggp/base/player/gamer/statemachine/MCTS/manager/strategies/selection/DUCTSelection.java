@@ -7,7 +7,6 @@ import java.util.Random;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.DUCTJointMove;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.DUCTMove;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.InternalPropnetDUCTMCTreeNode;
-import org.ggp.base.util.logging.GamerLogger;
 import org.ggp.base.util.statemachine.inernalPropnetStructure.InternalPropnetMove;
 
 public class DUCTSelection implements SelectionStrategy {
@@ -32,17 +31,23 @@ public class DUCTSelection implements SelectionStrategy {
 	@Override
 	public DUCTJointMove select(InternalPropnetDUCTMCTreeNode currentNode) {
 
+		/* No need for this check, if the code is correct, because the node that is passed as input
+		 * is always non-terminal.
 		if(currentNode.isTerminal()){
 			GamerLogger.logError("MCTSManager", "Trying to perform selection on a terminal node.");
 			throw new RuntimeException("Trying to perform selection on a treminal node.");
 		}
+		*/
 
 		DUCTMove[][] moves = currentNode.getMoves();
 
+		/* Also here we can assume that the moves will be non-null since the code takes care of only passing to
+		 * this method the nodes that have all the information needed for selection.
 		if(moves == null){
 			GamerLogger.logError("MCTSManager", "Trying to perform selection on a node with no legal moves.");
 			throw new RuntimeException("Trying to perform selection on a node with no legal moves.");
 		}
+		*/
 
 		List<InternalPropnetMove> selectedJointMove = new ArrayList<InternalPropnetMove>();
 		int[] movesIndices = new int[moves.length];
@@ -82,6 +87,7 @@ public class DUCTSelection implements SelectionStrategy {
 				}
 			}
 
+			/*
 			if(selectedMovesIndices.size() < 1){
 				System.out.println();
 				System.out.println();
@@ -96,6 +102,7 @@ public class DUCTSelection implements SelectionStrategy {
 				System.out.println();
 				System.out.println();
 			}
+			*/
 
 			movesIndices[i] = selectedMovesIndices.get(this.random.nextInt(selectedMovesIndices.size())).intValue();
 			selectedJointMove.add(moves[i][movesIndices[i]].getTheMove());

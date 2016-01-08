@@ -17,6 +17,7 @@ import org.ggp.base.player.gamer.statemachine.MCTS.manager.strategies.expansion.
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.strategies.movechoice.MaximumScoreChoice;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.strategies.playout.RandomPlayout;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.strategies.selection.DUCTSelection;
+import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.DUCTMove;
 import org.ggp.base.util.game.Game;
 import org.ggp.base.util.logging.GamerLogger;
 import org.ggp.base.util.propnet.architecture.separateExtendedState.immutable.ImmutablePropNet;
@@ -31,6 +32,7 @@ import org.ggp.base.util.statemachine.exceptions.StateMachineException;
 import org.ggp.base.util.statemachine.exceptions.TransitionDefinitionException;
 import org.ggp.base.util.statemachine.implementation.propnet.SeparateInternalPropnetStateMachine;
 import org.ggp.base.util.statemachine.implementation.prover.ProverStateMachine;
+import org.ggp.base.util.statemachine.inernalPropnetStructure.InternalPropnetMachineState;
 import org.ggp.base.util.statemachine.inernalPropnetStructure.InternalPropnetRole;
 
 /**
@@ -175,14 +177,21 @@ public class SlowDUCTGamer extends StateMachineGamer {
 	       		new RandomExpansion(r), new RandomPlayout(thePropnetMachine), new StandardBackpropagation(),
 	       		new MaximumScoreChoice(r), thePropnetMachine, myRole, gameStepOffset, maxSearchDepth);
 
-		//FIX!
-		// If search fails during metagame?? TODO: should i throw exception here and say i'm not able to play?
-		// If i don't it'll throw exception later anyway! better stop now?
-		try {
-			this.mctsManager.search(thePropnetMachine.getInternalInitialState(), timeout, gameStep);
-		} catch (MCTSException e) {
-			GamerLogger.logError("Gamer", "Exception during search while metagaming.");
-			GamerLogger.logStackTrace("Gamer", e);
+		// If there is enough time left start the MCT search.
+		// Otherwise return from metagaming.
+		if(System.currentTimeMillis() < (timeout - this.safetyMargin)){
+			// If search fails during metagame?? TODO: should I throw exception here and say I'm not able to play?
+			// If I don't it'll throw exception later anyway! Better stop now?
+			try {
+				GamerLogger.log("Gamer", "Starting search during metagame.");
+				this.mctsManager.search(thePropnetMachine.getInternalInitialState(), timeout-this.safetyMargin, gameStep+1);
+				GamerLogger.log("Gamer", "Done searching during metagame.");
+			} catch (MCTSException e) {
+				GamerLogger.logError("Gamer", "Exception during search while metagaming.");
+				GamerLogger.logStackTrace("Gamer", e);
+			}
+		}else{
+			GamerLogger.log("Gamer", "No time to start the search during metagame.");
 		}
 	}
 
@@ -193,8 +202,27 @@ public class SlowDUCTGamer extends StateMachineGamer {
 	public Move stateMachineSelectMove(long timeout)
 			throws TransitionDefinitionException, MoveDefinitionException,
 			GoalDefinitionException, StateMachineException {
-		// TODO Auto-generated method stub
-		return null;
+
+		this.gameStep++;
+
+		SeparateInternalPropnetStateMachine thePropnetMachine = (SeparateInternalPropnetStateMachine) this.getStateMachine();
+
+		if(System.currentTimeMillis() < (timeout-this.safetyMargin)){
+			InternalPropnetMachineState currentState = thePropnetMachine.stateToInternalState(this.getCurrentState());
+
+			try {
+				DUCTMove selectedMove = this.mctsManager.getBestMove(currentState, timeout-this.safetyMargin, gameStep);
+				return thePropnetMachine.internalMoveToMove(selectedMove.getTheMove());
+			} catch (MCTSException e) {
+				GamerLogger.logError("Gamer", "MCTS failed to return a move.");
+				GamerLogger.logStackTrace("Gamer", e);
+			}
+		}
+
+		// If there is no time or the MCTS manager failed to return a move,
+		// return a random one.
+		return thePropnetMachine.getRandomMove(this.getCurrentState(), this.getRole());
+
 	}
 
 	/* (non-Javadoc)
@@ -229,8 +257,7 @@ public class SlowDUCTGamer extends StateMachineGamer {
 	 */
 	@Override
 	public String getName() {
-		// TODO Auto-generated method stub
-		return null;
+		return getClass().getSimpleName();
 	}
 
 }
