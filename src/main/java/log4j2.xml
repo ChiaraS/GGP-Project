@@ -1,0 +1,128 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<Configuration>
+
+	<Appenders>  	
+	
+		<Routing name="LogRouter">
+  			<Routes pattern="$${ctx:LOG_FOLDER}">
+ 
+ 				<!-- This route is chosen for any possible value of LOG_FOLDER in ThreadContext. -->
+    			<Route>
+    				<Routing name="KnownFolderRouter">
+    					<Routes pattern="$${ctx:LOG_FILE}">
+    					
+    						<!-- This route is chosen for any possible value of LOG_FILE in ThreadContext. -->
+    						<Route>							
+								<RandomAccessFile name="${ctx:LOG_FOLDER}-${ctx:LOG_FILE}" fileName="${ctx:LOG_FOLDER}/${ctx:LOG_FILE}.log">
+      								<PatternLayout pattern="%d{ISO8601} %-5level %-30.30logger{1} %msg%n"/>
+    							</RandomAccessFile> 
+ 							</Route>
+    						
+    						<!-- This route is chosen if ThreadContext has no value for key LOG_FILE. -->
+    						<Route key="$${ctx:LOG_FILE}">    						
+    							<!-- This appender writes logs on a general log file in the given log folder. -->
+								<RandomAccessFile name="${ctx:LOG_FOLDER}-LogFile" fileName="${ctx:LOG_FOLDER}/logfile.log">
+      								<PatternLayout pattern="%d{ISO8601} %-5level %-30.30logger{1} %msg%n"/>
+    							</RandomAccessFile>					
+    						</Route>  
+							
+    					</Routes>
+    				</Routing>
+    			</Route>
+ 
+    			<!-- This route is chosen if ThreadContext has no value for key LOG_FOLDER. -->
+    			<Route key="$${ctx:LOG_FOLDER}">
+    				<!-- This appender writes logs in a general log folder. -->
+					<Routing name="UnknownFolderRouter">
+    					<Routes pattern="$${ctx:LOG_FILE}">
+    					
+    						<!-- This route is chosen for any possible value of LOG_FILE in ThreadContext. -->
+    						<Route>							
+								<RandomAccessFile name="LogFolder-${ctx:LOG_FILE}" fileName="LogFolder/${ctx:LOG_FILE}.log">
+      								<PatternLayout pattern="%d{ISO8601} %-5level %-30.30logger{1} %msg%n"/>
+    							</RandomAccessFile> 
+ 							</Route>
+    						
+    						<!-- This route is chosen if ThreadContext has no value for key LOG_FILE. -->
+    						<Route key="$${ctx:LOG_FILE}">    						
+    							<!-- This appender writes logs on a general log file in a general log folder. -->
+								<RandomAccessFile name="LogFolder-LogFile" fileName="LogFolder/logfile.log">
+      								<PatternLayout pattern="%d{ISO8601} %-5level %-30.30logger{1} %msg%n"/>
+    							</RandomAccessFile>					
+    						</Route>  
+							
+    					</Routes>
+    				</Routing>						    	
+			    </Route>
+    			
+  			</Routes>
+		</Routing>  
+
+		<Routing name="CSVLogRouter">
+  			<Routes pattern="$${ctx:LOG_FOLDER}">
+ 
+ 				<!-- This route is chosen for any possible value of LOG_FOLDER in ThreadContext. -->
+    			<Route>
+    				<Routing name="CSVKnownFolderRouter">
+    					<Routes pattern="$${ctx:LOG_FILE}">
+    					
+    						<!-- This route is chosen for any possible value of LOG_FILE in ThreadContext. -->
+    						<Route>							
+								<RandomAccessFile name="CSV-${ctx:LOG_FOLDER}-${ctx:LOG_FILE}" fileName="${ctx:LOG_FOLDER}/${ctx:LOG_FILE}.csv">
+      								<PatternLayout pattern="%msg%n"/>
+    							</RandomAccessFile> 
+ 							</Route>
+    						
+    						<!-- This route is chosen if ThreadContext has no value for key LOG_FILE. -->
+    						<Route key="$${ctx:LOG_FILE}">    						
+    							<!-- This appender writes logs on a general log file in the given log folder. -->
+								<RandomAccessFile name="CSV-${ctx:LOG_FOLDER}-LogFile" fileName="${ctx:LOG_FOLDER}/logfile.csv">
+      								<PatternLayout pattern="%msg%n"/>
+    							</RandomAccessFile>					
+    						</Route>  
+							
+    					</Routes>
+    				</Routing>
+    			</Route>
+ 
+    			<!-- This route is chosen if ThreadContext has no value for key LOG_FOLDER. -->
+    			<Route key="$${ctx:LOG_FOLDER}">
+    				<!-- This appender writes logs in a general log folder. -->
+					<Routing name="CSVUnknownFolderRouter">
+    					<Routes pattern="$${ctx:LOG_FILE}">
+    					
+    						<!-- This route is chosen for any possible value of LOG_FILE in ThreadContext. -->
+    						<Route>							
+								<RandomAccessFile name="CSV-LogFolder-${ctx:LOG_FILE}" fileName="LogFolder/${ctx:LOG_FILE}.csv">
+      								<PatternLayout pattern="%msg%n"/>
+    							</RandomAccessFile> 
+ 							</Route>
+    						
+    						<!-- This route is chosen if ThreadContext has no value for key LOG_FILE. -->
+    						<Route key="$${ctx:LOG_FILE}">    						
+    							<!-- This appender writes logs on a general log file in a general log folder. -->
+								<RandomAccessFile name="CSV-LogFolder-LogFile" fileName="LogFolder/logfile.csv">
+      								<PatternLayout pattern="%msg%n"/>
+    							</RandomAccessFile>					
+    						</Route>  
+							
+    					</Routes>
+    				</Routing>						    	
+			    </Route>
+    			
+  			</Routes>
+		</Routing>    		
+  		
+	</Appenders>
+
+	<Loggers>
+	    <Logger name="CSVLogger" level="trace" additivity="false">
+			<AppenderRef ref="CSVLogRouter"/>
+		</Logger>
+		<Root level="trace">
+			<AppenderRef ref="LogRouter"/>
+		</Root>
+	</Loggers>
+
+</Configuration>
