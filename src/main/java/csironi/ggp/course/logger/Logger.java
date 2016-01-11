@@ -19,7 +19,7 @@ import org.ggp.base.util.match.Match;
 
 /**
  * !!!!!!!!!!!!!!!!!!!! ADD A METHOD TO SET MANUALLY THE FILES TO SKIP (i.e. if i want to skip writing on file the
- * logs of the category Error or StateMachine i should be able to do that!)
+ * logs of the category Error or StateMachine I should be able to do that!)
  *
  *
  *

@@ -209,4 +209,41 @@ public class GamerLogger {
     private static int minLevelToDisplay = Integer.MAX_VALUE;
     private static boolean suppressLoggerOutput;
     private static String spilloverLogfile;
+
+
+    /************************ ADDITIONAL PARAMETERS AND METHODS FOR LOGGING DURIGN TESTS ************************
+     * This logger is normally meant to be used for a single player at a time.
+     * To run experiments and testing, however, multiple players are running at the same time in the same program
+     * instance. The following parameters and methods can be used to manage logging in such cases so that the logs
+     * of multiple players won't interfere with each other.
+     */
+
+    //private boolean concurrentLogging;
+
+    /**
+     * This method starts file logging in a directory for the game and match on which an experiment/test is being
+     * performed. The directory of the game tested will contain a directory for each match run in the experiment.
+     * Each directory for a match will contain the log files written during the match by each player involved in
+     * the experiment.
+     *
+     * NOTE: each log file already contains in its name an ID (the thread ID) that distinguishes it from the same
+     * 		 file of another player. However, to be able to really distinguish which player a log file belongs to
+     * 		 it is advisable to include a more meaningful ID (e.g. the player's role) to the file name (e.g.
+     * 		 "xplayerStats" instead of just "Stats", xplayerStateMachine)
+     * @param gameKey
+     * @param m
+     */
+    /*
+    public static void startConcurrentFileLogging(String testId, Match m) {
+        writeLogsToFile = true;
+        myDirectory = "testlogs/" + testId + "/" + m.getMatchId();
+
+        new File(myDirectory).mkdirs();
+
+        log("Logger", "Started logging to files at: " + new Date());
+        log("Logger", "Game rules: " + m.getGame().getRules());
+        log("Logger", "Start clock: " + m.getStartClock());
+        log("Logger", "Play clock: " + m.getPlayClock());
+    }*/
+
 }
