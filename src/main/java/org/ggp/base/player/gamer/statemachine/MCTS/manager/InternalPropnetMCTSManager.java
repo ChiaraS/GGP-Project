@@ -79,6 +79,16 @@ public class InternalPropnetMCTSManager extends MCTSManager {
 	private int currentIterationVisitedNodes;
 
 	/**
+	 * Start time of last performed search.
+	 */
+	private long searchStart;
+
+	/**
+	 * End time of last performed search.
+	 */
+	private long searchEnd;
+
+	/**
 	 *
 	 */
 	public InternalPropnetMCTSManager(SelectionStrategy selectionStrategy, ExpansionStrategy expansionStrategy,
@@ -95,6 +105,11 @@ public class InternalPropnetMCTSManager extends MCTSManager {
 		this.myRole = myRole;
 		this.transpositionTable = new DUCTTranspositionTable(gameStepOffset);
 		this.maxSearchDepth = maxSearchDepth;
+		this.iterations = 0;
+		this.visitedNodes = 0;
+		this.currentIterationVisitedNodes = 0;
+		this.searchStart = 0;
+		this.searchEnd = 0;
 	}
 
 	/**
@@ -187,8 +202,16 @@ public class InternalPropnetMCTSManager extends MCTSManager {
 	 * @return the tree node corresponding to the given initial state.
 	 */
 	private InternalPropnetDUCTMCTreeNode prepareForSearch(InternalPropnetMachineState initialState, int gameStep){
+
 		this.iterations = 0;
 		this.visitedNodes = 0;
+		// This is required in case the method that wants to prepare the manager for the search (i.e. getBestMove()
+		// or search()) fails before actually performing the search. In this way we can make sure that if someone
+		// ties to retrieve the search time after the search failed it won't get the positive time of the search
+		// performed before this one.
+		this.searchStart = 0L;
+		this.searchEnd = 0L;
+
 
 		this.transpositionTable.clean(gameStep);
 
@@ -217,14 +240,15 @@ public class InternalPropnetMCTSManager extends MCTSManager {
 	 * @param timeout the time (in milliseconds) by when the search must end.
 	 */
 	private void performSearch(InternalPropnetMachineState initialState, InternalPropnetDUCTMCTreeNode initialNode, long timeout){
+		this.searchStart = System.currentTimeMillis();
 		while(System.currentTimeMillis() < timeout){
 			this.currentIterationVisitedNodes = 0;
 			this.searchNext(initialState, initialNode);
 			this.iterations++;
 			this.visitedNodes += this.currentIterationVisitedNodes;
-
 			//System.out.println("Iteration: " + this.iterations);
 		}
+		this.searchEnd = System.currentTimeMillis();
 	}
 
 	/**
@@ -538,6 +562,10 @@ public class InternalPropnetMCTSManager extends MCTSManager {
 
 	public int getVisitedNodes(){
 		return this.visitedNodes;
+	}
+
+	public long getSearchTime(){
+		return (this.searchEnd - this.searchStart);
 	}
 
 }

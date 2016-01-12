@@ -2,6 +2,7 @@ package csironi.ggp.course;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.ThreadContext;
 
 public class ProvaLogs {
 
@@ -15,7 +16,7 @@ public class ProvaLogs {
 		ROOT_LOGGER.info("Logging text message in the default file in the default folder.");
 		CSV_LOGGER.info("Logging CSV message in the default file in the default folder.");
 
-		/*
+
 		ThreadContext.put("LOG_FOLDER", "SpecificLogFolder");
 
 		ROOT_LOGGER.info("Logging text message in the default file in a specific folder.");
@@ -31,7 +32,7 @@ public class ProvaLogs {
 
 		ROOT_LOGGER.info("Logging text message in a specific file in the default folder.");
 		CSV_LOGGER.info("Logging CSV message in a specific file in the default folder.");
-		*/
+
 	}
 
 }

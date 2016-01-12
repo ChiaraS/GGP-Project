@@ -8,6 +8,8 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.ggp.base.player.gamer.exception.GamePreviewException;
 import org.ggp.base.player.gamer.statemachine.StateMachineGamer;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.InternalPropnetMCTSManager;
@@ -19,7 +21,6 @@ import org.ggp.base.player.gamer.statemachine.MCTS.manager.strategies.playout.Ra
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.strategies.selection.DUCTSelection;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.DUCTMove;
 import org.ggp.base.util.game.Game;
-import org.ggp.base.util.logging.GamerLogger;
 import org.ggp.base.util.propnet.architecture.separateExtendedState.immutable.ImmutablePropNet;
 import org.ggp.base.util.propnet.creationManager.SeparatePropnetCreationManager;
 import org.ggp.base.util.propnet.state.ImmutableSeparatePropnetState;
@@ -49,6 +50,25 @@ import org.ggp.base.util.statemachine.inernalPropnetStructure.InternalPropnetRol
  *
  */
 public class SlowDUCTGamer extends StateMachineGamer {
+
+	/**
+	 * Static reference to the logger that logs messages with an header
+	 * that includes details like the logging time, the log level, etc...
+	 */
+	private static final Logger LOGGER;
+
+	/**
+	 * Static reference to the logger that logs entries in the CSV format
+	 * with no header.
+	 */
+	private static final Logger CSV_LOGGER;
+
+
+	static{
+		LOGGER = LogManager.getRootLogger();
+		CSV_LOGGER = LogManager.getLogger("CSVLogger");
+	}
+
 
 	/**
 	 * The player must complete the executions of methods with a timeout by the time
@@ -116,8 +136,9 @@ public class SlowDUCTGamer extends StateMachineGamer {
 				executor.awaitTermination(this.getMetagamingTimeout() - System.currentTimeMillis() - this.safetyMargin, TimeUnit.MILLISECONDS);
 			}catch(InterruptedException e){ // The thread running the gamer has been interrupted => stop playing.
 				executor.shutdownNow(); // Interrupt everything
-				GamerLogger.logError("Gamer", "Gamer interrupted while computing initial state machine.");
-				GamerLogger.logStackTrace("Gamer", e);
+				//GamerLogger.logError("Gamer", "Gamer interrupted while computing initial state machine.");
+				//GamerLogger.logStackTrace("Gamer", e);
+				LOGGER.error("[DUCT GAMER] Gamer interrupted while computing initial state machine.", e);
 				Thread.currentThread().interrupt();
 				return new CachedStateMachine(new ProverStateMachine());
 			}
@@ -166,6 +187,20 @@ public class SlowDUCTGamer extends StateMachineGamer {
 			throw new StateMachineException("Impossible to play without the state machine based on the propnet.");
 		}
 
+		long start = System.currentTimeMillis();
+		long realTimeout = timeout - this.safetyMargin;
+		// Information to log at the end of metagame.
+		// As default value they are initialized with "-1". A value of "-1" for a parameter means that
+		// its value couldn't be computed (because there was no time or because of an error).
+		long thinkingTime;
+		long searchTime = -1;
+		int iterations = -1;
+    	int visitedNodes = -1;
+    	double iterationsPerSecond = -1;
+    	double nodesPerSecond = -1;
+		LOGGER.info("[DUCT GAMER] Starting metagame with available thinking time " + (realTimeout-start) + "ms.");
+		CSV_LOGGER.info("Game step;Thinking time;Search time;Iterations;Visited nodes;Iterations/second;Nodes/second;Chosen move;Move score sum;Move visits;Avg move score");
+
 		this.gameStep = 0;
 
 		SeparateInternalPropnetStateMachine thePropnetMachine = (SeparateInternalPropnetStateMachine) this.getStateMachine();
@@ -179,20 +214,40 @@ public class SlowDUCTGamer extends StateMachineGamer {
 
 		// If there is enough time left start the MCT search.
 		// Otherwise return from metagaming.
-		if(System.currentTimeMillis() < (timeout - this.safetyMargin)){
+		if(System.currentTimeMillis() < realTimeout){
 			// If search fails during metagame?? TODO: should I throw exception here and say I'm not able to play?
 			// If I don't it'll throw exception later anyway! Better stop now?
+			//GamerLogger.log("Gamer", "Starting search during metagame.");
+			LOGGER.info("[DUCT GAMER] Starting search during metagame.");
+
 			try {
-				GamerLogger.log("Gamer", "Starting search during metagame.");
-				this.mctsManager.search(thePropnetMachine.getInternalInitialState(), timeout-this.safetyMargin, gameStep+1);
-				GamerLogger.log("Gamer", "Done searching during metagame.");
-			} catch (MCTSException e) {
-				GamerLogger.logError("Gamer", "Exception during search while metagaming.");
-				GamerLogger.logStackTrace("Gamer", e);
+				this.mctsManager.search(thePropnetMachine.getInternalInitialState(), realTimeout, gameStep+1);
+				//GamerLogger.log("Gamer", "Done searching during metagame.");
+				LOGGER.info("[DUCT GAMER] Done searching during metagame.");
+				searchTime = this.mctsManager.getSearchTime();
+	        	iterations = this.mctsManager.getIterations();
+	        	visitedNodes = this.mctsManager.getVisitedNodes();
+	        	if(searchTime != 0){
+		        	iterationsPerSecond = ((double) iterations * 1000)/((double) searchTime);
+		        	nodesPerSecond = ((double) visitedNodes * 1000)/((double) searchTime);
+	        	}else{
+	        		iterationsPerSecond = 0;
+	        		nodesPerSecond = 0;
+	        	}
+	        	thinkingTime = System.currentTimeMillis() - start;
+			}catch(MCTSException e){
+				//GamerLogger.logError("Gamer", "Exception during search while metagaming.");
+				//GamerLogger.logStackTrace("Gamer", e);
+				LOGGER.error("[DUCT GAMER] Exception during search while metagaming.", e);
+				thinkingTime = System.currentTimeMillis() - start;
 			}
 		}else{
-			GamerLogger.log("Gamer", "No time to start the search during metagame.");
+			//GamerLogger.log("Gamer", "No time to start the search during metagame.");
+			LOGGER.info("[DUCT GAMER] No time to start the search during metagame.");
+			thinkingTime = System.currentTimeMillis() - start;
 		}
+
+		CSV_LOGGER.info(this.gameStep + ";" + thinkingTime + ";" + searchTime + ";" + iterations + ";" + visitedNodes + ";" + iterationsPerSecond + ";" + nodesPerSecond + ";null;-1;-1;-1;");
 	}
 
 	/* (non-Javadoc)
@@ -203,26 +258,74 @@ public class SlowDUCTGamer extends StateMachineGamer {
 			throws TransitionDefinitionException, MoveDefinitionException,
 			GoalDefinitionException, StateMachineException {
 
+		long start = System.currentTimeMillis();
+		long realTimeout = timeout - this.safetyMargin;
+
+		// Information to log at the end of move selection.
+		// As default value numeric parameters are initialized with "-1" and the others with "null".
+		// A value of "-1" or "null" for a parameter means that its value couldn't be computed
+		// (because there was no time or because of an error).
+		long thinkingTime;
+		long searchTime = -1;
+		int iterations = -1;
+    	int visitedNodes = -1;
+    	double iterationsPerSecond = -1;
+    	double nodesPerSecond = -1;
+    	Move theMove = null;
+    	double moveScoreSum = -1;
+    	long moveVisits = -1;
+    	double moveAvgScore = -1;
+
 		this.gameStep++;
+
+		LOGGER.info("[DUCT GAMER] Starting move selection for game step " + this.gameStep + " with available time " + (realTimeout-start) + "ms.");
 
 		SeparateInternalPropnetStateMachine thePropnetMachine = (SeparateInternalPropnetStateMachine) this.getStateMachine();
 
-		if(System.currentTimeMillis() < (timeout-this.safetyMargin)){
+		if(System.currentTimeMillis() < realTimeout){
+
+			LOGGER.info("[DUCT GAMER] Selecting move using MCTS.");
+
 			InternalPropnetMachineState currentState = thePropnetMachine.stateToInternalState(this.getCurrentState());
 
 			try {
 				DUCTMove selectedMove = this.mctsManager.getBestMove(currentState, timeout-this.safetyMargin, gameStep);
-				return thePropnetMachine.internalMoveToMove(selectedMove.getTheMove());
+
+				searchTime = this.mctsManager.getSearchTime();
+				iterations = this.mctsManager.getIterations();
+		    	visitedNodes = this.mctsManager.getVisitedNodes();
+		    	if(searchTime != 0){
+		        	iterationsPerSecond = ((double) iterations * 1000)/((double) searchTime);
+		        	nodesPerSecond = ((double) visitedNodes * 1000)/((double) searchTime);
+	        	}else{
+	        		iterationsPerSecond = 0;
+	        		nodesPerSecond = 0;
+	        	}
+		    	theMove = thePropnetMachine.internalMoveToMove(selectedMove.getTheMove());
+		    	moveScoreSum = selectedMove.getScoreSum();
+		    	moveVisits = selectedMove.getVisits();
+		    	moveAvgScore = moveScoreSum / ((double) moveVisits);
+
+				LOGGER.info("[DUCT GAMER] Returning MCTS move " + theMove + ".");
 			} catch (MCTSException e) {
-				GamerLogger.logError("Gamer", "MCTS failed to return a move.");
-				GamerLogger.logStackTrace("Gamer", e);
+				//GamerLogger.logError("Gamer", "MCTS failed to return a move.");
+				//GamerLogger.logStackTrace("Gamer", e);
+				// If the MCTS manager failed to return a move return a random one.
+				theMove = thePropnetMachine.getRandomMove(this.getCurrentState(), this.getRole());
+				LOGGER.error("[DUCT GAMER] MCTS failed to return a move. Returning random move " + theMove + ".", e);
 			}
+		}else{
+			// If there is no time return a random move.
+			//GamerLogger.log("Gamer", "No time to start the search during metagame.");
+			theMove = thePropnetMachine.getRandomMove(this.getCurrentState(), this.getRole());
+			LOGGER.info("[DUCT GAMER] No time to select next move using MCTS. Returning random move " + theMove + ".");
 		}
 
-		// If there is no time or the MCTS manager failed to return a move,
-		// return a random one.
-		return thePropnetMachine.getRandomMove(this.getCurrentState(), this.getRole());
+		thinkingTime = System.currentTimeMillis() - start;
 
+		CSV_LOGGER.info(this.gameStep + ";" + thinkingTime + ";" + searchTime + ";" + iterations + ";" + visitedNodes + ";" + iterationsPerSecond + ";" + nodesPerSecond + ";" + theMove + ";" + moveScoreSum + ";" + moveVisits + ";" + moveAvgScore + ";");
+
+		return theMove;
 	}
 
 	/* (non-Javadoc)
