@@ -64,7 +64,7 @@ public class SlowDUCTGamer extends StateMachineGamer {
 
 
 	/**
-	 * Parameters used by the mcts manager
+	 * Parameters used by the MCTS manager.
 	 */
 	private double c;
 	private double uctOffset;
@@ -166,6 +166,20 @@ public class SlowDUCTGamer extends StateMachineGamer {
 			throw new StateMachineException("Impossible to play without the state machine based on the propnet.");
 		}
 
+		long start = System.currentTimeMillis();
+		long realTimeout = timeout - this.safetyMargin;
+		// Information to log at the end of metagame.
+		// As default value they are initialized with "-1". A value of "-1" for a parameter means that
+		// its value couldn't be computed (because there was no time or because of an error).
+		long thinkingTime;
+		long searchTime = -1;
+		int iterations = -1;
+    	int visitedNodes = -1;
+    	double iterationsPerSecond = -1;
+    	double nodesPerSecond = -1;
+		GamerLogger.log("Gamer", "Starting metagame with available thinking time " + (realTimeout-start) + "ms.");
+		GamerLogger.log(GamerLogger.FORMAT.CSV_FORMAT, "Stats", "Game step;Thinking time(ms);Search time(ms);Iterations;Visited nodes;Iterations/second;Nodes/second;Chosen move;Move score sum;Move visits;Avg move score");
+
 		this.gameStep = 0;
 
 		SeparateInternalPropnetStateMachine thePropnetMachine = (SeparateInternalPropnetStateMachine) this.getStateMachine();
@@ -179,20 +193,40 @@ public class SlowDUCTGamer extends StateMachineGamer {
 
 		// If there is enough time left start the MCT search.
 		// Otherwise return from metagaming.
-		if(System.currentTimeMillis() < (timeout - this.safetyMargin)){
+		if(System.currentTimeMillis() < realTimeout){
 			// If search fails during metagame?? TODO: should I throw exception here and say I'm not able to play?
 			// If I don't it'll throw exception later anyway! Better stop now?
+
+			GamerLogger.log("Gamer", "Starting search during metagame.");
+
 			try {
-				GamerLogger.log("Gamer", "Starting search during metagame.");
-				this.mctsManager.search(thePropnetMachine.getInternalInitialState(), timeout-this.safetyMargin, gameStep+1);
+				this.mctsManager.search(thePropnetMachine.getInternalInitialState(), realTimeout, gameStep+1);
+
 				GamerLogger.log("Gamer", "Done searching during metagame.");
-			} catch (MCTSException e) {
+				searchTime = this.mctsManager.getSearchTime();
+	        	iterations = this.mctsManager.getIterations();
+	        	visitedNodes = this.mctsManager.getVisitedNodes();
+	        	if(searchTime != 0){
+		        	iterationsPerSecond = ((double) iterations * 1000)/((double) searchTime);
+		        	nodesPerSecond = ((double) visitedNodes * 1000)/((double) searchTime);
+	        	}else{
+	        		iterationsPerSecond = 0;
+	        		nodesPerSecond = 0;
+	        	}
+	        	thinkingTime = System.currentTimeMillis() - start;
+			}catch(MCTSException e) {
 				GamerLogger.logError("Gamer", "Exception during search while metagaming.");
 				GamerLogger.logStackTrace("Gamer", e);
+
+				thinkingTime = System.currentTimeMillis() - start;
 			}
 		}else{
 			GamerLogger.log("Gamer", "No time to start the search during metagame.");
+
+			thinkingTime = System.currentTimeMillis() - start;
 		}
+
+		GamerLogger.log(GamerLogger.FORMAT.CSV_FORMAT, "Stats", this.gameStep + ";" + thinkingTime + ";" + searchTime + ";" + iterations + ";" + visitedNodes + ";" + iterationsPerSecond + ";" + nodesPerSecond + ";null;-1;-1;-1;");
 	}
 
 	/* (non-Javadoc)
@@ -203,26 +237,75 @@ public class SlowDUCTGamer extends StateMachineGamer {
 			throws TransitionDefinitionException, MoveDefinitionException,
 			GoalDefinitionException, StateMachineException {
 
+		long start = System.currentTimeMillis();
+		long realTimeout = timeout - this.safetyMargin;
+
+		// Information to log at the end of move selection.
+		// As default value numeric parameters are initialized with "-1" and the others with "null".
+		// A value of "-1" or "null" for a parameter means that its value couldn't be computed
+		// (because there was no time or because of an error).
+		long thinkingTime;
+		long searchTime = -1;
+		int iterations = -1;
+    	int visitedNodes = -1;
+    	double iterationsPerSecond = -1;
+    	double nodesPerSecond = -1;
+    	Move theMove = null;
+    	double moveScoreSum = -1;
+    	long moveVisits = -1;
+    	double moveAvgScore = -1;
+
 		this.gameStep++;
+
+		GamerLogger.log("Gamer", "Starting move selection for game step " + this.gameStep + " with available time " + (realTimeout-start) + "ms.");
 
 		SeparateInternalPropnetStateMachine thePropnetMachine = (SeparateInternalPropnetStateMachine) this.getStateMachine();
 
-		if(System.currentTimeMillis() < (timeout-this.safetyMargin)){
+		if(System.currentTimeMillis() < realTimeout){
+
+			GamerLogger.log("Gamer", "Selecting move using MCTS.");
+
 			InternalPropnetMachineState currentState = thePropnetMachine.stateToInternalState(this.getCurrentState());
 
 			try {
 				DUCTMove selectedMove = this.mctsManager.getBestMove(currentState, timeout-this.safetyMargin, gameStep);
-				return thePropnetMachine.internalMoveToMove(selectedMove.getTheMove());
-			} catch (MCTSException e) {
-				GamerLogger.logError("Gamer", "MCTS failed to return a move.");
+
+				searchTime = this.mctsManager.getSearchTime();
+				iterations = this.mctsManager.getIterations();
+		    	visitedNodes = this.mctsManager.getVisitedNodes();
+		    	if(searchTime != 0){
+		        	iterationsPerSecond = ((double) iterations * 1000)/((double) searchTime);
+		        	nodesPerSecond = ((double) visitedNodes * 1000)/((double) searchTime);
+	        	}else{
+	        		iterationsPerSecond = 0;
+	        		nodesPerSecond = 0;
+	        	}
+		    	theMove = thePropnetMachine.internalMoveToMove(selectedMove.getTheMove());
+		    	moveScoreSum = selectedMove.getScoreSum();
+		    	moveVisits = selectedMove.getVisits();
+		    	moveAvgScore = moveScoreSum / ((double) moveVisits);
+
+				GamerLogger.log("Gamer", "Returning MCTS move " + theMove + ".");
+			}catch(MCTSException e){
+				//GamerLogger.logError("Gamer", "MCTS failed to return a move.");
+				//GamerLogger.logStackTrace("Gamer", e);
+				// If the MCTS manager failed to return a move return a random one.
+				theMove = thePropnetMachine.getRandomMove(this.getCurrentState(), this.getRole());
+				GamerLogger.log("Gamer", "MCTS failed to return a move. Returning random move " + theMove + ".");
 				GamerLogger.logStackTrace("Gamer", e);
 			}
+		}else{
+			// If there is no time return a random move.
+			//GamerLogger.log("Gamer", "No time to start the search during metagame.");
+			theMove = thePropnetMachine.getRandomMove(this.getCurrentState(), this.getRole());
+			GamerLogger.log("Gamer", "No time to select next move using MCTS. Returning random move " + theMove + ".");
 		}
 
-		// If there is no time or the MCTS manager failed to return a move,
-		// return a random one.
-		return thePropnetMachine.getRandomMove(this.getCurrentState(), this.getRole());
+		thinkingTime = System.currentTimeMillis() - start;
 
+		GamerLogger.log(GamerLogger.FORMAT.CSV_FORMAT, "Stats", this.gameStep + ";" + thinkingTime + ";" + searchTime + ";" + iterations + ";" + visitedNodes + ";" + iterationsPerSecond + ";" + nodesPerSecond + ";" + theMove + ";" + moveScoreSum + ";" + moveVisits + ";" + moveAvgScore + ";");
+
+		return theMove;
 	}
 
 	/* (non-Javadoc)
