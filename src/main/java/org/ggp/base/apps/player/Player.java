@@ -52,8 +52,8 @@ public final class Player extends JPanel
 		/**
 		 * LOG4J2 SETUP - START
 		 */
-		System.setProperty("Log4jContextSelector", "org.apache.logging.log4j.core.async.AsyncLoggerContextSelector");
-		System.setProperty("isThreadContextMapInheritable", "true");
+		//System.setProperty("Log4jContextSelector", "org.apache.logging.log4j.core.async.AsyncLoggerContextSelector");
+		//System.setProperty("isThreadContextMapInheritable", "true");
 		/**
 		 * LOG4J2 SETUP - END
 		 */
