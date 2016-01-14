@@ -8,14 +8,14 @@ public class DUCTMove {
 
 	private long visits;
 
-	private double scoreSum;
+	private long scoreSum;
 
 	private double uct;
 
 	public DUCTMove(InternalPropnetMove theMove) {
 		this.theMove = theMove;
 		this.visits = 0L;
-		this.scoreSum = 0.0;
+		this.scoreSum = 0L;
 		this.uct = 0.0;
 	}
 
@@ -31,11 +31,11 @@ public class DUCTMove {
 		this.visits++;
 	}
 
-	public double getScoreSum() {
+	public long getScoreSum() {
 		return this.scoreSum;
 	}
 
-	public void incrementScoreSum(double newScore) {
+	public void incrementScoreSum(long newScore) {
 		this.scoreSum += newScore;
 	}
 

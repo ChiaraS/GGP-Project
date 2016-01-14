@@ -5,6 +5,7 @@ import java.util.List;
 import java.util.Random;
 
 import org.ggp.base.util.concurrency.ConcurrencyUtils;
+import org.ggp.base.util.logging.GamerLogger;
 import org.ggp.base.util.statemachine.exceptions.GoalDefinitionException;
 import org.ggp.base.util.statemachine.exceptions.MoveDefinitionException;
 import org.ggp.base.util.statemachine.exceptions.StateMachineException;
@@ -240,6 +241,7 @@ public abstract class InternalPropnetStateMachine extends StateMachine{
 
 
 
+	/*
 	public int[] getLossGoals(InternalPropnetRole myRole){
 		int[] goals;
 		int numRoles = this.getInternalRoles().length;
@@ -249,14 +251,15 @@ public abstract class InternalPropnetStateMachine extends StateMachine{
 				// Attention! Since this rounds the goals to the next integer, it might make a zero-sum game loose
 				// the property of being zero-sum. However, this doesn't influence our MCTS implementation since it
 				// does not assume that games are always zero-sum.
-				goals[i] = (int) Math.round(1.0 / ((double)numRoles-1.0));
+				goals[i] = (int) Math.round(100.0 / ((double)numRoles-1.0));
 			}
 		}
 		goals[myRole.getIndex()] = 0;
 
 		return goals;
-	}
+	}*/
 
+	/*
 	public int[] getTieGoals(){
 		int[] goals;
 		int numRoles = this.getInternalRoles().length;
@@ -264,53 +267,92 @@ public abstract class InternalPropnetStateMachine extends StateMachine{
 		for(int i = 0; i < goals.length; i++){
 			// Attention! Since this rounds the goals to the next integer, it might make a zero-sum game loose
 			// the property of being zero-sum. However, this doesn't influence our MCTS implementation.
-			goals[i] = (int) Math.round(1.0 / ((double)numRoles));
+			goals[i] = (int) Math.round(100.0 / ((double)numRoles));
 		}
 
 		return goals;
-	}
-
-
-
-
-
-
+	}*/
 
 	/**
      * Returns the goal values for each role in the given state. If and when a goal
      * for a player cannot be computed in the state (either because of an error in
      * the description or because the state is non-terminal and so goals haven't
-     * been defined), the corresponding goal value is set to a default tie value.
+     * been defined), the corresponding goal value is set to 0 (loss).
      * The goal values are listed in the same order the roles are listed in the game
      * rules, which is the same order in which they're returned by {@link #getRoles()}.
      *
      * This method is safe, meaning that it won't throw any GoalDefinitionException,
-     * but it will set default values for the goals when they cannot be computed.
+     * but it will set a zero value for the goals when they cannot be computed.
+     *
+     * Note: method meant to be used for terminal states, where an error computing a
+     * goal must be penalized (i.e. we don't want to end the game in a terminal state
+     * we don't know anything about for our player).
      *
      * @param state the state for which to compute the goals.
      */
-	/*
-    public int[] getSafeGoalsLoss(InternalPropnetMachineState state){
+    public int[] getSafeTerminalGoals(InternalPropnetMachineState state){
     	InternalPropnetRole[] theRoles = this.getInternalRoles();
     	int[] theGoals = new int[theRoles.length];
         for (int i = 0; i < theRoles.length; i++) {
-            theGoals[i] = getGoal(state, theRoles[i]);
+            try {
+				theGoals[i] = getGoal(state, theRoles[i]);
+			} catch (GoalDefinitionException e){
+				GamerLogger.logError("StateMachine", "Failed to compute a goal value when computing safe terminal goals.");
+				GamerLogger.logStackTrace("StateMachine", e);
+				theGoals[i] = 0;
+			}
+        }
+        return theGoals;
+    }
+
+	/**
+     * Returns the goal values for each role in the given state. If and when a goal
+     * for a player cannot be computed in the state (either because of an error in
+     * the description or because the state is non-terminal and so goals haven't
+     * been defined), the corresponding goal value is set to 0 (loss).
+     * If the goals cannot be computed for all players, then each of them will get
+     * a tie goal (i.e. 100/#roles when #roles > 1, 50 when there is only one goal).
+     * The goal values are listed in the same order the roles are listed in the game
+     * rules, which is the same order in which they're returned by {@link #getRoles()}.
+     *
+     * This method is safe, meaning that it won't throw any GoalDefinitionException,
+     * but it will set a zero value for the goals when they cannot be computed.
+     *
+     * Note: method meant to be used for non-terminal states. An error computing the
+     * goal for a role in a non-terminal state doesn't mean that the state is bad for
+     * that role. It can be that the goals haven't been defined for that non-terminal
+     * state. For a non-terminal state, if some goals can be computed, we assume that
+     * the state is "bad" (i.e. a loss) for the players that cannot compute the goal,
+     * thus we assign them a 0 goal. However, if no player can compute its goal, we
+     * consider the state as a tie.
+     *
+     * @param state the state for which to compute the goals.
+     */
+    public int[] getSafeIntermediateGoals(InternalPropnetMachineState state){
+    	InternalPropnetRole[] theRoles = this.getInternalRoles();
+    	int failures = 0;
+    	int[] theGoals = new int[theRoles.length];
+        for (int i = 0; i < theRoles.length; i++) {
+            try {
+				theGoals[i] = getGoal(state, theRoles[i]);
+			} catch (GoalDefinitionException e){
+				GamerLogger.logError("StateMachine", "Failed to compute a goal value when computing safe non-terminal goals.");
+				GamerLogger.logStackTrace("StateMachine", e);
+				theGoals[i] = 0;
+				failures++;
+			}
+        }
+
+        // If computation of goal failed for all players...
+        if(failures == theRoles.length){
+        	for(int i = 0; i < theGoals.length; i++){
+    			// Attention! Since this rounds the goals to the next integer, it might make a zero-sum game loose
+    			// the property of being zero-sum. However, this doesn't influence our MCTS implementation.
+    			theGoals[i] = (int) Math.round(100.0 / ((double)theRoles.length));
+    		}
+
         }
         return theGoals;
 
-        int[] goals;
-		int numRoles = this.theMachine.getInternalRoles().length;
-		goals = new int[numRoles];
-		if(numRoles > 1){
-			for(int i = 0; i < goals.length; i++){
-				// Attention! Since this rounds the goals to the next integer, it might make a zero-sum game loose
-				// the property of being zero-sum. However, this doesn't influence our MCTS implementation since it
-				// does not assume that games are always zero-sum.
-				goals[i] = (int) Math.round(1.0 / ((double)numRoles-1.0));
-			}
-		}
-		goals[this.myRole.getIndex()] = 0;
-
-		return goals;
-    }*/
+    }
 }

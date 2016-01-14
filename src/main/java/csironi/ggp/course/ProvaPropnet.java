@@ -60,7 +60,9 @@ public class ProvaPropnet {
 
 	public static void main(String []args) throws MoveDefinitionException, TransitionDefinitionException, GoalDefinitionException, StateMachineInitializationException{
 
-		altraProva();
+		//altraProva();
+
+		ennesimaProva();
 
 		//printDynamicPropnet("onestep", 420000L);
 
@@ -115,6 +117,57 @@ public class ProvaPropnet {
 
 	}
 
+	private static double computeDUCTvalue(double score, double moveVisits, double nodeVisits){
+
+		double c = 0.7;
+		// NOTE: this should never happen if we use this class together with the InternalPropnetMCTSManager
+		// because the selection phase in a node starts only after all moves have been expanded and visited
+		// at least once. However a check is performed to keep the computation consistent even when a move
+		// has never been visited (i.e. the "infinite" value (Double.MAX_VALUE) is returned).
+		if(moveVisits == 0){
+			return Double.MAX_VALUE;
+		}
+
+		double avgScore = (score / moveVisits) / 100.0;
+		double exploration = c * (Math.sqrt(Math.log(nodeVisits)/moveVisits));
+		return  avgScore + exploration;
+
+	}
+
+	public static void ennesimaProva(){
+		int a = 59078294;
+
+		System.out.println(a);
+
+		System.out.println(a * 1000);
+
+		System.out.println(a * 1000.0);
+
+		System.out.println((double) a * 1000);
+
+		System.out.println((double) a * 1000.0);
+
+		System.out.println(((double) (a * 1000)));
+
+		System.out.println(((double) (a * 1000.0)));
+
+		long aa = 59078294;
+
+		System.out.println(aa);
+
+		System.out.println(aa * 1000);
+
+		System.out.println(aa * 1000.0);
+
+		System.out.println((double) aa * 1000);
+
+		System.out.println((double) aa * 1000.0);
+
+		System.out.println(((double) (aa * 1000)));
+
+		System.out.println(((double) (aa * 1000.0)));
+
+	}
 
 	public static void printDynamicPropnet(String gameKey, long givenInitTime) throws StateMachineInitializationException{
 

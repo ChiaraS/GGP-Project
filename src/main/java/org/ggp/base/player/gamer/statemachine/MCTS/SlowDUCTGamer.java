@@ -87,7 +87,7 @@ public class SlowDUCTGamer extends StateMachineGamer {
 		this.c = 0.7;
 		this.uctOffset = 0.01;
 		this.gameStepOffset = 2;
-		this.maxSearchDepth = 1000;
+		this.maxSearchDepth = 500;
 	}
 
 	/* (non-Javadoc)
@@ -251,7 +251,7 @@ public class SlowDUCTGamer extends StateMachineGamer {
     	double iterationsPerSecond = -1;
     	double nodesPerSecond = -1;
     	Move theMove = null;
-    	double moveScoreSum = -1;
+    	long moveScoreSum = -1L;
     	long moveVisits = -1;
     	double moveAvgScore = -1;
 

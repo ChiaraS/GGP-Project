@@ -123,7 +123,7 @@ public class DUCTSelection implements SelectionStrategy {
 
 		double avgScore = (score / moveVisits) / 100.0;
 		double exploration = this.c * (Math.sqrt(Math.log(nodeVisits)/moveVisits));
-		return  avgScore + exploration;
+		return avgScore + exploration;
 
 	}
 

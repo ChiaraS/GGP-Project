@@ -191,7 +191,7 @@ public class DUCTMCTSSpeedTest {
 	        double nodesPerSecond = -1;
 	        Role playingRole = null;
 	        Move chosenMove = null;
-	        double scoresSum = -1.0;
+	        long scoresSum = -1L;
 	        long visits = -1;
 	        double averageScore = -1;
 
@@ -235,7 +235,7 @@ public class DUCTMCTSSpeedTest {
 		 	        scoresSum = finalMove.getScoreSum();
 		 	        visits = finalMove.getVisits();
 		 	        if(visits != 0){
-		 	        	averageScore = scoresSum / ((double) visits);
+		 	        	averageScore = ((double) scoresSum) / ((double) visits);
 		 	        }
 		 	        iterations = MCTSmanager.getIterations();
 		        	visitedNodes = MCTSmanager.getVisitedNodes();
