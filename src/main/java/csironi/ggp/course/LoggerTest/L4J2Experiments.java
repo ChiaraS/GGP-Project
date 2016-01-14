@@ -19,8 +19,6 @@ public class L4J2Experiments {
 		//Logger CSV_LOGGER = LogManager.getLogger("CSVLogger");
 
 		final LoggerContext ctx = (LoggerContext) LogManager.getContext(false);
-
-		ctx.
 	    final Configuration config = ctx.getConfiguration();
 	    Map<String, Appender> appenders = config.getAppenders();
 	    System.out.println("Num of appenders: " + appenders.size());
