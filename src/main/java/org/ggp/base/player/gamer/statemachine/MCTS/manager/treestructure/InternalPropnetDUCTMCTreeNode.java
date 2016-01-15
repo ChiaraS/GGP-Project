@@ -35,8 +35,9 @@ public class InternalPropnetDUCTMCTreeNode{
 
 		this.moves = moves;
 
-		// If this state has legal moves for the players (i.e. is not terminal),
-		// we keep track of the number of not yet visited moves for each player.
+		// If this state has legal moves for the players (i.e. is not terminal
+		// nor pseudo-terminal), we keep track of the number of not yet visited
+		// moves for each player.
 		if(moves != null){
 			this.unexploredMovesCount = new int[moves.length];
 

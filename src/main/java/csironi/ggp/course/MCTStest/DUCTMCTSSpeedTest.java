@@ -13,6 +13,7 @@ import org.ggp.base.player.gamer.statemachine.MCTS.manager.strategies.movechoice
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.strategies.playout.RandomPlayout;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.strategies.selection.DUCTSelection;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.DUCTMove;
+import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.InternalPropnetDUCTMCTreeNode;
 import org.ggp.base.util.game.GameRepository;
 import org.ggp.base.util.gdl.grammar.Gdl;
 import org.ggp.base.util.gdl.grammar.GdlPool;
@@ -104,7 +105,7 @@ public class DUCTMCTSSpeedTest {
 		InternalPropnetStateMachine thePropnetMachine;
 
 		GamerLogger.setSpilloverLogfile("DUCTMCTSSpeedTestTable.csv");
-	    GamerLogger.log(FORMAT.CSV_FORMAT, "DUCTMCTSSpeedTestTable", "Game key;PN Construction Time (ms);PN Initialization Time (ms);SM initialization time;Test Duration (ms);Search time(ms);Iterations;Visited Nodes;Iterations/second;Nodes/second;Playing role;Chosen move;Scores sum;Visits;AverageScore");
+	    GamerLogger.log(FORMAT.CSV_FORMAT, "DUCTMCTSSpeedTestTable", "Game key;#Roles;PN Construction Time (ms);PN Initialization Time (ms);SM initialization time;Test Duration (ms);Search time(ms);Iterations;Visited Nodes;Iterations/second;Nodes/second;Playing role;Chosen move;Scores sum;Visits;AverageScore");
 
 	    GameRepository theRepository = GameRepository.getDefaultRepository();
 	    for(String gameKey : theRepository.getGameKeys()) {
@@ -221,14 +222,15 @@ public class DUCTMCTSSpeedTest {
 
 		        InternalPropnetMCTSManager MCTSmanager = new InternalPropnetMCTSManager(new DUCTSelection(r, uctOffset, c),
 		        		new RandomExpansion(r), new RandomPlayout(thePropnetMachine), new StandardBackpropagation(),
-		        		new MaximumScoreChoice(r), thePropnetMachine, thePropnetMachine.getInternalRoles()[0], 2, 1000);
+		        		new MaximumScoreChoice(r), thePropnetMachine, 2, 1000);
 
 		        playingRole = thePropnetMachine.internalRoleToRole(thePropnetMachine.getInternalRoles()[0]);
 
 		        try{
 		        	GamerLogger.log("DUCTMCTSSpeedTest", "Starting search.");
 
-		        	DUCTMove finalMove = MCTSmanager.getBestMove(thePropnetMachine.getInternalInitialState(), System.currentTimeMillis() + testTime, gameStep);
+		        	InternalPropnetDUCTMCTreeNode initialNode = MCTSmanager.search(thePropnetMachine.getInternalInitialState(), System.currentTimeMillis() + testTime, gameStep);
+		        	DUCTMove finalMove = MCTSmanager.getBestMove(initialNode, thePropnetMachine.getInternalRoles()[0]);
 
 		        	GamerLogger.log("DUCTMCTSSpeedTest", "Search ended correctly.");
 		        	chosenMove = thePropnetMachine.internalMoveToMove(finalMove.getTheMove());
@@ -262,7 +264,7 @@ public class DUCTMCTSSpeedTest {
 
 	        GamerLogger.stopFileLogging();
 
-	        GamerLogger.log(FORMAT.CSV_FORMAT, "DUCTMCTSSpeedTestTable", gameKey + ";" + manager.getPropnetConstructionTime() + ";" + manager.getTotalInitTime() + ";" + initializationTime + ";" + testDuration + ";" + searchTime + ";" + iterations + ";" + visitedNodes + ";" + iterationsPerSecond + ";" + nodesPerSecond + ";" + playingRole + ";" + chosenMove + ";" + scoresSum + ";" + visits + ";" + averageScore + ";");
+	        GamerLogger.log(FORMAT.CSV_FORMAT, "DUCTMCTSSpeedTestTable", gameKey + ";" + thePropnetMachine.getInternalRoles().length + ";" + manager.getPropnetConstructionTime() + ";" + manager.getTotalInitTime() + ";" + initializationTime + ";" + testDuration + ";" + searchTime + ";" + iterations + ";" + visitedNodes + ";" + iterationsPerSecond + ";" + nodesPerSecond + ";" + playingRole + ";" + chosenMove + ";" + scoresSum + ";" + visits + ";" + averageScore + ";");
 
 	        /***************************************/
 	        System.gc();

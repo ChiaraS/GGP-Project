@@ -140,27 +140,34 @@ public abstract class InternalPropnetStateMachine extends StateMachine{
     }
 
     /**
-     * Returns a state derived from repeatedly making random joint moves
-     * until reaching the end of the game or the maximum given depth.
+     * Returns a state derived from repeatedly making random joint moves until
+     * reaching the end of the game or the maximum given depth or a non-terminal
+     * state from which it cannot continue the playout (for example because an
+     * exception is thrown when computing legal moves).
      *
+     * @param state the state from where to start the playout.
      * @param theDepth an integer array, the 0th element of which will be set to
      * the number of state changes that were made to reach the returned state.
      * @param maxDepth the maximum depth of the tree that this method must explore.
      *
-     * @throws TransitionDefinitionException indicates an error in either the
-     * game description or the StateMachine implementation.
-     * @throws MoveDefinitionException if a role has no legal moves. This indicates
-     * an error in either the game description or the StateMachine implementation.
-     * @throws StateMachineException if it was not possible to completely perform a
-     * playout of the game because of an error that occurred in the state machine and
-     * couldn't be handled.
+     * Note: this method is safe, meaning that it won't throw any checked Exception,
+     * but it will always return a state (that might not be terminal).
      */
-	public InternalPropnetMachineState performLimitedDepthCharge(InternalPropnetMachineState state, final int[] theDepth, int maxDepth) throws TransitionDefinitionException, MoveDefinitionException, StateMachineException {
+	public InternalPropnetMachineState performSafeLimitedDepthCharge(InternalPropnetMachineState state, final int[] theDepth, int maxDepth){
         int nDepth = 0;
 
         while(nDepth < maxDepth && !isTerminal(state)) {
+
+        	List<InternalPropnetMove> jointMove = null;
+			try {
+				jointMove = getRandomJointMove(state);
+			} catch (MoveDefinitionException e) {
+				GamerLogger.logError("StateMachine", "Exception getting a joint move while performing safe limited depth charges.");
+				GamerLogger.logStackTrace("StateMachine", e);
+				break;
+			}
+			state = getInternalNextState(state, jointMove);
             nDepth++;
-            state = getInternalNextState(state, getRandomJointMove(state));
         }
         if(theDepth != null)
             theDepth[0] = nDepth;
@@ -290,14 +297,14 @@ public abstract class InternalPropnetStateMachine extends StateMachine{
      *
      * @param state the state for which to compute the goals.
      */
-    public int[] getSafeTerminalGoals(InternalPropnetMachineState state){
+    public int[] getSafeGoals(InternalPropnetMachineState state){
     	InternalPropnetRole[] theRoles = this.getInternalRoles();
     	int[] theGoals = new int[theRoles.length];
         for (int i = 0; i < theRoles.length; i++) {
             try {
 				theGoals[i] = getGoal(state, theRoles[i]);
 			} catch (GoalDefinitionException e){
-				GamerLogger.logError("StateMachine", "Failed to compute a goal value when computing safe terminal goals.");
+				GamerLogger.logError("StateMachine", "Failed to compute a goal value when computing safe goals.");
 				GamerLogger.logStackTrace("StateMachine", e);
 				theGoals[i] = 0;
 			}
@@ -328,7 +335,7 @@ public abstract class InternalPropnetStateMachine extends StateMachine{
      *
      * @param state the state for which to compute the goals.
      */
-    public int[] getSafeIntermediateGoals(InternalPropnetMachineState state){
+    public int[] getSafeGoalsTie(InternalPropnetMachineState state){
     	InternalPropnetRole[] theRoles = this.getInternalRoles();
     	int failures = 0;
     	int[] theGoals = new int[theRoles.length];
@@ -336,21 +343,26 @@ public abstract class InternalPropnetStateMachine extends StateMachine{
             try {
 				theGoals[i] = getGoal(state, theRoles[i]);
 			} catch (GoalDefinitionException e){
-				GamerLogger.logError("StateMachine", "Failed to compute a goal value when computing safe non-terminal goals.");
+				GamerLogger.logError("StateMachine", "Failed to compute a goal value when computing safe goals with tie default.");
 				GamerLogger.logStackTrace("StateMachine", e);
-				theGoals[i] = 0;
+				theGoals[i] = 0; // TODO: should this be 50???
 				failures++;
 			}
         }
 
         // If computation of goal failed for all players...
         if(failures == theRoles.length){
-        	for(int i = 0; i < theGoals.length; i++){
-    			// Attention! Since this rounds the goals to the next integer, it might make a zero-sum game loose
-    			// the property of being zero-sum. However, this doesn't influence our MCTS implementation.
-    			theGoals[i] = (int) Math.round(100.0 / ((double)theRoles.length));
-    		}
-
+        	// Distinguish the single-player case from the multi-player case.
+        	if(theRoles.length == 1){
+        		theGoals[0] = 50;
+        	}else{
+        		int defaultGoal = (int) Math.round(100.0 / ((double)theRoles.length));
+        		for(int i = 0; i < theGoals.length; i++){
+        			// Attention! Since this rounds the goals to the next integer, it might make a zero-sum game loose
+        			// the property of being zero-sum. However, this doesn't influence our MCTS implementation.
+        			theGoals[i] = defaultGoal;
+        		}
+        	}
         }
         return theGoals;
 

@@ -41,6 +41,13 @@ public class SeparateInternalPropnetStateMachine extends InternalPropnetStateMac
 	public SeparateInternalPropnetStateMachine(ImmutablePropNet propNet, ImmutableSeparatePropnetState propnetState){
 		this.propNet = propNet;
 		this.propnetState = propnetState;
+		if(this.propNet != null && this.propnetState != null){
+    		this.roles = new InternalPropnetRole[this.propNet.getRoles().length];
+    		for(int i = 0; i < this.roles.length; i++){
+    			this.roles[i] = new InternalPropnetRole(i);
+    		}
+    		this.initialState = new InternalPropnetMachineState(this.propnetState.getCurrentState().clone());
+    	}
 	}
 
     /**
@@ -52,13 +59,7 @@ public class SeparateInternalPropnetStateMachine extends InternalPropnetStateMac
      */
     @Override
     public void initialize(List<Gdl> description, long timeout) throws StateMachineInitializationException {
-    	if(this.propNet != null && this.propnetState != null){
-    		this.roles = new InternalPropnetRole[this.propNet.getRoles().length];
-    		for(int i = 0; i < this.roles.length; i++){
-    			this.roles[i] = new InternalPropnetRole(i);
-    		}
-    		this.initialState = new InternalPropnetMachineState(this.propnetState.getCurrentState().clone());
-    	}else{
+    	if(this.propNet == null || this.propnetState == null){
     		GamerLogger.log("StateMachine", "[ExternalPropnet] State machine initialized with at least one among the propnet structure and the propnet state set to null. Impossible to reason on the game!");
     		throw new StateMachineInitializationException("Null parameter passed during instantiaton of the state mahcine: cannot reason on the game with null propnet or null propnet state.");
     	}
@@ -359,6 +360,7 @@ public class SeparateInternalPropnetStateMachine extends InternalPropnetStateMac
 	 * @return a machine state extended with the bit array representing the truth value in
 	 * the state for each base proposition.
 	 */
+	@Override
 	public InternalPropnetMachineState stateToInternalState(MachineState state){
 		if(state != null){
 			ImmutableProposition[] baseProps = this.propNet.getBasePropositions();
@@ -377,6 +379,7 @@ public class SeparateInternalPropnetStateMachine extends InternalPropnetStateMac
 		return null;
 	}
 
+	@Override
 	public MachineState internalStateToState(InternalPropnetMachineState state){
 		if(state != null){
 			ImmutableProposition[] baseProps = this.propNet.getBasePropositions();
@@ -395,6 +398,7 @@ public class SeparateInternalPropnetStateMachine extends InternalPropnetStateMac
 		return null;
 	}
 
+	@Override
 	public Role internalRoleToRole(InternalPropnetRole role){
 		if(role != null){
 			return this.propNet.getRoles()[role.getIndex()];
@@ -403,6 +407,7 @@ public class SeparateInternalPropnetStateMachine extends InternalPropnetStateMac
 		return null;
 	}
 
+	@Override
 	public InternalPropnetRole roleToInternalRole(Role role){
 		if(role != null){
 			// TODO check if index is -1 -> should never happen if the role given as input is a valid role.
@@ -417,10 +422,12 @@ public class SeparateInternalPropnetStateMachine extends InternalPropnetStateMac
 		return null;
 	}
 
+	@Override
 	public Move internalMoveToMove(InternalPropnetMove move){
 		return getMoveFromProposition(this.propNet.getInputPropositions()[move.getIndex()]);
 	}
 
+	@Override
 	public InternalPropnetMove moveToInternalMove(Move move){
 		List<Move> moveArray = new ArrayList<Move>();
 		moveArray.add(move);
@@ -443,6 +450,7 @@ public class SeparateInternalPropnetStateMachine extends InternalPropnetStateMac
 	 * @param roleIndex
 	 * @return
 	 */
+	@Override
 	public List<InternalPropnetMove> movesToInternalMoves(List<Move> moves){
 
 		List<InternalPropnetMove> transformedMoves = new ArrayList<InternalPropnetMove>();

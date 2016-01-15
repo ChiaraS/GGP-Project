@@ -18,11 +18,14 @@ import org.ggp.base.player.gamer.statemachine.MCTS.manager.strategies.movechoice
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.strategies.playout.RandomPlayout;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.strategies.selection.DUCTSelection;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.DUCTMove;
+import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.InternalPropnetDUCTMCTreeNode;
 import org.ggp.base.util.game.Game;
+import org.ggp.base.util.gdl.grammar.GdlPool;
 import org.ggp.base.util.logging.GamerLogger;
 import org.ggp.base.util.propnet.architecture.separateExtendedState.immutable.ImmutablePropNet;
 import org.ggp.base.util.propnet.creationManager.SeparatePropnetCreationManager;
 import org.ggp.base.util.propnet.state.ImmutableSeparatePropnetState;
+import org.ggp.base.util.statemachine.InternalPropnetStateMachine;
 import org.ggp.base.util.statemachine.Move;
 import org.ggp.base.util.statemachine.StateMachine;
 import org.ggp.base.util.statemachine.cache.CachedStateMachine;
@@ -33,7 +36,6 @@ import org.ggp.base.util.statemachine.exceptions.TransitionDefinitionException;
 import org.ggp.base.util.statemachine.implementation.propnet.SeparateInternalPropnetStateMachine;
 import org.ggp.base.util.statemachine.implementation.prover.ProverStateMachine;
 import org.ggp.base.util.statemachine.inernalPropnetStructure.InternalPropnetMachineState;
-import org.ggp.base.util.statemachine.inernalPropnetStructure.InternalPropnetRole;
 
 /**
  * This player performs Decoupled UCT Monte Carlo Tree Search.
@@ -75,7 +77,12 @@ public class SlowDUCTGamer extends StateMachineGamer {
 	/**
 	 * The class that takes care of performing Monte Carlo tree search.
 	 */
-	private InternalPropnetMCTSManager mctsManager;
+	protected InternalPropnetMCTSManager mctsManager;
+
+	/**
+	 * The personal reference to the propnet machine.
+	 */
+	protected InternalPropnetStateMachine thePropnetMachine;
 
 	/**
 	 *
@@ -88,6 +95,8 @@ public class SlowDUCTGamer extends StateMachineGamer {
 		this.uctOffset = 0.01;
 		this.gameStepOffset = 2;
 		this.maxSearchDepth = 500;
+
+		this.thePropnetMachine = null;
 	}
 
 	/* (non-Javadoc)
@@ -119,6 +128,9 @@ public class SlowDUCTGamer extends StateMachineGamer {
 				GamerLogger.logError("Gamer", "Gamer interrupted while computing initial state machine.");
 				GamerLogger.logStackTrace("Gamer", e);
 				Thread.currentThread().interrupt();
+
+				System.out.println("Returning prover state machine.");
+
 				return new CachedStateMachine(new ProverStateMachine());
 			}
 
@@ -143,10 +155,16 @@ public class SlowDUCTGamer extends StateMachineGamer {
 				if(propnet != null && propnetState != null){
 
 					// Create the state machine giving it the propnet and the propnet state.
-				    return new SeparateInternalPropnetStateMachine(propnet, propnetState);
+				    this.thePropnetMachine =  new SeparateInternalPropnetStateMachine(propnet, propnetState);
+
+				    System.out.println("Returning propnet state machine.");
+
+				    return this.thePropnetMachine;
 				}
 			}
 		}
+
+		System.out.println("Returning prover state machine.");
 
 		return new CachedStateMachine(new ProverStateMachine());
 	}
@@ -162,7 +180,7 @@ public class SlowDUCTGamer extends StateMachineGamer {
 		// For now the player can play only with the state machine based on the propnet.
 		// TODO: temporary solution! FIX!
 		// We throw an exception if the state machine based on the propnet couldn't be initialized.
-		if(!(this.getStateMachine() instanceof SeparateInternalPropnetStateMachine)){
+		if(this.thePropnetMachine == null){
 			throw new StateMachineException("Impossible to play without the state machine based on the propnet.");
 		}
 
@@ -182,14 +200,12 @@ public class SlowDUCTGamer extends StateMachineGamer {
 
 		this.gameStep = 0;
 
-		SeparateInternalPropnetStateMachine thePropnetMachine = (SeparateInternalPropnetStateMachine) this.getStateMachine();
 		Random r = new Random();
-		InternalPropnetRole myRole = thePropnetMachine.getInternalRoles()[thePropnetMachine.getRoleIndices().get(this.getRole())];
 
 		// Create the MCTS manager and start simulations.
 		this.mctsManager = new InternalPropnetMCTSManager(new DUCTSelection(r, uctOffset, c),
-	       		new RandomExpansion(r), new RandomPlayout(thePropnetMachine), new StandardBackpropagation(),
-	       		new MaximumScoreChoice(r), thePropnetMachine, myRole, gameStepOffset, maxSearchDepth);
+	       		new RandomExpansion(r), new RandomPlayout(this.thePropnetMachine), new StandardBackpropagation(),
+	       		new MaximumScoreChoice(r), this.thePropnetMachine, gameStepOffset, maxSearchDepth);
 
 		// If there is enough time left start the MCT search.
 		// Otherwise return from metagaming.
@@ -200,7 +216,7 @@ public class SlowDUCTGamer extends StateMachineGamer {
 			GamerLogger.log("Gamer", "Starting search during metagame.");
 
 			try {
-				this.mctsManager.search(thePropnetMachine.getInternalInitialState(), realTimeout, gameStep+1);
+				this.mctsManager.search(this.thePropnetMachine.getInternalInitialState(), realTimeout, gameStep+1);
 
 				GamerLogger.log("Gamer", "Done searching during metagame.");
 				searchTime = this.mctsManager.getSearchTime();
@@ -259,16 +275,15 @@ public class SlowDUCTGamer extends StateMachineGamer {
 
 		GamerLogger.log("Gamer", "Starting move selection for game step " + this.gameStep + " with available time " + (realTimeout-start) + "ms.");
 
-		SeparateInternalPropnetStateMachine thePropnetMachine = (SeparateInternalPropnetStateMachine) this.getStateMachine();
-
 		if(System.currentTimeMillis() < realTimeout){
 
 			GamerLogger.log("Gamer", "Selecting move using MCTS.");
 
-			InternalPropnetMachineState currentState = thePropnetMachine.stateToInternalState(this.getCurrentState());
+			InternalPropnetMachineState currentState = this.thePropnetMachine.stateToInternalState(this.getCurrentState());
 
 			try {
-				DUCTMove selectedMove = this.mctsManager.getBestMove(currentState, timeout-this.safetyMargin, gameStep);
+				InternalPropnetDUCTMCTreeNode currentNode = this.mctsManager.search(currentState, realTimeout, gameStep);
+				DUCTMove selectedMove = this.mctsManager.getBestMove(currentNode, this.thePropnetMachine.getInternalRoles()[this.thePropnetMachine.getRoleIndices().get(this.getRole())]);
 
 				searchTime = this.mctsManager.getSearchTime();
 				iterations = this.mctsManager.getIterations();
@@ -280,24 +295,23 @@ public class SlowDUCTGamer extends StateMachineGamer {
 	        		iterationsPerSecond = 0;
 	        		nodesPerSecond = 0;
 	        	}
-		    	theMove = thePropnetMachine.internalMoveToMove(selectedMove.getTheMove());
+		    	theMove = this.thePropnetMachine.internalMoveToMove(selectedMove.getTheMove());
 		    	moveScoreSum = selectedMove.getScoreSum();
 		    	moveVisits = selectedMove.getVisits();
 		    	moveAvgScore = moveScoreSum / ((double) moveVisits);
 
 				GamerLogger.log("Gamer", "Returning MCTS move " + theMove + ".");
 			}catch(MCTSException e){
-				//GamerLogger.logError("Gamer", "MCTS failed to return a move.");
-				//GamerLogger.logStackTrace("Gamer", e);
-				// If the MCTS manager failed to return a move return a random one.
-				theMove = thePropnetMachine.getRandomMove(this.getCurrentState(), this.getRole());
-				GamerLogger.log("Gamer", "MCTS failed to return a move. Returning random move " + theMove + ".");
+				GamerLogger.logError("Gamer", "MCTS failed to return a move.");
 				GamerLogger.logStackTrace("Gamer", e);
+				// If the MCTS manager failed to return a move return a random one.
+				theMove = this.thePropnetMachine.getRandomMove(this.getCurrentState(), this.getRole());
+				GamerLogger.log("Gamer", "Returning random move " + theMove + ".");
 			}
 		}else{
 			// If there is no time return a random move.
 			//GamerLogger.log("Gamer", "No time to start the search during metagame.");
-			theMove = thePropnetMachine.getRandomMove(this.getCurrentState(), this.getRole());
+			theMove = this.thePropnetMachine.getRandomMove(this.getCurrentState(), this.getRole());
 			GamerLogger.log("Gamer", "No time to select next move using MCTS. Returning random move " + theMove + ".");
 		}
 
@@ -313,7 +327,10 @@ public class SlowDUCTGamer extends StateMachineGamer {
 	 */
 	@Override
 	public void stateMachineStop() {
-		// TODO Auto-generated method stub
+
+		this.mctsManager = null;
+		System.gc();
+        GdlPool.drainPool();
 
 	}
 
@@ -322,7 +339,10 @@ public class SlowDUCTGamer extends StateMachineGamer {
 	 */
 	@Override
 	public void stateMachineAbort() {
-		// TODO Auto-generated method stub
+
+		this.mctsManager = null;
+		System.gc();
+        GdlPool.drainPool();
 
 	}
 

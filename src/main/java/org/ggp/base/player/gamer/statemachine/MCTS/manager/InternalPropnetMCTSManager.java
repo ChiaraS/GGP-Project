@@ -17,7 +17,6 @@ import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.DUCTTra
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.InternalPropnetDUCTMCTreeNode;
 import org.ggp.base.util.logging.GamerLogger;
 import org.ggp.base.util.statemachine.InternalPropnetStateMachine;
-import org.ggp.base.util.statemachine.exceptions.GoalDefinitionException;
 import org.ggp.base.util.statemachine.exceptions.MoveDefinitionException;
 import org.ggp.base.util.statemachine.inernalPropnetStructure.InternalPropnetMachineState;
 import org.ggp.base.util.statemachine.inernalPropnetStructure.InternalPropnetMove;
@@ -46,11 +45,6 @@ public class InternalPropnetMCTSManager extends MCTSManager {
 	 * The state machine that this MCTS manager uses to reason on the game
 	 */
 	private InternalPropnetStateMachine theMachine;
-
-	/**
-	 * The role of the playing gamer.
-	 */
-	private InternalPropnetRole myRole;
 
 	/**
 	 * Maximum depth that the MCTS algorithm must visit.
@@ -91,10 +85,10 @@ public class InternalPropnetMCTSManager extends MCTSManager {
 	/**
 	 *
 	 */
-	public InternalPropnetMCTSManager(SelectionStrategy selectionStrategy, ExpansionStrategy expansionStrategy,
-			PlayoutStrategy playoutStrategy, BackpropagationStrategy backpropagationStrategy,
-			MoveChoiceStrategy moveChoiceStrategy, InternalPropnetStateMachine theMachine,
-			InternalPropnetRole myRole, int gameStepOffset, int maxSearchDepth) {
+	public InternalPropnetMCTSManager(SelectionStrategy selectionStrategy,
+			ExpansionStrategy expansionStrategy, PlayoutStrategy playoutStrategy,
+			BackpropagationStrategy backpropagationStrategy, MoveChoiceStrategy moveChoiceStrategy,
+			InternalPropnetStateMachine theMachine,	int gameStepOffset, int maxSearchDepth) {
 
 		this.selectionStrategy = selectionStrategy;
 		this.expansionStrategy = expansionStrategy;
@@ -102,7 +96,6 @@ public class InternalPropnetMCTSManager extends MCTSManager {
 		this.backpropagationStrategy = backpropagationStrategy;
 		this.moveChoiceStrategy = moveChoiceStrategy;
 		this.theMachine = theMachine;
-		this.myRole = myRole;
 		this.transpositionTable = new DUCTTranspositionTable(gameStepOffset);
 		this.maxSearchDepth = maxSearchDepth;
 		this.iterations = 0;
@@ -113,39 +106,23 @@ public class InternalPropnetMCTSManager extends MCTSManager {
 	}
 
 	/**
-	 * This method takes care of performing the MCT search on the given state and then
-	 * returning the best move in such state.
-	 * First it prepares the manager for the search and then actually performs the search.
-	 * It also takes care of checking if the search can actually be performed on the given
-	 * state.
+	 * This method computes the best move in a state, given the corresponding MCT node.
 	 *
-	 * Note that if there is no time to perform the search the method will just retrieve (or
-	 * create if it doesn't exist) the MCT node. Getting the node is useful because even if
-	 * there is no time for the search, the node corresponding to the given state might already
-	 * exist and contain some statistics that can later be used in the chooseBestMove() method.
-	 *
-	 * @param initialState the state from which to start the search.
-	 * @param timeout the time by when the method must return.
-	 * @param gameStep the game step currently being played.
+	 * @param theNode the tree node for which to choose the best move.
+	 * @param theRole the role for which to choose the best move in the given node.
 	 * @return the selected best move.
-	 * @throws MCTSException if the search cannot be performed on the state because the
-	 * state is either terminal or there is some problem with the computation of legal
+	 * @throws MCTSException if the best move cannot be computed for the state because
+	 * it is either terminal or there is some problem with the computation of legal
 	 * moves (and thus corresponding statistics).
 	 */
-	public DUCTMove getBestMove(InternalPropnetMachineState initialState, long timeout, int gameStep) throws MCTSException{
+	public DUCTMove getBestMove(InternalPropnetDUCTMCTreeNode theNode, InternalPropnetRole theRole)throws MCTSException{
 
-		// If we already passes timeout throw an exception saying that the move cannot be computed.
-		InternalPropnetDUCTMCTreeNode initialNode = this.prepareForSearch(initialState, gameStep);
-
-		// We can be sure that the node is not null, but if it is terminal we cannot perform any search
-		// nor return any move.
+		// If the node is null or terminal we cannot return any move.
 		// Note that the node being terminal might mean that the state is not terminal but legal moves
 		// couldn't be correctly computed for all roles.
-		if(initialNode.isTerminal()){
-			throw new MCTSException("Impossible to perform search and return a move using the given state as root.");
+		if(theNode.isTerminal()){
+			throw new MCTSException("Impossible to return a move using the given state as root.");
 		}
-
-		this.performSearch(initialState, initialNode, timeout);
 
 		//System.out.println();
 
@@ -154,7 +131,7 @@ public class InternalPropnetMCTSManager extends MCTSManager {
 		//System.out.println("Selecting best move on node: ");
 		//System.out.println(node);
 
-		return this.moveChoiceStrategy.chooseBestMove(initialNode, this.myRole);
+		return this.moveChoiceStrategy.chooseBestMove(theNode, theRole);
 	}
 
 	/**
@@ -168,13 +145,13 @@ public class InternalPropnetMCTSManager extends MCTSManager {
 	 * @param initialState the state from which to start the search.
 	 * @param timeout the time by when the method must return.
 	 * @param gameStep the game step currently being played.
+	 * @return the tree node corresponding to the given initial state.
 	 * @throws MCTSException if the search cannot be performed on the state because the
 	 * state is either terminal or there is some problem with the computation of legal
 	 * moves (and thus corresponding statistics).
 	 */
-	public void search(InternalPropnetMachineState initialState, long timeout, int gameStep)  throws MCTSException{
+	public InternalPropnetDUCTMCTreeNode search(InternalPropnetMachineState initialState, long timeout, int gameStep)  throws MCTSException{
 
-		// If we already passes timeout throw an exception saying that the move cannot be computed.
 		InternalPropnetDUCTMCTreeNode initialNode = this.prepareForSearch(initialState, gameStep);
 
 		// We can be sure that the node is not null, but if it is terminal we cannot perform any search.
@@ -185,6 +162,8 @@ public class InternalPropnetMCTSManager extends MCTSManager {
 		}
 
 		this.performSearch(initialState, initialNode, timeout);
+
+		return initialNode;
 
 	}
 
@@ -205,10 +184,9 @@ public class InternalPropnetMCTSManager extends MCTSManager {
 
 		this.iterations = 0;
 		this.visitedNodes = 0;
-		// This is required in case the method that wants to prepare the manager for the search (i.e. getBestMove()
-		// or search()) fails before actually performing the search. In this way we can make sure that if someone
-		// ties to retrieve the search time after the search failed it won't get the positive time of the search
-		// performed before this one.
+		// This is required in case the method that wants to prepare the manager for the search fails before actually
+		// performing the search. In this way we can make sure that if someone tries to retrieve the search time after
+		// the search failed it won't get the positive time of the search performed before this one.
 		this.searchStart = 0L;
 		this.searchEnd = 0L;
 
@@ -317,22 +295,13 @@ public class InternalPropnetMCTSManager extends MCTSManager {
 		// it can be visited (i.e. one of its moves explored) only if the depth limit has not been reached.
 		if(this.currentIterationVisitedNodes >= this.maxSearchDepth){
 
+			GamerLogger.log("MCTSManager", "Reached search depth limit. Search interrupted (in the Monte Carlo tree) before reaching a treminal state.");
+
 			//System.out.print("Reached depth limit.");
 
 			// The state is not terminal, but we have reached the depth limit.
 			// So we must return some goals. Try to return the goals of the non-terminal state
 			// and if they cannot be computed return default tie-goals.
-
-			// Try to get the goals of the state.
-			try{
-				goals = this.theMachine.getGoals(currentState);
-			}catch(GoalDefinitionException e){
-
-				GamerLogger.logError("MCTSManager", "Search interrupted (in the Monte Carlo tree) before reaching a treminal state. Impossible to compute real goals. Returning default tie goals.");
-				GamerLogger.logStackTrace("MCTSManager", e);
-				goals = this.theMachine.getTieGoals();
-
-			}
 
 			/*
 			System.out.print("Returning goals:");
@@ -345,7 +314,7 @@ public class InternalPropnetMCTSManager extends MCTSManager {
 			System.out.print(s);
 			*/
 
-			return goals;
+			return theMachine.getSafeGoals(currentState);
 		}
 
 		this.currentIterationVisitedNodes++;
@@ -395,6 +364,11 @@ public class InternalPropnetMCTSManager extends MCTSManager {
 		// corresponding state has been already visited in a previous run of the MCTS,
 		// but since the corresponding MCT node hasn't been visited in recent runs anymore
 		// it has been removed from the transposition table during the "cleaning" process.
+		//
+		// TODO: if the node doesn't exists, after creation we perform a playout on it, both
+		// in the case when we were performing selection and in the case when we were performing
+		// expansion. If the node exists, we continue searching on it, even if we were performing
+		// expansion. Is this ok?
 		if(nextNode == null){
 
 			//System.out.println("Creating next node...");
@@ -403,10 +377,7 @@ public class InternalPropnetMCTSManager extends MCTSManager {
 
 			nextNode = this.createNewNode(nextState);
 			this.transpositionTable.putNode(nextState, nextNode);
-		}
 
-		// Now that we have the MCT node, if we are expanding:
-		if(expansionRequired){
 			// No need to perform playout if the node is terminal, we just return the goals in the node.
 			// Otherwise we perform the playout.
 			if(nextNode.isTerminal()){
@@ -425,15 +396,12 @@ public class InternalPropnetMCTSManager extends MCTSManager {
 				int[] playoutVisitedNodes = new int[1];
 				// Note that if no depth is left for the playout, the playout itself will take care of
 				// returning the added-state goal values (if any) or the default tie goal values.
-				goals = this.playoutStrategy.playout(nextState, this.myRole, playoutVisitedNodes, availableDepth);
+				goals = this.playoutStrategy.playout(nextState, playoutVisitedNodes, availableDepth);
 				this.currentIterationVisitedNodes += playoutVisitedNodes[0];
 				//System.out.println("Node: " + this.visitedNodes);
 			}
 		}else{
-
-			//System.out.println("Searching next selected node.");
-
-			// Otherwise, if we are selecting:
+			// Otherwise, if we continue selecting:
 			goals = this.searchNext(nextState, nextNode);
 		}
 
@@ -458,8 +426,8 @@ public class InternalPropnetMCTSManager extends MCTSManager {
 	 * 1. If the state is terminal the corresponding node will memorize the goals
 	 * for each player in the state and the fact that the state is terminal.
 	 * The legal moves will be null since there are supposed to be none in a
-	 * terminal state. If an error occurs in computing goals, the default goal
-	 * values will be memorized.
+	 * terminal state. If an error occurs in computing the goal for a player, its
+	 * goal value will be set to the default value (0 at the moment).
 	 *
 	 * 2. If the state is not terminal and the legal moves can be computed for each
 	 * role with no errors the corresponding node will memorize such moves, null goals
@@ -480,39 +448,27 @@ public class InternalPropnetMCTSManager extends MCTSManager {
 	 */
 	private InternalPropnetDUCTMCTreeNode createNewNode(InternalPropnetMachineState state){
 
-		int goals[];
-		boolean terminal;
+		DUCTMove[][] moves = null;
+		int goals[] = null;
+		boolean terminal = false;
 
 		// Terminal state:
 		if(this.theMachine.isTerminal(state)){
 
+			goals = this.theMachine.getSafeGoals(state);
+
 			terminal = true;
 
-			try{
-				// Try to compute the goals for each player.
-				goals = this.theMachine.getGoals(state);
-			}catch(GoalDefinitionException e) {
-				// If the computation of the goals fails assign to the state default goal values.
-				// When computation fails in a terminal state we consider it a tie for all other
-				// roles and a loss for ours.
-				GamerLogger.logError("MCTSManager", "Failed to retrieve the goals while adding a terminal state to the tree. Setting default loss goals.");
-				GamerLogger.logStackTrace("MCTSManager", e);
-				goals = this.theMachine.getLossGoals(this.myRole);
-			}
-
-			return new InternalPropnetDUCTMCTreeNode(null, goals, terminal);
 		}else{// Non-terminal state:
 
 			InternalPropnetRole[] roles = this.theMachine.getInternalRoles();
-			DUCTMove[][] moves = new DUCTMove[roles.length][];
-			goals = null;
-			terminal = false;
+			moves = new DUCTMove[roles.length][];
 
-			for(int i = 0; i < roles.length; i++){
-
+			try{
 				List<InternalPropnetMove> legalMoves;
 
-				try{
+				for(int i = 0; i < roles.length; i++){
+
 					// If the legal moves can be computed for every player, there is no need to compute the goals.
 					legalMoves = this.theMachine.getInternalLegalMoves(state, roles[i]);
 
@@ -520,39 +476,27 @@ public class InternalPropnetMCTSManager extends MCTSManager {
 					for(int j = 0; j < legalMoves.size(); j++){
 						moves[i][j] = new DUCTMove(legalMoves.get(j));
 					}
-
-				}catch(MoveDefinitionException e) {
-					// If for at least one player the legal moves cannot be computed, we consider
-					// this node "pseudo-terminal" (i.e. the corresponding state is not terminal but
-					// we cannot explore any of the next states, so we treat it as terminal). This
-					// means that we will need the goal values in this node and they will not change
-					// for all the rest of the search, so we compute them and memorize them.
-					GamerLogger.logError("MCTSManager", "Failed to retrieve the legal actions for role " + this.theMachine.internalRoleToRole(roles[i]) + " while adding non-terminal state to the tree.");
-					GamerLogger.logStackTrace("MCTSManager", e);
-
-					moves[i] = null;
-					terminal = true;
-
-					// If it is the first time that we cannot compute the legal moves for a player in this
-					// state we must compute the goals, otherwise we already computed them previously.
-					if(goals == null){
-						try{
-							// Try to compute the goals for each player.
-							goals = this.theMachine.getGoals(state);
-						}catch(GoalDefinitionException gde) {
-							// If the computation of the goals fails assign to the state default goal values.
-							// When computation fails in a non-terminal state we consider it a tie for all the
-							// roles. TODO: is this ok?
-							GamerLogger.logError("MCTSManager", "Failed to retrieve the goals while adding a terminal state to the tree. Setting default loss goals.");
-							GamerLogger.logStackTrace("MCTSManager", gde);
-							goals = this.theMachine.getLossGoals(this.myRole);
-						}
-					}
 				}
-			}
+			}catch(MoveDefinitionException e){
+				// If for at least one player the legal moves cannot be computed, we consider this
+				// node "pseudo-terminal" (i.e. the corresponding state is not terminal but we
+				// cannot explore any of the next states, so we treat it as terminal during the MCT
+				// search). This means that we will need the goal values in this node and they will
+				// not change for all the rest of the search, so we compute them and memorize them.
+				GamerLogger.logError("MCTSManager", "Failed to retrieve the legal moves while adding non-terminal state to the tree.");
+				GamerLogger.logStackTrace("MCTSManager", e);
 
-			return new InternalPropnetDUCTMCTreeNode(moves, goals, terminal);
+				moves = null;
+				terminal = true;
+
+				// Compute the goals for each player. We are in a non terminal state so the goal might not be defined.
+				// We use the state machine method that will return default goal values for the player for which goal
+				// values cannot be computed in this state.
+				goals = this.theMachine.getSafeGoals(state);
+			}
 		}
+
+		return new InternalPropnetDUCTMCTreeNode(moves, goals, terminal);
 	}
 
 	public int getIterations(){

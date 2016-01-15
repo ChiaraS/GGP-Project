@@ -61,7 +61,10 @@ public class RandomExpansion implements ExpansionStrategy {
 
 				movesIndices[i] = moveIndex;
 				jointMove.add(moves[i][movesIndices[i]].getTheMove());
-				unexploredMovesCount[i]--;
+
+				// Do this when backpropagating and actually incrementing the number of visits
+				// of this move from 0 to 1.
+				//unexploredMovesCount[i]--;
 			}
 		}
 
