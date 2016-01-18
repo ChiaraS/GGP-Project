@@ -4,8 +4,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
 
-import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.DUCTMove;
-import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.InternalPropnetDUCTMCTreeNode;
+import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.MCTSMove;
+import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.DUCT.InternalPropnetDUCTMCTreeNode;
 import org.ggp.base.util.statemachine.inernalPropnetStructure.InternalPropnetRole;
 
 public class MaximumScoreChoice implements MoveChoiceStrategy {
@@ -17,9 +17,9 @@ public class MaximumScoreChoice implements MoveChoiceStrategy {
 	}
 
 	@Override
-	public DUCTMove chooseBestMove(InternalPropnetDUCTMCTreeNode initialNode, InternalPropnetRole myRole) {
+	public MCTSMove chooseBestMove(InternalPropnetDUCTMCTreeNode initialNode, InternalPropnetRole myRole) {
 
-		DUCTMove[] myMovesStats = initialNode.getMoves()[myRole.getIndex()];
+		MCTSMove[] myMovesStats = initialNode.getMoves()[myRole.getIndex()];
 
 		//System.out.println("My moves: " + myMovesStats.length);
 

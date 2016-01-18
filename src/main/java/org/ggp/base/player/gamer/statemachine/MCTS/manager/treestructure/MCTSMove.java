@@ -2,7 +2,7 @@ package org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure;
 
 import org.ggp.base.util.statemachine.inernalPropnetStructure.InternalPropnetMove;
 
-public class DUCTMove {
+public class MCTSMove {
 
 	private InternalPropnetMove theMove;
 
@@ -12,7 +12,7 @@ public class DUCTMove {
 
 	private double uct;
 
-	public DUCTMove(InternalPropnetMove theMove) {
+	public MCTSMove(InternalPropnetMove theMove) {
 		this.theMove = theMove;
 		this.visits = 0L;
 		this.scoreSum = 0L;

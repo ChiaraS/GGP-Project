@@ -4,7 +4,7 @@ import java.util.List;
 
 import org.ggp.base.util.statemachine.inernalPropnetStructure.InternalPropnetMove;
 
-public class DUCTJointMove {
+public class SUCTDUCTJointMove {
 
 	/**
 	 * The joint move computed by the selection or expansion strategy.
@@ -16,7 +16,7 @@ public class DUCTJointMove {
 	 */
 	private int[] movesIndices;
 
-	public DUCTJointMove(List<InternalPropnetMove> jointMove, int[] movesIndices) {
+	public SUCTDUCTJointMove(List<InternalPropnetMove> jointMove, int[] movesIndices) {
 		this.jointMove = jointMove;
 		this.movesIndices = movesIndices;
 	}

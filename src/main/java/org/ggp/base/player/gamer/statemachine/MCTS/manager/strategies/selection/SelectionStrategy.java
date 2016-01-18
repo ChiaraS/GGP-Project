@@ -1,7 +1,7 @@
 package org.ggp.base.player.gamer.statemachine.MCTS.manager.strategies.selection;
 
-import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.DUCTJointMove;
-import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.InternalPropnetDUCTMCTreeNode;
+import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.SUCTDUCTJointMove;
+import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.DUCT.InternalPropnetDUCTMCTreeNode;
 
 public interface SelectionStrategy {
 
@@ -13,6 +13,6 @@ public interface SelectionStrategy {
 	 * @param currentNode the node for which to select an action to visit.
 	 * @return the selected move.
 	 */
-	public DUCTJointMove select(InternalPropnetDUCTMCTreeNode currentNode);
+	public SUCTDUCTJointMove select(InternalPropnetDUCTMCTreeNode currentNode);
 
 }

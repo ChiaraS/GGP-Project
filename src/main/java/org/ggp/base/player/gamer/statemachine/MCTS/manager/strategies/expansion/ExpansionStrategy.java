@@ -1,12 +1,12 @@
 package org.ggp.base.player.gamer.statemachine.MCTS.manager.strategies.expansion;
 
-import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.DUCTJointMove;
-import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.InternalPropnetDUCTMCTreeNode;
+import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.InternalPropnetMCTreeNode;
+import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.SUCTDUCTJointMove;
 
 public interface ExpansionStrategy {
 
-	public boolean expansionRequired(InternalPropnetDUCTMCTreeNode node);
+	public boolean expansionRequired(InternalPropnetMCTreeNode node);
 
-	public DUCTJointMove expand(InternalPropnetDUCTMCTreeNode node);
+	public SUCTDUCTJointMove expand(InternalPropnetMCTreeNode node);
 
 }

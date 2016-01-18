@@ -1,38 +1,24 @@
-package org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure;
+package org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.DUCT;
+
+import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.InternalPropnetMCTreeNode;
 
 
 
-public class InternalPropnetDUCTMCTreeNode{
+public class InternalPropnetDUCTMCTreeNode extends InternalPropnetMCTreeNode{
 
 	/**
 	 * List of the moves' statistics for each role in the state corresponding to this node.
 	 */
-	private DUCTMove[][] moves;
+	private DUCTMCTSMove[][] moves;
 
 	/**
 	 * Number of unexplored moves for each player.
 	 */
 	private int[] unexploredMovesCount;
 
-	/**
-	 * Goal for every role in the state (memorized only if the state corresponding to this tree node is terminal.
-	 */
-	private int[] goals;
+	public InternalPropnetDUCTMCTreeNode(DUCTMCTSMove[][] moves, int[] goals, boolean terminal) {
 
-	/**
-	 * True if the state is terminal, false otherwise.
-	 */
-	private boolean terminal;
-
-	private long totVisits;
-
-	/**
-	 * Keeps track of the last game turn for which this node was visited.
-	 */
-	private int gameStepStamp;
-
-	public InternalPropnetDUCTMCTreeNode(DUCTMove[][] moves, int[] goals, boolean terminal) {
-
+		super(goals, terminal);
 		this.moves = moves;
 
 		// If this state has legal moves for the players (i.e. is not terminal
@@ -45,15 +31,9 @@ public class InternalPropnetDUCTMCTreeNode{
 				this.unexploredMovesCount[i] = moves[i].length;
 			}
 		}
-
-
-		this.goals = goals;
-		this.terminal = terminal;
-		this.totVisits = 0L;
-		this.gameStepStamp = -1;
 	}
 
-	public DUCTMove[][] getMoves(){
+	public DUCTMCTSMove[][] getMoves(){
 		return this.moves;
 	}
 
@@ -61,29 +41,7 @@ public class InternalPropnetDUCTMCTreeNode{
 		return this.unexploredMovesCount;
 	}
 
-	public int[] getGoals(){
-		return this.goals;
-	}
 
-	public boolean isTerminal(){
-		return this.terminal;
-	}
-
-	public long getTotVisits(){
-		return this.totVisits;
-	}
-
-	public void incrementTotVisits(){
-		this.totVisits++;
-	}
-
-	public int getGameStepStamp() {
-		return this.gameStepStamp;
-	}
-
-	public void setGameStepStamp(int gameStepStamp) {
-		this.gameStepStamp = gameStepStamp;
-	}
 
 	@Override
 	public String toString(){

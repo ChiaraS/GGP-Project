@@ -4,21 +4,48 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
 
-import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.DUCTJointMove;
-import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.DUCTMove;
-import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.InternalPropnetDUCTMCTreeNode;
+import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.InternalPropnetMCTreeNode;
+import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.MCTSMove;
+import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.SUCTDUCTJointMove;
+import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.DUCT.InternalPropnetDUCTMCTreeNode;
+import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.SUCT.InternalPropnetSUCTMCTreeNode;
 import org.ggp.base.util.statemachine.inernalPropnetStructure.InternalPropnetMove;
+import org.ggp.base.util.statemachine.inernalPropnetStructure.InternalPropnetRole;
 
 public class RandomExpansion implements ExpansionStrategy {
 
+	/**
+	 * The total number of roles in the game.
+	 * Needed by the SUCT version of MCTS.
+	 */
+	private int numRoles;
+
+	/**
+	 * The role that is actually performing the search.
+	 * Needed by the SUCT version of MCTS.
+	 */
+	private InternalPropnetRole myRole;
+
 	private Random random;
 
-	public RandomExpansion(Random random){
+	public RandomExpansion(int numRoles, InternalPropnetRole myRole, Random random){
+		this.numRoles = numRoles;
+		this.myRole = myRole;
 		this.random = random;
 	}
 
 	@Override
-	public boolean expansionRequired(InternalPropnetDUCTMCTreeNode node) {
+	public boolean expansionRequired(InternalPropnetMCTreeNode node){
+		if(node instanceof InternalPropnetDUCTMCTreeNode){
+			return this.expansionRequired((InternalPropnetDUCTMCTreeNode)node);
+		}else if(node instanceof InternalPropnetSUCTMCTreeNode){
+			return this.expansionRequired((InternalPropnetSUCTMCTreeNode)node);
+		}else{
+			throw new RuntimeException("RandomExpansion: detected a node of a non-recognizable sub-type of class InternalPropnetMCTreeNode.");
+		}
+	}
+
+	private boolean expansionRequired(InternalPropnetDUCTMCTreeNode node) {
 
 		int[] unexploredMovesCount = node.getUnexploredMovesCount();
 
@@ -30,10 +57,24 @@ public class RandomExpansion implements ExpansionStrategy {
 		return false;
 	}
 
-	@Override
-	public DUCTJointMove expand(InternalPropnetDUCTMCTreeNode node){
+	private boolean expansionRequired(InternalPropnetSUCTMCTreeNode node){
+		return node.getUnvisitedLeaves().size() != 0;
+	}
 
-		DUCTMove[][] moves = node.getMoves();
+	@Override
+	public SUCTDUCTJointMove expand(InternalPropnetMCTreeNode node){
+		if(node instanceof InternalPropnetDUCTMCTreeNode){
+			return this.expand((InternalPropnetDUCTMCTreeNode)node);
+		}else if(node instanceof InternalPropnetSUCTMCTreeNode){
+			return this.expand((InternalPropnetSUCTMCTreeNode)node);
+		}else{
+			throw new RuntimeException("RandomExpansion: detected a node of a non-recognizable sub-type of class InternalPropnetMCTreeNode.");
+		}
+	}
+
+	private SUCTDUCTJointMove expand(InternalPropnetDUCTMCTreeNode node){
+
+		MCTSMove[][] moves = node.getMoves();
 		int[] unexploredMovesCount = node.getUnexploredMovesCount();
 
 		List<InternalPropnetMove> jointMove = new ArrayList<InternalPropnetMove>();
@@ -68,7 +109,12 @@ public class RandomExpansion implements ExpansionStrategy {
 			}
 		}
 
-		return new DUCTJointMove(jointMove, movesIndices);
+		return new SUCTDUCTJointMove(jointMove, movesIndices);
+	}
+
+	private SUCTDUCTJointMove expand(InternalPropnetSUCTMCTreeNode node){
+
+		int startingIndex = ((this.myRole.getIndex()-1) + this.numRoles)%this.numRoles;
 	}
 
 }

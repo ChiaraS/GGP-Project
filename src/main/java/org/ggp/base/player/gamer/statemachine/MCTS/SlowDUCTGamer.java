@@ -17,8 +17,8 @@ import org.ggp.base.player.gamer.statemachine.MCTS.manager.strategies.expansion.
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.strategies.movechoice.MaximumScoreChoice;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.strategies.playout.RandomPlayout;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.strategies.selection.DUCTSelection;
-import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.DUCTMove;
-import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.InternalPropnetDUCTMCTreeNode;
+import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.MCTSMove;
+import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.DUCT.InternalPropnetDUCTMCTreeNode;
 import org.ggp.base.util.game.Game;
 import org.ggp.base.util.gdl.grammar.GdlPool;
 import org.ggp.base.util.logging.GamerLogger;
@@ -283,7 +283,7 @@ public class SlowDUCTGamer extends StateMachineGamer {
 
 			try {
 				InternalPropnetDUCTMCTreeNode currentNode = this.mctsManager.search(currentState, realTimeout, gameStep);
-				DUCTMove selectedMove = this.mctsManager.getBestMove(currentNode, this.thePropnetMachine.getInternalRoles()[this.thePropnetMachine.getRoleIndices().get(this.getRole())]);
+				MCTSMove selectedMove = this.mctsManager.getBestMove(currentNode, this.thePropnetMachine.getInternalRoles()[this.thePropnetMachine.getRoleIndices().get(this.getRole())]);
 
 				searchTime = this.mctsManager.getSearchTime();
 				iterations = this.mctsManager.getIterations();

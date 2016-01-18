@@ -4,9 +4,9 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
 
-import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.DUCTJointMove;
-import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.DUCTMove;
-import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.InternalPropnetDUCTMCTreeNode;
+import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.SUCTDUCTJointMove;
+import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.MCTSMove;
+import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.DUCT.InternalPropnetDUCTMCTreeNode;
 import org.ggp.base.util.statemachine.inernalPropnetStructure.InternalPropnetMove;
 
 public class DUCTSelection implements SelectionStrategy {
@@ -29,7 +29,7 @@ public class DUCTSelection implements SelectionStrategy {
 	 * @see org.ggp.base.player.gamer.statemachine.MCTS.manager.strategies.selection.SelectionStrategy#select(org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.InternalPropnetDUCTMCTreeNode)
 	 */
 	@Override
-	public DUCTJointMove select(InternalPropnetDUCTMCTreeNode currentNode) {
+	public SUCTDUCTJointMove select(InternalPropnetDUCTMCTreeNode currentNode) {
 
 		/* No need for this check, if the code is correct, because the node that is passed as input
 		 * is always non-terminal.
@@ -39,7 +39,7 @@ public class DUCTSelection implements SelectionStrategy {
 		}
 		*/
 
-		DUCTMove[][] moves = currentNode.getMoves();
+		MCTSMove[][] moves = currentNode.getMoves();
 
 		/* Also here we can assume that the moves will be non-null since the code takes care of only passing to
 		 * this method the nodes that have all the information needed for selection.
@@ -108,7 +108,7 @@ public class DUCTSelection implements SelectionStrategy {
 			selectedJointMove.add(moves[i][movesIndices[i]].getTheMove());
 		}
 
-		return new DUCTJointMove(selectedJointMove, movesIndices);
+		return new SUCTDUCTJointMove(selectedJointMove, movesIndices);
 	}
 
 	private double computeDUCTvalue(double score, double moveVisits, double nodeVisits){
