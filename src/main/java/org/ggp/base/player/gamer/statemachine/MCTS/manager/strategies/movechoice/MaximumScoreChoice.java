@@ -4,22 +4,42 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
 
+import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.InternalPropnetMCTSNode;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.MCTSMove;
-import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.DUCT.InternalPropnetDUCTMCTreeNode;
+import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.DUCT.InternalPropnetDUCTMCTSNode;
+import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.SUCT.InternalPropnetSUCTMCTSNode;
 import org.ggp.base.util.statemachine.inernalPropnetStructure.InternalPropnetRole;
 
 public class MaximumScoreChoice implements MoveChoiceStrategy {
 
+	/**
+	 * The role performing the search and for which the best move will be computed.
+	 */
+	private InternalPropnetRole myRole;
+
 	private Random random;
 
-	public MaximumScoreChoice(Random random) {
+	public MaximumScoreChoice(InternalPropnetRole myRole, Random random){
+		this.myRole = myRole;
 		this.random = random;
 	}
 
+	/*
+	 * (non-Javadoc)
+	 * @see org.ggp.base.player.gamer.statemachine.MCTS.manager.strategies.movechoice.MoveChoiceStrategy#chooseBestMove(org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.InternalPropnetMCTSNode)
+	 */
 	@Override
-	public MCTSMove chooseBestMove(InternalPropnetDUCTMCTreeNode initialNode, InternalPropnetRole myRole) {
+	public MCTSMove chooseBestMove(InternalPropnetMCTSNode initialNode) {
 
-		MCTSMove[] myMovesStats = initialNode.getMoves()[myRole.getIndex()];
+		MCTSMove[] myMovesStats;
+
+		if(initialNode instanceof InternalPropnetDUCTMCTSNode){
+			myMovesStats = ((InternalPropnetDUCTMCTSNode)initialNode).getMoves()[myRole.getIndex()];
+		}else if(initialNode instanceof InternalPropnetSUCTMCTSNode){
+			myMovesStats = ((InternalPropnetSUCTMCTSNode)initialNode).getMoves();
+		}else{
+			throw new RuntimeException("MaximumScoreChoice-chooseBestMove(): detected a node of a non-recognizable sub-type of class InternalPropnetMCTreeNode.");
+		}
 
 		//System.out.println("My moves: " + myMovesStats.length);
 

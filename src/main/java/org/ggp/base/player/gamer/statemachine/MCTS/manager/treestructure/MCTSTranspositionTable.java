@@ -24,25 +24,25 @@ public class MCTSTranspositionTable {
 	 * The transposition table (implemented with HashMap that uses the internal propnet state as key
 	 * and solves collisions with linked lists).
 	 */
-	private Map<InternalPropnetMachineState,InternalPropnetMCTreeNode> transpositionTable;
+	private Map<InternalPropnetMachineState,InternalPropnetMCTSNode> transpositionTable;
 
 	/**
 	 *
 	 */
 	public MCTSTranspositionTable(int gameStepOffset){
-		this.transpositionTable = new HashMap<InternalPropnetMachineState,InternalPropnetMCTreeNode>();
+		this.transpositionTable = new HashMap<InternalPropnetMachineState,InternalPropnetMCTSNode>();
 		this.gameStepOffset = gameStepOffset;
 	}
 
-	public InternalPropnetMCTreeNode getNode(InternalPropnetMachineState state){
-		InternalPropnetMCTreeNode node = this.transpositionTable.get(state);
+	public InternalPropnetMCTSNode getNode(InternalPropnetMachineState state){
+		InternalPropnetMCTSNode node = this.transpositionTable.get(state);
 		if(node != null){
 			node.setGameStepStamp(this.currentGameStepStamp);
 		}
 		return node;
 	}
 
-	public void putNode(InternalPropnetMachineState state, InternalPropnetMCTreeNode node){
+	public void putNode(InternalPropnetMachineState state, InternalPropnetMCTSNode node){
 		if(node != null){
 			this.transpositionTable.put(state, node);
 			node.setGameStepStamp(this.currentGameStepStamp);
@@ -59,9 +59,9 @@ public class MCTSTranspositionTable {
 		if(newGameStepStamp != this.currentGameStepStamp){
 			this.currentGameStepStamp = newGameStepStamp;
 			// Remove all nodes last accessed earlier than the game step (newGameStepStamp-gameStepOffset)
-			Iterator<Entry<InternalPropnetMachineState,InternalPropnetMCTreeNode>> iterator = this.transpositionTable.entrySet().iterator();
+			Iterator<Entry<InternalPropnetMachineState,InternalPropnetMCTSNode>> iterator = this.transpositionTable.entrySet().iterator();
 			while(iterator.hasNext()){
-				Entry<InternalPropnetMachineState,InternalPropnetMCTreeNode> entry = iterator.next();
+				Entry<InternalPropnetMachineState,InternalPropnetMCTSNode> entry = iterator.next();
 				if(entry.getValue().getGameStepStamp() < (this.currentGameStepStamp-this.gameStepOffset)){
 					iterator.remove();
 				}

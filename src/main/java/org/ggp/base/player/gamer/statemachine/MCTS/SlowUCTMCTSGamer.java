@@ -16,9 +16,9 @@ import org.ggp.base.player.gamer.statemachine.MCTS.manager.strategies.backpropag
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.strategies.expansion.RandomExpansion;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.strategies.movechoice.MaximumScoreChoice;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.strategies.playout.RandomPlayout;
-import org.ggp.base.player.gamer.statemachine.MCTS.manager.strategies.selection.DUCTSelection;
+import org.ggp.base.player.gamer.statemachine.MCTS.manager.strategies.selection.UCTSelection;
+import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.InternalPropnetMCTSNode;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.MCTSMove;
-import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.DUCT.InternalPropnetDUCTMCTreeNode;
 import org.ggp.base.util.game.Game;
 import org.ggp.base.util.gdl.grammar.GdlPool;
 import org.ggp.base.util.logging.GamerLogger;
@@ -36,6 +36,7 @@ import org.ggp.base.util.statemachine.exceptions.TransitionDefinitionException;
 import org.ggp.base.util.statemachine.implementation.propnet.SeparateInternalPropnetStateMachine;
 import org.ggp.base.util.statemachine.implementation.prover.ProverStateMachine;
 import org.ggp.base.util.statemachine.inernalPropnetStructure.InternalPropnetMachineState;
+import org.ggp.base.util.statemachine.inernalPropnetStructure.InternalPropnetRole;
 
 /**
  * This player performs Decoupled UCT Monte Carlo Tree Search.
@@ -50,7 +51,7 @@ import org.ggp.base.util.statemachine.inernalPropnetStructure.InternalPropnetMac
  * @author C.Sironi
  *
  */
-public class SlowDUCTGamer extends StateMachineGamer {
+public class SlowUCTMCTSGamer extends StateMachineGamer {
 
 	/**
 	 * The player must complete the executions of methods with a timeout by the time
@@ -72,6 +73,11 @@ public class SlowDUCTGamer extends StateMachineGamer {
 	private double uctOffset;
 	private int gameStepOffset;
 	private int maxSearchDepth;
+	/**
+	 * True if this player must use a manager that runs the DUCT version
+	 * of Monte Carlo Tree Search, false otherwise.
+	 */
+	protected boolean DUCT;
 
 
 	/**
@@ -87,11 +93,12 @@ public class SlowDUCTGamer extends StateMachineGamer {
 	/**
 	 *
 	 */
-	public SlowDUCTGamer() {
+	public SlowUCTMCTSGamer() {
 		// TODO: change code so that the parameters can be set from outside.
 		this.safetyMargin = 1000L;
 
-		this.c = 0.7;
+		this.DUCT = true;
+		this.c = 1.4;
 		this.uctOffset = 0.01;
 		this.gameStepOffset = 2;
 		this.maxSearchDepth = 500;
@@ -202,10 +209,14 @@ public class SlowDUCTGamer extends StateMachineGamer {
 
 		Random r = new Random();
 
+		InternalPropnetRole myRole = this.thePropnetMachine.roleToInternalRole(this.getRole());
+		int numRoles = this.thePropnetMachine.getInternalRoles().length;
+
 		// Create the MCTS manager and start simulations.
-		this.mctsManager = new InternalPropnetMCTSManager(new DUCTSelection(r, uctOffset, c),
-	       		new RandomExpansion(r), new RandomPlayout(this.thePropnetMachine), new StandardBackpropagation(),
-	       		new MaximumScoreChoice(r), this.thePropnetMachine, gameStepOffset, maxSearchDepth);
+		this.mctsManager = new InternalPropnetMCTSManager(this.DUCT, myRole, new UCTSelection(numRoles, myRole, r, uctOffset, c),
+	       		new RandomExpansion(numRoles, myRole, r), new RandomPlayout(this.thePropnetMachine),
+	       		new StandardBackpropagation(numRoles, myRole),	new MaximumScoreChoice(myRole, r),
+	       		this.thePropnetMachine, gameStepOffset, maxSearchDepth);
 
 		// If there is enough time left start the MCT search.
 		// Otherwise return from metagaming.
@@ -282,8 +293,8 @@ public class SlowDUCTGamer extends StateMachineGamer {
 			InternalPropnetMachineState currentState = this.thePropnetMachine.stateToInternalState(this.getCurrentState());
 
 			try {
-				InternalPropnetDUCTMCTreeNode currentNode = this.mctsManager.search(currentState, realTimeout, gameStep);
-				MCTSMove selectedMove = this.mctsManager.getBestMove(currentNode, this.thePropnetMachine.getInternalRoles()[this.thePropnetMachine.getRoleIndices().get(this.getRole())]);
+				InternalPropnetMCTSNode currentNode = this.mctsManager.search(currentState, realTimeout, gameStep);
+				MCTSMove selectedMove = this.mctsManager.getBestMove(currentNode);
 
 				searchTime = this.mctsManager.getSearchTime();
 				iterations = this.mctsManager.getIterations();

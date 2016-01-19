@@ -11,6 +11,10 @@ public class RandomPlayout implements PlayoutStrategy {
 		this.theMachine = theMachine;
 	}
 
+	/*
+	 * (non-Javadoc)
+	 * @see org.ggp.base.player.gamer.statemachine.MCTS.manager.strategies.playout.PlayoutStrategy#playout(org.ggp.base.util.statemachine.inernalPropnetStructure.InternalPropnetMachineState, int[], int)
+	 */
 	@Override
 	public int[] playout(InternalPropnetMachineState state, int[] playoutVisitedNodes, int maxDepth){
 

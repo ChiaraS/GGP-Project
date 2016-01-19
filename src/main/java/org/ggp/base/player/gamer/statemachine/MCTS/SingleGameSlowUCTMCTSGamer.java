@@ -16,7 +16,7 @@ import org.ggp.base.util.statemachine.implementation.prover.ProverStateMachine;
  * @author C.Sironi
  *
  */
-public class SingleGameSlowDUCTGamer extends SlowDUCTGamer {
+public class SingleGameSlowUCTMCTSGamer extends SlowUCTMCTSGamer {
 
 	/**
 	 * True if this gamer never tried to build a propnet before.
@@ -27,7 +27,7 @@ public class SingleGameSlowDUCTGamer extends SlowDUCTGamer {
 	 */
 	private boolean firstTry;
 
-	public SingleGameSlowDUCTGamer(){
+	public SingleGameSlowUCTMCTSGamer(){
 		super();
 		this.firstTry = true;
 	}

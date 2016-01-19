@@ -4,11 +4,14 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
 
-import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.InternalPropnetMCTreeNode;
-import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.MCTSMove;
-import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.SUCTDUCTJointMove;
-import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.DUCT.InternalPropnetDUCTMCTreeNode;
-import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.SUCT.InternalPropnetSUCTMCTreeNode;
+import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.InternalPropnetMCTSNode;
+import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.MCTSJointMove;
+import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.DUCT.DUCTMCTSJointMove;
+import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.DUCT.DUCTMCTSMove;
+import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.DUCT.InternalPropnetDUCTMCTSNode;
+import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.SUCT.InternalPropnetSUCTMCTSNode;
+import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.SUCT.SUCTMCTSJointMove;
+import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.SUCT.SUCTMCTSMove;
 import org.ggp.base.util.statemachine.inernalPropnetStructure.InternalPropnetMove;
 import org.ggp.base.util.statemachine.inernalPropnetStructure.InternalPropnetRole;
 
@@ -34,18 +37,22 @@ public class RandomExpansion implements ExpansionStrategy {
 		this.random = random;
 	}
 
+	/*
+	 * (non-Javadoc)
+	 * @see org.ggp.base.player.gamer.statemachine.MCTS.manager.strategies.expansion.ExpansionStrategy#expansionRequired(org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.InternalPropnetMCTSNode)
+	 */
 	@Override
-	public boolean expansionRequired(InternalPropnetMCTreeNode node){
-		if(node instanceof InternalPropnetDUCTMCTreeNode){
-			return this.expansionRequired((InternalPropnetDUCTMCTreeNode)node);
-		}else if(node instanceof InternalPropnetSUCTMCTreeNode){
-			return this.expansionRequired((InternalPropnetSUCTMCTreeNode)node);
+	public boolean expansionRequired(InternalPropnetMCTSNode node){
+		if(node instanceof InternalPropnetDUCTMCTSNode){
+			return this.expansionRequired((InternalPropnetDUCTMCTSNode)node);
+		}else if(node instanceof InternalPropnetSUCTMCTSNode){
+			return this.expansionRequired((InternalPropnetSUCTMCTSNode)node);
 		}else{
-			throw new RuntimeException("RandomExpansion: detected a node of a non-recognizable sub-type of class InternalPropnetMCTreeNode.");
+			throw new RuntimeException("RandomExpansion-expansionRequired(): detected a node of a non-recognizable sub-type of class InternalPropnetMCTreeNode.");
 		}
 	}
 
-	private boolean expansionRequired(InternalPropnetDUCTMCTreeNode node) {
+	private boolean expansionRequired(InternalPropnetDUCTMCTSNode node) {
 
 		int[] unexploredMovesCount = node.getUnexploredMovesCount();
 
@@ -57,24 +64,38 @@ public class RandomExpansion implements ExpansionStrategy {
 		return false;
 	}
 
-	private boolean expansionRequired(InternalPropnetSUCTMCTreeNode node){
+	private boolean expansionRequired(InternalPropnetSUCTMCTSNode node){
 		return node.getUnvisitedLeaves().size() != 0;
 	}
 
+	/*
+	 * (non-Javadoc)
+	 * @see org.ggp.base.player.gamer.statemachine.MCTS.manager.strategies.expansion.ExpansionStrategy#expand(org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.InternalPropnetMCTSNode)
+	 */
 	@Override
-	public SUCTDUCTJointMove expand(InternalPropnetMCTreeNode node){
-		if(node instanceof InternalPropnetDUCTMCTreeNode){
-			return this.expand((InternalPropnetDUCTMCTreeNode)node);
-		}else if(node instanceof InternalPropnetSUCTMCTreeNode){
-			return this.expand((InternalPropnetSUCTMCTreeNode)node);
+	public MCTSJointMove expand(InternalPropnetMCTSNode node){
+		if(node instanceof InternalPropnetDUCTMCTSNode){
+			return this.expand((InternalPropnetDUCTMCTSNode)node);
+		}else if(node instanceof InternalPropnetSUCTMCTSNode){
+			return this.expand((InternalPropnetSUCTMCTSNode)node);
 		}else{
-			throw new RuntimeException("RandomExpansion: detected a node of a non-recognizable sub-type of class InternalPropnetMCTreeNode.");
+			throw new RuntimeException("RandomExpansion-expand(): detected a node of a non-recognizable sub-type of class InternalPropnetMCTreeNode.");
 		}
 	}
 
-	private SUCTDUCTJointMove expand(InternalPropnetDUCTMCTreeNode node){
+	/**
+	 * Random Expansion, DECOUPLED version.
+	 * This method selects for each role a move that has not been visited yet and
+	 * returns a joint move. If for a role all moves have been already visited, a
+	 * random one is returned. Note that this will never happen if this method is
+	 * called only after checking that the "expansionRequired" method returned true.
+	 *
+	 * @param node the node for which to choose a joint move.
+	 * @return the joint move.
+	 */
+	private MCTSJointMove expand(InternalPropnetDUCTMCTSNode node){
 
-		MCTSMove[][] moves = node.getMoves();
+		DUCTMCTSMove[][] moves = node.getMoves();
 		int[] unexploredMovesCount = node.getUnexploredMovesCount();
 
 		List<InternalPropnetMove> jointMove = new ArrayList<InternalPropnetMove>();
@@ -109,12 +130,92 @@ public class RandomExpansion implements ExpansionStrategy {
 			}
 		}
 
-		return new SUCTDUCTJointMove(jointMove, movesIndices);
+		return new DUCTMCTSJointMove(jointMove, movesIndices);
 	}
 
-	private SUCTDUCTJointMove expand(InternalPropnetSUCTMCTreeNode node){
+	/**
+	 * Random Expansion, SEQUENTIAL version.
+	 * This method selects a joint move that has not been explored yet.
+	 * This is done by selecting a random unvisited leaf move in the tree of move statistics.
+	 * Visiting the tree backward from the leaf allows to reconstruct the joint move.
+	 * If all joint moves have been explored, this method returns a random one among them.
+	 * Note that this will never happen if this method is called only after checking that
+	 * the "expansionRequired" method returned true.
+	 *
+	 * @param node the node for which to choose a joint move.
+	 * @return the joint move.
+	 */
+	private MCTSJointMove expand(InternalPropnetSUCTMCTSNode node){
 
-		int startingIndex = ((this.myRole.getIndex()-1) + this.numRoles)%this.numRoles;
+		List<InternalPropnetMove> jointMove = new ArrayList<InternalPropnetMove>(this.numRoles);
+
+		// Initialize ArrayList with numRoles null elements.
+		for(int i = 0; i < this.numRoles; i++){
+			jointMove.add(null);
+		}
+
+		SUCTMCTSMove leafMove = null;
+
+		List<SUCTMCTSMove> unvisitedLeaves = node.getUnvisitedLeaves();
+		if(unvisitedLeaves.isEmpty()){
+			return this.getRandomMove(node);
+		}
+
+		// Initialize the roleIndex to myRole index. In this way the first index for which a move will be
+		// chosen will be the role index right before this one (numRoles-1 in case myRole index is 0).
+		int roleIndex = this.myRole.getIndex();
+
+		// Get a random leaf move (will be the selected move for myRole if it's a single-player game, or for
+		// the role that comes right before myRole in the list of roles for a multi-player game).
+		leafMove = unvisitedLeaves.get(this.random.nextInt(unvisitedLeaves.size()));
+		SUCTMCTSMove chosenMove = leafMove;
+
+		while(chosenMove != null){
+			roleIndex = ((roleIndex-1) + this.numRoles)%this.numRoles;
+
+			// Add the move to the joint move.
+			jointMove.set(roleIndex, chosenMove.getTheMove());
+
+			// Get the parent move, that will be the chosen move for the previous role.
+			chosenMove = chosenMove.getPreviousRoleMove();
+		}
+
+		return new SUCTMCTSJointMove(jointMove, leafMove);
+	}
+
+	private MCTSJointMove getRandomMove(InternalPropnetSUCTMCTSNode node){
+
+		List<InternalPropnetMove> jointMove = new ArrayList<InternalPropnetMove>(this.numRoles);
+
+		// Initialize ArrayList with numRoles null elements.
+		for(int i = 0; i < this.numRoles; i++){
+			jointMove.add(null);
+		}
+
+		// Get the index of myRole.
+		int roleIndex = this.myRole.getIndex();
+
+		// Get a random move for myRole.
+		SUCTMCTSMove[] moves = node.getMoves();
+		SUCTMCTSMove chosenMove = null;
+
+		while(moves != null){
+
+			// Select a random move.
+			chosenMove = moves[this.random.nextInt(moves.length)];
+
+			// Add the move to the joint move.
+			jointMove.set(roleIndex, chosenMove.getTheMove());
+
+			// Get the next role moves.
+			moves = chosenMove.getNextRoleMoves();
+
+			// Compute the index for the next role
+			roleIndex = (roleIndex+1)%this.numRoles;
+
+		}
+
+		return new SUCTMCTSJointMove(jointMove, chosenMove);
 	}
 
 }

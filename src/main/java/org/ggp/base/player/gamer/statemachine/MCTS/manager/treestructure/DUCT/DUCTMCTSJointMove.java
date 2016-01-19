@@ -1,33 +1,37 @@
-package org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure;
+/**
+ *
+ */
+package org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.DUCT;
 
 import java.util.List;
 
+import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.MCTSJointMove;
 import org.ggp.base.util.statemachine.inernalPropnetStructure.InternalPropnetMove;
 
-public class SUCTDUCTJointMove {
-
-	/**
-	 * The joint move computed by the selection or expansion strategy.
-	 */
-	private List<InternalPropnetMove> jointMove;
+/**
+ * @author C.Sironi
+ *
+ */
+public class DUCTMCTSJointMove extends MCTSJointMove {
 
 	/**
 	 * Index that each single move has in the list of legal moves for its role.
 	 */
 	private int[] movesIndices;
 
-	public SUCTDUCTJointMove(List<InternalPropnetMove> jointMove, int[] movesIndices) {
-		this.jointMove = jointMove;
+	/**
+	 * @param jointMove
+	 * @param movesIndices
+	 */
+	public DUCTMCTSJointMove(List<InternalPropnetMove> jointMove, int[] movesIndices) {
+		super(jointMove);
 		this.movesIndices = movesIndices;
-	}
-
-	public List<InternalPropnetMove> getJointMove() {
-		return jointMove;
 	}
 
 	public int[] getMovesIndices() {
 		return movesIndices;
 	}
+
 
 	@Override
 	public String toString(){
