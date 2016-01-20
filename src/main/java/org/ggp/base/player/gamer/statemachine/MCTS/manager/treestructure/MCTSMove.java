@@ -1,42 +1,15 @@
 package org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure;
 
+import org.ggp.base.player.gamer.statemachine.MCS.manager.MCSMove;
 import org.ggp.base.util.statemachine.inernalPropnetStructure.InternalPropnetMove;
 
-public class MCTSMove {
-
-	private InternalPropnetMove theMove;
-
-	private long visits;
-
-	private long scoreSum;
+public class MCTSMove extends MCSMove{
 
 	private double uct;
 
 	public MCTSMove(InternalPropnetMove theMove) {
-		this.theMove = theMove;
-		this.visits = 0L;
-		this.scoreSum = 0L;
+		super(theMove);
 		this.uct = 0.0;
-	}
-
-	public InternalPropnetMove getTheMove() {
-		return this.theMove;
-	}
-
-	public long getVisits() {
-		return this.visits;
-	}
-
-	public void incrementVisits() {
-		this.visits++;
-	}
-
-	public long getScoreSum() {
-		return this.scoreSum;
-	}
-
-	public void incrementScoreSum(long newScore) {
-		this.scoreSum += newScore;
 	}
 
 	public double getUct() {
@@ -49,9 +22,8 @@ public class MCTSMove {
 
 	@Override
 	public String toString(){
-		return "[Move(" + theMove.toString() + "), Visits(" + this.visits + "), ScoreSum(" + this.scoreSum + "), UCT(" + this.uct + ")]";
+		return super.toString() + ", UCT(" + this.uct + ")";
 	}
-
 
 
 }

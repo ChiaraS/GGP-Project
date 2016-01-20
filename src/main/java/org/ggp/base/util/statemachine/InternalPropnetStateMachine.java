@@ -232,6 +232,30 @@ public abstract class InternalPropnetStateMachine extends StateMachine{
     }
 
     /**
+     * Returns a random joint move from among all the possible joint moves in
+     * the given state in which the given role makes the given move.
+     *
+     * @throws MoveDefinitionException if a role has no legal moves. This indicates
+     * an error in either the game description or the StateMachine implementation.
+     * @throws StateMachineException if it was not possible to compute a random
+     * joint move in the given state with the given role performing the given move
+     * because of an error that occurred in the state machine and couldn't be handled.
+     */
+    public List<InternalPropnetMove> getRandomJointMove(InternalPropnetMachineState state, InternalPropnetRole role, InternalPropnetMove move) throws MoveDefinitionException, StateMachineException
+    {
+        List<InternalPropnetMove> random = new ArrayList<InternalPropnetMove>();
+        for (InternalPropnetRole r : getInternalRoles()) {
+            if (r.equals(role)) {
+                random.add(move);
+            }else{
+                random.add(getRandomMove(state, r));
+            }
+        }
+
+        return random;
+    }
+
+    /**
      * Returns a random move from among the possible legal moves for the
      * given role in the given state.
      *

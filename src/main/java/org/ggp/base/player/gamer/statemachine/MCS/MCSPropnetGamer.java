@@ -1,20 +1,15 @@
 /**
  *
  */
-package org.ggp.base.player.gamer.statemachine.MCTS;
+package org.ggp.base.player.gamer.statemachine.MCS;
 
 import java.util.Random;
 
 import org.ggp.base.player.gamer.event.GamerSelectedMoveEvent;
-import org.ggp.base.player.gamer.statemachine.MCTS.manager.InternalPropnetMCTSManager;
-import org.ggp.base.player.gamer.statemachine.MCTS.manager.exceptions.MCTSException;
-import org.ggp.base.player.gamer.statemachine.MCTS.manager.strategies.backpropagation.StandardBackpropagation;
-import org.ggp.base.player.gamer.statemachine.MCTS.manager.strategies.expansion.RandomExpansion;
-import org.ggp.base.player.gamer.statemachine.MCTS.manager.strategies.movechoice.MaximumScoreChoice;
+import org.ggp.base.player.gamer.statemachine.MCS.manager.InternalPropnetMCSManager;
+import org.ggp.base.player.gamer.statemachine.MCS.manager.MCSException;
+import org.ggp.base.player.gamer.statemachine.MCS.manager.MCSMove;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.strategies.playout.RandomPlayout;
-import org.ggp.base.player.gamer.statemachine.MCTS.manager.strategies.selection.UCTSelection;
-import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.InternalPropnetMCTSNode;
-import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.MCTSMove;
 import org.ggp.base.player.gamer.statemachine.propnet.InternalPropnetGamer;
 import org.ggp.base.util.logging.GamerLogger;
 import org.ggp.base.util.statemachine.Move;
@@ -26,23 +21,10 @@ import org.ggp.base.util.statemachine.inernalPropnetStructure.InternalPropnetMac
 import org.ggp.base.util.statemachine.inernalPropnetStructure.InternalPropnetRole;
 
 /**
- * This gamer performs UCT Monte Carlo Tree Search.
- *
- * The gamer can be set in two ways:
- * - [DUCT=true] (default): the player will perform Decoupled UCT Monte Carlo Tree Search.
- * - [DUCT=false]: the player will perform Sequential UCT Monte Carlo Tree Search.
- *
- * {At the beginning of each game it tries to build the propnet. If it builds it will use for the
- * whole game the state machine based on the propnet otherwise it will use the cached prover.
- * Depending on the chosen state machine it will perform DUCT using the corresponding tree structure
- * (i.e. the one that uses internal propnet states to perform MCTS if the propnet managed to build,
- * the one that uses standard states otherwise). TODO: not true yet. Now it only uses the propnet
- * state machine and throws exception if it cannot be built.}
- *
  * @author C.Sironi
  *
  */
-public abstract class SlowUCTMCTSGamer extends InternalPropnetGamer {
+public class MCSPropnetGamer extends InternalPropnetGamer {
 
 	/**
 	 * Game step. Keeps track of the current game step.
@@ -50,34 +32,25 @@ public abstract class SlowUCTMCTSGamer extends InternalPropnetGamer {
 	private int gameStep;
 
 	/**
-	 * Parameters used by the MCTS manager.
+	 * Parameters used by the MCS manager.
 	 */
-	private double c;
-	private double uctOffset;
-	private int gameStepOffset;
 	private int maxSearchDepth;
-	/**
-	 * True if this player must use a manager that runs the DUCT version
-	 * of Monte Carlo Tree Search, false otherwise.
-	 */
-	protected boolean DUCT;
-
 
 	/**
-	 * The class that takes care of performing Monte Carlo tree search.
+	 * The class that takes care of performing Monte Carlo search.
 	 */
-	protected InternalPropnetMCTSManager mctsManager;
+	protected InternalPropnetMCSManager mcsManager;
 
 	/**
 	 *
 	 */
-	public SlowUCTMCTSGamer() {
-		// TODO: change code so that the parameters can be set from outside.
+//	private PlayoutStrategy playoutStrategy;
 
-		this.DUCT = true;
-		this.c = 1.4;
-		this.uctOffset = 0.01;
-		this.gameStepOffset = 2;
+	/**
+	 *
+	 */
+	public MCSPropnetGamer() {
+
 		this.maxSearchDepth = 500;
 
 	}
@@ -116,13 +89,10 @@ public abstract class SlowUCTMCTSGamer extends InternalPropnetGamer {
 		Random r = new Random();
 
 		InternalPropnetRole myRole = this.thePropnetMachine.roleToInternalRole(this.getRole());
-		int numRoles = this.thePropnetMachine.getInternalRoles().length;
 
-		// Create the MCTS manager and start simulations.
-		this.mctsManager = new InternalPropnetMCTSManager(this.DUCT, myRole, new UCTSelection(numRoles, myRole, r, uctOffset, c),
-	       		new RandomExpansion(numRoles, myRole, r), new RandomPlayout(this.thePropnetMachine),
-	       		new StandardBackpropagation(numRoles, myRole),	new MaximumScoreChoice(myRole, r),
-	       		this.thePropnetMachine, gameStepOffset, maxSearchDepth);
+		// Create the MCS manager and start simulations.
+		this.mcsManager = new InternalPropnetMCSManager(new RandomPlayout(this.thePropnetMachine),
+				this.thePropnetMachine,	myRole, maxSearchDepth, r);
 
 		// If there is enough time left start the MCT search.
 		// Otherwise return from metagaming.
@@ -133,12 +103,12 @@ public abstract class SlowUCTMCTSGamer extends InternalPropnetGamer {
 			GamerLogger.log("Gamer", "Starting search during metagame.");
 
 			try {
-				this.mctsManager.search(this.thePropnetMachine.getInternalInitialState(), realTimeout, gameStep+1);
+				this.mcsManager.search(this.thePropnetMachine.getInternalInitialState(), realTimeout);
 
 				GamerLogger.log("Gamer", "Done searching during metagame.");
-				searchTime = this.mctsManager.getSearchTime();
-	        	iterations = this.mctsManager.getIterations();
-	        	visitedNodes = this.mctsManager.getVisitedNodes();
+				searchTime = this.mcsManager.getSearchTime();
+	        	iterations = this.mcsManager.getIterations();
+	        	visitedNodes = this.mcsManager.getVisitedNodes();
 	        	if(searchTime != 0){
 		        	iterationsPerSecond = ((double) iterations * 1000)/((double) searchTime);
 		        	nodesPerSecond = ((double) visitedNodes * 1000)/((double) searchTime);
@@ -147,7 +117,7 @@ public abstract class SlowUCTMCTSGamer extends InternalPropnetGamer {
 	        		nodesPerSecond = 0;
 	        	}
 	        	thinkingTime = System.currentTimeMillis() - start;
-			}catch(MCTSException e) {
+			}catch(MCSException e) {
 				GamerLogger.logError("Gamer", "Exception during search while metagaming.");
 				GamerLogger.logStackTrace("Gamer", e);
 
@@ -160,6 +130,7 @@ public abstract class SlowUCTMCTSGamer extends InternalPropnetGamer {
 		}
 
 		GamerLogger.log(GamerLogger.FORMAT.CSV_FORMAT, "Stats", this.gameStep + ";" + thinkingTime + ";" + searchTime + ";" + iterations + ";" + visitedNodes + ";" + iterationsPerSecond + ";" + nodesPerSecond + ";null;-1;-1;-1;");
+
 	}
 
 	/* (non-Javadoc)
@@ -194,17 +165,17 @@ public abstract class SlowUCTMCTSGamer extends InternalPropnetGamer {
 
 		if(System.currentTimeMillis() < realTimeout){
 
-			GamerLogger.log("Gamer", "Selecting move using MCTS.");
+			GamerLogger.log("Gamer", "Selecting move using MCS.");
 
 			InternalPropnetMachineState currentState = this.thePropnetMachine.stateToInternalState(this.getCurrentState());
 
 			try {
-				InternalPropnetMCTSNode currentNode = this.mctsManager.search(currentState, realTimeout, gameStep);
-				MCTSMove selectedMove = this.mctsManager.getBestMove(currentNode);
+				this.mcsManager.search(currentState, realTimeout);
+				MCSMove selectedMove = this.mcsManager.getBestMove();
 
-				searchTime = this.mctsManager.getSearchTime();
-				iterations = this.mctsManager.getIterations();
-		    	visitedNodes = this.mctsManager.getVisitedNodes();
+				searchTime = this.mcsManager.getSearchTime();
+				iterations = this.mcsManager.getIterations();
+		    	visitedNodes = this.mcsManager.getVisitedNodes();
 		    	if(searchTime != 0){
 		        	iterationsPerSecond = ((double) iterations * 1000)/((double) searchTime);
 		        	nodesPerSecond = ((double) visitedNodes * 1000)/((double) searchTime);
@@ -217,11 +188,11 @@ public abstract class SlowUCTMCTSGamer extends InternalPropnetGamer {
 		    	moveVisits = selectedMove.getVisits();
 		    	moveAvgScore = moveScoreSum / ((double) moveVisits);
 
-				GamerLogger.log("Gamer", "Returning MCTS move " + theMove + ".");
-			}catch(MCTSException e){
-				GamerLogger.logError("Gamer", "MCTS failed to return a move.");
+				GamerLogger.log("Gamer", "Returning MCS move " + theMove + ".");
+			}catch(MCSException e){
+				GamerLogger.logError("Gamer", "MCS failed to return a move.");
 				GamerLogger.logStackTrace("Gamer", e);
-				// If the MCTS manager failed to return a move return a random one.
+				// If the MCS manager failed to return a move return a random one.
 				theMove = this.thePropnetMachine.getRandomMove(this.getCurrentState(), this.getRole());
 				GamerLogger.log("Gamer", "Returning random move " + theMove + ".");
 			}
@@ -229,7 +200,7 @@ public abstract class SlowUCTMCTSGamer extends InternalPropnetGamer {
 			// If there is no time return a random move.
 			//GamerLogger.log("Gamer", "No time to start the search during metagame.");
 			theMove = this.thePropnetMachine.getRandomMove(this.getCurrentState(), this.getRole());
-			GamerLogger.log("Gamer", "No time to select next move using MCTS. Returning random move " + theMove + ".");
+			GamerLogger.log("Gamer", "No time to select next move using MCS. Returning random move " + theMove + ".");
 		}
 
 		thinkingTime = System.currentTimeMillis() - start;
@@ -241,42 +212,5 @@ public abstract class SlowUCTMCTSGamer extends InternalPropnetGamer {
 
 		return theMove;
 	}
-
-	/* (non-Javadoc)
-	 * @see org.ggp.base.player.gamer.statemachine.StateMachineGamer#stateMachineStop()
-	 */
-	@Override
-	public void stateMachineStop() {
-
-		this.mctsManager = null;
-		super.stateMachineStop();
-
-	}
-
-	/* (non-Javadoc)
-	 * @see org.ggp.base.player.gamer.statemachine.StateMachineGamer#stateMachineAbort()
-	 */
-	@Override
-	public void stateMachineAbort() {
-
-		this.mctsManager = null;
-		super.stateMachineStop();
-
-	}
-
-	/* (non-Javadoc)
-	 * @see org.ggp.base.player.gamer.Gamer#getName()
-	 */
-	/*
-	@Override
-	public String getName(){
-		String type = "";
-		if(this.DUCT){
-			type = "DUCT";
-		}else{
-			type = "SUCT";
-		}
-		return super.getName()+"-"+type;
-	}*/
 
 }

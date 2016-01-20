@@ -3,19 +3,20 @@
  */
 package org.ggp.base.player.gamer.statemachine.MCTS;
 
+
 /**
  * @author C.Sironi
  *
  */
-public class SingleGameSlowSUCTMCTSGamer extends SlowUCTMCTSGamer{
+public class SlowSUCTMCTSGamer extends SlowUCTMCTSGamer {
 
 	/**
 	 *
 	 */
-	public SingleGameSlowSUCTMCTSGamer() {
+	public SlowSUCTMCTSGamer() {
 		super();
 		this.DUCT = false;
-		this.singleGame = true;
+		this.singleGame = false;
 	}
 
 }
