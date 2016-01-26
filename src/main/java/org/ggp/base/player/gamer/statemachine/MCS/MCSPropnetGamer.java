@@ -21,6 +21,15 @@ import org.ggp.base.util.statemachine.inernalPropnetStructure.InternalPropnetMac
 import org.ggp.base.util.statemachine.inernalPropnetStructure.InternalPropnetRole;
 
 /**
+ * This gamer performs Monte Carlo Search.
+ *
+ * {At the beginning of each game it tries to build the propnet. If it builds it will use for the
+ * whole game the state machine based on the propnet otherwise it will use the cached prover.
+ * Depending on the chosen state machine it will perform DUCT using the corresponding tree structure
+ * (i.e. the one that uses internal propnet states to perform MCTS if the propnet managed to build,
+ * the one that uses standard states otherwise). TODO: not true yet. Now it only uses the propnet
+ * state machine and throws exception if it cannot be built.}
+ *
  * @author C.Sironi
  *
  */
