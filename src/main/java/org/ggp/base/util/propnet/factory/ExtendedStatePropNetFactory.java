@@ -89,6 +89,18 @@ import com.google.common.collect.Multiset;
  *
  */
 public class ExtendedStatePropNetFactory {
+
+	/**
+	 * Static reference to the logger
+	 */
+	/*private static final Logger LOGGER;
+
+	static{
+
+		LOGGER = LogManager.getRootLogger();
+
+	}*/
+
 	static final private GdlConstant LEGAL = GdlPool.getConstant("legal");
 	static final private GdlConstant NEXT = GdlPool.getConstant("next");
 	static final private GdlConstant TRUE = GdlPool.getConstant("true");
@@ -114,7 +126,7 @@ public class ExtendedStatePropNetFactory {
 
 	public static ExtendedStatePropNet create(List<Gdl> description, boolean verbose) throws InterruptedException {
 		System.out.println("Building propnet...");
-		//GamerLogger.log("PropnetFactory", "Building propnet...");
+		//LOGGER.info("[PropnetFactory] Building propnet...");
 
 		long startTime = System.currentTimeMillis();
 
@@ -149,13 +161,13 @@ public class ExtendedStatePropNetFactory {
 
 		if(verbose){
 			System.out.println("Setting constants...");
-			//GamerLogger.log("PropnetFactory", "Setting constants...");
+			//LOGGER.info("[PropnetFactory] Setting constants...");
 		}
 
 		ConstantChecker constantChecker = ConstantCheckerFactory.createWithForwardChaining(model);
 		if(verbose){
 			System.out.println("Done setting constants.");
-			//GamerLogger.log("PropnetFactory", "Done setting constants.");
+			//LOGGER.info("[PropnetFactory] Done setting constants.");
 		}
 
 		Set<String> sentenceFormNames = SentenceForms.getNames(model.getSentenceForms());
@@ -171,13 +183,13 @@ public class ExtendedStatePropNetFactory {
 		if(verbose) {
 			System.out.print("Computing topological ordering... ");
 			System.out.flush();
-			//GamerLogger.log("PropnetFactory", "Computing topological ordering... ");
+			//LOGGER.info("[PropnetFactory] Computing topological ordering... ");
 		}
 		ConcurrencyUtils.checkForInterruption();
 		List<SentenceForm> topologicalOrdering = getTopologicalOrdering(model.getSentenceForms(), dependencyGraph, usingBase, usingInput);
 		if(verbose){
 			System.out.println("done");
-			//GamerLogger.log("PropnetFactory", "done");
+			//LOGGER.info("[PropnetFactory] done");
 		}
 
 		List<Role> roles = Role.computeRoles(description);
@@ -193,12 +205,12 @@ public class ExtendedStatePropNetFactory {
 			if(verbose) {
 				System.out.print("Adding sentence form " + form);
 				System.out.flush();
-				//GamerLogger.log("PropnetFactory", "Adding sentence form " + form);
+				//LOGGER.info("[PropnetFactory] Adding sentence form " + form);
 			}
 			if(constantChecker.isConstantForm(form)) {
 				if(verbose){
 					System.out.println(" (constant)");
-					//GamerLogger.log("PropnetFactory", " (constant)");
+					//LOGGER.info("[PropnetFactory]  (constant)");
 				}
 				//Only add it if it's important
 				if(form.getName().equals(LEGAL)
@@ -217,7 +229,7 @@ public class ExtendedStatePropNetFactory {
 
 				if(verbose){
 					System.out.println("Checking whether " + form + " is a functional constant...");
-					//GamerLogger.log("PropnetFactory", "Checking whether " + form + " is a functional constant...");
+					//LOGGER.info("[PropnetFactory] Checking whether " + form + " is a functional constant...");
 				}
 				addConstantsToFunctionInfo(form, constantChecker, functionInfoMap);
 				addFormToCompletedValues(form, completedSentenceFormValues, constantChecker);
@@ -236,7 +248,7 @@ public class ExtendedStatePropNetFactory {
 			//TODO: Pass these over groups of multiple sentence forms
 			if(verbose && !temporaryComponents.isEmpty()){
 				System.out.println("Processing temporary components...");
-				//GamerLogger.log("PropnetFactory", "Processing temporary components...");
+				//LOGGER.info("[PropnetFactory] Processing temporary components...");
 			}
 			processTemporaryComponents(temporaryComponents, temporaryNegations, components, negations, trueComponent, falseComponent);
 			addFormToCompletedValues(form, completedSentenceFormValues, components);
@@ -247,20 +259,20 @@ public class ExtendedStatePropNetFactory {
 		//Connect "next" to "true"
 		if(verbose){
 			System.out.println("Adding transitions...");
-			//GamerLogger.log("PropnetFactory", "Adding transitions...");
+			//LOGGER.info("[PropnetFactory] Adding transitions...");
 		}
 		addTransitions(components);
 		//Set up "init" proposition
 		if(verbose){
 			System.out.println("Setting up 'init' proposition...");
-			//GamerLogger.log("PropnetFactory", "Setting up 'init' proposition...");
+			//LOGGER.info("[PropnetFactory] Setting up 'init' proposition...");
 		}
 		setUpInit(components, trueComponent, falseComponent);
 		//Now we can safely...
 		removeUselessBasePropositions(components, negations, trueComponent, falseComponent);
 		if(verbose){
 			System.out.println("Creating component set...");
-			//GamerLogger.log("PropnetFactory", "Creating component set...");
+			//LOGGER.info("[PropnetFactory] Creating component set...");
 		}
 		Set<ExtendedStateComponent> componentSet = new HashSet<ExtendedStateComponent>(components.values());
 		//Try saving some memory here...
@@ -270,7 +282,7 @@ public class ExtendedStatePropNetFactory {
 		ConcurrencyUtils.checkForInterruption();
 		if(verbose){
 			System.out.println("Initializing propnet object...");
-			//GamerLogger.log("PropnetFactory", "Initializing propnet object...");
+			//LOGGER.info("[PropnetFactory] Initializing propnet object...");
 		}
 		//Make it look the same as the PropNetFactory results, until we decide
 		//how we want it to look
@@ -279,8 +291,8 @@ public class ExtendedStatePropNetFactory {
 		if(verbose) {
 			System.out.println("Done setting up propnet; took " + (System.currentTimeMillis() - startTime) + "ms, has " + componentSet.size() + " components and " + propnet.getNumLinks() + " links");
 			System.out.println("Propnet has " +propnet.getNumAnds()+" ands; "+propnet.getNumOrs()+" ors; "+propnet.getNumNots()+" nots");
-			//GamerLogger.log("PropnetFactory", "Done setting up propnet; took " + (System.currentTimeMillis() - startTime) + "ms, has " + componentSet.size() + " components and " + propnet.getNumLinks() + " links.");
-			//GamerLogger.log("PropnetFactory", "Propnet has " +propnet.getNumAnds()+" ands; "+propnet.getNumOrs()+" ors; "+propnet.getNumNots()+" nots");
+			//LOGGER.info("[PropnetFactory] Done setting up propnet; took " + (System.currentTimeMillis() - startTime) + "ms, has " + componentSet.size() + " components and " + propnet.getNumLinks() + " links.");
+			//LOGGER.info("[PropnetFactory] Propnet has " +propnet.getNumAnds()+" ands; "+propnet.getNumOrs()+" ors; "+propnet.getNumNots()+" nots");
 		}
 		//System.out.println(propnet);
 		return propnet;

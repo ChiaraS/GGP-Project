@@ -1,10 +1,12 @@
-package org.ggp.base.util.propnet.factory;
+package org.ggp.base.util.propnet.creationManager;
 
 import java.util.List;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.ggp.base.util.gdl.grammar.Gdl;
-import org.ggp.base.util.logging.GamerLogger;
 import org.ggp.base.util.propnet.architecture.forwardInterrupting.ForwardInterruptingPropNet;
+import org.ggp.base.util.propnet.factory.ForwardInterruptingPropNetFactory;
 
 /**
  * This class is used to run the creation of the propnet in a separate thread that can be
@@ -16,6 +18,17 @@ import org.ggp.base.util.propnet.architecture.forwardInterrupting.ForwardInterru
  *
  */
 public class FwdInterrPropNetCreator extends Thread {
+
+	/**
+	 * Static reference to the logger
+	 */
+	private static final Logger LOGGER;
+
+	static{
+
+		LOGGER = LogManager.getRootLogger();
+
+	}
 
 	/**
 	 * Reference to the (hopefully) created propnet.
@@ -54,23 +67,19 @@ public class FwdInterrPropNetCreator extends Thread {
 			long startTime = System.currentTimeMillis();
 			this.propNet = ForwardInterruptingPropNetFactory.create(this.description);
 			this.constructionTime = System.currentTimeMillis() - startTime;
-			GamerLogger.log("StateMachine", "[Propnet Creator] Propnet creation done. It took " + (this.constructionTime) + "ms.");
+			LOGGER.info("[Propnet Creator] Propnet creation done. It took " + (this.constructionTime) + "ms.");
 		}catch(InterruptedException ex){
 			this.propNet = null;
-			GamerLogger.logError("StateMachine", "[Propnet Creator] Propnet creation interrupted. Interrupted exception!");
-			GamerLogger.logStackTrace("StateMachine", ex);
+			LOGGER.error("[Propnet Creator] Propnet creation interrupted. Interrupted exception!", ex);
 		}catch(OutOfMemoryError er){
 			this.propNet = null;
-			GamerLogger.logError("StateMachine", "[Propnet Creator] Propnet creation interrupted. Out of memory error!");
-			GamerLogger.logStackTrace("StateMachine", er);
+			LOGGER.error("[Propnet Creator] Propnet creation interrupted. Out of memory error!", er);
 		}catch(Exception ex){
 			this.propNet = null;
-			GamerLogger.logError("StateMachine", "[Propnet Creator] Propnet creation interrupted. Exception during creation!");
-			GamerLogger.logStackTrace("StateMachine", ex);
+			LOGGER.error("[Propnet Creator] Propnet creation interrupted. Exception during creation!", ex);
 		}catch(Error er){
 			this.propNet = null;
-			GamerLogger.logError("StateMachine", "[Propnet Creator] Propnet creation interrupted. Error during creation!");
-			GamerLogger.logStackTrace("StateMachine", er);
+			LOGGER.error("[Propnet Creator] Propnet creation interrupted. Error during creation!", er);
 		}
 	}
 

@@ -9,13 +9,14 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.ggp.base.util.gdl.grammar.GdlConstant;
 import org.ggp.base.util.gdl.grammar.GdlPool;
 import org.ggp.base.util.gdl.grammar.GdlProposition;
 import org.ggp.base.util.gdl.grammar.GdlRelation;
 import org.ggp.base.util.gdl.grammar.GdlSentence;
 import org.ggp.base.util.gdl.grammar.GdlTerm;
-import org.ggp.base.util.logging.GamerLogger;
 import org.ggp.base.util.propnet.architecture.basic.components.And;
 import org.ggp.base.util.propnet.architecture.basic.components.Not;
 import org.ggp.base.util.propnet.architecture.basic.components.Or;
@@ -68,6 +69,18 @@ import org.ggp.base.util.statemachine.Role;
 
 public final class PropNet
 {
+
+	/**
+	 * Static reference to the logger
+	 */
+	private static final Logger LOGGER;
+
+	static{
+
+		LOGGER = LogManager.getRootLogger();
+
+	}
+
 	/** References to every component in the PropNet. */
 	private final Set<Component> components;
 
@@ -278,7 +291,7 @@ public final class PropNet
             fout.close();
             fos.close();
         } catch(Exception e) {
-            GamerLogger.logStackTrace("StateMachine", e);
+        	LOGGER.error("[Propnet] Impossible to render propnet to file.", e);
         }
     }
 

@@ -9,13 +9,14 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.ggp.base.util.gdl.grammar.GdlConstant;
 import org.ggp.base.util.gdl.grammar.GdlPool;
 import org.ggp.base.util.gdl.grammar.GdlProposition;
 import org.ggp.base.util.gdl.grammar.GdlRelation;
 import org.ggp.base.util.gdl.grammar.GdlSentence;
 import org.ggp.base.util.gdl.grammar.GdlTerm;
-import org.ggp.base.util.logging.GamerLogger;
 import org.ggp.base.util.propnet.architecture.forwardInterrupting.components.ForwardInterruptingAnd;
 import org.ggp.base.util.propnet.architecture.forwardInterrupting.components.ForwardInterruptingConstant;
 import org.ggp.base.util.propnet.architecture.forwardInterrupting.components.ForwardInterruptingNot;
@@ -69,6 +70,18 @@ import org.ggp.base.util.statemachine.Role;
 
 public final class ForwardInterruptingPropNet
 {
+
+	/**
+	 * Static reference to the logger
+	 */
+	private static final Logger LOGGER;
+
+	static{
+
+		LOGGER = LogManager.getRootLogger();
+
+	}
+
 
 	private final long initTime;
 
@@ -296,7 +309,7 @@ public final class ForwardInterruptingPropNet
             fout.close();
             fos.close();
         } catch(Exception e) {
-            GamerLogger.logStackTrace("StateMachine", e);
+        	LOGGER.error("[FwdInterrPropnet] Impossible to render propnet to file.", e);
         }
     }
 

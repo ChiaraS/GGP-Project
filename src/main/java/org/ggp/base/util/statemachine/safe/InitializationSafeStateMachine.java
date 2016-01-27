@@ -13,7 +13,6 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
 import org.ggp.base.util.gdl.grammar.Gdl;
-import org.ggp.base.util.logging.GamerLogger;
 import org.ggp.base.util.statemachine.MachineState;
 import org.ggp.base.util.statemachine.Move;
 import org.ggp.base.util.statemachine.Role;
@@ -92,13 +91,13 @@ public class InitializationSafeStateMachine extends StateMachine {
 		try {
 			executor.invokeAny(Arrays.asList(initializer), initTime, TimeUnit.MILLISECONDS);
 		} catch (ExecutionException | TimeoutException e) {
-			GamerLogger.logError("StateMachine", "[INIT SAFE] Impossible to initialize the state machine in the given amount of time.");
+			LOGGER.error("[StateMachine] [INIT SAFE] Impossible to initialize the state machine in the given amount of time.", e);
 			if(this.theRealMachine != null){
 				this.theRealMachine.shutdown();
 			}
 			throw new StateMachineInitializationException("Initialization of state machine failed!", e);
 		} catch (InterruptedException e) {
-			GamerLogger.logError("StateMachine", "[INIT SAFE] Impossible to initialize the state machine in the given amount of time.");
+			LOGGER.error("[StateMachine] [INIT SAFE] Impossible to initialize the state machine in the given amount of time.", e);
 			if(this.theRealMachine != null){
 				this.theRealMachine.shutdown();
 			}
@@ -120,8 +119,7 @@ public class InitializationSafeStateMachine extends StateMachine {
 					// of the InitializationSafeStateMachine has been interrupted. If we do nothing this state machine will be stuck in the
 					// while loop anyway until all tasks in the executor have terminated, thus we break out of the loop throwing a new exception.
 					// What happens to the still running tasks in the executor? Who will make sure they terminate?
-					GamerLogger.logError("StateMachine", "[INIT SAFE] Interrupted while waiting for termination of executor.");
-					GamerLogger.logStackTrace("StateMachine", e);
+					LOGGER.error("[StateMachine] [INIT SAFE] Interrupted while waiting for termination of executor.", e);
 					Thread.currentThread().interrupt();
 					throw new StateMachineInitializationException("Initialization of state machine failed!", e);
 				}

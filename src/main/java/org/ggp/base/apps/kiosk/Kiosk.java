@@ -27,6 +27,7 @@ import javax.swing.JTextField;
 import javax.swing.ListSelectionModel;
 import javax.swing.border.TitledBorder;
 
+import org.apache.logging.log4j.ThreadContext;
 import org.ggp.base.player.GamePlayer;
 import org.ggp.base.player.gamer.Gamer;
 import org.ggp.base.player.gamer.exception.AbortingException;
@@ -38,7 +39,6 @@ import org.ggp.base.util.game.CloudGameRepository;
 import org.ggp.base.util.game.Game;
 import org.ggp.base.util.game.GameRepository;
 import org.ggp.base.util.gdl.grammar.GdlPool;
-import org.ggp.base.util.logging.GamerLogger;
 import org.ggp.base.util.match.Match;
 import org.ggp.base.util.observer.Event;
 import org.ggp.base.util.observer.Observer;
@@ -108,7 +108,6 @@ public final class Kiosk extends JPanel implements ActionListener, ItemListener,
         setPreferredSize(new Dimension(1050, 900));
 
         NativeUI.setNativeUI();
-        GamerLogger.setFileToDisplay("GamePlayer");
 
         SortedSet<AvailableGame> theAvailableGames = new TreeSet<AvailableGame>();
         Set<Class<? extends GameCanvas>> theAvailableCanvasList = ProjectSearcher.GAME_CANVASES.getConcreteClasses();
@@ -374,7 +373,8 @@ public final class Kiosk extends JPanel implements ActionListener, ItemListener,
 
                 match.setPlayerNamesFromHost(playerNames);
 
-                GamerLogger.startFileLogging(match, "kiosk");
+                ThreadContext.put("LOG_FOLDER", System.currentTimeMillis() + ".KIOSK");
+
                 kioskServer = new GameServer(match, hosts, ports);
                 kioskServer.givePlayerUnlimitedTime((flipRoles.isSelected()? 1 : 0));
                 kioskServer.addObserver(theHumanGamer);

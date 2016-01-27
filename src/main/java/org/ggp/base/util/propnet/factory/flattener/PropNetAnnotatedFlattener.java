@@ -8,6 +8,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.ggp.base.util.gdl.grammar.Gdl;
 import org.ggp.base.util.gdl.grammar.GdlConstant;
 import org.ggp.base.util.gdl.grammar.GdlFunction;
@@ -17,7 +19,6 @@ import org.ggp.base.util.gdl.grammar.GdlRule;
 import org.ggp.base.util.gdl.grammar.GdlSentence;
 import org.ggp.base.util.gdl.grammar.GdlTerm;
 import org.ggp.base.util.gdl.transforms.DeORer;
-import org.ggp.base.util.logging.GamerLogger;
 import org.ggp.base.util.propnet.factory.annotater.PropNetAnnotater;
 import org.ggp.base.util.prover.aima.substituter.Substituter;
 import org.ggp.base.util.prover.aima.substitution.Substitution;
@@ -44,6 +45,18 @@ import org.ggp.base.util.prover.aima.unifier.Unifier;
  */
 public final class PropNetAnnotatedFlattener
 {
+
+	/**
+	 * Static reference to the logger
+	 */
+	private static final Logger LOGGER;
+
+	static{
+
+		LOGGER = LogManager.getRootLogger();
+
+	}
+
     /** An archive of Rule instantiations, indexed by head name. */
     private Map<GdlConstant, List<GdlRule>> instantiations;
     /** An archive of the rules in a game description, indexed by head name. */
@@ -75,9 +88,9 @@ public final class PropNetAnnotatedFlattener
     {
         description = DeORer.run(description);
         if (noAnnotations()) {
-            GamerLogger.log("StateMachine", "Could not find 'base' annotations. Attempting to generate them...");
+            LOGGER.info("[StateMachine] Could not find 'base' annotations. Attempting to generate them...");
             description = new PropNetAnnotater(description).getAugmentedDescription();
-            GamerLogger.log("StateMachine", "Annotations generated.");
+            LOGGER.info("[StateMachine] Annotations generated.");
         }
 
         templates = recordTemplates(description);

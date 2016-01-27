@@ -12,8 +12,8 @@ import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.DUCT.In
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.SUCT.InternalPropnetSUCTMCTSNode;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.SUCT.SUCTMCTSJointMove;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.SUCT.SUCTMCTSMove;
-import org.ggp.base.util.statemachine.inernalPropnetStructure.InternalPropnetMove;
-import org.ggp.base.util.statemachine.inernalPropnetStructure.InternalPropnetRole;
+import org.ggp.base.util.statemachine.implementation.internalPropnet.structure.InternalPropnetMove;
+import org.ggp.base.util.statemachine.implementation.internalPropnet.structure.InternalPropnetRole;
 
 public class UCTSelection implements SelectionStrategy {
 

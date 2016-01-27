@@ -1,10 +1,12 @@
 package org.ggp.base.player.request.grammar;
 
+import java.util.Date;
+
+import org.apache.logging.log4j.ThreadContext;
 import org.ggp.base.player.gamer.Gamer;
 import org.ggp.base.player.gamer.event.GamerAbortedMatchEvent;
 import org.ggp.base.player.gamer.event.GamerUnrecognizedMatchEvent;
 import org.ggp.base.player.gamer.exception.AbortingException;
-import org.ggp.base.util.logging.GamerLogger;
 
 public final class AbortRequest extends Request
 {
@@ -30,10 +32,12 @@ public final class AbortRequest extends Request
         // playing a different match, send back "busy".
 		if (gamer.getMatch() == null || !gamer.getMatch().getMatchId().equals(matchId))
 		{
-		    GamerLogger.logError("GamePlayer", "Got abort message not intended for current game: ignoring.");
-			gamer.notifyObservers(new GamerUnrecognizedMatchEvent(matchId));
+			LOGGER.error("[GamePlayer] Got abort message not intended for current game: ignoring.");
+		    gamer.notifyObservers(new GamerUnrecognizedMatchEvent(matchId));
 			return "busy";
 		}
+
+		LOGGER.info("[GamePlayer] Aborting match.");
 
 		// Mark the match as aborted and notify observers
 		gamer.getMatch().markAborted();
@@ -41,7 +45,7 @@ public final class AbortRequest extends Request
 		try {
 			gamer.abort();
 		} catch (AbortingException e) {
-		    GamerLogger.logStackTrace("GamePlayer", e);
+			LOGGER.error("[GamePlayer] Exception while aborting!", e);
 		}
 
 		// Once the match has ended, set 'roleName' and 'match'
@@ -49,13 +53,12 @@ public final class AbortRequest extends Request
 		gamer.setRoleName(null);
 	    gamer.setMatch(null);
 
-	    /**
-	     * AGGIUNTA: stop logging for this match
-	     */
-	    GamerLogger.stopFileLogging();
-	    /**
-	     * FINE AGGUINTA
-	     */
+		LOGGER.info("[GamePlayer] Stopping file logging for match " + this.matchId + ".");
+		LOGGER.info("[GamePlayer] Stopped logging to files at: " + new Date());
+		LOGGER.info("[GamePlayer] LOG SEALED");
+		ThreadContext.remove("LOG_FILE");
+
+		LOGGER.info("[GamePlayer] Stopped file logging for match " + this.matchId + ".");
 
 		return "aborted";
 	}

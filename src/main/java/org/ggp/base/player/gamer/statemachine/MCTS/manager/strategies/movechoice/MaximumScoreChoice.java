@@ -8,7 +8,7 @@ import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.Interna
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.MCTSMove;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.DUCT.InternalPropnetDUCTMCTSNode;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.SUCT.InternalPropnetSUCTMCTSNode;
-import org.ggp.base.util.statemachine.inernalPropnetStructure.InternalPropnetRole;
+import org.ggp.base.util.statemachine.implementation.internalPropnet.structure.InternalPropnetRole;
 
 public class MaximumScoreChoice implements MoveChoiceStrategy {
 

@@ -8,7 +8,6 @@ import java.util.List;
 
 import org.ggp.base.util.gdl.grammar.Gdl;
 import org.ggp.base.util.gdl.transforms.DistinctAndNotMover;
-import org.ggp.base.util.logging.GamerLogger;
 import org.ggp.base.util.statemachine.MachineState;
 import org.ggp.base.util.statemachine.Move;
 import org.ggp.base.util.statemachine.Role;
@@ -146,8 +145,7 @@ public class YapStateMachine extends StateMachine {
 			// Create the interface with the Yap Prover.
 			this.yapProver = new YapProver(this.support.toProlog(description), this.waitingTime);
 		}catch(YapProverException e){
-			GamerLogger.logError("StateMachine", "[YAP] Exception during state machine initialization. Yap Prover creation and startup failed!");
-			GamerLogger.logStackTrace("StateMachine", e);
+			LOGGER.error("[StateMachine] [YAP] Exception during state machine initialization. Yap Prover creation and startup failed!", e);
 			this.yapProver = null;
 			throw new StateMachineInitializationException("State machine initialization failed. Impossible to create and start up Yap Prover.", e);
 		}
@@ -156,8 +154,7 @@ public class YapStateMachine extends StateMachine {
 		try{
 			this.initialState = computeInitialState();
 		}catch(StateMachineException e){
-			GamerLogger.logError("StateMachine", "[YAP] Exception during state machine initialization. Initial state computation failed!");
-			GamerLogger.logStackTrace("StateMachine", e);
+			LOGGER.error("[StateMachine] [YAP] Exception during state machine initialization. Initial state computation failed!", e);
 			this.initialState = null;
 			throw new StateMachineInitializationException("State machine initialization failed. Impossible to compute initial state.", e);
 		}
@@ -165,8 +162,7 @@ public class YapStateMachine extends StateMachine {
 		try{
 			this.roles = computeRoles();
 		}catch(StateMachineException e){
-			GamerLogger.logError("StateMachine", "[YAP] Exception during state machine initialization. Roles computation failed!");
-			GamerLogger.logStackTrace("StateMachine", e);
+			LOGGER.error("[StateMachine] [YAP] Exception during state machine initialization. Roles computation failed!", e);
 			this.roles = null;
 			throw new StateMachineInitializationException("State machine initialization failed. Impossible to compute roles.", e);
 		}
@@ -197,8 +193,7 @@ public class YapStateMachine extends StateMachine {
 			//System.out.println("YAP-COMPUTE_INITIAL_STATE: " + (System.currentTimeMillis() - cancStart) + "ms");
 
 			this.currentYapState = null;
-			GamerLogger.logError("StateMachine", "[YAP] Exception during initial state computation.");
-			GamerLogger.logStackTrace("StateMachine", e);
+			LOGGER.error("[StateMachine] [YAP] Exception during initial state computation.", e);
 			throw new StateMachineException("Exception during initial state computation.", e);
 		}
 
@@ -209,7 +204,7 @@ public class YapStateMachine extends StateMachine {
 		if(bindings == null){
 			// State computation failed on Yap prolog side.
 			this.currentYapState = null;
-			GamerLogger.logError("StateMachine", "[YAP] Computation of initial state on Yap Prolog side failed.");
+			LOGGER.error("[StateMachine] [YAP] Computation of initial state on Yap Prolog side failed.");
 			throw new StateMachineException("Computation of initial state on Yap Prolog side failed.");
 		}
 
@@ -244,8 +239,7 @@ public class YapStateMachine extends StateMachine {
 
 			//System.out.println("YAP-COMPUTE_ROLES: " + (System.currentTimeMillis() - cancStart) + "ms");
 
-			GamerLogger.logError("StateMachine", "[YAP] Exception during game roles computation.");
-			GamerLogger.logStackTrace("StateMachine", e);
+			LOGGER.error("[StateMachine] [YAP] Exception during game roles computation.", e);
 			// Everytime a query fails throwing a YapProverException we cannot be sure about the state
 			// Yap Prolog is in (it's highly likely that it was reset so no state is currently set).
 			this.currentYapState = null;
@@ -253,7 +247,7 @@ public class YapStateMachine extends StateMachine {
 		}
 
 		if(bindings == null){
-			GamerLogger.logError("StateMachine", "[YAP] Got no results for the computation of the game roles, while expecting at least one role.");
+			LOGGER.error("[StateMachine] [YAP] Got no results for the computation of the game roles, while expecting at least one role.");
 			throw new StateMachineException("Got no results for the computation of the game roles, while expecting at least one role.");
 		}
 
@@ -265,8 +259,7 @@ public class YapStateMachine extends StateMachine {
 			this.fakeRoles = support.getFakeRoles(tmpRoles);
 
 		}catch(SymbolFormatException e){
-			GamerLogger.logError("StateMachine", "[YAP] Got exception while parsing the game roles.");
-			GamerLogger.logStackTrace("StateMachine", e);
+			LOGGER.error("[StateMachine] [YAP] Got exception while parsing the game roles.", e);
 			this.fakeRoles = null;
 			throw new StateMachineException("Impossible to parse the game roles.", e);
 		}
@@ -295,8 +288,7 @@ public class YapStateMachine extends StateMachine {
 
 			//System.out.println("YAP-GET_GOAL: " + (System.currentTimeMillis() - cancStart) + "ms");
 
-			GamerLogger.logError("StateMachine", "[YAP] Exception during goal computation.");
-			GamerLogger.logStackTrace("StateMachine", e);
+			LOGGER.error("[StateMachine] [YAP] Exception during goal computation.", e);
 			// Everytime a query fails throwing a YapProverException we cannot be sure about the state
 			// Yap Prolog is in (it's highly likely that it was reset so no state is currently set).
 			this.currentYapState = null;
@@ -306,22 +298,21 @@ public class YapStateMachine extends StateMachine {
 		int goal;
 
 		if(bindings == null){
-			GamerLogger.logError("StateMachine", "[YAP] Got no goal when expecting one.");
+			LOGGER.error("[StateMachine] [YAP] Got no goal when expecting one.");
 			throw new GoalDefinitionException(state, role);
 		}
 
 		String[] goals = (String[]) bindings[0];
 
 		if(goals.length != 1){
-			GamerLogger.logError("StateMachine", "[YAP] Got goal results of size: " + goals.length + " when expecting size one.");
+			LOGGER.error("[StateMachine] [YAP] Got goal results of size: " + goals.length + " when expecting size one.");
 			throw new GoalDefinitionException(state, role);
 		}
 
 		try{
 			goal = Integer.parseInt(goals[0]);
 		}catch(NumberFormatException ex){
-			GamerLogger.logError("StateMachine", "[YAP] Got goal results that is not a number.");
-			GamerLogger.logStackTrace("StateMachine", ex);
+			LOGGER.error("[StateMachine] [YAP] Got goal results that is not a number.", ex);
 			throw new GoalDefinitionException(state, role, ex);
 		}
 
@@ -349,8 +340,7 @@ public class YapStateMachine extends StateMachine {
 
 			//System.out.println("YAP-IS_TERMINAL: " + (System.currentTimeMillis() - cancStart) + "ms");
 
-			GamerLogger.logError("StateMachine", "[YAP] Exception during terminality computation.");
-			GamerLogger.logStackTrace("StateMachine", e);
+			LOGGER.error("[StateMachine] [YAP] Exception during terminality computation.", e);
 			// Everytime a query fails throwing a YapProverException we cannot be sure about the state
 			// Yap Prolog is in (it's highly likely that it was reset so no state is currently set).
 			this.currentYapState = null;
@@ -399,8 +389,7 @@ public class YapStateMachine extends StateMachine {
 
 			//System.out.println("YAP-GET_LEGAL_MOVES: " + (System.currentTimeMillis() - cancStart) + "ms");
 
-			GamerLogger.logError("StateMachine", "[YAP] Exception during legal moves computation.");
-			GamerLogger.logStackTrace("StateMachine", e);
+			LOGGER.error("[StateMachine] [YAP] Exception during legal moves computation.", e);
 			// Everytime a query fails throwing a YapProverException we cannot be sure about the state
 			// Yap Prolog is in (it's highly likely that it was reset so no state is currently set).
 			this.currentYapState = null;
@@ -408,7 +397,7 @@ public class YapStateMachine extends StateMachine {
 		}
 
 		if(bindings == null){
-			GamerLogger.logError("StateMachine", "[YAP] Got no legal moves when expecting at least one.");
+			LOGGER.error("[StateMachine] [YAP] Got no legal moves when expecting at least one.");
 			throw new MoveDefinitionException(state, role);
 		}
 
@@ -416,7 +405,7 @@ public class YapStateMachine extends StateMachine {
 
 		// Extra check, but this should never happen.
 		if(yapMoves.length < 1){
-			GamerLogger.logError("StateMachine", "[YAP] Got no legal moves when expecting at least one.");
+			LOGGER.error("[StateMachine] [YAP] Got no legal moves when expecting at least one.");
 			throw new MoveDefinitionException(state, role);
 		}
 
@@ -448,14 +437,13 @@ public class YapStateMachine extends StateMachine {
 
 			//System.out.println("YAP-GET_NEXT_STATE: " + (System.currentTimeMillis() - cancStart) + "ms");
 
-			GamerLogger.logError("StateMachine", "[YAP] Exception during next state computation.");
-			GamerLogger.logStackTrace("StateMachine", e);
+			LOGGER.error("[StateMachine] [YAP] Exception during next state computation.", e);
 			this.currentYapState = null;
 			throw new StateMachineException("Impossible to compute next state for moves " + moves + " in state " + state + ".", e);
 		}
 
 		if(bindings == null){
-			GamerLogger.logError("StateMachine", "[YAP] Computation of next state on Yap Prolog side failed.");
+			LOGGER.error("[StateMachine] [YAP] Computation of next state on Yap Prolog side failed.");
 			this.currentYapState = null;
 			throw new StateMachineException("Computation of next state on Yap Prolog side failed for moves " + moves + " in state " + state + ".");
 		}
@@ -491,8 +479,7 @@ public class YapStateMachine extends StateMachine {
 				//System.out.println("YAP-UPDATE_YAP_STATE: " + (System.currentTimeMillis() - cancStart) + "ms");
 
 				this.currentYapState = null;
-				GamerLogger.logError("StateMachine", "[YAP] Exception during prolog state update.");
-				GamerLogger.logStackTrace("StateMachine", e);
+				LOGGER.error("[StateMachine] [YAP] Exception during prolog state update.", e);
 				throw new StateMachineException("State update on YAP Prolog side failed for state: " + state, e);
 			}
 
@@ -500,7 +487,7 @@ public class YapStateMachine extends StateMachine {
 			if(!success){
 				// State computation failed on Yap prolog side.
 				this.currentYapState = null;
-				GamerLogger.logError("StateMachine", "[YAP] Computation of current state on YAP Prolog side failed!");
+				LOGGER.error("[StateMachine] [YAP] Computation of current state on YAP Prolog side failed!");
 				throw new StateMachineException("Computation on YAP Prolog side failed for state: " + state);
 			}
 

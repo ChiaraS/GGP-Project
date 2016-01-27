@@ -12,6 +12,8 @@ import java.util.Map.Entry;
 import java.util.Queue;
 import java.util.Set;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.ggp.base.util.concurrency.ConcurrencyUtils;
 import org.ggp.base.util.gdl.GdlUtils;
 import org.ggp.base.util.gdl.grammar.Gdl;
@@ -44,7 +46,6 @@ import org.ggp.base.util.gdl.transforms.DeORer;
 import org.ggp.base.util.gdl.transforms.GdlCleaner;
 import org.ggp.base.util.gdl.transforms.Relationizer;
 import org.ggp.base.util.gdl.transforms.VariableConstrainer;
-import org.ggp.base.util.logging.GamerLogger;
 import org.ggp.base.util.propnet.architecture.externalizedState.ExternalizedStateComponent;
 import org.ggp.base.util.propnet.architecture.externalizedState.ExternalizedStatePropNet;
 import org.ggp.base.util.propnet.architecture.externalizedState.components.ExternalizedStateAnd;
@@ -95,6 +96,17 @@ import com.google.common.collect.Multimap;
  *
  */
 public class ExternalizedStatePropnetFactory {
+
+	/**
+	 * Static reference to the logger
+	 */
+	private static final Logger LOGGER;
+
+	static{
+
+		LOGGER = LogManager.getRootLogger();
+
+	}
 
 	static final private GdlConstant LEGAL = GdlPool.getConstant("legal");
 	static final private GdlConstant NEXT = GdlPool.getConstant("next");
@@ -1266,7 +1278,7 @@ public class ExternalizedStatePropnetFactory {
 
 	}
 
-	////////FIX
+	/* FIX
 	private static void optimizeAwayTrueAndFalse2(ExternalizedStatePropNet pn, ExternalizedStateComponent trueComponent, ExternalizedStateComponent falseComponent) {
 
 		Set<ExternalizedStateComponent> toCheckTrue = new HashSet<ExternalizedStateComponent>(trueComponent.getOutputs());
@@ -1281,6 +1293,7 @@ public class ExternalizedStatePropnetFactory {
 	        optimizeAwayFalse(null, null, pn, trueComponent, falseComponent);
 	    }
 	}
+	*/
 
 	/*
 	//TODO: Create a version with just a set of components that we can share with post-optimizations
@@ -1427,7 +1440,7 @@ public class ExternalizedStatePropnetFactory {
 					}
 				}
 				if(!correctInputReferences){
-					GamerLogger.log("PropStructureChecker", "Component " + c.getComponentType() + " is not referenced back by its input " + in.getComponentType() + ".");
+					LOGGER.error("[PropStructureChecker] Component " + c.getComponentType() + " is not referenced back by its input " + in.getComponentType() + ".");
 					propnetOk = false;
 				}
 			}
@@ -1442,7 +1455,7 @@ public class ExternalizedStatePropnetFactory {
 					}
 				}
 				if(!correctOutputReferences){
-					GamerLogger.log("PropStructureChecker", "Component " + c.getComponentType() + " is not referenced back by its output " + out.getComponentType() + ".");
+					LOGGER.error("[PropStructureChecker] Component " + c.getComponentType() + " is not referenced back by its output " + out.getComponentType() + ".");
 					propnetOk = false;
 				}
 			}
@@ -1470,109 +1483,109 @@ public class ExternalizedStatePropnetFactory {
 				switch(p.getPropositionType()){
 				case BASE:
 					if(p.getInputs().size() != 1){
-						GamerLogger.log("PropStructureChecker", "Component " + p.getComponentType() + " has wrong number of inputs: " + p.getInputs().size());
+						LOGGER.error("[PropStructureChecker] Component " + p.getComponentType() + " has wrong number of inputs: " + p.getInputs().size());
 						propnetOk = false;
 					}else if(!(p.getSingleInput() instanceof ExternalizedStateTransition)){
-						GamerLogger.log("PropStructureChecker", "Component " + p.getComponentType() + " has no TRANSITION as input but " + p.getSingleInput().getClass().getName());
+						LOGGER.error("[PropStructureChecker] Component " + p.getComponentType() + " has no TRANSITION as input but " + p.getSingleInput().getClass().getName());
 						propnetOk = false;
 					}
 					break;
 				case INPUT:
 					if(p.getInputs().size() != 0){
-						GamerLogger.log("PropStructureChecker", "Component " + p.getComponentType() + " has wrong number of inputs: " + p.getInputs().size());
+						LOGGER.error("[PropStructureChecker] Component " + p.getComponentType() + " has wrong number of inputs: " + p.getInputs().size());
 						propnetOk = false;
 					}
 					break;
 				case LEGAL:
 					if(p.getInputs().size() != 1){
-						GamerLogger.log("PropStructureChecker", "Component " + p.getComponentType() + " has wrong number of inputs: " + p.getInputs().size());
+						LOGGER.error("[PropStructureChecker] Component " + p.getComponentType() + " has wrong number of inputs: " + p.getInputs().size());
 						propnetOk = false;
 					}
 					break;
 				case GOAL:
 					if(p.getInputs().size() != 1){
-						GamerLogger.log("PropStructureChecker", "Component " + p.getComponentType() + " has wrong number of inputs: " + p.getInputs().size());
+						LOGGER.error("[PropStructureChecker] Component " + p.getComponentType() + " has wrong number of inputs: " + p.getInputs().size());
 						propnetOk = false;
 					}
 					if(p.getOutputs().size() != 0){
-						GamerLogger.log("PropStructureChecker", "Component " + p.getComponentType() + " has wrong number of outputs: " + p.getOutputs().size());
+						LOGGER.error("[PropStructureChecker] Component " + p.getComponentType() + " has wrong number of outputs: " + p.getOutputs().size());
 						propnetOk = false;
 					}
 					break;
 				case TERMINAL:
 					if(p.getInputs().size() != 1){
-						GamerLogger.log("PropStructureChecker", "Component " + p.getComponentType() + " has wrong number of inputs: " + p.getInputs().size());
+						LOGGER.error("[PropStructureChecker] Component " + p.getComponentType() + " has wrong number of inputs: " + p.getInputs().size());
 						propnetOk = false;
 					}
 					if(p.getOutputs().size() != 0){
-						GamerLogger.log("PropStructureChecker", "Component " + p.getComponentType() + " has wrong number of outputs: " + p.getOutputs().size());
+						LOGGER.error("[PropStructureChecker] Component " + p.getComponentType() + " has wrong number of outputs: " + p.getOutputs().size());
 						propnetOk = false;
 					}
 					break;
 				case INIT:
 					if(p.getInputs().size() != 0){
-						GamerLogger.log("PropStructureChecker", "Component " + p.getComponentType() + " has wrong number of inputs: " + p.getInputs().size());
+						LOGGER.error("[PropStructureChecker] Component " + p.getComponentType() + " has wrong number of inputs: " + p.getInputs().size());
 						propnetOk = false;
 					}
 					break;
 				case OTHER:
 					if(p.getInputs().size() != 1){
-						GamerLogger.log("PropStructureChecker", "Component " + p.getComponentType() + " has wrong number of inputs: " + p.getInputs().size());
+						LOGGER.error("[PropStructureChecker] Component " + p.getComponentType() + " has wrong number of inputs: " + p.getInputs().size());
 						propnetOk = false;
 					}
 					break;
 				default:
-					GamerLogger.log("PropStructureChecker", "Component " + p.getComponentType() + " has no PROP_TYPE assigned.");
+					LOGGER.error("[PropStructureChecker] Component " + p.getComponentType() + " has no PROP_TYPE assigned.");
 					propnetOk = false;
 					break;
 				}
 			}else if(c instanceof ExternalizedStateTransition){
 
 				if(c.getInputs().size() != 1){
-					GamerLogger.log("PropStructureChecker", "The component " + c.getComponentType() + " doesn't have one and only one input. It has " + c.getInputs().size() + " inputs.");
+					LOGGER.error("[PropStructureChecker] The component " + c.getComponentType() + " doesn't have one and only one input. It has " + c.getInputs().size() + " inputs.");
 					propnetOk = false;
 				}
 
 				if(c.getOutputs().size() != 1){
-					GamerLogger.log("PropStructureChecker", "The component " + c.getComponentType() + " doesn't have one and only one output. It has " + c.getOutputs().size() + " outputs.");
+					LOGGER.error("[PropStructureChecker] The component " + c.getComponentType() + " doesn't have one and only one output. It has " + c.getOutputs().size() + " outputs.");
 					propnetOk = false;
 				}else if(!(c.getSingleOutput() instanceof ExternalizedStateProposition)){
-					GamerLogger.log("PropStructureChecker", "The component " + c.getComponentType() + " doesn't have a proposition as output. It has " + c.getSingleOutput().getComponentType() + " as output.");
+					LOGGER.error("[PropStructureChecker] The component " + c.getComponentType() + " doesn't have a proposition as output. It has " + c.getSingleOutput().getComponentType() + " as output.");
 					propnetOk = false;
 				}else if(((ExternalizedStateProposition) c.getSingleOutput()).getPropositionType() != PROP_TYPE.BASE){
-					GamerLogger.log("PropStructureChecker", "The component " + c.getComponentType() + " doesn't have a base proposition as output. It has " + c.getSingleOutput().getComponentType() + " as output.");
+					LOGGER.error("[PropStructureChecker] The component " + c.getComponentType() + " doesn't have a base proposition as output. It has " + c.getSingleOutput().getComponentType() + " as output.");
 					propnetOk = false;
 				}
 
 			}else if(c instanceof ExternalizedStateConstant){
 
 				if(c.getInputs().size() != 0){
-					GamerLogger.log("PropStructureChecker", "The component " + c.getComponentType() + " has " + c.getInputs().size() + " inputs.");
+					LOGGER.error("[PropStructureChecker] The component " + c.getComponentType() + " has " + c.getInputs().size() + " inputs.");
 					propnetOk = false;
 				}
 
 			}else if(c instanceof ExternalizedStateAnd){
 
 				if(c.getInputs().size() == 1){
-					GamerLogger.log("PropStructureChecker", "The component " + c.getComponentType() + " is unnecessary since it only has one input: " + c.getSingleInput().getComponentType() + ".");
+					LOGGER.error("[PropStructureChecker] The component " + c.getComponentType() + " is unnecessary since it only has one input: " + c.getSingleInput().getComponentType() + ".");
 					propnetOk = false;
 				}else if(c.getInputs().size() == 0){
-					GamerLogger.log("PropStructureChecker", "The component " + c.getComponentType() + " has no inputs: should be connected to a constant proposition.");
+					LOGGER.error("[PropStructureChecker] The component " + c.getComponentType() + " has no inputs: should be connected to a constant proposition.");
 					propnetOk = false;
 				}
 
 				if(c.getOutputs().size() == 0){
-					GamerLogger.log("PropStructureChecker", "The component " + c.getComponentType() + " is unnecessary since it has no outputs!");
+					LOGGER.error("[PropStructureChecker] The component " + c.getComponentType() + " is unnecessary since it has no outputs!");
 					propnetOk = false;
 				}
 
 			}else if(c instanceof ExternalizedStateOr){
 
 				if(c.getInputs().size() == 1){
-					GamerLogger.log("PropStructureChecker", "The component " + c.getComponentType() + " is unnecessary since it only has one input: " + c.getSingleInput().getComponentType() + ".");
+					LOGGER.error("[PropStructureChecker] The component " + c.getComponentType() + " is unnecessary since it only has one input: " + c.getSingleInput().getComponentType() + ".");
 					propnetOk = false;
 				}else if(c.getInputs().size() == 0){
-					GamerLogger.log("PropStructureChecker", "The component " + c.getComponentType() + " has no inputs: should be connected to a constant proposition.");
+					LOGGER.error("[PropStructureChecker] The component " + c.getComponentType() + " has no inputs: should be connected to a constant proposition.");
 					propnetOk = false;
 
 					/*
@@ -1587,17 +1600,17 @@ public class ExternalizedStatePropnetFactory {
 				}
 
 				if(c.getOutputs().size() == 0){
-					GamerLogger.log("PropStructureChecker", "The component " + c.getComponentType() + " is unnecessary since it has no outputs!");
+					LOGGER.error("[PropStructureChecker] The component " + c.getComponentType() + " is unnecessary since it has no outputs!");
 					propnetOk = false;
 				}
 
 			}else if(c instanceof ExternalizedStateNot){
 
 				if(c.getInputs().size() > 1){
-					GamerLogger.log("PropStructureChecker", "The component " + c.getComponentType() + " has too many inputs: " + c.getInputs().size());
+					LOGGER.error("[PropStructureChecker] The component " + c.getComponentType() + " has too many inputs: " + c.getInputs().size());
 					propnetOk = false;
 				}else if(c.getInputs().size() == 0){
-					GamerLogger.log("PropStructureChecker", "The component " + c.getComponentType() + " has no inputs: should be connected to a constant proposition!");
+					LOGGER.error("[PropStructureChecker] The component " + c.getComponentType() + " has no inputs: should be connected to a constant proposition!");
 					propnetOk = false;
 				}
 			}
@@ -1606,7 +1619,7 @@ public class ExternalizedStatePropnetFactory {
 		for(Entry<GdlSentence, Integer> e : propNumbers.entrySet()){
 			if(e.getValue().intValue() != 1 ){
 				propnetOk = false;
-				GamerLogger.log("PropStructureChecker", "There are " + e.getValue().intValue() + " propositions with name " + e.getKey() + " .");
+				LOGGER.error("[PropStructureChecker] There are " + e.getValue().intValue() + " propositions with name " + e.getKey() + " .");
 			}
 		}
 
@@ -1616,16 +1629,16 @@ public class ExternalizedStatePropnetFactory {
 
 		if(inputs.size() != legals.size()){
 			propnetOk = false;
-			GamerLogger.log("PropStructureChecker", "The lists with INPUT and LEGAL propositions don't have the same size.");
+			LOGGER.error("[PropStructureChecker] The lists with INPUT and LEGAL propositions don't have the same size.");
 		}else{
 			for(int i = 0; i < inputs.size(); i++){
 				if(inputs.get(i) == null){
 					propnetOk = false;
-					GamerLogger.log("PropStructureChecker", "The proposition " + legals.get(i).getComponentType() + " doesn't have a corresponding INPUT proposition.");
+					LOGGER.error("[PropStructureChecker] The proposition " + legals.get(i).getComponentType() + " doesn't have a corresponding INPUT proposition.");
 				}
 				if(legals.get(i) == null){
 					propnetOk = false;
-					GamerLogger.log("PropStructureChecker", "The proposition " + inputs.get(i).getComponentType() + " doesn't have a corresponding LEGAL proposition.");
+					LOGGER.error("[PropStructureChecker] The proposition " + inputs.get(i).getComponentType() + " doesn't have a corresponding LEGAL proposition.");
 				}
 			}
 		}

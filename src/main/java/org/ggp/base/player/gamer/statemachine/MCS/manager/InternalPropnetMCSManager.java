@@ -7,20 +7,32 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.strategies.playout.PlayoutStrategy;
-import org.ggp.base.util.logging.GamerLogger;
-import org.ggp.base.util.statemachine.InternalPropnetStateMachine;
 import org.ggp.base.util.statemachine.exceptions.MoveDefinitionException;
 import org.ggp.base.util.statemachine.exceptions.StateMachineException;
-import org.ggp.base.util.statemachine.inernalPropnetStructure.InternalPropnetMachineState;
-import org.ggp.base.util.statemachine.inernalPropnetStructure.InternalPropnetMove;
-import org.ggp.base.util.statemachine.inernalPropnetStructure.InternalPropnetRole;
+import org.ggp.base.util.statemachine.implementation.internalPropnet.InternalPropnetStateMachine;
+import org.ggp.base.util.statemachine.implementation.internalPropnet.structure.InternalPropnetMachineState;
+import org.ggp.base.util.statemachine.implementation.internalPropnet.structure.InternalPropnetMove;
+import org.ggp.base.util.statemachine.implementation.internalPropnet.structure.InternalPropnetRole;
 
 /**
  * @author C.Sironi
  *
  */
 public class InternalPropnetMCSManager {
+
+	/**
+	 * Static reference to the logger
+	 */
+	private static final Logger LOGGER;
+
+	static{
+
+		LOGGER = LogManager.getRootLogger();
+
+	}
 
 	/**
 	 * The game state currently being searched.
@@ -175,8 +187,7 @@ public class InternalPropnetMCSManager {
 			try {
 				legalMoves = this.theMachine.getInternalLegalMoves(this.currentState, this.myRole);
 			} catch (MoveDefinitionException e) {
-				GamerLogger.log("MCSManager", "Error when computing legal moves for my role in the root state before starting Monte Carlo search.");
-				GamerLogger.logStackTrace("MCSManager", e);
+				LOGGER.error("[MCSManager] Error when computing legal moves for my role in the root state before starting Monte Carlo search.", e);
 				throw new MCSException("Impossible to perform search: legal moves cannot be computed and explored in the given state.", e);
 			}
 
@@ -222,8 +233,7 @@ public class InternalPropnetMCSManager {
 
 			} catch (StateMachineException | MoveDefinitionException e) {
 
-				GamerLogger.logError("MCSManager", "Failed retrieving random joint move for the currently analyzed move of my role during Monte Carlo Search.");
-				GamerLogger.logStackTrace("MCSManager", e);
+				LOGGER.error("[MCSManager] Failed retrieving random joint move for the currently analyzed move of my role during Monte Carlo Search.", e);
 
 				myGoal = 0;
 

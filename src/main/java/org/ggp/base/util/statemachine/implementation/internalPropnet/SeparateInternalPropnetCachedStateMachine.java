@@ -1,4 +1,4 @@
-package org.ggp.base.util.statemachine.cache;
+package org.ggp.base.util.statemachine.implementation.internalPropnet;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -6,19 +6,18 @@ import java.util.List;
 import java.util.Map;
 
 import org.ggp.base.util.gdl.grammar.Gdl;
-import org.ggp.base.util.statemachine.InternalPropnetStateMachine;
 import org.ggp.base.util.statemachine.MachineState;
 import org.ggp.base.util.statemachine.Move;
 import org.ggp.base.util.statemachine.Role;
+import org.ggp.base.util.statemachine.cache.TtlCache;
 import org.ggp.base.util.statemachine.exceptions.GoalDefinitionException;
 import org.ggp.base.util.statemachine.exceptions.MoveDefinitionException;
 import org.ggp.base.util.statemachine.exceptions.StateMachineException;
 import org.ggp.base.util.statemachine.exceptions.StateMachineInitializationException;
 import org.ggp.base.util.statemachine.exceptions.TransitionDefinitionException;
-import org.ggp.base.util.statemachine.implementation.propnet.SeparateInternalPropnetStateMachine;
-import org.ggp.base.util.statemachine.inernalPropnetStructure.InternalPropnetMachineState;
-import org.ggp.base.util.statemachine.inernalPropnetStructure.InternalPropnetMove;
-import org.ggp.base.util.statemachine.inernalPropnetStructure.InternalPropnetRole;
+import org.ggp.base.util.statemachine.implementation.internalPropnet.structure.InternalPropnetMachineState;
+import org.ggp.base.util.statemachine.implementation.internalPropnet.structure.InternalPropnetMove;
+import org.ggp.base.util.statemachine.implementation.internalPropnet.structure.InternalPropnetRole;
 
 import com.google.common.collect.ImmutableList;
 

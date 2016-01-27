@@ -16,14 +16,14 @@ import org.ggp.base.util.logging.GamerLogger;
 import org.ggp.base.util.logging.GamerLogger.FORMAT;
 import org.ggp.base.util.match.Match;
 import org.ggp.base.util.propnet.architecture.separateExtendedState.immutable.ImmutablePropNet;
-import org.ggp.base.util.propnet.creationManager.SeparatePropnetCreationManager;
+import org.ggp.base.util.propnet.creationManager.SeparateInternalPropnetCreationManager;
 import org.ggp.base.util.propnet.state.ImmutableSeparatePropnetState;
-import org.ggp.base.util.statemachine.InternalPropnetStateMachine;
 import org.ggp.base.util.statemachine.Move;
 import org.ggp.base.util.statemachine.Role;
 import org.ggp.base.util.statemachine.exceptions.StateMachineInitializationException;
-import org.ggp.base.util.statemachine.implementation.propnet.SeparateInternalPropnetStateMachine;
-import org.ggp.base.util.statemachine.inernalPropnetStructure.InternalPropnetRole;
+import org.ggp.base.util.statemachine.implementation.internalPropnet.InternalPropnetStateMachine;
+import org.ggp.base.util.statemachine.implementation.internalPropnet.SeparateInternalPropnetStateMachine;
+import org.ggp.base.util.statemachine.implementation.internalPropnet.structure.InternalPropnetRole;
 
 /**
 * This class checks the speed (nodes/second, iterations/second) of the MCS player
@@ -126,7 +126,7 @@ public class MCSSpeedTest {
 	        ExecutorService executor = Executors.newSingleThreadExecutor();
 
 	        // Create the propnet creation manager
-	        SeparatePropnetCreationManager manager = new SeparatePropnetCreationManager(description, System.currentTimeMillis() + givenInitTime);
+	        SeparateInternalPropnetCreationManager manager = new SeparateInternalPropnetCreationManager(description, System.currentTimeMillis() + givenInitTime);
 
 	  	  	// Start the manager
 	  	  	executor.execute(manager);

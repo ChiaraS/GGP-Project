@@ -3,7 +3,6 @@ package org.ggp.base.util.statemachine.hybrid;
 import java.util.List;
 
 import org.ggp.base.util.gdl.grammar.Gdl;
-import org.ggp.base.util.logging.GamerLogger;
 import org.ggp.base.util.statemachine.MachineState;
 import org.ggp.base.util.statemachine.Move;
 import org.ggp.base.util.statemachine.Role;
@@ -87,8 +86,7 @@ public class BackedPrologStateMachine extends StateMachine {
 		//try{
 		this.backupMachine.initialize(description, timeout);
 		//}catch(StateMachineInitializationException e){
-		//	GamerLogger.logError("StateMachine", "[BACKED PROLOG] Impossible to create a backed prolog state machine because the initialization of backup machine failed!");
-		//	GamerLogger.logStackTrace("StateMachine", e);
+		//	LOGGER.error("[StateMachine] [BACKED PROLOG] Impossible to create a backed prolog state machine because the initialization of backup machine failed!", e);
 		//	throw new StateMachineInitializationException("State machine initialization failed. Impossible to initialize backup state machine!", e);
 		//}
 
@@ -97,8 +95,7 @@ public class BackedPrologStateMachine extends StateMachine {
 		}catch(StateMachineInitializationException e){
 			if(this.mainMachine.isUsable()){
 
-				GamerLogger.logError("StateMachine", "[BACKED PROLOG] Initialization of the main state machine failed. Recovering!");
-				GamerLogger.logStackTrace("StateMachine", e);
+				LOGGER.error("[StateMachine] [BACKED PROLOG] Initialization of the main state machine failed. Recovering!", e);
 
 				if(this.mainMachine.getInitialState() == null){
 					this.mainMachine.setInitialState(this.backupMachine.getInitialState());
@@ -107,8 +104,7 @@ public class BackedPrologStateMachine extends StateMachine {
 					this.mainMachine.setRoles(this.backupMachine.getRoles());
 				}
 			}else{
-				GamerLogger.logError("StateMachine", "[BACKED PROLOG] Initialization of the main state machine failed. Using only backup state machine!");
-				GamerLogger.logStackTrace("StateMachine", e);
+				LOGGER.error("[StateMachine] [BACKED PROLOG] Initialization of the main state machine failed. Using only backup state machine!");
 				this.mainMachine.shutdown();
 				this.mainMachine = null;
 			}
@@ -150,8 +146,7 @@ public class BackedPrologStateMachine extends StateMachine {
 			try{
 				return this.mainMachine.getGoal(state, role);
 			}catch(GoalDefinitionException | StateMachineException e){
-				GamerLogger.logError("StateMachine", "[BACKED PROLOG] Failed to get goals. Falling back to backup machine.");
-				GamerLogger.logStackTrace("StateMachine", e);
+				LOGGER.error("[StateMachine] [BACKED PROLOG] Failed to get goals. Falling back to backup machine.", e);
 			}
 		}
 
@@ -168,8 +163,7 @@ public class BackedPrologStateMachine extends StateMachine {
 			try{
 				return this.mainMachine.isTerminal(state);
 			}catch(StateMachineException e){
-				GamerLogger.logError("StateMachine", "[BACKED PROLOG] Failed to compute state terminality. Falling back to backup machine.");
-				GamerLogger.logStackTrace("StateMachine", e);
+				LOGGER.error("[StateMachine] [BACKED PROLOG] Failed to compute state terminality. Falling back to backup machine.", e);
 			}
 		}
 
@@ -187,8 +181,7 @@ public class BackedPrologStateMachine extends StateMachine {
 			try{
 				return this.mainMachine.getLegalMoves(state, role);
 			}catch(MoveDefinitionException | StateMachineException e){
-				GamerLogger.logError("StateMachine", "[BACKED PROLOG] Failed to get legal moves. Falling back to backup machine.");
-				GamerLogger.logStackTrace("StateMachine", e);
+				LOGGER.error("[StateMachine] [BACKED PROLOG] Failed to get legal moves. Falling back to backup machine.", e);
 			}
 		}
 
@@ -206,8 +199,7 @@ public class BackedPrologStateMachine extends StateMachine {
 			try{
 				return this.mainMachine.getNextState(state, moves);
 			}catch(TransitionDefinitionException | StateMachineException e){
-				GamerLogger.logError("StateMachine", "[BACKED PROLOG] Failed to get next state. Falling back to backup machine.");
-				GamerLogger.logStackTrace("StateMachine", e);
+				LOGGER.error("[StateMachine] [BACKED PROLOG] Failed to get next state. Falling back to backup machine.", e);
 			}
 		}
 

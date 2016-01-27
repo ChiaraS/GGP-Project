@@ -11,13 +11,14 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.ggp.base.util.gdl.grammar.GdlConstant;
 import org.ggp.base.util.gdl.grammar.GdlPool;
 import org.ggp.base.util.gdl.grammar.GdlProposition;
 import org.ggp.base.util.gdl.grammar.GdlRelation;
 import org.ggp.base.util.gdl.grammar.GdlSentence;
 import org.ggp.base.util.gdl.grammar.GdlTerm;
-import org.ggp.base.util.logging.GamerLogger;
 import org.ggp.base.util.propnet.architecture.separateExtendedState.dynamic.components.DynamicAnd;
 import org.ggp.base.util.propnet.architecture.separateExtendedState.dynamic.components.DynamicConstant;
 import org.ggp.base.util.propnet.architecture.separateExtendedState.dynamic.components.DynamicNot;
@@ -28,6 +29,17 @@ import org.ggp.base.util.propnet.utils.PROP_TYPE;
 import org.ggp.base.util.statemachine.Role;
 
 public class DynamicPropNet {
+
+	/**
+	 * Static reference to the logger
+	 */
+	private static final Logger LOGGER;
+
+	static{
+
+		LOGGER = LogManager.getRootLogger();
+
+	}
 
 	/********************************** Parameters **********************************/
 
@@ -718,7 +730,7 @@ public class DynamicPropNet {
             fout.close();
             fos.close();
         }catch(Exception e){
-            GamerLogger.logStackTrace("StateMachine", e);
+            LOGGER.error("[DynamicPropnet] Impossible to render propnet to file.", e);
         }
     }
 

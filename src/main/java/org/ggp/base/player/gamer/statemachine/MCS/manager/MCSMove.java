@@ -1,6 +1,6 @@
 package org.ggp.base.player.gamer.statemachine.MCS.manager;
 
-import org.ggp.base.util.statemachine.inernalPropnetStructure.InternalPropnetMove;
+import org.ggp.base.util.statemachine.implementation.internalPropnet.structure.InternalPropnetMove;
 
 public class MCSMove {
 

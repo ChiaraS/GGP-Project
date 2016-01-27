@@ -12,7 +12,6 @@ import org.ggp.base.util.gdl.grammar.Gdl;
 import org.ggp.base.util.gdl.grammar.GdlConstant;
 import org.ggp.base.util.gdl.grammar.GdlRelation;
 import org.ggp.base.util.gdl.grammar.GdlSentence;
-import org.ggp.base.util.logging.GamerLogger;
 import org.ggp.base.util.propnet.architecture.extendedState.ExtendedStatePropNet;
 import org.ggp.base.util.propnet.architecture.extendedState.components.ExtendedStateProposition;
 import org.ggp.base.util.propnet.architecture.extendedState.components.ExtendedStateTransition;
@@ -64,17 +63,16 @@ public class ExtendedStatePropnetStateMachine extends StateMachine {
     	try{
     		this.propNet = ExtendedStatePropNetFactory.create(description);
     	}catch(InterruptedException e){
-    		GamerLogger.logError("StateMachine", "[Propnet] Propnet creation interrupted!");
-    		GamerLogger.logStackTrace("StateMachine", e);
+    		LOGGER.error("[StateMachine] [Propnet] Propnet creation interrupted!", e);
     		throw new StateMachineInitializationException(e);
     	}
     	// Compute the time taken to construct the propnet
     	this.propnetConstructionTime = System.currentTimeMillis() - startTime;
-		GamerLogger.log("StateMachine", "[Propnet Creator] Propnet creation done. It took " + (this.propnetConstructionTime) + "ms.");
+    	LOGGER.info("[StateMachine] [Propnet] Propnet creation done. It took " + (this.propnetConstructionTime) + "ms.");
 
 		ExtendedStatePropNetFactory.removeAnonymousPropositions(this.propNet);
 
-		GamerLogger.log("StateMachine", "[Propnet Creator] Removed anonymous propositions.");
+		LOGGER.info("[StateMachine] [Propnet] Removed anonymous propositions.");
 
 		// Compute the roles
    		this.roles = ImmutableList.copyOf(this.propNet.getRoles());
@@ -242,7 +240,7 @@ public class ExtendedStatePropnetStateMachine extends StateMachine {
 		for(ExtendedStateProposition goalProp : goalPropsForRole){
 			if(goalProp.getValue()){
 				if(trueGoal != null){
-					GamerLogger.logError("StateMachine", "[Propnet] Got more than one true goal in state " + state + " for role " + role + ".");
+					LOGGER.error("[StateMachine] [Propnet] Got more than one true goal in state " + state + " for role " + role + ".");
 					throw new GoalDefinitionException(state, role);
 				}else{
 					trueGoal = goalProp;
@@ -252,7 +250,7 @@ public class ExtendedStatePropnetStateMachine extends StateMachine {
 
 		// If there is no true goal proposition for the role in this state throw an exception.
 		if(trueGoal == null){
-			GamerLogger.logError("StateMachine", "[Propnet] Got no true goal in state " + state + " for role " + role + ".");
+			LOGGER.error("[StateMachine] [Propnet] Got no true goal in state " + state + " for role " + role + ".");
 			throw new GoalDefinitionException(state, role);
 		}
 

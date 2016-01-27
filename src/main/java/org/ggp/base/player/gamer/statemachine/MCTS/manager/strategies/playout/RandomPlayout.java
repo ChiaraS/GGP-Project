@@ -1,7 +1,7 @@
 package org.ggp.base.player.gamer.statemachine.MCTS.manager.strategies.playout;
 
-import org.ggp.base.util.statemachine.InternalPropnetStateMachine;
-import org.ggp.base.util.statemachine.inernalPropnetStructure.InternalPropnetMachineState;
+import org.ggp.base.util.statemachine.implementation.internalPropnet.InternalPropnetStateMachine;
+import org.ggp.base.util.statemachine.implementation.internalPropnet.structure.InternalPropnetMachineState;
 
 public class RandomPlayout implements PlayoutStrategy {
 

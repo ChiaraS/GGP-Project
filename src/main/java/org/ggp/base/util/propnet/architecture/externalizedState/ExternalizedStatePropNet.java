@@ -10,11 +10,12 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.ggp.base.util.gdl.grammar.GdlConstant;
 import org.ggp.base.util.gdl.grammar.GdlProposition;
 import org.ggp.base.util.gdl.grammar.GdlRelation;
 import org.ggp.base.util.gdl.grammar.GdlTerm;
-import org.ggp.base.util.logging.GamerLogger;
 import org.ggp.base.util.propnet.architecture.externalizedState.components.ExternalizedStateAnd;
 import org.ggp.base.util.propnet.architecture.externalizedState.components.ExternalizedStateConstant;
 import org.ggp.base.util.propnet.architecture.externalizedState.components.ExternalizedStateNot;
@@ -25,6 +26,18 @@ import org.ggp.base.util.propnet.utils.PROP_TYPE;
 import org.ggp.base.util.statemachine.Role;
 
 public class ExternalizedStatePropNet {
+
+	/**
+	 * Static reference to the logger
+	 */
+	private static final Logger LOGGER;
+
+	static{
+
+		LOGGER = LogManager.getRootLogger();
+
+	}
+
 
 	/********************************** Parameters **********************************/
 
@@ -805,7 +818,7 @@ public class ExternalizedStatePropNet {
             fout.close();
             fos.close();
         }catch(Exception e){
-            GamerLogger.logStackTrace("StateMachine", e);
+        	LOGGER.error("[ExternalizedStatePropnet] Impossible to render propnet to file.", e);
         }
     }
 

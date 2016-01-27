@@ -12,8 +12,8 @@ import org.ggp.base.util.logging.GamerLogger;
 import org.ggp.base.util.logging.GamerLogger.FORMAT;
 import org.ggp.base.util.match.Match;
 import org.ggp.base.util.propnet.architecture.forwardInterrupting.ForwardInterruptingPropNet;
+import org.ggp.base.util.propnet.creationManager.FwdInterrPropNetCreator;
 import org.ggp.base.util.propnet.factory.ForwardInterruptingPropNetFactory;
-import org.ggp.base.util.propnet.factory.FwdInterrPropNetCreator;
 
 /**
  * This class checks if the structure of the propnet is consistent (e.g. there are no gates with no input,

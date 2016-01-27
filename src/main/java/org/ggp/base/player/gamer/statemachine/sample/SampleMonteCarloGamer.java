@@ -3,7 +3,6 @@ package org.ggp.base.player.gamer.statemachine.sample;
 import java.util.List;
 
 import org.ggp.base.player.gamer.event.GamerSelectedMoveEvent;
-import org.ggp.base.util.logging.GamerLogger;
 import org.ggp.base.util.statemachine.MachineState;
 import org.ggp.base.util.statemachine.Move;
 import org.ggp.base.util.statemachine.StateMachine;
@@ -80,9 +79,9 @@ public final class SampleMonteCarloGamer extends SampleGamer
 
 		long stop = System.currentTimeMillis();
 
-		GamerLogger.log("Stats", "VISITED_NODES = " + visitedNodes);
-		GamerLogger.log("Stats", "ITERATIONS = " + iterations);
-		GamerLogger.log("Stats", "MOVE_SELECTION_TIME = " + (stop - start));
+		LOGGER.info("[Gamer] VISITED_NODES = " + visitedNodes);
+		LOGGER.info("[Gamer] ITERATIONS = " + iterations);
+		LOGGER.info("[Gamer] MOVE_SELECTION_TIME = " + (stop - start));
 
 		notifyObservers(new GamerSelectedMoveEvent(moves, selection, stop - start));
 		return selection;

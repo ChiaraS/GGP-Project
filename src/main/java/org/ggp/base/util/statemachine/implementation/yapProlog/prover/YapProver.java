@@ -12,7 +12,8 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
-import org.ggp.base.util.logging.GamerLogger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import com.declarativa.interprolog.YAPSubprocessEngine;
 
@@ -47,6 +48,17 @@ import com.declarativa.interprolog.YAPSubprocessEngine;
  *
  */
 public class YapProver {
+
+	/**
+	 * Static reference to the logger
+	 */
+	private static final Logger LOGGER;
+
+	static{
+
+		LOGGER = LogManager.getRootLogger();
+
+	}
 
 	private static String LINUX_DESCRIPTION_FILE_PATH = "/home/csironi/PrologPlayer/prologFiles/description.pl";
 	private static String LINUX_FUNCTIONS_FILE_PATH = "/home/csironi/PrologPlayer/prologFiles/prologFunctions.pl";
@@ -288,8 +300,7 @@ public class YapProver {
 			writeDescription(this.description);
 		} catch (IOException e) {
 			// Log the exception
-			GamerLogger.logError("StateMachine", "[YapProver] Exception during initialization of Yap Prover.");
-			GamerLogger.logStackTrace("StateMachine", e);
+			LOGGER.error("[StateMachine] [YAP] [YapProver] Exception during initialization of Yap Prover.", e);
 			// Throw a new exception.
 			throw new YapProverException("Creation of Yap Prover failed.", e);
 		}
@@ -349,8 +360,7 @@ public class YapProver {
 			this.isReady = true;
 		}catch(RuntimeException e){
 			// Log the exception
-			GamerLogger.logError("StateMachine", "[YapProver] Exception during startup of Yap Prover. Shutting down.");
-			GamerLogger.logStackTrace("StateMachine", e);
+			LOGGER.error("[StateMachine] [YAP] [YapProver] Exception during startup of Yap Prover. Shutting down.", e);
 			this.shutdown();
 			// Throw an exception.
 			throw new YapProverException("Startup of Yap Prover failed.", e);
@@ -456,8 +466,7 @@ public class YapProver {
 			try{
 				this.startup();
 			}catch(YapProverException e){
-				GamerLogger.logError("StateMachine", "[YapProver] Impossible to complete the computation of query result on Yap Prolog side.");
-				GamerLogger.logStackTrace("StateMachine", e);
+				LOGGER.error("[StateMachine] [YAP] [YapProver] Impossible to complete the computation of query result on Yap Prolog side.", e);
 				throw new YapProverException("Computation of query \"" + goal + "\" with result variables \"" + resVar + "\" on Yap Prolog side couldn't be completed.", e);
 			}
 		}
@@ -476,8 +485,7 @@ public class YapProver {
 			} catch (ExecutionException
 					| TimeoutException e) {
 				// If something went wrong or timeout has been reached, then throw an exception.
-				GamerLogger.logError("StateMachine", "[YapProver] Impossible to complete the computation of query result on Yap Prolog side.");
-				GamerLogger.logStackTrace("StateMachine", e);
+				LOGGER.error("[StateMachine] [YAP] [YapProver] Impossible to complete the computation of query result on Yap Prolog side.", e);
 				this.shutdown();
 				throw new YapProverException("Computation of query \"" + goal + "\" with result variables \"" + resVar + "\" on Yap Prolog side couldn't be completed.", e);
 			} catch (InterruptedException e) {
@@ -485,8 +493,7 @@ public class YapProver {
 				// cause the query couldn't be computed, but also re-set the interrupted status of the
 				// current thread to "true" so that also the callers of this method know that they have
 				// to interrupt.
-				GamerLogger.logError("StateMachine", "[YapProver] Impossible to complete the computation of query result on Yap Prolog side.");
-				GamerLogger.logStackTrace("StateMachine", e);
+				LOGGER.error("[StateMachine] [YAP] [YapProver] Impossible to complete the computation of query result on Yap Prolog side.", e);
 				this.shutdown();
 				Thread.currentThread().interrupt();
 				throw new YapProverException("Computation of query \"" + goal + "\" with result variables \"" + resVar + "\" on Yap Prolog side couldn't be completed.", e);
@@ -499,8 +506,7 @@ public class YapProver {
 			// Catch all possible exceptions of Interprolog and re-throw them as a YapPrologException
 			// to signal that something went wrong and the query couldn't be answered.
 			}catch(RuntimeException e){
-				GamerLogger.logError("StateMachine", "[YapProver] Impossible to complete the computation of query result on Yap Prolog side.");
-				GamerLogger.logStackTrace("StateMachine", e);
+				LOGGER.error("[StateMachine] [YAP] [YapProver] Impossible to complete the computation of query result on Yap Prolog side.", e);
 				this.shutdown();
 				throw new YapProverException("Computation of query \"" + goal + "\" with result variables \"" + resVar + "\" on Yap Prolog side couldn't be completed.", e);
 			}
@@ -531,8 +537,7 @@ public class YapProver {
 			try{
 				this.startup();
 			}catch(YapProverException e){
-				GamerLogger.logError("StateMachine", "[YapProver] Impossible to complete the computation of yes/no query on Yap Prolog side.");
-				GamerLogger.logStackTrace("StateMachine", e);
+				LOGGER.error("[StateMachine] [YAP] [YapProver] Impossible to complete the computation of yes/no query on Yap Prolog side.", e);
 				throw new YapProverException("Computation of yes/no query \"" + goal + "\" on Yap Prolog side couldn't be completed.", e);
 			}
 		}
@@ -551,8 +556,7 @@ public class YapProver {
 			} catch (ExecutionException
 					| TimeoutException e) {
 				// If something went wrong or timeout has been reached, then throw an exception.
-				GamerLogger.logError("StateMachine", "[YapProver] Impossible to complete the computation of yes/no query on Yap Prolog side.");
-				GamerLogger.logStackTrace("StateMachine", e);
+				LOGGER.error("[StateMachine] [YAP] [YapProver] Impossible to complete the computation of yes/no query on Yap Prolog side.", e);
 				this.shutdown();
 				throw new YapProverException("Computation of yes/no query \"" + goal + "\" on Yap Prolog side couldn't be completed.", e);
 			} catch (InterruptedException e) {
@@ -560,8 +564,7 @@ public class YapProver {
 				// cause the query couldn't be computed, but also re-set the interrupted status of the
 				// current thread to "true" so that also the callers of this method know that they have
 				// to interrupt.
-				GamerLogger.logError("StateMachine", "[YapProver] Impossible to complete the computation of yes/no query on Yap Prolog side.");
-				GamerLogger.logStackTrace("StateMachine", e);
+				LOGGER.error("[StateMachine] [YAP] [YapProver] Impossible to complete the computation of yes/no query on Yap Prolog side.", e);
 				this.shutdown();
 				Thread.currentThread().interrupt();
 				throw new YapProverException("Computation of yes/no query \"" + goal + "\" on Yap Prolog side couldn't be completed.", e);
@@ -575,8 +578,7 @@ public class YapProver {
 			// Catch all possible exceptions of Interprolog and re-throw them as a YapPrologException
 			// to signal that something went wrong and the query couldn't be answered.
 			}catch(RuntimeException e){
-				GamerLogger.logError("StateMachine", "[YapProver] Impossible to complete the computation of yes/no query on Yap Prolog side.");
-				GamerLogger.logStackTrace("StateMachine", e);
+				LOGGER.error("[StateMachine] [YAP] [YapProver] Impossible to complete the computation of yes/no query on Yap Prolog side.", e);
 				this.shutdown();
 				throw new YapProverException("Computation of yes/no query \"" + goal + "\" on Yap Prolog side couldn't be completed.", e);
 			}

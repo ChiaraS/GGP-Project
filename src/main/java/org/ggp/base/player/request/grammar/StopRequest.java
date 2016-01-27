@@ -1,13 +1,14 @@
 package org.ggp.base.player.request.grammar;
 
+import java.util.Date;
 import java.util.List;
 
+import org.apache.logging.log4j.ThreadContext;
 import org.ggp.base.player.gamer.Gamer;
 import org.ggp.base.player.gamer.event.GamerCompletedMatchEvent;
 import org.ggp.base.player.gamer.event.GamerUnrecognizedMatchEvent;
 import org.ggp.base.player.gamer.exception.StoppingException;
 import org.ggp.base.util.gdl.grammar.GdlTerm;
-import org.ggp.base.util.logging.GamerLogger;
 
 public final class StopRequest extends Request
 {
@@ -35,10 +36,12 @@ public final class StopRequest extends Request
         // playing a different match, send back "busy".
 		if (gamer.getMatch() == null || !gamer.getMatch().getMatchId().equals(matchId))
 		{
-		    GamerLogger.logError("GamePlayer", "Got stop message not intended for current game: ignoring.");
+			LOGGER.error("[GamePlayer] Got stop message not intended for current game: ignoring.");
 			gamer.notifyObservers(new GamerUnrecognizedMatchEvent(matchId));
 			return "busy";
 		}
+
+		LOGGER.info("[GamePlayer] Stopping match.");
 
 		//TODO: Add goal values
 		if(moves != null) {
@@ -49,7 +52,7 @@ public final class StopRequest extends Request
 		try {
 			gamer.stop();
 		} catch (StoppingException e) {
-		    GamerLogger.logStackTrace("GamePlayer", e);
+			LOGGER.error("[GamePlayer] Exception while stopping!", e);
 		}
 
 		// Once the match has ended, set 'roleName' and 'match'
@@ -57,13 +60,13 @@ public final class StopRequest extends Request
 		gamer.setRoleName(null);
 	    gamer.setMatch(null);
 
-	    /**
-	     * AGGIUNTA: stop logging for this match
-	     */
-	    GamerLogger.stopFileLogging();
-	    /**
-	     * FINE AGGUINTA
-	     */
+		LOGGER.info("[GamePlayer] Stopping file logging for match " + this.matchId + ".");
+		LOGGER.info("[GamePlayer] Stopped logging to files at: " + new Date());
+		LOGGER.info("[GamePlayer] LOG SEALED");
+		ThreadContext.remove("LOG_FILE");
+
+		LOGGER.info("[GamePlayer] Stopped file logging for match " + this.matchId + ".");
+
 
 		return "done";
 	}

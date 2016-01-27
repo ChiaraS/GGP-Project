@@ -8,7 +8,6 @@ import org.ggp.base.player.gamer.exception.MoveSelectionException;
 import org.ggp.base.player.gamer.exception.StoppingException;
 import org.ggp.base.util.game.Game;
 import org.ggp.base.util.gdl.grammar.GdlTerm;
-import org.ggp.base.util.logging.GamerLogger;
 import org.python.core.PyObject;
 import org.python.util.PythonInterpreter;
 
@@ -51,8 +50,7 @@ public abstract class PythonGamer extends Gamer
 	            PyObject PyGamerObject = thePyClass.__call__();
 	            thePythonGamer = (Gamer)PyGamerObject.__tojava__(Gamer.class);
 	        } catch(Exception e) {
-	            GamerLogger.logError("GamePlayer", "Caught exception in Python initialization:");
-	            GamerLogger.logStackTrace("GamePlayer", e);
+	        	LOGGER.error("[Gamer] Caught exception in Python initialization.", e);
 	        }
     	}
     }
@@ -70,8 +68,7 @@ public abstract class PythonGamer extends Gamer
         try {
             thePythonGamer.preview(game, timeout);
         } catch(GamePreviewException e) {
-            GamerLogger.logError("GamePlayer", "Caught exception in Python stateMachinePreview:");
-            GamerLogger.logStackTrace("GamePlayer", e);
+        	LOGGER.error("[Gamer] Caught exception in Python stateMachinePreview.", e);
         }
     }
 
@@ -83,8 +80,7 @@ public abstract class PythonGamer extends Gamer
         try {
             thePythonGamer.metaGame(timeout);
         } catch(MetaGamingException e) {
-            GamerLogger.logError("GamePlayer", "Caught exception in Python stateMachineMetaGame:");
-            GamerLogger.logStackTrace("GamePlayer", e);
+        	LOGGER.error("[Gamer] Caught exception in Python stateMachineMetaGame.", e);
         }
     }
 
@@ -96,8 +92,7 @@ public abstract class PythonGamer extends Gamer
         try {
             return thePythonGamer.selectMove(timeout);
         } catch(MoveSelectionException e) {
-            GamerLogger.logError("GamePlayer", "Caught exception in Python stateMachineSelectMove:");
-            GamerLogger.logStackTrace("GamePlayer", e);
+        	LOGGER.error("[Gamer] Caught exception in Python stateMachineSelectMove.", e);
             return null;
         }
     }
@@ -110,8 +105,7 @@ public abstract class PythonGamer extends Gamer
         try {
             thePythonGamer.stop();
         } catch(StoppingException e) {
-            GamerLogger.logError("GamePlayer", "Caught exception in Python stateMachineStop:");
-            GamerLogger.logStackTrace("GamePlayer", e);
+        	LOGGER.error("[Gamer] Caught exception in Python stateMachineStop.", e);
         }
     }
 
@@ -123,8 +117,7 @@ public abstract class PythonGamer extends Gamer
         try {
             thePythonGamer.abort();
         } catch(AbortingException e) {
-            GamerLogger.logError("GamePlayer", "Caught exception in Python stateMachineAbort:");
-            GamerLogger.logStackTrace("GamePlayer", e);
+        	LOGGER.error("[Gamer] Caught exception in Python stateMachineAbort.", e);
         }
     }
 

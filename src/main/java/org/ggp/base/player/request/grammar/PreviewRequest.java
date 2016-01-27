@@ -3,7 +3,6 @@ package org.ggp.base.player.request.grammar;
 import org.ggp.base.player.gamer.Gamer;
 import org.ggp.base.player.gamer.exception.GamePreviewException;
 import org.ggp.base.util.game.Game;
-import org.ggp.base.util.logging.GamerLogger;
 
 public final class PreviewRequest extends Request
 {
@@ -29,10 +28,12 @@ public final class PreviewRequest extends Request
 		// Ensure that we aren't already playing a match. If we are,
 	    // ignore the message, saying that we're busy.
 		if (gamer.getMatch() != null) {
-            GamerLogger.logError("GamePlayer", "Got preview message while already busy playing a game: ignoring.");
+			LOGGER.error("[GamePlayer] Got preview message while already busy playing a game: ignoring.");
             //gamer.notifyObservers(new GamerUnrecognizedMatchEvent(matchId));
             return "busy";
         }
+
+		LOGGER.info("[GamePlayer] Previewing game.");
 
 		// Otherwise, if we're not busy, have the gamer start previewing.
 		try {
@@ -40,7 +41,7 @@ public final class PreviewRequest extends Request
 			gamer.preview(game, previewClock * 1000 + receptionTime);
 			//gamer.metaGame(gamer.getMatch().getStartClock() * 1000 + receptionTime);
 		} catch (GamePreviewException e) {
-		    GamerLogger.logStackTrace("GamePlayer", e);
+			LOGGER.error("[GamePlayer] Exception while previewing game!", e);
 
 		    // Upon encountering an uncaught exception during previewing,
 		    // assume that indicates that we aren't actually able to play

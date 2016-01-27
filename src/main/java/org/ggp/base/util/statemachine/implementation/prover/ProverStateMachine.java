@@ -8,7 +8,6 @@ import org.ggp.base.util.gdl.grammar.Gdl;
 import org.ggp.base.util.gdl.grammar.GdlConstant;
 import org.ggp.base.util.gdl.grammar.GdlRelation;
 import org.ggp.base.util.gdl.grammar.GdlSentence;
-import org.ggp.base.util.logging.GamerLogger;
 import org.ggp.base.util.prover.Prover;
 import org.ggp.base.util.prover.aima.AimaProver;
 import org.ggp.base.util.statemachine.MachineState;
@@ -59,7 +58,7 @@ public class ProverStateMachine extends StateMachine
 
 		if (results.size() != 1)
 		{
-		    GamerLogger.logError("StateMachine", "[Prover] Got goal results of size: " + results.size() + " when expecting size one.");
+			LOGGER.error("[StateMachine] [Prover] Got goal results of size: " + results.size() + " when expecting size one.");
 			throw new GoalDefinitionException(state, role);
 		}
 
@@ -89,7 +88,7 @@ public class ProverStateMachine extends StateMachine
 
 		if (results.size() == 0)
 		{
-			GamerLogger.logError("StateMachine", "Got no legal moves when expecting at least one.");
+			LOGGER.error("[StateMachine] [Prover] Got no legal moves when expecting at least one.");
 			throw new MoveDefinitionException(state, role);
 		}
 

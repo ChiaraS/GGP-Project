@@ -16,14 +16,13 @@ import org.ggp.base.player.gamer.statemachine.MCTS.manager.strategies.selection.
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.InternalPropnetMCTSNode;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.MCTSMove;
 import org.ggp.base.player.gamer.statemachine.propnet.InternalPropnetGamer;
-import org.ggp.base.util.logging.GamerLogger;
 import org.ggp.base.util.statemachine.Move;
 import org.ggp.base.util.statemachine.exceptions.GoalDefinitionException;
 import org.ggp.base.util.statemachine.exceptions.MoveDefinitionException;
 import org.ggp.base.util.statemachine.exceptions.StateMachineException;
 import org.ggp.base.util.statemachine.exceptions.TransitionDefinitionException;
-import org.ggp.base.util.statemachine.inernalPropnetStructure.InternalPropnetMachineState;
-import org.ggp.base.util.statemachine.inernalPropnetStructure.InternalPropnetRole;
+import org.ggp.base.util.statemachine.implementation.internalPropnet.structure.InternalPropnetMachineState;
+import org.ggp.base.util.statemachine.implementation.internalPropnet.structure.InternalPropnetRole;
 
 /**
  * This gamer performs UCT Monte Carlo Tree Search.
@@ -108,8 +107,8 @@ public abstract class SlowUCTMCTSGamer extends InternalPropnetGamer {
     	int visitedNodes = -1;
     	double iterationsPerSecond = -1;
     	double nodesPerSecond = -1;
-		GamerLogger.log("Gamer", "Starting metagame with available thinking time " + (realTimeout-start) + "ms.");
-		GamerLogger.log(GamerLogger.FORMAT.CSV_FORMAT, "Stats", "Game step;Thinking time(ms);Search time(ms);Iterations;Visited nodes;Iterations/second;Nodes/second;Chosen move;Move score sum;Move visits;Avg move score");
+    	LOGGER.info("[Gamer] Starting metagame with available thinking time " + (realTimeout-start) + "ms.");
+    	CSV_LOGGER.info("Game step;Thinking time(ms);Search time(ms);Iterations;Visited nodes;Iterations/second;Nodes/second;Chosen move;Move score sum;Move visits;Avg move score");
 
 		this.gameStep = 0;
 
@@ -130,12 +129,12 @@ public abstract class SlowUCTMCTSGamer extends InternalPropnetGamer {
 			// If search fails during metagame?? TODO: should I throw exception here and say I'm not able to play?
 			// If I don't it'll throw exception later anyway! Better stop now?
 
-			GamerLogger.log("Gamer", "Starting search during metagame.");
+			LOGGER.info("[Gamer] Starting search during metagame.");
 
 			try {
 				this.mctsManager.search(this.thePropnetMachine.getInternalInitialState(), realTimeout, gameStep+1);
 
-				GamerLogger.log("Gamer", "Done searching during metagame.");
+				LOGGER.info("[Gamer] Done searching during metagame.");
 				searchTime = this.mctsManager.getSearchTime();
 	        	iterations = this.mctsManager.getIterations();
 	        	visitedNodes = this.mctsManager.getVisitedNodes();
@@ -148,18 +147,17 @@ public abstract class SlowUCTMCTSGamer extends InternalPropnetGamer {
 	        	}
 	        	thinkingTime = System.currentTimeMillis() - start;
 			}catch(MCTSException e) {
-				GamerLogger.logError("Gamer", "Exception during search while metagaming.");
-				GamerLogger.logStackTrace("Gamer", e);
+				LOGGER.error("[Gamer] Exception during search while metagaming.", e);
 
 				thinkingTime = System.currentTimeMillis() - start;
 			}
 		}else{
-			GamerLogger.log("Gamer", "No time to start the search during metagame.");
+			LOGGER.info("[Gamer] No time to start the search during metagame.");
 
 			thinkingTime = System.currentTimeMillis() - start;
 		}
 
-		GamerLogger.log(GamerLogger.FORMAT.CSV_FORMAT, "Stats", this.gameStep + ";" + thinkingTime + ";" + searchTime + ";" + iterations + ";" + visitedNodes + ";" + iterationsPerSecond + ";" + nodesPerSecond + ";null;-1;-1;-1;");
+		CSV_LOGGER.info("" + this.gameStep + ";" + thinkingTime + ";" + searchTime + ";" + iterations + ";" + visitedNodes + ";" + iterationsPerSecond + ";" + nodesPerSecond + ";null;-1;-1;-1;");
 	}
 
 	/* (non-Javadoc)
@@ -190,11 +188,11 @@ public abstract class SlowUCTMCTSGamer extends InternalPropnetGamer {
 
 		this.gameStep++;
 
-		GamerLogger.log("Gamer", "Starting move selection for game step " + this.gameStep + " with available time " + (realTimeout-start) + "ms.");
+		LOGGER.info("[Gamer] Starting move selection for game step " + this.gameStep + " with available time " + (realTimeout-start) + "ms.");
 
 		if(System.currentTimeMillis() < realTimeout){
 
-			GamerLogger.log("Gamer", "Selecting move using MCTS.");
+			LOGGER.info("[Gamer] Selecting move using MCTS.");
 
 			InternalPropnetMachineState currentState = this.thePropnetMachine.stateToInternalState(this.getCurrentState());
 
@@ -217,24 +215,22 @@ public abstract class SlowUCTMCTSGamer extends InternalPropnetGamer {
 		    	moveVisits = selectedMove.getVisits();
 		    	moveAvgScore = moveScoreSum / ((double) moveVisits);
 
-				GamerLogger.log("Gamer", "Returning MCTS move " + theMove + ".");
+		    	LOGGER.info("[Gamer] Returning MCTS move " + theMove + ".");
 			}catch(MCTSException e){
-				GamerLogger.logError("Gamer", "MCTS failed to return a move.");
-				GamerLogger.logStackTrace("Gamer", e);
+				LOGGER.error("[Gamer] MCTS failed to return a move.", e);
 				// If the MCTS manager failed to return a move return a random one.
 				theMove = this.thePropnetMachine.getRandomMove(this.getCurrentState(), this.getRole());
-				GamerLogger.log("Gamer", "Returning random move " + theMove + ".");
+				LOGGER.error("[Gamer] Returning random move " + theMove + ".");
 			}
 		}else{
 			// If there is no time return a random move.
-			//GamerLogger.log("Gamer", "No time to start the search during metagame.");
 			theMove = this.thePropnetMachine.getRandomMove(this.getCurrentState(), this.getRole());
-			GamerLogger.log("Gamer", "No time to select next move using MCTS. Returning random move " + theMove + ".");
+			LOGGER.info("[Gamer] No time to select next move using MCTS. Returning random move " + theMove + ".");
 		}
 
 		thinkingTime = System.currentTimeMillis() - start;
 
-		GamerLogger.log(GamerLogger.FORMAT.CSV_FORMAT, "Stats", this.gameStep + ";" + thinkingTime + ";" + searchTime + ";" + iterations + ";" + visitedNodes + ";" + iterationsPerSecond + ";" + nodesPerSecond + ";" + theMove + ";" + moveScoreSum + ";" + moveVisits + ";" + moveAvgScore + ";");
+		CSV_LOGGER.info("" + this.gameStep + ";" + thinkingTime + ";" + searchTime + ";" + iterations + ";" + visitedNodes + ";" + iterationsPerSecond + ";" + nodesPerSecond + ";" + theMove + ";" + moveScoreSum + ";" + moveVisits + ";" + moveAvgScore + ";");
 
 		// TODO: IS THIS NEEDED? WHEN?
 		notifyObservers(new GamerSelectedMoveEvent(this.thePropnetMachine.getLegalMoves(this.getCurrentState(), this.getRole()), theMove, thinkingTime));

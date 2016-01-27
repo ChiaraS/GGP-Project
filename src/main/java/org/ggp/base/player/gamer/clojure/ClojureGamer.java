@@ -8,7 +8,6 @@ import org.ggp.base.player.gamer.exception.MoveSelectionException;
 import org.ggp.base.player.gamer.exception.StoppingException;
 import org.ggp.base.util.game.Game;
 import org.ggp.base.util.gdl.grammar.GdlTerm;
-import org.ggp.base.util.logging.GamerLogger;
 
 import clojure.lang.RT;
 import clojure.lang.Var;
@@ -53,8 +52,7 @@ public abstract class ClojureGamer extends Gamer
 	            // Call it!
 	            theClojureGamer = (Gamer)gamerVar.invoke();
 	        } catch(Exception e) {
-	            GamerLogger.logError("GamePlayer", "Caught exception in Clojure initialization:");
-	            GamerLogger.logStackTrace("GamePlayer", e);
+	        	LOGGER.error("[Gamer] Caught exception in Clojure initialization.", e);
 	        }
     	}
     }
@@ -72,8 +70,7 @@ public abstract class ClojureGamer extends Gamer
         try {
             theClojureGamer.preview(game, timeout);
         } catch(GamePreviewException e) {
-            GamerLogger.logError("GamePlayer", "Caught exception in Clojure stateMachineMetaGame:");
-            GamerLogger.logStackTrace("GamePlayer", e);
+        	LOGGER.error("[Gamer] Caught exception in Clojure stateMachineMetaGame.", e);
         }
     }
 
@@ -85,8 +82,7 @@ public abstract class ClojureGamer extends Gamer
         try {
             theClojureGamer.metaGame(timeout);
         } catch(MetaGamingException e) {
-            GamerLogger.logError("GamePlayer", "Caught exception in Clojure stateMachineMetaGame:");
-            GamerLogger.logStackTrace("GamePlayer", e);
+        	LOGGER.error("[Gamer] Caught exception in Clojure stateMachineMetaGame.", e);
         }
     }
 
@@ -98,8 +94,7 @@ public abstract class ClojureGamer extends Gamer
         try {
             return theClojureGamer.selectMove(timeout);
         } catch(MoveSelectionException e) {
-            GamerLogger.logError("GamePlayer", "Caught exception in Clojure stateMachineSelectMove:");
-            GamerLogger.logStackTrace("GamePlayer", e);
+        	LOGGER.error("[Gamer] Caught exception in Clojure stateMachineSelectMove.", e);
             return null;
         }
     }
@@ -112,8 +107,7 @@ public abstract class ClojureGamer extends Gamer
         try {
             theClojureGamer.stop();
         } catch(StoppingException e) {
-            GamerLogger.logError("GamePlayer", "Caught exception in Clojure stateMachineStop:");
-            GamerLogger.logStackTrace("GamePlayer", e);
+        	LOGGER.error("[Gamer] Caught exception in Clojure stateMachineStop.", e);
         }
     }
 
@@ -125,8 +119,7 @@ public abstract class ClojureGamer extends Gamer
         try {
             theClojureGamer.abort();
         } catch(AbortingException e) {
-            GamerLogger.logError("GamePlayer", "Caught exception in Clojure stateMachineAbort:");
-            GamerLogger.logStackTrace("GamePlayer", e);
+        	LOGGER.error("[Gamer] Caught exception in Clojure stateMachineAbort.", e);
         }
     }
 

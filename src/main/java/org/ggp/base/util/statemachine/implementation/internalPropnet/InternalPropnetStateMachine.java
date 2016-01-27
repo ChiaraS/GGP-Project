@@ -1,18 +1,21 @@
-package org.ggp.base.util.statemachine;
+package org.ggp.base.util.statemachine.implementation.internalPropnet;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
 
 import org.ggp.base.util.concurrency.ConcurrencyUtils;
-import org.ggp.base.util.logging.GamerLogger;
+import org.ggp.base.util.statemachine.MachineState;
+import org.ggp.base.util.statemachine.Move;
+import org.ggp.base.util.statemachine.Role;
+import org.ggp.base.util.statemachine.StateMachine;
 import org.ggp.base.util.statemachine.exceptions.GoalDefinitionException;
 import org.ggp.base.util.statemachine.exceptions.MoveDefinitionException;
 import org.ggp.base.util.statemachine.exceptions.StateMachineException;
 import org.ggp.base.util.statemachine.exceptions.TransitionDefinitionException;
-import org.ggp.base.util.statemachine.inernalPropnetStructure.InternalPropnetMachineState;
-import org.ggp.base.util.statemachine.inernalPropnetStructure.InternalPropnetMove;
-import org.ggp.base.util.statemachine.inernalPropnetStructure.InternalPropnetRole;
+import org.ggp.base.util.statemachine.implementation.internalPropnet.structure.InternalPropnetMachineState;
+import org.ggp.base.util.statemachine.implementation.internalPropnet.structure.InternalPropnetMove;
+import org.ggp.base.util.statemachine.implementation.internalPropnet.structure.InternalPropnetRole;
 
 /**
  * Provides the base class for all state machine implementations that are based on the version
@@ -162,8 +165,7 @@ public abstract class InternalPropnetStateMachine extends StateMachine{
 			try {
 				jointMove = getRandomJointMove(state);
 			} catch (MoveDefinitionException e) {
-				GamerLogger.logError("StateMachine", "Exception getting a joint move while performing safe limited depth charges.");
-				GamerLogger.logStackTrace("StateMachine", e);
+				LOGGER.error("[StateMachine] [InternalPropnet] Exception getting a joint move while performing safe limited depth charges.", e);
 				break;
 			}
 			state = getInternalNextState(state, jointMove);
@@ -328,8 +330,7 @@ public abstract class InternalPropnetStateMachine extends StateMachine{
             try {
 				theGoals[i] = getGoal(state, theRoles[i]);
 			} catch (GoalDefinitionException e){
-				GamerLogger.logError("StateMachine", "Failed to compute a goal value when computing safe goals.");
-				GamerLogger.logStackTrace("StateMachine", e);
+				LOGGER.error("[StateMachine] [InternalPropnet] Failed to compute a goal value when computing safe goals. Returning 0 as goal for player " + this.getRoles().get(i) + ".", e);
 				theGoals[i] = 0;
 			}
         }
@@ -367,8 +368,7 @@ public abstract class InternalPropnetStateMachine extends StateMachine{
             try {
 				theGoals[i] = getGoal(state, theRoles[i]);
 			} catch (GoalDefinitionException e){
-				GamerLogger.logError("StateMachine", "Failed to compute a goal value when computing safe goals with tie default.");
-				GamerLogger.logStackTrace("StateMachine", e);
+				LOGGER.error("[StateMachine] [InternalPropnet] Failed to compute a goal value when computing safe goals with tie default. Returning 0 as goal for player " + this.getRoles().get(i) + ".", e);
 				theGoals[i] = 0; // TODO: should this be 50???
 				failures++;
 			}

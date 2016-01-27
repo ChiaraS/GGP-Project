@@ -1,14 +1,14 @@
 package csironi.ggp.course.speedtester;
 
 import org.ggp.base.util.logging.GamerLogger;
-import org.ggp.base.util.statemachine.InternalPropnetStateMachine;
 import org.ggp.base.util.statemachine.MachineState;
 import org.ggp.base.util.statemachine.StateMachine;
 import org.ggp.base.util.statemachine.exceptions.MoveDefinitionException;
 import org.ggp.base.util.statemachine.exceptions.StateMachineException;
 import org.ggp.base.util.statemachine.exceptions.TransitionDefinitionException;
+import org.ggp.base.util.statemachine.implementation.internalPropnet.InternalPropnetStateMachine;
+import org.ggp.base.util.statemachine.implementation.internalPropnet.structure.InternalPropnetMachineState;
 import org.ggp.base.util.statemachine.implementation.propnet.ExternalPropnetStateMachine;
-import org.ggp.base.util.statemachine.inernalPropnetStructure.InternalPropnetMachineState;
 
 /**
  * This class computes the nodes visits and the Monte Carlo iterations that a state machine

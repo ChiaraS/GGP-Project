@@ -1,5 +1,8 @@
 package org.ggp.base.player.request.grammar;
 
+import java.util.Date;
+
+import org.apache.logging.log4j.ThreadContext;
 import org.ggp.base.player.event.PlayerTimeEvent;
 import org.ggp.base.player.gamer.Gamer;
 import org.ggp.base.player.gamer.event.GamerNewMatchEvent;
@@ -7,7 +10,6 @@ import org.ggp.base.player.gamer.event.GamerUnrecognizedMatchEvent;
 import org.ggp.base.player.gamer.exception.MetaGamingException;
 import org.ggp.base.util.game.Game;
 import org.ggp.base.util.gdl.grammar.GdlConstant;
-import org.ggp.base.util.logging.GamerLogger;
 import org.ggp.base.util.match.Match;
 
 
@@ -41,7 +43,7 @@ public final class StartRequest extends Request
 	    // Ensure that we aren't already playing a match. If we are,
 	    // ignore the message, saying that we're busy.
         if (gamer.getMatch() != null) {
-            GamerLogger.logError("GamePlayer", "Got start message while already busy playing a game: ignoring.");
+        	LOGGER.error("[GamePlayer] Got start message while already busy playing a game: ignoring.");
             gamer.notifyObservers(new GamerUnrecognizedMatchEvent(matchId));
             return "busy";
         }
@@ -55,7 +57,15 @@ public final class StartRequest extends Request
 		gamer.setRoleName(roleName);
 		gamer.notifyObservers(new GamerNewMatchEvent(match, roleName));
 
-		GamerLogger.startFileLogging(match, roleName.getValue());
+		LOGGER.info("[GamePlayer] Starting match " + match.getMatchId() + ". Writing logs in folder " + ThreadContext.get("LOG_FOLDER") + "\\" + match.getMatchId());
+
+		ThreadContext.put("LOG_FILE", match.getMatchId());
+		LOGGER.info("[GamePlayer] Starting file logging for match " + match.getMatchId() + ".");
+
+		LOGGER.info("[GamePlayer] Started logging to files at: " + new Date());
+		LOGGER.info("[GamePlayer] Game rules: " + match.getGame().getRules());
+		LOGGER.info("[GamePlayer] Start clock: " + match.getStartClock());
+		LOGGER.info("[GamePlayer] Play clock: " + match.getPlayClock());
 
 		// Finally, have the gamer begin metagaming.
 		try {
@@ -63,8 +73,7 @@ public final class StartRequest extends Request
 			// TODO ...also metaGame calls game.getRules() to get the game description as GDL objects... -> double as EXPENSIVE! How to fix this?
 			gamer.metaGame(gamer.getMatch().getStartClock() * 1000 + receptionTime);
 		} catch (MetaGamingException e) {
-			GamerLogger.logError("GamePlayer", "Something went wrong when metagaming: player unable to play!");
-		    GamerLogger.logStackTrace("GamePlayer", e);
+			LOGGER.error("[GamePlayer] Something went wrong when metagaming: player unable to play!", e);
 
 		    // Upon encountering an uncaught exception during metagaming,
 		    // assume that indicates that we aren't actually able to play
@@ -72,7 +81,12 @@ public final class StartRequest extends Request
 			gamer.setMatch(null);
 			gamer.setRoleName(null);
 
-			GamerLogger.stopFileLogging();
+			LOGGER.info("[GamePlayer] Stopping file logging for match " + match.getMatchId() + ".");
+			LOGGER.info("[GamePlayer] Stopped logging to files at: " + new Date());
+			LOGGER.info("[GamePlayer] LOG SEALED");
+			ThreadContext.remove("LOG_FILE");
+
+			LOGGER.info("[GamePlayer] Stopped file logging for match " + match.getMatchId() + ".");
 
 			return "busy";
 		}

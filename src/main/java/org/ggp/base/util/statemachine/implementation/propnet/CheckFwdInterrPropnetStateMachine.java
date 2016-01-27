@@ -10,11 +10,10 @@ import org.ggp.base.util.gdl.grammar.Gdl;
 import org.ggp.base.util.gdl.grammar.GdlConstant;
 import org.ggp.base.util.gdl.grammar.GdlRelation;
 import org.ggp.base.util.gdl.grammar.GdlSentence;
-import org.ggp.base.util.logging.GamerLogger;
 import org.ggp.base.util.propnet.architecture.forwardInterrupting.ForwardInterruptingPropNet;
 import org.ggp.base.util.propnet.architecture.forwardInterrupting.components.ForwardInterruptingProposition;
 import org.ggp.base.util.propnet.architecture.forwardInterrupting.components.ForwardInterruptingTransition;
-import org.ggp.base.util.propnet.factory.FwdInterrPropNetCreator;
+import org.ggp.base.util.propnet.creationManager.FwdInterrPropNetCreator;
 import org.ggp.base.util.statemachine.MachineState;
 import org.ggp.base.util.statemachine.Move;
 import org.ggp.base.util.statemachine.Role;
@@ -86,8 +85,7 @@ public class CheckFwdInterrPropnetStateMachine extends StateMachine {
     	try{
     		creator.join(maxPropnetCreationTime);
     	}catch (InterruptedException e) {
-    		GamerLogger.logError("StateMachine", "[Propnet] Propnet creation interrupted! Terminating initialization!");
-    		GamerLogger.logStackTrace("StateMachine", e);
+    		LOGGER.error("[StateMachine] [Propnet] Propnet creation interrupted! Terminating initialization!", e);
     		Thread.currentThread().interrupt();
 			throw new StateMachineInitializationException("Propnet creation interrupted by external action.", e);
 		}
@@ -103,8 +101,7 @@ public class CheckFwdInterrPropnetStateMachine extends StateMachine {
     			// not be respected in the file).
     			creator.join();
     		}catch(InterruptedException e){
-    			GamerLogger.logError("StateMachine", "[Propnet] Propnet creation interrupted! Terminating initialization!");
-        		GamerLogger.logStackTrace("StateMachine", e);
+    			LOGGER.error("[StateMachine] [Propnet] Propnet creation interrupted! Terminating initialization!", e);
         		Thread.currentThread().interrupt();
     			throw new StateMachineInitializationException("Propnet creation interrupted by external action.", e);
     		}
@@ -252,7 +249,7 @@ public class CheckFwdInterrPropnetStateMachine extends StateMachine {
 		for(ForwardInterruptingProposition goalProp : goalPropsForRole){
 			if(goalProp.getValue()){
 				if(trueGoal != null){
-					GamerLogger.logError("StateMachine", "[Propnet] Got more than one true goal in state " + state + " for role " + role + ".");
+					LOGGER.error("[StateMachine] [Propnet] Got more than one true goal in state " + state + " for role " + role + ".");
 					throw new GoalDefinitionException(state, role);
 				}else{
 					trueGoal = goalProp;
@@ -262,7 +259,7 @@ public class CheckFwdInterrPropnetStateMachine extends StateMachine {
 
 		// If there is no true goal proposition for the role in this state throw an exception.
 		if(trueGoal == null){
-			GamerLogger.logError("StateMachine", "[Propnet] Got no true goal in state " + state + " for role " + role + ".");
+			LOGGER.error("[StateMachine] [Propnet] Got no true goal in state " + state + " for role " + role + ".");
 			throw new GoalDefinitionException(state, role);
 		}
 

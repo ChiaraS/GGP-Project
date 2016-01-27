@@ -9,7 +9,6 @@ import org.ggp.base.player.gamer.exception.MetaGamingException;
 import org.ggp.base.player.gamer.exception.MoveSelectionException;
 import org.ggp.base.player.gamer.exception.StoppingException;
 import org.ggp.base.util.gdl.grammar.GdlTerm;
-import org.ggp.base.util.logging.GamerLogger;
 import org.ggp.base.util.statemachine.MachineState;
 import org.ggp.base.util.statemachine.Move;
 import org.ggp.base.util.statemachine.Role;
@@ -148,8 +147,7 @@ public abstract class StateMachineGamer extends Gamer
             currentState = newCurrentState;
             stateMachine = newStateMachine;
         } catch (Exception e) {
-            GamerLogger.log("GamePlayer", "Caught an exception while switching state machine!");
-            GamerLogger.logStackTrace("GamePlayer", e);
+        	LOGGER.error("[Gamer] Caught an exception while switching state machine!", e);
         }
     }
 
@@ -200,7 +198,7 @@ public abstract class StateMachineGamer extends Gamer
 		}
 		catch (Exception e)
 		{
-			GamerLogger.logStackTrace("GamePlayer", e);
+			LOGGER.error("[Gamer] Exception when metagaming", e);
 			throw new MetaGamingException(e);
 		}
 	}
@@ -235,7 +233,7 @@ public abstract class StateMachineGamer extends Gamer
 		}
 		catch (Exception e)
 		{
-		    GamerLogger.logStackTrace("GamePlayer", e);
+			LOGGER.error("[Gamer] Exception during move selection!", e);
 			throw new MoveSelectionException(e);
 		}
 	}
@@ -263,7 +261,7 @@ public abstract class StateMachineGamer extends Gamer
 		}
 		catch (Exception e)
 		{
-			GamerLogger.logStackTrace("GamePlayer", e);
+			LOGGER.error("[Gamer] Exception while stopping!", e);
 			throw new StoppingException(e);
 		}finally{
 			// Stop the state machine (if the state machine implementation needs
@@ -279,7 +277,7 @@ public abstract class StateMachineGamer extends Gamer
 		}
 		catch (Exception e)
 		{
-			GamerLogger.logStackTrace("GamePlayer", e);
+			LOGGER.error("[Gamer] Exception while aborting!", e);
 			throw new AbortingException(e);
 		}finally{
 			// Stop the state machine (if the state machine implementation needs

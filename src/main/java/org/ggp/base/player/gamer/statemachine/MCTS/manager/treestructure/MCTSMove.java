@@ -1,7 +1,7 @@
 package org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure;
 
 import org.ggp.base.player.gamer.statemachine.MCS.manager.MCSMove;
-import org.ggp.base.util.statemachine.inernalPropnetStructure.InternalPropnetMove;
+import org.ggp.base.util.statemachine.implementation.internalPropnet.structure.InternalPropnetMove;
 
 public class MCTSMove extends MCSMove{
 

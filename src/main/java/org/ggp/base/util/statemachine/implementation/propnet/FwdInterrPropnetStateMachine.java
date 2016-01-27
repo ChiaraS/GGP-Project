@@ -11,7 +11,6 @@ import org.ggp.base.util.gdl.grammar.Gdl;
 import org.ggp.base.util.gdl.grammar.GdlConstant;
 import org.ggp.base.util.gdl.grammar.GdlRelation;
 import org.ggp.base.util.gdl.grammar.GdlSentence;
-import org.ggp.base.util.logging.GamerLogger;
 import org.ggp.base.util.propnet.architecture.forwardInterrupting.ForwardInterruptingPropNet;
 import org.ggp.base.util.propnet.architecture.forwardInterrupting.components.ForwardInterruptingProposition;
 import org.ggp.base.util.propnet.architecture.forwardInterrupting.components.ForwardInterruptingTransition;
@@ -60,29 +59,36 @@ public class FwdInterrPropnetStateMachine extends StateMachine {
     	try{
     		this.propNet = ForwardInterruptingPropNetFactory.create(description);
     	}catch(InterruptedException e){
-    		GamerLogger.logError("StateMachine", "[Propnet] Propnet creation interrupted!");
-    		GamerLogger.logStackTrace("StateMachine", e);
+    		LOGGER.error("[StateMachine] [Propnet] Propnet creation interrupted!", e);
     		throw new StateMachineInitializationException(e);
     	}
     	// Compute the time taken to construct the propnet
     	this.propnetConstructionTime = System.currentTimeMillis() - startTime;
-		GamerLogger.log("StateMachine", "[Propnet Creator] Propnet creation done. It took " + (this.propnetConstructionTime) + "ms.");
+    	LOGGER.info("[StateMachine] [Propnet] Propnet creation done. It took " + (this.propnetConstructionTime) + "ms.");
 
 
+    	/* ONLY FOR DEBUG. DON'T USE WHILE PLAYING BECAUSE IT CAN TAKE SOME TIME
+    	LOGGER.info("[StateMachine] [Propnet] Propnet has: " + propNet.getSize() + " COMPONENTS, " + propNet.getNumPropositions() + " PROPOSITIONS, " + propNet.getNumConstants() + " CONSTANTS, " + propNet.getNumLinks() + " LINKS.");
+    	LOGGER.info("[StateMachine] [Propnet] Propnet has: " + propNet.getNumAnds() + " ANDS, " + propNet.getNumOrs() + " ORS, " + propNet.getNumNots() + " NOTS.");
+    	LOGGER.info("[StateMachine] [Propnet] Propnet has: " + propNet.getNumBases() + " BASES, " + propNet.getNumTransitions() + " TRANSITIONS.");
+    	LOGGER.info("[StateMachine] [Propnet] Propnet has: " + propNet.getNumInputs() + " INPUTS, " + propNet.getNumLegals() + " LEGALS.");
+    	LOGGER.info("[StateMachine] [Propnet] Propnet has: " + propNet.getNumGoals() + " GOALS.");
+		LOGGER.info("[StateMachine] [Propnet] Propnet has: " + propNet.getNumOthers() + " OTHER PROPOSITIONS.");
+		LOGGER.info("[StateMachine] [Propnet] Propnet has: " + propNet.getNumInits() + " INITS, " + propNet.getNumTerminals() + " TERMINALS.");
+		*/
+
+		/* ONLY FOR DEBUG. DON'T USE WHILE PLAYING BECAUSE IT CAN TAKE SOME TIME
 		System.out.println("Propnet has: " + propNet.getSize() + " COMPONENTS, " + propNet.getNumPropositions() + " PROPOSITIONS, " + propNet.getNumConstants() + " CONSTANTS, " + propNet.getNumLinks() + " LINKS.");
 		System.out.println("Propnet has: " + propNet.getNumAnds() + " ANDS, " + propNet.getNumOrs() + " ORS, " + propNet.getNumNots() + " NOTS.");
 		System.out.println("Propnet has: " + propNet.getNumBases() + " BASES, " + propNet.getNumTransitions() + " TRANSITIONS.");
 		System.out.println("Propnet has: " + propNet.getNumInputs() + " INPUTS, " + propNet.getNumLegals() + " LEGALS.");
 		System.out.println("Propnet has: " + propNet.getNumGoals() + " GOALS.");
-		//System.out.println("Propnet has: " + propNet.getNumOthers() + " OTHER PROPOSITIONS.");
-		//System.out.println("Propnet has: " + propNet.getNumInits() + " INITS, " + propNet.getNumTerminals() + " TERMINALS.");
+		System.out.println("Propnet has: " + propNet.getNumOthers() + " OTHER PROPOSITIONS.");
+		System.out.println("Propnet has: " + propNet.getNumInits() + " INITS, " + propNet.getNumTerminals() + " TERMINALS.");
+		*/
 
 
-
-
-
-
-		GamerLogger.log("StateMachine", "Removing unreachable bases and inputs.");
+    	LOGGER.info("[StateMachine] [Propnet] Removing unreachable bases and inputs.");
 		startTime = System.currentTimeMillis();
 		Collection<ForwardInterruptingProposition> baseProps = this.propNet.getBasePropositions().values();
 
@@ -100,26 +106,28 @@ public class FwdInterrPropnetStateMachine extends StateMachine {
 			//System.out.println("Propnet has " +propNet.getNumAnds()+" ands; "+propNet.getNumOrs()+" ors; "+propNet.getNumNots()+" nots");
 			//System.out.println("Propnet has " +propNet.getNumBases() + " bases; "+propNet.getNumTransitions()+" transitions; "+propNet.getNumInputs()+" inputs");
 
+			/* ONLY FOR DEBUG. DON'T USE WHILE PLAYING BECAUSE IT CAN TAKE SOME TIME
+			LOGGER.info("[StateMachine] [Propnet] Done removing unreachable bases and inputs; took " + (System.currentTimeMillis() - startTime) + "ms.");
+			LOGGER.info("[StateMachine] [Propnet] Propnet has: " + propNet.getSize() + " COMPONENTS, " + propNet.getNumPropositions() + " PROPOSITIONS, " + propNet.getNumConstants() + " CONSTANTS, " + propNet.getNumLinks() + " LINKS.");
+			LOGGER.info("[StateMachine] [Propnet] Propnet has: " + propNet.getNumAnds() + " ANDS, " + propNet.getNumOrs() + " ORS, " + propNet.getNumNots() + " NOTS.");
+			LOGGER.info("[StateMachine] [Propnet] Propnet has: " + propNet.getNumBases() + " BASES, " + propNet.getNumTransitions() + " TRANSITIONS.");
+			LOGGER.info("[StateMachine] [Propnet] Propnet has: " + propNet.getNumInputs() + " INPUTS, " + propNet.getNumLegals() + " LEGALS.");
+			LOGGER.info("[StateMachine] [Propnet] Propnet has: " + propNet.getNumGoals() + " GOALS.");
+			*/
+
+			/* ONLY FOR DEBUG. DON'T USE WHILE PLAYING BECAUSE IT CAN TAKE SOME TIME
 			System.out.println("Done removing unreachable bases and inputs; took " + (System.currentTimeMillis() - startTime) + "ms.");
 			System.out.println("Propnet has: " + propNet.getSize() + " COMPONENTS, " + propNet.getNumPropositions() + " PROPOSITIONS, " + propNet.getNumConstants() + " CONSTANTS, " + propNet.getNumLinks() + " LINKS.");
 			System.out.println("Propnet has: " + propNet.getNumAnds() + " ANDS, " + propNet.getNumOrs() + " ORS, " + propNet.getNumNots() + " NOTS.");
 			System.out.println("Propnet has: " + propNet.getNumBases() + " BASES, " + propNet.getNumTransitions() + " TRANSITIONS.");
 			System.out.println("Propnet has: " + propNet.getNumInputs() + " INPUTS, " + propNet.getNumLegals() + " LEGALS.");
 			System.out.println("Propnet has: " + propNet.getNumGoals() + " GOALS.");
-
+			*/
 
 		} catch (InterruptedException e) {
-			GamerLogger.logError("StateMachine", "[Propnet] Removal of unreachable bases and inputs interrupted!");
-    		GamerLogger.logStackTrace("StateMachine", e);
+			LOGGER.error("[StateMachine] [Propnet] Removal of unreachable bases and inputs interrupted!", e);
     		throw new StateMachineInitializationException(e);
 		}
-
-
-
-
-
-
-
 
 		// Compute the roles
    		this.roles = ImmutableList.copyOf(this.propNet.getRoles());
@@ -249,8 +257,8 @@ public class FwdInterrPropnetStateMachine extends StateMachine {
 		for(ForwardInterruptingProposition goalProp : goalPropsForRole){
 			if(goalProp.getValue()){
 				if(trueGoal != null){
-					GamerLogger.logError("StateMachine", "[Propnet] Got more than one true goal in state " + state + " for role " + role + ".");
-					GamerLogger.logError("StateMachine", "[Propnet] True goals = " + trueGoal.getName() + ", " + goalProp.getName() + ".");
+					LOGGER.error("[StateMachine] [Propnet] Got more than one true goal in state " + state + " for role " + role + ".");
+					LOGGER.error("[StateMachine] [Propnet] True goals = " + trueGoal.getName() + ", " + goalProp.getName() + ".");
 					throw new GoalDefinitionException(state, role);
 				}else{
 					trueGoal = goalProp;
@@ -260,7 +268,7 @@ public class FwdInterrPropnetStateMachine extends StateMachine {
 
 		// If there is no true goal proposition for the role in this state throw an exception.
 		if(trueGoal == null){
-			GamerLogger.logError("StateMachine", "[Propnet] Got no true goal in state " + state + " for role " + role + ".");
+			LOGGER.error("[StateMachine] [Propnet] Got no true goal in state " + state + " for role " + role + ".");
 			throw new GoalDefinitionException(state, role);
 		}
 

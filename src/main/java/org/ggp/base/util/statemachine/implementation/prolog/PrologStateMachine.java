@@ -5,7 +5,6 @@ import java.util.List;
 
 import org.ggp.base.util.gdl.grammar.Gdl;
 import org.ggp.base.util.gdl.transforms.DistinctAndNotMover;
-import org.ggp.base.util.logging.GamerLogger;
 import org.ggp.base.util.statemachine.MachineState;
 import org.ggp.base.util.statemachine.Move;
 import org.ggp.base.util.statemachine.Role;
@@ -159,8 +158,7 @@ public class PrologStateMachine extends StateMachine {
 			// Create the interface with the Prover.
 			this.prologProver = new PrologProver(this.support.toProlog(description), this.prologType, this.waitingTime);
 		}catch(PrologProverException e){
-			GamerLogger.logError("StateMachine", "[" + this.prologType + " PROLOG] Exception during state machine initialization. " + this.prologType + " Prolog Prover creation and startup failed!");
-			GamerLogger.logStackTrace("StateMachine", e);
+			LOGGER.error("[StateMachine] [" + this.prologType + " PROLOG] Exception during state machine initialization. " + this.prologType + " Prolog Prover creation and startup failed!", e);
 			this.prologProver = null;
 			throw new StateMachineInitializationException("State machine initialization failed. Impossible to create and start up " + this.prologType + " Prolog Prover.", e);
 		}
@@ -169,8 +167,7 @@ public class PrologStateMachine extends StateMachine {
 		try{
 			this.initialState = computeInitialState();
 		}catch(StateMachineException e){
-			GamerLogger.logError("StateMachine", "[" + this.prologType + " PROLOG] Exception during state machine initialization. Initial state computation failed!");
-			GamerLogger.logStackTrace("StateMachine", e);
+			LOGGER.error("[StateMachine] [" + this.prologType + " PROLOG] Exception during state machine initialization. Initial state computation failed!", e);
 			this.initialState = null;
 			throw new StateMachineInitializationException("State machine initialization failed. Impossible to compute initial state.", e);
 		}
@@ -178,8 +175,7 @@ public class PrologStateMachine extends StateMachine {
 		try{
 			this.roles = computeRoles();
 		}catch(StateMachineException e){
-			GamerLogger.logError("StateMachine", "[" + this.prologType + " PROLOG] Exception during state machine initialization. Roles computation failed!");
-			GamerLogger.logStackTrace("StateMachine", e);
+			LOGGER.error("[StateMachine] [" + this.prologType + " PROLOG] Exception during state machine initialization. Roles computation failed!", e);
 			this.roles = null;
 			throw new StateMachineInitializationException("State machine initialization failed. Impossible to compute roles.", e);
 		}
@@ -210,8 +206,7 @@ public class PrologStateMachine extends StateMachine {
 			//System.out.println("PROLOG-COMPUTE_INITIAL_STATE: " + (System.currentTimeMillis() - cancStart) + "ms");
 
 			this.currentPrologState = null;
-			GamerLogger.logError("StateMachine", "[" + this.prologType + " PROLOG] Exception during initial state computation.");
-			GamerLogger.logStackTrace("StateMachine", e);
+			LOGGER.error("[StateMachine] [" + this.prologType + " PROLOG] Exception during initial state computation.", e);
 			throw new StateMachineException("Exception during initial state computation.", e);
 		}
 
@@ -222,7 +217,7 @@ public class PrologStateMachine extends StateMachine {
 		if(bindings == null){
 			// State computation failed on prolog side.
 			this.currentPrologState = null;
-			GamerLogger.logError("StateMachine", "[" + this.prologType + " PROLOG] Computation of initial state on " + this.prologType + " Prolog side failed.");
+			LOGGER.error("[StateMachine] [" + this.prologType + " PROLOG] Computation of initial state on " + this.prologType + " Prolog side failed.");
 			throw new StateMachineException("Computation of initial state on " + this.prologType + " Prolog side failed.");
 		}
 
@@ -257,8 +252,7 @@ public class PrologStateMachine extends StateMachine {
 
 			//System.out.println("PROLOG-COMPUTE_ROLES: " + (System.currentTimeMillis() - cancStart) + "ms");
 
-			GamerLogger.logError("StateMachine", "[" + this.prologType + " PROLOG] Exception during game roles computation.");
-			GamerLogger.logStackTrace("StateMachine", e);
+			LOGGER.error("[StateMachine] [" + this.prologType + " PROLOG] Exception during game roles computation.", e);
 			// Everytime a query fails throwing a PrologProverException we cannot be sure about the state
 			// Prolog is in (it's highly likely that it was reset so no state is currently set).
 			this.currentPrologState = null;
@@ -266,7 +260,7 @@ public class PrologStateMachine extends StateMachine {
 		}
 
 		if(bindings == null){
-			GamerLogger.logError("StateMachine", "[" + this.prologType + " PROLOG] Got no results for the computation of the game roles, while expecting at least one role.");
+			LOGGER.error("[StateMachine] [" + this.prologType + " PROLOG] Got no results for the computation of the game roles, while expecting at least one role.");
 			throw new StateMachineException("Got no results for the computation of the game roles, while expecting at least one role.");
 		}
 
@@ -278,8 +272,7 @@ public class PrologStateMachine extends StateMachine {
 			this.fakeRoles = support.getFakeRoles(tmpRoles);
 
 		}catch(SymbolFormatException e){
-			GamerLogger.logError("StateMachine", "[" + this.prologType + " PROLOG] Got exception while parsing the game roles.");
-			GamerLogger.logStackTrace("StateMachine", e);
+			LOGGER.error("[StateMachine] [" + this.prologType + " PROLOG] Got exception while parsing the game roles.", e);
 			this.fakeRoles = null;
 			throw new StateMachineException("Impossible to parse the game roles.", e);
 		}
@@ -308,8 +301,7 @@ public class PrologStateMachine extends StateMachine {
 
 			//System.out.println("PROLOG-GET_GOAL: " + (System.currentTimeMillis() - cancStart) + "ms");
 
-			GamerLogger.logError("StateMachine", "[" + this.prologType + " PROLOG] Exception during goal computation.");
-			GamerLogger.logStackTrace("StateMachine", e);
+			LOGGER.error("[StateMachine] [" + this.prologType + " PROLOG] Exception during goal computation.", e);
 			// Everytime a query fails throwing a PrologProverException we cannot be sure about the state
 			// Prolog is in (it's highly likely that it was reset so no state is currently set).
 			this.currentPrologState = null;
@@ -319,22 +311,21 @@ public class PrologStateMachine extends StateMachine {
 		int goal;
 
 		if(bindings == null){
-			GamerLogger.logError("StateMachine", "[" + this.prologType + " PROLOG] Got no goal when expecting one.");
+			LOGGER.error("[StateMachine] [" + this.prologType + " PROLOG] Got no goal when expecting one.");
 			throw new GoalDefinitionException(state, role);
 		}
 
 		String[] goals = (String[]) bindings[0];
 
 		if(goals.length != 1){
-			GamerLogger.logError("StateMachine", "[" + this.prologType + " PROLOG] Got goal results of size: " + goals.length + " when expecting size one.");
+			LOGGER.error("[StateMachine] [" + this.prologType + " PROLOG] Got goal results of size: " + goals.length + " when expecting size one.");
 			throw new GoalDefinitionException(state, role);
 		}
 
 		try{
 			goal = Integer.parseInt(goals[0]);
 		}catch(NumberFormatException ex){
-			GamerLogger.logError("StateMachine", "[" + this.prologType + " PROLOG] Got goal results that is not a number.");
-			GamerLogger.logStackTrace("StateMachine", ex);
+			LOGGER.error("[StateMachine] [" + this.prologType + " PROLOG] Got goal results that is not a number.", ex);
 			throw new GoalDefinitionException(state, role, ex);
 		}
 
@@ -362,8 +353,7 @@ public class PrologStateMachine extends StateMachine {
 
 			//System.out.println("PROLOG-IS_TERMINAL: " + (System.currentTimeMillis() - cancStart) + "ms");
 
-			GamerLogger.logError("StateMachine", "[" + this.prologType + " PROLOG] Exception during terminality computation.");
-			GamerLogger.logStackTrace("StateMachine", e);
+			LOGGER.error("[StateMachine] [" + this.prologType + " PROLOG] Exception during terminality computation.", e);
 			// Everytime a query fails throwing a PrologProverException we cannot be sure about the state
 			// Prolog is in (it's highly likely that it was reset so no state is currently set).
 			this.currentPrologState = null;
@@ -412,8 +402,7 @@ public class PrologStateMachine extends StateMachine {
 
 			//System.out.println("PROLOG-GET_LEGAL_MOVES: " + (System.currentTimeMillis() - cancStart) + "ms");
 
-			GamerLogger.logError("StateMachine", "[" + this.prologType + " PROLOG] Exception during legal moves computation.");
-			GamerLogger.logStackTrace("StateMachine", e);
+			LOGGER.error("[StateMachine] [" + this.prologType + " PROLOG] Exception during legal moves computation.", e);
 			// Everytime a query fails throwing a PrologProverException we cannot be sure about the state
 			// Prolog is in (it's highly likely that it was reset so no state is currently set).
 			this.currentPrologState = null;
@@ -421,7 +410,7 @@ public class PrologStateMachine extends StateMachine {
 		}
 
 		if(bindings == null){
-			GamerLogger.logError("StateMachine", "[" + this.prologType + " PROLOG] Got no legal moves when expecting at least one.");
+			LOGGER.error("[StateMachine] [" + this.prologType + " PROLOG] Got no legal moves when expecting at least one.");
 			throw new MoveDefinitionException(state, role);
 		}
 
@@ -429,7 +418,7 @@ public class PrologStateMachine extends StateMachine {
 
 		// Extra check, but this should never happen.
 		if(prologMoves.length < 1){
-			GamerLogger.logError("StateMachine", "[" + this.prologType + " PROLOG] Got no legal moves when expecting at least one.");
+			LOGGER.error("[StateMachine] [" + this.prologType + " PROLOG] Got no legal moves when expecting at least one.");
 			throw new MoveDefinitionException(state, role);
 		}
 
@@ -461,14 +450,13 @@ public class PrologStateMachine extends StateMachine {
 
 			//System.out.println("PROLOG-GET_NEXT_STATE: " + (System.currentTimeMillis() - cancStart) + "ms");
 
-			GamerLogger.logError("StateMachine", "[" + this.prologType + " PROLOG] Exception during next state computation.");
-			GamerLogger.logStackTrace("StateMachine", e);
+			LOGGER.error("[StateMachine] [" + this.prologType + " PROLOG] Exception during next state computation.", e);
 			this.currentPrologState = null;
 			throw new StateMachineException("Impossible to compute next state for moves " + moves + " in state " + state + ".", e);
 		}
 
 		if(bindings == null){
-			GamerLogger.logError("StateMachine", "[" + this.prologType + " PROLOG] Computation of next state on " + this.prologType + " Prolog side failed.");
+			LOGGER.error("[StateMachine] [" + this.prologType + " PROLOG] Computation of next state on " + this.prologType + " Prolog side failed.");
 			this.currentPrologState = null;
 			throw new StateMachineException("Computation of next state on " + this.prologType + " Prolog side failed for moves " + moves + " in state " + state + ".");
 		}
@@ -504,8 +492,7 @@ public class PrologStateMachine extends StateMachine {
 				//System.out.println("PROLOG-UPDATE_PROLOG_STATE: " + (System.currentTimeMillis() - cancStart) + "ms");
 
 				this.currentPrologState = null;
-				GamerLogger.logError("StateMachine", "[" + this.prologType + " PROLOG] Exception during prolog state update.");
-				GamerLogger.logStackTrace("StateMahcine", e);
+				LOGGER.error("[StateMachine] [" + this.prologType + " PROLOG] Exception during prolog state update.", e);
 				throw new StateMachineException("State update on " + this.prologType + " Prolog side failed for state: " + state, e);
 			}
 
@@ -513,7 +500,7 @@ public class PrologStateMachine extends StateMachine {
 			if(!success){
 				// State computation failed on prolog side.
 				this.currentPrologState = null;
-				GamerLogger.logError("StateMachine", "[" + this.prologType + " PROLOG] Computation of current state on " + this.prologType + " Prolog side failed!");
+				LOGGER.error("[StateMachine] [" + this.prologType + " PROLOG] Computation of current state on " + this.prologType + " Prolog side failed!");
 				throw new StateMachineException("Computation on " + this.prologType + " Prolog side failed for state: " + state);
 			}
 

@@ -4,9 +4,10 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.apache.lucene.util.OpenBitSet;
 import org.ggp.base.util.gdl.grammar.Gdl;
-import org.ggp.base.util.logging.GamerLogger;
 import org.ggp.base.util.propnet.architecture.separateExtendedState.dynamic.DynamicComponent;
 import org.ggp.base.util.propnet.architecture.separateExtendedState.dynamic.DynamicPropNet;
 import org.ggp.base.util.propnet.architecture.separateExtendedState.dynamic.components.DynamicProposition;
@@ -43,7 +44,18 @@ import org.ggp.base.util.statemachine.Role;
  * @author C.Sironi
  *
  */
-public class SeparatePropnetCreationManager extends Thread{
+public class SeparateInternalPropnetCreationManager extends Thread{
+
+	/**
+	 * Static reference to the logger
+	 */
+	private static final Logger LOGGER;
+
+	static{
+
+		LOGGER = LogManager.getRootLogger();
+
+	}
 
 	private List<Gdl> description;
 
@@ -74,7 +86,7 @@ public class SeparatePropnetCreationManager extends Thread{
 	 */
 	private ImmutableSeparatePropnetState initialPropnetState;
 
-	public SeparatePropnetCreationManager(List<Gdl> description, long timeout) {
+	public SeparateInternalPropnetCreationManager(List<Gdl> description, long timeout) {
 		this.description = description;
 		this.timeout = timeout;
 	}
@@ -94,8 +106,7 @@ public class SeparatePropnetCreationManager extends Thread{
     	try{
     		this.dynamicPropNet = DynamicPropNetFactory.create(description);
     	}catch(InterruptedException e){
-    		GamerLogger.logError("PropnetManager", "Propnet creation interrupted!");
-    		GamerLogger.logStackTrace("PropnetManager", e);
+    		LOGGER.error("[PropnetManager] Propnet creation interrupted!", e);
     		this.dynamicPropNet = null;
     		this.initialPropnetState = null;
     		this.propNetConstructionTime = -1;
@@ -104,13 +115,25 @@ public class SeparatePropnetCreationManager extends Thread{
     	}
     	// Compute the time taken to construct the propnet
     	this.propNetConstructionTime = System.currentTimeMillis() - startTime;
-		GamerLogger.log("StateMachine", "[Propnet Creator] Propnet creation done. It took " + this.propNetConstructionTime + "ms.");
+		LOGGER.info("[PropnetManager] Propnet creation done. It took " + this.propNetConstructionTime + "ms.");
 
 
-		//System.out.println(this.dynamicPropNet.toString());
-		//System.out.println("Propnet has: " + this.dynamicPropNet.getSize() + " COMPONENTS");
+		/* ONLY FOR DEBUG. DON'T USE WHILE PLAYING BECAUSE IT CAN TAKE SOME TIME
+		LOGGER.info("[PropnetManager] " + this.dynamicPropNet.toString());
+		LOGGER.info("[PropnetManager] Propnet has: " + this.dynamicPropNet.getSize() + " COMPONENTS");
 
-		/*
+		LOGGER.info("[PropnetManager] Propnet has: " + this.propNet.getSize() + " COMPONENTS, " + this.propNet.getNumPropositions() + " PROPOSITIONS, " + this.propNet.getNumLinks() + " LINKS.");
+		LOGGER.info("[PropnetManager] Propnet has: " + this.propNet.getNumAnds() + " ANDS, " + this.propNet.getNumOrs() + " ORS, " + this.propNet.getNumNots() + " NOTS.");
+		LOGGER.info("[PropnetManager] Propnet has: " + this.propNet.getNumBases() + " BASES, " + this.propNet.getNumTransitions() + " TRANSITIONS.");
+		LOGGER.info("[PropnetManager] Propnet has: " + this.propNet.getNumInputs() + " INPUTS, " + this.propNet.getNumLegals() + " LEGALS.");
+		LOGGER.info("[PropnetManager] Propnet has: " + this.propNet.getNumGoals() + " GOALS.");
+		LOGGER.info("[PropnetManager] Propnet has: " + this.propNet.getNumInits() + " INITS, " + this.propNet.getNumTerminals() + " TERMINALS.");
+		*/
+
+		/* ONLY FOR DEBUG. DON'T USE WHILE PLAYING BECAUSE IT CAN TAKE SOME TIME
+		System.out.println(this.dynamicPropNet.toString());
+		System.out.println("Propnet has: " + this.dynamicPropNet.getSize() + " COMPONENTS");
+
 		System.out.println("Propnet has: " + this.propNet.getSize() + " COMPONENTS, " + this.propNet.getNumPropositions() + " PROPOSITIONS, " + this.propNet.getNumLinks() + " LINKS.");
 		System.out.println("Propnet has: " + this.propNet.getNumAnds() + " ANDS, " + this.propNet.getNumOrs() + " ORS, " + this.propNet.getNumNots() + " NOTS.");
 		System.out.println("Propnet has: " + this.propNet.getNumBases() + " BASES, " + this.propNet.getNumTransitions() + " TRANSITIONS.");
@@ -132,8 +155,7 @@ public class SeparatePropnetCreationManager extends Thread{
 		try{
 			ConcurrencyUtils.checkForInterruption();
 		}catch(InterruptedException e){
-			GamerLogger.logError("PropnetManager", "Manager interrupted before ropnet state initialization!");
-    		GamerLogger.logStackTrace("PropnetManager", e);
+			LOGGER.error("[PropnetManager] Manager interrupted before propnet state initialization!", e);
     		this.propNet = null;
     		this.initialPropnetState = null;
     		this.propNetConstructionTime = -1;
@@ -149,17 +171,29 @@ public class SeparatePropnetCreationManager extends Thread{
 		 */
 		DynamicPropNetFactory.fixInputlessComponents(this.dynamicPropNet);
 
-		/*
+		/* ONLY FOR DEBUG. DON'T USE WHILE PLAYING BECAUSE IT CAN TAKE SOME TIME
+		LOGGER.info("[PropnetManager] " + this.dynamicPropNet.toString());
+		LOGGER.info("[PropnetManager] Propnet has: " + this.dynamicPropNet.getSize() + " COMPONENTS");
+
+		LOGGER.info("[PropnetManager] Propnet has: " + this.propNet.getSize() + " COMPONENTS, " + this.propNet.getNumPropositions() + " PROPOSITIONS, " + this.propNet.getNumLinks() + " LINKS.");
+		LOGGER.info("[PropnetManager] Propnet has: " + this.propNet.getNumAnds() + " ANDS, " + this.propNet.getNumOrs() + " ORS, " + this.propNet.getNumNots() + " NOTS.");
+		LOGGER.info("[PropnetManager] Propnet has: " + this.propNet.getNumBases() + " BASES, " + this.propNet.getNumTransitions() + " TRANSITIONS.");
+		LOGGER.info("[PropnetManager] Propnet has: " + this.propNet.getNumInputs() + " INPUTS, " + this.propNet.getNumLegals() + " LEGALS.");
+		LOGGER.info("[PropnetManager] Propnet has: " + this.propNet.getNumGoals() + " GOALS.");
+		LOGGER.info("[PropnetManager] Propnet has: " + this.propNet.getNumInits() + " INITS, " + this.propNet.getNumTerminals() + " TERMINALS.");
+		*/
+
+		/* ONLY FOR DEBUG. DON'T USE WHILE PLAYING BECAUSE IT CAN TAKE SOME TIME
 		System.out.println("Propnet has: " + this.dynamicPropNet.getSize() + " COMPONENTS, " + this.dynamicPropNet.getNumPropositions() + " PROPOSITIONS, " + this.dynamicPropNet.getNumLinks() + " LINKS.");
 		System.out.println("Propnet has: " + this.dynamicPropNet.getNumAnds() + " ANDS, " + this.dynamicPropNet.getNumOrs() + " ORS, " + this.dynamicPropNet.getNumNots() + " NOTS.");
 		System.out.println("Propnet has: " + this.dynamicPropNet.getNumBases() + " BASES, " + this.dynamicPropNet.getNumTransitions() + " TRANSITIONS.");
 		System.out.println("Propnet has: " + this.dynamicPropNet.getNumInputs() + " INPUTS, " + this.dynamicPropNet.getNumLegals() + " LEGALS.");
 		System.out.println("Propnet has: " + this.dynamicPropNet.getNumGoals() + " GOALS.");
 		System.out.println("Propnet has: " + this.dynamicPropNet.getNumInits() + " INITS, " + this.dynamicPropNet.getNumTerminals() + " TERMINALS.");
-		*/
 
-		//System.out.println(this.dynamicPropNet.toString());
-		//System.out.println("Propnet has: " + this.dynamicPropNet.getSize() + " COMPONENTS");
+		System.out.println(this.dynamicPropNet.toString());
+		System.out.println("Propnet has: " + this.dynamicPropNet.getSize() + " COMPONENTS");
+		*/
 
 		/** 2. REMOVE ANONYMOUS PROPOSITIONS:
 		 *  find and remove all the propositions that have no particular GDL meaning (i.e. the ones that have
@@ -167,17 +201,29 @@ public class SeparatePropnetCreationManager extends Thread{
 		 */
 		DynamicPropNetFactory.removeAnonymousPropositions(this.dynamicPropNet);
 
-		/*
+		/* ONLY FOR DEBUG. DON'T USE WHILE PLAYING BECAUSE IT CAN TAKE SOME TIME
+		LOGGER.info("[PropnetManager] " + this.dynamicPropNet.toString());
+		LOGGER.info("[PropnetManager] Propnet has: " + this.dynamicPropNet.getSize() + " COMPONENTS");
+
+		LOGGER.info("[PropnetManager] Propnet has: " + this.propNet.getSize() + " COMPONENTS, " + this.propNet.getNumPropositions() + " PROPOSITIONS, " + this.propNet.getNumLinks() + " LINKS.");
+		LOGGER.info("[PropnetManager] Propnet has: " + this.propNet.getNumAnds() + " ANDS, " + this.propNet.getNumOrs() + " ORS, " + this.propNet.getNumNots() + " NOTS.");
+		LOGGER.info("[PropnetManager] Propnet has: " + this.propNet.getNumBases() + " BASES, " + this.propNet.getNumTransitions() + " TRANSITIONS.");
+		LOGGER.info("[PropnetManager] Propnet has: " + this.propNet.getNumInputs() + " INPUTS, " + this.propNet.getNumLegals() + " LEGALS.");
+		LOGGER.info("[PropnetManager] Propnet has: " + this.propNet.getNumGoals() + " GOALS.");
+		LOGGER.info("[PropnetManager] Propnet has: " + this.propNet.getNumInits() + " INITS, " + this.propNet.getNumTerminals() + " TERMINALS.");
+		*/
+
+		/* ONLY FOR DEBUG. DON'T USE WHILE PLAYING BECAUSE IT CAN TAKE SOME TIME
 		System.out.println("Propnet has: " + this.dynamicPropNet.getSize() + " COMPONENTS, " + this.dynamicPropNet.getNumPropositions() + " PROPOSITIONS, " + this.dynamicPropNet.getNumLinks() + " LINKS.");
 		System.out.println("Propnet has: " + this.dynamicPropNet.getNumAnds() + " ANDS, " + this.dynamicPropNet.getNumOrs() + " ORS, " + this.dynamicPropNet.getNumNots() + " NOTS.");
 		System.out.println("Propnet has: " + this.dynamicPropNet.getNumBases() + " BASES, " + this.dynamicPropNet.getNumTransitions() + " TRANSITIONS.");
 		System.out.println("Propnet has: " + this.dynamicPropNet.getNumInputs() + " INPUTS, " + this.dynamicPropNet.getNumLegals() + " LEGALS.");
 		System.out.println("Propnet has: " + this.dynamicPropNet.getNumGoals() + " GOALS.");
 		System.out.println("Propnet has: " + this.dynamicPropNet.getNumInits() + " INITS, " + this.dynamicPropNet.getNumTerminals() + " TERMINALS.");
-		*/
 
-		//System.out.println(this.dynamicPropNet.toString());
-		//System.out.println("Propnet has: " + this.dynamicPropNet.getSize() + " COMPONENTS");
+		System.out.println(this.dynamicPropNet.toString());
+		System.out.println("Propnet has: " + this.dynamicPropNet.getSize() + " COMPONENTS");
+		*/
 
 		/** 3. REMOVE USELESS COMPONENTS WITH CONSTANT VALUE:
 		 *  find all the components in the propnet that will always have the same value in all possible states
@@ -188,24 +234,36 @@ public class SeparatePropnetCreationManager extends Thread{
 		try {
 			DynamicPropNetFactory.removeConstantValueComponents(this.dynamicPropNet);
 		} catch (InterruptedException e) {
-			GamerLogger.logError("PropnetManager", "Propnet optimization interrupted!");
-    		GamerLogger.logStackTrace("PropnetManager", e);
+			LOGGER.error("[PropnetManager] Propnet optimization interrupted!", e);
+
     		// Note that here the dynamic propnet is still consistent. The initial propnet state can
     		// be computed on the previous optimization by removing the following "return" statement.
     		return;
 		}
 
-		/*
+		/* ONLY FOR DEBUG. DON'T USE WHILE PLAYING BECAUSE IT CAN TAKE SOME TIME
+		LOGGER.info("[PropnetManager] " + this.dynamicPropNet.toString());
+		LOGGER.info("[PropnetManager] Propnet has: " + this.dynamicPropNet.getSize() + " COMPONENTS");
+
+		LOGGER.info("[PropnetManager] Propnet has: " + this.propNet.getSize() + " COMPONENTS, " + this.propNet.getNumPropositions() + " PROPOSITIONS, " + this.propNet.getNumLinks() + " LINKS.");
+		LOGGER.info("[PropnetManager] Propnet has: " + this.propNet.getNumAnds() + " ANDS, " + this.propNet.getNumOrs() + " ORS, " + this.propNet.getNumNots() + " NOTS.");
+		LOGGER.info("[PropnetManager] Propnet has: " + this.propNet.getNumBases() + " BASES, " + this.propNet.getNumTransitions() + " TRANSITIONS.");
+		LOGGER.info("[PropnetManager] Propnet has: " + this.propNet.getNumInputs() + " INPUTS, " + this.propNet.getNumLegals() + " LEGALS.");
+		LOGGER.info("[PropnetManager] Propnet has: " + this.propNet.getNumGoals() + " GOALS.");
+		LOGGER.info("[PropnetManager] Propnet has: " + this.propNet.getNumInits() + " INITS, " + this.propNet.getNumTerminals() + " TERMINALS.");
+		*/
+
+		/* ONLY FOR DEBUG. DON'T USE WHILE PLAYING BECAUSE IT CAN TAKE SOME TIME
 		System.out.println("Propnet has: " + this.dynamicPropNet.getSize() + " COMPONENTS, " + this.dynamicPropNet.getNumPropositions() + " PROPOSITIONS, " + this.dynamicPropNet.getNumLinks() + " LINKS.");
 		System.out.println("Propnet has: " + this.dynamicPropNet.getNumAnds() + " ANDS, " + this.dynamicPropNet.getNumOrs() + " ORS, " + this.dynamicPropNet.getNumNots() + " NOTS.");
 		System.out.println("Propnet has: " + this.dynamicPropNet.getNumBases() + " BASES, " + this.dynamicPropNet.getNumTransitions() + " TRANSITIONS.");
 		System.out.println("Propnet has: " + this.dynamicPropNet.getNumInputs() + " INPUTS, " + this.dynamicPropNet.getNumLegals() + " LEGALS.");
 		System.out.println("Propnet has: " + this.dynamicPropNet.getNumGoals() + " GOALS.");
 		System.out.println("Propnet has: " + this.dynamicPropNet.getNumInits() + " INITS, " + this.dynamicPropNet.getNumTerminals() + " TERMINALS.");
-		*/
 
-		//System.out.println(this.dynamicPropNet.toString());
-		//System.out.println("Propnet has: " + this.dynamicPropNet.getSize() + " COMPONENTS");
+		System.out.println(this.dynamicPropNet.toString());
+		System.out.println("Propnet has: " + this.dynamicPropNet.getSize() + " COMPONENTS");
+		*/
 
 		/** 4. REMOVE OUTPUT-LESS COMPONENTS THAT ARE USELESS:
 		 *  find all the components in the propnet that have no outputs and if they don't have a special
@@ -215,16 +273,28 @@ public class SeparatePropnetCreationManager extends Thread{
 
 		DynamicPropNetFactory.removeOutputlessComponents(this.dynamicPropNet);
 
-		/*
+		/* ONLY FOR DEBUG. DON'T USE WHILE PLAYING BECAUSE IT CAN TAKE SOME TIME
+		LOGGER.info("[PropnetManager] " + this.dynamicPropNet.toString());
+		LOGGER.info("[PropnetManager] Propnet has: " + this.dynamicPropNet.getSize() + " COMPONENTS");
+
+		LOGGER.info("[PropnetManager] Propnet has: " + this.propNet.getSize() + " COMPONENTS, " + this.propNet.getNumPropositions() + " PROPOSITIONS, " + this.propNet.getNumLinks() + " LINKS.");
+		LOGGER.info("[PropnetManager] Propnet has: " + this.propNet.getNumAnds() + " ANDS, " + this.propNet.getNumOrs() + " ORS, " + this.propNet.getNumNots() + " NOTS.");
+		LOGGER.info("[PropnetManager] Propnet has: " + this.propNet.getNumBases() + " BASES, " + this.propNet.getNumTransitions() + " TRANSITIONS.");
+		LOGGER.info("[PropnetManager] Propnet has: " + this.propNet.getNumInputs() + " INPUTS, " + this.propNet.getNumLegals() + " LEGALS.");
+		LOGGER.info("[PropnetManager] Propnet has: " + this.propNet.getNumGoals() + " GOALS.");
+		LOGGER.info("[PropnetManager] Propnet has: " + this.propNet.getNumInits() + " INITS, " + this.propNet.getNumTerminals() + " TERMINALS.");
+		*/
+
+		/* ONLY FOR DEBUG. DON'T USE WHILE PLAYING BECAUSE IT CAN TAKE SOME TIME
 		System.out.println("Propnet has: " + this.dynamicPropNet.getSize() + " COMPONENTS, " + this.dynamicPropNet.getNumPropositions() + " PROPOSITIONS, " + this.dynamicPropNet.getNumLinks() + " LINKS.");
 		System.out.println("Propnet has: " + this.dynamicPropNet.getNumAnds() + " ANDS, " + this.dynamicPropNet.getNumOrs() + " ORS, " + this.dynamicPropNet.getNumNots() + " NOTS.");
 		System.out.println("Propnet has: " + this.dynamicPropNet.getNumBases() + " BASES, " + this.dynamicPropNet.getNumTransitions() + " TRANSITIONS.");
 		System.out.println("Propnet has: " + this.dynamicPropNet.getNumInputs() + " INPUTS, " + this.dynamicPropNet.getNumLegals() + " LEGALS.");
 		System.out.println("Propnet has: " + this.dynamicPropNet.getNumGoals() + " GOALS.");
 		System.out.println("Propnet has: " + this.dynamicPropNet.getNumInits() + " INITS, " + this.dynamicPropNet.getNumTerminals() + " TERMINALS.");
-		*/
 
-		//System.out.println(this.dynamicPropNet.toString());
+		System.out.println(this.dynamicPropNet.toString());
+		*/
 
 		/************************ PROPNET EXTERNAL COMPLETE STATE INITIALIZATION **************************/
 

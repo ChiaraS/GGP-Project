@@ -8,6 +8,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.ggp.base.util.game.GameRepository;
 import org.ggp.base.util.gdl.grammar.Gdl;
 import org.ggp.base.util.gdl.grammar.GdlConstant;
@@ -23,7 +25,6 @@ import org.ggp.base.util.gdl.grammar.GdlRule;
 import org.ggp.base.util.gdl.grammar.GdlSentence;
 import org.ggp.base.util.gdl.grammar.GdlTerm;
 import org.ggp.base.util.gdl.grammar.GdlVariable;
-import org.ggp.base.util.logging.GamerLogger;
 
 
 /**
@@ -40,6 +41,17 @@ import org.ggp.base.util.logging.GamerLogger;
  * @author Sam Schreiber (comments)
  */
 public class PropNetFlattener {
+
+	/**
+	 * Static reference to the logger
+	 */
+	private static final Logger LOGGER;
+
+	static{
+
+		LOGGER = LogManager.getRootLogger();
+
+	}
 
     private List<Gdl> description;
 
@@ -614,7 +626,7 @@ public class PropNetFlattener {
         Set<Domain> lastUpdatedDomains = new HashSet<Domain>(domains.values());
         while(changedSomething)
         {
-            GamerLogger.log("StateMachine", "Beginning domain finding iteration: "+itrNum);
+        	LOGGER.info("[StateMachine] Beginning domain finding iteration: "+itrNum);
             Set<Domain> currUpdatedDomains = new HashSet<Domain>();
             changedSomething = false;
             int rulesConsidered = 0;
@@ -685,7 +697,7 @@ public class PropNetFlattener {
             }
             itrNum++;
             lastUpdatedDomains = currUpdatedDomains;
-            GamerLogger.log("StateMachine", "\tDone with iteration.  Considered "+rulesConsidered+" rules.");
+            LOGGER.info("[StateMachine] \tDone with iteration.  Considered "+rulesConsidered+" rules.");
         }
     }
 

@@ -3,9 +3,10 @@ package org.ggp.base.util.propnet.creationManager;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.apache.lucene.util.OpenBitSet;
 import org.ggp.base.util.gdl.grammar.Gdl;
-import org.ggp.base.util.logging.GamerLogger;
 import org.ggp.base.util.propnet.architecture.externalizedState.ExternalizedStateComponent;
 import org.ggp.base.util.propnet.architecture.externalizedState.ExternalizedStatePropNet;
 import org.ggp.base.util.propnet.architecture.externalizedState.components.ExternalizedStateAnd;
@@ -41,6 +42,17 @@ import org.ggp.base.util.statemachine.Role;
  */
 public class ExternalStatePropnetCreationManager extends Thread{
 
+	/**
+	 * Static reference to the logger
+	 */
+	private static final Logger LOGGER;
+
+	static{
+
+		LOGGER = LogManager.getRootLogger();
+
+	}
+
 	private List<Gdl> description;
 
 	private long timeout;
@@ -71,8 +83,7 @@ public class ExternalStatePropnetCreationManager extends Thread{
     	try{
     		this.propNet = ExternalizedStatePropnetFactory.create(description);
     	}catch(InterruptedException e){
-    		GamerLogger.logError("PropnetManager", "Propnet creation interrupted!");
-    		GamerLogger.logStackTrace("PropnetManager", e);
+    		LOGGER.error("[PropnetManager] Propnet creation interrupted!", e);
     		this.propNet = null;
     		this.initialPropnetState = null;
     		this.propNetConstructionTime = -1;
@@ -81,9 +92,18 @@ public class ExternalStatePropnetCreationManager extends Thread{
     	}
     	// Compute the time taken to construct the propnet
     	this.propNetConstructionTime = System.currentTimeMillis() - startTime;
-		GamerLogger.log("StateMachine", "[Propnet Creator] Propnet creation done. It took " + this.propNetConstructionTime + "ms.");
+    	LOGGER.info("[PropnetManager] Propnet creation done. It took " + this.propNetConstructionTime + "ms.");
 
-		/*
+		/* ONLY FOR DEBUG. DON'T USE WHILE PLAYING BECAUSE IT CAN TAKE SOME TIME
+		LOGGER.info("[PropnetManager] Propnet has: " + this.propNet.getSize() + " COMPONENTS, " + this.propNet.getNumPropositions() + " PROPOSITIONS, " + this.propNet.getNumLinks() + " LINKS.");
+		LOGGER.info("[PropnetManager] Propnet has: " + this.propNet.getNumAnds() + " ANDS, " + this.propNet.getNumOrs() + " ORS, " + this.propNet.getNumNots() + " NOTS.");
+		LOGGER.info("[PropnetManager] Propnet has: " + this.propNet.getNumBases() + " BASES, " + this.propNet.getNumTransitions() + " TRANSITIONS.");
+		LOGGER.info("[PropnetManager] Propnet has: " + this.propNet.getNumInputs() + " INPUTS, " + this.propNet.getNumLegals() + " LEGALS.");
+		LOGGER.info("[PropnetManager] Propnet has: " + this.propNet.getNumGoals() + " GOALS.");
+		LOGGER.info("[PropnetManager] Propnet has: " + this.propNet.getNumInits() + " INITS, " + this.propNet.getNumTerminals() + " TERMINALS.");
+		*/
+
+		/* ONLY FOR DEBUG. DON'T USE WHILE PLAYING BECAUSE IT CAN TAKE SOME TIME
 		System.out.println("Propnet has: " + this.propNet.getSize() + " COMPONENTS, " + this.propNet.getNumPropositions() + " PROPOSITIONS, " + this.propNet.getNumLinks() + " LINKS.");
 		System.out.println("Propnet has: " + this.propNet.getNumAnds() + " ANDS, " + this.propNet.getNumOrs() + " ORS, " + this.propNet.getNumNots() + " NOTS.");
 		System.out.println("Propnet has: " + this.propNet.getNumBases() + " BASES, " + this.propNet.getNumTransitions() + " TRANSITIONS.");
@@ -105,8 +125,7 @@ public class ExternalStatePropnetCreationManager extends Thread{
 		try{
 			ConcurrencyUtils.checkForInterruption();
 		}catch(InterruptedException e){
-			GamerLogger.logError("PropnetManager", "Manager interrupted before ropnet state initialization!");
-    		GamerLogger.logStackTrace("PropnetManager", e);
+			LOGGER.error("[PropnetManager] Manager interrupted before propnet state initialization!", e);
     		this.propNet = null;
     		this.initialPropnetState = null;
     		this.propNetConstructionTime = -1;

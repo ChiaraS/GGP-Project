@@ -12,7 +12,8 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
-import org.ggp.base.util.logging.GamerLogger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import com.declarativa.interprolog.PrologEngine;
 import com.declarativa.interprolog.SWISubprocessEngine;
@@ -54,6 +55,17 @@ import com.xsb.interprolog.NativeEngine;
  *
  */
 public class PrologProver {
+
+	/**
+	 * Static reference to the logger
+	 */
+	private static final Logger LOGGER;
+
+	static{
+
+		LOGGER = LogManager.getRootLogger();
+
+	}
 
 	/**
 	 * Enumeration of all possible types of prolog that this class can mask.
@@ -332,7 +344,7 @@ public class PrologProver {
 				this.prologPath = LINUX_XSB_BIN;
 				break;
 			default:
-				GamerLogger.logError("StateMachine", "[PrologProver] Exception during initialization of prolog prover. Unrecognized prolog type " + this.prologType + ".");
+				LOGGER.error("[StateMachine] [" + this.prologType + " PROLOG] [PrologProver] Exception during initialization of prolog prover. Unrecognized prolog type " + this.prologType + ".");
 				throw new PrologProverException("Creation of Prolog prover failed. " + this.prologType + " is not a valid prolog type.");
 			}
 		}else{ // WINDOWS
@@ -353,7 +365,7 @@ public class PrologProver {
 				this.prologPath = WINDOWS_XSB_BIN;
 				break;
 			default:
-				GamerLogger.logError("StateMachine", "[PrologProver] Exception during initialization of prolog prover. Unrecognized prolog type " + this.prologType + ".");
+				LOGGER.error("[StateMachine] [" + this.prologType + " PROLOG] [PrologProver] Exception during initialization of prolog prover. Unrecognized prolog type " + this.prologType + ".");
 				throw new PrologProverException("Creation of Prolog prover failed. " + this.prologType + " is not a valid prolog type.");
 			}
 		}
@@ -368,11 +380,10 @@ public class PrologProver {
 		// Write game description to a file
 		try {
 			writeDescription(this.description);
-			GamerLogger.log("StateMachine", "[PrologProver] Prolog game description saved, trying to start up real prover.");
+			LOGGER.info("[StateMachine] [" + this.prologType + " PROLOG] [PrologProver] Prolog game description saved, trying to start up real prover.");
 		} catch (IOException e) {
 			// Log the exception
-			GamerLogger.logError("StateMachine", "[PrologProver] Exception during initialization of " + this.prologType + " prover. Impossible to write game description on file.");
-			GamerLogger.logStackTrace("StateMachine", e);
+			LOGGER.error("[StateMachine] [" + this.prologType + " PROLOG] [PrologProver] Exception during initialization of " + this.prologType + " prover. Impossible to write game description on file.", e);
 			// Throw a new exception.
 			throw new PrologProverException("Creation of " + this.prologType + " prover failed. Impossible to write game description on file.", e);
 		}
@@ -426,20 +437,20 @@ public class PrologProver {
 				this.prologProver = new NativeEngine(this.prologPath);
 				break;
 			default:
-				GamerLogger.logError("StateMachine", "[PrologProver] Exception during startup of " + this.prologType + " prover: unrecognized prolog path. Shutting down.");
+				LOGGER.error("[StateMachine] [" + this.prologType + " PROLOG] [PrologProver] Exception during startup of " + this.prologType + " prover: unrecognized prolog path. Shutting down.");
 				this.shutdown();
 				// Throw an exception.
 				throw new PrologProverException("Startup of " + this.prologType + " prover failed.");
 			}
 
-			GamerLogger.log("StateMachine", "Creation of PrologProver succeeded.");
+			LOGGER.info("[StateMachine] [" + this.prologType + " PROLOG] [PrologProver] Creation of PrologProver succeeded.");
 
 			// Tell to Prolog to consult the file with the functions definitions
 			// (the game description will also be consulted since it is referenced in
 			// the functions file.)
 			this.prologProver.consultAbsolute(new File(functionsFilePath));
 
-			GamerLogger.log("StateMachine", "Prolog function file consulted.");
+			LOGGER.info("[StateMachine] [" + this.prologType + " PROLOG] [PrologProver] Prolog function file consulted.");
 
 			// Not needed for now since the state machine is not calling
 			// any query that uses random numbers.
@@ -457,8 +468,7 @@ public class PrologProver {
 			this.isReady = true;
 		}catch(RuntimeException e){
 			// Log the exception
-			GamerLogger.logError("StateMachine", "[PrologProver] Exception during startup of " + this.prologType + " prover. Shutting down.");
-			GamerLogger.logStackTrace("StateMachine", e);
+			LOGGER.error("[StateMachine] [" + this.prologType + " PROLOG] [PrologProver] Exception during startup of " + this.prologType + " prover. Shutting down.", e);
 			this.shutdown();
 			// Throw an exception.
 			throw new PrologProverException("Startup of " + this.prologType + " prover failed.", e);
@@ -564,8 +574,7 @@ public class PrologProver {
 			try{
 				this.startup();
 			}catch(PrologProverException e){
-				GamerLogger.logError("StateMachine", "[PrologProver] Impossible to compute query result on " + this.prologType + " prolog side: prolog engine restart failed.");
-				GamerLogger.logStackTrace("StateMachine", e);
+				LOGGER.error("[StateMachine] [" + this.prologType + " PROLOG] [PrologProver] Impossible to compute query result on " + this.prologType + " prolog side: prolog engine restart failed.", e);
 				throw new PrologProverException("Computation of query \"" + goal + "\" with result variables \"" + resVar + "\" on " + this.prologType + " prolog side couldn't be completed: prolog engine restart failed.", e);
 			}
 		}
@@ -584,8 +593,7 @@ public class PrologProver {
 			} catch (ExecutionException
 					| TimeoutException e) {
 				// If something went wrong or timeout has been reached, then throw an exception.
-				GamerLogger.logError("StateMachine", "[PrologProver] Impossible to compute query result on " + this.prologType + " prolog side: computation failed on prolog side.");
-				GamerLogger.logStackTrace("StateMachine", e);
+				LOGGER.error("[StateMachine] [" + this.prologType + " PROLOG] [PrologProver] Impossible to compute query result on " + this.prologType + " prolog side: computation failed on prolog side.", e);
 				this.shutdown();
 				throw new PrologProverException("Computation of query \"" + goal + "\" with result variables \"" + resVar + "\" on " + this.prologType + " prolog side couldn't be completed: computation failed on prolog side.", e);
 			} catch (InterruptedException e) {
@@ -593,8 +601,7 @@ public class PrologProver {
 				// cause the query couldn't be computed, but also re-set the interrupted status of the
 				// current thread to "true" so that also the callers of this method know that they have
 				// to interrupt.
-				GamerLogger.logError("StateMachine", "[PrologProver] Impossible to compute query result on " + this.prologType + " prolog: PrologProver has been interrupted before getting the result.");
-				GamerLogger.logStackTrace("StateMachine", e);
+				LOGGER.error("[StateMachine] [" + this.prologType + " PROLOG] [PrologProver] Impossible to compute query result on " + this.prologType + " prolog: PrologProver has been interrupted before getting the result.", e);
 				this.shutdown();
 				Thread.currentThread().interrupt();
 				throw new PrologProverException("Computation of query \"" + goal + "\" with result variables \"" + resVar + "\" on " + this.prologType + " prolog side couldn't be completed: PrologProver has been interrupted before getting the result.", e);
@@ -607,8 +614,7 @@ public class PrologProver {
 			// Catch all possible exceptions of Interprolog and re-throw them as a PrologProverException
 			// to signal that something went wrong and the query couldn't be answered.
 			}catch(RuntimeException e){
-				GamerLogger.logError("StateMachine", "[PrologProver] Impossible to compute query result on " + this.prologType + " prolog side: Interprolog exception occurred.");
-				GamerLogger.logStackTrace("StateMachine", e);
+				LOGGER.error("[StateMachine] [" + this.prologType + " PROLOG] [PrologProver] Impossible to compute query result on " + this.prologType + " prolog side: Interprolog exception occurred.", e);
 				this.shutdown();
 				throw new PrologProverException("Computation of query \"" + goal + "\" with result variables \"" + resVar + "\" on " + this.prologType + " prolog side couldn't be completed: Interprolog exception occurred.", e);
 			}
@@ -639,8 +645,7 @@ public class PrologProver {
 			try{
 				this.startup();
 			}catch(PrologProverException e){
-				GamerLogger.logError("StateMachine", "[PrologProver] Impossible to compute yes/no query on " + this.prologType + " prolog side: prolog engine restart failed.");
-				GamerLogger.logStackTrace("StateMachine", e);
+				LOGGER.error("[StateMachine] [" + this.prologType + " PROLOG] [PrologProver] Impossible to compute yes/no query on " + this.prologType + " prolog side: prolog engine restart failed.", e);
 				throw new PrologProverException("Computation of yes/no query \"" + goal + "\" on " + this.prologType + " prolog side couldn't be completed: prolog engine restart failed.", e);
 			}
 		}
@@ -659,8 +664,7 @@ public class PrologProver {
 			} catch (ExecutionException
 					| TimeoutException e) {
 				// If something went wrong or timeout has been reached, then throw an exception.
-				GamerLogger.logError("StateMachine", "[PrologProver] Impossible to compute yes/no query on " + this.prologType + " prolog side: computation failed on prolog side.");
-				GamerLogger.logStackTrace("StateMachine", e);
+				LOGGER.error("[StateMachine] [" + this.prologType + " PROLOG] [PrologProver] Impossible to compute yes/no query on " + this.prologType + " prolog side: computation failed on prolog side.", e);
 				this.shutdown();
 				throw new PrologProverException("Computation of yes/no query \"" + goal + "\" on " + this.prologType + " prolog side couldn't be completed: computation failed on prolog side.", e);
 			} catch (InterruptedException e) {
@@ -668,8 +672,7 @@ public class PrologProver {
 				// cause the query couldn't be computed, but also re-set the interrupted status of the
 				// current thread to "true" so that also the callers of this method know that they have
 				// to interrupt.
-				GamerLogger.logError("StateMachine", "[PrologProver] Impossible to compute yes/no query on " + this.prologType + " prolog side: PrologProver has been interrupted before getting the result.");
-				GamerLogger.logStackTrace("StateMachine", e);
+				LOGGER.error("[StateMachine] [" + this.prologType + " PROLOG] [PrologProver] Impossible to compute yes/no query on " + this.prologType + " prolog side: PrologProver has been interrupted before getting the result.", e);
 				this.shutdown();
 				Thread.currentThread().interrupt();
 				throw new PrologProverException("Computation of yes/no query \"" + goal + "\" on " + this.prologType + " prolog side couldn't be completed: PrologProver has been interrupted before getting the result.", e);
@@ -683,8 +686,7 @@ public class PrologProver {
 			// Catch all possible exceptions of Interprolog and re-throw them as a PrologProverException
 			// to signal that something went wrong and the query couldn't be answered.
 			}catch(RuntimeException e){
-				GamerLogger.logError("StateMachine", "[PrologProver] Impossible to compute yes/no query on " + this.prologType + " prolog side: Interprolog exception occurred.");
-				GamerLogger.logStackTrace("StateMachine", e);
+				LOGGER.error("[StateMachine] [" + this.prologType + " PROLOG] [PrologProver] Impossible to compute yes/no query on " + this.prologType + " prolog side: Interprolog exception occurred.", e);
 				this.shutdown();
 				throw new PrologProverException("Computation of yes/no query \"" + goal + "\" on " + this.prologType + " prolog side couldn't be completed: Interprolog exception occurred.", e);
 			}

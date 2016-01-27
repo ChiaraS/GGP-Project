@@ -13,19 +13,18 @@ import org.ggp.base.player.gamer.statemachine.MCTS.manager.strategies.movechoice
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.strategies.playout.PlayoutStrategy;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.strategies.selection.SelectionStrategy;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.InternalPropnetMCTSNode;
+import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.MCTSJointMove;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.MCTSMove;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.MCTSTranspositionTable;
-import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.MCTSJointMove;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.DUCT.DUCTMCTSMove;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.DUCT.InternalPropnetDUCTMCTSNode;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.SUCT.InternalPropnetSUCTMCTSNode;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.SUCT.SUCTMCTSMove;
-import org.ggp.base.util.logging.GamerLogger;
-import org.ggp.base.util.statemachine.InternalPropnetStateMachine;
 import org.ggp.base.util.statemachine.exceptions.MoveDefinitionException;
-import org.ggp.base.util.statemachine.inernalPropnetStructure.InternalPropnetMachineState;
-import org.ggp.base.util.statemachine.inernalPropnetStructure.InternalPropnetMove;
-import org.ggp.base.util.statemachine.inernalPropnetStructure.InternalPropnetRole;
+import org.ggp.base.util.statemachine.implementation.internalPropnet.InternalPropnetStateMachine;
+import org.ggp.base.util.statemachine.implementation.internalPropnet.structure.InternalPropnetMachineState;
+import org.ggp.base.util.statemachine.implementation.internalPropnet.structure.InternalPropnetMove;
+import org.ggp.base.util.statemachine.implementation.internalPropnet.structure.InternalPropnetRole;
 
 /**
  * @author C.Sironi
@@ -124,9 +123,9 @@ public class InternalPropnetMCTSManager extends MCTSManager {
 		this.searchEnd = 0;
 
 		if(this.DUCT){
-			GamerLogger.log("MCTSManager", "MCTS manager initialized to perform DUCT MCTS with maximum search dept " + this.maxSearchDepth + ".");
+			LOGGER.info("[MCTSManager] MCTS manager initialized to perform DUCT MCTS with maximum search dept " + this.maxSearchDepth + ".");
 		}else{
-			GamerLogger.log("MCTSManager", "MCTS manager initialized to perform SUCT MCTS with maximum search dept " + this.maxSearchDepth + ".");
+			LOGGER.info("[MCTSManager] MCTS manager initialized to perform SUCT MCTS with maximum search dept " + this.maxSearchDepth + ".");
 		}
 	}
 
@@ -296,7 +295,7 @@ public class InternalPropnetMCTSManager extends MCTSManager {
 			// If a state in the tree is terminal, it must record the goals for every player.
 			// If it doesn't there must be a programming error.
 			if(goals == null){
-				GamerLogger.logError("MCTSManager", "Detected null goals for a treminal node in the tree.");
+				LOGGER.error("[MCTSManager] Detected null goals for a treminal node in the tree.");
 				throw new RuntimeException("Detected null goals for a treminal node in the tree.");
 			}
 
@@ -319,7 +318,7 @@ public class InternalPropnetMCTSManager extends MCTSManager {
 		// it can be visited (i.e. one of its moves explored) only if the depth limit has not been reached.
 		if(this.currentIterationVisitedNodes >= this.maxSearchDepth){
 
-			GamerLogger.log("MCTSManager", "Reached search depth limit. Search interrupted (in the Monte Carlo tree) before reaching a treminal state.");
+			LOGGER.info("[MCTSManager] Reached search depth limit. Search interrupted (in the Monte Carlo tree) before reaching a treminal state.");
 
 			//System.out.print("Reached depth limit.");
 
@@ -579,8 +578,7 @@ public class InternalPropnetMCTSManager extends MCTSManager {
 			}
 		}catch(MoveDefinitionException e){
 			// If for at least one player the legal moves cannot be computed, we return null.
-			GamerLogger.logError("MCTSManager", "Failed to retrieve the legal moves while adding non-terminal DUCT state to the tree.");
-			GamerLogger.logStackTrace("MCTSManager", e);
+			LOGGER.error("[MCTSManager] Failed to retrieve the legal moves while adding non-terminal DUCT state to the tree.", e);
 
 			moves = null;
 		}
@@ -601,8 +599,7 @@ public class InternalPropnetMCTSManager extends MCTSManager {
 			}
 		}catch (MoveDefinitionException e) {
 			// If for at least one player the legal moves cannot be computed, we return null.
-			GamerLogger.logError("MCTSManager", "Failed to retrieve the legal moves while adding non-terminal SUCT state to the tree.");
-			GamerLogger.logStackTrace("MCTSManager", e);
+			LOGGER.error("[MCTSManager] Failed to retrieve the legal moves while adding non-terminal SUCT state to the tree.", e);
 
 			return null;
 		}

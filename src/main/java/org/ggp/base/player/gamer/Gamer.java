@@ -3,6 +3,8 @@ package org.ggp.base.player.gamer;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.ggp.base.apps.player.config.ConfigPanel;
 import org.ggp.base.apps.player.config.EmptyConfigPanel;
 import org.ggp.base.apps.player.detail.DetailPanel;
@@ -28,6 +30,24 @@ import org.ggp.base.util.observer.Subject;
  */
 public abstract class Gamer implements Subject
 {
+	/**
+	 * Static reference to the root logger.
+	 */
+	protected static final Logger LOGGER;
+
+	/**
+	 * Static reference to the CSV logger.
+	 */
+	protected static final Logger CSV_LOGGER;
+
+	static{
+
+		LOGGER = LogManager.getRootLogger();
+		CSV_LOGGER = LogManager.getLogger("CSVLogger");
+
+	}
+
+
 	private Match match;
 	private GdlConstant roleName;
 

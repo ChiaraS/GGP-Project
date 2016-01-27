@@ -11,14 +11,13 @@ import org.ggp.base.player.gamer.exception.GamePreviewException;
 import org.ggp.base.player.gamer.statemachine.StateMachineGamer;
 import org.ggp.base.util.game.Game;
 import org.ggp.base.util.gdl.grammar.GdlPool;
-import org.ggp.base.util.logging.GamerLogger;
 import org.ggp.base.util.propnet.architecture.separateExtendedState.immutable.ImmutablePropNet;
-import org.ggp.base.util.propnet.creationManager.SeparatePropnetCreationManager;
+import org.ggp.base.util.propnet.creationManager.SeparateInternalPropnetCreationManager;
 import org.ggp.base.util.propnet.state.ImmutableSeparatePropnetState;
-import org.ggp.base.util.statemachine.InternalPropnetStateMachine;
 import org.ggp.base.util.statemachine.StateMachine;
 import org.ggp.base.util.statemachine.cache.CachedStateMachine;
-import org.ggp.base.util.statemachine.implementation.propnet.SeparateInternalPropnetStateMachine;
+import org.ggp.base.util.statemachine.implementation.internalPropnet.InternalPropnetStateMachine;
+import org.ggp.base.util.statemachine.implementation.internalPropnet.SeparateInternalPropnetStateMachine;
 import org.ggp.base.util.statemachine.implementation.prover.ProverStateMachine;
 
 /**
@@ -93,17 +92,17 @@ public abstract class InternalPropnetGamer extends StateMachineGamer {
 	@Override
 	public StateMachine getInitialStateMachine() {
 
-		GamerLogger.log("Gamer", "Returning initial state machine.");
+		LOGGER.info("[Gamer] Returning initial state machine.");
 
 		// If the gamer must re-use the same state machine if it already created it...
 		if(this.singleGame){
 
-			GamerLogger.log("Gamer", "Single-game gamer.");
+			LOGGER.info("[Gamer] Single-game gamer.");
 
 			// ...if the propnet machine already exists, return it.
 			if(this.thePropnetMachine != null){
 
-				GamerLogger.log("Gamer", "Propnet state machine already created for the game. Returning same state machine.");
+				LOGGER.info("[Gamer] Propnet state machine already created for the game. Returning same state machine.");
 				//System.out.println("Returning SAME propnet state machine.");
 
 				return this.thePropnetMachine;
@@ -115,13 +114,13 @@ public abstract class InternalPropnetGamer extends StateMachineGamer {
 
 				this.firstTry = false;
 
-				GamerLogger.log("Gamer", "First try to create the propnet state machine.");
+				LOGGER.info("[Gamer] First try to create the propnet state machine.");
 
 				return this.createStateMachine();
 
 			}else{
 
-				GamerLogger.logError("Gamer", "Already tried to build propnet and failed. Returning prover state machine.");
+				LOGGER.info("[Gamer] Already tried to build propnet and failed. Returning prover state machine.");
 				//System.out.println("Already FAILED with propnet, not gonna try again: returning prover state machine.");
 
 				return new CachedStateMachine(new ProverStateMachine());
@@ -129,8 +128,8 @@ public abstract class InternalPropnetGamer extends StateMachineGamer {
 
 		}else{ // If the player must create a new state machine for every game, create it.
 
-			GamerLogger.log("Gamer", "Standard gamer (not single-game).");
-			GamerLogger.log("Gamer", "Creating state machine for the game.");
+			LOGGER.info("[Gamer] Standard gamer (not single-game).");
+			LOGGER.info("[Gamer] Creating state machine for the game.");
 
 			return this.createStateMachine();
 		}
@@ -144,7 +143,7 @@ public abstract class InternalPropnetGamer extends StateMachineGamer {
 	        ExecutorService executor = Executors.newSingleThreadExecutor();
 
 	        // Create the propnet creation manager
-	        SeparatePropnetCreationManager manager = new SeparatePropnetCreationManager(getMatch().getGame().getRules(), this.getMetagamingTimeout());
+	        SeparateInternalPropnetCreationManager manager = new SeparateInternalPropnetCreationManager(getMatch().getGame().getRules(), this.getMetagamingTimeout());
 
 	        // Start the manager
 	  	  	executor.execute(manager);
@@ -158,8 +157,7 @@ public abstract class InternalPropnetGamer extends StateMachineGamer {
 				executor.awaitTermination(this.getMetagamingTimeout() - System.currentTimeMillis() - this.safetyMargin, TimeUnit.MILLISECONDS);
 			}catch(InterruptedException e){ // The thread running the gamer has been interrupted => stop playing.
 				executor.shutdownNow(); // Interrupt everything
-				GamerLogger.logError("Gamer", "Gamer interrupted while computing initial propnet state machine: returning prover state machine.");
-				GamerLogger.logStackTrace("Gamer", e);
+				LOGGER.error("[Gamer] Gamer interrupted while computing initial propnet state machine: returning prover state machine.", e);
 				Thread.currentThread().interrupt();
 
 				//System.out.println("Returning prover state machine.");
@@ -190,18 +188,18 @@ public abstract class InternalPropnetGamer extends StateMachineGamer {
 					// Create the state machine giving it the propnet and the propnet state.
 				    this.thePropnetMachine =  new SeparateInternalPropnetStateMachine(propnet, propnetState);
 
-				    GamerLogger.log("Gamer", "Propnet built successfully: returning propnet state machine.");
+				    LOGGER.info("[Gamer] Propnet built successfully: returning propnet state machine.");
 				    //System.out.println("Returning propnet state machine.");
 
 				    return this.thePropnetMachine;
 				}else{
-					GamerLogger.logError("Gamer", "Propnet builder ended execution but at leas one among the immutable propnet structure and the propnet state is null: returning prover state machine.");
+					LOGGER.info("[Gamer] Propnet builder ended execution but at least one among the immutable propnet structure and the propnet state is null: returning prover state machine.");
 				}
 			}else{
-				GamerLogger.logError("Gamer", "The propnet state machine didn't build in time: returning prover state machine.");
+				LOGGER.info("[Gamer] The propnet state machine didn't build in time: returning prover state machine.");
 			}
 		}else{
-			GamerLogger.logError("Gamer", "No time to build propnet state machine: returning prover state machine.");
+			LOGGER.info("[Gamer] No time to build propnet state machine: returning prover state machine.");
 		}
 
 		//System.out.println("Returning prover state machine.");

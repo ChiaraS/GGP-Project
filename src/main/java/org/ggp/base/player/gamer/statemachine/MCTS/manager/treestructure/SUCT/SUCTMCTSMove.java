@@ -4,7 +4,7 @@
 package org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.SUCT;
 
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.MCTSMove;
-import org.ggp.base.util.statemachine.inernalPropnetStructure.InternalPropnetMove;
+import org.ggp.base.util.statemachine.implementation.internalPropnet.structure.InternalPropnetMove;
 
 /**
  * @author C.Sironi

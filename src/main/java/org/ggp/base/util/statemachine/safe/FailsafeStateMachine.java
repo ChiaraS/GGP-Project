@@ -7,7 +7,6 @@ import org.ggp.base.util.gdl.grammar.Gdl;
 import org.ggp.base.util.gdl.grammar.GdlConstant;
 import org.ggp.base.util.gdl.grammar.GdlSentence;
 import org.ggp.base.util.gdl.grammar.GdlTerm;
-import org.ggp.base.util.logging.GamerLogger;
 import org.ggp.base.util.statemachine.MachineState;
 import org.ggp.base.util.statemachine.Move;
 import org.ggp.base.util.statemachine.Role;
@@ -57,37 +56,37 @@ public class FailsafeStateMachine extends StateMachine
         if(attemptLoadingInitialMachine(timeout))
             return;
 
-        GamerLogger.logError("StateMachine", "Failsafe Machine: failed to load initial state machine. Falling back...");
+        LOGGER.error("[StateMachine] [Failsafe] failed to load initial state machine. Falling back...");
 
         // Giving the timeout to the ProverStateMachine is irrelevant since it will ignore it,
         // but remember to change this if you change the backup machine.
         if(attemptLoadingProverMachine())
             return;
 
-        GamerLogger.logError("StateMachine", "Failsafe Machine: catastrophic failure to load *any* state machine. Cannot recover.");
-        GamerLogger.logError("StateMachine", "Failsafe Machine: cannot recover from current state. Shutting down.");
+        LOGGER.error("[StateMachine] [Failsafe] Catastrophic failure to load *any* state machine. Cannot recover.");
+        LOGGER.error("[StateMachine] [Failsafe] Cannot recover from current state. Shutting down.");
         theBackingMachine = null;
     }
 
     private void failGracefully(Exception e1, Error e2) {
-        if(e1 != null) GamerLogger.logStackTrace("StateMachine", e1);
-        if(e2 != null) GamerLogger.logStackTrace("StateMachine", e2);
-        GamerLogger.logError("StateMachine", "Failsafe Machine: graceful failure mode kicking in.");
+        if(e1 != null) LOGGER.error("[StateMachine] [Failsafe] Failing gracefully.", e1);
+        if(e2 != null) LOGGER.error("[StateMachine] [Failsafe] Failing gracefully.", e2);
+        LOGGER.error("[StateMachine] [Failsafe] Graceful failure mode kicking in.");
 
         if(theBackingMachine.getClass() != ProverStateMachine.class) {
-            GamerLogger.logError("StateMachine", "Failsafe Machine: online failure for " + theBackingMachine.getClass() + ". Attempting to restart with a standard prover.");
+        	LOGGER.error("[StateMachine] [Failsafe] Online failure for " + theBackingMachine.getClass() + ". Attempting to restart with a standard prover.");
             if(attemptLoadingProverMachine())
                 return;
         }
 
         theBackingMachine = null;
-        GamerLogger.logError("StateMachine", "Failsafe Machine: online failure for regular prover. Cannot recover.");
+        LOGGER.error("[StateMachine] [Failsafe] Online failure for regular prover. Cannot recover.");
     }
 
     private boolean attemptLoadingInitialMachine(long timeout) {
         try {
             theBackingMachine.initialize(gameDescription, timeout);
-            GamerLogger.log("StateMachine", "Failsafe Machine: successfully activated initial state machine for use!");
+            LOGGER.info("[StateMachine] [Failsafe] Successfully activated initial state machine for use!");
             return true;
         } catch(Exception e1) {
         } catch(ThreadDeath d) {
@@ -102,7 +101,7 @@ public class FailsafeStateMachine extends StateMachine
             StateMachine theStateMachine = new ProverStateMachine();
             theStateMachine.initialize(gameDescription, Long.MAX_VALUE);
             theBackingMachine = theStateMachine;
-            GamerLogger.log("StateMachine", "Failsafe Machine: successfully loaded traditional prover.");
+            LOGGER.info("[StateMachine] [Failsafe] Successfully loaded traditional prover.");
             return true;
         } catch(Exception e1) {
         } catch(ThreadDeath d) {

@@ -6,7 +6,6 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 
 import org.ggp.base.util.gdl.grammar.Gdl;
-import org.ggp.base.util.logging.GamerLogger;
 import org.ggp.base.util.statemachine.MachineState;
 import org.ggp.base.util.statemachine.Move;
 import org.ggp.base.util.statemachine.Role;
@@ -175,9 +174,9 @@ public class AdaptiveInitializationStateMachine extends StateMachine {
 				// machine being tested. However, it is possible that you want to give two instances of the same state
 				// machine twice because the two instances have, for example, different settings. So to be safe the name
 				// of the log file will also include the unique id of the thread testing the state machine --> the GamerLogger
-				// will take care of this.
-				GamerLogger.logError("StateMachineTester-" + this.theMachine.getName(), "Initialization of the state machine failed. Cannot test its speed.");
-				GamerLogger.logStackTrace("StateMachineTester-" + this.theMachine.getName(), e);
+				// will take care of this. --> ! WITH LOG4J2 THIS IS NOT TRUE ANYMORE. NO CONFLICT WILL ARISE FROM THE DIFFERENT
+				// TESTERS LOGGING MESSAGES, HOWEVER THEY WILL ALL LOG ON THE SAME FILE.
+				LOGGER.error("[StateMachine] [Tester] Initialization of the state machine " + this.theMachine.getName() + " failed. Cannot test its speed.", e);
 				this.theMachine.shutdown();
 				this.initSuccess = false;
 			}
@@ -230,11 +229,11 @@ public class AdaptiveInitializationStateMachine extends StateMachine {
 
 		//System.out.println("[DEBUG] [" + this.getCurrentDate() + "] We have " + (timeout - currentTime) + "ms to initialize the state machine subtracting a safety margin of " + safetyMargin + "ms.");
 
-		GamerLogger.log("StateMachine", "Available time for initialization: " + (timeout - currentTime) + "ms from which a safety margin of " + safetyMargin + "ms must be subtracted.");
+		LOGGER.info("[StateMachine] Available time for initialization: " + (timeout - currentTime) + "ms from which a safety margin of " + this.safetyMargin + "ms must be subtracted.");
 
 		if(initializeBy <= currentTime){
-			GamerLogger.logError("StateMachine", "Impossible to initialize the state machine in " + (timeout - currentTime) + "ms respecting the safety margin of " + safetyMargin + "ms.");
-			throw new StateMachineInitializationException("Initialization failed. Impossible to initialize the state machine in " + (timeout - currentTime) + "ms respecting the safety margin of " + safetyMargin + "ms.");
+			LOGGER.error("[StateMachine] Impossible to initialize the state machine in " + (timeout - currentTime) + "ms respecting the safety margin of " + this.safetyMargin + "ms.");
+			throw new StateMachineInitializationException("Initialization failed. Impossible to initialize the state machine in " + (timeout - currentTime) + "ms respecting the safety margin of " + this.safetyMargin + "ms.");
 		}
 
 		// Create the executor as a pool with the number of threads that equals the number of state machines to test.
@@ -278,8 +277,7 @@ public class AdaptiveInitializationStateMachine extends StateMachine {
 
 		} catch (InterruptedException e) {
 			executor.shutdownNow(); // Interrupt everything
-			GamerLogger.logError("StateMachine", "[ADAPTIVE_INIT] Initialization interrupted before completion.");
-			GamerLogger.logStackTrace("StateMachine", e);
+			LOGGER.error("[StateMachine] [ADAPTIVE_INIT] Initialization interrupted before completion.", e);
 			Thread.currentThread().interrupt();
 			throw new StateMachineInitializationException("State machine initialization failed. Initialization interrupted before completion (while running speed tests).");
 		}
@@ -302,8 +300,7 @@ public class AdaptiveInitializationStateMachine extends StateMachine {
 				// of the InitializationSafeStateMachine has been interrupted. If we do nothing this state machine will be stuck in the
 				// while loop anyway until all tasks in the executor have terminated, thus we break out of the loop throwing a new exception.
 				// What happens to the still running tasks in the executor? Who will make sure they terminate?
-				GamerLogger.logError("StateMachine", "[ADAPTIVE_INIT] Initialization interrupted before completion (while waiting for all tasks to interrupt).");
-				GamerLogger.logStackTrace("StateMachine", e);
+				LOGGER.error("[StateMachine] [ADAPTIVE_INIT] Initialization interrupted before completion (while waiting for all tasks to interrupt).", e);
 				Thread.currentThread().interrupt();
 				throw new StateMachineInitializationException("State machine initialization failed. Impossible to initialize the AdaptiveInitializationStateMachine!");
 			}
@@ -344,7 +341,7 @@ public class AdaptiveInitializationStateMachine extends StateMachine {
 		// (this happens only if all of the given state machines failed initialization, if there is at least a state
 		// machine for which initialization succeeded then that one will be selected even if its speed is 0 or very slow)
 		if(this.theFastestMachine == null){
-			GamerLogger.logError("StateMachine", "[ADAPTIVE_INIT] Impossible to initialize the state machine. Initialization of all given sub-machines failed.");
+			LOGGER.error("[StateMachine] [ADAPTIVE_INIT] Impossible to initialize the state machine. Initialization of all given sub-machines failed.");
 			throw new StateMachineInitializationException("State machine initialization failed. Impossible to initialize any of the given sub-machines.");
 		}
 

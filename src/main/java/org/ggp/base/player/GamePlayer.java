@@ -1,12 +1,14 @@
 package org.ggp.base.player;
 
-import java.io.File;
 import java.io.IOException;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.ThreadContext;
 import org.ggp.base.player.event.PlayerDroppedPacketEvent;
 import org.ggp.base.player.event.PlayerReceivedMessageEvent;
 import org.ggp.base.player.event.PlayerSentMessageEvent;
@@ -16,7 +18,6 @@ import org.ggp.base.player.request.factory.RequestFactory;
 import org.ggp.base.player.request.grammar.Request;
 import org.ggp.base.util.http.HttpReader;
 import org.ggp.base.util.http.HttpWriter;
-import org.ggp.base.util.logging.GamerLogger;
 import org.ggp.base.util.observer.Event;
 import org.ggp.base.util.observer.Observer;
 import org.ggp.base.util.observer.Subject;
@@ -24,6 +25,19 @@ import org.ggp.base.util.observer.Subject;
 
 public final class GamePlayer extends Thread implements Subject
 {
+	/**
+	 * Static reference to the logger
+	 */
+	private static final Logger LOGGER;
+
+	static{
+
+		LOGGER = LogManager.getRootLogger();
+
+	}
+
+	private String playerID;
+
     private final int port;
     private final Gamer gamer;
     private ServerSocket listener;
@@ -41,11 +55,14 @@ public final class GamePlayer extends Thread implements Subject
                 listener = null;
                 port++;
                 System.err.println("Failed to start gamer on port: " + (port-1) + " trying port " + port);
+                LOGGER.info("[GamePlayer] Failed to start gamer on port: " + (port-1) + " trying port " + port + ".");
             }
         }
 
         this.port = port;
         this.gamer = gamer;
+        this.playerID = System.currentTimeMillis() + "." + this.gamer.getName() + "." + this.port;
+
     }
 
 	@Override
@@ -75,6 +92,8 @@ public final class GamePlayer extends Thread implements Subject
 		try {
 			listener.close();
 			listener = null;
+			ThreadContext.remove("LOG_FOLDER");
+			ThreadContext.remove("LOG_FILE");
 		} catch (IOException e) {
 			;
 		}
@@ -84,16 +103,12 @@ public final class GamePlayer extends Thread implements Subject
 	public void run()
 	{
 
-		/**
-		 * START: to avoid loosing logs between matches, set the name of the spill-over log file for this gamer.
-		 * All logs that don't refer to a match will be written on that file for this gamer.
-		 */
-		String spilloverDirectory = "spilloverFiles";
-		new File(spilloverDirectory).mkdirs();
-		GamerLogger.setSpilloverLogfile(spilloverDirectory + "/" + System.currentTimeMillis() + "-" + this.gamer.getName());
-		/**
-		 * END
-		 */
+        LOGGER.info("Started player " + playerID + ". Writing logs to file " + this.playerID + "\\logFile.log");
+
+		// LOGGING DETAILS
+		ThreadContext.put("LOG_FOLDER", this.playerID);
+		LOGGER.info("Starting logs for player " + this.playerID + ". Player available to play a match.");
+		// LOGGING DETAILS
 
 
 		while (listener != null) {
@@ -112,7 +127,7 @@ public final class GamePlayer extends Thread implements Subject
 				}
 
 				notifyObservers(new PlayerReceivedMessageEvent(in));
-				GamerLogger.log("GamePlayer", "[Received at " + System.currentTimeMillis() + "] " + in, GamerLogger.LOG_LEVEL_DATA_DUMP);
+				LOGGER.info("[GamePlayer] [Received at " + System.currentTimeMillis() + "] " + in);
 
 				Request request = new RequestFactory().create(gamer, in);
 				String out = request.process(System.currentTimeMillis());
@@ -120,19 +135,15 @@ public final class GamePlayer extends Thread implements Subject
 				HttpWriter.writeAsServer(connection, out);
 				connection.close();
 
-				/*
-				if(request instanceof PlayRequest){
-					GamerLogger.log("Stats", "MOVE_PROCESSING_TIME = " + (System.currentTimeMillis() - start));
-				}
-				*/
-
 				notifyObservers(new PlayerSentMessageEvent(out));
-				GamerLogger.log("GamePlayer", "[Sent at " + System.currentTimeMillis() + "] " + out, GamerLogger.LOG_LEVEL_DATA_DUMP);
+				LOGGER.info("[GamePlayer] [Sent at " + System.currentTimeMillis() + "] " + out);
 			} catch (Exception e) {
-				GamerLogger.log("GamePlayer", "[Dropped data at " + System.currentTimeMillis() + "] Due to " + e, GamerLogger.LOG_LEVEL_DATA_DUMP);
+				LOGGER.error("[GamePlayer] [Dropped data at " + System.currentTimeMillis() + "]", e);
 				notifyObservers(new PlayerDroppedPacketEvent());
 			}
 		}
+
+		ThreadContext.remove("LOG_FOLDER");
 	}
 
 	// Simple main function that starts a RandomGamer on a specified port.

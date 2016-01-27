@@ -1,4 +1,4 @@
-package org.ggp.base.util.statemachine.inernalPropnetStructure;
+package org.ggp.base.util.statemachine.implementation.internalPropnet.structure;
 
 import org.apache.lucene.util.OpenBitSet;
 

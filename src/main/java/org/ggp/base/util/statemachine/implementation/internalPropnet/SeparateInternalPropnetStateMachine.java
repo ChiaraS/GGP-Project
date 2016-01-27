@@ -1,4 +1,4 @@
-package org.ggp.base.util.statemachine.implementation.propnet;
+package org.ggp.base.util.statemachine.implementation.internalPropnet;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -7,21 +7,19 @@ import java.util.Set;
 import org.apache.lucene.util.OpenBitSet;
 import org.ggp.base.util.gdl.grammar.Gdl;
 import org.ggp.base.util.gdl.grammar.GdlSentence;
-import org.ggp.base.util.logging.GamerLogger;
 import org.ggp.base.util.propnet.architecture.separateExtendedState.immutable.ImmutablePropNet;
 import org.ggp.base.util.propnet.architecture.separateExtendedState.immutable.components.ImmutableProposition;
 import org.ggp.base.util.propnet.state.ImmutableSeparatePropnetState;
-import org.ggp.base.util.statemachine.InternalPropnetStateMachine;
 import org.ggp.base.util.statemachine.MachineState;
 import org.ggp.base.util.statemachine.Move;
 import org.ggp.base.util.statemachine.Role;
 import org.ggp.base.util.statemachine.exceptions.GoalDefinitionException;
 import org.ggp.base.util.statemachine.exceptions.MoveDefinitionException;
 import org.ggp.base.util.statemachine.exceptions.StateMachineInitializationException;
+import org.ggp.base.util.statemachine.implementation.internalPropnet.structure.InternalPropnetMachineState;
+import org.ggp.base.util.statemachine.implementation.internalPropnet.structure.InternalPropnetMove;
+import org.ggp.base.util.statemachine.implementation.internalPropnet.structure.InternalPropnetRole;
 import org.ggp.base.util.statemachine.implementation.prover.query.ProverQueryBuilder;
-import org.ggp.base.util.statemachine.inernalPropnetStructure.InternalPropnetMachineState;
-import org.ggp.base.util.statemachine.inernalPropnetStructure.InternalPropnetMove;
-import org.ggp.base.util.statemachine.inernalPropnetStructure.InternalPropnetRole;
 
 import com.google.common.collect.ImmutableList;
 
@@ -60,7 +58,7 @@ public class SeparateInternalPropnetStateMachine extends InternalPropnetStateMac
     @Override
     public void initialize(List<Gdl> description, long timeout) throws StateMachineInitializationException {
     	if(this.propNet == null || this.propnetState == null){
-    		GamerLogger.log("StateMachine", "[ExternalPropnet] State machine initialized with at least one among the propnet structure and the propnet state set to null. Impossible to reason on the game!");
+    		LOGGER.error("[StateMachine] [InternalPropnet] State machine initialized with at least one among the propnet structure and the propnet state set to null. Impossible to reason on the game!");
     		throw new StateMachineInitializationException("Null parameter passed during instantiaton of the state mahcine: cannot reason on the game with null propnet or null propnet state.");
     	}
     }
@@ -145,14 +143,14 @@ public class SeparateInternalPropnetStateMachine extends InternalPropnetStateMac
 		if(trueGoalIndex >= firstGoalIndices[role.getIndex()+1] || trueGoalIndex == -1){ // No true goal for current role
 			MachineState standardState = this.internalStateToState(state);
 			Role standardRole = this.internalRoleToRole(role);
-			GamerLogger.logError("StateMachine", "[Propnet] Got no true goal in state " + standardState + " for role " + standardRole + ".");
+			LOGGER.error("[StateMachine] [InternalPropnet] Got no true goal in state " + standardState + " for role " + standardRole + ".");
 			throw new GoalDefinitionException(standardState, standardRole);
 		}else if(trueGoalIndex < (firstGoalIndices[role.getIndex()+1]-1)){ // If it's not the last goal proposition check if there are any other true goal propositions for the role
 			int nextTrueGoalIndex =	otherComponents.nextSetBit(trueGoalIndex+1);
 			if(nextTrueGoalIndex < firstGoalIndices[role.getIndex()+1] && nextTrueGoalIndex != -1){
 				MachineState standardState = this.internalStateToState(state);
 				Role standardRole = this.internalRoleToRole(role);
-				GamerLogger.logError("StateMachine", "[Propnet] Got more than one true goal in state " + standardState + " for role " + standardRole + ".");
+				LOGGER.error("[StateMachine] [InternalPropnet] Got more than one true goal in state " + standardState + " for role " + standardRole + ".");
 				throw new GoalDefinitionException(standardState, standardRole);
 			}
 		}

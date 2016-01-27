@@ -10,6 +10,9 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.ThreadContext;
 import org.ggp.base.server.event.ServerAbortedMatchEvent;
 import org.ggp.base.server.event.ServerCompletedMatchEvent;
 import org.ggp.base.server.event.ServerConnectionErrorEvent;
@@ -27,7 +30,6 @@ import org.ggp.base.server.threads.PreviewRequestThread;
 import org.ggp.base.server.threads.RandomPlayRequestThread;
 import org.ggp.base.server.threads.StartRequestThread;
 import org.ggp.base.server.threads.StopRequestThread;
-import org.ggp.base.util.logging.GamerLogger;
 import org.ggp.base.util.match.Match;
 import org.ggp.base.util.match.MatchPublisher;
 import org.ggp.base.util.observer.Event;
@@ -45,6 +47,18 @@ import org.ggp.base.util.statemachine.implementation.prover.ProverStateMachine;
 
 public final class GameServer extends Thread implements Subject
 {
+
+	/**
+	 * Static reference to the logger
+	 */
+	private static final Logger LOGGER;
+
+	static{
+
+		LOGGER = LogManager.getRootLogger();
+
+	}
+
     private final Match match;
     private final StateMachine stateMachine;
     private MachineState currentState;
@@ -65,6 +79,9 @@ public final class GameServer extends Thread implements Subject
     private boolean forceUsingEntireClock;
 
     public GameServer(Match match, List<String> hosts, List<Integer> ports) throws GameServerException {
+
+    	ThreadContext.put("LOG_FILE", match.getMatchId() + "-GameServer");
+
         this.match = match;
 
         this.hosts = hosts;
@@ -80,7 +97,7 @@ public final class GameServer extends Thread implements Subject
         try {
 			stateMachine.initialize(match.getGame().getRules(), Long.MAX_VALUE);
 		} catch (StateMachineInitializationException e) {
-			GamerLogger.logError("GameServer", "Failed inititalization of state machine for current match.");
+			LOGGER.error("[GameServer] Failed inititalization of state machine for current match.", e);
 			throw new GameServerException("Impossible to create the game server.", e);
 		}
         currentState = stateMachine.getInitialState();
@@ -204,6 +221,8 @@ public final class GameServer extends Thread implements Subject
         	}
         } catch (Exception e) {
         	e.printStackTrace();
+        } finally{
+        	ThreadContext.remove("LOG_FILE");
         }
     }
 
