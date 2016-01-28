@@ -6,6 +6,9 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.ThreadContext;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.InternalPropnetMCTSManager;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.strategies.backpropagation.StandardBackpropagation;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.strategies.expansion.RandomExpansion;
@@ -17,8 +20,6 @@ import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.MCTSMov
 import org.ggp.base.util.game.GameRepository;
 import org.ggp.base.util.gdl.grammar.Gdl;
 import org.ggp.base.util.gdl.grammar.GdlPool;
-import org.ggp.base.util.logging.GamerLogger;
-import org.ggp.base.util.logging.GamerLogger.FORMAT;
 import org.ggp.base.util.match.Match;
 import org.ggp.base.util.propnet.architecture.separateExtendedState.immutable.ImmutablePropNet;
 import org.ggp.base.util.propnet.creationManager.SeparateInternalPropnetCreationManager;
@@ -57,6 +58,27 @@ import org.ggp.base.util.statemachine.implementation.internalPropnet.structure.I
 *
 */
 public class MCTSSpeedTest {
+
+	/**
+	 * Static reference to the logger
+	 */
+	private static final Logger LOGGER;
+
+	/**
+	 * Static reference to the CSV logger
+	 */
+	private static final Logger CSV_LOGGER;
+
+	static{
+
+		//These properties have to be set here before creating the logger, in the main method is already too late
+		System.setProperty("Log4jContextSelector", "org.apache.logging.log4j.core.async.AsyncLoggerContextSelector");
+		System.setProperty("isThreadContextMapInheritable", "true");
+
+		LOGGER = LogManager.getRootLogger();
+		CSV_LOGGER = LogManager.getLogger("CSVLogger");
+	}
+
 
 	public static void main(String[] args) {
 
@@ -119,8 +141,11 @@ public class MCTSSpeedTest {
 
 		InternalPropnetStateMachine thePropnetMachine;
 
-		GamerLogger.setSpilloverLogfile(s + "MCTSSpeedTestTable.csv");
-	    GamerLogger.log(FORMAT.CSV_FORMAT, s + "MCTSSpeedTestTable", "Game key;#Roles;PN Construction Time (ms);PN Initialization Time (ms);SM initialization time;Test Duration (ms);Search time(ms);Iterations;Visited Nodes;Iterations/second;Nodes/second;Playing role;Chosen move;Scores sum;Visits;AverageScore");
+		ThreadContext.put("LOG_FOLDER", System.currentTimeMillis() + "-" + s + "MCTSSpeedTest");
+
+		ThreadContext.put("LOG_FILE", s + "MCTSSpeedTestTable");
+
+	    CSV_LOGGER.info("Game key;#Roles;PN Construction Time (ms);PN Initialization Time (ms);SM initialization time;Test Duration (ms);Search time(ms);Iterations;Visited Nodes;Iterations/second;Nodes/second;Playing role;Chosen move;Scores sum;Visits;AverageScore");
 
 	    GameRepository theRepository = GameRepository.getDefaultRepository();
 	    for(String gameKey : theRepository.getGameKeys()) {
@@ -135,9 +160,9 @@ public class MCTSSpeedTest {
 
 	        Match fakeMatch = new Match(gameKey + "." + System.currentTimeMillis(), -1, -1, -1,theRepository.getGame(gameKey));
 
-	        GamerLogger.startFileLogging(fakeMatch, s + "MCTSSpeedTester");
+	        ThreadContext.put("LOG_FILE", fakeMatch.getMatchId() + "-" + s + "MCTSSpeedTester");
 
-	        GamerLogger.log(s + "MCTSSpeedTest", "Testing on game " + gameKey);
+	        LOGGER.info("[" + s + "MCTSSpeedTest] Testing on game " + gameKey);
 
 	        List<Gdl> description = theRepository.getGame(gameKey).getRules();
 
@@ -159,9 +184,7 @@ public class MCTSSpeedTest {
 				executor.awaitTermination(givenInitTime, TimeUnit.MILLISECONDS);
 			}catch(InterruptedException e){ // The thread running the verifier has been interrupted => stop the test
 				executor.shutdownNow(); // Interrupt everything
-				GamerLogger.logError(s + "MCTSSpeedTest", s + "/MCTS speed test interrupted. Test on game "+ gameKey +" won't be completed.");
-				GamerLogger.logStackTrace(s + "MCTSSpeedTest", e);
-				GamerLogger.stopFileLogging();
+				LOGGER.error("[" + s + "MCTSSpeedTest] " + s + "/MCTS speed test interrupted. Test on game "+ gameKey +" won't be completed.", e);
 				Thread.currentThread().interrupt();
 				return;
 			}
@@ -180,9 +203,7 @@ public class MCTSSpeedTest {
 					// of the DUCT/MCTS has been interrupted. If we do nothing this state machine could be stuck in the
 					// while loop anyway until all tasks in the executor have terminated, thus we break out of the loop and return.
 					// What happens to the still running tasks in the executor? Who will make sure they terminate?
-					GamerLogger.logError(s + "MCTSSpeedTest", "State mahcine verification interrupted. Test on game "+ gameKey +" won't be completed.");
-					GamerLogger.logStackTrace(s + "MCTSSpeedTest", e);
-					GamerLogger.stopFileLogging();
+					LOGGER.error("[" + s + "MCTSSpeedTest] State mahcine verification interrupted. Test on game "+ gameKey +" won't be completed.", e);
 					Thread.currentThread().interrupt();
 					return;
 				}
@@ -237,7 +258,7 @@ public class MCTSSpeedTest {
 
 		        long testStart = System.currentTimeMillis();
 
-		        GamerLogger.log(s + "MCTSSpeedTest", "Starting speed test.");
+		        LOGGER.info("[" + s + "MCTSSpeedTest] Starting speed test.");
 
 		        InternalPropnetRole internalPlayingRole = thePropnetMachine.getInternalRoles()[0];
 		        playingRole = thePropnetMachine.internalRoleToRole(internalPlayingRole);
@@ -250,12 +271,12 @@ public class MCTSSpeedTest {
 		        		new MaximumScoreChoice(internalPlayingRole, r), thePropnetMachine, gameStepOffset, maxSearchDepth);
 
 		        try{
-		        	GamerLogger.log(s + "MCTSSpeedTest", "Starting search.");
+		        	LOGGER.info("[" + s + "MCTSSpeedTest] Starting search.");
 
 		        	InternalPropnetMCTSNode initialNode = MCTSmanager.search(thePropnetMachine.getInternalInitialState(), System.currentTimeMillis() + testTime, gameStep);
 		        	MCTSMove finalMove = MCTSmanager.getBestMove(initialNode);
 
-		        	GamerLogger.log(s + "MCTSSpeedTest", "Search ended correctly.");
+		        	LOGGER.info("[" + s + "MCTSSpeedTest] Search ended correctly.");
 		        	chosenMove = thePropnetMachine.internalMoveToMove(finalMove.getTheMove());
 		 	        scoresSum = finalMove.getScoreSum();
 		 	        visits = finalMove.getVisits();
@@ -270,24 +291,22 @@ public class MCTSSpeedTest {
 			        	nodesPerSecond = ((double) visitedNodes * 1000)/((double) searchTime);
 		        	}
 		        }catch(Exception e){
-		        	GamerLogger.logError(s + "MCTSSpeedTest", "MCTS failed during execution. Impossible to continue the speed test. Cause: [" + e.getClass().getSimpleName() + "] " + e.getMessage() );
-		        	GamerLogger.logStackTrace(s + "MCTSSpeedTest", e);
+		        	LOGGER.error("[" + s + "MCTSSpeedTest] MCTS failed during execution. Impossible to continue the speed test. Cause: [" + e.getClass().getSimpleName() + "] " + e.getMessage(), e);
 		        	System.out.println("Stopping test on game " + gameKey + ". Exception during search execution.");
 		        }
 
 		        testDuration = System.currentTimeMillis() - testStart;
 	        }catch(StateMachineInitializationException e){
 	        	initializationTime = System.currentTimeMillis() - initStart;
-	        	GamerLogger.logError(s + "MCTSSpeedTest", "State machine " + thePropnetMachine.getName() + " initialization failed, impossible to test this game. Cause: [" + e.getClass().getSimpleName() + "] " + e.getMessage() );
-	        	GamerLogger.logStackTrace(s + "MCTSSpeedTest", e);
+	        	LOGGER.error("[" + s + "MCTSSpeedTest] State machine " + thePropnetMachine.getName() + " initialization failed, impossible to test this game. Cause: [" + e.getClass().getSimpleName() + "] " + e.getMessage(), e);
 	        	System.out.println("Skipping test on game " + gameKey + ". No propnet available.");
 	        }
 
-	        GamerLogger.log(FORMAT.PLAIN_FORMAT, s + "MCTSSpeedTest", "");
+	        LOGGER.info("");
 
-	        GamerLogger.stopFileLogging();
+	        ThreadContext.put("LOG_FILE", s + "MCTSSpeedTestTable");
 
-	        GamerLogger.log(FORMAT.CSV_FORMAT, s + "MCTSSpeedTestTable", gameKey + ";" + numRoles + ";" + manager.getPropnetConstructionTime() + ";" + manager.getTotalInitTime() + ";" + initializationTime + ";" + testDuration + ";" + searchTime + ";" + iterations + ";" + visitedNodes + ";" + iterationsPerSecond + ";" + nodesPerSecond + ";" + playingRole + ";" + chosenMove + ";" + scoresSum + ";" + visits + ";" + averageScore + ";");
+	        CSV_LOGGER.info(gameKey + ";" + numRoles + ";" + manager.getPropnetConstructionTime() + ";" + manager.getTotalInitTime() + ";" + initializationTime + ";" + testDuration + ";" + searchTime + ";" + iterations + ";" + visitedNodes + ";" + iterationsPerSecond + ";" + nodesPerSecond + ";" + playingRole + ";" + chosenMove + ";" + scoresSum + ";" + visits + ";" + averageScore + ";");
 
 	        /***************************************/
 	        System.gc();

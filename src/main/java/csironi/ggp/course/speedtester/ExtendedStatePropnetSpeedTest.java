@@ -2,10 +2,11 @@ package csironi.ggp.course.speedtester;
 
 import java.util.List;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.ThreadContext;
 import org.ggp.base.util.game.GameRepository;
 import org.ggp.base.util.gdl.grammar.Gdl;
-import org.ggp.base.util.logging.GamerLogger;
-import org.ggp.base.util.logging.GamerLogger.FORMAT;
 import org.ggp.base.util.match.Match;
 import org.ggp.base.util.statemachine.StateMachine;
 import org.ggp.base.util.statemachine.cache.CachedStateMachine;
@@ -43,6 +44,26 @@ import org.ggp.base.util.statemachine.safe.InitializationSafeStateMachine;
 *
 */
 public class ExtendedStatePropnetSpeedTest {
+
+	/**
+	 * Static reference to the logger
+	 */
+	private static final Logger LOGGER;
+
+	/**
+	 * Static reference to the CSV logger
+	 */
+	private static final Logger CSV_LOGGER;
+
+	static{
+
+		//These properties have to be set here before creating the logger, in the main method is already too late
+		System.setProperty("Log4jContextSelector", "org.apache.logging.log4j.core.async.AsyncLoggerContextSelector");
+		System.setProperty("isThreadContextMapInheritable", "true");
+
+		LOGGER = LogManager.getRootLogger();
+		CSV_LOGGER = LogManager.getLogger("CSVLogger");
+	}
 
 	public static void main(String[] args) {
 
@@ -108,8 +129,11 @@ public class ExtendedStatePropnetSpeedTest {
 			type = "Cached" + type;
 		}
 
-		GamerLogger.setSpilloverLogfile(type + "SpeedTestTable.csv");
-	    GamerLogger.log(FORMAT.CSV_FORMAT, type + "SpeedTestTable", "Game key;Initialization Time (ms);Construction Time (ms);Test Duration (ms);Succeeded Iterations;Failed Iterations;Visited Nodes;Iterations/second;Nodes/second;");
+		ThreadContext.put("LOG_FOLDER", System.currentTimeMillis() + "-" + type + "SpeedTest");
+
+		ThreadContext.put("LOG_FILE", type + "SpeedTestTable");
+
+	    CSV_LOGGER.info("Game key;Initialization Time (ms);Construction Time (ms);Test Duration (ms);Succeeded Iterations;Failed Iterations;Visited Nodes;Iterations/second;Nodes/second;");
 
       GameRepository theRepository = GameRepository.getDefaultRepository();
       for(String gameKey : theRepository.getGameKeys()) {
@@ -122,9 +146,9 @@ public class ExtendedStatePropnetSpeedTest {
 
           Match fakeMatch = new Match(gameKey + "." + System.currentTimeMillis(), -1, -1, -1,theRepository.getGame(gameKey) );
 
-          GamerLogger.startFileLogging(fakeMatch, type + "SpeedTester");
+	      ThreadContext.put("LOG_FILE", fakeMatch.getMatchId() + "-" + type + "SpeedTester");
 
-          GamerLogger.log("SMSpeedTest", "Testing on game " + gameKey);
+	      LOGGER.info("[SMSpeedTest] Testing on game " + gameKey);
 
           List<Gdl> description = theRepository.getGame(gameKey).getRules();
 
@@ -164,16 +188,15 @@ public class ExtendedStatePropnetSpeedTest {
               nodesPerSecond = ((double) visitedNodes * 1000)/((double) testDuration);
           }catch(StateMachineInitializationException e){
           	initializationTime = System.currentTimeMillis() - initStart;
-          	GamerLogger.logError("SMSpeedTest", "State machine " + theSubject.getName() + " initialization failed, impossible to test this game. Cause: [" + e.getClass().getSimpleName() + "] " + e.getMessage() );
-          	GamerLogger.logStackTrace("SMSpeedTest", e);
+          	LOGGER.error("[SMSpeedTest] State machine " + theSubject.getName() + " initialization failed, impossible to test this game. Cause: [" + e.getClass().getSimpleName() + "] " + e.getMessage(), e);
           	System.out.println("Skipping test on game " + gameKey + ". No propnet available.");
           }
 
-          GamerLogger.log(FORMAT.PLAIN_FORMAT, "SMSpeedTest", "");
+	      LOGGER.info("");
 
-          GamerLogger.stopFileLogging();
+	      ThreadContext.put("LOG_FILE", type + "SpeedTestTable");
 
-          GamerLogger.log(FORMAT.CSV_FORMAT, type + "SpeedTestTable", gameKey + ";" + initializationTime + ";" + thePropnetMachine.getPropnetConstructionTime() + ";" + testDuration + ";" + succeededIterations + ";" + failedIterations + ";" + visitedNodes + ";" + iterationsPerSecond + ";" + nodesPerSecond + ";");
+	      CSV_LOGGER.info(gameKey + ";" + initializationTime + ";" + thePropnetMachine.getPropnetConstructionTime() + ";" + testDuration + ";" + succeededIterations + ";" + failedIterations + ";" + visitedNodes + ";" + iterationsPerSecond + ";" + nodesPerSecond + ";");
       }
 	}
 }

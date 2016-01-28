@@ -25,6 +25,7 @@ import javax.swing.JSpinner;
 import javax.swing.JTabbedPane;
 import javax.swing.SpinnerNumberModel;
 
+import org.apache.logging.log4j.ThreadContext;
 import org.ggp.base.apps.server.leaderboard.LeaderboardPanel;
 import org.ggp.base.apps.server.scheduling.PendingMatch;
 import org.ggp.base.apps.server.scheduling.Scheduler;
@@ -61,6 +62,11 @@ public final class Server extends JPanel implements ActionListener
 
 	public static void main(String[] args)
 	{
+		System.setProperty("Log4jContextSelector", "org.apache.logging.log4j.core.async.AsyncLoggerContextSelector");
+		System.setProperty("isThreadContextMapInheritable", "true");
+
+		ThreadContext.put("LOG_FOLDER", System.currentTimeMillis() + "-Server");
+
 	    NativeUI.setNativeUI();
 	    GdlPool.caseSensitive = false;
 

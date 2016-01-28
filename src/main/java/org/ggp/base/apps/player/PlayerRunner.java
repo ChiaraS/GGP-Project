@@ -16,6 +16,14 @@ import org.ggp.base.util.reflection.ProjectSearcher;
  */
 public final class PlayerRunner
 {
+
+	static{
+
+		System.setProperty("Log4jContextSelector", "org.apache.logging.log4j.core.async.AsyncLoggerContextSelector");
+		System.setProperty("isThreadContextMapInheritable", "true");
+
+	}
+
 	public static void main(String[] args) throws IOException, InstantiationException, IllegalAccessException
 	{
 		if (args.length != 2 || args[0].equals("${arg0}")) {

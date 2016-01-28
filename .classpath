@@ -16,16 +16,16 @@
 	<classpathentry exported="true" kind="lib" path="lib/Htmlparser/htmlparser-1.4.jar"/>
 	<classpathentry exported="true" kind="lib" path="C:/Users/c.sironi/BITBUCKET REPOS/Java libraries/Disruptor3.2.1/disruptor-3.2.1.jar"/>
 	<classpathentry kind="lib" path="C:/Users/c.sironi/BITBUCKET REPOS/Java libraries/Lucene-core-4.8.1/lucene-core-4.8.1.jar"/>
-	<classpathentry kind="lib" path="C:/Users/c.sironi/BITBUCKET REPOS/Java libraries/apache-log4j-2.3-bin/log4j-1.2-api-2.3.jar"/>
-	<classpathentry kind="lib" path="C:/Users/c.sironi/BITBUCKET REPOS/Java libraries/apache-log4j-2.3-bin/log4j-1.2-api-2.3-javadoc.jar"/>
-	<classpathentry kind="lib" path="C:/Users/c.sironi/BITBUCKET REPOS/Java libraries/apache-log4j-2.3-bin/log4j-1.2-api-2.3-sources.jar"/>
-	<classpathentry kind="lib" path="C:/Users/c.sironi/BITBUCKET REPOS/Java libraries/apache-log4j-2.3-bin/log4j-api-2.3.jar"/>
-	<classpathentry kind="lib" path="C:/Users/c.sironi/BITBUCKET REPOS/Java libraries/apache-log4j-2.3-bin/log4j-api-2.3-javadoc.jar"/>
-	<classpathentry kind="lib" path="C:/Users/c.sironi/BITBUCKET REPOS/Java libraries/apache-log4j-2.3-bin/log4j-api-2.3-sources.jar"/>
-	<classpathentry kind="lib" path="C:/Users/c.sironi/BITBUCKET REPOS/Java libraries/apache-log4j-2.3-bin/log4j-core-2.3.jar"/>
-	<classpathentry kind="lib" path="C:/Users/c.sironi/BITBUCKET REPOS/Java libraries/apache-log4j-2.3-bin/log4j-core-2.3-javadoc.jar"/>
-	<classpathentry kind="lib" path="C:/Users/c.sironi/BITBUCKET REPOS/Java libraries/apache-log4j-2.3-bin/log4j-core-2.3-sources.jar"/>
-	<classpathentry kind="lib" path="C:/Users/c.sironi/BITBUCKET REPOS/Java libraries/apache-log4j-2.3-bin/log4j-core-2.3-tests.jar"/>
 	<classpathentry kind="lib" path="C:/Users/c.sironi/BITBUCKET REPOS/Java libraries/Interprolog-2.2a4/interprolog2.2a4/interprolog2.2a4/interprolog.jar"/>
+	<classpathentry kind="lib" path="C:/Users/c.sironi/BITBUCKET REPOS/Java libraries/apache-log4j-2.5-bin/log4j-1.2-api-2.5.jar"/>
+	<classpathentry kind="lib" path="C:/Users/c.sironi/BITBUCKET REPOS/Java libraries/apache-log4j-2.5-bin/log4j-1.2-api-2.5-javadoc.jar"/>
+	<classpathentry kind="lib" path="C:/Users/c.sironi/BITBUCKET REPOS/Java libraries/apache-log4j-2.5-bin/log4j-1.2-api-2.5-sources.jar"/>
+	<classpathentry kind="lib" path="C:/Users/c.sironi/BITBUCKET REPOS/Java libraries/apache-log4j-2.5-bin/log4j-api-2.5.jar"/>
+	<classpathentry kind="lib" path="C:/Users/c.sironi/BITBUCKET REPOS/Java libraries/apache-log4j-2.5-bin/log4j-api-2.5-javadoc.jar"/>
+	<classpathentry kind="lib" path="C:/Users/c.sironi/BITBUCKET REPOS/Java libraries/apache-log4j-2.5-bin/log4j-api-2.5-sources.jar"/>
+	<classpathentry kind="lib" path="C:/Users/c.sironi/BITBUCKET REPOS/Java libraries/apache-log4j-2.5-bin/log4j-core-2.5.jar"/>
+	<classpathentry kind="lib" path="C:/Users/c.sironi/BITBUCKET REPOS/Java libraries/apache-log4j-2.5-bin/log4j-core-2.5-javadoc.jar"/>
+	<classpathentry kind="lib" path="C:/Users/c.sironi/BITBUCKET REPOS/Java libraries/apache-log4j-2.5-bin/log4j-core-2.5-sources.jar"/>
+	<classpathentry kind="lib" path="C:/Users/c.sironi/BITBUCKET REPOS/Java libraries/apache-log4j-2.5-bin/log4j-core-2.5-tests.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>

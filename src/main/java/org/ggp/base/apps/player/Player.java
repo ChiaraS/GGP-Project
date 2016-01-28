@@ -49,6 +49,9 @@ public final class Player extends JPanel
 
 	public static void main(String[] args) throws IOException
 	{
+		System.setProperty("Log4jContextSelector", "org.apache.logging.log4j.core.async.AsyncLoggerContextSelector");
+		System.setProperty("isThreadContextMapInheritable", "true");
+
 	    NativeUI.setNativeUI();
 
 	    final Player playerPanel = new Player();

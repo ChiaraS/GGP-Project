@@ -103,11 +103,11 @@ public final class GamePlayer extends Thread implements Subject
 	public void run()
 	{
 
-        LOGGER.info("Started player " + playerID + ". Writing logs to file " + this.playerID + "\\logFile.log");
+        LOGGER.info("[GamePlayer] Started player " + playerID + ". Writing logs to file " + this.playerID + "\\logFile.log");
 
 		// LOGGING DETAILS
 		ThreadContext.put("LOG_FOLDER", this.playerID);
-		LOGGER.info("Starting logs for player " + this.playerID + ". Player available to play a match.");
+		LOGGER.info("[GamePlayer] Starting logs for player " + this.playerID + ". Player available to play a match.");
 		// LOGGING DETAILS
 
 

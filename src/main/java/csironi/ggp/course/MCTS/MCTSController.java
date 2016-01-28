@@ -6,7 +6,8 @@ package csironi.ggp.course.MCTS;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.ggp.base.util.logging.GamerLogger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.ggp.base.util.statemachine.MachineState;
 import org.ggp.base.util.statemachine.Move;
 import org.ggp.base.util.statemachine.Role;
@@ -24,6 +25,18 @@ import csironi.ggp.course.MCTS.selection.OldSelectionStrategy;
  *
  */
 public class MCTSController {
+
+	/**
+	 * Static reference to the logger
+	 */
+	private static final Logger LOGGER;
+
+	static{
+
+		LOGGER = LogManager.getRootLogger();
+
+	}
+
 
 	/**
 	 * Strategy that the player uses to perform selection (e.g. random, UCT, ...).
@@ -68,7 +81,7 @@ public class MCTSController {
 		long endTime;
 		long remainingTime;
 
-		GamerLogger.log("Stats", "Starting MCTS at time: " + startTime);
+		LOGGER.info("[MCTSController] Starting MCTS at time: " + startTime);
 
 		int numberOfIterations = 0;
 		double avgTime;
@@ -86,9 +99,9 @@ public class MCTSController {
 
 		}while(remainingTime > 2 * avgTime);
 
-		GamerLogger.log("Stats", "Ending MCTS at time: " + System.currentTimeMillis());
-		GamerLogger.log("Stats", "Number of simulations: " + numberOfIterations);
-		GamerLogger.log("Stats", "Average time per simulation: " + avgTime +  "ms");
+		LOGGER.info("[MCTSController] Ending MCTS at time: " + System.currentTimeMillis());
+		LOGGER.info("[MCTSController] Number of simulations: " + numberOfIterations);
+		LOGGER.info("[MCTSController] Average time per simulation: " + avgTime +  "ms");
 
 		return this.finalMoveChoiceStrategy.chooseFinalMove(root);
 

@@ -7,6 +7,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.apache.logging.log4j.ThreadContext;
 import org.ggp.base.server.GameServer;
 import org.ggp.base.server.exception.GameServerException;
 import org.ggp.base.util.game.Game;
@@ -35,8 +36,18 @@ import org.ggp.base.util.symbol.factory.exceptions.SymbolFormatException;
  */
 public final class GameServerRunner
 {
+	static{
+
+		System.setProperty("Log4jContextSelector", "org.apache.logging.log4j.core.async.AsyncLoggerContextSelector");
+		System.setProperty("isThreadContextMapInheritable", "true");
+
+	}
+
+
 	public static void main(String[] args) throws IOException, SymbolFormatException, GdlFormatException, InterruptedException, GoalDefinitionException, GameServerException, StateMachineException
 	{
+
+		ThreadContext.put("LOG_FOLDER", "ServerRunner");
 		// Extract the desired configuration from the command line.
 		String tourneyName = args[0];
 		String gameKey = args[1];

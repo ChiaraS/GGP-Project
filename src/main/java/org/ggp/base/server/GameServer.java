@@ -80,7 +80,7 @@ public final class GameServer extends Thread implements Subject
 
     public GameServer(Match match, List<String> hosts, List<Integer> ports) throws GameServerException {
 
-    	ThreadContext.put("LOG_FILE", match.getMatchId() + "-GameServer");
+    	LOGGER.info("[GameServer] Creating new game server.");
 
         this.match = match;
 
@@ -98,6 +98,7 @@ public final class GameServer extends Thread implements Subject
 			stateMachine.initialize(match.getGame().getRules(), Long.MAX_VALUE);
 		} catch (StateMachineInitializationException e) {
 			LOGGER.error("[GameServer] Failed inititalization of state machine for current match.", e);
+			LOGGER.error("[GameServer] Impossible to create the game server.");
 			throw new GameServerException("Impossible to create the game server.", e);
 		}
         currentState = stateMachine.getInitialState();
@@ -177,6 +178,13 @@ public final class GameServer extends Thread implements Subject
 
     @Override
     public void run() {
+
+    	LOGGER.info("[GameServer] Running new game server. Saving logs in " + ThreadContext.get("LOG_FOLDER") + "\\" + this.match.getMatchId() + "-GameServer.log");
+
+    	ThreadContext.put("LOG_FILE", this.match.getMatchId() + "-GameServer");
+
+    	LOGGER.info("[GameServer] Starting file logging of GameServer for match " + this.match.getMatchId() + ".");
+
         try {
         	if (match.getPreviewClock() >= 0) {
         		sendPreviewRequests();
@@ -222,7 +230,9 @@ public final class GameServer extends Thread implements Subject
         } catch (Exception e) {
         	e.printStackTrace();
         } finally{
+        	LOGGER.info("[GameServer] Ending file logging of GameServer for match " + this.match.getMatchId() + ".");
         	ThreadContext.remove("LOG_FILE");
+        	LOGGER.info("[GameServer] Stopping GameServer for match " + this.match.getMatchId() + ".");
         }
     }
 

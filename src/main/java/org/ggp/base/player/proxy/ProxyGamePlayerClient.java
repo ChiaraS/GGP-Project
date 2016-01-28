@@ -8,17 +8,17 @@ import java.net.Socket;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.ThreadContext;
 import org.ggp.base.player.event.PlayerDroppedPacketEvent;
 import org.ggp.base.player.event.PlayerReceivedMessageEvent;
 import org.ggp.base.player.event.PlayerSentMessageEvent;
 import org.ggp.base.player.gamer.Gamer;
-import org.ggp.base.player.gamer.statemachine.random.RandomGamer;
 import org.ggp.base.player.request.factory.RequestFactory;
 import org.ggp.base.player.request.grammar.AbortRequest;
 import org.ggp.base.player.request.grammar.Request;
-import org.ggp.base.player.request.grammar.StartRequest;
 import org.ggp.base.player.request.grammar.StopRequest;
-import org.ggp.base.util.logging.GamerLogger;
 import org.ggp.base.util.observer.Event;
 import org.ggp.base.util.observer.Observer;
 import org.ggp.base.util.observer.Subject;
@@ -28,7 +28,26 @@ import com.google.common.collect.Lists;
 
 public final class ProxyGamePlayerClient extends Thread implements Subject, Observer
 {
+	/**
+	 * Static reference to the logger
+	 */
+	private static final Logger LOGGER;
+
+	static{
+
+		//These properties have to be set here before creating the logger, in the main method is already too late
+		System.setProperty("Log4jContextSelector", "org.apache.logging.log4j.core.async.AsyncLoggerContextSelector");
+    	System.setProperty("isThreadContextMapInheritable", "true");
+
+    	ThreadContext.put("LOG_FOLDER", System.currentTimeMillis() + "-ProxyClient");
+
+		LOGGER = LogManager.getRootLogger();
+	}
+
+
 	private final Gamer gamer;
+	private final int port;
+	private final String playerID;
 	private final List<Observer> observers;
 
 	private Socket theConnection;
@@ -41,11 +60,13 @@ public final class ProxyGamePlayerClient extends Thread implements Subject, Obse
      *  ProxyGamePlayerClient gamer port
      */
     public static void main(String[] args) {
-		GamerLogger.setSpilloverLogfile("spilloverLog");
-        GamerLogger.log("Proxy", "Starting the ProxyGamePlayerClient program.");
+
+    	LOGGER.info("[ProxyClient] Starting the ProxyGamePlayerClient program.");
+
+
 
         if (!(args.length == 2)) {
-            GamerLogger.logError("Proxy", "Usage is: \n\tProxyGamePlayerClient gamer port");
+        	LOGGER.error("[ProxyClient] Usage is: \n\tProxyGamePlayerClient gamer port");
             return;
         }
 
@@ -54,7 +75,7 @@ public final class ProxyGamePlayerClient extends Thread implements Subject, Obse
         try {
             port = Integer.valueOf(args[1]);
         } catch(Exception e) {
-            GamerLogger.logError("Proxy", args[1]+" is not a valid port.");
+        	LOGGER.error("[ProxyClient] Caught exception when parsing the port number: " + args[1]+" is not a valid port.", e);
             return;
         }
 
@@ -68,16 +89,17 @@ public final class ProxyGamePlayerClient extends Thread implements Subject, Obse
 
         int idx = gamerNames.indexOf(args[0]);
         if (idx == -1) {
-            GamerLogger.logError("Proxy", args[0] + " is not a subclass of gamer.  Valid options are:");
+        	String message = "[ProxyClient] " + args[0] + " is not a subclass of gamer. Valid options are:";
             for(String s : gamerNames)
-                GamerLogger.logError("Proxy", "\t"+s);
+            	message += "\n" + s;
+            LOGGER.error(message);
             return;
         }
 
         try {
             gamer = (Gamer)(gamers.get(idx).newInstance());
         } catch(Exception ex) {
-            GamerLogger.logError("Proxy", "Cannot create instance of " + args[0]);
+        	LOGGER.error("[ProxyClient] Caught exception when creating the gamer: cannot create instance of " + args[0] + ".", ex);
             return;
         }
 
@@ -85,7 +107,7 @@ public final class ProxyGamePlayerClient extends Thread implements Subject, Obse
             ProxyGamePlayerClient theClient = new ProxyGamePlayerClient(port, gamer);
             theClient.start();
         } catch (IOException e) {
-            GamerLogger.logStackTrace("Proxy", e);
+        	LOGGER.error("[ProxyClient] Caught exception when creating and starting the Proxy Game Player Client.", e);
         }
     }
 
@@ -98,6 +120,10 @@ public final class ProxyGamePlayerClient extends Thread implements Subject, Obse
         theInput = new BufferedReader(new InputStreamReader(theConnection.getInputStream()));
 
 		this.gamer = gamer;
+		this.port = port;
+		this.playerID = System.currentTimeMillis() + "." + this.gamer.getName() + "." + this.port;
+
+		LOGGER.info("[ProxyClient] Started player " + playerID + ". Writing logs to file " + ThreadContext.get("LOG_FOLDER") + "\\" + this.playerID + "\\logfile.log");
 		gamer.addObserver(this);
 	}
 
@@ -121,48 +147,61 @@ public final class ProxyGamePlayerClient extends Thread implements Subject, Obse
 	@Override
 	public void run()
 	{
+
+		// LOGGING DETAILS
+		String newLogFolder = ThreadContext.get("LOG_FOLDER") + "\\" + this.playerID;
+		ThreadContext.put("LOG_FOLDER", newLogFolder);
+		LOGGER.info("[ProxyClient] Starting logs for player " + this.playerID + ". Player available to play a match.");
+		// LOGGING DETAILS
+
+
 		while (!isInterrupted())
 		{
 			try
 			{
 			    ProxyMessage theMessage = ProxyMessage.readFrom(theInput);
-			    GamerLogger.log("Proxy", "[ProxyClient] Got message: " + theMessage);
+			    LOGGER.info("[ProxyClient] [MESSAGE RECEIVED] " + theMessage);
 			    String in = theMessage.theMessage;
 			    theCode = theMessage.messageCode;
 			    long receptionTime = theMessage.receptionTime;
 				notifyObservers(new PlayerReceivedMessageEvent(in));
 
 				Request request = new RequestFactory().create(gamer, in);
+
+				/* This part of code is needed only to get information about the match for which we want to start file
+				 * logging in a specific file with the GamerLogger class. However, using Log4j2, file logging is started
+				 * automatically by the StartRequest class every time a start request is processed.
 				if(request instanceof StartRequest) {
 				    RandomGamer theDefaultGamer = new RandomGamer();
 				    new RequestFactory().create(theDefaultGamer, in).process(1);
 				    GamerLogger.startFileLogging(theDefaultGamer.getMatch(), theDefaultGamer.getRoleName().toString());
 				    GamerLogger.log("Proxy", "[ProxyClient] Got message: " + theMessage);
-				}
+				}*/
+
 				String out = request.process(receptionTime);
 
 				ProxyMessage outMessage = new ProxyMessage("DONE:" + out, theCode, 0L);
 				outMessage.writeTo(theOutput);
-				GamerLogger.log("Proxy", "[ProxyClient] Sent message: " + outMessage);
+				LOGGER.info("[ProxyClient] [MESSAGE SENT] " + outMessage);
 				notifyObservers(new PlayerSentMessageEvent(out));
 
 				if(request instanceof StopRequest) {
-				    GamerLogger.log("Proxy", "[ProxyClient] Got stop request, shutting down.");
+					LOGGER.info("[ProxyClient] Got stop request, shutting down.");
 				    System.exit(0);
 				}
                 if(request instanceof AbortRequest) {
-                    GamerLogger.log("Proxy", "[ProxyClient] Got abort request, shutting down.");
+                	LOGGER.info("[ProxyClient] Got abort request, shutting down.");
                     System.exit(0);
                 }
 			}
 			catch (Exception e)
 			{
-			    GamerLogger.logStackTrace("Proxy", e);
+				LOGGER.error("[ProxyClient] Caught exception while running.", e);
 				notifyObservers(new PlayerDroppedPacketEvent());
 			}
 		}
 
-		GamerLogger.log("Proxy", "[ProxyClient] Got interrupted, shutting down.");
+		LOGGER.info("[ProxyClient] Got interrupted, shutting down.");
 	}
 
     @Override
@@ -171,7 +210,7 @@ public final class ProxyGamePlayerClient extends Thread implements Subject, Obse
             WorkingResponseSelectedEvent theWorking = (WorkingResponseSelectedEvent)event;
             ProxyMessage theMessage = new ProxyMessage("WORK:" + theWorking.getWorkingResponse(), theCode, 0L);
             theMessage.writeTo(theOutput);
-            GamerLogger.log("Proxy", "[ProxyClient] Sent message: " + theMessage);
+            LOGGER.info("[ProxyClient] [MESSAGE SENT] " + theMessage);
         }
     }
 }

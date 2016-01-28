@@ -5,10 +5,24 @@ import java.io.PrintStream;
 import java.io.Serializable;
 import java.net.SocketException;
 
-import org.ggp.base.util.logging.GamerLogger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 
 public class ProxyMessage implements Serializable {
+
+	/**
+	 * Static reference to the logger
+	 */
+	private static final Logger LOGGER;
+
+	static{
+
+		LOGGER = LogManager.getRootLogger();
+
+	}
+
+
     private static final long serialVersionUID = 1237859L;
 
     public final long messageCode;
@@ -33,19 +47,18 @@ public class ProxyMessage implements Serializable {
             String theMessage = theInput.readLine();
             return new ProxyMessage(theMessage, messageCode, receptionTime);
         } catch(SocketException se) {
-            GamerLogger.log("Proxy", "[ProxyMessage Reader] Socket closed: stopping read operation.");
+        	LOGGER.error("[PROXY] [ProxyMessage Reader] Socket closed: stopping read operation.", se);
             throw se;
         } catch(Exception e) {
-            GamerLogger.logStackTrace("Proxy", e);
-            GamerLogger.logError("Proxy", "[ProxyMessage Reader] Could not digest message. Emptying stream.");
+        	LOGGER.error("[PROXY] [ProxyMessage Reader] Could not digest message. Emptying stream.", e);
             try {
                 // TODO: Fix this, I suspect it may be buggy.
                 theInput.skip(Long.MAX_VALUE);
-            } catch(SocketException se) {
-                GamerLogger.log("Proxy", "[ProxyMessage Reader] Socket closed: stopping read operation.");
+            } catch(SocketException se){
+            	LOGGER.error("[PROXY] [ProxyMessage Reader] Socket closed: stopping read operation.", se);
                 throw se;
             } catch(Exception ie) {
-                GamerLogger.logStackTrace("Proxy", ie);
+            	LOGGER.error("[PROXY] [ProxyMessage Reader] Caught exception while skipping characters in the input stream.", ie);
             }
             return null;
         }

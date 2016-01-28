@@ -4,6 +4,14 @@ import org.ggp.base.util.game.GameRepository;
 import org.ggp.base.util.logging.GamerLogger;
 import org.ggp.base.util.match.Match;
 
+/**
+ * This class tests the speed of the GamerLogger checking the time
+ * that the logger takes to log the given amount of messages on the
+ * given number of log files.
+ *
+ * @author C.Sironi
+ *
+ */
 public class LoggerSpeedTest {
 
 	public static void main(String[] args) {
