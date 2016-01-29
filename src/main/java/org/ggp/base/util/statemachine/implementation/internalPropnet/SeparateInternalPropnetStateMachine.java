@@ -222,7 +222,7 @@ public class SeparateInternalPropnetStateMachine extends InternalPropnetStateMac
 
 		List<InternalPropnetMove> legalMoves = new ArrayList<InternalPropnetMove>();
 
-		// Get all the otehrProposition values (the legal propositions are included there).
+		// Get all the otherProposition values (the legal propositions are included there).
 		OpenBitSet otherComponents = this.propnetState.getOtherComponents();
 		// Get for every role the index that its first legal propositions has in
 		// the otherComponents array. Remember all legal proposition for the same

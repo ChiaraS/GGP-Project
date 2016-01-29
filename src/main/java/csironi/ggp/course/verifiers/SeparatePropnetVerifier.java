@@ -5,12 +5,15 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.ThreadContext;
 import org.ggp.base.util.game.GameRepository;
 import org.ggp.base.util.gdl.grammar.Gdl;
-import org.ggp.base.util.logging.GamerLogger;
-import org.ggp.base.util.logging.GamerLogger.FORMAT;
+import org.ggp.base.util.gdl.grammar.GdlSentence;
 import org.ggp.base.util.match.Match;
 import org.ggp.base.util.propnet.architecture.separateExtendedState.immutable.ImmutablePropNet;
+import org.ggp.base.util.propnet.architecture.separateExtendedState.immutable.components.ImmutableProposition;
 import org.ggp.base.util.propnet.creationManager.SeparateInternalPropnetCreationManager;
 import org.ggp.base.util.propnet.state.ImmutableSeparatePropnetState;
 import org.ggp.base.util.statemachine.StateMachine;
@@ -49,6 +52,28 @@ import org.ggp.base.util.statemachine.implementation.prover.ProverStateMachine;
 *
 */
 public class SeparatePropnetVerifier {
+
+	/**
+	 * Static reference to the logger
+	 */
+	private static final Logger LOGGER;
+
+	/**
+	 * Static reference to the CSV logger
+	 */
+	private static final Logger CSV_LOGGER;
+
+	static{
+
+		//These properties have to be set here before creating the logger, in the main method is already too late
+		System.setProperty("Log4jContextSelector", "org.apache.logging.log4j.core.async.AsyncLoggerContextSelector");
+		System.setProperty("isThreadContextMapInheritable", "true");
+
+		LOGGER = LogManager.getRootLogger();
+		CSV_LOGGER = LogManager.getLogger("CSVLogger");
+	}
+
+
 
 	public static void main(String[] args) throws InterruptedException{
 
@@ -108,8 +133,11 @@ public class SeparatePropnetVerifier {
 		SeparateInternalPropnetStateMachine thePropnetMachine;
 		StateMachine theSubject;
 
-	    GamerLogger.setSpilloverLogfile("SeparatePropnetVerifierTable.csv");
-	    GamerLogger.log(FORMAT.CSV_FORMAT, "SeparatePropnetVerifierTable", "Game key;PN initialization time (ms);PN construction time (ms);SM initialization time;Rounds;Completed rounds;Test duration (ms);Subject exception;Other exceptions;Pass;");
+		ThreadContext.put("LOG_FOLDER", System.currentTimeMillis() + "-SeparatePropnetVerifier");
+
+		ThreadContext.put("LOG_FILE", "SeparatePropnetVerifierTable");
+
+	    CSV_LOGGER.info("Game key;PN initialization time (ms);PN construction time (ms);SM initialization time;Rounds;Completed rounds;Test duration (ms);Subject exception;Other exceptions;Pass;");
 
 	    GameRepository theRepository = GameRepository.getDefaultRepository();
 	    for(String gameKey : theRepository.getGameKeys()) {
@@ -122,9 +150,9 @@ public class SeparatePropnetVerifier {
 
 	        Match fakeMatch = new Match(gameKey + System.currentTimeMillis(), -1, -1, -1,theRepository.getGame(gameKey) );
 
-	        GamerLogger.startFileLogging(fakeMatch, "SeparatePropnetVerifier");
+	        ThreadContext.put("LOG_FILE", fakeMatch.getMatchId() + "-SeparatePropnetVerifier");
 
-	        GamerLogger.log("Verifier", "Testing on game " + gameKey);
+	        LOGGER.info("[Verifier] Testing on game " + gameKey);
 
 	        List<Gdl> description = theRepository.getGame(gameKey).getRules();
 
@@ -148,9 +176,7 @@ public class SeparatePropnetVerifier {
 				executor.awaitTermination(initializationTime, TimeUnit.MILLISECONDS);
 			}catch(InterruptedException e){ // The thread running the verifier has been interrupted => stop the test
 				executor.shutdownNow(); // Interrupt everything
-				GamerLogger.logError("Verifier", "State machine verification interrupted. Test on game "+ gameKey +" won't be completed.");
-				GamerLogger.logStackTrace("Verifier", e);
-				GamerLogger.stopFileLogging();
+				LOGGER.error("[Verifier] State machine verification interrupted. Test on game "+ gameKey +" won't be completed.", e);
 				Thread.currentThread().interrupt();
 				return;
 			}
@@ -169,9 +195,7 @@ public class SeparatePropnetVerifier {
 					// of the state machine has been interrupted. If we do nothing this state machine could be stuck in the
 					// while loop anyway until all tasks in the executor have terminated, thus we break out of the loop and return.
 					// What happens to the still running tasks in the executor? Who will make sure they terminate?
-					GamerLogger.logError("Verifier", "State machine verification interrupted. Test on game "+ gameKey +" won't be completed.");
-					GamerLogger.logStackTrace("Verifier", e);
-					GamerLogger.stopFileLogging();
+					LOGGER.error("[Verifier] State machine verification interrupted. Test on game "+ gameKey +" won't be completed.", e);
 					Thread.currentThread().interrupt();
 					return;
 				}
@@ -181,6 +205,24 @@ public class SeparatePropnetVerifier {
 
 			ImmutablePropNet propnet = manager.getImmutablePropnet();
 			ImmutableSeparatePropnetState propnetState = manager.getInitialPropnetState();
+
+			String bases = "[";
+			for(ImmutableProposition b : propnet.getBasePropositions()){
+				 bases += b.getName();
+			}
+
+			bases += "]";
+
+			LOGGER.error("[Verifier] Bases: " + bases);
+
+			bases = "[";
+			for(GdlSentence b : propnet.getAlwaysTrueBases()){
+				 bases += b.toString();
+			}
+
+			bases += "]";
+
+			LOGGER.error("[Verifier] Always true bases: " + bases);
 
 			// Create the state machine giving it the propnet and the propnet state.
 			// NOTE that if any of the two is null, it means that the propnet creation/initialization went wrong
@@ -225,16 +267,15 @@ public class SeparatePropnetVerifier {
 		        otherExceptions = ExtendedStateMachineVerifier.otherExceptions;
 	        }catch(StateMachineInitializationException e){
 	      	  	smInitTime = System.currentTimeMillis() - initStart;
-	        	GamerLogger.logError("Verifier", "State machine " + theSubject.getName() + " initialization failed, impossible to test this game. Cause: [" + e.getClass().getSimpleName() + "] " + e.getMessage() );
-	        	GamerLogger.logStackTrace("Verifier", e);
+	      	    LOGGER.error("[Verifier] State machine " + theSubject.getName() + " initialization failed, impossible to test this game. Cause: [" + e.getClass().getSimpleName() + "] " + e.getMessage(), e);
 	        	System.out.println("Skipping test on game " + gameKey + ". State machine initialization failed, no propnet available.");
 	        }
 
-	        GamerLogger.log(FORMAT.PLAIN_FORMAT, "Verifier", "");
+	        LOGGER.info("");
 
-	        GamerLogger.stopFileLogging();
+	        ThreadContext.put("LOG_FILE", "SeparatePropnetVerifierTable");
 
-	        GamerLogger.log(FORMAT.CSV_FORMAT, "SeparatePropnetVerifierTable", gameKey + ";" + manager.getTotalInitTime() + ";" + manager.getPropnetConstructionTime() + ";" + smInitTime +  ";"  + rounds +  ";"  + completedRounds + ";"  + testDuration + ";"  + exception + ";"  + otherExceptions + ";" + pass + ";");
+	        CSV_LOGGER.info(gameKey + ";" + manager.getTotalInitTime() + ";" + manager.getPropnetConstructionTime() + ";" + smInitTime +  ";"  + rounds +  ";"  + completedRounds + ";"  + testDuration + ";"  + exception + ";"  + otherExceptions + ";" + pass + ";");
 
 	        /***************************************/
 	        //System.gc();

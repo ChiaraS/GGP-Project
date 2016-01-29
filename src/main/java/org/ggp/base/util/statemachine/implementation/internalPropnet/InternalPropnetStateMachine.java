@@ -165,7 +165,7 @@ public abstract class InternalPropnetStateMachine extends StateMachine{
 			try {
 				jointMove = getRandomJointMove(state);
 			} catch (MoveDefinitionException e) {
-				LOGGER.error("[StateMachine] [InternalPropnet] Exception getting a joint move while performing safe limited depth charges.", e);
+				LOGGER.error("[StateMachine] [InternalPropnet] Exception getting a joint move in a " + (this.isTerminal(state) ? "terminal" : "non-terminal") + " state while performing safe limited depth charges. Playout depth = " + nDepth + ", total depth = " + (500 - maxDepth), e);
 				break;
 			}
 			state = getInternalNextState(state, jointMove);
@@ -330,7 +330,7 @@ public abstract class InternalPropnetStateMachine extends StateMachine{
             try {
 				theGoals[i] = getGoal(state, theRoles[i]);
 			} catch (GoalDefinitionException e){
-				LOGGER.error("[StateMachine] [InternalPropnet] Failed to compute a goal value when computing safe goals. Returning 0 as goal for player " + this.getRoles().get(i) + ".", e);
+				LOGGER.error("[StateMachine] [InternalPropnet] Failed to compute a goal value when computing safe goals in a " + (this.isTerminal(state) ? "terminal" : "non-terminal") + " state. Returning 0 as goal for player " + this.getRoles().get(i) + ".", e);
 				theGoals[i] = 0;
 			}
         }
@@ -368,7 +368,7 @@ public abstract class InternalPropnetStateMachine extends StateMachine{
             try {
 				theGoals[i] = getGoal(state, theRoles[i]);
 			} catch (GoalDefinitionException e){
-				LOGGER.error("[StateMachine] [InternalPropnet] Failed to compute a goal value when computing safe goals with tie default. Returning 0 as goal for player " + this.getRoles().get(i) + ".", e);
+				LOGGER.error("[StateMachine] [InternalPropnet] Failed to compute a goal value when computing safe goals with tie default in a " + (this.isTerminal(state) ? "terminal" : "non-terminal") + " state. Returning 0 as goal for player " + this.getRoles().get(i) + ".", e);
 				theGoals[i] = 0; // TODO: should this be 50???
 				failures++;
 			}

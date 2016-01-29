@@ -163,6 +163,33 @@ public class SeparateInternalPropnetCreationManager extends Thread{
 		}
 		*/
 
+
+
+
+
+
+		//CHECK
+		String bases = "[";
+		for(DynamicProposition b : this.dynamicPropNet.getBasePropositions()){
+			 bases += b.getName();
+		}
+
+		bases += "]";
+
+		LOGGER.error("[Verifier] Bases: " + bases);
+
+
+
+
+
+
+
+
+
+
+
+
+
 		/***************************************** OPTIMIZATIONS ******************************************/
 
 		/** 1. FIX INPUTLESS COMPONENT:

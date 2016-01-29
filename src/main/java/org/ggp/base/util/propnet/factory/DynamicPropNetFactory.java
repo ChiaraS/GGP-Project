@@ -1594,6 +1594,7 @@ public class DynamicPropNetFactory {
 	        			toConvert.add(p);
 	        			if(type == Type.TRUE){
 	        				pn.addAlwaysTrueBase(p.getName());
+	        				System.out.println("Adding true base = " + p.getName());
 	        			}
 	        			break;
 	        		case INPUT:
