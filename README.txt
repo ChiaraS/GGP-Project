@@ -1,0 +1,1 @@
+This branch contains the final complete implementation of the DUCT and SUCT MCTS players that use the GamerLogger as logging system. This is the same as commit 310a678, except for the addition of this README file.
