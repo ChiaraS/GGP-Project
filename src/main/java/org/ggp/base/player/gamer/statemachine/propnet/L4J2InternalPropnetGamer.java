@@ -11,10 +11,10 @@ import org.ggp.base.util.gdl.grammar.GdlPool;
 import org.ggp.base.util.propnet.architecture.separateExtendedState.immutable.ImmutablePropNet;
 import org.ggp.base.util.propnet.creationManager.L4J2SeparateInternalPropnetCreationManager;
 import org.ggp.base.util.propnet.state.ImmutableSeparatePropnetState;
-import org.ggp.base.util.statemachine.InternalPropnetStateMachine;
+import org.ggp.base.util.statemachine.L4J2InternalPropnetStateMachine;
 import org.ggp.base.util.statemachine.StateMachine;
 import org.ggp.base.util.statemachine.cache.CachedStateMachine;
-import org.ggp.base.util.statemachine.implementation.propnet.SeparateInternalPropnetStateMachine;
+import org.ggp.base.util.statemachine.implementation.propnet.L4J2SeparateInternalPropnetStateMachine;
 import org.ggp.base.util.statemachine.implementation.prover.ProverStateMachine;
 
 public abstract class L4J2InternalPropnetGamer extends L4J2StateMachineGamer {
@@ -36,7 +36,7 @@ public abstract class L4J2InternalPropnetGamer extends L4J2StateMachineGamer {
 	/**
 	 * The personal reference to the propnet machine.
 	 */
-	protected InternalPropnetStateMachine thePropnetMachine;
+	protected L4J2InternalPropnetStateMachine thePropnetMachine;
 
 	/**
 	 * True if this gamer never tried to build a propnet before.
@@ -161,7 +161,7 @@ public abstract class L4J2InternalPropnetGamer extends L4J2StateMachineGamer {
 				if(propnet != null && propnetState != null){
 
 					// Create the state machine giving it the propnet and the propnet state.
-				    this.thePropnetMachine =  new SeparateInternalPropnetStateMachine(propnet, propnetState);
+				    this.thePropnetMachine =  new L4J2SeparateInternalPropnetStateMachine(propnet, propnetState);
 
 				    LOGGER.info("[Gamer] Propnet built successfully: returning propnet state machine.");
 				    //System.out.println("Returning propnet state machine.");

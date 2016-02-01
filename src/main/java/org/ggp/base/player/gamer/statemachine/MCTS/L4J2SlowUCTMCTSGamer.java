@@ -8,7 +8,7 @@ import org.ggp.base.player.gamer.statemachine.MCTS.manager.exceptions.MCTSExcept
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.strategies.backpropagation.StandardBackpropagation;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.strategies.expansion.RandomExpansion;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.strategies.movechoice.MaximumScoreChoice;
-import org.ggp.base.player.gamer.statemachine.MCTS.manager.strategies.playout.RandomPlayout;
+import org.ggp.base.player.gamer.statemachine.MCTS.manager.strategies.playout.L4J2RandomPlayout;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.strategies.selection.UCTSelection;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.InternalPropnetMCTSNode;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.MCTSMove;
@@ -99,7 +99,7 @@ public abstract class L4J2SlowUCTMCTSGamer extends L4J2InternalPropnetGamer {
 
 		// Create the MCTS manager and start simulations.
 		this.mctsManager = new L4J2InternalPropnetMCTSManager(this.DUCT, myRole, new UCTSelection(numRoles, myRole, r, uctOffset, c),
-	       		new RandomExpansion(numRoles, myRole, r), new RandomPlayout(this.thePropnetMachine),
+	       		new RandomExpansion(numRoles, myRole, r), new L4J2RandomPlayout(this.thePropnetMachine),
 	       		new StandardBackpropagation(numRoles, myRole),	new MaximumScoreChoice(myRole, r),
 	       		this.thePropnetMachine, gameStepOffset, maxSearchDepth);
 

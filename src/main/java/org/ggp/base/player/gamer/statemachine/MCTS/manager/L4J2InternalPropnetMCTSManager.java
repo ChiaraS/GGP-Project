@@ -19,7 +19,7 @@ import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.DUCT.DU
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.DUCT.InternalPropnetDUCTMCTSNode;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.SUCT.InternalPropnetSUCTMCTSNode;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.SUCT.SUCTMCTSMove;
-import org.ggp.base.util.statemachine.InternalPropnetStateMachine;
+import org.ggp.base.util.statemachine.L4J2InternalPropnetStateMachine;
 import org.ggp.base.util.statemachine.exceptions.MoveDefinitionException;
 import org.ggp.base.util.statemachine.inernalPropnetStructure.InternalPropnetMachineState;
 import org.ggp.base.util.statemachine.inernalPropnetStructure.InternalPropnetMove;
@@ -65,7 +65,7 @@ public class L4J2InternalPropnetMCTSManager extends MCTSManager {
 	/**
 	 * The state machine that this MCTS manager uses to reason on the game
 	 */
-	private InternalPropnetStateMachine theMachine;
+	private L4J2InternalPropnetStateMachine theMachine;
 
 	/**
 	 * Maximum depth that the MCTS algorithm must visit.
@@ -109,7 +109,7 @@ public class L4J2InternalPropnetMCTSManager extends MCTSManager {
 	public L4J2InternalPropnetMCTSManager(boolean DUCT, InternalPropnetRole myRole,
 			SelectionStrategy selectionStrategy, ExpansionStrategy expansionStrategy,
 			PlayoutStrategy playoutStrategy, BackpropagationStrategy backpropagationStrategy,
-			MoveChoiceStrategy moveChoiceStrategy, InternalPropnetStateMachine theMachine,
+			MoveChoiceStrategy moveChoiceStrategy, L4J2InternalPropnetStateMachine theMachine,
 			int gameStepOffset, int maxSearchDepth) {
 
 		this.DUCT = DUCT;

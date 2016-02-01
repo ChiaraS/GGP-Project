@@ -90,8 +90,10 @@ public final class L4J2GamePlayer extends Thread implements Subject
 		try {
 			listener.close();
 			listener = null;
+			/*
 			ThreadContext.remove("LOG_FOLDER");
 			ThreadContext.remove("LOG_FILE");
+			*/
 		} catch (IOException e) {
 			;
 		}
@@ -101,10 +103,10 @@ public final class L4J2GamePlayer extends Thread implements Subject
 	public void run()
 	{
 
-        LOGGER.info("[GamePlayer] Started player " + playerID + ". Writing logs to file " + this.playerID + "\\logFile.log");
+        LOGGER.info("[GamePlayer] Started player " + playerID + ". Writing logs to file L4J2logs\\" + this.playerID + "\\logFile.log");
 
 		// LOGGING DETAILS
-		ThreadContext.put("LOG_FOLDER", this.playerID);
+		ThreadContext.put("LOG_FOLDER", "L4J2logs/" + this.playerID);
 		LOGGER.info("[GamePlayer] Starting logs for player " + this.playerID + ". Player available to play a match.");
 		// LOGGING DETAILS
 
@@ -141,6 +143,7 @@ public final class L4J2GamePlayer extends Thread implements Subject
 			}
 		}
 
+		ThreadContext.remove("LOG_FILE");
 		ThreadContext.remove("LOG_FOLDER");
 	}
 
