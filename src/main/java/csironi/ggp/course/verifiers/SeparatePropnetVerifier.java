@@ -10,10 +10,8 @@ import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.ThreadContext;
 import org.ggp.base.util.game.GameRepository;
 import org.ggp.base.util.gdl.grammar.Gdl;
-import org.ggp.base.util.gdl.grammar.GdlSentence;
 import org.ggp.base.util.match.Match;
 import org.ggp.base.util.propnet.architecture.separateExtendedState.immutable.ImmutablePropNet;
-import org.ggp.base.util.propnet.architecture.separateExtendedState.immutable.components.ImmutableProposition;
 import org.ggp.base.util.propnet.creationManager.SeparateInternalPropnetCreationManager;
 import org.ggp.base.util.propnet.state.ImmutableSeparatePropnetState;
 import org.ggp.base.util.statemachine.StateMachine;
@@ -206,6 +204,7 @@ public class SeparatePropnetVerifier {
 			ImmutablePropNet propnet = manager.getImmutablePropnet();
 			ImmutableSeparatePropnetState propnetState = manager.getInitialPropnetState();
 
+			/*
 			String bases = "[";
 			for(ImmutableProposition b : propnet.getBasePropositions()){
 				 bases += b.getName();
@@ -223,6 +222,7 @@ public class SeparatePropnetVerifier {
 			bases += "]";
 
 			LOGGER.error("[Verifier] Always true bases: " + bases);
+			*/
 
 			// Create the state machine giving it the propnet and the propnet state.
 			// NOTE that if any of the two is null, it means that the propnet creation/initialization went wrong

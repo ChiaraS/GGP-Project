@@ -159,11 +159,7 @@ public class DynamicPropNet {
 		this.trueConstant = trueConstant;
 
 
-
-
-
-
-
+		/*
 		//CHECK
 		String trues = "[";
 		for(DynamicComponent c : this.trueConstant.getOutputs()){
@@ -173,24 +169,7 @@ public class DynamicPropNet {
 		trues += "]";
 
 		LOGGER.error("[Verifier] TRUES: " + trues);
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+		*/
 
 		this.components.add(trueConstant);
 		this.components.add(falseConstant);

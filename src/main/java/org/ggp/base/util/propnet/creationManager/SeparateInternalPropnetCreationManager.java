@@ -163,13 +163,10 @@ public class SeparateInternalPropnetCreationManager extends Thread{
 		}
 		*/
 
-
-
-
-
-
 		//CHECK
+		/*
 		String bases = "[";
+
 		for(DynamicProposition b : this.dynamicPropNet.getBasePropositions()){
 			 bases += b.getName();
 		}
@@ -177,18 +174,7 @@ public class SeparateInternalPropnetCreationManager extends Thread{
 		bases += "]";
 
 		LOGGER.error("[Verifier] Bases: " + bases);
-
-
-
-
-
-
-
-
-
-
-
-
+		*/
 
 		/***************************************** OPTIMIZATIONS ******************************************/
 
