@@ -5,4 +5,8 @@ import org.ggp.base.util.statemachine.implementation.internalPropnet.structure.I
 public interface PlayoutStrategy {
 
 	public int[] playout(InternalPropnetMachineState state, int[] playoutVisitedNodes, int maxDepth);
+
+	// ERROR TEST - START
+	// public int[] playout(InternalPropnetMachineState state, int[] playoutVisitedNodes, int maxDepth, List<List<InternalPropnetMove>> errorPath, boolean[] error);
+	// ERROR TEST - END
 }

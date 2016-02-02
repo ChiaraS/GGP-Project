@@ -240,13 +240,56 @@ public class InternalPropnetMCTSManager extends MCTSManager {
 	 * @param timeout the time (in milliseconds) by when the search must end.
 	 */
 	private void performSearch(InternalPropnetMachineState initialState, InternalPropnetMCTSNode initialNode, long timeout){
+
 		this.searchStart = System.currentTimeMillis();
 		while(System.currentTimeMillis() < timeout){
+
+			// ERROR TEST - START
+			/*
+			error = false;
+			errorPath = new ArrayList<List<InternalPropnetMove>>();
+			*/
+			// ERROR TEST - END
+
+
 			this.currentIterationVisitedNodes = 0;
 			this.searchNext(initialState, initialNode);
 			this.iterations++;
 			this.visitedNodes += this.currentIterationVisitedNodes;
 			//System.out.println("Iteration: " + this.iterations);
+
+
+			// ERROR TEST - START
+			/*
+			if(this.error){
+
+				this.toGet = new ArrayList<List<Move>>();
+
+				System.out.println("Error during simulation " + this.iterations + ".");
+				System.out.println();
+				System.out.print("Roles: [ ");
+				for(Role r : this.theMachine.getRoles()){
+					System.out.print(r + " ");
+				}
+				System.out.println("]");
+				System.out.println();
+				System.out.println("List of performed joint moves:");
+				for(List<InternalPropnetMove> jointMove : this.errorPath){
+					List<Move> toPrint = this.theMachine.internalMovesToMoves(jointMove);
+
+					System.out.print("Move: [ ");
+					for(Move m : toPrint){
+						System.out.print(m + " ");
+					}
+					System.out.println("]");
+
+					this.toGet.add(toPrint);
+				}
+			}
+			*/
+			// ERROR TEST - END
+
+
 		}
 		this.searchEnd = System.currentTimeMillis();
 	}
@@ -367,6 +410,10 @@ public class InternalPropnetMCTSManager extends MCTSManager {
 
 		//System.out.println("Computing next state and next node.");
 
+		// ERROR TEST - START
+		//this.errorPath.add(mctsJointMove.getJointMove());
+		// ERROR TEST - END
+
 		// Get the next state according to the joint move...
 		nextState = this.theMachine.getInternalNextState(currentState, mctsJointMove.getJointMove());
 		// ...and get the corresponding MCT node from the transposition table.
@@ -419,7 +466,18 @@ public class InternalPropnetMCTSManager extends MCTSManager {
 				int[] playoutVisitedNodes = new int[1];
 				// Note that if no depth is left for the playout, the playout itself will take care of
 				// returning the added-state goal values (if any) or the default tie goal values.
+
 				goals = this.playoutStrategy.playout(nextState, playoutVisitedNodes, availableDepth);
+
+
+				// ERROR TEST - START
+				/*
+				boolean[] playoutError = new boolean[1];
+				goals = this.playoutStrategy.playout(nextState, playoutVisitedNodes, availableDepth, this.errorPath, playoutError);
+				this.error = playoutError[0];
+				*/
+				// ERROR TEST - END
+
 				this.currentIterationVisitedNodes += playoutVisitedNodes[0];
 				//System.out.println("Node: " + this.visitedNodes);
 			}
@@ -649,5 +707,20 @@ public class InternalPropnetMCTSManager extends MCTSManager {
 	public long getSearchTime(){
 		return (this.searchEnd - this.searchStart);
 	}
+
+
+	// ERROR TEST - START
+	/*
+	private boolean error;
+
+	private List<List<InternalPropnetMove>> errorPath;
+
+	private List<List<Move>> toGet;
+
+	public List<List<Move>> getToGet(){
+		return this.toGet;
+	}
+	*/
+	// ERROR TEST - END
 
 }

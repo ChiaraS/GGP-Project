@@ -232,6 +232,7 @@ public class MCTSSpeedTest {
 	        long scoresSum = -1L;
 	        long visits = -1;
 	        double averageScore = -1;
+	        InternalPropnetMCTSManager MCTSmanager = null;
 
 	        // Try to initialize the propnet state machine.
 	        // If initialization fails, skip the test.
@@ -264,7 +265,7 @@ public class MCTSSpeedTest {
 		        playingRole = thePropnetMachine.internalRoleToRole(internalPlayingRole);
 		        numRoles = thePropnetMachine.getInternalRoles().length;
 
-		        InternalPropnetMCTSManager MCTSmanager = new InternalPropnetMCTSManager(DUCT, internalPlayingRole,
+		        MCTSmanager = new InternalPropnetMCTSManager(DUCT, internalPlayingRole,
 		        		new UCTSelection(numRoles, internalPlayingRole, r, uctOffset, c),
 		        		new RandomExpansion(numRoles, internalPlayingRole, r), new RandomPlayout(thePropnetMachine),
 		        		new StandardBackpropagation(numRoles, internalPlayingRole),
@@ -307,6 +308,91 @@ public class MCTSSpeedTest {
 	        ThreadContext.put("LOG_FILE", s + "MCTSSpeedTestTable");
 
 	        CSV_LOGGER.info(gameKey + ";" + numRoles + ";" + manager.getPropnetConstructionTime() + ";" + manager.getTotalInitTime() + ";" + initializationTime + ";" + testDuration + ";" + searchTime + ";" + iterations + ";" + visitedNodes + ";" + iterationsPerSecond + ";" + nodesPerSecond + ";" + playingRole + ";" + chosenMove + ";" + scoresSum + ";" + visits + ";" + averageScore + ";");
+
+
+	        // ERROR TEST - START
+	        /*
+	        ThreadContext.put("LOG_FILE", "The prover error test");
+
+	        if(MCTSmanager != null){
+
+	        	System.out.println();
+
+	        	List<List<Move>> errorJointMoves = MCTSmanager.getToGet();
+
+	        	StateMachine prover = new ProverStateMachine();
+	        	try {
+					prover.initialize(description, Long.MAX_VALUE);
+				} catch (StateMachineInitializationException e) {
+					System.out.println("EXCEPTION INIT: Impossible to try error path.");
+					e.printStackTrace();
+					return;
+				}
+
+	        	MachineState state = prover.getInitialState();
+
+	        	int i = 0;
+
+	        	for(List<Move> m : errorJointMoves){
+
+	        		System.out.println();
+	        		System.out.println("State " + i + ":");
+
+	        		List<List<Move>> legalMoves = new ArrayList<List<Move>>();
+
+	        		int roleIndex = 0;
+
+	        		for(Role r : prover.getRoles()){
+	        			try {
+	        				List<Move> lm = prover.getLegalMoves(state, r);
+							legalMoves.add(lm);
+							System.out.println("Legal moves for " + r + ":");
+							System.out.println(lm);
+							if(!(lm.contains(m.get(roleIndex)))){
+								System.out.println("MOVE " + m.get(roleIndex) + " NOT FOUND: Impossible to try error path.");
+								return;
+							}
+						} catch (MoveDefinitionException | StateMachineException e) {
+							System.out.println("EXCEPTION LEGAL MOVES: Impossible to try error path.");
+							e.printStackTrace();
+							return;
+						}
+	        			roleIndex++;
+	        		}
+
+	        		try {
+						state = prover.getNextState(state, m);
+					} catch (TransitionDefinitionException | StateMachineException e) {
+						System.out.println("EXCEPTION NEXT STATE: Impossible to try error path.");
+						System.out.println("Cannot go further than state " + state);
+						e.printStackTrace();
+						return;
+					}
+
+	        		i++;
+	        	}
+
+	        	System.out.println();
+	        	System.out.println("Reached error state: " + state);
+
+	        	List<Move> randomJointMove;
+	        	try {
+					randomJointMove = prover.getRandomJointMove(state);
+				} catch (MoveDefinitionException | StateMachineException e) {
+					System.out.println("EXCEPTION JOINT MOVE: Impossible to get joint move!");
+					e.printStackTrace();
+					return;
+				}
+
+	        	System.out.println("TRAGEDY! There must be a bug in your code cause the prover works!");
+	        	System.out.println("It found joint move: " + randomJointMove + "!");
+
+	        }else{
+	        	System.out.println("NULL MANAGER: Impossible to try error path.");
+	        	return;
+	        }
+	        */
+	        // ERROR TEST - END
 
 	        /***************************************/
 	        System.gc();

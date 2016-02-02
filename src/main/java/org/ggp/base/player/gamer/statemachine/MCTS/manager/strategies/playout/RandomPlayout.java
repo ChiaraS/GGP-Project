@@ -26,4 +26,23 @@ public class RandomPlayout implements PlayoutStrategy {
 		return this.theMachine.getSafeGoals(lastState);
 	}
 
+	// ERROR TEST - START
+	/*
+	 * (non-Javadoc)
+	 * @see org.ggp.base.player.gamer.statemachine.MCTS.manager.strategies.playout.PlayoutStrategy#playout(org.ggp.base.util.statemachine.inernalPropnetStructure.InternalPropnetMachineState, int[], int)
+	 */
+	/*
+	@Override
+	public int[] playout(InternalPropnetMachineState state, int[] playoutVisitedNodes, int maxDepth, List<List<InternalPropnetMove>> errorPath, boolean[] error){
+
+		InternalPropnetMachineState lastState;
+
+		lastState = this.theMachine.performSafeLimitedDepthCharge(state, playoutVisitedNodes, maxDepth, errorPath, error);
+
+		// Now try to get the goals of the state.
+		return this.theMachine.getSafeGoals(lastState);
+	}
+	*/
+	// ERROR TEST - END
+
 }

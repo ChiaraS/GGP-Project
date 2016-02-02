@@ -442,7 +442,8 @@ public class SeparateInternalPropnetStateMachine extends InternalPropnetStateMac
 	}
 
 	/**
-	 * Useful when we need to translate a joint move. Faster than translating the moves one by one.
+	 * Useful when we need to translate a joint move from external to internal.
+	 * Faster than translating the moves one by one.
 	 *
 	 * @param move
 	 * @param roleIndex
@@ -460,6 +461,26 @@ public class SeparateInternalPropnetStateMachine extends InternalPropnetStateMac
 			if(movesToDoes.contains(inputs[i].getName())){
 				transformedMoves.add(new InternalPropnetMove(i));
 			}
+		}
+
+		return transformedMoves;
+	}
+
+	/**
+	 * Useful when we need to translate a joint move from internal to external.
+	 * It translates the moves one by one. Not faster but useful.
+	 *
+	 * @param move
+	 * @param roleIndex
+	 * @return
+	 */
+	@Override
+	public List<Move> internalMovesToMoves(List<InternalPropnetMove> moves){
+
+		List<Move> transformedMoves = new ArrayList<Move>();
+
+		for(InternalPropnetMove m : moves){
+			transformedMoves.add(this.internalMoveToMove(m));
 		}
 
 		return transformedMoves;

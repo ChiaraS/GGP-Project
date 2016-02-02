@@ -45,11 +45,25 @@ import org.ggp.base.util.statemachine.implementation.prover.ProverStateMachine;
 public abstract class InternalPropnetGamer extends StateMachineGamer {
 
 	/**
-	 * True if the player is assumed to always play the same game and thus has to always
-	 * use the same propnet state machine, false if for every game it has to build the
-	 * propnet.
+	 * Used to tell to the player if and how to build the propnet state machine.
+	 *
+	 * More precisely:
+	 * - ALWAYS = the player will build a new propnet and thus a new state machine
+	 * 			  every time a new match starts (i.e. everytime the getInitialStateMachine
+	 * 			  is called).
+	 * - ONCE = the player will assume to always be playing the same game and thus
+	 * 			it will use the same propnet state machine and build it only the
+	 * 			first time.
+	 * - NEVER = the player will never build a new propnet and thus never a new state
+	 * 			 machine, but will use the one (if any) that is given as input to the
+	 * 			 constructor.
+	 *
+	 * @author C.Sironi
+	 *
 	 */
-	protected boolean singleGame;
+    public enum PROPNET_BUILD{
+    	ALWAYS, ONCE, NEVER
+    }
 
 	/**
 	 * The player must complete the executions of methods with a timeout by the time
@@ -62,6 +76,11 @@ public abstract class InternalPropnetGamer extends StateMachineGamer {
 	 * The personal reference to the propnet machine.
 	 */
 	protected InternalPropnetStateMachine thePropnetMachine;
+
+	/**
+	 *
+	 */
+	protected PROPNET_BUILD propnetBuild;
 
 	/**
 	 * True if this gamer never tried to build a propnet before.
@@ -78,10 +97,21 @@ public abstract class InternalPropnetGamer extends StateMachineGamer {
 	 */
 	public InternalPropnetGamer() {
 		// TODO: change code so that the parameters can be set from outside.
-
-		this.singleGame = false;
 		this.safetyMargin = 10000L;
 		this.thePropnetMachine = null;
+		this.propnetBuild = PROPNET_BUILD.ALWAYS;
+		this.firstTry = true;
+
+	}
+
+	/**
+	 *
+	 */
+	public InternalPropnetGamer(long safetyMargin, InternalPropnetStateMachine thePropnetMachine){
+		// TODO: change code so that the parameters can be set from outside.
+		this.safetyMargin = 10000L;
+		this.thePropnetMachine = thePropnetMachine;
+		this.propnetBuild = PROPNET_BUILD.NEVER;
 		this.firstTry = true;
 
 	}
@@ -94,12 +124,17 @@ public abstract class InternalPropnetGamer extends StateMachineGamer {
 
 		LOGGER.info("[Gamer] Returning initial state machine.");
 
-		// If the gamer must re-use the same state machine if it already created it...
-		if(this.singleGame){
+		switch(this.propnetBuild){
+		case ALWAYS: // Create a new state machine for every game:
+			LOGGER.info("[Gamer] Standard gamer (not single-game).");
+			LOGGER.info("[Gamer] Creating state machine for the game.");
+
+			return this.createStateMachine();
+		case ONCE: // Build once, then re-use:
 
 			LOGGER.info("[Gamer] Single-game gamer.");
 
-			// ...if the propnet machine already exists, return it.
+			// If the propnet machine already exists, return it.
 			if(this.thePropnetMachine != null){
 
 				LOGGER.info("[Gamer] Propnet state machine already created for the game. Returning same state machine.");
@@ -125,14 +160,11 @@ public abstract class InternalPropnetGamer extends StateMachineGamer {
 
 				return new CachedStateMachine(new ProverStateMachine());
 			}
-
-		}else{ // If the player must create a new state machine for every game, create it.
-
-			LOGGER.info("[Gamer] Standard gamer (not single-game).");
-			LOGGER.info("[Gamer] Creating state machine for the game.");
-
-			return this.createStateMachine();
+		case NEVER:
+			return this.thePropnetMachine;
 		}
+
+		return null;
 
 	}
 
@@ -215,7 +247,7 @@ public abstract class InternalPropnetGamer extends StateMachineGamer {
 	@Override
 	public void stateMachineStop() {
 		System.gc();
-		if(!this.singleGame){
+		if(this.propnetBuild == PROPNET_BUILD.ALWAYS){
 			GdlPool.drainPool();
 		}
 	}
@@ -226,7 +258,7 @@ public abstract class InternalPropnetGamer extends StateMachineGamer {
 	@Override
 	public void stateMachineAbort() {
 		System.gc();
-		if(!this.singleGame){
+		if(this.propnetBuild == PROPNET_BUILD.ALWAYS){
 			GdlPool.drainPool();
 		}
 	}

@@ -83,13 +83,24 @@ public abstract class InternalPropnetStateMachine extends StateMachine{
 	public abstract InternalPropnetMove moveToInternalMove(Move move);
 
 	/**
-	 * Useful when we need to translate a joint move. Faster than translating the moves one by one.
+	 * Useful when we need to translate a joint move from external to internal.
+	 * Faster than translating the moves one by one.
 	 *
 	 * @param move
 	 * @param roleIndex
 	 * @return
 	 */
 	public abstract List<InternalPropnetMove> movesToInternalMoves(List<Move> moves);
+
+	/**
+	 * Useful when we need to translate a joint move from internal to external.
+	 * It translates the moves one by one. Not faster but useful.
+	 *
+	 * @param move
+	 * @param roleIndex
+	 * @return
+	 */
+	public abstract List<Move> internalMovesToMoves(List<InternalPropnetMove> moves);
 
 
 	/***************** Extra methods to replace the ones offered by the StateMahcine *****************/
@@ -175,6 +186,37 @@ public abstract class InternalPropnetStateMachine extends StateMachine{
             theDepth[0] = nDepth;
         return state;
     }
+
+	// DEL
+	public InternalPropnetMachineState performSafeLimitedDepthCharge(InternalPropnetMachineState state, final int[] theDepth, int maxDepth, List<List<InternalPropnetMove>> errorPath, final boolean[] error){
+        int nDepth = 0;
+
+        while(nDepth < maxDepth && !isTerminal(state)) {
+
+        	List<InternalPropnetMove> jointMove = null;
+			try {
+				jointMove = getRandomJointMove(state);
+			} catch (MoveDefinitionException e) {
+				LOGGER.error("[StateMachine] [InternalPropnet] Exception getting a joint move in a " + (this.isTerminal(state) ? "terminal" : "non-terminal") + " state while performing safe limited depth charges. Playout depth = " + nDepth + ", total depth = " + (500 - maxDepth), e);
+				if(error != null){
+					System.out.println("Setting error.");
+					error[0] = true;
+				}else{
+					System.out.println("Error is null.");
+				}
+				break;
+			}
+
+			errorPath.add(jointMove);
+			state = getInternalNextState(state, jointMove);
+            nDepth++;
+        }
+        if(theDepth != null)
+            theDepth[0] = nDepth;
+        return state;
+    }
+	// DEL
+
 
     /**
      * Like performDepthCharge() method, but this one checks after visiting each node

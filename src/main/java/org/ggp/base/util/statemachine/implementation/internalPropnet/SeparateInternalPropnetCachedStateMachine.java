@@ -213,4 +213,9 @@ public final class SeparateInternalPropnetCachedStateMachine extends InternalPro
 		return this.backingStateMachine.movesToInternalMoves(moves);
 	}
 
+	@Override
+	public List<Move> internalMovesToMoves(List<InternalPropnetMove> moves) {
+		return this.backingStateMachine.internalMovesToMoves(moves);
+	}
+
 }
