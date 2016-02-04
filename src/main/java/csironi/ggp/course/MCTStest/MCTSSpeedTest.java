@@ -251,7 +251,7 @@ public class MCTSSpeedTest {
 		        /***************************************/
 
 		        Random r = new Random();
-		        double c = 1.4;
+		        double c = 0.7;
 		        double uctOffset = 0.01;
 		        int gameStep = 1;
 		        int gameStepOffset = 2;

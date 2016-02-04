@@ -21,6 +21,7 @@ import org.ggp.base.util.statemachine.exceptions.GoalDefinitionException;
 import org.ggp.base.util.statemachine.exceptions.MoveDefinitionException;
 import org.ggp.base.util.statemachine.exceptions.StateMachineException;
 import org.ggp.base.util.statemachine.exceptions.TransitionDefinitionException;
+import org.ggp.base.util.statemachine.implementation.internalPropnet.InternalPropnetStateMachine;
 import org.ggp.base.util.statemachine.implementation.internalPropnet.structure.InternalPropnetMachineState;
 import org.ggp.base.util.statemachine.implementation.internalPropnet.structure.InternalPropnetRole;
 
@@ -73,8 +74,26 @@ public abstract class SlowUCTMCTSGamer extends InternalPropnetGamer {
 	public SlowUCTMCTSGamer() {
 		// TODO: change code so that the parameters can be set from outside.
 
+		super();
+
 		this.DUCT = true;
-		this.c = 1.4;
+		this.c = 0.7;
+		this.uctOffset = 0.01;
+		this.gameStepOffset = 2;
+		this.maxSearchDepth = 500;
+
+	}
+
+	/**
+	 *
+	 */
+	public SlowUCTMCTSGamer(InternalPropnetStateMachine thePropnetMachine) {
+		// TODO: change code so that the parameters can be set from outside.
+
+		super(thePropnetMachine);
+
+		this.DUCT = true;
+		this.c = 0.7;
 		this.uctOffset = 0.01;
 		this.gameStepOffset = 2;
 		this.maxSearchDepth = 500;

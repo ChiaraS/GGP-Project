@@ -179,8 +179,19 @@ public final class GameServer extends Thread implements Subject
     @Override
     public void run() {
 
-    	LOGGER.info("[GameServer] Running new game server. Saving logs in " + ThreadContext.get("LOG_FOLDER") + "\\" + this.match.getMatchId() + "-GameServer.log");
+    	String oldLogFolder = ThreadContext.get("LOG_FOLDER");
 
+    	String logFolder = oldLogFolder;
+
+		if(logFolder != null){
+			logFolder += "/GameServer";
+		}else{
+			logFolder = "GameServer";
+		}
+
+    	LOGGER.info("[GameServer] Running new game server. Saving logs in " + logFolder + "/" + this.match.getMatchId() + "-GameServer.log");
+
+    	ThreadContext.put("LOG_FOLDER", logFolder);
     	ThreadContext.put("LOG_FILE", this.match.getMatchId() + "-GameServer");
 
     	LOGGER.info("[GameServer] Starting file logging of GameServer for match " + this.match.getMatchId() + ".");
@@ -232,6 +243,11 @@ public final class GameServer extends Thread implements Subject
         } finally{
         	LOGGER.info("[GameServer] Ending file logging of GameServer for match " + this.match.getMatchId() + ".");
         	ThreadContext.remove("LOG_FILE");
+        	if(oldLogFolder == null){
+        		ThreadContext.remove("LOG_FOLDER");
+        	}else{
+        		ThreadContext.put("LOG_FOLDER", oldLogFolder);
+        	}
         	LOGGER.info("[GameServer] Stopping GameServer for match " + this.match.getMatchId() + ".");
         }
     }

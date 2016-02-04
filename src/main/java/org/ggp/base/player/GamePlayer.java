@@ -92,8 +92,6 @@ public final class GamePlayer extends Thread implements Subject
 		try {
 			listener.close();
 			listener = null;
-			ThreadContext.remove("LOG_FOLDER");
-			ThreadContext.remove("LOG_FILE");
 		} catch (IOException e) {
 			;
 		}
@@ -102,11 +100,18 @@ public final class GamePlayer extends Thread implements Subject
 	@Override
 	public void run()
 	{
+		String logFolder = ThreadContext.get("LOG_FOLDER");
 
-        LOGGER.info("[GamePlayer] Started player " + playerID + ". Writing logs to file " + this.playerID + "\\logFile.log");
+		if(logFolder != null){
+			logFolder += "/GamePlayer/" + this.playerID;
+		}else{
+			logFolder = "GamePlayer/" + this.playerID;
+		}
+
+        LOGGER.info("[GamePlayer] Started player " + playerID + ". Writing logs to file " + logFolder + "/logFile.log");
 
 		// LOGGING DETAILS
-		ThreadContext.put("LOG_FOLDER", this.playerID);
+		ThreadContext.put("LOG_FOLDER", logFolder);
 		LOGGER.info("[GamePlayer] Starting logs for player " + this.playerID + ". Player available to play a match.");
 		// LOGGING DETAILS
 
@@ -143,7 +148,6 @@ public final class GamePlayer extends Thread implements Subject
 			}
 		}
 
-		ThreadContext.remove("LOG_FOLDER");
 	}
 
 	// Simple main function that starts a RandomGamer on a specified port.

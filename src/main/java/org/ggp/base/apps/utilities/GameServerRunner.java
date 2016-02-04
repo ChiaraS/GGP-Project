@@ -48,6 +48,7 @@ public final class GameServerRunner
 	{
 
 		ThreadContext.put("LOG_FOLDER", "ServerRunner");
+
 		// Extract the desired configuration from the command line.
 		String tourneyName = args[0];
 		String gameKey = args[1];

@@ -6,6 +6,7 @@ package csironi.ggp.course.experiments;
 import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileWriter;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
@@ -14,22 +15,29 @@ import java.util.concurrent.TimeUnit;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.ThreadContext;
 import org.ggp.base.player.GamePlayer;
+import org.ggp.base.player.gamer.statemachine.MCTS.SlowDUCTMCTSGamer;
+import org.ggp.base.player.gamer.statemachine.MCTS.SlowSUCTMCTSGamer;
 import org.ggp.base.server.GameServer;
+import org.ggp.base.server.exception.GameServerException;
 import org.ggp.base.util.game.Game;
 import org.ggp.base.util.game.GameRepository;
 import org.ggp.base.util.gdl.grammar.Gdl;
 import org.ggp.base.util.match.Match;
 import org.ggp.base.util.propnet.creationManager.SeparateInternalPropnetCreationManager;
-import org.ggp.base.util.statemachine.Role;
+import org.ggp.base.util.statemachine.exceptions.GoalDefinitionException;
+import org.ggp.base.util.statemachine.exceptions.StateMachineException;
 import org.ggp.base.util.statemachine.implementation.internalPropnet.InternalPropnetStateMachine;
 import org.ggp.base.util.statemachine.implementation.internalPropnet.SeparateInternalPropnetStateMachine;
 
 /**
+ * ATTENTION! ALWAYS MAKE SURE THAT LOG_FOLDER IS SET IN THREADCONTEXT BEFORE RUNNING THIS THREAD!
+ * OTHERWISE THERE WILL BE A PROBLEM WHEN SAVING THE SCORES!
  * @author C.Sironi
  *
  */
-public class MatchRunner {
+public class MatchRunner extends Thread{
 
 	static{
 
@@ -37,6 +45,7 @@ public class MatchRunner {
 		System.setProperty("isThreadContextMapInheritable", "true");
 
 		LOGGER = LogManager.getRootLogger();
+		CSV_LOGGER = LogManager.getLogger("CSVLogger");
 
 	}
 
@@ -45,30 +54,80 @@ public class MatchRunner {
 	 */
 	private static final Logger LOGGER;
 
+	/**
+	 * Static reference to the logger for the match score
+	 */
+	private static final Logger CSV_LOGGER;
 
-	public void runMatch(String tourneyName, String gameKey, int startClock, int playClock,
-			long initializationTime, boolean invert){
 
-		Game game = GameRepository.getDefaultRepository().getGame(gameKey);
+	private int ID;
 
-		int expectedRoles = Role.computeRoles(game.getRules()).size();
-		if (2 != expectedRoles) {
-			throw new RuntimeException("Game " + gameKey + "cannot be used to test the gamers because it is not a 2 players game.");
+	private String tourneyName;
+	private String gameKey;
+	private int startClock;
+	private int playClock;
+	private long creationTime;
+	private boolean invert;
+
+	/**
+	 * Needed to know where to log the scores
+	 */
+	private String resultFolder;
+
+
+	public MatchRunner(int ID, String tourneyName, String gameKey, int startClock, int playClock,
+			long creationTime, boolean invert){
+
+		this.ID = ID;
+		this.tourneyName = tourneyName;
+		this.gameKey = gameKey;
+		this.startClock = startClock;
+		this.playClock = playClock;
+		this.creationTime = creationTime;
+		this.invert = invert;
+
+		this.resultFolder = "";
+
+	}
+
+	@Override
+	public void run(){
+
+		System.out.println("Starting " + this.ID);
+
+		this.resultFolder = ThreadContext.get("LOG_FOLDER");
+
+		String logFolder = this.resultFolder;
+
+		if(logFolder != null){
+			logFolder += "/MatchRunner-" + this.ID;
+		}else{
+			logFolder = "/MatchRunner-" + this.ID;
 		}
 
-		ThreadContext.put("LOG_FOLDER", System.currentTimeMillis() + "MatchRunner");
-		ThreadContext.put("LOG_FILE", "MatchRunner.log");
+		LOGGER.info("[MatchRunner] Started MatchRunner " + this.ID + ". Writing logs to file " + logFolder + "/logFile.log");
+
+		// LOGGING DETAILS
+		ThreadContext.put("LOG_FOLDER", logFolder);
+		LOGGER.info("[GamePlayer] Starting logs for MatchRunner " + this.ID + ".");
+		// LOGGING DETAILS
+
+		String matchName = this.ID + "." + this.tourneyName + "." + this.gameKey + "." + System.currentTimeMillis();
+
+		LOGGER.info("[MatchRunner] Starting new match: " + matchName);
+
+		Game game = GameRepository.getDefaultRepository().getGame(this.gameKey);
 
 		// Create the propnet
 		GameRepository theRepository = GameRepository.getDefaultRepository();
 
-		List<Gdl> description = theRepository.getGame(gameKey).getRules();
+		List<Gdl> description = theRepository.getGame(this.gameKey).getRules();
 
         // Create the executor service that will run the propnet manager that creates the propnet
         ExecutorService executor = Executors.newSingleThreadExecutor();
 
         // Create the propnet creation manager
-        SeparateInternalPropnetCreationManager manager = new SeparateInternalPropnetCreationManager(description, System.currentTimeMillis() + initializationTime);
+        SeparateInternalPropnetCreationManager manager = new SeparateInternalPropnetCreationManager(description, System.currentTimeMillis() + creationTime);
 
         // Start the manager
   	  	executor.execute(manager);
@@ -79,10 +138,11 @@ public class MatchRunner {
 
 		// Tell the executor to wait until the currently running task has completed execution or the timeout has elapsed.
 		try{
-			executor.awaitTermination(initializationTime, TimeUnit.MILLISECONDS);
+			executor.awaitTermination(creationTime, TimeUnit.MILLISECONDS);
 		}catch(InterruptedException e){ // The thread running the verifier has been interrupted => stop the test
 			executor.shutdownNow(); // Interrupt everything
-			LOGGER.error("[MatchRunner] Program interrupted. Test on game "+ gameKey +" won't be completed.", e);
+			LOGGER.error("[MatchRunner] Program interrupted. Match of game "+ this.gameKey +" won't be performed.", e);
+			this.resetLogSettings();
 			Thread.currentThread().interrupt();
 			return;
 		}
@@ -101,7 +161,8 @@ public class MatchRunner {
 				// of the state machine has been interrupted. If we do nothing this state machine could be stuck in the
 				// while loop anyway until all tasks in the executor have terminated, thus we break out of the loop and return.
 				// What happens to the still running tasks in the executor? Who will make sure they terminate?
-				LOGGER.error("[MatchRunner] Program interrupted. Test on game "+ gameKey +" won't be completed.", e);
+				LOGGER.error("[MatchRunner] Program interrupted. Match of game "+ this.gameKey +" won't be performed.", e);
+				this.resetLogSettings();
 				Thread.currentThread().interrupt();
 				return;
 			}
@@ -110,18 +171,34 @@ public class MatchRunner {
 		// If we are here it means that the manager stopped running. We must check if it has created a usable propnet or not.
 		if(manager.getImmutablePropnet() == null || manager.getInitialPropnetState() == null){
 			LOGGER.error("[MatchRunner] Impossible to play the match. Propnet and/or propnet state are null.");
+			this.resetLogSettings();
+			return;
 		}
 
 		InternalPropnetStateMachine theMachine1 = new SeparateInternalPropnetStateMachine(manager.getImmutablePropnet(), manager.getInitialPropnetState());
 
 		InternalPropnetStateMachine theMachine2 = new SeparateInternalPropnetStateMachine(manager.getImmutablePropnet(), manager.getInitialPropnetState());
 
-		GLTestSlowDUCTGamer ductGamer = new GLTestSlowDUCTGamer(theMachine1);
+		SlowDUCTMCTSGamer ductGamer = new SlowDUCTMCTSGamer(theMachine1);
 
-		L4J2TestSlowDUCTGamer suctGamer = new L4J2TestSlowDUCTGamer(theMachine2);
+		SlowSUCTMCTSGamer suctGamer = new SlowSUCTMCTSGamer(theMachine2);
 
-		GamePlayer ductPlayer =  new GamePlayer(9147, ductGamer);
-		GamePlayer suctPlayer = new GamePlayer(9148, suctGamer);
+		GamePlayer ductPlayer = null;
+		try {
+			ductPlayer = new GamePlayer(9147 + (this.ID * 2), ductGamer);
+		} catch (IOException e) {
+			LOGGER.error("[MatchRunner] Impossible to play the match. Error when creating game player.", e);
+			this.resetLogSettings();
+			return;
+		}
+		GamePlayer suctPlayer = null;
+		try {
+			suctPlayer = new GamePlayer(9148 + (this.ID * 2), suctGamer);
+		} catch (IOException e) {
+			LOGGER.error("[MatchRunner] Impossible to play the match. Error when creating game player.", e);
+			this.resetLogSettings();
+			return;
+		}
 
 		int ductPort = ductPlayer.getGamerPort();
 		int suctPort = suctPlayer.getGamerPort();
@@ -136,7 +213,7 @@ public class MatchRunner {
 		hostNames.add("127.0.0.1");
 		hostNames.add("127.0.0.1");
 
-		if(invert){
+		if(this.invert){
 
 			portNumbers.add(suctPort);
 			portNumbers.add(ductPort);
@@ -152,24 +229,40 @@ public class MatchRunner {
 			playerNames.add("SUCT");
 		}
 
-		String matchName = tourneyName + "." + gameKey + "." + System.currentTimeMillis();
-		Match match = new Match(matchName, -1, startClock, playClock, game);
+		Match match = new Match(matchName, -1, this.startClock, this.playClock, game);
 		match.setPlayerNamesFromHost(playerNames);
 
 		// Actually run the match, using the desired configuration.
-		GameServer server = new GameServer(match, hostNames, portNumbers);
+		GameServer server;
+		try {
+			server = new GameServer(match, hostNames, portNumbers);
+		} catch (GameServerException e) {
+			LOGGER.error("[MatchRunner] Impossible to play the match. Error when creating game server.", e);
+			ductPlayer.shutdown();
+			suctPlayer.shutdown();
+			this.resetLogSettings();
+			return;
+		}
 		server.start();
-		server.join();
-
-		// Open up the directory for this tournament.
-		// Create a "scores" file if none exists.
-		File f = new File(tourneyName);
-		if (!f.exists()) {
-			f.mkdir();
-			f = new File(tourneyName + "/scores");
-			f.createNewFile();
+		try {
+			server.join();
+		} catch (InterruptedException e) {
+			LOGGER.error("[MatchRunner] Program interrupted. Impossible to complete the match.", e);
+			server.abort();
+			ductPlayer.shutdown();
+			suctPlayer.shutdown();
+			this.resetLogSettings();
+			Thread.currentThread().interrupt();
+			return;
 		}
 
+		LOGGER.info("[MatchRunner] Execution of match " + matchName + " completed.");
+
+		// Open up the directory for this tournament.
+		File f = new File(this.resultFolder);
+		if (!f.exists()) {
+			f.mkdir();
+		}
 
 		BufferedWriter bw;
 
@@ -186,36 +279,37 @@ public class MatchRunner {
 		bw.close();
 		*/
 
-
-
 		// Open up the JSON file for this match, and save the match there.
-		f = new File(tourneyName + "/" + matchName + ".json");
+		f = new File(this.resultFolder + "/" + matchName + ".json");
 		if (f.exists()) f.delete();
-		bw = new BufferedWriter(new FileWriter(f));
-		bw.write(match.toJSON());
-		bw.flush();
-		bw.close();
-
+		try {
+			bw = new BufferedWriter(new FileWriter(f));
+			bw.write(match.toJSON());
+			bw.flush();
+			bw.close();
+		} catch (IOException e) {
+			LOGGER.error("[MatchRunner] Match completed correctly, but impossible to save match information on JSON file.", e);
+		}
 
 		// Save the goals in the "/scores" file for the tournament.
-		bw = new BufferedWriter(new FileWriter(tourneyName + "/scores", true));
-		List<Integer> goals = server.getGoals();
-		String goalStr = "";
-		String playerStr = "";
-		for (int i = 0; i < goals.size(); i++)
-		{
-			Integer goal = server.getGoals().get(i);
-			goalStr += Integer.toString(goal);
-			playerStr += playerNames.get(i);
-			if (i != goals.size() - 1)
-			{
-				playerStr += ",";
-				goalStr += ",";
-			}
+
+		List<Integer> goals;
+		try {
+			goals = server.getGoals();
+		} catch (GoalDefinitionException | StateMachineException e) {
+			LOGGER.error("[MatchRunner] Match completed correctly, but impossible to save final scores.", e);
+			this.resetLogSettings();
+			return;
 		}
-		bw.write("\n" + playerStr + "=" + goalStr);
-		bw.flush();
-		bw.close();
+
+		ThreadContext.put("LOG_FOLDER", this.resultFolder);
+		ThreadContext.put("LOG_FILE", "scores");
+
+		for (int i = 0; i < goals.size(); i++){
+
+			CSV_LOGGER.info(this.ID + ";" + matchName + ";" + playerNames.get(i) + ";" + goals.get(i) + ";");
+
+		}
 
 		try{
 			Thread.sleep(1000);
@@ -226,6 +320,20 @@ public class MatchRunner {
 		ductPlayer.shutdown();
 		suctPlayer.shutdown();
 
+		this.resetLogSettings();
+
+		System.out.println("Ending " + this.ID);
+
+	}
+
+	private void resetLogSettings(){
+
+		if(this.resultFolder == null){
+			ThreadContext.remove("LOG_FOLDER");
+		}else{
+			ThreadContext.put("LOG_FOLDER", this.resultFolder);
+		}
+		ThreadContext.remove("LOG_FILE");
 	}
 
 }
