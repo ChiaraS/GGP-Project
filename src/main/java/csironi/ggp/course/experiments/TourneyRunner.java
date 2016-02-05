@@ -4,6 +4,7 @@
 package csironi.ggp.course.experiments;
 
 import java.lang.management.ManagementFactory;
+import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
@@ -13,6 +14,7 @@ import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.ThreadContext;
 import org.ggp.base.util.game.Game;
 import org.ggp.base.util.game.GameRepository;
+import org.ggp.base.util.gdl.grammar.Gdl;
 import org.ggp.base.util.statemachine.Role;
 
 /**
@@ -69,16 +71,17 @@ public class TourneyRunner {
 				startClock + "s, PLAY_CLOCK=" + playClock + "s, PROPNET_CREATION_TIME=" + creationTime + "ms, NUM_PARALLEL_MATCHES=" +
 				numParallelMatches + ", NUM_MATCHES_PER_CONFIG=" + matchesPerConfiguration + ".");
 
+		List<Gdl> description = game.getRules();
 
 		// Create the executor as a pool with the desired number of threads
 		// (corresponding to the number of matches we want to run in parallel).
 		ExecutorService executor = Executors.newFixedThreadPool(numParallelMatches);
 
 		for(int i = 0; i < matchesPerConfiguration; i++){
-			executor.execute(new MatchRunner(i, tourneyName, gameKey, startClock, playClock, creationTime, false));
+			executor.execute(new MatchRunner(i, tourneyName, game, description, startClock, playClock, creationTime, false));
 		}
 		for(int i = matchesPerConfiguration; i < (2*matchesPerConfiguration); i++){
-			executor.execute(new MatchRunner(i, tourneyName, gameKey, startClock, playClock, creationTime, true));
+			executor.execute(new MatchRunner(i, tourneyName, game, description, startClock, playClock, creationTime, true));
 		}
 
 		// Shutdown executor to tell it not to accept any more task to execute.

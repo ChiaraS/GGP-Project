@@ -22,7 +22,6 @@ import org.ggp.base.player.gamer.statemachine.MCTS.SlowSUCTMCTSGamer;
 import org.ggp.base.server.GameServer;
 import org.ggp.base.server.exception.GameServerException;
 import org.ggp.base.util.game.Game;
-import org.ggp.base.util.game.GameRepository;
 import org.ggp.base.util.gdl.grammar.Gdl;
 import org.ggp.base.util.match.Match;
 import org.ggp.base.util.propnet.creationManager.SeparateInternalPropnetCreationManager;
@@ -63,7 +62,9 @@ public class MatchRunner extends Thread{
 	private int ID;
 
 	private String tourneyName;
+	private Game game;
 	private String gameKey;
+	private List<Gdl> description;
 	private int startClock;
 	private int playClock;
 	private long creationTime;
@@ -75,12 +76,14 @@ public class MatchRunner extends Thread{
 	private String resultFolder;
 
 
-	public MatchRunner(int ID, String tourneyName, String gameKey, int startClock, int playClock,
+	public MatchRunner(int ID, String tourneyName, Game game, List<Gdl> description, int startClock, int playClock,
 			long creationTime, boolean invert){
 
 		this.ID = ID;
 		this.tourneyName = tourneyName;
-		this.gameKey = gameKey;
+		this.game = game;
+		this.gameKey = game.getKey();
+		this.description = description;
 		this.startClock = startClock;
 		this.playClock = playClock;
 		this.creationTime = creationTime;
@@ -116,18 +119,11 @@ public class MatchRunner extends Thread{
 
 		LOGGER.info("[MatchRunner] Starting new match: " + matchName);
 
-		Game game = GameRepository.getDefaultRepository().getGame(this.gameKey);
-
-		// Create the propnet
-		GameRepository theRepository = GameRepository.getDefaultRepository();
-
-		List<Gdl> description = theRepository.getGame(this.gameKey).getRules();
-
-        // Create the executor service that will run the propnet manager that creates the propnet
+		// Create the executor service that will run the propnet manager that creates the propnet
         ExecutorService executor = Executors.newSingleThreadExecutor();
 
         // Create the propnet creation manager
-        SeparateInternalPropnetCreationManager manager = new SeparateInternalPropnetCreationManager(description, System.currentTimeMillis() + creationTime);
+        SeparateInternalPropnetCreationManager manager = new SeparateInternalPropnetCreationManager(this.description, System.currentTimeMillis() + creationTime);
 
         // Start the manager
   	  	executor.execute(manager);
