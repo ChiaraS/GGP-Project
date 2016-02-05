@@ -35,9 +35,9 @@ public class GamerLogger {
     }
 
     public static void stopFileLogging() {
-        log("Logger", "Stopped logging to files at: " + new Date());
-        log("Logger", "LOG SEALED");
-        writeLogsToFile = false;
+       // log("Logger", "Stopped logging to files at: " + new Date());
+       // log("Logger", "LOG SEALED");
+       // writeLogsToFile = false;
     }
 
     public static void setSpilloverLogfile(String spilloverFilename) {
@@ -54,6 +54,29 @@ public class GamerLogger {
         log("Logger", "Game rules: " + m.getGame().getRules());
         log("Logger", "Start clock: " + m.getStartClock());
         log("Logger", "Play clock: " + m.getPlayClock());
+    }
+
+    /**
+     * Starts file logging only once setting a logging directory.
+     * If someone else calls this method before the stopFileLogging method
+     * has been called nothing will happen. This method is meant to replace
+     * the startFileLoggingMethod soon.
+     *
+     * @param m
+     * @param roleName
+     */
+    public static void singleStartFileLogging(Match m, String roleName) {
+    	if(!writeLogsToFile){
+	        writeLogsToFile = true;
+	        myDirectory = "logs/" + m.getMatchId() + "-" + roleName;
+
+	        new File(myDirectory).mkdirs();
+
+	        log("Logger", "Started logging to files at: " + new Date());
+	        log("Logger", "Game rules: " + m.getGame().getRules());
+	        log("Logger", "Start clock: " + m.getStartClock());
+	        log("Logger", "Play clock: " + m.getPlayClock());
+    	}
     }
 
     public static void setFileToDisplay(String toFile) {
