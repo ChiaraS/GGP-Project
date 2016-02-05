@@ -1,6 +1,7 @@
 package org.ggp.base.apps.player;
 
 import java.io.IOException;
+import java.lang.management.ManagementFactory;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -40,5 +41,16 @@ public final class PlayerRunner
     	}
     	Gamer gamer = (Gamer) chosenGamerClass.newInstance();
 		new GamePlayer(port, gamer).start();
+
+		for(int i = 0; i < 30; i++){
+			System.out.println("Threads ALL: " + ManagementFactory.getThreadMXBean().getThreadCount());
+			System.out.println("Threads ACTIVE: " + Thread.activeCount());
+			try {
+				Thread.sleep(30000);
+			} catch (InterruptedException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+		}
 	}
 }

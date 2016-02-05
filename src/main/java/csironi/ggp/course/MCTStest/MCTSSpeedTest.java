@@ -15,6 +15,7 @@ import org.ggp.base.player.gamer.statemachine.MCTS.manager.strategies.selection.
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.InternalPropnetMCTSNode;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.MCTSMove;
 import org.ggp.base.util.game.GameRepository;
+import org.ggp.base.util.game.ManualUpdateLocalGameRepository;
 import org.ggp.base.util.gdl.grammar.Gdl;
 import org.ggp.base.util.gdl.grammar.GdlPool;
 import org.ggp.base.util.logging.GamerLogger;
@@ -122,7 +123,7 @@ public class MCTSSpeedTest {
 		GamerLogger.setSpilloverLogfile(s + "MCTSSpeedTestTable.csv");
 	    GamerLogger.log(FORMAT.CSV_FORMAT, s + "MCTSSpeedTestTable", "Game key;#Roles;PN Construction Time (ms);PN Initialization Time (ms);SM initialization time;Test Duration (ms);Search time(ms);Iterations;Visited Nodes;Iterations/second;Nodes/second;Playing role;Chosen move;Scores sum;Visits;AverageScore");
 
-	    GameRepository theRepository = GameRepository.getDefaultRepository();
+	    GameRepository theRepository = new ManualUpdateLocalGameRepository("GGPBase-GameRepo-03022016");
 	    for(String gameKey : theRepository.getGameKeys()) {
 	        if(gameKey.contains("laikLee")) continue;
 
