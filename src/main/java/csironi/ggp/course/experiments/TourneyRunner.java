@@ -6,11 +6,11 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 
+import org.apache.logging.log4j.ThreadContext;
 import org.ggp.base.util.game.Game;
 import org.ggp.base.util.game.GameRepository;
 import org.ggp.base.util.gdl.grammar.Gdl;
 import org.ggp.base.util.logging.GamerLogger;
-import org.ggp.base.util.match.Match;
 import org.ggp.base.util.statemachine.Role;
 
 /**
@@ -47,9 +47,12 @@ public class TourneyRunner {
 			throw new RuntimeException("Game " + gameKey + "cannot be used to test the players because it is not a 2 players game.");
 		}
 
-		Match fakeMatch = new Match(gameKey + "." + System.currentTimeMillis(), -1, -1, -1, game);
+		//Match fakeMatch = new Match(gameKey + "." + System.currentTimeMillis(), -1, -1, -1, game);
 
-		GamerLogger.startFileLogging(fakeMatch, tourneyName);
+		ThreadContext.put("LOG_FOLDER", System.currentTimeMillis() + tourneyName);
+
+		//GamerLogger.startFileLogging(fakeMatch, tourneyName);
+		GamerLogger.startFileLogging();
 
 		GamerLogger.log("TourneyRunner", "Starting tourney " + tourneyName + " for game " + gameKey + " with following settings: START_CLOCK=" +
 				startClock + "s, PLAY_CLOCK=" + playClock + "s, PROPNET_CREATION_TIME=" + creationTime + "ms, NUM_PARALLEL_MATCHES=" +

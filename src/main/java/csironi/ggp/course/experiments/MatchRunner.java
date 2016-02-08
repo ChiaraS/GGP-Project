@@ -10,6 +10,7 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 
+import org.apache.logging.log4j.ThreadContext;
 import org.ggp.base.player.GamePlayer;
 import org.ggp.base.player.gamer.statemachine.MCTS.SlowDUCTMCTSGamer;
 import org.ggp.base.player.gamer.statemachine.MCTS.SlowSUCTMCTSGamer;
@@ -66,9 +67,13 @@ public class MatchRunner extends Thread{
 
 		System.out.println("Starting " + this.ID);
 
-		GamerLogger.log("MatchRunner"+this.ID, "Started MatchRunner " + this.ID + ".");
+		String matchName = this.ID + "." + this.gameKey + "." + System.currentTimeMillis();
 
-		String matchName = this.ID + "." + this.tourneyName + "." + this.gameKey + "." + System.currentTimeMillis();
+		this.resultFolder = ThreadContext.get("LOG_FOLDER");
+
+		ThreadContext.put("LOG_FOLDER", this.resultFolder + "/" + "MatchRunner" + this.ID);
+
+		GamerLogger.log("MatchRunner"+this.ID, "Started MatchRunner " + this.ID + ".");
 
 		GamerLogger.log("MatchRunner"+this.ID, "Starting new match: " + matchName);
 
@@ -228,7 +233,7 @@ public class MatchRunner extends Thread{
 		*/
 
 		// Open up the JSON file for this match, and save the match there.
-		f = new File(this.resultFolder + "/" + matchName + ".json");
+		f = new File(ThreadContext.get("LOG_FOLDER") + "/" + matchName + ".json");
 		if (f.exists()) f.delete();
 		try {
 			bw = new BufferedWriter(new FileWriter(f));
@@ -251,11 +256,17 @@ public class MatchRunner extends Thread{
 			return;
 		}
 
-		for (int i = 0; i < goals.size(); i++){
+		ThreadContext.put("LOG_FOLDER", this.resultFolder);
 
-			CSV_LOGGER.info(this.ID + ";" + matchName + ";" + playerNames.get(i) + ";" + goals.get(i) + ";");
+		String toLog = this.ID + ";" + matchName + ";";
+
+		for(int i = 0; i < goals.size(); i++){
+
+			toLog += playerNames.get(i) + ";" + goals.get(i) + ";";
 
 		}
+
+		GamerLogger.logSync(GamerLogger.FORMAT.CSV_FORMAT, "scores", toLog);
 
 		try{
 			Thread.sleep(1000);

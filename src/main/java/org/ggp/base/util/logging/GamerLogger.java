@@ -12,6 +12,7 @@ import java.util.HashSet;
 import java.util.Random;
 import java.util.Set;
 
+import org.apache.logging.log4j.ThreadContext;
 import org.ggp.base.util.match.Match;
 
 
@@ -38,6 +39,15 @@ public class GamerLogger {
        // log("Logger", "Stopped logging to files at: " + new Date());
        // log("Logger", "LOG SEALED");
        // writeLogsToFile = false;
+    }
+
+    public static void startFileLogging() {
+    	if(!writeLogsToFile){
+    		writeLogsToFile = true;
+
+    		log("Logger", "Started logging to files at: " + new Date());
+
+    	}
     }
 
     public static void setSpilloverLogfile(String spilloverFilename) {
@@ -154,7 +164,60 @@ public class GamerLogger {
     private static final Set<String> filesToSkip = new HashSet<String>();
     private static final long maximumLogfileSize = 25 * 1024 * 1024;
 
+
     private static void logEntry(FORMAT formatType, PrintStream ordinaryOutput, String toFile, String message, int logLevel) {
+        if(suppressLoggerOutput)
+            return;
+
+        // When we're not writing to a particular directory, and we're not spilling over into
+        // a general logfile, write directly to the standard output unless it is really unimportant.
+        if(!writeLogsToFile && spilloverLogfile == null) {
+            if (logLevel >= LOG_LEVEL_ORDINARY) {
+                ordinaryOutput.println("[" + toFile + "] " + message);
+            }
+            return;
+        }
+
+        try {
+            String logMessage = logFormat(formatType, logLevel, ordinaryOutput == System.err, message);
+
+            // If we are also displaying this file, write it to the standard output.
+            if(filesToDisplay.contains(toFile) || logLevel >= minLevelToDisplay) {
+                ordinaryOutput.println("[" + toFile + "] " + message);
+            }
+
+            // When constructing filename, if we are not writing to a particular directory,
+            // go directly to the spillover file if one exists.
+            String completeFilePath = ThreadContext.get("LOG_FOLDER") + "/" + toFile;
+            if(!writeLogsToFile && spilloverLogfile != null) {
+            	completeFilePath = spilloverLogfile;
+            }
+
+            // Periodically check to make sure we're not writing TOO MUCH to this file.
+            if(filesToSkip.size() != 0 && filesToSkip.contains(completeFilePath)) {
+                return;
+            }
+            if(theRandom.nextInt(1000) == 0) {
+                // Verify that the file is not too large.
+                if(new File(completeFilePath).length() > maximumLogfileSize) {
+                    System.err.println("Adding " + completeFilePath + " to filesToSkip.");
+                    filesToSkip.add(completeFilePath);
+                    logLevel = 9;
+                    logMessage = logFormat(formatType, logLevel, ordinaryOutput == System.err, "File too long; stopping all writes to this file.");
+                }
+            }
+
+            // Finally, write the log message to the file.
+            BufferedWriter out = new BufferedWriter(new FileWriter(completeFilePath, true));
+            out.write(logMessage);
+            out.close();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+
+   /* private static void logEntry(FORMAT formatType, PrintStream ordinaryOutput, String toFile, String message, int logLevel) {
         if(suppressLoggerOutput)
             return;
 
@@ -206,6 +269,7 @@ public class GamerLogger {
             e.printStackTrace();
         }
     }
+    */
 
     private static String logFormat(FORMAT formatType, int logLevel, boolean isError, String message) {
 
