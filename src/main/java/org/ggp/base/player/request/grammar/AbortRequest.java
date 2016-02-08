@@ -1,5 +1,7 @@
 package org.ggp.base.player.request.grammar;
 
+import java.util.Date;
+
 import org.ggp.base.player.gamer.Gamer;
 import org.ggp.base.player.gamer.event.GamerAbortedMatchEvent;
 import org.ggp.base.player.gamer.event.GamerUnrecognizedMatchEvent;
@@ -49,11 +51,14 @@ public final class AbortRequest extends Request
 		gamer.setRoleName(null);
 	    gamer.setMatch(null);
 
+	    GamerLogger.log("GamePlayer", "Stopped logging to files at: " + new Date());
+	    GamerLogger.log("GamePlayer", "LOG SEALED");
+
 	    /**
 	     * AGGIUNTA: stop logging for this match
-	     */
+	     *
 	    GamerLogger.stopFileLogging();
-	    /**
+	    **
 	     * FINE AGGUINTA
 	     */
 

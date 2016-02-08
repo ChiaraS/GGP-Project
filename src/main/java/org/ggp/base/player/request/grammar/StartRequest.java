@@ -1,5 +1,8 @@
 package org.ggp.base.player.request.grammar;
 
+import java.util.Date;
+
+import org.apache.logging.log4j.ThreadContext;
 import org.ggp.base.player.event.PlayerTimeEvent;
 import org.ggp.base.player.gamer.Gamer;
 import org.ggp.base.player.gamer.event.GamerNewMatchEvent;
@@ -55,7 +58,15 @@ public final class StartRequest extends Request
 		gamer.setRoleName(roleName);
 		gamer.notifyObservers(new GamerNewMatchEvent(match, roleName));
 
-		GamerLogger.startFileLogging(match, roleName.getValue());
+		String oldFolder = ThreadContext.get("LOG_FOLDER");
+		ThreadContext.put("LOG_FOLDER", oldFolder + "/" + match.getMatchId() + "-" + roleName);
+
+		GamerLogger.log("GamePlayer", "Started match logging at: " + new Date());
+		GamerLogger.log("GamePlayer", "Game rules: " + match.getGame().getRules());
+		GamerLogger.log("GamePlayer", "Start clock: " + match.getStartClock());
+		GamerLogger.log("GamePlayer", "Play clock: " + match.getPlayClock());
+
+		//GamerLogger.startFileLogging(match, roleName.getValue());
 
 		// Finally, have the gamer begin metagaming.
 		try {
@@ -72,7 +83,11 @@ public final class StartRequest extends Request
 			gamer.setMatch(null);
 			gamer.setRoleName(null);
 
-			GamerLogger.stopFileLogging();
+			GamerLogger.log("GamePlayer", "Stopped logging to files at: " + new Date());
+		    GamerLogger.log("GamePlayer", "LOG SEALED");
+
+			ThreadContext.put("LOG_FOLDER", oldFolder);
+			//GamerLogger.stopFileLogging();
 
 			return "busy";
 		}

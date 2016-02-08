@@ -207,6 +207,15 @@ public class GamerLogger {
                 }
             }
 
+            switch(formatType){
+        	case STANDARD_FORMAT: case PLAIN_FORMAT:
+        		completeFilePath += ".log";
+        		break;
+        	case CSV_FORMAT:
+        		completeFilePath += ".csv";
+        		break;
+            }
+
             // Finally, write the log message to the file.
             BufferedWriter out = new BufferedWriter(new FileWriter(completeFilePath, true));
             out.write(logMessage);

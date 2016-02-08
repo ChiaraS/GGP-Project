@@ -1,5 +1,6 @@
 package org.ggp.base.player.request.grammar;
 
+import java.util.Date;
 import java.util.List;
 
 import org.ggp.base.player.gamer.Gamer;
@@ -57,11 +58,14 @@ public final class StopRequest extends Request
 		gamer.setRoleName(null);
 	    gamer.setMatch(null);
 
+	    GamerLogger.log("GamePlayer", "Stopped logging to files at: " + new Date());
+	    GamerLogger.log("GamePlayer", "LOG SEALED");
+
 	    /**
 	     * AGGIUNTA: stop logging for this match
-	     */
+	     *
 	    GamerLogger.stopFileLogging();
-	    /**
+	    **
 	     * FINE AGGUINTA
 	     */
 

@@ -10,6 +10,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.logging.log4j.ThreadContext;
 import org.ggp.base.server.event.ServerAbortedMatchEvent;
 import org.ggp.base.server.event.ServerCompletedMatchEvent;
 import org.ggp.base.server.event.ServerConnectionErrorEvent;
@@ -80,7 +81,7 @@ public final class GameServer extends Thread implements Subject
         try {
 			stateMachine.initialize(match.getGame().getRules(), Long.MAX_VALUE);
 		} catch (StateMachineInitializationException e) {
-			GamerLogger.logError("GameServer", "Failed inititalization of state machine for current match.");
+			GamerLogger.logError("GameServer", "Impossible to create game server! Failed inititalization of state machine for current match.");
 			throw new GameServerException("Impossible to create the game server.", e);
 		}
         currentState = stateMachine.getInitialState();
@@ -160,6 +161,15 @@ public final class GameServer extends Thread implements Subject
 
     @Override
     public void run() {
+
+    	String oldFolder =  ThreadContext.get("LOG_FOLDER");
+
+		if(oldFolder == null){
+			ThreadContext.put("LOG_FOLDER", match.getMatchId() + "-GameServer");
+		}else{
+			ThreadContext.put("LOG_FOLDER", oldFolder + "/" + match.getMatchId() + "-GameServer");
+		}
+
         try {
         	if (match.getPreviewClock() >= 0) {
         		sendPreviewRequests();
@@ -186,6 +196,11 @@ public final class GameServer extends Thread implements Subject
                 appendErrorsToMatchDescription();
 
                 if (match.isAborted()) {
+                	if(oldFolder == null){
+            			ThreadContext.remove("LOG_FOLDER");
+            		}else{
+            			ThreadContext.put("LOG_FOLDER", oldFolder);
+            		}
                 	return;
                 }
             }
@@ -198,12 +213,23 @@ public final class GameServer extends Thread implements Subject
             sendStopRequests(previousMoves);
         } catch (InterruptedException ie) {
         	if (match.isAborted()) {
+        		if(oldFolder == null){
+        			ThreadContext.remove("LOG_FOLDER");
+        		}else{
+        			ThreadContext.put("LOG_FOLDER", oldFolder);
+        		}
         		return;
         	} else {
         		ie.printStackTrace();
         	}
         } catch (Exception e) {
         	e.printStackTrace();
+        }finally{
+        	if(oldFolder == null){
+    			ThreadContext.remove("LOG_FOLDER");
+    		}else{
+    			ThreadContext.put("LOG_FOLDER", oldFolder);
+    		}
         }
     }
 
