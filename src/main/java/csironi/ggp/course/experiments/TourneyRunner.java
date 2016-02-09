@@ -14,6 +14,7 @@ import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.ThreadContext;
 import org.ggp.base.util.game.Game;
 import org.ggp.base.util.game.GameRepository;
+import org.ggp.base.util.game.ManualUpdateLocalGameRepository;
 import org.ggp.base.util.gdl.grammar.Gdl;
 import org.ggp.base.util.statemachine.Role;
 
@@ -58,7 +59,10 @@ public class TourneyRunner {
 		int numParallelMatches = Integer.valueOf(args[5]);
 		int matchesPerConfiguration = Integer.valueOf(args[6]);
 
-		Game game = GameRepository.getDefaultRepository().getGame(gameKey);
+		//Game game = GameRepository.getDefaultRepository().getGame(gameKey);
+		GameRepository gameRepo = new ManualUpdateLocalGameRepository("/home/csironi/GAMEREPOS/GGPBase-GameRepo-03022016");
+
+		Game game = gameRepo.getGame(gameKey);
 
 		int expectedRoles = Role.computeRoles(game.getRules()).size();
 		if (2 != expectedRoles) {
