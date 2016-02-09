@@ -32,7 +32,7 @@ import org.ggp.base.util.propnet.architecture.forwardInterrupting.components.For
 import org.ggp.base.util.propnet.architecture.forwardInterrupting.components.ForwardInterruptingTransition;
 import org.ggp.base.util.propnet.architecture.separateExtendedState.dynamic.DynamicPropNet;
 import org.ggp.base.util.propnet.architecture.separateExtendedState.immutable.ImmutablePropNet;
-import org.ggp.base.util.propnet.creationManager.SeparatePropnetCreationManager;
+import org.ggp.base.util.propnet.creationManager.SeparateInternalPropnetCreationManager;
 import org.ggp.base.util.propnet.factory.ForwardInterruptingPropNetFactory;
 import org.ggp.base.util.propnet.state.ImmutableSeparatePropnetState;
 import org.ggp.base.util.statemachine.InternalPropnetStateMachine;
@@ -194,7 +194,7 @@ public class ProvaPropnet {
         ExecutorService executor = Executors.newSingleThreadExecutor();
 
         // Create the propnet creation manager
-        SeparatePropnetCreationManager manager = new SeparatePropnetCreationManager(description, System.currentTimeMillis() + givenInitTime);
+        SeparateInternalPropnetCreationManager manager = new SeparateInternalPropnetCreationManager(description, System.currentTimeMillis() + givenInitTime);
 
   	  	// Start the manager
   	  	executor.execute(manager);
@@ -398,7 +398,7 @@ public class ProvaPropnet {
         ExecutorService executor = Executors.newSingleThreadExecutor();
 
         // Create the propnet creation manager
-        SeparatePropnetCreationManager manager = new SeparatePropnetCreationManager(description, Long.MAX_VALUE);
+        SeparateInternalPropnetCreationManager manager = new SeparateInternalPropnetCreationManager(description, Long.MAX_VALUE);
 
   	  	// Start the manager
   	  	executor.execute(manager);

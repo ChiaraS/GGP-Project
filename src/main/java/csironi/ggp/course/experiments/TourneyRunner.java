@@ -19,6 +19,10 @@ import org.ggp.base.util.statemachine.Role;
  */
 public class TourneyRunner {
 
+	static{
+		System.setProperty("isThreadContextMapInheritable", "true");
+	}
+
 	/**
 	 *
 	 */
@@ -108,7 +112,7 @@ public class TourneyRunner {
 			GamerLogger.logError("TourneyRunner", "Tourney is taking too long. Interrupting it.");
 			executor.shutdownNow(); // This instruction interrupts all threads.
 		}else{
-			GamerLogger.logError("TourneyRunner", "Tourney completed.");
+			GamerLogger.log("TourneyRunner", "Tourney completed.");
 		}
 	}
 

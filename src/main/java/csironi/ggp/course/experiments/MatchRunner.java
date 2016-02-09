@@ -20,7 +20,7 @@ import org.ggp.base.util.game.Game;
 import org.ggp.base.util.gdl.grammar.Gdl;
 import org.ggp.base.util.logging.GamerLogger;
 import org.ggp.base.util.match.Match;
-import org.ggp.base.util.propnet.creationManager.SeparatePropnetCreationManager;
+import org.ggp.base.util.propnet.creationManager.SeparateInternalPropnetCreationManager;
 import org.ggp.base.util.statemachine.InternalPropnetStateMachine;
 import org.ggp.base.util.statemachine.exceptions.GoalDefinitionException;
 import org.ggp.base.util.statemachine.exceptions.StateMachineException;
@@ -77,7 +77,7 @@ public class MatchRunner extends Thread{
         ExecutorService executor = Executors.newSingleThreadExecutor();
 
         // Create the propnet creation manager
-     !   SeparatePropnetCreationManager manager = new SeparatePropnetCreationManager(this.description, System.currentTimeMillis() + creationTime);
+        SeparateInternalPropnetCreationManager manager = new SeparateInternalPropnetCreationManager(this.description, System.currentTimeMillis() + creationTime);
 
         // Start the manager
   	  	executor.execute(manager);
@@ -260,7 +260,7 @@ public class MatchRunner extends Thread{
 			return;
 		}
 
-		this.resetLogFolder(oldFolder);
+		//this.resetLogFolder(oldFolder);
 
 		String toLog = this.ID + ";" + matchName + ";";
 
@@ -270,7 +270,9 @@ public class MatchRunner extends Thread{
 
 		}
 
-		GamerLogger.logSync(GamerLogger.FORMAT.CSV_FORMAT, "scores", toLog);
+		//GamerLogger.logSync(GamerLogger.FORMAT.CSV_FORMAT, "scores", toLog);
+
+		GamerLogger.log(GamerLogger.FORMAT.CSV_FORMAT, "scores", toLog);
 
 		try{
 			Thread.sleep(1000);
@@ -280,6 +282,8 @@ public class MatchRunner extends Thread{
 
 		ductPlayer.shutdown();
 		suctPlayer.shutdown();
+
+		this.resetLogFolder(oldFolder);
 
 		System.out.println("Ending " + this.ID);
 

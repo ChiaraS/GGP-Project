@@ -188,9 +188,16 @@ public class GamerLogger {
 
             // When constructing filename, if we are not writing to a particular directory,
             // go directly to the spillover file if one exists.
-            String completeFilePath = ThreadContext.get("LOG_FOLDER") + "/" + toFile;
+            String completeFilePath;
             if(!writeLogsToFile && spilloverLogfile != null) {
             	completeFilePath = spilloverLogfile;
+            }else{
+            	completeFilePath = ThreadContext.get("LOG_FOLDER");
+            	File f = new File(completeFilePath);
+            	if(!f.exists()){
+            		f.mkdirs();
+            	}
+            	completeFilePath += "/" + toFile;
             }
 
             // Periodically check to make sure we're not writing TOO MUCH to this file.

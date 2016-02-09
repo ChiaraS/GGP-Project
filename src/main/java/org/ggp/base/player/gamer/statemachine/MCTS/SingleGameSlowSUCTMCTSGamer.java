@@ -15,7 +15,7 @@ public class SingleGameSlowSUCTMCTSGamer extends SlowUCTMCTSGamer{
 	public SingleGameSlowSUCTMCTSGamer() {
 		super();
 		this.DUCT = false;
-		this.singleGame = true;
+		this.propnetBuild = PROPNET_BUILD.ONCE;
 	}
 
 }

@@ -43,7 +43,7 @@ import org.ggp.base.util.statemachine.Role;
  * @author C.Sironi
  *
  */
-public class SeparatePropnetCreationManager extends Thread{
+public class SeparateInternalPropnetCreationManager extends Thread{
 
 	private List<Gdl> description;
 
@@ -74,7 +74,7 @@ public class SeparatePropnetCreationManager extends Thread{
 	 */
 	private ImmutableSeparatePropnetState initialPropnetState;
 
-	public SeparatePropnetCreationManager(List<Gdl> description, long timeout) {
+	public SeparateInternalPropnetCreationManager(List<Gdl> description, long timeout) {
 		this.description = description;
 		this.timeout = timeout;
 	}
