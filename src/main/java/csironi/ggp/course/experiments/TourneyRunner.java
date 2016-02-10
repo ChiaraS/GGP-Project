@@ -73,8 +73,8 @@ public class TourneyRunner {
 		ExecutorService executor = Executors.newFixedThreadPool(numParallelMatches);
 
 		for(int i = 0; i < matchesPerConfiguration; i++){
-			executor.execute(new MatchRunner(i, tourneyName, game, description, startClock, playClock, creationTime, false));
-			executor.execute(new MatchRunner((i+matchesPerConfiguration), tourneyName, game, description, startClock, playClock, creationTime, true));
+			executor.execute(new MatchRunner(i, /*tourneyName,*/ game, description, startClock, playClock, creationTime, false));
+			executor.execute(new MatchRunner((i+matchesPerConfiguration), /*tourneyName,*/ game, description, startClock, playClock, creationTime, true));
 		}
 
 		// Shutdown executor to tell it not to accept any more task to execute.

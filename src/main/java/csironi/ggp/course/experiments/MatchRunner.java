@@ -30,7 +30,7 @@ public class MatchRunner extends Thread{
 
 	private int ID;
 
-	private String tourneyName;
+	//private String tourneyName;
 	private Game game;
 	private String gameKey;
 	private List<Gdl> description;
@@ -39,11 +39,11 @@ public class MatchRunner extends Thread{
 	private long creationTime;
 	private boolean invert;
 
-	public MatchRunner(int ID, String tourneyName, Game game, List<Gdl> description, int startClock, int playClock,
+	public MatchRunner(int ID, /*String tourneyName,*/ Game game, List<Gdl> description, int startClock, int playClock,
 			long creationTime, boolean invert){
 
 		this.ID = ID;
-		this.tourneyName = tourneyName;
+		//this.tourneyName = tourneyName;
 		this.game = game;
 		this.gameKey = game.getKey();
 		this.description = description;
@@ -274,11 +274,13 @@ public class MatchRunner extends Thread{
 
 		GamerLogger.log(GamerLogger.FORMAT.CSV_FORMAT, "scores", toLog);
 
+		/*
 		try{
 			Thread.sleep(1000);
 		}catch(InterruptedException e){
 
 		}
+		*/
 
 		ductPlayer.shutdown();
 		suctPlayer.shutdown();
