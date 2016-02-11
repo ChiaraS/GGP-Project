@@ -12,8 +12,7 @@ import java.util.concurrent.TimeUnit;
 
 import org.apache.logging.log4j.ThreadContext;
 import org.ggp.base.player.GamePlayer;
-import org.ggp.base.player.gamer.statemachine.MCTS.SlowDUCTMCTSGamer;
-import org.ggp.base.player.gamer.statemachine.MCTS.SlowSUCTMCTSGamer;
+import org.ggp.base.player.gamer.statemachine.propnet.InternalPropnetGamer;
 import org.ggp.base.server.GameServer;
 import org.ggp.base.server.exception.GameServerException;
 import org.ggp.base.util.game.Game;
@@ -21,7 +20,6 @@ import org.ggp.base.util.gdl.grammar.Gdl;
 import org.ggp.base.util.logging.GamerLogger;
 import org.ggp.base.util.match.Match;
 import org.ggp.base.util.propnet.creationManager.SeparateInternalPropnetCreationManager;
-import org.ggp.base.util.statemachine.InternalPropnetStateMachine;
 import org.ggp.base.util.statemachine.exceptions.GoalDefinitionException;
 import org.ggp.base.util.statemachine.exceptions.StateMachineException;
 import org.ggp.base.util.statemachine.implementation.propnet.SeparateInternalPropnetStateMachine;
@@ -36,11 +34,11 @@ public class MatchRunner extends Thread{
 	private List<Gdl> description;
 	private int startClock;
 	private int playClock;
-	private long creationTime;
-	private boolean invert;
+	private long pnCreationTime;
+	private List<Class<?>> theGamerClasses;
 
 	public MatchRunner(int ID, /*String tourneyName,*/ Game game, List<Gdl> description, int startClock, int playClock,
-			long creationTime, boolean invert){
+			long pnCreationTime, List<Class<?>> theGamerClasses){
 
 		this.ID = ID;
 		//this.tourneyName = tourneyName;
@@ -49,8 +47,8 @@ public class MatchRunner extends Thread{
 		this.description = description;
 		this.startClock = startClock;
 		this.playClock = playClock;
-		this.creationTime = creationTime;
-		this.invert = invert;
+		this.pnCreationTime = pnCreationTime;
+		this.theGamerClasses = theGamerClasses;
 
 	}
 
@@ -77,7 +75,7 @@ public class MatchRunner extends Thread{
         ExecutorService executor = Executors.newSingleThreadExecutor();
 
         // Create the propnet creation manager
-        SeparateInternalPropnetCreationManager manager = new SeparateInternalPropnetCreationManager(this.description, System.currentTimeMillis() + creationTime);
+        SeparateInternalPropnetCreationManager manager = new SeparateInternalPropnetCreationManager(this.description, System.currentTimeMillis() + pnCreationTime);
 
         // Start the manager
   	  	executor.execute(manager);
@@ -88,7 +86,7 @@ public class MatchRunner extends Thread{
 
 		// Tell the executor to wait until the currently running task has completed execution or the timeout has elapsed.
 		try{
-			executor.awaitTermination(creationTime, TimeUnit.MILLISECONDS);
+			executor.awaitTermination(pnCreationTime, TimeUnit.MILLISECONDS);
 		}catch(InterruptedException e){ // The thread running the verifier has been interrupted => stop the test
 			executor.shutdownNow(); // Interrupt everything
 			GamerLogger.logError("MatchRunner", "Program interrupted. Match of game "+ this.gameKey +" won't be performed.");
@@ -127,13 +125,80 @@ public class MatchRunner extends Thread{
 			return;
 		}
 
-		InternalPropnetStateMachine theMachine1 = new SeparateInternalPropnetStateMachine(manager.getImmutablePropnet(), manager.getInitialPropnetState());
+		// Create the players.
+		List<GamePlayer> thePlayers = new ArrayList<GamePlayer>();
 
+		List<String> hostNames = new ArrayList<String>();
+		List<String> playerNames = new ArrayList<String>();
+		List<Integer> portNumbers = new ArrayList<Integer>();
+
+		InternalPropnetGamer theGamer;
+		int i = 0;
+		for(Class<?> gamerClass : this.theGamerClasses){
+			try {
+				theGamer  = (InternalPropnetGamer) gamerClass.newInstance();
+			} catch (InstantiationException | IllegalAccessException e) {
+				GamerLogger.logError("MatchRunner", "Impossible to play the match. Error when instantiating the gamer " + gamerClass.getSimpleName() + ".");
+				GamerLogger.logStackTrace("MatchRunner", e);
+				this.resetLogFolder(oldFolder);
+				return;
+			}
+			theGamer.setExternalStateMachine(new SeparateInternalPropnetStateMachine(manager.getImmutablePropnet(), manager.getInitialPropnetState()));
+
+			try {
+				thePlayers.add(new GamePlayer(9000 + i + (this.ID * this.theGamerClasses.size()), theGamer));
+			} catch (IOException e) {
+				GamerLogger.logError("MatchRunner", "Impossible to play the match. Error when creating game player for gamer " + theGamer.getName() + ".");
+				GamerLogger.logStackTrace("MatchRunner", e);
+				this.resetLogFolder(oldFolder);
+				return;
+			}
+			hostNames.add("127.0.0.1");
+			playerNames.add(theGamer.getName());
+			portNumbers.add(thePlayers.get(i).getGamerPort());
+			i++;
+		}
+
+		// Start all players (after creating them all so that if the creation of one of them throws an exception
+		// we won't have to think about stopping all previously started players).
+		for(GamePlayer player : thePlayers){
+			player.start();
+		}
+
+
+		/*
+		InternalPropnetStateMachine theMachine1 = new SeparateInternalPropnetStateMachine(manager.getImmutablePropnet(), manager.getInitialPropnetState());
 		InternalPropnetStateMachine theMachine2 = new SeparateInternalPropnetStateMachine(manager.getImmutablePropnet(), manager.getInitialPropnetState());
 
-		SlowDUCTMCTSGamer ductGamer = new SlowDUCTMCTSGamer(theMachine1);
+		//SlowDUCTMCTSGamer ductGamer1 = new SlowDUCTMCTSGamer();
+		//ductGamer1.setExternalStateMachine(theMachine1);
+		//SlowDUCTMCTSGamer ductGamer2 = new SlowDUCTMCTSGamer();
+		//ductGamer2.setExternalStateMachine(theMachine2);
 
-		SlowSUCTMCTSGamer suctGamer = new SlowSUCTMCTSGamer(theMachine2);
+		SlowDUCTMCTSGamer ductGamer = new SlowDUCTMCTSGamer();
+		ductGamer.setExternalStateMachine(theMachine1);
+
+		SlowSUCTMCTSGamer suctGamer = new SlowSUCTMCTSGamer();
+		suctGamer.setExternalStateMachine(theMachine2);
+
+		//GamePlayer ductPlayer1 = null;
+		//try {
+		//	ductPlayer1 = new GamePlayer(9147 + (this.ID * 2), ductGamer1);
+		//} catch (IOException e) {
+		//	GamerLogger.logError("MatchRunner", "Impossible to play the match. Error when creating game player.");
+		//	GamerLogger.logStackTrace("MatchRunner", e);
+		//	this.resetLogFolder(oldFolder);
+		//	return;
+		//}
+		//GamePlayer ductPlayer2 = null;
+		//try {
+		//	ductPlayer2 = new GamePlayer(9148 + (this.ID * 2), ductGamer2);
+		//} catch (IOException e) {
+		//	GamerLogger.logError("MatchRunner", "Impossible to play the match. Error when creating game player.");
+		//	GamerLogger.logStackTrace("MatchRunner", e);
+		//	this.resetLogFolder(oldFolder);
+		//	return;
+		//}
 
 		GamePlayer ductPlayer = null;
 		try {
@@ -144,6 +209,7 @@ public class MatchRunner extends Thread{
 			this.resetLogFolder(oldFolder);
 			return;
 		}
+
 		GamePlayer suctPlayer = null;
 		try {
 			suctPlayer = new GamePlayer(9148 + (this.ID * 2), suctGamer);
@@ -154,9 +220,13 @@ public class MatchRunner extends Thread{
 			return;
 		}
 
+		//int ductPort1 = ductPlayer1.getGamerPort();
+		//int ductPort2 = ductPlayer2.getGamerPort();
 		int ductPort = ductPlayer.getGamerPort();
 		int suctPort = suctPlayer.getGamerPort();
 
+		//ductPlayer1.start();
+		//ductPlayer2.start();
 		ductPlayer.start();
 		suctPlayer.start();
 
@@ -171,17 +241,27 @@ public class MatchRunner extends Thread{
 
 			portNumbers.add(suctPort);
 			portNumbers.add(ductPort);
+			//portNumbers.add(ductPort2);
+			//portNumbers.add(ductPort1);
 
 			playerNames.add("SUCT");
 			playerNames.add("DUCT");
+			//playerNames.add("DUCT2");
+			//playerNames.add("DUCT1");
 
 		}else{
+			//portNumbers.add(ductPort1);
+			//portNumbers.add(ductPort2);
 			portNumbers.add(ductPort);
 			portNumbers.add(suctPort);
 
+
+			//playerNames.add("DUCT1");
+			//playerNames.add("DUCT2");
 			playerNames.add("DUCT");
 			playerNames.add("SUCT");
 		}
+		*/
 
 		Match match = new Match(matchName, -1, this.startClock, this.playClock, game);
 		match.setPlayerNamesFromHost(playerNames);
@@ -193,26 +273,42 @@ public class MatchRunner extends Thread{
 		} catch (GameServerException e) {
 			GamerLogger.logError("MatchRunner", "Impossible to play the match. Error when creating game server.");
 			GamerLogger.logStackTrace("MatchRunner", e);
-			ductPlayer.shutdown();
-			suctPlayer.shutdown();
+			//ductPlayer1.shutdown();
+			//ductPlayer2.shutdown();
+			//ductPlayer.shutdown();
+			//suctPlayer.shutdown();
+			for(GamePlayer player : thePlayers){
+				player.shutdown();
+			}
 			this.resetLogFolder(oldFolder);
 			return;
 		}
+
 		server.start();
+
 		try {
 			server.join();
 		} catch (InterruptedException e) {
 			GamerLogger.logError("MatchRunner", "Program interrupted. Impossible to complete the match.");
 			GamerLogger.logStackTrace("MatchRunner", e);
 			server.abort();
-			ductPlayer.shutdown();
-			suctPlayer.shutdown();
+			//ductPlayer1.shutdown();
+			//ductPlayer2.shutdown();
+			//ductPlayer.shutdown();
+			//suctPlayer.shutdown();
+			for(GamePlayer player : thePlayers){
+				player.shutdown();
+			}
 			this.resetLogFolder(oldFolder);
 			Thread.currentThread().interrupt();
 			return;
 		}
 
 		GamerLogger.log("MatchRunner", "Execution of match " + matchName + " completed.");
+
+		for(GamePlayer player : thePlayers){
+			player.shutdown();
+		}
 
 		// Open up the directory for this tournament.
 		//File f = new File(oldFolder);
@@ -264,9 +360,9 @@ public class MatchRunner extends Thread{
 
 		String toLog = this.ID + ";" + matchName + ";";
 
-		for(int i = 0; i < goals.size(); i++){
+		for(int j = 0; j < goals.size(); j++){
 
-			toLog += playerNames.get(i) + ";" + goals.get(i) + ";";
+			toLog += playerNames.get(j) + ";" + goals.get(j) + ";";
 
 		}
 
@@ -282,8 +378,11 @@ public class MatchRunner extends Thread{
 		}
 		*/
 
-		ductPlayer.shutdown();
-		suctPlayer.shutdown();
+		//ductPlayer1.shutdown();
+		//ductPlayer2.shutdown();
+
+		//ductPlayer.shutdown();
+		//suctPlayer.shutdown();
 
 		this.resetLogFolder(oldFolder);
 

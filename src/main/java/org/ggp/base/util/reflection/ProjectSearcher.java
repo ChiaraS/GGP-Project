@@ -4,6 +4,7 @@ import java.lang.reflect.Modifier;
 
 import org.ggp.base.apps.kiosk.GameCanvas;
 import org.ggp.base.player.gamer.Gamer;
+import org.ggp.base.player.gamer.statemachine.propnet.InternalPropnetGamer;
 import org.reflections.Reflections;
 
 import com.google.common.base.Objects;
@@ -15,12 +16,14 @@ public class ProjectSearcher {
 	public static void main(String[] args)
 	{
 		System.out.println(GAMERS);
+		System.out.println(INTERNAL_PROPNET_GAMERS);
         System.out.println(GAME_CANVASES);
 	}
 
     private static final Reflections REFLECTIONS = new Reflections();
 
     public static final LoadedClasses<Gamer> GAMERS = new LoadedClasses<Gamer>(Gamer.class);
+    public static final LoadedClasses<InternalPropnetGamer> INTERNAL_PROPNET_GAMERS = new LoadedClasses<InternalPropnetGamer>(InternalPropnetGamer.class);
     public static final LoadedClasses<GameCanvas> GAME_CANVASES = new LoadedClasses<GameCanvas>(GameCanvas.class);
 
     public static final <T> ImmutableSet<Class<? extends T>> getAllClassesThatAre(Class<T> klass) {

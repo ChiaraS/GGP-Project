@@ -30,9 +30,14 @@ public class StatsSummarizer {
 	 */
 	public static void main(String[] args) {
 
+		if(args.length != 1){
+			System.out.println("Impossible to start statistics summarization. Specify the folder containing the MatchesLogs folder for which to create the statistics.");
+			return;
+		}
+
 		String mainFolderPath = args[0];
 
-		String matchLogFolderPath = mainFolderPath + "/MatchLogs";
+		String matchLogFolderPath = mainFolderPath + "/MatchesLogs";
 
 		File matchLogFolder = new File(matchLogFolderPath);
 

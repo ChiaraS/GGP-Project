@@ -3,7 +3,6 @@
  */
 package org.ggp.base.player.gamer.statemachine.MCTS;
 
-import org.ggp.base.util.statemachine.InternalPropnetStateMachine;
 
 /**
  * Standard (i.e. non single-game) gamer that performs DUCT/MCTS.
@@ -22,8 +21,10 @@ public class SlowDUCTMCTSGamer extends SlowUCTMCTSGamer {
 	/**
 	 *
 	 */
+	/*
 	public SlowDUCTMCTSGamer(InternalPropnetStateMachine thePropnetMachine) {
 		super(thePropnetMachine);
 	}
+	*/
 
 }

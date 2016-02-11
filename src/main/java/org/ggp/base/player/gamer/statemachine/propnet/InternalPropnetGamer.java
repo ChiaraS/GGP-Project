@@ -112,6 +112,7 @@ public abstract class InternalPropnetGamer extends StateMachineGamer {
 	/**
 	 *
 	 */
+	/*
 	public InternalPropnetGamer(InternalPropnetStateMachine thePropnetMachine){
 		// TODO: change code so that the parameters can be set from outside.
 		this.safetyMargin = 10000L;
@@ -119,6 +120,24 @@ public abstract class InternalPropnetGamer extends StateMachineGamer {
 		this.propnetBuild = PROPNET_BUILD.NEVER;
 		this.firstTry = true;
 
+	}
+	*/
+
+	/**
+	 * This method sets the state machine with a state machine built externally and sets
+	 * this game to always use such state machine without creating a new one. Always remember
+	 * to also initialize the state machine before giving it as input to this method.
+	 *
+	 * This method is safe to use if called right after the initialization of the gamer.
+	 * It should also be safe to use between matches.
+	 * However, switching state machine while playing a match is potentially not safe and depends
+	 * on the actual implementation of the state machine.
+	 *
+	 * @param thePropnetMachine the state machine to set.
+	 */
+	public void setExternalStateMachine(InternalPropnetStateMachine thePropnetMachine){
+		this.thePropnetMachine = thePropnetMachine;
+		this.propnetBuild = PROPNET_BUILD.NEVER;
 	}
 
 	/* (non-Javadoc)

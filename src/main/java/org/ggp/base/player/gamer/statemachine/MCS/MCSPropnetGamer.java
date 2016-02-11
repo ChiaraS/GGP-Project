@@ -60,6 +60,7 @@ public class MCSPropnetGamer extends InternalPropnetGamer {
 	 */
 	public MCSPropnetGamer() {
 
+		super();
 		this.maxSearchDepth = 500;
 
 	}

@@ -1,5 +1,6 @@
 package csironi.ggp.course.experiments;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -11,9 +12,17 @@ import org.ggp.base.util.game.GameRepository;
 import org.ggp.base.util.game.ManualUpdateLocalGameRepository;
 import org.ggp.base.util.gdl.grammar.Gdl;
 import org.ggp.base.util.logging.GamerLogger;
+import org.ggp.base.util.reflection.ProjectSearcher;
 import org.ggp.base.util.statemachine.Role;
 
 /**
+ * This class takes care of performing a tourney for the given game.
+ * For the given game it computes all the possible combinations in which the given
+ * gamer types can be assigned (with no exclusion of any of the types) to the roles
+ * in the game and performs the specified amount of matches for each combination,
+ * with the given settings.
+ *
+ * NOTE: for now it works only if #gamerTypes <= #gameRoles
  * @author C.Sironi
  *
  */
@@ -35,6 +44,12 @@ public class TourneyRunner {
 	 */
 	public static void main(String[] args) {
 
+		if(args.length < 8){
+			System.out.println("Impossible to start tourney, missing inputs. Please give the following parameters to the command line:");
+			System.out.println("[tourneyName] [gameKey] [startClock(sec)] [playClock(sec)] [propnetCreationTime(ms)] [numParallelMatches] [matchesPerConfiguration] [listOfGamersTypes]");
+			return;
+		}
+
 		// Extract the desired configuration from the command line.
 		String tourneyName = args[0];
 		String gameKey = args[1];
@@ -43,6 +58,46 @@ public class TourneyRunner {
 		long creationTime = Long.valueOf(args[4]);
 		int numParallelMatches = Integer.valueOf(args[5]);
 		int matchesPerConfiguration = Integer.valueOf(args[6]);
+
+		List<Class<?>> gamersClasses = new ArrayList<Class<?>>();
+
+		String gamerType;
+    	for (int i = 7; i < args.length; i++){
+    		gamerType = args[i];
+    		Class<?> theCorrespondingClass = null;
+    		for (Class<?> gamerClass : ProjectSearcher.INTERNAL_PROPNET_GAMERS.getConcreteClasses()) {
+        		if(gamerClass.getSimpleName().equals(gamerType)){
+        			theCorrespondingClass = gamerClass;
+        		}
+        	}
+    		if(theCorrespondingClass == null){
+    			System.out.println("Impossible to start tourney, unexisting gamer type " + gamerType + ".");
+    			return;
+    		}else{
+    			gamersClasses.add(theCorrespondingClass);
+    		}
+		}
+
+
+    	// Compute all combinations of gamer types
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 		//Game game = GameRepository.getDefaultRepository().getGame(gameKey);
 
@@ -62,9 +117,15 @@ public class TourneyRunner {
 		//GamerLogger.startFileLogging(fakeMatch, tourneyName);
 		GamerLogger.startFileLogging();
 
+		String gamerTypesList = "[ ";
+		for (Class<?> gamerClass : gamersClasses) {
+			gamerTypesList += (gamerClass.getSimpleName() + " ");
+    	}
+		gamerTypesList += "]";
+
 		GamerLogger.log("TourneyRunner", "Starting tourney " + tourneyName + " for game " + gameKey + " with following settings: START_CLOCK=" +
 				startClock + "s, PLAY_CLOCK=" + playClock + "s, PROPNET_CREATION_TIME=" + creationTime + "ms, NUM_PARALLEL_MATCHES=" +
-				numParallelMatches + ", NUM_MATCHES_PER_CONFIG=" + matchesPerConfiguration + ".");
+				numParallelMatches + ", NUM_MATCHES_PER_CONFIG=" + matchesPerConfiguration + ", GAMER_TYPES=" + gamerTypesList + ".");
 
 		List<Gdl> description = game.getRules();
 
@@ -73,14 +134,13 @@ public class TourneyRunner {
 		ExecutorService executor = Executors.newFixedThreadPool(numParallelMatches);
 
 		for(int i = 0; i < matchesPerConfiguration; i++){
-			executor.execute(new MatchRunner(i, /*tourneyName,*/ game, description, startClock, playClock, creationTime, false));
-			executor.execute(new MatchRunner((i+matchesPerConfiguration), /*tourneyName,*/ game, description, startClock, playClock, creationTime, true));
+			//TODO: executor.execute(new MatchRunner(i, game, description, startClock, playClock, creationTime, false));
+			//TODO: executor.execute(new MatchRunner((i+matchesPerConfiguration), game, description, startClock, playClock, creationTime, true));
 		}
 
 		// Shutdown executor to tell it not to accept any more task to execute.
 		// Note that this doesn't interrupt previously started tasks nor avoids executing previously submitted tasks.
 		executor.shutdown();
-
 
 		/*
 		while(!(executor.isTerminated())){
@@ -94,10 +154,6 @@ public class TourneyRunner {
 			}
 		}
 		*/
-
-
-
-
 
 		// Tell the executor to wait until all currently running tasks have completed execution.
 		try {
@@ -118,6 +174,8 @@ public class TourneyRunner {
 		}else{
 			GamerLogger.log("TourneyRunner", "Tourney completed.");
 		}
+
 	}
+
 
 }
