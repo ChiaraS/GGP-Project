@@ -1,7 +1,7 @@
 /**
  *
  */
-package csironi.ggp.course.logSummarizer;
+package csironi.ggp.course.statsSummarizer;
 
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
@@ -23,7 +23,7 @@ import external.JSON.JSONObject;
  * @author C.Sironi
  *
  */
-public class LogSummarizer {
+public class StatsSummarizer {
 
 	/**
 	 * @param args
@@ -31,6 +31,7 @@ public class LogSummarizer {
 	public static void main(String[] args) {
 
 		String mainFolderPath = args[0];
+
 		String matchLogFolderPath = mainFolderPath + "/MatchLogs";
 
 		File matchLogFolder = new File(matchLogFolderPath);
@@ -47,19 +48,23 @@ public class LogSummarizer {
 					return;
 				}
 			}else{
-				rejectedFilesFolder.mkdir();
+				if(!rejectedFilesFolder.mkdir()){
+					System.out.println("Summarization interrupted. Cannot create the RejectedFiles folder.");
+				}
 			}
 
 			// Create (or empty if it already exists) the folder where to save all the statistics.
 			String statsFolderPath = mainFolderPath + "/Statistics";
 			File statsFolder = new File(statsFolderPath);
 			if(statsFolder.isDirectory()){
-				if(!emptyFolder(rejectedFilesFolder)){
+				if(!emptyFolder(statsFolder)){
 					System.out.println("Summarization interrupted. Cannot empty the Statistics folder.");
 					return;
 				}
 			}else{
-				statsFolder.mkdir();
+				if(!statsFolder.mkdir()){
+					System.out.println("Summarization interrupted. Cannot create the Statistics folder.");
+				}
 			}
 
 			// TODO: here, before analyzing all .json files, we can look in the folder for each combination of players
@@ -77,7 +82,17 @@ public class LogSummarizer {
 
 			for(int i = 0; i < children.length; i++){
 
-				if(children[i].isFile()){ // TODO: check extension == .json?
+				if(children[i].isFile()){
+
+					String[] splittedName = children[i].getName().split("\\.");
+
+					if(!splittedName[splittedName.length-1].equalsIgnoreCase("json")){
+						System.out.println("Found a file without .json extension.");
+		            	System.out.println("Rejecting file.");
+		            	rejectFile(children[i], rejectedFilesFolderPath);
+		            	continue;
+					}
+
 					BufferedReader br;
 					String theLine;
 					try {
@@ -87,6 +102,14 @@ public class LogSummarizer {
 					} catch (IOException e) {
 						System.out.println("Exception when reading a file in the match log folder.");
 		            	e.printStackTrace();
+		            	System.out.println("Rejecting file.");
+		            	rejectFile(children[i], rejectedFilesFolderPath);
+		            	continue;
+					}
+
+					// Check if the file was empty.
+					if(theLine == null || theLine.equals("")){
+						System.out.println("Empty JSON file.");
 		            	System.out.println("Rejecting file.");
 		            	rejectFile(children[i], rejectedFilesFolderPath);
 		            	continue;
@@ -206,7 +229,7 @@ public class LogSummarizer {
 
 			writeToFile(scoresStatsFilePath, "Player;#Samples;MaxScore;MinScore;StandardDeviation;StdErrMean;AvgScore;ConfidenceInterval;");
 
-			writeToFile(scoresStatsFilePath, "Player;#Samples;MaxPoints;MinPoints;StandardDeviation;StdErrMean;AvgWin%;ConfidenceInterval;");
+			writeToFile(pointsStatsFilePath, "Player;#Samples;MaxPoints;MinPoints;StandardDeviation;StdErrMean;AvgWin%;ConfidenceInterval;");
 
 			for(Entry<String, PlayerStatistics> entry : playersStatistics.entrySet()){
 
@@ -229,8 +252,6 @@ public class LogSummarizer {
 
 			}
 
-
-
 		}else{
 			System.out.println("Impossible to find the log directory to summarize.");
 		}
@@ -251,7 +272,7 @@ public class LogSummarizer {
 					return false;
 				}
 			}
-			if(children[i].delete()){
+			if(!children[i].delete()){
 				return false;
 			}
 		}
@@ -338,7 +359,7 @@ public class LogSummarizer {
 		BufferedWriter out;
 		try {
 			out = new BufferedWriter(new FileWriter(filename, true));
-			out.write(message+"/n");
+			out.write(message+"\n");
             out.close();
 		} catch (IOException e) {
 			System.out.println("Error writing file " + filename + ".");

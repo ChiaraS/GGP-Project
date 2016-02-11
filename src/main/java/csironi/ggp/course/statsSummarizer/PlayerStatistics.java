@@ -1,7 +1,7 @@
 /**
  *
  */
-package csironi.ggp.course.logSummarizer;
+package csironi.ggp.course.statsSummarizer;
 
 import java.util.ArrayList;
 import java.util.List;
