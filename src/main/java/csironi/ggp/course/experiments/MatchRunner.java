@@ -37,7 +37,7 @@ public class MatchRunner extends Thread{
 	private long pnCreationTime;
 	private List<Class<?>> theGamerClasses;
 
-	public MatchRunner(int ID, /*String tourneyName,*/ Game game, List<Gdl> description, int startClock, int playClock,
+	public MatchRunner(int ID, Game game, List<Gdl> description, int startClock, int playClock,
 			long pnCreationTime, List<Class<?>> theGamerClasses){
 
 		this.ID = ID;
