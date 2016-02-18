@@ -37,8 +37,11 @@ public class MCTSTranspositionTable {
 	public InternalPropnetMCTSNode getNode(InternalPropnetMachineState state){
 		InternalPropnetMCTSNode node = this.transpositionTable.get(state);
 		if(node != null){
+			//System.out.println("Found");
 			node.setGameStepStamp(this.currentGameStepStamp);
-		}
+		}/*else{
+			System.out.println("Not found");
+		}*/
 		return node;
 	}
 

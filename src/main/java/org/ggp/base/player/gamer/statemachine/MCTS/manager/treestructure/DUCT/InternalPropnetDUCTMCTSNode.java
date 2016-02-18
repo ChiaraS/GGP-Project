@@ -9,14 +9,14 @@ public class InternalPropnetDUCTMCTSNode extends InternalPropnetMCTSNode{
 	/**
 	 * List of the moves' statistics for each role in the state corresponding to this node.
 	 */
-	private DUCTMCTSMove[][] moves;
+	private DUCTMCTSMoveStats[][] moves;
 
 	/**
 	 * Number of unexplored moves for each player.
 	 */
 	private int[] unexploredMovesCount;
 
-	public InternalPropnetDUCTMCTSNode(DUCTMCTSMove[][] moves, int[] goals, boolean terminal) {
+	public InternalPropnetDUCTMCTSNode(DUCTMCTSMoveStats[][] moves, int[] goals, boolean terminal) {
 
 		super(goals, terminal);
 		this.moves = moves;
@@ -33,7 +33,7 @@ public class InternalPropnetDUCTMCTSNode extends InternalPropnetMCTSNode{
 		}
 	}
 
-	public DUCTMCTSMove[][] getMoves(){
+	public DUCTMCTSMoveStats[][] getMoves(){
 		return this.moves;
 	}
 

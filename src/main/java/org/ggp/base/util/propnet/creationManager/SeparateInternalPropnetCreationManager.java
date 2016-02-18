@@ -313,12 +313,10 @@ public class SeparateInternalPropnetCreationManager extends Thread{
 			i = 0;
 			// For each dynamic input proposition...
 			for(DynamicProposition dynamicInput : dynamicInputPropositions){
-				// ...get the corresponding immutable input,...
-				ImmutableProposition input = (ImmutableProposition) immutableComponents[dynamicInput.getStructureIndex()];
-				// ...add it to the immutable inputs array,...
-				immutableInputPropositions[i] = input;
+				// ...get the corresponding immutable input and add it to the immutable inputs array,...
+				immutableInputPropositions[i] = (ImmutableProposition) immutableComponents[dynamicInput.getStructureIndex()];
 				// ...and set its state index to the correct value.
-				input.setStateIndex(i);
+				immutableInputPropositions[i].setStateIndex(i);
 
 				i++;
 			}

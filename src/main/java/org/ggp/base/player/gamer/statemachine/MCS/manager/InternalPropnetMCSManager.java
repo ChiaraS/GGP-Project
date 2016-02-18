@@ -30,7 +30,7 @@ public class InternalPropnetMCSManager {
 	/**
 	 * The statistics for all the legal moves for myRole in the state currently being searched.
 	 */
-	private MCSMove[] currentMovesStatistics;
+	private MCSMoveStats[] currentMovesStatistics;
 
 	/**
 	 * The strategy that this MCS manager must use to perform playouts.
@@ -97,7 +97,7 @@ public class InternalPropnetMCSManager {
 		this.searchEnd = 0;
 	}
 
-	public MCSMove getBestMove() throws MCSException{
+	public MCSMoveStats getBestMove() throws MCSException{
 
 		if(this.currentMovesStatistics!=null){
 			List<Integer> chosenMovesIndices = new ArrayList<Integer>();
@@ -180,10 +180,10 @@ public class InternalPropnetMCSManager {
 				throw new MCSException("Impossible to perform search: legal moves cannot be computed and explored in the given state.", e);
 			}
 
-			this.currentMovesStatistics = new MCSMove[legalMoves.size()];
+			this.currentMovesStatistics = new MCSMoveStats[legalMoves.size()];
 
 			for(int i = 0; i < this.currentMovesStatistics.length; i++){
-				this.currentMovesStatistics[i] = new MCSMove(legalMoves.get(i));
+				this.currentMovesStatistics[i] = new MCSMoveStats(legalMoves.get(i));
 			}
 
 		} // Otherwise proceed with the search using the old statistics and updating them.

@@ -271,9 +271,9 @@ public abstract class InternalPropnetGamer extends StateMachineGamer {
 	 */
 	@Override
 	public void stateMachineStop() {
-		System.gc();
 		if(this.propnetBuild == PROPNET_BUILD.ALWAYS){
 			GdlPool.drainPool();
+			System.gc();
 		}
 	}
 
@@ -282,9 +282,9 @@ public abstract class InternalPropnetGamer extends StateMachineGamer {
 	 */
 	@Override
 	public void stateMachineAbort() {
-		System.gc();
 		if(this.propnetBuild == PROPNET_BUILD.ALWAYS){
 			GdlPool.drainPool();
+			System.gc();
 		}
 	}
 

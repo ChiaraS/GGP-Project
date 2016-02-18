@@ -7,11 +7,11 @@ import java.util.Random;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.InternalPropnetMCTSNode;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.MCTSJointMove;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.DUCT.DUCTMCTSJointMove;
-import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.DUCT.DUCTMCTSMove;
+import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.DUCT.DUCTMCTSMoveStats;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.DUCT.InternalPropnetDUCTMCTSNode;
-import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.SUCT.InternalPropnetSUCTMCTSNode;
+import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.SUCT.InternalPropnetSlowSUCTMCTSNode;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.SUCT.SUCTMCTSJointMove;
-import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.SUCT.SUCTMCTSMove;
+import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.SUCT.SlowSUCTMCTSMoveStats;
 import org.ggp.base.util.statemachine.inernalPropnetStructure.InternalPropnetMove;
 import org.ggp.base.util.statemachine.inernalPropnetStructure.InternalPropnetRole;
 
@@ -51,8 +51,8 @@ public class UCTSelection implements SelectionStrategy {
 	public MCTSJointMove select(InternalPropnetMCTSNode currentNode) {
 		if(currentNode instanceof InternalPropnetDUCTMCTSNode){
 			return this.select((InternalPropnetDUCTMCTSNode)currentNode);
-		}else if(currentNode instanceof InternalPropnetSUCTMCTSNode){
-			return this.select((InternalPropnetSUCTMCTSNode)currentNode);
+		}else if(currentNode instanceof InternalPropnetSlowSUCTMCTSNode){
+			return this.select((InternalPropnetSlowSUCTMCTSNode)currentNode);
 		}else{
 			throw new RuntimeException("UCTSelection-select(): detected a node of a non-recognizable sub-type of class InternalPropnetMCTreeNode.");
 		}
@@ -68,7 +68,7 @@ public class UCTSelection implements SelectionStrategy {
 		}
 		*/
 
-		DUCTMCTSMove[][] moves = currentNode.getMoves();
+		DUCTMCTSMoveStats[][] moves = currentNode.getMoves();
 
 		/* Also here we can assume that the moves will be non-null since the code takes care of only passing to
 		 * this method the nodes that have all the information needed for selection.
@@ -145,7 +145,7 @@ public class UCTSelection implements SelectionStrategy {
 		return new DUCTMCTSJointMove(selectedJointMove, movesIndices);
 	}
 
-	private MCTSJointMove select(InternalPropnetSUCTMCTSNode currentNode){
+	private MCTSJointMove select(InternalPropnetSlowSUCTMCTSNode currentNode){
 
 		List<InternalPropnetMove> jointMove = new ArrayList<InternalPropnetMove>(this.numRoles);
 
@@ -158,9 +158,9 @@ public class UCTSelection implements SelectionStrategy {
 		int roleIndex = this.myRole.getIndex();
 
 		// Get the moves for myRole.
-		SUCTMCTSMove[] moves = currentNode.getMoves();
+		SlowSUCTMCTSMoveStats[] moves = currentNode.getMoves();
 
-		SUCTMCTSMove chosenMove = null;
+		SlowSUCTMCTSMoveStats chosenMove = null;
 
 		double maxUCTvalue;
 		double UCTvalue;

@@ -17,17 +17,17 @@ public class SUCTMCTSJointMove extends MCTSJointMove {
 	/**
 	 * Reference to the leaf move that allows to reconstruct the joint move.
 	 */
-	private SUCTMCTSMove leafMove;
+	private SlowSUCTMCTSMoveStats leafMove;
 
 	/**
 	 * @param jointMove
 	 */
-	public SUCTMCTSJointMove(List<InternalPropnetMove> jointMove, SUCTMCTSMove leafMove) {
+	public SUCTMCTSJointMove(List<InternalPropnetMove> jointMove, SlowSUCTMCTSMoveStats leafMove) {
 		super(jointMove);
 		this.leafMove = leafMove;
 	}
 
-	public SUCTMCTSMove getLeafMove(){
+	public SlowSUCTMCTSMoveStats getLeafMove(){
 		return this.leafMove;
 	}
 

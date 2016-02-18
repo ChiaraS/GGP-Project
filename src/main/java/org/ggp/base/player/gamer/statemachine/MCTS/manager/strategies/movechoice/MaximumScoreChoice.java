@@ -5,9 +5,9 @@ import java.util.List;
 import java.util.Random;
 
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.InternalPropnetMCTSNode;
-import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.MCTSMove;
+import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.MCTSMoveStats;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.DUCT.InternalPropnetDUCTMCTSNode;
-import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.SUCT.InternalPropnetSUCTMCTSNode;
+import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.SUCT.InternalPropnetSlowSUCTMCTSNode;
 import org.ggp.base.util.statemachine.inernalPropnetStructure.InternalPropnetRole;
 
 public class MaximumScoreChoice implements MoveChoiceStrategy {
@@ -29,14 +29,14 @@ public class MaximumScoreChoice implements MoveChoiceStrategy {
 	 * @see org.ggp.base.player.gamer.statemachine.MCTS.manager.strategies.movechoice.MoveChoiceStrategy#chooseBestMove(org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.InternalPropnetMCTSNode)
 	 */
 	@Override
-	public MCTSMove chooseBestMove(InternalPropnetMCTSNode initialNode) {
+	public MCTSMoveStats chooseBestMove(InternalPropnetMCTSNode initialNode) {
 
-		MCTSMove[] myMovesStats;
+		MCTSMoveStats[] myMovesStats;
 
 		if(initialNode instanceof InternalPropnetDUCTMCTSNode){
 			myMovesStats = ((InternalPropnetDUCTMCTSNode)initialNode).getMoves()[myRole.getIndex()];
-		}else if(initialNode instanceof InternalPropnetSUCTMCTSNode){
-			myMovesStats = ((InternalPropnetSUCTMCTSNode)initialNode).getMoves();
+		}else if(initialNode instanceof InternalPropnetSlowSUCTMCTSNode){
+			myMovesStats = ((InternalPropnetSlowSUCTMCTSNode)initialNode).getMoves();
 		}else{
 			throw new RuntimeException("MaximumScoreChoice-chooseBestMove(): detected a node of a non-recognizable sub-type of class InternalPropnetMCTreeNode.");
 		}

@@ -137,6 +137,10 @@ public final class GamePlayer extends Thread implements Subject
 				HttpWriter.writeAsServer(connection, out);
 				connection.close();
 
+				///////////////////////////////
+				System.gc();
+				///////////////////////////////
+
 				/*
 				if(request instanceof PlayRequest){
 					GamerLogger.log("Stats", "MOVE_PROCESSING_TIME = " + (System.currentTimeMillis() - start));

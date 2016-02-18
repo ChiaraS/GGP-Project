@@ -3,11 +3,11 @@ package org.ggp.base.player.gamer.statemachine.MCTS.manager.strategies.backpropa
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.InternalPropnetMCTSNode;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.MCTSJointMove;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.DUCT.DUCTMCTSJointMove;
-import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.DUCT.DUCTMCTSMove;
+import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.DUCT.DUCTMCTSMoveStats;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.DUCT.InternalPropnetDUCTMCTSNode;
-import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.SUCT.InternalPropnetSUCTMCTSNode;
+import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.SUCT.InternalPropnetSlowSUCTMCTSNode;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.SUCT.SUCTMCTSJointMove;
-import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.SUCT.SUCTMCTSMove;
+import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.SUCT.SlowSUCTMCTSMoveStats;
 import org.ggp.base.util.statemachine.inernalPropnetStructure.InternalPropnetRole;
 
 public class StandardBackpropagation implements BackpropagationStrategy {
@@ -37,8 +37,8 @@ public class StandardBackpropagation implements BackpropagationStrategy {
 	public void update(InternalPropnetMCTSNode node, MCTSJointMove jointMove, int[] goals){
 		if(node instanceof InternalPropnetDUCTMCTSNode && jointMove instanceof DUCTMCTSJointMove){
 			this.update((InternalPropnetDUCTMCTSNode)node, (DUCTMCTSJointMove)jointMove, goals);
-		}else if(node instanceof InternalPropnetSUCTMCTSNode && jointMove instanceof SUCTMCTSJointMove){
-			this.update((InternalPropnetSUCTMCTSNode)node, (SUCTMCTSJointMove)jointMove, goals);
+		}else if(node instanceof InternalPropnetSlowSUCTMCTSNode && jointMove instanceof SUCTMCTSJointMove){
+			this.update((InternalPropnetSlowSUCTMCTSNode)node, (SUCTMCTSJointMove)jointMove, goals);
 		}else{
 			throw new RuntimeException("StandardBackpropagation-update(): detected wrong combination of types for node (" + node.getClass().getSimpleName() + ") and joint move (" + jointMove.getClass().getSimpleName() + ").");
 		}
@@ -58,13 +58,13 @@ public class StandardBackpropagation implements BackpropagationStrategy {
 
 		node.incrementTotVisits();
 
-		DUCTMCTSMove[][] moves = node.getMoves();
+		DUCTMCTSMoveStats[][] moves = node.getMoves();
 
 		int[] moveIndices = jointMove.getMovesIndices();
 
 		for(int i = 0; i < moves.length; i++){
 			// Get the DUCTMove
-			DUCTMCTSMove theMoveToUpdate = moves[i][moveIndices[i]];
+			DUCTMCTSMoveStats theMoveToUpdate = moves[i][moveIndices[i]];
 			theMoveToUpdate.incrementScoreSum(goals[i]);
 			if(theMoveToUpdate.getVisits() == 0){
 				node.getUnexploredMovesCount()[i]--;
@@ -84,12 +84,12 @@ public class StandardBackpropagation implements BackpropagationStrategy {
 	 * @param jointMove the explored joint move.
 	 * @param goals the goals obtained by the simulation, to be used to update the statistics.
 	 */
-	private void update(InternalPropnetSUCTMCTSNode node, SUCTMCTSJointMove jointMove, int[] goals) {
+	private void update(InternalPropnetSlowSUCTMCTSNode node, SUCTMCTSJointMove jointMove, int[] goals) {
 
 		node.incrementTotVisits();
 
 		// Get the leaf move from where to start updating
-		SUCTMCTSMove theMoveToUpdate = jointMove.getLeafMove();
+		SlowSUCTMCTSMoveStats theMoveToUpdate = jointMove.getLeafMove();
 
 		// Get the index of the role that performs the leaf move.
 		int roleIndex = ((this.myRole.getIndex()-1) + this.numRoles)%this.numRoles;

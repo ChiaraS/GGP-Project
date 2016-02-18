@@ -1,23 +1,22 @@
+/**
+ *
+ */
 package org.ggp.base.player.gamer.statemachine.MCS.manager;
 
-import org.ggp.base.util.statemachine.inernalPropnetStructure.InternalPropnetMove;
 
-public class MCSMove {
-
-	protected InternalPropnetMove theMove;
+/**
+ * @author C.Sironi
+ *
+ */
+public abstract class MoveStats{
 
 	protected long visits;
 
 	protected long scoreSum;
 
-	public MCSMove(InternalPropnetMove theMove) {
-		this.theMove = theMove;
+	public MoveStats() {
 		this.visits = 0L;
 		this.scoreSum = 0L;
-	}
-
-	public InternalPropnetMove getTheMove() {
-		return this.theMove;
 	}
 
 	public long getVisits() {
@@ -38,7 +37,7 @@ public class MCSMove {
 
 	@Override
 	public String toString(){
-		return "Move(" + theMove.toString() + "), Visits(" + this.visits + "), ScoreSum(" + this.scoreSum + ")";
+		return "Visits(" + this.visits + "), ScoreSum(" + this.scoreSum + ")";
 	}
 
 }

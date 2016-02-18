@@ -7,7 +7,7 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 
 import org.ggp.base.player.gamer.statemachine.MCS.manager.InternalPropnetMCSManager;
-import org.ggp.base.player.gamer.statemachine.MCS.manager.MCSMove;
+import org.ggp.base.player.gamer.statemachine.MCS.manager.MCSMoveStats;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.strategies.playout.RandomPlayout;
 import org.ggp.base.util.game.GameRepository;
 import org.ggp.base.util.gdl.grammar.Gdl;
@@ -227,7 +227,7 @@ public class MCSSpeedTest {
 		        	GamerLogger.log("MCSSpeedTest", "Starting search.");
 
 		        	MCSmanager.search(thePropnetMachine.getInternalInitialState(), System.currentTimeMillis() + testTime);
-		        	MCSMove finalMove = MCSmanager.getBestMove();
+		        	MCSMoveStats finalMove = MCSmanager.getBestMove();
 
 		        	GamerLogger.log("MCSSpeedTest", "Search ended correctly.");
 		        	chosenMove = thePropnetMachine.internalMoveToMove(finalMove.getTheMove());

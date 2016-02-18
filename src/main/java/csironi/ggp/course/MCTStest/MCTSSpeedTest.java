@@ -6,6 +6,7 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 
+import org.apache.logging.log4j.ThreadContext;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.InternalPropnetMCTSManager;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.strategies.backpropagation.StandardBackpropagation;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.strategies.expansion.RandomExpansion;
@@ -13,7 +14,7 @@ import org.ggp.base.player.gamer.statemachine.MCTS.manager.strategies.movechoice
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.strategies.playout.RandomPlayout;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.strategies.selection.UCTSelection;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.InternalPropnetMCTSNode;
-import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.MCTSMove;
+import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.MCTSMoveStats;
 import org.ggp.base.util.game.GameRepository;
 import org.ggp.base.util.game.ManualUpdateLocalGameRepository;
 import org.ggp.base.util.gdl.grammar.Gdl;
@@ -27,6 +28,8 @@ import org.ggp.base.util.propnet.state.ImmutableSeparatePropnetState;
 import org.ggp.base.util.statemachine.InternalPropnetStateMachine;
 import org.ggp.base.util.statemachine.Move;
 import org.ggp.base.util.statemachine.Role;
+import org.ggp.base.util.statemachine.exceptions.MoveDefinitionException;
+import org.ggp.base.util.statemachine.exceptions.StateMachineException;
 import org.ggp.base.util.statemachine.exceptions.StateMachineInitializationException;
 import org.ggp.base.util.statemachine.implementation.propnet.SeparateInternalPropnetStateMachine;
 import org.ggp.base.util.statemachine.inernalPropnetStructure.InternalPropnetRole;
@@ -59,7 +62,11 @@ import org.ggp.base.util.statemachine.inernalPropnetStructure.InternalPropnetRol
 */
 public class MCTSSpeedTest {
 
-	public static void main(String[] args) {
+	static{
+		System.setProperty("isThreadContextMapInheritable", "true");
+	}
+
+	public static void main(String[] args) throws MoveDefinitionException, StateMachineException {
 
 		/*********************** Parse main arguments ****************************/
 
@@ -120,8 +127,12 @@ public class MCTSSpeedTest {
 
 		InternalPropnetStateMachine thePropnetMachine;
 
-		GamerLogger.setSpilloverLogfile(s + "MCTSSpeedTestTable.csv");
-	    GamerLogger.log(FORMAT.CSV_FORMAT, s + "MCTSSpeedTestTable", "Game key;#Roles;PN Construction Time (ms);PN Initialization Time (ms);SM initialization time;Test Duration (ms);Search time(ms);Iterations;Visited Nodes;Iterations/second;Nodes/second;Playing role;Chosen move;Scores sum;Visits;AverageScore");
+		String mainLogFolder = System.currentTimeMillis() + "-" + s + "MCTSSpeedTest";
+    	ThreadContext.put("LOG_FOLDER", mainLogFolder);
+
+    	GamerLogger.startFileLogging();
+
+		GamerLogger.log(FORMAT.CSV_FORMAT, s + "MCTSSpeedTestTable", "Game key;#Roles;PN Construction Time (ms);PN Initialization Time (ms);SM initialization time;Test Duration (ms);Search time(ms);Iterations;Visited Nodes;Iterations/second;Nodes/second;Playing role;Chosen move;Scores sum;Visits;AverageScore");
 
 	    GameRepository theRepository = new ManualUpdateLocalGameRepository("GGPBase-GameRepo-03022016");
 	    for(String gameKey : theRepository.getGameKeys()) {
@@ -136,7 +147,7 @@ public class MCTSSpeedTest {
 
 	        Match fakeMatch = new Match(gameKey + "." + System.currentTimeMillis(), -1, -1, -1,theRepository.getGame(gameKey));
 
-	        GamerLogger.startFileLogging(fakeMatch, s + "MCTSSpeedTester");
+	        ThreadContext.put("LOG_FOLDER", mainLogFolder + "/" + fakeMatch.getMatchId() + "-" + s + "MCTSSpeedTester");
 
 	        GamerLogger.log(s + "MCTSSpeedTest", "Testing on game " + gameKey);
 
@@ -240,7 +251,20 @@ public class MCTSSpeedTest {
 
 		        GamerLogger.log(s + "MCTSSpeedTest", "Starting speed test.");
 
-		        InternalPropnetRole internalPlayingRole = thePropnetMachine.getInternalRoles()[0];
+
+
+
+		        System.out.println(thePropnetMachine.getRoles());
+
+		        System.out.println(thePropnetMachine.getLegalMoves(thePropnetMachine.getInitialState(), thePropnetMachine.getRoles().get(0)));
+
+		        System.out.println(thePropnetMachine.getLegalMoves(thePropnetMachine.getInitialState(), thePropnetMachine.getRoles().get(1)));
+
+
+
+
+
+		        InternalPropnetRole internalPlayingRole = thePropnetMachine.getInternalRoles()[1];
 		        playingRole = thePropnetMachine.internalRoleToRole(internalPlayingRole);
 		        numRoles = thePropnetMachine.getInternalRoles().length;
 
@@ -254,7 +278,7 @@ public class MCTSSpeedTest {
 		        	GamerLogger.log(s + "MCTSSpeedTest", "Starting search.");
 
 		        	InternalPropnetMCTSNode initialNode = MCTSmanager.search(thePropnetMachine.getInternalInitialState(), System.currentTimeMillis() + testTime, gameStep);
-		        	MCTSMove finalMove = MCTSmanager.getBestMove(initialNode);
+		        	MCTSMoveStats finalMove = MCTSmanager.getBestMove(initialNode);
 
 		        	GamerLogger.log(s + "MCTSSpeedTest", "Search ended correctly.");
 		        	chosenMove = thePropnetMachine.internalMoveToMove(finalMove.getTheMove());
@@ -284,9 +308,7 @@ public class MCTSSpeedTest {
 	        	System.out.println("Skipping test on game " + gameKey + ". No propnet available.");
 	        }
 
-	        GamerLogger.log(FORMAT.PLAIN_FORMAT, s + "MCTSSpeedTest", "");
-
-	        GamerLogger.stopFileLogging();
+	        ThreadContext.put("LOG_FOLDER", mainLogFolder);
 
 	        GamerLogger.log(FORMAT.CSV_FORMAT, s + "MCTSSpeedTestTable", gameKey + ";" + numRoles + ";" + manager.getPropnetConstructionTime() + ";" + manager.getTotalInitTime() + ";" + initializationTime + ";" + testDuration + ";" + searchTime + ";" + iterations + ";" + visitedNodes + ";" + iterationsPerSecond + ";" + nodesPerSecond + ";" + playingRole + ";" + chosenMove + ";" + scoresSum + ";" + visits + ";" + averageScore + ";");
 

@@ -7,7 +7,7 @@ package org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure;
  * @author C.Sironi
  *
  */
-public abstract class InternalPropnetMCTSNode {
+public abstract class InternalPropnetMCTSNode{
 
 	/**
 	 * Goal for every role in the state (memorized only if the state corresponding to this tree node is terminal.

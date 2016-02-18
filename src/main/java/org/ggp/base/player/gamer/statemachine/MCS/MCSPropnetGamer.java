@@ -8,7 +8,7 @@ import java.util.Random;
 import org.ggp.base.player.gamer.event.GamerSelectedMoveEvent;
 import org.ggp.base.player.gamer.statemachine.MCS.manager.InternalPropnetMCSManager;
 import org.ggp.base.player.gamer.statemachine.MCS.manager.MCSException;
-import org.ggp.base.player.gamer.statemachine.MCS.manager.MCSMove;
+import org.ggp.base.player.gamer.statemachine.MCS.manager.MCSMoveStats;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.strategies.playout.RandomPlayout;
 import org.ggp.base.player.gamer.statemachine.propnet.InternalPropnetGamer;
 import org.ggp.base.util.logging.GamerLogger;
@@ -181,7 +181,7 @@ public class MCSPropnetGamer extends InternalPropnetGamer {
 
 			try {
 				this.mcsManager.search(currentState, realTimeout);
-				MCSMove selectedMove = this.mcsManager.getBestMove();
+				MCSMoveStats selectedMove = this.mcsManager.getBestMove();
 
 				searchTime = this.mcsManager.getSearchTime();
 				iterations = this.mcsManager.getIterations();
