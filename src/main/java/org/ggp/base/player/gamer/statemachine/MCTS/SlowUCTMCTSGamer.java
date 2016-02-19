@@ -7,6 +7,7 @@ import java.util.Random;
 
 import org.ggp.base.player.gamer.event.GamerSelectedMoveEvent;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.InternalPropnetMCTSManager;
+import org.ggp.base.player.gamer.statemachine.MCTS.manager.InternalPropnetMCTSManager.MCTS_TYPE;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.exceptions.MCTSException;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.strategies.backpropagation.StandardBackpropagation;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.strategies.expansion.RandomExpansion;
@@ -60,7 +61,7 @@ public abstract class SlowUCTMCTSGamer extends InternalPropnetGamer {
 	 * True if this player must use a manager that runs the DUCT version
 	 * of Monte Carlo Tree Search, false otherwise.
 	 */
-	protected boolean DUCT;
+	protected MCTS_TYPE mctsType;
 
 
 	/**
@@ -76,7 +77,7 @@ public abstract class SlowUCTMCTSGamer extends InternalPropnetGamer {
 
 		super();
 
-		this.DUCT = true;
+		this.mctsType = MCTS_TYPE.DUCT;
 		this.c = 0.7;
 		this.uctOffset = 0.01;
 		this.gameStepOffset = 2;
@@ -139,7 +140,7 @@ public abstract class SlowUCTMCTSGamer extends InternalPropnetGamer {
 		int numRoles = this.thePropnetMachine.getInternalRoles().length;
 
 		// Create the MCTS manager and start simulations.
-		this.mctsManager = new InternalPropnetMCTSManager(this.DUCT, myRole, new UCTSelection(numRoles, myRole, r, uctOffset, c),
+		this.mctsManager = new InternalPropnetMCTSManager(this.mctsType, myRole, new UCTSelection(numRoles, myRole, r, uctOffset, c),
 	       		new RandomExpansion(numRoles, myRole, r), new RandomPlayout(this.thePropnetMachine),
 	       		new StandardBackpropagation(numRoles, myRole),	new MaximumScoreChoice(myRole, r),
 	       		this.thePropnetMachine, gameStepOffset, maxSearchDepth);

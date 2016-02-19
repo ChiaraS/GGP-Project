@@ -3,6 +3,8 @@
  */
 package org.ggp.base.player.gamer.statemachine.MCTS;
 
+import org.ggp.base.player.gamer.statemachine.MCTS.manager.InternalPropnetMCTSManager.MCTS_TYPE;
+
 
 
 /**
@@ -16,7 +18,7 @@ public class SlowSUCTMCTSGamer extends SlowUCTMCTSGamer {
 	 */
 	public SlowSUCTMCTSGamer() {
 		super();
-		this.DUCT = false;
+		this.mctsType = MCTS_TYPE.SLOW_SUCT;
 	}
 
 	/**

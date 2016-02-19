@@ -17,13 +17,19 @@ public class SUCTMCTSMoveStats extends MoveStats {
 	 *  Keeps track of the number of leaves in the moves statistics tree that are descendants
 	 *  of this move statistics node and haven't been visited at least once yet.
 	 */
-	private int unvisitedLeaves;
+	private int unvisitedSubleaves;
 
-	public SUCTMCTSMoveStats(SUCTMCTSMoveStats[] nextRoleMovesStats, int unvisitedLeaves) {
+	public SUCTMCTSMoveStats(SUCTMCTSMoveStats[] nextRoleMovesStats) {
 		super();
 		this.uct = 0.0;
 		this.nextRoleMovesStats = nextRoleMovesStats;
-		this.unvisitedLeaves = unvisitedLeaves;
+		if(this.nextRoleMovesStats == null){
+			this.unvisitedSubleaves = 1;
+		}else{
+			this.unvisitedSubleaves = this.nextRoleMovesStats[0].getUnvisitedSubleaves() * this.nextRoleMovesStats.length;
+			// This works because each of the next moves has the same amount of leaves in its descendants
+			// and they are all not visited yet.
+		}
 	}
 
 	/**
@@ -53,13 +59,13 @@ public class SUCTMCTSMoveStats extends MoveStats {
 		return this.nextRoleMovesStats;
 	}
 
-	public int getUnvisitedLeaves(){
-		return this.unvisitedLeaves;
+	public int getUnvisitedSubleaves(){
+		return this.unvisitedSubleaves;
 	}
 
-	public void decreaseUnvisitedLeaves(){
-		if(this.unvisitedLeaves > 0)
-			this.unvisitedLeaves--;
+	public void decreaseUnvisitedSubLeaves(){
+		if(this.unvisitedSubleaves > 0)
+			this.unvisitedSubleaves--;
 	}
 
 	@Override

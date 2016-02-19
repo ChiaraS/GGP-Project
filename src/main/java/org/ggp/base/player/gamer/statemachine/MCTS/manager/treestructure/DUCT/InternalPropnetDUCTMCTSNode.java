@@ -9,32 +9,32 @@ public class InternalPropnetDUCTMCTSNode extends InternalPropnetMCTSNode{
 	/**
 	 * List of the moves' statistics for each role in the state corresponding to this node.
 	 */
-	private DUCTMCTSMoveStats[][] moves;
+	private DUCTMCTSMoveStats[][] movesStats;
 
 	/**
 	 * Number of unexplored moves for each player.
 	 */
 	private int[] unexploredMovesCount;
 
-	public InternalPropnetDUCTMCTSNode(DUCTMCTSMoveStats[][] moves, int[] goals, boolean terminal) {
+	public InternalPropnetDUCTMCTSNode(DUCTMCTSMoveStats[][] movesStats, int[] goals, boolean terminal) {
 
 		super(goals, terminal);
-		this.moves = moves;
+		this.movesStats = movesStats;
 
 		// If this state has legal moves for the players (i.e. is not terminal
 		// nor pseudo-terminal), we keep track of the number of not yet visited
 		// moves for each player.
-		if(moves != null){
-			this.unexploredMovesCount = new int[moves.length];
+		if(movesStats != null){
+			this.unexploredMovesCount = new int[movesStats.length];
 
-			for(int i = 0; i < moves.length; i++){
-				this.unexploredMovesCount[i] = moves[i].length;
+			for(int i = 0; i < movesStats.length; i++){
+				this.unexploredMovesCount[i] = movesStats[i].length;
 			}
 		}
 	}
 
 	public DUCTMCTSMoveStats[][] getMoves(){
-		return this.moves;
+		return this.movesStats;
 	}
 
 	public int[] getUnexploredMovesCount(){
@@ -48,16 +48,16 @@ public class InternalPropnetDUCTMCTSNode extends InternalPropnetMCTSNode{
 
 		String s = "NODE[\n";
 		s += "  Moves[";
-		if(this.moves == null){
+		if(this.movesStats == null){
 			s += "null]\n";
 		}else{
-			for(int i = 0; i < this.moves.length; i++){
+			for(int i = 0; i < this.movesStats.length; i++){
 				s += "\n    Role" + i +"[";
-				if(moves[i] == null){
+				if(movesStats[i] == null){
 					s += "null]";
 				}else{
-					for(int j = 0; j < moves[i].length; j++){
-						s += "\n      " + moves[i][j].toString();
+					for(int j = 0; j < movesStats[i].length; j++){
+						s += "\n      " + movesStats[i][j].toString();
 					}
 					s += "\n    ]\n";
 				}

@@ -59,7 +59,7 @@ public class InternalPropnetSUCTMCTSNode extends InternalPropnetMCTSNode {
 	 * (NOTE! The roles are not re-ordered to have the playing role as the first,
 	 * but are in the standard order as returned by the state machine).
 	 */
-	private InternalPropnetMove[] legalMoves;
+	private List<List<InternalPropnetMove>> allLegalMoves;
 
 	/**
 	 * Number of joint moves that haven't been visited yet from this node.
@@ -72,14 +72,19 @@ public class InternalPropnetSUCTMCTSNode extends InternalPropnetMCTSNode {
 	 * @param goals
 	 * @param terminal
 	 */
-	public InternalPropnetSUCTMCTSNode(SlowSUCTMCTSMoveStats[] moves, List<SlowSUCTMCTSMoveStats> unvisitedLeaves, int[] goals, boolean terminal) {
+	public InternalPropnetSUCTMCTSNode(List<List<InternalPropnetMove>> allLegalMoves, SUCTMCTSMoveStats[] movesStats, int[] goals, boolean terminal) {
 		super(goals, terminal);
-		this.moves = moves;
-		this.unvisitedLeaves = unvisitedLeaves;
+		this.movesStats = movesStats;
+		this.allLegalMoves = allLegalMoves;
+		this.unvisitedLeaves = this.movesStats[0].getUnvisitedSubleaves() * this.movesStats.length;
 	}
 
-	public SUCTMCTSMoveStats[] getMoves(){
+	public SUCTMCTSMoveStats[] getMovesStats(){
 		return this.movesStats;
+	}
+
+	public List<List<InternalPropnetMove>> getAllLegalMoves(){
+		return this.allLegalMoves;
 	}
 
 	public int getUnvisitedLeaves(){
@@ -93,7 +98,9 @@ public class InternalPropnetSUCTMCTSNode extends InternalPropnetMCTSNode {
 	@Override
 	public String toString(){
 
-		String s = "NODE[\n";
+		return "";
+
+/*		String s = "NODE[\n";
 		s += "  Moves[";
 		if(this.legalMoves == null){
 			s += "null]\n";
@@ -133,6 +140,6 @@ public class InternalPropnetSUCTMCTSNode extends InternalPropnetMCTSNode {
 		s += "]";
 
 		return s;
-
+*/
 	}
 }

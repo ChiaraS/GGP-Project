@@ -18,6 +18,7 @@ import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.MCTSMov
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.MCTSTranspositionTable;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.DUCT.DUCTMCTSMoveStats;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.DUCT.InternalPropnetDUCTMCTSNode;
+import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.SUCT.InternalPropnetSUCTMCTSNode;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.SUCT.InternalPropnetSlowSUCTMCTSNode;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.SUCT.SUCTMCTSMoveStats;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.SUCT.SlowSUCTMCTSMoveStats;
@@ -501,6 +502,7 @@ public class InternalPropnetMCTSManager extends MCTSManager {
 
 		int goals[] = null;
 		boolean terminal = false;
+		List<List<InternalPropnetMove>> allLegalMoves = null;
 
 		switch(this.mctsType){
 		// DUCT version of MCTS.
@@ -515,6 +517,7 @@ public class InternalPropnetMCTSManager extends MCTSManager {
 				terminal = true;
 
 			}else{// Non-terminal state:
+
 				ductMovesStats = this.createDUCTMCTSMoves(state);
 
 				// Error when computing moves.
@@ -536,10 +539,8 @@ public class InternalPropnetMCTSManager extends MCTSManager {
 
 			return new InternalPropnetDUCTMCTSNode(ductMovesStats, goals, terminal);
 		case SUCT: // SUCT version of MCTS.
-			return null;
-/*
+
 			SUCTMCTSMoveStats[] suctMoves = null;
-			List<SUCTMCTSMoveStats> unvisitedLeaves = null;
 
 			// Terminal state:
 			if(this.theMachine.isTerminal(state)){
@@ -548,41 +549,35 @@ public class InternalPropnetMCTSManager extends MCTSManager {
 				terminal = true;
 
 			}else{// Non-terminal state:
-				// The method that creates the SlowSUCTMCTSMoves assumes that the unvisitedLeaves parameter
-				// passed as input will be initialized to an empty list. The method will then fill it
-				// with all the SUCTMoves that are leaves of the tree representing the move statistics.
-				// Such leaf moves represent the end of a path that form a joint move and are included
-				// in the unvisitedLeaves list if the corresponding joint move hasn't been visited yet
-				// during the search.
-				unvisitedLeaves = new ArrayList<SlowSUCTMCTSMoveStats>();
-				suctMoves = this.createSUCTMCTSMoves(state, unvisitedLeaves);
 
-				//System.out.println("Unvisited leaves = " + unvisitedLeaves.size());
+				try {
+					allLegalMoves = this.theMachine.getAllLegalMoves(state);
+					suctMoves = this.createSUCTMCTSMoves(allLegalMoves);
+					// this.printMovesTree(suctMoves, "");
+				} catch (MoveDefinitionException e) {
+					// Error when computing moves.
+					GamerLogger.logError("MCTSManager", "Failed to retrieve the legal moves while adding non-terminal SUCT state to the tree.");
+					GamerLogger.logStackTrace("MCTSManager", e);
+					// If for at least one player the legal moves cannot be computed we consider this node
+					// "pseudo-terminal" (i.e. the corresponding state is not terminal but we cannot explore
+					// any of the next states, so we treat it as terminal during the MCT search). This means
+					// that we will need the goal values in this node and they will not change for all the rest
+					// of the search, so we compute them and memorize them.
 
-				// Error when computing moves.
-				// If for at least one player the legal moves cannot be computed (an thus the moves
-				// are returned as a null value), we consider this node "pseudo-terminal" (i.e. the
-				// corresponding state is not terminal but we cannot explore any of the next states,
-				// so we treat it as terminal during the MCT search). This means that we will need
-				// the goal values in this node and they will not change for all the rest of the
-				// search, so we compute them and memorize them.
-				if(suctMoves == null){
 					// Compute the goals for each player. We are in a non terminal state so the goal might not be defined.
 					// We use the state machine method that will return default goal values for the player for which goal
 					// values cannot be computed in this state.
 
 					//System.out.println("Null moves in non terminal state!");
 
+					allLegalMoves = null;
 					goals = this.theMachine.getSafeGoals(state);
 					terminal = true;
-					unvisitedLeaves = null;
-				}*//*else{
-					this.printMovesTree(suctMoves, "");
-				}*/
+				}
 				// If the legal moves can be computed for every player, there is no need to compute the goals.
-//			}
+			}
 
-//			return new InternalPropnetSlowSUCTMCTSNode(suctMoves, unvisitedLeaves, goals, terminal);
+			return new InternalPropnetSUCTMCTSNode(allLegalMoves, suctMoves, goals, terminal);
 
 		case SLOW_SUCT: // Slow SUCT version of MCTS.
 
@@ -596,37 +591,38 @@ public class InternalPropnetMCTSManager extends MCTSManager {
 				terminal = true;
 
 			}else{// Non-terminal state:
-				// The method that creates the SlowSUCTMCTSMoves assumes that the unvisitedLeaves parameter
-				// passed as input will be initialized to an empty list. The method will then fill it
-				// with all the SUCTMoves that are leaves of the tree representing the move statistics.
-				// Such leaf moves represent the end of a path that form a joint move and are included
-				// in the unvisitedLeaves list if the corresponding joint move hasn't been visited yet
-				// during the search.
-				unvisitedLeaves = new ArrayList<SlowSUCTMCTSMoveStats>();
-				suctMovesStats = this.createSlowSUCTMCTSMoves(state, unvisitedLeaves);
 
-				//System.out.println("Unvisited leaves = " + unvisitedLeaves.size());
+				try {
+					allLegalMoves = this.theMachine.getAllLegalMoves(state);
+					// The method that creates the SlowSUCTMCTSMoves assumes that the unvisitedLeaves parameter
+					// passed as input will be initialized to an empty list. The method will then fill it
+					// with all the SUCTMoves that are leaves of the tree representing the move statistics.
+					// Such leaf moves represent the end of a path that form a joint move and are included
+					// in the unvisitedLeaves list if the corresponding joint move hasn't been visited yet
+					// during the search.
+					unvisitedLeaves = new ArrayList<SlowSUCTMCTSMoveStats>();
+					suctMovesStats = this.createSlowSUCTMCTSMoves(allLegalMoves, unvisitedLeaves);
+				} catch (MoveDefinitionException e) {
+					// Error when computing moves.
+					GamerLogger.logError("MCTSManager", "Failed to retrieve the legal moves while adding non-terminal SlowSUCT state to the tree.");
+					GamerLogger.logStackTrace("MCTSManager", e);
+					// If for at least one player the legal moves cannot be computed we consider this node
+					// "pseudo-terminal" (i.e. the corresponding state is not terminal but we cannot explore
+					// any of the next states, so we treat it as terminal during the MCT search). This means
+					// that we will need the goal values in this node and they will not change for all the rest
+					// of the search, so we compute them and memorize them.
 
-				// Error when computing moves.
-				// If for at least one player the legal moves cannot be computed (an thus the moves
-				// are returned as a null value), we consider this node "pseudo-terminal" (i.e. the
-				// corresponding state is not terminal but we cannot explore any of the next states,
-				// so we treat it as terminal during the MCT search). This means that we will need
-				// the goal values in this node and they will not change for all the rest of the
-				// search, so we compute them and memorize them.
-				if(suctMovesStats == null){
 					// Compute the goals for each player. We are in a non terminal state so the goal might not be defined.
 					// We use the state machine method that will return default goal values for the player for which goal
 					// values cannot be computed in this state.
 
 					//System.out.println("Null moves in non terminal state!");
-
+					allLegalMoves = null;
 					goals = this.theMachine.getSafeGoals(state);
 					terminal = true;
 					unvisitedLeaves = null;
-				}/*else{
-					this.printMovesTree(suctMoves, "");
-				}*/
+				}
+
 				// If the legal moves can be computed for every player, there is no need to compute the goals.
 			}
 
@@ -672,34 +668,19 @@ public class InternalPropnetMCTSManager extends MCTSManager {
 		return moves;
 	}
 
-	private SlowSUCTMCTSMoveStats[] createSlowSUCTMCTSMoves(InternalPropnetMachineState state, List<SlowSUCTMCTSMoveStats> unvisitedLeaves){
+	private SlowSUCTMCTSMoveStats[] createSlowSUCTMCTSMoves(List<List<InternalPropnetMove>> allLegalMoves, List<SlowSUCTMCTSMoveStats> unvisitedLeaves){
 
 		InternalPropnetRole[] roles = this.theMachine.getInternalRoles();
-
-		List<List<InternalPropnetMove>> legalMoves = new ArrayList<List<InternalPropnetMove>>();
-
-		// Get legal moves for all players.
-		try {
-			for(int i = 0; i < roles.length; i++){
-				legalMoves.add(this.theMachine.getInternalLegalMoves(state, roles[i]));
-			}
-		}catch (MoveDefinitionException e) {
-			// If for at least one player the legal moves cannot be computed, we return null.
-			GamerLogger.logError("MCTSManager", "Failed to retrieve the legal moves while adding non-terminal SUCT state to the tree.");
-			GamerLogger.logStackTrace("MCTSManager", e);
-
-			return null;
-		}
 
 		// For all the moves of my role (i.e. the role actually performing the search)
 		// create the SUCT move containing the move statistics.
 		int myIndex = this.myRole.getIndex();
 
-		List<InternalPropnetMove> myLegalMoves = legalMoves.get(myIndex);
+		List<InternalPropnetMove> myLegalMoves = allLegalMoves.get(myIndex);
 		SlowSUCTMCTSMoveStats[] moves = new SlowSUCTMCTSMoveStats[myLegalMoves.size()];
 		for(int i = 0; i < myLegalMoves.size(); i++){
-			moves[i] = new SlowSUCTMCTSMoveStats(myLegalMoves.get(i), i, createSlowSUCTMCTSMoves((myIndex+1)%(roles.length), roles.length, legalMoves, unvisitedLeaves));
-			if(moves[i].getNextRoleMoves() == null){
+			moves[i] = new SlowSUCTMCTSMoveStats(myLegalMoves.get(i), i, createSlowSUCTMCTSMoves((myIndex+1)%(roles.length), roles.length, allLegalMoves, unvisitedLeaves));
+			if(moves[i].getNextRoleMovesStats() == null){
 				unvisitedLeaves.add(moves[i]);
 			}
 		}
@@ -717,7 +698,7 @@ public class InternalPropnetMCTSManager extends MCTSManager {
 		SlowSUCTMCTSMoveStats[] moves = new SlowSUCTMCTSMoveStats[roleLegalMoves.size()];
 		for(int i = 0; i <roleLegalMoves.size(); i++){
 			moves[i] = new SlowSUCTMCTSMoveStats(roleLegalMoves.get(i), i, createSlowSUCTMCTSMoves((roleIndex+1)%(numRoles), numRoles, legalMoves, unvisitedLeaves));
-			if(moves[i].getNextRoleMoves() == null){
+			if(moves[i].getNextRoleMovesStats() == null){
 				unvisitedLeaves.add(moves[i]);
 			}
 		}
@@ -727,14 +708,12 @@ public class InternalPropnetMCTSManager extends MCTSManager {
 
 
 
-	private SlowSUCTMCTSMoveStats[] createSlowSUCTMCTSMoves(InternalPropnetMachineState state, List<SlowSUCTMCTSMoveStats> unvisitedLeaves){
+	private SUCTMCTSMoveStats[] createSUCTMCTSMoves(List<List<InternalPropnetMove>> allLegalMoves){
 
 		InternalPropnetRole[] roles = this.theMachine.getInternalRoles();
 
-		List<List<InternalPropnetMove>> legalMoves = new ArrayList<List<InternalPropnetMove>>();
-
 		// Get legal moves for all players.
-		try {
+/*		try {
 			for(int i = 0; i < roles.length; i++){
 				legalMoves.add(this.theMachine.getInternalLegalMoves(state, roles[i]));
 			}
@@ -744,35 +723,31 @@ public class InternalPropnetMCTSManager extends MCTSManager {
 			GamerLogger.logStackTrace("MCTSManager", e);
 
 			return null;
-		}
+		} */
 
 		// For all the moves of my role (i.e. the role actually performing the search)
 		// create the SUCT move containing the move statistics.
 		int myIndex = this.myRole.getIndex();
 
-		List<InternalPropnetMove> myLegalMoves = legalMoves.get(myIndex);
-		SlowSUCTMCTSMoveStats[] moves = new SlowSUCTMCTSMoveStats[myLegalMoves.size()];
+		List<InternalPropnetMove> myLegalMoves = allLegalMoves.get(myIndex);
+		SUCTMCTSMoveStats[] moves = new SUCTMCTSMoveStats[myLegalMoves.size()];
 		for(int i = 0; i < myLegalMoves.size(); i++){
-			moves[i] = new SlowSUCTMCTSMoveStats(myLegalMoves.get(i), i, createSlowSUCTMCTSMoves((myIndex+1)%(roles.length), roles.length, legalMoves, unvisitedLeaves));
-			if(moves[i].getNextRoleMoves() == null){
-				unvisitedLeaves.add(moves[i]);
-			}
+			moves[i] = new SUCTMCTSMoveStats(createSUCTMCTSMoves((myIndex+1)%(roles.length), roles.length, allLegalMoves));
 		}
 
 		return moves;
 	}
 
-	private SUCTMCTSMoveStats[] createSUCTMCTSMoves(int roleIndex, int numRoles, List<List<InternalPropnetMove>> legalMoves, List<SlowSUCTMCTSMoveStats> unvisitedLeaves){
+	private SUCTMCTSMoveStats[] createSUCTMCTSMoves(int roleIndex, int numRoles, List<List<InternalPropnetMove>> allLegalMoves){
 
 		if(roleIndex == this.myRole.getIndex()){
 			return null;
 		}
 
-		List<InternalPropnetMove> roleLegalMoves = legalMoves.get(roleIndex);
+		List<InternalPropnetMove> roleLegalMoves = allLegalMoves.get(roleIndex);
 		SUCTMCTSMoveStats[] moves = new SUCTMCTSMoveStats[roleLegalMoves.size()];
 		for(int i = 0; i < roleLegalMoves.size(); i++){
-			moves[i] = new SUCTMCTSMoveStats(roleLegalMoves.get(i), i, createSUCTMCTSMoves((roleIndex+1)%(numRoles), numRoles, legalMoves, unvisitedLeaves));
-
+			moves[i] = new SUCTMCTSMoveStats(createSUCTMCTSMoves((roleIndex+1)%(numRoles), numRoles, allLegalMoves));
 		}
 
 		return moves;
@@ -801,7 +776,7 @@ public class InternalPropnetMCTSManager extends MCTSManager {
 
 		for(SlowSUCTMCTSMoveStats m : moves){
 			System.out.println(tab + this.theMachine.internalMoveToMove(m.getTheMove()));
-			this.printMovesTree(m.getNextRoleMoves(), tab + "   ");
+			this.printMovesTree(m.getNextRoleMovesStats(), tab + "   ");
 		}
 
 	}

@@ -30,7 +30,7 @@ public class InternalPropnetSlowSUCTMCTSNode extends InternalPropnetMCTSNode {
 	 * all the moves of r3, and each entry in each list for r3 will reference a list of
 	 * moves for r1).
 	 *
-	 * moves = 	[
+	 * movesStats = 	[
 	 * 				r2.move1stats
 	 * 					<-> r3.move1stats
 	 * 						<-> r1.move1stats
@@ -51,7 +51,7 @@ public class InternalPropnetSlowSUCTMCTSNode extends InternalPropnetMCTSNode {
 	 * both to all the statistics of the moves of the role that comes next and to the statistics
 	 * of the move that's been chosen for the previous role.
 	 */
-	private SlowSUCTMCTSMoveStats[] moves;
+	private SlowSUCTMCTSMoveStats[] movesStats;
 
 	/**
 	 * List of all the unvisited moves.
@@ -66,14 +66,14 @@ public class InternalPropnetSlowSUCTMCTSNode extends InternalPropnetMCTSNode {
 	 * @param goals
 	 * @param terminal
 	 */
-	public InternalPropnetSlowSUCTMCTSNode(SlowSUCTMCTSMoveStats[] moves, List<SlowSUCTMCTSMoveStats> unvisitedLeaves, int[] goals, boolean terminal) {
+	public InternalPropnetSlowSUCTMCTSNode(SlowSUCTMCTSMoveStats[] movesStats, List<SlowSUCTMCTSMoveStats> unvisitedLeaves, int[] goals, boolean terminal) {
 		super(goals, terminal);
-		this.moves = moves;
+		this.movesStats = movesStats;
 		this.unvisitedLeaves = unvisitedLeaves;
 	}
 
-	public SlowSUCTMCTSMoveStats[] getMoves(){
-		return this.moves;
+	public SlowSUCTMCTSMoveStats[] getMovesStats(){
+		return this.movesStats;
 	}
 
 	public List<SlowSUCTMCTSMoveStats> getUnvisitedLeaves(){
@@ -85,12 +85,12 @@ public class InternalPropnetSlowSUCTMCTSNode extends InternalPropnetMCTSNode {
 
 		String s = "NODE[\n";
 		s += "  Moves[";
-		if(this.moves == null){
+		if(this.movesStats == null){
 			s += "null]\n";
 		}else{
-			for(int i = 0; i < this.moves.length; i++){
+			for(int i = 0; i < this.movesStats.length; i++){
 				s += "\n    Move" + i + "[";
-				s += "\n      " + moves[i].toString();
+				s += "\n      " + movesStats[i].toString();
 			}
 			s += "  ]\n";
 		}

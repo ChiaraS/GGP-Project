@@ -9,8 +9,10 @@ import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.MCTSJoi
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.DUCT.DUCTMCTSJointMove;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.DUCT.DUCTMCTSMoveStats;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.DUCT.InternalPropnetDUCTMCTSNode;
+import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.SUCT.InternalPropnetSUCTMCTSNode;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.SUCT.InternalPropnetSlowSUCTMCTSNode;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.SUCT.SUCTMCTSJointMove;
+import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.SUCT.SUCTMCTSMoveStats;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.SUCT.SlowSUCTMCTSMoveStats;
 import org.ggp.base.util.statemachine.inernalPropnetStructure.InternalPropnetMove;
 import org.ggp.base.util.statemachine.inernalPropnetStructure.InternalPropnetRole;
@@ -50,15 +52,17 @@ public class UCTSelection implements SelectionStrategy {
 	@Override
 	public MCTSJointMove select(InternalPropnetMCTSNode currentNode) {
 		if(currentNode instanceof InternalPropnetDUCTMCTSNode){
-			return this.select((InternalPropnetDUCTMCTSNode)currentNode);
+			return this.ductSelect((InternalPropnetDUCTMCTSNode)currentNode);
+		}else if(currentNode instanceof InternalPropnetSUCTMCTSNode){
+			return this.suctSelect((InternalPropnetSUCTMCTSNode)currentNode);
 		}else if(currentNode instanceof InternalPropnetSlowSUCTMCTSNode){
-			return this.select((InternalPropnetSlowSUCTMCTSNode)currentNode);
+			return this.ssuctSelect((InternalPropnetSlowSUCTMCTSNode)currentNode);
 		}else{
 			throw new RuntimeException("UCTSelection-select(): detected a node of a non-recognizable sub-type of class InternalPropnetMCTreeNode.");
 		}
 	}
 
-	private MCTSJointMove select(InternalPropnetDUCTMCTSNode currentNode) {
+	private MCTSJointMove ductSelect(InternalPropnetDUCTMCTSNode currentNode) {
 
 		/* No need for this check, if the code is correct, because the node that is passed as input
 		 * is always non-terminal.
@@ -145,7 +149,77 @@ public class UCTSelection implements SelectionStrategy {
 		return new DUCTMCTSJointMove(selectedJointMove, movesIndices);
 	}
 
-	private MCTSJointMove select(InternalPropnetSlowSUCTMCTSNode currentNode){
+	private MCTSJointMove suctSelect(InternalPropnetSUCTMCTSNode currentNode){
+
+		List<InternalPropnetMove> jointMove = new ArrayList<InternalPropnetMove>(this.numRoles);
+		int[] movesIndices = new int[this.numRoles];
+
+		// Initialize ArrayList with numRoles null elements.
+		for(int i = 0; i < this.numRoles; i++){
+			jointMove.add(null);
+		}
+
+		// Get the index of myRole.
+		int roleIndex = this.myRole.getIndex();
+
+		// Get the moves for myRole.
+		SUCTMCTSMoveStats[] movesStats = currentNode.getMovesStats();
+
+		//SUCTMCTSMoveStats chosenMove = null;
+
+		double maxUCTvalue;
+		double UCTvalue;
+		long nodeVisits = currentNode.getTotVisits();
+
+		while(movesStats != null){
+
+			// Compute UCT value for all moves.
+			maxUCTvalue = -1;
+
+			for(int i = 0; i < movesStats.length; i++){
+				// Compute the UCT value.
+				UCTvalue = this.computeUCTvalue(movesStats[i].getScoreSum(), (double) movesStats[i].getVisits(), (double) nodeVisits);
+
+				movesStats[i].setUct(UCTvalue);
+
+				// If it's higher than the current maximum one, replace the max value
+				if(UCTvalue > maxUCTvalue){
+					maxUCTvalue = UCTvalue;
+				}
+			}
+
+			// Now that we have the maximum UCT value we can look for all moves that have their UCT value
+			// in the interval [maxUCTvalue-offset, maxUCTvalue].
+			List<Integer> selectedMovesIndices = new ArrayList<Integer>();
+
+			for(int i = 0; i < movesStats.length; i++){
+				if(movesStats[i].getUct() >= (maxUCTvalue-this.uctOffset)){
+					selectedMovesIndices.add(new Integer(i));
+				}
+			}
+
+			// Extra check (should never be true).
+			if(selectedMovesIndices.isEmpty()){
+				throw new RuntimeException("SUCT selection: detected no moves with UCT value higher than -1.");
+			}
+
+			// Add one of the selected moves to the joint move.
+			movesIndices[roleIndex] = selectedMovesIndices.get(this.random.nextInt(selectedMovesIndices.size())).intValue();
+			jointMove.set(roleIndex, currentNode.getAllLegalMoves().get(roleIndex).get(movesIndices[roleIndex]));
+
+			// Get the move statistics of the next role, given the selected move.
+			movesStats = movesStats[movesIndices[roleIndex]].getNextRoleMovesStats();
+
+			// Compute the index for the next role
+			roleIndex = (roleIndex+1)%this.numRoles;
+
+		}
+
+		return new DUCTMCTSJointMove(jointMove, movesIndices);
+
+	}
+
+	private MCTSJointMove ssuctSelect(InternalPropnetSlowSUCTMCTSNode currentNode){
 
 		List<InternalPropnetMove> jointMove = new ArrayList<InternalPropnetMove>(this.numRoles);
 
@@ -158,7 +232,7 @@ public class UCTSelection implements SelectionStrategy {
 		int roleIndex = this.myRole.getIndex();
 
 		// Get the moves for myRole.
-		SlowSUCTMCTSMoveStats[] moves = currentNode.getMoves();
+		SlowSUCTMCTSMoveStats[] movesStats = currentNode.getMovesStats();
 
 		SlowSUCTMCTSMoveStats chosenMove = null;
 
@@ -166,16 +240,16 @@ public class UCTSelection implements SelectionStrategy {
 		double UCTvalue;
 		long nodeVisits = currentNode.getTotVisits();
 
-		while(moves != null){
+		while(movesStats != null){
 
 			// Compute UCT value for all moves.
 			maxUCTvalue = -1;
 
-			for(int i = 0; i < moves.length; i++){
+			for(int i = 0; i < movesStats.length; i++){
 				// Compute the UCT value.
-				UCTvalue = this.computeUCTvalue(moves[i].getScoreSum(), (double) moves[i].getVisits(), (double) nodeVisits);
+				UCTvalue = this.computeUCTvalue(movesStats[i].getScoreSum(), (double) movesStats[i].getVisits(), (double) nodeVisits);
 
-				moves[i].setUct(UCTvalue);
+				movesStats[i].setUct(UCTvalue);
 
 				// If it's higher than the current maximum one, replace the max value
 				if(UCTvalue > maxUCTvalue){
@@ -187,8 +261,8 @@ public class UCTSelection implements SelectionStrategy {
 			// in the interval [maxUCTvalue-offset, maxUCTvalue].
 			List<Integer> selectedMovesIndices = new ArrayList<Integer>();
 
-			for(int i = 0; i < moves.length; i++){
-				if(moves[i].getUct() >= (maxUCTvalue-this.uctOffset)){
+			for(int i = 0; i < movesStats.length; i++){
+				if(movesStats[i].getUct() >= (maxUCTvalue-this.uctOffset)){
 					selectedMovesIndices.add(new Integer(i));
 				}
 			}
@@ -200,11 +274,11 @@ public class UCTSelection implements SelectionStrategy {
 
 			// Add one of the selected moves to the joint move.
 			int selectedMoveIndex = selectedMovesIndices.get(this.random.nextInt(selectedMovesIndices.size())).intValue();
-			chosenMove = moves[selectedMoveIndex];
+			chosenMove = movesStats[selectedMoveIndex];
 			jointMove.set(roleIndex, chosenMove.getTheMove());
 
 			// Get the move statistics of the next role, given the selected move.
-			moves = chosenMove.getNextRoleMoves();
+			movesStats = chosenMove.getNextRoleMovesStats();
 
 			// Compute the index for the next role
 			roleIndex = (roleIndex+1)%this.numRoles;

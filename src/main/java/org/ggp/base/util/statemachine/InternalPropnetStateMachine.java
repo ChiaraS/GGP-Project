@@ -391,4 +391,28 @@ public abstract class InternalPropnetStateMachine extends StateMachine{
         return theGoals;
 
     }
+
+    /**
+     * This method returns the legal moves for all players in the state.
+     * The order of the roles in the list is the standard role order (i.e.
+     * the same as the one of the list with roles).
+     *
+     * @param state
+     * @return
+     * @throws MoveDefinitionException
+     */
+    public List<List<InternalPropnetMove>> getAllLegalMoves(InternalPropnetMachineState state) throws MoveDefinitionException{
+    	if(this.isTerminal(state)){
+    		return null;
+    	}else{
+    		List<List<InternalPropnetMove>> legalMoves = new ArrayList<List<InternalPropnetMove>>();
+
+    		// Get legal moves for all players.
+    		for(int i = 0; i < this.getInternalRoles().length; i++){
+    			legalMoves.add(this.getInternalLegalMoves(state, this.getInternalRoles()[i]));
+    		}
+    		return legalMoves;
+
+    	}
+    }
 }
