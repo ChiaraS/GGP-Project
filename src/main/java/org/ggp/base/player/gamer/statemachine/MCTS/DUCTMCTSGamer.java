@@ -9,12 +9,12 @@ package org.ggp.base.player.gamer.statemachine.MCTS;
  * @author C.Sironi
  *
  */
-public class SlowDUCTMCTSGamer extends SlowUCTMCTSGamer {
+public class DUCTMCTSGamer extends UCTMCTSGamer {
 
 	/**
 	 *
 	 */
-	public SlowDUCTMCTSGamer() {
+	public DUCTMCTSGamer() {
 		super();
 	}
 

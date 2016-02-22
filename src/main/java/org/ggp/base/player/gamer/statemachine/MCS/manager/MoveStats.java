@@ -19,6 +19,11 @@ public abstract class MoveStats{
 		this.scoreSum = 0L;
 	}
 
+	public MoveStats(long visits, long scoreSum) {
+		this.visits = visits;
+		this.scoreSum = scoreSum;
+	}
+
 	public long getVisits() {
 		return this.visits;
 	}

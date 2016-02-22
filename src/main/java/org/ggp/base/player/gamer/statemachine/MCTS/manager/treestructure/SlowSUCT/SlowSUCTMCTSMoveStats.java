@@ -1,16 +1,16 @@
 /**
  *
  */
-package org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.SUCT;
+package org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.SlowSUCT;
 
-import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.MCTSMoveStats;
+import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.MCTSCompleteMoveStats;
 import org.ggp.base.util.statemachine.inernalPropnetStructure.InternalPropnetMove;
 
 /**
  * @author C.Sironi
  *
  */
-public class SlowSUCTMCTSMoveStats extends MCTSMoveStats {
+public class SlowSUCTMCTSMoveStats extends MCTSCompleteMoveStats {
 
 	/**
 	 * Index of the move statistics in the list of move statistics of the node

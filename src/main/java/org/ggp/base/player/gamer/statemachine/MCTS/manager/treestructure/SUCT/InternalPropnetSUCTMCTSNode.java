@@ -72,11 +72,11 @@ public class InternalPropnetSUCTMCTSNode extends InternalPropnetMCTSNode {
 	 * @param goals
 	 * @param terminal
 	 */
-	public InternalPropnetSUCTMCTSNode(List<List<InternalPropnetMove>> allLegalMoves, SUCTMCTSMoveStats[] movesStats, int[] goals, boolean terminal) {
+	public InternalPropnetSUCTMCTSNode(List<List<InternalPropnetMove>> allLegalMoves, SUCTMCTSMoveStats[] movesStats, int[] goals, boolean terminal, int unvisitedLeaves) {
 		super(goals, terminal);
 		this.movesStats = movesStats;
 		this.allLegalMoves = allLegalMoves;
-		this.unvisitedLeaves = this.movesStats[0].getUnvisitedSubleaves() * this.movesStats.length;
+		this.unvisitedLeaves = unvisitedLeaves;
 	}
 
 	public SUCTMCTSMoveStats[] getMovesStats(){
@@ -91,7 +91,7 @@ public class InternalPropnetSUCTMCTSNode extends InternalPropnetMCTSNode {
 		return this.unvisitedLeaves;
 	}
 
-	public void decrementUnvisitedLeaves(){
+	public void decreaseUnvisitedLeaves(){
 		this.unvisitedLeaves--;
 	}
 

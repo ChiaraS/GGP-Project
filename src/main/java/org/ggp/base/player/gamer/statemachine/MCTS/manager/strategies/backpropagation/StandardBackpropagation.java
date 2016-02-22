@@ -2,12 +2,14 @@ package org.ggp.base.player.gamer.statemachine.MCTS.manager.strategies.backpropa
 
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.InternalPropnetMCTSNode;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.MCTSJointMove;
-import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.DUCT.DUCTMCTSJointMove;
+import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.UCTMCTSJointMove;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.DUCT.DUCTMCTSMoveStats;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.DUCT.InternalPropnetDUCTMCTSNode;
-import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.SUCT.InternalPropnetSlowSUCTMCTSNode;
-import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.SUCT.SUCTMCTSJointMove;
-import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.SUCT.SlowSUCTMCTSMoveStats;
+import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.SUCT.InternalPropnetSUCTMCTSNode;
+import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.SUCT.SUCTMCTSMoveStats;
+import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.SlowSUCT.InternalPropnetSlowSUCTMCTSNode;
+import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.SlowSUCT.SlowSUCTMCTSJointMove;
+import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.SlowSUCT.SlowSUCTMCTSMoveStats;
 import org.ggp.base.util.statemachine.inernalPropnetStructure.InternalPropnetRole;
 
 public class StandardBackpropagation implements BackpropagationStrategy {
@@ -35,10 +37,12 @@ public class StandardBackpropagation implements BackpropagationStrategy {
 	 */
 	@Override
 	public void update(InternalPropnetMCTSNode node, MCTSJointMove jointMove, int[] goals){
-		if(node instanceof InternalPropnetDUCTMCTSNode && jointMove instanceof DUCTMCTSJointMove){
-			this.update((InternalPropnetDUCTMCTSNode)node, (DUCTMCTSJointMove)jointMove, goals);
-		}else if(node instanceof InternalPropnetSlowSUCTMCTSNode && jointMove instanceof SUCTMCTSJointMove){
-			this.update((InternalPropnetSlowSUCTMCTSNode)node, (SUCTMCTSJointMove)jointMove, goals);
+		if(node instanceof InternalPropnetDUCTMCTSNode && jointMove instanceof UCTMCTSJointMove){
+			this.ductUpdate((InternalPropnetDUCTMCTSNode)node, (UCTMCTSJointMove)jointMove, goals);
+		}else if(node instanceof InternalPropnetSUCTMCTSNode && jointMove instanceof UCTMCTSJointMove){
+			this.suctUpdate((InternalPropnetSUCTMCTSNode)node, (UCTMCTSJointMove)jointMove, goals);
+		}else if(node instanceof InternalPropnetSlowSUCTMCTSNode && jointMove instanceof SlowSUCTMCTSJointMove){
+			this.ssuctUpdate((InternalPropnetSlowSUCTMCTSNode)node, (SlowSUCTMCTSJointMove)jointMove, goals);
 		}else{
 			throw new RuntimeException("StandardBackpropagation-update(): detected wrong combination of types for node (" + node.getClass().getSimpleName() + ") and joint move (" + jointMove.getClass().getSimpleName() + ").");
 		}
@@ -54,7 +58,7 @@ public class StandardBackpropagation implements BackpropagationStrategy {
 	 * @param jointMove the explored joint move.
 	 * @param goals the goals obtained by the simulation, to be used to update the statistics.
 	 */
-	private void update(InternalPropnetDUCTMCTSNode node, DUCTMCTSJointMove jointMove, int[] goals) {
+	private void ductUpdate(InternalPropnetDUCTMCTSNode node, UCTMCTSJointMove jointMove, int[] goals) {
 
 		node.incrementTotVisits();
 
@@ -75,6 +79,8 @@ public class StandardBackpropagation implements BackpropagationStrategy {
 
 	/**
 	 * Backpropagation, SEQUENTIAL version.
+	 *
+	 *
 	 * This method backpropagates the goal values, updating for each role the score
 	 * and the visits of the move that was selected to be part of the joint move.
 	 * This method updates only the statistics of a move depending on the moves selected
@@ -84,7 +90,59 @@ public class StandardBackpropagation implements BackpropagationStrategy {
 	 * @param jointMove the explored joint move.
 	 * @param goals the goals obtained by the simulation, to be used to update the statistics.
 	 */
-	private void update(InternalPropnetSlowSUCTMCTSNode node, SUCTMCTSJointMove jointMove, int[] goals) {
+	private void suctUpdate(InternalPropnetSUCTMCTSNode node, UCTMCTSJointMove jointMove, int[] goals) {
+
+		node.incrementTotVisits();
+
+		int currentRoleIndex = this.myRole.getIndex();
+
+		SUCTMCTSMoveStats currentStatsToUpdate = node.getMovesStats()[jointMove.getMovesIndices()[currentRoleIndex]];
+
+		while(currentRoleIndex != ((this.myRole.getIndex()-1+this.numRoles)%this.numRoles)){
+			currentStatsToUpdate.incrementVisits();
+			currentStatsToUpdate.incrementScoreSum(goals[currentRoleIndex]);
+			currentRoleIndex = (currentRoleIndex+1)%this.numRoles;
+			currentStatsToUpdate = currentStatsToUpdate.getNextRoleMovesStats()[jointMove.getMovesIndices()[currentRoleIndex]];
+		}
+
+		// When the while-loop exits, the leaf move's stats (or the ones of my role if the game is
+		// a single player game) still have to be updated. We do so also checking if it was the
+		// first time the joint move was explored (i.e. the unvisitedSubleaves count of this move's
+		// stats equals 1 or equally its visits count equals 0).
+		currentStatsToUpdate.incrementVisits();
+		currentStatsToUpdate.incrementScoreSum(goals[currentRoleIndex]);
+
+		// If it's the first visit for this leaf, it's also the first visit of the joint move and
+		// we must decrement by 1 the unvisitedSubleaves count of all the moves in this joint move.
+		if(currentStatsToUpdate.getUnvisitedSubleaves() == 1){
+			currentRoleIndex = this.myRole.getIndex();
+
+			currentStatsToUpdate = node.getMovesStats()[jointMove.getMovesIndices()[currentRoleIndex]];
+
+			while(currentRoleIndex != ((this.myRole.getIndex()-1+this.numRoles)%this.numRoles)){
+				currentStatsToUpdate.decreaseUnvisitedSubLeaves();
+				currentRoleIndex = (currentRoleIndex+1)%this.numRoles;
+				currentStatsToUpdate = currentStatsToUpdate.getNextRoleMovesStats()[jointMove.getMovesIndices()[currentRoleIndex]];
+			}
+
+			currentStatsToUpdate.decreaseUnvisitedSubLeaves();
+
+			node.decreaseUnvisitedLeaves();
+		}
+	}
+
+	/**
+	 * Backpropagation, slow SEQUENTIAL version.
+	 * This method backpropagates the goal values, updating for each role the score
+	 * and the visits of the move that was selected to be part of the joint move.
+	 * This method updates only the statistics of a move depending on the moves selected
+	 * in the joint move for the roles that precede this move in the moves statistics tree.
+	 *
+	 * @param node the node for which to update the moves.
+	 * @param jointMove the explored joint move.
+	 * @param goals the goals obtained by the simulation, to be used to update the statistics.
+	 */
+	private void ssuctUpdate(InternalPropnetSlowSUCTMCTSNode node, SlowSUCTMCTSJointMove jointMove, int[] goals) {
 
 		node.incrementTotVisits();
 
@@ -103,7 +161,7 @@ public class StandardBackpropagation implements BackpropagationStrategy {
 		theMoveToUpdate.incrementVisits();
 
 		// Get the parent move to be updated.
-		theMoveToUpdate = theMoveToUpdate.getPreviousRoleMove();
+		theMoveToUpdate = theMoveToUpdate.getPreviousRoleMoveStats();
 
 		// Until we reach the root move (i.e. our move), keep updating.
 		while(theMoveToUpdate != null){
@@ -115,7 +173,7 @@ public class StandardBackpropagation implements BackpropagationStrategy {
 			theMoveToUpdate.incrementVisits();
 
 			// Get the parent move, that will be the chosen move for the previous role.
-			theMoveToUpdate = theMoveToUpdate.getPreviousRoleMove();
+			theMoveToUpdate = theMoveToUpdate.getPreviousRoleMoveStats();
 		}
 	}
 }

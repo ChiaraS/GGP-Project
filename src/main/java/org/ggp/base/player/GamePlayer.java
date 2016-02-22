@@ -138,7 +138,7 @@ public final class GamePlayer extends Thread implements Subject
 				connection.close();
 
 				///////////////////////////////
-				System.gc();
+				//System.gc();
 				///////////////////////////////
 
 				/*

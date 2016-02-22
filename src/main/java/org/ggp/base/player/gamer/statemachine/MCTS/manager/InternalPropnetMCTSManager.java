@@ -13,15 +13,15 @@ import org.ggp.base.player.gamer.statemachine.MCTS.manager.strategies.movechoice
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.strategies.playout.PlayoutStrategy;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.strategies.selection.SelectionStrategy;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.InternalPropnetMCTSNode;
+import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.MCTSCompleteMoveStats;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.MCTSJointMove;
-import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.MCTSMoveStats;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.MCTSTranspositionTable;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.DUCT.DUCTMCTSMoveStats;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.DUCT.InternalPropnetDUCTMCTSNode;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.SUCT.InternalPropnetSUCTMCTSNode;
-import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.SUCT.InternalPropnetSlowSUCTMCTSNode;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.SUCT.SUCTMCTSMoveStats;
-import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.SUCT.SlowSUCTMCTSMoveStats;
+import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.SlowSUCT.InternalPropnetSlowSUCTMCTSNode;
+import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.SlowSUCT.SlowSUCTMCTSMoveStats;
 import org.ggp.base.util.logging.GamerLogger;
 import org.ggp.base.util.statemachine.InternalPropnetStateMachine;
 import org.ggp.base.util.statemachine.exceptions.MoveDefinitionException;
@@ -149,10 +149,10 @@ public class InternalPropnetMCTSManager extends MCTSManager {
 			GamerLogger.log("MCTSManager", "MCTS manager initialized to perform DUCT MCTS with maximum search dept " + this.maxSearchDepth + ".");
 			break;
 		case SUCT:
-			GamerLogger.log("MCTSManager", "MCTS manager initialized to perform DUCT MCTS with maximum search dept " + this.maxSearchDepth + ".");
+			GamerLogger.log("MCTSManager", "MCTS manager initialized to perform SUCT MCTS with maximum search dept " + this.maxSearchDepth + ".");
 			break;
 		case SLOW_SUCT:
-			GamerLogger.log("MCTSManager", "MCTS manager initialized to perform DUCT MCTS with maximum search dept " + this.maxSearchDepth + ".");
+			GamerLogger.log("MCTSManager", "MCTS manager initialized to perform SLOW_SUCT MCTS with maximum search dept " + this.maxSearchDepth + ".");
 			break;
 		}
 	}
@@ -166,7 +166,7 @@ public class InternalPropnetMCTSManager extends MCTSManager {
 	 * it is either terminal or there is some problem with the computation of legal
 	 * moves (and thus corresponding statistics).
 	 */
-	public MCTSMoveStats getBestMove(InternalPropnetMCTSNode theNode)throws MCTSException{
+	public MCTSCompleteMoveStats getBestMove(InternalPropnetMCTSNode theNode)throws MCTSException{
 
 		// If the node is null or terminal we cannot return any move.
 		// Note that the node being terminal might mean that the state is not terminal but legal moves
@@ -271,6 +271,9 @@ public class InternalPropnetMCTSManager extends MCTSManager {
 		this.searchStart = System.currentTimeMillis();
 		while(System.currentTimeMillis() < timeout){
 			this.currentIterationVisitedNodes = 0;
+
+			//System.out.println("Iteration " + this.iterations);
+
 			this.searchNext(initialState, initialNode);
 			this.iterations++;
 			this.visitedNodes += this.currentIterationVisitedNodes;
@@ -327,6 +330,7 @@ public class InternalPropnetMCTSManager extends MCTSManager {
 				throw new RuntimeException("Detected null goals for a treminal node in the tree.");
 			}
 
+
 			/*
 			System.out.println("Detected terminal.");
 			System.out.print("Returning goals:");
@@ -338,6 +342,7 @@ public class InternalPropnetMCTSManager extends MCTSManager {
 			s += "]\n";
 			System.out.print(s);
 			*/
+
 
 			return goals;
 		}
@@ -355,6 +360,7 @@ public class InternalPropnetMCTSManager extends MCTSManager {
 			// and if they cannot be computed return default tie-goals.
 
 			/*
+			goals = theMachine.getSafeGoals(currentState);
 			System.out.print("Returning goals:");
 			String s = "[";
 			s += " ";
@@ -364,6 +370,7 @@ public class InternalPropnetMCTSManager extends MCTSManager {
 			s += "]\n";
 			System.out.print(s);
 			*/
+
 
 			return theMachine.getSafeGoals(currentState);
 		}
@@ -376,6 +383,24 @@ public class InternalPropnetMCTSManager extends MCTSManager {
 		InternalPropnetMachineState nextState;
 		InternalPropnetMCTSNode nextNode;
 
+		/*
+		System.out.println("Printing current node: ");
+		switch(this.mctsType){
+		// DUCT version of MCTS.
+		case DUCT:
+			break;
+		case SUCT: // SUCT version of MCTS.
+			printSUCTMovesTree(((InternalPropnetSUCTMCTSNode)currentNode).getMovesStats(), "");
+			break;
+		case SLOW_SUCT: // Slow SUCT version of MCTS.
+			printMovesTree(((InternalPropnetSlowSUCTMCTSNode)currentNode).getMovesStats(), "");
+			break;
+		default:
+			throw new RuntimeException("Someone added a new MCTS Node type and forgot to deal with it here, when creating a new tree node.");
+		}
+		System.out.println("Finished printing current node.");
+		*/
+
 		// If the state is not terminal we must check if we have to expand it or if we have to continue the selection.
 		// Depending on what needs to be done, get the joint move to be expanded/selected.
 		boolean expansionRequired = this.expansionStrategy.expansionRequired(currentNode);
@@ -384,14 +409,19 @@ public class InternalPropnetMCTSManager extends MCTSManager {
 			//System.out.println("Expanding.");
 
 			mctsJointMove = this.expansionStrategy.expand(currentNode);
+
+			//System.out.println("Expanding move " + mctsJointMove);
+
 		}else{
 
 			//System.out.println("Selecting.");
 
 			mctsJointMove = this.selectionStrategy.select(currentNode);
+
+			//System.out.println("Selecting move " + mctsJointMove);
 		}
 
-		//System.out.println("Chosen move: " + ductJointMove);
+		//System.out.println("Chosen move: " + mctsJointMove);
 
 		//System.out.println("Computing next state and next node.");
 
@@ -456,6 +486,7 @@ public class InternalPropnetMCTSManager extends MCTSManager {
 			goals = this.searchNext(nextState, nextNode);
 		}
 
+
 		/*
 		System.out.println("Backpropagating goals:");
 		String s = "[";
@@ -466,6 +497,7 @@ public class InternalPropnetMCTSManager extends MCTSManager {
 		s += "]\n";
 		System.out.print(s);
 		*/
+
 
 		this.backpropagationStrategy.update(currentNode, mctsJointMove, goals);
 		return goals;
@@ -499,6 +531,8 @@ public class InternalPropnetMCTSManager extends MCTSManager {
 	 * @return the tree node corresponding to the state.
 	 */
 	private InternalPropnetMCTSNode createNewNode(InternalPropnetMachineState state){
+
+		//System.out.println("Creating new node.");
 
 		int goals[] = null;
 		boolean terminal = false;
@@ -540,7 +574,8 @@ public class InternalPropnetMCTSManager extends MCTSManager {
 			return new InternalPropnetDUCTMCTSNode(ductMovesStats, goals, terminal);
 		case SUCT: // SUCT version of MCTS.
 
-			SUCTMCTSMoveStats[] suctMoves = null;
+			SUCTMCTSMoveStats[] suctMovesStats = null;
+			int unvisitedLeavesCount = 0;
 
 			// Terminal state:
 			if(this.theMachine.isTerminal(state)){
@@ -552,8 +587,23 @@ public class InternalPropnetMCTSManager extends MCTSManager {
 
 				try {
 					allLegalMoves = this.theMachine.getAllLegalMoves(state);
-					suctMoves = this.createSUCTMCTSMoves(allLegalMoves);
-					// this.printMovesTree(suctMoves, "");
+
+					/*
+					int r = 0;
+					for(List<InternalPropnetMove> legalPerRole : allLegalMoves){
+						System.out.println("Legal moves for role " + r);
+						System.out.print("[ ");
+						for(InternalPropnetMove m : legalPerRole){
+							System.out.print("(" + m.getIndex() + ", " + this.theMachine.internalMoveToMove(m) + ") ");
+						}
+						System.out.println("]");
+						r++;
+					}
+					*/
+
+					suctMovesStats = this.createSUCTMCTSMoves(allLegalMoves);
+					unvisitedLeavesCount = suctMovesStats[0].getUnvisitedSubleaves() * suctMovesStats.length;
+					//this.printSUCTMovesTree(suctMovesStats, "");
 				} catch (MoveDefinitionException e) {
 					// Error when computing moves.
 					GamerLogger.logError("MCTSManager", "Failed to retrieve the legal moves while adding non-terminal SUCT state to the tree.");
@@ -573,15 +623,16 @@ public class InternalPropnetMCTSManager extends MCTSManager {
 					allLegalMoves = null;
 					goals = this.theMachine.getSafeGoals(state);
 					terminal = true;
+					unvisitedLeavesCount = 0;
 				}
 				// If the legal moves can be computed for every player, there is no need to compute the goals.
 			}
 
-			return new InternalPropnetSUCTMCTSNode(allLegalMoves, suctMoves, goals, terminal);
+			return new InternalPropnetSUCTMCTSNode(allLegalMoves, suctMovesStats, goals, terminal, unvisitedLeavesCount);
 
 		case SLOW_SUCT: // Slow SUCT version of MCTS.
 
-			SlowSUCTMCTSMoveStats[] suctMovesStats = null;
+			SlowSUCTMCTSMoveStats[] ssuctMovesStats = null;
 			List<SlowSUCTMCTSMoveStats> unvisitedLeaves = null;
 
 			// Terminal state:
@@ -601,7 +652,8 @@ public class InternalPropnetMCTSManager extends MCTSManager {
 					// in the unvisitedLeaves list if the corresponding joint move hasn't been visited yet
 					// during the search.
 					unvisitedLeaves = new ArrayList<SlowSUCTMCTSMoveStats>();
-					suctMovesStats = this.createSlowSUCTMCTSMoves(allLegalMoves, unvisitedLeaves);
+					ssuctMovesStats = this.createSlowSUCTMCTSMoves(allLegalMoves, unvisitedLeaves);
+					//this.printMovesTree(ssuctMovesStats, "");
 				} catch (MoveDefinitionException e) {
 					// Error when computing moves.
 					GamerLogger.logError("MCTSManager", "Failed to retrieve the legal moves while adding non-terminal SlowSUCT state to the tree.");
@@ -626,7 +678,7 @@ public class InternalPropnetMCTSManager extends MCTSManager {
 				// If the legal moves can be computed for every player, there is no need to compute the goals.
 			}
 
-			return new InternalPropnetSlowSUCTMCTSNode(suctMovesStats, unvisitedLeaves, goals, terminal);
+			return new InternalPropnetSlowSUCTMCTSNode(ssuctMovesStats, unvisitedLeaves, goals, terminal);
 		default:
 			throw new RuntimeException("Someone added a new MCTS Node type and forgot to del with it here, when creating a new tree node.");
 		}
@@ -753,9 +805,6 @@ public class InternalPropnetMCTSManager extends MCTSManager {
 		return moves;
 	}
 
-
-
-
 	public int getIterations(){
 		return this.iterations;
 	}
@@ -768,6 +817,13 @@ public class InternalPropnetMCTSManager extends MCTSManager {
 		return (this.searchEnd - this.searchStart);
 	}
 
+
+
+
+
+
+
+
 	private void printMovesTree(SlowSUCTMCTSMoveStats[] moves, String tab){
 
 		if(moves == null){
@@ -777,6 +833,19 @@ public class InternalPropnetMCTSManager extends MCTSManager {
 		for(SlowSUCTMCTSMoveStats m : moves){
 			System.out.println(tab + this.theMachine.internalMoveToMove(m.getTheMove()));
 			this.printMovesTree(m.getNextRoleMovesStats(), tab + "   ");
+		}
+
+	}
+
+	private void printSUCTMovesTree(SUCTMCTSMoveStats[] moves, String tab){
+
+		if(moves == null){
+			return;
+		}
+
+		for(SUCTMCTSMoveStats m : moves){
+			System.out.println(tab + "[" + m + "]");
+			this.printSUCTMovesTree(m.getNextRoleMovesStats(), tab + "   ");
 		}
 
 	}

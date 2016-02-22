@@ -19,4 +19,15 @@ public class MCTSJointMove {
 		return jointMove;
 	}
 
+	@Override
+	public String toString(){
+		String s = "[ ";
+		for(InternalPropnetMove m : this.jointMove){
+			s += m.getIndex() + " ";
+		}
+		s += " ]";
+
+		return s;
+	}
+
 }

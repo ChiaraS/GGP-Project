@@ -8,13 +8,14 @@ import java.util.concurrent.TimeUnit;
 
 import org.apache.logging.log4j.ThreadContext;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.InternalPropnetMCTSManager;
+import org.ggp.base.player.gamer.statemachine.MCTS.manager.InternalPropnetMCTSManager.MCTS_TYPE;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.strategies.backpropagation.StandardBackpropagation;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.strategies.expansion.RandomExpansion;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.strategies.movechoice.MaximumScoreChoice;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.strategies.playout.RandomPlayout;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.strategies.selection.UCTSelection;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.InternalPropnetMCTSNode;
-import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.MCTSMoveStats;
+import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.MCTSCompleteMoveStats;
 import org.ggp.base.util.game.GameRepository;
 import org.ggp.base.util.game.ManualUpdateLocalGameRepository;
 import org.ggp.base.util.gdl.grammar.Gdl;
@@ -41,16 +42,17 @@ import org.ggp.base.util.statemachine.inernalPropnetStructure.InternalPropnetRol
 *
 * It is possible to specify the following combinations of main arguments:
 *
-* 1. [DUCT/SUCT]
-* 2. [DUCT/SUCT] [keyOfGameToTest]
-* 3. [DUCT/SUCT] [givenInitTime] [maximumTestDuration]
-* 4. [DUCT/SUCT] [givenInitTime] [maximumTestDuration] [keyOfGameToTest]
+* 1. [DUCT|SUCT|SLOW_SUCT]
+* 2. [DUCT|SUCT|SLOW_SUCT] [keyOfGameToTest]
+* 3. [DUCT|SUCT|SLOW_SUCT] [givenInitTime] [maximumTestDuration]
+* 4. [DUCT|SUCT|SLOW_SUCT] [givenInitTime] [maximumTestDuration] [keyOfGameToTest]
 *
 * where:
-* [DUCT/SUCT] = true if the player must perform Decoupled UCT, false if it must perform Sequential UCT
-* 				(DEFAULT: true).
-* [givenInitTime] = maximum time in milliseconds that should be spent to initialize the
-* 								 propnet state machine (DEFAULT: 420000ms - 7mins).
+* [DUCT|SUCT|SLOW_SUCT] = set it to the string "DUCT" if the player must perform Decoupled UCT, "SUCT" if
+* 					  it must perform Sequential UCT, "SLOW_SUCT" if it must perform the slow version of
+* 					  Sequential UCT (DEFAULT: "DUCT").
+* [givenInitTime] = maximum time in milliseconds that should be spent to initialize the propnet state machine
+* 					(DEFAULT: 420000ms - 7mins).
 * [maximumTestDuration] = duration of each test in millisecond (DEFAULT: 60000ms - 1min).
 * [keyOfGameToTest] = key of the game to be tested (DEFAULT: null (i.e. all games)).
 *
@@ -70,14 +72,29 @@ public class MCTSSpeedTest {
 
 		/*********************** Parse main arguments ****************************/
 
-		boolean DUCT = true;
+		MCTS_TYPE mctsType = MCTS_TYPE.DUCT;
 		long givenInitTime = 420000L;
 		long testTime = 60000L;
 		String gameToTest = null;
 
-		if(args.length != 0){ // At least one argument is specified and the first argument is either true or false
+		String s = "DUCT";
 
-			DUCT = Boolean.parseBoolean(args[0]);
+		if(args.length != 0){ // At least one argument is specified and the first argument is the MCTS type.
+
+			switch(args[0]){
+			case "SUCT":
+				mctsType = MCTS_TYPE.SUCT;
+				s = "SUCT";
+				break;
+			case "SLOW_SUCT":
+				mctsType = MCTS_TYPE.SLOW_SUCT;
+				s = "SLOW_SUCT";
+				break;
+			default:
+				mctsType = MCTS_TYPE.DUCT;
+				s = "DUCT";
+				break;
+			}
 
 			if (args.length <= 4){
 
@@ -103,13 +120,6 @@ public class MCTSSpeedTest {
 			}
 
 		} // else use default values
-
-		String s;
-		if(DUCT){
-			s = "DUCT";
-		}else{
-			s = "SUCT";
-		}
 
 		System.out.println("Testing speed of " + s + "/MCTS using the propnet state machine.");
 
@@ -254,21 +264,21 @@ public class MCTSSpeedTest {
 
 
 
-		        System.out.println(thePropnetMachine.getRoles());
+		        //System.out.println(thePropnetMachine.getRoles());
 
-		        System.out.println(thePropnetMachine.getLegalMoves(thePropnetMachine.getInitialState(), thePropnetMachine.getRoles().get(0)));
+		        //System.out.println(thePropnetMachine.getLegalMoves(thePropnetMachine.getInitialState(), thePropnetMachine.getRoles().get(0)));
 
-		        System.out.println(thePropnetMachine.getLegalMoves(thePropnetMachine.getInitialState(), thePropnetMachine.getRoles().get(1)));
-
-
+		        //System.out.println(thePropnetMachine.getLegalMoves(thePropnetMachine.getInitialState(), thePropnetMachine.getRoles().get(1)));
 
 
 
-		        InternalPropnetRole internalPlayingRole = thePropnetMachine.getInternalRoles()[1];
+
+
+		        InternalPropnetRole internalPlayingRole = thePropnetMachine.getInternalRoles()[0];
 		        playingRole = thePropnetMachine.internalRoleToRole(internalPlayingRole);
 		        numRoles = thePropnetMachine.getInternalRoles().length;
 
-		        InternalPropnetMCTSManager MCTSmanager = new InternalPropnetMCTSManager(DUCT, internalPlayingRole,
+		        InternalPropnetMCTSManager MCTSmanager = new InternalPropnetMCTSManager(mctsType, internalPlayingRole,
 		        		new UCTSelection(numRoles, internalPlayingRole, r, uctOffset, c),
 		        		new RandomExpansion(numRoles, internalPlayingRole, r), new RandomPlayout(thePropnetMachine),
 		        		new StandardBackpropagation(numRoles, internalPlayingRole),
@@ -278,7 +288,7 @@ public class MCTSSpeedTest {
 		        	GamerLogger.log(s + "MCTSSpeedTest", "Starting search.");
 
 		        	InternalPropnetMCTSNode initialNode = MCTSmanager.search(thePropnetMachine.getInternalInitialState(), System.currentTimeMillis() + testTime, gameStep);
-		        	MCTSMoveStats finalMove = MCTSmanager.getBestMove(initialNode);
+		        	MCTSCompleteMoveStats finalMove = MCTSmanager.getBestMove(initialNode);
 
 		        	GamerLogger.log(s + "MCTSSpeedTest", "Search ended correctly.");
 		        	chosenMove = thePropnetMachine.internalMoveToMove(finalMove.getTheMove());

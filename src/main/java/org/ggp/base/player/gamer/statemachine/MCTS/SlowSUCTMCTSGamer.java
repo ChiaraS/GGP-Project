@@ -11,7 +11,7 @@ import org.ggp.base.player.gamer.statemachine.MCTS.manager.InternalPropnetMCTSMa
  * @author C.Sironi
  *
  */
-public class SlowSUCTMCTSGamer extends SlowUCTMCTSGamer {
+public class SlowSUCTMCTSGamer extends UCTMCTSGamer {
 
 	/**
 	 *

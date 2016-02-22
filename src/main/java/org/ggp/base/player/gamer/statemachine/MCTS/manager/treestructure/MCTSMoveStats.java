@@ -1,14 +1,18 @@
 package org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure;
 
-import org.ggp.base.player.gamer.statemachine.MCS.manager.MCSMoveStats;
-import org.ggp.base.util.statemachine.inernalPropnetStructure.InternalPropnetMove;
+import org.ggp.base.player.gamer.statemachine.MCS.manager.MoveStats;
 
-public class MCTSMoveStats extends MCSMoveStats{
+public class MCTSMoveStats extends MoveStats{
 
 	private double uct;
 
-	public MCTSMoveStats(InternalPropnetMove theMove) {
-		super(theMove);
+	public MCTSMoveStats() {
+		super();
+		this.uct = 0.0;
+	}
+
+	public MCTSMoveStats(long visits, long scoreSum, double uct) {
+		super(visits, scoreSum);
 		this.uct = 0.0;
 	}
 

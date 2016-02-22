@@ -15,7 +15,7 @@ import org.ggp.base.player.gamer.statemachine.MCTS.manager.strategies.movechoice
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.strategies.playout.RandomPlayout;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.strategies.selection.UCTSelection;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.InternalPropnetMCTSNode;
-import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.MCTSMoveStats;
+import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.MCTSCompleteMoveStats;
 import org.ggp.base.player.gamer.statemachine.propnet.InternalPropnetGamer;
 import org.ggp.base.util.logging.GamerLogger;
 import org.ggp.base.util.statemachine.Move;
@@ -43,7 +43,7 @@ import org.ggp.base.util.statemachine.inernalPropnetStructure.InternalPropnetRol
  * @author C.Sironi
  *
  */
-public abstract class SlowUCTMCTSGamer extends InternalPropnetGamer {
+public abstract class UCTMCTSGamer extends InternalPropnetGamer {
 
 	/**
 	 * Game step. Keeps track of the current game step.
@@ -72,7 +72,7 @@ public abstract class SlowUCTMCTSGamer extends InternalPropnetGamer {
 	/**
 	 *
 	 */
-	public SlowUCTMCTSGamer() {
+	public UCTMCTSGamer() {
 		// TODO: change code so that the parameters can be set from outside.
 
 		super();
@@ -221,7 +221,7 @@ public abstract class SlowUCTMCTSGamer extends InternalPropnetGamer {
 
 			try {
 				InternalPropnetMCTSNode currentNode = this.mctsManager.search(currentState, realTimeout, gameStep);
-				MCTSMoveStats selectedMove = this.mctsManager.getBestMove(currentNode);
+				MCTSCompleteMoveStats selectedMove = this.mctsManager.getBestMove(currentNode);
 
 				searchTime = this.mctsManager.getSearchTime();
 				iterations = this.mctsManager.getIterations();

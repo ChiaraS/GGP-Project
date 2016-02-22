@@ -1,7 +1,7 @@
 /**
  *
  */
-package org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.SUCT;
+package org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.SlowSUCT;
 
 import java.util.List;
 
@@ -12,7 +12,7 @@ import org.ggp.base.util.statemachine.inernalPropnetStructure.InternalPropnetMov
  * @author C.Sironi
  *
  */
-public class SUCTMCTSJointMove extends MCTSJointMove {
+public class SlowSUCTMCTSJointMove extends MCTSJointMove {
 
 	/**
 	 * Reference to the leaf move that allows to reconstruct the joint move.
@@ -22,7 +22,7 @@ public class SUCTMCTSJointMove extends MCTSJointMove {
 	/**
 	 * @param jointMove
 	 */
-	public SUCTMCTSJointMove(List<InternalPropnetMove> jointMove, SlowSUCTMCTSMoveStats leafMove) {
+	public SlowSUCTMCTSJointMove(List<InternalPropnetMove> jointMove, SlowSUCTMCTSMoveStats leafMove) {
 		super(jointMove);
 		this.leafMove = leafMove;
 	}

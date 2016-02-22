@@ -1,7 +1,7 @@
 /**
  *
  */
-package org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.SUCT;
+package org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.SlowSUCT;
 
 import java.util.List;
 

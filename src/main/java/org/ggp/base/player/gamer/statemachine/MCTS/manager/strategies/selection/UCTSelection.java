@@ -6,14 +6,14 @@ import java.util.Random;
 
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.InternalPropnetMCTSNode;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.MCTSJointMove;
-import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.DUCT.DUCTMCTSJointMove;
+import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.UCTMCTSJointMove;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.DUCT.DUCTMCTSMoveStats;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.DUCT.InternalPropnetDUCTMCTSNode;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.SUCT.InternalPropnetSUCTMCTSNode;
-import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.SUCT.InternalPropnetSlowSUCTMCTSNode;
-import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.SUCT.SUCTMCTSJointMove;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.SUCT.SUCTMCTSMoveStats;
-import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.SUCT.SlowSUCTMCTSMoveStats;
+import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.SlowSUCT.InternalPropnetSlowSUCTMCTSNode;
+import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.SlowSUCT.SlowSUCTMCTSJointMove;
+import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.SlowSUCT.SlowSUCTMCTSMoveStats;
 import org.ggp.base.util.statemachine.inernalPropnetStructure.InternalPropnetMove;
 import org.ggp.base.util.statemachine.inernalPropnetStructure.InternalPropnetRole;
 
@@ -146,7 +146,7 @@ public class UCTSelection implements SelectionStrategy {
 			selectedJointMove.add(moves[i][movesIndices[i]].getTheMove());
 		}
 
-		return new DUCTMCTSJointMove(selectedJointMove, movesIndices);
+		return new UCTMCTSJointMove(selectedJointMove, movesIndices);
 	}
 
 	private MCTSJointMove suctSelect(InternalPropnetSUCTMCTSNode currentNode){
@@ -215,7 +215,7 @@ public class UCTSelection implements SelectionStrategy {
 
 		}
 
-		return new DUCTMCTSJointMove(jointMove, movesIndices);
+		return new UCTMCTSJointMove(jointMove, movesIndices);
 
 	}
 
@@ -285,7 +285,7 @@ public class UCTSelection implements SelectionStrategy {
 
 		}
 
-		return new SUCTMCTSJointMove(jointMove, chosenMove);
+		return new SlowSUCTMCTSJointMove(jointMove, chosenMove);
 
 	}
 
