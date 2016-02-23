@@ -99,7 +99,7 @@ public class TourneyRunner {
 
     	// 3. Inputs are correct, officially start the tourney.
 
-    	String mainLogFolder = System.currentTimeMillis() + tourneyName;
+    	String mainLogFolder = System.currentTimeMillis() + "." + tourneyName;
     	ThreadContext.put("LOG_FOLDER", mainLogFolder);
 
     	GamerLogger.startFileLogging();
@@ -121,6 +121,11 @@ public class TourneyRunner {
     	List<Gdl> description = game.getRules();
 
     	for(List<Integer> combination : combinations){
+
+    		System.out.println("Calling GC.");
+    		for(int i = 0; i < 10; i++){
+    			System.gc();
+    		}
 
     		String comboIndices = "";
     		List<Class<?>> combinationClasses = new ArrayList<Class<?>>();
