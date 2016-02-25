@@ -92,10 +92,10 @@ public class TourneyRunner {
     	}
 
     	int expectedRoles = Role.computeRoles(game.getRules()).size();
-    	if (gamersClasses.size() > expectedRoles) {
+    	/*if (gamersClasses.size() > expectedRoles) {
     		System.out.println("Impossible to start tourney: number of gamer types to test is bigger than the number of roles in the game.");
 			return;
-    	}
+    	}*/
 
     	// 3. Inputs are correct, officially start the tourney.
 
@@ -122,10 +122,20 @@ public class TourneyRunner {
 
     	for(List<Integer> combination : combinations){
 
-    		System.out.println("Calling GC.");
+    		// Prompt the JVM to do garbage collection, because we've hopefully just freed a lot of stuff.
+    	    long endGCTime = System.currentTimeMillis() + 3000;
+    	    for (int ii = 0; ii < 1000 && System.currentTimeMillis() < endGCTime; ii++){
+
+    	    	System.out.println("Calling GC: " + System.currentTimeMillis());
+
+    	    	System.gc();
+    	        try {Thread.sleep(1);} catch (InterruptedException lEx) {/* Whatever */}
+    	    }
+
+    		/*System.out.println("Calling GC.");
     		for(int i = 0; i < 10; i++){
     			System.gc();
-    		}
+    		}*/
 
     		String comboIndices = "";
     		List<Class<?>> combinationClasses = new ArrayList<Class<?>>();
