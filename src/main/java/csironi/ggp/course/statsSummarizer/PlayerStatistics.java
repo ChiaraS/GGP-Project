@@ -13,6 +13,16 @@ import java.util.List;
 public class PlayerStatistics {
 
 	/**
+	 * List containing the combination for all matches of the player
+	 */
+	private List<String> combinations;
+
+	/**
+	 * List containing the match number for all matches of the player
+	 */
+	private List<String> matchNumbers;
+
+	/**
 	 * List containing the score for all matches of the player.
 	 */
 	private List<Integer> scores;
@@ -58,6 +68,8 @@ public class PlayerStatistics {
 	 *
 	 */
 	public PlayerStatistics() {
+		this.combinations = new ArrayList<String>();
+		this.matchNumbers = new ArrayList<String>();
 		this.scores = new ArrayList<Integer>();
 		this.points = new ArrayList<Double>();
 		this.scoreSum = 0;
@@ -90,12 +102,28 @@ public class PlayerStatistics {
 		}
 	}
 
+	public void addCombination(String combination){
+		this.combinations.add(combination);
+	}
+
+	public void addMatchNumber(String matchNumber){
+		this.matchNumbers.add(matchNumber);
+	}
+
 	public List<Integer> getScores(){
 		return this.scores;
 	}
 
 	public List<Double> getPoints(){
 		return this.points;
+	}
+
+	public List<String> getMatchNumbers(){
+		return this.matchNumbers;
+	}
+
+	public List<String> getCombinations(){
+		return this.combinations;
 	}
 
 	public double getAvgScore(){
