@@ -5,6 +5,6 @@ import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.MCTSJoi
 
 public interface BackpropagationStrategy {
 
-	public void update(InternalPropnetMCTSNode node, MCTSJointMove ductJointMove, int[] goals);
+	public void update(InternalPropnetMCTSNode node, MCTSJointMove jointMove, int[] goals);
 
 }

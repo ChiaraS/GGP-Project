@@ -8,7 +8,7 @@ package org.ggp.base.player.gamer.statemachine.MCS.manager;
  * @author C.Sironi
  *
  */
-public abstract class MoveStats{
+public class MoveStats{
 
 	protected long visits;
 

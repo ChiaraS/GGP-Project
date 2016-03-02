@@ -126,7 +126,7 @@ public class TourneyRunner {
     	    long endGCTime = System.currentTimeMillis() + 3000;
     	    for (int ii = 0; ii < 1000 && System.currentTimeMillis() < endGCTime; ii++){
 
-    	    	System.out.println("Calling GC: " + System.currentTimeMillis());
+    	    	//System.out.println("Calling GC: " + System.currentTimeMillis());
 
     	    	System.gc();
     	        try {Thread.sleep(1);} catch (InterruptedException lEx) {/* Whatever */}

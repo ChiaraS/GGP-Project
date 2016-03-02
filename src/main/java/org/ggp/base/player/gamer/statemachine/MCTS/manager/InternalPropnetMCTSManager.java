@@ -278,6 +278,7 @@ public class InternalPropnetMCTSManager extends MCTSManager {
 			this.iterations++;
 			this.visitedNodes += this.currentIterationVisitedNodes;
 			//System.out.println("Iteration: " + this.iterations);
+			//System.out.println("Stats: " + ((MASTStrategy)this.playoutStrategy).getNumStats());
 		}
 		this.searchEnd = System.currentTimeMillis();
 	}

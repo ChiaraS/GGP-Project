@@ -53,10 +53,10 @@ public abstract class UCTMCTSGamer extends InternalPropnetGamer {
 	/**
 	 * Parameters used by the MCTS manager.
 	 */
-	private double c;
-	private double uctOffset;
-	private int gameStepOffset;
-	private int maxSearchDepth;
+	protected double c;
+	protected double uctOffset;
+	protected int gameStepOffset;
+	protected int maxSearchDepth;
 	/**
 	 * True if this player must use a manager that runs the DUCT version
 	 * of Monte Carlo Tree Search, false otherwise.
@@ -134,16 +134,8 @@ public abstract class UCTMCTSGamer extends InternalPropnetGamer {
 
 		this.gameStep = 0;
 
-		Random r = new Random();
-
-		InternalPropnetRole myRole = this.thePropnetMachine.roleToInternalRole(this.getRole());
-		int numRoles = this.thePropnetMachine.getInternalRoles().length;
-
 		// Create the MCTS manager and start simulations.
-		this.mctsManager = new InternalPropnetMCTSManager(this.mctsType, myRole, new UCTSelection(numRoles, myRole, r, uctOffset, c),
-	       		new RandomExpansion(numRoles, myRole, r), new RandomPlayout(this.thePropnetMachine),
-	       		new StandardBackpropagation(numRoles, myRole),	new MaximumScoreChoice(myRole, r),
-	       		this.thePropnetMachine, gameStepOffset, maxSearchDepth);
+		this.mctsManager = this.createMCTSManager();
 
 		// If there is enough time left start the MCT search.
 		// Otherwise return from metagaming.
@@ -283,6 +275,19 @@ public abstract class UCTMCTSGamer extends InternalPropnetGamer {
 		this.mctsManager = null;
 		super.stateMachineStop();
 
+	}
+
+	public InternalPropnetMCTSManager createMCTSManager(){
+
+		Random r = new Random();
+
+		InternalPropnetRole myRole = this.thePropnetMachine.roleToInternalRole(this.getRole());
+		int numRoles = this.thePropnetMachine.getInternalRoles().length;
+
+		return new InternalPropnetMCTSManager(this.mctsType, myRole, new UCTSelection(numRoles, myRole, r, uctOffset, c),
+	       		new RandomExpansion(numRoles, myRole, r), new RandomPlayout(this.thePropnetMachine),
+	       		new StandardBackpropagation(numRoles, myRole),	new MaximumScoreChoice(myRole, r),
+	       		this.thePropnetMachine, gameStepOffset, maxSearchDepth);
 	}
 
 	/* (non-Javadoc)
