@@ -19,6 +19,10 @@ public class Pair<T, V> {
 		this.t=t;
 	}
 
+	public void setSecond(V v){
+		this.v=v;
+	}
+
 	public V getSecond(){
 		return this.v;
 	}

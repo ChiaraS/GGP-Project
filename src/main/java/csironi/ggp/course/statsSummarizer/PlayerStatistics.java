@@ -13,14 +13,24 @@ import java.util.List;
 public class PlayerStatistics {
 
 	/**
-	 * List containing the combination for all matches of the player
+	 * List containing the combination for each inserted score value of the player
 	 */
-	private List<String> combinations;
+	private List<String> scoresCombinations;
 
 	/**
-	 * List containing the match number for all matches of the player
+	 * List containing the match number for each inserted score value of the player
 	 */
-	private List<String> matchNumbers;
+	private List<String> scoresMatchNumbers;
+
+	/**
+	 * List containing the combination for each inserted win/loss of the player
+	 */
+	private List<String> winsCombinations;
+
+	/**
+	 * List containing the match number for each inserted win/loss of the player
+	 */
+	private List<String> winsMatchNumbers;
 
 	/**
 	 * List containing the score for all matches of the player.
@@ -28,10 +38,10 @@ public class PlayerStatistics {
 	private List<Integer> scores;
 
 	/**
-	 * List containing the points for all matches of the player.
+	 * List containing the wins for all matches of the player.
 	 * (0 if some other player got a higher score, 1/(#players that got highest score) if the player is one of them).
 	 */
-	private List<Double> points;
+	private List<Double> wins;
 
 	/**
 	 * Average of the scores.
@@ -41,7 +51,7 @@ public class PlayerStatistics {
 	/**
 	 * Average of the points.
 	 */
-	private double pointsSum;
+	private double winsSum;
 
 	/**
 	 * Maximum score ever obtained by the player.
@@ -54,34 +64,41 @@ public class PlayerStatistics {
 	private int minScore;
 
 	/**
-	 * Maximum points ever obtained by the player.
+	 * Maximum win percentage ever obtained by the player.
 	 */
-	private double maxPoints;
+	private double maxWinPercentage;
 
 	/**
-	 * Minimum points ever obtained by the player.
+	 * Minimum win percentage ever obtained by the player.
 	 */
-	private double minPoints;
+	private double minWinPercentage;
 
 
 	/**
 	 *
 	 */
 	public PlayerStatistics() {
-		this.combinations = new ArrayList<String>();
-		this.matchNumbers = new ArrayList<String>();
+		this.scoresCombinations = new ArrayList<String>();
+		this.scoresMatchNumbers = new ArrayList<String>();
+		this.winsCombinations = new ArrayList<String>();
+		this.winsMatchNumbers = new ArrayList<String>();
 		this.scores = new ArrayList<Integer>();
-		this.points = new ArrayList<Double>();
+		this.wins = new ArrayList<Double>();
 		this.scoreSum = 0;
-		this.pointsSum = 0;
+		this.winsSum = 0;
 		this.maxScore = Integer.MIN_VALUE;
 		this.minScore = Integer.MAX_VALUE;
-		this.maxPoints = -1.0; // Points can only take a value between 0 and 1
-		this.minPoints = 2.0;
+		this.maxWinPercentage = -1.0; // Wins can only take a value between 0 and 1
+		this.minWinPercentage = 2.0;
 	}
 
-	public void addScore(int score){
+	public void addScore(int score, String combination, String matchNumber){
+
+		this.scoresCombinations.add(combination);
+		this.scoresMatchNumbers.add(matchNumber);
+
 		this.scores.add(score);
+
 		this.scoreSum += score;
 		if(score > this.maxScore){
 			this.maxScore = score;
@@ -91,39 +108,43 @@ public class PlayerStatistics {
 		}
 	}
 
-	public void addPoints(double points){
-		this.points.add(points);
-		this.pointsSum += points;
-		if(points > this.maxPoints){
-			this.maxPoints = points;
-		}
-		if(points < this.minPoints){
-			this.minPoints = points;
-		}
-	}
+	public void addWins(double win, String combination, String matchNumber){
 
-	public void addCombination(String combination){
-		this.combinations.add(combination);
-	}
+		this.winsCombinations.add(combination);
+		this.winsMatchNumbers.add(matchNumber);
 
-	public void addMatchNumber(String matchNumber){
-		this.matchNumbers.add(matchNumber);
+		this.wins.add(win);
+		this.winsSum += win;
+		if(win > this.maxWinPercentage){
+			this.maxWinPercentage = win;
+		}
+		if(win < this.minWinPercentage){
+			this.minWinPercentage = win;
+		}
 	}
 
 	public List<Integer> getScores(){
 		return this.scores;
 	}
 
-	public List<Double> getPoints(){
-		return this.points;
+	public List<Double> getWins(){
+		return this.wins;
 	}
 
-	public List<String> getMatchNumbers(){
-		return this.matchNumbers;
+	public List<String> getScoresCombinations(){
+		return this.scoresCombinations;
 	}
 
-	public List<String> getCombinations(){
-		return this.combinations;
+	public List<String> getScoresMatchNumbers(){
+		return this.scoresMatchNumbers;
+	}
+
+	public List<String> getWinsCombinations(){
+		return this.winsCombinations;
+	}
+
+	public List<String> getWinsMatchNumbers(){
+		return this.winsMatchNumbers;
 	}
 
 	public double getAvgScore(){
@@ -133,11 +154,11 @@ public class PlayerStatistics {
 		return ((double)this.scoreSum)/((double) this.scores.size());
 	}
 
-	public double getAvgPoints(){
-		if(this.points.isEmpty()){
+	public double getAvgWins(){
+		if(this.wins.isEmpty()){
 			return -1;
 		}
-		return ((double)this.pointsSum)/((double) this.points.size());
+		return ((double)this.winsSum)/((double) this.wins.size());
 	}
 
 	public int getMaxScore(){
@@ -148,12 +169,12 @@ public class PlayerStatistics {
 		return this.minScore;
 	}
 
-	public double getMaxPoints(){
-		return this.maxPoints;
+	public double getMaxWinPercentage(){
+		return this.maxWinPercentage;
 	}
 
-	public double getMinPoints(){
-		return this.minPoints;
+	public double getMinWinPercentage(){
+		return this.minWinPercentage;
 	}
 
 	public double getScoresStandardDeviation(){
@@ -169,17 +190,17 @@ public class PlayerStatistics {
 		return Math.sqrt(squaredSum/(this.scores.size()-1));
 	}
 
-	public double getPointsStandardDeviation(){
-		if(this.points.isEmpty()){
+	public double getWinsStandardDeviation(){
+		if(this.wins.isEmpty()){
 			return -1;
 		}
 		double squaredSum = 0.0;
-		double avgPoints = this.getAvgPoints();
-		for(Double point : this.points){
+		double avgPoints = this.getAvgWins();
+		for(Double point : this.wins){
 			double difference = point - avgPoints;
 			squaredSum += (difference * difference);
 		}
-		return Math.sqrt(squaredSum/(this.points.size()-1));
+		return Math.sqrt(squaredSum/(this.wins.size()-1));
 	}
 
 	public double getScoresSEM(){
@@ -190,12 +211,12 @@ public class PlayerStatistics {
 		return (standardDev / Math.sqrt(this.scores.size()));
 	}
 
-	public double getPointsSEM(){
-		double standardDev = this.getPointsStandardDeviation();
+	public double getWinsSEM(){
+		double standardDev = this.getWinsStandardDeviation();
 		if(standardDev == -1){
 			return -1;
 		}
-		return (standardDev / Math.sqrt(this.points.size()));
+		return (standardDev / Math.sqrt(this.wins.size()));
 	}
 
 }

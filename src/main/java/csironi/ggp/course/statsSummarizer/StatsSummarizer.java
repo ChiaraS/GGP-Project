@@ -11,11 +11,14 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Random;
+import java.util.Set;
 
+import csironi.ggp.course.utils.Pair;
 import external.JSON.JSONArray;
 import external.JSON.JSONException;
 import external.JSON.JSONObject;
@@ -156,35 +159,38 @@ public class StatsSummarizer {
 		Map<String, PlayerStatistics> playersStatistics = new HashMap<String, PlayerStatistics>();
 
 		int maxScore;
-        List<Integer> maxScoreIndices;
+        Set<String> maxScorePlayerTypes;
         String[] playersNames;
         int[] playersGoals;
         double[] playersPoints;
         PlayerStatistics theStats;
         double winnerPoint;
+        Map<String, Pair<Integer, Double>> aggregatedScoresAndPoints = new HashMap<String, Pair<Integer, Double>>();
+        Pair<Integer, Double> currentPair;
+        //Map<String, Double> aggregatedPoints = new HashMap<String, Double>();
 
 		for(List<MatchInfo> infoList : matchInfo){
 			for(MatchInfo mi : infoList){
 
 				playersNames = mi.getPlayersNames();
 				playersGoals = mi.getplayersGoals();
-				playersPoints = new double[playersGoals.length];
+				//playersPoints = new double[playersGoals.length];
 
 	            if(playersNames.length > 1){
 	            	maxScore = Integer.MIN_VALUE;
-	            	maxScoreIndices = new ArrayList<Integer>();
+	            	maxScorePlayerTypes = new HashSet<String>();
 
 	            	for(int i = 0; i < playersGoals.length; i++){
 	            		if(playersGoals[i] > maxScore){
 	            			maxScore = playersGoals[i];
-	            			maxScoreIndices.clear();
-	            			maxScoreIndices.add(i);
+	            			maxScorePlayerTypes.clear();
+	            			maxScorePlayerTypes.add(playersNames[i]);
 	            		}else if(playersGoals[i] == maxScore){
-	            			maxScoreIndices.add(i);
+	            			maxScorePlayerTypes.add(playersNames[i]);
 	            		}
 					}
 
-	            	winnerPoint = 1.0/((double)maxScoreIndices.size());
+	            	winnerPoint = 1.0/((double)maxScorePlayerTypes.size());
 
 		            for(int i = 0; i < maxScoreIndices.size(); i++){
 		            	playersPoints[maxScoreIndices.get(i).intValue()] = winnerPoint;
@@ -195,8 +201,46 @@ public class StatsSummarizer {
 	            }
 
 	            // Now that for the match we have all the player names, their scores and their points,
-	            // we can add the values to the players statistics. NOTE: we must check if a player name
-	            // has no associated statistics yet, and if so, create them.
+	            // we can add the values to the players statistics.
+	            // NOTE1: we must check if a player name has no associated statistics yet, and if so, create them.
+	            // NOTE2: in a match, even if a player type played multiple roles, it will count as a single match
+	            // and the amount of points it earned in the match will be the sum of points it earned for each role
+	            // (e.g. PLAYER_NAMES=[A,A,B], POINTS=[0.5, 0.5, 0], => A.points=1)
+
+	            //aggregatedScores.clear();
+	            //aggregatedPoints.clear();
+
+	            aggregatedScoresAndPoints.clear();
+
+	            for(int i = 0; i < playersNames.length; i++){
+
+	            	currentPair = aggregatedScoresAndPoints.get(playersNames[i]);
+
+	            	if(currentPair == null){
+	            		currentPair = new Pair<Integer, Double>(new Integer(playersGoals[i]), new Double(playersPoints[i]));
+	            		aggregatedScoresAndPoints.put(playersNames[i], currentPair);
+	            	}else{
+	            		currentPair.setFirst(new Integer(currentPair.getFirst().intValue()+playersGoals[i]));
+	            		currentPair.setSecond(new Double(currentPair.getSecond().doubleValue()+playersPoints[i]));
+	            	}
+	            }
+
+	            for(Entry<String, Pair<Integer, Double>> scoreAndPointsEntry : aggregatedScoresAndPoints.entrySet()){
+
+	            	theStats = playersStatistics.get(scoreAndPointsEntry.getKey());
+	            	if(theStats == null){
+	            		playersStatistics.put(scoreAndPointsEntry.getKey(), new PlayerStatistics());
+	            		theStats = playersStatistics.get(scoreAndPointsEntry.getKey());
+	            	}
+	            	theStats.addScore(scoreAndPointsEntry.getValue().getFirst().intValue());
+	            	theStats.addPoints(scoreAndPointsEntry.getValue().getSecond().doubleValue());
+	            	theStats.addCombination("C"+mi.getCombination());
+	            	theStats.addMatchNumber(mi.getMatchNumber());
+	            }
+
+	            /* VERSION2: if a player type played multiple roles in a match, the scores and points for each of
+	             * the player roles will form a new statistic (i.e. as if the player played in two separate matches.)
+	             * Note that this won't maintain the zero-sum property of the win percentages of all player types.
 	            for(int i = 0; i < playersNames.length; i++){
 	            	theStats = playersStatistics.get(playersNames[i]);
 	            	if(theStats == null){
@@ -208,6 +252,7 @@ public class StatsSummarizer {
 	            	theStats.addCombination("C"+mi.getCombination());
 	            	theStats.addMatchNumber(mi.getMatchNumber());
 	            }
+	            */
 			}
 		}
 
@@ -223,13 +268,13 @@ public class StatsSummarizer {
 
 			PlayerStatistics stats = entry.getValue();
 
-			writeToFile(statsFolder + "/" + entry.getKey() + "-ScoreAndPoints.csv", "Combination;Match number;Scores;Points;");
+			writeToFile(statsFolder + "/" + entry.getKey() + "-CombinedScoreAndPoints.csv", "Combination;Match number;Scores;Points;");
 			List<String> combinations = stats.getCombinations();
 			List<String> matchNumbers = stats.getMatchNumbers();
 			List<Integer> scores = stats.getScores();
 			List<Double> points = stats.getPoints();
 			for(int i = 0; i < scores.size(); i++){
-				writeToFile(statsFolder + "/" + entry.getKey() + "-ScoreAndPoints.csv", combinations.get(i) + ";" + matchNumbers.get(i) + ";" + scores.get(i) + ";" + points.get(i) + ";");
+				writeToFile(statsFolder + "/" + entry.getKey() + "-CombinedScoreAndPoints.csv", combinations.get(i) + ";" + matchNumbers.get(i) + ";" + scores.get(i) + ";" + points.get(i) + ";");
 			}
 
 			writeToFile(scoresStatsFilePath, entry.getKey() + ";" + scores.size() + ";" + stats.getMaxScore() + ";"
@@ -239,6 +284,15 @@ public class StatsSummarizer {
 			writeToFile(pointsStatsFilePath, entry.getKey() + ";" + points.size() + ";" + stats.getMaxPoints() + ";"
 					+ stats.getMinPoints() + ";" + stats.getPointsStandardDeviation() + ";" + stats.getPointsSEM() + ";"
 					+ (stats.getAvgPoints()*100) + ";" + (stats.getPointsSEM() * 1.96 * 100) + ";");
+		}
+
+		for(List<MatchInfo> infoList : matchInfo){
+
+			writeToFile(statsFolder + "/Combination" + infoList.get(0).getCombination() + ".csv", "Combination;Match number;Scores;Points;");
+
+			for(MatchInfo mi : infoList){
+
+			}
 		}
 
 	}
