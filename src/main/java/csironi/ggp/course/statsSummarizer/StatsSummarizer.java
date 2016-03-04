@@ -18,7 +18,6 @@ import java.util.Map.Entry;
 import java.util.Random;
 import java.util.Set;
 
-import csironi.ggp.course.utils.Pair;
 import external.JSON.JSONArray;
 import external.JSON.JSONException;
 import external.JSON.JSONObject;
@@ -153,34 +152,79 @@ public class StatsSummarizer {
 			}
 		}
 
+		/****************************** Save to file the results of all matches ******************************/
+
+		//writeToFile(statsFolder + "/AllMatchesScores.csv", "Combination;Match number;Scores;");
+
+		String toWrite;
+        String[] playersNames;
+        int[] playersGoals;
+
+		for(List<MatchInfo> infoList : matchInfo){
+
+			toWrite = "Match number;";
+
+			playersNames = infoList.get(0).getPlayersNames();
+
+			for(int i = 0; i < playersNames.length; i++){
+				toWrite += playersNames[i] + ";";
+			}
+
+			writeToFile(statsFolder + "/Combination" + infoList.get(0).getCombination() + ".csv", toWrite);
+
+			for(MatchInfo mi : infoList){
+
+				toWrite = mi.getMatchNumber() + ";";
+
+				playersGoals = mi.getplayersGoals();
+
+				for(int i = 0; i < playersGoals.length; i++){
+					toWrite += playersGoals[i] + ";";
+				}
+				writeToFile(statsFolder + "/Combination" + mi.getCombination() + ".csv", toWrite);
+			}
+		}
+
 		/******************** Compute the statistics for every player in the tournament **********************/
 
 		// Create a map that contains the statistic for every player.
 		Map<String, PlayerStatistics> playersStatistics = new HashMap<String, PlayerStatistics>();
 
 		int maxScore;
+		Set<String> playerTypesSet;
         Set<String> maxScorePlayerTypes;
-        String[] playersNames;
-        int[] playersGoals;
-        double[] playersPoints;
         PlayerStatistics theStats;
-        double winnerPoint;
-        Map<String, Pair<Integer, Double>> aggregatedScoresAndPoints = new HashMap<String, Pair<Integer, Double>>();
-        Pair<Integer, Double> currentPair;
-        //Map<String, Double> aggregatedPoints = new HashMap<String, Double>();
+        double splitWin;
 
 		for(List<MatchInfo> infoList : matchInfo){
 			for(MatchInfo mi : infoList){
 
 				playersNames = mi.getPlayersNames();
 				playersGoals = mi.getplayersGoals();
-				//playersPoints = new double[playersGoals.length];
 
+				// For each role add to the corresponding player statistics the score that the player obtained playing that role
+				for(int i = 0; i < playersNames.length; i++){
+	            	// Get the stats of the player
+	            	theStats = playersStatistics.get(playersNames[i]);
+	            	if(theStats == null){
+	            		playersStatistics.put(playersNames[i], new PlayerStatistics());
+	            		theStats = playersStatistics.get(playersNames[i]);
+	            	}
+
+	            	theStats.addScore(playersGoals[i], mi.getCombination(), mi.getMatchNumber());
+				}
+
+				// Add the wins
 	            if(playersNames.length > 1){
+
+	            	// For more roles we need to find the algorithm(s) that won and split 1 win between them
+
 	            	maxScore = Integer.MIN_VALUE;
+	            	playerTypesSet = new HashSet<String>();
 	            	maxScorePlayerTypes = new HashSet<String>();
 
 	            	for(int i = 0; i < playersGoals.length; i++){
+	            		playerTypesSet.add(playersNames[i]);
 	            		if(playersGoals[i] > maxScore){
 	            			maxScore = playersGoals[i];
 	            			maxScorePlayerTypes.clear();
@@ -190,110 +234,93 @@ public class StatsSummarizer {
 	            		}
 					}
 
-	            	winnerPoint = 1.0/((double)maxScorePlayerTypes.size());
+	            	splitWin = 1.0/((double)maxScorePlayerTypes.size());
 
-		            for(int i = 0; i < maxScoreIndices.size(); i++){
-		            	playersPoints[maxScoreIndices.get(i).intValue()] = winnerPoint;
+	            	// For each distinct player type that won, update the statistics adding the (split) win
+	            	// and for the losers add a loss (i.e. 0).
+		            for(String thePlayer: playerTypesSet){
+
+		            	// Get the stats of the player
+		            	theStats = playersStatistics.get(thePlayer);
+		            	if(theStats == null){
+		            		playersStatistics.put(thePlayer, new PlayerStatistics());
+		            		theStats = playersStatistics.get(thePlayer);
+		            	}
+
+		            	if(maxScorePlayerTypes.contains(thePlayer)){
+		            		theStats.addWins(splitWin, mi.getCombination(), mi.getMatchNumber());
+		            	}else{
+		            		theStats.addWins(0, mi.getCombination(), mi.getMatchNumber());
+		            	}
+
 		            }
 
 	            }else{
-	            	playersPoints[0] = ((double)playersGoals[0]) / 100.0;
-	            }
+	            	// Get the stats of the player
+	            	theStats = playersStatistics.get(playersNames[0]);
+	            	if(theStats == null){
+	            		playersStatistics.put(playersNames[0], new PlayerStatistics());
+	            		theStats = playersStatistics.get(playersNames[0]);
+	            	}
 
-	            // Now that for the match we have all the player names, their scores and their points,
-	            // we can add the values to the players statistics.
-	            // NOTE1: we must check if a player name has no associated statistics yet, and if so, create them.
-	            // NOTE2: in a match, even if a player type played multiple roles, it will count as a single match
-	            // and the amount of points it earned in the match will be the sum of points it earned for each role
-	            // (e.g. PLAYER_NAMES=[A,A,B], POINTS=[0.5, 0.5, 0], => A.points=1)
-
-	            //aggregatedScores.clear();
-	            //aggregatedPoints.clear();
-
-	            aggregatedScoresAndPoints.clear();
-
-	            for(int i = 0; i < playersNames.length; i++){
-
-	            	currentPair = aggregatedScoresAndPoints.get(playersNames[i]);
-
-	            	if(currentPair == null){
-	            		currentPair = new Pair<Integer, Double>(new Integer(playersGoals[i]), new Double(playersPoints[i]));
-	            		aggregatedScoresAndPoints.put(playersNames[i], currentPair);
+	            	if(playersGoals[0] != 100){
+	            		theStats.addWins(0, mi.getCombination(), mi.getMatchNumber());
 	            	}else{
-	            		currentPair.setFirst(new Integer(currentPair.getFirst().intValue()+playersGoals[i]));
-	            		currentPair.setSecond(new Double(currentPair.getSecond().doubleValue()+playersPoints[i]));
+	            		theStats.addWins(1, mi.getCombination(), mi.getMatchNumber());
 	            	}
 	            }
-
-	            for(Entry<String, Pair<Integer, Double>> scoreAndPointsEntry : aggregatedScoresAndPoints.entrySet()){
-
-	            	theStats = playersStatistics.get(scoreAndPointsEntry.getKey());
-	            	if(theStats == null){
-	            		playersStatistics.put(scoreAndPointsEntry.getKey(), new PlayerStatistics());
-	            		theStats = playersStatistics.get(scoreAndPointsEntry.getKey());
-	            	}
-	            	theStats.addScore(scoreAndPointsEntry.getValue().getFirst().intValue());
-	            	theStats.addPoints(scoreAndPointsEntry.getValue().getSecond().doubleValue());
-	            	theStats.addCombination("C"+mi.getCombination());
-	            	theStats.addMatchNumber(mi.getMatchNumber());
-	            }
-
-	            /* VERSION2: if a player type played multiple roles in a match, the scores and points for each of
-	             * the player roles will form a new statistic (i.e. as if the player played in two separate matches.)
-	             * Note that this won't maintain the zero-sum property of the win percentages of all player types.
-	            for(int i = 0; i < playersNames.length; i++){
-	            	theStats = playersStatistics.get(playersNames[i]);
-	            	if(theStats == null){
-	            		playersStatistics.put(playersNames[i], new PlayerStatistics());
-	            		theStats = playersStatistics.get(playersNames[i]);
-	            	}
-	            	theStats.addScore(playersGoals[i]);
-	            	theStats.addPoints(playersPoints[i]);
-	            	theStats.addCombination("C"+mi.getCombination());
-	            	theStats.addMatchNumber(mi.getMatchNumber());
-	            }
-	            */
 			}
 		}
 
 		String scoresStatsFilePath = statsFolder + "/ScoreStats.csv";
 
-		String pointsStatsFilePath = statsFolder + "/PointsStats.csv";
+		String winsStatsFilePath = statsFolder + "/WinsStats.csv";
 
-		writeToFile(scoresStatsFilePath, "Player;#Samples;MaxScore;MinScore;StandardDeviation;StdErrMean;AvgScore;ConfidenceInterval;");
+		writeToFile(scoresStatsFilePath, "Player;#Samples;MinScore;MaxScore;StandardDeviation;StdErrMean;AvgScore;ConfidenceInterval;");
 
-		writeToFile(pointsStatsFilePath, "Player;#Samples;MaxPoints;MinPoints;StandardDeviation;StdErrMean;AvgWin%;ConfidenceInterval;");
+		writeToFile(winsStatsFilePath, "Player;#Samples;MinWins;MaxWins;StandardDeviation;StdErrMean;AvgWin%;ConfidenceInterval;");
+
+
+		PlayerStatistics stats;
+		List<Integer> scores;
+		List<Double> wins;
+		List<String> combinations;
+		List<String> matchNumbers;
 
 		for(Entry<String, PlayerStatistics> entry : playersStatistics.entrySet()){
 
-			PlayerStatistics stats = entry.getValue();
+			stats = entry.getValue();
 
-			writeToFile(statsFolder + "/" + entry.getKey() + "-CombinedScoreAndPoints.csv", "Combination;Match number;Scores;Points;");
-			List<String> combinations = stats.getCombinations();
-			List<String> matchNumbers = stats.getMatchNumbers();
-			List<Integer> scores = stats.getScores();
-			List<Double> points = stats.getPoints();
+			scores = stats.getScores();
+			combinations = stats.getScoresCombinations();
+			matchNumbers = stats.getScoresMatchNumbers();
+
+			writeToFile(statsFolder + "/" + entry.getKey() + "-ScoreSamples.csv", "Combination;Match number;Score;");
+
 			for(int i = 0; i < scores.size(); i++){
-				writeToFile(statsFolder + "/" + entry.getKey() + "-CombinedScoreAndPoints.csv", combinations.get(i) + ";" + matchNumbers.get(i) + ";" + scores.get(i) + ";" + points.get(i) + ";");
+				writeToFile(statsFolder + "/" + entry.getKey() + "-ScoreSamples.csv", "C" + combinations.get(i) + ";" + matchNumbers.get(i) + ";" + scores.get(i) + ";");
 			}
 
-			writeToFile(scoresStatsFilePath, entry.getKey() + ";" + scores.size() + ";" + stats.getMaxScore() + ";"
-					+ stats.getMinScore() + ";" + stats.getScoresStandardDeviation() + ";" + stats.getScoresSEM() + ";"
+			wins = stats.getWins();
+			combinations = stats.getWinsCombinations();
+			matchNumbers = stats.getWinsMatchNumbers();
+
+			writeToFile(statsFolder + "/" + entry.getKey() + "-WinsSamples.csv", "Combination;Match number;Win percentage;");
+
+			for(int i = 0; i < wins.size(); i++){
+				writeToFile(statsFolder + "/" + entry.getKey() + "-WinsSamples.csv", "C" + combinations.get(i) + ";" + matchNumbers.get(i) + ";" + wins.get(i) + ";");
+			}
+
+			writeToFile(scoresStatsFilePath, entry.getKey() + ";" + scores.size() + ";" + stats.getMinScore() + ";"
+					+ stats.getMaxScore() + ";" + stats.getScoresStandardDeviation() + ";" + stats.getScoresSEM() + ";"
 					+ stats.getAvgScore() + ";" + (stats.getScoresSEM() * 1.96) + ";");
 
-			writeToFile(pointsStatsFilePath, entry.getKey() + ";" + points.size() + ";" + stats.getMaxPoints() + ";"
-					+ stats.getMinPoints() + ";" + stats.getPointsStandardDeviation() + ";" + stats.getPointsSEM() + ";"
-					+ (stats.getAvgPoints()*100) + ";" + (stats.getPointsSEM() * 1.96 * 100) + ";");
+			writeToFile(winsStatsFilePath, entry.getKey() + ";" + wins.size() + ";" + stats.getMinWinPercentage() + ";"
+					+ stats.getMaxWinPercentage() + ";" + stats.getWinsStandardDeviation() + ";" + stats.getWinsSEM() + ";"
+					+ (stats.getAvgWins()*100) + ";" + (stats.getWinsSEM() * 1.96 * 100) + ";");
 		}
 
-		for(List<MatchInfo> infoList : matchInfo){
 
-			writeToFile(statsFolder + "/Combination" + infoList.get(0).getCombination() + ".csv", "Combination;Match number;Scores;Points;");
-
-			for(MatchInfo mi : infoList){
-
-			}
-		}
 
 	}
 
