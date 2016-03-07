@@ -176,4 +176,9 @@ public class StandardBackpropagation implements BackpropagationStrategy {
 			theMoveToUpdate = theMoveToUpdate.getPreviousRoleMoveStats();
 		}
 	}
+
+	@Override
+	public String getStrategyParameters() {
+		return "[BACKPROPAGATION_STRATEGY = " + this.getClass().getSimpleName() + "]";
+	}
 }

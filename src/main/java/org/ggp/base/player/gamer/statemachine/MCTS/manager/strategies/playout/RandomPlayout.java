@@ -26,4 +26,9 @@ public class RandomPlayout implements PlayoutStrategy {
 		return this.theMachine.getSafeGoals(lastState);
 	}
 
+	@Override
+	public String getStrategyParameters() {
+		return "[PLAYOUT_STRATEGY = " + this.getClass().getSimpleName() + "]";
+	}
+
 }

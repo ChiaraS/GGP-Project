@@ -57,7 +57,7 @@ public class TourneyRunner {
 		int playClock = Integer.valueOf(args[3]);
 		long creationTime = Long.valueOf(args[4]);
 		int numParallelMatches = Integer.valueOf(args[5]);
-		int matchesPerConfiguration = Integer.valueOf(args[6]);
+		int matchesPerGamerType = Integer.valueOf(args[6]);
 
 		List<Class<?>> gamersClasses = new ArrayList<Class<?>>();
 
@@ -112,10 +112,16 @@ public class TourneyRunner {
 
     	GamerLogger.log("TourneyRunner", "Starting tourney " + tourneyName + " for game " + gameKey + " with following settings: START_CLOCK=" +
     			startClock + "s, PLAY_CLOCK=" + playClock + "s, PROPNET_CREATION_TIME=" + creationTime + "ms, NUM_PARALLEL_MATCHES=" +
-    			numParallelMatches + ", NUM_MATCHES_PER_CONFIG=" + matchesPerConfiguration + ", GAMER_TYPES=" + gamerTypesList + ".");
+    			numParallelMatches + ", NUM_MATCHES_PER_GAMER_TYPE=" + matchesPerGamerType + ", GAMER_TYPES=" + gamerTypesList + ".");
 
     	// 4. Compute all combinations of gamer types.
     	List<List<Integer>> combinations = Combinator.getCombinations(gamersClasses.size(), expectedRoles);
+
+    	int matchesPerCombination = (matchesPerGamerType / (Combinator.getLastCombinationsPerElement() * Combinator.getLastPermutationsPerCombination()));
+
+    	if(matchesPerGamerType%(Combinator.getLastCombinationsPerElement() * Combinator.getLastPermutationsPerCombination()) != 0){
+    		matchesPerCombination++;
+    	}
 
     	// 5. For each combination run the given amount of matches.
     	List<Gdl> description = game.getRules();
@@ -147,7 +153,7 @@ public class TourneyRunner {
     		GamerLogger.log("TourneyRunner", "Strating sub-tourney for combination " + comboIndices + ".");
 
     		ThreadContext.put("LOG_FOLDER", mainLogFolder + "/Combination" + comboIndices);
-    		boolean completed = runMatchesForCombination(game, description, startClock, playClock, creationTime, combinationClasses, numParallelMatches, matchesPerConfiguration);
+    		boolean completed = runMatchesForCombination(game, description, startClock, playClock, creationTime, combinationClasses, numParallelMatches, matchesPerCombination);
     		ThreadContext.put("LOG_FOLDER", mainLogFolder);
 
     		if(completed){
@@ -164,7 +170,7 @@ public class TourneyRunner {
 
 
 	private static boolean runMatchesForCombination(Game game, List<Gdl> description, int startClock, int playClock,
-			long creationTime, List<Class<?>> combinationClasses, int numParallelMatches, int matchesPerConfiguration){
+			long creationTime, List<Class<?>> combinationClasses, int numParallelMatches, int matchesPerCombination){
 
 		GamerLogger.log("TourneyRunner", "Strating sub-tourney.");
 
@@ -172,7 +178,7 @@ public class TourneyRunner {
 		// (corresponding to the number of matches we want to run in parallel).
 		ExecutorService executor = Executors.newFixedThreadPool(numParallelMatches);
 
-		for(int i = 0; i < matchesPerConfiguration; i++){
+		for(int i = 0; i < matchesPerCombination; i++){
 			executor.execute(new MatchRunner(i, game, description, startClock, playClock, creationTime, combinationClasses));
 		}
 

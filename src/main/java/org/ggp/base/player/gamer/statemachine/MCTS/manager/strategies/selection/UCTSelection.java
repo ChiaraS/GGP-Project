@@ -86,27 +86,26 @@ public class UCTSelection implements SelectionStrategy {
 		int[] movesIndices = new int[moves.length];
 
 		double maxUCTvalue;
-		double UCTvalue;
+		double[] UCTvalues;
 
-		long nodeVisits = currentNode.getTotVisits();
+		int nodeVisits = currentNode.getTotVisits();
 
 		// For each role check the statistics and pick a move.
 		for(int i = 0; i < moves.length; i++){
 
 			// Compute UCT value for all moves.
 			maxUCTvalue = -1;
+			UCTvalues = new double[moves[i].length];
 
 			// For each legal move check the UCTvalue.
 			for(int j = 0; j < moves[i].length; j++){
 
 				// Compute the UCT value.
-				UCTvalue = this.computeUCTvalue(moves[i][j].getScoreSum(), (double) moves[i][j].getVisits(), (double) nodeVisits);
-
-				moves[i][j].setUct(UCTvalue);
+				UCTvalues[j] = this.computeUCTvalue(moves[i][j].getScoreSum(), (double) moves[i][j].getVisits(), (double) nodeVisits);
 
 				// If it's higher than the current maximum one, replace the max value.
-				if(UCTvalue > maxUCTvalue){
-					maxUCTvalue = UCTvalue;
+				if(UCTvalues[j] > maxUCTvalue){
+					maxUCTvalue = UCTvalues[j];
 				}
 			}
 
@@ -114,8 +113,8 @@ public class UCTSelection implements SelectionStrategy {
 			// in the interval [maxUCTvalue-offset, maxUCTvalue].
 			List<Integer> selectedMovesIndices = new ArrayList<Integer>();
 
-			for(int j = 0; j < moves[i].length; j++){
-				if(moves[i][j].getUct() >= (maxUCTvalue-this.uctOffset)){
+			for(int j = 0; j < UCTvalues.length; j++){
+				if(UCTvalues[j] >= (maxUCTvalue-this.uctOffset)){
 					selectedMovesIndices.add(new Integer(j));
 				}
 			}
@@ -168,23 +167,24 @@ public class UCTSelection implements SelectionStrategy {
 		//SUCTMCTSMoveStats chosenMove = null;
 
 		double maxUCTvalue;
-		double UCTvalue;
-		long nodeVisits = currentNode.getTotVisits();
+		double[] UCTvalues;
+		int nodeVisits = currentNode.getTotVisits();
 
 		while(movesStats != null){
 
 			// Compute UCT value for all moves.
 			maxUCTvalue = -1;
+			UCTvalues = new double[movesStats.length];
 
 			for(int i = 0; i < movesStats.length; i++){
 				// Compute the UCT value.
-				UCTvalue = this.computeUCTvalue(movesStats[i].getScoreSum(), (double) movesStats[i].getVisits(), (double) nodeVisits);
+				UCTvalues[i] = this.computeUCTvalue(movesStats[i].getScoreSum(), (double) movesStats[i].getVisits(), (double) nodeVisits);
 
-				movesStats[i].setUct(UCTvalue);
+				//movesStats[i].setUct(UCTvalue);
 
 				// If it's higher than the current maximum one, replace the max value
-				if(UCTvalue > maxUCTvalue){
-					maxUCTvalue = UCTvalue;
+				if(UCTvalues[i] > maxUCTvalue){
+					maxUCTvalue = UCTvalues[i];
 				}
 			}
 
@@ -192,8 +192,8 @@ public class UCTSelection implements SelectionStrategy {
 			// in the interval [maxUCTvalue-offset, maxUCTvalue].
 			List<Integer> selectedMovesIndices = new ArrayList<Integer>();
 
-			for(int i = 0; i < movesStats.length; i++){
-				if(movesStats[i].getUct() >= (maxUCTvalue-this.uctOffset)){
+			for(int i = 0; i < UCTvalues.length; i++){
+				if(UCTvalues[i] >= (maxUCTvalue-this.uctOffset)){
 					selectedMovesIndices.add(new Integer(i));
 				}
 			}
@@ -237,23 +237,24 @@ public class UCTSelection implements SelectionStrategy {
 		SlowSUCTMCTSMoveStats chosenMove = null;
 
 		double maxUCTvalue;
-		double UCTvalue;
-		long nodeVisits = currentNode.getTotVisits();
+		double UCTvalues[];
+		int nodeVisits = currentNode.getTotVisits();
 
 		while(movesStats != null){
 
 			// Compute UCT value for all moves.
 			maxUCTvalue = -1;
+			UCTvalues = new double[movesStats.length];
 
 			for(int i = 0; i < movesStats.length; i++){
 				// Compute the UCT value.
-				UCTvalue = this.computeUCTvalue(movesStats[i].getScoreSum(), (double) movesStats[i].getVisits(), (double) nodeVisits);
+				UCTvalues[i] = this.computeUCTvalue(movesStats[i].getScoreSum(), (double) movesStats[i].getVisits(), (double) nodeVisits);
 
-				movesStats[i].setUct(UCTvalue);
+				//movesStats[i].setUct(UCTvalue);
 
 				// If it's higher than the current maximum one, replace the max value
-				if(UCTvalue > maxUCTvalue){
-					maxUCTvalue = UCTvalue;
+				if(UCTvalues[i] > maxUCTvalue){
+					maxUCTvalue = UCTvalues[i];
 				}
 			}
 
@@ -261,8 +262,8 @@ public class UCTSelection implements SelectionStrategy {
 			// in the interval [maxUCTvalue-offset, maxUCTvalue].
 			List<Integer> selectedMovesIndices = new ArrayList<Integer>();
 
-			for(int i = 0; i < movesStats.length; i++){
-				if(movesStats[i].getUct() >= (maxUCTvalue-this.uctOffset)){
+			for(int i = 0; i < UCTvalues.length; i++){
+				if(UCTvalues[i] >= (maxUCTvalue-this.uctOffset)){
 					selectedMovesIndices.add(new Integer(i));
 				}
 			}
@@ -303,6 +304,11 @@ public class UCTSelection implements SelectionStrategy {
 		double exploration = this.c * (Math.sqrt(Math.log(nodeVisits)/moveVisits));
 		return avgScore + exploration;
 
+	}
+
+	@Override
+	public String getStrategyParameters() {
+		return "[SELECTION_STRATEGY = " + this.getClass().getSimpleName() + ", UCT_OFFSET = " + this.uctOffset + ", C_CONSTANT = " + this.c + "]";
 	}
 
 }

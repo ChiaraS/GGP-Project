@@ -10,21 +10,21 @@ package org.ggp.base.player.gamer.statemachine.MCS.manager;
  */
 public class MoveStats{
 
-	protected long visits;
+	protected int visits;
 
-	protected long scoreSum;
+	protected int scoreSum;
 
 	public MoveStats() {
-		this.visits = 0L;
-		this.scoreSum = 0L;
+		this.visits = 0;
+		this.scoreSum = 0;
 	}
 
-	public MoveStats(long visits, long scoreSum) {
+	public MoveStats(int visits, int scoreSum) {
 		this.visits = visits;
 		this.scoreSum = scoreSum;
 	}
 
-	public long getVisits() {
+	public int getVisits() {
 		return this.visits;
 	}
 
@@ -32,17 +32,17 @@ public class MoveStats{
 		this.visits++;
 	}
 
-	public long getScoreSum() {
+	public int getScoreSum() {
 		return this.scoreSum;
 	}
 
-	public void incrementScoreSum(long newScore) {
+	public void incrementScoreSum(int newScore) {
 		this.scoreSum += newScore;
 	}
 
 	@Override
 	public String toString(){
-		return "Visits(" + this.visits + "), ScoreSum(" + this.scoreSum + ")";
+		return "VISITS(" + this.visits + "), SCORE_SUM(" + this.scoreSum + ")";
 	}
 
 }

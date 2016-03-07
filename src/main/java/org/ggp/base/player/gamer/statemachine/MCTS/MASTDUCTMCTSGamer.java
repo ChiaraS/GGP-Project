@@ -28,7 +28,7 @@ public class MASTDUCTMCTSGamer extends DUCTMCTSGamer {
 
 		MASTStrategy mast = new MASTStrategy(this.thePropnetMachine, this.epsilon, r, numRoles, myRole);
 
-		return new InternalPropnetMCTSManager(this.mctsType, myRole, new UCTSelection(numRoles, myRole, r, uctOffset, c),
+		return new InternalPropnetMCTSManager(this.mctsType, myRole, new UCTSelection(numRoles, myRole, r, this.uctOffset, c),
 	       		new RandomExpansion(numRoles, myRole, r), mast,	mast, new MaximumScoreChoice(myRole, r),
 	       		this.thePropnetMachine, gameStepOffset, maxSearchDepth);
 	}

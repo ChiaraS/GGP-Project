@@ -314,4 +314,9 @@ public class RandomExpansion implements ExpansionStrategy {
 		return new SlowSUCTMCTSJointMove(jointMove, chosenMove);
 	}
 
+	@Override
+	public String getStrategyParameters() {
+		return "[EXPANSION_STRATEGY = " + this.getClass().getSimpleName() + "]";
+	}
+
 }

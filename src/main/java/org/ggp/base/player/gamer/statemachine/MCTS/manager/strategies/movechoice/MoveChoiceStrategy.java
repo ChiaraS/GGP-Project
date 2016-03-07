@@ -1,10 +1,11 @@
 package org.ggp.base.player.gamer.statemachine.MCTS.manager.strategies.movechoice;
 
+import org.ggp.base.player.gamer.statemachine.MCS.manager.CompleteMoveStats;
+import org.ggp.base.player.gamer.statemachine.MCTS.manager.strategies.Strategy;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.InternalPropnetMCTSNode;
-import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.MCTSCompleteMoveStats;
 
-public interface MoveChoiceStrategy {
+public interface MoveChoiceStrategy extends Strategy{
 
-	public MCTSCompleteMoveStats chooseBestMove(InternalPropnetMCTSNode initialNode);
+	public CompleteMoveStats chooseBestMove(InternalPropnetMCTSNode initialNode);
 
 }

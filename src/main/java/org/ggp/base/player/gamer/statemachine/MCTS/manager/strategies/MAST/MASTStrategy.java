@@ -182,4 +182,9 @@ public class MASTStrategy extends StandardBackpropagation implements /*Backpropa
 		return this.mastStatistics.size();
 	}
 
+	@Override
+	public String getStrategyParameters() {
+		return super.getStrategyParameters() + "\n[PLAYOUT_STRATEGY = " + this.getClass().getSimpleName() + ", EPSILON = " + this.epsilon + "]";
+	}
+
 }

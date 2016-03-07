@@ -30,7 +30,7 @@ public class InternalPropnetMCSManager {
 	/**
 	 * The statistics for all the legal moves for myRole in the state currently being searched.
 	 */
-	private MCSMoveStats[] currentMovesStatistics;
+	private CompleteMoveStats[] currentMovesStatistics;
 
 	/**
 	 * The strategy that this MCS manager must use to perform playouts.
@@ -97,7 +97,7 @@ public class InternalPropnetMCSManager {
 		this.searchEnd = 0;
 	}
 
-	public MCSMoveStats getBestMove() throws MCSException{
+	public CompleteMoveStats getBestMove() throws MCSException{
 
 		if(this.currentMovesStatistics!=null){
 			List<Integer> chosenMovesIndices = new ArrayList<Integer>();
@@ -108,11 +108,11 @@ public class InternalPropnetMCSManager {
 			// For each legal move check the average score
 			for(int i = 0; i < this.currentMovesStatistics.length; i++){
 
-				long visits =  this.currentMovesStatistics[i].getVisits();
+				int visits =  this.currentMovesStatistics[i].getVisits();
 
 				//System.out.println("Visits: " + visits);
 
-				long scoreSum = this.currentMovesStatistics[i].getScoreSum();
+				int scoreSum = this.currentMovesStatistics[i].getScoreSum();
 
 				//System.out.println("Score sum: " + scoreSum);
 
@@ -180,10 +180,10 @@ public class InternalPropnetMCSManager {
 				throw new MCSException("Impossible to perform search: legal moves cannot be computed and explored in the given state.", e);
 			}
 
-			this.currentMovesStatistics = new MCSMoveStats[legalMoves.size()];
+			this.currentMovesStatistics = new CompleteMoveStats[legalMoves.size()];
 
 			for(int i = 0; i < this.currentMovesStatistics.length; i++){
-				this.currentMovesStatistics[i] = new MCSMoveStats(legalMoves.get(i));
+				this.currentMovesStatistics[i] = new CompleteMoveStats(legalMoves.get(i));
 			}
 
 		} // Otherwise proceed with the search using the old statistics and updating them.

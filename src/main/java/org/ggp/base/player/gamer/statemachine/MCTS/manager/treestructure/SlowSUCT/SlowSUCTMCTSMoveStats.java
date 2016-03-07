@@ -3,14 +3,14 @@
  */
 package org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.SlowSUCT;
 
-import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.MCTSCompleteMoveStats;
+import org.ggp.base.player.gamer.statemachine.MCS.manager.CompleteMoveStats;
 import org.ggp.base.util.statemachine.inernalPropnetStructure.InternalPropnetMove;
 
 /**
  * @author C.Sironi
  *
  */
-public class SlowSUCTMCTSMoveStats extends MCTSCompleteMoveStats {
+public class SlowSUCTMCTSMoveStats extends CompleteMoveStats {
 
 	/**
 	 * Index of the move statistics in the list of move statistics of the node
@@ -94,8 +94,8 @@ public class SlowSUCTMCTSMoveStats extends MCTSCompleteMoveStats {
 	@Override
 	public String toString(){
 		String s = super.toString();
-		s += "\n      PARENT(" + this.previousRoleMoveStats.getTheMove() + ")";
-		s += "\n      NEXT_MOVES(";
+		s += ", PARENT(" + this.previousRoleMoveStats.getTheMove() + "),";
+		s += "NEXT_ROLE_MOVES_STATS(";
 		for(SlowSUCTMCTSMoveStats m : this.nextRoleMovesStats){
 			s += "\n      " + m.toString();
 		}

@@ -4,9 +4,9 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
 
+import org.ggp.base.player.gamer.statemachine.MCS.manager.CompleteMoveStats;
+import org.ggp.base.player.gamer.statemachine.MCS.manager.MoveStats;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.InternalPropnetMCTSNode;
-import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.MCTSCompleteMoveStats;
-import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.MCTSMoveStats;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.DUCT.DUCTMCTSMoveStats;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.DUCT.InternalPropnetDUCTMCTSNode;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.SUCT.InternalPropnetSUCTMCTSNode;
@@ -34,9 +34,9 @@ public class MaximumScoreChoice implements MoveChoiceStrategy {
 	 * @see org.ggp.base.player.gamer.statemachine.MCTS.manager.strategies.movechoice.MoveChoiceStrategy#chooseBestMove(org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.InternalPropnetMCTSNode)
 	 */
 	@Override
-	public MCTSCompleteMoveStats chooseBestMove(InternalPropnetMCTSNode initialNode) {
+	public CompleteMoveStats chooseBestMove(InternalPropnetMCTSNode initialNode) {
 
-		MCTSMoveStats[] myMovesStats;
+		MoveStats[] myMovesStats;
 
 		if(initialNode instanceof InternalPropnetDUCTMCTSNode){
 			myMovesStats = ((InternalPropnetDUCTMCTSNode)initialNode).getMoves()[myRole.getIndex()];
@@ -58,11 +58,21 @@ public class MaximumScoreChoice implements MoveChoiceStrategy {
 		// For each legal move check the average score
 		for(int i = 0; i < myMovesStats.length; i++){
 
-			long visits =  myMovesStats[i].getVisits();
+			int visits =  myMovesStats[i].getVisits();
 
 			//System.out.println("Visits: " + visits);
 
-			long scoreSum = myMovesStats[i].getScoreSum();
+			int scoreSum = myMovesStats[i].getScoreSum();
+
+			/**
+			 * Extra check to make sure that neither the visits nor the
+			 * scoreSum exceed the maximum feasible value for an int type.
+			 * TODO: remove this check once you are reasonably sure that
+			 * this can never happen.
+			 */
+			if(visits < 0 || scoreSum < 0){
+				throw new RuntimeException("Negative value for visits and/or scores sum : VISITS=" + visits + ", SCORE_SUM=" + scoreSum + ".");
+			}
 
 			//System.out.println("Score sum: " + scoreSum);
 
@@ -98,17 +108,22 @@ public class MaximumScoreChoice implements MoveChoiceStrategy {
 
 		int bestMoveIndex = chosenMovesIndices.get(this.random.nextInt(chosenMovesIndices.size()));
 
-		MCTSMoveStats toReturn = myMovesStats[bestMoveIndex];
+		MoveStats toReturn = myMovesStats[bestMoveIndex];
 
 		if(toReturn instanceof DUCTMCTSMoveStats){
 			return (DUCTMCTSMoveStats)toReturn;
 		}else if(toReturn instanceof SUCTMCTSMoveStats){
-			return new MCTSCompleteMoveStats(toReturn.getVisits(), toReturn.getScoreSum(), toReturn.getUct(), ((InternalPropnetSUCTMCTSNode)initialNode).getAllLegalMoves().get(this.myRole.getIndex()).get(bestMoveIndex));
+			return new CompleteMoveStats(toReturn.getVisits(), toReturn.getScoreSum(), ((InternalPropnetSUCTMCTSNode)initialNode).getAllLegalMoves().get(this.myRole.getIndex()).get(bestMoveIndex));
 		}else if(toReturn instanceof SlowSUCTMCTSMoveStats){
 			return (SlowSUCTMCTSMoveStats)toReturn;
 		}else{
 			throw new RuntimeException("MaximumScoreChoice-chooseBestMove(): detected a node of a non-recognizable sub-type of class InternalPropnetMCTreeNode.");
 		}
+	}
+
+	@Override
+	public String getStrategyParameters() {
+		return "[MOVE_CHOICE_STRATEGY = " + this.getClass().getSimpleName() + "]";
 	}
 
 }

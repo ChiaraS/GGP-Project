@@ -22,7 +22,7 @@ public abstract class InternalPropnetMCTSNode{
 	/**
 	 * Number of times this node has been visited.
 	 */
-	protected long totVisits;
+	protected int totVisits;
 
 	/**
 	 * Keeps track of the last game turn for which this node was visited.
@@ -35,7 +35,7 @@ public abstract class InternalPropnetMCTSNode{
 	public InternalPropnetMCTSNode(int[] goals, boolean terminal) {
 		this.goals = goals;
 		this.terminal = terminal;
-		this.totVisits = 0L;
+		this.totVisits = 0;
 		this.gameStepStamp = -1;
 	}
 
@@ -47,7 +47,7 @@ public abstract class InternalPropnetMCTSNode{
 		return this.terminal;
 	}
 
-	public long getTotVisits(){
+	public int getTotVisits(){
 		return this.totVisits;
 	}
 

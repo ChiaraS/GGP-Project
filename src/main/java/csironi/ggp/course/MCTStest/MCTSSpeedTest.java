@@ -7,6 +7,7 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 
 import org.apache.logging.log4j.ThreadContext;
+import org.ggp.base.player.gamer.statemachine.MCS.manager.CompleteMoveStats;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.InternalPropnetMCTSManager;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.InternalPropnetMCTSManager.MCTS_TYPE;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.strategies.backpropagation.StandardBackpropagation;
@@ -15,7 +16,6 @@ import org.ggp.base.player.gamer.statemachine.MCTS.manager.strategies.movechoice
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.strategies.playout.RandomPlayout;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.strategies.selection.UCTSelection;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.InternalPropnetMCTSNode;
-import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.MCTSCompleteMoveStats;
 import org.ggp.base.util.game.GameRepository;
 import org.ggp.base.util.game.ManualUpdateLocalGameRepository;
 import org.ggp.base.util.gdl.grammar.Gdl;
@@ -288,7 +288,7 @@ public class MCTSSpeedTest {
 		        	GamerLogger.log(s + "MCTSSpeedTest", "Starting search.");
 
 		        	InternalPropnetMCTSNode initialNode = MCTSmanager.search(thePropnetMachine.getInternalInitialState(), System.currentTimeMillis() + testTime, gameStep);
-		        	MCTSCompleteMoveStats finalMove = MCTSmanager.getBestMove(initialNode);
+		        	CompleteMoveStats finalMove = MCTSmanager.getBestMove(initialNode);
 
 		        	GamerLogger.log(s + "MCTSSpeedTest", "Search ended correctly.");
 		        	chosenMove = thePropnetMachine.internalMoveToMove(finalMove.getTheMove());

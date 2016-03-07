@@ -6,6 +6,7 @@ package org.ggp.base.player.gamer.statemachine.MCTS;
 import java.util.Random;
 
 import org.ggp.base.player.gamer.event.GamerSelectedMoveEvent;
+import org.ggp.base.player.gamer.statemachine.MCS.manager.CompleteMoveStats;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.InternalPropnetMCTSManager;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.InternalPropnetMCTSManager.MCTS_TYPE;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.exceptions.MCTSException;
@@ -15,7 +16,6 @@ import org.ggp.base.player.gamer.statemachine.MCTS.manager.strategies.movechoice
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.strategies.playout.RandomPlayout;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.strategies.selection.UCTSelection;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.InternalPropnetMCTSNode;
-import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.MCTSCompleteMoveStats;
 import org.ggp.base.player.gamer.statemachine.propnet.InternalPropnetGamer;
 import org.ggp.base.util.logging.GamerLogger;
 import org.ggp.base.util.statemachine.Move;
@@ -197,8 +197,8 @@ public abstract class UCTMCTSGamer extends InternalPropnetGamer {
     	double iterationsPerSecond = -1;
     	double nodesPerSecond = -1;
     	Move theMove = null;
-    	long moveScoreSum = -1L;
-    	long moveVisits = -1;
+    	int moveScoreSum = -1;
+    	int moveVisits = -1;
     	double moveAvgScore = -1;
 
 		this.gameStep++;
@@ -213,7 +213,7 @@ public abstract class UCTMCTSGamer extends InternalPropnetGamer {
 
 			try {
 				InternalPropnetMCTSNode currentNode = this.mctsManager.search(currentState, realTimeout, gameStep);
-				MCTSCompleteMoveStats selectedMove = this.mctsManager.getBestMove(currentNode);
+				CompleteMoveStats selectedMove = this.mctsManager.getBestMove(currentNode);
 
 				searchTime = this.mctsManager.getSearchTime();
 				iterations = this.mctsManager.getIterations();

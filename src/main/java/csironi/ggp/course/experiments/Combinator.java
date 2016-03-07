@@ -24,6 +24,31 @@ public class Combinator {
 		// 3. Compute all combinations of gamer types.
     	List<List<Integer>> combinations = Combinator.getCombinations(4, 3);
 
+    	System.out.println("Combinations for each element: " + Combinator.lastCombinationsPerElement);
+    	System.out.println("Permutations for each combination: " + Combinator.lastPermutationsPerCombination);
+    	System.out.println("All combinations for an element: " + (Combinator.lastCombinationsPerElement * Combinator.lastPermutationsPerCombination));
+
+    	// 4. For each combination run the given amount of matches.
+
+    	System.out.println("Combinations:");
+
+    	for(List<Integer> combination : combinations){
+    		System.out.print("[ ");
+    		for(Integer i : combination){
+    			System.out.print(i.intValue() + " ");
+    		}
+    		System.out.println("]");
+    	}
+
+
+
+
+    	combinations = Combinator.getCombinations(3, 4);
+
+    	System.out.println("Combinations for each element: " + Combinator.lastCombinationsPerElement);
+    	System.out.println("Permutations for each combination: " + Combinator.lastPermutationsPerCombination);
+    	System.out.println("All combinations for an element: " + (Combinator.lastCombinationsPerElement * Combinator.lastPermutationsPerCombination));
+
     	// 4. For each combination run the given amount of matches.
 
     	System.out.println("Combinations:");
@@ -64,13 +89,25 @@ public class Combinator {
 	 */
 	public static List<List<Integer>> getCombinations(int numElements, int combinationsLength){
 
+		lastCombinationsPerElement = 0;
+		lastPermutationsPerCombination = 0;
+
 		// If any of the inputs is 0 return an empty list of combinations.
 		if(numElements == 0 || combinationsLength == 0){
 			return new ArrayList<List<Integer>>();
 		}
 
+		List<List<Integer>> theCombinations;
+
 		if(numElements <= combinationsLength){
-			return getPermutations(numElements, combinationsLength);
+
+			lastCombinationsPerElement = 1;
+
+			theCombinations = getPermutations(numElements, combinationsLength);
+
+			lastPermutationsPerCombination = theCombinations.size();
+
+			return theCombinations;
 		}
 
 		return buildCombinations(numElements, combinationsLength);
@@ -92,6 +129,8 @@ public class Combinator {
 		// combinations that can be obtained with a number of distinct elements exactly equal to the length of
 		// the combination.
 		List<List<Integer>> permutations = getPermutations(k, k);
+
+		lastPermutationsPerCombination = permutations.size();
 
         if(k > n){
             GamerLogger.logError("Combinator", "Invalid input for computing combinations of K over N elements. K=" + k + " shouldn't be greater than N=" + n + ". ");
@@ -131,10 +170,16 @@ public class Combinator {
                 // if we are at the last position print and increase the index
                 if(r == k-1){
 
+                	if(combinationList.get(0).intValue() == 0){
+                		lastCombinationsPerElement++;
+                	}
+
                     //do something with the combination e.g. add to list or print
                 	addPermutations(combinationList, permutations, allCombinations);
 
                     //System.out.println(Arrays.toString(combination));
+
+                	//System.out.println(combinationList);
 
                 	index++;
                 }
@@ -293,6 +338,28 @@ public class Combinator {
 
 			allCombinations.add(newPermutation);
 		}
+	}
+
+
+
+	/**
+	 * Number of combinations containing a certain element (this number is the same for each element).
+	 * Computed for the last set of elements that this class had to combine.
+	 */
+	private static int lastCombinationsPerElement;
+
+	/**
+	 * Number of permutations for combination that contain all elements in the combination at
+	 * least once (computed for the last set of elements that this class had to combine).
+	 */
+	private static int lastPermutationsPerCombination;
+
+	public static int getLastCombinationsPerElement(){
+		return lastCombinationsPerElement;
+	}
+
+	public static int getLastPermutationsPerCombination(){
+		return lastPermutationsPerCombination;
 	}
 
 }

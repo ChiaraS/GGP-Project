@@ -1,8 +1,8 @@
 package org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.SUCT;
 
-import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.MCTSMoveStats;
+import org.ggp.base.player.gamer.statemachine.MCS.manager.MoveStats;
 
-public class SUCTMCTSMoveStats extends MCTSMoveStats {
+public class SUCTMCTSMoveStats extends MoveStats {
 
 	/**
 	 * Reference to the list of SUCTMovesStats for the next role.
@@ -49,7 +49,14 @@ public class SUCTMCTSMoveStats extends MCTSMoveStats {
 
 	@Override
 	public String toString(){
-		return super.toString() + ", UNVISITED_SUBLEAVES(" + this.unvisitedSubleaves + ")";
+		String s = super.toString() + ", UNVISITED_SUBLEAVES(" + this.unvisitedSubleaves + "), ";
+		s += "NEXT_ROLE_MOVES_STATS(";
+		for(SUCTMCTSMoveStats m : this.nextRoleMovesStats){
+			s += "\n      " + m.toString();
+		}
+		s += ")";
+
+		return s;
 	}
 
 }

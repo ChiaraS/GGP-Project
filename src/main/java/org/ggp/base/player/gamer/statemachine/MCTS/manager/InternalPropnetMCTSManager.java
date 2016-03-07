@@ -4,16 +4,19 @@
 package org.ggp.base.player.gamer.statemachine.MCTS.manager;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
+import org.ggp.base.player.gamer.statemachine.MCS.manager.CompleteMoveStats;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.exceptions.MCTSException;
+import org.ggp.base.player.gamer.statemachine.MCTS.manager.strategies.Strategy;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.strategies.backpropagation.BackpropagationStrategy;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.strategies.expansion.ExpansionStrategy;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.strategies.movechoice.MoveChoiceStrategy;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.strategies.playout.PlayoutStrategy;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.strategies.selection.SelectionStrategy;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.InternalPropnetMCTSNode;
-import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.MCTSCompleteMoveStats;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.MCTSJointMove;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.MCTSTranspositionTable;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.DUCT.DUCTMCTSMoveStats;
@@ -155,6 +158,23 @@ public class InternalPropnetMCTSManager extends MCTSManager {
 			GamerLogger.log("MCTSManager", "MCTS manager initialized to perform SLOW_SUCT MCTS with maximum search dept " + this.maxSearchDepth + ".");
 			break;
 		}
+
+		String toLog = "MCTS manager initialized with the following strategies: ";
+
+		Set<Strategy> strategies = new HashSet<Strategy>();
+
+		strategies.add(this.expansionStrategy);
+		strategies.add(this.selectionStrategy);
+		strategies.add(this.backpropagationStrategy);
+		strategies.add(this.playoutStrategy);
+		strategies.add(this.moveChoiceStrategy);
+
+		for(Strategy s : strategies){
+			toLog += "\n" + s.getStrategyParameters();
+		}
+
+		GamerLogger.log("MCTSManager", toLog);
+
 	}
 
 	/**
@@ -166,7 +186,7 @@ public class InternalPropnetMCTSManager extends MCTSManager {
 	 * it is either terminal or there is some problem with the computation of legal
 	 * moves (and thus corresponding statistics).
 	 */
-	public MCTSCompleteMoveStats getBestMove(InternalPropnetMCTSNode theNode)throws MCTSException{
+	public CompleteMoveStats getBestMove(InternalPropnetMCTSNode theNode)throws MCTSException{
 
 		// If the node is null or terminal we cannot return any move.
 		// Note that the node being terminal might mean that the state is not terminal but legal moves

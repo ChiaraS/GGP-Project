@@ -1,9 +1,10 @@
 package org.ggp.base.player.gamer.statemachine.MCTS.manager.strategies.selection;
 
+import org.ggp.base.player.gamer.statemachine.MCTS.manager.strategies.Strategy;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.InternalPropnetMCTSNode;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.MCTSJointMove;
 
-public interface SelectionStrategy {
+public interface SelectionStrategy extends Strategy{
 
 	/**
 	 * This method selects the next move to visit in the given tree node.

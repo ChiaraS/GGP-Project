@@ -42,7 +42,11 @@ public class StatsSummarizer {
 
 		String mainFolderPath = args[0];
 
+		//System.out.println("mainFolderPath= " + mainFolderPath);
+
 		String matchesLogsFolderPath = mainFolderPath + "/MatchesLogs";
+
+		//System.out.println("matchesLogsFolderPath= " + matchesLogsFolderPath);
 
 		File matchesLogsFolder = new File(matchesLogsFolderPath);
 
@@ -54,6 +58,10 @@ public class StatsSummarizer {
 		// Create (or empty if it already exists) the folder where to move all the match log files
 		// that have been rejected and haven't been considered when computing the statistics.
 		String rejectedFilesFolderPath = mainFolderPath + "/RejectedFiles";
+
+		//System.out.println("rejectedFilesFolderPath= " + rejectedFilesFolderPath);
+
+
 		File rejectedFilesFolder = new File(rejectedFilesFolderPath);
 		if(rejectedFilesFolder.isDirectory()){
 			if(!emptyFolder(rejectedFilesFolder)){
@@ -138,6 +146,16 @@ public class StatsSummarizer {
 
 				matchInfo.add(comboMatchInfo);
 			}
+		}
+
+		if(minAccepted == 0){
+			System.out.println("Summarization interrupted. No valid matches for at least one of the combinations.");
+			return;
+		}
+
+		if(matchInfo.size() == 0){
+			System.out.println("Summarization interrupted. No combinations folders detected.");
+			return;
 		}
 
 		/** Discard for each combination the amount of matches needed to consider the same amount of matches for each combination **/
@@ -499,11 +517,18 @@ public class StatsSummarizer {
 
 	}
 
-	private static void rejectFile(File theRejectedFile, String rejectedFilesFolderPath){
+	private static void rejectFile(File theRejectedFile, String rejectionDestinationPath){
+
+		File rejectionDestinationFolder = new File(rejectionDestinationPath);
+		if(!rejectionDestinationFolder.exists() || !rejectionDestinationFolder.isDirectory()){
+			rejectionDestinationFolder.mkdir();
+		}
 
 		System.out.println("Rejecting file " + theRejectedFile.getPath());
 
-		boolean success = theRejectedFile.renameTo(new File(rejectedFilesFolderPath + "/" + theRejectedFile.getName()));
+		//System.out.println("Rejection destination= " + rejectionDestinationPath + "/" + theRejectedFile.getName());
+
+		boolean success = theRejectedFile.renameTo(new File(rejectionDestinationPath + "/" + theRejectedFile.getName()));
     	if(!success){
     		System.out.println("Failed to move file " + theRejectedFile.getPath() + " to the RejectedFiles folder. Excluding it from the summary anyway.");
     	}
