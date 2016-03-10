@@ -53,6 +53,7 @@ public class InternalPropnetMCTSManager extends MCTSManager {
 	 * - SUCT = the manager will run Monte Carlo Tree Search with the Sequential UCT statistics.
 	 *
 	 * - SLOW_SUCT = like SUCT but using the slower version of the tree nodes structure.
+	 *   (//TODO: This version of SUCT should disappear)
 	 *
 	 * @author C.Sironi
 	 *
