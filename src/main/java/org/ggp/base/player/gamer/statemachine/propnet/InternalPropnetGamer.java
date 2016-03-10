@@ -25,19 +25,6 @@ import org.ggp.base.util.statemachine.implementation.prover.ProverStateMachine;
  * This gamer tries to use the state machine based on the internal propnet.
  * If the propnet fails to build, the gamer will use the cached prover.
  *
- * The gamer can be set in two ways:
- * - [singleGame = true]: the player assumes to be playing always the same game
- *   and thus tries to build the propnet state machine only the first time. If
- *   it succeeds it will always use the same propnet state machine for every match,
- *   otherwise it will always return the prover state machine.
- *   ATTENTION! DANGER! If you use this setting make sure that the Game Manager always sends
- *   exactly the same game description or the player will start behaving in a weird way. The
- *   game description, for example, must not be scrambled or the names of the moves will be
- *   different and the gamer will return wrong moves.
- * - [singleGame = false] (default): the player will try for each match to build the propnet
- *   state machine of the given game and return the prover state machine every time
- *   it fails building the propnet.
- *
  * All the gamers that want to use the internal propnet must extend this class.
  *
  * @author C.Sironi
@@ -54,7 +41,14 @@ public abstract class InternalPropnetGamer extends StateMachineGamer {
 	 * 			  is called).
 	 * - ONCE = the player will assume to always be playing the same game and thus
 	 * 			it will use the same propnet state machine and build it only the
-	 * 			first time.
+	 * 			first time. If the build succeeds this gamer will always use the same
+	 * 			propnet state machine for every match, otherwise it will always return
+	 * 			the prover state machine.
+	 * 			ATTENTION! DANGER! If you use this setting make sure that the Game
+	 * 			Manager always sends exactly the same game description or the player
+	 *  		will start behaving in a weird way. The game description, for example,
+	 *  		must not be scrambled or the names of the moves will be different and the
+	 *  		gamer will return wrong moves.
 	 * - NEVER = the player will never build a new propnet and thus never a new state
 	 * 			 machine, but will use the one (if any) that is given as input to the
 	 * 			 constructor.
