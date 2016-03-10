@@ -126,4 +126,10 @@ public class MaximumScoreChoice implements MoveChoiceStrategy {
 		return "[MOVE_CHOICE_STRATEGY = " + this.getClass().getSimpleName() + "]";
 	}
 
+	@Override
+	public void afterMoveAction() {
+		// TODO Auto-generated method stub
+
+	}
+
 }

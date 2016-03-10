@@ -40,6 +40,12 @@ public class MoveStats{
 		this.scoreSum += newScore;
 	}
 
+	public void decreaseByFactor(double factor){
+		double avg = ((double) this.scoreSum)/((double)this.visits);
+		this.visits = (int) Math.round(((double)this.visits)*factor);
+		this.scoreSum = (int) Math.round(((double)this.visits)*avg);
+	}
+
 	@Override
 	public String toString(){
 		return "VISITS(" + this.visits + "), SCORE_SUM(" + this.scoreSum + ")";

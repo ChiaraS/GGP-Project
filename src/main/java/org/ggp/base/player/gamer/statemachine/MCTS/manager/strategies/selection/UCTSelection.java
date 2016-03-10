@@ -311,4 +311,10 @@ public class UCTSelection implements SelectionStrategy {
 		return "[SELECTION_STRATEGY = " + this.getClass().getSimpleName() + ", UCT_OFFSET = " + this.uctOffset + ", C_CONSTANT = " + this.c + "]";
 	}
 
+	@Override
+	public void afterMoveAction() {
+		// TODO Auto-generated method stub
+
+	}
+
 }

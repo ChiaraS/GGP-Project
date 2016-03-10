@@ -181,4 +181,9 @@ public class StandardBackpropagation implements BackpropagationStrategy {
 	public String getStrategyParameters() {
 		return "[BACKPROPAGATION_STRATEGY = " + this.getClass().getSimpleName() + "]";
 	}
+
+	@Override
+	public void afterMoveAction() {
+		// TODO Auto-generated method stub
+	}
 }

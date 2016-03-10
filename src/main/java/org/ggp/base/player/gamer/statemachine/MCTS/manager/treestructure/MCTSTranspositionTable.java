@@ -58,8 +58,8 @@ public class MCTSTranspositionTable {
 		//System.out.println("Cleaning TT with game step: " + newGameStepStamp);
 		//System.out.println("Current TT size: " + this.transpositionTable.size());
 
-		// Clean the table only if the game-step stamp changed.
-		if(newGameStepStamp != this.currentGameStepStamp){
+		// Clean the table only if the game-step stamp changed (this is already checked by the caller).
+		//if(newGameStepStamp != this.currentGameStepStamp){
 			this.currentGameStepStamp = newGameStepStamp;
 			// Remove all nodes last accessed earlier than the game step (newGameStepStamp-gameStepOffset)
 			Iterator<Entry<InternalPropnetMachineState,InternalPropnetMCTSNode>> iterator = this.transpositionTable.entrySet().iterator();
@@ -71,7 +71,11 @@ public class MCTSTranspositionTable {
 			}
 
 			//System.out.println("TT size after cleaning: " + this.transpositionTable.size());
-		}
+		//}
+	}
+
+	public int getLastGameStep(){
+		return this.currentGameStepStamp;
 	}
 
 }

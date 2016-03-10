@@ -13,9 +13,12 @@ public class MASTDUCTMCTSGamer extends DUCTMCTSGamer {
 
 	double epsilon;
 
+	double decayFactor;
+
 	public MASTDUCTMCTSGamer() {
 		super();
 		this.epsilon = 0.4;
+		this.decayFactor = 0.2;
 	}
 
 	@Override
@@ -26,7 +29,7 @@ public class MASTDUCTMCTSGamer extends DUCTMCTSGamer {
 		InternalPropnetRole myRole = this.thePropnetMachine.roleToInternalRole(this.getRole());
 		int numRoles = this.thePropnetMachine.getInternalRoles().length;
 
-		MASTStrategy mast = new MASTStrategy(this.thePropnetMachine, this.epsilon, r, numRoles, myRole);
+		MASTStrategy mast = new MASTStrategy(this.thePropnetMachine, this.epsilon, this.decayFactor, r, numRoles, myRole);
 
 		return new InternalPropnetMCTSManager(this.mctsType, myRole, new UCTSelection(numRoles, myRole, r, this.uctOffset, c),
 	       		new RandomExpansion(numRoles, myRole, r), mast,	mast, new MaximumScoreChoice(myRole, r),

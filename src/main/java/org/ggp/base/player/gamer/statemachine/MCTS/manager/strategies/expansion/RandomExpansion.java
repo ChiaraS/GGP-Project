@@ -319,4 +319,10 @@ public class RandomExpansion implements ExpansionStrategy {
 		return "[EXPANSION_STRATEGY = " + this.getClass().getSimpleName() + "]";
 	}
 
+	@Override
+	public void afterMoveAction() {
+		// TODO Auto-generated method stub
+
+	}
+
 }

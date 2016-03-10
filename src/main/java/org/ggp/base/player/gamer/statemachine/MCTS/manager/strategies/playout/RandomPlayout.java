@@ -31,4 +31,9 @@ public class RandomPlayout implements PlayoutStrategy {
 		return "[PLAYOUT_STRATEGY = " + this.getClass().getSimpleName() + "]";
 	}
 
+	@Override
+	public void afterMoveAction() {
+		// TODO Auto-generated method stub
+	}
+
 }

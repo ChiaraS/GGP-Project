@@ -83,6 +83,13 @@ public class InternalPropnetMCTSManager extends MCTSManager {
 	private MoveChoiceStrategy moveChoiceStrategy;
 
 	/**
+	 * A set containing all the distinct concrete strategy classes only once.
+	 * NOTE: two strategies might be implemented by the same concrete class implementing two
+	 * different interfaces, this set allows to perform certain operations only once per class.
+	 */
+	private Set<Strategy> strategies = new HashSet<Strategy>();
+
+	/**
 	 * The state machine that this MCTS manager uses to reason on the game
 	 */
 	private InternalPropnetStateMachine theMachine;
@@ -162,15 +169,13 @@ public class InternalPropnetMCTSManager extends MCTSManager {
 
 		String toLog = "MCTS manager initialized with the following strategies: ";
 
-		Set<Strategy> strategies = new HashSet<Strategy>();
+		this.strategies.add(this.expansionStrategy);
+		this.strategies.add(this.selectionStrategy);
+		this.strategies.add(this.backpropagationStrategy);
+		this.strategies.add(this.playoutStrategy);
+		this.strategies.add(this.moveChoiceStrategy);
 
-		strategies.add(this.expansionStrategy);
-		strategies.add(this.selectionStrategy);
-		strategies.add(this.backpropagationStrategy);
-		strategies.add(this.playoutStrategy);
-		strategies.add(this.moveChoiceStrategy);
-
-		for(Strategy s : strategies){
+		for(Strategy s : this.strategies){
 			toLog += "\n" + s.getStrategyParameters();
 		}
 
@@ -262,7 +267,16 @@ public class InternalPropnetMCTSManager extends MCTSManager {
 		this.searchStart = 0L;
 		this.searchEnd = 0L;
 
-		this.transpositionTable.clean(gameStep);
+		// Every time a move is played in the actual game...
+		if(this.transpositionTable.getLastGameStep() != gameStep){
+			// ...nodes not visited recently are removed by the transposition table...
+			this.transpositionTable.clean(gameStep);
+
+			// ...and each strategy performs some clean-up of its internal structures (if necessary).
+			for(Strategy s : this.strategies){
+				s.afterMoveAction();
+			}
+		}
 
 		// If it's the first time during the game that we call this method the transposition table is empty
 		// so we create the first node, otherwise we check if the node is already in the tree.

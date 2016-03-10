@@ -24,16 +24,19 @@ public class MASTStrategy extends StandardBackpropagation implements /*Backpropa
 
 	private double epsilon;
 
+	private double decayFactor;
+
 	private Random random;
 
 	private Map<InternalPropnetMove, MoveStats> mastStatistics;
 
-	public MASTStrategy(InternalPropnetStateMachine theMachine, double epsilon, Random random, int numRoles, InternalPropnetRole myRole) {
+	public MASTStrategy(InternalPropnetStateMachine theMachine, double epsilon, double decayFactor, Random random, int numRoles, InternalPropnetRole myRole) {
 
 		super(numRoles, myRole);
 
 		this.theMachine = theMachine;
 		this.epsilon = epsilon;
+		this.decayFactor = decayFactor;
 		this.random = random;
 		this.mastStatistics = new HashMap<InternalPropnetMove, MoveStats>();
 	}
@@ -184,7 +187,16 @@ public class MASTStrategy extends StandardBackpropagation implements /*Backpropa
 
 	@Override
 	public String getStrategyParameters() {
-		return super.getStrategyParameters() + "\n[PLAYOUT_STRATEGY = " + this.getClass().getSimpleName() + ", EPSILON = " + this.epsilon + "]";
+		return super.getStrategyParameters() + "\n[PLAYOUT_STRATEGY = " + this.getClass().getSimpleName() + ", EPSILON = " + this.epsilon + ", DECAY_FACTOR = " + this.decayFactor + "]";
+	}
+
+	@Override
+	public void afterMoveAction(){
+
+		for(MoveStats m : this.mastStatistics.values()){
+			m.decreaseByFactor(this.decayFactor);
+		}
+
 	}
 
 }
