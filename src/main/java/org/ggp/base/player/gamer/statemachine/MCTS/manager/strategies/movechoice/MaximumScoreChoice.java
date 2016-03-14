@@ -123,13 +123,18 @@ public class MaximumScoreChoice implements MoveChoiceStrategy {
 
 	@Override
 	public String getStrategyParameters() {
-		return "[MOVE_CHOICE_STRATEGY = " + this.getClass().getSimpleName() + "]";
+		return null;
 	}
 
 	@Override
-	public void afterMoveAction() {
-		// TODO Auto-generated method stub
+	public String printStrategy() {
+		String params = this.getStrategyParameters();
 
+		if(params != null){
+			return "[MOVE_CHOICE_STRATEGY = " + this.getClass().getSimpleName() + ", " + params + "]";
+		}else{
+			return "[MOVE_CHOICE_STRATEGY = " + this.getClass().getSimpleName() + "]";
+		}
 	}
 
 }

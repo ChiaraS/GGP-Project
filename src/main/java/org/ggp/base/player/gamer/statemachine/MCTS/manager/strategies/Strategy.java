@@ -4,6 +4,6 @@ public interface Strategy {
 
 	public String getStrategyParameters();
 
-	public void afterMoveAction();
+	public String printStrategy();
 
 }

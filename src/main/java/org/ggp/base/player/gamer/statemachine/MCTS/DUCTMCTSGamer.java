@@ -40,7 +40,7 @@ public class DUCTMCTSGamer extends UCTMCTSGamer {
 	return new InternalPropnetMCTSManager(new UCTSelection(numRoles, myRole, r, uctOffset, c),
        		new RandomExpansion(numRoles, myRole, r), new RandomPlayout(this.thePropnetMachine),
        		new StandardBackpropagation(numRoles, myRole),	new MaximumScoreChoice(myRole, r),
-       		new PnDUCTTreeNodeFactory(this.thePropnetMachine), this.thePropnetMachine,
+       		null, null, new PnDUCTTreeNodeFactory(this.thePropnetMachine), this.thePropnetMachine,
        		gameStepOffset, maxSearchDepth);
 }
 

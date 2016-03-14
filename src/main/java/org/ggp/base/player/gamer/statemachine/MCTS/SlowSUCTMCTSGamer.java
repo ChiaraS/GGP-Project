@@ -40,8 +40,8 @@ public class SlowSUCTMCTSGamer extends UCTMCTSGamer {
 		return new InternalPropnetMCTSManager(new UCTSelection(numRoles, myRole, r, uctOffset, c),
 	       		new RandomExpansion(numRoles, myRole, r), new RandomPlayout(this.thePropnetMachine),
 	       		new StandardBackpropagation(numRoles, myRole),	new MaximumScoreChoice(myRole, r),
-	       		new PnSlowSUCTTreeNodeFactory(this.thePropnetMachine, myRole), this.thePropnetMachine,
-	       		gameStepOffset, maxSearchDepth);
+	       		null, null, new PnSlowSUCTTreeNodeFactory(this.thePropnetMachine, myRole),
+	       		this.thePropnetMachine,	gameStepOffset, maxSearchDepth);
 	}
 
 	/**

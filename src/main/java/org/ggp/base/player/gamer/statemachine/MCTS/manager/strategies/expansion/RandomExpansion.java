@@ -4,8 +4,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
 
-import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.PnMCTSNode;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.MCTSJointMove;
+import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.PnMCTSNode;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.UCTMCTSJointMove;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.DUCT.DUCTMCTSMoveStats;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.DUCT.PnDUCTMCTSNode;
@@ -316,13 +316,18 @@ public class RandomExpansion implements ExpansionStrategy {
 
 	@Override
 	public String getStrategyParameters() {
-		return "[EXPANSION_STRATEGY = " + this.getClass().getSimpleName() + "]";
+		return null;
 	}
 
 	@Override
-	public void afterMoveAction() {
-		// TODO Auto-generated method stub
+	public String printStrategy() {
+		String params = this.getStrategyParameters();
 
+		if(params != null){
+			return "[EXPANSION_STRATEGY = " + this.getClass().getSimpleName() + ", " + params + "]";
+		}else{
+			return "[EXPANSION_STRATEGY = " + this.getClass().getSimpleName() + "]";
+		}
 	}
 
 }

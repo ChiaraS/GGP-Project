@@ -28,12 +28,18 @@ public class RandomPlayout implements PlayoutStrategy {
 
 	@Override
 	public String getStrategyParameters() {
-		return "[PLAYOUT_STRATEGY = " + this.getClass().getSimpleName() + "]";
+		return null;
 	}
 
 	@Override
-	public void afterMoveAction() {
-		// TODO Auto-generated method stub
+	public String printStrategy() {
+		String params = this.getStrategyParameters();
+
+		if(params != null){
+			return "[PLAYOUT_STRATEGY = " + this.getClass().getSimpleName() + ", " + params + "]";
+		}else{
+			return "[PLAYOUT_STRATEGY = " + this.getClass().getSimpleName() + "]";
+		}
 	}
 
 }

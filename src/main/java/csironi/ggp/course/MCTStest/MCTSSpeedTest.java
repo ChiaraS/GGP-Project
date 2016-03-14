@@ -286,7 +286,7 @@ public class MCTSSpeedTest {
 		        		new UCTSelection(numRoles, internalPlayingRole, r, uctOffset, c),
 		        		new RandomExpansion(numRoles, internalPlayingRole, r), new RandomPlayout(thePropnetMachine),
 		        		new StandardBackpropagation(numRoles, internalPlayingRole),
-		        		new MaximumScoreChoice(internalPlayingRole, r), theNodeFactory,
+		        		new MaximumScoreChoice(internalPlayingRole, r), null, null, theNodeFactory,
 		        		thePropnetMachine, gameStepOffset, maxSearchDepth);
 
 		        try{

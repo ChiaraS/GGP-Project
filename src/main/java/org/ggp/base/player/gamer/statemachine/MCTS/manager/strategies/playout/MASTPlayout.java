@@ -1,4 +1,4 @@
-package org.ggp.base.player.gamer.statemachine.MCTS.manager.strategies.MAST;
+package org.ggp.base.player.gamer.statemachine.MCTS.manager.strategies.playout;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -6,18 +6,13 @@ import java.util.Map;
 import java.util.Random;
 
 import org.ggp.base.player.gamer.statemachine.MCS.manager.MoveStats;
-import org.ggp.base.player.gamer.statemachine.MCTS.manager.strategies.backpropagation.StandardBackpropagation;
-import org.ggp.base.player.gamer.statemachine.MCTS.manager.strategies.playout.PlayoutStrategy;
-import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.MCTSJointMove;
-import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.PnMCTSNode;
 import org.ggp.base.util.logging.GamerLogger;
 import org.ggp.base.util.statemachine.InternalPropnetStateMachine;
 import org.ggp.base.util.statemachine.exceptions.MoveDefinitionException;
 import org.ggp.base.util.statemachine.inernalPropnetStructure.InternalPropnetMachineState;
 import org.ggp.base.util.statemachine.inernalPropnetStructure.InternalPropnetMove;
-import org.ggp.base.util.statemachine.inernalPropnetStructure.InternalPropnetRole;
 
-public class MASTStrategy extends StandardBackpropagation implements /*BackpropagationStrategy,*/ PlayoutStrategy {
+public class MASTPlayout implements PlayoutStrategy {
 
 	private InternalPropnetStateMachine theMachine;
 
@@ -27,10 +22,7 @@ public class MASTStrategy extends StandardBackpropagation implements /*Backpropa
 
 	private Map<InternalPropnetMove, MoveStats> mastStatistics;
 
-	public MASTStrategy(InternalPropnetStateMachine theMachine, double epsilon, Random random, Map<InternalPropnetMove, MoveStats> mastStatistics, int numRoles, InternalPropnetRole myRole) {
-
-		super(numRoles, myRole);
-
+	public MASTPlayout(InternalPropnetStateMachine theMachine, double epsilon, Random random, Map<InternalPropnetMove, MoveStats> mastStatistics) {
 		this.theMachine = theMachine;
 		this.epsilon = epsilon;
 		this.random = random;
@@ -107,22 +99,6 @@ public class MASTStrategy extends StandardBackpropagation implements /*Backpropa
         return goals;
 	}
 
-	/*
-	 *         	List<InternalPropnetMove> jointMove = null;
-			try {
-				jointMove = getRandomJointMove(state);
-			} catch (MoveDefinitionException e) {
-				GamerLogger.logError("StateMachine", "Exception getting a joint move while performing safe limited depth charges.");
-				GamerLogger.logStackTrace("StateMachine", e);
-				break;
-			}
-	 *
-	 *
-	 *
-	 * (non-Javadoc)
-	 * @see org.ggp.base.player.gamer.statemachine.MCTS.manager.strategies.backpropagation.BackpropagationStrategy#update(org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.InternalPropnetMCTSNode, org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.MCTSJointMove, int[])
-	 */
-
 	private InternalPropnetMove getMASTMove(List<InternalPropnetMove> moves) {
 
 		List<InternalPropnetMove> chosenMoves = new ArrayList<InternalPropnetMove>();
@@ -156,45 +132,18 @@ public class MASTStrategy extends StandardBackpropagation implements /*Backpropa
 	}
 
 	@Override
-	public void update(PnMCTSNode node, MCTSJointMove jointMove, int[] goals) {
-
-		super.update(node,jointMove, goals);
-
-		//System.out.println("MASTBP");
-
-		List<InternalPropnetMove> internalJointMove = jointMove.getJointMove();
-		MoveStats moveStats;
-
-		for(int i = 0; i < internalJointMove.size(); i++){
-        	moveStats = this.mastStatistics.get(internalJointMove.get(i));
-        	if(moveStats == null){
-        		moveStats = new MoveStats();
-        		this.mastStatistics.put(internalJointMove.get(i), moveStats);
-        	}
-       		moveStats.incrementVisits();
-       		moveStats.incrementScoreSum(goals[i]);
-       	}
-
-	}
-
-	public int getNumStats(){
-		return this.mastStatistics.size();
-	}
-
-	@Override
 	public String getStrategyParameters() {
 		return "EPSILON = " + this.epsilon;
 	}
 
 	@Override
 	public String printStrategy() {
-
 		String params = this.getStrategyParameters();
 
 		if(params != null){
-			return super.printStrategy() + "\n[PLAYOUT_STRATEGY = " + this.getClass().getSimpleName() + ", " + params + "]";
+			return "[PLAYOUT_STRATEGY = " + this.getClass().getSimpleName() + ", " + params + "]";
 		}else{
-			return super.printStrategy() + "\n[PLAYOUT_STRATEGY = " + this.getClass().getSimpleName() + "]";
+			return "[PLAYOUT_STRATEGY = " + this.getClass().getSimpleName() + "]";
 		}
 	}
 

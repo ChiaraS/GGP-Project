@@ -4,8 +4,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
 
-import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.PnMCTSNode;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.MCTSJointMove;
+import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.PnMCTSNode;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.UCTMCTSJointMove;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.DUCT.DUCTMCTSMoveStats;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.DUCT.PnDUCTMCTSNode;
@@ -308,13 +308,18 @@ public class UCTSelection implements SelectionStrategy {
 
 	@Override
 	public String getStrategyParameters() {
-		return "[SELECTION_STRATEGY = " + this.getClass().getSimpleName() + ", UCT_OFFSET = " + this.uctOffset + ", C_CONSTANT = " + this.c + "]";
+		return "UCT_OFFSET = " + this.uctOffset + ", C_CONSTANT = " + this.c;
 	}
 
 	@Override
-	public void afterMoveAction() {
-		// TODO Auto-generated method stub
+	public String printStrategy() {
+		String params = this.getStrategyParameters();
 
+		if(params != null){
+			return "[SELECTION_STRATEGY = " + this.getClass().getSimpleName() + ", " + params + "]";
+		}else{
+			return "[SELECTION_STRATEGY = " + this.getClass().getSimpleName() + "]";
+		}
 	}
 
 }

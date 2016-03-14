@@ -9,6 +9,8 @@ import java.util.Set;
 import org.ggp.base.player.gamer.statemachine.MCS.manager.CompleteMoveStats;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.exceptions.MCTSException;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.strategies.Strategy;
+import org.ggp.base.player.gamer.statemachine.MCTS.manager.strategies.aftermove.AfterMoveStrategy;
+import org.ggp.base.player.gamer.statemachine.MCTS.manager.strategies.aftersimulation.AfterSimulationStrategy;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.strategies.backpropagation.BackpropagationStrategy;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.strategies.expansion.ExpansionStrategy;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.strategies.movechoice.MoveChoiceStrategy;
@@ -71,6 +73,16 @@ public class InternalPropnetMCTSManager extends MCTSManager {
 	private MoveChoiceStrategy moveChoiceStrategy;
 
 	/**
+	 * Some MCTS strategies require additional work after every simulation or after every move has
+	 * been played in the real game (e.g. clear or decay some statistics). These two strategies allow
+	 * to specify the actions to be taken in such situations. If nothing has to be done, just set
+	 * these strategies to null.
+	 */
+	private AfterSimulationStrategy afterSimulationStrategy;
+
+	private AfterMoveStrategy afterMoveStrategy;
+
+	/**
 	 * The factory that creates the tree nodes with the necessary structure that the strategies need.
 	 * The factory will always return the same node interface with all the methods that the manager
 	 * needs, hiding all the specific details of the structure that depend on what the single
@@ -79,7 +91,7 @@ public class InternalPropnetMCTSManager extends MCTSManager {
 	 * however, if the selection implements Decoupled UCT, it will need a certain structure of the
 	 * statistics).
 	 * NOTE: always make sure when initializing the manager to assign it the correct node factory,
-	 * that creates nodes containing all the information that the strategie need.
+	 * that creates nodes containing all the information that the strategies need.
 	 */
 	private TreeNodeFactory theNodesFactory;
 
@@ -137,6 +149,7 @@ public class InternalPropnetMCTSManager extends MCTSManager {
 	public InternalPropnetMCTSManager(SelectionStrategy selectionStrategy,
 			ExpansionStrategy expansionStrategy, PlayoutStrategy playoutStrategy,
 			BackpropagationStrategy backpropagationStrategy, MoveChoiceStrategy moveChoiceStrategy,
+			AfterSimulationStrategy afterSimulationStrategy, AfterMoveStrategy afterMoveStrategy,
 			TreeNodeFactory theNodesFactory, InternalPropnetStateMachine theMachine,
 			int gameStepOffset, int maxSearchDepth) {
 
@@ -146,6 +159,8 @@ public class InternalPropnetMCTSManager extends MCTSManager {
 		this.playoutStrategy = playoutStrategy;
 		this.backpropagationStrategy = backpropagationStrategy;
 		this.moveChoiceStrategy = moveChoiceStrategy;
+		this.afterSimulationStrategy = afterSimulationStrategy;
+		this.afterMoveStrategy = afterMoveStrategy;
 		this.theNodesFactory = theNodesFactory;
 		this.theMachine = theMachine;
 		this.transpositionTable = new MCTSTranspositionTable(gameStepOffset);
@@ -181,11 +196,20 @@ public class InternalPropnetMCTSManager extends MCTSManager {
 		toLog = "\nMCTS manager initialized with the following strategies: ";
 
 		for(Strategy s : this.strategies){
-			toLog += "\n" + s.getStrategyParameters();
+			toLog += "\n" + s.printStrategy();
 		}
 
+		if(this.afterSimulationStrategy != null){
+			toLog += "\n" + this.afterSimulationStrategy.printStrategy();
+		}else{
+			toLog += "\n[AFTER_SIM_STRATEGY = null]";
+		}
 
-
+		if(this.afterMoveStrategy != null){
+			toLog += "\n" + this.afterMoveStrategy.printStrategy();
+		}else{
+			toLog += "\n[AFTER_MOVE_STRATEGY = null]";
+		}
 
 		GamerLogger.log("MCTSManager", toLog);
 
@@ -281,8 +305,17 @@ public class InternalPropnetMCTSManager extends MCTSManager {
 			this.transpositionTable.clean(gameStep);
 
 			// ...and each strategy performs some clean-up of its internal structures (if necessary).
-			for(Strategy s : this.strategies){
-				s.afterMoveAction();
+			//for(Strategy s : this.strategies){
+			//	s.afterMoveAction();
+			//}
+
+			// ...and all the actions that need to be taken after a move is performed in the real game are performed.
+			// NOTE: we cannot perform such actions right after the end of the search, we must wait until the execution
+			// gets here so that we can check the new game step and be sure that the actual game proceeded.
+			// Otherwise we'll also perform the "AfterMoveActions" even after the initial search during metagame, but
+			// the actual game won't have been advanced the next time the search will be performed.
+			if(this.afterMoveStrategy != null){
+				this.afterMoveStrategy.afterMoveActions();
 			}
 		}
 
@@ -320,6 +353,10 @@ public class InternalPropnetMCTSManager extends MCTSManager {
 			this.searchNext(initialState, initialNode);
 			this.iterations++;
 			this.visitedNodes += this.currentIterationVisitedNodes;
+
+			if(this.afterSimulationStrategy != null){
+				this.afterSimulationStrategy.afterSimulationActions();
+			}
 			//System.out.println("Iteration: " + this.iterations);
 			//System.out.println("Stats: " + ((MASTStrategy)this.playoutStrategy).getNumStats());
 		}

@@ -1,7 +1,7 @@
 package org.ggp.base.player.gamer.statemachine.MCTS.manager.strategies.backpropagation;
 
-import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.PnMCTSNode;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.MCTSJointMove;
+import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.PnMCTSNode;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.UCTMCTSJointMove;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.DUCT.DUCTMCTSMoveStats;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.DUCT.PnDUCTMCTSNode;
@@ -179,11 +179,17 @@ public class StandardBackpropagation implements BackpropagationStrategy {
 
 	@Override
 	public String getStrategyParameters() {
-		return "[BACKPROPAGATION_STRATEGY = " + this.getClass().getSimpleName() + "]";
+		return null;
 	}
 
 	@Override
-	public void afterMoveAction() {
-		// TODO Auto-generated method stub
+	public String printStrategy() {
+		String params = this.getStrategyParameters();
+		if(params != null){
+			return "[BACKPROPAGATION_STRATEGY = " + this.getClass().getSimpleName() + ", " + params + "]";
+		}else{
+			return "[BACKPROPAGATION_STRATEGY = " + this.getClass().getSimpleName() + "]";
+		}
 	}
+
 }

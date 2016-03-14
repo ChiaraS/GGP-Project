@@ -9,7 +9,6 @@ import java.util.concurrent.TimeUnit;
 import org.apache.logging.log4j.ThreadContext;
 import org.ggp.base.util.game.Game;
 import org.ggp.base.util.game.GameRepository;
-import org.ggp.base.util.game.ManualUpdateLocalGameRepository;
 import org.ggp.base.util.gdl.grammar.Gdl;
 import org.ggp.base.util.logging.GamerLogger;
 import org.ggp.base.util.reflection.ProjectSearcher;
@@ -80,11 +79,11 @@ public class TourneyRunner {
 
     	// 2. Get the game and check that the number of gamer types is not greater than the number of roles in the game.
 
-    	//Game game = GameRepository.getDefaultRepository().getGame(gameKey);
+    	Game game = GameRepository.getDefaultRepository().getGame(gameKey);
 
-    	GameRepository gameRepo = new ManualUpdateLocalGameRepository("/home/csironi/GAMEREPOS/GGPBase-GameRepo-03022016");
+    	//GameRepository gameRepo = new ManualUpdateLocalGameRepository("/home/csironi/GAMEREPOS/GGPBase-GameRepo-03022016");
 
-    	Game game = gameRepo.getGame(gameKey);
+    	//Game game = gameRepo.getGame(gameKey);
 
     	if(game == null){
     		System.out.println("Impossible to start tourney: specified game not found in the repository.");
