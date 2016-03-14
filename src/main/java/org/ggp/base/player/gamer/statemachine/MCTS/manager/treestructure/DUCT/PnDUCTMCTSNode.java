@@ -1,10 +1,10 @@
 package org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.DUCT;
 
-import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.InternalPropnetMCTSNode;
+import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.PnMCTSNode;
 
 
 
-public class InternalPropnetDUCTMCTSNode extends InternalPropnetMCTSNode{
+public class PnDUCTMCTSNode extends PnMCTSNode{
 
 	/**
 	 * List of the moves' statistics for each role in the state corresponding to this node.
@@ -16,7 +16,7 @@ public class InternalPropnetDUCTMCTSNode extends InternalPropnetMCTSNode{
 	 */
 	private int[] unexploredMovesCount;
 
-	public InternalPropnetDUCTMCTSNode(DUCTMCTSMoveStats[][] movesStats, int[] goals, boolean terminal) {
+	public PnDUCTMCTSNode(DUCTMCTSMoveStats[][] movesStats, int[] goals, boolean terminal) {
 
 		super(goals, terminal);
 		this.movesStats = movesStats;

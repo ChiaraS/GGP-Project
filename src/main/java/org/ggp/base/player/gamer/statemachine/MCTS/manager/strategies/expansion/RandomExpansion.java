@@ -4,14 +4,14 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
 
-import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.InternalPropnetMCTSNode;
+import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.PnMCTSNode;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.MCTSJointMove;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.UCTMCTSJointMove;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.DUCT.DUCTMCTSMoveStats;
-import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.DUCT.InternalPropnetDUCTMCTSNode;
-import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.SUCT.InternalPropnetSUCTMCTSNode;
+import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.DUCT.PnDUCTMCTSNode;
+import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.SUCT.PnSUCTMCTSNode;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.SUCT.SUCTMCTSMoveStats;
-import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.SlowSUCT.InternalPropnetSlowSUCTMCTSNode;
+import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.SlowSUCT.PnSlowSUCTMCTSNode;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.SlowSUCT.SlowSUCTMCTSJointMove;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.SlowSUCT.SlowSUCTMCTSMoveStats;
 import org.ggp.base.util.statemachine.inernalPropnetStructure.InternalPropnetMove;
@@ -44,19 +44,19 @@ public class RandomExpansion implements ExpansionStrategy {
 	 * @see org.ggp.base.player.gamer.statemachine.MCTS.manager.strategies.expansion.ExpansionStrategy#expansionRequired(org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.InternalPropnetMCTSNode)
 	 */
 	@Override
-	public boolean expansionRequired(InternalPropnetMCTSNode node){
-		if(node instanceof InternalPropnetDUCTMCTSNode){
-			return this.ductExpansionRequired((InternalPropnetDUCTMCTSNode)node);
-		}else if(node instanceof InternalPropnetSUCTMCTSNode){
-			return this.suctExpansionRequired((InternalPropnetSUCTMCTSNode)node);
-		}else if(node instanceof InternalPropnetSlowSUCTMCTSNode){
-			return this.ssuctExpansionRequired((InternalPropnetSlowSUCTMCTSNode)node);
+	public boolean expansionRequired(PnMCTSNode node){
+		if(node instanceof PnDUCTMCTSNode){
+			return this.ductExpansionRequired((PnDUCTMCTSNode)node);
+		}else if(node instanceof PnSUCTMCTSNode){
+			return this.suctExpansionRequired((PnSUCTMCTSNode)node);
+		}else if(node instanceof PnSlowSUCTMCTSNode){
+			return this.ssuctExpansionRequired((PnSlowSUCTMCTSNode)node);
 		}else{
 			throw new RuntimeException("RandomExpansion-expansionRequired(): detected a node of a non-recognizable sub-type of class InternalPropnetMCTreeNode.");
 		}
 	}
 
-	private boolean ductExpansionRequired(InternalPropnetDUCTMCTSNode node) {
+	private boolean ductExpansionRequired(PnDUCTMCTSNode node) {
 
 		int[] unexploredMovesCount = node.getUnexploredMovesCount();
 
@@ -68,11 +68,11 @@ public class RandomExpansion implements ExpansionStrategy {
 		return false;
 	}
 
-	private boolean suctExpansionRequired(InternalPropnetSUCTMCTSNode node){
+	private boolean suctExpansionRequired(PnSUCTMCTSNode node){
 		return node.getUnvisitedLeaves() != 0;
 	}
 
-	private boolean ssuctExpansionRequired(InternalPropnetSlowSUCTMCTSNode node){
+	private boolean ssuctExpansionRequired(PnSlowSUCTMCTSNode node){
 		return node.getUnvisitedLeaves().size() != 0;
 	}
 
@@ -81,13 +81,13 @@ public class RandomExpansion implements ExpansionStrategy {
 	 * @see org.ggp.base.player.gamer.statemachine.MCTS.manager.strategies.expansion.ExpansionStrategy#expand(org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.InternalPropnetMCTSNode)
 	 */
 	@Override
-	public MCTSJointMove expand(InternalPropnetMCTSNode node){
-		if(node instanceof InternalPropnetDUCTMCTSNode){
-			return this.ductExpand((InternalPropnetDUCTMCTSNode)node);
-		}else if(node instanceof InternalPropnetSUCTMCTSNode){
-			return this.suctExpand((InternalPropnetSUCTMCTSNode)node);
-		}else if(node instanceof InternalPropnetSlowSUCTMCTSNode){
-			return this.ssuctExpand((InternalPropnetSlowSUCTMCTSNode)node);
+	public MCTSJointMove expand(PnMCTSNode node){
+		if(node instanceof PnDUCTMCTSNode){
+			return this.ductExpand((PnDUCTMCTSNode)node);
+		}else if(node instanceof PnSUCTMCTSNode){
+			return this.suctExpand((PnSUCTMCTSNode)node);
+		}else if(node instanceof PnSlowSUCTMCTSNode){
+			return this.ssuctExpand((PnSlowSUCTMCTSNode)node);
 		}else{
 			throw new RuntimeException("RandomExpansion-expand(): detected a node of a non-recognizable sub-type of class InternalPropnetMCTreeNode.");
 		}
@@ -103,7 +103,7 @@ public class RandomExpansion implements ExpansionStrategy {
 	 * @param node the node for which to choose a joint move.
 	 * @return the joint move.
 	 */
-	private MCTSJointMove ductExpand(InternalPropnetDUCTMCTSNode node){
+	private MCTSJointMove ductExpand(PnDUCTMCTSNode node){
 
 		DUCTMCTSMoveStats[][] moves = node.getMoves();
 		int[] unexploredMovesCount = node.getUnexploredMovesCount();
@@ -160,7 +160,7 @@ public class RandomExpansion implements ExpansionStrategy {
 	 * @param node the node for which to choose a joint move.
 	 * @return the joint move.
 	 */
-	private MCTSJointMove suctExpand(InternalPropnetSUCTMCTSNode node){
+	private MCTSJointMove suctExpand(PnSUCTMCTSNode node){
 
 		List<InternalPropnetMove> jointMove = new ArrayList<InternalPropnetMove>(this.numRoles);
 		int[] movesIndices = new int[this.numRoles];
@@ -235,7 +235,7 @@ public class RandomExpansion implements ExpansionStrategy {
 	 * @param node the node for which to choose a joint move.
 	 * @return the joint move.
 	 */
-	private MCTSJointMove ssuctExpand(InternalPropnetSlowSUCTMCTSNode node){
+	private MCTSJointMove ssuctExpand(PnSlowSUCTMCTSNode node){
 
 		List<SlowSUCTMCTSMoveStats> unvisitedLeaves = node.getUnvisitedLeaves();
 		if(unvisitedLeaves.isEmpty()){
@@ -279,7 +279,7 @@ public class RandomExpansion implements ExpansionStrategy {
 	 * @param node
 	 * @return
 	 */
-	private MCTSJointMove getRandomMove(InternalPropnetSlowSUCTMCTSNode node){
+	private MCTSJointMove getRandomMove(PnSlowSUCTMCTSNode node){
 
 		List<InternalPropnetMove> jointMove = new ArrayList<InternalPropnetMove>(this.numRoles);
 

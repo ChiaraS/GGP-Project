@@ -3,19 +3,11 @@
  */
 package org.ggp.base.player.gamer.statemachine.MCTS;
 
-import java.util.Random;
-
 import org.ggp.base.player.gamer.event.GamerSelectedMoveEvent;
 import org.ggp.base.player.gamer.statemachine.MCS.manager.CompleteMoveStats;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.InternalPropnetMCTSManager;
-import org.ggp.base.player.gamer.statemachine.MCTS.manager.InternalPropnetMCTSManager.MCTS_TYPE;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.exceptions.MCTSException;
-import org.ggp.base.player.gamer.statemachine.MCTS.manager.strategies.backpropagation.StandardBackpropagation;
-import org.ggp.base.player.gamer.statemachine.MCTS.manager.strategies.expansion.RandomExpansion;
-import org.ggp.base.player.gamer.statemachine.MCTS.manager.strategies.movechoice.MaximumScoreChoice;
-import org.ggp.base.player.gamer.statemachine.MCTS.manager.strategies.playout.RandomPlayout;
-import org.ggp.base.player.gamer.statemachine.MCTS.manager.strategies.selection.UCTSelection;
-import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.InternalPropnetMCTSNode;
+import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.PnMCTSNode;
 import org.ggp.base.player.gamer.statemachine.propnet.InternalPropnetGamer;
 import org.ggp.base.util.logging.GamerLogger;
 import org.ggp.base.util.statemachine.Move;
@@ -24,7 +16,6 @@ import org.ggp.base.util.statemachine.exceptions.MoveDefinitionException;
 import org.ggp.base.util.statemachine.exceptions.StateMachineException;
 import org.ggp.base.util.statemachine.exceptions.TransitionDefinitionException;
 import org.ggp.base.util.statemachine.inernalPropnetStructure.InternalPropnetMachineState;
-import org.ggp.base.util.statemachine.inernalPropnetStructure.InternalPropnetRole;
 
 /**
  * This gamer performs UCT Monte Carlo Tree Search.
@@ -57,12 +48,6 @@ public abstract class UCTMCTSGamer extends InternalPropnetGamer {
 	protected double uctOffset;
 	protected int gameStepOffset;
 	protected int maxSearchDepth;
-	/**
-	 * True if this player must use a manager that runs the DUCT version
-	 * of Monte Carlo Tree Search, false otherwise.
-	 */
-	protected MCTS_TYPE mctsType;
-
 
 	/**
 	 * The class that takes care of performing Monte Carlo tree search.
@@ -77,7 +62,6 @@ public abstract class UCTMCTSGamer extends InternalPropnetGamer {
 
 		super();
 
-		this.mctsType = MCTS_TYPE.DUCT;
 		this.c = 0.7;
 		this.uctOffset = 0.01;
 		this.gameStepOffset = 2;
@@ -212,7 +196,7 @@ public abstract class UCTMCTSGamer extends InternalPropnetGamer {
 			InternalPropnetMachineState currentState = this.thePropnetMachine.stateToInternalState(this.getCurrentState());
 
 			try {
-				InternalPropnetMCTSNode currentNode = this.mctsManager.search(currentState, realTimeout, gameStep);
+				PnMCTSNode currentNode = this.mctsManager.search(currentState, realTimeout, gameStep);
 				CompleteMoveStats selectedMove = this.mctsManager.getBestMove(currentNode);
 
 				searchTime = this.mctsManager.getSearchTime();
@@ -277,18 +261,22 @@ public abstract class UCTMCTSGamer extends InternalPropnetGamer {
 
 	}
 
-	public InternalPropnetMCTSManager createMCTSManager(){
+	public abstract InternalPropnetMCTSManager createMCTSManager();
+
+/*	public InternalPropnetMCTSManager createMCTSManager(){
 
 		Random r = new Random();
 
 		InternalPropnetRole myRole = this.thePropnetMachine.roleToInternalRole(this.getRole());
 		int numRoles = this.thePropnetMachine.getInternalRoles().length;
 
-		return new InternalPropnetMCTSManager(this.mctsType, myRole, new UCTSelection(numRoles, myRole, r, uctOffset, c),
+		return new InternalPropnetMCTSManager(new UCTSelection(numRoles, myRole, r, uctOffset, c),
 	       		new RandomExpansion(numRoles, myRole, r), new RandomPlayout(this.thePropnetMachine),
 	       		new StandardBackpropagation(numRoles, myRole),	new MaximumScoreChoice(myRole, r),
-	       		this.thePropnetMachine, gameStepOffset, maxSearchDepth);
+	       		new PnDUCTTreeNodeFactory(this.thePropnetMachine), this.thePropnetMachine,
+	       		gameStepOffset, maxSearchDepth);
 	}
+*/
 
 	/* (non-Javadoc)
 	 * @see org.ggp.base.player.gamer.Gamer#getName()

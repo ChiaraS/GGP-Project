@@ -4,14 +4,14 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
 
-import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.InternalPropnetMCTSNode;
+import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.PnMCTSNode;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.MCTSJointMove;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.UCTMCTSJointMove;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.DUCT.DUCTMCTSMoveStats;
-import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.DUCT.InternalPropnetDUCTMCTSNode;
-import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.SUCT.InternalPropnetSUCTMCTSNode;
+import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.DUCT.PnDUCTMCTSNode;
+import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.SUCT.PnSUCTMCTSNode;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.SUCT.SUCTMCTSMoveStats;
-import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.SlowSUCT.InternalPropnetSlowSUCTMCTSNode;
+import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.SlowSUCT.PnSlowSUCTMCTSNode;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.SlowSUCT.SlowSUCTMCTSJointMove;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.SlowSUCT.SlowSUCTMCTSMoveStats;
 import org.ggp.base.util.statemachine.inernalPropnetStructure.InternalPropnetMove;
@@ -50,19 +50,19 @@ public class UCTSelection implements SelectionStrategy {
 	 * @see org.ggp.base.player.gamer.statemachine.MCTS.manager.strategies.selection.SelectionStrategy#select(org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.InternalPropnetMCTSNode)
 	 */
 	@Override
-	public MCTSJointMove select(InternalPropnetMCTSNode currentNode) {
-		if(currentNode instanceof InternalPropnetDUCTMCTSNode){
-			return this.ductSelect((InternalPropnetDUCTMCTSNode)currentNode);
-		}else if(currentNode instanceof InternalPropnetSUCTMCTSNode){
-			return this.suctSelect((InternalPropnetSUCTMCTSNode)currentNode);
-		}else if(currentNode instanceof InternalPropnetSlowSUCTMCTSNode){
-			return this.ssuctSelect((InternalPropnetSlowSUCTMCTSNode)currentNode);
+	public MCTSJointMove select(PnMCTSNode currentNode) {
+		if(currentNode instanceof PnDUCTMCTSNode){
+			return this.ductSelect((PnDUCTMCTSNode)currentNode);
+		}else if(currentNode instanceof PnSUCTMCTSNode){
+			return this.suctSelect((PnSUCTMCTSNode)currentNode);
+		}else if(currentNode instanceof PnSlowSUCTMCTSNode){
+			return this.ssuctSelect((PnSlowSUCTMCTSNode)currentNode);
 		}else{
 			throw new RuntimeException("UCTSelection-select(): detected a node of a non-recognizable sub-type of class InternalPropnetMCTreeNode.");
 		}
 	}
 
-	private MCTSJointMove ductSelect(InternalPropnetDUCTMCTSNode currentNode) {
+	private MCTSJointMove ductSelect(PnDUCTMCTSNode currentNode) {
 
 		/* No need for this check, if the code is correct, because the node that is passed as input
 		 * is always non-terminal.
@@ -148,7 +148,7 @@ public class UCTSelection implements SelectionStrategy {
 		return new UCTMCTSJointMove(selectedJointMove, movesIndices);
 	}
 
-	private MCTSJointMove suctSelect(InternalPropnetSUCTMCTSNode currentNode){
+	private MCTSJointMove suctSelect(PnSUCTMCTSNode currentNode){
 
 		List<InternalPropnetMove> jointMove = new ArrayList<InternalPropnetMove>(this.numRoles);
 		int[] movesIndices = new int[this.numRoles];
@@ -219,7 +219,7 @@ public class UCTSelection implements SelectionStrategy {
 
 	}
 
-	private MCTSJointMove ssuctSelect(InternalPropnetSlowSUCTMCTSNode currentNode){
+	private MCTSJointMove ssuctSelect(PnSlowSUCTMCTSNode currentNode){
 
 		List<InternalPropnetMove> jointMove = new ArrayList<InternalPropnetMove>(this.numRoles);
 

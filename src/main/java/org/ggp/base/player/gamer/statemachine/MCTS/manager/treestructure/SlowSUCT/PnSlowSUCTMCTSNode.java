@@ -5,13 +5,13 @@ package org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.SlowSU
 
 import java.util.List;
 
-import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.InternalPropnetMCTSNode;
+import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.PnMCTSNode;
 
 /**
  * @author C.Sironi
  *
  */
-public class InternalPropnetSlowSUCTMCTSNode extends InternalPropnetMCTSNode {
+public class PnSlowSUCTMCTSNode extends PnMCTSNode {
 
 	/**
 	 * List of the moves' statistics for the state corresponding to this node.
@@ -66,7 +66,7 @@ public class InternalPropnetSlowSUCTMCTSNode extends InternalPropnetMCTSNode {
 	 * @param goals
 	 * @param terminal
 	 */
-	public InternalPropnetSlowSUCTMCTSNode(SlowSUCTMCTSMoveStats[] movesStats, List<SlowSUCTMCTSMoveStats> unvisitedLeaves, int[] goals, boolean terminal) {
+	public PnSlowSUCTMCTSNode(SlowSUCTMCTSMoveStats[] movesStats, List<SlowSUCTMCTSMoveStats> unvisitedLeaves, int[] goals, boolean terminal) {
 		super(goals, terminal);
 		this.movesStats = movesStats;
 		this.unvisitedLeaves = unvisitedLeaves;

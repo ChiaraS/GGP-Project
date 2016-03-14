@@ -7,6 +7,7 @@ import org.ggp.base.player.gamer.statemachine.MCTS.manager.strategies.MAST.MASTS
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.strategies.expansion.RandomExpansion;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.strategies.movechoice.MaximumScoreChoice;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.strategies.selection.UCTSelection;
+import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.DUCT.PnDUCTTreeNodeFactory;
 import org.ggp.base.util.statemachine.inernalPropnetStructure.InternalPropnetRole;
 
 public class MASTDUCTMCTSGamer extends DUCTMCTSGamer {
@@ -31,9 +32,10 @@ public class MASTDUCTMCTSGamer extends DUCTMCTSGamer {
 
 		MASTStrategy mast = new MASTStrategy(this.thePropnetMachine, this.epsilon, this.decayFactor, r, numRoles, myRole);
 
-		return new InternalPropnetMCTSManager(this.mctsType, myRole, new UCTSelection(numRoles, myRole, r, this.uctOffset, c),
+		return new InternalPropnetMCTSManager(new UCTSelection(numRoles, myRole, r, this.uctOffset, c),
 	       		new RandomExpansion(numRoles, myRole, r), mast,	mast, new MaximumScoreChoice(myRole, r),
-	       		this.thePropnetMachine, gameStepOffset, maxSearchDepth);
+	       		new PnDUCTTreeNodeFactory(this.thePropnetMachine), this.thePropnetMachine, gameStepOffset,
+	       		maxSearchDepth);
 	}
 
 }

@@ -1,13 +1,13 @@
 package org.ggp.base.player.gamer.statemachine.MCTS.manager.strategies.backpropagation;
 
-import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.InternalPropnetMCTSNode;
+import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.PnMCTSNode;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.MCTSJointMove;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.UCTMCTSJointMove;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.DUCT.DUCTMCTSMoveStats;
-import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.DUCT.InternalPropnetDUCTMCTSNode;
-import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.SUCT.InternalPropnetSUCTMCTSNode;
+import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.DUCT.PnDUCTMCTSNode;
+import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.SUCT.PnSUCTMCTSNode;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.SUCT.SUCTMCTSMoveStats;
-import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.SlowSUCT.InternalPropnetSlowSUCTMCTSNode;
+import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.SlowSUCT.PnSlowSUCTMCTSNode;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.SlowSUCT.SlowSUCTMCTSJointMove;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.SlowSUCT.SlowSUCTMCTSMoveStats;
 import org.ggp.base.util.statemachine.inernalPropnetStructure.InternalPropnetRole;
@@ -36,13 +36,13 @@ public class StandardBackpropagation implements BackpropagationStrategy {
 	 * @see org.ggp.base.player.gamer.statemachine.MCTS.manager.strategies.backpropagation.BackpropagationStrategy#update(org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.InternalPropnetMCTSNode, org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.MCTSJointMove, int[])
 	 */
 	@Override
-	public void update(InternalPropnetMCTSNode node, MCTSJointMove jointMove, int[] goals){
-		if(node instanceof InternalPropnetDUCTMCTSNode && jointMove instanceof UCTMCTSJointMove){
-			this.ductUpdate((InternalPropnetDUCTMCTSNode)node, (UCTMCTSJointMove)jointMove, goals);
-		}else if(node instanceof InternalPropnetSUCTMCTSNode && jointMove instanceof UCTMCTSJointMove){
-			this.suctUpdate((InternalPropnetSUCTMCTSNode)node, (UCTMCTSJointMove)jointMove, goals);
-		}else if(node instanceof InternalPropnetSlowSUCTMCTSNode && jointMove instanceof SlowSUCTMCTSJointMove){
-			this.ssuctUpdate((InternalPropnetSlowSUCTMCTSNode)node, (SlowSUCTMCTSJointMove)jointMove, goals);
+	public void update(PnMCTSNode node, MCTSJointMove jointMove, int[] goals){
+		if(node instanceof PnDUCTMCTSNode && jointMove instanceof UCTMCTSJointMove){
+			this.ductUpdate((PnDUCTMCTSNode)node, (UCTMCTSJointMove)jointMove, goals);
+		}else if(node instanceof PnSUCTMCTSNode && jointMove instanceof UCTMCTSJointMove){
+			this.suctUpdate((PnSUCTMCTSNode)node, (UCTMCTSJointMove)jointMove, goals);
+		}else if(node instanceof PnSlowSUCTMCTSNode && jointMove instanceof SlowSUCTMCTSJointMove){
+			this.ssuctUpdate((PnSlowSUCTMCTSNode)node, (SlowSUCTMCTSJointMove)jointMove, goals);
 		}else{
 			throw new RuntimeException("StandardBackpropagation-update(): detected wrong combination of types for node (" + node.getClass().getSimpleName() + ") and joint move (" + jointMove.getClass().getSimpleName() + ").");
 		}
@@ -58,7 +58,7 @@ public class StandardBackpropagation implements BackpropagationStrategy {
 	 * @param jointMove the explored joint move.
 	 * @param goals the goals obtained by the simulation, to be used to update the statistics.
 	 */
-	private void ductUpdate(InternalPropnetDUCTMCTSNode node, UCTMCTSJointMove jointMove, int[] goals) {
+	private void ductUpdate(PnDUCTMCTSNode node, UCTMCTSJointMove jointMove, int[] goals) {
 
 		node.incrementTotVisits();
 
@@ -90,7 +90,7 @@ public class StandardBackpropagation implements BackpropagationStrategy {
 	 * @param jointMove the explored joint move.
 	 * @param goals the goals obtained by the simulation, to be used to update the statistics.
 	 */
-	private void suctUpdate(InternalPropnetSUCTMCTSNode node, UCTMCTSJointMove jointMove, int[] goals) {
+	private void suctUpdate(PnSUCTMCTSNode node, UCTMCTSJointMove jointMove, int[] goals) {
 
 		node.incrementTotVisits();
 
@@ -142,7 +142,7 @@ public class StandardBackpropagation implements BackpropagationStrategy {
 	 * @param jointMove the explored joint move.
 	 * @param goals the goals obtained by the simulation, to be used to update the statistics.
 	 */
-	private void ssuctUpdate(InternalPropnetSlowSUCTMCTSNode node, SlowSUCTMCTSJointMove jointMove, int[] goals) {
+	private void ssuctUpdate(PnSlowSUCTMCTSNode node, SlowSUCTMCTSJointMove jointMove, int[] goals) {
 
 		node.incrementTotVisits();
 

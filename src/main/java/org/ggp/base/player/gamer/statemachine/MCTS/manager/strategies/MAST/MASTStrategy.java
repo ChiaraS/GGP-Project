@@ -2,14 +2,16 @@ package org.ggp.base.player.gamer.statemachine.MCTS.manager.strategies.MAST;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Random;
 
 import org.ggp.base.player.gamer.statemachine.MCS.manager.MoveStats;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.strategies.backpropagation.StandardBackpropagation;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.strategies.playout.PlayoutStrategy;
-import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.InternalPropnetMCTSNode;
+import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.PnMCTSNode;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.MCTSJointMove;
 import org.ggp.base.util.logging.GamerLogger;
 import org.ggp.base.util.statemachine.InternalPropnetStateMachine;
@@ -139,7 +141,7 @@ public class MASTStrategy extends StandardBackpropagation implements /*Backpropa
 
 			moveStats = this.mastStatistics.get(move);
 
-			if(moveStats != null){
+			if(moveStats != null && moveStats.getVisits() != 0){
 				currentAvgScore = ((double) moveStats.getScoreSum()) / ((double) moveStats.getVisits());
 			}else{
 				currentAvgScore = 100;
@@ -160,7 +162,7 @@ public class MASTStrategy extends StandardBackpropagation implements /*Backpropa
 	}
 
 	@Override
-	public void update(InternalPropnetMCTSNode node, MCTSJointMove jointMove, int[] goals) {
+	public void update(PnMCTSNode node, MCTSJointMove jointMove, int[] goals) {
 
 		super.update(node,jointMove, goals);
 
@@ -193,9 +195,31 @@ public class MASTStrategy extends StandardBackpropagation implements /*Backpropa
 	@Override
 	public void afterMoveAction(){
 
+		// VERSION 1: decrease, then check if the visits became 0 and, if so, remove the statistic
+		// for the move. -> This means that if the move will be explored again in the next step of
+		// the search, a new entry for the move will be created. However it's highly likely that the
+		// number of visits decreases to 0 because this move is never explored again because the real
+		// game ended up in a part of the tree where this move will not be legal anymore. In this case
+		// we won't keep around statistics that we will never use again, but we risk also to end up
+		// removing the statistic object for a move that will be explored again during the next steps
+		// and we will have to recreate the object (in this case we'll consider as garbage an object
+		// that instead we would have needed again).
+		Iterator<Entry<InternalPropnetMove,MoveStats>> iterator = this.mastStatistics.entrySet().iterator();
+		Entry<InternalPropnetMove,MoveStats> theEntry;
+		while(iterator.hasNext()){
+			theEntry = iterator.next();
+			theEntry.getValue().decreaseByFactor(this.decayFactor);
+			if(theEntry.getValue().getVisits() == 0){
+				iterator.remove();
+			}
+		}
+
+		// VERSION 2: decrease and don't check anything.
+		/*
 		for(MoveStats m : this.mastStatistics.values()){
 			m.decreaseByFactor(this.decayFactor);
 		}
+		*/
 
 	}
 

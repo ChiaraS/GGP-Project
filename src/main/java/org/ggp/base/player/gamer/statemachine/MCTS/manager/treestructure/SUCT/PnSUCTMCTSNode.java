@@ -5,14 +5,14 @@ package org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.SUCT;
 
 import java.util.List;
 
-import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.InternalPropnetMCTSNode;
+import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.PnMCTSNode;
 import org.ggp.base.util.statemachine.inernalPropnetStructure.InternalPropnetMove;
 
 /**
  * @author C.Sironi
  *
  */
-public class InternalPropnetSUCTMCTSNode extends InternalPropnetMCTSNode {
+public class PnSUCTMCTSNode extends PnMCTSNode {
 
 	/**
 	 * List of the moves' statistics for the state corresponding to this node.
@@ -72,7 +72,7 @@ public class InternalPropnetSUCTMCTSNode extends InternalPropnetMCTSNode {
 	 * @param goals
 	 * @param terminal
 	 */
-	public InternalPropnetSUCTMCTSNode(List<List<InternalPropnetMove>> allLegalMoves, SUCTMCTSMoveStats[] movesStats, int[] goals, boolean terminal, int unvisitedLeaves) {
+	public PnSUCTMCTSNode(List<List<InternalPropnetMove>> allLegalMoves, SUCTMCTSMoveStats[] movesStats, int[] goals, boolean terminal, int unvisitedLeaves) {
 		super(goals, terminal);
 		this.movesStats = movesStats;
 		this.allLegalMoves = allLegalMoves;
