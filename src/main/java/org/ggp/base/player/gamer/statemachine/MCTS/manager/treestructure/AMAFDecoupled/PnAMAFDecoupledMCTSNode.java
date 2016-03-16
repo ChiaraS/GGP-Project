@@ -1,4 +1,4 @@
-package org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.GRAVEDUCT;
+package org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.AMAFDecoupled;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -8,17 +8,19 @@ import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.decoupl
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.decoupled.PnDecoupledMCTSNode;
 import org.ggp.base.util.statemachine.inernalPropnetStructure.InternalPropnetMove;
 
-public class PnGRAVEDecoupledMCTSNode extends PnDecoupledMCTSNode implements PnGRAVENode{
+public class PnAMAFDecoupledMCTSNode extends PnDecoupledMCTSNode implements PnAMAFNode{
 
 	/**
 	 * Table that collects the AMAF statistics for the node for each move.
 	 */
 	private Map<InternalPropnetMove, MoveStats> amafStats;
 
-	public PnGRAVEDecoupledMCTSNode(DecoupledMCTSMoveStats[][] movesStats, int[] goals, boolean terminal) {
+	public PnAMAFDecoupledMCTSNode(DecoupledMCTSMoveStats[][] movesStats, int[] goals, boolean terminal) {
 		super(movesStats, goals, terminal);
 
-		this.amafStats = new HashMap<InternalPropnetMove, MoveStats>();
+		if(!terminal){
+			this.amafStats = new HashMap<InternalPropnetMove, MoveStats>();
+		} // If the node is terminal we'll never use the AMAF stats, so we can leave them pointing to null.
 	}
 
 	@Override

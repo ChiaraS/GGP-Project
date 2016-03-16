@@ -13,7 +13,7 @@ import org.ggp.base.util.statemachine.inernalPropnetStructure.InternalPropnetRol
 
 public class PnDecoupledTreeNodeFactory implements TreeNodeFactory {
 
-	private InternalPropnetStateMachine theMachine;
+	protected InternalPropnetStateMachine theMachine;
 
 	public PnDecoupledTreeNodeFactory(InternalPropnetStateMachine theMachine) {
 		this.theMachine = theMachine;
@@ -93,7 +93,7 @@ public class PnDecoupledTreeNodeFactory implements TreeNodeFactory {
 	 * @param state the state for which to create the moves statistics.
 	 * @return the moves statistics, if the moves can be computed, null otherwise.
 	 */
-	private DecoupledMCTSMoveStats[][] createDUCTMCTSMoves(InternalPropnetMachineState state){
+	protected DecoupledMCTSMoveStats[][] createDUCTMCTSMoves(InternalPropnetMachineState state){
 
 		InternalPropnetRole[] roles = this.theMachine.getInternalRoles();
 		DecoupledMCTSMoveStats[][] moves = new DecoupledMCTSMoveStats[roles.length][];

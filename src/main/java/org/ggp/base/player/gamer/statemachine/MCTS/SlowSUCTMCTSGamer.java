@@ -37,11 +37,11 @@ public class SlowSUCTMCTSGamer extends UCTMCTSGamer {
 		InternalPropnetRole myRole = this.thePropnetMachine.roleToInternalRole(this.getRole());
 		int numRoles = this.thePropnetMachine.getInternalRoles().length;
 
-		return new InternalPropnetMCTSManager(new UCTSelection(numRoles, myRole, r, uctOffset, c),
+		return new InternalPropnetMCTSManager(new UCTSelection(numRoles, myRole, r, this.valueOffset, this.c),
 	       		new RandomExpansion(numRoles, myRole, r), new RandomPlayout(this.thePropnetMachine),
 	       		new StandardBackpropagation(numRoles, myRole),	new MaximumScoreChoice(myRole, r),
 	       		null, null, new PnSlowSequentialTreeNodeFactory(this.thePropnetMachine, myRole),
-	       		this.thePropnetMachine,	gameStepOffset, maxSearchDepth);
+	       		this.thePropnetMachine,	this.gameStepOffset, this.maxSearchDepth);
 	}
 
 	/**

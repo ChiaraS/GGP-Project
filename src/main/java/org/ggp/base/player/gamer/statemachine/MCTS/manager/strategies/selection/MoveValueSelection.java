@@ -4,7 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
 
-import org.ggp.base.player.gamer.statemachine.MCS.manager.MoveStats;
+import org.ggp.base.player.gamer.statemachine.MCTS.manager.strategies.selection.evaluators.MoveEvaluator;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.MCTSJointMove;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.PnMCTSNode;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.SequDecMCTSJointMove;
@@ -36,11 +36,14 @@ public abstract class MoveValueSelection implements SelectionStrategy {
 
 	private double valueOffset;
 
-	public MoveValueSelection(int numRoles, InternalPropnetRole myRole, Random random, double valueOffset) {
+	protected MoveEvaluator moveEvaluator;
+
+	public MoveValueSelection(int numRoles, InternalPropnetRole myRole, Random random, double valueOffset, MoveEvaluator moveEvaluator) {
 		this.numRoles = numRoles;
 		this.myRole = myRole;
 		this.random = random;
 		this.valueOffset = valueOffset;
+		this.moveEvaluator = moveEvaluator;
 	}
 
 	@Override
@@ -95,7 +98,7 @@ public abstract class MoveValueSelection implements SelectionStrategy {
 			for(int j = 0; j < moves[i].length; j++){
 
 				// Compute the move value.
-				moveValues[j] = this.computeMoveValue(currentNode, moves[i][j].getTheMove(), moves[i][j]);
+				moveValues[j] = this.moveEvaluator.computeMoveValue(currentNode, moves[i][j].getTheMove(), moves[i][j]);
 
 				// If it's higher than the current maximum one, replace the max value.
 				if(moveValues[j] > maxMoveValue){
@@ -170,7 +173,7 @@ public abstract class MoveValueSelection implements SelectionStrategy {
 
 			for(int i = 0; i < movesStats.length; i++){
 				// Compute the move value.
-				moveValues[i] = this.computeMoveValue(currentNode, currentNode.getAllLegalMoves().get(roleIndex).get(i), movesStats[i]);
+				moveValues[i] = this.moveEvaluator.computeMoveValue(currentNode, currentNode.getAllLegalMoves().get(roleIndex).get(i), movesStats[i]);
 
 				// If it's higher than the current maximum one, replace the max value
 				if(moveValues[i] > maxMoveValue){
@@ -238,7 +241,7 @@ public abstract class MoveValueSelection implements SelectionStrategy {
 
 			for(int i = 0; i < movesStats.length; i++){
 				// Compute the move value.
-				moveValues[i] = this.computeMoveValue(currentNode, movesStats[i].getTheMove(), movesStats[i]);
+				moveValues[i] = this.moveEvaluator.computeMoveValue(currentNode, movesStats[i].getTheMove(), movesStats[i]);
 
 				// If it's higher than the current maximum one, replace the max value
 				if(moveValues[i] > maxMoveValue){
@@ -278,14 +281,23 @@ public abstract class MoveValueSelection implements SelectionStrategy {
 
 	}
 
-	public abstract double computeMoveValue(PnMCTSNode theNode, InternalPropnetMove theMove, MoveStats theMoveStats);
+	//public abstract double computeMoveValue(PnMCTSNode theNode, InternalPropnetMove theMove, MoveStats theMoveStats);
 
 	@Override
 	public String getStrategyParameters(){
-		return "VALUE_OFFSET = " + this.valueOffset;
+
+		return "VALUE_OFFSET = " + this.valueOffset + ", " + this.moveEvaluator.printEvaluator();
 	}
 
 	@Override
-	public abstract String printStrategy();
+	public String printStrategy(){
+		String params = this.getStrategyParameters();
+
+		if(params != null){
+			return "[SELECTION_STRATEGY = " + this.getClass().getSimpleName() + ", " + params + "]";
+		}else{
+			return "[SELECTION_STRATEGY = " + this.getClass().getSimpleName() + "]";
+		}
+	}
 
 }

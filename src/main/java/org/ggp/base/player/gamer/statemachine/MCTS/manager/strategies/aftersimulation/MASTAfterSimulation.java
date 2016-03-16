@@ -1,23 +1,19 @@
 package org.ggp.base.player.gamer.statemachine.MCTS.manager.strategies.aftersimulation;
 
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.strategies.playout.MemorizedStandardPlayout;
-import org.ggp.base.player.gamer.statemachine.MCTS.manager.strategies.selection.GRAVESelection;
 
-public class GRAVEAfterSimulation implements AfterSimulationStrategy {
+public class MASTAfterSimulation implements AfterSimulationStrategy {
 
-	private GRAVESelection graveSelection;
+	private MemorizedStandardPlayout mastPlayout;
 
-	private MemorizedStandardPlayout gravePlayout;
-
-	public GRAVEAfterSimulation(GRAVESelection graveSelection, MemorizedStandardPlayout gravePlayout) {
-		this.graveSelection = graveSelection;
-		this.gravePlayout = gravePlayout;
+	public MASTAfterSimulation(MemorizedStandardPlayout mastPlayout) {
+		this.mastPlayout = mastPlayout;
 	}
 
 	@Override
 	public void afterSimulationActions() {
-		this.graveSelection.resetAmafStats();
-		this.gravePlayout.clearLastMemorizedPlayout();
+		this.mastPlayout.clearLastMemorizedPlayout();
+
 	}
 
 	@Override
@@ -35,5 +31,7 @@ public class GRAVEAfterSimulation implements AfterSimulationStrategy {
 			return "[AFTER_SIM_STRATEGY = " + this.getClass().getSimpleName() + "]";
 		}
 	}
+
+
 
 }

@@ -2,61 +2,39 @@ package org.ggp.base.player.gamer.statemachine.MCTS.manager.strategies.backpropa
 
 import java.util.List;
 
-import org.ggp.base.player.gamer.statemachine.MCS.manager.MoveStats;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.MCTSJointMove;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.PnMCTSNode;
 import org.ggp.base.util.statemachine.inernalPropnetStructure.InternalPropnetMove;
 import org.ggp.base.util.statemachine.inernalPropnetStructure.InternalPropnetRole;
 
-public class GRAVEBackpropagation extends StandardBackpropagation {
+public class GRAVEBackpropagation implements BackpropagationStrategy {
 
-	private List<List<InternalPropnetMove>> allJointMoves;
+	private StandardBackpropagation stdBackpropagation;
+
+	private GRAVEUpdate graveUpdate;
 
 	public GRAVEBackpropagation(int numRoles, InternalPropnetRole myRole, List<List<InternalPropnetMove>> allJointMoves) {
-		super(numRoles, myRole);
-		this.allJointMoves = allJointMoves;
+		this.stdBackpropagation = new StandardBackpropagation(numRoles, myRole);
+		this.graveUpdate = new GRAVEUpdate(allJointMoves);
 	}
 
 	@Override
 	public void update(PnMCTSNode node, MCTSJointMove jointMove, int[] goals) {
 
-		super.update(node,jointMove, goals);
-
-		//System.out.println("MASTBP");
-
-
-		// TODO: fix!
-		List<InternalPropnetMove> internalJointMove = jointMove.getJointMove();
-		MoveStats moveStats;
-
-		for(int i = 0; i < internalJointMove.size(); i++){
-        	//moveStats = this.mastStatistics.get(internalJointMove.get(i));
-        	//if(moveStats == null){
-        		moveStats = new MoveStats();
-        		//this.mastStatistics.put(internalJointMove.get(i), moveStats);
-        	//}
-       		//moveStats.incrementVisits();
-       		//moveStats.incrementScoreSum(goals[i]);
-       	}
+		this.stdBackpropagation.update(node, jointMove, goals);
+		this.graveUpdate.update(node, jointMove, goals);
 
 	}
 
 	@Override
 	public String getStrategyParameters() {
 
-		// TODO: fix
-		String params = super.getStrategyParameters();
-		if(params != null){
-			return params;
-		}else{
-			return null;
-		}
+		return null;
 	}
 
 	@Override
 	public String printStrategy() {
 
-		// TODO: fix
 		String params = this.getStrategyParameters();
 
 		if(params != null){
