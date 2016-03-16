@@ -16,9 +16,9 @@ import org.ggp.base.player.gamer.statemachine.MCTS.manager.strategies.playout.Ra
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.strategies.selection.UCTSelection;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.PnMCTSNode;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.TreeNodeFactory;
-import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.DUCT.PnDUCTTreeNodeFactory;
-import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.SUCT.PnSUCTTreeNodeFactory;
-import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.SlowSUCT.PnSlowSUCTTreeNodeFactory;
+import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.decoupled.PnDecoupledTreeNodeFactory;
+import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.sequential.PnSequentialTreeNodeFactory;
+import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.slowsequential.PnSlowSequentialTreeNodeFactory;
 import org.ggp.base.util.game.GameRepository;
 import org.ggp.base.util.game.ManualUpdateLocalGameRepository;
 import org.ggp.base.util.gdl.grammar.Gdl;
@@ -272,13 +272,13 @@ public class MCTSSpeedTest {
 
 		        switch(mctsType){
 		        	case "SUCT":
-		        		theNodeFactory = new PnSUCTTreeNodeFactory(thePropnetMachine, internalPlayingRole);
+		        		theNodeFactory = new PnSequentialTreeNodeFactory(thePropnetMachine, internalPlayingRole);
 		        		break;
 		        	case "SLOW_SUCT":
-		        		theNodeFactory = new PnSlowSUCTTreeNodeFactory(thePropnetMachine, internalPlayingRole);
+		        		theNodeFactory = new PnSlowSequentialTreeNodeFactory(thePropnetMachine, internalPlayingRole);
 		        		break;
 		        	default:
-			        	theNodeFactory = new PnDUCTTreeNodeFactory(thePropnetMachine);
+			        	theNodeFactory = new PnDecoupledTreeNodeFactory(thePropnetMachine);
 			        	break;
 		        }
 

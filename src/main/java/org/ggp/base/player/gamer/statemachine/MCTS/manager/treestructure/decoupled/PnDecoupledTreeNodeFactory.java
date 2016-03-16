@@ -1,4 +1,4 @@
-package org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.DUCT;
+package org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.decoupled;
 
 import java.util.List;
 
@@ -11,11 +11,11 @@ import org.ggp.base.util.statemachine.inernalPropnetStructure.InternalPropnetMac
 import org.ggp.base.util.statemachine.inernalPropnetStructure.InternalPropnetMove;
 import org.ggp.base.util.statemachine.inernalPropnetStructure.InternalPropnetRole;
 
-public class PnDUCTTreeNodeFactory implements TreeNodeFactory {
+public class PnDecoupledTreeNodeFactory implements TreeNodeFactory {
 
 	private InternalPropnetStateMachine theMachine;
 
-	public PnDUCTTreeNodeFactory(InternalPropnetStateMachine theMachine) {
+	public PnDecoupledTreeNodeFactory(InternalPropnetStateMachine theMachine) {
 		this.theMachine = theMachine;
 	}
 
@@ -54,7 +54,7 @@ public class PnDUCTTreeNodeFactory implements TreeNodeFactory {
 		int goals[] = null;
 		boolean terminal = false;
 
-		DUCTMCTSMoveStats[][] ductMovesStats = null;
+		DecoupledMCTSMoveStats[][] ductMovesStats = null;
 
 		// Terminal state:
 		if(this.theMachine.isTerminal(state)){
@@ -83,7 +83,7 @@ public class PnDUCTTreeNodeFactory implements TreeNodeFactory {
 				// If the legal moves can be computed for every player, there is no need to compute the goals.
 			}
 
-			return new PnDUCTMCTSNode(ductMovesStats, goals, terminal);
+			return new PnDecoupledMCTSNode(ductMovesStats, goals, terminal);
 	}
 
 	/**
@@ -93,10 +93,10 @@ public class PnDUCTTreeNodeFactory implements TreeNodeFactory {
 	 * @param state the state for which to create the moves statistics.
 	 * @return the moves statistics, if the moves can be computed, null otherwise.
 	 */
-	private DUCTMCTSMoveStats[][] createDUCTMCTSMoves(InternalPropnetMachineState state){
+	private DecoupledMCTSMoveStats[][] createDUCTMCTSMoves(InternalPropnetMachineState state){
 
 		InternalPropnetRole[] roles = this.theMachine.getInternalRoles();
-		DUCTMCTSMoveStats[][] moves = new DUCTMCTSMoveStats[roles.length][];
+		DecoupledMCTSMoveStats[][] moves = new DecoupledMCTSMoveStats[roles.length][];
 
 		try{
 			List<InternalPropnetMove> legalMoves;
@@ -105,9 +105,9 @@ public class PnDUCTTreeNodeFactory implements TreeNodeFactory {
 
 				legalMoves = this.theMachine.getInternalLegalMoves(state, roles[i]);
 
-				moves[i] = new DUCTMCTSMoveStats[legalMoves.size()];
+				moves[i] = new DecoupledMCTSMoveStats[legalMoves.size()];
 				for(int j = 0; j < legalMoves.size(); j++){
-					moves[i][j] = new DUCTMCTSMoveStats(legalMoves.get(j));
+					moves[i][j] = new DecoupledMCTSMoveStats(legalMoves.get(j));
 				}
 			}
 		}catch(MoveDefinitionException e){

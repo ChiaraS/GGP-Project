@@ -12,9 +12,9 @@ import org.ggp.base.util.statemachine.exceptions.MoveDefinitionException;
 import org.ggp.base.util.statemachine.inernalPropnetStructure.InternalPropnetMachineState;
 import org.ggp.base.util.statemachine.inernalPropnetStructure.InternalPropnetMove;
 
-public class MASTPlayout implements PlayoutStrategy {
+public class MASTPlayout extends RandomPlayout {
 
-	private InternalPropnetStateMachine theMachine;
+	//private InternalPropnetStateMachine theMachine;
 
 	private double epsilon;
 
@@ -22,20 +22,28 @@ public class MASTPlayout implements PlayoutStrategy {
 
 	private Map<InternalPropnetMove, MoveStats> mastStatistics;
 
-	public MASTPlayout(InternalPropnetStateMachine theMachine, double epsilon, Random random, Map<InternalPropnetMove, MoveStats> mastStatistics) {
-		this.theMachine = theMachine;
+    private List<List<InternalPropnetMove>> allJointMoves;
+
+	public MASTPlayout(InternalPropnetStateMachine theMachine, double epsilon, Random random, Map<InternalPropnetMove, MoveStats> mastStatistics, List<List<InternalPropnetMove>> allJointMoves) {
+		//this.theMachine = theMachine;
+		super(theMachine);
 		this.epsilon = epsilon;
 		this.random = random;
 		this.mastStatistics = mastStatistics;
+		this.allJointMoves = allJointMoves;
 	}
 
 	@Override
 	public int[] playout(InternalPropnetMachineState state,
 			int[] playoutVisitedNodes, int maxDepth) {
 
+		this.allJointMoves.clear();
+
+		int[] goals = super.playout(state, playoutVisitedNodes, maxDepth);
 
 		//System.out.println("MASTPL");
 
+		/*
         int nDepth = 0;
         List<InternalPropnetMove> jointMove = null;
         List<List<InternalPropnetMove>> allLegalMoves;
@@ -79,11 +87,13 @@ public class MASTPlayout implements PlayoutStrategy {
         }
         if(playoutVisitedNodes != null)
         	playoutVisitedNodes[0] = nDepth;
+        */
 
 		// Now try to get the goals of the state and update the moves statistics.
-        int[] goals = this.theMachine.getSafeGoals(state);
-        MoveStats moveStats;
-        for(List<InternalPropnetMove> jM : allJointMoves){
+        //int[] goals = this.theMachine.getSafeGoals(state);
+
+		MoveStats moveStats;
+        for(List<InternalPropnetMove> jM : this.allJointMoves){
         	for(int i = 0; i<jM.size(); i++){
         		moveStats = this.mastStatistics.get(jM.get(i));
         		if(moveStats == null){
@@ -97,6 +107,42 @@ public class MASTPlayout implements PlayoutStrategy {
         }
 
         return goals;
+	}
+
+	@Override
+	public List<InternalPropnetMove> getJointMove(InternalPropnetMachineState state) throws MoveDefinitionException{
+
+        List<InternalPropnetMove> jointMove = null;
+        List<List<InternalPropnetMove>> allLegalMoves;
+
+		if(this.random.nextDouble() < this.epsilon){
+    		// Choose random action with probability epsilon
+    		try {
+				jointMove = this.theMachine.getRandomJointMove(state);
+			} catch (MoveDefinitionException e) {
+				GamerLogger.logError("MCTSManager", "Exception getting a random joint move while performing MAST playout.");
+				throw e;
+			}
+    	}else{
+    		// Choose move with highest average score
+
+    		jointMove = new ArrayList<InternalPropnetMove>();
+
+    		try {
+				allLegalMoves = this.theMachine.getAllLegalMoves(state);
+			} catch (MoveDefinitionException e) {
+				GamerLogger.logError("MCTSManager", "Exception getting all legal moves while performing MAST playout.");
+				throw e;
+			}
+
+    		for(List<InternalPropnetMove> moves : allLegalMoves){
+    			jointMove.add(this.getMASTMove(moves));
+    		}
+    	}
+
+		this.allJointMoves.add(jointMove);
+
+		return jointMove;
 	}
 
 	private InternalPropnetMove getMASTMove(List<InternalPropnetMove> moves) {

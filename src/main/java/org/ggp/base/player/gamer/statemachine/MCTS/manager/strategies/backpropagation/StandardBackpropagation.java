@@ -2,27 +2,27 @@ package org.ggp.base.player.gamer.statemachine.MCTS.manager.strategies.backpropa
 
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.MCTSJointMove;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.PnMCTSNode;
-import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.UCTMCTSJointMove;
-import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.DUCT.DUCTMCTSMoveStats;
-import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.DUCT.PnDUCTMCTSNode;
-import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.SUCT.PnSUCTMCTSNode;
-import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.SUCT.SUCTMCTSMoveStats;
-import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.SlowSUCT.PnSlowSUCTMCTSNode;
-import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.SlowSUCT.SlowSUCTMCTSJointMove;
-import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.SlowSUCT.SlowSUCTMCTSMoveStats;
+import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.SequDecMCTSJointMove;
+import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.decoupled.DecoupledMCTSMoveStats;
+import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.decoupled.PnDecoupledMCTSNode;
+import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.sequential.PnSequentialMCTSNode;
+import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.sequential.SequentialMCTSMoveStats;
+import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.slowsequential.PnSlowSeqentialMCTSNode;
+import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.slowsequential.SlowSequentialMCTSJointMove;
+import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.slowsequential.SlowSequentialMCTSMoveStats;
 import org.ggp.base.util.statemachine.inernalPropnetStructure.InternalPropnetRole;
 
 public class StandardBackpropagation implements BackpropagationStrategy {
 
 	/**
 	 * The total number of roles in the game.
-	 * Needed by the SUCT version of MCTS.
+	 * Needed by the sequential version of MCTS.
 	 */
 	private int numRoles;
 
 	/**
 	 * The role that is actually performing the search.
-	 * Needed by the SUCT version of MCTS.
+	 * Needed by the sequential version of MCTS.
 	 */
 	private InternalPropnetRole myRole;
 
@@ -37,12 +37,12 @@ public class StandardBackpropagation implements BackpropagationStrategy {
 	 */
 	@Override
 	public void update(PnMCTSNode node, MCTSJointMove jointMove, int[] goals){
-		if(node instanceof PnDUCTMCTSNode && jointMove instanceof UCTMCTSJointMove){
-			this.ductUpdate((PnDUCTMCTSNode)node, (UCTMCTSJointMove)jointMove, goals);
-		}else if(node instanceof PnSUCTMCTSNode && jointMove instanceof UCTMCTSJointMove){
-			this.suctUpdate((PnSUCTMCTSNode)node, (UCTMCTSJointMove)jointMove, goals);
-		}else if(node instanceof PnSlowSUCTMCTSNode && jointMove instanceof SlowSUCTMCTSJointMove){
-			this.ssuctUpdate((PnSlowSUCTMCTSNode)node, (SlowSUCTMCTSJointMove)jointMove, goals);
+		if(node instanceof PnDecoupledMCTSNode && jointMove instanceof SequDecMCTSJointMove){
+			this.decUpdate((PnDecoupledMCTSNode)node, (SequDecMCTSJointMove)jointMove, goals);
+		}else if(node instanceof PnSequentialMCTSNode && jointMove instanceof SequDecMCTSJointMove){
+			this.seqUpdate((PnSequentialMCTSNode)node, (SequDecMCTSJointMove)jointMove, goals);
+		}else if(node instanceof PnSlowSeqentialMCTSNode && jointMove instanceof SlowSequentialMCTSJointMove){
+			this.sseqUpdate((PnSlowSeqentialMCTSNode)node, (SlowSequentialMCTSJointMove)jointMove, goals);
 		}else{
 			throw new RuntimeException("StandardBackpropagation-update(): detected wrong combination of types for node (" + node.getClass().getSimpleName() + ") and joint move (" + jointMove.getClass().getSimpleName() + ").");
 		}
@@ -58,17 +58,17 @@ public class StandardBackpropagation implements BackpropagationStrategy {
 	 * @param jointMove the explored joint move.
 	 * @param goals the goals obtained by the simulation, to be used to update the statistics.
 	 */
-	private void ductUpdate(PnDUCTMCTSNode node, UCTMCTSJointMove jointMove, int[] goals) {
+	private void decUpdate(PnDecoupledMCTSNode node, SequDecMCTSJointMove jointMove, int[] goals) {
 
 		node.incrementTotVisits();
 
-		DUCTMCTSMoveStats[][] moves = node.getMoves();
+		DecoupledMCTSMoveStats[][] moves = node.getMoves();
 
 		int[] moveIndices = jointMove.getMovesIndices();
 
 		for(int i = 0; i < moves.length; i++){
-			// Get the DUCTMove
-			DUCTMCTSMoveStats theMoveToUpdate = moves[i][moveIndices[i]];
+			// Get the decoupled MCTS Move
+			DecoupledMCTSMoveStats theMoveToUpdate = moves[i][moveIndices[i]];
 			theMoveToUpdate.incrementScoreSum(goals[i]);
 			if(theMoveToUpdate.getVisits() == 0){
 				node.getUnexploredMovesCount()[i]--;
@@ -90,13 +90,13 @@ public class StandardBackpropagation implements BackpropagationStrategy {
 	 * @param jointMove the explored joint move.
 	 * @param goals the goals obtained by the simulation, to be used to update the statistics.
 	 */
-	private void suctUpdate(PnSUCTMCTSNode node, UCTMCTSJointMove jointMove, int[] goals) {
+	private void seqUpdate(PnSequentialMCTSNode node, SequDecMCTSJointMove jointMove, int[] goals) {
 
 		node.incrementTotVisits();
 
 		int currentRoleIndex = this.myRole.getIndex();
 
-		SUCTMCTSMoveStats currentStatsToUpdate = node.getMovesStats()[jointMove.getMovesIndices()[currentRoleIndex]];
+		SequentialMCTSMoveStats currentStatsToUpdate = node.getMovesStats()[jointMove.getMovesIndices()[currentRoleIndex]];
 
 		while(currentRoleIndex != ((this.myRole.getIndex()-1+this.numRoles)%this.numRoles)){
 			currentStatsToUpdate.incrementVisits();
@@ -142,12 +142,12 @@ public class StandardBackpropagation implements BackpropagationStrategy {
 	 * @param jointMove the explored joint move.
 	 * @param goals the goals obtained by the simulation, to be used to update the statistics.
 	 */
-	private void ssuctUpdate(PnSlowSUCTMCTSNode node, SlowSUCTMCTSJointMove jointMove, int[] goals) {
+	private void sseqUpdate(PnSlowSeqentialMCTSNode node, SlowSequentialMCTSJointMove jointMove, int[] goals) {
 
 		node.incrementTotVisits();
 
 		// Get the leaf move from where to start updating
-		SlowSUCTMCTSMoveStats theMoveToUpdate = jointMove.getLeafMove();
+		SlowSequentialMCTSMoveStats theMoveToUpdate = jointMove.getLeafMove();
 
 		// Get the index of the role that performs the leaf move.
 		int roleIndex = ((this.myRole.getIndex()-1) + this.numRoles)%this.numRoles;

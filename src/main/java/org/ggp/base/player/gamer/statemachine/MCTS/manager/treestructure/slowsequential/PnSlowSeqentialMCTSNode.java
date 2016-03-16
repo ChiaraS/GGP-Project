@@ -1,7 +1,7 @@
 /**
  *
  */
-package org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.SlowSUCT;
+package org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.slowsequential;
 
 import java.util.List;
 
@@ -11,7 +11,7 @@ import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.PnMCTSN
  * @author C.Sironi
  *
  */
-public class PnSlowSUCTMCTSNode extends PnMCTSNode {
+public class PnSlowSeqentialMCTSNode extends PnMCTSNode {
 
 	/**
 	 * List of the moves' statistics for the state corresponding to this node.
@@ -51,7 +51,7 @@ public class PnSlowSUCTMCTSNode extends PnMCTSNode {
 	 * both to all the statistics of the moves of the role that comes next and to the statistics
 	 * of the move that's been chosen for the previous role.
 	 */
-	private SlowSUCTMCTSMoveStats[] movesStats;
+	private SlowSequentialMCTSMoveStats[] movesStats;
 
 	/**
 	 * List of all the unvisited moves.
@@ -60,23 +60,23 @@ public class PnSlowSUCTMCTSNode extends PnMCTSNode {
 	 * visits). The leaves exactly correspond to all the possible joint moves.
 	 * TODO: is this ok? So many combinations for some games!
 	 */
-	private List<SlowSUCTMCTSMoveStats> unvisitedLeaves;
+	private List<SlowSequentialMCTSMoveStats> unvisitedLeaves;
 
 	/**
 	 * @param goals
 	 * @param terminal
 	 */
-	public PnSlowSUCTMCTSNode(SlowSUCTMCTSMoveStats[] movesStats, List<SlowSUCTMCTSMoveStats> unvisitedLeaves, int[] goals, boolean terminal) {
+	public PnSlowSeqentialMCTSNode(SlowSequentialMCTSMoveStats[] movesStats, List<SlowSequentialMCTSMoveStats> unvisitedLeaves, int[] goals, boolean terminal) {
 		super(goals, terminal);
 		this.movesStats = movesStats;
 		this.unvisitedLeaves = unvisitedLeaves;
 	}
 
-	public SlowSUCTMCTSMoveStats[] getMovesStats(){
+	public SlowSequentialMCTSMoveStats[] getMovesStats(){
 		return this.movesStats;
 	}
 
-	public List<SlowSUCTMCTSMoveStats> getUnvisitedLeaves(){
+	public List<SlowSequentialMCTSMoveStats> getUnvisitedLeaves(){
 		return this.unvisitedLeaves;
 	}
 

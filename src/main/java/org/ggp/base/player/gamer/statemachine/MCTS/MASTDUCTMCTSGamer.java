@@ -1,6 +1,8 @@
 package org.ggp.base.player.gamer.statemachine.MCTS;
 
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Random;
 
@@ -12,7 +14,7 @@ import org.ggp.base.player.gamer.statemachine.MCTS.manager.strategies.expansion.
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.strategies.movechoice.MaximumScoreChoice;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.strategies.playout.MASTPlayout;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.strategies.selection.UCTSelection;
-import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.DUCT.PnDUCTTreeNodeFactory;
+import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.decoupled.PnDecoupledTreeNodeFactory;
 import org.ggp.base.util.statemachine.inernalPropnetStructure.InternalPropnetMove;
 import org.ggp.base.util.statemachine.inernalPropnetStructure.InternalPropnetRole;
 
@@ -48,9 +50,9 @@ public class MASTDUCTMCTSGamer extends DUCTMCTSGamer {
 		*/
 
 		return new InternalPropnetMCTSManager(new UCTSelection(numRoles, myRole, r, this.uctOffset, c),
-	       		new RandomExpansion(numRoles, myRole, r), new MASTPlayout(this.thePropnetMachine, this.epsilon, r, mastStatistics),
+	       		new RandomExpansion(numRoles, myRole, r), new MASTPlayout(this.thePropnetMachine, this.epsilon, r, mastStatistics, new ArrayList<List<InternalPropnetMove>>()),
 	       		new MASTBackpropagation(numRoles, myRole, mastStatistics), new MaximumScoreChoice(myRole, r),
-	       		null, new MASTAfterMove(mastStatistics, this.decayFactor), new PnDUCTTreeNodeFactory(this.thePropnetMachine),
+	       		null, new MASTAfterMove(mastStatistics, this.decayFactor), new PnDecoupledTreeNodeFactory(this.thePropnetMachine),
 	       		this.thePropnetMachine, this.gameStepOffset, this.maxSearchDepth);
 	}
 

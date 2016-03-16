@@ -11,7 +11,7 @@ import org.ggp.base.util.statemachine.inernalPropnetStructure.InternalPropnetMov
  * @author C.Sironi
  *
  */
-public class UCTMCTSJointMove extends MCTSJointMove {
+public class SequDecMCTSJointMove extends MCTSJointMove {
 
 	/**
 	 * Index that each single move has in the list of legal moves for its role.
@@ -22,7 +22,7 @@ public class UCTMCTSJointMove extends MCTSJointMove {
 	 * @param jointMove
 	 * @param movesIndices
 	 */
-	public UCTMCTSJointMove(List<InternalPropnetMove> jointMove, int[] movesIndices) {
+	public SequDecMCTSJointMove(List<InternalPropnetMove> jointMove, int[] movesIndices) {
 		super(jointMove);
 		this.movesIndices = movesIndices;
 	}

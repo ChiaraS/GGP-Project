@@ -1,7 +1,7 @@
 /**
  *
  */
-package org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.SlowSUCT;
+package org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.slowsequential;
 
 import org.ggp.base.player.gamer.statemachine.MCS.manager.CompleteMoveStats;
 import org.ggp.base.util.statemachine.inernalPropnetStructure.InternalPropnetMove;
@@ -10,7 +10,7 @@ import org.ggp.base.util.statemachine.inernalPropnetStructure.InternalPropnetMov
  * @author C.Sironi
  *
  */
-public class SlowSUCTMCTSMoveStats extends CompleteMoveStats {
+public class SlowSequentialMCTSMoveStats extends CompleteMoveStats {
 
 	/**
 	 * Index of the move statistics in the list of move statistics of the node
@@ -21,14 +21,14 @@ public class SlowSUCTMCTSMoveStats extends CompleteMoveStats {
 	/**
 	 * Reference to the parent SUCTMove of this move.
 	 */
-	private SlowSUCTMCTSMoveStats previousRoleMoveStats;
+	private SlowSequentialMCTSMoveStats previousRoleMoveStats;
 
 	/**
 	 * Reference to the list of SUCTMovesStats for the next role.
 	 * This list contains the statistics for all the next role's
 	 * moves given that the current role played this move.
 	 */
-	private SlowSUCTMCTSMoveStats[] nextRoleMovesStats;
+	private SlowSequentialMCTSMoveStats[] nextRoleMovesStats;
 
 	/**
 	 * Initializes a new collection of move statistics.
@@ -40,7 +40,7 @@ public class SlowSUCTMCTSMoveStats extends CompleteMoveStats {
 	 * as input are a copy of the array only belonging to this SUCTMove, otherwise
 	 * the statistics will be messed up.
 	 */
-	public SlowSUCTMCTSMoveStats(InternalPropnetMove theMove, int moveIndex, SlowSUCTMCTSMoveStats[] nextRoleMovesStats) {
+	public SlowSequentialMCTSMoveStats(InternalPropnetMove theMove, int moveIndex, SlowSequentialMCTSMoveStats[] nextRoleMovesStats) {
 		super(theMove);
 		this.moveIndex = moveIndex;
 		this.previousRoleMoveStats = null;
@@ -69,7 +69,7 @@ public class SlowSUCTMCTSMoveStats extends CompleteMoveStats {
 	 *
 	 * @return move statistics for the next role given this move.
 	 */
-	public SlowSUCTMCTSMoveStats[] getNextRoleMovesStats(){
+	public SlowSequentialMCTSMoveStats[] getNextRoleMovesStats(){
 		return this.nextRoleMovesStats;
 	}
 
@@ -78,7 +78,7 @@ public class SlowSUCTMCTSMoveStats extends CompleteMoveStats {
 	 *
 	 * @return move statistics for the previous role's move.
 	 */
-	public SlowSUCTMCTSMoveStats getPreviousRoleMoveStats(){
+	public SlowSequentialMCTSMoveStats getPreviousRoleMoveStats(){
 		return this.previousRoleMoveStats;
 	}
 
@@ -87,7 +87,7 @@ public class SlowSUCTMCTSMoveStats extends CompleteMoveStats {
 	 *
 	 * @param previousRoleMove move statistics for the previous role's move to be set.
 	 */
-	public void setPreviousRoleMoveStats(SlowSUCTMCTSMoveStats previousRoleMoveStats){
+	public void setPreviousRoleMoveStats(SlowSequentialMCTSMoveStats previousRoleMoveStats){
 		this.previousRoleMoveStats = previousRoleMoveStats;
 	}
 
@@ -96,7 +96,7 @@ public class SlowSUCTMCTSMoveStats extends CompleteMoveStats {
 		String s = super.toString();
 		s += ", PARENT(" + this.previousRoleMoveStats.getTheMove() + "),";
 		s += "NEXT_ROLE_MOVES_STATS(";
-		for(SlowSUCTMCTSMoveStats m : this.nextRoleMovesStats){
+		for(SlowSequentialMCTSMoveStats m : this.nextRoleMovesStats){
 			s += "\n      " + m.toString();
 		}
 		s += ")";

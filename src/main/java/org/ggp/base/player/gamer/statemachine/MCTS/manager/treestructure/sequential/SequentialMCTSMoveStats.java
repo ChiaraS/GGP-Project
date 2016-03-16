@@ -1,15 +1,15 @@
-package org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.SUCT;
+package org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.sequential;
 
 import org.ggp.base.player.gamer.statemachine.MCS.manager.MoveStats;
 
-public class SUCTMCTSMoveStats extends MoveStats {
+public class SequentialMCTSMoveStats extends MoveStats {
 
 	/**
 	 * Reference to the list of SUCTMovesStats for the next role.
 	 * This list contains the statistics for all the next role's
 	 * moves given that the current role played this move.
 	 */
-	private SUCTMCTSMoveStats[] nextRoleMovesStats;
+	private SequentialMCTSMoveStats[] nextRoleMovesStats;
 
 	/**
 	 *  Keeps track of the number of leaves in the moves statistics tree that are descendants
@@ -17,7 +17,7 @@ public class SUCTMCTSMoveStats extends MoveStats {
 	 */
 	private int unvisitedSubleaves;
 
-	public SUCTMCTSMoveStats(SUCTMCTSMoveStats[] nextRoleMovesStats) {
+	public SequentialMCTSMoveStats(SequentialMCTSMoveStats[] nextRoleMovesStats) {
 		super();
 		this.nextRoleMovesStats = nextRoleMovesStats;
 		if(this.nextRoleMovesStats == null){
@@ -34,7 +34,7 @@ public class SUCTMCTSMoveStats extends MoveStats {
 	 *
 	 * @return move statistics for the next role given this move.
 	 */
-	public SUCTMCTSMoveStats[] getNextRoleMovesStats(){
+	public SequentialMCTSMoveStats[] getNextRoleMovesStats(){
 		return this.nextRoleMovesStats;
 	}
 
@@ -51,7 +51,7 @@ public class SUCTMCTSMoveStats extends MoveStats {
 	public String toString(){
 		String s = super.toString() + ", UNVISITED_SUBLEAVES(" + this.unvisitedSubleaves + "), ";
 		s += "NEXT_ROLE_MOVES_STATS(";
-		for(SUCTMCTSMoveStats m : this.nextRoleMovesStats){
+		for(SequentialMCTSMoveStats m : this.nextRoleMovesStats){
 			s += "\n      " + m.toString();
 		}
 		s += ")";

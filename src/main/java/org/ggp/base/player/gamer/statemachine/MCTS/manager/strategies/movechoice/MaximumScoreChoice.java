@@ -7,12 +7,12 @@ import java.util.Random;
 import org.ggp.base.player.gamer.statemachine.MCS.manager.CompleteMoveStats;
 import org.ggp.base.player.gamer.statemachine.MCS.manager.MoveStats;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.PnMCTSNode;
-import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.DUCT.DUCTMCTSMoveStats;
-import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.DUCT.PnDUCTMCTSNode;
-import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.SUCT.PnSUCTMCTSNode;
-import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.SUCT.SUCTMCTSMoveStats;
-import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.SlowSUCT.PnSlowSUCTMCTSNode;
-import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.SlowSUCT.SlowSUCTMCTSMoveStats;
+import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.decoupled.DecoupledMCTSMoveStats;
+import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.decoupled.PnDecoupledMCTSNode;
+import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.sequential.PnSequentialMCTSNode;
+import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.sequential.SequentialMCTSMoveStats;
+import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.slowsequential.PnSlowSeqentialMCTSNode;
+import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.slowsequential.SlowSequentialMCTSMoveStats;
 import org.ggp.base.util.statemachine.inernalPropnetStructure.InternalPropnetRole;
 
 public class MaximumScoreChoice implements MoveChoiceStrategy {
@@ -38,12 +38,12 @@ public class MaximumScoreChoice implements MoveChoiceStrategy {
 
 		MoveStats[] myMovesStats;
 
-		if(initialNode instanceof PnDUCTMCTSNode){
-			myMovesStats = ((PnDUCTMCTSNode)initialNode).getMoves()[myRole.getIndex()];
-		}else if(initialNode instanceof PnSUCTMCTSNode){
-			myMovesStats = ((PnSUCTMCTSNode)initialNode).getMovesStats();
-		}else if(initialNode instanceof PnSlowSUCTMCTSNode){
-			myMovesStats = ((PnSlowSUCTMCTSNode)initialNode).getMovesStats();
+		if(initialNode instanceof PnDecoupledMCTSNode){
+			myMovesStats = ((PnDecoupledMCTSNode)initialNode).getMoves()[myRole.getIndex()];
+		}else if(initialNode instanceof PnSequentialMCTSNode){
+			myMovesStats = ((PnSequentialMCTSNode)initialNode).getMovesStats();
+		}else if(initialNode instanceof PnSlowSeqentialMCTSNode){
+			myMovesStats = ((PnSlowSeqentialMCTSNode)initialNode).getMovesStats();
 		}else{
 			throw new RuntimeException("MaximumScoreChoice-chooseBestMove(): detected a node of a non-recognizable sub-type of class InternalPropnetMCTreeNode.");
 		}
@@ -110,12 +110,12 @@ public class MaximumScoreChoice implements MoveChoiceStrategy {
 
 		MoveStats toReturn = myMovesStats[bestMoveIndex];
 
-		if(toReturn instanceof DUCTMCTSMoveStats){
-			return (DUCTMCTSMoveStats)toReturn;
-		}else if(toReturn instanceof SUCTMCTSMoveStats){
-			return new CompleteMoveStats(toReturn.getVisits(), toReturn.getScoreSum(), ((PnSUCTMCTSNode)initialNode).getAllLegalMoves().get(this.myRole.getIndex()).get(bestMoveIndex));
-		}else if(toReturn instanceof SlowSUCTMCTSMoveStats){
-			return (SlowSUCTMCTSMoveStats)toReturn;
+		if(toReturn instanceof DecoupledMCTSMoveStats){
+			return (DecoupledMCTSMoveStats)toReturn;
+		}else if(toReturn instanceof SequentialMCTSMoveStats){
+			return new CompleteMoveStats(toReturn.getVisits(), toReturn.getScoreSum(), ((PnSequentialMCTSNode)initialNode).getAllLegalMoves().get(this.myRole.getIndex()).get(bestMoveIndex));
+		}else if(toReturn instanceof SlowSequentialMCTSMoveStats){
+			return (SlowSequentialMCTSMoveStats)toReturn;
 		}else{
 			throw new RuntimeException("MaximumScoreChoice-chooseBestMove(): detected a node of a non-recognizable sub-type of class InternalPropnetMCTreeNode.");
 		}

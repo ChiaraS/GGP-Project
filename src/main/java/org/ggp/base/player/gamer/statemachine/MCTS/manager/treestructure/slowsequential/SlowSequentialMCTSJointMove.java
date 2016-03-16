@@ -1,7 +1,7 @@
 /**
  *
  */
-package org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.SlowSUCT;
+package org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.slowsequential;
 
 import java.util.List;
 
@@ -12,22 +12,22 @@ import org.ggp.base.util.statemachine.inernalPropnetStructure.InternalPropnetMov
  * @author C.Sironi
  *
  */
-public class SlowSUCTMCTSJointMove extends MCTSJointMove {
+public class SlowSequentialMCTSJointMove extends MCTSJointMove {
 
 	/**
 	 * Reference to the leaf move that allows to reconstruct the joint move.
 	 */
-	private SlowSUCTMCTSMoveStats leafMove;
+	private SlowSequentialMCTSMoveStats leafMove;
 
 	/**
 	 * @param jointMove
 	 */
-	public SlowSUCTMCTSJointMove(List<InternalPropnetMove> jointMove, SlowSUCTMCTSMoveStats leafMove) {
+	public SlowSequentialMCTSJointMove(List<InternalPropnetMove> jointMove, SlowSequentialMCTSMoveStats leafMove) {
 		super(jointMove);
 		this.leafMove = leafMove;
 	}
 
-	public SlowSUCTMCTSMoveStats getLeafMove(){
+	public SlowSequentialMCTSMoveStats getLeafMove(){
 		return this.leafMove;
 	}
 

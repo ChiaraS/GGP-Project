@@ -1,8 +1,8 @@
 package org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.GRAVEDUCT;
 
-public class PnGRAVEDUCTTreeNodeFactory {
+public class PnGRAVEDecoupledTreeNodeFactory {
 
-	public PnGRAVEDUCTTreeNodeFactory() {
+	public PnGRAVEDecoupledTreeNodeFactory() {
 		// TODO Auto-generated constructor stub
 	}
 

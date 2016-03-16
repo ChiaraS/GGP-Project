@@ -1,11 +1,16 @@
 package org.ggp.base.player.gamer.statemachine.MCTS.manager.strategies.playout;
 
+import java.util.List;
+
+import org.ggp.base.util.logging.GamerLogger;
 import org.ggp.base.util.statemachine.InternalPropnetStateMachine;
+import org.ggp.base.util.statemachine.exceptions.MoveDefinitionException;
 import org.ggp.base.util.statemachine.inernalPropnetStructure.InternalPropnetMachineState;
+import org.ggp.base.util.statemachine.inernalPropnetStructure.InternalPropnetMove;
 
 public class RandomPlayout implements PlayoutStrategy {
 
-	private InternalPropnetStateMachine theMachine;
+	protected InternalPropnetStateMachine theMachine;
 
 	public RandomPlayout(InternalPropnetStateMachine theMachine){
 		this.theMachine = theMachine;
@@ -18,12 +23,35 @@ public class RandomPlayout implements PlayoutStrategy {
 	@Override
 	public int[] playout(InternalPropnetMachineState state, int[] playoutVisitedNodes, int maxDepth){
 
-		InternalPropnetMachineState lastState;
+		//InternalPropnetMachineState lastState;
 
-		lastState = this.theMachine.performSafeLimitedDepthCharge(state, playoutVisitedNodes, maxDepth);
+        int nDepth = 0;
+
+        while(nDepth < maxDepth && !this.theMachine.isTerminal(state)) {
+
+        	List<InternalPropnetMove> jointMove = null;
+			try {
+				jointMove = getJointMove(state);
+			} catch (MoveDefinitionException e) {
+				GamerLogger.logError("MCTSManager", "Exception getting a joint move while performing a playout.");
+				GamerLogger.logStackTrace("MCTSManager", e);
+				break;
+			}
+			state = this.theMachine.getInternalNextState(state, jointMove);
+            nDepth++;
+        }
+        if(playoutVisitedNodes != null)
+        	playoutVisitedNodes[0] = nDepth;
+
+		//lastState = this.theMachine.performSafeLimitedDepthCharge(state, playoutVisitedNodes, maxDepth);
 
 		// Now try to get the goals of the state.
-		return this.theMachine.getSafeGoals(lastState);
+		return this.theMachine.getSafeGoals(state);
+	}
+
+
+	public List<InternalPropnetMove> getJointMove(InternalPropnetMachineState state) throws MoveDefinitionException{
+		return this.theMachine.getRandomJointMove(state);
 	}
 
 	@Override

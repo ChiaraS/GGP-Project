@@ -1,22 +1,22 @@
-package org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.DUCT;
+package org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.decoupled;
 
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.PnMCTSNode;
 
 
 
-public class PnDUCTMCTSNode extends PnMCTSNode{
+public class PnDecoupledMCTSNode extends PnMCTSNode{
 
 	/**
 	 * List of the moves' statistics for each role in the state corresponding to this node.
 	 */
-	private DUCTMCTSMoveStats[][] movesStats;
+	private DecoupledMCTSMoveStats[][] movesStats;
 
 	/**
 	 * Number of unexplored moves for each player.
 	 */
 	private int[] unexploredMovesCount;
 
-	public PnDUCTMCTSNode(DUCTMCTSMoveStats[][] movesStats, int[] goals, boolean terminal) {
+	public PnDecoupledMCTSNode(DecoupledMCTSMoveStats[][] movesStats, int[] goals, boolean terminal) {
 
 		super(goals, terminal);
 		this.movesStats = movesStats;
@@ -33,7 +33,7 @@ public class PnDUCTMCTSNode extends PnMCTSNode{
 		}
 	}
 
-	public DUCTMCTSMoveStats[][] getMoves(){
+	public DecoupledMCTSMoveStats[][] getMoves(){
 		return this.movesStats;
 	}
 

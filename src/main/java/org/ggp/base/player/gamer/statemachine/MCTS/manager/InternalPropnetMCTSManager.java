@@ -20,8 +20,8 @@ import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.MCTSJoi
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.MCTSTranspositionTable;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.PnMCTSNode;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.TreeNodeFactory;
-import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.SUCT.SUCTMCTSMoveStats;
-import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.SlowSUCT.SlowSUCTMCTSMoveStats;
+import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.sequential.SequentialMCTSMoveStats;
+import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.slowsequential.SlowSequentialMCTSMoveStats;
 import org.ggp.base.util.logging.GamerLogger;
 import org.ggp.base.util.statemachine.InternalPropnetStateMachine;
 import org.ggp.base.util.statemachine.inernalPropnetStructure.InternalPropnetMachineState;
@@ -907,26 +907,26 @@ public class InternalPropnetMCTSManager extends MCTSManager {
 
 
 
-	private void printMovesTree(SlowSUCTMCTSMoveStats[] moves, String tab){
+	private void printMovesTree(SlowSequentialMCTSMoveStats[] moves, String tab){
 
 		if(moves == null){
 			return;
 		}
 
-		for(SlowSUCTMCTSMoveStats m : moves){
+		for(SlowSequentialMCTSMoveStats m : moves){
 			System.out.println(tab + this.theMachine.internalMoveToMove(m.getTheMove()));
 			this.printMovesTree(m.getNextRoleMovesStats(), tab + "   ");
 		}
 
 	}
 
-	private void printSUCTMovesTree(SUCTMCTSMoveStats[] moves, String tab){
+	private void printSUCTMovesTree(SequentialMCTSMoveStats[] moves, String tab){
 
 		if(moves == null){
 			return;
 		}
 
-		for(SUCTMCTSMoveStats m : moves){
+		for(SequentialMCTSMoveStats m : moves){
 			System.out.println(tab + "[" + m + "]");
 			this.printSUCTMovesTree(m.getNextRoleMovesStats(), tab + "   ");
 		}

@@ -1,7 +1,7 @@
 /**
  *
  */
-package org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.SUCT;
+package org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.sequential;
 
 import java.util.List;
 
@@ -12,7 +12,7 @@ import org.ggp.base.util.statemachine.inernalPropnetStructure.InternalPropnetMov
  * @author C.Sironi
  *
  */
-public class PnSUCTMCTSNode extends PnMCTSNode {
+public class PnSequentialMCTSNode extends PnMCTSNode {
 
 	/**
 	 * List of the moves' statistics for the state corresponding to this node.
@@ -52,7 +52,7 @@ public class PnSUCTMCTSNode extends PnMCTSNode {
 	 * to all the statistics of the moves of the role that comes next but not to the statistics
 	 * of the move that's been chosen for the previous role.
 	 */
-	private SUCTMCTSMoveStats[] movesStats;
+	private SequentialMCTSMoveStats[] movesStats;
 
 	/**
 	 * List of legal moves for each role in this state
@@ -72,14 +72,14 @@ public class PnSUCTMCTSNode extends PnMCTSNode {
 	 * @param goals
 	 * @param terminal
 	 */
-	public PnSUCTMCTSNode(List<List<InternalPropnetMove>> allLegalMoves, SUCTMCTSMoveStats[] movesStats, int[] goals, boolean terminal, int unvisitedLeaves) {
+	public PnSequentialMCTSNode(List<List<InternalPropnetMove>> allLegalMoves, SequentialMCTSMoveStats[] movesStats, int[] goals, boolean terminal, int unvisitedLeaves) {
 		super(goals, terminal);
 		this.movesStats = movesStats;
 		this.allLegalMoves = allLegalMoves;
 		this.unvisitedLeaves = unvisitedLeaves;
 	}
 
-	public SUCTMCTSMoveStats[] getMovesStats(){
+	public SequentialMCTSMoveStats[] getMovesStats(){
 		return this.movesStats;
 	}
 

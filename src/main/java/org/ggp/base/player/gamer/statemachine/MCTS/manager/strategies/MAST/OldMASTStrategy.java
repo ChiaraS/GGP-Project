@@ -17,7 +17,7 @@ import org.ggp.base.util.statemachine.inernalPropnetStructure.InternalPropnetMac
 import org.ggp.base.util.statemachine.inernalPropnetStructure.InternalPropnetMove;
 import org.ggp.base.util.statemachine.inernalPropnetStructure.InternalPropnetRole;
 
-public class MASTStrategy extends StandardBackpropagation implements /*BackpropagationStrategy,*/ PlayoutStrategy {
+public class OldMASTStrategy extends StandardBackpropagation implements /*BackpropagationStrategy,*/ PlayoutStrategy {
 
 	private InternalPropnetStateMachine theMachine;
 
@@ -27,7 +27,7 @@ public class MASTStrategy extends StandardBackpropagation implements /*Backpropa
 
 	private Map<InternalPropnetMove, MoveStats> mastStatistics;
 
-	public MASTStrategy(InternalPropnetStateMachine theMachine, double epsilon, Random random, Map<InternalPropnetMove, MoveStats> mastStatistics, int numRoles, InternalPropnetRole myRole) {
+	public OldMASTStrategy(InternalPropnetStateMachine theMachine, double epsilon, Random random, Map<InternalPropnetMove, MoveStats> mastStatistics, int numRoles, InternalPropnetRole myRole) {
 
 		super(numRoles, myRole);
 
