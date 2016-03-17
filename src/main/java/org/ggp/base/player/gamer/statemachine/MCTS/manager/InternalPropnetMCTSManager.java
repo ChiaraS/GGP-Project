@@ -193,7 +193,7 @@ public class InternalPropnetMCTSManager extends MCTSManager {
 
 		String toLog = "MCTS manager initialized with the following tree node factory: " + this.theNodesFactory.getClass().getSimpleName() + ".";
 
-		toLog = "\nMCTS manager initialized with the following strategies: ";
+		toLog += "\nMCTS manager initialized with the following strategies: ";
 
 		for(Strategy s : this.strategies){
 			toLog += "\n" + s.printStrategy();

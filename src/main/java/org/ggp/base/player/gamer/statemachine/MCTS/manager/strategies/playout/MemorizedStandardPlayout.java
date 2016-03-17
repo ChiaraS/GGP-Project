@@ -10,14 +10,14 @@ import org.ggp.base.util.statemachine.inernalPropnetStructure.InternalPropnetMov
 
 public class MemorizedStandardPlayout extends StandardPlayout {
 
-    private List<List<InternalPropnetMove>> allJointMoves;
+    protected List<List<InternalPropnetMove>> allJointMoves;
 
 	public MemorizedStandardPlayout(InternalPropnetStateMachine theMachine,
 			JointMoveSelector jointMoveSelector, List<List<InternalPropnetMove>> allJointMoves) {
 		super(theMachine, jointMoveSelector);
 
 		this.allJointMoves = allJointMoves;
-		this.allJointMoves.clear();
+		this.allJointMoves.clear(); // Just to make sure that if the list given as input is not empty it will be before being used in this class.
 	}
 
 	@Override

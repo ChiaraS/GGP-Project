@@ -88,7 +88,7 @@ public abstract class MCTSGamer extends InternalPropnetGamer {
 			GamerLogger.log("Gamer", "Starting search during metagame.");
 
 			try {
-				this.mctsManager.search(this.thePropnetMachine.getInternalInitialState(), realTimeout, gameStep+1);
+				this.mctsManager.search(this.thePropnetMachine.getInternalInitialState(), realTimeout, this.gameStep+1);
 
 				GamerLogger.log("Gamer", "Done searching during metagame.");
 				searchTime = this.mctsManager.getSearchTime();

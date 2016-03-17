@@ -55,7 +55,7 @@ public class StandardPlayout implements PlayoutStrategy {
 
 	@Override
 	public String getStrategyParameters() {
-		return null;
+		return this.jointMoveSelector.printJointMoveSelector();
 	}
 
 	@Override

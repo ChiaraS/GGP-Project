@@ -6,7 +6,7 @@ import org.ggp.base.player.gamer.statemachine.MCS.manager.MoveStats;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.PnMCTSNode;
 import org.ggp.base.util.statemachine.inernalPropnetStructure.InternalPropnetMove;
 
-public class GRAVEEvaluator implements MoveEvaluator {
+public class GRAVEEvaluator extends UCTEvaluator {
 
 	/**
 	 * Reference to the AMAF statistics of the ancestor of this node that has enough visits
@@ -17,7 +17,8 @@ public class GRAVEEvaluator implements MoveEvaluator {
 
 	private double bias;
 
-	public GRAVEEvaluator(double bias) {
+	public GRAVEEvaluator(double c, double bias) {
+		super(c);
 		this.amafStats = null;
 		this.bias = bias;
 	}
@@ -26,56 +27,62 @@ public class GRAVEEvaluator implements MoveEvaluator {
 		this.amafStats = amafStats;
 	}
 
+	public Map<InternalPropnetMove, MoveStats> getAmafStats(){
+		return this.amafStats;
+	}
+
 	@Override
 	public double computeMoveValue(PnMCTSNode theNode,
 			InternalPropnetMove theMove, MoveStats theMoveStats) {
 
-		double moveVisits = theMoveStats.getVisits();
-		double moveScore = theMoveStats.getScoreSum();
-		double amafVisits = 0.0;
-		double amafScore = 0.0;
+		if(this.amafStats == null){
 
-		if(this.amafStats != null){
-			MoveStats moveAmaf = this.amafStats.get(theMove);
-			if(moveAmaf != null){
-				amafVisits = moveAmaf.getVisits();
-				amafScore = moveAmaf.getScoreSum();
-			}
+			System.out.println("null amaf");
+
+			System.out.println("returning " + super.computeMoveValue(theNode, theMove, theMoveStats));
+
+			return super.computeMoveValue(theNode, theMove, theMoveStats);
 		}
 
-		if(moveVisits == 0){
-			if(amafVisits == 0){
-				// If the move hasn't been explored ever (i.e. not in this node nor in any descendant of the node
-				// whose AMAF table we are using), return the maximum value to encourage exploration of this move.
-				return Double.MAX_VALUE;
-			}else{
-				// If average cannot be computed, return only AMAF average.
-				return ((amafScore / amafVisits) / 100.0);
-			}
-		}else{
-			if(amafVisits == 0){
-				// If the AMAF average cannot be computed, return only the move average.
-				return ((moveScore / moveVisits) / 100.0);
-			}else{
-				double beta = amafVisits / (amafVisits + moveVisits + (this.bias * amafVisits * moveVisits));
-				return ((1.0 - beta) * ((moveScore / moveVisits) / 100.0)) + (beta * ((amafScore / amafVisits) / 100.0));
-			}
+		MoveStats moveAmafStats = this.amafStats.get(theMove);
+
+		if(moveAmafStats == null || moveAmafStats.getVisits() == 0){
+
+			System.out.println("no stats for move");
+
+			System.out.println("returning " + super.computeMoveValue(theNode, theMove, theMoveStats));
+
+			return super.computeMoveValue(theNode, theMove, theMoveStats);
 		}
+
+		double uct = super.computeMoveValue(theNode, theMove, theMoveStats);
+
+		double amafAvg = (moveAmafStats.getScoreSum() / moveAmafStats.getVisits()) / 100.0;
+
+		double beta = this.computeBeta(theMoveStats, moveAmafStats);
+
+		System.out.println("uct = " + uct);
+		System.out.println("amafAvg = " + amafAvg);
+		System.out.println("beta = " + beta);
+
+		System.out.println("returning = " + (((1.0 - beta) * uct) + (beta * amafAvg)));
+
+		return (((1.0 - beta) * uct) + (beta * amafAvg));
+
+	}
+
+	private double computeBeta(MoveStats theMoveStats, MoveStats moveAmafStats){
+		return (moveAmafStats.getVisits() / (moveAmafStats.getVisits() + theMoveStats.getVisits() + (this.bias * moveAmafStats.getVisits() * theMoveStats.getVisits())));
 	}
 
 	@Override
 	public String getEvaluatorParameters() {
-		return "BIAS = " + this.bias;
-	}
-
-	@Override
-	public String printEvaluator() {
-		String params = this.getEvaluatorParameters();
+		String params = super.getEvaluatorParameters();
 
 		if(params != null){
-			return "(EVALUATOR_TYPE = " + this.getClass().getSimpleName() + ", " + params + ")";
+			return params + ", BIAS = " + this.bias;
 		}else{
-			return "(EVALUATOR_TYPE = " + this.getClass().getSimpleName() + ")";
+			return "BIAS = " + this.bias;
 		}
 	}
 

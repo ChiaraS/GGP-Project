@@ -15,37 +15,36 @@ import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.AMAFDec
 import org.ggp.base.util.statemachine.inernalPropnetStructure.InternalPropnetMove;
 import org.ggp.base.util.statemachine.inernalPropnetStructure.InternalPropnetRole;
 
-public class GRAVEMCTSGamer extends UCTMCTSGamer {
+public class RAVEDUCTMCTSGamer extends UCTMCTSGamer{
 
 	private int minAMAFVisits;
 
 	private double bias;
 
-	public GRAVEMCTSGamer() {
+	public RAVEDUCTMCTSGamer() {
 		super();
 
-		this.minAMAFVisits = 50;
+		this.minAMAFVisits = 0;
 		this.bias = 0.001;
 	}
 
 	@Override
-	public InternalPropnetMCTSManager createMCTSManager(){
+	public InternalPropnetMCTSManager createMCTSManager() {
+		Random r = new Random();
 
-	Random r = new Random();
+		InternalPropnetRole myRole = this.thePropnetMachine.roleToInternalRole(this.getRole());
+		int numRoles = this.thePropnetMachine.getInternalRoles().length;
 
-	InternalPropnetRole myRole = this.thePropnetMachine.roleToInternalRole(this.getRole());
-	int numRoles = this.thePropnetMachine.getInternalRoles().length;
+		List<List<InternalPropnetMove>> allJointMoves = new ArrayList<List<InternalPropnetMove>>();
 
-	List<List<InternalPropnetMove>> allJointMoves = new ArrayList<List<InternalPropnetMove>>();
+		GRAVESelection graveSelection = new GRAVESelection(numRoles, myRole, r, this.valueOffset, this.c, this.minAMAFVisits, this.bias);
+		GRAVEPlayout gravePlayout = new GRAVEPlayout(this.thePropnetMachine, allJointMoves);
 
-	GRAVESelection graveSelection = new GRAVESelection(numRoles, myRole, r, this.valueOffset, this.c, this.minAMAFVisits, this.bias);
-	GRAVEPlayout gravePlayout = new GRAVEPlayout(this.thePropnetMachine, allJointMoves);
-
-	return new InternalPropnetMCTSManager(graveSelection, new RandomExpansion(numRoles, myRole, r),
-			gravePlayout, new GRAVEBackpropagation(numRoles, myRole, allJointMoves),
-			new MaximumScoreChoice(myRole, r),	new GRAVEAfterSimulation(graveSelection, gravePlayout),
-			null, new PnAMAFDecoupledTreeNodeFactory(this.thePropnetMachine), this.thePropnetMachine,
-       		this.gameStepOffset, this.maxSearchDepth);
+		return new InternalPropnetMCTSManager(graveSelection, new RandomExpansion(numRoles, myRole, r),
+				gravePlayout, new GRAVEBackpropagation(numRoles, myRole, allJointMoves),
+				new MaximumScoreChoice(myRole, r),	new GRAVEAfterSimulation(graveSelection, gravePlayout),
+				null, new PnAMAFDecoupledTreeNodeFactory(this.thePropnetMachine), this.thePropnetMachine,
+	       		this.gameStepOffset, this.maxSearchDepth);
 	}
 
 }
