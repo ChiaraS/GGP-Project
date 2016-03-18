@@ -241,7 +241,8 @@ public class MCTSSpeedTest {
 		        /***************************************/
 
 		        Random r = new Random();
-		        double c = 1.4;
+		        double c = 0.7;
+		        double unexploredMoveDefaultSelectionValue = Double.MAX_VALUE;
 		        double uctOffset = 0.01;
 		        int gameStep = 1;
 		        int gameStepOffset = 2;
@@ -283,7 +284,7 @@ public class MCTSSpeedTest {
 		        }
 
 		        InternalPropnetMCTSManager MCTSmanager = new InternalPropnetMCTSManager(
-		        		new UCTSelection(numRoles, internalPlayingRole, r, uctOffset, c),
+		        		new UCTSelection(numRoles, internalPlayingRole, r, uctOffset, c, unexploredMoveDefaultSelectionValue),
 		        		new RandomExpansion(numRoles, internalPlayingRole, r), new RandomPlayout(thePropnetMachine),
 		        		new StandardBackpropagation(numRoles, internalPlayingRole),
 		        		new MaximumScoreChoice(internalPlayingRole, r), null, null, theNodeFactory,

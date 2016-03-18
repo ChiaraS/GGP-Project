@@ -2,7 +2,8 @@ package org.ggp.base.player.gamer.statemachine.MCTS.manager.strategies.selection
 
 import java.util.Random;
 
-import org.ggp.base.player.gamer.statemachine.MCTS.manager.strategies.selection.evaluators.GRAVEEvaluator;
+import org.ggp.base.player.gamer.statemachine.MCTS.manager.strategies.selection.evaluators.GRAVE.BetaComputer;
+import org.ggp.base.player.gamer.statemachine.MCTS.manager.strategies.selection.evaluators.GRAVE.GRAVEEvaluator;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.MCTSJointMove;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.PnMCTSNode;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.AMAFDecoupled.PnAMAFNode;
@@ -16,9 +17,9 @@ public class GRAVESelection extends MoveValueSelection {
 	private int minAMAFVisits;
 
 	public GRAVESelection(int numRoles, InternalPropnetRole myRole,
-			Random random, double valueOffset, double c, int minAMAFVisits, double bias) {
+			Random random, double valueOffset, double c, double defaultValue, int minAMAFVisits, BetaComputer betaComputer) {
 
-		super(numRoles, myRole, random, valueOffset, new GRAVEEvaluator(c, bias));
+		super(numRoles, myRole, random, valueOffset, new GRAVEEvaluator(c, defaultValue, betaComputer));
 
 		this.minAMAFVisits =  minAMAFVisits;
 
@@ -27,17 +28,17 @@ public class GRAVESelection extends MoveValueSelection {
 	@Override
 	public MCTSJointMove select(PnMCTSNode currentNode) {
 
-		System.out.println("GRAVE selection");
+		//System.out.println("GRAVE selection");
 
 		if(currentNode instanceof PnAMAFNode){
 
-			System.out.println("tot node visits: " + currentNode.getTotVisits());
+			//System.out.println("tot node visits: " + currentNode.getTotVisits());
 
 			// TODO: uncomment the check. This will make sure that if no stats have visits higher than the threshold at least
 			// the root stats will be used rather than ignoring amaf values.
 			if(/*(((GRAVEEvaluator)this.moveEvaluator).getAmafStats()) == null ||*/ currentNode.getTotVisits() > this.minAMAFVisits){
 
-				System.out.println("change");
+				//System.out.println("change");
 				((GRAVEEvaluator)this.moveEvaluator).setAmafStats(((PnAMAFNode)currentNode).getAmafStats());
 			}
 

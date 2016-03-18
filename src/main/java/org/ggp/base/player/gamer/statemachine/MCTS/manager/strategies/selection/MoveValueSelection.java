@@ -61,7 +61,7 @@ public abstract class MoveValueSelection implements SelectionStrategy {
 
 	private MCTSJointMove decSelect(PnDecoupledMCTSNode currentNode) {
 
-		System.out.println("decSelect");
+		//System.out.println("decSelect");
 
 		/* No need for this check, if the code is correct, because the node that is passed as input
 		 * is always non-terminal.

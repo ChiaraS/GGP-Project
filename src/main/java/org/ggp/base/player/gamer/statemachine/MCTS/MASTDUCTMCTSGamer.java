@@ -52,7 +52,7 @@ public class MASTDUCTMCTSGamer extends DUCTMCTSGamer {
 	       		this.thePropnetMachine, gameStepOffset,	maxSearchDepth);
 		*/
 
-		return new InternalPropnetMCTSManager(new UCTSelection(numRoles, myRole, r, this.valueOffset, c),
+		return new InternalPropnetMCTSManager(new UCTSelection(numRoles, myRole, r, this.valueOffset, this.c, this.unexploredMoveDefaultSelectionValue),
 	       		new RandomExpansion(numRoles, myRole, r), mastPlayout,
 	       		new MASTBackpropagation(numRoles, myRole, mastStatistics),
 	       		new MaximumScoreChoice(myRole, r), new MASTAfterSimulation(mastPlayout),

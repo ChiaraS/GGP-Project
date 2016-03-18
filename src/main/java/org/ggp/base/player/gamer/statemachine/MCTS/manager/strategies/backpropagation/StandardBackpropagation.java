@@ -71,7 +71,12 @@ public class StandardBackpropagation implements BackpropagationStrategy {
 			DecoupledMCTSMoveStats theMoveToUpdate = moves[i][moveIndices[i]];
 			theMoveToUpdate.incrementScoreSum(goals[i]);
 			if(theMoveToUpdate.getVisits() == 0){
+				//System.out.println("!!!!!");
+				//System.out.println(node.getUnexploredMovesCount()[i]);
 				node.getUnexploredMovesCount()[i]--;
+				//System.out.println(node.getUnexploredMovesCount()[i]);
+				//System.out.println("!!!!!");
+
 			}
 			theMoveToUpdate.incrementVisits();
 		}

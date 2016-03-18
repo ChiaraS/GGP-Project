@@ -8,8 +8,8 @@ import org.ggp.base.util.statemachine.inernalPropnetStructure.InternalPropnetRol
 public class UCTSelection extends MoveValueSelection {
 
 	public UCTSelection(int numRoles, InternalPropnetRole myRole,
-			Random random, double valueOffset, double c) {
-		super(numRoles, myRole, random, valueOffset, new UCTEvaluator(c));
+			Random random, double valueOffset, double c, double defaultValue) {
+		super(numRoles, myRole, random, valueOffset, new UCTEvaluator(c, defaultValue));
 
 	}
 

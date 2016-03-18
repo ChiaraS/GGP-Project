@@ -1,8 +1,9 @@
-package org.ggp.base.player.gamer.statemachine.MCTS.manager.strategies.selection.evaluators;
+package org.ggp.base.player.gamer.statemachine.MCTS.manager.strategies.selection.evaluators.GRAVE;
 
 import java.util.Map;
 
 import org.ggp.base.player.gamer.statemachine.MCS.manager.MoveStats;
+import org.ggp.base.player.gamer.statemachine.MCTS.manager.strategies.selection.evaluators.UCTEvaluator;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.PnMCTSNode;
 import org.ggp.base.util.statemachine.inernalPropnetStructure.InternalPropnetMove;
 
@@ -15,12 +16,13 @@ public class GRAVEEvaluator extends UCTEvaluator {
 	 */
 	private Map<InternalPropnetMove, MoveStats> amafStats;
 
-	private double bias;
+	private BetaComputer betaComputer;
 
-	public GRAVEEvaluator(double c, double bias) {
-		super(c);
+	public GRAVEEvaluator(double c, double defaultValue, BetaComputer betaComputer) {
+		super(c, defaultValue);
+		this.betaComputer = betaComputer;
 		this.amafStats = null;
-		this.bias = bias;
+		//this.bias = bias;
 	}
 
 	public void setAmafStats(Map<InternalPropnetMove, MoveStats> amafStats){
@@ -37,9 +39,9 @@ public class GRAVEEvaluator extends UCTEvaluator {
 
 		if(this.amafStats == null){
 
-			System.out.println("null amaf");
+			//System.out.println("null amaf");
 
-			System.out.println("returning " + super.computeMoveValue(theNode, theMove, theMoveStats));
+			//System.out.println("returning " + super.computeMoveValue(theNode, theMove, theMoveStats));
 
 			return super.computeMoveValue(theNode, theMove, theMoveStats);
 		}
@@ -48,9 +50,9 @@ public class GRAVEEvaluator extends UCTEvaluator {
 
 		if(moveAmafStats == null || moveAmafStats.getVisits() == 0){
 
-			System.out.println("no stats for move");
+			//System.out.println("no stats for move");
 
-			System.out.println("returning " + super.computeMoveValue(theNode, theMove, theMoveStats));
+			//System.out.println("returning " + super.computeMoveValue(theNode, theMove, theMoveStats));
 
 			return super.computeMoveValue(theNode, theMove, theMoveStats);
 		}
@@ -59,20 +61,16 @@ public class GRAVEEvaluator extends UCTEvaluator {
 
 		double amafAvg = (moveAmafStats.getScoreSum() / moveAmafStats.getVisits()) / 100.0;
 
-		double beta = this.computeBeta(theMoveStats, moveAmafStats);
+		double beta = this.betaComputer.computeBeta(theMoveStats, moveAmafStats, theNode.getTotVisits());
 
-		System.out.println("uct = " + uct);
-		System.out.println("amafAvg = " + amafAvg);
-		System.out.println("beta = " + beta);
+		//System.out.println("uct = " + uct);
+		//System.out.println("amafAvg = " + amafAvg);
+		//System.out.println("beta = " + beta);
 
-		System.out.println("returning = " + (((1.0 - beta) * uct) + (beta * amafAvg)));
+		//System.out.println("returning = " + (((1.0 - beta) * uct) + (beta * amafAvg)));
 
 		return (((1.0 - beta) * uct) + (beta * amafAvg));
 
-	}
-
-	private double computeBeta(MoveStats theMoveStats, MoveStats moveAmafStats){
-		return (moveAmafStats.getVisits() / (moveAmafStats.getVisits() + theMoveStats.getVisits() + (this.bias * moveAmafStats.getVisits() * theMoveStats.getVisits())));
 	}
 
 	@Override
@@ -80,9 +78,9 @@ public class GRAVEEvaluator extends UCTEvaluator {
 		String params = super.getEvaluatorParameters();
 
 		if(params != null){
-			return params + ", BIAS = " + this.bias;
+			return params + ", " + this.betaComputer.printBetaComputer();
 		}else{
-			return "BIAS = " + this.bias;
+			return this.betaComputer.printBetaComputer();
 		}
 	}
 

@@ -12,24 +12,24 @@ import org.ggp.base.player.gamer.statemachine.MCTS.manager.strategies.movechoice
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.strategies.playout.GRAVEPlayout;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.strategies.selection.GRAVESelection;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.strategies.selection.evaluators.GRAVE.BetaComputer;
-import org.ggp.base.player.gamer.statemachine.MCTS.manager.strategies.selection.evaluators.GRAVE.GRAVEBetaComputer;
+import org.ggp.base.player.gamer.statemachine.MCTS.manager.strategies.selection.evaluators.GRAVE.CADIABetaComputer;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.AMAFDecoupled.PnAMAFDecoupledTreeNodeFactory;
 import org.ggp.base.util.statemachine.inernalPropnetStructure.InternalPropnetMove;
 import org.ggp.base.util.statemachine.inernalPropnetStructure.InternalPropnetRole;
 
-public class RAVEDUCTMCTSGamer extends UCTMCTSGamer{
+public class CadiaRAVEDUCTMCTSGamer extends UCTMCTSGamer {
 
 	private int minAMAFVisits;
 
 	private BetaComputer betaComputer;
 
-	public RAVEDUCTMCTSGamer() {
+	public CadiaRAVEDUCTMCTSGamer() {
 		super();
 
 		this.c = 0.4;
 		this.unexploredMoveDefaultSelectionValue = 0.0;
 		this.minAMAFVisits = 0;
-		this.betaComputer = new GRAVEBetaComputer(0.001);
+		this.betaComputer = new CADIABetaComputer(500);
 	}
 
 	@Override

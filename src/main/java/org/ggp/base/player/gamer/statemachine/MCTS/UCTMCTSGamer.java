@@ -29,6 +29,12 @@ public abstract class UCTMCTSGamer extends MCTSGamer {
 	protected double c;
 
 	/**
+	 * Default value to be assigned to a move during selection if such move has never been seen before
+	 * and a value for it cannot be thus computed.
+	 */
+	protected double unexploredMoveDefaultSelectionValue;
+
+	/**
 	 *
 	 */
 	public UCTMCTSGamer() {
@@ -37,6 +43,8 @@ public abstract class UCTMCTSGamer extends MCTSGamer {
 		super();
 
 		this.c = 0.7;
+
+		this.unexploredMoveDefaultSelectionValue = Double.MAX_VALUE;
 
 	}
 

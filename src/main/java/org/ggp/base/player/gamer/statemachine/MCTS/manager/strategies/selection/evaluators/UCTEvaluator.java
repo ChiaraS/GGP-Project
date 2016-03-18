@@ -8,8 +8,15 @@ public class UCTEvaluator implements MoveEvaluator {
 
 	private double c;
 
-	public UCTEvaluator(double c) {
+	/**
+	 * Default value to assign to an unexplored move.
+	 */
+	protected double defaultValue;
+
+	public UCTEvaluator(double c, double defaultValue) {
 		this.c = c;
+		this.defaultValue = defaultValue;
+
 	}
 
 	@Override
@@ -22,7 +29,7 @@ public class UCTEvaluator implements MoveEvaluator {
 		// this makes sure that if the node on which we are selecting has 0 visits the selection will
 		// evaluate all moves equally (becoming a random selection).
 		if(nodeVisits == 0){
-			return Double.MAX_VALUE;
+			return this.defaultValue;
 		}
 
 		double moveVisits = theMoveStats.getVisits();
@@ -34,7 +41,7 @@ public class UCTEvaluator implements MoveEvaluator {
 		// at least once. However a check is performed to keep the computation consistent even when a move
 		// has never been visited (i.e. the "infinite" value (Double.MAX_VALUE) is returned).
 		if(moveVisits == 0){
-			return Double.MAX_VALUE;
+			return this.defaultValue;
 		}
 
 		double avgScore = (score / moveVisits) / 100.0;
@@ -44,7 +51,7 @@ public class UCTEvaluator implements MoveEvaluator {
 
 	@Override
 	public String getEvaluatorParameters() {
-		return "C_CONSTANT = " + this.c;
+		return "C_CONSTANT = " + this.c + ", DEFAULT_VALUE = " + this.defaultValue;
 	}
 
 	@Override

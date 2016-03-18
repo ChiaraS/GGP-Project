@@ -48,6 +48,9 @@ public class MaximumScoreChoice implements MoveChoiceStrategy {
 			throw new RuntimeException("MaximumScoreChoice-chooseBestMove(): detected a node of a non-recognizable sub-type of class InternalPropnetMCTreeNode.");
 		}
 
+		//System.out.println();
+		//System.out.println("Choosing move!");
+
 		//System.out.println("My moves: " + myMovesStats.length);
 
 		List<Integer> chosenMovesIndices = new ArrayList<Integer>();
@@ -58,11 +61,15 @@ public class MaximumScoreChoice implements MoveChoiceStrategy {
 		// For each legal move check the average score
 		for(int i = 0; i < myMovesStats.length; i++){
 
+			//System.out.println("Move " + i);
+
 			int visits =  myMovesStats[i].getVisits();
 
 			//System.out.println("Visits: " + visits);
 
 			int scoreSum = myMovesStats[i].getScoreSum();
+
+			//System.out.println("Score sum: " + scoreSum);
 
 			/**
 			 * Extra check to make sure that neither the visits nor the
@@ -73,8 +80,6 @@ public class MaximumScoreChoice implements MoveChoiceStrategy {
 			if(visits < 0 || scoreSum < 0){
 				throw new RuntimeException("Negative value for visits and/or scores sum : VISITS=" + visits + ", SCORE_SUM=" + scoreSum + ".");
 			}
-
-			//System.out.println("Score sum: " + scoreSum);
 
 			if(visits == 0){
 				// Default score for unvisited moves
@@ -96,7 +101,7 @@ public class MaximumScoreChoice implements MoveChoiceStrategy {
 				maxAvgScore = currentAvgScore;
 				chosenMovesIndices.clear();
 				chosenMovesIndices.add(new Integer(i));
-				//System.out.println("Resetting.");
+				//System.out.println("Resetting and adding index: " + i);
 			}else if(currentAvgScore == maxAvgScore){
 				chosenMovesIndices.add(new Integer(i));
 
@@ -107,6 +112,8 @@ public class MaximumScoreChoice implements MoveChoiceStrategy {
 		//System.out.println("Number of indices: " + chosenMovesIndices.size());
 
 		int bestMoveIndex = chosenMovesIndices.get(this.random.nextInt(chosenMovesIndices.size()));
+
+		//System.out.println("Choosing move " + bestMoveIndex);
 
 		MoveStats toReturn = myMovesStats[bestMoveIndex];
 
