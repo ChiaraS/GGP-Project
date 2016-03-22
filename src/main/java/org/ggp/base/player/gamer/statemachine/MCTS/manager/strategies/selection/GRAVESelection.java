@@ -36,7 +36,7 @@ public class GRAVESelection extends MoveValueSelection {
 
 			// TODO: uncomment the check. This will make sure that if no stats have visits higher than the threshold at least
 			// the root stats will be used rather than ignoring amaf values.
-			if(/*(((GRAVEEvaluator)this.moveEvaluator).getAmafStats()) == null ||*/ currentNode.getTotVisits() > this.minAMAFVisits){
+			if(/*(((GRAVEEvaluator)this.moveEvaluator).getAmafStats()) == null ||*/ currentNode.getTotVisits() >= this.minAMAFVisits){
 
 				//System.out.println("change");
 				((GRAVEEvaluator)this.moveEvaluator).setAmafStats(((PnAMAFNode)currentNode).getAmafStats());

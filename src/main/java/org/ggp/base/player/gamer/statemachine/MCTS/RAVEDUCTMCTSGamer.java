@@ -27,7 +27,7 @@ public class RAVEDUCTMCTSGamer extends UCTMCTSGamer{
 		super();
 
 		this.c = 0.4;
-		this.unexploredMoveDefaultSelectionValue = 0.0;
+		this.unexploredMoveDefaultSelectionValue = Double.MAX_VALUE;
 		this.minAMAFVisits = 0;
 		this.betaComputer = new GRAVEBetaComputer(0.001);
 	}

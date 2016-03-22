@@ -13,6 +13,11 @@ public class GRAVEBetaComputer implements BetaComputer {
 	@Override
 	public double computeBeta(MoveStats theMoveStats,
 			MoveStats theAmafMoveStats, int nodeVisits) {
+
+		if(theAmafMoveStats == null){
+			return -1.0;
+		}
+
 		return (theAmafMoveStats.getVisits() / (theAmafMoveStats.getVisits() + theMoveStats.getVisits() + (this.bias * theAmafMoveStats.getVisits() * theMoveStats.getVisits())));
 	}
 

@@ -16,8 +16,7 @@ public class RandomJointMoveSelector implements JointMoveSelector {
 	}
 
 	@Override
-	public List<InternalPropnetMove> getJointMove(
-			InternalPropnetMachineState state) throws MoveDefinitionException {
+	public List<InternalPropnetMove> getJointMove(InternalPropnetMachineState state) throws MoveDefinitionException {
 		return this.theMachine.getRandomJointMove(state);
 	}
 

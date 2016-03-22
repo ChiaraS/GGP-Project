@@ -31,4 +31,23 @@ public class MemorizedStandardPlayout extends StandardPlayout {
 		this.allJointMoves.clear();
 	}
 
+	/*
+	public void printJM(){
+		System.out.println("All joint moves: " + this.allJointMoves.size());
+
+		System.out.println("[");
+
+		for(List<InternalPropnetMove> jm : this.allJointMoves){
+
+			System.out.print("( ");
+			for(InternalPropnetMove i : jm){
+				System.out.print(i + ", ");
+			}
+			System.out.println(")");
+		}
+
+		System.out.println("]");
+	}
+	*/
+
 }

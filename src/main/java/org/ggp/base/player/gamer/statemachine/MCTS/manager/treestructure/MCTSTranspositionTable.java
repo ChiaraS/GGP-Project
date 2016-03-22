@@ -30,6 +30,7 @@ public class MCTSTranspositionTable {
 	 *
 	 */
 	public MCTSTranspositionTable(int gameStepOffset){
+		this.currentGameStepStamp = 0;
 		this.transpositionTable = new HashMap<InternalPropnetMachineState,PnMCTSNode>();
 		this.gameStepOffset = gameStepOffset;
 	}

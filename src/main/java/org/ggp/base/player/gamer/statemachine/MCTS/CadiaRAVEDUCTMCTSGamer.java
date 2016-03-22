@@ -26,8 +26,8 @@ public class CadiaRAVEDUCTMCTSGamer extends UCTMCTSGamer {
 	public CadiaRAVEDUCTMCTSGamer() {
 		super();
 
-		this.c = 0.4;
-		this.unexploredMoveDefaultSelectionValue = 0.0;
+		this.c = 0.7;
+		this.unexploredMoveDefaultSelectionValue = Double.MAX_VALUE;
 		this.minAMAFVisits = 0;
 		this.betaComputer = new CADIABetaComputer(500);
 	}

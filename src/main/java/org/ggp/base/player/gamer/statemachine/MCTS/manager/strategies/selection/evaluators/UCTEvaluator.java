@@ -6,7 +6,7 @@ import org.ggp.base.util.statemachine.inernalPropnetStructure.InternalPropnetMov
 
 public class UCTEvaluator implements MoveEvaluator {
 
-	private double c;
+	protected double c;
 
 	/**
 	 * Default value to assign to an unexplored move.
@@ -23,30 +23,40 @@ public class UCTEvaluator implements MoveEvaluator {
 	public double computeMoveValue(PnMCTSNode theNode,
 			InternalPropnetMove theMove, MoveStats theMoveStats) {
 
-		double nodeVisits = theNode.getTotVisits();
+		double exploitation = this.computeExploitation(theNode, theMove, theMoveStats);
+		double exploration = this.computeExploration(theNode, theMoveStats);
 
-		// NOTE: this should never happen, but if in the future some decay is applied to node statistics
-		// this makes sure that if the node on which we are selecting has 0 visits the selection will
-		// evaluate all moves equally (becoming a random selection).
-		if(nodeVisits == 0){
+		if(exploitation != -1 && exploration != -1){
+			return exploitation + exploration;
+		}else{
 			return this.defaultValue;
 		}
+	}
+
+	protected double computeExploitation(PnMCTSNode theNode, InternalPropnetMove theMove,  MoveStats theMoveStats){
 
 		double moveVisits = theMoveStats.getVisits();
 		double score = theMoveStats.getScoreSum();
 
-
-		// NOTE: this should never happen if we use this class together with the InternalPropnetMCTSManager
-		// because the selection phase in a node starts only after all moves have been expanded and visited
-		// at least once. However a check is performed to keep the computation consistent even when a move
-		// has never been visited (i.e. the "infinite" value (Double.MAX_VALUE) is returned).
 		if(moveVisits == 0){
-			return this.defaultValue;
+			return -1.0;
+		}else{
+			return ((score / moveVisits) / 100.0);
 		}
 
-		double avgScore = (score / moveVisits) / 100.0;
-		double exploration = this.c * (Math.sqrt(Math.log(nodeVisits)/moveVisits));
-		return avgScore + exploration;
+	}
+
+	protected double computeExploration(PnMCTSNode theNode, MoveStats theMoveStats){
+
+		double nodeVisits = theNode.getTotVisits();
+		double moveVisits = theMoveStats.getVisits();
+
+		if(nodeVisits != 0 && moveVisits != 0){
+			return (this.c * (Math.sqrt(Math.log(nodeVisits)/moveVisits)));
+		}else{
+			return -1.0;
+		}
+
 	}
 
 	@Override

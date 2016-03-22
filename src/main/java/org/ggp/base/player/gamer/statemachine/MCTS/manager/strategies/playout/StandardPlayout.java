@@ -43,6 +43,8 @@ public class StandardPlayout implements PlayoutStrategy {
         if(playoutVisitedNodes != null)
         	playoutVisitedNodes[0] = nDepth;
 
+        //System.out.println("Playout state erminal: " + this.theMachine.isTerminal(state));
+
 		//lastState = this.theMachine.performSafeLimitedDepthCharge(state, playoutVisitedNodes, maxDepth);
 
 		// Now try to get the goals of the state.

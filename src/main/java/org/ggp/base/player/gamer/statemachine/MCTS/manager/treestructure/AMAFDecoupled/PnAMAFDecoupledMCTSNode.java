@@ -28,4 +28,22 @@ public class PnAMAFDecoupledMCTSNode extends PnDecoupledMCTSNode implements PnAM
 		return this.amafStats;
 	}
 
+	/*
+	public void printAMAF(){
+		System.out.println("AMAF stats of node - size: " + this.amafStats.size());
+
+		System.out.println("");
+		System.out.println("[");
+
+
+		for(Entry<InternalPropnetMove, MoveStats> e : this.amafStats.entrySet()){
+
+			System.out.println("(" + e.getKey() + ", " + e.getValue().getVisits() + ", " + e.getValue().getScoreSum() + ")");
+
+		}
+
+		System.out.println("]");
+	}
+	*/
+
 }

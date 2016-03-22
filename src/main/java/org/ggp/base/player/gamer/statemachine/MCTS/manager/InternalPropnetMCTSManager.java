@@ -301,7 +301,7 @@ public class InternalPropnetMCTSManager extends MCTSManager {
 
 		// Every time a move is played in the actual game...
 		if(this.transpositionTable.getLastGameStep() != gameStep){
-			// ...nodes not visited recently are removed by the transposition table...
+			// ...nodes not visited recently are removed from the transposition table...
 			this.transpositionTable.clean(gameStep);
 
 			// ...and each strategy performs some clean-up of its internal structures (if necessary).
@@ -353,6 +353,9 @@ public class InternalPropnetMCTSManager extends MCTSManager {
 			this.searchNext(initialState, initialNode);
 			this.iterations++;
 			this.visitedNodes += this.currentIterationVisitedNodes;
+
+			//((PnAMAFDecoupledMCTSNode)initialNode).printAMAF();
+
 
 			if(this.afterSimulationStrategy != null){
 				this.afterSimulationStrategy.afterSimulationActions();
@@ -527,10 +530,10 @@ public class InternalPropnetMCTSManager extends MCTSManager {
 		// but since the corresponding MCT node hasn't been visited in recent runs anymore
 		// it has been removed from the transposition table during the "cleaning" process.
 		//
-		// TODO: if the node doesn't exists, after creation we perform a playout on it, both
+		// If the node doesn't exists, after creation we perform a playout on it, both
 		// in the case when we were performing selection and in the case when we were performing
 		// expansion. If the node exists, we continue searching on it, even if we were performing
-		// expansion. Is this ok?
+		// expansion.
 		if(nextNode == null){
 
 			//System.out.println("Creating next node...");
@@ -560,7 +563,9 @@ public class InternalPropnetMCTSManager extends MCTSManager {
 				// returning the added-state goal values (if any) or the default tie goal values.
 				goals = this.playoutStrategy.playout(nextState, playoutVisitedNodes, availableDepth);
 				this.currentIterationVisitedNodes += playoutVisitedNodes[0];
-				//System.out.println("Node: " + this.visitedNodes);
+
+				//System.out.print("After playout - ");
+				//((MemorizedStandardPlayout)this.playoutStrategy).printJM();
 			}
 		}else{
 			// Otherwise, if we continue selecting:

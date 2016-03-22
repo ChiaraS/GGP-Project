@@ -22,44 +22,34 @@ public class GRAVEEvaluator extends UCTEvaluator {
 		super(c, defaultValue);
 		this.betaComputer = betaComputer;
 		this.amafStats = null;
-		//this.bias = bias;
-	}
-
-	public void setAmafStats(Map<InternalPropnetMove, MoveStats> amafStats){
-		this.amafStats = amafStats;
-	}
-
-	public Map<InternalPropnetMove, MoveStats> getAmafStats(){
-		return this.amafStats;
 	}
 
 	@Override
-	public double computeMoveValue(PnMCTSNode theNode,
-			InternalPropnetMove theMove, MoveStats theMoveStats) {
+	protected double computeExploitation(PnMCTSNode theNode, InternalPropnetMove theMove, MoveStats theMoveStats){
 
-		if(this.amafStats == null){
+		double uctExploitation = super.computeExploitation(theNode, theMove, theMoveStats);
 
-			//System.out.println("null amaf");
+		double amafExploitation = -1.0;
 
-			//System.out.println("returning " + super.computeMoveValue(theNode, theMove, theMoveStats));
+		MoveStats moveAmafStats = null;
 
-			return super.computeMoveValue(theNode, theMove, theMoveStats);
+		if(this.amafStats != null){
+
+			moveAmafStats = this.amafStats.get(theMove);
+
+			if(moveAmafStats != null && moveAmafStats.getVisits() != 0){
+				amafExploitation = (moveAmafStats.getScoreSum() / moveAmafStats.getVisits()) / 100.0;
+			}
+
 		}
 
-		MoveStats moveAmafStats = this.amafStats.get(theMove);
-
-		if(moveAmafStats == null || moveAmafStats.getVisits() == 0){
-
-			//System.out.println("no stats for move");
-
-			//System.out.println("returning " + super.computeMoveValue(theNode, theMove, theMoveStats));
-
-			return super.computeMoveValue(theNode, theMove, theMoveStats);
+		if(uctExploitation == -1){
+			return amafExploitation;
 		}
 
-		double uct = super.computeMoveValue(theNode, theMove, theMoveStats);
-
-		double amafAvg = (moveAmafStats.getScoreSum() / moveAmafStats.getVisits()) / 100.0;
+		if(amafExploitation == -1){
+			return uctExploitation;
+		}
 
 		double beta = this.betaComputer.computeBeta(theMoveStats, moveAmafStats, theNode.getTotVisits());
 
@@ -69,8 +59,33 @@ public class GRAVEEvaluator extends UCTEvaluator {
 
 		//System.out.println("returning = " + (((1.0 - beta) * uct) + (beta * amafAvg)));
 
-		return (((1.0 - beta) * uct) + (beta * amafAvg));
+		if(beta == -1){
+			return -1.0;
+		}else{
+			return (((1.0 - beta) * uctExploitation) + (beta * amafExploitation));
+		}
 
+	}
+
+	@Override
+	protected double computeExploration(PnMCTSNode theNode, MoveStats theMoveStats){
+
+		double exploration = super.computeExploration(theNode, theMoveStats);
+
+		if(exploration != -1){
+			return exploration;
+		}else{
+			return 100.0;
+		}
+
+	}
+
+	public void setAmafStats(Map<InternalPropnetMove, MoveStats> amafStats){
+		this.amafStats = amafStats;
+	}
+
+	public Map<InternalPropnetMove, MoveStats> getAmafStats(){
+		return this.amafStats;
 	}
 
 	@Override
