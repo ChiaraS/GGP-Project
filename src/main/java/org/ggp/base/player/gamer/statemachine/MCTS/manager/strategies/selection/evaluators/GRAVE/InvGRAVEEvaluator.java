@@ -4,7 +4,6 @@ import java.util.Map;
 
 import org.ggp.base.player.gamer.statemachine.MCS.manager.MoveStats;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.strategies.selection.evaluators.UCTEvaluator;
-import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.PnMCTSNode;
 import org.ggp.base.util.statemachine.inernalPropnetStructure.InternalPropnetMove;
 
 /**
@@ -43,7 +42,7 @@ public class InvGRAVEEvaluator extends UCTEvaluator {
 	}
 
 	@Override
-	public double computeMoveValue(PnMCTSNode theNode,
+	public double computeMoveValue(int allMoveVisits,
 			InternalPropnetMove theMove, MoveStats theMoveStats) {
 
 		if(this.amafStats == null){
@@ -52,7 +51,7 @@ public class InvGRAVEEvaluator extends UCTEvaluator {
 
 			//System.out.println("returning " + super.computeMoveValue(theNode, theMove, theMoveStats));
 
-			return super.computeMoveValue(theNode, theMove, theMoveStats);
+			return super.computeMoveValue(allMoveVisits, theMove, theMoveStats);
 		}
 
 		MoveStats moveAmafStats = this.amafStats.get(theMove);
@@ -63,14 +62,14 @@ public class InvGRAVEEvaluator extends UCTEvaluator {
 
 			//System.out.println("returning " + super.computeMoveValue(theNode, theMove, theMoveStats));
 
-			return super.computeMoveValue(theNode, theMove, theMoveStats);
+			return super.computeMoveValue(allMoveVisits, theMove, theMoveStats);
 		}
 
-		double uct = super.computeMoveValue(theNode, theMove, theMoveStats);
+		double uct = super.computeMoveValue(allMoveVisits, theMove, theMoveStats);
 
 		double amafAvg = (moveAmafStats.getScoreSum() / moveAmafStats.getVisits()) / 100.0;
 
-		double beta = this.betaComputer.computeBeta(theMoveStats, moveAmafStats, theNode.getTotVisits());
+		double beta = this.betaComputer.computeBeta(theMoveStats, moveAmafStats, allMoveVisits);
 
 		//System.out.println("uct = " + uct);
 		//System.out.println("amafAvg = " + amafAvg);

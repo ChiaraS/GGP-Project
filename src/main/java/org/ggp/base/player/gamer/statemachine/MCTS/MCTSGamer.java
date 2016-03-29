@@ -22,6 +22,12 @@ public abstract class MCTSGamer extends InternalPropnetGamer {
 	private int gameStep;
 
 	/**
+	 * Tells to the gamer if start performing the search also during metagame or not.
+	 * (Usually true, set to false only for testing purposes)
+	 */
+	protected boolean metagameSearch;
+
+	/**
 	 * Parameters used by the MCTS manager.
 	 */
 	protected double valueOffset;
@@ -39,6 +45,7 @@ public abstract class MCTSGamer extends InternalPropnetGamer {
 		super();
 
 		this.gameStep = 0;
+		this.metagameSearch = true;
 
 		this.valueOffset = 0.01;
 		this.gameStepOffset = 2;
@@ -79,37 +86,45 @@ public abstract class MCTSGamer extends InternalPropnetGamer {
 		// Create the MCTS manager and start simulations.
 		this.mctsManager = this.createMCTSManager();
 
-		// If there is enough time left start the MCT search.
-		// Otherwise return from metagaming.
-		if(System.currentTimeMillis() < realTimeout){
-			// If search fails during metagame?? TODO: should I throw exception here and say I'm not able to play?
-			// If I don't it'll throw exception later anyway! Better stop now?
+		if(this.metagameSearch){
 
-			GamerLogger.log("Gamer", "Starting search during metagame.");
+			// If there is enough time left start the MCT search.
+			// Otherwise return from metagaming.
+			if(System.currentTimeMillis() < realTimeout){
+				// If search fails during metagame?? TODO: should I throw exception here and say I'm not able to play?
+				// If I don't it'll throw exception later anyway! Better stop now?
 
-			try {
-				this.mctsManager.search(this.thePropnetMachine.getInternalInitialState(), realTimeout, this.gameStep+1);
+				GamerLogger.log("Gamer", "Starting search during metagame.");
 
-				GamerLogger.log("Gamer", "Done searching during metagame.");
-				searchTime = this.mctsManager.getSearchTime();
-	        	iterations = this.mctsManager.getIterations();
-	        	visitedNodes = this.mctsManager.getVisitedNodes();
-	        	if(searchTime != 0){
-		        	iterationsPerSecond = ((double) iterations * 1000)/((double) searchTime);
-		        	nodesPerSecond = ((double) visitedNodes * 1000)/((double) searchTime);
-	        	}else{
-	        		iterationsPerSecond = 0;
-	        		nodesPerSecond = 0;
-	        	}
-	        	thinkingTime = System.currentTimeMillis() - start;
-			}catch(MCTSException e) {
-				GamerLogger.logError("Gamer", "Exception during search while metagaming.");
-				GamerLogger.logStackTrace("Gamer", e);
+				try {
+					this.mctsManager.search(this.thePropnetMachine.getInternalInitialState(), realTimeout, this.gameStep+1);
+
+					GamerLogger.log("Gamer", "Done searching during metagame.");
+					searchTime = this.mctsManager.getSearchTime();
+		        	iterations = this.mctsManager.getIterations();
+		        	visitedNodes = this.mctsManager.getVisitedNodes();
+		        	if(searchTime != 0){
+			        	iterationsPerSecond = ((double) iterations * 1000)/((double) searchTime);
+			        	nodesPerSecond = ((double) visitedNodes * 1000)/((double) searchTime);
+		        	}else{
+		        		iterationsPerSecond = 0;
+		        		nodesPerSecond = 0;
+		        	}
+		        	thinkingTime = System.currentTimeMillis() - start;
+				}catch(MCTSException e) {
+					GamerLogger.logError("Gamer", "Exception during search while metagaming.");
+					GamerLogger.logStackTrace("Gamer", e);
+
+					thinkingTime = System.currentTimeMillis() - start;
+				}
+			}else{
+				GamerLogger.log("Gamer", "No time to start the search during metagame.");
 
 				thinkingTime = System.currentTimeMillis() - start;
 			}
 		}else{
-			GamerLogger.log("Gamer", "No time to start the search during metagame.");
+
+			GamerLogger.log("Gamer", "Gamer set to perform no search during metagame.");
 
 			thinkingTime = System.currentTimeMillis() - start;
 		}

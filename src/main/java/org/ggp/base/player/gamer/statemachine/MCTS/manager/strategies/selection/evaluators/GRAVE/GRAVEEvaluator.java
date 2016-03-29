@@ -4,7 +4,6 @@ import java.util.Map;
 
 import org.ggp.base.player.gamer.statemachine.MCS.manager.MoveStats;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.strategies.selection.evaluators.UCTEvaluator;
-import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.PnMCTSNode;
 import org.ggp.base.util.statemachine.inernalPropnetStructure.InternalPropnetMove;
 
 public class GRAVEEvaluator extends UCTEvaluator {
@@ -18,16 +17,19 @@ public class GRAVEEvaluator extends UCTEvaluator {
 
 	private BetaComputer betaComputer;
 
-	public GRAVEEvaluator(double c, double defaultValue, BetaComputer betaComputer) {
+	private double defaultExploration;
+
+	public GRAVEEvaluator(double c, double defaultValue, BetaComputer betaComputer, double defaultExploration) {
 		super(c, defaultValue);
 		this.betaComputer = betaComputer;
 		this.amafStats = null;
+		this.defaultExploration = defaultExploration;
 	}
 
 	@Override
-	protected double computeExploitation(PnMCTSNode theNode, InternalPropnetMove theMove, MoveStats theMoveStats){
+	protected double computeExploitation(int allMoveVisits, InternalPropnetMove theMove, MoveStats theMoveStats){
 
-		double uctExploitation = super.computeExploitation(theNode, theMove, theMoveStats);
+		double uctExploitation = super.computeExploitation(allMoveVisits, theMove, theMoveStats);
 
 		double amafExploitation = -1.0;
 
@@ -51,7 +53,7 @@ public class GRAVEEvaluator extends UCTEvaluator {
 			return uctExploitation;
 		}
 
-		double beta = this.betaComputer.computeBeta(theMoveStats, moveAmafStats, theNode.getTotVisits());
+		double beta = this.betaComputer.computeBeta(theMoveStats, moveAmafStats, allMoveVisits);
 
 		//System.out.println("uct = " + uct);
 		//System.out.println("amafAvg = " + amafAvg);
@@ -68,14 +70,14 @@ public class GRAVEEvaluator extends UCTEvaluator {
 	}
 
 	@Override
-	protected double computeExploration(PnMCTSNode theNode, MoveStats theMoveStats){
+	protected double computeExploration(int allMoveVisits, MoveStats theMoveStats){
 
-		double exploration = super.computeExploration(theNode, theMoveStats);
+		double exploration = super.computeExploration(allMoveVisits, theMoveStats);
 
 		if(exploration != -1){
 			return exploration;
 		}else{
-			return 100.0;
+			return this.defaultExploration;
 		}
 
 	}
@@ -93,9 +95,9 @@ public class GRAVEEvaluator extends UCTEvaluator {
 		String params = super.getEvaluatorParameters();
 
 		if(params != null){
-			return params + ", " + this.betaComputer.printBetaComputer();
+			return params + ", " + this.betaComputer.printBetaComputer() + ", DEFAULT_EXPLORATION = " + this.defaultExploration;
 		}else{
-			return this.betaComputer.printBetaComputer();
+			return this.betaComputer.printBetaComputer() + ", DEFAULT_EXPLORATION = " + this.defaultExploration;
 		}
 	}
 

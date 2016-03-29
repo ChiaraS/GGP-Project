@@ -17,37 +17,42 @@ import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.AMAFDec
 import org.ggp.base.util.statemachine.inernalPropnetStructure.InternalPropnetMove;
 import org.ggp.base.util.statemachine.inernalPropnetStructure.InternalPropnetRole;
 
-public class GRAVEMCTSGamer extends UCTMCTSGamer {
+public class GRAVEDUCTMCTSGamer extends UCTMCTSGamer {
 
 	private int minAMAFVisits;
 
 	private BetaComputer betaComputer;
 
-	public GRAVEMCTSGamer() {
+	private double defaultExploration;
+
+	public GRAVEDUCTMCTSGamer() {
 		super();
 
+		this.c = 0.0;
+		this.unexploredMoveDefaultSelectionValue = 1.0;
 		this.minAMAFVisits = 50;
 		this.betaComputer = new GRAVEBetaComputer(0.001);
+		this.defaultExploration = 0.0;
 	}
 
 	@Override
 	public InternalPropnetMCTSManager createMCTSManager(){
+		Random r = new Random();
 
-	Random r = new Random();
+		InternalPropnetRole myRole = this.thePropnetMachine.roleToInternalRole(this.getRole());
+		int numRoles = this.thePropnetMachine.getInternalRoles().length;
 
-	InternalPropnetRole myRole = this.thePropnetMachine.roleToInternalRole(this.getRole());
-	int numRoles = this.thePropnetMachine.getInternalRoles().length;
+		List<List<InternalPropnetMove>> allJointMoves = new ArrayList<List<InternalPropnetMove>>();
 
-	List<List<InternalPropnetMove>> allJointMoves = new ArrayList<List<InternalPropnetMove>>();
+		GRAVESelection graveSelection = new GRAVESelection(numRoles, myRole, r, this.valueOffset, this.c,
+				this.unexploredMoveDefaultSelectionValue, this.minAMAFVisits, this.betaComputer, this.defaultExploration);
+		GRAVEPlayout gravePlayout = new GRAVEPlayout(this.thePropnetMachine, allJointMoves);
 
-	GRAVESelection graveSelection = new GRAVESelection(numRoles, myRole, r, this.valueOffset, this.c, this.unexploredMoveDefaultSelectionValue, this.minAMAFVisits, this.betaComputer);
-	GRAVEPlayout gravePlayout = new GRAVEPlayout(this.thePropnetMachine, allJointMoves);
-
-	return new InternalPropnetMCTSManager(graveSelection, new NoExpansion() /*new RandomExpansion(numRoles, myRole, r)*/,
-			gravePlayout, new GRAVEBackpropagation(numRoles, myRole, allJointMoves),
-			new MaximumScoreChoice(myRole, r),	new GRAVEAfterSimulation(graveSelection, gravePlayout),
-			null, new PnAMAFDecoupledTreeNodeFactory(this.thePropnetMachine), this.thePropnetMachine,
-       		this.gameStepOffset, this.maxSearchDepth);
+		return new InternalPropnetMCTSManager(graveSelection, new NoExpansion() /*new RandomExpansion(numRoles, myRole, r)*/,
+				gravePlayout, new GRAVEBackpropagation(numRoles, myRole, allJointMoves),
+				new MaximumScoreChoice(myRole, r),	new GRAVEAfterSimulation(graveSelection, gravePlayout),
+				null, new PnAMAFDecoupledTreeNodeFactory(this.thePropnetMachine), this.thePropnetMachine,
+				this.gameStepOffset, this.maxSearchDepth);
 	}
 
 }

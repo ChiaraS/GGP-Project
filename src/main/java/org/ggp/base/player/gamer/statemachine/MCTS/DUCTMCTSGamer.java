@@ -27,6 +27,8 @@ public class DUCTMCTSGamer extends UCTMCTSGamer {
 	 */
 	public DUCTMCTSGamer() {
 		super();
+
+		this.metagameSearch = true;
 	}
 
 	@Override

@@ -17,9 +17,9 @@ public class GRAVESelection extends MoveValueSelection {
 	private int minAMAFVisits;
 
 	public GRAVESelection(int numRoles, InternalPropnetRole myRole,
-			Random random, double valueOffset, double c, double defaultValue, int minAMAFVisits, BetaComputer betaComputer) {
+			Random random, double valueOffset, double c, double defaultValue, int minAMAFVisits, BetaComputer betaComputer, double defaultExploration) {
 
-		super(numRoles, myRole, random, valueOffset, new GRAVEEvaluator(c, defaultValue, betaComputer));
+		super(numRoles, myRole, random, valueOffset, new GRAVEEvaluator(c, defaultValue, betaComputer, defaultExploration));
 
 		this.minAMAFVisits =  minAMAFVisits;
 
@@ -36,7 +36,7 @@ public class GRAVESelection extends MoveValueSelection {
 
 			// TODO: uncomment the check. This will make sure that if no stats have visits higher than the threshold at least
 			// the root stats will be used rather than ignoring amaf values.
-			if(/*(((GRAVEEvaluator)this.moveEvaluator).getAmafStats()) == null ||*/ currentNode.getTotVisits() >= this.minAMAFVisits){
+			if((((GRAVEEvaluator)this.moveEvaluator).getAmafStats()) == null || currentNode.getTotVisits() >= this.minAMAFVisits){
 
 				//System.out.println("change");
 				((GRAVEEvaluator)this.moveEvaluator).setAmafStats(((PnAMAFNode)currentNode).getAmafStats());

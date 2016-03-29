@@ -23,17 +23,20 @@ public class RAVEDUCTMCTSGamer extends UCTMCTSGamer{
 
 	private BetaComputer betaComputer;
 
+	private double defaultExploration;
+
 	public RAVEDUCTMCTSGamer() {
 		super();
 
-		this.c = 0.4;
-		this.unexploredMoveDefaultSelectionValue = Double.MAX_VALUE;
+		this.c = 0.0;
+		this.unexploredMoveDefaultSelectionValue = 1.0;
 		this.minAMAFVisits = 0;
 		this.betaComputer = new GRAVEBetaComputer(0.001);
+		this.defaultExploration = 0.0;
 	}
 
 	@Override
-	public InternalPropnetMCTSManager createMCTSManager() {
+	public InternalPropnetMCTSManager createMCTSManager(){
 		Random r = new Random();
 
 		InternalPropnetRole myRole = this.thePropnetMachine.roleToInternalRole(this.getRole());
@@ -41,7 +44,8 @@ public class RAVEDUCTMCTSGamer extends UCTMCTSGamer{
 
 		List<List<InternalPropnetMove>> allJointMoves = new ArrayList<List<InternalPropnetMove>>();
 
-		GRAVESelection graveSelection = new GRAVESelection(numRoles, myRole, r, this.valueOffset, this.c, this.unexploredMoveDefaultSelectionValue, this.minAMAFVisits, this.betaComputer);
+		GRAVESelection graveSelection = new GRAVESelection(numRoles, myRole, r, this.valueOffset, this.c,
+				this.unexploredMoveDefaultSelectionValue, this.minAMAFVisits, this.betaComputer, this.defaultExploration);
 		GRAVEPlayout gravePlayout = new GRAVEPlayout(this.thePropnetMachine, allJointMoves);
 
 		return new InternalPropnetMCTSManager(graveSelection, new NoExpansion() /*new RandomExpansion(numRoles, myRole, r)*/,

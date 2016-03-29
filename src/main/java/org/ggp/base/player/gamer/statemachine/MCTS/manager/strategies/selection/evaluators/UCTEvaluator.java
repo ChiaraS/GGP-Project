@@ -1,7 +1,6 @@
 package org.ggp.base.player.gamer.statemachine.MCTS.manager.strategies.selection.evaluators;
 
 import org.ggp.base.player.gamer.statemachine.MCS.manager.MoveStats;
-import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.PnMCTSNode;
 import org.ggp.base.util.statemachine.inernalPropnetStructure.InternalPropnetMove;
 
 public class UCTEvaluator implements MoveEvaluator {
@@ -20,11 +19,11 @@ public class UCTEvaluator implements MoveEvaluator {
 	}
 
 	@Override
-	public double computeMoveValue(PnMCTSNode theNode,
+	public double computeMoveValue(int allMoveVisits,
 			InternalPropnetMove theMove, MoveStats theMoveStats) {
 
-		double exploitation = this.computeExploitation(theNode, theMove, theMoveStats);
-		double exploration = this.computeExploration(theNode, theMoveStats);
+		double exploitation = this.computeExploitation(allMoveVisits, theMove, theMoveStats);
+		double exploration = this.computeExploration(allMoveVisits, theMoveStats);
 
 		if(exploitation != -1 && exploration != -1){
 			return exploitation + exploration;
@@ -33,7 +32,7 @@ public class UCTEvaluator implements MoveEvaluator {
 		}
 	}
 
-	protected double computeExploitation(PnMCTSNode theNode, InternalPropnetMove theMove,  MoveStats theMoveStats){
+	protected double computeExploitation(int allMoveVisits, InternalPropnetMove theMove,  MoveStats theMoveStats){
 
 		double moveVisits = theMoveStats.getVisits();
 		double score = theMoveStats.getScoreSum();
@@ -46,13 +45,12 @@ public class UCTEvaluator implements MoveEvaluator {
 
 	}
 
-	protected double computeExploration(PnMCTSNode theNode, MoveStats theMoveStats){
+	protected double computeExploration(int allMoveVisits, MoveStats theMoveStats){
 
-		double nodeVisits = theNode.getTotVisits();
 		double moveVisits = theMoveStats.getVisits();
 
-		if(nodeVisits != 0 && moveVisits != 0){
-			return (this.c * (Math.sqrt(Math.log(nodeVisits)/moveVisits)));
+		if(allMoveVisits != 0 && moveVisits != 0){
+			return (this.c * (Math.sqrt(Math.log(allMoveVisits)/moveVisits)));
 		}else{
 			return -1.0;
 		}
