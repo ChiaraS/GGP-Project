@@ -9,7 +9,7 @@ import org.ggp.base.util.logging.GamerLogger;
 import org.ggp.base.util.logging.GamerLogger.FORMAT;
 import org.ggp.base.util.match.Match;
 import org.ggp.base.util.propnet.architecture.separateExtendedState.dynamic.DynamicPropNet;
-import org.ggp.base.util.propnet.creationManager.SeparateInternalPropnetCreationManager;
+import org.ggp.base.util.propnet.creationManager.SeparateInternalPropnetManager;
 import org.ggp.base.util.propnet.factory.DynamicPropNetFactory;
 
 /**
@@ -94,7 +94,7 @@ public class DynamicPropnetStructureChecker {
 
 		DynamicPropNet propNet = null;
 
-		SeparateInternalPropnetCreationManager creator = new SeparateInternalPropnetCreationManager(description, maxPropnetCreationTime);
+		SeparateInternalPropnetManager creator = new SeparateInternalPropnetManager(description, maxPropnetCreationTime);
 
 		Match fakeMatch = new Match(gameKey + "." + System.currentTimeMillis(), -1, -1, -1,theRepository.getGame(gameKey) );
 

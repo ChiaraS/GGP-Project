@@ -27,6 +27,14 @@ import org.ggp.base.util.propnet.architecture.separateExtendedState.dynamic.comp
 import org.ggp.base.util.propnet.utils.PROP_TYPE;
 import org.ggp.base.util.statemachine.Role;
 
+/**
+ * NOTE: uncomment the parts with comments "PRECONDITION CHECK" to be able to use the class
+ * PreconditionCheck that logs details about the original propnet structure and how it has
+ * been fixed to comply to the assumption that the propnet optimization methods require.
+ *
+ * @author C.Sironi
+ *
+ */
 public class DynamicPropNet {
 
 	/********************************** Parameters **********************************/
@@ -103,10 +111,28 @@ public class DynamicPropNet {
 	 */
 	private Set<GdlSentence> alwaysTrueBases;
 
+
+
+	/****************** PRECONDITION CHECK - START *****************/
+	public int inputlessOr;
+	public int inputlessGoal;
+	public int inputlessTerminal;
+	public int inputlessLegal;
+	public int inputlessNonInput;
+	public int inputlessOther;
+	public int inputlessBase;
+
+	public int numLegals;
+	public int numPossibleInputs;
+	public int numAddedInputs;
+	/****************** PRECONDITION CHECK - END *****************/
+
+
+
 	/**
 	 * Creates a new PropNet from a list of Components.
 	 *
-	 * TODO: Also checks if a gate or a proposition has no inputs and if so connects it to the FALSE component
+	 * TODO: Also checks if a gate or a proposition has no inputs and if so connect it to the FALSE component
 	 * (TRUE component if it is a NOT).
 	 * Note: if a BASE proposition has no input it won't be detected as base proposition, so can be
 	 * treated as any other proposition and connected to FALSE.
@@ -123,6 +149,23 @@ public class DynamicPropNet {
 	 *            A list of Components.
 	 */
 	public DynamicPropNet(List<Role> roles, Set<DynamicComponent> components, DynamicConstant trueConstant, DynamicConstant falseConstant){
+
+
+		/************ PRECONDITION CHECK - START *************/
+		this.inputlessOr = 0;
+		this.inputlessGoal = 0;
+		this.inputlessTerminal = 0;
+		this.inputlessLegal = 0;
+		this.inputlessNonInput = 0;
+		this.inputlessOther = 0;
+		this.inputlessBase = 0;
+
+		this.numLegals = 0;
+		this.numPossibleInputs = 0;
+		this.numAddedInputs = 0;
+		/************ PRECONDITION CHECK - END *************/
+
+
 
 		//System.out.println();
 		//System.out.println(trueConstant.getComponentType());
@@ -232,6 +275,14 @@ public class DynamicPropNet {
 						if(possibleInputsPerRole != null){
 							//...otherwise we put this proposition in the map of possible inputs.
 							possibleInputsPerRole.put(gdlMove, p);
+							// We set that the proposition is of type INPUT for now. But if later we find out that
+							// there is no corresponding legal this proposition will be classified back to OTHER.
+							p.setPropositionType(PROP_TYPE.INPUT);
+
+							/************ PRECONDITION CHECK - START *************/
+							this.numPossibleInputs++;
+							/************ PRECONDITION CHECK - END *************/
+
 						}
 						/* ALG3 - END */
 
@@ -251,6 +302,12 @@ public class DynamicPropNet {
 						if(possibleLegalsPerRole != null){
 							//...otherwise we put this proposition in the map of possible legals.
 							possibleLegals.get(r).put(gdlMove, p);
+							// We set that the proposition is of type LEGAL.
+							p.setPropositionType(PROP_TYPE.LEGAL);
+
+							/************ PRECONDITION CHECK - START *************/
+							this.numLegals++;
+							/************ PRECONDITION CHECK - END *************/
 						}
 						/* ALG3 - END */
 
@@ -289,13 +346,67 @@ public class DynamicPropNet {
 
 			    //System.out.println("["+c.getComponentType()+"]");
 
+			    // If the proposition is not a possible INPUT proposition, we must check if it has no inputs,
+			    // and if so set the FALSE constant as its input.
+			    if(p.getInputs().size() == 0 && p.getPropositionType() != PROP_TYPE.INPUT){
+					p.addInput(falseConstant);
+					falseConstant.addOutput(p);
+
+
+
+					/************ PRECONDITION CHECK - START *************/
+					switch(p.getPropositionType()){
+					case GOAL:
+						this.inputlessGoal++;
+						break;
+					case TERMINAL:
+						this.inputlessTerminal++;
+						break;
+					case LEGAL:
+						this.inputlessLegal++;
+						break;
+					case OTHER:
+						this.inputlessOther++;
+						//System.out.println(p.getComponentType());
+						break;
+					case BASE:
+						this.inputlessBase++;
+						break;
+					default:
+						break;
+					}
+					/************ PRECONDITION CHECK - END *************/
+
+
+
+
+
+
+
+
+				}
 			}else if(c instanceof DynamicTransition){
-
+				if(c.getInputs().size() == 0){
+					throw new RuntimeException("Unhandled input-less component type: TRANSITION");
+				}
 			}else if(c instanceof DynamicNot){
-
+				if(c.getInputs().size() == 0){
+					throw new RuntimeException("Unhandled input-less component type: NOT");
+				}
 			}else if(c instanceof DynamicAnd){
+				if(c.getInputs().size() == 0){
+					throw new RuntimeException("Unhandled input-less component type: AND");
+				}
 				this.andOrGatesNumber++;
 			}else if(c instanceof DynamicOr){
+				if(c.getInputs().size() == 0){
+					c.addInput(falseConstant);
+					falseConstant.addOutput(c);
+
+					/************ PRECONDITION CHECK - START *************/
+					this.inputlessOr++;
+					/************ PRECONDITION CHECK - END *************/
+				}
 				this.andOrGatesNumber++;
 			}else{
 				throw new RuntimeException("Unhandled component type " + c.getClass());
@@ -373,6 +484,7 @@ public class DynamicPropNet {
 			/* ALG3 - START */
 			Map<List<GdlTerm>,DynamicProposition> possibleLegalsPerRole = possibleLegals.get(r);
 			Map<List<GdlTerm>,DynamicProposition> possibleInputsPerRole = possibleInputs.get(r);
+
 			for(Entry<List<GdlTerm>,DynamicProposition> legalEntry : possibleLegalsPerRole.entrySet()){
 				DynamicProposition input = possibleInputsPerRole.remove(legalEntry.getKey());
 
@@ -387,6 +499,7 @@ public class DynamicPropNet {
 				if(input == null){
 					input = new DynamicProposition(GdlPool.getRelation(GdlPool.getConstant("does"), legalEntry.getValue().getName().getBody()));
 
+					input.setPropositionType(PROP_TYPE.INPUT);
 					/*System.out.println("INLEGAL:");
 
 					for(DynamicComponent i: legalEntry.getValue().getInputs()){
@@ -407,16 +520,29 @@ public class DynamicPropNet {
 
 					System.out.println("INPUT = " + input.getName()); */
 
+					/************ PRECONDITION CHECK - START *************/
+					this.numAddedInputs++;
+					/************ PRECONDITION CHECK - END *************/
+
 					this.components.add(input);
 				}
 
 				// Now we put both the legal and input in the correct
 				// list for the role in the same position
 				this.inputsPerRole.get(r).add(input);
-				input.setPropositionType(PROP_TYPE.INPUT);
 				this.legalsPerRole.get(r).add(legalEntry.getValue());
-				legalEntry.getValue().setPropositionType(PROP_TYPE.LEGAL);
 
+			}
+
+			for(DynamicProposition inputProp : possibleInputsPerRole.values()){
+				// We have to set back to OTHER the type of the input propositions that have turned out to not be inputs...
+				inputProp.setPropositionType(PROP_TYPE.OTHER);
+				// ...and if they have no inputs set FALSE as their input.
+				if(inputProp.getInputs().size() == 0){
+					inputProp.addInput(falseConstant);
+					falseConstant.addOutput(inputProp);
+					this.inputlessNonInput++;
+				}
 			}
 
 			for(DynamicProposition p : this.inputsPerRole.get(r)){

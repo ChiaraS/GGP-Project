@@ -1,4 +1,4 @@
-package csironi.ggp.course.experiments;
+package csironi.ggp.course.experiments.tournaments;
 
 import java.io.BufferedWriter;
 import java.io.File;
@@ -19,7 +19,7 @@ import org.ggp.base.util.game.Game;
 import org.ggp.base.util.gdl.grammar.Gdl;
 import org.ggp.base.util.logging.GamerLogger;
 import org.ggp.base.util.match.Match;
-import org.ggp.base.util.propnet.creationManager.SeparateInternalPropnetCreationManager;
+import org.ggp.base.util.propnet.creationManager.SeparateInternalPropnetManager;
 import org.ggp.base.util.statemachine.exceptions.GoalDefinitionException;
 import org.ggp.base.util.statemachine.exceptions.StateMachineException;
 import org.ggp.base.util.statemachine.implementation.propnet.SeparateInternalPropnetStateMachine;
@@ -75,7 +75,7 @@ public class MatchRunner extends Thread{
         ExecutorService executor = Executors.newSingleThreadExecutor();
 
         // Create the propnet creation manager
-        SeparateInternalPropnetCreationManager manager = new SeparateInternalPropnetCreationManager(this.description, System.currentTimeMillis() + pnCreationTime);
+        SeparateInternalPropnetManager manager = new SeparateInternalPropnetManager(this.description, System.currentTimeMillis() + pnCreationTime);
 
         // Start the manager
   	  	executor.execute(manager);

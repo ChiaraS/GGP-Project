@@ -1201,6 +1201,9 @@ public class DynamicPropNetFactory {
 
 
 	/**
+	 * NOTE: this method is not used anymore because the fixing of the input-less components has been
+	 * directly incorporated in the initialization of the propnet.
+	 *
 	 * This method checks every component in the propnet looking for the ones that have no input.
 	 * Except input propositions and constants, all components in the propnet are supposed to have
 	 * at least an input. If one that has no inputs is detected it is connected to a constant
@@ -1225,7 +1228,7 @@ public class DynamicPropNetFactory {
 	 *
 	 * IMPORTANT NOTE: as it is, the propnet works correctly on all games in the repository even if this method
 	 * is never run. This is because the propnet for such games is meant to work when all the input-less components
-	 * are set to false (and we have the exetrnal propnet state that initializes such components' default truth
+	 * are set to false (and we have the external propnet state that initializes such components' default truth
 	 * value to false).
 	 * However is not impossible that there will be a game that will have input-less components that will require
 	 * a different initialization value. Whenever this will happen there are two ways to fix the problem:
@@ -1275,9 +1278,20 @@ public class DynamicPropNetFactory {
 		}
 
 		// Now we can remove the (unnecessary) components that are always true or false.
-		optimizeAwayTrueAndFalse2(pn, trueConstant, falseConstant);
+		//optimizeAwayTrueAndFalse2(pn, trueConstant, falseConstant);
 
 	}
+
+	public static void optimizeAwayConstants(DynamicPropNet pn){
+		DynamicConstant trueConstant = pn.getTrueConstant();
+		DynamicConstant falseConstant = pn.getFalseConstant();
+
+		optimizeAwayTrueAndFalse2(pn, trueConstant, falseConstant);
+	}
+
+
+
+
 
 	/**
 	 * This method removes from the propnet the propositions that have no particular meaning in the game
@@ -1333,7 +1347,7 @@ public class DynamicPropNetFactory {
 	 * Represents the "type" of a node with respect to which truth
 	 * values it is capable of having: true, false, either value,
 	 * or neither value. Used by
-	 * {@link DynamicPropNetFactory#removeConstantValueComponents(DynamicPropNet)}.
+	 * {@link DynamicPropNetFactory#optimizeAwayConstantValueComponents(DynamicPropNet)}.
 	 */
 	private static enum Type { NEITHER(false, false),
 						TRUE(true, false),
@@ -1448,7 +1462,7 @@ public class DynamicPropNetFactory {
 	 * @param pn
 	 * @throws InterruptedException
 	 */
-	public static void removeConstantValueComponents(DynamicPropNet pn) throws InterruptedException{
+	public static void optimizeAwayConstantValueComponents(DynamicPropNet pn) throws InterruptedException{
 
 		DynamicConstant trueConstant = pn.getTrueConstant();
 		DynamicConstant falseConstant = pn.getFalseConstant();

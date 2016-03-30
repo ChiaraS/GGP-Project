@@ -1,7 +1,9 @@
 package csironi.ggp.course.verifiers;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import org.ggp.base.util.logging.GamerLogger;
 import org.ggp.base.util.statemachine.MachineState;
@@ -99,6 +101,16 @@ public class ExtendedStateMachineVerifier {
             	MachineState[] theCurrentStates = new MachineState[theMachines.size()];
             	for(int i = 0; i < theMachines.size(); i++) {
             		theCurrentStates[i] = theMachines.get(i).getInitialState();
+
+            		/*
+            		if(!(theCurrentStates[i].equals(theCurrentStates[0]))){
+            			GamerLogger.log("Verifier", "Machine #" + i + " has an initial state that's different from the one of Machine #0.");
+            			GamerLogger.log("Verifier", "Machine #" + i + " state: " + theCurrentStates[i]+ ".");
+            			GamerLogger.log("Verifier", "Machine #0 state: " + theCurrentStates[0]+ ".");
+            			return false;
+            		}
+            		*/
+
             		//System.out.println("Getting initial state of machine " + i);
             		//if(i == 0){
             			//System.out.println(theCurrentStates[i].getContents());
@@ -156,12 +168,29 @@ public class ExtendedStateMachineVerifier {
 					            		return false;
 					            	}
 
+					            	// Transform from lists to sets then check equality
+					            	Set<Move> referenceSet = new HashSet<Move>(referenceMoves);
+					            	Set<Move> subjectSet = new HashSet<Move>(subjectMoves);
+
 					                if(!(subjectMoves.size() == referenceMoves.size())) {
 					                    GamerLogger.log("Verifier", "Inconsistency between machine #" + i + " and ProverStateMachine over state " + theCurrentStates[0] + " vs " + theCurrentStates[i].getContents());
 					                    GamerLogger.log("Verifier", "Machine #" + 0 + " has move count = " + referenceMoves.size() + " for role " + theRole);
 					                    GamerLogger.log("Verifier", "Machine #" + i + " has move count = " + subjectMoves.size() + " for role " + theRole);
 					                    GamerLogger.log("Verifier", "Machine #" + 0 + " has legal moves = " + referenceMoves);
 					                    GamerLogger.log("Verifier", "Machine #" + i + " has legal moves = " + subjectMoves);
+					                    return false;
+					                }else if(!(subjectSet.size() == referenceSet.size())){
+					                	GamerLogger.log("Verifier", "MOVES SETS Inconsistency between machine #" + i + " and ProverStateMachine over state " + theCurrentStates[0] + " vs " + theCurrentStates[i].getContents());
+					                	GamerLogger.log("Verifier", "Machine #" + 0 + " has move count = " + referenceSet.size() + " for role " + theRole);
+					                	GamerLogger.log("Verifier", "Machine #" + i + " has move count = " + subjectSet.size() + " for role " + theRole);
+					                	GamerLogger.log("Verifier", "Machine #" + 0 + " has legal moves = " + referenceSet);
+					                	GamerLogger.log("Verifier", "Machine #" + i + " has legal moves = " + subjectSet);
+					                    return false;
+					                }else if(!(subjectSet.equals(referenceSet))){
+					                	GamerLogger.log("Verifier", "MOVES SETS Inconsistency between machine #" + i + " and ProverStateMachine over state " + theCurrentStates[0] + " vs " + theCurrentStates[i].getContents());
+					                	GamerLogger.log("Verifier", "Detected different legal moves for the machines");
+					                	GamerLogger.log("Verifier", "Machine #" + 0 + " has legal moves = " + referenceSet);
+					                	GamerLogger.log("Verifier", "Machine #" + i + " has legal moves = " + subjectSet);
 					                    return false;
 					                }
 					                //System.out.println("Machines have same number of moves.");
@@ -196,6 +225,14 @@ public class ExtendedStateMachineVerifier {
 				    for(int i = 1; i < theMachines.size(); i++) {
 			            try {
 			                theCurrentStates[i] = theMachines.get(i).getNextState(theCurrentStates[i], theJointMove);
+			                /*
+			                if(!theCurrentStates[i].equals(theCurrentStates[0])){
+			                	GamerLogger.log("Verifier", "Machine #" + i + " has a next state that's different from the one of Machine #0.");
+		            			GamerLogger.log("Verifier", "Machine #" + i + " state: " + theCurrentStates[i]+ ".");
+		            			GamerLogger.log("Verifier", "Machine #0 state: " + theCurrentStates[0]+ ".");
+		            			return false;
+			                }
+			                */
 			                //System.out.println("Getting next state of machine " + i);
 			            } catch(StateMachineException sme) {
 			            	GamerLogger.log("Verifier", "Machine #" + i + " failed computation of next state for state " + theCurrentStates[i] + " and joint move " + theJointMove + ".");

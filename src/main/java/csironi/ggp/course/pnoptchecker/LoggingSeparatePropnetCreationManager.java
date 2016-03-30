@@ -268,7 +268,7 @@ public class LoggingSeparatePropnetCreationManager extends Thread{
 		startTime = System.currentTimeMillis();
 
 		try {
-			DynamicPropNetFactory.removeConstantValueComponents(this.dynamicPropNet);
+			DynamicPropNetFactory.optimizeAwayConstantValueComponents(this.dynamicPropNet);
 		} catch (InterruptedException e) {
 			timeSpent = System.currentTimeMillis()-startTime;
     		totalTime += timeSpent;

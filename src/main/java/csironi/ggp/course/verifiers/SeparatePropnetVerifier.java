@@ -5,13 +5,16 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 
+import org.apache.logging.log4j.ThreadContext;
 import org.ggp.base.util.game.GameRepository;
+import org.ggp.base.util.game.ManualUpdateLocalGameRepository;
 import org.ggp.base.util.gdl.grammar.Gdl;
+import org.ggp.base.util.gdl.grammar.GdlPool;
 import org.ggp.base.util.logging.GamerLogger;
 import org.ggp.base.util.logging.GamerLogger.FORMAT;
 import org.ggp.base.util.match.Match;
 import org.ggp.base.util.propnet.architecture.separateExtendedState.immutable.ImmutablePropNet;
-import org.ggp.base.util.propnet.creationManager.SeparateInternalPropnetCreationManager;
+import org.ggp.base.util.propnet.creationManager.SeparateInternalPropnetManager;
 import org.ggp.base.util.propnet.state.ImmutableSeparatePropnetState;
 import org.ggp.base.util.statemachine.StateMachine;
 import org.ggp.base.util.statemachine.cache.SeparateInternalPropnetCachedStateMachine;
@@ -49,6 +52,10 @@ import org.ggp.base.util.statemachine.implementation.prover.ProverStateMachine;
 *
 */
 public class SeparatePropnetVerifier {
+
+	static{
+		System.setProperty("isThreadContextMapInheritable", "true");
+	}
 
 	public static void main(String[] args) throws InterruptedException{
 
@@ -108,10 +115,17 @@ public class SeparatePropnetVerifier {
 		SeparateInternalPropnetStateMachine thePropnetMachine;
 		StateMachine theSubject;
 
-	    GamerLogger.setSpilloverLogfile("SeparatePropnetVerifierTable.csv");
+		String mainLogFolder = System.currentTimeMillis() + ".Verifier";
+    	ThreadContext.put("LOG_FOLDER", mainLogFolder);
+
+    	GamerLogger.startFileLogging();
+
 	    GamerLogger.log(FORMAT.CSV_FORMAT, "SeparatePropnetVerifierTable", "Game key;PN initialization time (ms);PN construction time (ms);SM initialization time;Rounds;Completed rounds;Test duration (ms);Subject exception;Other exceptions;Pass;");
 
-	    GameRepository theRepository = GameRepository.getDefaultRepository();
+	    //GameRepository theRepository = GameRepository.getDefaultRepository();
+
+	    GameRepository theRepository = new ManualUpdateLocalGameRepository("/home/csironi/GAMEREPOS/GGPBase-GameRepo-03022016");
+
 	    for(String gameKey : theRepository.getGameKeys()) {
 	        if(gameKey.contains("laikLee")) continue;
 
@@ -122,7 +136,7 @@ public class SeparatePropnetVerifier {
 
 	        Match fakeMatch = new Match(gameKey + System.currentTimeMillis(), -1, -1, -1,theRepository.getGame(gameKey) );
 
-	        GamerLogger.startFileLogging(fakeMatch, "SeparatePropnetVerifier");
+	        ThreadContext.put("LOG_FOLDER", mainLogFolder + "/logs/" + fakeMatch.getMatchId());
 
 	        GamerLogger.log("Verifier", "Testing on game " + gameKey);
 
@@ -134,7 +148,7 @@ public class SeparatePropnetVerifier {
 	        ExecutorService executor = Executors.newSingleThreadExecutor();
 
 	        // Create the propnet creation manager
-	        SeparateInternalPropnetCreationManager manager = new SeparateInternalPropnetCreationManager(description, System.currentTimeMillis() + initializationTime);
+	        SeparateInternalPropnetManager manager = new SeparateInternalPropnetManager(description, System.currentTimeMillis() + initializationTime, null);
 
 	        // Start the manager
 	  	  	executor.execute(manager);
@@ -150,7 +164,7 @@ public class SeparatePropnetVerifier {
 				executor.shutdownNow(); // Interrupt everything
 				GamerLogger.logError("Verifier", "State machine verification interrupted. Test on game "+ gameKey +" won't be completed.");
 				GamerLogger.logStackTrace("Verifier", e);
-				GamerLogger.stopFileLogging();
+				//GamerLogger.stopFileLogging();
 				Thread.currentThread().interrupt();
 				return;
 			}
@@ -171,7 +185,7 @@ public class SeparatePropnetVerifier {
 					// What happens to the still running tasks in the executor? Who will make sure they terminate?
 					GamerLogger.logError("Verifier", "State machine verification interrupted. Test on game "+ gameKey +" won't be completed.");
 					GamerLogger.logStackTrace("Verifier", e);
-					GamerLogger.stopFileLogging();
+					//GamerLogger.stopFileLogging();
 					Thread.currentThread().interrupt();
 					return;
 				}
@@ -214,7 +228,7 @@ public class SeparatePropnetVerifier {
 		        long testStart = System.currentTimeMillis();
 
 		        /***************************************/
-			    //System.gc();
+			    System.gc();
 			    /***************************************/
 
 		        pass = ExtendedStateMachineVerifier.checkMachineConsistency(theReference, theSubject, testTime);
@@ -232,13 +246,13 @@ public class SeparatePropnetVerifier {
 
 	        GamerLogger.log(FORMAT.PLAIN_FORMAT, "Verifier", "");
 
-	        GamerLogger.stopFileLogging();
+	        ThreadContext.put("LOG_FOLDER", mainLogFolder);
 
 	        GamerLogger.log(FORMAT.CSV_FORMAT, "SeparatePropnetVerifierTable", gameKey + ";" + manager.getTotalInitTime() + ";" + manager.getPropnetConstructionTime() + ";" + smInitTime +  ";"  + rounds +  ";"  + completedRounds + ";"  + testDuration + ";"  + exception + ";"  + otherExceptions + ";" + pass + ";");
 
 	        /***************************************/
-	        //System.gc();
-	        //GdlPool.drainPool();
+	        System.gc();
+	        GdlPool.drainPool();
 	        /***************************************/
 	    }
 	}

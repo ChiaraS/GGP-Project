@@ -17,6 +17,11 @@ import org.ggp.base.util.propnet.architecture.separateExtendedState.immutable.co
 import org.ggp.base.util.propnet.architecture.separateExtendedState.immutable.components.ImmutableOr;
 import org.ggp.base.util.propnet.architecture.separateExtendedState.immutable.components.ImmutableProposition;
 import org.ggp.base.util.propnet.architecture.separateExtendedState.immutable.components.ImmutableTransition;
+import org.ggp.base.util.propnet.creationManager.optimizationcallers.OptimizationCaller;
+import org.ggp.base.util.propnet.creationManager.optimizationcallers.OptimizeAwayConstantValueComponents;
+import org.ggp.base.util.propnet.creationManager.optimizationcallers.OptimizeAwayConstants;
+import org.ggp.base.util.propnet.creationManager.optimizationcallers.RemoveAnonPropositions;
+import org.ggp.base.util.propnet.creationManager.optimizationcallers.RemoveOutputlessComponents;
 import org.ggp.base.util.propnet.factory.DynamicPropNetFactory;
 import org.ggp.base.util.propnet.state.ImmutableSeparatePropnetState;
 import org.ggp.base.util.propnet.utils.PROP_TYPE;
@@ -43,11 +48,17 @@ import org.ggp.base.util.statemachine.Role;
  * @author C.Sironi
  *
  */
-public class SeparateInternalPropnetCreationManager extends Thread{
+public class SeparateInternalPropnetManager extends Thread{
 
 	private List<Gdl> description;
 
 	private long timeout;
+
+	/**
+	 * Array with all the optimizations that should be performed on the propnet
+	 * in the given order.
+	 */
+	private OptimizationCaller[] optimizations;
 
 	/**
 	 * Propnet structure to be used in the optimization phase. Can be modified.
@@ -74,9 +85,23 @@ public class SeparateInternalPropnetCreationManager extends Thread{
 	 */
 	private ImmutableSeparatePropnetState initialPropnetState;
 
-	public SeparateInternalPropnetCreationManager(List<Gdl> description, long timeout) {
+	public SeparateInternalPropnetManager(List<Gdl> description, long timeout) {
+
+		this(description, timeout, null);
+
+		this.optimizations = new OptimizationCaller[4];
+
+		optimizations[0] = new OptimizeAwayConstants();
+		optimizations[1] = new RemoveAnonPropositions();
+		optimizations[2] = new OptimizeAwayConstantValueComponents();
+		optimizations[3] = new RemoveOutputlessComponents();
+
+	}
+
+	public SeparateInternalPropnetManager(List<Gdl> description, long timeout, OptimizationCaller[] optimizations) {
 		this.description = description;
 		this.timeout = timeout;
+		this.optimizations = optimizations;
 	}
 
 	@Override
@@ -141,13 +166,24 @@ public class SeparateInternalPropnetCreationManager extends Thread{
 		}
 		*/
 
+		/****** PRE-OPTIMIZATIONS (no more needed, done automatically when initializing the propnet)*******/
+
+		/** 0. FIX INPUTLESS COMPONENT:
+		 *  set to true or false the input of input-less components that are not supposed to have no input.
+		 *  Required before performing any other optimization.
+		 */
+		//DynamicPropNetFactory.fixInputlessComponents(this.dynamicPropNet);
+
 		/***************************************** OPTIMIZATIONS ******************************************/
 
-		/** 1. FIX INPUTLESS COMPONENT:
-		 *  set to true or false the input of input-less components that are not supposed to have no input
-		 *  and then remove components that are useless (e.g. always true or false).
+		/**
+		 * No need to call each optimization singularly.
+		 * The optimizations will be called iterating over the array of optimizations.
 		 */
-		DynamicPropNetFactory.fixInputlessComponents(this.dynamicPropNet);
+		/** 1. OPTIMIZE AWAY CONSTANT COMPONENTS:
+		 * 	remove components that are useless (e.g. always true or false).
+		 */
+		//DynamicPropNetFactory.optimizeAwayConstants(this.dynamicPropNet);
 
 		/*
 		System.out.println("Propnet has: " + this.dynamicPropNet.getSize() + " COMPONENTS, " + this.dynamicPropNet.getNumPropositions() + " PROPOSITIONS, " + this.dynamicPropNet.getNumLinks() + " LINKS.");
@@ -165,7 +201,7 @@ public class SeparateInternalPropnetCreationManager extends Thread{
 		 *  find and remove all the propositions that have no particular GDL meaning (i.e. the ones that have
 		 *  type OTHER). Before removing them connect their single input to each of their outputs.
 		 */
-		DynamicPropNetFactory.removeAnonymousPropositions(this.dynamicPropNet);
+		//DynamicPropNetFactory.removeAnonymousPropositions(this.dynamicPropNet);
 
 		/*
 		System.out.println("Propnet has: " + this.dynamicPropNet.getSize() + " COMPONENTS, " + this.dynamicPropNet.getNumPropositions() + " PROPOSITIONS, " + this.dynamicPropNet.getNumLinks() + " LINKS.");
@@ -185,15 +221,15 @@ public class SeparateInternalPropnetCreationManager extends Thread{
 		 *  optimize away the components that result in being useless.
 		 */
 
-		try {
-			DynamicPropNetFactory.removeConstantValueComponents(this.dynamicPropNet);
-		} catch (InterruptedException e) {
-			GamerLogger.logError("PropnetManager", "Propnet optimization interrupted!");
-    		GamerLogger.logStackTrace("PropnetManager", e);
+		//try {
+		//	DynamicPropNetFactory.optimizeAwayConstantValueComponents(this.dynamicPropNet);
+		//} catch (InterruptedException e) {
+		//	GamerLogger.logError("PropnetManager", "Propnet optimization interrupted!");
+    	//	GamerLogger.logStackTrace("PropnetManager", e);
     		// Note that here the dynamic propnet is still consistent. The initial propnet state can
     		// be computed on the previous optimization by removing the following "return" statement.
-    		return;
-		}
+    	//	return;
+		//}
 
 		/*
 		System.out.println("Propnet has: " + this.dynamicPropNet.getSize() + " COMPONENTS, " + this.dynamicPropNet.getNumPropositions() + " PROPOSITIONS, " + this.dynamicPropNet.getNumLinks() + " LINKS.");
@@ -213,7 +249,7 @@ public class SeparateInternalPropnetCreationManager extends Thread{
 		 *  has no outputs).
 		 */
 
-		DynamicPropNetFactory.removeOutputlessComponents(this.dynamicPropNet);
+		//DynamicPropNetFactory.removeOutputlessComponents(this.dynamicPropNet);
 
 		/*
 		System.out.println("Propnet has: " + this.dynamicPropNet.getSize() + " COMPONENTS, " + this.dynamicPropNet.getNumPropositions() + " PROPOSITIONS, " + this.dynamicPropNet.getNumLinks() + " LINKS.");
@@ -224,7 +260,22 @@ public class SeparateInternalPropnetCreationManager extends Thread{
 		System.out.println("Propnet has: " + this.dynamicPropNet.getNumInits() + " INITS, " + this.dynamicPropNet.getNumTerminals() + " TERMINALS.");
 		*/
 
-		//System.out.println(this.dynamicPropNet.toString());
+		//System.out.println(this.optimizations);
+
+		if(this.optimizations != null){
+			for(OptimizationCaller caller : this.optimizations){
+				try {
+					caller.optimize(this.dynamicPropNet);
+				} catch (InterruptedException e) {
+					GamerLogger.logError("PropnetManager", "Propnet optimization interrupted!");
+		    		GamerLogger.logStackTrace("PropnetManager", e);
+		    		// Note that here the dynamic propnet is still consistent (???). The initial propnet state can
+		    		// be computed on the previous optimization by removing the following "return" statement (and
+		    		// probably saving somewhere the state of the dynamic propnet before calling the last optimization).
+		    		return;
+				}
+			}
+		}
 
 		/************************ PROPNET EXTERNAL COMPLETE STATE INITIALIZATION **************************/
 

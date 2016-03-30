@@ -1,4 +1,4 @@
-package csironi.ggp.course.experiments;
+package csironi.ggp.course.experiments.tournaments;
 
 import java.util.ArrayList;
 import java.util.List;

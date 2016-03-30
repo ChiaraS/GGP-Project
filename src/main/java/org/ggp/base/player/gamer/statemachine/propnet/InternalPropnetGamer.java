@@ -13,7 +13,7 @@ import org.ggp.base.util.game.Game;
 import org.ggp.base.util.gdl.grammar.GdlPool;
 import org.ggp.base.util.logging.GamerLogger;
 import org.ggp.base.util.propnet.architecture.separateExtendedState.immutable.ImmutablePropNet;
-import org.ggp.base.util.propnet.creationManager.SeparateInternalPropnetCreationManager;
+import org.ggp.base.util.propnet.creationManager.SeparateInternalPropnetManager;
 import org.ggp.base.util.propnet.state.ImmutableSeparatePropnetState;
 import org.ggp.base.util.statemachine.InternalPropnetStateMachine;
 import org.ggp.base.util.statemachine.StateMachine;
@@ -193,7 +193,7 @@ public abstract class InternalPropnetGamer extends StateMachineGamer {
 	        ExecutorService executor = Executors.newSingleThreadExecutor();
 
 	        // Create the propnet creation manager
-	        SeparateInternalPropnetCreationManager manager = new SeparateInternalPropnetCreationManager(getMatch().getGame().getRules(), this.getMetagamingTimeout());
+	        SeparateInternalPropnetManager manager = new SeparateInternalPropnetManager(getMatch().getGame().getRules(), this.getMetagamingTimeout());
 
 	        // Start the manager
 	  	  	executor.execute(manager);

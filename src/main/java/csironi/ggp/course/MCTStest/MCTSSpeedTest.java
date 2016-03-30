@@ -27,7 +27,7 @@ import org.ggp.base.util.logging.GamerLogger;
 import org.ggp.base.util.logging.GamerLogger.FORMAT;
 import org.ggp.base.util.match.Match;
 import org.ggp.base.util.propnet.architecture.separateExtendedState.immutable.ImmutablePropNet;
-import org.ggp.base.util.propnet.creationManager.SeparateInternalPropnetCreationManager;
+import org.ggp.base.util.propnet.creationManager.SeparateInternalPropnetManager;
 import org.ggp.base.util.propnet.state.ImmutableSeparatePropnetState;
 import org.ggp.base.util.statemachine.InternalPropnetStateMachine;
 import org.ggp.base.util.statemachine.Move;
@@ -157,7 +157,7 @@ public class MCTSSpeedTest {
 	        ExecutorService executor = Executors.newSingleThreadExecutor();
 
 	        // Create the propnet creation manager
-	        SeparateInternalPropnetCreationManager manager = new SeparateInternalPropnetCreationManager(description, System.currentTimeMillis() + givenInitTime);
+	        SeparateInternalPropnetManager manager = new SeparateInternalPropnetManager(description, System.currentTimeMillis() + givenInitTime);
 
 	  	  	// Start the manager
 	  	  	executor.execute(manager);
