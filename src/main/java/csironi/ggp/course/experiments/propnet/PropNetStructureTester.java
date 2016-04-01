@@ -93,7 +93,8 @@ public class PropNetStructureTester {
 		}else{
 			boolean properStructure = DynamicPropNetFactory.checkPropnetStructure(propnet);
 
-			GamerLogger.log(GamerLogger.FORMAT.CSV_FORMAT, "StructureCheckerSummary", gameKey + ";" + propnet.inputlessOr + ";" + propnet.inputlessGoal + ";" + propnet.inputlessTerminal + ";" + propnet.inputlessLegal + ";" + propnet.inputlessNonInput + ";" + propnet.inputlessOther + ";" +  propnet.inputlessBase + ";" + propnet.numLegals + ";" + propnet.numPossibleInputs + ";" + propnet.numAddedInputs + ";" + properStructure + ";");
+			// UNCOMMENT THIS IF WANT TO RUN
+			//GamerLogger.log(GamerLogger.FORMAT.CSV_FORMAT, "StructureCheckerSummary", gameKey + ";" + propnet.inputlessOr + ";" + propnet.inputlessGoal + ";" + propnet.inputlessTerminal + ";" + propnet.inputlessLegal + ";" + propnet.inputlessNonInput + ";" + propnet.inputlessOther + ";" +  propnet.inputlessBase + ";" + propnet.numLegals + ";" + propnet.numPossibleInputs + ";" + propnet.numAddedInputs + ";" + properStructure + ";");
 		}
 
 	}

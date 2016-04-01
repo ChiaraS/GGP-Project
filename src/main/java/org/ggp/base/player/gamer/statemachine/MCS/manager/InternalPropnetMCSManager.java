@@ -95,6 +95,21 @@ public class InternalPropnetMCSManager {
 		this.visitedNodes = 0;
 		this.searchStart = 0;
 		this.searchEnd = 0;
+
+		String toLog = "MCS manager initialized with the following state mahcine " + this.theMachine.getName();
+
+		toLog += "\nMCS manager initialized with the following parameters: [maxSearchDepth = " + this.maxSearchDepth + "]";
+
+		toLog += "\nMCS manager initialized with the following playout strategy: ";
+
+		//for(Strategy s : this.strategies){
+		//	toLog += "\n" + s.printStrategy();
+		//}
+
+		toLog += "\n" + this.playoutStrategy.printStrategy();
+
+		GamerLogger.log("MCSManager", toLog);
+
 	}
 
 	public CompleteMoveStats getBestMove() throws MCSException{

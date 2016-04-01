@@ -113,6 +113,8 @@ public class SeparateInternalPropnetManager extends Thread{
 		// or if there probably is not enough time and we don't want to risk taking too
 		// long to interrupt in case the time was not enough.
 
+		GamerLogger.log("PropnetManager", "Starting to build propnet.");
+
 		// 1. Create the propnet.
 		long startTime = System.currentTimeMillis();
 
@@ -129,7 +131,7 @@ public class SeparateInternalPropnetManager extends Thread{
     	}
     	// Compute the time taken to construct the propnet
     	this.propNetConstructionTime = System.currentTimeMillis() - startTime;
-		GamerLogger.log("StateMachine", "[Propnet Creator] Propnet creation done. It took " + this.propNetConstructionTime + "ms.");
+		GamerLogger.log("PropnetManager", "[Propnet Creator] Propnet creation done. It took " + this.propNetConstructionTime + "ms.");
 
 
 		//System.out.println(this.dynamicPropNet.toString());
@@ -263,23 +265,39 @@ public class SeparateInternalPropnetManager extends Thread{
 		//System.out.println(this.optimizations);
 
 		if(this.optimizations != null){
+
+			GamerLogger.log("PropnetManager", "Performing optimizations.");
+
 			for(OptimizationCaller caller : this.optimizations){
 				try {
+					GamerLogger.log("PropnetManager", "Starting optimization " + caller.getClass().getSimpleName() + ".");
 					caller.optimize(this.dynamicPropNet);
+					GamerLogger.log("PropnetManager", "Ended optimization " + caller.getClass().getSimpleName() + ".");
 				} catch (InterruptedException e) {
-					GamerLogger.logError("PropnetManager", "Propnet optimization interrupted!");
+					GamerLogger.logError("PropnetManager", "Propnet optimization " + caller.getClass().getSimpleName() + " interrupted!");
 		    		GamerLogger.logStackTrace("PropnetManager", e);
-		    		// Note that here the dynamic propnet is still consistent (???). The initial propnet state can
-		    		// be computed on the previous optimization by removing the following "return" statement (and
-		    		// probably saving somewhere the state of the dynamic propnet before calling the last optimization).
+		    		this.dynamicPropNet = null;
+		    		this.initialPropnetState = null;
+		    		this.propNetConstructionTime = -1;
+		    		this.totalInitTime = System.currentTimeMillis() - startTime;
+		    		// TODO: if we fail here do something to save the propnet before this last optimization.
+		    		// That propnet is still usable. The initial propnet state can be computed on the previous
+		    		// optimization by removing the following "return" statement (and saving somewhere the
+		    		// state of the dynamic propnet before calling the last optimization).
 		    		return;
 				}
 			}
+		}else{
+			GamerLogger.log("PropnetManager", "No optimizations to be performed.");
 		}
 
 		/************************ PROPNET EXTERNAL COMPLETE STATE INITIALIZATION **************************/
 
+		GamerLogger.log("PropnetManager", "Starting computation of PropNet state.");
+
 		this.computeSeparatePropAutomata();
+
+		GamerLogger.log("PropnetManager", "Ended computation of PropNet state.");
 
 		this.totalInitTime = System.currentTimeMillis() - startTime;
 

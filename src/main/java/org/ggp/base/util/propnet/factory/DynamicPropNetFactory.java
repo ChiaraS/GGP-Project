@@ -2105,27 +2105,6 @@ public class DynamicPropNetFactory {
 	}
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 	public static boolean checkPropnetStructure(DynamicPropNet pn){
 
 		boolean propnetOk = true;
@@ -2214,20 +2193,22 @@ public class DynamicPropNetFactory {
 						GamerLogger.log("PropStructureChecker", "Component " + p.getComponentType() + " has wrong number of inputs: " + p.getInputs().size());
 						propnetOk = false;
 					}
+					/* A goal can have outputs!
 					if(p.getOutputs().size() != 0){
 						GamerLogger.log("PropStructureChecker", "Component " + p.getComponentType() + " has wrong number of outputs: " + p.getOutputs().size());
 						propnetOk = false;
-					}
+					}*/
 					break;
 				case TERMINAL:
 					if(p.getInputs().size() != 1){
 						GamerLogger.log("PropStructureChecker", "Component " + p.getComponentType() + " has wrong number of inputs: " + p.getInputs().size());
 						propnetOk = false;
 					}
+					/* A terminal can have outputs!
 					if(p.getOutputs().size() != 0){
 						GamerLogger.log("PropStructureChecker", "Component " + p.getComponentType() + " has wrong number of outputs: " + p.getOutputs().size());
 						propnetOk = false;
-					}
+					}*/
 					break;
 				case INIT:
 					if(p.getInputs().size() != 0){

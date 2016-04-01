@@ -113,7 +113,7 @@ public class DynamicPropNet {
 
 
 
-	/****************** PRECONDITION CHECK - START *****************/
+	/****************** PRECONDITION CHECK - START *****************
 	public int inputlessOr;
 	public int inputlessGoal;
 	public int inputlessTerminal;
@@ -125,7 +125,7 @@ public class DynamicPropNet {
 	public int numLegals;
 	public int numPossibleInputs;
 	public int numAddedInputs;
-	/****************** PRECONDITION CHECK - END *****************/
+	****************** PRECONDITION CHECK - END *****************/
 
 
 
@@ -151,7 +151,7 @@ public class DynamicPropNet {
 	public DynamicPropNet(List<Role> roles, Set<DynamicComponent> components, DynamicConstant trueConstant, DynamicConstant falseConstant){
 
 
-		/************ PRECONDITION CHECK - START *************/
+		/************ PRECONDITION CHECK - START *************
 		this.inputlessOr = 0;
 		this.inputlessGoal = 0;
 		this.inputlessTerminal = 0;
@@ -163,7 +163,7 @@ public class DynamicPropNet {
 		this.numLegals = 0;
 		this.numPossibleInputs = 0;
 		this.numAddedInputs = 0;
-		/************ PRECONDITION CHECK - END *************/
+		************ PRECONDITION CHECK - END *************/
 
 
 
@@ -279,9 +279,9 @@ public class DynamicPropNet {
 							// there is no corresponding legal this proposition will be classified back to OTHER.
 							p.setPropositionType(PROP_TYPE.INPUT);
 
-							/************ PRECONDITION CHECK - START *************/
+							/************ PRECONDITION CHECK - START *************
 							this.numPossibleInputs++;
-							/************ PRECONDITION CHECK - END *************/
+							************ PRECONDITION CHECK - END *************/
 
 						}
 						/* ALG3 - END */
@@ -305,9 +305,9 @@ public class DynamicPropNet {
 							// We set that the proposition is of type LEGAL.
 							p.setPropositionType(PROP_TYPE.LEGAL);
 
-							/************ PRECONDITION CHECK - START *************/
+							/************ PRECONDITION CHECK - START *************
 							this.numLegals++;
-							/************ PRECONDITION CHECK - END *************/
+							************ PRECONDITION CHECK - END *************/
 						}
 						/* ALG3 - END */
 
@@ -354,7 +354,7 @@ public class DynamicPropNet {
 
 
 
-					/************ PRECONDITION CHECK - START *************/
+					/************ PRECONDITION CHECK - START *************
 					switch(p.getPropositionType()){
 					case GOAL:
 						this.inputlessGoal++;
@@ -375,7 +375,7 @@ public class DynamicPropNet {
 					default:
 						break;
 					}
-					/************ PRECONDITION CHECK - END *************/
+					************ PRECONDITION CHECK - END *************/
 
 
 
@@ -403,9 +403,9 @@ public class DynamicPropNet {
 					c.addInput(falseConstant);
 					falseConstant.addOutput(c);
 
-					/************ PRECONDITION CHECK - START *************/
+					/************ PRECONDITION CHECK - START *************
 					this.inputlessOr++;
-					/************ PRECONDITION CHECK - END *************/
+					************ PRECONDITION CHECK - END *************/
 				}
 				this.andOrGatesNumber++;
 			}else{
@@ -520,9 +520,9 @@ public class DynamicPropNet {
 
 					System.out.println("INPUT = " + input.getName()); */
 
-					/************ PRECONDITION CHECK - START *************/
+					/************ PRECONDITION CHECK - START *************
 					this.numAddedInputs++;
-					/************ PRECONDITION CHECK - END *************/
+					************ PRECONDITION CHECK - END *************/
 
 					this.components.add(input);
 				}
@@ -541,7 +541,10 @@ public class DynamicPropNet {
 				if(inputProp.getInputs().size() == 0){
 					inputProp.addInput(falseConstant);
 					falseConstant.addOutput(inputProp);
+
+					/************ PRECONDITION CHECK - START *************
 					this.inputlessNonInput++;
+					************ PRECONDITION CHECK - END *************/
 				}
 			}
 
@@ -1236,7 +1239,7 @@ public class DynamicPropNet {
 	 * attention not to remove a component that is fundamental for the
 	 * the correct functioning of your implementation of the propnet
 	 * state machine (i.e. don't remove the terminal proposition if it
-	 * is the one that gets checked at for every state to know if the
+	 * is the one that gets checked for every state to know if the
 	 * state is terminal, or don't remove the INIT proposition if your
 	 * implementation of the state machine uses it to determine which
 	 * base propositions are true in the initial state).
@@ -1245,68 +1248,70 @@ public class DynamicPropNet {
 
 		boolean found = components.remove(c);
 
-		//Go through all the collections it could appear in
-		if(c instanceof DynamicProposition) {
-			DynamicProposition p = (DynamicProposition) c;
+		if(found){ // If it wasn't in the components then it should not be anywhere.
+			//Go through all the collections it could appear in
+			if(c instanceof DynamicProposition) {
+				DynamicProposition p = (DynamicProposition) c;
 
-			Role r;
+				Role r;
 
-			switch(p.getPropositionType()){
-			case BASE:
-				this.basePropositions.remove(p);
-				break;
-			case INPUT:
-				this.inputPropositions.remove(p);
-				// Find the role for this input
-				r = new Role((GdlConstant) ((GdlRelation) p.getName()).get(0));
-				this.inputsPerRole.get(r).remove(p);
-				break;
-			case LEGAL:
-				this.legalPropositions.remove(p);
-				// Find the role for this legal
-				r = new Role((GdlConstant) ((GdlRelation) p.getName()).get(0));
-				this.legalsPerRole.get(r).remove(p);
-				break;
-			case GOAL:
-				// Find the role for this goal
-				r = new Role((GdlConstant) ((GdlRelation) p.getName()).get(0));
-				this.goalsPerRole.get(r).remove(p);
-				break;
-			case TERMINAL:
-				if(this.terminalProposition == p){
-					this.terminalProposition = null;
+				switch(p.getPropositionType()){
+				case BASE:
+					this.basePropositions.remove(p);
+					break;
+				case INPUT:
+					this.inputPropositions.remove(p);
+					// Find the role for this input
+					r = new Role((GdlConstant) ((GdlRelation) p.getName()).get(0));
+					this.inputsPerRole.get(r).remove(p);
+					break;
+				case LEGAL:
+					this.legalPropositions.remove(p);
+					// Find the role for this legal
+					r = new Role((GdlConstant) ((GdlRelation) p.getName()).get(0));
+					this.legalsPerRole.get(r).remove(p);
+					break;
+				case GOAL:
+					// Find the role for this goal
+					r = new Role((GdlConstant) ((GdlRelation) p.getName()).get(0));
+					this.goalsPerRole.get(r).remove(p);
+					break;
+				case TERMINAL:
+					if(this.terminalProposition == p){
+						this.terminalProposition = null;
+					}
+					break;
+				case INIT:
+					/*if(this.initProposition == p){
+						this.initProposition = null;
+					}*/
+					break;
+				default:
+					break;
 				}
-				break;
-			case INIT:
-				/*if(this.initProposition == p){
-					this.initProposition = null;
-				}*/
-				break;
-			default:
-				break;
+
+				this.propositions.remove(p);
+			}else if(c instanceof DynamicConstant){
+				if(this.trueConstant == c){
+					this.trueConstant = null;
+				}else if(this.falseConstant == c){
+					this.falseConstant = null;
+				}
+			}else if(c instanceof DynamicAnd || c instanceof DynamicOr){
+				if(found){
+					this.andOrGatesNumber--;
+				}
 			}
 
-			this.propositions.remove(p);
-		}else if(c instanceof DynamicConstant){
-			if(this.trueConstant == c){
-				this.trueConstant = null;
-			}else if(this.falseConstant == c){
-				this.falseConstant = null;
-			}
-		}else if(c instanceof DynamicAnd || c instanceof DynamicOr){
-			if(found){
-				this.andOrGatesNumber--;
-			}
+			//Remove all the local links to the component
+			for(DynamicComponent parent : c.getInputs())
+				parent.removeOutput(c);
+			for(DynamicComponent child : c.getOutputs())
+				child.removeInput(c);
+			//These are actually unnecessary...
+			//c.removeAllInputs();
+			//c.removeAllOutputs();
 		}
-
-		//Remove all the local links to the component
-		for(DynamicComponent parent : c.getInputs())
-			parent.removeOutput(c);
-		for(DynamicComponent child : c.getOutputs())
-			child.removeInput(c);
-		//These are actually unnecessary...
-		//c.removeAllInputs();
-		//c.removeAllOutputs();
 	}
 
 	/**

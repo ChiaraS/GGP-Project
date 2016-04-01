@@ -3,12 +3,8 @@
  */
 package org.ggp.base.player.gamer.statemachine.MCTS.manager;
 
-import java.util.HashSet;
-import java.util.Set;
-
 import org.ggp.base.player.gamer.statemachine.MCS.manager.CompleteMoveStats;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.exceptions.MCTSException;
-import org.ggp.base.player.gamer.statemachine.MCTS.manager.strategies.Strategy;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.strategies.aftermove.AfterMoveStrategy;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.strategies.aftersimulation.AfterSimulationStrategy;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.strategies.backpropagation.BackpropagationStrategy;
@@ -95,12 +91,12 @@ public class InternalPropnetMCTSManager extends MCTSManager {
 	 */
 	private TreeNodeFactory theNodesFactory;
 
-	/**
+	/** NOT NEEDED FOR NOW SINCE ALL STRATEGIES ARE SEPARATE
 	 * A set containing all the distinct concrete strategy classes only once.
 	 * NOTE: two strategies might be implemented by the same concrete class implementing two
 	 * different interfaces, this set allows to perform certain operations only once per class.
 	 */
-	private Set<Strategy> strategies = new HashSet<Strategy>();
+	//private Set<Strategy> strategies = new HashSet<Strategy>();
 
 	/**
 	 * The state machine that this MCTS manager uses to reason on the game
@@ -185,19 +181,29 @@ public class InternalPropnetMCTSManager extends MCTSManager {
 		}
 		*/
 
-		this.strategies.add(this.expansionStrategy);
-		this.strategies.add(this.selectionStrategy);
-		this.strategies.add(this.backpropagationStrategy);
-		this.strategies.add(this.playoutStrategy);
-		this.strategies.add(this.moveChoiceStrategy);
+		//this.strategies.add(this.expansionStrategy);
+		//this.strategies.add(this.selectionStrategy);
+		//this.strategies.add(this.backpropagationStrategy);
+		//this.strategies.add(this.playoutStrategy);
+		//this.strategies.add(this.moveChoiceStrategy);
 
-		String toLog = "MCTS manager initialized with the following tree node factory: " + this.theNodesFactory.getClass().getSimpleName() + ".";
+		String toLog = "MCTS manager initialized with the following state mahcine " + this.theMachine.getName();
+
+		toLog += "\nMCTS manager initialized with the following parameters: [maxSearchDepth = " + this.maxSearchDepth + "]";
+
+		toLog += "\nMCTS manager initialized with the following tree node factory: " + this.theNodesFactory.getClass().getSimpleName() + ".";
 
 		toLog += "\nMCTS manager initialized with the following strategies: ";
 
-		for(Strategy s : this.strategies){
-			toLog += "\n" + s.printStrategy();
-		}
+		//for(Strategy s : this.strategies){
+		//	toLog += "\n" + s.printStrategy();
+		//}
+
+		toLog += "\n" + this.selectionStrategy.printStrategy();
+		toLog += "\n" + this.expansionStrategy.printStrategy();
+		toLog += "\n" + this.playoutStrategy.printStrategy();
+		toLog += "\n" + this.backpropagationStrategy.printStrategy();
+		toLog += "\n" + this.moveChoiceStrategy.printStrategy();
 
 		if(this.afterSimulationStrategy != null){
 			toLog += "\n" + this.afterSimulationStrategy.printStrategy();

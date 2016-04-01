@@ -265,6 +265,7 @@ public abstract class InternalPropnetGamer extends StateMachineGamer {
 	 */
 	@Override
 	public void stateMachineStop() {
+		// TODO: ATTENTION! You should add a different check here. The garbage collector can be called and the pool drained ONLY if there is just ONE player active in the whole program!
 		if(this.propnetBuild == PROPNET_BUILD.ALWAYS){
 			GdlPool.drainPool();
 			System.gc();
@@ -276,6 +277,7 @@ public abstract class InternalPropnetGamer extends StateMachineGamer {
 	 */
 	@Override
 	public void stateMachineAbort() {
+		// TODO: ATTENTION! You should add a different check here. The garbage collector can be called and the pool drained ONLY if there is just ONE player active in the whole program!
 		if(this.propnetBuild == PROPNET_BUILD.ALWAYS){
 			GdlPool.drainPool();
 			System.gc();
