@@ -6,9 +6,9 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 
-import org.ggp.base.player.gamer.statemachine.MCS.manager.InternalPropnetMCSManager;
-import org.ggp.base.player.gamer.statemachine.MCS.manager.CompleteMoveStats;
-import org.ggp.base.player.gamer.statemachine.MCTS.manager.strategies.playout.RandomPlayout;
+import org.ggp.base.player.gamer.statemachine.MCS.manager.propnet.CompleteMoveStats;
+import org.ggp.base.player.gamer.statemachine.MCS.manager.propnet.InternalPropnetMCSManager;
+import org.ggp.base.player.gamer.statemachine.MCTS.manager.propnet.strategies.playout.RandomPlayout;
 import org.ggp.base.util.game.GameRepository;
 import org.ggp.base.util.gdl.grammar.Gdl;
 import org.ggp.base.util.gdl.grammar.GdlPool;

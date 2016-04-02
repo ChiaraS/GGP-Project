@@ -2,13 +2,13 @@ package org.ggp.base.player.gamer.statemachine.MCTS;
 
 import java.util.Random;
 
-import org.ggp.base.player.gamer.statemachine.MCTS.manager.InternalPropnetMCTSManager;
-import org.ggp.base.player.gamer.statemachine.MCTS.manager.strategies.backpropagation.StandardBackpropagation;
-import org.ggp.base.player.gamer.statemachine.MCTS.manager.strategies.expansion.RandomExpansion;
-import org.ggp.base.player.gamer.statemachine.MCTS.manager.strategies.movechoice.MaximumScoreChoice;
-import org.ggp.base.player.gamer.statemachine.MCTS.manager.strategies.playout.RandomPlayout;
-import org.ggp.base.player.gamer.statemachine.MCTS.manager.strategies.selection.UCTSelection;
-import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.sequential.PnSequentialTreeNodeFactory;
+import org.ggp.base.player.gamer.statemachine.MCTS.manager.propnet.InternalPropnetMCTSManager;
+import org.ggp.base.player.gamer.statemachine.MCTS.manager.propnet.strategies.backpropagation.StandardBackpropagation;
+import org.ggp.base.player.gamer.statemachine.MCTS.manager.propnet.strategies.expansion.RandomExpansion;
+import org.ggp.base.player.gamer.statemachine.MCTS.manager.propnet.strategies.movechoice.MaximumScoreChoice;
+import org.ggp.base.player.gamer.statemachine.MCTS.manager.propnet.strategies.playout.RandomPlayout;
+import org.ggp.base.player.gamer.statemachine.MCTS.manager.propnet.strategies.selection.UCTSelection;
+import org.ggp.base.player.gamer.statemachine.MCTS.manager.propnet.treestructure.sequential.PnSequentialTreeNodeFactory;
 import org.ggp.base.util.statemachine.inernalPropnetStructure.InternalPropnetRole;
 
 public class SUCTMCTSGamer extends UCTMCTSGamer{

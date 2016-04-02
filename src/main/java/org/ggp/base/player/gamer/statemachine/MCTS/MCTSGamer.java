@@ -1,10 +1,10 @@
 package org.ggp.base.player.gamer.statemachine.MCTS;
 
 import org.ggp.base.player.gamer.event.GamerSelectedMoveEvent;
-import org.ggp.base.player.gamer.statemachine.MCS.manager.CompleteMoveStats;
-import org.ggp.base.player.gamer.statemachine.MCTS.manager.InternalPropnetMCTSManager;
+import org.ggp.base.player.gamer.statemachine.MCS.manager.propnet.CompleteMoveStats;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.exceptions.MCTSException;
-import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.PnMCTSNode;
+import org.ggp.base.player.gamer.statemachine.MCTS.manager.propnet.InternalPropnetMCTSManager;
+import org.ggp.base.player.gamer.statemachine.MCTS.manager.propnet.treestructure.PnMCTSNode;
 import org.ggp.base.player.gamer.statemachine.propnet.InternalPropnetGamer;
 import org.ggp.base.util.logging.GamerLogger;
 import org.ggp.base.util.statemachine.Move;

@@ -7,15 +7,15 @@ import java.util.Map;
 import java.util.Random;
 
 import org.ggp.base.player.gamer.statemachine.MCS.manager.MoveStats;
-import org.ggp.base.player.gamer.statemachine.MCTS.manager.InternalPropnetMCTSManager;
-import org.ggp.base.player.gamer.statemachine.MCTS.manager.strategies.aftermove.MASTAfterMove;
-import org.ggp.base.player.gamer.statemachine.MCTS.manager.strategies.aftersimulation.MASTAfterSimulation;
-import org.ggp.base.player.gamer.statemachine.MCTS.manager.strategies.backpropagation.MASTBackpropagation;
-import org.ggp.base.player.gamer.statemachine.MCTS.manager.strategies.expansion.RandomExpansion;
-import org.ggp.base.player.gamer.statemachine.MCTS.manager.strategies.movechoice.MaximumScoreChoice;
-import org.ggp.base.player.gamer.statemachine.MCTS.manager.strategies.playout.MASTPlayout;
-import org.ggp.base.player.gamer.statemachine.MCTS.manager.strategies.selection.UCTSelection;
-import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.decoupled.PnDecoupledTreeNodeFactory;
+import org.ggp.base.player.gamer.statemachine.MCTS.manager.propnet.InternalPropnetMCTSManager;
+import org.ggp.base.player.gamer.statemachine.MCTS.manager.propnet.strategies.aftermove.MASTAfterMove;
+import org.ggp.base.player.gamer.statemachine.MCTS.manager.propnet.strategies.aftersimulation.MASTAfterSimulation;
+import org.ggp.base.player.gamer.statemachine.MCTS.manager.propnet.strategies.backpropagation.MASTBackpropagation;
+import org.ggp.base.player.gamer.statemachine.MCTS.manager.propnet.strategies.expansion.RandomExpansion;
+import org.ggp.base.player.gamer.statemachine.MCTS.manager.propnet.strategies.movechoice.MaximumScoreChoice;
+import org.ggp.base.player.gamer.statemachine.MCTS.manager.propnet.strategies.playout.MASTPlayout;
+import org.ggp.base.player.gamer.statemachine.MCTS.manager.propnet.strategies.selection.UCTSelection;
+import org.ggp.base.player.gamer.statemachine.MCTS.manager.propnet.treestructure.decoupled.PnDecoupledTreeNodeFactory;
 import org.ggp.base.util.statemachine.inernalPropnetStructure.InternalPropnetMove;
 import org.ggp.base.util.statemachine.inernalPropnetStructure.InternalPropnetRole;
 

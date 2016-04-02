@@ -4,16 +4,16 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
 
-import org.ggp.base.player.gamer.statemachine.MCTS.manager.InternalPropnetMCTSManager;
-import org.ggp.base.player.gamer.statemachine.MCTS.manager.strategies.aftersimulation.GRAVEAfterSimulation;
-import org.ggp.base.player.gamer.statemachine.MCTS.manager.strategies.backpropagation.GRAVEBackpropagation;
-import org.ggp.base.player.gamer.statemachine.MCTS.manager.strategies.expansion.NoExpansion;
-import org.ggp.base.player.gamer.statemachine.MCTS.manager.strategies.movechoice.MaximumScoreChoice;
-import org.ggp.base.player.gamer.statemachine.MCTS.manager.strategies.playout.GRAVEPlayout;
-import org.ggp.base.player.gamer.statemachine.MCTS.manager.strategies.selection.GRAVESelection;
-import org.ggp.base.player.gamer.statemachine.MCTS.manager.strategies.selection.evaluators.GRAVE.BetaComputer;
-import org.ggp.base.player.gamer.statemachine.MCTS.manager.strategies.selection.evaluators.GRAVE.GRAVEBetaComputer;
-import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.AMAFDecoupled.PnAMAFDecoupledTreeNodeFactory;
+import org.ggp.base.player.gamer.statemachine.MCTS.manager.propnet.InternalPropnetMCTSManager;
+import org.ggp.base.player.gamer.statemachine.MCTS.manager.propnet.strategies.aftersimulation.GRAVEAfterSimulation;
+import org.ggp.base.player.gamer.statemachine.MCTS.manager.propnet.strategies.backpropagation.GRAVEBackpropagation;
+import org.ggp.base.player.gamer.statemachine.MCTS.manager.propnet.strategies.expansion.NoExpansion;
+import org.ggp.base.player.gamer.statemachine.MCTS.manager.propnet.strategies.movechoice.MaximumScoreChoice;
+import org.ggp.base.player.gamer.statemachine.MCTS.manager.propnet.strategies.playout.GRAVEPlayout;
+import org.ggp.base.player.gamer.statemachine.MCTS.manager.propnet.strategies.selection.GRAVESelection;
+import org.ggp.base.player.gamer.statemachine.MCTS.manager.propnet.strategies.selection.evaluators.GRAVE.BetaComputer;
+import org.ggp.base.player.gamer.statemachine.MCTS.manager.propnet.strategies.selection.evaluators.GRAVE.GRAVEBetaComputer;
+import org.ggp.base.player.gamer.statemachine.MCTS.manager.propnet.treestructure.AMAFDecoupled.PnAMAFDecoupledTreeNodeFactory;
 import org.ggp.base.util.statemachine.inernalPropnetStructure.InternalPropnetMove;
 import org.ggp.base.util.statemachine.inernalPropnetStructure.InternalPropnetRole;
 
