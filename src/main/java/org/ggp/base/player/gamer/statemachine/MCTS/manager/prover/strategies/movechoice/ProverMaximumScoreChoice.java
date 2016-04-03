@@ -1,31 +1,28 @@
-package org.ggp.base.player.gamer.statemachine.MCTS.manager.propnet.strategies.movechoice;
+package org.ggp.base.player.gamer.statemachine.MCTS.manager.prover.strategies.movechoice;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
 
 import org.ggp.base.player.gamer.statemachine.MCS.manager.MoveStats;
-import org.ggp.base.player.gamer.statemachine.MCS.manager.propnet.CompleteMoveStats;
+import org.ggp.base.player.gamer.statemachine.MCS.manager.prover.ProverCompleteMoveStats;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.propnet.treestructure.MCTSNode;
-import org.ggp.base.player.gamer.statemachine.MCTS.manager.propnet.treestructure.decoupled.DecoupledMCTSMoveStats;
-import org.ggp.base.player.gamer.statemachine.MCTS.manager.propnet.treestructure.decoupled.PnDecoupledMCTSNode;
-import org.ggp.base.player.gamer.statemachine.MCTS.manager.propnet.treestructure.sequential.PnSequentialMCTSNode;
-import org.ggp.base.player.gamer.statemachine.MCTS.manager.propnet.treestructure.sequential.SequentialMCTSMoveStats;
-import org.ggp.base.player.gamer.statemachine.MCTS.manager.propnet.treestructure.slowsequential.PnSlowSeqentialMCTSNode;
-import org.ggp.base.player.gamer.statemachine.MCTS.manager.propnet.treestructure.slowsequential.SlowSequentialMCTSMoveStats;
-import org.ggp.base.util.statemachine.inernalPropnetStructure.InternalPropnetRole;
+import org.ggp.base.player.gamer.statemachine.MCTS.manager.prover.treestructure.decoupled.ProverDecoupledMCTSMoveStats;
+import org.ggp.base.player.gamer.statemachine.MCTS.manager.prover.treestructure.decoupled.ProverDecoupledMCTSNode;
 
-public class MaximumScoreChoice implements MoveChoiceStrategy {
+public class ProverMaximumScoreChoice implements ProverMoveChoiceStrategy {
 
 	/**
 	 * The role performing the search and for which the best move will be computed.
 	 */
-	private InternalPropnetRole myRole;
+	//private Role myRole;
+	private int myRoleIndex;
 
 	private Random random;
 
-	public MaximumScoreChoice(InternalPropnetRole myRole, Random random){
-		this.myRole = myRole;
+	public ProverMaximumScoreChoice(/*Role myRole*/int myRoleIndex, Random random){
+		//this.myRole = myRole;
+		this.myRoleIndex = myRoleIndex;
 		this.random = random;
 	}
 
@@ -34,17 +31,17 @@ public class MaximumScoreChoice implements MoveChoiceStrategy {
 	 * @see org.ggp.base.player.gamer.statemachine.MCTS.manager.strategies.movechoice.MoveChoiceStrategy#chooseBestMove(org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.InternalPropnetMCTSNode)
 	 */
 	@Override
-	public CompleteMoveStats chooseBestMove(MCTSNode initialNode) {
+	public ProverCompleteMoveStats chooseBestMove(MCTSNode initialNode) {
 
 		MoveStats[] myMovesStats;
 
-		if(initialNode instanceof PnDecoupledMCTSNode){
-			myMovesStats = ((PnDecoupledMCTSNode)initialNode).getMoves()[myRole.getIndex()];
-		}else if(initialNode instanceof PnSequentialMCTSNode){
+		if(initialNode instanceof ProverDecoupledMCTSNode){
+			myMovesStats = ((ProverDecoupledMCTSNode)initialNode).getMoves()[myRoleIndex];
+		}/*else if(initialNode instanceof PnSequentialMCTSNode){
 			myMovesStats = ((PnSequentialMCTSNode)initialNode).getMovesStats();
 		}else if(initialNode instanceof PnSlowSeqentialMCTSNode){
 			myMovesStats = ((PnSlowSeqentialMCTSNode)initialNode).getMovesStats();
-		}else{
+		}*/else{
 			throw new RuntimeException("MaximumScoreChoice-chooseBestMove(): detected a node of a non-recognizable sub-type of class InternalPropnetMCTreeNode.");
 		}
 
@@ -117,13 +114,13 @@ public class MaximumScoreChoice implements MoveChoiceStrategy {
 
 		MoveStats toReturn = myMovesStats[bestMoveIndex];
 
-		if(toReturn instanceof DecoupledMCTSMoveStats){
-			return (DecoupledMCTSMoveStats)toReturn;
-		}else if(toReturn instanceof SequentialMCTSMoveStats){
+		if(toReturn instanceof ProverDecoupledMCTSMoveStats){
+			return (ProverDecoupledMCTSMoveStats)toReturn;
+		}/*else if(toReturn instanceof SequentialMCTSMoveStats){
 			return new CompleteMoveStats(toReturn.getVisits(), toReturn.getScoreSum(), ((PnSequentialMCTSNode)initialNode).getAllLegalMoves().get(this.myRole.getIndex()).get(bestMoveIndex));
 		}else if(toReturn instanceof SlowSequentialMCTSMoveStats){
 			return (SlowSequentialMCTSMoveStats)toReturn;
-		}else{
+		}*/else{
 			throw new RuntimeException("MaximumScoreChoice-chooseBestMove(): detected a node of a non-recognizable sub-type of class InternalPropnetMCTreeNode.");
 		}
 	}
@@ -143,5 +140,6 @@ public class MaximumScoreChoice implements MoveChoiceStrategy {
 			return "[MOVE_CHOICE_STRATEGY = " + this.getClass().getSimpleName() + "]";
 		}
 	}
+
 
 }

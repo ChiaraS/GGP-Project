@@ -1,65 +1,60 @@
-package org.ggp.base.player.gamer.statemachine.MCTS.manager.propnet.strategies.selection;
+package org.ggp.base.player.gamer.statemachine.MCTS.manager.prover.strategies.selection;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
 
-import org.ggp.base.player.gamer.statemachine.MCTS.manager.propnet.strategies.selection.evaluators.MoveEvaluator;
-import org.ggp.base.player.gamer.statemachine.MCTS.manager.propnet.treestructure.MCTSJointMove;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.propnet.treestructure.MCTSNode;
-import org.ggp.base.player.gamer.statemachine.MCTS.manager.propnet.treestructure.SequDecMCTSJointMove;
-import org.ggp.base.player.gamer.statemachine.MCTS.manager.propnet.treestructure.decoupled.DecoupledMCTSMoveStats;
-import org.ggp.base.player.gamer.statemachine.MCTS.manager.propnet.treestructure.decoupled.PnDecoupledMCTSNode;
-import org.ggp.base.player.gamer.statemachine.MCTS.manager.propnet.treestructure.sequential.PnSequentialMCTSNode;
-import org.ggp.base.player.gamer.statemachine.MCTS.manager.propnet.treestructure.sequential.SequentialMCTSMoveStats;
-import org.ggp.base.player.gamer.statemachine.MCTS.manager.propnet.treestructure.slowsequential.PnSlowSeqentialMCTSNode;
-import org.ggp.base.player.gamer.statemachine.MCTS.manager.propnet.treestructure.slowsequential.SlowSequentialMCTSJointMove;
-import org.ggp.base.player.gamer.statemachine.MCTS.manager.propnet.treestructure.slowsequential.SlowSequentialMCTSMoveStats;
-import org.ggp.base.util.statemachine.inernalPropnetStructure.InternalPropnetMove;
-import org.ggp.base.util.statemachine.inernalPropnetStructure.InternalPropnetRole;
+import org.ggp.base.player.gamer.statemachine.MCTS.manager.prover.strategies.selection.evaluators.ProverMoveEvaluator;
+import org.ggp.base.player.gamer.statemachine.MCTS.manager.prover.treestructure.ProverMCTSJointMove;
+import org.ggp.base.player.gamer.statemachine.MCTS.manager.prover.treestructure.ProverSequDecMCTSJointMove;
+import org.ggp.base.player.gamer.statemachine.MCTS.manager.prover.treestructure.decoupled.ProverDecoupledMCTSMoveStats;
+import org.ggp.base.player.gamer.statemachine.MCTS.manager.prover.treestructure.decoupled.ProverDecoupledMCTSNode;
+import org.ggp.base.util.statemachine.Move;
+import org.ggp.base.util.statemachine.Role;
 
-public abstract class MoveValueSelection implements SelectionStrategy {
+public abstract class ProverMoveValueSelection implements ProverSelectionStrategy {
 
 	/**
 	 * The total number of roles in the game.
 	 * Needed by the Sequential version of MCTS.
 	 */
-	private int numRoles;
+	//private int numRoles;
 
 	/**
 	 * The role that is actually performing the search.
 	 * Needed by the Sequential version of MCTS.
 	 */
-	private InternalPropnetRole myRole;
+	//private Role myRole;
 
 	private Random random;
 
 	private double valueOffset;
 
-	protected MoveEvaluator moveEvaluator;
+	protected ProverMoveEvaluator moveEvaluator;
 
-	public MoveValueSelection(int numRoles, InternalPropnetRole myRole, Random random, double valueOffset, MoveEvaluator moveEvaluator) {
-		this.numRoles = numRoles;
-		this.myRole = myRole;
+	public ProverMoveValueSelection(int numRoles, Role myRole, Random random, double valueOffset, ProverMoveEvaluator moveEvaluator) {
+		//this.numRoles = numRoles;
+		//this.myRole = myRole;
 		this.random = random;
 		this.valueOffset = valueOffset;
 		this.moveEvaluator = moveEvaluator;
 	}
 
 	@Override
-	public MCTSJointMove select(MCTSNode currentNode) {
-		if(currentNode instanceof PnDecoupledMCTSNode){
-			return this.decSelect((PnDecoupledMCTSNode)currentNode);
-		}else if(currentNode instanceof PnSequentialMCTSNode){
+	public ProverMCTSJointMove select(MCTSNode currentNode) {
+		if(currentNode instanceof ProverDecoupledMCTSNode){
+			return this.decSelect((ProverDecoupledMCTSNode)currentNode);
+		}/*else if(currentNode instanceof PnSequentialMCTSNode){
 			return this.seqSelect((PnSequentialMCTSNode)currentNode);
 		}else if(currentNode instanceof PnSlowSeqentialMCTSNode){
 			return this.sseqSelect((PnSlowSeqentialMCTSNode)currentNode);
-		}else{
+		}*/else{
 			throw new RuntimeException("MoveValueSelection-select(): detected a node of a non-recognizable sub-type of class InternalPropnetMCTreeNode.");
 		}
 	}
 
-	private MCTSJointMove decSelect(PnDecoupledMCTSNode currentNode) {
+	private ProverMCTSJointMove decSelect(ProverDecoupledMCTSNode currentNode) {
 
 		//System.out.println("decSelect");
 
@@ -71,7 +66,7 @@ public abstract class MoveValueSelection implements SelectionStrategy {
 		}
 		*/
 
-		DecoupledMCTSMoveStats[][] moves = currentNode.getMoves();
+		ProverDecoupledMCTSMoveStats[][] moves = currentNode.getMoves();
 
 		/* Also here we can assume that the moves will be non-null since the code takes care of only passing to
 		 * this method the nodes that have all the information needed for selection.
@@ -81,7 +76,7 @@ public abstract class MoveValueSelection implements SelectionStrategy {
 		}
 		*/
 
-		List<InternalPropnetMove> selectedJointMove = new ArrayList<InternalPropnetMove>();
+		List<Move> selectedJointMove = new ArrayList<Move>();
 		int[] movesIndices = new int[moves.length];
 
 		double maxMoveValue;
@@ -143,11 +138,11 @@ public abstract class MoveValueSelection implements SelectionStrategy {
 			selectedJointMove.add(moves[i][movesIndices[i]].getTheMove());
 		}
 
-		return new SequDecMCTSJointMove(selectedJointMove, movesIndices);
+		return new ProverSequDecMCTSJointMove(selectedJointMove, movesIndices);
 	}
 
 
-	private MCTSJointMove seqSelect(PnSequentialMCTSNode currentNode){
+	/*private MCTSJointMove seqSelect(PnSequentialMCTSNode currentNode){
 
 		List<InternalPropnetMove> jointMove = new ArrayList<InternalPropnetMove>(this.numRoles);
 		int[] movesIndices = new int[this.numRoles];
@@ -212,8 +207,9 @@ public abstract class MoveValueSelection implements SelectionStrategy {
 
 		return new SequDecMCTSJointMove(jointMove, movesIndices);
 
-	}
+	}*/
 
+	/*
 	private MCTSJointMove sseqSelect(PnSlowSeqentialMCTSNode currentNode){
 
 		List<InternalPropnetMove> jointMove = new ArrayList<InternalPropnetMove>(this.numRoles);
@@ -281,7 +277,7 @@ public abstract class MoveValueSelection implements SelectionStrategy {
 
 		return new SlowSequentialMCTSJointMove(jointMove, chosenMove);
 
-	}
+	}*/
 
 	//public abstract double computeMoveValue(PnMCTSNode theNode, InternalPropnetMove theMove, MoveStats theMoveStats);
 

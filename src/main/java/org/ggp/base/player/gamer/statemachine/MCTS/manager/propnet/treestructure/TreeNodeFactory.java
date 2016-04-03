@@ -4,6 +4,6 @@ import org.ggp.base.util.statemachine.inernalPropnetStructure.InternalPropnetMac
 
 public interface TreeNodeFactory {
 
-	public PnMCTSNode createNewNode(InternalPropnetMachineState state);
+	public MCTSNode createNewNode(InternalPropnetMachineState state);
 
 }

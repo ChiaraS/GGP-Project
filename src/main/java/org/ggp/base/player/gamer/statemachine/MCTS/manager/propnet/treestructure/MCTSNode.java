@@ -7,7 +7,7 @@ package org.ggp.base.player.gamer.statemachine.MCTS.manager.propnet.treestructur
  * @author C.Sironi
  *
  */
-public abstract class PnMCTSNode{
+public abstract class MCTSNode{
 
 	/**
 	 * Goal for every role in the state (memorized only if the state corresponding to this tree node is terminal.
@@ -32,7 +32,7 @@ public abstract class PnMCTSNode{
 	/**
 	 *
 	 */
-	public PnMCTSNode(int[] goals, boolean terminal) {
+	public MCTSNode(int[] goals, boolean terminal) {
 		this.goals = goals;
 		this.terminal = terminal;
 		this.totVisits = 0;

@@ -1,41 +1,36 @@
-package org.ggp.base.player.gamer.statemachine.MCTS.manager.propnet.strategies.expansion;
+package org.ggp.base.player.gamer.statemachine.MCTS.manager.prover.strategies.expansion;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
 
-import org.ggp.base.player.gamer.statemachine.MCTS.manager.propnet.treestructure.MCTSJointMove;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.propnet.treestructure.MCTSNode;
-import org.ggp.base.player.gamer.statemachine.MCTS.manager.propnet.treestructure.SequDecMCTSJointMove;
-import org.ggp.base.player.gamer.statemachine.MCTS.manager.propnet.treestructure.decoupled.DecoupledMCTSMoveStats;
-import org.ggp.base.player.gamer.statemachine.MCTS.manager.propnet.treestructure.decoupled.PnDecoupledMCTSNode;
-import org.ggp.base.player.gamer.statemachine.MCTS.manager.propnet.treestructure.sequential.PnSequentialMCTSNode;
-import org.ggp.base.player.gamer.statemachine.MCTS.manager.propnet.treestructure.sequential.SequentialMCTSMoveStats;
-import org.ggp.base.player.gamer.statemachine.MCTS.manager.propnet.treestructure.slowsequential.PnSlowSeqentialMCTSNode;
-import org.ggp.base.player.gamer.statemachine.MCTS.manager.propnet.treestructure.slowsequential.SlowSequentialMCTSJointMove;
-import org.ggp.base.player.gamer.statemachine.MCTS.manager.propnet.treestructure.slowsequential.SlowSequentialMCTSMoveStats;
-import org.ggp.base.util.statemachine.inernalPropnetStructure.InternalPropnetMove;
-import org.ggp.base.util.statemachine.inernalPropnetStructure.InternalPropnetRole;
+import org.ggp.base.player.gamer.statemachine.MCTS.manager.prover.treestructure.ProverMCTSJointMove;
+import org.ggp.base.player.gamer.statemachine.MCTS.manager.prover.treestructure.ProverSequDecMCTSJointMove;
+import org.ggp.base.player.gamer.statemachine.MCTS.manager.prover.treestructure.decoupled.ProverDecoupledMCTSMoveStats;
+import org.ggp.base.player.gamer.statemachine.MCTS.manager.prover.treestructure.decoupled.ProverDecoupledMCTSNode;
+import org.ggp.base.util.statemachine.Move;
+import org.ggp.base.util.statemachine.Role;
 
-public class RandomExpansion implements ExpansionStrategy {
+public class ProverRandomExpansion implements ProverExpansionStrategy {
 
 	/**
 	 * The total number of roles in the game.
 	 * Needed by the sequential version of MCTS.
 	 */
-	private int numRoles;
+	//private int numRoles;
 
 	/**
 	 * The role that is actually performing the search.
 	 * Needed by the sequential version of MCTS.
 	 */
-	private InternalPropnetRole myRole;
+	//private Role myRole;
 
 	private Random random;
 
-	public RandomExpansion(int numRoles, InternalPropnetRole myRole, Random random){
-		this.numRoles = numRoles;
-		this.myRole = myRole;
+	public ProverRandomExpansion(int numRoles, Role myRole, Random random){
+		//this.numRoles = numRoles;
+		//this.myRole = myRole;
 		this.random = random;
 	}
 
@@ -45,18 +40,18 @@ public class RandomExpansion implements ExpansionStrategy {
 	 */
 	@Override
 	public boolean expansionRequired(MCTSNode node){
-		if(node instanceof PnDecoupledMCTSNode){
-			return this.decExpansionRequired((PnDecoupledMCTSNode)node);
-		}else if(node instanceof PnSequentialMCTSNode){
+		if(node instanceof ProverDecoupledMCTSNode){
+			return this.decExpansionRequired((ProverDecoupledMCTSNode)node);
+		}/*else if(node instanceof PnSequentialMCTSNode){
 			return this.seqExpansionRequired((PnSequentialMCTSNode)node);
 		}else if(node instanceof PnSlowSeqentialMCTSNode){
 			return this.sseqExpansionRequired((PnSlowSeqentialMCTSNode)node);
-		}else{
+		}*/else{
 			throw new RuntimeException("RandomExpansion-expansionRequired(): detected a node of a non-recognizable sub-type of class InternalPropnetMCTreeNode.");
 		}
 	}
 
-	private boolean decExpansionRequired(PnDecoupledMCTSNode node) {
+	private boolean decExpansionRequired(ProverDecoupledMCTSNode node) {
 
 		int[] unexploredMovesCount = node.getUnexploredMovesCount();
 
@@ -68,27 +63,30 @@ public class RandomExpansion implements ExpansionStrategy {
 		return false;
 	}
 
+	/*
 	private boolean seqExpansionRequired(PnSequentialMCTSNode node){
 		return node.getUnvisitedLeaves() != 0;
-	}
+	}*/
 
+	/*
 	private boolean sseqExpansionRequired(PnSlowSeqentialMCTSNode node){
 		return node.getUnvisitedLeaves().size() != 0;
 	}
+	*/
 
 	/*
 	 * (non-Javadoc)
 	 * @see org.ggp.base.player.gamer.statemachine.MCTS.manager.strategies.expansion.ExpansionStrategy#expand(org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.InternalPropnetMCTSNode)
 	 */
 	@Override
-	public MCTSJointMove expand(MCTSNode node){
-		if(node instanceof PnDecoupledMCTSNode){
-			return this.decExpand((PnDecoupledMCTSNode)node);
-		}else if(node instanceof PnSequentialMCTSNode){
+	public ProverMCTSJointMove expand(MCTSNode node){
+		if(node instanceof ProverDecoupledMCTSNode){
+			return this.decExpand((ProverDecoupledMCTSNode)node);
+		}/*else if(node instanceof PnSequentialMCTSNode){
 			return this.seqExpand((PnSequentialMCTSNode)node);
 		}else if(node instanceof PnSlowSeqentialMCTSNode){
 			return this.sseqExpand((PnSlowSeqentialMCTSNode)node);
-		}else{
+		}*/else{
 			throw new RuntimeException("RandomExpansion-expand(): detected a node of a non-recognizable sub-type of class InternalPropnetMCTreeNode.");
 		}
 	}
@@ -103,12 +101,12 @@ public class RandomExpansion implements ExpansionStrategy {
 	 * @param node the node for which to choose a joint move.
 	 * @return the joint move.
 	 */
-	private MCTSJointMove decExpand(PnDecoupledMCTSNode node){
+	private ProverMCTSJointMove decExpand(ProverDecoupledMCTSNode node){
 
-		DecoupledMCTSMoveStats[][] moves = node.getMoves();
+		ProverDecoupledMCTSMoveStats[][] moves = node.getMoves();
 		int[] unexploredMovesCount = node.getUnexploredMovesCount();
 
-		List<InternalPropnetMove> jointMove = new ArrayList<InternalPropnetMove>();
+		List<Move> jointMove = new ArrayList<Move>();
 		int[] movesIndices = new int[moves.length];
 
 		// For each role...
@@ -140,7 +138,7 @@ public class RandomExpansion implements ExpansionStrategy {
 			}
 		}
 
-		return new SequDecMCTSJointMove(jointMove, movesIndices);
+		return new ProverSequDecMCTSJointMove(jointMove, movesIndices);
 	}
 
 
@@ -160,7 +158,7 @@ public class RandomExpansion implements ExpansionStrategy {
 	 * @param node the node for which to choose a joint move.
 	 * @return the joint move.
 	 */
-	private MCTSJointMove seqExpand(PnSequentialMCTSNode node){
+	/*private MCTSJointMove seqExpand(PnSequentialMCTSNode node){
 
 		List<InternalPropnetMove> jointMove = new ArrayList<InternalPropnetMove>(this.numRoles);
 		int[] movesIndices = new int[this.numRoles];
@@ -220,7 +218,7 @@ public class RandomExpansion implements ExpansionStrategy {
 		}
 
 		return new SequDecMCTSJointMove(jointMove, movesIndices);
-	}
+	}*/
 
 	/**
 	 * Random Expansion, SLOW SEQUENTIAL version.
@@ -234,7 +232,7 @@ public class RandomExpansion implements ExpansionStrategy {
 	 * @param node the node for which to choose a joint move.
 	 * @return the joint move.
 	 */
-	private MCTSJointMove sseqExpand(PnSlowSeqentialMCTSNode node){
+	/*private MCTSJointMove sseqExpand(PnSlowSeqentialMCTSNode node){
 
 		List<SlowSequentialMCTSMoveStats> unvisitedLeaves = node.getUnvisitedLeaves();
 		if(unvisitedLeaves.isEmpty()){
@@ -270,7 +268,7 @@ public class RandomExpansion implements ExpansionStrategy {
 		}
 
 		return new SlowSequentialMCTSJointMove(jointMove, leafMove);
-	}
+	}*/
 
 	/**
 	 * TODO: THIS METHOD MIGHT EVENTUALLY DISAPPEAR TOGETHER WITH THE WHOLE SLOW SEQUENTIAL GAMER, SO IT IS NOT
@@ -278,7 +276,7 @@ public class RandomExpansion implements ExpansionStrategy {
 	 * @param node
 	 * @return
 	 */
-	private MCTSJointMove getRandomMove(PnSlowSeqentialMCTSNode node){
+	/*private MCTSJointMove getRandomMove(PnSlowSeqentialMCTSNode node){
 
 		List<InternalPropnetMove> jointMove = new ArrayList<InternalPropnetMove>(this.numRoles);
 
@@ -311,7 +309,7 @@ public class RandomExpansion implements ExpansionStrategy {
 		}
 
 		return new SlowSequentialMCTSJointMove(jointMove, chosenMove);
-	}
+	}*/
 
 	@Override
 	public String getStrategyParameters() {

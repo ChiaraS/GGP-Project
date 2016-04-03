@@ -1,22 +1,20 @@
-package org.ggp.base.player.gamer.statemachine.MCTS.manager.propnet.treestructure.decoupled;
+package org.ggp.base.player.gamer.statemachine.MCTS.manager.prover.treestructure.decoupled;
 
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.propnet.treestructure.MCTSNode;
 
-
-
-public class PnDecoupledMCTSNode extends MCTSNode{
+public class ProverDecoupledMCTSNode extends MCTSNode {
 
 	/**
 	 * List of the moves' statistics for each role in the state corresponding to this node.
 	 */
-	private DecoupledMCTSMoveStats[][] movesStats;
+	private ProverDecoupledMCTSMoveStats[][] movesStats;
 
 	/**
 	 * Number of unexplored moves for each player.
 	 */
 	private int[] unexploredMovesCount;
 
-	public PnDecoupledMCTSNode(DecoupledMCTSMoveStats[][] movesStats, int[] goals, boolean terminal) {
+	public ProverDecoupledMCTSNode(ProverDecoupledMCTSMoveStats[][] movesStats, int[] goals, boolean terminal) {
 
 		super(goals, terminal);
 		this.movesStats = movesStats;
@@ -33,7 +31,7 @@ public class PnDecoupledMCTSNode extends MCTSNode{
 		}
 	}
 
-	public DecoupledMCTSMoveStats[][] getMoves(){
+	public ProverDecoupledMCTSMoveStats[][] getMoves(){
 		return this.movesStats;
 	}
 
@@ -104,4 +102,5 @@ public class PnDecoupledMCTSNode extends MCTSNode{
 
 		return s;
 	}
+
 }

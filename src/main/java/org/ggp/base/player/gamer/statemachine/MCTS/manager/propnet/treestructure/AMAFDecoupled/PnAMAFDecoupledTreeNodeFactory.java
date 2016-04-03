@@ -1,6 +1,6 @@
 package org.ggp.base.player.gamer.statemachine.MCTS.manager.propnet.treestructure.AMAFDecoupled;
 
-import org.ggp.base.player.gamer.statemachine.MCTS.manager.propnet.treestructure.PnMCTSNode;
+import org.ggp.base.player.gamer.statemachine.MCTS.manager.propnet.treestructure.MCTSNode;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.propnet.treestructure.decoupled.DecoupledMCTSMoveStats;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.propnet.treestructure.decoupled.PnDecoupledTreeNodeFactory;
 import org.ggp.base.util.statemachine.InternalPropnetStateMachine;
@@ -13,7 +13,7 @@ public class PnAMAFDecoupledTreeNodeFactory extends PnDecoupledTreeNodeFactory{
 	}
 
 	@Override
-	public PnMCTSNode createNewNode(InternalPropnetMachineState state) {
+	public MCTSNode createNewNode(InternalPropnetMachineState state) {
 
 		//System.out.println("Creating new node.");
 

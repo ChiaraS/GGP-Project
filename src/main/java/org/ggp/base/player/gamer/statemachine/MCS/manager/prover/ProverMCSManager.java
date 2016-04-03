@@ -13,10 +13,10 @@ import org.ggp.base.util.logging.GamerLogger;
 import org.ggp.base.util.statemachine.MachineState;
 import org.ggp.base.util.statemachine.Move;
 import org.ggp.base.util.statemachine.Role;
+import org.ggp.base.util.statemachine.StateMachine;
 import org.ggp.base.util.statemachine.exceptions.MoveDefinitionException;
 import org.ggp.base.util.statemachine.exceptions.StateMachineException;
 import org.ggp.base.util.statemachine.exceptions.TransitionDefinitionException;
-import org.ggp.base.util.statemachine.implementation.prover.ProverStateMachine;
 
 /**
  * @author C.Sironi
@@ -42,7 +42,7 @@ public class ProverMCSManager {
 	/**
 	 * The state machine that this MCTS manager uses to reason on the game
 	 */
-	private ProverStateMachine theMachine;
+	private StateMachine theMachine;
 
 	/**
 	 * The role performing the search.
@@ -83,7 +83,7 @@ public class ProverMCSManager {
 	/**
 	 *
 	 */
-	public ProverMCSManager(ProverPlayoutStrategy playoutStrategy, ProverStateMachine theMachine, Role myRole, int maxSearchDepth, Random random) {
+	public ProverMCSManager(ProverPlayoutStrategy playoutStrategy, StateMachine theMachine, Role myRole, int maxSearchDepth, Random random) {
 
 		this.currentState = null;
 		this.currentMovesStatistics = null;
@@ -193,7 +193,7 @@ public class ProverMCSManager {
 			List<Move> legalMoves;
 			try {
 				legalMoves = this.theMachine.getLegalMoves(this.currentState, this.myRole);
-			} catch (MoveDefinitionException e) {
+			} catch (MoveDefinitionException | StateMachineException e) {
 				GamerLogger.log("MCSManager", "Error when computing legal moves for my role in the root state before starting Monte Carlo search.");
 				GamerLogger.logStackTrace("MCSManager", e);
 				throw new MCSException("Impossible to perform search: legal moves cannot be computed and explored in the given state.", e);

@@ -1,7 +1,7 @@
 package org.ggp.base.player.gamer.statemachine.MCTS.manager.propnet.strategies.expansion;
 
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.propnet.treestructure.MCTSJointMove;
-import org.ggp.base.player.gamer.statemachine.MCTS.manager.propnet.treestructure.PnMCTSNode;
+import org.ggp.base.player.gamer.statemachine.MCTS.manager.propnet.treestructure.MCTSNode;
 
 /**
  * Attention!: for the decoupled version of MCTS the choice of expanding a node and of the action to use
@@ -40,13 +40,13 @@ public class NoExpansion implements ExpansionStrategy {
 	}
 
 	@Override
-	public boolean expansionRequired(PnMCTSNode node) {
+	public boolean expansionRequired(MCTSNode node) {
 		// TODO Auto-generated method stub
 		return false;
 	}
 
 	@Override
-	public MCTSJointMove expand(PnMCTSNode node) {
+	public MCTSJointMove expand(MCTSNode node) {
 		// TODO Auto-generated method stub
 		return null;
 	}

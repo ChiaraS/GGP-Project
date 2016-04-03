@@ -14,7 +14,7 @@ import org.ggp.base.player.gamer.statemachine.MCTS.manager.propnet.strategies.pl
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.propnet.strategies.selection.SelectionStrategy;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.propnet.treestructure.MCTSJointMove;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.propnet.treestructure.MCTSTranspositionTable;
-import org.ggp.base.player.gamer.statemachine.MCTS.manager.propnet.treestructure.PnMCTSNode;
+import org.ggp.base.player.gamer.statemachine.MCTS.manager.propnet.treestructure.MCTSNode;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.propnet.treestructure.TreeNodeFactory;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.propnet.treestructure.sequential.SequentialMCTSMoveStats;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.propnet.treestructure.slowsequential.SlowSequentialMCTSMoveStats;
@@ -230,7 +230,7 @@ public class InternalPropnetMCTSManager extends MCTSManager {
 	 * it is either terminal or there is some problem with the computation of legal
 	 * moves (and thus corresponding statistics).
 	 */
-	public CompleteMoveStats getBestMove(PnMCTSNode theNode)throws MCTSException{
+	public CompleteMoveStats getBestMove(MCTSNode theNode)throws MCTSException{
 
 		// If the node is null or terminal we cannot return any move.
 		// Note that the node being terminal might mean that the state is not terminal but legal moves
@@ -265,9 +265,9 @@ public class InternalPropnetMCTSManager extends MCTSManager {
 	 * state is either terminal or there is some problem with the computation of legal
 	 * moves (and thus corresponding statistics).
 	 */
-	public PnMCTSNode search(InternalPropnetMachineState initialState, long timeout, int gameStep) throws MCTSException{
+	public MCTSNode search(InternalPropnetMachineState initialState, long timeout, int gameStep) throws MCTSException{
 
-		PnMCTSNode initialNode = this.prepareForSearch(initialState, gameStep);
+		MCTSNode initialNode = this.prepareForSearch(initialState, gameStep);
 
 		// We can be sure that the node is not null, but if it is terminal we cannot perform any search.
 		// Note that the node being terminal might mean that the state is not terminal but legal moves
@@ -295,7 +295,7 @@ public class InternalPropnetMCTSManager extends MCTSManager {
 	 * 				   table and be used as time stamp for tree nodes).
 	 * @return the tree node corresponding to the given initial state.
 	 */
-	private PnMCTSNode prepareForSearch(InternalPropnetMachineState initialState, int gameStep){
+	private MCTSNode prepareForSearch(InternalPropnetMachineState initialState, int gameStep){
 
 		this.iterations = 0;
 		this.visitedNodes = 0;
@@ -328,7 +328,7 @@ public class InternalPropnetMCTSManager extends MCTSManager {
 		// If it's the first time during the game that we call this method the transposition table is empty
 		// so we create the first node, otherwise we check if the node is already in the tree.
 
-		PnMCTSNode initialNode = this.transpositionTable.getNode(initialState);
+		MCTSNode initialNode = this.transpositionTable.getNode(initialState);
 
 		if(initialNode == null){
 
@@ -349,7 +349,7 @@ public class InternalPropnetMCTSManager extends MCTSManager {
 	 * 					  the search (making it the root of the currently searched tree).
 	 * @param timeout the time (in milliseconds) by when the search must end.
 	 */
-	private void performSearch(InternalPropnetMachineState initialState, PnMCTSNode initialNode, long timeout){
+	private void performSearch(InternalPropnetMachineState initialState, MCTSNode initialNode, long timeout){
 		this.searchStart = System.currentTimeMillis();
 		while(System.currentTimeMillis() < timeout){
 			this.currentIterationVisitedNodes = 0;
@@ -389,7 +389,7 @@ public class InternalPropnetMCTSManager extends MCTSManager {
 	 * @return the goals of all players, obtained by the current MCTS iteration and that
 	 *         must be backpropagated.
 	 */
-	private int[] searchNext(InternalPropnetMachineState currentState, PnMCTSNode currentNode) {
+	private int[] searchNext(InternalPropnetMachineState currentState, MCTSNode currentNode) {
 
 		//System.out.println();
 		//System.out.println("Search step:");
@@ -471,7 +471,7 @@ public class InternalPropnetMCTSManager extends MCTSManager {
 
 		MCTSJointMove mctsJointMove;
 		InternalPropnetMachineState nextState;
-		PnMCTSNode nextNode;
+		MCTSNode nextNode;
 
 		/*
 		System.out.println("Printing current node: ");

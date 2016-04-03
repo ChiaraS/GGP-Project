@@ -6,18 +6,18 @@ import org.ggp.base.player.gamer.statemachine.MCTS.manager.prover.strategies.pla
 import org.ggp.base.util.logging.GamerLogger;
 import org.ggp.base.util.statemachine.MachineState;
 import org.ggp.base.util.statemachine.Move;
+import org.ggp.base.util.statemachine.StateMachine;
 import org.ggp.base.util.statemachine.exceptions.MoveDefinitionException;
 import org.ggp.base.util.statemachine.exceptions.StateMachineException;
 import org.ggp.base.util.statemachine.exceptions.TransitionDefinitionException;
-import org.ggp.base.util.statemachine.implementation.prover.ProverStateMachine;
 
 public class ProverStandardPlayout implements ProverPlayoutStrategy {
 
-	protected ProverStateMachine theMachine;
+	protected StateMachine theMachine;
 
 	protected ProverJointMoveSelector jointMoveSelector;
 
-	public ProverStandardPlayout(ProverStateMachine theMachine, ProverJointMoveSelector jointMoveSelector) {
+	public ProverStandardPlayout(StateMachine theMachine, ProverJointMoveSelector jointMoveSelector) {
 		this.theMachine = theMachine;
 		this.jointMoveSelector = jointMoveSelector;
 	}
@@ -29,7 +29,17 @@ public class ProverStandardPlayout implements ProverPlayoutStrategy {
 
         int nDepth = 0;
 
-        while(nDepth < maxDepth && !this.theMachine.isTerminal(state)) {
+        boolean terminal = true;
+
+        try {
+			terminal = this.theMachine.isTerminal(state);
+		} catch (StateMachineException e) {
+			GamerLogger.logError("MCTSManager", "Exception computing state terminality while performing a playout.");
+			GamerLogger.logStackTrace("MCTSManager", e);
+			terminal = true;
+		}
+
+        while(nDepth < maxDepth && !terminal) {
 
         	List<Move> jointMove = null;
 			try {
@@ -41,12 +51,21 @@ public class ProverStandardPlayout implements ProverPlayoutStrategy {
 			}
 			try {
 				state = this.theMachine.getNextState(state, jointMove);
-			} catch (TransitionDefinitionException e) {
+			} catch (TransitionDefinitionException | StateMachineException e) {
 				GamerLogger.logError("MCTSManager", "Exception getting the next state while performing a playout.");
 				GamerLogger.logStackTrace("MCTSManager", e);
 				break;
 			}
             nDepth++;
+
+            try {
+				terminal = this.theMachine.isTerminal(state);
+			} catch (StateMachineException e) {
+				GamerLogger.logError("MCTSManager", "Exception computing state terminality while performing a playout.");
+				GamerLogger.logStackTrace("MCTSManager", e);
+				terminal = true;
+				break;
+			}
         }
         if(playoutVisitedNodes != null)
         	playoutVisitedNodes[0] = nDepth;

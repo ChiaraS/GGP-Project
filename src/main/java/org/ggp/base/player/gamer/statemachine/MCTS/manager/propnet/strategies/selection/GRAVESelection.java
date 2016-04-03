@@ -5,7 +5,7 @@ import java.util.Random;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.propnet.strategies.selection.evaluators.GRAVE.BetaComputer;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.propnet.strategies.selection.evaluators.GRAVE.GRAVEEvaluator;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.propnet.treestructure.MCTSJointMove;
-import org.ggp.base.player.gamer.statemachine.MCTS.manager.propnet.treestructure.PnMCTSNode;
+import org.ggp.base.player.gamer.statemachine.MCTS.manager.propnet.treestructure.MCTSNode;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.propnet.treestructure.AMAFDecoupled.PnAMAFNode;
 import org.ggp.base.util.statemachine.inernalPropnetStructure.InternalPropnetRole;
 
@@ -26,7 +26,7 @@ public class GRAVESelection extends MoveValueSelection {
 	}
 
 	@Override
-	public MCTSJointMove select(PnMCTSNode currentNode) {
+	public MCTSJointMove select(MCTSNode currentNode) {
 
 		//System.out.println("GRAVE selection");
 

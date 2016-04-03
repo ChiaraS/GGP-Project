@@ -5,7 +5,7 @@ import java.util.List;
 import java.util.Random;
 
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.propnet.treestructure.MCTSJointMove;
-import org.ggp.base.player.gamer.statemachine.MCTS.manager.propnet.treestructure.PnMCTSNode;
+import org.ggp.base.player.gamer.statemachine.MCTS.manager.propnet.treestructure.MCTSNode;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.propnet.treestructure.SequDecMCTSJointMove;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.propnet.treestructure.decoupled.DecoupledMCTSMoveStats;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.propnet.treestructure.decoupled.PnDecoupledMCTSNode;
@@ -59,7 +59,7 @@ public class OldUCTSelection implements SelectionStrategy {
 	 * @see org.ggp.base.player.gamer.statemachine.MCTS.manager.strategies.selection.SelectionStrategy#select(org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.InternalPropnetMCTSNode)
 	 */
 	@Override
-	public MCTSJointMove select(PnMCTSNode currentNode) {
+	public MCTSJointMove select(MCTSNode currentNode) {
 		if(currentNode instanceof PnDecoupledMCTSNode){
 			return this.ductSelect((PnDecoupledMCTSNode)currentNode);
 		}else if(currentNode instanceof PnSequentialMCTSNode){

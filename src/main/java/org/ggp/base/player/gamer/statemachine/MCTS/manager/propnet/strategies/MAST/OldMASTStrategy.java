@@ -9,7 +9,7 @@ import org.ggp.base.player.gamer.statemachine.MCS.manager.MoveStats;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.propnet.strategies.backpropagation.StandardBackpropagation;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.propnet.strategies.playout.PlayoutStrategy;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.propnet.treestructure.MCTSJointMove;
-import org.ggp.base.player.gamer.statemachine.MCTS.manager.propnet.treestructure.PnMCTSNode;
+import org.ggp.base.player.gamer.statemachine.MCTS.manager.propnet.treestructure.MCTSNode;
 import org.ggp.base.util.logging.GamerLogger;
 import org.ggp.base.util.statemachine.InternalPropnetStateMachine;
 import org.ggp.base.util.statemachine.exceptions.MoveDefinitionException;
@@ -156,7 +156,7 @@ public class OldMASTStrategy extends StandardBackpropagation implements /*Backpr
 	}
 
 	@Override
-	public void update(PnMCTSNode node, MCTSJointMove jointMove, int[] goals) {
+	public void update(MCTSNode node, MCTSJointMove jointMove, int[] goals) {
 
 		super.update(node,jointMove, goals);
 

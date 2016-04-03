@@ -3,7 +3,7 @@ package org.ggp.base.player.gamer.statemachine.MCTS.manager.propnet.treestructur
 import java.util.ArrayList;
 import java.util.List;
 
-import org.ggp.base.player.gamer.statemachine.MCTS.manager.propnet.treestructure.PnMCTSNode;
+import org.ggp.base.player.gamer.statemachine.MCTS.manager.propnet.treestructure.MCTSNode;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.propnet.treestructure.TreeNodeFactory;
 import org.ggp.base.util.logging.GamerLogger;
 import org.ggp.base.util.statemachine.InternalPropnetStateMachine;
@@ -28,7 +28,7 @@ public class PnSlowSequentialTreeNodeFactory implements TreeNodeFactory {
 	}
 
 	@Override
-	public PnMCTSNode createNewNode(InternalPropnetMachineState state) {
+	public MCTSNode createNewNode(InternalPropnetMachineState state) {
 
 		int goals[] = null;
 		boolean terminal = false;

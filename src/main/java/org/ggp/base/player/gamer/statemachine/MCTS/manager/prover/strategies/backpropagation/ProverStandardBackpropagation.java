@@ -1,34 +1,29 @@
-package org.ggp.base.player.gamer.statemachine.MCTS.manager.propnet.strategies.backpropagation;
+package org.ggp.base.player.gamer.statemachine.MCTS.manager.prover.strategies.backpropagation;
 
-import org.ggp.base.player.gamer.statemachine.MCTS.manager.propnet.treestructure.MCTSJointMove;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.propnet.treestructure.MCTSNode;
-import org.ggp.base.player.gamer.statemachine.MCTS.manager.propnet.treestructure.SequDecMCTSJointMove;
-import org.ggp.base.player.gamer.statemachine.MCTS.manager.propnet.treestructure.decoupled.DecoupledMCTSMoveStats;
-import org.ggp.base.player.gamer.statemachine.MCTS.manager.propnet.treestructure.decoupled.PnDecoupledMCTSNode;
-import org.ggp.base.player.gamer.statemachine.MCTS.manager.propnet.treestructure.sequential.PnSequentialMCTSNode;
-import org.ggp.base.player.gamer.statemachine.MCTS.manager.propnet.treestructure.sequential.SequentialMCTSMoveStats;
-import org.ggp.base.player.gamer.statemachine.MCTS.manager.propnet.treestructure.slowsequential.PnSlowSeqentialMCTSNode;
-import org.ggp.base.player.gamer.statemachine.MCTS.manager.propnet.treestructure.slowsequential.SlowSequentialMCTSJointMove;
-import org.ggp.base.player.gamer.statemachine.MCTS.manager.propnet.treestructure.slowsequential.SlowSequentialMCTSMoveStats;
-import org.ggp.base.util.statemachine.inernalPropnetStructure.InternalPropnetRole;
+import org.ggp.base.player.gamer.statemachine.MCTS.manager.prover.treestructure.ProverMCTSJointMove;
+import org.ggp.base.player.gamer.statemachine.MCTS.manager.prover.treestructure.ProverSequDecMCTSJointMove;
+import org.ggp.base.player.gamer.statemachine.MCTS.manager.prover.treestructure.decoupled.ProverDecoupledMCTSMoveStats;
+import org.ggp.base.player.gamer.statemachine.MCTS.manager.prover.treestructure.decoupled.ProverDecoupledMCTSNode;
+import org.ggp.base.util.statemachine.Role;
 
-public class StandardBackpropagation implements BackpropagationStrategy {
+public class ProverStandardBackpropagation implements ProverBackpropagationStrategy {
 
 	/**
 	 * The total number of roles in the game.
 	 * Needed by the sequential version of MCTS.
 	 */
-	private int numRoles;
+	//private int numRoles;
 
 	/**
 	 * The role that is actually performing the search.
 	 * Needed by the sequential version of MCTS.
 	 */
-	private InternalPropnetRole myRole;
+	//private Role myRole;
 
-	public StandardBackpropagation(int numRoles, InternalPropnetRole myRole){
-		this.numRoles = numRoles;
-		this.myRole = myRole;
+	public ProverStandardBackpropagation(int numRoles, Role myRole){
+		//this.numRoles = numRoles;
+		//this.myRole = myRole;
 	}
 
 	/*
@@ -36,14 +31,14 @@ public class StandardBackpropagation implements BackpropagationStrategy {
 	 * @see org.ggp.base.player.gamer.statemachine.MCTS.manager.strategies.backpropagation.BackpropagationStrategy#update(org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.InternalPropnetMCTSNode, org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.MCTSJointMove, int[])
 	 */
 	@Override
-	public void update(MCTSNode node, MCTSJointMove jointMove, int[] goals){
-		if(node instanceof PnDecoupledMCTSNode && jointMove instanceof SequDecMCTSJointMove){
-			this.decUpdate((PnDecoupledMCTSNode)node, (SequDecMCTSJointMove)jointMove, goals);
-		}else if(node instanceof PnSequentialMCTSNode && jointMove instanceof SequDecMCTSJointMove){
+	public void update(MCTSNode node, ProverMCTSJointMove jointMove, int[] goals){
+		if(node instanceof ProverDecoupledMCTSNode && jointMove instanceof ProverSequDecMCTSJointMove){
+			this.decUpdate((ProverDecoupledMCTSNode)node, (ProverSequDecMCTSJointMove)jointMove, goals);
+		}/*else if(node instanceof PnSequentialMCTSNode && jointMove instanceof SequDecMCTSJointMove){
 			this.seqUpdate((PnSequentialMCTSNode)node, (SequDecMCTSJointMove)jointMove, goals);
 		}else if(node instanceof PnSlowSeqentialMCTSNode && jointMove instanceof SlowSequentialMCTSJointMove){
 			this.sseqUpdate((PnSlowSeqentialMCTSNode)node, (SlowSequentialMCTSJointMove)jointMove, goals);
-		}else{
+		}*/else{
 			throw new RuntimeException("StandardBackpropagation-update(): detected wrong combination of types for node (" + node.getClass().getSimpleName() + ") and joint move (" + jointMove.getClass().getSimpleName() + ").");
 		}
 	}
@@ -58,17 +53,17 @@ public class StandardBackpropagation implements BackpropagationStrategy {
 	 * @param jointMove the explored joint move.
 	 * @param goals the goals obtained by the simulation, to be used to update the statistics.
 	 */
-	private void decUpdate(PnDecoupledMCTSNode node, SequDecMCTSJointMove jointMove, int[] goals) {
+	private void decUpdate(ProverDecoupledMCTSNode node, ProverSequDecMCTSJointMove jointMove, int[] goals) {
 
 		node.incrementTotVisits();
 
-		DecoupledMCTSMoveStats[][] moves = node.getMoves();
+		ProverDecoupledMCTSMoveStats[][] moves = node.getMoves();
 
 		int[] moveIndices = jointMove.getMovesIndices();
 
 		for(int i = 0; i < moves.length; i++){
 			// Get the decoupled MCTS Move
-			DecoupledMCTSMoveStats theMoveToUpdate = moves[i][moveIndices[i]];
+			ProverDecoupledMCTSMoveStats theMoveToUpdate = moves[i][moveIndices[i]];
 			theMoveToUpdate.incrementScoreSum(goals[i]);
 			if(theMoveToUpdate.getVisits() == 0){
 				//System.out.println("!!!!!");
@@ -95,7 +90,7 @@ public class StandardBackpropagation implements BackpropagationStrategy {
 	 * @param jointMove the explored joint move.
 	 * @param goals the goals obtained by the simulation, to be used to update the statistics.
 	 */
-	private void seqUpdate(PnSequentialMCTSNode node, SequDecMCTSJointMove jointMove, int[] goals) {
+	/*private void seqUpdate(PnSequentialMCTSNode node, SequDecMCTSJointMove jointMove, int[] goals) {
 
 		node.incrementTotVisits();
 
@@ -134,7 +129,7 @@ public class StandardBackpropagation implements BackpropagationStrategy {
 
 			node.decreaseUnvisitedLeaves();
 		}
-	}
+	}*/
 
 	/**
 	 * Backpropagation, slow SEQUENTIAL version.
@@ -147,7 +142,7 @@ public class StandardBackpropagation implements BackpropagationStrategy {
 	 * @param jointMove the explored joint move.
 	 * @param goals the goals obtained by the simulation, to be used to update the statistics.
 	 */
-	private void sseqUpdate(PnSlowSeqentialMCTSNode node, SlowSequentialMCTSJointMove jointMove, int[] goals) {
+	/*private void sseqUpdate(PnSlowSeqentialMCTSNode node, SlowSequentialMCTSJointMove jointMove, int[] goals) {
 
 		node.incrementTotVisits();
 
@@ -180,7 +175,7 @@ public class StandardBackpropagation implements BackpropagationStrategy {
 			// Get the parent move, that will be the chosen move for the previous role.
 			theMoveToUpdate = theMoveToUpdate.getPreviousRoleMoveStats();
 		}
-	}
+	}*/
 
 	@Override
 	public String getStrategyParameters() {
@@ -196,5 +191,7 @@ public class StandardBackpropagation implements BackpropagationStrategy {
 			return "[BACKPROPAGATION_STRATEGY = " + this.getClass().getSimpleName() + "]";
 		}
 	}
+
+
 
 }

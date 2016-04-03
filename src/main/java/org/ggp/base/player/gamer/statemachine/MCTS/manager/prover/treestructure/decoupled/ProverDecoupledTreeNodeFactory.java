@@ -1,22 +1,23 @@
-package org.ggp.base.player.gamer.statemachine.MCTS.manager.propnet.treestructure.decoupled;
+package org.ggp.base.player.gamer.statemachine.MCTS.manager.prover.treestructure.decoupled;
 
 import java.util.List;
 
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.propnet.treestructure.MCTSNode;
-import org.ggp.base.player.gamer.statemachine.MCTS.manager.propnet.treestructure.TreeNodeFactory;
+import org.ggp.base.player.gamer.statemachine.MCTS.manager.prover.treestructure.ProverTreeNodeFactory;
 import org.ggp.base.util.logging.GamerLogger;
-import org.ggp.base.util.statemachine.InternalPropnetStateMachine;
+import org.ggp.base.util.statemachine.MachineState;
+import org.ggp.base.util.statemachine.Move;
+import org.ggp.base.util.statemachine.Role;
+import org.ggp.base.util.statemachine.StateMachine;
 import org.ggp.base.util.statemachine.exceptions.MoveDefinitionException;
-import org.ggp.base.util.statemachine.inernalPropnetStructure.InternalPropnetMachineState;
-import org.ggp.base.util.statemachine.inernalPropnetStructure.InternalPropnetMove;
-import org.ggp.base.util.statemachine.inernalPropnetStructure.InternalPropnetRole;
+import org.ggp.base.util.statemachine.exceptions.StateMachineException;
 
-public class PnDecoupledTreeNodeFactory implements TreeNodeFactory {
+public class ProverDecoupledTreeNodeFactory implements ProverTreeNodeFactory{
 
-	protected InternalPropnetStateMachine theMachine;
+	protected StateMachine theMachine;
 
-	public PnDecoupledTreeNodeFactory(InternalPropnetStateMachine theMachine) {
-		this.theMachine = theMachine;
+	public ProverDecoupledTreeNodeFactory(StateMachine theProverMachine) {
+		this.theMachine = theProverMachine;
 	}
 
 	/**
@@ -47,20 +48,27 @@ public class PnDecoupledTreeNodeFactory implements TreeNodeFactory {
 	 * @return the tree node corresponding to the state.
 	 */
 	@Override
-	public MCTSNode createNewNode(InternalPropnetMachineState state) {
+	public MCTSNode createNewNode(MachineState state) {
 
 		//System.out.println("Creating new node.");
 
 		int goals[] = null;
 		boolean terminal = false;
 
-		DecoupledMCTSMoveStats[][] ductMovesStats = null;
+		ProverDecoupledMCTSMoveStats[][] ductMovesStats = null;
+
+		try {
+			terminal = this.theMachine.isTerminal(state);
+		} catch (StateMachineException e) {
+			GamerLogger.logError("MCTSManager", "Failed to compute state terminality.");
+			GamerLogger.logStackTrace("MCTSManager", e);
+			terminal = true;
+		}
 
 		// Terminal state:
-		if(this.theMachine.isTerminal(state)){
+		if(terminal){
 
 			goals = this.theMachine.getSafeGoals(state);
-			terminal = true;
 
 		}else{// Non-terminal state:
 
@@ -83,7 +91,7 @@ public class PnDecoupledTreeNodeFactory implements TreeNodeFactory {
 				// If the legal moves can be computed for every player, there is no need to compute the goals.
 			}
 
-			return new PnDecoupledMCTSNode(ductMovesStats, goals, terminal);
+			return new ProverDecoupledMCTSNode(ductMovesStats, goals, terminal);
 	}
 
 	/**
@@ -93,24 +101,24 @@ public class PnDecoupledTreeNodeFactory implements TreeNodeFactory {
 	 * @param state the state for which to create the moves statistics.
 	 * @return the moves statistics, if the moves can be computed, null otherwise.
 	 */
-	protected DecoupledMCTSMoveStats[][] createDUCTMCTSMoves(InternalPropnetMachineState state){
+	protected ProverDecoupledMCTSMoveStats[][] createDUCTMCTSMoves(MachineState state){
 
-		InternalPropnetRole[] roles = this.theMachine.getInternalRoles();
-		DecoupledMCTSMoveStats[][] moves = new DecoupledMCTSMoveStats[roles.length][];
+		List<Role> roles = this.theMachine.getRoles();
+		ProverDecoupledMCTSMoveStats[][] moves = new ProverDecoupledMCTSMoveStats[roles.size()][];
 
 		try{
-			List<InternalPropnetMove> legalMoves;
+			List<Move> legalMoves;
 
-			for(int i = 0; i < roles.length; i++){
+			for(int i = 0; i < roles.size(); i++){
 
-				legalMoves = this.theMachine.getInternalLegalMoves(state, roles[i]);
+				legalMoves = this.theMachine.getLegalMoves(state, roles.get(i));
 
-				moves[i] = new DecoupledMCTSMoveStats[legalMoves.size()];
+				moves[i] = new ProverDecoupledMCTSMoveStats[legalMoves.size()];
 				for(int j = 0; j < legalMoves.size(); j++){
-					moves[i][j] = new DecoupledMCTSMoveStats(legalMoves.get(j));
+					moves[i][j] = new ProverDecoupledMCTSMoveStats(legalMoves.get(j));
 				}
 			}
-		}catch(MoveDefinitionException e){
+		}catch(MoveDefinitionException | StateMachineException e){
 			// If for at least one player the legal moves cannot be computed, we return null.
 			GamerLogger.logError("MCTSManager", "Failed to retrieve the legal moves while adding non-terminal DUCT state to the tree.");
 			GamerLogger.logStackTrace("MCTSManager", e);

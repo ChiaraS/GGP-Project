@@ -4,7 +4,7 @@ import org.ggp.base.player.gamer.event.GamerSelectedMoveEvent;
 import org.ggp.base.player.gamer.statemachine.MCS.manager.propnet.CompleteMoveStats;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.exceptions.MCTSException;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.propnet.InternalPropnetMCTSManager;
-import org.ggp.base.player.gamer.statemachine.MCTS.manager.propnet.treestructure.PnMCTSNode;
+import org.ggp.base.player.gamer.statemachine.MCTS.manager.propnet.treestructure.MCTSNode;
 import org.ggp.base.player.gamer.statemachine.propnet.InternalPropnetGamer;
 import org.ggp.base.util.logging.GamerLogger;
 import org.ggp.base.util.statemachine.Move;
@@ -169,7 +169,7 @@ public abstract class MCTSGamer extends InternalPropnetGamer {
 			InternalPropnetMachineState currentState = this.thePropnetMachine.stateToInternalState(this.getCurrentState());
 
 			try {
-				PnMCTSNode currentNode = this.mctsManager.search(currentState, realTimeout, gameStep);
+				MCTSNode currentNode = this.mctsManager.search(currentState, realTimeout, gameStep);
 				CompleteMoveStats selectedMove = this.mctsManager.getBestMove(currentNode);
 
 				searchTime = this.mctsManager.getSearchTime();
