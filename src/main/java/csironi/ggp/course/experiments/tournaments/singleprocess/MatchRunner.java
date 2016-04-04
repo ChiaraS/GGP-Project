@@ -1,4 +1,4 @@
-package csironi.ggp.course.experiments.tournaments;
+package csironi.ggp.course.experiments.tournaments.singleprocess;
 
 import java.io.BufferedWriter;
 import java.io.File;
@@ -6,9 +6,6 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.TimeUnit;
 
 import org.apache.logging.log4j.ThreadContext;
 import org.ggp.base.player.GamePlayer;
@@ -19,6 +16,7 @@ import org.ggp.base.util.game.Game;
 import org.ggp.base.util.gdl.grammar.Gdl;
 import org.ggp.base.util.logging.GamerLogger;
 import org.ggp.base.util.match.Match;
+import org.ggp.base.util.propnet.creationManager.PropNetManagerRunner;
 import org.ggp.base.util.propnet.creationManager.SeparateInternalPropnetManager;
 import org.ggp.base.util.statemachine.exceptions.GoalDefinitionException;
 import org.ggp.base.util.statemachine.exceptions.StateMachineException;
@@ -71,52 +69,11 @@ public class MatchRunner extends Thread{
 
 		GamerLogger.log("MatchRunner", "Starting new match: " + matchName);
 
-		// Create the executor service that will run the propnet manager that creates the propnet
-        ExecutorService executor = Executors.newSingleThreadExecutor();
+		GamerLogger.log("MatchRunner", "Creating the propnet.");
 
-        // Create the propnet creation manager
-        SeparateInternalPropnetManager manager = new SeparateInternalPropnetManager(this.description, System.currentTimeMillis() + pnCreationTime);
+		SeparateInternalPropnetManager manager =  new SeparateInternalPropnetManager(description, System.currentTimeMillis() + pnCreationTime);
 
-        // Start the manager
-  	  	executor.execute(manager);
-
-  	  	// Shutdown executor to tell it not to accept any more task to execute.
-		// Note that this doesn't interrupt previously started tasks.
-		executor.shutdown();
-
-		// Tell the executor to wait until the currently running task has completed execution or the timeout has elapsed.
-		try{
-			executor.awaitTermination(pnCreationTime, TimeUnit.MILLISECONDS);
-		}catch(InterruptedException e){ // The thread running the verifier has been interrupted => stop the test
-			executor.shutdownNow(); // Interrupt everything
-			GamerLogger.logError("MatchRunner", "Program interrupted. Match of game "+ this.gameKey +" won't be performed.");
-			GamerLogger.logStackTrace("MatchRunner", e);
-			this.resetLogFolder(oldFolder);
-			Thread.currentThread().interrupt();
-			return;
-		}
-
-		// Here the available time has elapsed, so we must interrupt the thread if it is still running.
-		executor.shutdownNow();
-
-		// Wait for the thread to actually terminate
-		while(!executor.isTerminated()){
-
-			// If the thread didn't terminate, wait for a minute and then check again
-			try{
-				executor.awaitTermination(1, TimeUnit.MINUTES);
-			}catch(InterruptedException e) {
-				// If this exception is thrown it means the thread that is executing the verification
-				// of the state machine has been interrupted. If we do nothing this state machine could be stuck in the
-				// while loop anyway until all tasks in the executor have terminated, thus we break out of the loop and return.
-				// What happens to the still running tasks in the executor? Who will make sure they terminate?
-				GamerLogger.logError("MatchRunner", "Program interrupted. Match of game "+ this.gameKey +" won't be performed.");
-				GamerLogger.logStackTrace("MatchRunner", e);
-				this.resetLogFolder(oldFolder);
-				Thread.currentThread().interrupt();
-				return;
-			}
-		}
+		PropNetManagerRunner.runPropNetManager(manager, pnCreationTime);
 
 		// If we are here it means that the manager stopped running. We must check if it has created a usable propnet or not.
 		if(manager.getImmutablePropnet() == null || manager.getInitialPropnetState() == null){

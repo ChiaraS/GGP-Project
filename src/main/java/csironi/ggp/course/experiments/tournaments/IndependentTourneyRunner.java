@@ -9,8 +9,6 @@ import java.util.concurrent.TimeUnit;
 import org.apache.logging.log4j.ThreadContext;
 import org.ggp.base.util.game.Game;
 import org.ggp.base.util.game.GameRepository;
-import org.ggp.base.util.game.ManualUpdateLocalGameRepository;
-import org.ggp.base.util.gdl.grammar.Gdl;
 import org.ggp.base.util.logging.GamerLogger;
 import org.ggp.base.util.reflection.ProjectSearcher;
 import org.ggp.base.util.statemachine.Role;
@@ -26,17 +24,10 @@ import org.ggp.base.util.statemachine.Role;
  * @author C.Sironi
  *
  */
-public class TourneyRunner {
+public class IndependentTourneyRunner {
 
 	static{
 		System.setProperty("isThreadContextMapInheritable", "true");
-	}
-
-	/**
-	 *
-	 */
-	public TourneyRunner() {
-		// TODO Auto-generated constructor stub
 	}
 
 	/**
@@ -44,22 +35,73 @@ public class TourneyRunner {
 	 */
 	public static void main(String[] args) {
 
+		/** 1. Extract the desired configuration from the command line and check that all inputs are correct. **/
+
 		if(args.length < 8){
 			System.out.println("Impossible to start tourney, missing inputs. Please give the following parameters to the command line:");
-			System.out.println("[tourneyName] [gameKey] [startClock(sec)] [playClock(sec)] [propnetCreationTime(ms)] [numParallelMatches] [matchesPerConfiguration] [listOfGamersTypes]");
+			System.out.println("[tourneyName] [gameKey] [startClock(sec)] [playClock(sec)] [propnetCreationTime(ms)] [numParallelMatches] [matchesPerGamerType] [listOfGamersTypes]");
 			return;
 		}
 
-		// 1. Extract the desired configuration from the command line.
-		String tourneyName = args[0];
-		String gameKey = args[1];
-		int startClock = Integer.valueOf(args[2]);
-		int playClock = Integer.valueOf(args[3]);
-		long creationTime = Long.valueOf(args[4]);
-		int numParallelMatches = Integer.valueOf(args[5]);
-		int matchesPerGamerType = Integer.valueOf(args[6]);
+		String tourneyName;
+		String gameKey;
+		int startClock;
+		int playClock;
+		long pnCreationTime;
+		int numParallelMatches;
+		int matchesPerGamerType;
+		List<String> theGamersTypes;
 
-		List<Class<?>> gamersClasses = new ArrayList<Class<?>>();
+		tourneyName = args[0];
+		gameKey = args[1];
+
+		GameRepository gameRepo = GameRepository.getDefaultRepository();
+
+    	//GameRepository gameRepo = new ManualUpdateLocalGameRepository("/home/csironi/GAMEREPOS/GGPBase-GameRepo-03022016");
+
+    	Game game = gameRepo.getGame(gameKey);
+
+    	if(game == null){
+    		System.out.println("Impossible to start tourney: specified game not found in the repository.");
+			return;
+    	}
+
+		try{
+			startClock = Integer.valueOf(args[2]);
+		}catch(NumberFormatException e){
+			System.out.println("Impossible to start tourney runner, wrong input. The start clock must be an integer value, not " + args[2] + ".");
+			return;
+		}
+
+		try{
+			playClock = Integer.valueOf(args[3]);
+		}catch(NumberFormatException e){
+			System.out.println("Impossible to start tourney runner, wrong input. The play clock must be an integer value, not " + args[3] + ".");
+			return;
+		}
+
+		try{
+			pnCreationTime = Long.valueOf(args[4]);
+		}catch(NumberFormatException e){
+			System.out.println("Impossible to start tourney runner, wrong input. The PropNet creation time must be a long value, not " + args[4] + ".");
+			return;
+		}
+
+		try{
+			numParallelMatches = Integer.valueOf(args[5]);
+		}catch(NumberFormatException e){
+			System.out.println("Impossible to start tourney runner, wrong input. The number of parallel matches must be an integer value, not " + args[5] + ".");
+			return;
+		}
+
+		try{
+			matchesPerGamerType = Integer.valueOf(args[6]);
+		}catch(NumberFormatException e){
+			System.out.println("Impossible to start tourney runner, wrong input. The number of matches per game must be an integer value, not " + args[6] + ".");
+			return;
+		}
+
+		theGamersTypes = new ArrayList<String>();
 
 		String gamerType;
     	for (int i = 7; i < args.length; i++){
@@ -74,48 +116,30 @@ public class TourneyRunner {
     			System.out.println("Impossible to start tourney, unexisting gamer type " + gamerType + ".");
     			return;
     		}else{
-    			gamersClasses.add(theCorrespondingClass);
+    			theGamersTypes.add(gamerType);
     		}
 		}
 
-    	// 2. Get the game and check that the number of gamer types is not greater than the number of roles in the game.
-
-    	//Game game = GameRepository.getDefaultRepository().getGame(gameKey);
-
-    	GameRepository gameRepo = new ManualUpdateLocalGameRepository("/home/csironi/GAMEREPOS/GGPBase-GameRepo-03022016");
-
-    	Game game = gameRepo.getGame(gameKey);
-
-    	if(game == null){
-    		System.out.println("Impossible to start tourney: specified game not found in the repository.");
-			return;
-    	}
-
-    	int expectedRoles = Role.computeRoles(game.getRules()).size();
-    	/*if (gamersClasses.size() > expectedRoles) {
-    		System.out.println("Impossible to start tourney: number of gamer types to test is bigger than the number of roles in the game.");
-			return;
-    	}*/
-
-    	// 3. Inputs are correct, officially start the tourney.
+    	/** 2. Officially start the tourney and start logging. **/
 
     	String mainLogFolder = System.currentTimeMillis() + "." + tourneyName;
     	ThreadContext.put("LOG_FOLDER", mainLogFolder);
-
     	GamerLogger.startFileLogging();
 
     	String gamerTypesList = "[ ";
-    	for (Class<?> gamerClass : gamersClasses) {
-    		gamerTypesList += (gamerClass.getSimpleName() + " ");
+    	for (String s : theGamersTypes) {
+    		gamerTypesList += (s + " ");
     	}
     	gamerTypesList += "]";
 
     	GamerLogger.log("TourneyRunner", "Starting tourney " + tourneyName + " for game " + gameKey + " with following settings: START_CLOCK=" +
-    			startClock + "s, PLAY_CLOCK=" + playClock + "s, PROPNET_CREATION_TIME=" + creationTime + "ms, NUM_PARALLEL_MATCHES=" +
+    			startClock + "s, PLAY_CLOCK=" + playClock + "s, PROPNET_CREATION_TIME=" + pnCreationTime + "ms, NUM_PARALLEL_MATCHES=" +
     			numParallelMatches + ", NUM_MATCHES_PER_GAMER_TYPE=" + matchesPerGamerType + ", GAMER_TYPES=" + gamerTypesList + ".");
 
-    	// 4. Compute all combinations of gamer types.
-    	List<List<Integer>> combinations = Combinator.getCombinations(gamersClasses.size(), expectedRoles);
+    	/** 2. Compute all combinations of gamer types. **/
+
+    	int expectedRoles = Role.computeRoles(game.getRules()).size();
+    	List<List<Integer>> combinations = Combinator.getCombinations(theGamersTypes.size(), expectedRoles);
 
     	int matchesPerCombination = (matchesPerGamerType / (Combinator.getLastCombinationsPerElement() * Combinator.getLastPermutationsPerCombination()));
 
@@ -124,18 +148,17 @@ public class TourneyRunner {
     	}
 
     	// 5. For each combination run the given amount of matches.
-    	List<Gdl> description = game.getRules();
 
     	for(List<Integer> combination : combinations){
 
-    		// Prompt the JVM to do garbage collection, because we've hopefully just freed a lot of stuff.
+    		// Prompt the JVM to do garbage collection (not sure if really helpful).
     	    long endGCTime = System.currentTimeMillis() + 3000;
     	    for (int ii = 0; ii < 1000 && System.currentTimeMillis() < endGCTime; ii++){
 
     	    	//System.out.println("Calling GC: " + System.currentTimeMillis());
 
     	    	System.gc();
-    	        try {Thread.sleep(1);} catch (InterruptedException lEx) {/* Whatever */}
+    	       try {Thread.sleep(1);} catch (InterruptedException lEx) {/* Whatever */}
     	    }
 
     		/*System.out.println("Calling GC.");
@@ -144,16 +167,16 @@ public class TourneyRunner {
     		}*/
 
     		String comboIndices = "";
-    		List<Class<?>> combinationClasses = new ArrayList<Class<?>>();
+    		List<String> theComboGamersTypes = new ArrayList<String>();
     		for(Integer i : combination){
-    			combinationClasses.add(gamersClasses.get(i.intValue()));
+    			theComboGamersTypes.add(theGamersTypes.get(i.intValue()));
     			comboIndices += i.toString();
     		}
 
-    		GamerLogger.log("TourneyRunner", "Strating sub-tourney for combination " + comboIndices + ".");
+    		GamerLogger.log("TourneyRunner", "Starting sub-tourney for combination " + comboIndices + ".");
 
     		ThreadContext.put("LOG_FOLDER", mainLogFolder + "/Combination" + comboIndices);
-    		boolean completed = runMatchesForCombination(game, description, startClock, playClock, creationTime, combinationClasses, numParallelMatches, matchesPerCombination);
+    		boolean completed = runMatchesForCombination(gameKey, startClock, playClock, pnCreationTime, theComboGamersTypes, numParallelMatches, matchesPerCombination);
     		ThreadContext.put("LOG_FOLDER", mainLogFolder);
 
     		if(completed){
@@ -169,17 +192,36 @@ public class TourneyRunner {
 
 
 
-	private static boolean runMatchesForCombination(Game game, List<Gdl> description, int startClock, int playClock,
-			long creationTime, List<Class<?>> combinationClasses, int numParallelMatches, int matchesPerCombination){
+	private static boolean runMatchesForCombination(String gameKey, int startClock, int playClock,
+			long pnCreationTime, List<String> theGamersTypes, int numParallelMatches, int matchesPerCombination){
 
-		GamerLogger.log("TourneyRunner", "Strating sub-tourney.");
+		GamerLogger.log("TourneyRunner", "Starting sub-tourney.");
 
 		// Create the executor as a pool with the desired number of threads
 		// (corresponding to the number of matches we want to run in parallel).
 		ExecutorService executor = Executors.newFixedThreadPool(numParallelMatches);
 
+		// Create the settings for the process
+		List<String> theSettings = new ArrayList<String>();
+
+		theSettings.add("java");
+		theSettings.add("-jar");
+		theSettings.add("IndependentSingleMatchRunner.jar");
+		theSettings.add(ThreadContext.get("LOG_FOLDER"));
+		theSettings.add("" + 0);
+		theSettings.add(gameKey);
+		theSettings.add("" + startClock);
+		theSettings.add("" + playClock);
+		theSettings.add("" + pnCreationTime);
+
+		for(String s : theGamersTypes){
+			theSettings.add(s);
+		}
+
+
 		for(int i = 0; i < matchesPerCombination; i++){
-			executor.execute(new MatchRunner(i, game, description, startClock, playClock, creationTime, combinationClasses));
+			theSettings.set(4, ""+i);
+			executor.execute(new MatchProcessRunner(i, new ArrayList<String>(theSettings), ThreadContext.get("LOG_FOLDER") + "/MatchRunner" + i));
 		}
 
 		// Shutdown executor to tell it not to accept any more task to execute.
