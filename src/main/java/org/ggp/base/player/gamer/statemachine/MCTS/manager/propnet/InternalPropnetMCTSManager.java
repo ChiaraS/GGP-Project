@@ -13,9 +13,10 @@ import org.ggp.base.player.gamer.statemachine.MCTS.manager.propnet.strategies.mo
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.propnet.strategies.playout.PlayoutStrategy;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.propnet.strategies.selection.SelectionStrategy;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.propnet.treestructure.MCTSJointMove;
-import org.ggp.base.player.gamer.statemachine.MCTS.manager.propnet.treestructure.MCTSTranspositionTable;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.propnet.treestructure.MCTSNode;
+import org.ggp.base.player.gamer.statemachine.MCTS.manager.propnet.treestructure.MCTSTranspositionTable;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.propnet.treestructure.TreeNodeFactory;
+import org.ggp.base.player.gamer.statemachine.MCTS.manager.propnet.treestructure.AMAFDecoupled.PnAMAFDecoupledTreeNodeFactory;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.propnet.treestructure.sequential.SequentialMCTSMoveStats;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.propnet.treestructure.slowsequential.SlowSequentialMCTSMoveStats;
 import org.ggp.base.util.logging.GamerLogger;
@@ -147,7 +148,7 @@ public class InternalPropnetMCTSManager extends MCTSManager {
 			BackpropagationStrategy backpropagationStrategy, MoveChoiceStrategy moveChoiceStrategy,
 			AfterSimulationStrategy afterSimulationStrategy, AfterMoveStrategy afterMoveStrategy,
 			TreeNodeFactory theNodesFactory, InternalPropnetStateMachine theMachine,
-			int gameStepOffset, int maxSearchDepth) {
+			int gameStepOffset, int maxSearchDepth, boolean logTranspositionTable) {
 
 		//this.mctsType = mctsType;
 		this.selectionStrategy = selectionStrategy;
@@ -159,7 +160,13 @@ public class InternalPropnetMCTSManager extends MCTSManager {
 		this.afterMoveStrategy = afterMoveStrategy;
 		this.theNodesFactory = theNodesFactory;
 		this.theMachine = theMachine;
-		this.transpositionTable = new MCTSTranspositionTable(gameStepOffset);
+
+		if(!(theNodesFactory instanceof PnAMAFDecoupledTreeNodeFactory)){
+			logTranspositionTable = false;
+		}
+
+		this.transpositionTable = new MCTSTranspositionTable(gameStepOffset, logTranspositionTable);
+
 		this.maxSearchDepth = maxSearchDepth;
 		this.iterations = 0;
 		this.visitedNodes = 0;
@@ -189,7 +196,7 @@ public class InternalPropnetMCTSManager extends MCTSManager {
 
 		String toLog = "MCTS manager initialized with the following state mahcine " + this.theMachine.getName();
 
-		toLog += "\nMCTS manager initialized with the following parameters: [maxSearchDepth = " + this.maxSearchDepth + "]";
+		toLog += "\nMCTS manager initialized with the following parameters: [maxSearchDepth = " + this.maxSearchDepth + ", logTranspositionTable = " + logTranspositionTable + "]";
 
 		toLog += "\nMCTS manager initialized with the following tree node factory: " + this.theNodesFactory.getClass().getSimpleName() + ".";
 
@@ -267,6 +274,7 @@ public class InternalPropnetMCTSManager extends MCTSManager {
 	 */
 	public MCTSNode search(InternalPropnetMachineState initialState, long timeout, int gameStep) throws MCTSException{
 
+
 		MCTSNode initialNode = this.prepareForSearch(initialState, gameStep);
 
 		// We can be sure that the node is not null, but if it is terminal we cannot perform any search.
@@ -292,7 +300,8 @@ public class InternalPropnetMCTSManager extends MCTSManager {
 	 * @param initialState the state of the game to be used as starting state for
 	 * 					   to perform the search.
 	 * @param gameStep the current game step being played (needed to clean the transposition
-	 * 				   table and be used as time stamp for tree nodes).
+	 * 				   table and be used as time stamp for tree nodes). The manager considers
+	 * 				   the steps as starting from 1. 0 or less are not valid!
 	 * @return the tree node corresponding to the given initial state.
 	 */
 	private MCTSNode prepareForSearch(InternalPropnetMachineState initialState, int gameStep){
@@ -308,7 +317,12 @@ public class InternalPropnetMCTSManager extends MCTSManager {
 		// Every time a move is played in the actual game...
 		if(this.transpositionTable.getLastGameStep() != gameStep){
 			// ...nodes not visited recently are removed from the transposition table...
+
+			long ttStart = System.currentTimeMillis();
+
 			this.transpositionTable.clean(gameStep);
+
+			System.out.println(this.selectionStrategy.getClass().getSimpleName() + " cleaning TT : " + (System.currentTimeMillis()-ttStart));
 
 			// ...and each strategy performs some clean-up of its internal structures (if necessary).
 			//for(Strategy s : this.strategies){

@@ -9,7 +9,7 @@ public class PnDecoupledMCTSNode extends MCTSNode{
 	/**
 	 * List of the moves' statistics for each role in the state corresponding to this node.
 	 */
-	private DecoupledMCTSMoveStats[][] movesStats;
+	protected DecoupledMCTSMoveStats[][] movesStats;
 
 	/**
 	 * Number of unexplored moves for each player.

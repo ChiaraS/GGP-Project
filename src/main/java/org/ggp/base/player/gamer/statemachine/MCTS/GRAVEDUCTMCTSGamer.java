@@ -28,11 +28,13 @@ public class GRAVEDUCTMCTSGamer extends UCTMCTSGamer {
 	public GRAVEDUCTMCTSGamer() {
 		super();
 
-		this.c = 0.0;
+		this.c = 0.2;
 		this.unexploredMoveDefaultSelectionValue = 1.0;
 		this.minAMAFVisits = 50;
 		this.betaComputer = new GRAVEBetaComputer(0.001);
-		this.defaultExploration = 0.0;
+		this.defaultExploration = 1.0;
+
+		this.logTranspositionTable = true;
 	}
 
 	@Override
@@ -52,7 +54,7 @@ public class GRAVEDUCTMCTSGamer extends UCTMCTSGamer {
 				gravePlayout, new GRAVEBackpropagation(numRoles, myRole, allJointMoves),
 				new MaximumScoreChoice(myRole, r),	new GRAVEAfterSimulation(graveSelection, gravePlayout),
 				null, new PnAMAFDecoupledTreeNodeFactory(this.thePropnetMachine), this.thePropnetMachine,
-				this.gameStepOffset, this.maxSearchDepth);
+				this.gameStepOffset, this.maxSearchDepth, this.logTranspositionTable);
 	}
 
 }

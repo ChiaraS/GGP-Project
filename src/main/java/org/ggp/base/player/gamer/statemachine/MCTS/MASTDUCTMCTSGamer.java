@@ -58,7 +58,7 @@ public class MASTDUCTMCTSGamer extends DUCTMCTSGamer {
 	       		new MaximumScoreChoice(myRole, r), new MASTAfterSimulation(mastPlayout),
 	       		new MASTAfterMove(mastStatistics, this.decayFactor),
 	       		new PnDecoupledTreeNodeFactory(this.thePropnetMachine),
-	       		this.thePropnetMachine, this.gameStepOffset, this.maxSearchDepth);
+	       		this.thePropnetMachine, this.gameStepOffset, this.maxSearchDepth, this.logTranspositionTable);
 	}
 
 }

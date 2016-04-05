@@ -1,4 +1,4 @@
-package csironi.ggp.course.experiments.tournaments;
+package csironi.ggp.course.experiments.tournaments.independentprocesses;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -9,9 +9,12 @@ import java.util.concurrent.TimeUnit;
 import org.apache.logging.log4j.ThreadContext;
 import org.ggp.base.util.game.Game;
 import org.ggp.base.util.game.GameRepository;
+import org.ggp.base.util.game.ManualUpdateLocalGameRepository;
 import org.ggp.base.util.logging.GamerLogger;
 import org.ggp.base.util.reflection.ProjectSearcher;
 import org.ggp.base.util.statemachine.Role;
+
+import csironi.ggp.course.experiments.tournaments.Combinator;
 
 /**
  * This class takes care of performing a tourney for the given game.
@@ -55,9 +58,9 @@ public class IndependentTourneyRunner {
 		tourneyName = args[0];
 		gameKey = args[1];
 
-		GameRepository gameRepo = GameRepository.getDefaultRepository();
+		//GameRepository gameRepo = GameRepository.getDefaultRepository();
 
-    	//GameRepository gameRepo = new ManualUpdateLocalGameRepository("/home/csironi/GAMEREPOS/GGPBase-GameRepo-03022016");
+    	GameRepository gameRepo = new ManualUpdateLocalGameRepository("/home/csironi/GAMEREPOS/GGPBase-GameRepo-03022016");
 
     	Game game = gameRepo.getGame(gameKey);
 
@@ -206,7 +209,7 @@ public class IndependentTourneyRunner {
 
 		theSettings.add("java");
 		theSettings.add("-jar");
-		theSettings.add("IndependentSingleMatchRunner.jar");
+		theSettings.add("BIAS0001K500IndependentSingleMatchRunner.jar");
 		theSettings.add(ThreadContext.get("LOG_FOLDER"));
 		theSettings.add("" + 0);
 		theSettings.add(gameKey);

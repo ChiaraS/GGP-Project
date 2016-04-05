@@ -8,6 +8,8 @@ public class CadiaGRAVEDUCTMCTSGamer extends CadiaRAVEDUCTMCTSGamer {
 		super();
 
 		this.minAMAFVisits = 50;
+
+		this.logTranspositionTable = true;
 	}
 
 }

@@ -41,7 +41,7 @@ public class SlowSUCTMCTSGamer extends UCTMCTSGamer {
 	       		new RandomExpansion(numRoles, myRole, r), new RandomPlayout(this.thePropnetMachine),
 	       		new StandardBackpropagation(numRoles, myRole),	new MaximumScoreChoice(myRole, r),
 	       		null, null, new PnSlowSequentialTreeNodeFactory(this.thePropnetMachine, myRole),
-	       		this.thePropnetMachine,	this.gameStepOffset, this.maxSearchDepth);
+	       		this.thePropnetMachine,	this.gameStepOffset, this.maxSearchDepth, this.logTranspositionTable);
 	}
 
 	/**

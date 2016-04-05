@@ -1,4 +1,4 @@
-package csironi.ggp.course.experiments.tournaments;
+package csironi.ggp.course.experiments.tournaments.independentprocesses;
 
 import java.io.File;
 import java.io.IOException;

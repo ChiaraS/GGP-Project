@@ -365,7 +365,7 @@ public class SingleRunPNTest {
 		        		new RandomExpansion(numRoles, internalPlayingRole, r), new RandomPlayout(thePropnetMachine),
 		        		new StandardBackpropagation(numRoles, internalPlayingRole),
 		        		new MaximumScoreChoice(internalPlayingRole, r), null, null, theNodeFactory,
-		        		thePropnetMachine, gameStepOffset, maxSearchDepth);
+		        		thePropnetMachine, gameStepOffset, maxSearchDepth, false);
 
 		        GamerLogger.log("SingleRunPNTester", "Starting MCTS search.");
 

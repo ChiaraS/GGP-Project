@@ -40,7 +40,7 @@ public class SingleGameDUCTMCTSGamer extends UCTMCTSGamer{
 	       		new RandomExpansion(numRoles, myRole, r), new RandomPlayout(this.thePropnetMachine),
 	       		new StandardBackpropagation(numRoles, myRole),	new MaximumScoreChoice(myRole, r),
 	       		null, null, new PnDecoupledTreeNodeFactory(this.thePropnetMachine), this.thePropnetMachine,
-	       		this.gameStepOffset, this.maxSearchDepth);
+	       		this.gameStepOffset, this.maxSearchDepth, this.logTranspositionTable);
 
 	}
 

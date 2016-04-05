@@ -1,4 +1,4 @@
-package csironi.ggp.course.experiments.tournaments;
+package csironi.ggp.course.experiments.tournaments.independentprocesses;
 
 import java.io.BufferedWriter;
 import java.io.File;
@@ -14,6 +14,7 @@ import org.ggp.base.server.GameServer;
 import org.ggp.base.server.exception.GameServerException;
 import org.ggp.base.util.game.Game;
 import org.ggp.base.util.game.GameRepository;
+import org.ggp.base.util.game.ManualUpdateLocalGameRepository;
 import org.ggp.base.util.gdl.grammar.Gdl;
 import org.ggp.base.util.logging.GamerLogger;
 import org.ggp.base.util.match.Match;
@@ -60,9 +61,9 @@ public class IndependentSingleMatchRunner {
 
 		gameKey = args[2];
 
-		GameRepository gameRepo = GameRepository.getDefaultRepository();
+		//GameRepository gameRepo = GameRepository.getDefaultRepository();
 
-    	//GameRepository gameRepo = new ManualUpdateLocalGameRepository("/home/csironi/GAMEREPOS/GGPBase-GameRepo-03022016");
+    	GameRepository gameRepo = new ManualUpdateLocalGameRepository("/home/csironi/GAMEREPOS/GGPBase-GameRepo-03022016");
 
     	Game game = gameRepo.getGame(gameKey);
 

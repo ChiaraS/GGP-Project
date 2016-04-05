@@ -288,7 +288,7 @@ public class MCTSSpeedTest {
 		        		new RandomExpansion(numRoles, internalPlayingRole, r), new RandomPlayout(thePropnetMachine),
 		        		new StandardBackpropagation(numRoles, internalPlayingRole),
 		        		new MaximumScoreChoice(internalPlayingRole, r), null, null, theNodeFactory,
-		        		thePropnetMachine, gameStepOffset, maxSearchDepth);
+		        		thePropnetMachine, gameStepOffset, maxSearchDepth, false);
 
 		        try{
 		        	GamerLogger.log(mctsType + "MCTSSpeedTest", "Starting search.");

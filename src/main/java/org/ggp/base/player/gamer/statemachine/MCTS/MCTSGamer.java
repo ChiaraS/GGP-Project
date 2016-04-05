@@ -33,6 +33,7 @@ public abstract class MCTSGamer extends InternalPropnetGamer {
 	protected double valueOffset;
 	protected int gameStepOffset;
 	protected int maxSearchDepth;
+	protected boolean logTranspositionTable;
 
 	/**
 	 * The class that takes care of performing Monte Carlo tree search.
@@ -50,6 +51,7 @@ public abstract class MCTSGamer extends InternalPropnetGamer {
 		this.valueOffset = 0.01;
 		this.gameStepOffset = 2;
 		this.maxSearchDepth = 500;
+		this.logTranspositionTable = false;
 	}
 
 	/* (non-Javadoc)

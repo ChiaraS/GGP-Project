@@ -96,7 +96,7 @@ public abstract class InternalPropnetGamer extends StateMachineGamer {
 	 */
 	public InternalPropnetGamer() {
 		// TODO: change code so that the parameters can be set from outside.
-		this.safetyMargin = 10500L;
+		this.safetyMargin = 10000L;
 		this.thePropnetMachine = null;
 		this.propnetBuild = PROPNET_BUILD.ALWAYS;
 		this.firstTry = true;

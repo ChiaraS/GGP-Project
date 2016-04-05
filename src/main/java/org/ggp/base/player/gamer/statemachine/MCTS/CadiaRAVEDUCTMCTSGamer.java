@@ -28,13 +28,15 @@ public class CadiaRAVEDUCTMCTSGamer extends UCTMCTSGamer {
 	public CadiaRAVEDUCTMCTSGamer() {
 		super();
 
-		this.metagameSearch = true;
+		//this.metagameSearch = true;
 
 		this.c = 0.2;
 		this.unexploredMoveDefaultSelectionValue = 1.0;
 		this.minAMAFVisits = 0;
 		this.betaComputer = new CADIABetaComputer(500);
 		this.defaultExploration = 1.0;
+
+		this.logTranspositionTable = true;
 	}
 
 	@Override
@@ -54,7 +56,7 @@ public class CadiaRAVEDUCTMCTSGamer extends UCTMCTSGamer {
 				gravePlayout, new GRAVEBackpropagation(numRoles, myRole, allJointMoves),
 				new MaximumScoreChoice(myRole, r),	new GRAVEAfterSimulation(graveSelection, gravePlayout),
 				null, new PnAMAFDecoupledTreeNodeFactory(this.thePropnetMachine), this.thePropnetMachine,
-	       		this.gameStepOffset, this.maxSearchDepth);
+	       		this.gameStepOffset, this.maxSearchDepth, this.logTranspositionTable);
 	}
 
 }
