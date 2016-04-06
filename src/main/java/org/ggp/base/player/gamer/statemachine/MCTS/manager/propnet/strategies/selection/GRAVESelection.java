@@ -2,7 +2,6 @@ package org.ggp.base.player.gamer.statemachine.MCTS.manager.propnet.strategies.s
 
 import java.util.Random;
 
-import org.ggp.base.player.gamer.statemachine.MCTS.manager.propnet.strategies.selection.evaluators.GRAVE.BetaComputer;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.propnet.strategies.selection.evaluators.GRAVE.GRAVEEvaluator;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.propnet.treestructure.MCTSJointMove;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.propnet.treestructure.MCTSNode;
@@ -17,11 +16,11 @@ public class GRAVESelection extends MoveValueSelection {
 	private int minAMAFVisits;
 
 	public GRAVESelection(int numRoles, InternalPropnetRole myRole,
-			Random random, double valueOffset, double c, double defaultValue, int minAMAFVisits, BetaComputer betaComputer, double defaultExploration) {
+			Random random, double valueOffset, int minAMAFVisits, GRAVEEvaluator moveEvaluator) {
 
-		super(numRoles, myRole, random, valueOffset, new GRAVEEvaluator(c, defaultValue, betaComputer, defaultExploration));
+		super(numRoles, myRole, random, valueOffset, moveEvaluator);
 
-		this.minAMAFVisits =  minAMAFVisits;
+		this.minAMAFVisits = minAMAFVisits;
 
 	}
 
@@ -36,10 +35,10 @@ public class GRAVESelection extends MoveValueSelection {
 
 			// TODO: uncomment the check. This will make sure that if no stats have visits higher than the threshold at least
 			// the root stats will be used rather than ignoring amaf values.
-			if((((GRAVEEvaluator)this.moveEvaluator).getAmafStats()) == null || currentNode.getTotVisits() >= this.minAMAFVisits){
+			if((((GRAVEEvaluator)this.moveEvaluator).getCloserAmafStats()) == null || currentNode.getTotVisits() >= this.minAMAFVisits){
 
 				//System.out.println("change");
-				((GRAVEEvaluator)this.moveEvaluator).setAmafStats(((PnAMAFNode)currentNode).getAmafStats());
+				((GRAVEEvaluator)this.moveEvaluator).setCloserAmafStats(((PnAMAFNode)currentNode).getAmafStats());
 			}
 
 			return super.select(currentNode);
@@ -49,8 +48,8 @@ public class GRAVESelection extends MoveValueSelection {
 		}
 	}
 
-	public void resetAmafStats(){
-		((GRAVEEvaluator)this.moveEvaluator).setAmafStats(null);
+	public void resetCloserAmafStats(){
+		((GRAVEEvaluator)this.moveEvaluator).setCloserAmafStats(null);
 	}
 
 	@Override

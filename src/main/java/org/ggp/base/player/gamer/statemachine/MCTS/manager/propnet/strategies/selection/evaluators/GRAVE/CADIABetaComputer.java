@@ -17,7 +17,10 @@ public class CADIABetaComputer implements BetaComputer {
 	@Override
 	public double computeBeta(MoveStats theMoveStats,
 			MoveStats theAmafMoveStats, int nodeVisits) {
-		return Math.sqrt(((double)this.k) / ((double)((3*nodeVisits) + this.k)));
+
+		double numerator = k;
+		double denominator = ((3*nodeVisits) + this.k);
+		return Math.sqrt(numerator / denominator);
 	}
 
 	@Override

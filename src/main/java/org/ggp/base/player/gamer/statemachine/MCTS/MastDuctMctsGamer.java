@@ -15,17 +15,18 @@ import org.ggp.base.player.gamer.statemachine.MCTS.manager.propnet.strategies.ex
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.propnet.strategies.movechoice.MaximumScoreChoice;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.propnet.strategies.playout.MASTPlayout;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.propnet.strategies.selection.UCTSelection;
+import org.ggp.base.player.gamer.statemachine.MCTS.manager.propnet.strategies.selection.evaluators.UCTEvaluator;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.propnet.treestructure.decoupled.PnDecoupledTreeNodeFactory;
 import org.ggp.base.util.statemachine.inernalPropnetStructure.InternalPropnetMove;
 import org.ggp.base.util.statemachine.inernalPropnetStructure.InternalPropnetRole;
 
-public class MASTDUCTMCTSGamer extends DUCTMCTSGamer {
+public class MastDuctMctsGamer extends DuctMctsGamer {
 
-	private double epsilon;
+	protected double epsilon;
 
-	private double decayFactor;
+	protected double decayFactor;
 
-	public MASTDUCTMCTSGamer() {
+	public MastDuctMctsGamer() {
 		super();
 		this.epsilon = 0.4;
 		this.decayFactor = 0.2;
@@ -52,7 +53,7 @@ public class MASTDUCTMCTSGamer extends DUCTMCTSGamer {
 	       		this.thePropnetMachine, gameStepOffset,	maxSearchDepth);
 		*/
 
-		return new InternalPropnetMCTSManager(new UCTSelection(numRoles, myRole, r, this.valueOffset, this.c, this.unexploredMoveDefaultSelectionValue),
+		return new InternalPropnetMCTSManager(new UCTSelection(numRoles, myRole, r, this.valueOffset, new UCTEvaluator(this.c, this.unexploredMoveDefaultSelectionValue)),
 	       		new RandomExpansion(numRoles, myRole, r), mastPlayout,
 	       		new MASTBackpropagation(numRoles, myRole, mastStatistics),
 	       		new MaximumScoreChoice(myRole, r), new MASTAfterSimulation(mastPlayout),

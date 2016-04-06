@@ -9,7 +9,6 @@ import java.util.concurrent.TimeUnit;
 import org.apache.logging.log4j.ThreadContext;
 import org.ggp.base.util.game.Game;
 import org.ggp.base.util.game.GameRepository;
-import org.ggp.base.util.game.ManualUpdateLocalGameRepository;
 import org.ggp.base.util.logging.GamerLogger;
 import org.ggp.base.util.reflection.ProjectSearcher;
 import org.ggp.base.util.statemachine.Role;
@@ -38,6 +37,8 @@ public class IndependentTourneyRunner {
 	 */
 	public static void main(String[] args) {
 
+		//System.out.println("!!" + ProjectSearcher.INTERNAL_PROPNET_GAMERS.getConcreteClasses().size());
+
 		/** 1. Extract the desired configuration from the command line and check that all inputs are correct. **/
 
 		if(args.length < 8){
@@ -58,9 +59,9 @@ public class IndependentTourneyRunner {
 		tourneyName = args[0];
 		gameKey = args[1];
 
-		//GameRepository gameRepo = GameRepository.getDefaultRepository();
+		GameRepository gameRepo = GameRepository.getDefaultRepository();
 
-    	GameRepository gameRepo = new ManualUpdateLocalGameRepository("/home/csironi/GAMEREPOS/GGPBase-GameRepo-03022016");
+    	//GameRepository gameRepo = new ManualUpdateLocalGameRepository("/home/csironi/GAMEREPOS/GGPBase-GameRepo-03022016");
 
     	Game game = gameRepo.getGame(gameKey);
 
@@ -110,7 +111,13 @@ public class IndependentTourneyRunner {
     	for (int i = 7; i < args.length; i++){
     		gamerType = args[i];
     		Class<?> theCorrespondingClass = null;
+
+    		//System.out.println(ProjectSearcher.INTERNAL_PROPNET_GAMERS.getConcreteClasses().size());
+
     		for (Class<?> gamerClass : ProjectSearcher.INTERNAL_PROPNET_GAMERS.getConcreteClasses()) {
+
+    			//System.out.println(gamerClass.getSimpleName());
+
         		if(gamerClass.getSimpleName().equals(gamerType)){
         			theCorrespondingClass = gamerClass;
         		}
@@ -209,7 +216,7 @@ public class IndependentTourneyRunner {
 
 		theSettings.add("java");
 		theSettings.add("-jar");
-		theSettings.add("BIAS0001K500IndependentSingleMatchRunner.jar");
+		theSettings.add("IndependentSingleMatchRunner.jar");
 		theSettings.add(ThreadContext.get("LOG_FOLDER"));
 		theSettings.add("" + 0);
 		theSettings.add(gameKey);

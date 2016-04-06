@@ -1,7 +1,7 @@
 package org.ggp.base.player.gamer.statemachine.MCTS;
 
 
-public class NoOffsetSelMASTDUCTMCTSGamer extends MASTDUCTMCTSGamer {
+public class NoOffsetSelMASTDUCTMCTSGamer extends MastDuctMctsGamer {
 
 	public NoOffsetSelMASTDUCTMCTSGamer() {
 		super();

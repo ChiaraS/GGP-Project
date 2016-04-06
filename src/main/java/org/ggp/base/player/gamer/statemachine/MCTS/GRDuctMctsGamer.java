@@ -13,34 +13,37 @@ import org.ggp.base.player.gamer.statemachine.MCTS.manager.propnet.strategies.pl
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.propnet.strategies.selection.GRAVESelection;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.propnet.strategies.selection.evaluators.GRAVE.BetaComputer;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.propnet.strategies.selection.evaluators.GRAVE.CADIABetaComputer;
+import org.ggp.base.player.gamer.statemachine.MCTS.manager.propnet.strategies.selection.evaluators.GRAVE.GRAVEEvaluator;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.propnet.treestructure.AMAFDecoupled.PnAMAFDecoupledTreeNodeFactory;
 import org.ggp.base.util.statemachine.inernalPropnetStructure.InternalPropnetMove;
 import org.ggp.base.util.statemachine.inernalPropnetStructure.InternalPropnetRole;
 
-public class CadiaRAVEDUCTMCTSGamer extends UCTMCTSGamer {
+public abstract class GRDuctMctsGamer extends DuctMctsGamer {
 
 	protected int minAMAFVisits;
 
-	private BetaComputer betaComputer;
+	protected BetaComputer betaComputer;
 
-	private double defaultExploration;
+	protected double defaultExploration;
 
-	public CadiaRAVEDUCTMCTSGamer() {
+	public GRDuctMctsGamer(){
+
 		super();
-
-		//this.metagameSearch = true;
 
 		this.c = 0.2;
 		this.unexploredMoveDefaultSelectionValue = 1.0;
+
+		this.logTranspositionTable = true;
+
 		this.minAMAFVisits = 0;
 		this.betaComputer = new CADIABetaComputer(500);
 		this.defaultExploration = 1.0;
 
-		this.logTranspositionTable = true;
 	}
 
 	@Override
 	public InternalPropnetMCTSManager createMCTSManager() {
+
 		Random r = new Random();
 
 		InternalPropnetRole myRole = this.thePropnetMachine.roleToInternalRole(this.getRole());
@@ -48,8 +51,8 @@ public class CadiaRAVEDUCTMCTSGamer extends UCTMCTSGamer {
 
 		List<List<InternalPropnetMove>> allJointMoves = new ArrayList<List<InternalPropnetMove>>();
 
-		GRAVESelection graveSelection = new GRAVESelection(numRoles, myRole, r, this.valueOffset, this.c,
-				this.unexploredMoveDefaultSelectionValue, this.minAMAFVisits, this.betaComputer, this.defaultExploration);
+		GRAVESelection graveSelection = new GRAVESelection(numRoles, myRole, r, this.valueOffset, this.minAMAFVisits, new GRAVEEvaluator(this.c, this.unexploredMoveDefaultSelectionValue, this.betaComputer, this.defaultExploration));
+
 		GRAVEPlayout gravePlayout = new GRAVEPlayout(this.thePropnetMachine, allJointMoves);
 
 		return new InternalPropnetMCTSManager(graveSelection, new NoExpansion() /*new RandomExpansion(numRoles, myRole, r)*/,
@@ -57,6 +60,6 @@ public class CadiaRAVEDUCTMCTSGamer extends UCTMCTSGamer {
 				new MaximumScoreChoice(myRole, r),	new GRAVEAfterSimulation(graveSelection, gravePlayout),
 				null, new PnAMAFDecoupledTreeNodeFactory(this.thePropnetMachine), this.thePropnetMachine,
 	       		this.gameStepOffset, this.maxSearchDepth, this.logTranspositionTable);
-	}
 
+	}
 }

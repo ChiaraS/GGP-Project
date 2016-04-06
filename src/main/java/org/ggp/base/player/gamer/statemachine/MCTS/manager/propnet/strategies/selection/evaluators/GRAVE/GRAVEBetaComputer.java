@@ -18,7 +18,10 @@ public class GRAVEBetaComputer implements BetaComputer {
 			return -1.0;
 		}
 
-		return (theAmafMoveStats.getVisits() / (theAmafMoveStats.getVisits() + theMoveStats.getVisits() + (this.bias * theAmafMoveStats.getVisits() * theMoveStats.getVisits())));
+		double amafVisits = theAmafMoveStats.getVisits();
+		double moveVisits = theMoveStats.getVisits();
+
+		return (amafVisits / (amafVisits + moveVisits + (this.bias * amafVisits * moveVisits)));
 	}
 
 	@Override

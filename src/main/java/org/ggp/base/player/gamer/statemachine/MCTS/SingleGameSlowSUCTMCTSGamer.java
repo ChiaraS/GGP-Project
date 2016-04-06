@@ -11,6 +11,7 @@ import org.ggp.base.player.gamer.statemachine.MCTS.manager.propnet.strategies.ex
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.propnet.strategies.movechoice.MaximumScoreChoice;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.propnet.strategies.playout.RandomPlayout;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.propnet.strategies.selection.UCTSelection;
+import org.ggp.base.player.gamer.statemachine.MCTS.manager.propnet.strategies.selection.evaluators.UCTEvaluator;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.propnet.treestructure.slowsequential.PnSlowSequentialTreeNodeFactory;
 import org.ggp.base.util.statemachine.inernalPropnetStructure.InternalPropnetRole;
 
@@ -18,7 +19,7 @@ import org.ggp.base.util.statemachine.inernalPropnetStructure.InternalPropnetRol
  * @author C.Sironi
  *
  */
-public class SingleGameSlowSUCTMCTSGamer extends UCTMCTSGamer{
+public class SingleGameSlowSUCTMCTSGamer extends UctMctsGamer{
 
 	/**
 	 *
@@ -36,7 +37,7 @@ public class SingleGameSlowSUCTMCTSGamer extends UCTMCTSGamer{
 		InternalPropnetRole myRole = this.thePropnetMachine.roleToInternalRole(this.getRole());
 		int numRoles = this.thePropnetMachine.getInternalRoles().length;
 
-		return new InternalPropnetMCTSManager(new UCTSelection(numRoles, myRole, r, this.valueOffset, this.c, this.unexploredMoveDefaultSelectionValue),
+		return new InternalPropnetMCTSManager(new UCTSelection(numRoles, myRole, r, this.valueOffset, new UCTEvaluator(this.c, this.unexploredMoveDefaultSelectionValue)),
 	       		new RandomExpansion(numRoles, myRole, r), new RandomPlayout(this.thePropnetMachine),
 	       		new StandardBackpropagation(numRoles, myRole),	new MaximumScoreChoice(myRole, r),
 	       		null, null, new PnSlowSequentialTreeNodeFactory(this.thePropnetMachine, myRole),

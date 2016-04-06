@@ -22,7 +22,7 @@ package org.ggp.base.player.gamer.statemachine.MCTS;
  * @author C.Sironi
  *
  */
-public abstract class UCTMCTSGamer extends MCTSGamer {
+public abstract class UctMctsGamer extends MctsGamer {
 
 	/**
 	 * Parameters used by the MCTS manager.
@@ -38,7 +38,7 @@ public abstract class UCTMCTSGamer extends MCTSGamer {
 	/**
 	 *
 	 */
-	public UCTMCTSGamer() {
+	public UctMctsGamer() {
 		// TODO: change code so that the parameters can be set from outside.
 
 		super();

@@ -14,7 +14,7 @@ import org.ggp.base.util.statemachine.exceptions.StateMachineException;
 import org.ggp.base.util.statemachine.exceptions.TransitionDefinitionException;
 import org.ggp.base.util.statemachine.inernalPropnetStructure.InternalPropnetMachineState;
 
-public abstract class MCTSGamer extends InternalPropnetGamer {
+public abstract class MctsGamer extends InternalPropnetGamer {
 
 	/**
 	 * Game step. Keeps track of the current game step.
@@ -40,7 +40,7 @@ public abstract class MCTSGamer extends InternalPropnetGamer {
 	 */
 	protected InternalPropnetMCTSManager mctsManager;
 
-	public MCTSGamer() {
+	public MctsGamer() {
 		// TODO: change code so that the parameters can be set from outside.
 
 		super();

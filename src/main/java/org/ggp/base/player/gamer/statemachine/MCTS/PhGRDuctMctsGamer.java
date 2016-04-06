@@ -5,40 +5,33 @@ import java.util.List;
 import java.util.Random;
 
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.propnet.InternalPropnetMCTSManager;
+import org.ggp.base.player.gamer.statemachine.MCTS.manager.propnet.strategies.aftermove.ProgressiveHistoryAfterMove;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.propnet.strategies.aftersimulation.GRAVEAfterSimulation;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.propnet.strategies.backpropagation.GRAVEBackpropagation;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.propnet.strategies.expansion.NoExpansion;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.propnet.strategies.movechoice.MaximumScoreChoice;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.propnet.strategies.playout.GRAVEPlayout;
-import org.ggp.base.player.gamer.statemachine.MCTS.manager.propnet.strategies.selection.GRAVESelection;
-import org.ggp.base.player.gamer.statemachine.MCTS.manager.propnet.strategies.selection.evaluators.GRAVE.BetaComputer;
-import org.ggp.base.player.gamer.statemachine.MCTS.manager.propnet.strategies.selection.evaluators.GRAVE.GRAVEBetaComputer;
+import org.ggp.base.player.gamer.statemachine.MCTS.manager.propnet.strategies.selection.ProgressiveHistoryGRAVESelection;
+import org.ggp.base.player.gamer.statemachine.MCTS.manager.propnet.strategies.selection.evaluators.GRAVE.ProgressiveHistoryGRAVEEvaluator;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.propnet.treestructure.AMAFDecoupled.PnAMAFDecoupledTreeNodeFactory;
 import org.ggp.base.util.statemachine.inernalPropnetStructure.InternalPropnetMove;
 import org.ggp.base.util.statemachine.inernalPropnetStructure.InternalPropnetRole;
 
-public class RAVEDUCTMCTSGamer extends UCTMCTSGamer{
+public abstract class PhGRDuctMctsGamer extends GRDuctMctsGamer {
 
-	private int minAMAFVisits;
+	protected double w;
 
-	private BetaComputer betaComputer;
+	public PhGRDuctMctsGamer(){
 
-	private double defaultExploration;
-
-	public RAVEDUCTMCTSGamer() {
 		super();
 
-		this.c = 0.2;
-		this.unexploredMoveDefaultSelectionValue = 1.0;
-		this.minAMAFVisits = 0;
-		this.betaComputer = new GRAVEBetaComputer(0.001);
-		this.defaultExploration = 1.0;
+		this.w = 5.0;
 
-		this.logTranspositionTable = true;
 	}
 
 	@Override
-	public InternalPropnetMCTSManager createMCTSManager(){
+	public InternalPropnetMCTSManager createMCTSManager() {
+
 		Random r = new Random();
 
 		InternalPropnetRole myRole = this.thePropnetMachine.roleToInternalRole(this.getRole());
@@ -46,15 +39,16 @@ public class RAVEDUCTMCTSGamer extends UCTMCTSGamer{
 
 		List<List<InternalPropnetMove>> allJointMoves = new ArrayList<List<InternalPropnetMove>>();
 
-		GRAVESelection graveSelection = new GRAVESelection(numRoles, myRole, r, this.valueOffset, this.c,
-				this.unexploredMoveDefaultSelectionValue, this.minAMAFVisits, this.betaComputer, this.defaultExploration);
+		ProgressiveHistoryGRAVESelection graveSelection = new ProgressiveHistoryGRAVESelection(numRoles, myRole, r,	this.valueOffset, this.minAMAFVisits,
+				new ProgressiveHistoryGRAVEEvaluator(this.c, this.unexploredMoveDefaultSelectionValue, this.betaComputer, this.defaultExploration, this.w));
+
 		GRAVEPlayout gravePlayout = new GRAVEPlayout(this.thePropnetMachine, allJointMoves);
 
 		return new InternalPropnetMCTSManager(graveSelection, new NoExpansion() /*new RandomExpansion(numRoles, myRole, r)*/,
 				gravePlayout, new GRAVEBackpropagation(numRoles, myRole, allJointMoves),
 				new MaximumScoreChoice(myRole, r),	new GRAVEAfterSimulation(graveSelection, gravePlayout),
-				null, new PnAMAFDecoupledTreeNodeFactory(this.thePropnetMachine), this.thePropnetMachine,
+				new ProgressiveHistoryAfterMove(graveSelection), new PnAMAFDecoupledTreeNodeFactory(this.thePropnetMachine), this.thePropnetMachine,
 	       		this.gameStepOffset, this.maxSearchDepth, this.logTranspositionTable);
-	}
 
+	}
 }

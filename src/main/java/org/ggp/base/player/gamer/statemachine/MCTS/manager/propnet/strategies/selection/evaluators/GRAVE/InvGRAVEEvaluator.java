@@ -65,9 +65,12 @@ public class InvGRAVEEvaluator extends UCTEvaluator {
 			return super.computeMoveValue(allMoveVisits, theMove, theMoveStats);
 		}
 
+		double amafScore = moveAmafStats.getScoreSum();
+		double amafVisits = moveAmafStats.getVisits();
+
 		double uct = super.computeMoveValue(allMoveVisits, theMove, theMoveStats);
 
-		double amafAvg = (moveAmafStats.getScoreSum() / moveAmafStats.getVisits()) / 100.0;
+		double amafAvg = (amafScore / amafVisits) / 100.0;
 
 		double beta = this.betaComputer.computeBeta(theMoveStats, moveAmafStats, allMoveVisits);
 

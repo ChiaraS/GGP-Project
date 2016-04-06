@@ -13,7 +13,7 @@ public class GRAVEEvaluator extends UCTEvaluator {
 	 * to make the statistics reliable. This reference will be updated every time the current
 	 * node being checked has enough visits to use its own AMAF statistics.
 	 */
-	private Map<InternalPropnetMove, MoveStats> amafStats;
+	private Map<InternalPropnetMove, MoveStats> closerAmafStats;
 
 	private BetaComputer betaComputer;
 
@@ -22,7 +22,7 @@ public class GRAVEEvaluator extends UCTEvaluator {
 	public GRAVEEvaluator(double c, double defaultValue, BetaComputer betaComputer, double defaultExploration) {
 		super(c, defaultValue);
 		this.betaComputer = betaComputer;
-		this.amafStats = null;
+		this.closerAmafStats = null;
 		this.defaultExploration = defaultExploration;
 	}
 
@@ -35,12 +35,14 @@ public class GRAVEEvaluator extends UCTEvaluator {
 
 		MoveStats moveAmafStats = null;
 
-		if(this.amafStats != null){
+		if(this.closerAmafStats != null){
 
-			moveAmafStats = this.amafStats.get(theMove);
+			moveAmafStats = this.closerAmafStats.get(theMove);
 
 			if(moveAmafStats != null && moveAmafStats.getVisits() != 0){
-				amafExploitation = (moveAmafStats.getScoreSum() / moveAmafStats.getVisits()) / 100.0;
+				double amafVisits = moveAmafStats.getVisits();
+				double amafScore = moveAmafStats.getScoreSum();
+				amafExploitation = (amafScore / amafVisits) / 100.0;
 			}
 
 		}
@@ -82,12 +84,12 @@ public class GRAVEEvaluator extends UCTEvaluator {
 
 	}
 
-	public void setAmafStats(Map<InternalPropnetMove, MoveStats> amafStats){
-		this.amafStats = amafStats;
+	public void setCloserAmafStats(Map<InternalPropnetMove, MoveStats> closerAmafStats){
+		this.closerAmafStats = closerAmafStats;
 	}
 
-	public Map<InternalPropnetMove, MoveStats> getAmafStats(){
-		return this.amafStats;
+	public Map<InternalPropnetMove, MoveStats> getCloserAmafStats(){
+		return this.closerAmafStats;
 	}
 
 	@Override

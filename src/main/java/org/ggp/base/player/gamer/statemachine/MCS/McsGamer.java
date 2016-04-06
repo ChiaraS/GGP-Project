@@ -33,7 +33,7 @@ import org.ggp.base.util.statemachine.inernalPropnetStructure.InternalPropnetRol
  * @author C.Sironi
  *
  */
-public class MCSPropnetGamer extends InternalPropnetGamer {
+public class McsGamer extends InternalPropnetGamer {
 
 	/**
 	 * Game step. Keeps track of the current game step.
@@ -58,7 +58,7 @@ public class MCSPropnetGamer extends InternalPropnetGamer {
 	/**
 	 *
 	 */
-	public MCSPropnetGamer() {
+	public McsGamer() {
 
 		super();
 		this.maxSearchDepth = 500;
