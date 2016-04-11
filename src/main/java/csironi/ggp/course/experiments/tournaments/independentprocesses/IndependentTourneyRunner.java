@@ -9,6 +9,7 @@ import java.util.concurrent.TimeUnit;
 import org.apache.logging.log4j.ThreadContext;
 import org.ggp.base.util.game.Game;
 import org.ggp.base.util.game.GameRepository;
+import org.ggp.base.util.game.ManualUpdateLocalGameRepository;
 import org.ggp.base.util.logging.GamerLogger;
 import org.ggp.base.util.reflection.ProjectSearcher;
 import org.ggp.base.util.statemachine.Role;
@@ -59,9 +60,9 @@ public class IndependentTourneyRunner {
 		tourneyName = args[0];
 		gameKey = args[1];
 
-		GameRepository gameRepo = GameRepository.getDefaultRepository();
+		//GameRepository gameRepo = GameRepository.getDefaultRepository();
 
-    	//GameRepository gameRepo = new ManualUpdateLocalGameRepository("/home/csironi/GAMEREPOS/GGPBase-GameRepo-03022016");
+    	GameRepository gameRepo = new ManualUpdateLocalGameRepository("/home/csironi/GAMEREPOS/GGPBase-GameRepo-03022016");
 
     	Game game = gameRepo.getGame(gameKey);
 
@@ -215,8 +216,9 @@ public class IndependentTourneyRunner {
 		List<String> theSettings = new ArrayList<String>();
 
 		theSettings.add("java");
+		theSettings.add("-Xmx:25g");
 		theSettings.add("-jar");
-		theSettings.add("IndependentSingleMatchRunner.jar");
+		theSettings.add("K250IndependentSingleMatchRunner.jar");
 		theSettings.add(ThreadContext.get("LOG_FOLDER"));
 		theSettings.add("" + 0);
 		theSettings.add(gameKey);
@@ -230,7 +232,7 @@ public class IndependentTourneyRunner {
 
 
 		for(int i = 0; i < matchesPerCombination; i++){
-			theSettings.set(4, ""+i);
+			theSettings.set(5, ""+i);
 			executor.execute(new MatchProcessRunner(i, new ArrayList<String>(theSettings), ThreadContext.get("LOG_FOLDER") + "/MatchRunner" + i));
 		}
 

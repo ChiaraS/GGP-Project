@@ -9,6 +9,7 @@ public class PhRaveDuctMctsGamer extends PhGRDuctMctsGamer {
 		super();
 
 		this.betaComputer = new GRAVEBetaComputer(0.001);
+
 	}
 
 }

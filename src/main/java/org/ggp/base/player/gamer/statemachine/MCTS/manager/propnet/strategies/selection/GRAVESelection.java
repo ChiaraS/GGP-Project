@@ -37,6 +37,9 @@ public class GRAVESelection extends MoveValueSelection {
 			// the root stats will be used rather than ignoring amaf values.
 			if((((GRAVEEvaluator)this.moveEvaluator).getCloserAmafStats()) == null || currentNode.getTotVisits() >= this.minAMAFVisits){
 
+				//if((((GRAVEEvaluator)this.moveEvaluator).getCloserAmafStats()) == null){
+				//	System.out.print("Null reference: ");
+				//}
 				//System.out.println("change");
 				((GRAVEEvaluator)this.moveEvaluator).setCloserAmafStats(((PnAMAFNode)currentNode).getAmafStats());
 			}

@@ -8,7 +8,7 @@ public class CadiaPhRaveDuctMctsGamer extends PhGRDuctMctsGamer {
 
 		super();
 
-		this.betaComputer = new CADIABetaComputer(500);
+		this.betaComputer = new CADIABetaComputer(250);
 
 	}
 

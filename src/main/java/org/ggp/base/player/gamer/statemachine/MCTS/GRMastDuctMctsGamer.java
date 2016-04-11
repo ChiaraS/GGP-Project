@@ -40,7 +40,7 @@ public abstract class GRMastDuctMctsGamer extends MastDuctMctsGamer {
 		this.logTranspositionTable = true;
 
 		this.minAMAFVisits = 0;
-		this.betaComputer = new CADIABetaComputer(500);
+		this.betaComputer = new CADIABetaComputer(250);
 		this.defaultExploration = 1.0;
 	}
 

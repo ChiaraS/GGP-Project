@@ -42,9 +42,22 @@ public class StatsSummarizer {
 
 		String mainFolderPath = args[0];
 
+		/** New instructions that work only if the main folder path contains in the last folder name
+		 *  the tourney type and the game key surrounded by "." in the 2nd and 3rd position respectively.
+		 *
+		 *  E.g.: something.something.gameKey.somethingElse (usually 354658372535.Tourney.gameKey)
+		 */
+		String[] splitMainFolderPath = mainFolderPath.split("/");
+		// Get the name of the tourney folder
+		String tourneyName = splitMainFolderPath[splitMainFolderPath.length-1];
+		// Split the tourney folder name
+		String[] splitTourneyName = tourneyName.split("\\.");
+		String tourneyType = splitTourneyName[1];
+		String gameKey = splitTourneyName[2];
+
 		//System.out.println("mainFolderPath= " + mainFolderPath);
 
-		String matchesLogsFolderPath = mainFolderPath + "/MatchesLogs";
+		String matchesLogsFolderPath = mainFolderPath + "/" + tourneyType + "." + gameKey + ".MatchesLogs";
 
 		//System.out.println("matchesLogsFolderPath= " + matchesLogsFolderPath);
 
@@ -57,7 +70,7 @@ public class StatsSummarizer {
 
 		// Create (or empty if it already exists) the folder where to move all the match log files
 		// that have been rejected and haven't been considered when computing the statistics.
-		String rejectedFilesFolderPath = mainFolderPath + "/RejectedFiles";
+		String rejectedFilesFolderPath = mainFolderPath + "/" + tourneyType + "." + gameKey + ".RejectedFiles";
 
 		//System.out.println("rejectedFilesFolderPath= " + rejectedFilesFolderPath);
 
@@ -76,7 +89,7 @@ public class StatsSummarizer {
 		}
 
 		// Create (or empty if it already exists) the folder where to save all the statistics.
-		String statsFolderPath = mainFolderPath + "/Statistics";
+		String statsFolderPath = mainFolderPath + "/" + tourneyType + "." + gameKey + ".Statistics";
 		File statsFolder = new File(statsFolderPath);
 		if(statsFolder.isDirectory()){
 			if(!emptyFolder(statsFolder)){
@@ -294,9 +307,9 @@ public class StatsSummarizer {
 
 		String winsStatsFilePath = statsFolder + "/WinsStats.csv";
 
-		writeToFile(scoresStatsFilePath, "Player;#Samples;MinScore;MaxScore;StandardDeviation;StdErrMean;AvgScore;ConfidenceInterval;");
+		writeToFile(scoresStatsFilePath, "Player;#Samples;MinScore;MaxScore;StandardDeviation;StdErrMean;AvgScore;ConfidenceInterval;MinAvgScore;MaxAvgScore;");
 
-		writeToFile(winsStatsFilePath, "Player;#Samples;MinWins;MaxWins;StandardDeviation;StdErrMean;AvgWin%;ConfidenceInterval;");
+		writeToFile(winsStatsFilePath, "Player;#Samples;MinWins;MaxWins;StandardDeviation;StdErrMean;AvgWin%;ConfidenceInterval;MinAvgWin%;MaxAvgWin%");
 
 
 		PlayerStatistics stats;
@@ -329,13 +342,19 @@ public class StatsSummarizer {
 				writeToFile(statsFolder + "/" + entry.getKey() + "-WinsSamples.csv", "C" + combinations.get(i) + ";" + matchNumbers.get(i) + ";" + wins.get(i) + ";");
 			}
 
+			double avgScore = stats.getAvgScore();
+			double scoreCi = (stats.getScoresSEM() * 1.96);
+
 			writeToFile(scoresStatsFilePath, entry.getKey() + ";" + scores.size() + ";" + stats.getMinScore() + ";"
 					+ stats.getMaxScore() + ";" + stats.getScoresStandardDeviation() + ";" + stats.getScoresSEM() + ";"
-					+ stats.getAvgScore() + ";" + (stats.getScoresSEM() * 1.96) + ";");
+					+ avgScore + ";" + scoreCi + ";" + (avgScore - scoreCi) + ";" + (avgScore + scoreCi) + ";");
+
+			double avgWinPerc = (stats.getAvgWins()*100);
+			double winCi = (stats.getWinsSEM() * 1.96 * 100);
 
 			writeToFile(winsStatsFilePath, entry.getKey() + ";" + wins.size() + ";" + stats.getMinWinPercentage() + ";"
 					+ stats.getMaxWinPercentage() + ";" + stats.getWinsStandardDeviation() + ";" + stats.getWinsSEM() + ";"
-					+ (stats.getAvgWins()*100) + ";" + (stats.getWinsSEM() * 1.96 * 100) + ";");
+					+ avgWinPerc + ";" + winCi + ";" + (avgWinPerc - winCi) + ";" + (avgWinPerc + winCi) + ";");
 		}
 
 

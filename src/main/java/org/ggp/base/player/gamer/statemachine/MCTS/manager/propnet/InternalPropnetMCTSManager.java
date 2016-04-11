@@ -368,7 +368,8 @@ public class InternalPropnetMCTSManager extends MCTSManager {
 		while(System.currentTimeMillis() < timeout){
 			this.currentIterationVisitedNodes = 0;
 
-			//System.out.println("Iteration " + this.iterations);
+			//System.out.println();
+			//System.out.println("MyIteration " + this.iterations);
 
 			this.searchNext(initialState, initialNode);
 			this.iterations++;

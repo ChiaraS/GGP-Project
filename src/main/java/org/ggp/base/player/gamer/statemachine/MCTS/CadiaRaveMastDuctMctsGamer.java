@@ -5,9 +5,10 @@ import org.ggp.base.player.gamer.statemachine.MCTS.manager.propnet.strategies.se
 public class CadiaRaveMastDuctMctsGamer extends GRMastDuctMctsGamer {
 
 	public CadiaRaveMastDuctMctsGamer() {
+
 		super();
 
-		this.betaComputer = new CADIABetaComputer(500);
+		this.betaComputer = new CADIABetaComputer(250);
 
 	}
 

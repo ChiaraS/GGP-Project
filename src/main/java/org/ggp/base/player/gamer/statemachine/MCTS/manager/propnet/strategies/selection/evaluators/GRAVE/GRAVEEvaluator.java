@@ -57,8 +57,8 @@ public class GRAVEEvaluator extends UCTEvaluator {
 
 		double beta = this.betaComputer.computeBeta(theMoveStats, moveAmafStats, allMoveVisits);
 
-		//System.out.println("uct = " + uct);
-		//System.out.println("amafAvg = " + amafAvg);
+		//System.out.println("uct = " + uctExploitation);
+		//System.out.println("amaf = " + amafExploitation);
 		//System.out.println("beta = " + beta);
 
 		//System.out.println("returning = " + (((1.0 - beta) * uct) + (beta * amafAvg)));
@@ -66,6 +66,7 @@ public class GRAVEEvaluator extends UCTEvaluator {
 		if(beta == -1){
 			return -1.0;
 		}else{
+			//System.out.println("returning exploitation = " + (((1.0 - beta) * uctExploitation) + (beta * amafExploitation)));
 			return (((1.0 - beta) * uctExploitation) + (beta * amafExploitation));
 		}
 
@@ -77,8 +78,10 @@ public class GRAVEEvaluator extends UCTEvaluator {
 		double exploration = super.computeExploration(allMoveVisits, theMoveStats);
 
 		if(exploration != -1){
+			//System.out.println("returning exploration = " + exploration);
 			return exploration;
 		}else{
+			//System.out.println("returning default exploration = " + this.defaultExploration);
 			return this.defaultExploration;
 		}
 
