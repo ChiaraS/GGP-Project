@@ -7,7 +7,7 @@ public class ProverDecoupledMCTSNode extends MCTSNode {
 	/**
 	 * List of the moves' statistics for each role in the state corresponding to this node.
 	 */
-	private ProverDecoupledMCTSMoveStats[][] movesStats;
+	protected ProverDecoupledMCTSMoveStats[][] movesStats;
 
 	/**
 	 * Number of unexplored moves for each player.

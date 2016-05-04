@@ -12,6 +12,7 @@ import org.ggp.base.player.gamer.statemachine.MCTS.manager.prover.strategies.exp
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.prover.strategies.movechoice.ProverMaximumScoreChoice;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.prover.strategies.playout.ProverRandomPlayout;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.prover.strategies.selection.ProverUCTSelection;
+import org.ggp.base.player.gamer.statemachine.MCTS.manager.prover.strategies.selection.evaluators.ProverUCTEvaluator;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.prover.treestructure.ProverTreeNodeFactory;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.prover.treestructure.decoupled.ProverDecoupledTreeNodeFactory;
 import org.ggp.base.util.game.GameRepository;
@@ -214,7 +215,7 @@ public class ProverMCTSSpeedTest {
 			}
 
 			ProverMCTSManager MCTSmanager = new ProverMCTSManager(
-					new ProverUCTSelection(numRoles, playingRole, r, uctOffset, c, unexploredMoveDefaultSelectionValue),
+					new ProverUCTSelection(numRoles, playingRole, r, uctOffset, new ProverUCTEvaluator(c, unexploredMoveDefaultSelectionValue)),
 					new ProverRandomExpansion(numRoles, playingRole, r), new ProverRandomPlayout(theProverMachine),
 					new ProverStandardBackpropagation(numRoles, playingRole),
 					new ProverMaximumScoreChoice(0, r), null, null, theNodeFactory,

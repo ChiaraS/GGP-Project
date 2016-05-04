@@ -6,8 +6,6 @@ package csironi.ggp.course.experiments.tournaments;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.ggp.base.util.logging.GamerLogger;
-
 /**
  * @author C.Sironi
  *
@@ -133,7 +131,7 @@ public class Combinator {
 		lastPermutationsPerCombination = permutations.size();
 
         if(k > n){
-            GamerLogger.logError("Combinator", "Invalid input for computing combinations of K over N elements. K=" + k + " shouldn't be greater than N=" + n + ". ");
+            //GamerLogger.logError("Combinator", "Invalid input for computing combinations of K over N elements. K=" + k + " shouldn't be greater than N=" + n + ". ");
             return allCombinations;
         }
         // calculate the possible combinations

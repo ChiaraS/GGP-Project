@@ -91,8 +91,8 @@ public class SeparateInternalPropnetManager extends Thread{
 
 		this.optimizations = new OptimizationCaller[4];
 
-		optimizations[0] = new OptimizeAwayConstants();
-		optimizations[1] = new RemoveAnonPropositions();
+		optimizations[0] = new RemoveAnonPropositions();
+		optimizations[1] = new OptimizeAwayConstants();
 		optimizations[2] = new OptimizeAwayConstantValueComponents();
 		optimizations[3] = new RemoveOutputlessComponents();
 

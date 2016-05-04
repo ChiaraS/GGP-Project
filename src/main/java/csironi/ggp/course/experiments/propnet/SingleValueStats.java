@@ -1,5 +1,6 @@
 package csironi.ggp.course.experiments.propnet;
 
+
 public interface SingleValueStats {
 
 	public int getNumSamples();
@@ -13,6 +14,8 @@ public interface SingleValueStats {
 	public double getValuesStandardDeviation();
 
 	public double getValuesSEM();
+
+	public double getMedian();
 
 	/**
 	 * Attention! This method assumes there are enough samples to use the t-distribution constant equal to 1.96.

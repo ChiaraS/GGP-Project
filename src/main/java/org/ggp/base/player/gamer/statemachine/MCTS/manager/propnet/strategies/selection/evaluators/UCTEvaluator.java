@@ -19,11 +19,11 @@ public class UCTEvaluator implements MoveEvaluator {
 	}
 
 	@Override
-	public double computeMoveValue(int allMoveVisits,
+	public double computeMoveValue(int nodeVisits,
 			InternalPropnetMove theMove, MoveStats theMoveStats) {
 
-		double exploitation = this.computeExploitation(allMoveVisits, theMove, theMoveStats);
-		double exploration = this.computeExploration(allMoveVisits, theMoveStats);
+		double exploitation = this.computeExploitation(nodeVisits, theMove, theMoveStats);
+		double exploration = this.computeExploration(nodeVisits, theMoveStats);
 
 		if(exploitation != -1 && exploration != -1){
 			return exploitation + exploration;
@@ -32,7 +32,7 @@ public class UCTEvaluator implements MoveEvaluator {
 		}
 	}
 
-	protected double computeExploitation(int allMoveVisits, InternalPropnetMove theMove,  MoveStats theMoveStats){
+	protected double computeExploitation(int nodeVisits, InternalPropnetMove theMove,  MoveStats theMoveStats){
 
 		double moveVisits = theMoveStats.getVisits();
 		double score = theMoveStats.getScoreSum();
@@ -45,12 +45,12 @@ public class UCTEvaluator implements MoveEvaluator {
 
 	}
 
-	protected double computeExploration(int allMoveVisits, MoveStats theMoveStats){
+	protected double computeExploration(int nodeVisits, MoveStats theMoveStats){
 
 		double moveVisits = theMoveStats.getVisits();
 
-		if(allMoveVisits != 0 && moveVisits != 0){
-			return (this.c * (Math.sqrt(Math.log(allMoveVisits)/moveVisits)));
+		if(nodeVisits != 0 && moveVisits != 0){
+			return (this.c * (Math.sqrt(Math.log(nodeVisits)/moveVisits)));
 		}else{
 			return -1.0;
 		}

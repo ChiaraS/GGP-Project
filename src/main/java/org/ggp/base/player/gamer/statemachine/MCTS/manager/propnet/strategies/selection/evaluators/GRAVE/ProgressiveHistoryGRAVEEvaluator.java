@@ -30,7 +30,7 @@ public class ProgressiveHistoryGRAVEEvaluator extends GRAVEEvaluator {
 	}
 
 	@Override
-	public double computeMoveValue(int allMoveVisits,
+	public double computeMoveValue(int nodeVisits,
 			InternalPropnetMove theMove, MoveStats theMoveStats) {
 
 		// This should never happen because we should set a new reference before performing the search at every game step.
@@ -64,7 +64,7 @@ public class ProgressiveHistoryGRAVEEvaluator extends GRAVEEvaluator {
 			progressiveHistory = rootAmafAvg * (this.w / ( (1.0 - moveScoreAvg) * moveVisits + 1.0));
 		}
 
-		return (super.computeMoveValue(allMoveVisits, theMove, theMoveStats) + progressiveHistory);
+		return (super.computeMoveValue(nodeVisits, theMove, theMoveStats) + progressiveHistory);
 
 	}
 

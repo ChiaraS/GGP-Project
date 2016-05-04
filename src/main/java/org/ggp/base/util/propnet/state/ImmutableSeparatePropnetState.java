@@ -1,8 +1,15 @@
 package org.ggp.base.util.propnet.state;
 
+import java.io.Serializable;
+
 import org.apache.lucene.util.OpenBitSet;
 
-public class ImmutableSeparatePropnetState {
+public class ImmutableSeparatePropnetState implements Serializable{
+
+	/**
+	 *
+	 */
+	private static final long serialVersionUID = 1L;
 
 	/** Currently set values of the BASE propositions. */
 	private OpenBitSet currentState;

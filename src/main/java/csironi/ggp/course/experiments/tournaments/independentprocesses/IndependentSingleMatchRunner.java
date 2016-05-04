@@ -9,6 +9,7 @@ import java.util.List;
 
 import org.apache.logging.log4j.ThreadContext;
 import org.ggp.base.player.GamePlayer;
+import org.ggp.base.player.gamer.statemachine.StateMachineGamer;
 import org.ggp.base.player.gamer.statemachine.propnet.InternalPropnetGamer;
 import org.ggp.base.server.GameServer;
 import org.ggp.base.server.exception.GameServerException;
@@ -20,6 +21,11 @@ import org.ggp.base.util.logging.GamerLogger;
 import org.ggp.base.util.match.Match;
 import org.ggp.base.util.propnet.creationManager.PropNetManagerRunner;
 import org.ggp.base.util.propnet.creationManager.SeparateInternalPropnetManager;
+import org.ggp.base.util.propnet.creationManager.optimizationcallers.OptimizationCaller;
+import org.ggp.base.util.propnet.creationManager.optimizationcallers.OptimizeAwayConstantValueComponents;
+import org.ggp.base.util.propnet.creationManager.optimizationcallers.OptimizeAwayConstants;
+import org.ggp.base.util.propnet.creationManager.optimizationcallers.RemoveAnonPropositions;
+import org.ggp.base.util.propnet.creationManager.optimizationcallers.RemoveOutputlessComponents;
 import org.ggp.base.util.reflection.ProjectSearcher;
 import org.ggp.base.util.statemachine.Role;
 import org.ggp.base.util.statemachine.exceptions.GoalDefinitionException;
@@ -42,7 +48,7 @@ public class IndependentSingleMatchRunner {
 			return;
 		}
 
-		String logFolder;
+		String logFolder; // Don't log directly in here or you might overwrite some old log
 		int ID;
 		String gameKey;
 		int startClock;
@@ -93,11 +99,18 @@ public class IndependentSingleMatchRunner {
 			return;
 		}
 
+		boolean buildPropnet = false;
 		String gamerType;
     	for (int i = 6; i < args.length; i++){
     		gamerType = args[i];
     		Class<?> theCorrespondingClass = null;
     		for (Class<?> gamerClass : ProjectSearcher.INTERNAL_PROPNET_GAMERS.getConcreteClasses()) {
+        		if(gamerClass.getSimpleName().equals(gamerType)){
+        			theCorrespondingClass = gamerClass;
+        			buildPropnet = true;
+        		}
+        	}
+    		for (Class<?> gamerClass : ProjectSearcher.PROVER_GAMERS.getConcreteClasses()) {
         		if(gamerClass.getSimpleName().equals(gamerType)){
         			theCorrespondingClass = gamerClass;
         		}
@@ -135,20 +148,42 @@ public class IndependentSingleMatchRunner {
 
 		GamerLogger.log("MatchRunner", "Starting new match: " + matchName);
 
-		/** 3. Try to create the PropNet. **/
-
-		GamerLogger.log("MatchRunner", "Creating the propnet.");
 
 		List<Gdl> description = game.getRules();
 
-		SeparateInternalPropnetManager manager =  new SeparateInternalPropnetManager(description, System.currentTimeMillis() + pnCreationTime);
+		SeparateInternalPropnetManager manager = null;
 
-		PropNetManagerRunner.runPropNetManager(manager, pnCreationTime);
+		/** 3. Try to create the PropNet if needed. **/
 
-		// If we are here it means that the manager stopped running. We must check if it has created a usable propnet or not.
-		if(manager.getImmutablePropnet() == null || manager.getInitialPropnetState() == null){
-			GamerLogger.logError("MatchRunner", "Impossible to play the match. Propnet and/or propnet state are null.");
-			return;
+		if(buildPropnet){
+
+			/****************** ONLY USE IF RUNNING PROPNET EXPERIMENTS - start **********************/
+
+			OptimizationCaller[] optimizations;
+
+			optimizations = new OptimizationCaller[4];
+
+
+			optimizations[0] = new RemoveAnonPropositions();
+			optimizations[1] = new OptimizeAwayConstants();
+			optimizations[2] = new OptimizeAwayConstantValueComponents();
+			optimizations[3] = new RemoveOutputlessComponents();
+
+			/****************** ONLY USE IF RUNNING PROPNET EXPERIMENTS - end **********************/
+
+			GamerLogger.log("MatchRunner", "Creating the propnet.");
+
+			//manager =  new SeparateInternalPropnetManager(description, System.currentTimeMillis() + pnCreationTime);
+
+			manager =  new SeparateInternalPropnetManager(description, System.currentTimeMillis() + pnCreationTime, optimizations);
+
+			PropNetManagerRunner.runPropNetManager(manager, pnCreationTime);
+
+			// If we are here it means that the manager stopped running. We must check if it has created a usable propnet or not.
+			if(manager.getImmutablePropnet() == null || manager.getInitialPropnetState() == null){
+				GamerLogger.logError("MatchRunner", "Impossible to play the match. Propnet and/or propnet state are null.");
+				return;
+			}
 		}
 
 		/** 4. Try to create and start the players. **/
@@ -160,17 +195,22 @@ public class IndependentSingleMatchRunner {
 		List<String> playerNames = new ArrayList<String>();
 		List<Integer> portNumbers = new ArrayList<Integer>();
 
-		InternalPropnetGamer theGamer;
+		StateMachineGamer theGamer;
+		InternalPropnetGamer thePropnetGamer;
 		int i = 0;
 		for(Class<?> gamerClass : theGamersClasses){
 			try {
-				theGamer  = (InternalPropnetGamer) gamerClass.newInstance();
+				theGamer  = (StateMachineGamer) gamerClass.newInstance();
 			} catch (InstantiationException | IllegalAccessException e) {
 				GamerLogger.logError("MatchRunner", "Impossible to play the match. Error when instantiating the gamer " + gamerClass.getSimpleName() + ".");
 				GamerLogger.logStackTrace("MatchRunner", e);
 				return;
 			}
-			theGamer.setExternalStateMachine(new SeparateInternalPropnetStateMachine(manager.getImmutablePropnet(), manager.getInitialPropnetState()));
+
+			if(theGamer instanceof InternalPropnetGamer){
+				thePropnetGamer  = (InternalPropnetGamer) theGamer;
+				thePropnetGamer.setExternalStateMachine(new SeparateInternalPropnetStateMachine(manager.getImmutablePropnet(), manager.getInitialPropnetState()));
+			}
 
 			try {
 				thePlayers.add(new GamePlayer(9000 + i + (ID * theGamersClasses.size()), theGamer));

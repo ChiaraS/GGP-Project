@@ -27,9 +27,9 @@ public class GRAVEEvaluator extends UCTEvaluator {
 	}
 
 	@Override
-	protected double computeExploitation(int allMoveVisits, InternalPropnetMove theMove, MoveStats theMoveStats){
+	protected double computeExploitation(int nodeVisits, InternalPropnetMove theMove, MoveStats theMoveStats){
 
-		double uctExploitation = super.computeExploitation(allMoveVisits, theMove, theMoveStats);
+		double uctExploitation = super.computeExploitation(nodeVisits, theMove, theMoveStats);
 
 		double amafExploitation = -1.0;
 
@@ -55,7 +55,7 @@ public class GRAVEEvaluator extends UCTEvaluator {
 			return uctExploitation;
 		}
 
-		double beta = this.betaComputer.computeBeta(theMoveStats, moveAmafStats, allMoveVisits);
+		double beta = this.betaComputer.computeBeta(theMoveStats, moveAmafStats, nodeVisits);
 
 		//System.out.println("uct = " + uctExploitation);
 		//System.out.println("amaf = " + amafExploitation);
@@ -73,9 +73,9 @@ public class GRAVEEvaluator extends UCTEvaluator {
 	}
 
 	@Override
-	protected double computeExploration(int allMoveVisits, MoveStats theMoveStats){
+	protected double computeExploration(int nodeVisits, MoveStats theMoveStats){
 
-		double exploration = super.computeExploration(allMoveVisits, theMoveStats);
+		double exploration = super.computeExploration(nodeVisits, theMoveStats);
 
 		if(exploration != -1){
 			//System.out.println("returning exploration = " + exploration);

@@ -1,5 +1,6 @@
 package org.ggp.base.util.propnet.architecture.separateExtendedState.immutable;
 
+import java.io.Serializable;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -7,9 +8,14 @@ import org.ggp.base.util.gdl.grammar.GdlSentence;
 import org.ggp.base.util.propnet.architecture.separateExtendedState.immutable.components.ImmutableProposition;
 import org.ggp.base.util.statemachine.Role;
 
-public class ImmutablePropNet {
+public class ImmutablePropNet implements Serializable{
 
 	/********************************** Parameters **********************************/
+
+	/**
+	 *
+	 */
+	private static final long serialVersionUID = 1L;
 
 	/** Ordered references to every component in the PropNet. */
 	private final ImmutableComponent[] components;

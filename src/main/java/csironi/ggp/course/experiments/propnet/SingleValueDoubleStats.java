@@ -1,6 +1,7 @@
 package csironi.ggp.course.experiments.propnet;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 public class SingleValueDoubleStats implements SingleValueStats{
@@ -107,6 +108,21 @@ public class SingleValueDoubleStats implements SingleValueStats{
 			return -1;
 		}
 		return (standardDev / Math.sqrt(this.toDoubleWithCheck(this.values.size())));
+	}
+
+	@Override
+	public double getMedian(){
+
+		ArrayList<Double> valuesCopy = new ArrayList<Double>(this.values);
+		Collections.sort(valuesCopy);
+
+		int index = valuesCopy.size() / 2; // Rounded to lower closest integer
+
+		if(valuesCopy.size()%2 == 1){
+			return valuesCopy.get(index).doubleValue();
+		}else{
+			return (valuesCopy.get(index-1) + valuesCopy.get(index)) / 2.0;
+		}
 	}
 
 	/**

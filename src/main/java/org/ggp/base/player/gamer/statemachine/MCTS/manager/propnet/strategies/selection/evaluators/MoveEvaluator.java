@@ -5,7 +5,7 @@ import org.ggp.base.util.statemachine.inernalPropnetStructure.InternalPropnetMov
 
 public interface MoveEvaluator {
 
-	public double computeMoveValue(int allMoveVisits, InternalPropnetMove theMove, MoveStats theMoveStats);
+	public double computeMoveValue(int nodeVisits, InternalPropnetMove theMove, MoveStats theMoveStats);
 
 	public String getEvaluatorParameters();
 
