@@ -537,79 +537,56 @@ public class DynamicPropNet implements Serializable {
 				// Distinguish the case when the LEGAL proposition is connected to FALSE and when is not.
 				DynamicProposition legal = legalEntry.getValue();
 
-				DynamicProposition input = possibleInputsPerRole.remove(legalEntry.getKey());
-
 				if(legal.getInputs().size() != 1){
 					throw new RuntimeException("LEGAL proposition " + legal.getComponentType() + " has " + legal.getInputs().size() + " inputs.");
 				}
 
-				if(legal.getSingleInput() instanceof DynamicConstant && !((DynamicConstant)legal.getSingleInput()).getValue()){ // FALSE LEGAL
-					// If the legal has no corresponding input, we create the input proposition
-					// and add it to the propnet (note that it will have no input nor output so it won't
-					// influence the game, however we must create it because the corresponding legal might
-					// become true at a certain moment in the game and the player could choose to play the
-					// corresponding move, thus we need a proposition to exist so we can set its value without
-					// breaking the state machine implementation. Also note that it's highly likely that the
-					// corresponding legal will never become true, however we cannot assume this here, but it
-					// will be detected later when the propnet will be optimized by the removeConstantValueComponents()
-					// method in the DynamicPropnetFactory).
-					if(input == null){
-						input = new DynamicProposition(GdlPool.getRelation(GdlPool.getConstant("does"), legalEntry.getValue().getName().getBody()));
+				DynamicProposition input = possibleInputsPerRole.remove(legalEntry.getKey());
 
-						input.setPropositionType(PROP_TYPE.INPUT);
+				// If the legal has no corresponding input, we create the input proposition
+				// and add it to the propnet (note that it will have no input nor output so it won't
+				// influence the game, however we must create it because the corresponding legal might
+				// become true at a certain moment in the game and the player could choose to play the
+				// corresponding move, thus we need a proposition to exist so we can set its value without
+				// breaking the state machine implementation. Also note that it's highly likely that the
+				// corresponding legal will never become true, however we cannot assume this here, but it
+				// will be detected later when the propnet will be optimized by the removeConstantValueComponents()
+				// method in the DynamicPropnetFactory).
+				if(input == null){
+					input = new DynamicProposition(GdlPool.getRelation(GdlPool.getConstant("does"), legalEntry.getValue().getName().getBody()));
 
-						/*System.out.println("INLEGAL:");
+					input.setPropositionType(PROP_TYPE.INPUT);
 
-						for(DynamicComponent i: legalEntry.getValue().getInputs()){
-							System.out.println("	- " + i.getComponentType());
-							for(DynamicComponent ii: i.getInputs()){
-								System.out.println("		- " + ii.getComponentType());
-							}
-						}
-						System.out.println("LEGAL = " + legalEntry.getValue().getName());
+					/*System.out.println("INLEGAL:");
 
-						for(DynamicComponent o: legalEntry.getValue().getOutputs()){
-							System.out.println("	- " + o.getComponentType());
-							for(DynamicComponent oo: o.getOutputs()){
-								System.out.println("	- " + oo.getComponentType());
-							}
-						}
-
-
-						System.out.println("INPUT = " + input.getName()); */
-
-						/************ PRECONDITION CHECK - START *************
-						this.numAddedInputs++;
-						************ PRECONDITION CHECK - END *************/
-
-						this.components.add(input);
-
-						falseConstant.addOutput(input);
-						input.addInput(falseConstant);
-
-					}else{
-						// Now that we are sure the proposition is an input check if it really has no inputs or if there is a problem!
-						if(input.getInputs().size() == 0){
-							falseConstant.addOutput(input);
-							input.addInput(falseConstant);
-						}else if(input.getInputs().size() != 1 || !(input.getSingleInput() instanceof DynamicConstant) || (((DynamicConstant)input.getSingleInput()).getValue())){
-							throw new RuntimeException("Detected INPUT proposition " + input.getName() + " that corresponds to a false LEGAL proposition, but is not input-less and not connected to FLASE. Number of inputs: " + input.getInputs().size() + ".");
+					for(DynamicComponent i: legalEntry.getValue().getInputs()){
+						System.out.println("	- " + i.getComponentType());
+						for(DynamicComponent ii: i.getInputs()){
+							System.out.println("		- " + ii.getComponentType());
 						}
 					}
-				}else{ // NOT FALSE LEGAL
-					if(input == null){
-						input = new DynamicProposition(GdlPool.getRelation(GdlPool.getConstant("does"), legalEntry.getValue().getName().getBody()));
+					System.out.println("LEGAL = " + legalEntry.getValue().getName());
 
-						input.setPropositionType(PROP_TYPE.INPUT);
-
-						this.components.add(input);
-
-					}else{
-						// Now that we are sure the proposition is an input check if it really has no inputs or if there is a problem!
-						if(input.getInputs().size() != 0){
-							throw new RuntimeException("Detected INPUT proposition " + input.getName() + " that corresponds to a non-false LEGAL proposition, but is not input-less. Number of inputs: " + input.getInputs().size() + ".");
+					for(DynamicComponent o: legalEntry.getValue().getOutputs()){
+						System.out.println("	- " + o.getComponentType());
+						for(DynamicComponent oo: o.getOutputs()){
+							System.out.println("	- " + oo.getComponentType());
 						}
 					}
+
+
+					System.out.println("INPUT = " + input.getName()); */
+
+					/************ PRECONDITION CHECK - START *************
+					this.numAddedInputs++;
+					************ PRECONDITION CHECK - END *************/
+
+					this.components.add(input);
+				}
+
+				// Now that we are sure the input exists check if it really has no inputs or if there is a problem!
+				if(input.getInputs().size() != 0){
+					throw new RuntimeException("Detected INPUT proposition " + input.getName() + " that is not input-less. Number of inputs: " + input.getInputs().size() + ".");
 				}
 
 				// Now we put both the legal and input in the correct
@@ -648,6 +625,47 @@ public class DynamicPropNet implements Serializable {
 			}
 			*/
 		}
+
+		//System.out.println();
+		//System.out.println("Propnet initialized with " + this.legalPropositions.size() + " LEGAL propositions.");
+		//System.out.println("Propnet initialized with " + this.inputPropositions.size() + " INPUT propositions.");
+		//System.out.println();
+
+
+		int falselegals = 0;
+		int falseinputs = 0;
+
+		int truelegals = 0;
+		int trueinputs = 0;
+
+		for(DynamicComponent truecomp : trueConstant.getOutputs()){
+			if(truecomp instanceof DynamicProposition){
+				if(((DynamicProposition) truecomp).getPropositionType() == PROP_TYPE.INPUT){
+					trueinputs++;
+				}else if(((DynamicProposition) truecomp).getPropositionType() == PROP_TYPE.LEGAL){
+					truelegals++;
+				}
+			}
+		}
+
+		for(DynamicComponent falsecomp : falseConstant.getOutputs()){
+			if(falsecomp instanceof DynamicProposition){
+				if(((DynamicProposition) falsecomp).getPropositionType() == PROP_TYPE.INPUT){
+					falseinputs++;
+				}else if(((DynamicProposition) falsecomp).getPropositionType() == PROP_TYPE.LEGAL){
+					falselegals++;
+				}
+			}
+		}
+
+
+		//System.out.println();
+		//System.out.println("After propnet initialization the TRUE constant has " + truelegals + " LEGAL propositions and " + trueinputs + " INPUT propositions as output.");
+		//System.out.println("After propnet initialization the FALSE constant has " + falselegals + " LEGAL propositions and " + falseinputs + " INPUT propositions as output.");
+		//System.out.println();
+
+
+
 	}
 
 	/**

@@ -13,6 +13,11 @@ import org.ggp.base.util.match.Match;
 import org.ggp.base.util.propnet.architecture.separateExtendedState.immutable.ImmutablePropNet;
 import org.ggp.base.util.propnet.creationManager.PropNetManagerRunner;
 import org.ggp.base.util.propnet.creationManager.SeparateInternalPropnetManager;
+import org.ggp.base.util.propnet.creationManager.optimizationcallers.OptimizationCaller;
+import org.ggp.base.util.propnet.creationManager.optimizationcallers.OptimizeAwayConstantValueComponents;
+import org.ggp.base.util.propnet.creationManager.optimizationcallers.OptimizeAwayConstants;
+import org.ggp.base.util.propnet.creationManager.optimizationcallers.RemoveAnonPropositions;
+import org.ggp.base.util.propnet.creationManager.optimizationcallers.RemoveOutputlessComponents;
 import org.ggp.base.util.propnet.state.ImmutableSeparatePropnetState;
 import org.ggp.base.util.statemachine.StateMachine;
 import org.ggp.base.util.statemachine.cache.SeparateInternalPropnetCachedStateMachine;
@@ -30,14 +35,25 @@ import org.ggp.base.util.statemachine.implementation.prover.ProverStateMachine;
 *
 * It is possible to specify the following combinations of main arguments:
 *
-* 1. [withCache]
-* 2. [withCache] [keyOfGameToTest]
-* 3. [withCache] [maximumPropnetInitializationTime] [maximumTestDuration]
-* 4. [withCache] [maximumPropnetInitializationTime] [maximumTestDuration] [keyOfGameToTest]
+* 1. [withCache] [optimizations]
+* 2. [withCache] [optimizations] [keyOfGameToTest]
+* 3. [withCache] [optimizations] [maximumPropnetInitializationTime] [maximumTestDuration]
+* 4. [withCache] [optimizations] [maximumPropnetInitializationTime] [maximumTestDuration] [keyOfGameToTest]
 *
 * where:
 * [withCache] = true if the propnet state machine must be provided with a cache for its results, false
 * 				otherwise (DEFAULT: false).
+* [optimizations] = the optimizations that the PropNet manager must perform on the PropNet after creation.
+*  					  Each optimization corresponds to a number as follows:
+*  					  	0 = OptimizeAwayConstants
+*  						1 = RemoveAnonPropositions
+*  						2 = OptimizeAwayConstantValueComponents
+*  						3 = RemoveOutputlessComponents
+*  					  The optimizations to be performed must be specified with their corresponding numbers,
+*  					  separated by "-", in the order we want the manager to perform them (e.g. the input "0-1-2-3"
+*  					  will make the manager perform optimization 0, followed by optimization 1, followed by
+*  					  optimization 2, followed by optimization 3). To let the manager perform no optimizations
+*  					  give the string "null" as argument. (Default value: "null")
 * [maximumPropnetInitializationTime] = time in milliseconds that is available to build and initialize
 * 									   the propnet (DEFAULT: 420000ms - 7mins).
 * [maximumTestDuration] = duration of each test in millisecond (DEFAULT: 60000ms - 1min).
@@ -65,29 +81,40 @@ public class SeparatePropnetVerifier {
 		long initializationTime = 420000L;
 		long testTime = 60000L;
 		String gameToTest = null;
+		String optimizationsString = "null";
+		OptimizationCaller[] optimizations = null;
 
-		if (args.length != 0 && args.length <= 4){
+		if (args.length != 0 && args.length <= 5){
 
 			withCache = Boolean.parseBoolean(args[0]);
 
-			if(args.length == 4 || args.length == 2){
+			optimizationsString = args[1];
+			try{
+				optimizations = parseOptimizations(optimizationsString);
+			}catch(IllegalArgumentException e){
+				System.out.println("Inconsistent specification of the PropNet optimizations. Using default value!");
+				optimizationsString = "null";
+		    	optimizations = null;
+			}
+
+			if(args.length == 5 || args.length == 3){
 				gameToTest = args[args.length-1];
 			}
-			if(args.length == 4 || args.length == 3){
+			if(args.length == 5 || args.length == 4){
 				try{
-					initializationTime = Long.parseLong(args[1]);
+					initializationTime = Long.parseLong(args[2]);
 				}catch(NumberFormatException nfe){
 					System.out.println("Inconsistent propnet maximum building time specification! Using default value.");
 					initializationTime = 420000L;
 				}
 				try{
-					testTime = Long.parseLong(args[2]);
+					testTime = Long.parseLong(args[3]);
 				}catch(NumberFormatException nfe){
 					System.out.println("Inconsistent test duration specification! Using default value.");
 					testTime = 60000L;
 				}
 			}
-		}else if(args.length > 4){
+		}else if(args.length > 5){
 			System.out.println("Inconsistent number of main arguments! Ignoring them.");
 		}
 
@@ -103,6 +130,7 @@ public class SeparatePropnetVerifier {
 		}
 		System.out.println("Propnet building time: " + initializationTime + "ms");
 		System.out.println("Running time for each test: " + testTime + "ms");
+		System.out.println("Optimizations: " + optimizationsString + ".");
 		System.out.println();
 
 
@@ -143,7 +171,7 @@ public class SeparatePropnetVerifier {
 	        theReference = new ProverStateMachine();
 
 	        // Create the propnet creation manager
-	        SeparateInternalPropnetManager manager = new SeparateInternalPropnetManager(description, System.currentTimeMillis() + initializationTime);
+	        SeparateInternalPropnetManager manager = new SeparateInternalPropnetManager(description, System.currentTimeMillis() + initializationTime, optimizations);
 
 			PropNetManagerRunner.runPropNetManager(manager, initializationTime);
 
@@ -211,5 +239,41 @@ public class SeparatePropnetVerifier {
 	        GdlPool.drainPool();
 	        /***************************************/
 	    }
+	}
+
+	private static OptimizationCaller[] parseOptimizations(String opts){
+
+		if(opts.equalsIgnoreCase("null")){
+			return null;
+		}
+
+		String[] splitOpts = opts.split("-");
+
+		if(splitOpts.length < 1){
+			throw new IllegalArgumentException();
+		}
+
+		OptimizationCaller[] optimizations = new OptimizationCaller[splitOpts.length];
+
+		for(int i = 0; i < splitOpts.length; i++){
+			switch(splitOpts[i]){
+				case "0":
+					optimizations[i] = new OptimizeAwayConstants();
+					break;
+				case "1":
+					optimizations[i] = new RemoveAnonPropositions();
+					break;
+				case "2":
+					optimizations[i] = new OptimizeAwayConstantValueComponents();
+					break;
+				case "3":
+					optimizations[i] = new RemoveOutputlessComponents();
+					break;
+				default:
+					throw new IllegalArgumentException();
+			}
+		}
+
+		return optimizations;
 	}
 }

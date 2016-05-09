@@ -28,15 +28,15 @@ import com.google.common.collect.ImmutableList;
 public class SeparateInternalPropnetStateMachine extends InternalPropnetStateMachine {
 
 	/** The underlying proposition network  */
-    private ImmutablePropNet propNet;
+    protected ImmutablePropNet propNet;
 
     /** The state of the proposition network */
-    private ImmutableSeparatePropnetState propnetState;
+    protected ImmutableSeparatePropnetState propnetState;
 
     /** The player roles */
-    private InternalPropnetRole[] roles;
+    protected InternalPropnetRole[] roles;
     /** The initial state */
-    private InternalPropnetMachineState initialState;
+    protected InternalPropnetMachineState initialState;
 
 	public SeparateInternalPropnetStateMachine(ImmutablePropNet propNet, ImmutableSeparatePropnetState propnetState){
 		this.propNet = propNet;
@@ -61,7 +61,7 @@ public class SeparateInternalPropnetStateMachine extends InternalPropnetStateMac
     public void initialize(List<Gdl> description, long timeout) throws StateMachineInitializationException {
     	if(this.propNet == null || this.propnetState == null){
     		GamerLogger.log("StateMachine", "[ExternalPropnet] State machine initialized with at least one among the propnet structure and the propnet state set to null. Impossible to reason on the game!");
-    		throw new StateMachineInitializationException("Null parameter passed during instantiaton of the state mahcine: cannot reason on the game with null propnet or null propnet state.");
+    		throw new StateMachineInitializationException("Null parameter passed during instantiaton of the state machine: cannot reason on the game with null propnet or null propnet state.");
     	}
     }
 

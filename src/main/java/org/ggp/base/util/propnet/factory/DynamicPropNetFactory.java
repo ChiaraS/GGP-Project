@@ -1287,6 +1287,11 @@ public class DynamicPropNetFactory {
 		DynamicConstant falseConstant = pn.getFalseConstant();
 
 		optimizeAwayTrueAndFalse2(pn, trueConstant, falseConstant);
+
+		//System.out.println();
+		//System.out.println("After optimizing away constants propnet has " + pn.getLegalPropositions().size() + " LEGAL propositions.");
+		//System.out.println("After optimizing away constants propnet has " + pn.getInputPropositions().size() + " INPUT propositions.");
+		//System.out.println();
 	}
 
 
@@ -1341,6 +1346,11 @@ public class DynamicPropNetFactory {
 		for(DynamicProposition p : toRemove){
 			pn.removeComponent(p);
 		}
+
+		//System.out.println();
+		//System.out.println("After removing anonymous propositions propnet has " + pn.getLegalPropositions().size() + " LEGAL propositions.");
+		//System.out.println("After removing anonymous propositions propnet has " + pn.getInputPropositions().size() + " INPUT propositions.");
+		//System.out.println();
 	}
 
 	/**
@@ -1626,19 +1636,23 @@ public class DynamicPropNetFactory {
 	        		}
 	        	}
 
-	        	for(DynamicComponent i : c.getInputs()){
-	        		i.removeOutput(c);
-	        	}
-	        	c.removeAllInputs();
+	        	if(!(c instanceof DynamicProposition) || (((DynamicProposition)c).getPropositionType() != PROP_TYPE.INPUT)){
+		        	for(DynamicComponent i : c.getInputs()){
+		        		i.removeOutput(c);
+		        	}
+		        	c.removeAllInputs();
 
-	        	if(type == Type.TRUE ^ c instanceof DynamicNot){
-        			c.addInput(trueConstant);
-        			trueConstant.addOutput(c);
-        		}else{
-        			c.addInput(falseConstant);
-        			falseConstant.addOutput(c);
-        		}
+		        	if(type == Type.TRUE ^ c instanceof DynamicNot){
+	        			c.addInput(trueConstant);
+	        			trueConstant.addOutput(c);
+	        		}else{
+	        			c.addInput(falseConstant);
+	        			falseConstant.addOutput(c);
+	        		}
+	        	}
 	        }
+
+
 	    }
 
 	    // Remove all useless transitions and legal propositions from the propnet
@@ -1649,6 +1663,11 @@ public class DynamicPropNetFactory {
 	    for(DynamicProposition p : toConvert){
 	    	pn.convertToOther(p);
 	    }*/
+
+		//System.out.println();
+		//System.out.println("After detecting constant-value components propnet has " + pn.getLegalPropositions().size() + " LEGAL propositions.");
+		//System.out.println("After detecting constant-value components propnet has " + pn.getInputPropositions().size() + " INPUT propositions.");
+		//System.out.println();
 
 	    optimizeAwayTrueAndFalse2(pn, trueConstant, falseConstant);
 	}
@@ -1696,6 +1715,11 @@ public class DynamicPropNetFactory {
 
 			toCheckNow = toCheckNext;
 		}
+
+		//System.out.println();
+		//System.out.println("After removing outputless components propnet has " + pn.getLegalPropositions().size() + " LEGAL propositions.");
+		//System.out.println("After removing outputless components propnet has " + pn.getInputPropositions().size() + " INPUT propositions.");
+		//System.out.println();
 	}
 
 	/**
@@ -1915,12 +1939,6 @@ public class DynamicPropNetFactory {
 					c.removeAllOutputs();
 					pn.removeComponent(c);
 				}else if(c instanceof DynamicTransition){
-					// It must never happen that a transition has no output.
-					// This method assumes that whenever a base proposition is removed/disconnected
-					// from its transition also the transition disappears from the propnet (i.e. if
-					// the base proposition is removed, it doesn't exist in the current state, so
-					// it cannot be true or false also in future states -> the transition value has no
-					// meaning).
 					if(c.getOutputs().size() == 0){
 						pn.removeComponent(c);
 						//throw new RuntimeException("Found a transition with no output! Something is wrong with the propnet structure!");
@@ -1931,7 +1949,7 @@ public class DynamicPropNetFactory {
 					DynamicProposition p = (DynamicProposition) c;
 
 					if(p.getPropositionType() == PROP_TYPE.INPUT){
-						throw new RuntimeException("Input propositions cannot be always TRUE!");
+						throw new RuntimeException("Input propositions cannot have inputs nor be always TRUE!");
 					}
 
 					// If the proposition is always TRUE connect all its outputs to true
@@ -2098,12 +2116,6 @@ public class DynamicPropNetFactory {
 					c.removeAllOutputs();
 					pn.removeComponent(c);
 				}else if(c instanceof DynamicTransition){
-					// It must never happen that a transition has no output.
-					// This method assumes that whenever a base proposition is removed/disconnected
-					// from its transition also the transition disappears from the propnet (i.e. if
-					// the base proposition is removed, it doesn't exist in the current state, so
-					// it cannot be true or false also in future states -> the transition value has no
-					// meaning).
 					if(c.getOutputs().size() == 0){
 						pn.removeComponent(c);
 						//throw new RuntimeException("Found a transition with no output! Something is wrong with the propnet structure!");
@@ -2112,6 +2124,10 @@ public class DynamicPropNetFactory {
 					// base is proved to be always TRUE or FALSE and thus gets removed together with the transition.
 				}else if(c instanceof DynamicProposition){
 					DynamicProposition p = (DynamicProposition) c;
+
+					if(p.getPropositionType() == PROP_TYPE.INPUT){
+						throw new RuntimeException("Input propositions cannot have inputs even if it's always FALSE!");
+					}
 
 					// If the proposition is always FALSE connect all its outputs to FALSE
 					for(DynamicComponent o : c.getOutputs()){
@@ -2126,6 +2142,34 @@ public class DynamicPropNetFactory {
 						}
 					}
 					c.removeAllOutputs();
+
+					// If the proposition is a LEGAL we must look for the corresponding INPUT and remove it, connecting all its outputs to the FALSE constant.
+					if(p.getPropositionType() == PROP_TYPE.LEGAL){
+						int index = pn.getLegalPropositions().indexOf(p);
+	        			if(index == -1){
+	    					throw new RuntimeException("Found a non-indexed legal proposition! Something must have gone wrong with the propnet initialization!");
+	        			}
+
+	        			DynamicProposition correspondingInput = pn.getInputPropositions().get(index);
+
+	        			// We are sure the input is input-less, thus we only take care of the outputs
+	        			for(DynamicComponent o : correspondingInput.getOutputs()){
+							o.removeInput(correspondingInput);
+							o.addInput(falseConstant);
+							// If this component is not an output of FALSE yet, we add it to the set of components
+							// to be checked in the next step. If it is already an output of TRUE it means that it
+							// will be already checked in this step or that it has been already added to be checked
+							// next or that it has already been checked that it cannot be removed.
+							if(falseConstant.addOutput(o)){
+								toCheckNextF.add(o);
+							}
+						}
+
+	        			correspondingInput.removeAllOutputs();
+
+	        			pn.removeComponent(correspondingInput);
+
+					}
 
 					// If the proposition is not the TERMINAL proposition it's safe to remove it
 					if(p.getPropositionType() != PROP_TYPE.TERMINAL){
