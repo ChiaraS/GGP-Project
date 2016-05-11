@@ -5,6 +5,7 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 
+import org.apache.logging.log4j.ThreadContext;
 import org.ggp.base.util.game.GameRepository;
 import org.ggp.base.util.gdl.grammar.Gdl;
 import org.ggp.base.util.logging.GamerLogger;
@@ -54,6 +55,10 @@ import org.ggp.base.util.statemachine.implementation.propnet.SeparateInternalPro
 *
 */
 public class SeparatePropnetSpeedTest {
+
+	static{
+		System.setProperty("isThreadContextMapInheritable", "true");
+	}
 
 	public static void main(String[] args) {
 
@@ -130,7 +135,11 @@ public class SeparatePropnetSpeedTest {
 			type = "Cached" + type;
 		}
 
-		GamerLogger.setSpilloverLogfile(type + "SpeedTestTable.csv");
+
+		String mainLogFolder = System.currentTimeMillis() + ".SpeedTester";
+    	ThreadContext.put("LOG_FOLDER", mainLogFolder);
+		GamerLogger.startFileLogging();
+		//GamerLogger.setSpilloverLogfile(type + "SpeedTestTable.csv");
 	    GamerLogger.log(FORMAT.CSV_FORMAT, type + "SpeedTestTable", "Game key;PN Initialization Time (ms);PN Construction Time (ms);SM initialization time;Test Duration (ms);Succeeded Iterations;Failed Iterations;Visited Nodes;Iterations/second;Nodes/second;");
 
 	    GameRepository theRepository = GameRepository.getDefaultRepository();
@@ -144,7 +153,9 @@ public class SeparatePropnetSpeedTest {
 
 	        Match fakeMatch = new Match(gameKey + "." + System.currentTimeMillis(), -1, -1, -1,theRepository.getGame(gameKey) );
 
-	        GamerLogger.startFileLogging(fakeMatch, type + "SpeedTester");
+	        ThreadContext.put("LOG_FOLDER", mainLogFolder + "/logs/" + fakeMatch.getMatchId());
+
+	       // GamerLogger.startFileLogging(fakeMatch, type + "SpeedTester");
 
 	        GamerLogger.log("SMSpeedTest", "Testing on game " + gameKey);
 
@@ -258,7 +269,7 @@ public class SeparatePropnetSpeedTest {
 
 	        GamerLogger.log(FORMAT.PLAIN_FORMAT, "SMSpeedTest", "");
 
-	        GamerLogger.stopFileLogging();
+	        ThreadContext.put("LOG_FOLDER", mainLogFolder);
 
 	        GamerLogger.log(FORMAT.CSV_FORMAT, type + "SpeedTestTable", gameKey + ";" + manager.getTotalInitTime() + ";" + manager.getPropnetConstructionTime() + ";" + initializationTime + ";" + testDuration + ";" + succeededIterations + ";" + failedIterations + ";" + visitedNodes + ";" + iterationsPerSecond + ";" + nodesPerSecond + ";");
 

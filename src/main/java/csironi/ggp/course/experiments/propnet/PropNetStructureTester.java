@@ -10,6 +10,7 @@ import org.ggp.base.util.logging.GamerLogger;
 import org.ggp.base.util.propnet.architecture.separateExtendedState.dynamic.DynamicPropNet;
 import org.ggp.base.util.propnet.creationManager.PropNetManagerRunner;
 import org.ggp.base.util.propnet.creationManager.SeparateInternalPropnetManager;
+import org.ggp.base.util.propnet.creationManager.optimizationcallers.OptimizationCaller;
 import org.ggp.base.util.propnet.factory.DynamicPropNetFactory;
 
 /**
@@ -81,7 +82,7 @@ public class PropNetStructureTester {
 
 		GamerLogger.log(GamerLogger.FORMAT.PLAIN_FORMAT, "PropStructureChecker", gameKey + ":");
 
-		SeparateInternalPropnetManager manager =  new SeparateInternalPropnetManager(description, System.currentTimeMillis() + givenInitTime, null);
+		SeparateInternalPropnetManager manager =  new SeparateInternalPropnetManager(description, System.currentTimeMillis() + givenInitTime, new OptimizationCaller[0]);
 
 		PropNetManagerRunner.runPropNetManager(manager, givenInitTime);
 

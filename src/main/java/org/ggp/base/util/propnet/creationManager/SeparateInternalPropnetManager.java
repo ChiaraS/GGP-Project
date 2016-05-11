@@ -89,19 +89,22 @@ public class SeparateInternalPropnetManager extends Thread{
 
 		this(description, timeout, null);
 
-		this.optimizations = new OptimizationCaller[4];
-
-		optimizations[0] = new RemoveAnonPropositions();
-		optimizations[1] = new OptimizeAwayConstants();
-		optimizations[2] = new OptimizeAwayConstantValueComponents();
-		optimizations[3] = new RemoveOutputlessComponents();
-
 	}
 
 	public SeparateInternalPropnetManager(List<Gdl> description, long timeout, OptimizationCaller[] optimizations) {
 		this.description = description;
 		this.timeout = timeout;
-		this.optimizations = optimizations;
+
+		if(optimizations == null){
+			this.optimizations = new OptimizationCaller[4];
+
+			this.optimizations[0] = new RemoveAnonPropositions();
+			this.optimizations[1] = new OptimizeAwayConstants();
+			this.optimizations[2] = new OptimizeAwayConstantValueComponents();
+			this.optimizations[3] = new RemoveOutputlessComponents();
+		}else{
+			this.optimizations = optimizations;
+		}
 	}
 
 	@Override
@@ -264,7 +267,8 @@ public class SeparateInternalPropnetManager extends Thread{
 
 		//System.out.println(this.optimizations);
 
-		if(this.optimizations != null){
+		// this.optimizations is non null for sure!
+		if(this.optimizations.length > 0){
 
 			GamerLogger.log("PropnetManager", "Performing optimizations.");
 

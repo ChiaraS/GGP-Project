@@ -21,11 +21,6 @@ import org.ggp.base.util.logging.GamerLogger;
 import org.ggp.base.util.match.Match;
 import org.ggp.base.util.propnet.creationManager.PropNetManagerRunner;
 import org.ggp.base.util.propnet.creationManager.SeparateInternalPropnetManager;
-import org.ggp.base.util.propnet.creationManager.optimizationcallers.OptimizationCaller;
-import org.ggp.base.util.propnet.creationManager.optimizationcallers.OptimizeAwayConstantValueComponents;
-import org.ggp.base.util.propnet.creationManager.optimizationcallers.OptimizeAwayConstants;
-import org.ggp.base.util.propnet.creationManager.optimizationcallers.RemoveAnonPropositions;
-import org.ggp.base.util.propnet.creationManager.optimizationcallers.RemoveOutputlessComponents;
 import org.ggp.base.util.reflection.ProjectSearcher;
 import org.ggp.base.util.statemachine.Role;
 import org.ggp.base.util.statemachine.exceptions.GoalDefinitionException;
@@ -157,7 +152,7 @@ public class IndependentSingleMatchRunner {
 
 		if(buildPropnet){
 
-			/****************** ONLY USE IF RUNNING PROPNET EXPERIMENTS - start **********************/
+			/****************** ONLY USE IF RUNNING PROPNET EXPERIMENTS - start **********************
 
 			OptimizationCaller[] optimizations;
 
@@ -169,13 +164,13 @@ public class IndependentSingleMatchRunner {
 			optimizations[2] = new OptimizeAwayConstantValueComponents();
 			optimizations[3] = new RemoveOutputlessComponents();
 
-			/****************** ONLY USE IF RUNNING PROPNET EXPERIMENTS - end **********************/
+			****************** ONLY USE IF RUNNING PROPNET EXPERIMENTS - end **********************/
 
 			GamerLogger.log("MatchRunner", "Creating the propnet.");
 
-			//manager =  new SeparateInternalPropnetManager(description, System.currentTimeMillis() + pnCreationTime);
+			manager =  new SeparateInternalPropnetManager(description, System.currentTimeMillis() + pnCreationTime);
 
-			manager =  new SeparateInternalPropnetManager(description, System.currentTimeMillis() + pnCreationTime, optimizations);
+			//manager =  new SeparateInternalPropnetManager(description, System.currentTimeMillis() + pnCreationTime, optimizations);
 
 			PropNetManagerRunner.runPropNetManager(manager, pnCreationTime);
 

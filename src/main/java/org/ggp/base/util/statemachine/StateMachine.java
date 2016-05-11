@@ -59,6 +59,11 @@ public abstract class StateMachine
 	 * shutdown() method on it).
 	 */
     public abstract void initialize(List<Gdl> description, long timeout) throws StateMachineInitializationException;
+
+    public void initialize(List<Gdl> description) throws StateMachineInitializationException{
+    	this.initialize(description, Long.MAX_VALUE);
+    }
+
     /**
      * Returns the goal value for the given role in the given state. Goal values
      * are always between 0 and 100.
@@ -541,6 +546,11 @@ public abstract class StateMachine
         int nDepth = 0;
         while(!isTerminal(state)) {
             nDepth++;
+
+            //System.out.println("!");
+            //System.out.println(getRandomJointMove(state));
+            //System.out.println("!");
+
             state = getNextStateDestructively(state, getRandomJointMove(state));
         }
         if(theDepth != null)

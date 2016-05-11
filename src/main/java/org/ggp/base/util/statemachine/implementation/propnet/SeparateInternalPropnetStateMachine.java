@@ -41,13 +41,14 @@ public class SeparateInternalPropnetStateMachine extends InternalPropnetStateMac
 	public SeparateInternalPropnetStateMachine(ImmutablePropNet propNet, ImmutableSeparatePropnetState propnetState){
 		this.propNet = propNet;
 		this.propnetState = propnetState;
+		/*
 		if(this.propNet != null && this.propnetState != null){
     		this.roles = new InternalPropnetRole[this.propNet.getRoles().length];
     		for(int i = 0; i < this.roles.length; i++){
     			this.roles[i] = new InternalPropnetRole(i);
     		}
     		this.initialState = new InternalPropnetMachineState(this.propnetState.getCurrentState().clone());
-    	}
+    	}*/
 	}
 
     /**
@@ -62,6 +63,12 @@ public class SeparateInternalPropnetStateMachine extends InternalPropnetStateMac
     	if(this.propNet == null || this.propnetState == null){
     		GamerLogger.log("StateMachine", "[ExternalPropnet] State machine initialized with at least one among the propnet structure and the propnet state set to null. Impossible to reason on the game!");
     		throw new StateMachineInitializationException("Null parameter passed during instantiaton of the state machine: cannot reason on the game with null propnet or null propnet state.");
+    	}else{
+    		this.roles = new InternalPropnetRole[this.propNet.getRoles().length];
+    		for(int i = 0; i < this.roles.length; i++){
+    			this.roles[i] = new InternalPropnetRole(i);
+    		}
+    		this.initialState = new InternalPropnetMachineState(this.propnetState.getCurrentState().clone());
     	}
     }
 

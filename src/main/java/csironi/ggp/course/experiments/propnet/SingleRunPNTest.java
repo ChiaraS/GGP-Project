@@ -66,7 +66,8 @@ import org.ggp.base.util.statemachine.inernalPropnetStructure.InternalPropnetRol
  *  					  separated by "-", in the order we want the manager to perform them (e.g. the input "0-1-2-3"
  *  					  will make the manager perform optimization 0, followed by optimization 1, followed by
  *  					  optimization 2, followed by optimization 3). To let the manager perform no optimizations
- *  					  give the string "null" as argument. (Default value: "null")
+ *  					  give the string "none" as argument, if you want to use the default optimizations give the
+ *  					  string "default" as input. (Default value: "none")
  *  	[withCache] = true if the state machine based on the propnet must use the cache, false otherwise. (Default
  *  				  value: false)
  *
@@ -100,8 +101,8 @@ public class SingleRunPNTest {
 
        	long givenInitTime = 420000L;
     	long searchTime = 60000L;
-    	String optimizationsString = "null";
-    	OptimizationCaller[] optimizations = null;
+    	String optimizationsString = "none";
+    	OptimizationCaller[] optimizations = new OptimizationCaller[0];
     	boolean withCache = false;
 
     	if(args.length == 7){
@@ -123,8 +124,8 @@ public class SingleRunPNTest {
 				optimizations = parseOptimizations(optimizationsString);
 			}catch(IllegalArgumentException e){
 				GamerLogger.log("SingleRunPNTester", "Inconsistent specification of the PropNet optimizations. Using default value!");
-				optimizationsString = "null";
-		    	optimizations = null;
+				optimizationsString = "none";
+		    	optimizations = new OptimizationCaller[0];
 			}
 
 			withCache = Boolean.parseBoolean(args[6]);
@@ -166,7 +167,11 @@ public class SingleRunPNTest {
 
 	private static OptimizationCaller[] parseOptimizations(String opts){
 
-		if(opts.equalsIgnoreCase("null")){
+		if(opts.equalsIgnoreCase("none")){
+			return new OptimizationCaller[0];
+		}
+
+		if(opts.equalsIgnoreCase("default")){
 			return null;
 		}
 

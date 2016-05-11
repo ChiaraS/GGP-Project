@@ -1,5 +1,5 @@
 /**
- * 
+ *
  */
 package ggpbasebenchmark;
 
@@ -9,14 +9,18 @@ public class Main {
 
 	/**
 	 * @param args arguments are: REASONER {dfs|fdfs|mc} PLAYCLOCK|DEPTH GDLFILE TRACEFILE
-	 * 
+	 *
 	 * valid values for REASONER are: all values of ReasonerType
-	 * @throws Exception 
+	 * @throws Exception
 	 */
 	public static void main(String[] args) throws Exception {
 
 		// parse arguments
 		if(args.length != 5) {
+
+			System.err.println("Wrong number of args: " + args.length);
+			System.out.println(args);
+
 			printUsage();
 			System.exit(2);
 		}

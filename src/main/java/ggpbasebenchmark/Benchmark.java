@@ -6,7 +6,12 @@ import java.io.FileReader;
 import java.io.IOException;
 
 import org.ggp.base.util.game.Game;
+import org.ggp.base.util.propnet.creationManager.optimizationcallers.OptimizationCaller;
+import org.ggp.base.util.statemachine.MachineState;
 import org.ggp.base.util.statemachine.StateMachine;
+import org.ggp.base.util.statemachine.exceptions.StateMachineException;
+import org.ggp.base.util.statemachine.exceptions.TransitionDefinitionException;
+import org.ggp.base.util.statemachine.implementation.propnet.SelfInitSeparateInternalPropNetStateMachine;
 import org.ggp.base.util.statemachine.implementation.prover.ProverStateMachine;
 
 public class Benchmark {
@@ -39,44 +44,51 @@ public class Benchmark {
 			case GGPBASEPROVER:
 				stateMachine = new ProverStateMachine();
 				break;
-			/*
 			case BACKWARDPROPNET:
-				stateMachine = new BackwardPropNetStateMachine(new GGPBasePropNetStructureFactory());
+				//stateMachine = new BackwardPropNetStateMachine(new GGPBasePropNetStructureFactory());
 				break;
 			case FORWARDPROPNET:
-				stateMachine = new ForwardPropNetStateMachine(new GGPBasePropNetStructureFactory());
+				//stateMachine = new ForwardPropNetStateMachine(new GGPBasePropNetStructureFactory());
 				break;
 			case FCPN_BASE:
-				stateMachine = new ForwardChangePropNetStateMachine(new GGPBasePropNetStructureFactory());
+				//stateMachine = new ForwardChangePropNetStateMachine(new GGPBasePropNetStructureFactory());
 				break;
 			case BPN_ASP:
-				stateMachine = new BackwardPropNetStateMachine(new ASPPropNetStructureFactory(matchId));
+				//stateMachine = new BackwardPropNetStateMachine(new ASPPropNetStructureFactory(matchId));
 				break;
 			case FPN_ASP:
-				stateMachine = new ForwardPropNetStateMachine(new ASPPropNetStructureFactory(matchId));
+				//stateMachine = new ForwardPropNetStateMachine(new ASPPropNetStructureFactory(matchId));
 				break;
 			case FCPN_ASP:
-				stateMachine = new ForwardChangePropNetStateMachine(new ASPPropNetStructureFactory(matchId));
+				//stateMachine = new ForwardChangePropNetStateMachine(new ASPPropNetStructureFactory(matchId));
 				break;
-			*/
-//			case TRAN_FPN:
-//				stateMachine = new SeparateInternalPropnetStateMachine();
-//				break;
+			case TRAN_SIPN:
+				stateMachine = new SelfInitSeparateInternalPropNetStateMachine(new OptimizationCaller[0]);
+				break;
 		}
 
 		// load game
 		String gameDescription = readFile(gdlFile);
 		String preprocessedRules = Game.preprocessRulesheet(gameDescription);
+
 		Game ggpBaseGame = Game.createEphemeralGame(preprocessedRules);
 
+		//!
+		System.out.println("Descr: " + ggpBaseGame.getDescription());
+		System.out.println("Rulesheet: " + ggpBaseGame.getRulesheet());
+		System.out.println("Rulesheet: " + ggpBaseGame.getRules());
+
 		long startTime = System.currentTimeMillis();
-//		stateMachine.initialize(ggpBaseGame.getRules());
+		stateMachine.initialize(ggpBaseGame.getRules());
 		long endTime = System.currentTimeMillis();
 		double secondsUsed = (endTime-startTime)/1000.0;
 		System.out.println("time for stateMachine.initialize (in s): " + secondsUsed);
 
 		// load trace
 		Trace trace = Trace.loadFromFile(traceFile);
+
+		//!
+		System.out.println("Trace: " + trace);
 
 		// setup search algorithm
 		switch (method) {
@@ -114,9 +126,14 @@ public class Benchmark {
 	}
 
 	private void runTrace(Trace trace) {
-/*		int stepCounter = 0;
+		int stepCounter = 0;
 		MachineState state = stateMachine.getInitialState();
-		boolean isTerminal = stateMachine.isTerminal(state);
+		boolean isTerminal = false;
+		try {
+			isTerminal = stateMachine.isTerminal(state);
+		} catch (StateMachineException e) {
+			System.out.println("ERROR: impossible to check terminality: " + state + "\n" + e.getMessage());
+		}
 		while (!isTerminal && !trace.isEmpty()) {
 			++stepCounter;
 			System.out.println("step " + stepCounter);
@@ -130,11 +147,15 @@ public class Benchmark {
 
 			try {
 				state = stateMachine.getNextState(state, trace.remove(0));
-			} catch (TransitionDefinitionException e) {
+			} catch (TransitionDefinitionException | StateMachineException e) {
 	        	System.out.println("ERROR: with state update: " + state + "\n" + e.getMessage());
 			}
 			++nbUpdates;
-			isTerminal = stateMachine.isTerminal(state);
+			try {
+				isTerminal = stateMachine.isTerminal(state);
+			} catch (StateMachineException e) {
+				System.out.println("ERROR: impossible to check terminality: " + state + "\n" + e.getMessage());
+			}
 			System.out.println("MOVE " + stepCounter + " #legals: " + nbLegals + ", #updates: " + nbUpdates + ", #goals: " + nbGoals);
 		}
 		// System.out.println("final state: " + state);
@@ -142,11 +163,15 @@ public class Benchmark {
 	        if (!trace.isEmpty()) {
 	        	System.out.println("ERROR: terminal state in middle of trace: " + state);
 	        } else {
-	        	algorithm.evaluateGoals(state);
+	        	try {
+					algorithm.evaluateGoals(state);
+				} catch (StateMachineException e) {
+					System.out.println("ERROR: with goals evaluation: " + state + "\n" + e.getMessage());
+				}
 				++nbGoals;
 	        }
 	    } else if (trace.isEmpty()) {
 	    	System.out.println("ERROR: final state of trace is not terminal in the game: " + state);
 	    }
-*/	}
+	}
 }
