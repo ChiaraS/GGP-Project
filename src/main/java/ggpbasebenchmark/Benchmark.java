@@ -74,9 +74,9 @@ public class Benchmark {
 		Game ggpBaseGame = Game.createEphemeralGame(preprocessedRules);
 
 		//!
-		System.out.println("Descr: " + ggpBaseGame.getDescription());
-		System.out.println("Rulesheet: " + ggpBaseGame.getRulesheet());
-		System.out.println("Rulesheet: " + ggpBaseGame.getRules());
+		//System.out.println("Descr: " + ggpBaseGame.getDescription());
+		//System.out.println("Rulesheet: " + ggpBaseGame.getRulesheet());
+		//System.out.println("Rulesheet: " + ggpBaseGame.getRules());
 
 		long startTime = System.currentTimeMillis();
 		stateMachine.initialize(ggpBaseGame.getRules());
@@ -88,7 +88,7 @@ public class Benchmark {
 		Trace trace = Trace.loadFromFile(traceFile);
 
 		//!
-		System.out.println("Trace: " + trace);
+		//System.out.println("Trace: " + trace);
 
 		// setup search algorithm
 		switch (method) {
@@ -146,7 +146,9 @@ public class Benchmark {
 			nbGoals += algorithm.getNbGoals();
 
 			try {
+				System.out.println("Using SM EXT"); //!
 				state = stateMachine.getNextState(state, trace.remove(0));
+
 			} catch (TransitionDefinitionException | StateMachineException e) {
 	        	System.out.println("ERROR: with state update: " + state + "\n" + e.getMessage());
 			}
@@ -164,6 +166,7 @@ public class Benchmark {
 	        	System.out.println("ERROR: terminal state in middle of trace: " + state);
 	        } else {
 	        	try {
+	        		System.out.println("Using SM EXT"); //!
 					algorithm.evaluateGoals(state);
 				} catch (StateMachineException e) {
 					System.out.println("ERROR: with goals evaluation: " + state + "\n" + e.getMessage());

@@ -6,7 +6,6 @@ package org.ggp.base.util.statemachine.implementation.propnet;
 import java.util.List;
 
 import org.ggp.base.util.gdl.grammar.Gdl;
-import org.ggp.base.util.propnet.architecture.separateExtendedState.dynamic.DynamicPropNet;
 import org.ggp.base.util.propnet.architecture.separateExtendedState.immutable.ImmutablePropNet;
 import org.ggp.base.util.propnet.creationManager.PropNetManagerRunner;
 import org.ggp.base.util.propnet.creationManager.SeparateInternalPropnetManager;
@@ -61,10 +60,10 @@ public class SelfInitSeparateInternalPropNetStateMachine extends
     		this.propNet = manager.getImmutablePropnet();
     		this.propnetState = manager.getInitialPropnetState();
 
-    		DynamicPropNet dm = manager.getDynamicPropnet();
-    		if(dm != null){
-    			System.out.println(dm);
-    		}
+    		//DynamicPropNet dm = manager.getDynamicPropnet();
+    		//if(dm != null){
+    		//	System.out.println(dm);
+    		//}
 
     	}
 
