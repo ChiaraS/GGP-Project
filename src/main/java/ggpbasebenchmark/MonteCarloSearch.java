@@ -17,37 +17,12 @@ public class MonteCarloSearch extends SearchAlgorithm {
 
 	@Override
 	public void doSearch(MachineState state) {
-		/*System.out.println();
-		System.out.println();
-
-		System.out.println();
-		System.out.println();
-		System.out.println();
-		System.out.println();
-		System.out.println();
-		System.out.println();
-		System.out.println();
-		System.out.println();
-
-		System.out.println();
-		System.out.println();
-		System.out.println();
-
-		System.out.println();*/
-
-
 		System.out.println("monteCarloSearch " + getPlayclock());
 		long simulationCount = 0;
 		while (!timeout()) {
 			try {
-				//System.out.println("Performing random simulation-start"); //!
 				randomSimulation(state);
-				//System.out.println("Performing random simulation-end"); //!
 			} catch (Exception e) {
-				System.out.println("I catched an exception!"); //!
-				e.printStackTrace();
-			}catch (Error e){ //!
-				System.out.println("I catched an error!");
 				e.printStackTrace();
 			}
 			++simulationCount;
@@ -59,37 +34,18 @@ public class MonteCarloSearch extends SearchAlgorithm {
 	}
 
 	private void randomSimulation(MachineState unChangableState) throws MoveDefinitionException, TransitionDefinitionException, StateMachineException {
-		//System.out.println("Cloning"); //!
 		MachineState state = unChangableState.clone();
-		//System.out.println("Terminality"); //!
 		boolean terminal = stateMachine.isTerminal(state);
-		//System.out.println("Terminality: " + terminal); //!
 		while (!terminal) {
-			//System.out.println("In Wile"); //!
-			if (timeout()){	return; }
-			//System.out.println("JointMove"); //!
-
+			if (timeout()) return;
 			List<Move> jointMove = stateMachine.getRandomJointMove(state);
-			System.out.println("Using SM INT"); //!
-			//System.out.println("JointMove: " + jointMove); //!
 			++nbLegals;
-			//System.out.println("Legal increased"); //!
-			if (timeout()){	return; }
-			//System.out.println("NextState"); //!
-
+			if (timeout()) return;
 			state = stateMachine.getNextStateDestructively(state, jointMove);
-			System.out.println("Using SM INT"); //!
-			//System.out.println("NextState " + state); //!
 			++nbUpdates;
-			//System.out.println("Terminality2"); //!
-
 			terminal = stateMachine.isTerminal(state);
-			System.out.println("Using SM INT"); //!
-			//System.out.println("Terminality2: " + terminal); //!
 		}
-		//System.out.println("Goals"); //!
         evaluateGoals(state);
-        System.out.println("Using SM INT"); //!
 	}
 
 }

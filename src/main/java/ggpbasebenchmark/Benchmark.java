@@ -6,7 +6,6 @@ import java.io.FileReader;
 import java.io.IOException;
 
 import org.ggp.base.util.game.Game;
-import org.ggp.base.util.propnet.creationManager.optimizationcallers.OptimizationCaller;
 import org.ggp.base.util.statemachine.MachineState;
 import org.ggp.base.util.statemachine.StateMachine;
 import org.ggp.base.util.statemachine.exceptions.StateMachineException;
@@ -40,7 +39,6 @@ public class Benchmark {
 		if (matchId.endsWith(".trace")) matchId = matchId.substring(0, matchId.length()-6);
 
 		switch (reasonerType) {
-
 			case GGPBASEPROVER:
 				stateMachine = new ProverStateMachine();
 				break;
@@ -63,20 +61,14 @@ public class Benchmark {
 				//stateMachine = new ForwardChangePropNetStateMachine(new ASPPropNetStructureFactory(matchId));
 				break;
 			case TRAN_SIPN:
-				stateMachine = new SelfInitSeparateInternalPropNetStateMachine(new OptimizationCaller[0]);
+				stateMachine = new SelfInitSeparateInternalPropNetStateMachine();
 				break;
 		}
 
 		// load game
 		String gameDescription = readFile(gdlFile);
 		String preprocessedRules = Game.preprocessRulesheet(gameDescription);
-
 		Game ggpBaseGame = Game.createEphemeralGame(preprocessedRules);
-
-		//!
-		//System.out.println("Descr: " + ggpBaseGame.getDescription());
-		//System.out.println("Rulesheet: " + ggpBaseGame.getRulesheet());
-		//System.out.println("Rulesheet: " + ggpBaseGame.getRules());
 
 		long startTime = System.currentTimeMillis();
 		stateMachine.initialize(ggpBaseGame.getRules());
@@ -86,9 +78,6 @@ public class Benchmark {
 
 		// load trace
 		Trace trace = Trace.loadFromFile(traceFile);
-
-		//!
-		//System.out.println("Trace: " + trace);
 
 		// setup search algorithm
 		switch (method) {
@@ -146,9 +135,7 @@ public class Benchmark {
 			nbGoals += algorithm.getNbGoals();
 
 			try {
-				System.out.println("Using SM EXT"); //!
 				state = stateMachine.getNextState(state, trace.remove(0));
-
 			} catch (TransitionDefinitionException | StateMachineException e) {
 	        	System.out.println("ERROR: with state update: " + state + "\n" + e.getMessage());
 			}
@@ -166,7 +153,6 @@ public class Benchmark {
 	        	System.out.println("ERROR: terminal state in middle of trace: " + state);
 	        } else {
 	        	try {
-	        		System.out.println("Using SM EXT"); //!
 					algorithm.evaluateGoals(state);
 				} catch (StateMachineException e) {
 					System.out.println("ERROR: with goals evaluation: " + state + "\n" + e.getMessage());

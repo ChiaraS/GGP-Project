@@ -45,7 +45,7 @@ public abstract class SearchAlgorithm {
 				t.interrupt();
 
 				// Added this instruction to make sure that the thread t has really terminated execution
-				// and the runTrace method won't use the state machine before this thread is done using it.
+				// and the runTrace() method won't use the state machine before this thread is done using it.
 				t.join();
 			} catch (InterruptedException e) {
 				// thread finished and thus our notifier.wait(...) call got interrupted

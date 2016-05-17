@@ -17,10 +17,6 @@ public class Main {
 
 		// parse arguments
 		if(args.length != 5) {
-
-			System.err.println("Wrong number of args: " + args.length);
-			System.out.println(args);
-
 			printUsage();
 			System.exit(2);
 		}
