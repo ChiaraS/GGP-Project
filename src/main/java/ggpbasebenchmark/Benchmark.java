@@ -6,6 +6,7 @@ import java.io.FileReader;
 import java.io.IOException;
 
 import org.ggp.base.util.game.Game;
+import org.ggp.base.util.logging.GamerLogger;
 import org.ggp.base.util.statemachine.MachineState;
 import org.ggp.base.util.statemachine.StateMachine;
 import org.ggp.base.util.statemachine.exceptions.StateMachineException;
@@ -61,6 +62,7 @@ public class Benchmark {
 				//stateMachine = new ForwardChangePropNetStateMachine(new ASPPropNetStructureFactory(matchId));
 				break;
 			case TRAN_SIPN:
+				GamerLogger.setSuppressLoggerOutput(true); // Otherwise the PropNet manager that creates the PropNet will log on the console
 				stateMachine = new SelfInitSeparateInternalPropNetStateMachine();
 				break;
 		}
