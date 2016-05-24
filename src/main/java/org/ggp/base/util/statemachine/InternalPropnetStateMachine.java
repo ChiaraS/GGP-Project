@@ -1,6 +1,7 @@
 package org.ggp.base.util.statemachine;
 
 import java.util.ArrayList;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Random;
 
@@ -414,5 +415,49 @@ public abstract class InternalPropnetStateMachine extends StateMachine{
     		return legalMoves;
 
     	}
+    }
+
+    /**
+     * Returns a list containing every joint move possible in the given state.
+     * A joint move consists of one move for each role, with the moves in the
+     * same ordering that their roles have in {@link #getRoles()}.
+     * <p>
+     * The list of possible joint moves is the Cartesian product of the lists
+     * of legal moves available for each player.
+     * <p>
+     * If only one player has more than one legal move, then the number of
+     * joint moves returned will equal the number of possible moves for that
+     * player.
+     *
+     * @throws MoveDefinitionException if a role has no legal moves. This indicates
+     * an error in either the game description or the StateMachine implementation.
+     * @throws StateMachineException if it was not possible to compute the legal
+     * joint moves for the given state because of an error that occurred in the
+     * state machine and couldn't be handled.
+     */
+    public List<List<InternalPropnetMove>> getLegalJointMoves(InternalPropnetMachineState state) throws MoveDefinitionException, StateMachineException
+    {
+        List<List<InternalPropnetMove>> legals = new ArrayList<List<InternalPropnetMove>>();
+        for (InternalPropnetRole role : getInternalRoles()) {
+            legals.add(getInternalLegalMoves(state, role));
+        }
+
+        List<List<InternalPropnetMove>> crossProduct = new ArrayList<List<InternalPropnetMove>>();
+        crossProductInternalLegalMoves(legals, crossProduct, new LinkedList<InternalPropnetMove>());
+
+        return crossProduct;
+    }
+
+    protected void crossProductInternalLegalMoves(List<List<InternalPropnetMove>> legals, List<List<InternalPropnetMove>> crossProduct, LinkedList<InternalPropnetMove> partial)
+    {
+        if (partial.size() == legals.size()) {
+            crossProduct.add(new ArrayList<InternalPropnetMove>(partial));
+        } else {
+            for (InternalPropnetMove move : legals.get(partial.size())) {
+                partial.addLast(move);
+                crossProductInternalLegalMoves(legals, crossProduct, partial);
+                partial.removeLast();
+            }
+        }
     }
 }

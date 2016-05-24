@@ -1,9 +1,11 @@
 package ggpbasebenchmark;
 
+import org.ggp.base.util.statemachine.InternalPropnetStateMachine;
 import org.ggp.base.util.statemachine.MachineState;
 import org.ggp.base.util.statemachine.StateMachine;
 import org.ggp.base.util.statemachine.exceptions.GoalDefinitionException;
 import org.ggp.base.util.statemachine.exceptions.StateMachineException;
+import org.ggp.base.util.statemachine.inernalPropnetStructure.InternalPropnetMachineState;
 
 public abstract class SearchAlgorithm {
 
@@ -85,6 +87,15 @@ public abstract class SearchAlgorithm {
 	public void evaluateGoals(MachineState state) throws StateMachineException {
 		try {
 			stateMachine.getGoals(state);
+			++nbGoals;
+		} catch (GoalDefinitionException e) {
+			e.printStackTrace();
+		}
+	}
+
+	public void evaluateGoals(InternalPropnetMachineState internalState) throws StateMachineException {
+		try {
+			((InternalPropnetStateMachine) this.stateMachine).getGoals(internalState);
 			++nbGoals;
 		} catch (GoalDefinitionException e) {
 			e.printStackTrace();
