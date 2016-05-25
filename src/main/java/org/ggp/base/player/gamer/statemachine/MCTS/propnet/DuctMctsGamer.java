@@ -26,6 +26,7 @@ public class DuctMctsGamer extends UctMctsGamer {
 	public DuctMctsGamer(){
 
 		this.unexploredMoveDefaultSelectionValue = 1.0;
+
 	}
 
 	@Override

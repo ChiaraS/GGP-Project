@@ -14,9 +14,9 @@ public class InternalReprIterativeDeepeningSearch extends SearchAlgorithm {
 
 	private int upperDepthLimit;
 
-	public InternalReprIterativeDeepeningSearch(InternalPropnetStateMachine stateMachine,
-			int playclock) {
+	public InternalReprIterativeDeepeningSearch(InternalPropnetStateMachine stateMachine, int playclock, int depthLimit) {
 		super(stateMachine, playclock);
+		this.upperDepthLimit = depthLimit;
 	}
 
 	@Override

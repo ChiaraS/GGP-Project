@@ -7,6 +7,7 @@ import java.io.IOException;
 
 import org.ggp.base.util.game.Game;
 import org.ggp.base.util.logging.GamerLogger;
+import org.ggp.base.util.statemachine.InternalPropnetStateMachine;
 import org.ggp.base.util.statemachine.MachineState;
 import org.ggp.base.util.statemachine.StateMachine;
 import org.ggp.base.util.statemachine.exceptions.StateMachineException;
@@ -62,6 +63,7 @@ public class Benchmark {
 				//stateMachine = new ForwardChangePropNetStateMachine(new ASPPropNetStructureFactory(matchId));
 				break;
 			case TRAN_SIPN:
+			case NOTRAN_SIPN:
 				GamerLogger.setSuppressLoggerOutput(true); // Otherwise the PropNet manager that creates the PropNet will log on the console
 				stateMachine = new SelfInitSeparateInternalPropNetStateMachine();
 				break;
@@ -82,16 +84,30 @@ public class Benchmark {
 		Trace trace = Trace.loadFromFile(traceFile);
 
 		// setup search algorithm
-		switch (method) {
-			case DFS:
-				algorithm = new IterativeDeepeningSearch(stateMachine, playclock, Integer.MAX_VALUE);
-				break;
-			case FDFS:
-				algorithm = new IterativeDeepeningSearch(stateMachine, Integer.MAX_VALUE, playclock);
-				break;
-			case MC:
-				algorithm = new MonteCarloSearch(stateMachine, playclock);
-				break;
+		if(reasonerType == ReasonerType.NOTRAN_SIPN){
+			switch (method) {
+				case DFS:
+					algorithm = new InternalReprIterativeDeepeningSearch((InternalPropnetStateMachine)stateMachine, playclock, Integer.MAX_VALUE);
+					break;
+				case FDFS:
+					algorithm = new InternalReprIterativeDeepeningSearch((InternalPropnetStateMachine)stateMachine, Integer.MAX_VALUE, playclock);
+					break;
+				case MC:
+					algorithm = new InternalReprMonteCarloSearch((InternalPropnetStateMachine)stateMachine, playclock);
+					break;
+			}
+		}else{
+			switch (method) {
+				case DFS:
+					algorithm = new IterativeDeepeningSearch(stateMachine, playclock, Integer.MAX_VALUE);
+					break;
+				case FDFS:
+					algorithm = new IterativeDeepeningSearch(stateMachine, Integer.MAX_VALUE, playclock);
+					break;
+				case MC:
+					algorithm = new MonteCarloSearch(stateMachine, playclock);
+					break;
+			}
 		}
 
 		// run trace
