@@ -1,14 +1,12 @@
 package org.ggp.base.util.statemachine.cache;
 
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-/**
+/** REFACTORED VERSION
  * This is a generic implementation of a Time-To-Live cache
  * that maps keys of type K to values of type V. It's backed
  * by a hashmap, and whenever a pair (K,V) is accessed, their
@@ -25,14 +23,14 @@ import java.util.Set;
  * @param <K> Key type
  * @param <V> Value type
  */
-public final class TtlCache<K, V> implements Map<K,V>
+public final class RefactoredTtlCache<K, V> implements Map<K,V>
 {
-	private final class Entry
+	private final class CacheEntry
 	{
 		public int ttl;
 		public V value;
 
-		public Entry(V value, int ttl)
+		public CacheEntry(V value, int ttl)
 		{
 			this.value = value;
 			this.ttl = ttl;
@@ -41,19 +39,19 @@ public final class TtlCache<K, V> implements Map<K,V>
 		@Override
 		@SuppressWarnings("unchecked")
         public boolean equals(Object o) {
-		    if (o instanceof TtlCache.Entry) {
-		        return ((Entry)o).value.equals(value);
+		    if (o instanceof RefactoredTtlCache.CacheEntry) {
+		        return ((CacheEntry)o).value.equals(value);
 		    }
 		    return false;
 		}
 	}
 
-	private final Map<K, Entry> contents;
+	private final Map<K, CacheEntry> contents;
 	private final int ttl;
 
-	public TtlCache(int ttl)
+	public RefactoredTtlCache(int ttl)
 	{
-		this.contents = new HashMap<K, Entry>();
+		this.contents = new HashMap<K, CacheEntry>();
 		this.ttl = ttl;
 	}
 
@@ -66,7 +64,7 @@ public final class TtlCache<K, V> implements Map<K,V>
 	@Override
 	public synchronized V get(Object key)
 	{
-		Entry entry = contents.get(key);
+		CacheEntry entry = contents.get(key);
 		if (entry == null)
 		    return null;
 
@@ -77,6 +75,13 @@ public final class TtlCache<K, V> implements Map<K,V>
 
 	public synchronized void prune()
 	{
+		//Iterator<Entry<K, Entry>> iterator = contents.entrySet().iterator();
+
+		//while(iterator.hasNext()){
+		//	Entry entry = iterator.next().getValue
+		//}
+
+		/** OLD METHOD - START
 		List<K> toPrune = new ArrayList<K>();
 		for (K key : contents.keySet())
 		{
@@ -92,12 +97,13 @@ public final class TtlCache<K, V> implements Map<K,V>
 		{
 			contents.remove(key);
 		}
+		OLD METHOD - END **/
 	}
 
 	@Override
 	public synchronized V put(K key, V value)
 	{
-		Entry x = contents.put(key, new Entry(value, ttl));
+		CacheEntry x = contents.put(key, new CacheEntry(value, ttl));
 		if(x == null) return null;
 		return x.value;
 	}
@@ -113,12 +119,9 @@ public final class TtlCache<K, V> implements Map<K,V>
         contents.clear();
     }
 
-    /** PROBLEM!!!!
-     * This method doesn't work if an object of type V is passed because the
-     * contents.containsValue method compares objects of type TtlCache.Entry.
-     */
     @Override
 	public synchronized boolean containsValue(Object value) {
+
         return contents.containsValue(value);
     }
 
@@ -147,7 +150,7 @@ public final class TtlCache<K, V> implements Map<K,V>
     @Override
 	public synchronized Collection<V> values() {
         Collection<V> theValues = new HashSet<V>();
-        for (Entry e : contents.values())
+        for (CacheEntry e : contents.values())
             theValues.add(e.value);
         return theValues;
     }
@@ -172,8 +175,9 @@ public final class TtlCache<K, V> implements Map<K,V>
     @Override
 	public synchronized Set<java.util.Map.Entry<K, V>> entrySet() {
         Set<Map.Entry<K,V>> theEntries = new HashSet<Map.Entry<K, V>>();
-        for (Map.Entry<K, Entry> e : contents.entrySet())
+        for (Map.Entry<K, CacheEntry> e : contents.entrySet())
             theEntries.add(new entrySetMapEntry(e.getKey(), e.getValue().value));
         return theEntries;
     }
+
 }

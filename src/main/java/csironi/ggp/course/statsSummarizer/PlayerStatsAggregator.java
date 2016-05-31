@@ -12,11 +12,16 @@ public class PlayerStatsAggregator {
 
 
 	/**
-	 * This method takes as input the folder that contains, for each game that we want to consider,
-	 * the TreeStatistics folder created by the StatsSummarizer. Moreover, takes as input the file
-	 * name of the tree stats files for which we want to gather the stats in a single file for all
-	 * games. E.g.: if the name "CadiaPhRaveDuctMctsGamer-AllRoles-NumNodes-AggrStats.csv" is given,
-	 * this method will aggregate the results present in all the files with that name for all the games.
+	 * This method takes as input the folder that contains, for each game that we want to consider, either the
+	 * TreeStatistics folder or the SpeedStatistics folder created by the StatsSummarizer. Moreover, takes as
+	 * input the file name of the stats files for which we want to gather the stats in a single file for all
+	 * games. E.g.: if the name "CadiaPhRaveDuctMctsGamer-AllRoles-NumNodes-AggrStats.csv" is given, this method
+	 * will aggregate the results present in all the files with that name for all the games.
+	 *
+	 * Example:
+	 * [folder] [file to summarize for each game] [name of the statistic to summarize] [type of statistic to compute for the statistic name]
+	 * C:\Users\c.sironi\Desktop\AAA\BESTK1000\TRANSPTAB-CHRAVE CadiaRhRaveDuctMctsGamer-AllRoles-GraveAmafStatsPerNode-AggrStats median avg
+	 * (this will compute the average of all the medians in the given file to summarize for each game in the folder)
 	 *
 	 * @param args
 	 */
