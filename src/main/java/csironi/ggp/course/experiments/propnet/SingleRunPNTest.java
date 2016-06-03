@@ -33,6 +33,8 @@ import org.ggp.base.util.propnet.creationManager.optimizationcallers.RemoveAnonP
 import org.ggp.base.util.propnet.creationManager.optimizationcallers.RemoveOutputlessComponents;
 import org.ggp.base.util.propnet.state.ImmutableSeparatePropnetState;
 import org.ggp.base.util.statemachine.InternalPropnetStateMachine;
+import org.ggp.base.util.statemachine.cache.NoSyncRefactoredSeparateInternalPropnetCachedStateMachine;
+import org.ggp.base.util.statemachine.cache.RefactoredSeparateInternalPropnetCachedStateMachine;
 import org.ggp.base.util.statemachine.cache.SeparateInternalPropnetCachedStateMachine;
 import org.ggp.base.util.statemachine.exceptions.StateMachineInitializationException;
 import org.ggp.base.util.statemachine.implementation.propnet.SeparateInternalPropnetStateMachine;
@@ -70,6 +72,10 @@ import org.ggp.base.util.statemachine.inernalPropnetStructure.InternalPropnetRol
  *  					  string "default" as input. (Default value: "none")
  *  	[withCache] = true if the state machine based on the propnet must use the cache, false otherwise. (Default
  *  				  value: false)
+ *  	[cacheType] = specifies which version of the cache to use. Possible types are:
+ *  							- old: implementation that equals the one already provided in this code base
+ *  							- ref: refactored cache that should spend less time searching entries in the cache
+ *  							- nosync: same as ref but doesn't synchronize code and is not thread safe
  *
  *
  * @author C.Sironi
@@ -104,8 +110,9 @@ public class SingleRunPNTest {
     	String optimizationsString = "none";
     	OptimizationCaller[] optimizations = new OptimizationCaller[0];
     	boolean withCache = false;
+    	String cacheType = null;
 
-    	if(args.length == 7){
+    	if(args.length == 8){
 	    	try{
 				givenInitTime = Long.parseLong(args[3]);
 			}catch(NumberFormatException nfe){
@@ -130,6 +137,8 @@ public class SingleRunPNTest {
 
 			withCache = Boolean.parseBoolean(args[6]);
 
+			cacheType = args[7];
+
     	}
 
     	String testSettings = "Settings for current test run:\n";
@@ -137,6 +146,7 @@ public class SingleRunPNTest {
     	testSettings += "[searchTime] = " + searchTime + "\n";
     	testSettings += "[optimizations] = " + optimizationsString + "\n";
     	testSettings += "[withCache] = " + withCache + "\n";
+    	testSettings += "[cacheType] = " + cacheType + "\n";
 
     	GamerLogger.log("SingleRunPNTester", testSettings);
 
@@ -161,7 +171,7 @@ public class SingleRunPNTest {
 
     	List<Gdl> description = game.getRules();
 
-    	singleTestRun(mainLogFolder, myLogFolder, description, givenInitTime, searchTime, optimizations, withCache);
+    	singleTestRun(mainLogFolder, myLogFolder, description, givenInitTime, searchTime, optimizations, withCache, cacheType);
 
 	}
 
@@ -205,7 +215,7 @@ public class SingleRunPNTest {
 		return optimizations;
 	}
 
-	private static void singleTestRun(String mainLogFolder, String myLogFolder, List<Gdl> description, long givenInitTime, long searchTime, OptimizationCaller[] optimizations, boolean withCache){
+	private static void singleTestRun(String mainLogFolder, String myLogFolder, List<Gdl> description, long givenInitTime, long searchTime, OptimizationCaller[] optimizations, boolean withCache, String cacheType){
 
 		GamerLogger.log("SingleRunPNTester", "Starting PropNet test.");
 
@@ -286,10 +296,22 @@ public class SingleRunPNTest {
 			InternalPropnetStateMachine thePropnetMachine;
 
 		    if(withCache){
-		    	thePropnetMachine = new SeparateInternalPropnetCachedStateMachine(new SeparateInternalPropnetStateMachine(immutablePropnet, propnetState));
-	        }else{
+
+		    	switch(cacheType){
+		    	case "ref":
+		    		thePropnetMachine = new RefactoredSeparateInternalPropnetCachedStateMachine(new SeparateInternalPropnetStateMachine(immutablePropnet, propnetState));
+		    		break;
+		    	case "nosync":
+		    		thePropnetMachine = new NoSyncRefactoredSeparateInternalPropnetCachedStateMachine(new SeparateInternalPropnetStateMachine(immutablePropnet, propnetState));
+		    		break;
+		    	default:
+		    		thePropnetMachine = new SeparateInternalPropnetCachedStateMachine(new SeparateInternalPropnetStateMachine(immutablePropnet, propnetState));
+		    	}
+		    }else{
 	        	thePropnetMachine = new SeparateInternalPropnetStateMachine(immutablePropnet, propnetState);
 	        }
+
+		    GamerLogger.log("SingleRunPNTester", "Testing machine: " + thePropnetMachine.getClass().getSimpleName());
 
 			Random r;
 			int maxSearchDepth;

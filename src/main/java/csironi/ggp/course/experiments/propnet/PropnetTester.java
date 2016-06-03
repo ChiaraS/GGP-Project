@@ -38,6 +38,10 @@ import org.ggp.base.util.logging.GamerLogger;
  *  					  give the string "null" as argument. (Default value: "null")
  *  	[withCache] = true if the state machine based on the propnet must use the cache, false otherwise. (Default
  *  				  value: false)
+ *  	[cacheType] = specifies which version of the cache to use. Possible types are:
+ *  							- old: implementation that equals the one already provided in this code base
+ *  							- ref: refactored cache that should spend less time searching entries in the cache
+ *  							- nosync: same as ref but doesn't synchronize code and is not thread safe
  *
  *
  * @author C.Sironi
@@ -73,8 +77,9 @@ public class PropnetTester {
     	long searchTime = 60000L;
     	String optimizationsString = "null";
     	boolean withCache = false;
+    	String cacheType = null;
 
-    	if(args.length == 7){
+    	if(args.length == 8){
     		try{
     			repetitions = Integer.parseInt(args[2]);
 			}catch(NumberFormatException nfe){
@@ -98,6 +103,8 @@ public class PropnetTester {
 
 			withCache = Boolean.parseBoolean(args[6]);
 
+			cacheType = args[7];
+
     	}
 
     	if(gameKey.equals("ALL")){
@@ -113,6 +120,7 @@ public class PropnetTester {
     	testSettings += "[searchTime] = " + searchTime + "\n";
     	testSettings += "[optimizations] = " + optimizationsString + "\n";
     	testSettings += "[withCache] = " + withCache + "\n";
+    	testSettings += "[cacheType] = " + cacheType + "\n";
 
     	GamerLogger.log("PropNetTester", testSettings);
 
@@ -125,17 +133,17 @@ public class PropnetTester {
     	    for(String aGameKey : theRepository.getGameKeys()) {
     	        if(aGameKey.contains("laikLee")) continue;
 
-    	        testGame(mainLogFolder, aGameKey, repetitions, givenInitTime, searchTime, optimizationsString, withCache);
+    	        testGame(mainLogFolder, aGameKey, repetitions, givenInitTime, searchTime, optimizationsString, withCache, cacheType);
 
     	    }
 
     	}else{
-    		testGame(mainLogFolder, gameKey, repetitions, givenInitTime, searchTime, optimizationsString, withCache);
+    		testGame(mainLogFolder, gameKey, repetitions, givenInitTime, searchTime, optimizationsString, withCache, cacheType);
     	}
 
 	}
 
-	private static void testGame(String mainLogFolder, String gameKey, int repetitions, long givenInitTime, long searchTime, String optimizationsString, boolean withCache){
+	private static void testGame(String mainLogFolder, String gameKey, int repetitions, long givenInitTime, long searchTime, String optimizationsString, boolean withCache, String cacheType){
 
 		String gameFolder = mainLogFolder + "/" + gameKey;
 
@@ -147,13 +155,14 @@ public class PropnetTester {
     	toLog += "\n[searchTime] = " + searchTime;
     	toLog += "\n[optimizations] = " + optimizationsString;
     	toLog += "\n[withCache] = " + withCache;
+    	toLog += "\n[cacheType] = " + cacheType;
 
     	GamerLogger.log("PropnetTester", toLog);
 
 		String singleRunID = null;
 		String singleRunFolder = null;
 		File logFile = null;
-		ProcessBuilder pb = new ProcessBuilder("java", "-jar", "SingleRunPNTest.jar", gameFolder, singleRunFolder, gameKey, ""+givenInitTime, ""+searchTime, optimizationsString, ""+withCache);
+		ProcessBuilder pb = new ProcessBuilder("java", "-jar", "SingleRunPNTest.jar", gameFolder, singleRunFolder, gameKey, ""+givenInitTime, ""+searchTime, optimizationsString, ""+withCache, cacheType);
 
 		//System.out.println(pb.command());
 

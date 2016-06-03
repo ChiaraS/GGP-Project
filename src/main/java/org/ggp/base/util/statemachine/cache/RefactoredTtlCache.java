@@ -3,7 +3,9 @@ package org.ggp.base.util.statemachine.cache;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Set;
 
 /** REFACTORED VERSION
@@ -23,22 +25,25 @@ import java.util.Set;
  * @param <K> Key type
  * @param <V> Value type
  */
-public final class RefactoredTtlCache<K, V> implements Map<K,V>
-{
-	private final class CacheEntry
-	{
-		public int ttl;
-		public V value;
+public final class RefactoredTtlCache<K, V>{
 
-		public CacheEntry(V value, int ttl)
-		{
+	private final class CacheEntry{
+		private int ttl;
+		private V value;
+
+		public CacheEntry(V value, int ttl)		{
 			this.value = value;
 			this.ttl = ttl;
 		}
 
 		@Override
+		public String toString(){
+			return this.ttl + ", " + (this.value != null ? this.value : "null");
+		}
+
+		@Override
 		@SuppressWarnings("unchecked")
-        public boolean equals(Object o) {
+		public boolean equals(Object o) {
 		    if (o instanceof RefactoredTtlCache.CacheEntry) {
 		        return ((CacheEntry)o).value.equals(value);
 		    }
@@ -49,21 +54,16 @@ public final class RefactoredTtlCache<K, V> implements Map<K,V>
 	private final Map<K, CacheEntry> contents;
 	private final int ttl;
 
-	public RefactoredTtlCache(int ttl)
-	{
+	public RefactoredTtlCache(int ttl){
 		this.contents = new HashMap<K, CacheEntry>();
 		this.ttl = ttl;
 	}
 
-	@Override
-	public synchronized boolean containsKey(Object key)
-	{
+	public synchronized boolean containsKey(K key){
 		return contents.containsKey(key);
 	}
 
-	@Override
-	public synchronized V get(Object key)
-	{
+	public synchronized V get(K key){
 		CacheEntry entry = contents.get(key);
 		if (entry == null)
 		    return null;
@@ -73,13 +73,17 @@ public final class RefactoredTtlCache<K, V> implements Map<K,V>
 		return entry.value;
 	}
 
-	public synchronized void prune()
-	{
-		//Iterator<Entry<K, Entry>> iterator = contents.entrySet().iterator();
+	public synchronized void prune(){
+		Iterator<Entry<K, CacheEntry>> iterator = contents.entrySet().iterator();
 
-		//while(iterator.hasNext()){
-		//	Entry entry = iterator.next().getValue
-		//}
+		while(iterator.hasNext()){
+			Entry<K, CacheEntry> entry = iterator.next();
+			if(entry.getValue().ttl == 0){
+				iterator.remove();
+			}else{
+				entry.getValue().ttl--;
+			}
+		}
 
 		/** OLD METHOD - START
 		List<K> toPrune = new ArrayList<K>();
@@ -100,62 +104,67 @@ public final class RefactoredTtlCache<K, V> implements Map<K,V>
 		OLD METHOD - END **/
 	}
 
-	@Override
-	public synchronized V put(K key, V value)
-	{
+	public synchronized V put(K key, V value){
 		CacheEntry x = contents.put(key, new CacheEntry(value, ttl));
 		if(x == null) return null;
 		return x.value;
 	}
 
-	@Override
-	public synchronized int size()
-	{
+	public synchronized int size(){
 		return contents.size();
 	}
 
-    @Override
-	public synchronized void clear() {
+	public synchronized void clear(){
         contents.clear();
     }
 
-    @Override
-	public synchronized boolean containsValue(Object value) {
+	public synchronized boolean containsValue(V value){
 
-        return contents.containsValue(value);
+        return contents.containsValue(new CacheEntry(value,0));
     }
 
-    @Override
-	public synchronized boolean isEmpty() {
+	public synchronized boolean isEmpty(){
         return contents.isEmpty();
     }
 
-    @Override
-	public synchronized Set<K> keySet() {
+	public synchronized Set<K> keySet(){
         return contents.keySet();
     }
 
-    @Override
-	public synchronized void putAll(Map<? extends K, ? extends V> m) {
+	public synchronized void putAll(Map<? extends K, ? extends V> m){
          for(Map.Entry<? extends K, ? extends V> anEntry : m.entrySet()) {
              this.put(anEntry.getKey(), anEntry.getValue());
          }
     }
 
-    @Override
-	public synchronized V remove(Object key) {
+	public synchronized V remove(K key){
         return contents.remove(key).value;
     }
 
-    @Override
-	public synchronized Collection<V> values() {
+	public synchronized Collection<V> values(){
         Collection<V> theValues = new HashSet<V>();
         for (CacheEntry e : contents.values())
             theValues.add(e.value);
         return theValues;
     }
 
-    private class entrySetMapEntry implements Map.Entry<K,V> {
+	@Override
+	public String toString(){
+
+		String cacheString = "[ ";
+
+		for(Entry<K,CacheEntry> entry : this.contents.entrySet()){
+
+			cacheString += "(" + entry.getKey() + ", " + entry.getValue() + ") ";
+
+		}
+
+		cacheString += "]";
+
+		return cacheString;
+	}
+
+  /*  private class entrySetMapEntry implements Map.Entry<K,V> {
         private K key;
         private V value;
 
@@ -172,12 +181,11 @@ public final class RefactoredTtlCache<K, V> implements Map<K,V>
 		public V setValue(V value) { return (this.value = value); }
     }
 
-    @Override
 	public synchronized Set<java.util.Map.Entry<K, V>> entrySet() {
         Set<Map.Entry<K,V>> theEntries = new HashSet<Map.Entry<K, V>>();
         for (Map.Entry<K, CacheEntry> e : contents.entrySet())
             theEntries.add(new entrySetMapEntry(e.getKey(), e.getValue().value));
         return theEntries;
-    }
+    } */
 
 }

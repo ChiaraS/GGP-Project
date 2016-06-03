@@ -115,7 +115,8 @@ public final class TtlCache<K, V> implements Map<K,V>
 
     /** PROBLEM!!!!
      * This method doesn't work if an object of type V is passed because the
-     * contents.containsValue method compares objects of type TtlCache.Entry.
+     * contents.containsValue method compares objects of type TtlCache.Entry,
+     * not objects of type V.
      */
     @Override
 	public synchronized boolean containsValue(Object value) {

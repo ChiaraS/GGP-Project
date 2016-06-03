@@ -17,20 +17,18 @@ import org.ggp.base.util.statemachine.exceptions.TransitionDefinitionException;
 
 import com.google.common.collect.ImmutableList;
 
-public class RefactoredCachedStateMachine extends StateMachine {
+public class RefactoredCachedStateMachine extends StateMachine{
 
 	private final StateMachine backingStateMachine;
-	private final TtlCache<MachineState, Entry> ttlCache;
+	private final RefactoredTtlCache<MachineState, MachineStateEntry> ttlCache;
 
-	private final class Entry
-	{
+	private final class MachineStateEntry{
 		public Map<Role, Integer> goals;
 		public Map<Role, List<Move>> moves;
 		public Map<List<Move>, MachineState> nexts;
 		public Boolean terminal;
 
-		public Entry()
-		{
+		public MachineStateEntry(){
 			goals = new HashMap<Role, Integer>();
 			moves = new HashMap<Role, List<Move>>();
 			nexts = new HashMap<List<Move>, MachineState>();
@@ -38,76 +36,78 @@ public class RefactoredCachedStateMachine extends StateMachine {
 		}
 	}
 
-	public RefactoredCachedStateMachine(StateMachine backingStateMachine)
-	{
+	public RefactoredCachedStateMachine(StateMachine backingStateMachine){
 		this.backingStateMachine = backingStateMachine;
-		ttlCache = new TtlCache<MachineState, Entry>(1);
+		ttlCache = new RefactoredTtlCache<MachineState, MachineStateEntry>(1);
 	}
 
-	private Entry getEntry(MachineState state)
-	{
-		if (!ttlCache.containsKey(state))
-		{
-			ttlCache.put(state, new Entry());
+	private MachineStateEntry getEntry(MachineState state){
+
+		MachineStateEntry entry = ttlCache.get(state);
+
+		if (entry == null){ // If it's null because there is no such entry or because the entry is null, we must create a new one anyway.
+			entry = new MachineStateEntry();
+			ttlCache.put(state, entry);
 		}
 
-		return ttlCache.get(state);
+		return entry;
 	}
 
 	@Override
-	public int getGoal(MachineState state, Role role) throws GoalDefinitionException, StateMachineException
-	{
-		Entry entry = getEntry(state);
-		synchronized (entry)
-		{
-			if (!entry.goals.containsKey(role))
-			{
-				entry.goals.put(role, backingStateMachine.getGoal(state, role));
+	public int getGoal(MachineState state, Role role) throws GoalDefinitionException, StateMachineException{
+		MachineStateEntry entry = getEntry(state);
+		synchronized (entry){
+			Integer goal = entry.goals.get(role);
+
+			if(goal == null){ // If it's null because there is no such entry or because the entry is null, we must create a new one anyway.
+				goal = new Integer(backingStateMachine.getGoal(state, role));
+				entry.goals.put(role, goal);
 			}
 
-			return entry.goals.get(role);
+			return goal.intValue();
 		}
 	}
 
 	@Override
-	public List<Move> getLegalMoves(MachineState state, Role role) throws MoveDefinitionException, StateMachineException
-	{
-		Entry entry = getEntry(state);
-		synchronized (entry)
-		{
-			if (!entry.moves.containsKey(role))
-			{
-				entry.moves.put(role, ImmutableList.copyOf(backingStateMachine.getLegalMoves(state, role)));
+	public List<Move> getLegalMoves(MachineState state, Role role) throws MoveDefinitionException, StateMachineException{
+		MachineStateEntry entry = getEntry(state);
+		synchronized (entry){
+
+			List<Move> moves = entry.moves.get(role);
+
+			if (moves == null){
+				moves = ImmutableList.copyOf(backingStateMachine.getLegalMoves(state, role));
+				entry.moves.put(role, moves);
 			}
 
-			return entry.moves.get(role);
+			return moves;
 		}
 	}
 
 	@Override
-	public MachineState getNextState(MachineState state, List<Move> moves) throws TransitionDefinitionException, StateMachineException
-	{
-		Entry entry = getEntry(state);
-		synchronized (entry)
-		{
-			if (!entry.nexts.containsKey(moves))
-			{
-				entry.nexts.put(moves, backingStateMachine.getNextState(state, moves));
+	public MachineState getNextState(MachineState state, List<Move> moves) throws TransitionDefinitionException, StateMachineException{
+		MachineStateEntry entry = getEntry(state);
+		synchronized (entry){
+
+			MachineState nextState = entry.nexts.get(moves);
+
+			if(nextState == null){
+
+				nextState = this.backingStateMachine.getNextState(state, moves);
+				entry.nexts.put(moves, nextState);
 			}
 
-			return entry.nexts.get(moves);
+			return nextState;
 		}
 	}
 
 	@Override
-	public boolean isTerminal(MachineState state) throws StateMachineException
-	{
-		Entry entry = getEntry(state);
-		synchronized (entry)
-		{
-			if (entry.terminal == null)
-			{
-				entry.terminal = backingStateMachine.isTerminal(state);
+	public boolean isTerminal(MachineState state) throws StateMachineException{
+		MachineStateEntry entry = getEntry(state);
+		synchronized (entry){
+
+			if (entry.terminal == null){
+				entry.terminal = this.backingStateMachine.isTerminal(state);
 			}
 
 			return entry.terminal;
@@ -115,42 +115,40 @@ public class RefactoredCachedStateMachine extends StateMachine {
 	}
 
 	@Override
-	public void doPerMoveWork()
-	{
+	public void doPerMoveWork(){
 		prune();
 	}
 
-	public void prune()
-	{
-		ttlCache.prune();
+	public void prune(){
+		this.ttlCache.prune();
 	}
 
 	@Override
-	public void initialize(List<Gdl> description, long timeout) throws StateMachineInitializationException {
-		backingStateMachine.initialize(description, timeout);
+	public void initialize(List<Gdl> description, long timeout) throws StateMachineInitializationException{
+		this.backingStateMachine.initialize(description, timeout);
 	}
 
 	@Override
-	public List<Role> getRoles() {
+	public List<Role> getRoles(){
 		// TODO(schreib): Should this be cached as well?
-		return backingStateMachine.getRoles();
+		return this.backingStateMachine.getRoles();
 	}
 
 	@Override
-	public MachineState getInitialState() {
+	public MachineState getInitialState(){
 		// TODO(schreib): Should this be cached as well?
-		return backingStateMachine.getInitialState();
+		return this.backingStateMachine.getInitialState();
 	}
 
 	@Override
-	public void shutdown() {
+	public void shutdown(){
 		if(this.backingStateMachine != null){
 			this.backingStateMachine.shutdown();
 		}
 	}
 
 	@Override
-    public String getName() {
+    public String getName(){
         if(this.backingStateMachine != null) {
             return "Cache(" + this.backingStateMachine.getName() + ")";
         }
