@@ -90,6 +90,11 @@ public class PNStatsFormatter {
 		optOrder.add("Cache1023PN");
 		optOrder.add("Cache10323PN");
 		optOrder.add("60Cache1023PN");
+		optOrder.add("Opt1023NoCache");
+		optOrder.add("Opt1023OldCache");
+		optOrder.add("Opt1023RefCache");
+		optOrder.add("Opt1023NoSyncCache");
+
 	}
 
 	public static void main(String[] args){

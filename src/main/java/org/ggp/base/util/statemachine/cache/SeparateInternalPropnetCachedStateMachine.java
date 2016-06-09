@@ -15,7 +15,6 @@ import org.ggp.base.util.statemachine.exceptions.MoveDefinitionException;
 import org.ggp.base.util.statemachine.exceptions.StateMachineException;
 import org.ggp.base.util.statemachine.exceptions.StateMachineInitializationException;
 import org.ggp.base.util.statemachine.exceptions.TransitionDefinitionException;
-import org.ggp.base.util.statemachine.implementation.propnet.SeparateInternalPropnetStateMachine;
 import org.ggp.base.util.statemachine.inernalPropnetStructure.InternalPropnetMachineState;
 import org.ggp.base.util.statemachine.inernalPropnetStructure.InternalPropnetMove;
 import org.ggp.base.util.statemachine.inernalPropnetStructure.InternalPropnetRole;
@@ -24,7 +23,13 @@ import com.google.common.collect.ImmutableList;
 
 public final class SeparateInternalPropnetCachedStateMachine extends InternalPropnetStateMachine
 {
-	private final SeparateInternalPropnetStateMachine backingStateMachine;
+
+	private int allQueries;
+	private int notCachedQueries;
+
+
+
+	private final InternalPropnetStateMachine backingStateMachine;
 	private final TtlCache<InternalPropnetMachineState, PropnetEntry> internalStateTtlCache;
 
 	private final class PropnetEntry{
@@ -43,9 +48,12 @@ public final class SeparateInternalPropnetCachedStateMachine extends InternalPro
 		}
 	}
 
-	public SeparateInternalPropnetCachedStateMachine(SeparateInternalPropnetStateMachine backingStateMachine){
+	public SeparateInternalPropnetCachedStateMachine(InternalPropnetStateMachine backingStateMachine){
 		this.backingStateMachine = backingStateMachine;
 		this.internalStateTtlCache = new TtlCache<InternalPropnetMachineState, PropnetEntry>(1);
+
+		this.allQueries = 0;
+		this.notCachedQueries = 0;
 	}
 
 	@Override
@@ -72,7 +80,12 @@ public final class SeparateInternalPropnetCachedStateMachine extends InternalPro
 		synchronized (entry){
 			if (!entry.goals.containsKey(role)){
 				entry.goals.put(role, this.backingStateMachine.getGoal(state, role));
+				//!
+				this.notCachedQueries++;
 			}
+
+			//!
+			this.allQueries++;
 
 			return entry.goals.get(role);
 		}
@@ -93,7 +106,13 @@ public final class SeparateInternalPropnetCachedStateMachine extends InternalPro
 		synchronized (entry){
 			if (!entry.moves.containsKey(role)){
 				entry.moves.put(role, ImmutableList.copyOf(this.backingStateMachine.getInternalLegalMoves(state, role)));
+
+				//!
+				this.notCachedQueries++;
 			}
+
+			//!
+			this.allQueries++;
 
 			return entry.moves.get(role);
 		}
@@ -110,7 +129,13 @@ public final class SeparateInternalPropnetCachedStateMachine extends InternalPro
 		synchronized (entry){
 			if (!entry.nexts.containsKey(moves)){
 				entry.nexts.put(moves, this.backingStateMachine.getInternalNextState(state, moves));
+
+				//!
+				this.notCachedQueries++;
 			}
+
+			//!
+			this.allQueries++;
 
 			return entry.nexts.get(moves);
 		}
@@ -127,7 +152,13 @@ public final class SeparateInternalPropnetCachedStateMachine extends InternalPro
 		synchronized (entry){
 			if (entry.terminal == null){
 				entry.terminal = this.backingStateMachine.isTerminal(state);
+
+				//!
+				this.notCachedQueries++;
 			}
+
+			//!
+			this.allQueries++;
 
 			return entry.terminal;
 		}

@@ -7,16 +7,7 @@ import java.util.Random;
 import org.apache.logging.log4j.ThreadContext;
 import org.ggp.base.player.gamer.statemachine.MCS.manager.MCSException;
 import org.ggp.base.player.gamer.statemachine.MCS.manager.propnet.InternalPropnetMCSManager;
-import org.ggp.base.player.gamer.statemachine.MCTS.manager.exceptions.MCTSException;
-import org.ggp.base.player.gamer.statemachine.MCTS.manager.propnet.InternalPropnetMCTSManager;
-import org.ggp.base.player.gamer.statemachine.MCTS.manager.propnet.strategies.backpropagation.StandardBackpropagation;
-import org.ggp.base.player.gamer.statemachine.MCTS.manager.propnet.strategies.expansion.RandomExpansion;
-import org.ggp.base.player.gamer.statemachine.MCTS.manager.propnet.strategies.movechoice.MaximumScoreChoice;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.propnet.strategies.playout.RandomPlayout;
-import org.ggp.base.player.gamer.statemachine.MCTS.manager.propnet.strategies.selection.UCTSelection;
-import org.ggp.base.player.gamer.statemachine.MCTS.manager.propnet.strategies.selection.evaluators.UCTEvaluator;
-import org.ggp.base.player.gamer.statemachine.MCTS.manager.propnet.treestructure.TreeNodeFactory;
-import org.ggp.base.player.gamer.statemachine.MCTS.manager.propnet.treestructure.decoupled.PnDecoupledTreeNodeFactory;
 import org.ggp.base.util.game.Game;
 import org.ggp.base.util.game.GameRepository;
 import org.ggp.base.util.game.ManualUpdateLocalGameRepository;
@@ -152,6 +143,10 @@ public class SingleRunPNTest {
 
     	//GameRepository gameRepo = GameRepository.getDefaultRepository();
 
+		// WINDOWS
+		//GameRepository gameRepo = new ManualUpdateLocalGameRepository("C:/Users/c.sironi/BITBUCKET REPOS/GGP-Base/GGPBase-GameRepo-03022016");
+
+		// LINUX
     	GameRepository gameRepo = new ManualUpdateLocalGameRepository("/home/csironi/GAMEREPOS/GGPBase-GameRepo-03022016");
 
     	Game game = gameRepo.getGame(gameKey);
@@ -362,7 +357,7 @@ public class SingleRunPNTest {
 
 			/******************************** MCTS SPEED TEST *********************************/
 
-			GamerLogger.log("SingleRunPNTester", "Starting MCTS speed test.");
+/*			GamerLogger.log("SingleRunPNTester", "Starting MCTS speed test.");
 
 			propnetState = manager.getInitialPropnetState();
 
@@ -419,7 +414,7 @@ public class SingleRunPNTest {
 	        	GamerLogger.logError("SingleRunPNTester", "Search failed for MCTSManager. Impossible to test MCTS for this game. Cause: [" + e.getClass().getSimpleName() + "] " + e.getMessage() );
 	        	GamerLogger.logStackTrace("SingleRunPNTester", e);
 			}
-
+*/
 		}
 
 		/************************** LOG *******************************/

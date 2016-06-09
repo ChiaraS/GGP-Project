@@ -32,8 +32,13 @@ public final class ManualUpdateLocalGameRepository extends GameRepository {
 	 */
 	public ManualUpdateLocalGameRepository(String gamesDirectoryPath){
 
+		System.out.println(gamesDirectoryPath);
+
 		if(gamesDirectoryPath == null || gamesDirectoryPath == ""){
 			this.theGamesDirectory = null;
+
+			System.out.println("null1");
+
 			return;
 		}
 
@@ -43,8 +48,10 @@ public final class ManualUpdateLocalGameRepository extends GameRepository {
 		// Otherwise, set it null.
 		if (!(theDirectory.exists())) {
 			this.theGamesDirectory = null;
+			System.out.println("null2");
         }else{
         	this.theGamesDirectory = theDirectory;
+        	System.out.println(this.theGamesDirectory.getPath());
         }
 
 	}

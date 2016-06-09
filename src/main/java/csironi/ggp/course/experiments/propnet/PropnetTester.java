@@ -128,6 +128,10 @@ public class PropnetTester {
 
     	    //GameRepository theRepository = GameRepository.getDefaultRepository();
 
+    		// WINDOWS
+    		//GameRepository theRepository = new ManualUpdateLocalGameRepository("C:/Users/c.sironi/\"BITBUCKET REPOS\"/GGP-Base/GGPBase-GameRepo-03022016");
+
+    		// LINUX
     	    GameRepository theRepository = new ManualUpdateLocalGameRepository("/home/csironi/GAMEREPOS/GGPBase-GameRepo-03022016");
 
     	    for(String aGameKey : theRepository.getGameKeys()) {

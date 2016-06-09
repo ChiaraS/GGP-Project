@@ -18,6 +18,7 @@ import org.ggp.base.util.propnet.state.ImmutableSeparatePropnetState;
 import org.ggp.base.util.statemachine.InternalPropnetStateMachine;
 import org.ggp.base.util.statemachine.StateMachine;
 import org.ggp.base.util.statemachine.cache.CachedStateMachine;
+import org.ggp.base.util.statemachine.cache.NoSyncRefactoredSeparateInternalPropnetCachedStateMachine;
 import org.ggp.base.util.statemachine.implementation.propnet.SeparateInternalPropnetStateMachine;
 import org.ggp.base.util.statemachine.implementation.prover.ProverStateMachine;
 
@@ -92,6 +93,11 @@ public abstract class InternalPropnetGamer extends StateMachineGamer {
 	private boolean firstTry;
 
 	/**
+	 * True if we want to use the cache for the state machine, false otherwise.
+	 */
+	protected boolean cache;
+
+	/**
 	 *
 	 */
 	public InternalPropnetGamer() {
@@ -100,6 +106,7 @@ public abstract class InternalPropnetGamer extends StateMachineGamer {
 		this.thePropnetMachine = null;
 		this.propnetBuild = PROPNET_BUILD.ALWAYS;
 		this.firstTry = true;
+		this.cache = false;
 
 	}
 
@@ -147,7 +154,8 @@ public abstract class InternalPropnetGamer extends StateMachineGamer {
 			GamerLogger.log("Gamer", "Standard gamer (not single-game).");
 			GamerLogger.log("Gamer", "Creating state machine for the game.");
 
-			return this.createStateMachine();
+			this.thePropnetMachine = this.createStateMachine();
+			//return this.createStateMachine();
 		case ONCE: // Build once, then re-use:
 
 			GamerLogger.log("Gamer", "Single-game gamer.");
@@ -158,35 +166,55 @@ public abstract class InternalPropnetGamer extends StateMachineGamer {
 				GamerLogger.log("Gamer", "Propnet state machine already created for the game. Returning same state machine.");
 				//System.out.println("Returning SAME propnet state machine.");
 
-				return this.thePropnetMachine;
-			}
-
-			// Otherwise, if it doesn't exist because we never tried to build a propnet,
-			// create it and return it.
-			if(this.firstTry){
-
-				this.firstTry = false;
-
-				GamerLogger.log("Gamer", "First try to create the propnet state machine.");
-
-				return this.createStateMachine();
-
+				//return this.thePropnetMachine;
 			}else{
 
-				GamerLogger.log("Gamer", "Already tried to build propnet and failed. Returning prover state machine.");
-				//System.out.println("Already FAILED with propnet, not gonna try again: returning prover state machine.");
+				// Otherwise, if it doesn't exist because we never tried to build a propnet,
+				// create it and return it.
+				if(this.firstTry){
 
-				return new CachedStateMachine(new ProverStateMachine());
+					this.firstTry = false;
+
+					GamerLogger.log("Gamer", "First try to create the propnet state machine.");
+
+					this.thePropnetMachine = this.createStateMachine();
+					//return this.createStateMachine();
+
+				}else{
+
+					GamerLogger.log("Gamer", "Already tried to build propnet and failed. Returning prover state machine.");
+					//System.out.println("Already FAILED with propnet, not gonna try again: returning prover state machine.");
+
+					//return new CachedStateMachine(new ProverStateMachine());
+				}
 			}
 		case NEVER:
-			return this.thePropnetMachine;
+			//return this.thePropnetMachine;
 		}
 
-		return null;
+		if(this.thePropnetMachine != null){
+			// Check if we want to use the cache
+			if(this.cache){
+				GamerLogger.log("Gamer", "Returning PropNet state machine with cache.");
+				this.thePropnetMachine = new NoSyncRefactoredSeparateInternalPropnetCachedStateMachine(this.thePropnetMachine);
+			}else{
+				GamerLogger.log("Gamer", "Returning PropNet state machine without cache.");
+			}
+			return this.thePropnetMachine;
+		}else{
+			// Check if we want to use the cache
+			if(this.cache){
+				GamerLogger.log("Gamer", "Returning Prover state machine with cache.");
+				return new CachedStateMachine(new ProverStateMachine());
+			}else{
+				GamerLogger.log("Gamer", "Returning Prover state machine without cache.");
+				return new ProverStateMachine();
+			}
+		}
 
 	}
 
-	private StateMachine createStateMachine(){
+	private InternalPropnetStateMachine createStateMachine(){
 		if(System.currentTimeMillis() < this.getMetagamingTimeout() - this.safetyMargin){
 
 	        // Create the executor service that will run the propnet manager that creates the propnet
@@ -213,7 +241,8 @@ public abstract class InternalPropnetGamer extends StateMachineGamer {
 
 				//System.out.println("Returning prover state machine.");
 
-				return new CachedStateMachine(new ProverStateMachine());
+				//return new CachedStateMachine(new ProverStateMachine());
+				return null;
 			}
 
 			// Here the available time has elapsed, so we must interrupt the thread if it is still running.
@@ -237,12 +266,15 @@ public abstract class InternalPropnetGamer extends StateMachineGamer {
 				if(propnet != null && propnetState != null){
 
 					// Create the state machine giving it the propnet and the propnet state.
-				    this.thePropnetMachine =  new SeparateInternalPropnetStateMachine(propnet, propnetState);
+				    //this.thePropnetMachine =  new SeparateInternalPropnetStateMachine(propnet, propnetState);
 
 				    GamerLogger.log("Gamer", "Propnet built successfully: returning propnet state machine.");
 				    //System.out.println("Returning propnet state machine.");
 
-				    return this.thePropnetMachine;
+				    //return this.thePropnetMachine;
+
+				    return new SeparateInternalPropnetStateMachine(propnet, propnetState);
+
 				}else{
 					GamerLogger.logError("Gamer", "Propnet builder ended execution but at leas one among the immutable propnet structure and the propnet state is null: returning prover state machine.");
 				}
@@ -255,7 +287,8 @@ public abstract class InternalPropnetGamer extends StateMachineGamer {
 
 		//System.out.println("Returning prover state machine.");
 
-		return new CachedStateMachine(new ProverStateMachine());
+		//return new CachedStateMachine(new ProverStateMachine());
+		return null;
 	}
 
 

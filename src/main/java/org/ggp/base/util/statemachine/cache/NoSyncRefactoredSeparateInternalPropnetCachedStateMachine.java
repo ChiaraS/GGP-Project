@@ -15,7 +15,6 @@ import org.ggp.base.util.statemachine.exceptions.MoveDefinitionException;
 import org.ggp.base.util.statemachine.exceptions.StateMachineException;
 import org.ggp.base.util.statemachine.exceptions.StateMachineInitializationException;
 import org.ggp.base.util.statemachine.exceptions.TransitionDefinitionException;
-import org.ggp.base.util.statemachine.implementation.propnet.SeparateInternalPropnetStateMachine;
 import org.ggp.base.util.statemachine.inernalPropnetStructure.InternalPropnetMachineState;
 import org.ggp.base.util.statemachine.inernalPropnetStructure.InternalPropnetMove;
 import org.ggp.base.util.statemachine.inernalPropnetStructure.InternalPropnetRole;
@@ -30,7 +29,7 @@ import com.google.common.collect.ImmutableList;
  */
 public final class NoSyncRefactoredSeparateInternalPropnetCachedStateMachine extends InternalPropnetStateMachine{
 
-	private final SeparateInternalPropnetStateMachine backingStateMachine;
+	private final InternalPropnetStateMachine backingStateMachine;
 	private final RefactoredTtlCache<InternalPropnetMachineState, PropnetMachineStateEntry> internalStateTtlCache;
 
 	private final class PropnetMachineStateEntry{
@@ -47,7 +46,7 @@ public final class NoSyncRefactoredSeparateInternalPropnetCachedStateMachine ext
 		}
 	}
 
-	public NoSyncRefactoredSeparateInternalPropnetCachedStateMachine(SeparateInternalPropnetStateMachine backingStateMachine){
+	public NoSyncRefactoredSeparateInternalPropnetCachedStateMachine(InternalPropnetStateMachine backingStateMachine){
 		this.backingStateMachine = backingStateMachine;
 		this.internalStateTtlCache = new RefactoredTtlCache<InternalPropnetMachineState, PropnetMachineStateEntry>(1);
 	}

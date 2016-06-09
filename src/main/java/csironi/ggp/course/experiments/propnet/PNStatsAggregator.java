@@ -12,6 +12,14 @@ import csironi.ggp.course.statsSummarizer.ColumnType;
 
 public class PNStatsAggregator {
 
+	/**
+	 * Gets as input the path of the folder for the tested StateMahcine containing a folder for each game, each of which contains
+	 * a folder for each repetition of the test for the game and a file with one entry per repetition showing the statistics of the
+	 * repetition (i.e. PN building time, nodes/sec, iterations/sec, num components,...). This method, for each game computes the
+	 * statistics over all the repetitions of the test saving them in a file in the folder of the game. Moreover, it aggregates all
+	 * the statistics for all games in another cumulative file, if its path is specified as input.
+	 * @param args
+	 */
 	public static void main(String[] args){
 
 		if(args.length < 1 || args.length > 2){
