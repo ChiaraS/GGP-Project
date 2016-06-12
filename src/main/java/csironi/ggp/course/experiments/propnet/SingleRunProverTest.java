@@ -7,16 +7,7 @@ import java.util.Random;
 import org.apache.logging.log4j.ThreadContext;
 import org.ggp.base.player.gamer.statemachine.MCS.manager.MCSException;
 import org.ggp.base.player.gamer.statemachine.MCS.manager.prover.ProverMCSManager;
-import org.ggp.base.player.gamer.statemachine.MCTS.manager.exceptions.MCTSException;
-import org.ggp.base.player.gamer.statemachine.MCTS.manager.prover.ProverMCTSManager;
-import org.ggp.base.player.gamer.statemachine.MCTS.manager.prover.strategies.backpropagation.ProverStandardBackpropagation;
-import org.ggp.base.player.gamer.statemachine.MCTS.manager.prover.strategies.expansion.ProverRandomExpansion;
-import org.ggp.base.player.gamer.statemachine.MCTS.manager.prover.strategies.movechoice.ProverMaximumScoreChoice;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.prover.strategies.playout.ProverRandomPlayout;
-import org.ggp.base.player.gamer.statemachine.MCTS.manager.prover.strategies.selection.ProverUCTSelection;
-import org.ggp.base.player.gamer.statemachine.MCTS.manager.prover.strategies.selection.evaluators.ProverUCTEvaluator;
-import org.ggp.base.player.gamer.statemachine.MCTS.manager.prover.treestructure.ProverTreeNodeFactory;
-import org.ggp.base.player.gamer.statemachine.MCTS.manager.prover.treestructure.decoupled.ProverDecoupledTreeNodeFactory;
 import org.ggp.base.util.game.Game;
 import org.ggp.base.util.game.GameRepository;
 import org.ggp.base.util.game.ManualUpdateLocalGameRepository;
@@ -25,6 +16,7 @@ import org.ggp.base.util.logging.GamerLogger;
 import org.ggp.base.util.statemachine.Role;
 import org.ggp.base.util.statemachine.StateMachine;
 import org.ggp.base.util.statemachine.cache.CachedStateMachine;
+import org.ggp.base.util.statemachine.cache.NoSyncRefactoredCachedStateMachine;
 import org.ggp.base.util.statemachine.exceptions.StateMachineInitializationException;
 import org.ggp.base.util.statemachine.implementation.prover.ProverStateMachine;
 
@@ -45,6 +37,10 @@ import org.ggp.base.util.statemachine.implementation.prover.ProverStateMachine;
  * 					   this amount of time. (Default value: 60000ms)
  *  	[withCache] = true if the state machine based on the prover must use the cache, false otherwise. (Default
  *  				  value: false)
+ *  	[cacheType] = specifies which version of the cache to use. Possible types are:
+ *  							- old: implementation that equals the one already provided in this code base
+ *  							- nosync: refactored cache that should spend less time searching entries in the
+ *  									  cache and doesn't synchronize code and is not thread safe
  *
  *
  * @author C.Sironi
@@ -77,8 +73,9 @@ public class SingleRunProverTest {
        	long givenInitTime = 420000L;
     	long searchTime = 60000L;
     	boolean withCache = false;
+    	String cacheType = null;
 
-    	if(args.length == 6){
+    	if(args.length == 7){
 	    	try{
 				givenInitTime = Long.parseLong(args[3]);
 			}catch(NumberFormatException nfe){
@@ -94,12 +91,15 @@ public class SingleRunProverTest {
 
 			withCache = Boolean.parseBoolean(args[5]);
 
+			cacheType = args[6];
+
     	}
 
     	String testSettings = "Settings for current test run:\n";
     	testSettings += "[givenInitTime] = " + givenInitTime + "\n";
     	testSettings += "[searchTime] = " + searchTime + "\n";
     	testSettings += "[withCache] = " + withCache + "\n";
+    	testSettings += "[cacheType] = " + cacheType + "\n";
 
     	GamerLogger.log("SingleRunProverTester", testSettings);
 
@@ -124,11 +124,11 @@ public class SingleRunProverTest {
 
     	List<Gdl> description = game.getRules();
 
-    	singleTestRun(mainLogFolder, myLogFolder, description, givenInitTime, searchTime, withCache);
+    	singleTestRun(mainLogFolder, myLogFolder, description, givenInitTime, searchTime, withCache, cacheType);
 
 	}
 
-	private static void singleTestRun(String mainLogFolder, String myLogFolder, List<Gdl> description, long givenInitTime, long searchTime, boolean withCache){
+	private static void singleTestRun(String mainLogFolder, String myLogFolder, List<Gdl> description, long givenInitTime, long searchTime, boolean withCache, String cacheType){
 
 		GamerLogger.log("SingleRunProverTester", "Starting Prover test.");
 
@@ -151,7 +151,14 @@ public class SingleRunProverTest {
 		StateMachine theProverMachine;
 
 	    if(withCache){
-	    	theProverMachine = new CachedStateMachine(new ProverStateMachine());
+
+	    	switch(cacheType){
+	    	case "nosync":
+	    		theProverMachine = new NoSyncRefactoredCachedStateMachine(new ProverStateMachine());
+	    		break;
+	    	default:
+	    		theProverMachine = new CachedStateMachine(new ProverStateMachine());
+	    	}
         }else{
         	theProverMachine = new ProverStateMachine();
         }
@@ -206,7 +213,7 @@ public class SingleRunProverTest {
 
 		/******************************** MCTS SPEED TEST *********************************/
 
-		GamerLogger.log("SingleRunProverTester", "Starting MCTS speed test.");
+/*		GamerLogger.log("SingleRunProverTester", "Starting MCTS speed test.");
 
 		if(withCache){
 			theProverMachine = new CachedStateMachine(new ProverStateMachine());
@@ -261,6 +268,7 @@ public class SingleRunProverTest {
 	        	GamerLogger.logError("SingleRunPNTester", "Search failed for MCTSManager. Impossible to test MCTS for this game. Cause: [" + e.getClass().getSimpleName() + "] " + e.getMessage() );
 	        	GamerLogger.logStackTrace("SingleRunPNTester", e);
 		}
+		*/
 
 		/************************** LOG *******************************/
 

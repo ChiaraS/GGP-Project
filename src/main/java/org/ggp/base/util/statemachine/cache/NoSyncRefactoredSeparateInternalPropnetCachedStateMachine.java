@@ -53,11 +53,11 @@ public final class NoSyncRefactoredSeparateInternalPropnetCachedStateMachine ext
 
 	private PropnetMachineStateEntry getPropnetEntry(InternalPropnetMachineState state){
 
-		PropnetMachineStateEntry entry = internalStateTtlCache.get(state);
+		PropnetMachineStateEntry entry = this.internalStateTtlCache.get(state);
 
 		if (entry == null){ // If it's null because there is no such entry or because the entry is null, we must create a new one anyway.
 			entry = new PropnetMachineStateEntry();
-			internalStateTtlCache.put(state, entry);
+			this.internalStateTtlCache.put(state, entry);
 		}
 
 		return entry;
@@ -154,7 +154,7 @@ public final class NoSyncRefactoredSeparateInternalPropnetCachedStateMachine ext
 
 	@Override
 	public void initialize(List<Gdl> description, long timeout) throws StateMachineInitializationException {
-		backingStateMachine.initialize(description, timeout);
+		this.backingStateMachine.initialize(description, timeout);
 	}
 
 	@Override
@@ -189,9 +189,9 @@ public final class NoSyncRefactoredSeparateInternalPropnetCachedStateMachine ext
 	@Override
     public String getName() {
         if(this.backingStateMachine != null) {
-            return "PnCache(" + this.backingStateMachine.getName() + ")";
+            return "NoSyncPnCache(" + this.backingStateMachine.getName() + ")";
         }
-        return "PnCache(null)";
+        return "NoSyncPnCache(null)";
     }
 
 	@Override

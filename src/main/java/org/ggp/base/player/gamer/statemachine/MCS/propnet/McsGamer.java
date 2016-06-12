@@ -1,7 +1,7 @@
 /**
  *
  */
-package org.ggp.base.player.gamer.statemachine.MCS;
+package org.ggp.base.player.gamer.statemachine.MCS.propnet;
 
 import java.util.Random;
 
@@ -62,6 +62,8 @@ public class McsGamer extends InternalPropnetGamer {
 
 		super();
 		this.maxSearchDepth = 500;
+
+		//this.safetyMargin = 100000L;
 
 	}
 

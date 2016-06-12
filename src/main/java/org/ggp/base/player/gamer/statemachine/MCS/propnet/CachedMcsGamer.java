@@ -1,4 +1,5 @@
-package org.ggp.base.player.gamer.statemachine.MCS;
+package org.ggp.base.player.gamer.statemachine.MCS.propnet;
+
 
 public class CachedMcsGamer extends McsGamer {
 

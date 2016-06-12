@@ -74,6 +74,7 @@ public class PNStatsFormatter {
 		optOrder.add("Prover");
 		optOrder.add("CacheProver");
 		optOrder.add("60CacheProver");
+		optOrder.add("NoSyncCacheProver");
 		optOrder.add("BasePN");
 		optOrder.add("Opt0PN");
 		optOrder.add("Opt1PN");
@@ -90,6 +91,7 @@ public class PNStatsFormatter {
 		optOrder.add("Cache1023PN");
 		optOrder.add("Cache10323PN");
 		optOrder.add("60Cache1023PN");
+		optOrder.add("NoSyncCache1023PN");
 		optOrder.add("Opt1023NoCache");
 		optOrder.add("Opt1023OldCache");
 		optOrder.add("Opt1023RefCache");

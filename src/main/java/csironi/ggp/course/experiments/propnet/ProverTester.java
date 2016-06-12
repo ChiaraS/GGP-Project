@@ -24,6 +24,10 @@ import org.ggp.base.util.logging.GamerLogger;
  * 					   this amount of time. (Default value: 60000ms)
  *  	[withCache] = true if the state machine based on the prover must use the cache, false otherwise. (Default
  *  				  value: false)
+ * 		[cacheType] = specifies which version of the cache to use. Possible types are:
+ *  					- old: implementation that equals the one already provided in this code base
+ *  					- nosync: refactored cache that should spend less time searching entries in the
+ *  							  cache and doesn't synchronize code and is not thread safe
  *
  *
  * @author C.Sironi
@@ -58,8 +62,9 @@ public class ProverTester {
        	long givenInitTime = 420000L;
     	long searchTime = 60000L;
     	boolean withCache = false;
+    	String cacheType = null;
 
-    	if(args.length == 6){
+    	if(args.length == 7){
     		try{
     			repetitions = Integer.parseInt(args[2]);
 			}catch(NumberFormatException nfe){
@@ -81,6 +86,8 @@ public class ProverTester {
 
 			withCache = Boolean.parseBoolean(args[5]);
 
+			cacheType = args[6];
+
     	}
 
     	if(gameKey.equals("ALL")){
@@ -95,6 +102,7 @@ public class ProverTester {
     	testSettings += "[givenInitTime] = " + givenInitTime + "\n";
     	testSettings += "[searchTime] = " + searchTime + "\n";
     	testSettings += "[withCache] = " + withCache + "\n";
+    	testSettings += "[cacheType] = " + cacheType + "\n";
 
     	GamerLogger.log("ProverTester", testSettings);
 
@@ -107,17 +115,17 @@ public class ProverTester {
     	    for(String aGameKey : theRepository.getGameKeys()) {
     	        if(aGameKey.contains("laikLee")) continue;
 
-    	        testGame(mainLogFolder, aGameKey, repetitions, givenInitTime, searchTime, withCache);
+    	        testGame(mainLogFolder, aGameKey, repetitions, givenInitTime, searchTime, withCache, cacheType);
 
     	    }
 
     	}else{
-    		testGame(mainLogFolder, gameKey, repetitions, givenInitTime, searchTime, withCache);
+    		testGame(mainLogFolder, gameKey, repetitions, givenInitTime, searchTime, withCache, cacheType);
     	}
 
 	}
 
-	private static void testGame(String mainLogFolder, String gameKey, int repetitions, long givenInitTime, long searchTime, boolean withCache){
+	private static void testGame(String mainLogFolder, String gameKey, int repetitions, long givenInitTime, long searchTime, boolean withCache, String cacheType){
 
 		String gameFolder = mainLogFolder + "/" + gameKey;
 
@@ -128,13 +136,14 @@ public class ProverTester {
     	toLog += "\n[givenInitTime] = " + givenInitTime;
     	toLog += "\n[searchTime] = " + searchTime;
     	toLog += "\n[withCache] = " + withCache;
+    	toLog += "\n[cacheType] = " + cacheType;
 
     	GamerLogger.log("ProverTester", toLog);
 
 		String singleRunID = null;
 		String singleRunFolder = null;
 		File logFile = null;
-		ProcessBuilder pb = new ProcessBuilder("java", "-jar", "SingleRunProverTest.jar", gameFolder, singleRunFolder, gameKey, ""+givenInitTime, ""+searchTime, ""+withCache);
+		ProcessBuilder pb = new ProcessBuilder("java", "-jar", "SingleRunProverTest.jar", gameFolder, singleRunFolder, gameKey, ""+givenInitTime, ""+searchTime, ""+withCache, cacheType);
 
 		//System.out.println(pb.command());
 

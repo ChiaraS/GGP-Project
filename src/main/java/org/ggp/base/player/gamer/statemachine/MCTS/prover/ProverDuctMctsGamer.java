@@ -20,7 +20,7 @@ public class ProverDuctMctsGamer extends ProverUctMctsGamer {
 
 		this.metagameSearch = false;
 
-		this.withCache = false;
+		this.cache = false;
 	}
 
 	@Override

@@ -4,7 +4,7 @@ import org.ggp.base.player.gamer.exception.GamePreviewException;
 import org.ggp.base.player.gamer.statemachine.StateMachineGamer;
 import org.ggp.base.util.game.Game;
 import org.ggp.base.util.statemachine.StateMachine;
-import org.ggp.base.util.statemachine.cache.CachedStateMachine;
+import org.ggp.base.util.statemachine.cache.NoSyncRefactoredCachedStateMachine;
 import org.ggp.base.util.statemachine.implementation.prover.ProverStateMachine;
 
 public abstract class ProverGamer extends StateMachineGamer {
@@ -16,7 +16,7 @@ public abstract class ProverGamer extends StateMachineGamer {
 	 */
 	protected long safetyMargin;
 
-	protected boolean withCache;
+	protected boolean cache;
 
 	/**
 	 *
@@ -24,14 +24,14 @@ public abstract class ProverGamer extends StateMachineGamer {
 	public ProverGamer() {
 		// TODO: change code so that the parameters can be set from outside.
 		this.safetyMargin = 10000L;
-		this.withCache = true;
+		this.cache = false;
 
 	}
 
 	@Override
 	public StateMachine getInitialStateMachine() {
-		if(withCache){
-			return new CachedStateMachine(new ProverStateMachine());
+		if(cache){
+			return new NoSyncRefactoredCachedStateMachine(new ProverStateMachine());
 		}else{
 			return new ProverStateMachine();
 		}
