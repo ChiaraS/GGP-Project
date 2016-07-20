@@ -318,11 +318,11 @@ public class InternalPropnetMCTSManager extends MCTSManager {
 		if(this.transpositionTable.getLastGameStep() != gameStep){
 			// ...nodes not visited recently are removed from the transposition table...
 
-			long ttStart = System.currentTimeMillis();
+			//long ttStart = System.currentTimeMillis();
 
 			this.transpositionTable.clean(gameStep);
 
-			System.out.println(this.selectionStrategy.getClass().getSimpleName() + " cleaning TT : " + (System.currentTimeMillis()-ttStart));
+			//System.out.println(this.selectionStrategy.getClass().getSimpleName() + " cleaning TT : " + (System.currentTimeMillis()-ttStart));
 
 			// ...and each strategy performs some clean-up of its internal structures (if necessary).
 			//for(Strategy s : this.strategies){

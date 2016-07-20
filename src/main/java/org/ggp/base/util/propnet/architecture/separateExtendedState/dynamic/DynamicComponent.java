@@ -43,6 +43,7 @@ public abstract class DynamicComponent implements Serializable
      */
     public boolean addInput(DynamicComponent input)
     {
+    	// TODO: Add input only if it's not the component itself
         return inputs.add(input);
     }
 

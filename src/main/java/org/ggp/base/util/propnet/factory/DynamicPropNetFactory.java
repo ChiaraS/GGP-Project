@@ -96,8 +96,6 @@ import com.google.common.collect.Multiset;
  * after creation are taken (and sometimes improved) from the DynamicPropNetFactory,
  * while some others have been implemented from scratch.
  *
- * @author C.Sironi
- *
  */
 public class DynamicPropNetFactory {
 

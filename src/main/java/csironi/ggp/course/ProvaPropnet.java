@@ -32,7 +32,13 @@ import org.ggp.base.util.propnet.architecture.forwardInterrupting.components.For
 import org.ggp.base.util.propnet.architecture.forwardInterrupting.components.ForwardInterruptingTransition;
 import org.ggp.base.util.propnet.architecture.separateExtendedState.dynamic.DynamicPropNet;
 import org.ggp.base.util.propnet.architecture.separateExtendedState.immutable.ImmutablePropNet;
+import org.ggp.base.util.propnet.creationManager.PropNetManagerRunner;
 import org.ggp.base.util.propnet.creationManager.SeparateInternalPropnetManager;
+import org.ggp.base.util.propnet.creationManager.optimizationcallers.OptimizationCaller;
+import org.ggp.base.util.propnet.creationManager.optimizationcallers.OptimizeAwayConstantValueComponents;
+import org.ggp.base.util.propnet.creationManager.optimizationcallers.OptimizeAwayConstants;
+import org.ggp.base.util.propnet.creationManager.optimizationcallers.RemoveAnonPropositions;
+import org.ggp.base.util.propnet.creationManager.optimizationcallers.RemoveOutputlessComponents;
 import org.ggp.base.util.propnet.factory.ForwardInterruptingPropNetFactory;
 import org.ggp.base.util.propnet.state.ImmutableSeparatePropnetState;
 import org.ggp.base.util.statemachine.InternalPropnetStateMachine;
@@ -60,9 +66,13 @@ public class ProvaPropnet {
 
 	public static void main(String []args) throws MoveDefinitionException, TransitionDefinitionException, GoalDefinitionException, StateMachineInitializationException{
 
+		//printOptPropnet("( ( role player ) ( light p ) ( light q ) ( <= ( legal player ( turnOn ?x ) ) ( not ( true ( on ?x ) ) ) ( light ?x ) ) ( <= ( next ( on ?x ) ) ( does player ( turnOn ?x ) ) ) ( <= ( next ( on ?x ) ) ( true ( on ?x ) ) ) ( <= terminal ( true ( on p ) ) ( true ( on q ) ) ) ( <= ( goal player 100 ) ( true ( on p ) ) ( true ( on q) ) ) ) ", "none", 10000L);
+
+		printOptPropnetFromGameCache("ticTacToe", "none", 10000L);
+
 		//altraProva();
 
-		ennesimaProva();
+		//ennesimaProva();
 
 		//printDynamicPropnet("onestep", 420000L);
 
@@ -1685,4 +1695,96 @@ public class ProvaPropnet {
         	}
         }
 	}
+
+	public static void printOptPropnetFromGameCache(String gameKey, String opts, long givenInitTime) throws MoveDefinitionException, TransitionDefinitionException, GoalDefinitionException, StateMachineInitializationException{
+
+		GameRepository theRepository = GameRepository.getDefaultRepository();
+
+		List<Gdl> description = theRepository.getGame(gameKey).getRules();
+
+		//System.out.println(description);
+
+		printOptPropnet(description, opts, givenInitTime);
+
+	}
+
+	public static void printOptPropnetFromDescription(String gdl, String opts, long givenInitTime) throws MoveDefinitionException, TransitionDefinitionException, GoalDefinitionException, StateMachineInitializationException{
+
+		Game g = Game.createEphemeralGame(gdl);
+
+		List<Gdl> description = g.getRules();
+
+		//System.out.println(description);
+
+		printOptPropnet(description, opts, givenInitTime);
+
+	}
+
+	/**
+	 * Given a GDL description, this method builds the propnet optimizing it as specified and then prints it.
+	 *
+	 * @throws MoveDefinitionException
+	 * @throws TransitionDefinitionException
+	 * @throws GoalDefinitionException
+	 * @throws StateMachineInitializationException
+	 */
+	public static void printOptPropnet(List<Gdl> description, String opts, long givenInitTime) throws MoveDefinitionException, TransitionDefinitionException, GoalDefinitionException, StateMachineInitializationException{
+
+		SeparateInternalPropnetManager manager =  new SeparateInternalPropnetManager(description, System.currentTimeMillis() + givenInitTime, parseOptimizations(opts));
+
+		PropNetManagerRunner.runPropNetManager(manager, givenInitTime);
+
+		DynamicPropNet dynamicPropnet = manager.getDynamicPropnet();
+
+		if(dynamicPropnet != null){
+			System.out.println("Printing propnet:");
+			System.out.println(dynamicPropnet.toString());
+		}else{
+			System.out.println("Impossible to print propnet: creation failed.");
+		}
+
+	}
+
+	private static OptimizationCaller[] parseOptimizations(String opts){
+
+		if(opts.equalsIgnoreCase("none")){
+			return new OptimizationCaller[0];
+		}
+
+		if(opts.equalsIgnoreCase("default")){
+			return null;
+		}
+
+		String[] splitOpts = opts.split("-");
+
+		if(splitOpts.length < 1){
+			throw new IllegalArgumentException();
+		}
+
+		OptimizationCaller[] optimizations = new OptimizationCaller[splitOpts.length];
+
+		for(int i = 0; i < splitOpts.length; i++){
+			switch(splitOpts[i]){
+				case "0":
+					optimizations[i] = new OptimizeAwayConstants();
+					break;
+				case "1":
+					optimizations[i] = new RemoveAnonPropositions();
+					break;
+				case "2":
+					optimizations[i] = new OptimizeAwayConstantValueComponents();
+					break;
+				case "3":
+					optimizations[i] = new RemoveOutputlessComponents();
+					break;
+				default:
+					throw new IllegalArgumentException();
+			}
+		}
+
+		return optimizations;
+	}
+
+
+
 }
