@@ -98,40 +98,10 @@ public class ProverMCTSManager extends MCTSManager {
 	private StateMachine theMachine;
 
 	/**
-	 * Maximum depth that the MCTS algorithm must visit.
-	 */
-	private int maxSearchDepth;
-
-	/**
 	 * The transposition table (implemented with HashMap that uses the internal propnet state as key
 	 * and solves collisions with linked lists).
 	 */
 	private ProverMCTSTranspositionTable transpositionTable;
-
-	/**
-	 * Number of performed iterations.
-	 */
-	private int iterations;
-
-	/**
-	 * Number of all visited states since the start of the search.
-	 */
-	private int visitedNodes;
-
-	/**
-	 * Number of visited nodes in the current iteration so far.
-	 */
-	private int currentIterationVisitedNodes;
-
-	/**
-	 * Start time of last performed search.
-	 */
-	private long searchStart;
-
-	/**
-	 * End time of last performed search.
-	 */
-	private long searchEnd;
 
 	/**
 	 *
@@ -286,7 +256,8 @@ public class ProverMCTSManager extends MCTSManager {
 	 * @param initialState the state of the game to be used as starting state for
 	 * 					   to perform the search.
 	 * @param gameStep the current game step being played (needed to clean the transposition
-	 * 				   table and be used as time stamp for tree nodes).
+	 * 				   table and be used as time stamp for tree nodes). The manager considers
+	 * 				   the steps as starting from 1. 0 or less are not valid!
 	 * @return the tree node corresponding to the given initial state.
 	 */
 	private MCTSNode prepareForSearch(MachineState initialState, int gameStep){
@@ -348,6 +319,7 @@ public class ProverMCTSManager extends MCTSManager {
 		while(System.currentTimeMillis() < timeout){
 			this.currentIterationVisitedNodes = 0;
 
+			//System.out.println();
 			//System.out.println("Iteration " + this.iterations);
 
 			this.searchNext(initialState, initialNode);
@@ -899,25 +871,6 @@ public class ProverMCTSManager extends MCTSManager {
 		return moves;
 	}
 */
-
-	public int getIterations(){
-		return this.iterations;
-	}
-
-	public int getVisitedNodes(){
-		return this.visitedNodes;
-	}
-
-	public long getSearchTime(){
-		return (this.searchEnd - this.searchStart);
-	}
-
-
-
-
-
-
-
 
 	/*private void printMovesTree(SlowSequentialMCTSMoveStats[] moves, String tab){
 

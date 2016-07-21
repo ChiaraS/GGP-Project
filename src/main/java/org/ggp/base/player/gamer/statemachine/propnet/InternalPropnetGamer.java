@@ -93,9 +93,14 @@ public abstract class InternalPropnetGamer extends StateMachineGamer {
 	private boolean firstTry;
 
 	/**
-	 * True if we want to use the cache for the state machine, false otherwise.
+	 * True if we want to use the cache for the state machine based on the Prover, false otherwise.
 	 */
-	protected boolean cache;
+	protected boolean proverCache;
+
+	/**
+	 * True if we want to use the cache for the state machine based on the PropNet, false otherwise.
+	 */
+	protected boolean pnCache;
 
 	/**
 	 *
@@ -106,7 +111,8 @@ public abstract class InternalPropnetGamer extends StateMachineGamer {
 		this.thePropnetMachine = null;
 		this.propnetBuild = PROPNET_BUILD.ALWAYS;
 		this.firstTry = true;
-		this.cache = false;
+		this.proverCache = true;
+		this.pnCache = false;
 
 	}
 
@@ -194,7 +200,7 @@ public abstract class InternalPropnetGamer extends StateMachineGamer {
 
 		if(this.thePropnetMachine != null){
 			// Check if we want to use the cache
-			if(this.cache){
+			if(this.pnCache){
 				GamerLogger.log("Gamer", "Returning PropNet state machine with cache.");
 				this.thePropnetMachine = new NoSyncRefactoredSeparateInternalPropnetCachedStateMachine(this.thePropnetMachine);
 			}else{
@@ -203,7 +209,7 @@ public abstract class InternalPropnetGamer extends StateMachineGamer {
 			return this.thePropnetMachine;
 		}else{
 			// Check if we want to use the cache
-			if(this.cache){
+			if(this.proverCache){
 				GamerLogger.log("Gamer", "Returning Prover state machine with cache.");
 				return new CachedStateMachine(new ProverStateMachine());
 			}else{

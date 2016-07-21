@@ -17,8 +17,6 @@ import org.ggp.base.player.gamer.statemachine.MCTS.manager.propnet.treestructure
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.propnet.treestructure.MCTSTranspositionTable;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.propnet.treestructure.TreeNodeFactory;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.propnet.treestructure.AMAFDecoupled.PnAMAFDecoupledTreeNodeFactory;
-import org.ggp.base.player.gamer.statemachine.MCTS.manager.propnet.treestructure.sequential.SequentialMCTSMoveStats;
-import org.ggp.base.player.gamer.statemachine.MCTS.manager.propnet.treestructure.slowsequential.SlowSequentialMCTSMoveStats;
 import org.ggp.base.util.logging.GamerLogger;
 import org.ggp.base.util.statemachine.InternalPropnetStateMachine;
 import org.ggp.base.util.statemachine.inernalPropnetStructure.InternalPropnetMachineState;
@@ -105,40 +103,10 @@ public class InternalPropnetMCTSManager extends MCTSManager {
 	private InternalPropnetStateMachine theMachine;
 
 	/**
-	 * Maximum depth that the MCTS algorithm must visit.
-	 */
-	private int maxSearchDepth;
-
-	/**
 	 * The transposition table (implemented with HashMap that uses the internal propnet state as key
 	 * and solves collisions with linked lists).
 	 */
 	private MCTSTranspositionTable transpositionTable;
-
-	/**
-	 * Number of performed iterations.
-	 */
-	private int iterations;
-
-	/**
-	 * Number of all visited states since the start of the search.
-	 */
-	private int visitedNodes;
-
-	/**
-	 * Number of visited nodes in the current iteration so far.
-	 */
-	private int currentIterationVisitedNodes;
-
-	/**
-	 * Start time of last performed search.
-	 */
-	private long searchStart;
-
-	/**
-	 * End time of last performed search.
-	 */
-	private long searchEnd;
 
 	/**
 	 *
@@ -273,7 +241,6 @@ public class InternalPropnetMCTSManager extends MCTSManager {
 	 * moves (and thus corresponding statistics).
 	 */
 	public MCTSNode search(InternalPropnetMachineState initialState, long timeout, int gameStep) throws MCTSException{
-
 
 		MCTSNode initialNode = this.prepareForSearch(initialState, gameStep);
 
@@ -914,25 +881,7 @@ public class InternalPropnetMCTSManager extends MCTSManager {
 	}
 */
 
-	public int getIterations(){
-		return this.iterations;
-	}
-
-	public int getVisitedNodes(){
-		return this.visitedNodes;
-	}
-
-	public long getSearchTime(){
-		return (this.searchEnd - this.searchStart);
-	}
-
-
-
-
-
-
-
-
+/*
 	private void printMovesTree(SlowSequentialMCTSMoveStats[] moves, String tab){
 
 		if(moves == null){
@@ -958,5 +907,5 @@ public class InternalPropnetMCTSManager extends MCTSManager {
 		}
 
 	}
-
+*/
 }

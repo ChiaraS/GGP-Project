@@ -1,10 +1,14 @@
 package org.ggp.base.player.gamer.statemachine.MCTS.propnet;
 
 import org.ggp.base.player.gamer.event.GamerSelectedMoveEvent;
+import org.ggp.base.player.gamer.statemachine.MCS.manager.MoveStats;
 import org.ggp.base.player.gamer.statemachine.MCS.manager.propnet.CompleteMoveStats;
+import org.ggp.base.player.gamer.statemachine.MCS.manager.prover.ProverCompleteMoveStats;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.exceptions.MCTSException;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.propnet.InternalPropnetMCTSManager;
+import org.ggp.base.player.gamer.statemachine.MCTS.manager.propnet.MCTSManager;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.propnet.treestructure.MCTSNode;
+import org.ggp.base.player.gamer.statemachine.MCTS.manager.prover.ProverMCTSManager;
 import org.ggp.base.player.gamer.statemachine.propnet.InternalPropnetGamer;
 import org.ggp.base.util.logging.GamerLogger;
 import org.ggp.base.util.statemachine.Move;
@@ -38,7 +42,8 @@ public abstract class MctsGamer extends InternalPropnetGamer {
 	/**
 	 * The class that takes care of performing Monte Carlo tree search.
 	 */
-	protected InternalPropnetMCTSManager mctsManager;
+	protected MCTSManager mctsManager;
+	//protected InternalPropnetMCTSManager mctsManager;
 
 	public MctsGamer() {
 		// TODO: change code so that the parameters can be set from outside.
@@ -86,7 +91,11 @@ public abstract class MctsGamer extends InternalPropnetGamer {
 		//this.gameStep = 0;
 
 		// Create the MCTS manager and start simulations.
-		this.mctsManager = this.createMCTSManager();
+		if(this.thePropnetMachine == null){
+			this.mctsManager = this.createPropnetMCTSManager();
+		}else{
+			this.mctsManager = this.createProverMCTSManager();
+		}
 
 		if(this.metagameSearch){
 
@@ -99,7 +108,14 @@ public abstract class MctsGamer extends InternalPropnetGamer {
 				GamerLogger.log("Gamer", "Starting search during metagame.");
 
 				try {
-					this.mctsManager.search(this.thePropnetMachine.getInternalInitialState(), realTimeout, this.gameStep+1);
+
+					// TODO: fix so that you don't have to check if the propnet is null all the times
+
+					if(this.mctsManager instanceof ProverMCTSManager){
+						((ProverMCTSManager) this.mctsManager).search(this.getStateMachine().getInitialState(), realTimeout, this.gameStep+1);
+					}else{
+						((InternalPropnetMCTSManager) this.mctsManager).search(this.thePropnetMachine.getInternalInitialState(), realTimeout, this.gameStep+1);
+					}
 
 					GamerLogger.log("Gamer", "Done searching during metagame.");
 					searchTime = this.mctsManager.getSearchTime();
@@ -168,11 +184,26 @@ public abstract class MctsGamer extends InternalPropnetGamer {
 
 			GamerLogger.log("Gamer", "Selecting move using MCTS.");
 
-			InternalPropnetMachineState currentState = this.thePropnetMachine.stateToInternalState(this.getCurrentState());
-
 			try {
-				MCTSNode currentNode = this.mctsManager.search(currentState, realTimeout, gameStep);
-				CompleteMoveStats selectedMove = this.mctsManager.getBestMove(currentNode);
+
+				MCTSNode currentNode;
+				MoveStats selectedMove;
+
+				if(this.mctsManager instanceof ProverMCTSManager){
+
+					currentNode = ((ProverMCTSManager) this.mctsManager).search(this.getCurrentState(), realTimeout, gameStep);
+
+					selectedMove = ((ProverMCTSManager) this.mctsManager).getBestMove(currentNode);
+
+				}else{
+
+					InternalPropnetMachineState currentState = this.thePropnetMachine.stateToInternalState(this.getCurrentState());
+
+					currentNode = ((InternalPropnetMCTSManager) this.mctsManager).search(currentState, realTimeout, gameStep);
+
+					selectedMove = ((InternalPropnetMCTSManager) this.mctsManager).getBestMove(currentNode);
+
+				}
 
 				searchTime = this.mctsManager.getSearchTime();
 				iterations = this.mctsManager.getIterations();
@@ -184,7 +215,17 @@ public abstract class MctsGamer extends InternalPropnetGamer {
 	        		iterationsPerSecond = 0;
 	        		nodesPerSecond = 0;
 	        	}
-		    	theMove = this.thePropnetMachine.internalMoveToMove(selectedMove.getTheMove());
+
+		    	if(this.mctsManager instanceof ProverMCTSManager){
+
+					theMove = ((ProverCompleteMoveStats)selectedMove).getTheMove();
+
+				}else{
+
+					theMove = this.thePropnetMachine.internalMoveToMove(((CompleteMoveStats)selectedMove).getTheMove());
+
+				}
+
 		    	moveScoreSum = selectedMove.getScoreSum();
 		    	moveVisits = selectedMove.getVisits();
 		    	moveAvgScore = moveScoreSum / ((double) moveVisits);
@@ -200,7 +241,7 @@ public abstract class MctsGamer extends InternalPropnetGamer {
 		}else{
 			// If there is no time return a random move.
 			//GamerLogger.log("Gamer", "No time to start the search during metagame.");
-			theMove = this.thePropnetMachine.getRandomMove(this.getCurrentState(), this.getRole());
+			theMove = this.getStateMachine().getRandomMove(this.getCurrentState(), this.getRole());
 			GamerLogger.log("Gamer", "No time to select next move using MCTS. Returning random move " + theMove + ".");
 		}
 
@@ -236,6 +277,8 @@ public abstract class MctsGamer extends InternalPropnetGamer {
 
 	}
 
-	public abstract InternalPropnetMCTSManager createMCTSManager();
+	public abstract InternalPropnetMCTSManager createPropnetMCTSManager();
+
+	public abstract ProverMCTSManager createProverMCTSManager();
 
 }

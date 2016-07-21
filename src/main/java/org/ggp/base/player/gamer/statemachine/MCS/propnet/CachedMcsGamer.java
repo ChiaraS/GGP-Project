@@ -5,7 +5,8 @@ public class CachedMcsGamer extends McsGamer {
 
 	public CachedMcsGamer() {
 		super();
-		this.cache = true;
+		this.proverCache = true;
+		this.pnCache = true;
 	}
 
 }
