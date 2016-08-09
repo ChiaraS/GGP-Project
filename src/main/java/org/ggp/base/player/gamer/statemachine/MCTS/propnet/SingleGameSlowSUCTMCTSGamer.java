@@ -13,6 +13,7 @@ import org.ggp.base.player.gamer.statemachine.MCTS.manager.propnet.strategies.pl
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.propnet.strategies.selection.UCTSelection;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.propnet.strategies.selection.evaluators.UCTEvaluator;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.propnet.treestructure.slowsequential.PnSlowSequentialTreeNodeFactory;
+import org.ggp.base.player.gamer.statemachine.MCTS.manager.prover.ProverMCTSManager;
 import org.ggp.base.util.statemachine.inernalPropnetStructure.InternalPropnetRole;
 
 /**
@@ -30,7 +31,7 @@ public class SingleGameSlowSUCTMCTSGamer extends UctMctsGamer{
 	}
 
 	@Override
-	public InternalPropnetMCTSManager createMCTSManager(){
+	public InternalPropnetMCTSManager createPropnetMCTSManager(){
 
 		Random r = new Random();
 
@@ -42,6 +43,17 @@ public class SingleGameSlowSUCTMCTSGamer extends UctMctsGamer{
 	       		new StandardBackpropagation(numRoles, myRole),	new MaximumScoreChoice(myRole, r),
 	       		null, null, new PnSlowSequentialTreeNodeFactory(this.thePropnetMachine, myRole),
 	       		this.thePropnetMachine,	this.gameStepOffset, this.maxSearchDepth, this.logTranspositionTable);
+	}
+
+	@Override
+	public ProverMCTSManager createProverMCTSManager(){
+
+
+		// ZZZ!
+
+		return null;
+
+
 	}
 
 }

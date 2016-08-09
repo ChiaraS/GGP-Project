@@ -17,6 +17,7 @@ import org.ggp.base.player.gamer.statemachine.MCTS.manager.propnet.strategies.pl
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.propnet.strategies.selection.UCTSelection;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.propnet.strategies.selection.evaluators.UCTEvaluator;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.propnet.treestructure.decoupled.PnDecoupledTreeNodeFactory;
+import org.ggp.base.player.gamer.statemachine.MCTS.manager.prover.ProverMCTSManager;
 import org.ggp.base.util.statemachine.inernalPropnetStructure.InternalPropnetMove;
 import org.ggp.base.util.statemachine.inernalPropnetStructure.InternalPropnetRole;
 
@@ -33,7 +34,7 @@ public class MastDuctMctsGamer extends DuctMctsGamer {
 	}
 
 	@Override
-	public InternalPropnetMCTSManager createMCTSManager(){
+	public InternalPropnetMCTSManager createPropnetMCTSManager(){
 
 		Random r = new Random();
 
@@ -60,6 +61,17 @@ public class MastDuctMctsGamer extends DuctMctsGamer {
 	       		new MASTAfterMove(mastStatistics, this.decayFactor),
 	       		new PnDecoupledTreeNodeFactory(this.thePropnetMachine),
 	       		this.thePropnetMachine, this.gameStepOffset, this.maxSearchDepth, this.logTranspositionTable);
+	}
+
+	@Override
+	public ProverMCTSManager createProverMCTSManager(){
+
+
+		// ZZZ!
+
+		return null;
+
+
 	}
 
 }

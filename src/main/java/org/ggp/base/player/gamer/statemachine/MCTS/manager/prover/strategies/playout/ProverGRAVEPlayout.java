@@ -10,7 +10,6 @@ public class ProverGRAVEPlayout extends ProverMemorizedStandardPlayout {
 
 	public ProverGRAVEPlayout(StateMachine theMachine, List<List<Move>> allJointMoves) {
 		super(theMachine, new ProverRandomJointMoveSelector(theMachine), allJointMoves);
-		// TODO Auto-generated constructor stub
 	}
 
 }

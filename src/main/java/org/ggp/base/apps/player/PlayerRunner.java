@@ -1,13 +1,14 @@
 package org.ggp.base.apps.player;
 
 import java.io.IOException;
-import java.lang.management.ManagementFactory;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
+import org.apache.logging.log4j.ThreadContext;
 import org.ggp.base.player.GamePlayer;
 import org.ggp.base.player.gamer.Gamer;
+import org.ggp.base.util.logging.GamerLogger;
 import org.ggp.base.util.reflection.ProjectSearcher;
 
 /**
@@ -17,6 +18,10 @@ import org.ggp.base.util.reflection.ProjectSearcher;
  */
 public final class PlayerRunner
 {
+	static{
+		System.setProperty("isThreadContextMapInheritable", "true");
+	}
+
 	public static void main(String[] args) throws IOException, InstantiationException, IllegalAccessException
 	{
 		if (args.length != 2 || args[0].equals("${arg0}")) {
@@ -40,9 +45,14 @@ public final class PlayerRunner
     		return;
     	}
     	Gamer gamer = (Gamer) chosenGamerClass.newInstance();
+
+    	ThreadContext.put("LOG_FOLDER", System.currentTimeMillis() + ".PlayerRunner");
+
+    	GamerLogger.startFileLogging();
+
 		new GamePlayer(port, gamer).start();
 
-		for(int i = 0; i < 30; i++){
+		/*for(int i = 0; i < 30; i++){
 			System.out.println("Threads ALL: " + ManagementFactory.getThreadMXBean().getThreadCount());
 			System.out.println("Threads ACTIVE: " + Thread.activeCount());
 			try {
@@ -51,6 +61,6 @@ public final class PlayerRunner
 				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
-		}
+		}*/
 	}
 }

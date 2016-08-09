@@ -70,12 +70,12 @@ public abstract class MctsGamer extends InternalPropnetGamer {
 		// For now the player can play only with the state machine based on the propnet.
 		// TODO: temporary solution! FIX!
 		// We throw an exception if the state machine based on the propnet couldn't be initialized.
-		if(this.thePropnetMachine == null){
-			throw new StateMachineException("Impossible to play without the state machine based on the propnet.");
-		}
+		//if(this.thePropnetMachine == null){
+		//	throw new StateMachineException("Impossible to play without the state machine based on the propnet.");
+		//}
 
 		long start = System.currentTimeMillis();
-		long realTimeout = timeout - this.safetyMargin;
+		long realTimeout = timeout - this.selectMoveSafetyMargin;
 		// Information to log at the end of metagame.
 		// As default value they are initialized with "-1". A value of "-1" for a parameter means that
 		// its value couldn't be computed (because there was no time or because of an error).
@@ -159,7 +159,7 @@ public abstract class MctsGamer extends InternalPropnetGamer {
 			GoalDefinitionException, StateMachineException {
 
 		long start = System.currentTimeMillis();
-		long realTimeout = timeout - this.safetyMargin;
+		long realTimeout = timeout - this.selectMoveSafetyMargin;
 
 		// Information to log at the end of move selection.
 		// As default value numeric parameters are initialized with "-1" and the others with "null".
@@ -273,7 +273,7 @@ public abstract class MctsGamer extends InternalPropnetGamer {
 	public void stateMachineAbort() {
 
 		this.mctsManager = null;
-		super.stateMachineStop();
+		super.stateMachineAbort();
 
 	}
 

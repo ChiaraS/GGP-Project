@@ -19,6 +19,7 @@ import org.ggp.base.player.gamer.statemachine.MCTS.manager.propnet.strategies.se
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.propnet.strategies.selection.evaluators.GRAVE.CADIABetaComputer;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.propnet.strategies.selection.evaluators.GRAVE.GRAVEEvaluator;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.propnet.treestructure.AMAFDecoupled.PnAMAFDecoupledTreeNodeFactory;
+import org.ggp.base.player.gamer.statemachine.MCTS.manager.prover.ProverMCTSManager;
 import org.ggp.base.player.gamer.statemachine.MCTS.propnet.MastDuctMctsGamer;
 import org.ggp.base.util.statemachine.inernalPropnetStructure.InternalPropnetMove;
 import org.ggp.base.util.statemachine.inernalPropnetStructure.InternalPropnetRole;
@@ -46,7 +47,7 @@ public abstract class GRMastDuctMctsGamer extends MastDuctMctsGamer {
 	}
 
 	@Override
-	public InternalPropnetMCTSManager createMCTSManager() {
+	public InternalPropnetMCTSManager createPropnetMCTSManager() {
 
 		Random r = new Random();
 
@@ -68,6 +69,17 @@ public abstract class GRMastDuctMctsGamer extends MastDuctMctsGamer {
 				new MaximumScoreChoice(myRole, r),	new GRAVEAfterSimulation(graveSelection, mastPlayout),
 				new MASTAfterMove(mastStatistics, this.decayFactor), new PnAMAFDecoupledTreeNodeFactory(this.thePropnetMachine),
 				this.thePropnetMachine,	this.gameStepOffset, this.maxSearchDepth, this.logTranspositionTable);
+	}
+
+	@Override
+	public ProverMCTSManager createProverMCTSManager(){
+
+
+		// ZZZ!
+
+		return null;
+
+
 	}
 
 }

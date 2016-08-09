@@ -21,6 +21,7 @@ import org.ggp.base.util.statemachine.cache.CachedStateMachine;
 import org.ggp.base.util.statemachine.cache.NoSyncRefactoredSeparateInternalPropnetCachedStateMachine;
 import org.ggp.base.util.statemachine.implementation.propnet.SeparateInternalPropnetStateMachine;
 import org.ggp.base.util.statemachine.implementation.prover.ProverStateMachine;
+import org.ggp.base.util.symbol.grammar.SymbolPool;
 
 /**
  * This gamer tries to use the state machine based on the internal propnet.
@@ -62,11 +63,17 @@ public abstract class InternalPropnetGamer extends StateMachineGamer {
     }
 
 	/**
+	 * The player must complete metagaming with by the time [timeout - safetyMargin(ms)]
+	 * to increase the certainty of answering to the Game Manager in time.
+	 */
+	protected long buildPnSafetyMargin;
+
+	/**
 	 * The player must complete the executions of methods with a timeout by the time
 	 * [timeout - safetyMargin(ms)] to increase the certainty of answering to the Game
 	 * Manager in time.
 	 */
-	protected long safetyMargin;
+	protected long selectMoveSafetyMargin;
 
 	/**
 	 * The personal reference to the propnet machine.
@@ -107,7 +114,8 @@ public abstract class InternalPropnetGamer extends StateMachineGamer {
 	 */
 	public InternalPropnetGamer() {
 		// TODO: change code so that the parameters can be set from outside.
-		this.safetyMargin = 10000L;
+		this.buildPnSafetyMargin = 5000L;
+		this.selectMoveSafetyMargin = 2000L;
 		this.thePropnetMachine = null;
 		this.propnetBuild = PROPNET_BUILD.ALWAYS;
 		this.firstTry = true;
@@ -221,7 +229,7 @@ public abstract class InternalPropnetGamer extends StateMachineGamer {
 	}
 
 	private InternalPropnetStateMachine createStateMachine(){
-		if(System.currentTimeMillis() < this.getMetagamingTimeout() - this.safetyMargin){
+		if(System.currentTimeMillis() < this.getMetagamingTimeout() - this.buildPnSafetyMargin){
 
 	        // Create the executor service that will run the propnet manager that creates the propnet
 	        ExecutorService executor = Executors.newSingleThreadExecutor();
@@ -238,7 +246,7 @@ public abstract class InternalPropnetGamer extends StateMachineGamer {
 
 			// Tell the executor to wait until the currently running task has completed execution or the timeout has elapsed.
 			try{
-				executor.awaitTermination(this.getMetagamingTimeout() - System.currentTimeMillis() - this.safetyMargin, TimeUnit.MILLISECONDS);
+				executor.awaitTermination(this.getMetagamingTimeout() - System.currentTimeMillis() - this.buildPnSafetyMargin, TimeUnit.MILLISECONDS);
 			}catch(InterruptedException e){ // The thread running the gamer has been interrupted => stop playing.
 				executor.shutdownNow(); // Interrupt everything
 				GamerLogger.logError("Gamer", "Gamer interrupted while computing initial propnet state machine: returning prover state machine.");
@@ -307,7 +315,13 @@ public abstract class InternalPropnetGamer extends StateMachineGamer {
 		// TODO: ATTENTION! You should add a different check here. The garbage collector can be called and the pool drained ONLY if there is just ONE player active in the whole program!
 		if(this.propnetBuild == PROPNET_BUILD.ALWAYS){
 			GdlPool.drainPool();
-			System.gc();
+		    SymbolPool.drainPool();
+
+		    long endGCTime = System.currentTimeMillis() + 3000;
+		    for (int ii = 0; ii < 1000 && System.currentTimeMillis() < endGCTime; ii++){
+		        System.gc();
+		        try {Thread.sleep(1);} catch (InterruptedException lEx) {/* Whatever */}
+		    }
 		}
 	}
 
@@ -318,8 +332,16 @@ public abstract class InternalPropnetGamer extends StateMachineGamer {
 	public void stateMachineAbort() {
 		// TODO: ATTENTION! You should add a different check here. The garbage collector can be called and the pool drained ONLY if there is just ONE player active in the whole program!
 		if(this.propnetBuild == PROPNET_BUILD.ALWAYS){
+
 			GdlPool.drainPool();
-			System.gc();
+		    SymbolPool.drainPool();
+
+		    long endGCTime = System.currentTimeMillis() + 3000;
+		    for (int ii = 0; ii < 1000 && System.currentTimeMillis() < endGCTime; ii++){
+		        System.gc();
+		        try {Thread.sleep(1);} catch (InterruptedException lEx) {/* Whatever */}
+		    }
+
 		}
 	}
 
