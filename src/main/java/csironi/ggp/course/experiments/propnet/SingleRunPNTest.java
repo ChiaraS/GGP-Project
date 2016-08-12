@@ -21,6 +21,7 @@ import org.ggp.base.util.propnet.creationManager.optimizationcallers.Optimizatio
 import org.ggp.base.util.propnet.creationManager.optimizationcallers.OptimizeAwayConstantValueComponents;
 import org.ggp.base.util.propnet.creationManager.optimizationcallers.OptimizeAwayConstants;
 import org.ggp.base.util.propnet.creationManager.optimizationcallers.RemoveAnonPropositions;
+import org.ggp.base.util.propnet.creationManager.optimizationcallers.RemoveDuplicateGates;
 import org.ggp.base.util.propnet.creationManager.optimizationcallers.RemoveOutputlessComponents;
 import org.ggp.base.util.propnet.state.ImmutableSeparatePropnetState;
 import org.ggp.base.util.statemachine.InternalPropnetStateMachine;
@@ -158,9 +159,26 @@ public class SingleRunPNTest {
 
     	File theCSVFile = new File(mainLogFolder + "/PropnetStatistics.csv");
 
+    	File theComponentsFile = new File(mainLogFolder + "/ComponentsStatistics.csv");
+
     	if(!theCSVFile.exists()){
     		ThreadContext.put("LOG_FOLDER", mainLogFolder);
     		GamerLogger.log(GamerLogger.FORMAT.CSV_FORMAT, "PropnetStatistics", "PropnetBuildingTime;TotalPropnetInitTime;NumComponents;NumLinks;NumConstants;NumAnds;NumOrs;NumNots;NumPropositions;NumInits;NumGoals;NumTerminals;NumInputs;NumLegals;NumOthers;NumBases;NumTransitions;MCSSearchDuration;MCSIterations;MCSVisitedNodes;MCSIterationsPerSecond;MCSNodesPerSecond;MCTSSearchDuration;MCTSIterations;MCTSVisitedNodes;MCTSIterationsPerSecond;MCTSNodesPerSecond;");
+    		ThreadContext.put("LOG_FOLDER",  myLogFolder);
+    	}
+
+    	if(!theComponentsFile.exists()){
+    		ThreadContext.put("LOG_FOLDER", mainLogFolder);
+
+    		String csvOptimizations = "InitComponents;";
+
+    		if(optimizations != null){
+	    		for(OptimizationCaller c : optimizations){
+	    			csvOptimizations += c.getClass().getSimpleName() + ";";
+	    		}
+    		}
+
+    		GamerLogger.log(GamerLogger.FORMAT.CSV_FORMAT, "ComponentsStatistics", csvOptimizations);
     		ThreadContext.put("LOG_FOLDER",  myLogFolder);
     	}
 
@@ -202,6 +220,9 @@ public class SingleRunPNTest {
 				case "3":
 					optimizations[i] = new RemoveOutputlessComponents();
 					break;
+				case "4":
+					optimizations[i] = new RemoveDuplicateGates();
+					break;
 				default:
 					throw new IllegalArgumentException();
 			}
@@ -232,6 +253,8 @@ public class SingleRunPNTest {
 		int numOthers = -1;
 		int numBases = -1;
 		int numTransitions = -1;
+
+		int[] componentsStats = null;
 
 		long mcsSearchDuration = -1;
         int mcsIterations = -1;
@@ -279,6 +302,8 @@ public class SingleRunPNTest {
 			numOthers = dynamicPropnet.getNumOthers();
 			numBases = dynamicPropnet.getNumBases();
 			numTransitions = dynamicPropnet.getNumTransitions();
+
+			componentsStats = manager.getComponentsStats();
 
 			collect(); // TODO: Leave or not?
 
@@ -429,6 +454,14 @@ public class SingleRunPNTest {
 				mcsVisitedNodes + ";" + mcsIterationsPerSecond + ";" + mcsNodesPerSecond + ";" +
 				mctsSearchDuration + ";" + mctsIterations + ";" + mctsVisitedNodes + ";" +
 				mctsIterationsPerSecond + ";" + mctsNodesPerSecond + ";");
+
+		String componentsNumber = "";
+
+		for(int i = 0; i < componentsStats.length; i++){
+			componentsNumber += componentsStats[i] + ";";
+		}
+
+		GamerLogger.log(GamerLogger.FORMAT.CSV_FORMAT, "ComponentsStatistics", componentsNumber);
 
 		ThreadContext.put("LOG_FOLDER",  myLogFolder);
 

@@ -5,6 +5,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -184,8 +185,8 @@ public class DynamicPropNetFactory {
 		/**
 		 * To use with the Orify and Andify methods that merge equivalent gates.
 		 */
-		//Map<Set<DynamicComponent>, DynamicOr> orMap = new HashMap<Set<DynamicComponent>, DynamicOr>();
-		//Map<Set<DynamicComponent>, DynamicAnd> andMap = new HashMap<Set<DynamicComponent>, DynamicAnd>();
+		Map<Set<DynamicComponent>, DynamicOr> orMap = new HashMap<Set<DynamicComponent>, DynamicOr>();
+		Map<Set<DynamicComponent>, DynamicAnd> andMap = new HashMap<Set<DynamicComponent>, DynamicAnd>();
 
 		for(SentenceForm form : topologicalOrdering) {
 			ConcurrencyUtils.checkForInterruption();
@@ -229,9 +230,12 @@ public class DynamicPropNetFactory {
 			/**
 			 * To use with the Orify and Andify methods that merge equivalent gates
 			 */
-			//addSentenceForm(form, model, components, negations, trueComponent, falseComponent, usingBase, usingInput, Collections.singleton(form), temporaryComponents, temporaryNegations, functionInfoMap, constantChecker, completedSentenceFormValues, orMap, andMap);
+			addSentenceForm(form, model, components, negations, trueComponent, falseComponent, usingBase, usingInput, Collections.singleton(form), temporaryComponents, temporaryNegations, functionInfoMap, constantChecker, completedSentenceFormValues, orMap, andMap);
 
-			addSentenceForm(form, model, components, negations, trueComponent, falseComponent, usingBase, usingInput, Collections.singleton(form), temporaryComponents, temporaryNegations, functionInfoMap, constantChecker, completedSentenceFormValues);
+			/**
+			 * To use with the Orify and Andify methods that don't merge equivalent gates
+			 */
+			//addSentenceForm(form, model, components, negations, trueComponent, falseComponent, usingBase, usingInput, Collections.singleton(form), temporaryComponents, temporaryNegations, functionInfoMap, constantChecker, completedSentenceFormValues);
 
 			//TODO: Pass these over groups of multiple sentence forms
 			if(verbose && !temporaryComponents.isEmpty())
@@ -253,8 +257,13 @@ public class DynamicPropNetFactory {
 		/**
 		 * To use with the Orify method that merge equivalent gates
 		 */
-		//setUpInit(components, trueComponent, falseComponent, orMap);
-		setUpInit(components, trueComponent, falseComponent);
+		setUpInit(components, trueComponent, falseComponent, orMap);
+
+		/**
+		 * To use with the Orify method that doesn't merge equivalent gates
+		 */
+		//setUpInit(components, trueComponent, falseComponent);
+
 		//Now we can safely...
 		removeUselessBasePropositions(components, negations, trueComponent, falseComponent);
 		if(verbose)
@@ -720,7 +729,7 @@ public class DynamicPropNetFactory {
 	//TODO: This can give problematic results if interpreted in
 	//the standard way (see test_case_3d)
 	private static void setUpInit(Map<GdlSentence, DynamicComponent> components,
-			DynamicConstant trueComponent, DynamicConstant falseComponent/*To use with the Orify and Andify methods that merge equivalent gates.//, Map<Set<DynamicComponent>, DynamicOr> orMap*/) {
+			DynamicConstant trueComponent, DynamicConstant falseComponent/*To use with the Orify and Andify methods that merge equivalent gates.*/, Map<Set<DynamicComponent>, DynamicOr> orMap) {
 		DynamicProposition initProposition = new DynamicProposition(GdlPool.getProposition(INIT_CAPS));
 		for(Entry<GdlSentence, DynamicComponent> entry : components.entrySet()) {
 			//Is this something that will be true?
@@ -760,9 +769,13 @@ public class DynamicPropNetFactory {
 						/**
 						 * To use with the Orify method that merges equivalent gates
 						 */
-						//orify(orInputs, transition, falseComponent, orMap);
+						orify(orInputs, transition, falseComponent, orMap);
 
-						orify(orInputs, transition, falseComponent);
+						/**
+						 * To use with the Orify method that doesn't merge equivalent gates
+						 */
+						//orify(orInputs, transition, falseComponent);
+
 						// @author c.sironi: Also set to TRUE that fact that the value of this transition
 						// depends on the INIT proposition value.
 						((DynamicTransition) transition).setDependingOnInit(true);
@@ -779,7 +792,6 @@ public class DynamicPropNetFactory {
 	 * Orify method that merges Or gates that have the same inputs.
 	 * NOTE: not sure if it works properly!
 	 */
-	/*
 	private static void orify(Set<DynamicComponent> inputs, DynamicComponent output, DynamicConstant falseProp, Map<Set<DynamicComponent>, DynamicOr> orMap) {
 		//TODO: Look for already-existing ors with the same inputs?
 		//Or can this be handled with a GDL transformation?
@@ -835,8 +847,6 @@ public class DynamicPropNetFactory {
 		or.addOutput(output);
 		output.addInput(or);
 	}
-	*/
-
 
 	/**
 	 * Adds an or gate connecting the inputs to produce the output.
@@ -845,6 +855,7 @@ public class DynamicPropNetFactory {
 	 * Orify method that doesn't merge OR gates that have the same inputs.
 	 *
 	 */
+	/*
 	private static void orify(Collection<DynamicComponent> inputs, DynamicComponent output, DynamicConstant falseProp) {
 		//TODO: Look for already-existing ors with the same inputs?
 		//Or can this be handled with a GDL transformation?
@@ -890,6 +901,7 @@ public class DynamicPropNetFactory {
 		or.addOutput(output);
 		output.addInput(or);
 	}
+	*/
 
 	//TODO: This code is currently used by multiple classes, so perhaps it should be
 	//factored out into the SentenceModel.
@@ -949,8 +961,8 @@ public class DynamicPropNetFactory {
 			Set<SentenceForm> recursionForms,
 			Map<GdlSentence, DynamicComponent> temporaryComponents, Map<GdlSentence, DynamicComponent> temporaryNegations,
 			Map<SentenceForm, FunctionInfo> functionInfoMap, ConstantChecker constantChecker,
-			Map<SentenceForm, Collection<GdlSentence>> completedSentenceFormValues/*To use with the Orify method that merges equivalent gates//,
-			Map<Set<DynamicComponent>, DynamicOr> orMap, Map<Set<DynamicComponent>, DynamicAnd> andMap*/) throws InterruptedException {
+			Map<SentenceForm, Collection<GdlSentence>> completedSentenceFormValues/*To use with the Orify method that merges equivalent gates*/,
+			Map<Set<DynamicComponent>, DynamicOr> orMap, Map<Set<DynamicComponent>, DynamicAnd> andMap) throws InterruptedException {
 		//This is the meat of it (along with the entire Assignments class).
 		//We need to enumerate the possible propositions in the sentence form...
 		//We also need to hook up the sentence form to the inputs that can make it true.
@@ -1153,9 +1165,12 @@ public class DynamicPropNetFactory {
 					/**
 					 * To use with the Andify method that merges equivalent gates
 					 */
-					//andify(componentsToConnect, andComponent, trueComponent, andMap);
+					andify(componentsToConnect, andComponent, trueComponent, andMap);
 
-					andify(componentsToConnect, andComponent, trueComponent);
+					/**
+					 * To use with the Andify method that doesn't merge equivalent gates
+					 */
+					//andify(componentsToConnect, andComponent, trueComponent);
 
 					if(!isThisConstant(andComponent, falseComponent)) {
 						if(!inputsToOr.containsKey(sentence))
@@ -1193,9 +1208,13 @@ public class DynamicPropNetFactory {
 			/**
 			 * To use with the Orify method that merges equivalent gates
 			 */
-			//orify(realInputs, prop, falseComponent, orMap);
+			orify(realInputs, prop, falseComponent, orMap);
 
-			orify(realInputs, prop, falseComponent);
+			/**
+			 * To use with the Orify method that doesn't merge equivalent gates
+			 */
+			//orify(realInputs, prop, falseComponent);
+
 			components.put(sentence, prop);
 		}
 
@@ -1259,11 +1278,8 @@ public class DynamicPropNetFactory {
 
 	/**
 	 * Andify method that merges AND gates that have the same inputs.
-	 * NOTE: it doesn't work properly! Some gates might get their input changed
-	 * if they have as input a gate that is removed, but the hasmap still indexes
-	 * them with the old inputs
+	 * NOTE: not sure if it works properly!
 	 */
-	/*
 	private static void andify(Set<DynamicComponent> inputs, DynamicComponent output, DynamicConstant trueProp, Map<Set<DynamicComponent>, DynamicAnd> andMap) {
 		//Special case: If the inputs include false, connect false to thisComponent
 		for(DynamicComponent c : inputs) {
@@ -1313,11 +1329,11 @@ public class DynamicPropNetFactory {
 		and.addOutput(output);
 		output.addInput(and);
 	}
-	*/
 
 	/**
 	 * Andify method that doesn't merge AND gates that have the same inputs.
 	 */
+	/*
 	private static void andify(Set<DynamicComponent> inputs, DynamicComponent output, DynamicConstant trueProp) {
 		//Special case: If the inputs include false, connect false to thisComponent
 		for(DynamicComponent c : inputs) {
@@ -1356,6 +1372,7 @@ public class DynamicPropNetFactory {
 		and.addOutput(output);
 		output.addInput(and);
 	}
+	*/
 
 
 	/**
@@ -1440,7 +1457,10 @@ public class DynamicPropNetFactory {
 
 	}
 
-	public static void optimizeAwayConstants(DynamicPropNet pn){
+	public static int optimizeAwayConstants(DynamicPropNet pn){
+
+		int initSize = pn.getSize();
+
 		DynamicConstant trueConstant = pn.getTrueConstant();
 		DynamicConstant falseConstant = pn.getFalseConstant();
 
@@ -1450,6 +1470,8 @@ public class DynamicPropNetFactory {
 		//System.out.println("After optimizing away constants propnet has " + pn.getLegalPropositions().size() + " LEGAL propositions.");
 		//System.out.println("After optimizing away constants propnet has " + pn.getInputPropositions().size() + " INPUT propositions.");
 		//System.out.println();
+
+		return pn.getSize() - initSize;
 	}
 
 
@@ -1476,7 +1498,9 @@ public class DynamicPropNetFactory {
 	 *
 	 * @param pn
 	 */
-	public static void removeAnonymousPropositions(DynamicPropNet pn){
+	public static int removeAnonymousPropositions(DynamicPropNet pn){
+
+		int initSize = pn.getSize();
 
 		List<DynamicProposition> toRemove = new ArrayList<DynamicProposition>();
 
@@ -1509,6 +1533,8 @@ public class DynamicPropNetFactory {
 		//System.out.println("After removing anonymous propositions propnet has " + pn.getLegalPropositions().size() + " LEGAL propositions.");
 		//System.out.println("After removing anonymous propositions propnet has " + pn.getInputPropositions().size() + " INPUT propositions.");
 		//System.out.println();
+
+		return pn.getSize() - initSize;
 	}
 
 	/**
@@ -1630,7 +1656,9 @@ public class DynamicPropNetFactory {
 	 * @param pn
 	 * @throws InterruptedException
 	 */
-	public static void optimizeAwayConstantValueComponents(DynamicPropNet pn) throws InterruptedException{
+	public static int optimizeAwayConstantValueComponents(DynamicPropNet pn) throws InterruptedException{
+
+		int initSize = pn.getSize();
 
 		DynamicConstant trueConstant = pn.getTrueConstant();
 		DynamicConstant falseConstant = pn.getFalseConstant();
@@ -1828,6 +1856,8 @@ public class DynamicPropNetFactory {
 		//System.out.println();
 
 	    optimizeAwayTrueAndFalse2(pn, trueConstant, falseConstant);
+
+	    return pn.getSize() - initSize;
 	}
 
 	/**
@@ -1835,7 +1865,9 @@ public class DynamicPropNetFactory {
 	 *
 	 * @param pn
 	 */
-	public static void removeOutputlessComponents(DynamicPropNet pn){
+	public static int removeOutputlessComponents(DynamicPropNet pn){
+
+		int initSize = pn.getSize();
 
 		Set<DynamicComponent> toCheckNow = new HashSet<DynamicComponent>(pn.getComponents());
 		Set<DynamicComponent> toCheckNext;
@@ -1878,6 +1910,8 @@ public class DynamicPropNetFactory {
 		//System.out.println("After removing outputless components propnet has " + pn.getLegalPropositions().size() + " LEGAL propositions.");
 		//System.out.println("After removing outputless components propnet has " + pn.getInputPropositions().size() + " INPUT propositions.");
 		//System.out.println();
+
+		return pn.getSize() - initSize;
 	}
 
 	/**
@@ -2385,7 +2419,9 @@ public class DynamicPropNetFactory {
 	 * @return true if the propnet has been modified
 	 *
 	 */
-	public static boolean removeDuplicateGates(DynamicPropNet pn){
+	public static int removeDuplicateGates(DynamicPropNet pn){
+
+		int initSize = pn.getSize();
 
 		Map<Set<DynamicComponent>, DynamicOr> orMap = new HashMap<Set<DynamicComponent>, DynamicOr>();
 		Map<Set<DynamicComponent>, DynamicAnd> andMap = new HashMap<Set<DynamicComponent>, DynamicAnd>();
@@ -2512,7 +2548,7 @@ public class DynamicPropNetFactory {
 			pn.removeComponent(c);
 		}
 
-		return !toRemove.isEmpty();
+		return initSize;
 	}
 
 	/**
@@ -2523,7 +2559,9 @@ public class DynamicPropNetFactory {
 	 * @param pn
 	 * @return true if the propnet has been modified
 	 */
-	public static boolean simplifyLogicComponents(DynamicPropNet pn){
+	public static int simplifyLogicGates(DynamicPropNet pn){
+
+		int initSize = pn.getSize();
 
 		List<DynamicComponent> toRemove = new ArrayList<DynamicComponent>();
 
@@ -2616,7 +2654,7 @@ public class DynamicPropNetFactory {
 			pn.removeComponent(c);
 		}
 
-		return !toRemove.isEmpty();
+		return initSize;
 	}
 
 	public static boolean checkPropnetStructure(DynamicPropNet pn){

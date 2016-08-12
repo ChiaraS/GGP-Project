@@ -70,6 +70,11 @@ public class SeparateInternalPropnetManager extends Thread{
 	private long totalInitTime;
 
 	/**
+	 * Array that lists the number of components after the creation of the propnet and after performing each optimization.
+	 */
+	private int[] componentsStats;
+
+	/**
 	 * Essential propnet structure to be used in the game playing phase by the state
 	 * machine. Cannot be modified and leaves as visible to the state machine only
 	 * the strictly necessary components that it needs to reason on the game.
@@ -105,6 +110,12 @@ public class SeparateInternalPropnetManager extends Thread{
 		}else{
 			this.optimizations = optimizations;
 		}
+
+		this.componentsStats = new int[optimizations.length+1];
+
+		for(int i = 0; i < componentsStats.length; i++){
+			componentsStats[i] = -1;
+		}
 	}
 
 	@Override
@@ -135,6 +146,8 @@ public class SeparateInternalPropnetManager extends Thread{
     	// Compute the time taken to construct the propnet
     	this.propNetConstructionTime = System.currentTimeMillis() - startTime;
 		GamerLogger.log("PropnetManager", "[Propnet Creator] Propnet creation done. It took " + this.propNetConstructionTime + "ms.");
+
+		this.componentsStats[0] = this.dynamicPropNet.getSize();
 
 
 		//System.out.println(this.dynamicPropNet.toString());
@@ -272,11 +285,15 @@ public class SeparateInternalPropnetManager extends Thread{
 
 			GamerLogger.log("PropnetManager", "Performing optimizations.");
 
+			int i = 1;
+
 			for(OptimizationCaller caller : this.optimizations){
 				try {
 					GamerLogger.log("PropnetManager", "Starting optimization " + caller.getClass().getSimpleName() + ".");
 					caller.optimize(this.dynamicPropNet);
 					GamerLogger.log("PropnetManager", "Ended optimization " + caller.getClass().getSimpleName() + ".");
+					this.componentsStats[i] = this.dynamicPropNet.getSize();
+					i++;
 				} catch (InterruptedException e) {
 					GamerLogger.logError("PropnetManager", "Propnet optimization " + caller.getClass().getSimpleName() + " interrupted!");
 		    		GamerLogger.logStackTrace("PropnetManager", e);
@@ -570,6 +587,10 @@ public class SeparateInternalPropnetManager extends Thread{
 
 	public DynamicPropNet getDynamicPropnet(){
 		return this.dynamicPropNet;
+	}
+
+	public int[] getComponentsStats(){
+		return this.componentsStats;
 	}
 
 }

@@ -18,6 +18,7 @@ import org.ggp.base.util.propnet.creationManager.optimizationcallers.OptimizeAwa
 import org.ggp.base.util.propnet.creationManager.optimizationcallers.RemoveAnonPropositions;
 import org.ggp.base.util.propnet.creationManager.optimizationcallers.RemoveDuplicateGates;
 import org.ggp.base.util.propnet.creationManager.optimizationcallers.RemoveOutputlessComponents;
+import org.ggp.base.util.propnet.creationManager.optimizationcallers.SimplifyLogicGates;
 import org.ggp.base.util.propnet.state.ImmutableSeparatePropnetState;
 import org.ggp.base.util.statemachine.StateMachine;
 import org.ggp.base.util.statemachine.cache.SeparateInternalPropnetCachedStateMachine;
@@ -50,6 +51,7 @@ import org.ggp.base.util.statemachine.implementation.prover.ProverStateMachine;
 *  						2 = OptimizeAwayConstantValueComponents
 *  						3 = RemoveOutputlessComponents
 *  						4 = RemoveDuplicateGates
+*  						5 = SimplifyLogicGates
 *  					  The optimizations to be performed must be specified with their corresponding numbers,
 *  					  separated by "-", in the order we want the manager to perform them (e.g. the input "0-1-2-3"
 *  					  will make the manager perform optimization 0, followed by optimization 1, followed by
@@ -152,6 +154,10 @@ public class SeparatePropnetVerifier {
 
 	    GameRepository theRepository = GameRepository.getDefaultRepository();
 
+		// WINDOWS
+		//GameRepository theRepository = new ManualUpdateLocalGameRepository("C:/Users/c.sironi/\"BITBUCKET REPOS\"/GGP-Base/GGPBase-GameRepo-03022016");
+
+		// LINUX
 	    //GameRepository theRepository = new ManualUpdateLocalGameRepository("/home/csironi/GAMEREPOS/GGPBase-GameRepo-03022016");
 
 	    for(String gameKey : theRepository.getGameKeys()) {
@@ -277,6 +283,9 @@ public class SeparatePropnetVerifier {
 					break;
 				case "4":
 					optimizations[i] = new RemoveDuplicateGates();
+					break;
+				case "5":
+					optimizations[i] = new SimplifyLogicGates();
 					break;
 				default:
 					throw new IllegalArgumentException();

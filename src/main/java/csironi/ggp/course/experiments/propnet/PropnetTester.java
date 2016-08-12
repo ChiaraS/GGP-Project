@@ -202,7 +202,7 @@ public class PropnetTester {
 
 				pb.command().set(4, singleRunFolder);
 
-				System.out.println(pb.command());
+				//System.out.println(pb.command());
 
 				pb.redirectOutput(logFile);
 				pb.redirectError(logFile);
