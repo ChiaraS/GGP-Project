@@ -180,6 +180,13 @@ public class DynamicPropNetFactory {
 		DynamicConstant falseComponent = new DynamicConstant(false);
 		Map<SentenceForm, FunctionInfo> functionInfoMap = new HashMap<SentenceForm, FunctionInfo>();
 		Map<SentenceForm, Collection<GdlSentence>> completedSentenceFormValues = new HashMap<SentenceForm, Collection<GdlSentence>>();
+
+		/**
+		 * To use with the Orify and Andify methods that merge equivalent gates.
+		 */
+		//Map<Set<DynamicComponent>, DynamicOr> orMap = new HashMap<Set<DynamicComponent>, DynamicOr>();
+		//Map<Set<DynamicComponent>, DynamicAnd> andMap = new HashMap<Set<DynamicComponent>, DynamicAnd>();
+
 		for(SentenceForm form : topologicalOrdering) {
 			ConcurrencyUtils.checkForInterruption();
 
@@ -218,7 +225,14 @@ public class DynamicPropNetFactory {
 			//Add a temporary sentence form thingy? ...
 			Map<GdlSentence, DynamicComponent> temporaryComponents = new HashMap<GdlSentence, DynamicComponent>();
 			Map<GdlSentence, DynamicComponent> temporaryNegations = new HashMap<GdlSentence, DynamicComponent>();
+
+			/**
+			 * To use with the Orify and Andify methods that merge equivalent gates
+			 */
+			//addSentenceForm(form, model, components, negations, trueComponent, falseComponent, usingBase, usingInput, Collections.singleton(form), temporaryComponents, temporaryNegations, functionInfoMap, constantChecker, completedSentenceFormValues, orMap, andMap);
+
 			addSentenceForm(form, model, components, negations, trueComponent, falseComponent, usingBase, usingInput, Collections.singleton(form), temporaryComponents, temporaryNegations, functionInfoMap, constantChecker, completedSentenceFormValues);
+
 			//TODO: Pass these over groups of multiple sentence forms
 			if(verbose && !temporaryComponents.isEmpty())
 				System.out.println("Processing temporary components...");
@@ -235,6 +249,11 @@ public class DynamicPropNetFactory {
 		//Set up "init" proposition
 		if(verbose)
 			System.out.println("Setting up 'init' proposition...");
+
+		/**
+		 * To use with the Orify method that merge equivalent gates
+		 */
+		//setUpInit(components, trueComponent, falseComponent, orMap);
 		setUpInit(components, trueComponent, falseComponent);
 		//Now we can safely...
 		removeUselessBasePropositions(components, negations, trueComponent, falseComponent);
@@ -701,7 +720,7 @@ public class DynamicPropNetFactory {
 	//TODO: This can give problematic results if interpreted in
 	//the standard way (see test_case_3d)
 	private static void setUpInit(Map<GdlSentence, DynamicComponent> components,
-			DynamicConstant trueComponent, DynamicConstant falseComponent) {
+			DynamicConstant trueComponent, DynamicConstant falseComponent/*To use with the Orify and Andify methods that merge equivalent gates.//, Map<Set<DynamicComponent>, DynamicOr> orMap*/) {
 		DynamicProposition initProposition = new DynamicProposition(GdlPool.getProposition(INIT_CAPS));
 		for(Entry<GdlSentence, DynamicComponent> entry : components.entrySet()) {
 			//Is this something that will be true?
@@ -734,9 +753,15 @@ public class DynamicPropNetFactory {
 						//input and init go into or, or goes into transition
 						input.removeOutput(transition);
 						transition.removeInput(input);
-						List<DynamicComponent> orInputs = new ArrayList<DynamicComponent>(2);
+						Set<DynamicComponent> orInputs = new HashSet<DynamicComponent>(2);
 						orInputs.add(input);
 						orInputs.add(initProposition);
+
+						/**
+						 * To use with the Orify method that merges equivalent gates
+						 */
+						//orify(orInputs, transition, falseComponent, orMap);
+
 						orify(orInputs, transition, falseComponent);
 						// @author c.sironi: Also set to TRUE that fact that the value of this transition
 						// depends on the INIT proposition value.
@@ -747,13 +772,78 @@ public class DynamicPropNetFactory {
 		}
 	}
 
+	/**
+	 * Adds an or gate connecting the inputs to produce the output.
+	 * Handles special optimization cases like a true/false input.
+	 *
+	 * Orify method that merges Or gates that have the same inputs.
+	 * NOTE: not sure if it works properly!
+	 */
+	/*
+	private static void orify(Set<DynamicComponent> inputs, DynamicComponent output, DynamicConstant falseProp, Map<Set<DynamicComponent>, DynamicOr> orMap) {
+		//TODO: Look for already-existing ors with the same inputs?
+		//Or can this be handled with a GDL transformation?
 
+		//Special case: An input is the true constant
+		for(DynamicComponent in : inputs) {
+			if(in instanceof DynamicConstant && ((DynamicConstant) in).getValue()) {
+				//True constant: connect that to the component, done
+				in.addOutput(output);
+				output.addInput(in);
+				return;
+			}
+		}
 
+		//Special case: An input is "or"
+		//I'm honestly not sure how to handle special cases here...
+		//What if that "or" gate has multiple outputs? Could that happen?
+
+		//Remove any false constant
+		Iterator<DynamicComponent> iter = inputs.iterator();
+		while(iter.hasNext()){
+			if(iter.next() instanceof DynamicConstant){
+				iter.remove();
+			}
+		}
+
+		// If inputs now is empty, connect the output to false.
+		if(inputs.isEmpty()){
+			falseProp.addOutput(output);
+			output.addInput(falseProp);
+			return;
+		}
+
+		//If there's just one input, on the other hand, don't use the or gate.
+		if(inputs.size() == 1) {
+			DynamicComponent in = inputs.iterator().next();
+			in.addOutput(output);
+			output.addInput(in);
+			return;
+		}
+
+		DynamicOr or = orMap.get(inputs);
+
+		if(or == null){
+			or = new DynamicOr();
+			for(DynamicComponent in : inputs){
+				or.addInput(in);
+				in.addOutput(or);
+			}
+			orMap.put(inputs, or);
+		}
+
+		or.addOutput(output);
+		output.addInput(or);
+	}
+	*/
 
 
 	/**
 	 * Adds an or gate connecting the inputs to produce the output.
 	 * Handles special optimization cases like a true/false input.
+	 *
+	 * Orify method that doesn't merge OR gates that have the same inputs.
+	 *
 	 */
 	private static void orify(Collection<DynamicComponent> inputs, DynamicComponent output, DynamicConstant falseProp) {
 		//TODO: Look for already-existing ors with the same inputs?
@@ -800,10 +890,6 @@ public class DynamicPropNetFactory {
 		or.addOutput(output);
 		output.addInput(or);
 	}
-
-
-
-
 
 	//TODO: This code is currently used by multiple classes, so perhaps it should be
 	//factored out into the SentenceModel.
@@ -863,7 +949,8 @@ public class DynamicPropNetFactory {
 			Set<SentenceForm> recursionForms,
 			Map<GdlSentence, DynamicComponent> temporaryComponents, Map<GdlSentence, DynamicComponent> temporaryNegations,
 			Map<SentenceForm, FunctionInfo> functionInfoMap, ConstantChecker constantChecker,
-			Map<SentenceForm, Collection<GdlSentence>> completedSentenceFormValues) throws InterruptedException {
+			Map<SentenceForm, Collection<GdlSentence>> completedSentenceFormValues/*To use with the Orify method that merges equivalent gates//,
+			Map<Set<DynamicComponent>, DynamicOr> orMap, Map<Set<DynamicComponent>, DynamicAnd> andMap*/) throws InterruptedException {
 		//This is the meat of it (along with the entire Assignments class).
 		//We need to enumerate the possible propositions in the sentence form...
 		//We also need to hook up the sentence form to the inputs that can make it true.
@@ -934,7 +1021,7 @@ public class DynamicPropNetFactory {
 				GdlSentence sentence = CommonTransforms.replaceVariables(rule.getHead(), assignment);
 
 				//Now we go through the conjuncts as before, but we wait to hook them up.
-				List<DynamicComponent> componentsToConnect = new ArrayList<DynamicComponent>(rule.arity());
+				Set<DynamicComponent> componentsToConnect = new HashSet<DynamicComponent>(rule.arity());
 				for(GdlLiteral literal : rule.getBody()) {
 					if(literal instanceof GdlSentence) {
 						//Get the sentence post-substitutions
@@ -1063,7 +1150,13 @@ public class DynamicPropNetFactory {
 					//Connect all the components
 					DynamicProposition andComponent = new DynamicProposition(TEMP);
 
+					/**
+					 * To use with the Andify method that merges equivalent gates
+					 */
+					//andify(componentsToConnect, andComponent, trueComponent, andMap);
+
 					andify(componentsToConnect, andComponent, trueComponent);
+
 					if(!isThisConstant(andComponent, falseComponent)) {
 						if(!inputsToOr.containsKey(sentence))
 							inputsToOr.put(sentence, new HashSet<DynamicComponent>());
@@ -1096,6 +1189,12 @@ public class DynamicPropNetFactory {
 			}
 
 			DynamicProposition prop = new DynamicProposition(sentence);
+
+			/**
+			 * To use with the Orify method that merges equivalent gates
+			 */
+			//orify(realInputs, prop, falseComponent, orMap);
+
 			orify(realInputs, prop, falseComponent);
 			components.put(sentence, prop);
 		}
@@ -1158,7 +1257,68 @@ public class DynamicPropNetFactory {
 
 
 
-	private static void andify(List<DynamicComponent> inputs, DynamicComponent output, DynamicConstant trueProp) {
+	/**
+	 * Andify method that merges AND gates that have the same inputs.
+	 * NOTE: it doesn't work properly! Some gates might get their input changed
+	 * if they have as input a gate that is removed, but the hasmap still indexes
+	 * them with the old inputs
+	 */
+	/*
+	private static void andify(Set<DynamicComponent> inputs, DynamicComponent output, DynamicConstant trueProp, Map<Set<DynamicComponent>, DynamicAnd> andMap) {
+		//Special case: If the inputs include false, connect false to thisComponent
+		for(DynamicComponent c : inputs) {
+			if(c instanceof DynamicConstant && !((DynamicConstant)c).getValue()) {
+				//Connect false (c) to the output
+				output.addInput(c);
+				c.addOutput(output);
+				return;
+			}
+		}
+
+		//Remove any true constant
+		Iterator<DynamicComponent> iter = inputs.iterator();
+		while(iter.hasNext()){
+			if(iter.next() instanceof DynamicConstant){
+				iter.remove();
+			}
+		}
+
+		// If inputs now is empty, connect the output to true.
+		if(inputs.isEmpty()){
+			trueProp.addOutput(output);
+			output.addInput(trueProp);
+			return;
+		}
+
+		//If there's just one input, on the other hand, don't use the and gate.
+		if(inputs.size() == 1) {
+			DynamicComponent in = inputs.iterator().next();
+			in.addOutput(output);
+			output.addInput(in);
+			return;
+		}
+
+
+		DynamicAnd and = andMap.get(inputs);
+
+		if(and == null){
+			and = new DynamicAnd();
+			for(DynamicComponent in : inputs){
+				and.addInput(in);
+				in.addOutput(and);
+			}
+			andMap.put(inputs, and);
+		}
+
+		and.addOutput(output);
+		output.addInput(and);
+	}
+	*/
+
+	/**
+	 * Andify method that doesn't merge AND gates that have the same inputs.
+	 */
+	private static void andify(Set<DynamicComponent> inputs, DynamicComponent output, DynamicConstant trueProp) {
 		//Special case: If the inputs include false, connect false to thisComponent
 		for(DynamicComponent c : inputs) {
 			if(c instanceof DynamicConstant && !((DynamicConstant)c).getValue()) {
@@ -2213,6 +2373,251 @@ public class DynamicPropNetFactory {
 		return toCheckF;
 	}
 
+
+	/**
+	 * This optimization checks if there are gates with the same inputs (and thus that compute the same logic)
+	 * and merges them into one single gate.
+	 * NOTE: this optimization can (and should) be applied multiple times. Running it multiple times might lead
+	 * to further reduction of the PropNet. Also, performing other optimizations might cause this optimization
+	 * to be able to remove more components.
+	 *
+	 * @param pn
+	 * @return true if the propnet has been modified
+	 *
+	 */
+	public static boolean removeDuplicateGates(DynamicPropNet pn){
+
+		Map<Set<DynamicComponent>, DynamicOr> orMap = new HashMap<Set<DynamicComponent>, DynamicOr>();
+		Map<Set<DynamicComponent>, DynamicAnd> andMap = new HashMap<Set<DynamicComponent>, DynamicAnd>();
+
+		Set<DynamicComponent> toCheck = pn.getComponents();
+
+		Set<DynamicComponent> toCheckNext = new HashSet<DynamicComponent>();
+
+		List<DynamicComponent> toRemove = new ArrayList<DynamicComponent>();
+
+		Set<DynamicComponent> inputs = null;
+
+		while(!toCheck.isEmpty()){
+			for(DynamicComponent c : toCheck){
+
+				if(c instanceof DynamicAnd){
+
+					inputs = c.getInputs();
+
+					// No inputs => this gate has already been disconnected from the propnet
+					// Only check gates that have inputs
+					if(inputs != null && !inputs.isEmpty()){
+
+						// If the gate has inputs, check if we have already found a gate with the same inputs
+						DynamicAnd theAndGate = andMap.get(inputs);
+
+						if(theAndGate != null){ // We found an equivalent gate
+
+							// Disconnect all inputs from c
+							for(DynamicComponent i : inputs){
+								i.removeOutput(c);
+							}
+							c.removeAllInputs();
+
+							// Disconnect all outputs from c and connect them to the equivalent AND gate
+							for(DynamicComponent o : c.getOutputs()){
+
+								// If the output is an AND or an OR gate, it might have been already indexed in the
+								// corresponding table with an input set that contains the gate that's being removed.
+								// If so we must remove the entry and check the gate again (now it might be equivalent
+								// to some other gate). We do so in a subsequent iteration.
+								if(o instanceof DynamicAnd){
+									if(andMap.get(o.getInputs()) == o){
+										andMap.remove(o.getInputs());
+										toCheckNext.add(o);
+									}
+								}else if(o instanceof DynamicOr){
+									if(orMap.get(o.getInputs()) == o){
+										orMap.remove(o.getInputs());
+										toCheckNext.add(o);
+									}
+								}
+								o.removeInput(c);
+								o.addInput(theAndGate);
+								theAndGate.addOutput(o);
+							}
+							c.removeAllOutputs();
+
+							toRemove.add(c);
+
+						}else{
+							andMap.put(inputs, (DynamicAnd)c);
+						}
+					}
+				}else if(c instanceof DynamicOr){
+
+					inputs = c.getInputs();
+
+					// No inputs => this gate has already been disconnected from the propnet
+					// Only check gates that have inputs
+					if(inputs != null && !inputs.isEmpty()){
+
+						// If the gate has inputs, check if we have already found a gate with the same inputs
+						DynamicOr theOrGate = orMap.get(inputs);
+
+						if(theOrGate != null){ // We found an equivalent gate
+
+							// Disconnect all inputs from c
+							for(DynamicComponent i : inputs){
+								i.removeOutput(c);
+							}
+							c.removeAllInputs();
+
+							// Disconnect all outputs from c and connect them to the equivalent OR gate
+							for(DynamicComponent o : c.getOutputs()){
+
+								// If the output is an AND or an OR gate, it might have been already indexed in the
+								// corresponding table with an input set that contains the gate that's being removed.
+								// If so we must remove the entry and check the gate again (now it might be equivalent
+								// to some other gate). We do so in a subsequent iteration.
+								if(o instanceof DynamicAnd){
+									if(andMap.get(o.getInputs()) == o){
+										andMap.remove(o.getInputs());
+										toCheckNext.add(o);
+									}
+
+								}else if(o instanceof DynamicOr){
+									if(orMap.get(o.getInputs()) == o){
+										orMap.remove(o.getInputs());
+										toCheckNext.add(o);
+									}
+								}
+
+								o.removeInput(c);
+								o.addInput(theOrGate);
+								theOrGate.addOutput(o);
+							}
+							c.removeAllOutputs();
+
+							toRemove.add(c);
+
+						}else{
+							orMap.put(inputs, (DynamicOr)c);
+						}
+					}
+				}
+			}
+
+			toCheck = toCheckNext;
+			toCheckNext = new HashSet<DynamicComponent>();
+		}
+
+		for(DynamicComponent c : toRemove){
+			pn.removeComponent(c);
+		}
+
+		return !toRemove.isEmpty();
+	}
+
+	/**
+	 * This optimizations looks for OR (AND) gates that have as input other OR (AND) gates.
+	 * If such input gates have no other outputs, they can be removed after connecting their
+	 * inputs directly to the considered OR (AND) gate.
+	 *
+	 * @param pn
+	 * @return true if the propnet has been modified
+	 */
+	public static boolean simplifyLogicComponents(DynamicPropNet pn){
+
+		List<DynamicComponent> toRemove = new ArrayList<DynamicComponent>();
+
+		Set<DynamicComponent> inputsToCheck = null;
+		Set<DynamicComponent> inputsToCheckNext = null;
+
+
+		for(DynamicComponent c : pn.getComponents()){
+
+			if(c instanceof DynamicAnd){
+
+				inputsToCheck = c.getInputs();
+				inputsToCheckNext = new HashSet<DynamicComponent>();
+
+				// No inputs => this gate has already been disconnected from the propnet
+				// Only check gates that have inputs
+				while(!inputsToCheck.isEmpty()){
+
+					// If the AND gate has inputs, check if there are other ANDs in its inputs.
+					for(DynamicComponent i : inputsToCheck){
+
+						// If we find an AND gate and this gate has no other output...
+						// Note that we also checked if the gate has itself as input/output. In this case we do nothing.
+						// This special case might happen since we don't ever make sure that it won't happen when optimizing
+						// the propnet.
+						if(i instanceof DynamicAnd && i != c && i.getOutputs().size() == 1 && i.getSingleOutput() == c){
+
+							// ...we can connect its outputs directly to the main AND gate
+							for(DynamicComponent ii : i.getInputs()){
+								ii.removeOutput(i);
+								ii.addOutput(c);
+								if(c.addInput(ii)){
+									inputsToCheckNext.add(ii);
+								}
+							}
+							i.removeAllInputs();
+
+							c.removeInput(i);
+							i.removeAllOutputs();
+
+							toRemove.add(i);
+						}
+					}
+
+					inputsToCheck = inputsToCheckNext;
+					inputsToCheckNext = new HashSet<DynamicComponent>();
+				}
+			}else if(c instanceof DynamicOr){
+
+				inputsToCheck = c.getInputs();
+				inputsToCheckNext = new HashSet<DynamicComponent>();
+
+				// No inputs => this gate has already been disconnected from the propnet
+				// Only check gates that have inputs
+				while(!inputsToCheck.isEmpty()){
+
+					// If the OR gate has inputs, check if there are other ORs in its inputs.
+					for(DynamicComponent i : inputsToCheck){
+
+						// If we find an OR gate and this gate has no other output...
+						// Note that we also checked if the gate has itself as input/output. In this case we do nothing.
+						// This special case might happen since we don't ever make sure that it won't happen when optimizing
+						// the propnet.
+						if(i instanceof DynamicOr && i != c && i.getOutputs().size() == 1 && i.getSingleOutput() == c){
+
+							// ...we can connect its outputs directly to the main OR gate
+							for(DynamicComponent ii : i.getInputs()){
+								ii.removeOutput(i);
+								ii.addOutput(c);
+								if(c.addInput(ii)){
+									inputsToCheckNext.add(ii);
+								}
+							}
+							i.removeAllInputs();
+
+							c.removeInput(i);
+							i.removeAllOutputs();
+
+							toRemove.add(i);
+						}
+					}
+
+					inputsToCheck = inputsToCheckNext;
+					inputsToCheckNext = new HashSet<DynamicComponent>();
+				}
+			}
+		}
+
+		for(DynamicComponent c : toRemove){
+			pn.removeComponent(c);
+		}
+
+		return !toRemove.isEmpty();
+	}
 
 	public static boolean checkPropnetStructure(DynamicPropNet pn){
 

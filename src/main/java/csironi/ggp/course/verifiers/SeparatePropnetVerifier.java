@@ -4,7 +4,6 @@ import java.util.List;
 
 import org.apache.logging.log4j.ThreadContext;
 import org.ggp.base.util.game.GameRepository;
-import org.ggp.base.util.game.ManualUpdateLocalGameRepository;
 import org.ggp.base.util.gdl.grammar.Gdl;
 import org.ggp.base.util.gdl.grammar.GdlPool;
 import org.ggp.base.util.logging.GamerLogger;
@@ -17,6 +16,7 @@ import org.ggp.base.util.propnet.creationManager.optimizationcallers.Optimizatio
 import org.ggp.base.util.propnet.creationManager.optimizationcallers.OptimizeAwayConstantValueComponents;
 import org.ggp.base.util.propnet.creationManager.optimizationcallers.OptimizeAwayConstants;
 import org.ggp.base.util.propnet.creationManager.optimizationcallers.RemoveAnonPropositions;
+import org.ggp.base.util.propnet.creationManager.optimizationcallers.RemoveDuplicateGates;
 import org.ggp.base.util.propnet.creationManager.optimizationcallers.RemoveOutputlessComponents;
 import org.ggp.base.util.propnet.state.ImmutableSeparatePropnetState;
 import org.ggp.base.util.statemachine.StateMachine;
@@ -49,6 +49,7 @@ import org.ggp.base.util.statemachine.implementation.prover.ProverStateMachine;
 *  						1 = RemoveAnonPropositions
 *  						2 = OptimizeAwayConstantValueComponents
 *  						3 = RemoveOutputlessComponents
+*  						4 = RemoveDuplicateGates
 *  					  The optimizations to be performed must be specified with their corresponding numbers,
 *  					  separated by "-", in the order we want the manager to perform them (e.g. the input "0-1-2-3"
 *  					  will make the manager perform optimization 0, followed by optimization 1, followed by
@@ -149,9 +150,9 @@ public class SeparatePropnetVerifier {
 
 	    GamerLogger.log(FORMAT.CSV_FORMAT, "SeparatePropnetVerifierTable", "Game key;PN initialization time (ms);PN construction time (ms);SM initialization time;Rounds;Completed rounds;Test duration (ms);Subject exception;Other exceptions;Pass;");
 
-	    //GameRepository theRepository = GameRepository.getDefaultRepository();
+	    GameRepository theRepository = GameRepository.getDefaultRepository();
 
-	    GameRepository theRepository = new ManualUpdateLocalGameRepository("/home/csironi/GAMEREPOS/GGPBase-GameRepo-03022016");
+	    //GameRepository theRepository = new ManualUpdateLocalGameRepository("/home/csironi/GAMEREPOS/GGPBase-GameRepo-03022016");
 
 	    for(String gameKey : theRepository.getGameKeys()) {
 	        if(gameKey.contains("laikLee")) continue;
@@ -273,6 +274,9 @@ public class SeparatePropnetVerifier {
 					break;
 				case "3":
 					optimizations[i] = new RemoveOutputlessComponents();
+					break;
+				case "4":
+					optimizations[i] = new RemoveDuplicateGates();
 					break;
 				default:
 					throw new IllegalArgumentException();

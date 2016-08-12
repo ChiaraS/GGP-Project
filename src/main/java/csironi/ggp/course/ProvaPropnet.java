@@ -66,9 +66,9 @@ public class ProvaPropnet {
 
 	public static void main(String []args) throws MoveDefinitionException, TransitionDefinitionException, GoalDefinitionException, StateMachineInitializationException{
 
-		//printOptPropnet("( ( role player ) ( light p ) ( light q ) ( <= ( legal player ( turnOn ?x ) ) ( not ( true ( on ?x ) ) ) ( light ?x ) ) ( <= ( next ( on ?x ) ) ( does player ( turnOn ?x ) ) ) ( <= ( next ( on ?x ) ) ( true ( on ?x ) ) ) ( <= terminal ( true ( on p ) ) ( true ( on q ) ) ) ( <= ( goal player 100 ) ( true ( on p ) ) ( true ( on q) ) ) ) ", "none", 10000L);
+		printOptPropnetFromDescription("( ( role player ) ( light p ) ( light q ) ( <= ( legal player ( turnOn ?x ) ) ( not ( true ( on ?x ) ) ) ( light ?x ) ) ( <= ( next ( on ?x ) ) ( does player ( turnOn ?x ) ) ) ( <= ( next ( on ?x ) ) ( true ( on ?x ) ) ) ( <= terminal ( true ( on p ) ) ( true ( on q ) ) ) ( <= ( goal player 100 ) ( true ( on p ) ) ( true ( on q) ) ) ) ", "none", 10000L);
 
-		printOptPropnetFromGameCache("ticTacToe", "none", 10000L);
+		//printOptPropnetFromGameCache("ticTacToe", "none", 10000L);
 
 		//altraProva();
 

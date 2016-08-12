@@ -35,7 +35,7 @@ import org.ggp.base.util.logging.GamerLogger;
  *  					  separated by "-", in the order we want the manager to perform them (e.g. the input "0-1-2-3"
  *  					  will make the manager perform optimization 0, followed by optimization 1, followed by
  *  					  optimization 2, followed by optimization 3). To let the manager perform no optimizations
- *  					  give the string "null" as argument. (Default value: "null")
+ *  					  give the string "none" as argument. (Default value: "none")
  *  	[withCache] = true if the state machine based on the propnet must use the cache, false otherwise. (Default
  *  				  value: false)
  *  	[cacheType] = specifies which version of the cache to use. Possible types are:
@@ -75,9 +75,9 @@ public class PropnetTester {
     	int repetitions = 100;
        	long givenInitTime = 420000L;
     	long searchTime = 60000L;
-    	String optimizationsString = "null";
+    	String optimizationsString = "none";
     	boolean withCache = false;
-    	String cacheType = null;
+    	String cacheType = "none";
 
     	if(args.length == 8){
     		try{
@@ -101,9 +101,17 @@ public class PropnetTester {
 
 			optimizationsString = args[5];
 
+			if(optimizationsString == null || optimizationsString.equals("null")){
+				optimizationsString = "none";
+			}
+
 			withCache = Boolean.parseBoolean(args[6]);
 
 			cacheType = args[7];
+
+			if(cacheType == null || cacheType.equals("null")){
+				cacheType = "none";
+			}
 
     	}
 
@@ -166,7 +174,7 @@ public class PropnetTester {
 		String singleRunID = null;
 		String singleRunFolder = null;
 		File logFile = null;
-		ProcessBuilder pb = new ProcessBuilder("java", "-jar", "SingleRunPNTest.jar", gameFolder, singleRunFolder, gameKey, ""+givenInitTime, ""+searchTime, optimizationsString, ""+withCache, cacheType);
+		ProcessBuilder pb = new ProcessBuilder("java", "-jar", "SingleRunPNReTest.jar", gameFolder, singleRunFolder, gameKey, ""+givenInitTime, ""+searchTime, optimizationsString, ""+withCache, cacheType);
 
 		//System.out.println(pb.command());
 
@@ -194,7 +202,7 @@ public class PropnetTester {
 
 				pb.command().set(4, singleRunFolder);
 
-				//System.out.println(pb.command());
+				System.out.println(pb.command());
 
 				pb.redirectOutput(logFile);
 				pb.redirectError(logFile);
