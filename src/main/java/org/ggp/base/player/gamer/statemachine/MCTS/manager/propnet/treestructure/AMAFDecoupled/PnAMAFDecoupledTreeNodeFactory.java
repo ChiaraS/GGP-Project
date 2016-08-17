@@ -25,7 +25,7 @@ public class PnAMAFDecoupledTreeNodeFactory extends PnDecoupledTreeNodeFactory{
 		// Terminal state:
 		if(this.theMachine.isTerminal(state)){
 
-			goals = this.theMachine.getSafeGoals(state);
+			goals = this.theMachine.getSafeGoalsAvg(state);
 			terminal = true;
 
 		}else{// Non-terminal state:
@@ -43,7 +43,7 @@ public class PnAMAFDecoupledTreeNodeFactory extends PnDecoupledTreeNodeFactory{
 				// Compute the goals for each player. We are in a non terminal state so the goal might not be defined.
 				// We use the state machine method that will return default goal values for the player for which goal
 				// values cannot be computed in this state.
-				goals = this.theMachine.getSafeGoals(state);
+				goals = this.theMachine.getSafeGoalsAvg(state);
 				terminal = true;
 			}
 			// If the legal moves can be computed for every player, there is no need to compute the goals.

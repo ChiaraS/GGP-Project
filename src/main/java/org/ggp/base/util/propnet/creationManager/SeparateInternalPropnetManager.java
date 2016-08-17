@@ -111,10 +111,10 @@ public class SeparateInternalPropnetManager extends Thread{
 			this.optimizations = optimizations;
 		}
 
-		this.componentsStats = new int[optimizations.length+1];
+		this.componentsStats = new int[this.optimizations.length+1];
 
-		for(int i = 0; i < componentsStats.length; i++){
-			componentsStats[i] = -1;
+		for(int i = 0; i < this.componentsStats.length; i++){
+			this.componentsStats[i] = -1;
 		}
 	}
 
@@ -311,6 +311,9 @@ public class SeparateInternalPropnetManager extends Thread{
 		}else{
 			GamerLogger.log("PropnetManager", "No optimizations to be performed.");
 		}
+
+
+		//System.out.println(this.dynamicPropNet);
 
 		/************************ PROPNET EXTERNAL COMPLETE STATE INITIALIZATION **************************/
 

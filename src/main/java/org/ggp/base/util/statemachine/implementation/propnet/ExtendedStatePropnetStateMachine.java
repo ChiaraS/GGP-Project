@@ -203,21 +203,18 @@ public class ExtendedStatePropnetStateMachine extends StateMachine {
 	}
 
 	/**
-	 * Computes the goal for a role in the given state.
+	 * Computes the goals for a role in the given state.
 	 * If the state is not an extended propnet state, it is first transformed into one.
 	 * Should return the value of the goal proposition that
-	 * is true for that role. If there is not exactly one goal
-	 * proposition true for that role, then you should throw a
-	 * GoalDefinitionException because the goal is ill-defined.
+	 * is true for that role.
 	 */
 	@Override
-	public int getGoal(MachineState state, Role role)
-	throws GoalDefinitionException {
+	public List<Integer> getOneRoleGoals(MachineState state, Role role){
 		if(!(state instanceof ExtendedStatePropnetMachineState)){
 			state = this.stateToExtendedState(state);
 		}
 
-		return this.getGoal((ExtendedStatePropnetMachineState) state, role);
+		return this.getOneRoleGoals((ExtendedStatePropnetMachineState) state, role);
 
 	}
 
@@ -230,34 +227,59 @@ public class ExtendedStatePropnetStateMachine extends StateMachine {
 	 */
 	public int getGoal(ExtendedStatePropnetMachineState state, Role role)
 	throws GoalDefinitionException {
+
+    	List<Integer> goals = this.getOneRoleGoals(state, role);
+
+		if(goals.size() > 1){
+			GamerLogger.logError("StateMachine", "[Propnet] Got more than one true goal in state " + state + " for role " + role + ".");
+			throw new GoalDefinitionException(state, role);
+		}
+
+		// If there is no true goal proposition for the role in this state throw an exception.
+		if(goals.isEmpty()){
+			GamerLogger.logError("StateMachine", "[Propnet] Got no true goal in state " + state + " for role " + role + ".");
+			throw new GoalDefinitionException(state, role);
+		}
+
+		// Return the single goal for the given role in the given state.
+		return goals.get(0);
+
+	}
+
+	/**
+	 * Computes the goal for a role in the given state.
+	 * Should return the value of the goal proposition that
+	 * is true for that role.
+	 */
+	public List<Integer> getOneRoleGoals(ExtendedStatePropnetMachineState state, Role role) {
 		// Mark base propositions according to state.
 		this.markBases(state);
 
 		// Get all goal propositions for the given role.
 		Set<ExtendedStateProposition> goalPropsForRole = this.propNet.getGoalPropositions().get(role);
 
-		ExtendedStateProposition trueGoal = null;
+		List<Integer> trueGoals = new ArrayList<Integer>();
 
 		// Check all the goal propositions that are true for the role. If there is more than one throw an exception.
 		for(ExtendedStateProposition goalProp : goalPropsForRole){
 			if(goalProp.getValue()){
-				if(trueGoal != null){
-					GamerLogger.logError("StateMachine", "[Propnet] Got more than one true goal in state " + state + " for role " + role + ".");
-					throw new GoalDefinitionException(state, role);
-				}else{
-					trueGoal = goalProp;
-				}
+
+				trueGoals.add(this.getGoalValue(goalProp));
+
 			}
 		}
 
+		if(trueGoals.size() > 1){
+			GamerLogger.logError("StateMachine", "[Propnet] Got more than one true goal in state " + state + " for role " + role + ".");
+		}
+
 		// If there is no true goal proposition for the role in this state throw an exception.
-		if(trueGoal == null){
+		if(trueGoals.isEmpty()){
 			GamerLogger.logError("StateMachine", "[Propnet] Got no true goal in state " + state + " for role " + role + ".");
-			throw new GoalDefinitionException(state, role);
 		}
 
 		// Return the single goal for the given role in the given state.
-		return this.getGoalValue(trueGoal);
+		return trueGoals;
 	}
 
 	/**

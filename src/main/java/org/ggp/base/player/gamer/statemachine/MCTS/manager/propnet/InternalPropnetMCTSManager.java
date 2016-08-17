@@ -444,7 +444,7 @@ public class InternalPropnetMCTSManager extends MCTSManager {
 			*/
 
 
-			return theMachine.getSafeGoals(currentState);
+			return theMachine.getSafeGoalsAvg(currentState);
 		}
 
 		this.currentIterationVisitedNodes++;

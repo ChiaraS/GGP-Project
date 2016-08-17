@@ -42,6 +42,17 @@ public abstract class InternalPropnetStateMachine extends StateMachine{
 	 */
 	public abstract int getGoal(InternalPropnetMachineState state, InternalPropnetRole role) throws GoalDefinitionException;
 
+    /**
+     * Returns the goal value(s) for the given role in the given state. Goal values
+     * are always between 0 and 100.
+     *
+     * @throws StateMachineException if it was not possible to compute the goal value
+     * for the given role because of an error that occurred in the state machine and
+     * couldn't be handled.
+     */
+    public abstract List<Integer> getOneRoleGoals(InternalPropnetMachineState state, InternalPropnetRole role) throws StateMachineException;
+
+
 	/**
 	 * Returns the initial state. If the initial state has not been computed yet because
 	 * this state machine has not been initialized, NULL will be returned.
@@ -90,7 +101,7 @@ public abstract class InternalPropnetStateMachine extends StateMachine{
 	public abstract List<InternalPropnetMove> movesToInternalMoves(List<Move> moves);
 
 
-	/***************** Extra methods to replace the ones offered by the StateMahcine *****************/
+	/***************** Extra methods to replace the ones offered by the StateMachine *****************/
 
     /**
      * Returns the goal values for each role in the given state. The goal values
@@ -113,6 +124,26 @@ public abstract class InternalPropnetStateMachine extends StateMachine{
         }
         return theGoals;
     }
+
+    /**
+     * Returns a list containing a list for each role with all the goal values for
+     * that role in the given state. The lists of goal values are listed in the
+     * same order the roles are listed in the game rules, which is the same order
+     * in which they're returned by {@link #getRoles()}. If a list is empty it means
+     * that the role has no goals in the given state.
+     *
+     * @throws StateMachineException if it was not possible to compute the list
+     * with the goals for all the roles in the given state because of an error
+     * that occurred in the state machine and couldn't be handled.
+     */
+    public List<List<Integer>> getAllRolesGoals(InternalPropnetMachineState state) throws StateMachineException {
+        List<List<Integer>> theGoals = new ArrayList<List<Integer>>();
+        for (InternalPropnetRole r : getInternalRoles()) {
+        	theGoals.add(getOneRoleGoals(state, r));
+        }
+        return theGoals;
+    }
+
 
     /**
      * Returns a terminal state derived from repeatedly making random joint moves
@@ -304,6 +335,38 @@ public abstract class InternalPropnetStateMachine extends StateMachine{
 
 		return goals;
 	}*/
+
+	/**
+     * Returns the goal values for each role in the given state. If and when a goal
+     * for a player cannot be computed in the state (either because of an error in
+     * the description or because the state is non-terminal and so goals haven't
+     * been defined), the corresponding goal value is set to 0 (loss).
+     * The goal values are listed in the same order the roles are listed in the game
+     * rules, which is the same order in which they're returned by {@link #getRoles()}.
+     *
+     * This method is safe, meaning that it won't throw any GoalDefinitionException,
+     * but it will set a zero value for the goals when they cannot be computed.
+     *
+     * Note: method meant to be used for terminal states, where an error computing a
+     * goal must be penalized (i.e. we don't want to end the game in a terminal state
+     * we don't know anything about for our player).
+     *
+     * @param state the state for which to compute the goals.
+     */
+    public int[] getSafeGoalsAvg(InternalPropnetMachineState state){
+    	InternalPropnetRole[] theRoles = this.getInternalRoles();
+    	int[] theGoals = new int[theRoles.length];
+        for (int i = 0; i < theRoles.length; i++) {
+            try {
+				theGoals[i] = getGoal(state, theRoles[i]);
+			} catch (GoalDefinitionException e){
+				GamerLogger.logError("StateMachine", "Failed to compute a goal value when computing safe goals.");
+				GamerLogger.logStackTrace("StateMachine", e);
+				theGoals[i] = 0;
+			}
+        }
+        return theGoals;
+    }
 
 	/**
      * Returns the goal values for each role in the given state. If and when a goal

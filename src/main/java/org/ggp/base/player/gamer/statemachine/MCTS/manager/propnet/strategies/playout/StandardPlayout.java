@@ -48,7 +48,7 @@ public class StandardPlayout implements PlayoutStrategy {
 		//lastState = this.theMachine.performSafeLimitedDepthCharge(state, playoutVisitedNodes, maxDepth);
 
 		// Now try to get the goals of the state.
-		return this.theMachine.getSafeGoals(state);
+		return this.theMachine.getSafeGoalsAvg(state);
 	}
 
 	public List<InternalPropnetMove> getJointMove(InternalPropnetMachineState state) throws MoveDefinitionException{

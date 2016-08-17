@@ -76,7 +76,37 @@ public abstract class StateMachine
      * for the given role because of an error that occurred in the state machine and
      * couldn't be handled.
      */
-    public abstract int getGoal(MachineState state, Role role) throws GoalDefinitionException, StateMachineException;
+    public int getGoal(MachineState state, Role role) throws GoalDefinitionException, StateMachineException{
+
+    	List<Integer> goals = this.getOneRoleGoals(state, role);
+
+		if(goals.size() > 1){
+			GamerLogger.logError("StateMachine", "[Propnet] Got more than one true goal in state " + state + " for role " + role + ".");
+			throw new GoalDefinitionException(state, role);
+		}
+
+		// If there is no true goal proposition for the role in this state throw an exception.
+		if(goals.isEmpty()){
+			GamerLogger.logError("StateMachine", "[Propnet] Got no true goal in state " + state + " for role " + role + ".");
+			throw new GoalDefinitionException(state, role);
+		}
+
+		// Return the single goal for the given role in the given state.
+		return goals.get(0);
+
+    }
+
+    /**
+     * Returns the goal value(s) for the given role in the given state. Goal values
+     * are always between 0 and 100.
+     *
+     * @throws StateMachineException if it was not possible to compute the goal value
+     * for the given role because of an error that occurred in the state machine and
+     * couldn't be handled.
+     */
+    public abstract List<Integer> getOneRoleGoals(MachineState state, Role role) throws StateMachineException;
+
+
     /**
      * Returns true if and only if the given state is a terminal state (i.e. the
      * game is over).
@@ -384,6 +414,25 @@ public abstract class StateMachine
         List<Integer> theGoals = new ArrayList<Integer>();
         for (Role r : getRoles()) {
             theGoals.add(getGoal(state, r));
+        }
+        return theGoals;
+    }
+
+    /**
+     * Returns a list containing a list for each role with all the goal values for
+     * that role in the given state. The lists of goal values are listed in the
+     * same order the roles are listed in the game rules, which is the same order
+     * in which they're returned by {@link #getRoles()}. If a list is empty it means
+     * that the role has no goals in the given state.
+     *
+     * @throws StateMachineException if it was not possible to compute the list
+     * with the goals for all the roles in the given state because of an error
+     * that occurred in the state machine and couldn't be handled.
+     */
+    public List<List<Integer>> getAllRolesGoals(MachineState state) throws GoalDefinitionException, StateMachineException {
+        List<List<Integer>> theGoals = new ArrayList<List<Integer>>();
+        for (Role r : getRoles()) {
+        	theGoals.add(getOneRoleGoals(state, r));
         }
         return theGoals;
     }

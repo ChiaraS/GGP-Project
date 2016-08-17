@@ -8,7 +8,6 @@ import org.ggp.base.util.statemachine.MachineState;
 import org.ggp.base.util.statemachine.Move;
 import org.ggp.base.util.statemachine.Role;
 import org.ggp.base.util.statemachine.StateMachine;
-import org.ggp.base.util.statemachine.exceptions.GoalDefinitionException;
 import org.ggp.base.util.statemachine.exceptions.MoveDefinitionException;
 import org.ggp.base.util.statemachine.exceptions.StateMachineException;
 import org.ggp.base.util.statemachine.exceptions.StateMachineInitializationException;
@@ -139,23 +138,20 @@ public class BackedPrologStateMachine extends StateMachine {
 		}
 	}
 
-	/* (non-Javadoc)
-	 * @see org.ggp.base.util.statemachine.StateMachine#getGoal(org.ggp.base.util.statemachine.MachineState, org.ggp.base.util.statemachine.Role)
-	 */
 	@Override
-	public int getGoal(MachineState state, Role role)
-			throws GoalDefinitionException/*, StateMachineException*/ {
+	public List<Integer> getOneRoleGoals(MachineState state, Role role)
+			throws StateMachineException {
 
 		if(this.mainMachine != null){
 			try{
-				return this.mainMachine.getGoal(state, role);
-			}catch(GoalDefinitionException | StateMachineException e){
-				GamerLogger.logError("StateMachine", "[BACKED PROLOG] Failed to get goals. Falling back to backup machine.");
+				return this.mainMachine.getOneRoleGoals(state, role);
+			}catch(StateMachineException e){
+				GamerLogger.logError("StateMachine", "[BACKED PROLOG] Failed to get one role goals. Falling back to backup machine.");
 				GamerLogger.logStackTrace("StateMachine", e);
 			}
 		}
 
-		return this.backupMachine.getGoal(state, role);
+		return this.backupMachine.getOneRoleGoals(state, role);
 	}
 
 	/* (non-Javadoc)

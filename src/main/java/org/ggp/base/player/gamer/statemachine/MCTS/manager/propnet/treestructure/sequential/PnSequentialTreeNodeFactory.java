@@ -40,7 +40,7 @@ public class PnSequentialTreeNodeFactory implements TreeNodeFactory {
 		// Terminal state:
 		if(this.theMachine.isTerminal(state)){
 
-			goals = this.theMachine.getSafeGoals(state);
+			goals = this.theMachine.getSafeGoalsAvg(state);
 			terminal = true;
 
 		}else{// Non-terminal state:
@@ -81,7 +81,7 @@ public class PnSequentialTreeNodeFactory implements TreeNodeFactory {
 				//System.out.println("Null moves in non terminal state!");
 
 				allLegalMoves = null;
-				goals = this.theMachine.getSafeGoals(state);
+				goals = this.theMachine.getSafeGoalsAvg(state);
 				terminal = true;
 				unvisitedLeavesCount = 0;
 			}

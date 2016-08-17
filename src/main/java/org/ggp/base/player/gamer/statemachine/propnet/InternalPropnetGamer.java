@@ -115,7 +115,7 @@ public abstract class InternalPropnetGamer extends StateMachineGamer {
 	public InternalPropnetGamer() {
 		// TODO: change code so that the parameters can be set from outside.
 		this.buildPnSafetyMargin = 5000L;
-		this.selectMoveSafetyMargin = 2000L;
+		this.selectMoveSafetyMargin = 3000L;
 		this.thePropnetMachine = null;
 		this.propnetBuild = PROPNET_BUILD.ALWAYS;
 		this.firstTry = true;
@@ -170,6 +170,7 @@ public abstract class InternalPropnetGamer extends StateMachineGamer {
 
 			this.thePropnetMachine = this.createStateMachine();
 			//return this.createStateMachine();
+			break;
 		case ONCE: // Build once, then re-use:
 
 			GamerLogger.log("Gamer", "Single-game gamer.");
@@ -202,8 +203,10 @@ public abstract class InternalPropnetGamer extends StateMachineGamer {
 					//return new CachedStateMachine(new ProverStateMachine());
 				}
 			}
+			break;
 		case NEVER:
 			//return this.thePropnetMachine;
+			break;
 		}
 
 		if(this.thePropnetMachine != null){

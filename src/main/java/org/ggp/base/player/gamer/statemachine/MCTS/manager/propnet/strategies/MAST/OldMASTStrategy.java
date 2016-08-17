@@ -89,7 +89,7 @@ public class OldMASTStrategy extends StandardBackpropagation implements /*Backpr
         	playoutVisitedNodes[0] = nDepth;
 
 		// Now try to get the goals of the state and update the moves statistics.
-        int[] goals = this.theMachine.getSafeGoals(state);
+        int[] goals = this.theMachine.getSafeGoalsAvg(state);
         MoveStats moveStats;
         for(List<InternalPropnetMove> jM : allJointMoves){
         	for(int i = 0; i<jM.size(); i++){

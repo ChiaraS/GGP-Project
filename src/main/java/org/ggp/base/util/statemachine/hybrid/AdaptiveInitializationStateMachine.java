@@ -11,7 +11,6 @@ import org.ggp.base.util.statemachine.MachineState;
 import org.ggp.base.util.statemachine.Move;
 import org.ggp.base.util.statemachine.Role;
 import org.ggp.base.util.statemachine.StateMachine;
-import org.ggp.base.util.statemachine.exceptions.GoalDefinitionException;
 import org.ggp.base.util.statemachine.exceptions.MoveDefinitionException;
 import org.ggp.base.util.statemachine.exceptions.StateMachineException;
 import org.ggp.base.util.statemachine.exceptions.StateMachineInitializationException;
@@ -352,9 +351,9 @@ public class AdaptiveInitializationStateMachine extends StateMachine {
 	}
 
 	@Override
-	public int getGoal(MachineState state, Role role)
-			throws GoalDefinitionException, StateMachineException {
-		return this.theFastestMachine.getGoal(state, role);
+	public List<Integer> getOneRoleGoals(MachineState state, Role role)
+			throws StateMachineException {
+		return this.theFastestMachine.getOneRoleGoals(state, role);
 	}
 
 	@Override
@@ -418,7 +417,6 @@ public class AdaptiveInitializationStateMachine extends StateMachine {
 	public StateMachine getFastestMachine(){
 		return this.theFastestMachine;
 	}
-
 
 	/*
 	private String getCurrentDate(){

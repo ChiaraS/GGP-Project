@@ -174,7 +174,7 @@ public class PropnetTester {
 		String singleRunID = null;
 		String singleRunFolder = null;
 		File logFile = null;
-		ProcessBuilder pb = new ProcessBuilder("java", "-jar", "SingleRunPNReTest.jar", gameFolder, singleRunFolder, gameKey, ""+givenInitTime, ""+searchTime, optimizationsString, ""+withCache, cacheType);
+		ProcessBuilder pb = new ProcessBuilder("java", "-jar", "NewSingleRunPNTest.jar", gameFolder, singleRunFolder, gameKey, ""+givenInitTime, ""+searchTime, optimizationsString, ""+withCache, cacheType);
 
 		//System.out.println(pb.command());
 

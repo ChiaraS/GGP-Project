@@ -9,7 +9,6 @@ import org.ggp.base.util.statemachine.MachineState;
 import org.ggp.base.util.statemachine.Move;
 import org.ggp.base.util.statemachine.Role;
 import org.ggp.base.util.statemachine.StateMachine;
-import org.ggp.base.util.statemachine.exceptions.GoalDefinitionException;
 import org.ggp.base.util.statemachine.exceptions.MoveDefinitionException;
 import org.ggp.base.util.statemachine.exceptions.StateMachineException;
 import org.ggp.base.util.statemachine.exceptions.StateMachineInitializationException;
@@ -24,14 +23,14 @@ public final class CachedStateMachine extends StateMachine
 
 	private final class Entry
 	{
-		public Map<Role, Integer> goals;
+		public Map<Role, List<Integer>> goals;
 		public Map<Role, List<Move>> moves;
 		public Map<List<Move>, MachineState> nexts;
 		public Boolean terminal;
 
 		public Entry()
 		{
-			goals = new HashMap<Role, Integer>();
+			goals = new HashMap<Role, List<Integer>>();
 			moves = new HashMap<Role, List<Move>>();
 			nexts = new HashMap<List<Move>, MachineState>();
 			terminal = null;
@@ -55,14 +54,15 @@ public final class CachedStateMachine extends StateMachine
 	}
 
 	@Override
-	public int getGoal(MachineState state, Role role) throws GoalDefinitionException, StateMachineException
-	{
+	public List<Integer> getOneRoleGoals(MachineState state, Role role)
+			throws StateMachineException {
+
 		Entry entry = getEntry(state);
 		synchronized (entry)
 		{
 			if (!entry.goals.containsKey(role))
 			{
-				entry.goals.put(role, backingStateMachine.getGoal(state, role));
+				entry.goals.put(role, backingStateMachine.getOneRoleGoals(state, role));
 			}
 
 			return entry.goals.get(role);

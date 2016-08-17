@@ -91,7 +91,7 @@ public abstract class MctsGamer extends InternalPropnetGamer {
 		//this.gameStep = 0;
 
 		// Create the MCTS manager and start simulations.
-		if(this.thePropnetMachine == null){
+		if(this.thePropnetMachine != null){
 			this.mctsManager = this.createPropnetMCTSManager();
 		}else{
 			this.mctsManager = this.createProverMCTSManager();
@@ -261,6 +261,7 @@ public abstract class MctsGamer extends InternalPropnetGamer {
 	@Override
 	public void stateMachineStop() {
 
+		this.gameStep = 0;
 		this.mctsManager = null;
 		super.stateMachineStop();
 
@@ -272,6 +273,7 @@ public abstract class MctsGamer extends InternalPropnetGamer {
 	@Override
 	public void stateMachineAbort() {
 
+		this.gameStep = 0;
 		this.mctsManager = null;
 		super.stateMachineAbort();
 
