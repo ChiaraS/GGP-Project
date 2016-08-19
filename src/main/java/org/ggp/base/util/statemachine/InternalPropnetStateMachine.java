@@ -40,7 +40,23 @@ public abstract class InternalPropnetStateMachine extends StateMachine{
 	 * proposition true for that role, then you should throw a
 	 * GoalDefinitionException because the goal is ill-defined.
 	 */
-	public abstract int getGoal(InternalPropnetMachineState state, InternalPropnetRole role) throws GoalDefinitionException;
+	public int getGoal(InternalPropnetMachineState state, InternalPropnetRole role) throws GoalDefinitionException{
+		List<Integer> goals = this.getOneRoleGoals(state, role);
+
+		if(goals.size() > 1){
+			GamerLogger.logError("StateMachine", "[Propnet] Got more than one true goal in state " + state + " for role " + role + ".");
+			throw new GoalDefinitionException(this.internalStateToState(state), this.internalRoleToRole(role));
+		}
+
+		// If there is no true goal proposition for the role in this state throw an exception.
+		if(goals.size() == 0){
+			GamerLogger.logError("StateMachine", "[Propnet] Got no true goal in state " + state + " for role " + role + ".");
+			throw new GoalDefinitionException(this.internalStateToState(state), this.internalRoleToRole(role));
+		}
+
+		// Return the single goal for the given role in the given state.
+		return goals.get(0);
+	}
 
     /**
      * Returns the goal value(s) for the given role in the given state. Goal values
@@ -50,7 +66,7 @@ public abstract class InternalPropnetStateMachine extends StateMachine{
      * for the given role because of an error that occurred in the state machine and
      * couldn't be handled.
      */
-    public abstract List<Integer> getOneRoleGoals(InternalPropnetMachineState state, InternalPropnetRole role) throws StateMachineException;
+    public abstract List<Integer> getOneRoleGoals(InternalPropnetMachineState state, InternalPropnetRole role);
 
 
 	/**
@@ -116,11 +132,11 @@ public abstract class InternalPropnetStateMachine extends StateMachine{
      * with the goals for all the roles in the given state because of an error
      * that occurred in the state machine and couldn't be handled.
      */
-    public int[] getGoals(InternalPropnetMachineState state) throws GoalDefinitionException{
+    public List<Integer> getGoals(InternalPropnetMachineState state) throws GoalDefinitionException{
     	InternalPropnetRole[] theRoles = this.getInternalRoles();
-    	int[] theGoals = new int[theRoles.length];
-        for (int i = 0; i < theRoles.length; i++) {
-            theGoals[i] = getGoal(state, theRoles[i]);
+    	List<Integer> theGoals = new ArrayList<Integer>(theRoles.length);
+        for(int i = 0; i < theRoles.length; i++) {
+            theGoals.add(getGoal(state, theRoles[i]));
         }
         return theGoals;
     }
@@ -137,10 +153,13 @@ public abstract class InternalPropnetStateMachine extends StateMachine{
      * that occurred in the state machine and couldn't be handled.
      */
     public List<List<Integer>> getAllRolesGoals(InternalPropnetMachineState state) throws StateMachineException {
-        List<List<Integer>> theGoals = new ArrayList<List<Integer>>();
-        for (InternalPropnetRole r : getInternalRoles()) {
-        	theGoals.add(getOneRoleGoals(state, r));
+    	InternalPropnetRole[] theRoles = this.getInternalRoles();
+    	List<List<Integer>> theGoals = new ArrayList<List<Integer>>(theRoles.length);
+
+    	for(InternalPropnetRole r : this.getInternalRoles()) {
+            theGoals.add(this.getOneRoleGoals(state, r));
         }
+
         return theGoals;
     }
 
@@ -345,7 +364,8 @@ public abstract class InternalPropnetStateMachine extends StateMachine{
      * rules, which is the same order in which they're returned by {@link #getRoles()}.
      *
      * This method is safe, meaning that it won't throw any GoalDefinitionException,
-     * but it will set a zero value for the goals when they cannot be computed.
+     * but it will set a zero value for the goals when they cannot be computed or an
+     * average value when there is more than one goal per role.
      *
      * Note: method meant to be used for terminal states, where an error computing a
      * goal must be penalized (i.e. we don't want to end the game in a terminal state
@@ -356,14 +376,25 @@ public abstract class InternalPropnetStateMachine extends StateMachine{
     public int[] getSafeGoalsAvg(InternalPropnetMachineState state){
     	InternalPropnetRole[] theRoles = this.getInternalRoles();
     	int[] theGoals = new int[theRoles.length];
-        for (int i = 0; i < theRoles.length; i++) {
-            try {
-				theGoals[i] = getGoal(state, theRoles[i]);
-			} catch (GoalDefinitionException e){
-				GamerLogger.logError("StateMachine", "Failed to compute a goal value when computing safe goals.");
-				GamerLogger.logStackTrace("StateMachine", e);
-				theGoals[i] = 0;
-			}
+    	int avg;
+    	List<Integer> roleGoals = null;
+
+    	for (int i = 0; i < theRoles.length; i++) {
+
+        	roleGoals = this.getOneRoleGoals(state, theRoles[i]);
+
+        	if(roleGoals != null && !roleGoals.isEmpty()){
+
+        		avg = 0;
+
+        		for(Integer goal : roleGoals){
+        			avg += goal;
+        		}
+
+        		theGoals[i] = (int) Math.round(((double)avg)/((double)roleGoals.size()));
+        	}else{
+        		theGoals[i] = 0;
+        	}
         }
         return theGoals;
     }

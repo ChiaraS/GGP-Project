@@ -15,7 +15,6 @@ import org.ggp.base.util.statemachine.InternalPropnetStateMachine;
 import org.ggp.base.util.statemachine.MachineState;
 import org.ggp.base.util.statemachine.Move;
 import org.ggp.base.util.statemachine.Role;
-import org.ggp.base.util.statemachine.exceptions.GoalDefinitionException;
 import org.ggp.base.util.statemachine.exceptions.MoveDefinitionException;
 import org.ggp.base.util.statemachine.exceptions.StateMachineInitializationException;
 import org.ggp.base.util.statemachine.implementation.prover.query.ProverQueryBuilder;
@@ -106,25 +105,23 @@ public class SeparateInternalPropnetStateMachine extends InternalPropnetStateMac
 
 	/**
 	 * Computes the goal for a role in the given state.
-	 * Since the state is not an ExternalPropnetMachineState,
+	 * Since the state is not an InternalPropnetMachineState,
 	 * it is first transformed into one.
 	 *
 	 * Should return the value of the goal proposition that
-	 * is true for that role. If there is not exactly one goal
-	 * proposition true for that role, then you should throw a
-	 * GoalDefinitionException because the goal is ill-defined.
+	 * is true for that role.
 	 *
 	 * NOTE that this method has been added only for compatibility with other state
 	 * machines, however its performance will be much slower than the corresponding
-	 * method for the ExternalPropnetMachineState since the state will always have
-	 * to be translated first into an ExternalPropnetMachineState.
+	 * method for the InternalPropnetMachineState since the state will always have
+	 * to be translated first into an InternalPropnetMachineState.
 	 *
 	 * @param state
 	 * @param role
 	 */
 	@Override
-	public int getGoal(MachineState state, Role role) throws GoalDefinitionException {
-		return this.getGoal(this.stateToInternalState(state), this.roleToInternalRole(role));
+	public List<Integer> getOneRoleGoals(MachineState state, Role role) {
+		return this.getOneRoleGoals(this.stateToInternalState(state), this.roleToInternalRole(role));
 	}
 
 	/**
@@ -135,7 +132,7 @@ public class SeparateInternalPropnetStateMachine extends InternalPropnetStateMac
 	 * GoalDefinitionException because the goal is ill-defined.
 	 */
 	@Override
-	public int getGoal(InternalPropnetMachineState state, InternalPropnetRole role) throws GoalDefinitionException {
+	public List<Integer> getOneRoleGoals(InternalPropnetMachineState state, InternalPropnetRole role) {
 
 		// Mark base propositions according to state.
 		this.markBases(state);
@@ -149,6 +146,30 @@ public class SeparateInternalPropnetStateMachine extends InternalPropnetStateMac
 
 		int trueGoalIndex = otherComponents.nextSetBit(firstGoalIndices[role.getIndex()]);
 
+		int[] allGoalValues = this.propNet.getGoalValues()[role.getIndex()];
+
+		List<Integer> trueGoalValues = new ArrayList<Integer>();
+
+		while(trueGoalIndex < (firstGoalIndices[role.getIndex()+1]) && trueGoalIndex != -1){
+
+			trueGoalValues.add(allGoalValues[trueGoalIndex-firstGoalIndices[role.getIndex()]]);
+
+			trueGoalIndex =	otherComponents.nextSetBit(trueGoalIndex+1);
+		}
+
+		if(trueGoalValues.size() > 1){
+			GamerLogger.logError("StateMachine", "[Propnet] Got more than one true goal in state " + this.internalStateToState(state) + " for role " + this.internalRoleToRole(role) + ".");
+		}
+
+		// If there is no true goal proposition for the role in this state throw an exception.
+		if(trueGoalValues.isEmpty()){
+			GamerLogger.logError("StateMachine", "[Propnet] Got no true goal in state " + this.internalStateToState(state) + " for role " + this.internalRoleToRole(role) + ".");
+		}
+
+		return trueGoalValues;
+
+
+		/*
 		if(trueGoalIndex >= firstGoalIndices[role.getIndex()+1] || trueGoalIndex == -1){ // No true goal for current role
 			MachineState standardState = this.internalStateToState(state);
 			Role standardRole = this.internalRoleToRole(role);
@@ -165,6 +186,7 @@ public class SeparateInternalPropnetStateMachine extends InternalPropnetStateMac
 		}
 
 		return this.propNet.getGoalValues()[role.getIndex()][trueGoalIndex-firstGoalIndices[role.getIndex()]];
+		*/
 
 	}
 

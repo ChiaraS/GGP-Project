@@ -19,7 +19,6 @@ import org.ggp.base.util.statemachine.MachineState;
 import org.ggp.base.util.statemachine.Move;
 import org.ggp.base.util.statemachine.Role;
 import org.ggp.base.util.statemachine.StateMachine;
-import org.ggp.base.util.statemachine.exceptions.GoalDefinitionException;
 import org.ggp.base.util.statemachine.exceptions.MoveDefinitionException;
 import org.ggp.base.util.statemachine.exceptions.StateMachineException;
 import org.ggp.base.util.statemachine.exceptions.StateMachineInitializationException;
@@ -116,19 +115,25 @@ public class ExternalPropnetStateMachine extends StateMachine {
 	 * @param state
 	 * @param role
 	 */
+	//@Override
+	//public int getGoal(MachineState state, Role role) throws GoalDefinitionException {
+	//	return this.getGoal(this.stateToExternalState(state), this.roleToExternalRole(role));
+	//}
+
 	@Override
-	public int getGoal(MachineState state, Role role) throws GoalDefinitionException {
-		return this.getGoal(this.stateToExternalState(state), this.roleToExternalRole(role));
+	public List<Integer> getOneRoleGoals(MachineState state, Role role)
+			throws StateMachineException {
+		return this.getOneRoleGoals(this.stateToExternalState(state), this.roleToExternalRole(role));
 	}
 
 	/**
-	 * Computes the goal for a role in the given state.
-	 * Should return the value of the goal proposition that
-	 * is true for that role. If there is not exactly one goal
-	 * proposition true for that role, then you should throw a
-	 * GoalDefinitionException because the goal is ill-defined.
+	 * Computes the goals for a role in the given state.
+	 * Should return the value of the goal propositions that
+	 * are true for that role.
+	 *
+	 * ATTENTION! This method has not been tested!
 	 */
-	public int getGoal(InternalPropnetMachineState state, InternalPropnetRole role) throws GoalDefinitionException {
+	public List<Integer> getOneRoleGoals(InternalPropnetMachineState state, InternalPropnetRole role) {
 
 		// Mark base propositions according to state.
 		this.markBases(state);
@@ -142,22 +147,27 @@ public class ExternalPropnetStateMachine extends StateMachine {
 
 		int trueGoalIndex = otherComponents.nextSetBit(firstGoalIndices[role.getIndex()]);
 
-		if(trueGoalIndex >= firstGoalIndices[role.getIndex()+1] || trueGoalIndex == -1){ // No true goal for current role
-			MachineState standardState = this.externalStateToState(state);
-			Role standardRole = this.externalRoleToRole(role);
-			GamerLogger.logError("StateMachine", "[Propnet] Got no true goal in state " + standardState + " for role " + standardRole + ".");
-			throw new GoalDefinitionException(standardState, standardRole);
-		}else if(trueGoalIndex < (firstGoalIndices[role.getIndex()+1]-1)){ // If it's not the last goal proposition check if there are any other true goal propositions for the role
-			int nextTrueGoalIndex =	otherComponents.nextSetBit(trueGoalIndex+1);
-			if(nextTrueGoalIndex < firstGoalIndices[role.getIndex()+1] && nextTrueGoalIndex != -1){
-				MachineState standardState = this.externalStateToState(state);
-				Role standardRole = this.externalRoleToRole(role);
-				GamerLogger.logError("StateMachine", "[Propnet] Got more than one true goal in state " + standardState + " for role " + standardRole + ".");
-				throw new GoalDefinitionException(standardState, standardRole);
-			}
+		List<Integer> allGoalValues = this.propNet.getGoalValues().get(this.externalRoleToRole(role));
+
+		List<Integer> trueGoalValues = new ArrayList<Integer>();
+
+		while(trueGoalIndex < (firstGoalIndices[role.getIndex()+1]) && trueGoalIndex != -1){
+
+			trueGoalValues.add(allGoalValues.get(trueGoalIndex-firstGoalIndices[role.getIndex()]));
+
+			trueGoalIndex =	otherComponents.nextSetBit(trueGoalIndex+1);
 		}
 
-		return this.propNet.getGoalValues().get(this.externalRoleToRole(role)).get(trueGoalIndex-firstGoalIndices[role.getIndex()]);
+		if(trueGoalValues.size() > 1){
+			GamerLogger.logError("StateMachine", "[Propnet] Got more than one true goal in state " + state + " for role " + role + ".");
+		}
+
+		// If there is no true goal proposition for the role in this state throw an exception.
+		if(trueGoalValues.isEmpty()){
+			GamerLogger.logError("StateMachine", "[Propnet] Got no true goal in state " + state + " for role " + role + ".");
+		}
+
+		return trueGoalValues;
 
 	}
 
@@ -730,8 +740,5 @@ public class ExternalPropnetStateMachine extends StateMachine {
         List<InternalPropnetMove> legals = getLegalMoves(state, role);
         return legals.get(new Random().nextInt(legals.size()));
     }
-
-
-
 
 }

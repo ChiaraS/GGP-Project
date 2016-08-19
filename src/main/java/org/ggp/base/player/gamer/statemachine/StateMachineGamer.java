@@ -4,7 +4,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.ggp.base.player.gamer.Gamer;
-import org.ggp.base.player.gamer.exception.AbortingException;
 import org.ggp.base.player.gamer.exception.MetaGamingException;
 import org.ggp.base.player.gamer.exception.MoveSelectionException;
 import org.ggp.base.player.gamer.exception.StoppingException;
@@ -258,14 +257,12 @@ public abstract class StateMachineGamer extends Gamer
 				getMatch().appendState(currentState.getContents());
 				getMatch().markCompleted(stateMachine.getGoals(currentState));
 			}
-
-			stateMachineStop();
-		}
-		catch (Exception e)
-		{
+		}catch (Exception e){
 			GamerLogger.logStackTrace("GamePlayer", e);
 			throw new StoppingException(e);
 		}finally{
+
+			stateMachineStop();
 			// Stop the state machine (if the state machine implementation needs
 			// to be stopped).
 			stateMachine.shutdown();
@@ -273,19 +270,19 @@ public abstract class StateMachineGamer extends Gamer
 	}
 
 	@Override
-	public void abort() throws AbortingException {
-		try {
+	public void abort() /*throws AbortingException*/ {
+		//try {
 			stateMachineAbort();
-		}
-		catch (Exception e)
-		{
-			GamerLogger.logStackTrace("GamePlayer", e);
-			throw new AbortingException(e);
-		}finally{
+		//}
+		//catch (Exception e)
+		//{
+		//	GamerLogger.logStackTrace("GamePlayer", e);
+		//	throw new AbortingException(e);
+		//}finally{
 			// Stop the state machine (if the state machine implementation needs
 			// to be stopped).
 			stateMachine.shutdown();
-		}
+		//}
 	}
 
     // Internal state about the current state of the state machine.

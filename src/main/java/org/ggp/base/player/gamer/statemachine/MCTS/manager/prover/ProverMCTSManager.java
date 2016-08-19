@@ -1,8 +1,8 @@
 package org.ggp.base.player.gamer.statemachine.MCTS.manager.prover;
 
 import org.ggp.base.player.gamer.statemachine.MCS.manager.prover.ProverCompleteMoveStats;
+import org.ggp.base.player.gamer.statemachine.MCTS.manager.MCTSManager;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.exceptions.MCTSException;
-import org.ggp.base.player.gamer.statemachine.MCTS.manager.propnet.MCTSManager;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.propnet.strategies.aftermove.AfterMoveStrategy;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.propnet.strategies.aftersimulation.AfterSimulationStrategy;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.propnet.treestructure.MCTSNode;
@@ -428,7 +428,7 @@ public class ProverMCTSManager extends MCTSManager {
 			*/
 
 
-			return theMachine.getSafeGoals(currentState);
+			return this.theMachine.getSafeGoalsAvg(currentState);
 		}
 
 		this.currentIterationVisitedNodes++;
@@ -488,7 +488,7 @@ public class ProverMCTSManager extends MCTSManager {
 			GamerLogger.logError("MCTSManager", "Cannot compute next state. Stopping iteration and returning safe goals.");
 
 			this.currentIterationVisitedNodes--;
-			return theMachine.getSafeGoals(currentState);
+			return this.theMachine.getSafeGoalsAvg(currentState);
 		}
 		// ...and get the corresponding MCT node from the transposition table.
 		nextNode = this.transpositionTable.getNode(nextState);

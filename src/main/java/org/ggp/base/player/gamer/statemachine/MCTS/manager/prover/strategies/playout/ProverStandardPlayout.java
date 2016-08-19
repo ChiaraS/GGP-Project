@@ -75,7 +75,7 @@ public class ProverStandardPlayout implements ProverPlayoutStrategy {
 		//lastState = this.theMachine.performSafeLimitedDepthCharge(state, playoutVisitedNodes, maxDepth);
 
 		// Now try to get the goals of the state.
-		return this.theMachine.getSafeGoals(state);
+		return this.theMachine.getSafeGoalsAvg(state);
 	}
 
 	public List<Move> getJointMove(MachineState state) throws MoveDefinitionException, StateMachineException{

@@ -12,6 +12,7 @@ import org.ggp.base.util.gdl.grammar.GdlSentence;
 import org.ggp.base.util.statemachine.MachineState;
 import org.ggp.base.util.statemachine.Role;
 import org.ggp.base.util.statemachine.exceptions.GoalDefinitionException;
+import org.ggp.base.util.statemachine.exceptions.StateMachineException;
 import org.ggp.base.util.statemachine.implementation.prover.ProverStateMachine;
 import org.ggp.base.util.symbol.factory.SymbolFactory;
 import org.ggp.base.util.symbol.factory.exceptions.SymbolFormatException;
@@ -26,7 +27,7 @@ import org.ggp.base.util.symbol.grammar.SymbolList;
  */
 public class ProvaProver {
 
-	public static void main(String args[]) throws SymbolFormatException, GdlFormatException, GoalDefinitionException {
+	public static void main(String args[]) throws SymbolFormatException, GdlFormatException, GoalDefinitionException, StateMachineException {
 
 		GameRepository theRepository = GameRepository.getDefaultRepository();
         for(String gameKey : theRepository.getGameKeys()) {

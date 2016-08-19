@@ -1,5 +1,6 @@
 package org.ggp.base.util.statemachine.safe;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 
@@ -115,14 +116,14 @@ public class FailsafeStateMachine extends StateMachine
     }
 
     @Override
-    public int getGoal(MachineState state, Role role) throws GoalDefinitionException {
-        if(theBackingMachine == null)
-            return 0;
+    public List<Integer> getOneRoleGoals(MachineState state, Role role) {
+        if(theBackingMachine == null){
+            List<Integer> goals = new ArrayList<Integer>();
+            goals.add(new Integer(0));
+        }
 
         try {
-            return theBackingMachine.getGoal(state, role);
-        } catch(GoalDefinitionException ge) {
-            throw ge;
+            return theBackingMachine.getOneRoleGoals(state, role);
         } catch(Exception e) {
             failGracefully(e, null);
         } catch(ThreadDeath d) {
@@ -133,7 +134,7 @@ public class FailsafeStateMachine extends StateMachine
             failGracefully(null, e);
         }
 
-        return getGoal(state, role);
+        return getOneRoleGoals(state, role);
     }
 
     @Override

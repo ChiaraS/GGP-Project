@@ -10,7 +10,6 @@ import org.ggp.base.util.statemachine.InternalPropnetStateMachine;
 import org.ggp.base.util.statemachine.MachineState;
 import org.ggp.base.util.statemachine.Move;
 import org.ggp.base.util.statemachine.Role;
-import org.ggp.base.util.statemachine.exceptions.GoalDefinitionException;
 import org.ggp.base.util.statemachine.exceptions.MoveDefinitionException;
 import org.ggp.base.util.statemachine.exceptions.StateMachineException;
 import org.ggp.base.util.statemachine.exceptions.StateMachineInitializationException;
@@ -24,8 +23,8 @@ import com.google.common.collect.ImmutableList;
 public final class SeparateInternalPropnetCachedStateMachine extends InternalPropnetStateMachine
 {
 
-	private int allQueries;
-	private int notCachedQueries;
+	//private int allQueries;
+	//private int notCachedQueries;
 
 
 
@@ -34,14 +33,14 @@ public final class SeparateInternalPropnetCachedStateMachine extends InternalPro
 
 	private final class PropnetEntry{
 
-		public Map<InternalPropnetRole, Integer> goals;
+		public Map<InternalPropnetRole, List<Integer>> goals;
 		public Map<InternalPropnetRole, List<InternalPropnetMove>> moves;
 		public Map<List<InternalPropnetMove>, InternalPropnetMachineState> nexts;
 		public Boolean terminal;
 
 		public PropnetEntry()
 		{
-			goals = new HashMap<InternalPropnetRole, Integer>();
+			goals = new HashMap<InternalPropnetRole, List<Integer>>();
 			moves = new HashMap<InternalPropnetRole, List<InternalPropnetMove>>();
 			nexts = new HashMap<List<InternalPropnetMove>, InternalPropnetMachineState>();
 			terminal = null;
@@ -52,8 +51,8 @@ public final class SeparateInternalPropnetCachedStateMachine extends InternalPro
 		this.backingStateMachine = backingStateMachine;
 		this.internalStateTtlCache = new TtlCache<InternalPropnetMachineState, PropnetEntry>(1);
 
-		this.allQueries = 0;
-		this.notCachedQueries = 0;
+		//this.allQueries = 0;
+		//this.notCachedQueries = 0;
 	}
 
 	@Override
@@ -70,22 +69,22 @@ public final class SeparateInternalPropnetCachedStateMachine extends InternalPro
 	}
 
 	@Override
-	public int getGoal(MachineState state, Role role) throws GoalDefinitionException, StateMachineException{
-		return this.getGoal(this.backingStateMachine.stateToInternalState(state), this.backingStateMachine.roleToInternalRole(role));
+	public List<Integer> getOneRoleGoals(MachineState state, Role role) throws StateMachineException{
+		return this.getOneRoleGoals(this.backingStateMachine.stateToInternalState(state), this.backingStateMachine.roleToInternalRole(role));
 	}
 
 	@Override
-	public int getGoal(InternalPropnetMachineState state, InternalPropnetRole role) throws GoalDefinitionException{
+	public List<Integer> getOneRoleGoals(InternalPropnetMachineState state, InternalPropnetRole role) {
 		PropnetEntry entry = getPropnetEntry(state);
 		synchronized (entry){
 			if (!entry.goals.containsKey(role)){
-				entry.goals.put(role, this.backingStateMachine.getGoal(state, role));
+				entry.goals.put(role, this.backingStateMachine.getOneRoleGoals(state, role));
 				//!
-				this.notCachedQueries++;
+				//this.notCachedQueries++;
 			}
 
 			//!
-			this.allQueries++;
+			//this.allQueries++;
 
 			return entry.goals.get(role);
 		}
@@ -108,11 +107,11 @@ public final class SeparateInternalPropnetCachedStateMachine extends InternalPro
 				entry.moves.put(role, ImmutableList.copyOf(this.backingStateMachine.getInternalLegalMoves(state, role)));
 
 				//!
-				this.notCachedQueries++;
+				//this.notCachedQueries++;
 			}
 
 			//!
-			this.allQueries++;
+			//this.allQueries++;
 
 			return entry.moves.get(role);
 		}
@@ -131,11 +130,11 @@ public final class SeparateInternalPropnetCachedStateMachine extends InternalPro
 				entry.nexts.put(moves, this.backingStateMachine.getInternalNextState(state, moves));
 
 				//!
-				this.notCachedQueries++;
+				//this.notCachedQueries++;
 			}
 
 			//!
-			this.allQueries++;
+			//this.allQueries++;
 
 			return entry.nexts.get(moves);
 		}
@@ -154,11 +153,11 @@ public final class SeparateInternalPropnetCachedStateMachine extends InternalPro
 				entry.terminal = this.backingStateMachine.isTerminal(state);
 
 				//!
-				this.notCachedQueries++;
+				//this.notCachedQueries++;
 			}
 
 			//!
-			this.allQueries++;
+			//this.allQueries++;
 
 			return entry.terminal;
 		}

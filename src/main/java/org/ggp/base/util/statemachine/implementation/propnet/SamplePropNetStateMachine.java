@@ -19,7 +19,6 @@ import org.ggp.base.util.statemachine.MachineState;
 import org.ggp.base.util.statemachine.Move;
 import org.ggp.base.util.statemachine.Role;
 import org.ggp.base.util.statemachine.StateMachine;
-import org.ggp.base.util.statemachine.exceptions.GoalDefinitionException;
 import org.ggp.base.util.statemachine.exceptions.MoveDefinitionException;
 import org.ggp.base.util.statemachine.exceptions.TransitionDefinitionException;
 import org.ggp.base.util.statemachine.implementation.prover.query.ProverQueryBuilder;
@@ -68,10 +67,9 @@ public class SamplePropNetStateMachine extends StateMachine {
 	 * GoalDefinitionException because the goal is ill-defined.
 	 */
 	@Override
-	public int getGoal(MachineState state, Role role)
-	throws GoalDefinitionException {
+	public List<Integer> getOneRoleGoals(MachineState state, Role role) {
 		// TODO: Compute the goal for role in state.
-		return -1;
+		return null;
 	}
 
 	/**

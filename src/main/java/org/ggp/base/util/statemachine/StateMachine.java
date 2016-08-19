@@ -411,8 +411,8 @@ public abstract class StateMachine
      * that occurred in the state machine and couldn't be handled.
      */
     public List<Integer> getGoals(MachineState state) throws GoalDefinitionException, StateMachineException {
-        List<Integer> theGoals = new ArrayList<Integer>();
-        for (Role r : getRoles()) {
+        List<Integer> theGoals = new ArrayList<Integer>(getRoles().size());
+        for(Role r : getRoles()) {
             theGoals.add(getGoal(state, r));
         }
         return theGoals;
@@ -465,6 +465,55 @@ public abstract class StateMachine
 				GamerLogger.logStackTrace("StateMachine", e);
 				theGoals[i] = 0;
 			}
+        }
+        return theGoals;
+    }
+
+	/**
+     * Returns the goal values for each role in the given state. If and when a goal
+     * for a player cannot be computed in the state (either because of an error in
+     * the description or because the state is non-terminal and so goals haven't
+     * been defined), the corresponding goal value is set to 0 (loss).
+     * The goal values are listed in the same order the roles are listed in the game
+     * rules, which is the same order in which they're returned by {@link #getRoles()}.
+     *
+     * This method is safe, meaning that it won't throw any GoalDefinitionException,
+     * but it will set a zero value for the goals when they cannot be computed or an
+     * average value when there is more than one goal per role.
+     *
+     * Note: method meant to be used for terminal states, where an error computing a
+     * goal must be penalized (i.e. we don't want to end the game in a terminal state
+     * we don't know anything about for our player).
+     *
+     * @param state the state for which to compute the goals.
+	 * @throws StateMachineException
+     */
+    public int[] getSafeGoalsAvg(MachineState state){
+    	List<Role> theRoles = this.getRoles();
+    	int[] theGoals = new int[theRoles.size()];
+    	int avg;
+    	List<Integer> roleGoals = null;
+
+    	for(int i = 0; i < theRoles.size(); i++) {
+
+        	try{
+        		roleGoals = this.getOneRoleGoals(state, theRoles.get(i));
+
+        		if(roleGoals != null && !roleGoals.isEmpty()){
+
+        			avg = 0;
+
+        			for(Integer goal : roleGoals){
+        				avg += goal;
+        			}
+
+        			theGoals[i] = (int) Math.round(((double)avg)/((double)roleGoals.size()));
+        		}
+        	}catch(StateMachineException e){
+        		GamerLogger.logError("StateMachine", "Failed to compute a goal value when computing safe goals.");
+				GamerLogger.logStackTrace("StateMachine", e);
+				theGoals[i] = 0;
+        	}
         }
         return theGoals;
     }

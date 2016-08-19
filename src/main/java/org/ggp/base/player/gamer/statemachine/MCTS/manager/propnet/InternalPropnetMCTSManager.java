@@ -4,6 +4,7 @@
 package org.ggp.base.player.gamer.statemachine.MCTS.manager.propnet;
 
 import org.ggp.base.player.gamer.statemachine.MCS.manager.propnet.CompleteMoveStats;
+import org.ggp.base.player.gamer.statemachine.MCTS.manager.MCTSManager;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.exceptions.MCTSException;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.propnet.strategies.aftermove.AfterMoveStrategy;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.propnet.strategies.aftersimulation.AfterSimulationStrategy;
@@ -444,7 +445,7 @@ public class InternalPropnetMCTSManager extends MCTSManager {
 			*/
 
 
-			return theMachine.getSafeGoalsAvg(currentState);
+			return this.theMachine.getSafeGoalsAvg(currentState);
 		}
 
 		this.currentIterationVisitedNodes++;

@@ -10,7 +10,6 @@ import org.ggp.base.util.statemachine.InternalPropnetStateMachine;
 import org.ggp.base.util.statemachine.MachineState;
 import org.ggp.base.util.statemachine.Move;
 import org.ggp.base.util.statemachine.Role;
-import org.ggp.base.util.statemachine.exceptions.GoalDefinitionException;
 import org.ggp.base.util.statemachine.exceptions.MoveDefinitionException;
 import org.ggp.base.util.statemachine.exceptions.StateMachineException;
 import org.ggp.base.util.statemachine.exceptions.StateMachineInitializationException;
@@ -27,13 +26,13 @@ public final class RefactoredSeparateInternalPropnetCachedStateMachine extends I
 	private final RefactoredTtlCache<InternalPropnetMachineState, PropnetMachineStateEntry> internalStateTtlCache;
 
 	private final class PropnetMachineStateEntry{
-		public Map<InternalPropnetRole, Integer> goals;
+		public Map<InternalPropnetRole, List<Integer>> goals;
 		public Map<InternalPropnetRole, List<InternalPropnetMove>> moves;
 		public Map<List<InternalPropnetMove>, InternalPropnetMachineState> nexts;
 		public Boolean terminal;
 
 		public PropnetMachineStateEntry(){
-			goals = new HashMap<InternalPropnetRole, Integer>();
+			goals = new HashMap<InternalPropnetRole, List<Integer>>();
 			moves = new HashMap<InternalPropnetRole, List<InternalPropnetMove>>();
 			nexts = new HashMap<List<InternalPropnetMove>, InternalPropnetMachineState>();
 			terminal = null;
@@ -58,22 +57,22 @@ public final class RefactoredSeparateInternalPropnetCachedStateMachine extends I
 	}
 
 	@Override
-	public int getGoal(MachineState state, Role role) throws GoalDefinitionException, StateMachineException{
-		return this.getGoal(this.backingStateMachine.stateToInternalState(state), this.backingStateMachine.roleToInternalRole(role));
+	public List<Integer> getOneRoleGoals(MachineState state, Role role) throws StateMachineException{
+		return this.getOneRoleGoals(this.backingStateMachine.stateToInternalState(state), this.backingStateMachine.roleToInternalRole(role));
 	}
 
 	@Override
-	public int getGoal(InternalPropnetMachineState state, InternalPropnetRole role) throws GoalDefinitionException{
+	public List<Integer> getOneRoleGoals(InternalPropnetMachineState state, InternalPropnetRole role) {
 		PropnetMachineStateEntry entry = getPropnetEntry(state);
 		synchronized (entry){
-			Integer goal = entry.goals.get(role);
+			List<Integer> goal = entry.goals.get(role);
 
 			if (goal == null){
-				goal = this.backingStateMachine.getGoal(state, role);
+				goal = this.backingStateMachine.getOneRoleGoals(state, role);
 				entry.goals.put(role, goal);
 			}
 
-			return goal.intValue();
+			return goal;
 		}
 	}
 

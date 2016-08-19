@@ -1,4 +1,4 @@
-package org.ggp.base.player.gamer.statemachine.MCTS.manager.propnet;
+package org.ggp.base.player.gamer.statemachine.MCTS.manager;
 
 public abstract class MCTSManager {
 

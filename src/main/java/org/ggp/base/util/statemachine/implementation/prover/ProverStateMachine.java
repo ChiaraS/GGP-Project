@@ -1,5 +1,6 @@
 package org.ggp.base.util.statemachine.implementation.prover;
 
+import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -15,7 +16,6 @@ import org.ggp.base.util.statemachine.MachineState;
 import org.ggp.base.util.statemachine.Move;
 import org.ggp.base.util.statemachine.Role;
 import org.ggp.base.util.statemachine.StateMachine;
-import org.ggp.base.util.statemachine.exceptions.GoalDefinitionException;
 import org.ggp.base.util.statemachine.exceptions.MoveDefinitionException;
 import org.ggp.base.util.statemachine.exceptions.TransitionDefinitionException;
 import org.ggp.base.util.statemachine.implementation.prover.query.ProverQueryBuilder;
@@ -52,6 +52,7 @@ public class ProverStateMachine extends StateMachine
 		return new ProverResultParser().toState(results);
 	}
 
+	/*
 	@Override
 	public int getGoal(MachineState state, Role role) throws GoalDefinitionException
 	{
@@ -74,6 +75,36 @@ public class ProverStateMachine extends StateMachine
 		{
 			throw new GoalDefinitionException(state, role);
 		}
+	}
+	*/
+
+	@Override
+	public List<Integer> getOneRoleGoals(MachineState state, Role role)	{
+		Set<GdlSentence> results = prover.askAll(ProverQueryBuilder.getGoalQuery(role), ProverQueryBuilder.getContext(state));
+
+		if (results.size() != 1) {
+		    GamerLogger.logError("StateMachine", "[Prover] Got goal results of size: " + results.size() + " when expecting size one.");
+			//throw new GoalDefinitionException(state, role);
+		}
+
+		List<Integer> goalValues = new ArrayList<Integer>();
+
+		for(GdlSentence sentence : results){
+
+			GdlRelation relation = (GdlRelation) sentence;
+			GdlConstant constant = (GdlConstant) relation.get(1);
+
+			try	{
+				int value = Integer.parseInt(constant.toString());
+				goalValues.add(value);
+			}catch (Exception e){
+				GamerLogger.logError("StateMachine", "[Prover] Got goal results that is not a number: " + constant.toString() + ".");
+				GamerLogger.logStackTrace("StateMachine", e);
+				//throw new GoalDefinitionException(state, role);
+			}
+		}
+
+		return goalValues;
 	}
 
 	@Override

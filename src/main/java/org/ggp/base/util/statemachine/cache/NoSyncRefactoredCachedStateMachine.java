@@ -9,7 +9,6 @@ import org.ggp.base.util.statemachine.MachineState;
 import org.ggp.base.util.statemachine.Move;
 import org.ggp.base.util.statemachine.Role;
 import org.ggp.base.util.statemachine.StateMachine;
-import org.ggp.base.util.statemachine.exceptions.GoalDefinitionException;
 import org.ggp.base.util.statemachine.exceptions.MoveDefinitionException;
 import org.ggp.base.util.statemachine.exceptions.StateMachineException;
 import org.ggp.base.util.statemachine.exceptions.StateMachineInitializationException;
@@ -29,13 +28,13 @@ public final class NoSyncRefactoredCachedStateMachine extends StateMachine
 	private final RefactoredTtlCache<MachineState, MachineStateEntry> ttlCache;
 
 	private final class MachineStateEntry{
-		public Map<Role, Integer> goals;
+		public Map<Role, List<Integer>> goals;
 		public Map<Role, List<Move>> moves;
 		public Map<List<Move>, MachineState> nexts;
 		public Boolean terminal;
 
 		public MachineStateEntry(){
-			goals = new HashMap<Role, Integer>();
+			goals = new HashMap<Role, List<Integer>>();
 			moves = new HashMap<Role, List<Move>>();
 			nexts = new HashMap<List<Move>, MachineState>();
 			terminal = null;
@@ -60,17 +59,17 @@ public final class NoSyncRefactoredCachedStateMachine extends StateMachine
 	}
 
 	@Override
-	public int getGoal(MachineState state, Role role) throws GoalDefinitionException, StateMachineException{
+	public List<Integer> getOneRoleGoals(MachineState state, Role role) throws StateMachineException{
 		MachineStateEntry entry = getEntry(state);
 
-		Integer goal = entry.goals.get(role);
+		List<Integer> goals = entry.goals.get(role);
 
-		if(goal == null){
-			goal = this.backingStateMachine.getGoal(state, role);
-			entry.goals.put(role,goal);
+		if(goals == null){
+			goals = this.backingStateMachine.getOneRoleGoals(state, role);
+			entry.goals.put(role,goals);
 		}
 
-		return goal.intValue();
+		return goals;
 
 	}
 

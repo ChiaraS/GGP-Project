@@ -17,7 +17,7 @@ import org.ggp.base.util.propnet.creationManager.SeparateInternalPropnetManager;
 import org.ggp.base.util.propnet.state.ImmutableSeparatePropnetState;
 import org.ggp.base.util.statemachine.InternalPropnetStateMachine;
 import org.ggp.base.util.statemachine.StateMachine;
-import org.ggp.base.util.statemachine.cache.CachedStateMachine;
+import org.ggp.base.util.statemachine.cache.NoSyncRefactoredCachedStateMachine;
 import org.ggp.base.util.statemachine.cache.NoSyncRefactoredSeparateInternalPropnetCachedStateMachine;
 import org.ggp.base.util.statemachine.implementation.propnet.SeparateInternalPropnetStateMachine;
 import org.ggp.base.util.statemachine.implementation.prover.ProverStateMachine;
@@ -222,7 +222,7 @@ public abstract class InternalPropnetGamer extends StateMachineGamer {
 			// Check if we want to use the cache
 			if(this.proverCache){
 				GamerLogger.log("Gamer", "Returning Prover state machine with cache.");
-				return new CachedStateMachine(new ProverStateMachine());
+				return new NoSyncRefactoredCachedStateMachine(new ProverStateMachine());
 			}else{
 				GamerLogger.log("Gamer", "Returning Prover state machine without cache.");
 				return new ProverStateMachine();

@@ -13,7 +13,6 @@ import org.ggp.base.util.statemachine.MachineState;
 import org.ggp.base.util.statemachine.Move;
 import org.ggp.base.util.statemachine.Role;
 import org.ggp.base.util.statemachine.StateMachine;
-import org.ggp.base.util.statemachine.exceptions.GoalDefinitionException;
 import org.ggp.base.util.statemachine.exceptions.MoveDefinitionException;
 import org.ggp.base.util.statemachine.exceptions.StateMachineException;
 import org.ggp.base.util.statemachine.exceptions.StateMachineInitializationException;
@@ -277,8 +276,8 @@ public class YapStateMachine extends StateMachine {
 	 * @see org.ggp.base.util.statemachine.StateMachine#getGoal(org.ggp.base.util.statemachine.MachineState, org.ggp.base.util.statemachine.Role)
 	 */
 	@Override
-	public int getGoal(MachineState state, Role role)
-			throws GoalDefinitionException, StateMachineException {
+	public List<Integer> getOneRoleGoals(MachineState state, Role role)
+			throws StateMachineException {
 
 		updateYapState(state);
 
@@ -303,29 +302,33 @@ public class YapStateMachine extends StateMachine {
 			throw new StateMachineException("Impossible to compute goal for role \"" + role + "\" in state " + state + ".", e);
 		}
 
-		int goal;
-
 		if(bindings == null){
-			GamerLogger.logError("StateMachine", "[YAP] Got no goal when expecting one.");
-			throw new GoalDefinitionException(state, role);
+			GamerLogger.logError("StateMachine", "[YAP] Got no goal when expecting at least one.");
+			//throw new GoalDefinitionException(state, role);
 		}
 
 		String[] goals = (String[]) bindings[0];
 
 		if(goals.length != 1){
 			GamerLogger.logError("StateMachine", "[YAP] Got goal results of size: " + goals.length + " when expecting size one.");
-			throw new GoalDefinitionException(state, role);
+			//throw new GoalDefinitionException(state, role);
 		}
 
-		try{
-			goal = Integer.parseInt(goals[0]);
-		}catch(NumberFormatException ex){
-			GamerLogger.logError("StateMachine", "[YAP] Got goal results that is not a number.");
-			GamerLogger.logStackTrace("StateMachine", ex);
-			throw new GoalDefinitionException(state, role, ex);
+		List<Integer> goalValues = new ArrayList<Integer>();
+
+		for(String s : goals){
+			try{
+				int goal = Integer.parseInt(s);
+				goalValues.add(new Integer(goal));
+			}catch(NumberFormatException ex){
+				GamerLogger.logError("StateMachine", "[YAP] Got goal results that is not a number.");
+				GamerLogger.logStackTrace("StateMachine", ex);
+				//throw new GoalDefinitionException(state, role, ex);
+			}
 		}
 
-		return goal;
+		return goalValues;
+
 	}
 
 	/* (non-Javadoc)

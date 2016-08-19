@@ -1,5 +1,6 @@
 package org.ggp.base.util.statemachine.implementation.firstYapProlog;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import org.ggp.base.util.gdl.grammar.Gdl;
@@ -111,6 +112,10 @@ public class FirstYapStateMachine extends StateMachine{
 	 * Returns the goal value for the given role in the given state. Goal values
 	 * are always between 0 and 100.
 	 *
+	 * TODO: ATTENTION! This method only returns one goal value, if there are more
+	 *       it's not detected, should be fixed if you want to properly use this
+	 *       state machine
+	 *
 	 * @throws GoalDefinitionException if there is no goal value or more than one
 	 * goal value for the given role in the given state. If this occurs when this
 	 * is called on a terminal state, this indicates an error in either the game
@@ -118,9 +123,11 @@ public class FirstYapStateMachine extends StateMachine{
 	 * @throws StateMachineException
 	 */
 	@Override
-	public int getGoal(MachineState state, Role role) throws GoalDefinitionException, StateMachineException
-	{
-		return yapEngine.getGoal(state, role);
+	public List<Integer> getOneRoleGoals(MachineState state, Role role) throws StateMachineException{
+
+		List<Integer> goal = new ArrayList<Integer>();
+		goal.add(new Integer(yapEngine.getGoal(state, role)));
+		return goal;
 	}
 
 

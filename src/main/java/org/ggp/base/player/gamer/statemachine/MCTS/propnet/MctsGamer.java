@@ -4,9 +4,9 @@ import org.ggp.base.player.gamer.event.GamerSelectedMoveEvent;
 import org.ggp.base.player.gamer.statemachine.MCS.manager.MoveStats;
 import org.ggp.base.player.gamer.statemachine.MCS.manager.propnet.CompleteMoveStats;
 import org.ggp.base.player.gamer.statemachine.MCS.manager.prover.ProverCompleteMoveStats;
+import org.ggp.base.player.gamer.statemachine.MCTS.manager.MCTSManager;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.exceptions.MCTSException;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.propnet.InternalPropnetMCTSManager;
-import org.ggp.base.player.gamer.statemachine.MCTS.manager.propnet.MCTSManager;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.propnet.treestructure.MCTSNode;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.prover.ProverMCTSManager;
 import org.ggp.base.player.gamer.statemachine.propnet.InternalPropnetGamer;
@@ -235,7 +235,7 @@ public abstract class MctsGamer extends InternalPropnetGamer {
 				GamerLogger.logError("Gamer", "MCTS failed to return a move.");
 				GamerLogger.logStackTrace("Gamer", e);
 				// If the MCTS manager failed to return a move return a random one.
-				theMove = this.thePropnetMachine.getRandomMove(this.getCurrentState(), this.getRole());
+				theMove = this.getStateMachine().getRandomMove(this.getCurrentState(), this.getRole());
 				GamerLogger.log("Gamer", "Returning random move " + theMove + ".");
 			}
 		}else{
@@ -250,7 +250,7 @@ public abstract class MctsGamer extends InternalPropnetGamer {
 		GamerLogger.log(GamerLogger.FORMAT.CSV_FORMAT, "Stats", this.gameStep + ";" + thinkingTime + ";" + searchTime + ";" + iterations + ";" + visitedNodes + ";" + iterationsPerSecond + ";" + nodesPerSecond + ";" + theMove + ";" + moveScoreSum + ";" + moveVisits + ";" + moveAvgScore + ";");
 
 		// TODO: IS THIS NEEDED? WHEN?
-		notifyObservers(new GamerSelectedMoveEvent(this.thePropnetMachine.getLegalMoves(this.getCurrentState(), this.getRole()), theMove, thinkingTime));
+		notifyObservers(new GamerSelectedMoveEvent(this.getStateMachine().getLegalMoves(this.getCurrentState(), this.getRole()), theMove, thinkingTime));
 
 		return theMove;
 	}

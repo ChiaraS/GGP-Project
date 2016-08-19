@@ -18,7 +18,6 @@ import org.ggp.base.util.statemachine.MachineState;
 import org.ggp.base.util.statemachine.Move;
 import org.ggp.base.util.statemachine.Role;
 import org.ggp.base.util.statemachine.StateMachine;
-import org.ggp.base.util.statemachine.exceptions.GoalDefinitionException;
 import org.ggp.base.util.statemachine.exceptions.MoveDefinitionException;
 import org.ggp.base.util.statemachine.exceptions.StateMachineException;
 import org.ggp.base.util.statemachine.exceptions.StateMachineInitializationException;
@@ -137,11 +136,11 @@ public class InitializationSafeStateMachine extends StateMachine {
 	 * @see org.ggp.base.util.statemachine.StateMachine#getGoal(org.ggp.base.util.statemachine.MachineState, org.ggp.base.util.statemachine.Role)
 	 */
 	@Override
-	public int getGoal(MachineState state, Role role)
-			throws GoalDefinitionException, StateMachineException {
+	public List<Integer> getOneRoleGoals(MachineState state, Role role)
+			throws StateMachineException {
 		// We do not check if the real state machine is null, because if initialization succeeded this
 		// cannot happen and if initialization failed this state machine is not supposed to be used.
-		return this.theRealMachine.getGoal(state, role);
+		return this.theRealMachine.getOneRoleGoals(state, role);
 	}
 
 	/* (non-Javadoc)

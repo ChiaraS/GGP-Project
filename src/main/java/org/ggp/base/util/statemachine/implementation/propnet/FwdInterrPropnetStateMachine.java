@@ -20,7 +20,6 @@ import org.ggp.base.util.statemachine.MachineState;
 import org.ggp.base.util.statemachine.Move;
 import org.ggp.base.util.statemachine.Role;
 import org.ggp.base.util.statemachine.StateMachine;
-import org.ggp.base.util.statemachine.exceptions.GoalDefinitionException;
 import org.ggp.base.util.statemachine.exceptions.MoveDefinitionException;
 import org.ggp.base.util.statemachine.exceptions.StateMachineInitializationException;
 import org.ggp.base.util.statemachine.exceptions.TransitionDefinitionException;
@@ -228,44 +227,38 @@ public class FwdInterrPropnetStateMachine extends StateMachine {
 	}
 
 	/**
-	 * Computes the goal for a role in the current state.
-	 * Should return the value of the goal proposition that
-	 * is true for that role. If there is not exactly one goal
-	 * proposition true for that role, then you should throw a
-	 * GoalDefinitionException because the goal is ill-defined.
+	 * Computes the goals for a role in the current state.
+	 * Should return the value of the goal propositions that
+	 * are true for that role.
 	 */
 	@Override
-	public int getGoal(MachineState state, Role role)
-	throws GoalDefinitionException {
+	public List<Integer> getOneRoleGoals(MachineState state, Role role) {
 		// Mark base propositions according to state.
 		this.markBases(state);
 
 		// Get all goal propositions for the given role.
 		Set<ForwardInterruptingProposition> goalPropsForRole = this.propNet.getGoalPropositions().get(role);
 
-		ForwardInterruptingProposition trueGoal = null;
+		List<Integer> trueGoals = new ArrayList<Integer>();
 
 		// Check all the goal propositions that are true for the role. If there is more than one throw an exception.
 		for(ForwardInterruptingProposition goalProp : goalPropsForRole){
 			if(goalProp.getValue()){
-				if(trueGoal != null){
-					GamerLogger.logError("StateMachine", "[Propnet] Got more than one true goal in state " + state + " for role " + role + ".");
-					GamerLogger.logError("StateMachine", "[Propnet] True goals = " + trueGoal.getName() + ", " + goalProp.getName() + ".");
-					throw new GoalDefinitionException(state, role);
-				}else{
-					trueGoal = goalProp;
-				}
+				trueGoals.add(this.getGoalValue(goalProp));
 			}
 		}
 
+		if(trueGoals.size() > 1){
+			GamerLogger.logError("StateMachine", "[Propnet] Got more than one true goal in state " + state + " for role " + role + ".");
+		}
+
 		// If there is no true goal proposition for the role in this state throw an exception.
-		if(trueGoal == null){
+		if(trueGoals.isEmpty()){
 			GamerLogger.logError("StateMachine", "[Propnet] Got no true goal in state " + state + " for role " + role + ".");
-			throw new GoalDefinitionException(state, role);
 		}
 
 		// Return the single goal for the given role in the given state.
-		return this.getGoalValue(trueGoal);
+		return trueGoals;
 	}
 
 	/**

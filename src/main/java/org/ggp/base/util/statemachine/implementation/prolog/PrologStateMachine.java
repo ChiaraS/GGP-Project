@@ -10,7 +10,6 @@ import org.ggp.base.util.statemachine.MachineState;
 import org.ggp.base.util.statemachine.Move;
 import org.ggp.base.util.statemachine.Role;
 import org.ggp.base.util.statemachine.StateMachine;
-import org.ggp.base.util.statemachine.exceptions.GoalDefinitionException;
 import org.ggp.base.util.statemachine.exceptions.MoveDefinitionException;
 import org.ggp.base.util.statemachine.exceptions.StateMachineException;
 import org.ggp.base.util.statemachine.exceptions.StateMachineInitializationException;
@@ -289,9 +288,11 @@ public class PrologStateMachine extends StateMachine {
 	/* (non-Javadoc)
 	 * @see org.ggp.base.util.statemachine.StateMachine#getGoal(org.ggp.base.util.statemachine.MachineState, org.ggp.base.util.statemachine.Role)
 	 */
+	/**
+	 * TODO: ATTNETION! This method has never been tested.
+	 */
 	@Override
-	public int getGoal(MachineState state, Role role)
-			throws GoalDefinitionException, StateMachineException {
+	public List<Integer> getOneRoleGoals(MachineState state, Role role)	throws StateMachineException {
 
 		updatePrologState(state);
 
@@ -316,29 +317,31 @@ public class PrologStateMachine extends StateMachine {
 			throw new StateMachineException("Impossible to compute goal for role \"" + role + "\" in state " + state + ".", e);
 		}
 
-		int goal;
-
 		if(bindings == null){
-			GamerLogger.logError("StateMachine", "[" + this.prologType + " PROLOG] Got no goal when expecting one.");
-			throw new GoalDefinitionException(state, role);
+			GamerLogger.logError("StateMachine", "[" + this.prologType + " PROLOG] Got no goal when expecting at least one.");
+			return new ArrayList<Integer>();
 		}
 
 		String[] goals = (String[]) bindings[0];
 
 		if(goals.length != 1){
 			GamerLogger.logError("StateMachine", "[" + this.prologType + " PROLOG] Got goal results of size: " + goals.length + " when expecting size one.");
-			throw new GoalDefinitionException(state, role);
 		}
 
-		try{
-			goal = Integer.parseInt(goals[0]);
-		}catch(NumberFormatException ex){
-			GamerLogger.logError("StateMachine", "[" + this.prologType + " PROLOG] Got goal results that is not a number.");
-			GamerLogger.logStackTrace("StateMachine", ex);
-			throw new GoalDefinitionException(state, role, ex);
+		List<Integer> goalValues = new ArrayList<Integer>();
+
+		for(String s : goals){
+			try{
+				int goal = Integer.parseInt(s);
+				goalValues.add(new Integer(goal));
+			}catch(NumberFormatException ex){
+				GamerLogger.logError("StateMachine", "[" + this.prologType + " PROLOG] Got goal results that is not a number.");
+				GamerLogger.logStackTrace("StateMachine", ex);
+				//throw new GoalDefinitionException(state, role, ex);
+			}
 		}
 
-		return goal;
+		return goalValues;
 	}
 
 	/* (non-Javadoc)
