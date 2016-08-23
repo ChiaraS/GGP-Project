@@ -101,6 +101,9 @@ public class SeparateInternalPropnetManager extends Thread{
 		this.timeout = timeout;
 
 		if(optimizations == null){
+
+			//this.optimizations = new OptimizationCaller[0];
+
 			this.optimizations = new OptimizationCaller[4];
 
 			this.optimizations[0] = new RemoveAnonPropositions();

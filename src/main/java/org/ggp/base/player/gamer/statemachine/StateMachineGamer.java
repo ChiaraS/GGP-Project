@@ -255,7 +255,18 @@ public abstract class StateMachineGamer extends Gamer
 
 				currentState = stateMachine.getNextState(currentState, moves);
 				getMatch().appendState(currentState.getContents());
-				getMatch().markCompleted(stateMachine.getGoals(currentState));
+
+				List<Integer> allGoals = new ArrayList<Integer>();
+
+				int[] goals = this.stateMachine.getSafeGoalsAvg(currentState);
+
+				for(int i = 0; i < goals.length; i++){
+					allGoals.add(goals[i]);
+				}
+
+				//getMatch().markCompleted(stateMachine.getGoals(currentState));
+				getMatch().markCompleted(allGoals);
+
 			}
 		}catch (Exception e){
 			GamerLogger.logStackTrace("GamePlayer", e);

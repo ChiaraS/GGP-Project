@@ -4,6 +4,8 @@ import java.util.List;
 
 import org.apache.logging.log4j.ThreadContext;
 import org.ggp.base.util.game.GameRepository;
+import org.ggp.base.util.game.LocalFolderGameRepository;
+import org.ggp.base.util.game.ManualUpdateLocalGameRepository;
 import org.ggp.base.util.gdl.grammar.Gdl;
 import org.ggp.base.util.gdl.grammar.GdlPool;
 import org.ggp.base.util.logging.GamerLogger;
@@ -36,12 +38,14 @@ import org.ggp.base.util.statemachine.implementation.prover.ProverStateMachine;
 *
 * It is possible to specify the following combinations of main arguments:
 *
-* 1. [withCache] [optimizations]
-* 2. [withCache] [optimizations] [keyOfGameToTest]
-* 3. [withCache] [optimizations] [maximumPropnetInitializationTime] [maximumTestDuration]
-* 4. [withCache] [optimizations] [maximumPropnetInitializationTime] [maximumTestDuration] [keyOfGameToTest]
+* 1. [useFolder] [withCache] [optimizations]
+* 2. [useFolder] [withCache] [optimizations] [keyOfGameToTest]
+* 3. [useFolder] [withCache] [optimizations] [maximumPropnetInitializationTime] [maximumTestDuration]
+* 4. [useFolder] [withCache] [optimizations] [maximumPropnetInitializationTime] [maximumTestDuration] [keyOfGameToTest]
 *
 * where:
+* [useFolder] = true if the game(s) we want to test are in the GDLfolder, false if it(they) are in the default
+* 				repository (default: false).
 * [withCache] = true if the propnet state machine must be provided with a cache for its results, false
 * 				otherwise (DEFAULT: false).
 * [optimizations] = the optimizations that the PropNet manager must perform on the PropNet after creation.
@@ -81,6 +85,7 @@ public class SeparatePropnetVerifier {
 		/*********************** Parse main arguments ****************************/
 
 
+		boolean useFolder = false;
 		boolean withCache = false;
 		long initializationTime = 420000L;
 		long testTime = 60000L;
@@ -88,11 +93,13 @@ public class SeparatePropnetVerifier {
 		String optimizationsString = "none";
 		OptimizationCaller[] optimizations = new OptimizationCaller[0];
 
-		if (args.length != 0 && args.length <= 5){
+		if (args.length != 0 && args.length <= 6){
 
-			withCache = Boolean.parseBoolean(args[0]);
+			useFolder = Boolean.parseBoolean(args[0]);
 
-			optimizationsString = args[1];
+			withCache = Boolean.parseBoolean(args[1]);
+
+			optimizationsString = args[2];
 			try{
 				optimizations = parseOptimizations(optimizationsString);
 			}catch(IllegalArgumentException e){
@@ -101,24 +108,24 @@ public class SeparatePropnetVerifier {
 		    	optimizations = new OptimizationCaller[0];
 			}
 
-			if(args.length == 5 || args.length == 3){
+			if(args.length == 6 || args.length == 4){
 				gameToTest = args[args.length-1];
 			}
-			if(args.length == 5 || args.length == 4){
+			if(args.length == 6 || args.length == 5){
 				try{
-					initializationTime = Long.parseLong(args[2]);
+					initializationTime = Long.parseLong(args[3]);
 				}catch(NumberFormatException nfe){
 					System.out.println("Inconsistent propnet maximum building time specification! Using default value.");
 					initializationTime = 420000L;
 				}
 				try{
-					testTime = Long.parseLong(args[3]);
+					testTime = Long.parseLong(args[4]);
 				}catch(NumberFormatException nfe){
 					System.out.println("Inconsistent test duration specification! Using default value.");
 					testTime = 60000L;
 				}
 			}
-		}else if(args.length > 5){
+		}else if(args.length > 6){
 			System.out.println("Inconsistent number of main arguments! Ignoring them.");
 		}
 
@@ -126,6 +133,12 @@ public class SeparatePropnetVerifier {
 			System.out.println("Running tests on ALL games with the following settings:");
 		}else{
 			System.out.println("Running tests on game " + gameToTest + " with the following settings:");
+		}
+
+		if(useFolder){
+			System.out.println("Using games in GDLFolder.");
+		}else{
+			System.out.println("Using games in default repo.");
 		}
 		if(withCache){
 			System.out.println("With cache: yes.");
@@ -152,13 +165,23 @@ public class SeparatePropnetVerifier {
 
 	    GamerLogger.log(FORMAT.CSV_FORMAT, "SeparatePropnetVerifierTable", "Game key;PN initialization time (ms);PN construction time (ms);SM initialization time;Rounds;Completed rounds;Test duration (ms);Subject exception;Other exceptions;Pass;");
 
-	    GameRepository theRepository = GameRepository.getDefaultRepository();
+	    GameRepository theRepository;
 
-		// WINDOWS
-		//GameRepository theRepository = new ManualUpdateLocalGameRepository("C:/Users/c.sironi/\"BITBUCKET REPOS\"/GGP-Base/GGPBase-GameRepo-03022016");
+	    if(useFolder){
 
-		// LINUX
-	    //GameRepository theRepository = new ManualUpdateLocalGameRepository("/home/csironi/GAMEREPOS/GGPBase-GameRepo-03022016");
+	    	theRepository = new LocalFolderGameRepository("C:/Users/c.sironi/BITBUCKET REPOS/GGP-Base/GDLFolder");
+
+	    }else{
+
+		    //theRepository = GameRepository.getDefaultRepository();
+
+			// WINDOWS
+			theRepository = new ManualUpdateLocalGameRepository("C:/Users/c.sironi/\"BITBUCKET REPOS\"/GGP-Base/GGPBase-GameRepo-03022016");
+
+			// LINUX
+		    //theRepository = new ManualUpdateLocalGameRepository("/home/csironi/GAMEREPOS/GGPBase-GameRepo-03022016");
+
+	    }
 
 	    for(String gameKey : theRepository.getGameKeys()) {
 	        if(gameKey.contains("laikLee")) continue;
