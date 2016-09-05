@@ -96,6 +96,12 @@ public class PNStatsFormatter {
 		optOrder.add("Opt1023OldCache");
 		optOrder.add("Opt1023RefCache");
 		optOrder.add("Opt1023NoSyncCache");
+		optOrder.add("ReTestBasePN");
+		optOrder.add("ReTestOpt1023PN");
+		optOrder.add("ReTestOpt4PN");
+		optOrder.add("NewBasePN");
+		optOrder.add("NewOpt1023PN");
+		optOrder.add("NewOpt4PN");
 
 	}
 

@@ -254,7 +254,7 @@ public class DynamicPropNetFactory {
 			System.out.println("Setting up 'init' proposition...");
 
 		/**
-		 * To use with the Orify method that merge equivalent gates
+		 * To use with the Orify method that merges equivalent gates
 		 */
 		//setUpInit(components, trueComponent, falseComponent, orMap);
 
@@ -849,6 +849,7 @@ public class DynamicPropNetFactory {
 	}
 	*/
 
+
 	/**
 	 * Adds an or gate connecting the inputs to produce the output.
 	 * Handles special optimization cases like a true/false input.
@@ -1372,8 +1373,6 @@ public class DynamicPropNetFactory {
 		and.addOutput(output);
 		output.addInput(and);
 	}
-
-
 
 	/**
 	 * NOTE: this method is not used anymore because the fixing of the input-less components has been

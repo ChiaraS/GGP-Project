@@ -57,7 +57,7 @@ public class PNStatsAggregator {
 		FilenameFilter theFilter = new FilenameFilter(){
 			@Override
 			public boolean accept(File dir, String name) {
-		        return name.toLowerCase().endsWith(".csv");
+		        return (name.toLowerCase().endsWith("propnetstatistics.csv") || name.toLowerCase().endsWith("proverstatistics.csv"));
 			}
 		};
 		String theHeader = "";

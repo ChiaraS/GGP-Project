@@ -31,6 +31,8 @@ import org.ggp.base.util.logging.GamerLogger;
  *  						1 = RemoveAnonPropositions
  *  						2 = OptimizeAwayConstantValueComponents
  *  						3 = RemoveOutputlessComponents
+ *  						4 = RemoveDuplicateGates
+ *  						5 = SimplifyLogicGates
  *  					  The optimizations to be performed must be specified with their corresponding numbers,
  *  					  separated by "-", in the order we want the manager to perform them (e.g. the input "0-1-2-3"
  *  					  will make the manager perform optimization 0, followed by optimization 1, followed by
