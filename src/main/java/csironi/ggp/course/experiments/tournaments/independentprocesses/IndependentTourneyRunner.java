@@ -98,6 +98,7 @@ public class IndependentTourneyRunner {
 
 				//GameRepository gameRepo = GameRepository.getDefaultRepository();
 
+				// LINUX
 				GameRepository gameRepo = new ManualUpdateLocalGameRepository("/home/csironi/GAMEREPOS/GGPBase-GameRepo-03022016");
 
 		    	game = gameRepo.getGame(gameKey);
@@ -387,7 +388,7 @@ public class IndependentTourneyRunner {
 		theSettings.add("java");
 		//theSettings.add("-Xmx:25g");
 		theSettings.add("-jar");
-		theSettings.add("IndependentSingleMatchRunner.jar");
+		theSettings.add("KEvoIndependentSingleMatchRunner.jar");
 		theSettings.add(ThreadContext.get("LOG_FOLDER"));
 		theSettings.add("" + 0);
 		theSettings.add(gameKey);

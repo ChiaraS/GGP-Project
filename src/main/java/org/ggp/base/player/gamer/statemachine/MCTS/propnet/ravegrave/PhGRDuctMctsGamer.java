@@ -58,7 +58,7 @@ public abstract class PhGRDuctMctsGamer extends GRDuctMctsGamer {
 
 		return new InternalPropnetMCTSManager(graveSelection, new NoExpansion() /*new RandomExpansion(numRoles, myRole, r)*/,
 				gravePlayout, new GRAVEBackpropagation(numRoles, myRole, allJointMoves),
-				new MaximumScoreChoice(myRole, r),	new GRAVEAfterSimulation(graveSelection, gravePlayout),
+				new MaximumScoreChoice(myRole, r), null, new GRAVEAfterSimulation(graveSelection, gravePlayout),
 				new ProgressiveHistoryAfterMove(graveSelection), new PnAMAFDecoupledTreeNodeFactory(this.thePropnetMachine), this.thePropnetMachine,
 	       		this.gameStepOffset, this.maxSearchDepth, this.logTranspositionTable);
 

@@ -11,7 +11,7 @@ public class MASTAfterSimulation implements AfterSimulationStrategy {
 	}
 
 	@Override
-	public void afterSimulationActions() {
+	public void afterSimulationActions(int[] goals) {
 		this.mastPlayout.clearLastMemorizedPlayout();
 
 	}

@@ -9,6 +9,7 @@ import org.ggp.base.player.gamer.statemachine.MCTS.manager.exceptions.MCTSExcept
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.propnet.strategies.aftermove.AfterMoveStrategy;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.propnet.strategies.aftersimulation.AfterSimulationStrategy;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.propnet.strategies.backpropagation.BackpropagationStrategy;
+import org.ggp.base.player.gamer.statemachine.MCTS.manager.propnet.strategies.beforesimulation.BeforeSimulationStrategy;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.propnet.strategies.expansion.ExpansionStrategy;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.propnet.strategies.movechoice.MoveChoiceStrategy;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.propnet.strategies.playout.PlayoutStrategy;
@@ -69,11 +70,13 @@ public class InternalPropnetMCTSManager extends MCTSManager {
 	private MoveChoiceStrategy moveChoiceStrategy;
 
 	/**
-	 * Some MCTS strategies require additional work after every simulation or after every move has
-	 * been played in the real game (e.g. clear or decay some statistics). These two strategies allow
-	 * to specify the actions to be taken in such situations. If nothing has to be done, just set
-	 * these strategies to null.
+	 * Some MCTS strategies require additional work before/after every simulation has been performed
+	 * or before/after every move has been played in the real game (e.g. change some parameters, clear
+	 * or decay some statistics). The following strategies allow to specify the actions to be taken in
+	 * such situations. If nothing has to be done, just set these strategies to null.
 	 */
+	private BeforeSimulationStrategy beforeSimulationStrategy;
+
 	private AfterSimulationStrategy afterSimulationStrategy;
 
 	private AfterMoveStrategy afterMoveStrategy;
@@ -115,9 +118,10 @@ public class InternalPropnetMCTSManager extends MCTSManager {
 	public InternalPropnetMCTSManager(SelectionStrategy selectionStrategy,
 			ExpansionStrategy expansionStrategy, PlayoutStrategy playoutStrategy,
 			BackpropagationStrategy backpropagationStrategy, MoveChoiceStrategy moveChoiceStrategy,
-			AfterSimulationStrategy afterSimulationStrategy, AfterMoveStrategy afterMoveStrategy,
-			TreeNodeFactory theNodesFactory, InternalPropnetStateMachine theMachine,
-			int gameStepOffset, int maxSearchDepth, boolean logTranspositionTable) {
+			BeforeSimulationStrategy beforeSimulationStrategy, AfterSimulationStrategy afterSimulationStrategy,
+			AfterMoveStrategy afterMoveStrategy,TreeNodeFactory theNodesFactory,
+			InternalPropnetStateMachine theMachine, int gameStepOffset, int maxSearchDepth,
+			boolean logTranspositionTable) {
 
 		//this.mctsType = mctsType;
 		this.selectionStrategy = selectionStrategy;
@@ -125,6 +129,7 @@ public class InternalPropnetMCTSManager extends MCTSManager {
 		this.playoutStrategy = playoutStrategy;
 		this.backpropagationStrategy = backpropagationStrategy;
 		this.moveChoiceStrategy = moveChoiceStrategy;
+		this.beforeSimulationStrategy = beforeSimulationStrategy;
 		this.afterSimulationStrategy = afterSimulationStrategy;
 		this.afterMoveStrategy = afterMoveStrategy;
 		this.theNodesFactory = theNodesFactory;
@@ -180,6 +185,12 @@ public class InternalPropnetMCTSManager extends MCTSManager {
 		toLog += "\n" + this.playoutStrategy.printStrategy();
 		toLog += "\n" + this.backpropagationStrategy.printStrategy();
 		toLog += "\n" + this.moveChoiceStrategy.printStrategy();
+
+		if(this.beforeSimulationStrategy != null){
+			toLog += "\n" + this.beforeSimulationStrategy.printStrategy();
+		}else{
+			toLog += "\n[BEFORE_SIM_STRATEGY = null]";
+		}
 
 		if(this.afterSimulationStrategy != null){
 			toLog += "\n" + this.afterSimulationStrategy.printStrategy();
@@ -339,7 +350,11 @@ public class InternalPropnetMCTSManager extends MCTSManager {
 			//System.out.println();
 			//System.out.println("MyIteration " + this.iterations);
 
-			this.searchNext(initialState, initialNode);
+			if(this.beforeSimulationStrategy != null){
+				this.beforeSimulationStrategy.beforeSimulationActions();
+			}
+
+			int[] goals = this.searchNext(initialState, initialNode);
 			this.iterations++;
 			this.visitedNodes += this.currentIterationVisitedNodes;
 
@@ -347,7 +362,7 @@ public class InternalPropnetMCTSManager extends MCTSManager {
 
 
 			if(this.afterSimulationStrategy != null){
-				this.afterSimulationStrategy.afterSimulationActions();
+				this.afterSimulationStrategy.afterSimulationActions(goals);
 			}
 			//System.out.println("Iteration: " + this.iterations);
 			//System.out.println("Stats: " + ((MASTStrategy)this.playoutStrategy).getNumStats());

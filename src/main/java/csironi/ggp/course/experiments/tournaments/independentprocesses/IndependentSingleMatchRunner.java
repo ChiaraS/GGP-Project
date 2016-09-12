@@ -64,6 +64,7 @@ public class IndependentSingleMatchRunner {
 
 		//GameRepository gameRepo = GameRepository.getDefaultRepository();
 
+		// LINUX
     	GameRepository gameRepo = new ManualUpdateLocalGameRepository("/home/csironi/GAMEREPOS/GGPBase-GameRepo-03022016");
 
     	Game game = gameRepo.getGame(gameKey);

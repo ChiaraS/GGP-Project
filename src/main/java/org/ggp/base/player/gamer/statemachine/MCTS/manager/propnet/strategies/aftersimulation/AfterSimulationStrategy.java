@@ -4,6 +4,6 @@ import org.ggp.base.player.gamer.statemachine.MCTS.manager.propnet.strategies.St
 
 public interface AfterSimulationStrategy extends Strategy {
 
-	public void afterSimulationActions();
+	public void afterSimulationActions(int[] goals);
 
 }

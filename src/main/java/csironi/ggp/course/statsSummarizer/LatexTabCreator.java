@@ -18,7 +18,7 @@ import java.util.Map;
  * The games in the rows are ordered according to the gamesOrder.
  * The class expects as input the folder that contains a file of statistics for each
  * algorithm and the name of the destination file where to save the latex representation
- * of the accorpated statistics. If the files with the stats of each algorithm start with
+ * of the aggragated statistics. If the files with the stats of each algorithm start with
  * a number, their content will be ordered in the columns according to that number (from
  * the smallest to the largest number).
  *

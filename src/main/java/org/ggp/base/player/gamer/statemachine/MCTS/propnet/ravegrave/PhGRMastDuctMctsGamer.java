@@ -59,7 +59,7 @@ public abstract class PhGRMastDuctMctsGamer extends GRMastDuctMctsGamer {
 		// actions needed by the MAST strategy, so we don't need to change it when we use GRAVE and MAST together.
 		return new InternalPropnetMCTSManager(graveSelection, new NoExpansion() /*new RandomExpansion(numRoles, myRole, r)*/,
 				mastPlayout, new MASTGRAVEBackpropagation(numRoles, myRole, mastStatistics, allJointMoves),
-				new MaximumScoreChoice(myRole, r),	new GRAVEAfterSimulation(graveSelection, mastPlayout),
+				new MaximumScoreChoice(myRole, r), null, new GRAVEAfterSimulation(graveSelection, mastPlayout),
 				new PhMASTAfterMove(new MASTAfterMove(mastStatistics, this.decayFactor), new ProgressiveHistoryAfterMove(graveSelection)),
 				new PnAMAFDecoupledTreeNodeFactory(this.thePropnetMachine),
 				this.thePropnetMachine,	this.gameStepOffset, this.maxSearchDepth, this.logTranspositionTable);

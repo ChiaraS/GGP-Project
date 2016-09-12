@@ -39,4 +39,10 @@ public class CADIABetaComputer implements BetaComputer {
 		}
 	}
 
+	public void setK(int newK){
+		this.k = newK;
+
+		System.out.println(k);
+	}
+
 }

@@ -40,7 +40,7 @@ public class SingleGameSlowSUCTMCTSGamer extends UctMctsGamer{
 
 		return new InternalPropnetMCTSManager(new UCTSelection(numRoles, myRole, r, this.valueOffset, new UCTEvaluator(this.c, this.unexploredMoveDefaultSelectionValue)),
 	       		new RandomExpansion(numRoles, myRole, r), new RandomPlayout(this.thePropnetMachine),
-	       		new StandardBackpropagation(numRoles, myRole),	new MaximumScoreChoice(myRole, r),
+	       		new StandardBackpropagation(numRoles, myRole), new MaximumScoreChoice(myRole, r), null,
 	       		null, null, new PnSlowSequentialTreeNodeFactory(this.thePropnetMachine, myRole),
 	       		this.thePropnetMachine,	this.gameStepOffset, this.maxSearchDepth, this.logTranspositionTable);
 	}

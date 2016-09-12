@@ -176,10 +176,10 @@ public class SeparatePropnetVerifier {
 		    //theRepository = GameRepository.getDefaultRepository();
 
 			// WINDOWS
-			theRepository = new ManualUpdateLocalGameRepository("C:/Users/c.sironi/\"BITBUCKET REPOS\"/GGP-Base/GGPBase-GameRepo-03022016");
+			//theRepository = new ManualUpdateLocalGameRepository("C:/Users/c.sironi/\"BITBUCKET REPOS\"/GGP-Base/GGPBase-GameRepo-03022016");
 
 			// LINUX
-		    //theRepository = new ManualUpdateLocalGameRepository("/home/csironi/GAMEREPOS/GGPBase-GameRepo-03022016");
+		    theRepository = new ManualUpdateLocalGameRepository("/home/csironi/GAMEREPOS/GGPBase-GameRepo-03022016");
 
 	    }
 

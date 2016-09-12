@@ -4,52 +4,36 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
 
+import org.ggp.base.player.gamer.statemachine.MCTS.manager.evolution.EvolutionManager;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.propnet.InternalPropnetMCTSManager;
-import org.ggp.base.player.gamer.statemachine.MCTS.manager.propnet.strategies.aftersimulation.GRAVEAfterSimulation;
+import org.ggp.base.player.gamer.statemachine.MCTS.manager.propnet.strategies.aftermove.EvoGRAVEAfterMove;
+import org.ggp.base.player.gamer.statemachine.MCTS.manager.propnet.strategies.aftersimulation.EvoGRAVEAfterSimulation;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.propnet.strategies.backpropagation.GRAVEBackpropagation;
+import org.ggp.base.player.gamer.statemachine.MCTS.manager.propnet.strategies.beforesimulation.EvoGRAVEBeforeSimulation;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.propnet.strategies.expansion.NoExpansion;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.propnet.strategies.movechoice.MaximumScoreChoice;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.propnet.strategies.playout.GRAVEPlayout;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.propnet.strategies.selection.GRAVESelection;
-import org.ggp.base.player.gamer.statemachine.MCTS.manager.propnet.strategies.selection.evaluators.GRAVE.BetaComputer;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.propnet.strategies.selection.evaluators.GRAVE.CADIABetaComputer;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.propnet.strategies.selection.evaluators.GRAVE.GRAVEEvaluator;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.propnet.treestructure.AMAFDecoupled.PnAMAFDecoupledTreeNodeFactory;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.prover.ProverMCTSManager;
-import org.ggp.base.player.gamer.statemachine.MCTS.manager.prover.strategies.aftersimulation.ProverGRAVEAfterSimulation;
-import org.ggp.base.player.gamer.statemachine.MCTS.manager.prover.strategies.backpropagation.ProverGRAVEBackpropagation;
-import org.ggp.base.player.gamer.statemachine.MCTS.manager.prover.strategies.expansion.ProverNoExpansion;
-import org.ggp.base.player.gamer.statemachine.MCTS.manager.prover.strategies.movechoice.ProverMaximumScoreChoice;
-import org.ggp.base.player.gamer.statemachine.MCTS.manager.prover.strategies.playout.ProverGRAVEPlayout;
-import org.ggp.base.player.gamer.statemachine.MCTS.manager.prover.strategies.selection.ProverGRAVESelection;
-import org.ggp.base.player.gamer.statemachine.MCTS.manager.prover.strategies.selection.evaluators.GRAVE.ProverGRAVEEvaluator;
-import org.ggp.base.player.gamer.statemachine.MCTS.manager.prover.treestructure.AMAFDecoupled.ProverAMAFDecoupledTreeNodeFactory;
-import org.ggp.base.player.gamer.statemachine.MCTS.propnet.DuctMctsGamer;
-import org.ggp.base.util.statemachine.Move;
-import org.ggp.base.util.statemachine.Role;
 import org.ggp.base.util.statemachine.inernalPropnetStructure.InternalPropnetMove;
 import org.ggp.base.util.statemachine.inernalPropnetStructure.InternalPropnetRole;
 
-public abstract class GRDuctMctsGamer extends DuctMctsGamer {
+public class CadiaEvoRaveDuctMctsGamer extends CadiaRaveDuctMctsGamer {
 
-	protected int minAMAFVisits;
+	protected double evoC;
 
-	protected BetaComputer betaComputer;
+	protected double evoValueOffset;
 
-	protected double defaultExploration;
-
-	public GRDuctMctsGamer(){
+	public CadiaEvoRaveDuctMctsGamer() {
 
 		super();
 
-		this.c = 0.2;
-		this.unexploredMoveDefaultSelectionValue = 1.0;
+		this.evoC = 0.2;
 
-		this.logTranspositionTable = true;
-
-		this.minAMAFVisits = 0;
-		this.betaComputer = new CADIABetaComputer(250);
-		this.defaultExploration = 1.0;
+		this.evoValueOffset = 0.01;
 
 	}
 
@@ -67,17 +51,21 @@ public abstract class GRDuctMctsGamer extends DuctMctsGamer {
 
 		GRAVEPlayout gravePlayout = new GRAVEPlayout(this.thePropnetMachine, allJointMoves);
 
+		EvolutionManager evolutionManager = new EvolutionManager(r, this.evoC, this.evoValueOffset);
+
 		return new InternalPropnetMCTSManager(graveSelection, new NoExpansion() /*new RandomExpansion(numRoles, myRole, r)*/,
-				gravePlayout, new GRAVEBackpropagation(numRoles, myRole, allJointMoves),
-				new MaximumScoreChoice(myRole, r), null, new GRAVEAfterSimulation(graveSelection, gravePlayout),
-				null, new PnAMAFDecoupledTreeNodeFactory(this.thePropnetMachine), this.thePropnetMachine,
-	       		this.gameStepOffset, this.maxSearchDepth, this.logTranspositionTable);
+				gravePlayout, new GRAVEBackpropagation(numRoles, myRole, allJointMoves), new MaximumScoreChoice(myRole, r),
+				new EvoGRAVEBeforeSimulation(evolutionManager, ((CADIABetaComputer)this.betaComputer)),
+				new EvoGRAVEAfterSimulation(graveSelection, gravePlayout, evolutionManager, myRole),
+				new EvoGRAVEAfterMove(evolutionManager), new PnAMAFDecoupledTreeNodeFactory(this.thePropnetMachine),
+				this.thePropnetMachine, this.gameStepOffset, this.maxSearchDepth, this.logTranspositionTable);
 
 	}
 
 	@Override
 	public ProverMCTSManager createProverMCTSManager(){
 
+		/*
 		Random r = new Random();
 
 		Role myRole = this.getRole();
@@ -91,12 +79,15 @@ public abstract class GRDuctMctsGamer extends DuctMctsGamer {
 
 		ProverGRAVEPlayout gravePlayout = new ProverGRAVEPlayout(this.getStateMachine(), allJointMoves);
 
-		return new ProverMCTSManager(graveSelection, new ProverNoExpansion() /*new RandomExpansion(numRoles, myRole, r)*/,
+		return new ProverMCTSManager(graveSelection, new ProverNoExpansion() /*new RandomExpansion(numRoles, myRole, r)*//*,
 				gravePlayout, new ProverGRAVEBackpropagation(numRoles, myRole, allJointMoves),
 				new ProverMaximumScoreChoice(myRoleIndex, r), new ProverGRAVEAfterSimulation(graveSelection, gravePlayout),
 				null, new ProverAMAFDecoupledTreeNodeFactory(this.getStateMachine()), this.getStateMachine(),
 	       		this.gameStepOffset, this.maxSearchDepth);
 
+	    */
 
+		return null;
 	}
+
 }

@@ -15,7 +15,7 @@ public class GRAVEAfterSimulation implements AfterSimulationStrategy {
 	}
 
 	@Override
-	public void afterSimulationActions() {
+	public void afterSimulationActions(int[] goals) {
 		this.graveSelection.resetCloserAmafStats();
 		this.gravePlayout.clearLastMemorizedPlayout();
 	}

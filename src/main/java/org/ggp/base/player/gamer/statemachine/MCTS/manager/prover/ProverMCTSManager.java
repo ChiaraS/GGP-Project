@@ -322,7 +322,7 @@ public class ProverMCTSManager extends MCTSManager {
 			//System.out.println();
 			//System.out.println("Iteration " + this.iterations);
 
-			this.searchNext(initialState, initialNode);
+			int[] goals = this.searchNext(initialState, initialNode);
 			this.iterations++;
 			this.visitedNodes += this.currentIterationVisitedNodes;
 
@@ -330,7 +330,7 @@ public class ProverMCTSManager extends MCTSManager {
 
 
 			if(this.afterSimulationStrategy != null){
-				this.afterSimulationStrategy.afterSimulationActions();
+				this.afterSimulationStrategy.afterSimulationActions(goals);
 			}
 			//System.out.println("Iteration: " + this.iterations);
 			//System.out.println("Stats: " + ((MASTStrategy)this.playoutStrategy).getNumStats());
