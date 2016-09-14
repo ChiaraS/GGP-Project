@@ -52,7 +52,9 @@ public class WinScoreStatsAggregator {
 			return;
 		}
 
-		File[] statsDirs = sourceFolder.listFiles();
+		File[] gamesDirs = sourceFolder.listFiles();
+
+		File[] statsDirs;
 
 		File[] statsFiles;
 
@@ -74,79 +76,85 @@ public class WinScoreStatsAggregator {
 		String theLine;
 
 		// For the folder of each game...
-		for(int i = 0; i < statsDirs.length; i++){
+		for(int i = 0; i < gamesDirs.length; i++){
 
-			if(statsDirs[i].isDirectory() && statsDirs[i].getName() != null && (statsDirs[i].getName().endsWith("-Stats") || statsDirs[i].getName().endsWith("-stats") || statsDirs[i].getName().endsWith(".Statistics") || statsDirs[i].getName().endsWith(".statistics"))){
+			// ...scan the content until you find the ".Statistics" folder of the game.
+			statsDirs = gamesDirs[i].listFiles();
 
-				writeToFile(scoresFile, ";");
-				writeToFile(winsFile, ";");
+			for(int j = 0; j < statsDirs.length; j++){
 
-				if(statsDirs[i].getName().endsWith("-Stats") || statsDirs[i].getName().endsWith("-stats")){
-					gameKey = statsDirs[i].getName().substring(0, statsDirs[i].getName().length()-6);
-				}else{
-					String[] splitStatsDir = statsDirs[i].getName().split("\\.");
-					gameKey = splitStatsDir[1];
-				}
 
-				System.out.println(gameKey);
+				if(statsDirs[j].isDirectory() && statsDirs[j].getName() != null && (statsDirs[j].getName().endsWith("-Stats") || statsDirs[j].getName().endsWith("-stats") || statsDirs[j].getName().endsWith(".Statistics") || statsDirs[j].getName().endsWith(".statistics"))){
 
-				statsFiles = statsDirs[i].listFiles();
+					writeToFile(scoresFile, ";");
+					writeToFile(winsFile, ";");
 
-				for(int j = 0; j < statsFiles.length; j++){
-
-					if(statsFiles[j].getName().equals("ScoreStats.csv")){
-
-						try {
-							br = new BufferedReader(new FileReader(statsFiles[j]));
-							theLine = br.readLine(); // First line is headers
-							theLine = br.readLine();
-
-							// Forgot to do this when computing statistics, adding this temporary fix
-							theLine = addCIExtremes(theLine);
-
-							//System.out.println("4: " + theLine);
-
-							writeToFile(scoresFile, gameKey + ";" + theLine);
-							theLine = br.readLine();
-
-							// Forgot to do this when computing statistics, adding this temporary fix
-							theLine = addCIExtremes(theLine);
-
-							writeToFile(scoresFile, gameKey + ";" + theLine);
-							br.close();
-						} catch (IOException e) {
-							System.out.println("Exception when reading a file while aggregating the statistics.");
-				        	e.printStackTrace();
-						}
-
+					if(statsDirs[j].getName().endsWith("-Stats") || statsDirs[j].getName().endsWith("-stats")){
+						gameKey = statsDirs[j].getName().substring(0, statsDirs[j].getName().length()-6);
+					}else{
+						String[] splitStatsDir = statsDirs[i].getName().split("\\.");
+						gameKey = splitStatsDir[1];
 					}
 
-					if(statsFiles[j].getName().equals("WinsStats.csv")){
+					System.out.println(gameKey);
 
-						try {
-							br = new BufferedReader(new FileReader(statsFiles[j]));
-							theLine = br.readLine(); // First line is headers
-							theLine = br.readLine();
+					statsFiles = statsDirs[j].listFiles();
 
-							// Forgot to do this when computing statistics, adding this temporary fix
-							theLine = addCIExtremes(theLine);
+					for(int k = 0; k < statsFiles.length; k++){
 
-							writeToFile(winsFile, gameKey + ";" + theLine);
-							theLine = br.readLine();
+						if(statsFiles[k].getName().equals("ScoreStats.csv")){
 
-							// Forgot to do this when computing statistics, adding this temporary fix
-							theLine = addCIExtremes(theLine);
+							try {
+								br = new BufferedReader(new FileReader(statsFiles[k]));
+								theLine = br.readLine(); // First line is headers
+								theLine = br.readLine();
 
-							writeToFile(winsFile, gameKey + ";" + theLine);
-							br.close();
-						} catch (IOException e) {
-							System.out.println("Exception when reading a file while aggregating the statistics.");
-				        	e.printStackTrace();
+								// Forgot to do this when computing statistics, adding this temporary fix
+								theLine = addCIExtremes(theLine);
+
+								//System.out.println("4: " + theLine);
+
+								writeToFile(scoresFile, gameKey + ";" + theLine);
+								theLine = br.readLine();
+
+								// Forgot to do this when computing statistics, adding this temporary fix
+								theLine = addCIExtremes(theLine);
+
+								writeToFile(scoresFile, gameKey + ";" + theLine);
+								br.close();
+							} catch (IOException e) {
+								System.out.println("Exception when reading a file while aggregating the statistics.");
+					        	e.printStackTrace();
+							}
+
 						}
 
+						if(statsFiles[k].getName().equals("WinsStats.csv")){
+
+							try {
+								br = new BufferedReader(new FileReader(statsFiles[k]));
+								theLine = br.readLine(); // First line is headers
+								theLine = br.readLine();
+
+								// Forgot to do this when computing statistics, adding this temporary fix
+								theLine = addCIExtremes(theLine);
+
+								writeToFile(winsFile, gameKey + ";" + theLine);
+								theLine = br.readLine();
+
+								// Forgot to do this when computing statistics, adding this temporary fix
+								theLine = addCIExtremes(theLine);
+
+								writeToFile(winsFile, gameKey + ";" + theLine);
+								br.close();
+							} catch (IOException e) {
+								System.out.println("Exception when reading a file while aggregating the statistics.");
+					        	e.printStackTrace();
+							}
+
+						}
 					}
 				}
-
 			}
 		}
 

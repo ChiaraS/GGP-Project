@@ -1,9 +1,10 @@
 package org.ggp.base.player.gamer.statemachine.MCTS.manager.propnet.strategies.selection.evaluators;
 
 import org.ggp.base.player.gamer.statemachine.MCS.manager.MoveStats;
+import org.ggp.base.player.gamer.statemachine.MCTS.manager.evolution.OnlineTunableComponent;
 import org.ggp.base.util.statemachine.inernalPropnetStructure.InternalPropnetMove;
 
-public class UCTEvaluator implements MoveEvaluator {
+public class UCTEvaluator implements MoveEvaluator, OnlineTunableComponent {
 
 	protected double c;
 
@@ -71,6 +72,20 @@ public class UCTEvaluator implements MoveEvaluator {
 		}else{
 			return "(EVALUATOR_TYPE = " + this.getClass().getSimpleName() + ")";
 		}
+	}
+
+	@Override
+	public void setNewValue(double newValue) {
+
+		this.c = newValue;
+
+	}
+
+	@Override
+	public String printOnlineTunableComponent() {
+
+		return "(ONLINE_TUNABLE_COMPONENT = " + this.printEvaluator() + ")";
+
 	}
 
 }

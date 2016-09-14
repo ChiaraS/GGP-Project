@@ -1,8 +1,9 @@
 package org.ggp.base.player.gamer.statemachine.MCTS.manager.propnet.strategies.selection.evaluators.GRAVE;
 
 import org.ggp.base.player.gamer.statemachine.MCS.manager.MoveStats;
+import org.ggp.base.player.gamer.statemachine.MCTS.manager.evolution.OnlineTunableComponent;
 
-public interface BetaComputer {
+public abstract class BetaComputer implements OnlineTunableComponent {
 
 	/**
 	 * Computes the value of the weight beta used by the GRAVE move evaluator during selection.
@@ -12,10 +13,24 @@ public interface BetaComputer {
 	 * @param nodeVisits the visits of the node for which this move is being evaluated.
 	 * @return the weight to be used in the computation of the value of the move.
 	 */
-	public double computeBeta(MoveStats theMoveStats, MoveStats theAmafMoveStats, int nodeVisits);
+	public abstract double computeBeta(MoveStats theMoveStats, MoveStats theAmafMoveStats, int nodeVisits);
 
-	public String getBetaComputerParameters();
+	public abstract String getBetaComputerParameters();
 
-	public String printBetaComputer();
+	public String printBetaComputer() {
+		String params = this.getBetaComputerParameters();
+
+		if(params != null){
+			return "(BETA_COMPUTER_TYPE = " + this.getClass().getSimpleName() + ", " + params + ")";
+		}else{
+			return "(BETA_COMPUTER_TYPE = " + this.getClass().getSimpleName() + ")";
+		}
+	}
+
+	@Override
+	public String printOnlineTunableComponent() {
+
+		return "(ONLINE_TUNABLE_COMPONENT = " + this.printBetaComputer() + ")";
+	}
 
 }

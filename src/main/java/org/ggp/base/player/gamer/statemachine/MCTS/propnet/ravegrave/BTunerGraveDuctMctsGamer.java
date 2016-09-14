@@ -1,8 +1,8 @@
 package org.ggp.base.player.gamer.statemachine.MCTS.propnet.ravegrave;
 
-public class CadiaEvoGraveDuctMctsGamer extends CadiaEvoRaveDuctMctsGamer {
+public class BTunerGraveDuctMctsGamer extends BTunerRaveDuctMctsGamer {
 
-	public CadiaEvoGraveDuctMctsGamer() {
+	public BTunerGraveDuctMctsGamer() {
 		super();
 
 		this.minAMAFVisits = 50;

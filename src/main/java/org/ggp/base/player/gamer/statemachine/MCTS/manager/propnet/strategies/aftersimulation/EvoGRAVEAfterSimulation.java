@@ -1,43 +1,42 @@
 package org.ggp.base.player.gamer.statemachine.MCTS.manager.propnet.strategies.aftersimulation;
 
-import org.ggp.base.player.gamer.statemachine.MCTS.manager.evolution.EvolutionManager;
-import org.ggp.base.player.gamer.statemachine.MCTS.manager.propnet.strategies.playout.MemorizedStandardPlayout;
-import org.ggp.base.player.gamer.statemachine.MCTS.manager.propnet.strategies.selection.GRAVESelection;
-import org.ggp.base.util.statemachine.inernalPropnetStructure.InternalPropnetRole;
 
-public class EvoGRAVEAfterSimulation extends GRAVEAfterSimulation {
+public class EvoGRAVEAfterSimulation implements AfterSimulationStrategy{
 
-	private EvolutionManager evolutionManager;
+	private GRAVEAfterSimulation graveAfterSimulation;
 
-	private InternalPropnetRole myRole;
+	private EvoAfterSimulation evoAfterSimulation;
 
-	public EvoGRAVEAfterSimulation(GRAVESelection graveSelection,
-			MemorizedStandardPlayout gravePlayout, EvolutionManager evolutionManager, InternalPropnetRole myRole) {
-		super(graveSelection, gravePlayout);
+	public EvoGRAVEAfterSimulation(GRAVEAfterSimulation graveAfterSimulation, EvoAfterSimulation evoAfterSimulation) {
 
-		this.evolutionManager = evolutionManager;
+		this.graveAfterSimulation = graveAfterSimulation;
 
-		this.myRole = myRole;
+		this.evoAfterSimulation = evoAfterSimulation;
 
 	}
 
 	@Override
-	public void afterSimulationActions(int[] goals) {
+	public void afterSimulationActions(int[] goals){
 
-		super.afterSimulationActions(goals);
+		this.graveAfterSimulation.afterSimulationActions(goals);
 
-		this.evolutionManager.updateFitness(goals[this.myRole.getIndex()]);
+		this.evoAfterSimulation.afterSimulationActions(goals);
 
 	}
 
 	@Override
 	public String getStrategyParameters() {
-		String params = super.getStrategyParameters();
+		return "(SUB_AFTER_SIM_STRATEGY = " + this.graveAfterSimulation.printStrategy() + ", SUB_AFTER_SIM_STRATEGY = " + this.evoAfterSimulation.printStrategy() + ")";
+	}
 
-		if(params == null){
-			return this.evolutionManager.printEvolutionManager();
+	@Override
+	public String printStrategy() {
+		String params = this.getStrategyParameters();
+
+		if(params != null){
+			return "[AFTER_SIM_STRATEGY = " + this.getClass().getSimpleName() + ", " + params + "]";
 		}else{
-			return params + "," + this.evolutionManager.printEvolutionManager();
+			return "[AFTER_SIM_STRATEGY = " + this.getClass().getSimpleName() + "]";
 		}
 	}
 

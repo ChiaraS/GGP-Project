@@ -2,7 +2,7 @@ package org.ggp.base.player.gamer.statemachine.MCTS.manager.propnet.strategies.s
 
 import org.ggp.base.player.gamer.statemachine.MCS.manager.MoveStats;
 
-public class CADIABetaComputer implements BetaComputer {
+public class CADIABetaComputer extends BetaComputer{
 
 	/**
 	 * Equivalence parameter: number of node visits needed to consider as equal
@@ -29,20 +29,14 @@ public class CADIABetaComputer implements BetaComputer {
 	}
 
 	@Override
-	public String printBetaComputer() {
-		String params = this.getBetaComputerParameters();
+	public void setNewValue(double newValue){
 
-		if(params != null){
-			return "(BETA_COMPUTER_TYPE = " + this.getClass().getSimpleName() + ", " + params + ")";
-		}else{
-			return "(BETA_COMPUTER_TYPE = " + this.getClass().getSimpleName() + ")";
-		}
+		// TODO: fix this not-so-nice casting
+		this.k = (int) newValue;
+
+		//System.out.println(k);
 	}
 
-	public void setK(int newK){
-		this.k = newK;
 
-		System.out.println(k);
-	}
 
 }

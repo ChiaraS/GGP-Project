@@ -2,13 +2,14 @@ package org.ggp.base.player.gamer.statemachine.MCTS.manager.propnet.strategies.s
 
 import java.util.Random;
 
+import org.ggp.base.player.gamer.statemachine.MCTS.manager.evolution.OnlineTunableComponent;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.propnet.strategies.selection.evaluators.GRAVE.GRAVEEvaluator;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.propnet.treestructure.MCTSJointMove;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.propnet.treestructure.MCTSNode;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.propnet.treestructure.AMAFDecoupled.PnAMAFNode;
 import org.ggp.base.util.statemachine.inernalPropnetStructure.InternalPropnetRole;
 
-public class GRAVESelection extends MoveValueSelection {
+public class GRAVESelection extends MoveValueSelection implements OnlineTunableComponent{
 
 	/**
 	 * Minimum number of visits that the node must have to be allowed to use its own AMAF statistics.
@@ -64,6 +65,20 @@ public class GRAVESelection extends MoveValueSelection {
 		}else{
 			return params + ", MIN_AMAF_VISITS = " + this.minAMAFVisits;
 		}
+	}
+
+	@Override
+	public void setNewValue(double newValue) {
+
+		this.minAMAFVisits = (int) newValue;
+
+	}
+
+	@Override
+	public String printOnlineTunableComponent() {
+
+		return "(ONLINE_TUNABLE_COMPONENT = " + this.printStrategy() + ")";
+
 	}
 
 }

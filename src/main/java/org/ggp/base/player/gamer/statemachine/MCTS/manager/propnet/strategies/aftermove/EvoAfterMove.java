@@ -1,12 +1,12 @@
 package org.ggp.base.player.gamer.statemachine.MCTS.manager.propnet.strategies.aftermove;
 
-import org.ggp.base.player.gamer.statemachine.MCTS.manager.evolution.EvolutionManager;
+import org.ggp.base.player.gamer.statemachine.MCTS.manager.evolution.SingleParameterEvolutionManager;
 
-public class EvoGRAVEAfterMove implements AfterMoveStrategy {
+public class EvoAfterMove implements AfterMoveStrategy {
 
-	private EvolutionManager evolutionManager;
+	private SingleParameterEvolutionManager evolutionManager;
 
-	public EvoGRAVEAfterMove(EvolutionManager evolutionManager) {
+	public EvoAfterMove(SingleParameterEvolutionManager evolutionManager) {
 
 		this.evolutionManager = evolutionManager;
 	}

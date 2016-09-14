@@ -7,7 +7,7 @@ import java.util.Random;
 import org.ggp.base.util.logging.GamerLogger;
 
 
-public class EvolutionManager {
+public class SingleParameterEvolutionManager {
 
 	private Random random;
 
@@ -24,7 +24,7 @@ public class EvolutionManager {
 
 	private int currentSelectedIndividual;
 
-	public EvolutionManager(Random random, double explorationConstant, double valueOffset) {
+	public SingleParameterEvolutionManager(Random random, double explorationConstant, double valueOffset, Individual[] individuals) {
 
 		this.random = random;
 
@@ -34,6 +34,9 @@ public class EvolutionManager {
 
 		this.numUpdates = 0;
 
+		this.individuals = individuals;
+
+		/*
 		individuals = new Individual[8];
 
 		individuals[0] = new Individual(10);
@@ -45,11 +48,13 @@ public class EvolutionManager {
 		individuals[6] = new Individual(1000);
 		individuals[7] = new Individual(2000);
 
+		*/
+
 		this.currentSelectedIndividual = -1;
 
 	}
 
-	public int selectNextK(){
+	public double selectNextIndividual(){
 
 		// This should mean that the fitness hasn't been computed for any of the individuals yet,
 		// thus we return a random one.
@@ -144,7 +149,7 @@ public class EvolutionManager {
 
 		for(int i = 0; i < this.individuals.length; i++){
 
-			GamerLogger.log(GamerLogger.FORMAT.CSV_FORMAT, "EvoManager", "K =;" + individuals[i].getParameter() + ";EVALS =;" + individuals[i].getNumEvaluations() + ";TOT_FITNESS =;" + individuals[i].getTotalFitness() + ";AVG_FITNESS =;" + individuals[i].getAverageFitness());
+			GamerLogger.log(GamerLogger.FORMAT.CSV_FORMAT, "EvoManager", "PARAM_VALUE =;" + individuals[i].getParameter() + ";EVALS =;" + individuals[i].getNumEvaluations() + ";TOT_FITNESS =;" + individuals[i].getTotalFitness() + ";AVG_FITNESS =;" + individuals[i].getAverageFitness());
 
 		}
 
