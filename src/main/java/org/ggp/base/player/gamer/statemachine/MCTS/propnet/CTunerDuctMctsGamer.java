@@ -24,7 +24,7 @@ public class CTunerDuctMctsGamer extends DuctMctsGamer {
 
 	protected double evoValueOffset;
 
-	protected Individual[] individuals;
+	protected double[] individualsValues;
 
 	public CTunerDuctMctsGamer() {
 
@@ -34,17 +34,17 @@ public class CTunerDuctMctsGamer extends DuctMctsGamer {
 
 		this.evoValueOffset = 0.01;
 
-		this.individuals = new Individual[9];
+		this.individualsValues = new double[9];
 
-		this.individuals[0] = new Individual(0.1);
-		this.individuals[1] = new Individual(0.2);
-		this.individuals[2] = new Individual(0.3);
-		this.individuals[3] = new Individual(0.4);
-		this.individuals[4] = new Individual(0.5);
-		this.individuals[5] = new Individual(0.6);
-		this.individuals[6] = new Individual(0.7);
-		this.individuals[7] = new Individual(0.8);
-		this.individuals[7] = new Individual(0.9);
+		this.individualsValues[0] = 0.1;
+		this.individualsValues[1] = 0.2;
+		this.individualsValues[2] = 0.3;
+		this.individualsValues[3] = 0.4;
+		this.individualsValues[4] = 0.5;
+		this.individualsValues[5] = 0.6;
+		this.individualsValues[6] = 0.7;
+		this.individualsValues[7] = 0.8;
+		this.individualsValues[8] = 0.9;
 
 	}
 
@@ -58,7 +58,13 @@ public class CTunerDuctMctsGamer extends DuctMctsGamer {
 
 		UCTEvaluator evaluator = new UCTEvaluator(this.c, this.unexploredMoveDefaultSelectionValue);
 
-		SingleParameterEvolutionManager evolutionManager = new SingleParameterEvolutionManager(r, this.evoC, this.evoValueOffset, this.individuals);
+		Individual[] individuals = new Individual[this.individualsValues.length];
+
+		for(int i = 0; i < this.individualsValues.length; i++){
+			individuals[i] = new Individual(this.individualsValues[i]);
+		}
+
+		SingleParameterEvolutionManager evolutionManager = new SingleParameterEvolutionManager(r, this.evoC, this.evoValueOffset, individuals);
 
 		return new InternalPropnetMCTSManager(new UCTSelection(numRoles, myRole, r, this.valueOffset, evaluator),
 	       		new RandomExpansion(numRoles, myRole, r), new RandomPlayout(this.thePropnetMachine),

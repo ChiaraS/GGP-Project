@@ -10,7 +10,6 @@ public class CadiaRaveDuctMctsGamer extends GRDuctMctsGamer {
 
 		this.betaComputer = new CADIABetaComputer(250);
 
-
 	}
 
 }

@@ -23,7 +23,7 @@ import org.ggp.base.player.gamer.statemachine.MCTS.manager.prover.ProverMCTSMana
 import org.ggp.base.util.statemachine.inernalPropnetStructure.InternalPropnetMove;
 import org.ggp.base.util.statemachine.inernalPropnetStructure.InternalPropnetRole;
 
-public class CadiaKTunerRaveDuctMctsGamer extends CadiaRaveDuctMctsGamer {
+public class CadiaCTunerRaveDuctMctsGamer extends CadiaRaveDuctMctsGamer {
 
 	protected double evoC;
 
@@ -31,24 +31,24 @@ public class CadiaKTunerRaveDuctMctsGamer extends CadiaRaveDuctMctsGamer {
 
 	protected double[] individualsValues;
 
-	public CadiaKTunerRaveDuctMctsGamer() {
-
+	public CadiaCTunerRaveDuctMctsGamer() {
 		super();
 
 		this.evoC = 0.2;
 
 		this.evoValueOffset = 0.01;
 
-		this.individualsValues = new double[8];
+		this.individualsValues = new double[9];
 
-		this.individualsValues[0] = 10;
-		this.individualsValues[1] = 50;
-		this.individualsValues[2] = 100;
-		this.individualsValues[3] = 250;
-		this.individualsValues[4] = 500;
-		this.individualsValues[5] = 750;
-		this.individualsValues[6] = 1000;
-		this.individualsValues[7] = 2000;
+		this.individualsValues[0] = 0.1;
+		this.individualsValues[1] = 0.2;
+		this.individualsValues[2] = 0.3;
+		this.individualsValues[3] = 0.4;
+		this.individualsValues[4] = 0.5;
+		this.individualsValues[5] = 0.6;
+		this.individualsValues[6] = 0.7;
+		this.individualsValues[7] = 0.8;
+		this.individualsValues[8] = 0.9;
 
 	}
 
@@ -62,7 +62,9 @@ public class CadiaKTunerRaveDuctMctsGamer extends CadiaRaveDuctMctsGamer {
 
 		List<List<InternalPropnetMove>> allJointMoves = new ArrayList<List<InternalPropnetMove>>();
 
-		GRAVESelection graveSelection = new GRAVESelection(numRoles, myRole, r, this.valueOffset, this.minAMAFVisits, new GRAVEEvaluator(this.c, this.unexploredMoveDefaultSelectionValue, this.betaComputer, this.defaultExploration));
+		GRAVEEvaluator evaluator = new GRAVEEvaluator(this.c, this.unexploredMoveDefaultSelectionValue, this.betaComputer, this.defaultExploration);
+
+		GRAVESelection graveSelection = new GRAVESelection(numRoles, myRole, r, this.valueOffset, this.minAMAFVisits, evaluator);
 
 		GRAVEPlayout gravePlayout = new GRAVEPlayout(this.thePropnetMachine, allJointMoves);
 
@@ -76,7 +78,7 @@ public class CadiaKTunerRaveDuctMctsGamer extends CadiaRaveDuctMctsGamer {
 
 		return new InternalPropnetMCTSManager(graveSelection, new NoExpansion() /*new RandomExpansion(numRoles, myRole, r)*/,
 				gravePlayout, new GRAVEBackpropagation(numRoles, myRole, allJointMoves), new MaximumScoreChoice(myRole, r),
-				new EvoBeforeSimulation(evolutionManager, this.betaComputer),
+				new EvoBeforeSimulation(evolutionManager, evaluator),
 				new EvoGRAVEAfterSimulation(new GRAVEAfterSimulation(graveSelection, gravePlayout), new EvoAfterSimulation(evolutionManager, myRole)),
 				new EvoAfterMove(evolutionManager), new PnAMAFDecoupledTreeNodeFactory(this.thePropnetMachine),
 				this.thePropnetMachine, this.gameStepOffset, this.maxSearchDepth, this.logTranspositionTable);
@@ -110,5 +112,6 @@ public class CadiaKTunerRaveDuctMctsGamer extends CadiaRaveDuctMctsGamer {
 
 		return null;
 	}
+
 
 }

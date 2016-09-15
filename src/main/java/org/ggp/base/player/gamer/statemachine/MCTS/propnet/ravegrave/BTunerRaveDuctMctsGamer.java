@@ -29,7 +29,7 @@ public class BTunerRaveDuctMctsGamer extends RaveDuctMctsGamer {
 
 	protected double evoValueOffset;
 
-	protected Individual[] individuals;
+	protected double[] individualsValues;
 
 	public BTunerRaveDuctMctsGamer() {
 
@@ -39,16 +39,16 @@ public class BTunerRaveDuctMctsGamer extends RaveDuctMctsGamer {
 
 		this.evoValueOffset = 0.01;
 
-		this.individuals = new Individual[8];
+		this.individualsValues = new double[8];
 
-		this.individuals[0] = new Individual(1000);
-		this.individuals[1] = new Individual(100);
-		this.individuals[2] = new Individual(10);
-		this.individuals[3] = new Individual(1);
-		this.individuals[4] = new Individual(0.1);
-		this.individuals[5] = new Individual(0.01);
-		this.individuals[6] = new Individual(0.001);
-		this.individuals[7] = new Individual(0.0001);
+		this.individualsValues[0] = 1000;
+		this.individualsValues[1] = 100;
+		this.individualsValues[2] = 10;
+		this.individualsValues[3] = 1;
+		this.individualsValues[4] = 0.1;
+		this.individualsValues[5] = 0.01;
+		this.individualsValues[6] = 0.001;
+		this.individualsValues[7] = 0.0001;
 
 	}
 
@@ -66,7 +66,13 @@ public class BTunerRaveDuctMctsGamer extends RaveDuctMctsGamer {
 
 		GRAVEPlayout gravePlayout = new GRAVEPlayout(this.thePropnetMachine, allJointMoves);
 
-		SingleParameterEvolutionManager evolutionManager = new SingleParameterEvolutionManager(r, this.evoC, this.evoValueOffset, this.individuals);
+		Individual[] individuals = new Individual[this.individualsValues.length];
+
+		for(int i = 0; i < this.individualsValues.length; i++){
+			individuals[i] = new Individual(this.individualsValues[i]);
+		}
+
+		SingleParameterEvolutionManager evolutionManager = new SingleParameterEvolutionManager(r, this.evoC, this.evoValueOffset, individuals);
 
 		return new InternalPropnetMCTSManager(graveSelection, new NoExpansion() /*new RandomExpansion(numRoles, myRole, r)*/,
 				gravePlayout, new GRAVEBackpropagation(numRoles, myRole, allJointMoves), new MaximumScoreChoice(myRole, r),

@@ -50,7 +50,10 @@ public class IndependentTourneyRunner {
 		int startClock;
 		int playClock;
 		long pnCreationTime;
-		int numParallelMatches;
+		// Number of parallel player threads that should run at the same time. NOTE that this requirement is loosely satisfied.
+		// The actual number of player threads that will be running will be the closest feasible number of threads that allows
+		// to run matches with the given number of roles for the game.
+		int numParallelPlayers;
 		int matchesPerGamerType;
 		List<String> theGamersTypes;
 
@@ -59,6 +62,10 @@ public class IndependentTourneyRunner {
 		String mainLogFolder;
 
 		Game game;
+
+		//GameRepository gameRepo = GameRepository.getDefaultRepository();
+
+    	GameRepository gameRepo = new ManualUpdateLocalGameRepository("/home/csironi/GAMEREPOS/GGPBase-GameRepo-03022016");
 
 		if(args.length == 1){
 
@@ -96,11 +103,6 @@ public class IndependentTourneyRunner {
 				tourneyName = props.getProperty("tourneyName");
 				gameKey = props.getProperty("gameKey");
 
-				//GameRepository gameRepo = GameRepository.getDefaultRepository();
-
-				// LINUX
-				GameRepository gameRepo = new ManualUpdateLocalGameRepository("/home/csironi/GAMEREPOS/GGPBase-GameRepo-03022016");
-
 		    	game = gameRepo.getGame(gameKey);
 
 		    	if(game == null){
@@ -111,7 +113,7 @@ public class IndependentTourneyRunner {
 				startClock = Integer.parseInt(props.getProperty("startClock"));
 				playClock = Integer.parseInt(props.getProperty("playClock"));
 				pnCreationTime = Long.parseLong(props.getProperty("pnCreationTime"));
-				numParallelMatches = Integer.parseInt(props.getProperty("numParallelMatches"));
+				numParallelPlayers = Integer.parseInt(props.getProperty("numParallelPlayers"));
 				matchesPerGamerType = Integer.parseInt(props.getProperty("matchesPerGamerType"));
 
 				String[] theGamersTypesString = props.getProperty("theGamersTypes").split(";");
@@ -170,10 +172,6 @@ public class IndependentTourneyRunner {
 			tourneyName = args[0];
 			gameKey = args[1];
 
-			//GameRepository gameRepo = GameRepository.getDefaultRepository();
-
-	    	GameRepository gameRepo = new ManualUpdateLocalGameRepository("/home/csironi/GAMEREPOS/GGPBase-GameRepo-03022016");
-
 	    	game = gameRepo.getGame(gameKey);
 
 	    	if(game == null){
@@ -203,9 +201,9 @@ public class IndependentTourneyRunner {
 			}
 
 			try{
-				numParallelMatches = Integer.valueOf(args[5]);
+				numParallelPlayers = Integer.valueOf(args[5]);
 			}catch(NumberFormatException e){
-				System.out.println("Impossible to start tourney runner, wrong input. The number of parallel matches must be an integer value, not " + args[5] + ".");
+				System.out.println("Impossible to start tourney runner, wrong input. The number of parallel players must be an integer value, not " + args[5] + ".");
 				return;
 			}
 
@@ -275,7 +273,7 @@ public class IndependentTourneyRunner {
 	    	    props.setProperty("startClock", ""+startClock);
 	    	    props.setProperty("playClock", ""+playClock);
 	    	    props.setProperty("pnCreationTime", ""+pnCreationTime);
-	    	    props.setProperty("numParallelMatches", ""+numParallelMatches);
+	    	    props.setProperty("numParallelPlayers", ""+numParallelPlayers);
 	    	    props.setProperty("matchesPerGamerType", ""+matchesPerGamerType);
 
 	    	    String gamersTypesString = "";
@@ -314,8 +312,8 @@ public class IndependentTourneyRunner {
     	gamerTypesList += "]";
 
     	GamerLogger.log("TourneyRunner"+runNumber, "Starting tourney " + tourneyName + " for game " + gameKey + " with following settings: START_CLOCK=" +
-    			startClock + "s, PLAY_CLOCK=" + playClock + "s, PROPNET_CREATION_TIME=" + pnCreationTime + "ms, NUM_PARALLEL_MATCHES=" +
-    			numParallelMatches + ", NUM_MATCHES_PER_GAMER_TYPE=" + matchesPerGamerType + ", GAMER_TYPES=" + gamerTypesList + ".");
+    			startClock + "s, PLAY_CLOCK=" + playClock + "s, PROPNET_CREATION_TIME=" + pnCreationTime + "ms, DESIRED_NUM_PARALLEL_PLAYERS=" +
+    			numParallelPlayers + ", MIN_NUM_MATCHES_PER_GAMER_TYPE=" + matchesPerGamerType + ", GAMER_TYPES=" + gamerTypesList + ".");
 
     	/** 3. Compute all combinations of gamer types. **/
 
@@ -327,6 +325,13 @@ public class IndependentTourneyRunner {
     	if(matchesPerGamerType%(Combinator.getLastCombinationsPerElement() * Combinator.getLastPermutationsPerCombination()) != 0){
     		matchesPerCombination++;
     	}
+
+    	int numParallelMatches = Math.round(((float) numParallelPlayers) / ((float) expectedRoles));
+
+    	GamerLogger.log("TourneyRunner"+runNumber, "Computed following parameters for tourney: NUM_ROLES=" + expectedRoles +
+    			", NUM_COMBINATIONS=" + combinations.size() + ", NUM_PARALLEL_MATCHES=" + numParallelMatches + ", ACTUAL_NUM_PARALLEL_PLAYERS=" +
+    			numParallelMatches*expectedRoles + ", ACTUAL_NUM_MATCHES_PER_COMBINATION=" + matchesPerCombination + ", ACTUAL_NUM_MATCHES_PER_GAMER_TYPE=" +
+    			(Combinator.getLastCombinationsPerElement() * Combinator.getLastPermutationsPerCombination() * matchesPerCombination));
 
     	// 5. For each combination run the given amount of matches.
 
@@ -388,7 +393,7 @@ public class IndependentTourneyRunner {
 		theSettings.add("java");
 		//theSettings.add("-Xmx:25g");
 		theSettings.add("-jar");
-		theSettings.add("KEvoIndependentSingleMatchRunner.jar");
+		theSettings.add("TUNEIndependentSingleMatchRunner.jar");
 		theSettings.add(ThreadContext.get("LOG_FOLDER"));
 		theSettings.add("" + 0);
 		theSettings.add(gameKey);
