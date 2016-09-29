@@ -1,9 +1,8 @@
 package org.ggp.base.player.gamer.statemachine.MCTS.propnet.ravegrave;
 
+public class HraveDuctMctsGamer extends RaveDuctMctsGamer {
 
-public class CadiaRhRaveDuctMctsGamer extends CadiaRaveDuctMctsGamer {
-
-	public CadiaRhRaveDuctMctsGamer() {
+	public HraveDuctMctsGamer() {
 
 		super();
 

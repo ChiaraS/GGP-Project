@@ -138,8 +138,8 @@ public class ProverMCSSpeedTest {
 	        double nodesPerSecond = -1;
 	        Role playingRole = null;
 	        Move chosenMove = null;
-	        long scoresSum = -1L;
-	        long visits = -1;
+	        double scoresSum = -1.0;
+	        int visits = -1;
 	        double averageScore = -1;
 
 	        // Try to initialize the prover state machine.
@@ -178,7 +178,7 @@ public class ProverMCSSpeedTest {
 			    scoresSum = finalMove.getScoreSum();
 			    visits = finalMove.getVisits();
 			    if(visits != 0){
-			    	averageScore = ((double) scoresSum) / ((double) visits);
+			    	averageScore = scoresSum / ((double) visits);
 			    }
 			    iterations = MCSmanager.getIterations();
 				visitedNodes = MCSmanager.getVisitedNodes();

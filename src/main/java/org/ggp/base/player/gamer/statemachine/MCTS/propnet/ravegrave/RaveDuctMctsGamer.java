@@ -8,7 +8,7 @@ public class RaveDuctMctsGamer extends GRDuctMctsGamer{
 
 		super();
 
-		this.betaComputer = new GRAVEBetaComputer(0.00001);
+		this.betaComputer = new GRAVEBetaComputer(1);
 
 	}
 

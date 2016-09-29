@@ -128,7 +128,7 @@ public class InternalPropnetMCSManager {
 
 				//System.out.println("Visits: " + visits);
 
-				int scoreSum = this.currentMovesStatistics[i].getScoreSum();
+				double scoreSum = this.currentMovesStatistics[i].getScoreSum();
 
 				//System.out.println("Score sum: " + scoreSum);
 
@@ -140,7 +140,7 @@ public class InternalPropnetMCSManager {
 
 				}else{
 					// Compute average score
-					currentAvgScore = ((double) scoreSum) / ((double) visits);
+					currentAvgScore = scoreSum / ((double) visits);
 
 					//System.out.println("Computed average score: " + currentAvgScore);
 				}

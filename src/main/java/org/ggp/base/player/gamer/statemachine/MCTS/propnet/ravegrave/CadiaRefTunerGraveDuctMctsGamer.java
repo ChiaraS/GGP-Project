@@ -35,7 +35,7 @@ public class CadiaRefTunerGraveDuctMctsGamer extends CadiaRaveDuctMctsGamer {
 
 		super();
 
-		this.evoC = 0.2;
+		this.evoC = 0.05;
 
 		this.evoValueOffset = 0.01;
 

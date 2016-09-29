@@ -12,7 +12,7 @@ public class CompleteMoveStats extends MoveStats{
 		this.theMove = theMove;
 	}
 
-	public CompleteMoveStats(int visits, int scoreSum, InternalPropnetMove theMove){
+	public CompleteMoveStats(int visits, double scoreSum, InternalPropnetMove theMove){
 		super(visits, scoreSum);
 		this.theMove = theMove;
 	}

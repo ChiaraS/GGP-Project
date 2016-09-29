@@ -136,7 +136,7 @@ public class OldMASTStrategy extends StandardBackpropagation implements /*Backpr
 			moveStats = this.mastStatistics.get(move);
 
 			if(moveStats != null && moveStats.getVisits() != 0){
-				currentAvgScore = ((double) moveStats.getScoreSum()) / ((double) moveStats.getVisits());
+				currentAvgScore = moveStats.getScoreSum() / ((double) moveStats.getVisits());
 			}else{
 				currentAvgScore = 100;
 			}

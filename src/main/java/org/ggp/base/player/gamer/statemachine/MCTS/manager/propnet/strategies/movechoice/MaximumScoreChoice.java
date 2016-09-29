@@ -67,7 +67,7 @@ public class MaximumScoreChoice implements MoveChoiceStrategy {
 
 			//System.out.println("Visits: " + visits);
 
-			int scoreSum = myMovesStats[i].getScoreSum();
+			double scoreSum = myMovesStats[i].getScoreSum();
 
 			//System.out.println("Score sum: " + scoreSum);
 
@@ -77,7 +77,7 @@ public class MaximumScoreChoice implements MoveChoiceStrategy {
 			 * TODO: remove this check once you are reasonably sure that
 			 * this can never happen.
 			 */
-			if(visits < 0 || scoreSum < 0){
+			if(visits < 0 || scoreSum < 0.0){
 				throw new RuntimeException("Negative value for visits and/or scores sum : VISITS=" + visits + ", SCORE_SUM=" + scoreSum + ".");
 			}
 
@@ -89,7 +89,7 @@ public class MaximumScoreChoice implements MoveChoiceStrategy {
 
 			}else{
 				// Compute average score
-				currentAvgScore = ((double) scoreSum) / ((double) visits);
+				currentAvgScore = scoreSum / ((double) visits);
 
 				//System.out.println("Computed average score: " + currentAvgScore);
 			}

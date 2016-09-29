@@ -172,7 +172,7 @@ public abstract class MctsGamer extends InternalPropnetGamer {
     	double iterationsPerSecond = -1;
     	double nodesPerSecond = -1;
     	Move theMove = null;
-    	int moveScoreSum = -1;
+    	double moveScoreSum = -1.0;
     	int moveVisits = -1;
     	double moveAvgScore = -1;
 

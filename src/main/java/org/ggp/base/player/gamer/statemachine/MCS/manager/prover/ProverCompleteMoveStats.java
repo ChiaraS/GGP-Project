@@ -12,7 +12,7 @@ public class ProverCompleteMoveStats extends MoveStats{
 		this.theMove = theMove;
 	}
 
-	public ProverCompleteMoveStats(int visits, int scoreSum, Move theMove){
+	public ProverCompleteMoveStats(int visits, double scoreSum, Move theMove){
 		super(visits, scoreSum);
 		this.theMove = theMove;
 	}

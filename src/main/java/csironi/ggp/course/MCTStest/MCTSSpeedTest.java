@@ -221,8 +221,8 @@ public class MCTSSpeedTest {
 	        double nodesPerSecond = -1;
 	        Role playingRole = null;
 	        Move chosenMove = null;
-	        long scoresSum = -1L;
-	        long visits = -1;
+	        double scoresSum = -1.0;
+	        int visits = -1;
 	        double averageScore = -1;
 
 	        // Try to initialize the propnet state machine.
@@ -302,7 +302,7 @@ public class MCTSSpeedTest {
 		 	        scoresSum = finalMove.getScoreSum();
 		 	        visits = finalMove.getVisits();
 		 	        if(visits != 0){
-		 	        	averageScore = ((double) scoresSum) / ((double) visits);
+		 	        	averageScore = scoresSum / ((double) visits);
 		 	        }
 		 	        iterations = MCTSmanager.getIterations();
 		        	visitedNodes = MCTSmanager.getVisitedNodes();

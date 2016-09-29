@@ -12,14 +12,14 @@ public class MoveStats{
 
 	protected int visits;
 
-	protected int scoreSum;
+	protected double scoreSum;
 
 	public MoveStats() {
 		this.visits = 0;
-		this.scoreSum = 0;
+		this.scoreSum = 0.0;
 	}
 
-	public MoveStats(int visits, int scoreSum) {
+	public MoveStats(int visits, double scoreSum) {
 		this.visits = visits;
 		this.scoreSum = scoreSum;
 	}
@@ -32,15 +32,17 @@ public class MoveStats{
 		this.visits++;
 	}
 
-	public int getScoreSum() {
+	public double getScoreSum() {
 		return this.scoreSum;
 	}
 
-	public void incrementScoreSum(int newScore) {
+	public void incrementScoreSum(double newScore) {
 		this.scoreSum += newScore;
 	}
 
 	/**
+	 * OLD METHOD USED IF VISITS AND SCORE_SUM ARE MEMORIZED AS INTEGERS
+	 *
 	 * Note: this method rounds the decayed visits to the closest integer.
 	 * To deal with this the scoreSum is re-computed as equal to the average multiplied
 	 * by the rounded number of visits, instead of simply decaying the scoreSum with the
@@ -53,10 +55,21 @@ public class MoveStats{
 	 * @param factor how much of the original values we want to keep (e.g. factor=0,2 means that
 	 * the new value will be (approximately) 0,2 times the old value).
 	 */
+	/*
 	public void decreaseByFactor(double factor){
+
 		double avg = ((double) this.scoreSum)/((double)this.visits);
 		this.visits = (int) Math.round(((double)this.visits)*factor);
 		this.scoreSum = (int) Math.round(((double)this.visits)*avg);
+	}
+	*/
+
+	public void decreaseByFactor(double factor){
+
+		double avg = this.scoreSum/((double)this.visits);
+		this.visits = (int) Math.round(((double)this.visits)*factor);
+		this.scoreSum = ((double)this.visits)*avg;
+
 	}
 
 	@Override

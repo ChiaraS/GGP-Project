@@ -92,7 +92,7 @@ public class WinScoreStatsAggregator {
 					if(statsDirs[j].getName().endsWith("-Stats") || statsDirs[j].getName().endsWith("-stats")){
 						gameKey = statsDirs[j].getName().substring(0, statsDirs[j].getName().length()-6);
 					}else{
-						String[] splitStatsDir = statsDirs[i].getName().split("\\.");
+						String[] splitStatsDir = statsDirs[j].getName().split("\\.");
 						gameKey = splitStatsDir[1];
 					}
 

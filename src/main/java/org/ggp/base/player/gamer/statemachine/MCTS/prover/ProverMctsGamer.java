@@ -157,7 +157,7 @@ public abstract class ProverMctsGamer extends ProverGamer {
     	double iterationsPerSecond = -1;
     	double nodesPerSecond = -1;
     	Move theMove = null;
-    	int moveScoreSum = -1;
+    	double moveScoreSum = -1;
     	int moveVisits = -1;
     	double moveAvgScore = -1;
 
