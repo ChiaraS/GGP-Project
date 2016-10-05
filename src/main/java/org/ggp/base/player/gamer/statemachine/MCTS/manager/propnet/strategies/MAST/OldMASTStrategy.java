@@ -10,6 +10,7 @@ import org.ggp.base.player.gamer.statemachine.MCTS.manager.propnet.strategies.ba
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.propnet.strategies.playout.PlayoutStrategy;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.propnet.treestructure.MCTSJointMove;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.propnet.treestructure.MCTSNode;
+import org.ggp.base.player.gamer.statemachine.MCTS.manager.propnet.treestructure.SimulationResult;
 import org.ggp.base.util.logging.GamerLogger;
 import org.ggp.base.util.statemachine.InternalPropnetStateMachine;
 import org.ggp.base.util.statemachine.exceptions.MoveDefinitionException;
@@ -18,6 +19,9 @@ import org.ggp.base.util.statemachine.inernalPropnetStructure.InternalPropnetMov
 import org.ggp.base.util.statemachine.inernalPropnetStructure.InternalPropnetRole;
 
 public class OldMASTStrategy extends StandardBackpropagation implements /*BackpropagationStrategy,*/ PlayoutStrategy {
+
+
+	CANCELLA!
 
 	private InternalPropnetStateMachine theMachine;
 
@@ -38,9 +42,20 @@ public class OldMASTStrategy extends StandardBackpropagation implements /*Backpr
 	}
 
 	@Override
-	public int[] playout(InternalPropnetMachineState state,
-			int[] playoutVisitedNodes, int maxDepth) {
+	public SimulationResult playout(InternalPropnetMachineState state, int[] playoutVisitedNodes, int maxDepth) {
 
+		// NOTE that this is just an extra check: if the state is terminal or the depth limit has been reached, then
+		// it's the responsibility of the MCTS manager to add the pair (jointMove, goals) to the simulation result,
+		// thus we return an empty result.
+		// ALSO NOTE that at the moment the MCTS manager already doesn't call the playout if the state is terminal or
+		// if the depth limit has been reached, so this check will never be true, but it's here just to be safe.
+		if(this.theMachine.isTerminal(state) || maxDepth == 0){
+
+			if(playoutVisitedNodes != null)
+	        	playoutVisitedNodes[0] = 0;
+
+			return null;
+		}
 
 		//System.out.println("MASTPL");
 
@@ -88,23 +103,37 @@ public class OldMASTStrategy extends StandardBackpropagation implements /*Backpr
         if(playoutVisitedNodes != null)
         	playoutVisitedNodes[0] = nDepth;
 
-		// Now try to get the goals of the state and update the moves statistics.
-        int[] goals = this.theMachine.getSafeGoalsAvg(state);
-        MoveStats moveStats;
-        for(List<InternalPropnetMove> jM : allJointMoves){
-        	for(int i = 0; i<jM.size(); i++){
-        		moveStats = this.mastStatistics.get(jM.get(i));
-        		if(moveStats == null){
-        			moveStats = new MoveStats();
-        			this.mastStatistics.put(jM.get(i), moveStats);
-        		}
+        SimulationResult simulationResult = new SimulationResult();
 
-        		moveStats.incrementVisits();
-        		moveStats.incrementScoreSum(goals[i]);
-        	}
-        }
+        //if(allJointMoves.size() > 0){
+			// Now try to get the goals of the state and update the moves statistics.
+	        int[] goals = this.theMachine.getSafeGoalsAvg(state);
 
-        return goals;
+	        simulationResult.addGoals(goals);
+
+	        MoveStats moveStats;
+	        List<InternalPropnetMove> jM;
+
+	        for(int i = allJointMoves.size(); i >= 0; i--){
+
+	        	jM = allJointMoves.get(i);
+
+	        	simulationResult.addJointMove(jM);
+
+	        	for(int j = 0; j < jM.size(); j++){
+	        		moveStats = this.mastStatistics.get(jM.get(j));
+	        		if(moveStats == null){
+	        			moveStats = new MoveStats();
+	        			this.mastStatistics.put(jM.get(j), moveStats);
+	        		}
+
+	        		moveStats.incrementVisits();
+	        		moveStats.incrementScoreSum(goals[j]);
+	        	}
+	        }
+        //}
+
+	    return simulationResult;
 	}
 
 	/*

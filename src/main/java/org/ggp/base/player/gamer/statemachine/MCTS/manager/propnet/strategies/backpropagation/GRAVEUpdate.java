@@ -41,7 +41,7 @@ public class GRAVEUpdate {
 	        }
 
 		}else{
-			throw new RuntimeException("GRAVEUpdate-update(): detected a node not implementing interface PnGRAVENode.");
+			throw new RuntimeException("GRAVEUpdate-update(): detected a node not implementing interface PnAMAFNode.");
 		}
 	}
 

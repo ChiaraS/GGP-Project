@@ -17,6 +17,7 @@ import org.ggp.base.player.gamer.statemachine.MCTS.manager.propnet.strategies.se
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.propnet.treestructure.MCTSJointMove;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.propnet.treestructure.MCTSNode;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.propnet.treestructure.MCTSTranspositionTable;
+import org.ggp.base.player.gamer.statemachine.MCTS.manager.propnet.treestructure.SimulationResult;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.propnet.treestructure.TreeNodeFactory;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.propnet.treestructure.AMAFDecoupled.PnAMAFDecoupledTreeNodeFactory;
 import org.ggp.base.util.logging.GamerLogger;
@@ -387,7 +388,7 @@ public class InternalPropnetMCTSManager extends MCTSManager {
 	 * @return the goals of all players, obtained by the current MCTS iteration and that
 	 *         must be backpropagated.
 	 */
-	private int[] searchNext(InternalPropnetMachineState currentState, MCTSNode currentNode) {
+	private SimulationResult searchNext(InternalPropnetMachineState currentState, MCTSNode currentNode) {
 
 		//System.out.println();
 		//System.out.println("Search step:");
@@ -401,7 +402,9 @@ public class InternalPropnetMCTSManager extends MCTSManager {
 
 		//System.out.println();
 
-		int[] goals;
+		//int[] goals;
+
+		SimulationResult simulationResult;
 
 		// Check if the node is terminal, and if so, return the final goals (saved in the node) for all players.
 		// NOTE: even if the node is terminal the state might not be, but an error occurred when computing legal
@@ -410,7 +413,10 @@ public class InternalPropnetMCTSManager extends MCTSManager {
 
 			//System.out.println("Reached terminal state.");
 
-			goals = currentNode.getGoals();
+			simulationResult = new SimulationResult();
+
+
+			currentNode.getGoals();
 			// If a state in the tree is terminal, it must record the goals for every player.
 			// If it doesn't there must be a programming error.
 			if(goals == null){
@@ -562,18 +568,23 @@ public class InternalPropnetMCTSManager extends MCTSManager {
 				// "currentIterationVisitedNodes" can be at most equal to the "maxSearchDepth".
 				int availableDepth = this.maxSearchDepth - this.currentIterationVisitedNodes;
 
-				int[] playoutVisitedNodes = new int[1];
-				// Note that if no depth is left for the playout, the playout itself will take care of
-				// returning the added-state goal values (if any) or the default tie goal values.
-				goals = this.playoutStrategy.playout(nextState, playoutVisitedNodes, availableDepth);
-				this.currentIterationVisitedNodes += playoutVisitedNodes[0];
+				if(availableDepth == 0){
+					goals = this.theMachine.getSafeGoalsAvg(nextState);
+				}else{
+
+					int[] playoutVisitedNodes = new int[1];
+					// Note that if no depth is left for the playout, the playout itself will take care of
+					// returning the added-state goal values (if any) or the default tie goal values.
+					goals = this.playoutStrategy.playout(nextState, playoutVisitedNodes, availableDepth);
+					this.currentIterationVisitedNodes += playoutVisitedNodes[0];
+				}
 
 				//System.out.print("After playout - ");
 				//((MemorizedStandardPlayout)this.playoutStrategy).printJM();
 			}
 		}else{
 			// Otherwise, if we continue selecting:
-			goals = this.searchNext(nextState, nextNode);
+			simulationResult = this.searchNext(nextState, nextNode);
 		}
 
 
@@ -589,8 +600,8 @@ public class InternalPropnetMCTSManager extends MCTSManager {
 		*/
 
 
-		this.backpropagationStrategy.update(currentNode, mctsJointMove, goals);
-		return goals;
+		this.backpropagationStrategy.update(currentNode, mctsJointMove, nextState, simulationResult);
+		return simulationResult;
 	}
 
 	/**

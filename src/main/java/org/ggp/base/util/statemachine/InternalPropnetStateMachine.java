@@ -367,7 +367,7 @@ public abstract class InternalPropnetStateMachine extends StateMachine{
      * but it will set a zero value for the goals when they cannot be computed or an
      * average value when there is more than one goal per role.
      *
-     * Note: method meant to be used for terminal states, where an error computing a
+     * Note: method suited to be used for terminal states, where an error computing a
      * goal must be penalized (i.e. we don't want to end the game in a terminal state
      * we don't know anything about for our player).
      *

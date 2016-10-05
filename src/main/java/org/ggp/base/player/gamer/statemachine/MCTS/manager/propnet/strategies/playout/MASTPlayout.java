@@ -16,7 +16,7 @@ public class MASTPlayout extends MemorizedStandardPlayout{
 
 	public MASTPlayout(InternalPropnetStateMachine theMachine, Random random, Map<InternalPropnetMove, MoveStats> mastStatistics, double epsilon, List<List<InternalPropnetMove>> allJointMoves) {
 		//this.theMachine = theMachine;
-		super(theMachine, new EpsilonMASTJointMoveSelector(theMachine, random, mastStatistics, epsilon), allJointMoves);
+		super(theMachine, new EpsilonMASTJointMoveSelector(theMachine, random, mastStatistics, epsilon));
 
 		this.mastStatistics = mastStatistics;
 	}

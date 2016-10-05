@@ -1,5 +1,7 @@
 package org.ggp.base.player.gamer.statemachine.MCTS.manager.propnet.strategies.playout;
 
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.propnet.strategies.playout.jointmoveselector.JointMoveSelector;
@@ -10,15 +12,14 @@ import org.ggp.base.util.statemachine.exceptions.MoveDefinitionException;
 import org.ggp.base.util.statemachine.inernalPropnetStructure.InternalPropnetMachineState;
 import org.ggp.base.util.statemachine.inernalPropnetStructure.InternalPropnetMove;
 
-public class StandardPlayout implements PlayoutStrategy {
+public class CompleteMemorizedStandardPlayout extends StandardPlayout {
 
-	protected InternalPropnetStateMachine theMachine;
+	public CompleteMemorizedStandardPlayout(
+			InternalPropnetStateMachine theMachine,
+			JointMoveSelector jointMoveSelector) {
 
-	protected JointMoveSelector jointMoveSelector;
+		super(theMachine, jointMoveSelector);
 
-	public StandardPlayout(InternalPropnetStateMachine theMachine, JointMoveSelector jointMoveSelector) {
-		this.theMachine = theMachine;
-		this.jointMoveSelector = jointMoveSelector;
 	}
 
 	@Override
@@ -40,21 +41,28 @@ public class StandardPlayout implements PlayoutStrategy {
 
         int nDepth = 0;
 
+        List<List<InternalPropnetMove>> allJointMoves = new ArrayList<List<InternalPropnetMove>>();
+
+        List<int[]> allGoals = new ArrayList<int[]>();
+
         List<InternalPropnetMove> jointMove;
 
         do{
 
         	jointMove = null;
 			try {
-				//jointMove = this.getJointMove(state);
 				jointMove = this.jointMoveSelector.getJointMove(state);
 			} catch (MoveDefinitionException e) {
 				GamerLogger.logError("MCTSManager", "Exception getting a joint move while performing a playout.");
 				GamerLogger.logStackTrace("MCTSManager", e);
 				break;
 			}
-			//state = this.getNextState(state, jointMove);
+
+			allJointMoves.add(jointMove);
+
 			state = this.theMachine.getInternalNextState(state, jointMove);
+
+			allGoals.add(this.theMachine.getSafeGoalsAvg(state));
 
 			nDepth++;
 
@@ -63,52 +71,12 @@ public class StandardPlayout implements PlayoutStrategy {
         if(playoutVisitedNodes != null)
         	playoutVisitedNodes[0] = nDepth;
 
-        //System.out.println("Playout state terminal: " + this.theMachine.isTerminal(state));
+        Collections.reverse(allJointMoves);
 
-		//lastState = this.theMachine.performSafeLimitedDepthCharge(state, playoutVisitedNodes, maxDepth);
+        Collections.reverse(allGoals);
 
-		// Now try to get the goals of the state.
-        //return this.prepareSimulationResult(state);
-
-        return new SimulationResult(this.theMachine.getSafeGoalsAvg(state));
+        return new SimulationResult(allGoals.get(0), allJointMoves, allGoals);
 
 	}
-
-	/*
-	public List<InternalPropnetMove> getJointMove(InternalPropnetMachineState state) throws MoveDefinitionException{
-		return this.jointMoveSelector.getJointMove(state);
-	}
-
-	public InternalPropnetMachineState getNextState(InternalPropnetMachineState state, List<InternalPropnetMove> jointMove){
-		return this.theMachine.getInternalNextState(state, jointMove);
-	}
-
-	public SimulationResult prepareSimulationResult(InternalPropnetMachineState state){
-		SimulationResult simulationResult = new SimulationResult();
-
-		simulationResult.addGoals(this.theMachine.getSafeGoalsAvg(state));
-
-		return simulationResult;
-
-	}
-
-	*/
-
-	@Override
-	public String getStrategyParameters() {
-		return this.jointMoveSelector.printJointMoveSelector();
-	}
-
-	@Override
-	public String printStrategy() {
-		String params = this.getStrategyParameters();
-
-		if(params != null){
-			return "[PLAYOUT_STRATEGY = " + this.getClass().getSimpleName() + ", " + params + "]";
-		}else{
-			return "[PLAYOUT_STRATEGY = " + this.getClass().getSimpleName() + "]";
-		}
-	}
-
 
 }
