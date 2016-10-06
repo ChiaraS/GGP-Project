@@ -1,5 +1,7 @@
 package org.ggp.base.player.gamer.statemachine.MCTS.manager.propnet.strategies.aftersimulation;
 
+import org.ggp.base.player.gamer.statemachine.MCTS.manager.propnet.treestructure.SimulationResult;
+
 
 public class EvoGRAVEAfterSimulation implements AfterSimulationStrategy{
 
@@ -16,11 +18,11 @@ public class EvoGRAVEAfterSimulation implements AfterSimulationStrategy{
 	}
 
 	@Override
-	public void afterSimulationActions(int[] goals){
+	public void afterSimulationActions(SimulationResult simulationResult){
 
-		this.graveAfterSimulation.afterSimulationActions(goals);
+		this.graveAfterSimulation.afterSimulationActions(simulationResult);
 
-		this.evoAfterSimulation.afterSimulationActions(goals);
+		this.evoAfterSimulation.afterSimulationActions(simulationResult);
 
 	}
 

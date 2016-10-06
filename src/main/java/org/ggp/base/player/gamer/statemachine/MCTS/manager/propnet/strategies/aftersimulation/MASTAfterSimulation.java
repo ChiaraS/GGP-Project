@@ -1,6 +1,7 @@
 package org.ggp.base.player.gamer.statemachine.MCTS.manager.propnet.strategies.aftersimulation;
 
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.propnet.strategies.playout.MemorizedStandardPlayout;
+import org.ggp.base.player.gamer.statemachine.MCTS.manager.propnet.treestructure.SimulationResult;
 
 public class MASTAfterSimulation implements AfterSimulationStrategy {
 
@@ -11,7 +12,7 @@ public class MASTAfterSimulation implements AfterSimulationStrategy {
 	}
 
 	@Override
-	public void afterSimulationActions(int[] goals) {
+	public void afterSimulationActions(SimulationResult simulationResult) {
 		this.mastPlayout.clearLastMemorizedPlayout();
 
 	}

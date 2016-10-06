@@ -2,6 +2,7 @@ package org.ggp.base.player.gamer.statemachine.MCTS.manager.propnet.strategies.a
 
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.propnet.strategies.playout.MemorizedStandardPlayout;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.propnet.strategies.selection.GRAVESelection;
+import org.ggp.base.player.gamer.statemachine.MCTS.manager.propnet.treestructure.SimulationResult;
 
 public class GRAVEAfterSimulation implements AfterSimulationStrategy {
 
@@ -15,7 +16,7 @@ public class GRAVEAfterSimulation implements AfterSimulationStrategy {
 	}
 
 	@Override
-	public void afterSimulationActions(int[] goals) {
+	public void afterSimulationActions(SimulationResult simulationResult) {
 		this.graveSelection.resetCloserAmafStats();
 		this.gravePlayout.clearLastMemorizedPlayout();
 	}

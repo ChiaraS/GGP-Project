@@ -1,6 +1,7 @@
 package org.ggp.base.player.gamer.statemachine.MCTS.manager.propnet.strategies.aftersimulation;
 
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.evolution.SingleParameterEvolutionManager;
+import org.ggp.base.player.gamer.statemachine.MCTS.manager.propnet.treestructure.SimulationResult;
 import org.ggp.base.util.statemachine.inernalPropnetStructure.InternalPropnetRole;
 
 public class EvoAfterSimulation implements AfterSimulationStrategy {
@@ -18,9 +19,9 @@ public class EvoAfterSimulation implements AfterSimulationStrategy {
 	}
 
 	@Override
-	public void afterSimulationActions(int[] goals) {
+	public void afterSimulationActions(SimulationResult simulationResult) {
 
-		this.evolutionManager.updateFitness(goals[this.myRole.getIndex()]);
+		this.evolutionManager.updateFitness(simulationResult.getTerminalGoals()[this.myRole.getIndex()]);
 
 	}
 

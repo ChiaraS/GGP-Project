@@ -3,6 +3,7 @@ package org.ggp.base.player.gamer.statemachine.MCTS.manager.propnet.strategies.b
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.propnet.treestructure.MCTSJointMove;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.propnet.treestructure.MCTSNode;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.propnet.treestructure.SequDecMCTSJointMove;
+import org.ggp.base.player.gamer.statemachine.MCTS.manager.propnet.treestructure.SimulationResult;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.propnet.treestructure.decoupled.DecoupledMCTSMoveStats;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.propnet.treestructure.decoupled.PnDecoupledMCTSNode;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.propnet.treestructure.sequential.PnSequentialMCTSNode;
@@ -10,6 +11,7 @@ import org.ggp.base.player.gamer.statemachine.MCTS.manager.propnet.treestructure
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.propnet.treestructure.slowsequential.PnSlowSeqentialMCTSNode;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.propnet.treestructure.slowsequential.SlowSequentialMCTSJointMove;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.propnet.treestructure.slowsequential.SlowSequentialMCTSMoveStats;
+import org.ggp.base.util.statemachine.inernalPropnetStructure.InternalPropnetMachineState;
 import org.ggp.base.util.statemachine.inernalPropnetStructure.InternalPropnetRole;
 
 public class StandardBackpropagation implements BackpropagationStrategy {
@@ -36,15 +38,15 @@ public class StandardBackpropagation implements BackpropagationStrategy {
 	 * @see org.ggp.base.player.gamer.statemachine.MCTS.manager.strategies.backpropagation.BackpropagationStrategy#update(org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.InternalPropnetMCTSNode, org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.MCTSJointMove, int[])
 	 */
 	@Override
-	public void update(MCTSNode node, MCTSJointMove jointMove, int[] goals){
-		if(node instanceof PnDecoupledMCTSNode && jointMove instanceof SequDecMCTSJointMove){
-			this.decUpdate((PnDecoupledMCTSNode)node, (SequDecMCTSJointMove)jointMove, goals);
-		}else if(node instanceof PnSequentialMCTSNode && jointMove instanceof SequDecMCTSJointMove){
-			this.seqUpdate((PnSequentialMCTSNode)node, (SequDecMCTSJointMove)jointMove, goals);
-		}else if(node instanceof PnSlowSeqentialMCTSNode && jointMove instanceof SlowSequentialMCTSJointMove){
-			this.sseqUpdate((PnSlowSeqentialMCTSNode)node, (SlowSequentialMCTSJointMove)jointMove, goals);
+	public void update(MCTSNode currentNode, MCTSJointMove jointMove, InternalPropnetMachineState nextState, SimulationResult simulationResult){
+		if(currentNode instanceof PnDecoupledMCTSNode && jointMove instanceof SequDecMCTSJointMove){
+			this.decUpdate((PnDecoupledMCTSNode)currentNode, (SequDecMCTSJointMove)jointMove, nextState, simulationResult);
+		}else if(currentNode instanceof PnSequentialMCTSNode && jointMove instanceof SequDecMCTSJointMove){
+			this.seqUpdate((PnSequentialMCTSNode)currentNode, (SequDecMCTSJointMove)jointMove, nextState, simulationResult);
+		}else if(currentNode instanceof PnSlowSeqentialMCTSNode && jointMove instanceof SlowSequentialMCTSJointMove){
+			this.sseqUpdate((PnSlowSeqentialMCTSNode)currentNode, (SlowSequentialMCTSJointMove)jointMove, nextState, simulationResult);
 		}else{
-			throw new RuntimeException("StandardBackpropagation-update(): detected wrong combination of types for node (" + node.getClass().getSimpleName() + ") and joint move (" + jointMove.getClass().getSimpleName() + ").");
+			throw new RuntimeException("StandardBackpropagation-update(): detected wrong combination of types for node (" + currentNode.getClass().getSimpleName() + ") and joint move (" + jointMove.getClass().getSimpleName() + ").");
 		}
 	}
 
@@ -58,22 +60,22 @@ public class StandardBackpropagation implements BackpropagationStrategy {
 	 * @param jointMove the explored joint move.
 	 * @param goals the goals obtained by the simulation, to be used to update the statistics.
 	 */
-	private void decUpdate(PnDecoupledMCTSNode node, SequDecMCTSJointMove jointMove, int[] goals) {
+	private void decUpdate(PnDecoupledMCTSNode currentNode, SequDecMCTSJointMove jointMove, InternalPropnetMachineState nextState, SimulationResult simulationResult) {
 
-		node.incrementTotVisits();
+		currentNode.incrementTotVisits();
 
-		DecoupledMCTSMoveStats[][] moves = node.getMoves();
+		DecoupledMCTSMoveStats[][] moves = currentNode.getMoves();
 
 		int[] moveIndices = jointMove.getMovesIndices();
 
 		for(int i = 0; i < moves.length; i++){
 			// Get the decoupled MCTS Move
 			DecoupledMCTSMoveStats theMoveToUpdate = moves[i][moveIndices[i]];
-			theMoveToUpdate.incrementScoreSum(goals[i]);
+			theMoveToUpdate.incrementScoreSum(simulationResult.getTerminalGoals()[i]);
 			if(theMoveToUpdate.getVisits() == 0){
 				//System.out.println("!!!!!");
 				//System.out.println(node.getUnexploredMovesCount()[i]);
-				node.getUnexploredMovesCount()[i]--;
+				currentNode.getUnexploredMovesCount()[i]--;
 				//System.out.println(node.getUnexploredMovesCount()[i]);
 				//System.out.println("!!!!!");
 
@@ -95,17 +97,17 @@ public class StandardBackpropagation implements BackpropagationStrategy {
 	 * @param jointMove the explored joint move.
 	 * @param goals the goals obtained by the simulation, to be used to update the statistics.
 	 */
-	private void seqUpdate(PnSequentialMCTSNode node, SequDecMCTSJointMove jointMove, int[] goals) {
+	private void seqUpdate(PnSequentialMCTSNode currentNode, SequDecMCTSJointMove jointMove, InternalPropnetMachineState nextState, SimulationResult simulationResult) {
 
-		node.incrementTotVisits();
+		currentNode.incrementTotVisits();
 
 		int currentRoleIndex = this.myRole.getIndex();
 
-		SequentialMCTSMoveStats currentStatsToUpdate = node.getMovesStats()[jointMove.getMovesIndices()[currentRoleIndex]];
+		SequentialMCTSMoveStats currentStatsToUpdate = currentNode.getMovesStats()[jointMove.getMovesIndices()[currentRoleIndex]];
 
 		while(currentRoleIndex != ((this.myRole.getIndex()-1+this.numRoles)%this.numRoles)){
 			currentStatsToUpdate.incrementVisits();
-			currentStatsToUpdate.incrementScoreSum(goals[currentRoleIndex]);
+			currentStatsToUpdate.incrementScoreSum(simulationResult.getTerminalGoals()[currentRoleIndex]);
 			currentRoleIndex = (currentRoleIndex+1)%this.numRoles;
 			currentStatsToUpdate = currentStatsToUpdate.getNextRoleMovesStats()[jointMove.getMovesIndices()[currentRoleIndex]];
 		}
@@ -115,14 +117,14 @@ public class StandardBackpropagation implements BackpropagationStrategy {
 		// first time the joint move was explored (i.e. the unvisitedSubleaves count of this move's
 		// stats equals 1 or equally its visits count equals 0).
 		currentStatsToUpdate.incrementVisits();
-		currentStatsToUpdate.incrementScoreSum(goals[currentRoleIndex]);
+		currentStatsToUpdate.incrementScoreSum(simulationResult.getTerminalGoals()[currentRoleIndex]);
 
 		// If it's the first visit for this leaf, it's also the first visit of the joint move and
 		// we must decrement by 1 the unvisitedSubleaves count of all the moves in this joint move.
 		if(currentStatsToUpdate.getUnvisitedSubleaves() == 1){
 			currentRoleIndex = this.myRole.getIndex();
 
-			currentStatsToUpdate = node.getMovesStats()[jointMove.getMovesIndices()[currentRoleIndex]];
+			currentStatsToUpdate = currentNode.getMovesStats()[jointMove.getMovesIndices()[currentRoleIndex]];
 
 			while(currentRoleIndex != ((this.myRole.getIndex()-1+this.numRoles)%this.numRoles)){
 				currentStatsToUpdate.decreaseUnvisitedSubLeaves();
@@ -132,7 +134,7 @@ public class StandardBackpropagation implements BackpropagationStrategy {
 
 			currentStatsToUpdate.decreaseUnvisitedSubLeaves();
 
-			node.decreaseUnvisitedLeaves();
+			currentNode.decreaseUnvisitedLeaves();
 		}
 	}
 
@@ -147,9 +149,9 @@ public class StandardBackpropagation implements BackpropagationStrategy {
 	 * @param jointMove the explored joint move.
 	 * @param goals the goals obtained by the simulation, to be used to update the statistics.
 	 */
-	private void sseqUpdate(PnSlowSeqentialMCTSNode node, SlowSequentialMCTSJointMove jointMove, int[] goals) {
+	private void sseqUpdate(PnSlowSeqentialMCTSNode currentNode, SlowSequentialMCTSJointMove jointMove, InternalPropnetMachineState nextState, SimulationResult simulationResult) {
 
-		node.incrementTotVisits();
+		currentNode.incrementTotVisits();
 
 		// Get the leaf move from where to start updating
 		SlowSequentialMCTSMoveStats theMoveToUpdate = jointMove.getLeafMove();
@@ -159,9 +161,9 @@ public class StandardBackpropagation implements BackpropagationStrategy {
 
 		// Update the score and the visits of the move.
 		// For the leaf move, if this is the first visit, remove it from the unvisited leaf moves list.
-		theMoveToUpdate.incrementScoreSum(goals[roleIndex]);
+		theMoveToUpdate.incrementScoreSum(simulationResult.getTerminalGoals()[roleIndex]);
 		if(theMoveToUpdate.getVisits() == 0){
-			node.getUnvisitedLeaves().remove(theMoveToUpdate);
+			currentNode.getUnvisitedLeaves().remove(theMoveToUpdate);
 		}
 		theMoveToUpdate.incrementVisits();
 
@@ -174,7 +176,7 @@ public class StandardBackpropagation implements BackpropagationStrategy {
 			roleIndex = ((roleIndex-1) + this.numRoles)%this.numRoles;
 
 			// Update the score and the visits of the move.
-			theMoveToUpdate.incrementScoreSum(goals[roleIndex]);
+			theMoveToUpdate.incrementScoreSum(simulationResult.getTerminalGoals()[roleIndex]);
 			theMoveToUpdate.incrementVisits();
 
 			// Get the parent move, that will be the chosen move for the previous role.
@@ -195,6 +197,11 @@ public class StandardBackpropagation implements BackpropagationStrategy {
 		}else{
 			return "[BACKPROPAGATION_STRATEGY = " + this.getClass().getSimpleName() + "]";
 		}
+	}
+
+	@Override
+	public void processPlayoutResult(MCTSNode leafNode,	SimulationResult simulationResult) {
+		// TODO Auto-generated method stub
 	}
 
 }

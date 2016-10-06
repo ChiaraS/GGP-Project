@@ -5,6 +5,8 @@ import java.util.Map;
 import org.ggp.base.player.gamer.statemachine.MCS.manager.MoveStats;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.propnet.treestructure.MCTSJointMove;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.propnet.treestructure.MCTSNode;
+import org.ggp.base.player.gamer.statemachine.MCTS.manager.propnet.treestructure.SimulationResult;
+import org.ggp.base.util.statemachine.inernalPropnetStructure.InternalPropnetMachineState;
 import org.ggp.base.util.statemachine.inernalPropnetStructure.InternalPropnetMove;
 import org.ggp.base.util.statemachine.inernalPropnetStructure.InternalPropnetRole;
 
@@ -21,10 +23,10 @@ public class MASTBackpropagation implements BackpropagationStrategy {
 	}
 
 	@Override
-	public void update(MCTSNode node, MCTSJointMove jointMove, int[] goals) {
+	public void update(MCTSNode currentNode, MCTSJointMove jointMove, InternalPropnetMachineState nextState, SimulationResult simulationResult) {
 
-		this.stdBackpropagation.update(node, jointMove, goals);
-		this.mastUpdate.update(node, jointMove, goals);
+		this.stdBackpropagation.update(currentNode, jointMove, nextState, simulationResult);
+		this.mastUpdate.update(currentNode, jointMove, nextState, simulationResult);
 
 	}
 
@@ -42,6 +44,13 @@ public class MASTBackpropagation implements BackpropagationStrategy {
 		}else{
 			return "[BACKPROPAGATION_STRATEGY = " + this.getClass().getSimpleName() + "]";
 		}
+	}
+
+	@Override
+	public void processPlayoutResult(MCTSNode leafNode,	SimulationResult simulationResult) {
+
+		this.mastUpdate.processPlayoutResult(leafNode, simulationResult);
+
 	}
 
 }

@@ -355,7 +355,7 @@ public class InternalPropnetMCTSManager extends MCTSManager {
 				this.beforeSimulationStrategy.beforeSimulationActions();
 			}
 
-			int[] goals = this.searchNext(initialState, initialNode);
+			SimulationResult simulationResult = this.searchNext(initialState, initialNode);
 			this.iterations++;
 			this.visitedNodes += this.currentIterationVisitedNodes;
 
@@ -363,7 +363,7 @@ public class InternalPropnetMCTSManager extends MCTSManager {
 
 
 			if(this.afterSimulationStrategy != null){
-				this.afterSimulationStrategy.afterSimulationActions(goals);
+				this.afterSimulationStrategy.afterSimulationActions(simulationResult);
 			}
 			//System.out.println("Iteration: " + this.iterations);
 			//System.out.println("Stats: " + ((MASTStrategy)this.playoutStrategy).getNumStats());
@@ -413,17 +413,12 @@ public class InternalPropnetMCTSManager extends MCTSManager {
 
 			//System.out.println("Reached terminal state.");
 
-			simulationResult = new SimulationResult();
-
-
-			currentNode.getGoals();
 			// If a state in the tree is terminal, it must record the goals for every player.
 			// If it doesn't there must be a programming error.
-			if(goals == null){
+			if(currentNode.getGoals() == null){
 				GamerLogger.logError("MCTSManager", "Detected null goals for a treminal node in the tree.");
 				throw new RuntimeException("Detected null goals for a treminal node in the tree.");
 			}
-
 
 			/*
 			System.out.println("Detected terminal.");
@@ -437,8 +432,7 @@ public class InternalPropnetMCTSManager extends MCTSManager {
 			System.out.print(s);
 			*/
 
-
-			return goals;
+			return new SimulationResult(currentNode.getGoals());
 		}
 
 		// If the state is not terminal (and no error occurred when computing legal moves),
@@ -466,7 +460,7 @@ public class InternalPropnetMCTSManager extends MCTSManager {
 			*/
 
 
-			return this.theMachine.getSafeGoalsAvg(currentState);
+			return new SimulationResult(this.theMachine.getSafeGoalsAvg(currentState));
 		}
 
 		this.currentIterationVisitedNodes++;
@@ -559,7 +553,7 @@ public class InternalPropnetMCTSManager extends MCTSManager {
 
 				//System.out.println("Expanded state is terminal.");
 
-				goals = nextNode.getGoals();
+				simulationResult = new SimulationResult(nextNode.getGoals());
 			}else{
 
 				//System.out.println("Performing playout.");
@@ -569,14 +563,18 @@ public class InternalPropnetMCTSManager extends MCTSManager {
 				int availableDepth = this.maxSearchDepth - this.currentIterationVisitedNodes;
 
 				if(availableDepth == 0){
-					goals = this.theMachine.getSafeGoalsAvg(nextState);
+
+					simulationResult = new SimulationResult(this.theMachine.getSafeGoalsAvg(nextState));
+
 				}else{
 
 					int[] playoutVisitedNodes = new int[1];
 					// Note that if no depth is left for the playout, the playout itself will take care of
 					// returning the added-state goal values (if any) or the default tie goal values.
-					goals = this.playoutStrategy.playout(nextState, playoutVisitedNodes, availableDepth);
+					simulationResult = this.playoutStrategy.playout(nextState, playoutVisitedNodes, availableDepth);
 					this.currentIterationVisitedNodes += playoutVisitedNodes[0];
+
+					this.backpropagationStrategy.processPlayoutResult(nextNode, simulationResult);
 				}
 
 				//System.out.print("After playout - ");
