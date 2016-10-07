@@ -1,11 +1,12 @@
 package org.ggp.base.player.gamer.statemachine.MCTS.manager.propnet.strategies.backpropagation;
 
-import java.util.List;
 import java.util.Map;
 
 import org.ggp.base.player.gamer.statemachine.MCS.manager.MoveStats;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.propnet.treestructure.MCTSJointMove;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.propnet.treestructure.MCTSNode;
+import org.ggp.base.player.gamer.statemachine.MCTS.manager.propnet.treestructure.SimulationResult;
+import org.ggp.base.util.statemachine.inernalPropnetStructure.InternalPropnetMachineState;
 import org.ggp.base.util.statemachine.inernalPropnetStructure.InternalPropnetMove;
 import org.ggp.base.util.statemachine.inernalPropnetStructure.InternalPropnetRole;
 
@@ -17,18 +18,29 @@ public class MASTGRAVEBackpropagation implements BackpropagationStrategy {
 
 	private GRAVEUpdate graveUpdate;
 
-	public MASTGRAVEBackpropagation(int numRoles, InternalPropnetRole myRole,  Map<InternalPropnetMove, MoveStats> mastStatistics, List<List<InternalPropnetMove>> allJointMoves) {
+	public MASTGRAVEBackpropagation(int numRoles, InternalPropnetRole myRole,  Map<InternalPropnetMove, MoveStats> mastStatistics) {
 		this.stdBackpropagation = new StandardBackpropagation(numRoles, myRole);
 		this.mastUpdate = new MASTUpdate(mastStatistics);
-		this.graveUpdate = new GRAVEUpdate(allJointMoves);
+		this.graveUpdate = new GRAVEUpdate();
 	}
 
 	@Override
-	public void update(MCTSNode node, MCTSJointMove jointMove, int[] goals) {
+	public void update(MCTSNode currentNode, MCTSJointMove jointMove, InternalPropnetMachineState nextState, SimulationResult simulationResult) {
 
-		this.stdBackpropagation.update(node, jointMove, goals);
-		this.mastUpdate.update(node, jointMove, goals);
-		this.graveUpdate.update(node, jointMove, goals);
+		this.stdBackpropagation.update(currentNode, jointMove, nextState, simulationResult);
+		this.mastUpdate.update(currentNode, jointMove, nextState, simulationResult);
+		this.graveUpdate.update(currentNode, jointMove, nextState, simulationResult);
+
+	}
+
+	@Override
+	public void processPlayoutResult(MCTSNode leafNode,
+			SimulationResult simulationResult) {
+
+		this.stdBackpropagation.processPlayoutResult(leafNode, simulationResult);
+		this.mastUpdate.processPlayoutResult(leafNode, simulationResult);
+		this.graveUpdate.processPlayoutResult(leafNode, simulationResult);
+
 
 	}
 
@@ -49,6 +61,5 @@ public class MASTGRAVEBackpropagation implements BackpropagationStrategy {
 			return "[BACKPROPAGATION_STRATEGY = " + this.getClass().getSimpleName() + "]";
 		}
 	}
-
 
 }

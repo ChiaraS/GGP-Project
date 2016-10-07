@@ -4,8 +4,8 @@ import org.ggp.base.player.gamer.statemachine.MCS.manager.prover.ProverCompleteM
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.MCTSManager;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.exceptions.MCTSException;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.propnet.strategies.aftermove.AfterMoveStrategy;
-import org.ggp.base.player.gamer.statemachine.MCTS.manager.propnet.strategies.aftersimulation.AfterSimulationStrategy;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.propnet.treestructure.MCTSNode;
+import org.ggp.base.player.gamer.statemachine.MCTS.manager.prover.strategies.aftersimulation.ProverAfterSimulationStrategy;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.prover.strategies.backpropagation.ProverBackpropagationStrategy;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.prover.strategies.expansion.ProverExpansionStrategy;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.prover.strategies.movechoice.ProverMoveChoiceStrategy;
@@ -13,6 +13,7 @@ import org.ggp.base.player.gamer.statemachine.MCTS.manager.prover.strategies.pla
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.prover.strategies.selection.ProverSelectionStrategy;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.prover.treestructure.ProverMCTSJointMove;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.prover.treestructure.ProverMCTSTranspositionTable;
+import org.ggp.base.player.gamer.statemachine.MCTS.manager.prover.treestructure.ProverSimulationResult;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.prover.treestructure.ProverTreeNodeFactory;
 import org.ggp.base.util.logging.GamerLogger;
 import org.ggp.base.util.statemachine.MachineState;
@@ -68,7 +69,7 @@ public class ProverMCTSManager extends MCTSManager {
 	 * to specify the actions to be taken in such situations. If nothing has to be done, just set
 	 * these strategies to null.
 	 */
-	private AfterSimulationStrategy afterSimulationStrategy;
+	private ProverAfterSimulationStrategy afterSimulationStrategy;
 
 	private AfterMoveStrategy afterMoveStrategy;
 
@@ -109,7 +110,7 @@ public class ProverMCTSManager extends MCTSManager {
 	public ProverMCTSManager(ProverSelectionStrategy selectionStrategy,
 			ProverExpansionStrategy expansionStrategy, ProverPlayoutStrategy playoutStrategy,
 			ProverBackpropagationStrategy backpropagationStrategy, ProverMoveChoiceStrategy moveChoiceStrategy,
-			AfterSimulationStrategy afterSimulationStrategy, AfterMoveStrategy afterMoveStrategy,
+			ProverAfterSimulationStrategy afterSimulationStrategy, AfterMoveStrategy afterMoveStrategy,
 			ProverTreeNodeFactory theNodesFactory, StateMachine theMachine,
 			int gameStepOffset, int maxSearchDepth) {
 
@@ -322,7 +323,7 @@ public class ProverMCTSManager extends MCTSManager {
 			//System.out.println();
 			//System.out.println("Iteration " + this.iterations);
 
-			int[] goals = this.searchNext(initialState, initialNode);
+			ProverSimulationResult simulationResult = this.searchNext(initialState, initialNode);
 			this.iterations++;
 			this.visitedNodes += this.currentIterationVisitedNodes;
 
@@ -330,7 +331,7 @@ public class ProverMCTSManager extends MCTSManager {
 
 
 			if(this.afterSimulationStrategy != null){
-				this.afterSimulationStrategy.afterSimulationActions(goals);
+				this.afterSimulationStrategy.afterSimulationActions(simulationResult);
 			}
 			//System.out.println("Iteration: " + this.iterations);
 			//System.out.println("Stats: " + ((MASTStrategy)this.playoutStrategy).getNumStats());
@@ -355,7 +356,7 @@ public class ProverMCTSManager extends MCTSManager {
 	 * @return the goals of all players, obtained by the current MCTS iteration and that
 	 *         must be backpropagated.
 	 */
-	private int[] searchNext(MachineState currentState, MCTSNode currentNode) {
+	private ProverSimulationResult searchNext(MachineState currentState, MCTSNode currentNode) {
 
 		//System.out.println();
 		//System.out.println("Search step:");
@@ -369,7 +370,7 @@ public class ProverMCTSManager extends MCTSManager {
 
 		//System.out.println();
 
-		int[] goals;
+		ProverSimulationResult simulationResult;
 
 		// Check if the node is terminal, and if so, return the final goals (saved in the node) for all players.
 		// NOTE: even if the node is terminal the state might not be, but an error occurred when computing legal
@@ -378,14 +379,12 @@ public class ProverMCTSManager extends MCTSManager {
 
 			//System.out.println("Reached terminal state.");
 
-			goals = currentNode.getGoals();
 			// If a state in the tree is terminal, it must record the goals for every player.
 			// If it doesn't there must be a programming error.
-			if(goals == null){
+			if(currentNode.getGoals() == null){
 				GamerLogger.logError("MCTSManager", "Detected null goals for a treminal node in the tree.");
 				throw new RuntimeException("Detected null goals for a treminal node in the tree.");
 			}
-
 
 			/*
 			System.out.println("Detected terminal.");
@@ -400,7 +399,7 @@ public class ProverMCTSManager extends MCTSManager {
 			*/
 
 
-			return goals;
+			return new ProverSimulationResult(currentNode.getGoals());
 		}
 
 		// If the state is not terminal (and no error occurred when computing legal moves),
@@ -428,7 +427,7 @@ public class ProverMCTSManager extends MCTSManager {
 			*/
 
 
-			return this.theMachine.getSafeGoalsAvg(currentState);
+			return new ProverSimulationResult(this.theMachine.getSafeGoalsAvg(currentState));
 		}
 
 		this.currentIterationVisitedNodes++;
@@ -488,7 +487,7 @@ public class ProverMCTSManager extends MCTSManager {
 			GamerLogger.logError("MCTSManager", "Cannot compute next state. Stopping iteration and returning safe goals.");
 
 			this.currentIterationVisitedNodes--;
-			return this.theMachine.getSafeGoalsAvg(currentState);
+			return new ProverSimulationResult(this.theMachine.getSafeGoalsAvg(currentState));
 		}
 		// ...and get the corresponding MCT node from the transposition table.
 		nextNode = this.transpositionTable.getNode(nextState);
@@ -528,7 +527,12 @@ public class ProverMCTSManager extends MCTSManager {
 
 				//System.out.println("Expanded state is terminal.");
 
-				goals = nextNode.getGoals();
+				if(nextNode.getGoals() == null){
+					GamerLogger.logError("MCTSManager", "Detected null goals for a treminal node in the tree.");
+					throw new RuntimeException("Detected null goals for a treminal node in the tree.");
+				}
+
+				simulationResult = new ProverSimulationResult(nextNode.getGoals());
 			}else{
 
 				//System.out.println("Performing playout.");
@@ -537,18 +541,27 @@ public class ProverMCTSManager extends MCTSManager {
 				// "currentIterationVisitedNodes" can be at most equal to the "maxSearchDepth".
 				int availableDepth = this.maxSearchDepth - this.currentIterationVisitedNodes;
 
-				int[] playoutVisitedNodes = new int[1];
-				// Note that if no depth is left for the playout, the playout itself will take care of
-				// returning the added-state goal values (if any) or the default tie goal values.
-				goals = this.playoutStrategy.playout(nextState, playoutVisitedNodes, availableDepth);
-				this.currentIterationVisitedNodes += playoutVisitedNodes[0];
+				if(availableDepth == 0){
+
+					simulationResult = new ProverSimulationResult(this.theMachine.getSafeGoalsAvg(nextState));
+
+				}else{
+					int[] playoutVisitedNodes = new int[1];
+					// Note that if no depth is left for the playout, the playout itself will take care of
+					// returning the added-state goal values (if any) or the default tie goal values.
+					simulationResult = this.playoutStrategy.playout(nextState, playoutVisitedNodes, availableDepth);
+					this.currentIterationVisitedNodes += playoutVisitedNodes[0];
+
+					this.backpropagationStrategy.processPlayoutResult(nextNode, simulationResult);
+				}
+
 
 				//System.out.print("After playout - ");
 				//((MemorizedStandardPlayout)this.playoutStrategy).printJM();
 			}
 		}else{
 			// Otherwise, if we continue selecting:
-			goals = this.searchNext(nextState, nextNode);
+			simulationResult = this.searchNext(nextState, nextNode);
 		}
 
 
@@ -564,8 +577,8 @@ public class ProverMCTSManager extends MCTSManager {
 		*/
 
 
-		this.backpropagationStrategy.update(currentNode, mctsJointMove, goals);
-		return goals;
+		this.backpropagationStrategy.update(currentNode, mctsJointMove, nextState, simulationResult);
+		return simulationResult;
 	}
 
 	/**

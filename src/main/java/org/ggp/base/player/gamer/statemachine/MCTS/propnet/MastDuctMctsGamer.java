@@ -1,15 +1,12 @@
 package org.ggp.base.player.gamer.statemachine.MCTS.propnet;
 
-import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.Random;
 
 import org.ggp.base.player.gamer.statemachine.MCS.manager.MoveStats;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.propnet.InternalPropnetMCTSManager;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.propnet.strategies.aftermove.MASTAfterMove;
-import org.ggp.base.player.gamer.statemachine.MCTS.manager.propnet.strategies.aftersimulation.MASTAfterSimulation;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.propnet.strategies.backpropagation.MASTBackpropagation;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.propnet.strategies.expansion.RandomExpansion;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.propnet.strategies.movechoice.MaximumScoreChoice;
@@ -38,12 +35,10 @@ public class MastDuctMctsGamer extends DuctMctsGamer {
 
 		Random r = new Random();
 
-		Map<InternalPropnetMove, MoveStats> mastStatistics = new HashMap<InternalPropnetMove, MoveStats>();
-
 		InternalPropnetRole myRole = this.thePropnetMachine.roleToInternalRole(this.getRole());
 		int numRoles = this.thePropnetMachine.getInternalRoles().length;
 
-		MASTPlayout mastPlayout = new MASTPlayout(this.thePropnetMachine, r, mastStatistics, this.epsilon, new ArrayList<List<InternalPropnetMove>>());
+		Map<InternalPropnetMove, MoveStats> mastStatistics = new HashMap<InternalPropnetMove, MoveStats>();
 
 		/*
 		MASTStrategy mast = new MASTStrategy(this.thePropnetMachine, this.epsilon, r, mastStatistics, numRoles, myRole);
@@ -55,9 +50,9 @@ public class MastDuctMctsGamer extends DuctMctsGamer {
 		*/
 
 		return new InternalPropnetMCTSManager(new UCTSelection(numRoles, myRole, r, this.valueOffset, new UCTEvaluator(this.c, this.unexploredMoveDefaultSelectionValue)),
-	       		new RandomExpansion(numRoles, myRole, r), mastPlayout,
+	       		new RandomExpansion(numRoles, myRole, r), new MASTPlayout(this.thePropnetMachine, r, mastStatistics, this.epsilon),
 	       		new MASTBackpropagation(numRoles, myRole, mastStatistics),
-	       		new MaximumScoreChoice(myRole, r), null, new MASTAfterSimulation(mastPlayout),
+	       		new MaximumScoreChoice(myRole, r), null, null,
 	       		new MASTAfterMove(mastStatistics, this.decayFactor),
 	       		new PnDecoupledTreeNodeFactory(this.thePropnetMachine),
 	       		this.thePropnetMachine, this.gameStepOffset, this.maxSearchDepth, this.logTranspositionTable);

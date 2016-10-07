@@ -31,6 +31,13 @@ public class MASTBackpropagation implements BackpropagationStrategy {
 	}
 
 	@Override
+	public void processPlayoutResult(MCTSNode leafNode,	SimulationResult simulationResult) {
+
+		this.mastUpdate.processPlayoutResult(leafNode, simulationResult);
+
+	}
+
+	@Override
 	public String getStrategyParameters() {
 		return null;
 	}
@@ -44,13 +51,6 @@ public class MASTBackpropagation implements BackpropagationStrategy {
 		}else{
 			return "[BACKPROPAGATION_STRATEGY = " + this.getClass().getSimpleName() + "]";
 		}
-	}
-
-	@Override
-	public void processPlayoutResult(MCTSNode leafNode,	SimulationResult simulationResult) {
-
-		this.mastUpdate.processPlayoutResult(leafNode, simulationResult);
-
 	}
 
 }

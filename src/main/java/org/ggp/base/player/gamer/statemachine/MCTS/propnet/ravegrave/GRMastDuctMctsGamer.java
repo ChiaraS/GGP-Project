@@ -1,8 +1,6 @@
 package org.ggp.base.player.gamer.statemachine.MCTS.propnet.ravegrave;
 
-import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.Random;
 
@@ -58,15 +56,11 @@ public abstract class GRMastDuctMctsGamer extends MastDuctMctsGamer {
 
 		Map<InternalPropnetMove, MoveStats> mastStatistics = new HashMap<InternalPropnetMove, MoveStats>();
 
-		List<List<InternalPropnetMove>> allJointMoves = new ArrayList<List<InternalPropnetMove>>();
-
-		MASTPlayout mastPlayout = new MASTPlayout(this.thePropnetMachine, r, mastStatistics, this.epsilon, allJointMoves);
-
 		// Note that the after simulation strategy GRAVEAfterSimulation already performs all the after simulation
 		// actions needed by the MAST strategy, so we don't need to change it when we use GRAVE and MAST together.
 		return new InternalPropnetMCTSManager(graveSelection, new NoExpansion() /*new RandomExpansion(numRoles, myRole, r)*/,
-				mastPlayout, new MASTGRAVEBackpropagation(numRoles, myRole, mastStatistics, allJointMoves),
-				new MaximumScoreChoice(myRole, r), null, new GRAVEAfterSimulation(graveSelection, mastPlayout),
+				new MASTPlayout(this.thePropnetMachine, r, mastStatistics, this.epsilon), new MASTGRAVEBackpropagation(numRoles, myRole, mastStatistics),
+				new MaximumScoreChoice(myRole, r), null, new GRAVEAfterSimulation(graveSelection),
 				new MASTAfterMove(mastStatistics, this.decayFactor), new PnAMAFDecoupledTreeNodeFactory(this.thePropnetMachine),
 				this.thePropnetMachine,	this.gameStepOffset, this.maxSearchDepth, this.logTranspositionTable);
 	}

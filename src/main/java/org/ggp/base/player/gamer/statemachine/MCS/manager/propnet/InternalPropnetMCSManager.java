@@ -9,6 +9,7 @@ import java.util.Random;
 
 import org.ggp.base.player.gamer.statemachine.MCS.manager.MCSException;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.propnet.strategies.playout.PlayoutStrategy;
+import org.ggp.base.player.gamer.statemachine.MCTS.manager.propnet.treestructure.SimulationResult;
 import org.ggp.base.util.logging.GamerLogger;
 import org.ggp.base.util.statemachine.InternalPropnetStateMachine;
 import org.ggp.base.util.statemachine.exceptions.MoveDefinitionException;
@@ -207,7 +208,7 @@ public class InternalPropnetMCSManager {
 		InternalPropnetMove myCurrentMove;
 		List<InternalPropnetMove> jointMove;
 		InternalPropnetMachineState nextState;
-		int[] goals;
+		SimulationResult simulationResult;
 		int[] playoutVisitedNodes = new int[1];
 		int myGoal;
 
@@ -232,9 +233,9 @@ public class InternalPropnetMCSManager {
 				// Get the state reachable with this joint move.
 				nextState =  this.theMachine.getInternalNextState(this.currentState, jointMove);
 				// Get the goals obtained by performing playouts from this state.
-				goals = this.playoutStrategy.playout(nextState, playoutVisitedNodes, this.maxSearchDepth-1);
+				simulationResult = this.playoutStrategy.playout(nextState, playoutVisitedNodes, this.maxSearchDepth-1);
 				this.visitedNodes += playoutVisitedNodes[0];
-				myGoal = goals[this.myRole.getIndex()];
+				myGoal = simulationResult.getTerminalGoals()[this.myRole.getIndex()];
 
 			} catch (StateMachineException | MoveDefinitionException e) {
 

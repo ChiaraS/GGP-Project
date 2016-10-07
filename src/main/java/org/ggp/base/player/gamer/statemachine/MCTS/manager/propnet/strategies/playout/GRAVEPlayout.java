@@ -1,15 +1,12 @@
 package org.ggp.base.player.gamer.statemachine.MCTS.manager.propnet.strategies.playout;
 
-import java.util.List;
-
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.propnet.strategies.playout.jointmoveselector.RandomJointMoveSelector;
 import org.ggp.base.util.statemachine.InternalPropnetStateMachine;
-import org.ggp.base.util.statemachine.inernalPropnetStructure.InternalPropnetMove;
 
 public class GRAVEPlayout extends MemorizedStandardPlayout{
 
-	public GRAVEPlayout(InternalPropnetStateMachine theMachine, List<List<InternalPropnetMove>> allJointMoves) {
-		super(theMachine, new RandomJointMoveSelector(theMachine), allJointMoves);
+	public GRAVEPlayout(InternalPropnetStateMachine theMachine) {
+		super(theMachine, new RandomJointMoveSelector(theMachine));
 	}
 
 }

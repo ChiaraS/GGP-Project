@@ -9,6 +9,7 @@ import java.util.Random;
 
 import org.ggp.base.player.gamer.statemachine.MCS.manager.MCSException;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.prover.strategies.playout.ProverPlayoutStrategy;
+import org.ggp.base.player.gamer.statemachine.MCTS.manager.prover.treestructure.ProverSimulationResult;
 import org.ggp.base.util.logging.GamerLogger;
 import org.ggp.base.util.statemachine.MachineState;
 import org.ggp.base.util.statemachine.Move;
@@ -210,7 +211,7 @@ public class ProverMCSManager {
 		Move myCurrentMove;
 		List<Move> jointMove;
 		MachineState nextState;
-		int[] goals;
+		ProverSimulationResult simulationResult;
 		int[] playoutVisitedNodes = new int[1];
 		int myGoal;
 
@@ -235,9 +236,9 @@ public class ProverMCSManager {
 				// Get the state reachable with this joint move.
 				nextState =  this.theMachine.getNextState(this.currentState, jointMove);
 				// Get the goals obtained by performing playouts from this state.
-				goals = this.playoutStrategy.playout(nextState, playoutVisitedNodes, this.maxSearchDepth-1);
+				simulationResult = this.playoutStrategy.playout(nextState, playoutVisitedNodes, this.maxSearchDepth-1);
 				this.visitedNodes += playoutVisitedNodes[0];
-				myGoal = goals[this.myRoleIndex];
+				myGoal = simulationResult.getTerminalGoals()[this.myRoleIndex];
 
 			} catch (StateMachineException | MoveDefinitionException e) {
 

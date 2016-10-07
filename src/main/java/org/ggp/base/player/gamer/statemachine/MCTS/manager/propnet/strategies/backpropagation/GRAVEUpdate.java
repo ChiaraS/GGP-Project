@@ -6,28 +6,39 @@ import java.util.Map;
 import org.ggp.base.player.gamer.statemachine.MCS.manager.MoveStats;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.propnet.treestructure.MCTSJointMove;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.propnet.treestructure.MCTSNode;
+import org.ggp.base.player.gamer.statemachine.MCTS.manager.propnet.treestructure.SimulationResult;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.propnet.treestructure.AMAFDecoupled.PnAMAFNode;
+import org.ggp.base.util.logging.GamerLogger;
+import org.ggp.base.util.statemachine.inernalPropnetStructure.InternalPropnetMachineState;
 import org.ggp.base.util.statemachine.inernalPropnetStructure.InternalPropnetMove;
 
 public class GRAVEUpdate {
 
-	private List<List<InternalPropnetMove>> allJointMoves;
+	public void update(MCTSNode currentNode, MCTSJointMove jointMove, InternalPropnetMachineState nextState, SimulationResult simulationResult) {
 
-	public GRAVEUpdate(List<List<InternalPropnetMove>> allJointMoves) {
-		this.allJointMoves = allJointMoves;
-	}
+		if(currentNode instanceof PnAMAFNode){
 
-	public void update(MCTSNode node, MCTSJointMove jointMove, int[] goals) {
+			List<List<InternalPropnetMove>> allJointMoves = simulationResult.getAllJointMoves();
 
-		if(node instanceof PnAMAFNode){
+			int[] goals = simulationResult.getTerminalGoals();
 
-			Map<InternalPropnetMove, MoveStats> amafStats = ((PnAMAFNode)node).getAmafStats();
+			if(goals == null){
+				GamerLogger.logError("MCTSManager", "Found null terminal goals in the simulation result when updating the AMAF statistics. Probably a wrong combination of strategies has been set!");
+				throw new RuntimeException("Null terminal goals in the simulation result.");
+			}
 
-			this.allJointMoves.add(jointMove.getJointMove());
+			if(allJointMoves == null || allJointMoves.size() == 0){ // This method should be called only if the playout has actually been performed, so there must be at least one joint move
+				GamerLogger.logError("MCTSManager", "Found no joint moves in the simulation result when updating the AMAF statistics. Probably a wrong combination of strategies has been set!");
+				throw new RuntimeException("No joint moves in the simulation result.");
+			}
+
+			Map<InternalPropnetMove, MoveStats> amafStats = ((PnAMAFNode)currentNode).getAmafStats();
+
+			allJointMoves.add(jointMove.getJointMove());
 
 			MoveStats moveStats;
 
-	        for(List<InternalPropnetMove> jM : this.allJointMoves){
+	        for(List<InternalPropnetMove> jM : allJointMoves){
 	        	for(int i = 0; i<jM.size(); i++){
 	        		moveStats = amafStats.get(jM.get(i));
 	        		if(moveStats == null){
@@ -43,6 +54,10 @@ public class GRAVEUpdate {
 		}else{
 			throw new RuntimeException("GRAVEUpdate-update(): detected a node not implementing interface PnAMAFNode.");
 		}
+	}
+
+	public void processPlayoutResult(MCTSNode leafNode,	SimulationResult simulationResult) {
+
 	}
 
 }

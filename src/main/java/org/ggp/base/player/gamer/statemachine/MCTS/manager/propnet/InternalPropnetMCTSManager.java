@@ -406,7 +406,7 @@ public class InternalPropnetMCTSManager extends MCTSManager {
 
 		SimulationResult simulationResult;
 
-		// Check if the node is terminal, and if so, return the final goals (saved in the node) for all players.
+		// Check if the node is terminal, and if so, return as result the final goals (saved in the node) for all players.
 		// NOTE: even if the node is terminal the state might not be, but an error occurred when computing legal
 		// moves, so we cannot search deeper and we return the goals saved in the node.
 		if(currentNode.isTerminal()){
@@ -552,6 +552,11 @@ public class InternalPropnetMCTSManager extends MCTSManager {
 			if(nextNode.isTerminal()){
 
 				//System.out.println("Expanded state is terminal.");
+
+				if(nextNode.getGoals() == null){
+					GamerLogger.logError("MCTSManager", "Detected null goals for a treminal node in the tree.");
+					throw new RuntimeException("Detected null goals for a treminal node in the tree.");
+				}
 
 				simulationResult = new SimulationResult(nextNode.getGoals());
 			}else{

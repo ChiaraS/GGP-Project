@@ -55,10 +55,10 @@ public class MemorizedStandardPlayout extends StandardPlayout {
 				break;
 			}
 
-			allJointMoves.add(jointMove);
-
 			//state = this.getNextState(state, jointMove);
 			state = this.theMachine.getInternalNextState(state, jointMove);
+
+			allJointMoves.add(jointMove);
 
 			nDepth++;
 
@@ -69,7 +69,7 @@ public class MemorizedStandardPlayout extends StandardPlayout {
 
         Collections.reverse(allJointMoves);
 
-        SimulationResult simulationResult = new SimulationResult(this.theMachine.getSafeGoalsAvg(state), allJointMoves);
+        return new SimulationResult(this.theMachine.getSafeGoalsAvg(state), allJointMoves);
 
         //System.out.println("Playout state terminal: " + this.theMachine.isTerminal(state));
 
@@ -77,8 +77,6 @@ public class MemorizedStandardPlayout extends StandardPlayout {
 
 		// Now try to get the goals of the state.
         //return this.prepareSimulationResult(state);
-
-        return simulationResult;
 
 	}
 

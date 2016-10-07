@@ -34,7 +34,7 @@ public class GRAVESelection extends MoveValueSelection implements OnlineTunableC
 
 			//System.out.println("tot node visits: " + currentNode.getTotVisits());
 
-			// TODO: uncomment the check. This will make sure that if no stats have visits higher than the threshold at least
+			// This will make sure that if no stats have visits higher than the threshold at least
 			// the root stats will be used rather than ignoring amaf values.
 			if((((GRAVEEvaluator)this.moveEvaluator).getCloserAmafStats()) == null || currentNode.getTotVisits() >= this.minAMAFVisits){
 

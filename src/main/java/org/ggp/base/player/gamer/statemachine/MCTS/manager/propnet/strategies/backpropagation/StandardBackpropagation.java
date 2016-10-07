@@ -185,6 +185,11 @@ public class StandardBackpropagation implements BackpropagationStrategy {
 	}
 
 	@Override
+	public void processPlayoutResult(MCTSNode leafNode,	SimulationResult simulationResult) {
+		// TODO Auto-generated method stub
+	}
+
+	@Override
 	public String getStrategyParameters() {
 		return null;
 	}
@@ -198,10 +203,4 @@ public class StandardBackpropagation implements BackpropagationStrategy {
 			return "[BACKPROPAGATION_STRATEGY = " + this.getClass().getSimpleName() + "]";
 		}
 	}
-
-	@Override
-	public void processPlayoutResult(MCTSNode leafNode,	SimulationResult simulationResult) {
-		// TODO Auto-generated method stub
-	}
-
 }

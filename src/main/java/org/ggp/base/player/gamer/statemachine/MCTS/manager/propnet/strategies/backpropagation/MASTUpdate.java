@@ -23,6 +23,13 @@ public class MASTUpdate {
 
 		//System.out.println("MASTBP");
 
+		int[] goals = simulationResult.getTerminalGoals();
+
+		if(goals == null){
+			GamerLogger.logError("MCTSManager", "Found null terminal goals in the simulation result when updating the AMAF statistics. Probably a wrong combination of strategies has been set!");
+			throw new RuntimeException("Null terminal goals in the simulation result.");
+		}
+
 		List<InternalPropnetMove> internalJointMove = jointMove.getJointMove();
 		MoveStats moveStats;
 
@@ -33,7 +40,7 @@ public class MASTUpdate {
         		this.mastStatistics.put(internalJointMove.get(i), moveStats);
         	}
        		moveStats.incrementVisits();
-       		moveStats.incrementScoreSum(simulationResult.getTerminalGoals()[i]);
+       		moveStats.incrementScoreSum(goals[i]);
        	}
 
 	}

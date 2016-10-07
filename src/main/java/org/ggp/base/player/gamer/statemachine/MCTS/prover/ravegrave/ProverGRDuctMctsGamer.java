@@ -1,7 +1,5 @@
 package org.ggp.base.player.gamer.statemachine.MCTS.prover.ravegrave;
 
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Random;
 
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.propnet.strategies.selection.evaluators.GRAVE.BetaComputer;
@@ -16,7 +14,6 @@ import org.ggp.base.player.gamer.statemachine.MCTS.manager.prover.strategies.sel
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.prover.strategies.selection.evaluators.GRAVE.ProverGRAVEEvaluator;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.prover.treestructure.AMAFDecoupled.ProverAMAFDecoupledTreeNodeFactory;
 import org.ggp.base.player.gamer.statemachine.MCTS.prover.ProverDuctMctsGamer;
-import org.ggp.base.util.statemachine.Move;
 import org.ggp.base.util.statemachine.Role;
 
 public class ProverGRDuctMctsGamer extends ProverDuctMctsGamer {
@@ -52,15 +49,11 @@ public class ProverGRDuctMctsGamer extends ProverDuctMctsGamer {
 
 		int myRoleIndex = this.getStateMachine().getRoleIndices().get(this.getRole());
 
-		List<List<Move>> allJointMoves = new ArrayList<List<Move>>();
-
 		ProverGRAVESelection graveSelection = new ProverGRAVESelection(numRoles, myRole, r, this.valueOffset, this.minAMAFVisits, new ProverGRAVEEvaluator(this.c, this.unexploredMoveDefaultSelectionValue, this.betaComputer, this.defaultExploration));
 
-		ProverGRAVEPlayout gravePlayout = new ProverGRAVEPlayout(this.getStateMachine(), allJointMoves);
-
 		return new ProverMCTSManager(graveSelection, new ProverNoExpansion() /*new RandomExpansion(numRoles, myRole, r)*/,
-				gravePlayout, new ProverGRAVEBackpropagation(numRoles, myRole, allJointMoves),
-				new ProverMaximumScoreChoice(myRoleIndex, r), new ProverGRAVEAfterSimulation(graveSelection, gravePlayout),
+				new ProverGRAVEPlayout(this.getStateMachine()), new ProverGRAVEBackpropagation(numRoles, myRole),
+				new ProverMaximumScoreChoice(myRoleIndex, r), new ProverGRAVEAfterSimulation(graveSelection),
 				null, new ProverAMAFDecoupledTreeNodeFactory(this.getStateMachine()), this.getStateMachine(),
 	       		this.gameStepOffset, this.maxSearchDepth);
 

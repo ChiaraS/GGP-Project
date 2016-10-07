@@ -3,6 +3,7 @@ package org.ggp.base.player.gamer.statemachine.MCTS.manager.prover.strategies.pl
 import java.util.List;
 
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.prover.strategies.playout.jointmoveselector.ProverJointMoveSelector;
+import org.ggp.base.player.gamer.statemachine.MCTS.manager.prover.treestructure.ProverSimulationResult;
 import org.ggp.base.util.logging.GamerLogger;
 import org.ggp.base.util.statemachine.MachineState;
 import org.ggp.base.util.statemachine.Move;
@@ -23,11 +24,9 @@ public class ProverStandardPlayout implements ProverPlayoutStrategy {
 	}
 
 	@Override
-	public int[] playout(MachineState state,
+	public ProverSimulationResult playout(MachineState state,
 			int[] playoutVisitedNodes, int maxDepth) {
 		//InternalPropnetMachineState lastState;
-
-        int nDepth = 0;
 
         boolean terminal = true;
 
@@ -39,11 +38,23 @@ public class ProverStandardPlayout implements ProverPlayoutStrategy {
 			terminal = true;
 		}
 
-        while(nDepth < maxDepth && !terminal) {
+		if(terminal || maxDepth == 0){
 
-        	List<Move> jointMove = null;
+			if(playoutVisitedNodes != null)
+	        	playoutVisitedNodes[0] = 0;
+
+			return null;
+		}
+
+        int nDepth = 0;
+
+        List<Move> jointMove;
+
+        do{
+
+        	jointMove = null;
 			try {
-				jointMove = this.getJointMove(state);
+				jointMove = this.jointMoveSelector.getJointMove(state);
 			} catch (MoveDefinitionException | StateMachineException e) {
 				GamerLogger.logError("MCTSManager", "Exception getting a joint move while performing a playout.");
 				GamerLogger.logStackTrace("MCTSManager", e);
@@ -66,7 +77,7 @@ public class ProverStandardPlayout implements ProverPlayoutStrategy {
 				terminal = true;
 				break;
 			}
-        }
+        }while(nDepth < maxDepth && !terminal) ;
         if(playoutVisitedNodes != null)
         	playoutVisitedNodes[0] = nDepth;
 
@@ -75,12 +86,14 @@ public class ProverStandardPlayout implements ProverPlayoutStrategy {
 		//lastState = this.theMachine.performSafeLimitedDepthCharge(state, playoutVisitedNodes, maxDepth);
 
 		// Now try to get the goals of the state.
-		return this.theMachine.getSafeGoalsAvg(state);
+		return new ProverSimulationResult(this.theMachine.getSafeGoalsAvg(state));
 	}
 
+	/*
 	public List<Move> getJointMove(MachineState state) throws MoveDefinitionException, StateMachineException{
 		return this.jointMoveSelector.getJointMove(state);
 	}
+	*/
 
 	@Override
 	public String getStrategyParameters() {

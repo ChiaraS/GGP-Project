@@ -1,24 +1,19 @@
 package org.ggp.base.player.gamer.statemachine.MCTS.manager.prover.strategies.aftersimulation;
 
-import org.ggp.base.player.gamer.statemachine.MCTS.manager.propnet.strategies.aftersimulation.AfterSimulationStrategy;
-import org.ggp.base.player.gamer.statemachine.MCTS.manager.prover.strategies.playout.ProverMemorizedStandardPlayout;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.prover.strategies.selection.ProverGRAVESelection;
+import org.ggp.base.player.gamer.statemachine.MCTS.manager.prover.treestructure.ProverSimulationResult;
 
-public class ProverGRAVEAfterSimulation implements AfterSimulationStrategy {
+public class ProverGRAVEAfterSimulation implements ProverAfterSimulationStrategy {
 
 	private ProverGRAVESelection graveSelection;
 
-	private ProverMemorizedStandardPlayout gravePlayout;
-
-	public ProverGRAVEAfterSimulation(ProverGRAVESelection graveSelection, ProverMemorizedStandardPlayout gravePlayout) {
+	public ProverGRAVEAfterSimulation(ProverGRAVESelection graveSelection) {
 		this.graveSelection = graveSelection;
-		this.gravePlayout = gravePlayout;
 	}
 
 	@Override
-	public void afterSimulationActions(int[] goals) {
+	public void afterSimulationActions(ProverSimulationResult simulationResult) {
 		this.graveSelection.resetCloserAmafStats();
-		this.gravePlayout.clearLastMemorizedPlayout();
 	}
 
 	@Override

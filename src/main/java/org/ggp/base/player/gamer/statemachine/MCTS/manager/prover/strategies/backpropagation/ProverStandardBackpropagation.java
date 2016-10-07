@@ -3,8 +3,10 @@ package org.ggp.base.player.gamer.statemachine.MCTS.manager.prover.strategies.ba
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.propnet.treestructure.MCTSNode;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.prover.treestructure.ProverMCTSJointMove;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.prover.treestructure.ProverSequDecMCTSJointMove;
+import org.ggp.base.player.gamer.statemachine.MCTS.manager.prover.treestructure.ProverSimulationResult;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.prover.treestructure.decoupled.ProverDecoupledMCTSMoveStats;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.prover.treestructure.decoupled.ProverDecoupledMCTSNode;
+import org.ggp.base.util.statemachine.MachineState;
 import org.ggp.base.util.statemachine.Role;
 
 public class ProverStandardBackpropagation implements ProverBackpropagationStrategy {
@@ -31,15 +33,15 @@ public class ProverStandardBackpropagation implements ProverBackpropagationStrat
 	 * @see org.ggp.base.player.gamer.statemachine.MCTS.manager.strategies.backpropagation.BackpropagationStrategy#update(org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.InternalPropnetMCTSNode, org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.MCTSJointMove, int[])
 	 */
 	@Override
-	public void update(MCTSNode node, ProverMCTSJointMove jointMove, int[] goals){
-		if(node instanceof ProverDecoupledMCTSNode && jointMove instanceof ProverSequDecMCTSJointMove){
-			this.decUpdate((ProverDecoupledMCTSNode)node, (ProverSequDecMCTSJointMove)jointMove, goals);
+	public void update(MCTSNode currentNode, ProverMCTSJointMove jointMove, MachineState nextState, ProverSimulationResult simulationResult){
+		if(currentNode instanceof ProverDecoupledMCTSNode && jointMove instanceof ProverSequDecMCTSJointMove){
+			this.decUpdate((ProverDecoupledMCTSNode)currentNode, (ProverSequDecMCTSJointMove)jointMove, nextState, simulationResult);
 		}/*else if(node instanceof PnSequentialMCTSNode && jointMove instanceof SequDecMCTSJointMove){
 			this.seqUpdate((PnSequentialMCTSNode)node, (SequDecMCTSJointMove)jointMove, goals);
 		}else if(node instanceof PnSlowSeqentialMCTSNode && jointMove instanceof SlowSequentialMCTSJointMove){
 			this.sseqUpdate((PnSlowSeqentialMCTSNode)node, (SlowSequentialMCTSJointMove)jointMove, goals);
 		}*/else{
-			throw new RuntimeException("StandardBackpropagation-update(): detected wrong combination of types for node (" + node.getClass().getSimpleName() + ") and joint move (" + jointMove.getClass().getSimpleName() + ").");
+			throw new RuntimeException("StandardBackpropagation-update(): detected wrong combination of types for node (" + currentNode.getClass().getSimpleName() + ") and joint move (" + jointMove.getClass().getSimpleName() + ").");
 		}
 	}
 
@@ -53,7 +55,7 @@ public class ProverStandardBackpropagation implements ProverBackpropagationStrat
 	 * @param jointMove the explored joint move.
 	 * @param goals the goals obtained by the simulation, to be used to update the statistics.
 	 */
-	private void decUpdate(ProverDecoupledMCTSNode node, ProverSequDecMCTSJointMove jointMove, int[] goals) {
+	private void decUpdate(ProverDecoupledMCTSNode node, ProverSequDecMCTSJointMove jointMove, MachineState nextState, ProverSimulationResult simulationResult) {
 
 		node.incrementTotVisits();
 
@@ -64,7 +66,7 @@ public class ProverStandardBackpropagation implements ProverBackpropagationStrat
 		for(int i = 0; i < moves.length; i++){
 			// Get the decoupled MCTS Move
 			ProverDecoupledMCTSMoveStats theMoveToUpdate = moves[i][moveIndices[i]];
-			theMoveToUpdate.incrementScoreSum(goals[i]);
+			theMoveToUpdate.incrementScoreSum(simulationResult.getTerminalGoals()[i]);
 			if(theMoveToUpdate.getVisits() == 0){
 				//System.out.println("!!!!!");
 				//System.out.println(node.getUnexploredMovesCount()[i]);
@@ -178,6 +180,11 @@ public class ProverStandardBackpropagation implements ProverBackpropagationStrat
 	}*/
 
 	@Override
+	public void processPlayoutResult(MCTSNode leafNode,	ProverSimulationResult simulationResult) {
+		// TODO Auto-generated method stub
+	}
+
+	@Override
 	public String getStrategyParameters() {
 		return null;
 	}
@@ -191,7 +198,4 @@ public class ProverStandardBackpropagation implements ProverBackpropagationStrat
 			return "[BACKPROPAGATION_STRATEGY = " + this.getClass().getSimpleName() + "]";
 		}
 	}
-
-
-
 }
