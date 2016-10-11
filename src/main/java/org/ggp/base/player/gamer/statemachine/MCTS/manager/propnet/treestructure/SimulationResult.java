@@ -23,6 +23,19 @@ import org.ggp.base.util.statemachine.inernalPropnetStructure.InternalPropnetMov
 public class SimulationResult {
 
 	/**
+	 * The length of the playout.
+	 *
+	 * NOTE that this doesn't necessarily always correspond to the length of the list of allJointMoves or the
+	 * list of intermediateGoals because such lists might also contain goals and moves obtained/performed during
+	 * the selection phase.
+	 *
+	 * ALSO NOTE that this class doesn't in any way ensure that the playoutLength corresponds to the length of
+	 * the list of allJointMoves or the list of intermediateGoals even when this class is initialized after the
+	 * end of the playout.
+	 */
+	private int playoutLength;
+
+	/**
 	 * Goals in the final state of the simulation (note that it's not necessarily the terminal state,
 	 * because the simulation could have been interrupted earlier).
 	 */
@@ -55,53 +68,64 @@ public class SimulationResult {
 	private List<int[]> intermediateGoals;
 
 	/**
-	 * Constructor that initializes the two lists as empty lists and the terminal goals as null.
+	 * Constructor that initializes the playout length to 0, the two lists as empty lists and the terminal goals as null.
 	 */
 	public SimulationResult() {
 
-		this(null, new ArrayList<List<InternalPropnetMove>>(), new ArrayList<int[]>());
+		this(0, null, new ArrayList<List<InternalPropnetMove>>(), new ArrayList<int[]>());
 
 	}
 
 	/**
-	 * Constructor that initializes the two lists as empty lists and the terminal goals to the given values.
+	 * Constructor that initializes the playout length to 0, the two lists as empty lists and the terminal goals to the given values.
 	 *
 	 * @param terminalGoals
 	 */
 	public SimulationResult(int[] terminalGoals) {
 
-		this(terminalGoals, new ArrayList<List<InternalPropnetMove>>(), new ArrayList<int[]>());
+		this(0, terminalGoals, new ArrayList<List<InternalPropnetMove>>(), new ArrayList<int[]>());
 
 	}
 
 	/**
-	 * Constructor that initializes the list of intermediate goals as empty and the list of all joint moves
-	 * and the terminal goals to the given values.
+	 * Constructor that initializes the two lists as empty lists and the playout length and the terminal goals to the given values.
 	 *
 	 * @param terminalGoals
 	 */
-	public SimulationResult(int[] terminalGoals, List<List<InternalPropnetMove>> allJointMoves) {
+	public SimulationResult(int playoutLength, int[] terminalGoals) {
 
-		this(terminalGoals, allJointMoves, new ArrayList<int[]>());
+		this(playoutLength, terminalGoals, new ArrayList<List<InternalPropnetMove>>(), new ArrayList<int[]>());
 
 	}
 
-	public SimulationResult(int[] terminalGoals, List<List<InternalPropnetMove>> allJointMoves, List<int[]> allGoals) {
+	public SimulationResult(int[] terminalGoals, List<List<InternalPropnetMove>> allJointMoves, List<int[]> intermediateGoals) {
+
+		this(0, terminalGoals, allJointMoves, intermediateGoals);
+
+	}
+
+	public SimulationResult(int playoutLength, int[] terminalGoals, List<List<InternalPropnetMove>> allJointMoves, List<int[]> intermediateGoals) {
+
+		this.playoutLength = playoutLength;
 
 		this.terminalGoals = terminalGoals;
 
 		if(allJointMoves == null){
-			this.allJointMoves = new ArrayList<List<InternalPropnetMove>>();
+			allJointMoves = new ArrayList<List<InternalPropnetMove>>();
 		}
 
-		if(allGoals == null){
-			this.intermediateGoals = new ArrayList<int[]>();
+		if(intermediateGoals == null){
+			intermediateGoals = new ArrayList<int[]>();
 		}
 
 		this.allJointMoves = allJointMoves;
 
-		this.intermediateGoals = allGoals;
+		this.intermediateGoals = intermediateGoals;
 
+	}
+
+	public int getPlayoutLength(){
+		return this.playoutLength;
 	}
 
 	public List<List<InternalPropnetMove>> getAllJointMoves(){
@@ -110,7 +134,7 @@ public class SimulationResult {
 
 	}
 
-	public List<int[]> getAllGoals(){
+	public List<int[]> getIntermediateGoals(){
 
 		return this.intermediateGoals;
 
@@ -127,11 +151,21 @@ public class SimulationResult {
 
 	public void addJointMove(List<InternalPropnetMove> jointMove){
 
+		//if(this.allJointMoves == null){
+		//	GamerLogger.logError("MCTSManager", "Simulation result not initialized to memorize all the joint moves. Probably a wrong combination of strategies has been set!");
+		//	throw new RuntimeException("Simulation result not initialized to memorize all the joint moves.");
+		//}
+
 		this.allJointMoves.add(jointMove);
 
 	}
 
 	public void addGoals(int[] goals){
+
+		//if(this.intermediateGoals == null){
+		//	GamerLogger.logError("MCTSManager", "Simulation result not initialized to memorize all the intermediate goals. Probably a wrong combination of strategies has been set!");
+		//	throw new RuntimeException("Simulation result not initialized to memorize all the intermediate goals.");
+		//}
 
 		this.intermediateGoals.add(goals);
 

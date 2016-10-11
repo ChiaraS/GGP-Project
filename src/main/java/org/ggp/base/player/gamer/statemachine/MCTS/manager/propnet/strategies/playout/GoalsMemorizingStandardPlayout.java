@@ -12,16 +12,16 @@ import org.ggp.base.util.statemachine.exceptions.MoveDefinitionException;
 import org.ggp.base.util.statemachine.inernalPropnetStructure.InternalPropnetMachineState;
 import org.ggp.base.util.statemachine.inernalPropnetStructure.InternalPropnetMove;
 
-public class MemorizedStandardPlayout extends StandardPlayout {
+public class GoalsMemorizingStandardPlayout extends StandardPlayout {
 
-	public MemorizedStandardPlayout(InternalPropnetStateMachine theMachine,
+	public GoalsMemorizingStandardPlayout(
+			InternalPropnetStateMachine theMachine,
 			JointMoveSelector jointMoveSelector) {
 		super(theMachine, jointMoveSelector);
-
 	}
 
 	@Override
-	public SimulationResult playout(InternalPropnetMachineState state, int[] playoutVisitedNodes, int maxDepth) {
+	public SimulationResult playout(InternalPropnetMachineState state, int maxDepth) {
 		//InternalPropnetMachineState lastState;
 
 		// NOTE that this is just an extra check: if the state is terminal or the depth limit has been reached,
@@ -31,15 +31,17 @@ public class MemorizedStandardPlayout extends StandardPlayout {
 		// or if the depth limit has been reached, so this check will never be true, but it's here just to be safe.
 		if(this.theMachine.isTerminal(state) || maxDepth == 0){
 
-			if(playoutVisitedNodes != null)
-	        	playoutVisitedNodes[0] = 0;
+			//if(playoutVisitedNodes != null)
+	        //	playoutVisitedNodes[0] = 0;
 
-			return null;
+			GamerLogger.logError("MCTSManager", "Playout strategy shouldn't be called on a terminal node. The MCTSManager must take care of computing the simulation result in this case.");
+			throw new RuntimeException("Playout strategy called on a terminal node.");
+
 		}
 
         int nDepth = 0;
 
-        List<List<InternalPropnetMove>> allJointMoves = new ArrayList<List<InternalPropnetMove>>();
+        List<int[]> allGoals = new ArrayList<int[]>();
 
         List<InternalPropnetMove> jointMove;
 
@@ -47,7 +49,6 @@ public class MemorizedStandardPlayout extends StandardPlayout {
 
         	jointMove = null;
 			try {
-				//jointMove = this.getJointMove(state);
 				jointMove = this.jointMoveSelector.getJointMove(state);
 			} catch (MoveDefinitionException e) {
 				GamerLogger.logError("MCTSManager", "Exception getting a joint move while performing a playout.");
@@ -55,59 +56,21 @@ public class MemorizedStandardPlayout extends StandardPlayout {
 				break;
 			}
 
-			//state = this.getNextState(state, jointMove);
 			state = this.theMachine.getInternalNextState(state, jointMove);
 
-			allJointMoves.add(jointMove);
+			allGoals.add(this.theMachine.getSafeGoalsAvg(state));
 
 			nDepth++;
 
         }while(nDepth < maxDepth && !this.theMachine.isTerminal(state));
 
-        if(playoutVisitedNodes != null)
-        	playoutVisitedNodes[0] = nDepth;
+        //if(playoutVisitedNodes != null)
+        //	playoutVisitedNodes[0] = nDepth;
 
-        Collections.reverse(allJointMoves);
+        Collections.reverse(allGoals);
 
-        return new SimulationResult(this.theMachine.getSafeGoalsAvg(state), allJointMoves);
-
-        //System.out.println("Playout state terminal: " + this.theMachine.isTerminal(state));
-
-		//lastState = this.theMachine.performSafeLimitedDepthCharge(state, playoutVisitedNodes, maxDepth);
-
-		// Now try to get the goals of the state.
-        //return this.prepareSimulationResult(state);
+        return new SimulationResult(nDepth, allGoals.get(0), null, allGoals);
 
 	}
-
-	/*
-	@Override
-	public List<InternalPropnetMove> getJointMove(InternalPropnetMachineState state) throws MoveDefinitionException{
-		List<InternalPropnetMove> theChosenMove =  super.getJointMove(state);
-		this.allJointMoves.add(theChosenMove);
-		return theChosenMove;
-	}
-
-	public void clearLastMemorizedPlayout(){
-		this.allJointMoves.clear();
-	}
-
-	public void printJM(){
-		System.out.println("All joint moves: " + this.allJointMoves.size());
-
-		System.out.println("[");
-
-		for(List<InternalPropnetMove> jm : this.allJointMoves){
-
-			System.out.print("( ");
-			for(InternalPropnetMove i : jm){
-				System.out.print(i + ", ");
-			}
-			System.out.println(")");
-		}
-
-		System.out.println("]");
-	}
-	*/
 
 }

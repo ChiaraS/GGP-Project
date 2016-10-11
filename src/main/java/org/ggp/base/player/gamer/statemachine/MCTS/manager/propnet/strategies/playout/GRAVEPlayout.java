@@ -3,7 +3,7 @@ package org.ggp.base.player.gamer.statemachine.MCTS.manager.propnet.strategies.p
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.propnet.strategies.playout.jointmoveselector.RandomJointMoveSelector;
 import org.ggp.base.util.statemachine.InternalPropnetStateMachine;
 
-public class GRAVEPlayout extends MemorizedStandardPlayout{
+public class GRAVEPlayout extends MoveMemorizingStandardPlayout{
 
 	public GRAVEPlayout(InternalPropnetStateMachine theMachine) {
 		super(theMachine, new RandomJointMoveSelector(theMachine));

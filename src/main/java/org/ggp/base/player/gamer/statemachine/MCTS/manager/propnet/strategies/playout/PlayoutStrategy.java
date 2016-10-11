@@ -6,5 +6,5 @@ import org.ggp.base.util.statemachine.inernalPropnetStructure.InternalPropnetMac
 
 public interface PlayoutStrategy extends Strategy{
 
-	public SimulationResult playout(InternalPropnetMachineState state, int[] playoutVisitedNodes, int maxDepth);
+	public SimulationResult playout(InternalPropnetMachineState state, int maxDepth);
 }

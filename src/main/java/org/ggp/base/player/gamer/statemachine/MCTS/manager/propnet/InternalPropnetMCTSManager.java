@@ -169,7 +169,7 @@ public class InternalPropnetMCTSManager extends MCTSManager {
 		//this.strategies.add(this.playoutStrategy);
 		//this.strategies.add(this.moveChoiceStrategy);
 
-		String toLog = "MCTS manager initialized with the following state mahcine " + this.theMachine.getName();
+		String toLog = "MCTS manager initialized with the following state machine " + this.theMachine.getName();
 
 		toLog += "\nMCTS manager initialized with the following parameters: [maxSearchDepth = " + this.maxSearchDepth + ", logTranspositionTable = " + logTranspositionTable + "]";
 
@@ -573,13 +573,13 @@ public class InternalPropnetMCTSManager extends MCTSManager {
 
 				}else{
 
-					int[] playoutVisitedNodes = new int[1];
+					//int[] playoutVisitedNodes = new int[1];
 					// Note that if no depth is left for the playout, the playout itself will take care of
 					// returning the added-state goal values (if any) or the default tie goal values.
-					simulationResult = this.playoutStrategy.playout(nextState, playoutVisitedNodes, availableDepth);
-					this.currentIterationVisitedNodes += playoutVisitedNodes[0];
+					simulationResult = this.playoutStrategy.playout(nextState, availableDepth);
+					this.currentIterationVisitedNodes += simulationResult.getPlayoutLength();
 
-					this.backpropagationStrategy.processPlayoutResult(nextNode, simulationResult);
+					this.backpropagationStrategy.processPlayoutResult(nextNode, nextState, simulationResult);
 				}
 
 				//System.out.print("After playout - ");

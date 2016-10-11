@@ -209,7 +209,7 @@ public class InternalPropnetMCSManager {
 		List<InternalPropnetMove> jointMove;
 		InternalPropnetMachineState nextState;
 		SimulationResult simulationResult;
-		int[] playoutVisitedNodes = new int[1];
+		//int[] playoutVisitedNodes = new int[1];
 		int myGoal;
 
 		this.searchStart = System.currentTimeMillis();
@@ -233,8 +233,8 @@ public class InternalPropnetMCSManager {
 				// Get the state reachable with this joint move.
 				nextState =  this.theMachine.getInternalNextState(this.currentState, jointMove);
 				// Get the goals obtained by performing playouts from this state.
-				simulationResult = this.playoutStrategy.playout(nextState, playoutVisitedNodes, this.maxSearchDepth-1);
-				this.visitedNodes += playoutVisitedNodes[0];
+				simulationResult = this.playoutStrategy.playout(nextState, this.maxSearchDepth-1);
+				this.visitedNodes += simulationResult.getPlayoutLength();
 				myGoal = simulationResult.getTerminalGoals()[this.myRole.getIndex()];
 
 			} catch (StateMachineException | MoveDefinitionException e) {

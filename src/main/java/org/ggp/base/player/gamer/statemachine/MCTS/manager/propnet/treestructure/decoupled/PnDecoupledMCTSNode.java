@@ -8,6 +8,9 @@ public class PnDecoupledMCTSNode extends MCTSNode{
 
 	/**
 	 * List of the moves' statistics for each role in the state corresponding to this node.
+	 *
+	 * movesStats[i][j] = j-th move statistics for i-th role.
+	 *
 	 */
 	protected DecoupledMCTSMoveStats[][] movesStats;
 

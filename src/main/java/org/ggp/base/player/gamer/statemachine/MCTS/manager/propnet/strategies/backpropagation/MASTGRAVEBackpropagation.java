@@ -34,12 +34,11 @@ public class MASTGRAVEBackpropagation implements BackpropagationStrategy {
 	}
 
 	@Override
-	public void processPlayoutResult(MCTSNode leafNode,
-			SimulationResult simulationResult) {
+	public void processPlayoutResult(MCTSNode leafNode, InternalPropnetMachineState leafState, SimulationResult simulationResult) {
 
-		this.stdBackpropagation.processPlayoutResult(leafNode, simulationResult);
-		this.mastUpdate.processPlayoutResult(leafNode, simulationResult);
-		this.graveUpdate.processPlayoutResult(leafNode, simulationResult);
+		this.stdBackpropagation.processPlayoutResult(leafNode, leafState, simulationResult);
+		this.mastUpdate.processPlayoutResult(leafNode, leafState, simulationResult);
+		this.graveUpdate.processPlayoutResult(leafNode, leafState, simulationResult);
 
 
 	}

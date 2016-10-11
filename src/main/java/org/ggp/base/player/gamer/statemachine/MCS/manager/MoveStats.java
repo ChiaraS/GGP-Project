@@ -40,6 +40,10 @@ public class MoveStats{
 		this.scoreSum += newScore;
 	}
 
+	public void setScoreSum(double newScore) {
+		this.scoreSum = newScore;
+	}
+
 	/**
 	 * OLD METHOD USED IF VISITS AND SCORE_SUM ARE MEMORIZED AS INTEGERS
 	 *

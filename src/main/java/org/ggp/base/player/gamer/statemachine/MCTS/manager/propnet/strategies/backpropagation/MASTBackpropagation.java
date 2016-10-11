@@ -31,9 +31,9 @@ public class MASTBackpropagation implements BackpropagationStrategy {
 	}
 
 	@Override
-	public void processPlayoutResult(MCTSNode leafNode,	SimulationResult simulationResult) {
+	public void processPlayoutResult(MCTSNode leafNode, InternalPropnetMachineState leafState,	SimulationResult simulationResult) {
 
-		this.mastUpdate.processPlayoutResult(leafNode, simulationResult);
+		this.mastUpdate.processPlayoutResult(leafNode, leafState, simulationResult);
 
 	}
 

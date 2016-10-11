@@ -12,9 +12,9 @@ import org.ggp.base.util.statemachine.exceptions.MoveDefinitionException;
 import org.ggp.base.util.statemachine.inernalPropnetStructure.InternalPropnetMachineState;
 import org.ggp.base.util.statemachine.inernalPropnetStructure.InternalPropnetMove;
 
-public class CompleteMemorizedStandardPlayout extends StandardPlayout {
+public class AllMemorizingStandardPlayout extends StandardPlayout {
 
-	public CompleteMemorizedStandardPlayout(
+	public AllMemorizingStandardPlayout(
 			InternalPropnetStateMachine theMachine,
 			JointMoveSelector jointMoveSelector) {
 
@@ -23,7 +23,7 @@ public class CompleteMemorizedStandardPlayout extends StandardPlayout {
 	}
 
 	@Override
-	public SimulationResult playout(InternalPropnetMachineState state, int[] playoutVisitedNodes, int maxDepth) {
+	public SimulationResult playout(InternalPropnetMachineState state, int maxDepth) {
 		//InternalPropnetMachineState lastState;
 
 		// NOTE that this is just an extra check: if the state is terminal or the depth limit has been reached,
@@ -33,10 +33,12 @@ public class CompleteMemorizedStandardPlayout extends StandardPlayout {
 		// or if the depth limit has been reached, so this check will never be true, but it's here just to be safe.
 		if(this.theMachine.isTerminal(state) || maxDepth == 0){
 
-			if(playoutVisitedNodes != null)
-	        	playoutVisitedNodes[0] = 0;
+			//if(playoutVisitedNodes != null)
+	        //	playoutVisitedNodes[0] = 0;
 
-			return null;
+			GamerLogger.logError("MCTSManager", "Playout strategy shouldn't be called on a terminal node. The MCTSManager must take care of computing the simulation result in this case.");
+			throw new RuntimeException("Playout strategy called on a terminal node.");
+
 		}
 
         int nDepth = 0;
@@ -68,14 +70,14 @@ public class CompleteMemorizedStandardPlayout extends StandardPlayout {
 
         }while(nDepth < maxDepth && !this.theMachine.isTerminal(state));
 
-        if(playoutVisitedNodes != null)
-        	playoutVisitedNodes[0] = nDepth;
+        //if(playoutVisitedNodes != null)
+        //	playoutVisitedNodes[0] = nDepth;
 
         Collections.reverse(allJointMoves);
 
         Collections.reverse(allGoals);
 
-        return new SimulationResult(allGoals.get(0), allJointMoves, allGoals);
+        return new SimulationResult(nDepth, allGoals.get(0), allJointMoves, allGoals);
 
 	}
 

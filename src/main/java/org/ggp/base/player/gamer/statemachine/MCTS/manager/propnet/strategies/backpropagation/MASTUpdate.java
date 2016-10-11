@@ -45,7 +45,7 @@ public class MASTUpdate {
 
 	}
 
-	public void processPlayoutResult(MCTSNode leafNode,	SimulationResult simulationResult) {
+	public void processPlayoutResult(MCTSNode leafNode,	InternalPropnetMachineState leafState, SimulationResult simulationResult) {
 
 		int[] goals = simulationResult.getTerminalGoals();
 

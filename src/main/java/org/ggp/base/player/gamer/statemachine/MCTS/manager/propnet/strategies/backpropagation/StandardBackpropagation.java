@@ -185,7 +185,7 @@ public class StandardBackpropagation implements BackpropagationStrategy {
 	}
 
 	@Override
-	public void processPlayoutResult(MCTSNode leafNode,	SimulationResult simulationResult) {
+	public void processPlayoutResult(MCTSNode leafNode, InternalPropnetMachineState leafState,	SimulationResult simulationResult) {
 		// TODO Auto-generated method stub
 	}
 

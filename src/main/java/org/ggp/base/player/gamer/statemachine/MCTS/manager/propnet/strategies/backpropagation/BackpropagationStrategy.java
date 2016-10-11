@@ -29,6 +29,6 @@ public interface BackpropagationStrategy extends Strategy {
 	 * @param leafNode the node from which the playout was started.
 	 * @param simulationResult the result of the playout starting from the terminal state up to the leaf node.
 	 */
-	public void processPlayoutResult(MCTSNode leafNode, SimulationResult simulationResult);
+	public void processPlayoutResult(MCTSNode leafNode, InternalPropnetMachineState leafState, SimulationResult simulationResult);
 
 }
