@@ -18,10 +18,10 @@ public class GRAVEBackpropagation implements BackpropagationStrategy {
 	}
 
 	@Override
-	public void update(MCTSNode currentNode, MCTSJointMove jointMove, InternalPropnetMachineState nextState, SimulationResult simulationResult) {
+	public void update(MCTSNode currentNode, InternalPropnetMachineState currentState, MCTSJointMove jointMove, SimulationResult simulationResult) {
 
-		this.stdBackpropagation.update(currentNode, jointMove, nextState, simulationResult);
-		this.graveUpdate.update(currentNode, jointMove, nextState, simulationResult);
+		this.stdBackpropagation.update(currentNode, currentState, jointMove, simulationResult);
+		this.graveUpdate.update(currentNode, currentState, jointMove, simulationResult);
 
 	}
 

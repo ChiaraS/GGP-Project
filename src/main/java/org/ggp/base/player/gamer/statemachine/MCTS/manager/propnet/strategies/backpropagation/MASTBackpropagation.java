@@ -23,10 +23,10 @@ public class MASTBackpropagation implements BackpropagationStrategy {
 	}
 
 	@Override
-	public void update(MCTSNode currentNode, MCTSJointMove jointMove, InternalPropnetMachineState nextState, SimulationResult simulationResult) {
+	public void update(MCTSNode currentNode, InternalPropnetMachineState currentState, MCTSJointMove jointMove, SimulationResult simulationResult) {
 
-		this.stdBackpropagation.update(currentNode, jointMove, nextState, simulationResult);
-		this.mastUpdate.update(currentNode, jointMove, nextState, simulationResult);
+		this.stdBackpropagation.update(currentNode, currentState, jointMove, simulationResult);
+		this.mastUpdate.update(currentNode, currentState, jointMove, simulationResult);
 
 	}
 

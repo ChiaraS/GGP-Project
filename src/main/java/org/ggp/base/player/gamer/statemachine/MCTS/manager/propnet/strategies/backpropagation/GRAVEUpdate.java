@@ -14,7 +14,7 @@ import org.ggp.base.util.statemachine.inernalPropnetStructure.InternalPropnetMov
 
 public class GRAVEUpdate {
 
-	public void update(MCTSNode currentNode, MCTSJointMove jointMove, InternalPropnetMachineState nextState, SimulationResult simulationResult) {
+	public void update(MCTSNode currentNode, InternalPropnetMachineState currentState, MCTSJointMove jointMove, SimulationResult simulationResult) {
 
 		if(currentNode instanceof PnAMAFNode){
 

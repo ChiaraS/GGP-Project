@@ -71,7 +71,7 @@ public class MoveMemorizingStandardPlayout extends StandardPlayout {
 
         Collections.reverse(allJointMoves);
 
-        return new SimulationResult(nDepth, this.theMachine.getSafeGoalsAvg(state), allJointMoves, null);
+        return new SimulationResult(nDepth, this.theMachine.getSafeGoalsAvg(state), allJointMoves);
 
         //System.out.println("Playout state terminal: " + this.theMachine.isTerminal(state));
 

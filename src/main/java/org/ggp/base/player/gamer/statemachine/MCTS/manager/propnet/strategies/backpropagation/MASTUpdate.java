@@ -19,7 +19,7 @@ public class MASTUpdate {
 		this.mastStatistics = mastStatistics;
 	}
 
-	public void update(MCTSNode currentNode, MCTSJointMove jointMove, InternalPropnetMachineState nextState, SimulationResult simulationResult) {
+	public void update(MCTSNode currentNode, InternalPropnetMachineState currentState, MCTSJointMove jointMove, SimulationResult simulationResult) {
 
 		//System.out.println("MASTBP");
 

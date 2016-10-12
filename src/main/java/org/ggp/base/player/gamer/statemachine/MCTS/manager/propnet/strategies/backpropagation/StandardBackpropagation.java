@@ -38,13 +38,13 @@ public class StandardBackpropagation implements BackpropagationStrategy {
 	 * @see org.ggp.base.player.gamer.statemachine.MCTS.manager.strategies.backpropagation.BackpropagationStrategy#update(org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.InternalPropnetMCTSNode, org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.MCTSJointMove, int[])
 	 */
 	@Override
-	public void update(MCTSNode currentNode, MCTSJointMove jointMove, InternalPropnetMachineState nextState, SimulationResult simulationResult){
+	public void update(MCTSNode currentNode, InternalPropnetMachineState currentState, MCTSJointMove jointMove, SimulationResult simulationResult){
 		if(currentNode instanceof PnDecoupledMCTSNode && jointMove instanceof SequDecMCTSJointMove){
-			this.decUpdate((PnDecoupledMCTSNode)currentNode, (SequDecMCTSJointMove)jointMove, nextState, simulationResult);
+			this.decUpdate((PnDecoupledMCTSNode)currentNode, currentState, (SequDecMCTSJointMove)jointMove, simulationResult);
 		}else if(currentNode instanceof PnSequentialMCTSNode && jointMove instanceof SequDecMCTSJointMove){
-			this.seqUpdate((PnSequentialMCTSNode)currentNode, (SequDecMCTSJointMove)jointMove, nextState, simulationResult);
+			this.seqUpdate((PnSequentialMCTSNode)currentNode, currentState, (SequDecMCTSJointMove)jointMove, simulationResult);
 		}else if(currentNode instanceof PnSlowSeqentialMCTSNode && jointMove instanceof SlowSequentialMCTSJointMove){
-			this.sseqUpdate((PnSlowSeqentialMCTSNode)currentNode, (SlowSequentialMCTSJointMove)jointMove, nextState, simulationResult);
+			this.sseqUpdate((PnSlowSeqentialMCTSNode)currentNode, currentState, (SlowSequentialMCTSJointMove)jointMove, simulationResult);
 		}else{
 			throw new RuntimeException("StandardBackpropagation-update(): detected wrong combination of types for node (" + currentNode.getClass().getSimpleName() + ") and joint move (" + jointMove.getClass().getSimpleName() + ").");
 		}
@@ -60,7 +60,7 @@ public class StandardBackpropagation implements BackpropagationStrategy {
 	 * @param jointMove the explored joint move.
 	 * @param goals the goals obtained by the simulation, to be used to update the statistics.
 	 */
-	private void decUpdate(PnDecoupledMCTSNode currentNode, SequDecMCTSJointMove jointMove, InternalPropnetMachineState nextState, SimulationResult simulationResult) {
+	private void decUpdate(PnDecoupledMCTSNode currentNode, InternalPropnetMachineState currentState, SequDecMCTSJointMove jointMove, SimulationResult simulationResult) {
 
 		currentNode.incrementTotVisits();
 
@@ -97,7 +97,7 @@ public class StandardBackpropagation implements BackpropagationStrategy {
 	 * @param jointMove the explored joint move.
 	 * @param goals the goals obtained by the simulation, to be used to update the statistics.
 	 */
-	private void seqUpdate(PnSequentialMCTSNode currentNode, SequDecMCTSJointMove jointMove, InternalPropnetMachineState nextState, SimulationResult simulationResult) {
+	private void seqUpdate(PnSequentialMCTSNode currentNode, InternalPropnetMachineState currentState, SequDecMCTSJointMove jointMove, SimulationResult simulationResult) {
 
 		currentNode.incrementTotVisits();
 
@@ -149,7 +149,7 @@ public class StandardBackpropagation implements BackpropagationStrategy {
 	 * @param jointMove the explored joint move.
 	 * @param goals the goals obtained by the simulation, to be used to update the statistics.
 	 */
-	private void sseqUpdate(PnSlowSeqentialMCTSNode currentNode, SlowSequentialMCTSJointMove jointMove, InternalPropnetMachineState nextState, SimulationResult simulationResult) {
+	private void sseqUpdate(PnSlowSeqentialMCTSNode currentNode, InternalPropnetMachineState currentState, SlowSequentialMCTSJointMove jointMove, SimulationResult simulationResult) {
 
 		currentNode.incrementTotVisits();
 

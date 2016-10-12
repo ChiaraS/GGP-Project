@@ -603,7 +603,7 @@ public class InternalPropnetMCTSManager extends MCTSManager {
 		*/
 
 
-		this.backpropagationStrategy.update(currentNode, mctsJointMove, nextState, simulationResult);
+		this.backpropagationStrategy.update(currentNode, currentState, mctsJointMove, simulationResult);
 		return simulationResult;
 	}
 

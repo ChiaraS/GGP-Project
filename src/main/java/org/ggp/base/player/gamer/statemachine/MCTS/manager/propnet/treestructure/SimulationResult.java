@@ -39,15 +39,18 @@ public class SimulationResult {
 	 * Goals in the final state of the simulation (note that it's not necessarily the terminal state,
 	 * because the simulation could have been interrupted earlier).
 	 */
-	private int[] terminalGoals;
+	//private int[] terminalGoals;
 
 	/**
 	 *  The joint moves that form the path of this simulation.
 	 *
 	 * NOTE that since some implementations of MCTS do not need to remember all the taken actions,
 	 * this list might be empty.
-	 * contain only one element, that is the final outcome of the simulation (i.e. the goal of each
-	 * role in the final state of the simulation).
+	 *
+	 * NOTE that when both the joint moves and the intermediate goals are memorized for each simulation then
+	 * the length of the list of goals will be longer than the list of all joint moves by one element (i.e. we
+	 * save the goals of each state in the simulation, from root to last state, but in the last state we have
+	 * no joint move to memorize).
 	 */
 	private List<List<InternalPropnetMove>> allJointMoves;
 
@@ -56,13 +59,11 @@ public class SimulationResult {
 	 * (i.e. list of intermediate rewards for each role).
 	 *
 	 * NOTE that since some implementations of MCTS do not need intermediate goals, this list might
-	 * be empty.
+	 * only have a single element, that is the goals in the last state of the simulation.
 	 *
-	 * ALSO NOTE that if this list is empty the goals in the last state of the simulation will still
-	 * be memorized in the 'intermediateGoals' parameter, and if this list is not empty then the
-	 * goals in the last state of the simulation will be memorized as the first element of this list.
+	 * ALSO NOTE if this list contains more than one element then the goals in the last state of the
+	 * simulation will be memorized as the first element of this list.
 	 *
-	 * This list can either be empty or have the exact same length as the list of all the joint moves.
 	 *
 	 */
 	private List<int[]> intermediateGoals;
@@ -72,7 +73,7 @@ public class SimulationResult {
 	 */
 	public SimulationResult() {
 
-		this(0, null, new ArrayList<List<InternalPropnetMove>>(), new ArrayList<int[]>());
+		this(0, new ArrayList<List<InternalPropnetMove>>(), new ArrayList<int[]>());
 
 	}
 
@@ -83,7 +84,7 @@ public class SimulationResult {
 	 */
 	public SimulationResult(int[] terminalGoals) {
 
-		this(0, terminalGoals, new ArrayList<List<InternalPropnetMove>>(), new ArrayList<int[]>());
+		this(0, terminalGoals);
 
 	}
 
@@ -94,21 +95,29 @@ public class SimulationResult {
 	 */
 	public SimulationResult(int playoutLength, int[] terminalGoals) {
 
-		this(playoutLength, terminalGoals, new ArrayList<List<InternalPropnetMove>>(), new ArrayList<int[]>());
+		this(playoutLength, new ArrayList<List<InternalPropnetMove>>(), new ArrayList<int[]>());
+
+		this.intermediateGoals.add(terminalGoals);
 
 	}
 
-	public SimulationResult(int[] terminalGoals, List<List<InternalPropnetMove>> allJointMoves, List<int[]> intermediateGoals) {
+	public SimulationResult(int playoutLength, List<int[]> intermediateGoals) {
 
-		this(0, terminalGoals, allJointMoves, intermediateGoals);
+		this(playoutLength, new ArrayList<List<InternalPropnetMove>>(), intermediateGoals);
 
 	}
 
-	public SimulationResult(int playoutLength, int[] terminalGoals, List<List<InternalPropnetMove>> allJointMoves, List<int[]> intermediateGoals) {
+	public SimulationResult(int playoutLength, int[] terminalGoals, List<List<InternalPropnetMove>> allJointMoves) {
+
+		this(playoutLength, allJointMoves, new ArrayList<int[]>());
+
+		this.intermediateGoals.add(terminalGoals);
+
+	}
+
+	public SimulationResult(int playoutLength, List<List<InternalPropnetMove>> allJointMoves, List<int[]> intermediateGoals) {
 
 		this.playoutLength = playoutLength;
-
-		this.terminalGoals = terminalGoals;
 
 		if(allJointMoves == null){
 			allJointMoves = new ArrayList<List<InternalPropnetMove>>();
@@ -146,7 +155,7 @@ public class SimulationResult {
 	 */
 	public int[] getTerminalGoals(){
 
-		return this.terminalGoals;
+		return this.intermediateGoals.get(0);
 	}
 
 	public void addJointMove(List<InternalPropnetMove> jointMove){

@@ -54,18 +54,18 @@ public abstract class TDBackpropagation implements BackpropagationStrategy {
 	}
 
 	@Override
-	public void update(MCTSNode currentNode, MCTSJointMove jointMove,
-			InternalPropnetMachineState nextState, SimulationResult simulationResult) {
+	public void update(MCTSNode currentNode, InternalPropnetMachineState currentState,
+			MCTSJointMove jointMove, SimulationResult simulationResult) {
 
 		if(currentNode instanceof PnDecoupledMCTSNode && jointMove instanceof SequDecMCTSJointMove){
-			this.decUpdate((PnDecoupledMCTSNode)currentNode, (SequDecMCTSJointMove)jointMove, nextState, simulationResult);
+			this.decUpdate((PnDecoupledMCTSNode)currentNode, currentState, (SequDecMCTSJointMove)jointMove, simulationResult);
 		}else{
 			throw new RuntimeException("StandardBackpropagation-update(): no method implemented to manage backpropagation for node type (" + currentNode.getClass().getSimpleName() + ") and joint move type (" + jointMove.getClass().getSimpleName() + ").");
 		}
 
 	}
 
-	private void decUpdate(PnDecoupledMCTSNode currentNode, SequDecMCTSJointMove jointMove, InternalPropnetMachineState nextState, SimulationResult simulationResult){
+	protected void decUpdate(PnDecoupledMCTSNode currentNode, InternalPropnetMachineState currentState, SequDecMCTSJointMove jointMove, SimulationResult simulationResult){
 
 		currentNode.incrementTotVisits();
 
@@ -73,7 +73,6 @@ public abstract class TDBackpropagation implements BackpropagationStrategy {
 		int[] movesIndices = jointMove.getMovesIndices();
 
 		DecoupledMCTSMoveStats currentMoveStat;
-		double moveVisits;
 
 		int[] returnValuesForRoles = this.getReturnValuesForRolesInPlayout(simulationResult); // Here the index is useless so we set it to 0
 
@@ -84,16 +83,20 @@ public abstract class TDBackpropagation implements BackpropagationStrategy {
 		for(int i = 0; i < this.numRoles; i++){
 
 			currentMoveStat = moves[i][movesIndices[i]];
-			currentMoveStat.incrementVisits();
-			moveVisits = currentMoveStat.getVisits();
-			qCurrent = currentMoveStat.getScoreSum()/moveVisits;
+
+			if(currentMoveStat.getVisits() == 0){
+				qCurrent = 0.0;
+			}else{
+				qCurrent = currentMoveStat.getScoreSum()/((double)currentMoveStat.getVisits());
+			}
 
 			delta = returnValuesForRoles[i] + this.gamma * this.qNext[i] - qCurrent;
 			this.deltaSum[i] = this.lambda * this.gamma * this.deltaSum[i] + delta;
 
-			alpha = 1.0/moveVisits;
+			currentMoveStat.incrementVisits();
+			alpha = 1.0/((double)currentMoveStat.getVisits());
 
-			currentMoveStat.setScoreSum((qCurrent + alpha * this.deltaSum[i])*moveVisits); // Note that the statistics memorize the total sum of move values, thus we must multiply the new expected value by the number of visits of the move.
+			currentMoveStat.setScoreSum((qCurrent + alpha * this.deltaSum[i])*currentMoveStat.getVisits()); // Note that the statistics memorize the total sum of move values, thus we must multiply the new expected value by the number of visits of the move.
 
 			this.qNext[i] = qCurrent;
 		}

@@ -16,7 +16,7 @@ public interface BackpropagationStrategy extends Strategy {
 	 * @param nextState the state reached by playing the given joint move.
 	 * @param simulationResult the result obtained by the simulation that passed by this node.
 	 */
-	public void update(MCTSNode currentNode, MCTSJointMove jointMove, InternalPropnetMachineState nextState, SimulationResult simulationResult);
+	public void update(MCTSNode currentNode, InternalPropnetMachineState currentState, MCTSJointMove jointMove, SimulationResult simulationResult);
 
 	/**
 	 * Method that processes the result of the playout if needed for the chosen selection and playout strategies.

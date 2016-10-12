@@ -49,6 +49,8 @@ public class AllMemorizingStandardPlayout extends StandardPlayout {
 
         List<InternalPropnetMove> jointMove;
 
+        allGoals.add(this.theMachine.getSafeGoalsAvg(state));
+
         do{
 
         	jointMove = null;
@@ -77,7 +79,7 @@ public class AllMemorizingStandardPlayout extends StandardPlayout {
 
         Collections.reverse(allGoals);
 
-        return new SimulationResult(nDepth, allGoals.get(0), allJointMoves, allGoals);
+        return new SimulationResult(nDepth, allJointMoves, allGoals);
 
 	}
 

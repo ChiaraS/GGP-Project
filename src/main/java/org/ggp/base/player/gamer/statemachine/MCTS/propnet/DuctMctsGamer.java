@@ -7,7 +7,7 @@ import java.util.Random;
 
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.propnet.InternalPropnetMCTSManager;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.propnet.strategies.backpropagation.StandardBackpropagation;
-import org.ggp.base.player.gamer.statemachine.MCTS.manager.propnet.strategies.expansion.RandomExpansion;
+import org.ggp.base.player.gamer.statemachine.MCTS.manager.propnet.strategies.expansion.NoExpansion;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.propnet.strategies.movechoice.MaximumScoreChoice;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.propnet.strategies.playout.RandomPlayout;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.propnet.strategies.selection.UCTSelection;
@@ -34,7 +34,7 @@ public class DuctMctsGamer extends UctMctsGamer {
 
 	public DuctMctsGamer(){
 
-		this.unexploredMoveDefaultSelectionValue = 1.0;
+		//this.unexploredMoveDefaultSelectionValue = 1.0;
 
 	}
 
@@ -47,7 +47,7 @@ public class DuctMctsGamer extends UctMctsGamer {
 		int numRoles = this.thePropnetMachine.getInternalRoles().length;
 
 		return new InternalPropnetMCTSManager(new UCTSelection(numRoles, myRole, r, this.valueOffset, new UCTEvaluator(this.c, this.unexploredMoveDefaultSelectionValue)),
-	       		new RandomExpansion(numRoles, myRole, r), new RandomPlayout(this.thePropnetMachine),
+	       		new NoExpansion(), new RandomPlayout(this.thePropnetMachine),
 	       		new StandardBackpropagation(numRoles, myRole), new MaximumScoreChoice(myRole, r), null,
 	       		null, null, new PnDecoupledTreeNodeFactory(this.thePropnetMachine), this.thePropnetMachine,
 	       		this.gameStepOffset, this.maxSearchDepth, this.logTranspositionTable);
