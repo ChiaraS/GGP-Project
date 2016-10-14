@@ -130,6 +130,7 @@ public class InternalPropnetMCTSManager extends MCTSManager {
 		this.playoutStrategy = playoutStrategy;
 		this.backpropagationStrategy = backpropagationStrategy;
 		this.moveChoiceStrategy = moveChoiceStrategy;
+
 		this.beforeSimulationStrategy = beforeSimulationStrategy;
 		this.afterSimulationStrategy = afterSimulationStrategy;
 		this.afterMoveStrategy = afterMoveStrategy;

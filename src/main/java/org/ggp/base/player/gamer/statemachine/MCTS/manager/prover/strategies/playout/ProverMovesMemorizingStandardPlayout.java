@@ -14,17 +14,16 @@ import org.ggp.base.util.statemachine.exceptions.MoveDefinitionException;
 import org.ggp.base.util.statemachine.exceptions.StateMachineException;
 import org.ggp.base.util.statemachine.exceptions.TransitionDefinitionException;
 
-public class ProverMemorizedStandardPlayout extends ProverStandardPlayout {
+public class ProverMovesMemorizingStandardPlayout extends ProverStandardPlayout {
 
-	public ProverMemorizedStandardPlayout(StateMachine theMachine,
+	public ProverMovesMemorizingStandardPlayout(StateMachine theMachine,
 			ProverJointMoveSelector jointMoveSelector) {
 		super(theMachine, jointMoveSelector);
 
 	}
 
 	@Override
-	public ProverSimulationResult playout(MachineState state,
-			int[] playoutVisitedNodes, int maxDepth) {
+	public ProverSimulationResult playout(MachineState state, int maxDepth) {
 		//InternalPropnetMachineState lastState;
 
         boolean terminal = true;
@@ -37,12 +36,20 @@ public class ProverMemorizedStandardPlayout extends ProverStandardPlayout {
 			terminal = true;
 		}
 
+		// NOTE that this is just an extra check: if the state is terminal or the depth limit has been reached,
+		// we just return the final goals of the state. At the moment the MCTS manager already doesn't call the
+        // play-out if the state is terminal or if the depth limit has been reached, so this check will never be
+        // true, but it's here just to be safe.
 		if(terminal || maxDepth == 0){
 
-			if(playoutVisitedNodes != null)
-	        	playoutVisitedNodes[0] = 0;
+			//if(playoutVisitedNodes != null)
+	        //	playoutVisitedNodes[0] = 0;
 
-			return null;
+			GamerLogger.logError("MCTSManager", "Playout strategy shouldn't be called on a terminal node. The MCTSManager must take care of computing the simulation result in this case.");
+			//throw new RuntimeException("Playout strategy called on a terminal node.");
+
+			return new ProverSimulationResult(0, this.theMachine.getSafeGoalsAvg(state));
+
 		}
 
         int nDepth = 0;
@@ -83,8 +90,8 @@ public class ProverMemorizedStandardPlayout extends ProverStandardPlayout {
 			}
         }while(nDepth < maxDepth && !terminal);
 
-        if(playoutVisitedNodes != null)
-        	playoutVisitedNodes[0] = nDepth;
+        //if(playoutVisitedNodes != null)
+        //	playoutVisitedNodes[0] = nDepth;
 
         Collections.reverse(allJointMoves);
 
@@ -95,7 +102,7 @@ public class ProverMemorizedStandardPlayout extends ProverStandardPlayout {
 		//lastState = this.theMachine.performSafeLimitedDepthCharge(state, playoutVisitedNodes, maxDepth);
 
 		// Now try to get the goals of the state.
-		return new ProverSimulationResult(this.theMachine.getSafeGoalsAvg(state), allJointMoves);
+		return new ProverSimulationResult(nDepth, this.theMachine.getSafeGoalsAvg(state), allJointMoves);
 	}
 
 	/*

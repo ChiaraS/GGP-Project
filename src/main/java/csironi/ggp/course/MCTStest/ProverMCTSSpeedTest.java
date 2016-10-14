@@ -218,7 +218,7 @@ public class ProverMCTSSpeedTest {
 					new ProverUCTSelection(numRoles, playingRole, r, uctOffset, new ProverUCTEvaluator(c, unexploredMoveDefaultSelectionValue)),
 					new ProverRandomExpansion(numRoles, playingRole, r), new ProverRandomPlayout(theProverMachine),
 					new ProverStandardBackpropagation(numRoles, playingRole),
-					new ProverMaximumScoreChoice(0, r), null, null, theNodeFactory,
+					new ProverMaximumScoreChoice(0, r), null, null, null, theNodeFactory,
 					theProverMachine, gameStepOffset, maxSearchDepth);
 
 			try{

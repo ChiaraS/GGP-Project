@@ -24,9 +24,8 @@ public class ProverStandardPlayout implements ProverPlayoutStrategy {
 	}
 
 	@Override
-	public ProverSimulationResult playout(MachineState state,
-			int[] playoutVisitedNodes, int maxDepth) {
-		//InternalPropnetMachineState lastState;
+	public ProverSimulationResult playout(MachineState state, int maxDepth) {
+		//MachineState lastState;
 
         boolean terminal = true;
 
@@ -38,12 +37,23 @@ public class ProverStandardPlayout implements ProverPlayoutStrategy {
 			terminal = true;
 		}
 
+		// NOTE that this is just an extra check: if the state is terminal or the depth limit has been reached,
+		// we just return the final goals of the state. At the moment the MCTS manager already doesn't call the
+        // play-out if the state is terminal or if the depth limit has been reached, so this check will never be
+        // true, but it's here just to be safe.
+        // ALSO NOTE that the instruction "terminal = this.theMachine.isTerminal(state);" shouldn't throw an exception
+        // here because the MCTSManager already called it to check the terminality of the state and thus already
+        // dealt with a possible exception.
 		if(terminal || maxDepth == 0){
 
-			if(playoutVisitedNodes != null)
-	        	playoutVisitedNodes[0] = 0;
+			//if(playoutVisitedNodes != null)
+	        //	playoutVisitedNodes[0] = 0;
 
-			return null;
+			GamerLogger.logError("MCTSManager", "Playout strategy shouldn't be called on a terminal node. The MCTSManager must take care of computing the simulation result in this case.");
+			//throw new RuntimeException("Playout strategy called on a terminal node.");
+
+			return new ProverSimulationResult(0, this.theMachine.getSafeGoalsAvg(state));
+
 		}
 
         int nDepth = 0;
@@ -77,16 +87,17 @@ public class ProverStandardPlayout implements ProverPlayoutStrategy {
 				terminal = true;
 				break;
 			}
-        }while(nDepth < maxDepth && !terminal) ;
-        if(playoutVisitedNodes != null)
-        	playoutVisitedNodes[0] = nDepth;
+        }while(nDepth < maxDepth && !terminal);
+
+        //if(playoutVisitedNodes != null)
+        	//playoutVisitedNodes[0] = nDepth;
 
         //System.out.println("Playout state erminal: " + this.theMachine.isTerminal(state));
 
 		//lastState = this.theMachine.performSafeLimitedDepthCharge(state, playoutVisitedNodes, maxDepth);
 
 		// Now try to get the goals of the state.
-		return new ProverSimulationResult(this.theMachine.getSafeGoalsAvg(state));
+		return new ProverSimulationResult(nDepth, this.theMachine.getSafeGoalsAvg(state));
 	}
 
 	/*

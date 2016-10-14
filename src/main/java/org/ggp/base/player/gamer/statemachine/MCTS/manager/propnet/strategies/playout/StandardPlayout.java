@@ -26,17 +26,18 @@ public class StandardPlayout implements PlayoutStrategy {
 		//InternalPropnetMachineState lastState;
 
 		// NOTE that this is just an extra check: if the state is terminal or the depth limit has been reached,
-		// then it's the responsibility of the MCTS manager to compute the simulation result (e.g. collect the
-		// jointMoves and/or the goals), thus we throw an exception.
-		// ALSO NOTE that at the moment the MCTS manager already doesn't call the play-out if the state is terminal
-		// or if the depth limit has been reached, so this check will never be true, but it's here just to be safe.
+		// we just return the final goals of the state. At the moment the MCTS manager already doesn't call the
+        // play-out if the state is terminal or if the depth limit has been reached, so this check will never be
+        // true, but it's here just to be safe.
 		if(this.theMachine.isTerminal(state) || maxDepth == 0){
 
 			//if(playoutVisitedNodes != null)
 	        //	playoutVisitedNodes[0] = 0;
 
 			GamerLogger.logError("MCTSManager", "Playout strategy shouldn't be called on a terminal node. The MCTSManager must take care of computing the simulation result in this case.");
-			throw new RuntimeException("Playout strategy called on a terminal node.");
+			//throw new RuntimeException("Playout strategy called on a terminal node.");
+
+			return new SimulationResult(0, this.theMachine.getSafeGoalsAvg(state));
 
 		}
 

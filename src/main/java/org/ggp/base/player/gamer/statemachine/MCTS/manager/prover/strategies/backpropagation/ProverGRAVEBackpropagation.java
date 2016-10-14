@@ -18,17 +18,17 @@ public class ProverGRAVEBackpropagation implements ProverBackpropagationStrategy
 	}
 
 	@Override
-	public void update(MCTSNode currentNode, ProverMCTSJointMove jointMove, MachineState nextState, ProverSimulationResult simulationResult) {
+	public void update(MCTSNode currentNode, MachineState currentState, ProverMCTSJointMove jointMove, ProverSimulationResult simulationResult) {
 
-		this.stdBackpropagation.update(currentNode, jointMove, nextState, simulationResult);
-		this.graveUpdate.update(currentNode, jointMove, nextState, simulationResult);
+		this.stdBackpropagation.update(currentNode, currentState, jointMove, simulationResult);
+		this.graveUpdate.update(currentNode, currentState, jointMove, simulationResult);
 
 	}
 
 	@Override
-	public void processPlayoutResult(MCTSNode leafNode,	ProverSimulationResult simulationResult) {
+	public void processPlayoutResult(MCTSNode leafNode,	MachineState leafState, ProverSimulationResult simulationResult) {
 
-		this.graveUpdate.processPlayoutResult(leafNode, simulationResult);
+		this.graveUpdate.processPlayoutResult(leafNode, leafState, simulationResult);
 
 	}
 

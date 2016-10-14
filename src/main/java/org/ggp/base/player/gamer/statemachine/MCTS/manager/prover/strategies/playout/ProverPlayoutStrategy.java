@@ -6,5 +6,5 @@ import org.ggp.base.util.statemachine.MachineState;
 
 public interface ProverPlayoutStrategy extends Strategy{
 
-	public ProverSimulationResult playout(MachineState state, int[] playoutVisitedNodes, int maxDepth);
+	public ProverSimulationResult playout(MachineState state, int maxDepth);
 }

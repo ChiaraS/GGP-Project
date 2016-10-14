@@ -71,7 +71,7 @@ public abstract class ProverMctsGamer extends ProverGamer {
 		}
 
 		long start = System.currentTimeMillis();
-		long realTimeout = timeout - this.safetyMargin;
+		long realTimeout = timeout - this.selectMoveSafetyMargin;
 		// Information to log at the end of metagame.
 		// As default value they are initialized with "-1". A value of "-1" for a parameter means that
 		// its value couldn't be computed (because there was no time or because of an error).
@@ -144,7 +144,7 @@ public abstract class ProverMctsGamer extends ProverGamer {
 			GoalDefinitionException, StateMachineException {
 
 		long start = System.currentTimeMillis();
-		long realTimeout = timeout - this.safetyMargin;
+		long realTimeout = timeout - this.selectMoveSafetyMargin;
 
 		// Information to log at the end of move selection.
 		// As default value numeric parameters are initialized with "-1" and the others with "null".

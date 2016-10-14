@@ -212,7 +212,6 @@ public class ProverMCSManager {
 		List<Move> jointMove;
 		MachineState nextState;
 		ProverSimulationResult simulationResult;
-		int[] playoutVisitedNodes = new int[1];
 		int myGoal;
 
 		this.searchStart = System.currentTimeMillis();
@@ -236,8 +235,8 @@ public class ProverMCSManager {
 				// Get the state reachable with this joint move.
 				nextState =  this.theMachine.getNextState(this.currentState, jointMove);
 				// Get the goals obtained by performing playouts from this state.
-				simulationResult = this.playoutStrategy.playout(nextState, playoutVisitedNodes, this.maxSearchDepth-1);
-				this.visitedNodes += playoutVisitedNodes[0];
+				simulationResult = this.playoutStrategy.playout(nextState, this.maxSearchDepth-1);
+				this.visitedNodes += simulationResult.getPlayoutLength();
 				myGoal = simulationResult.getTerminalGoals()[this.myRoleIndex];
 
 			} catch (StateMachineException | MoveDefinitionException e) {

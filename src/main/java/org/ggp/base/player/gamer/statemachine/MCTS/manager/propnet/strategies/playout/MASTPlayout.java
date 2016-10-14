@@ -8,7 +8,7 @@ import org.ggp.base.player.gamer.statemachine.MCTS.manager.propnet.strategies.pl
 import org.ggp.base.util.statemachine.InternalPropnetStateMachine;
 import org.ggp.base.util.statemachine.inernalPropnetStructure.InternalPropnetMove;
 
-public class MASTPlayout extends MoveMemorizingStandardPlayout{
+public class MASTPlayout extends MovesMemorizingStandardPlayout{
 
 	public MASTPlayout(InternalPropnetStateMachine theMachine, Random random, Map<InternalPropnetMove, MoveStats> mastStatistics, double epsilon) {
 		//this.theMachine = theMachine;

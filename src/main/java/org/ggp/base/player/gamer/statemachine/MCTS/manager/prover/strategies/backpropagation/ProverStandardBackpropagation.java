@@ -33,9 +33,9 @@ public class ProverStandardBackpropagation implements ProverBackpropagationStrat
 	 * @see org.ggp.base.player.gamer.statemachine.MCTS.manager.strategies.backpropagation.BackpropagationStrategy#update(org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.InternalPropnetMCTSNode, org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.MCTSJointMove, int[])
 	 */
 	@Override
-	public void update(MCTSNode currentNode, ProverMCTSJointMove jointMove, MachineState nextState, ProverSimulationResult simulationResult){
+	public void update(MCTSNode currentNode, MachineState currentState, ProverMCTSJointMove jointMove, ProverSimulationResult simulationResult){
 		if(currentNode instanceof ProverDecoupledMCTSNode && jointMove instanceof ProverSequDecMCTSJointMove){
-			this.decUpdate((ProverDecoupledMCTSNode)currentNode, (ProverSequDecMCTSJointMove)jointMove, nextState, simulationResult);
+			this.decUpdate((ProverDecoupledMCTSNode)currentNode, currentState, (ProverSequDecMCTSJointMove)jointMove, simulationResult);
 		}/*else if(node instanceof PnSequentialMCTSNode && jointMove instanceof SequDecMCTSJointMove){
 			this.seqUpdate((PnSequentialMCTSNode)node, (SequDecMCTSJointMove)jointMove, goals);
 		}else if(node instanceof PnSlowSeqentialMCTSNode && jointMove instanceof SlowSequentialMCTSJointMove){
@@ -55,11 +55,11 @@ public class ProverStandardBackpropagation implements ProverBackpropagationStrat
 	 * @param jointMove the explored joint move.
 	 * @param goals the goals obtained by the simulation, to be used to update the statistics.
 	 */
-	private void decUpdate(ProverDecoupledMCTSNode node, ProverSequDecMCTSJointMove jointMove, MachineState nextState, ProverSimulationResult simulationResult) {
+	private void decUpdate(ProverDecoupledMCTSNode currentNode, MachineState currentState, ProverSequDecMCTSJointMove jointMove, ProverSimulationResult simulationResult) {
 
-		node.incrementTotVisits();
+		currentNode.incrementTotVisits();
 
-		ProverDecoupledMCTSMoveStats[][] moves = node.getMoves();
+		ProverDecoupledMCTSMoveStats[][] moves = currentNode.getMoves();
 
 		int[] moveIndices = jointMove.getMovesIndices();
 
@@ -70,7 +70,7 @@ public class ProverStandardBackpropagation implements ProverBackpropagationStrat
 			if(theMoveToUpdate.getVisits() == 0){
 				//System.out.println("!!!!!");
 				//System.out.println(node.getUnexploredMovesCount()[i]);
-				node.getUnexploredMovesCount()[i]--;
+				currentNode.getUnexploredMovesCount()[i]--;
 				//System.out.println(node.getUnexploredMovesCount()[i]);
 				//System.out.println("!!!!!");
 
@@ -180,7 +180,7 @@ public class ProverStandardBackpropagation implements ProverBackpropagationStrat
 	}*/
 
 	@Override
-	public void processPlayoutResult(MCTSNode leafNode,	ProverSimulationResult simulationResult) {
+	public void processPlayoutResult(MCTSNode leafNode,	MachineState leafState, ProverSimulationResult simulationResult) {
 		// TODO Auto-generated method stub
 	}
 

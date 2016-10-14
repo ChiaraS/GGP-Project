@@ -14,7 +14,7 @@ public abstract class ProverGamer extends StateMachineGamer {
 	 * [timeout - safetyMargin(ms)] to increase the certainty of answering to the Game
 	 * Manager in time.
 	 */
-	protected long safetyMargin;
+	protected long selectMoveSafetyMargin;
 
 	protected boolean cache;
 
@@ -23,7 +23,7 @@ public abstract class ProverGamer extends StateMachineGamer {
 	 */
 	public ProverGamer() {
 		// TODO: change code so that the parameters can be set from outside.
-		this.safetyMargin = 10000L;
+		this.selectMoveSafetyMargin = 10000L;
 		this.cache = false;
 
 	}

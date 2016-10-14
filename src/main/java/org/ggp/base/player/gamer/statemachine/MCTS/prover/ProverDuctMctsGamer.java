@@ -4,7 +4,7 @@ import java.util.Random;
 
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.prover.ProverMCTSManager;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.prover.strategies.backpropagation.ProverStandardBackpropagation;
-import org.ggp.base.player.gamer.statemachine.MCTS.manager.prover.strategies.expansion.ProverRandomExpansion;
+import org.ggp.base.player.gamer.statemachine.MCTS.manager.prover.strategies.expansion.ProverNoExpansion;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.prover.strategies.movechoice.ProverMaximumScoreChoice;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.prover.strategies.playout.ProverRandomPlayout;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.prover.strategies.selection.ProverUCTSelection;
@@ -33,8 +33,8 @@ public class ProverDuctMctsGamer extends ProverUctMctsGamer {
 	int numRoles = this.getStateMachine().getRoles().size();
 
 	return new ProverMCTSManager(new ProverUCTSelection(numRoles, this.getRole(), r, this.valueOffset, new ProverUCTEvaluator(this.c, this.unexploredMoveDefaultSelectionValue)),
-       		new ProverRandomExpansion(numRoles, this.getRole(), r), new ProverRandomPlayout(this.getStateMachine()),
-       		new ProverStandardBackpropagation(numRoles, this.getRole()), new ProverMaximumScoreChoice(myRoleIndex, r),
+       		new ProverNoExpansion(), new ProverRandomPlayout(this.getStateMachine()),
+       		new ProverStandardBackpropagation(numRoles, this.getRole()), new ProverMaximumScoreChoice(myRoleIndex, r), null,
        		null, null, new ProverDecoupledTreeNodeFactory(this.getStateMachine()), this.getStateMachine(),
        		this.gameStepOffset, this.maxSearchDepth);
 	}

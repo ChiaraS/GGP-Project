@@ -4,6 +4,7 @@ import org.ggp.base.player.gamer.statemachine.MCS.manager.prover.ProverCompleteM
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.MCTSManager;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.exceptions.MCTSException;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.propnet.strategies.aftermove.AfterMoveStrategy;
+import org.ggp.base.player.gamer.statemachine.MCTS.manager.propnet.strategies.beforesimulation.BeforeSimulationStrategy;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.propnet.treestructure.MCTSNode;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.prover.strategies.aftersimulation.ProverAfterSimulationStrategy;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.prover.strategies.backpropagation.ProverBackpropagationStrategy;
@@ -69,6 +70,8 @@ public class ProverMCTSManager extends MCTSManager {
 	 * to specify the actions to be taken in such situations. If nothing has to be done, just set
 	 * these strategies to null.
 	 */
+	private BeforeSimulationStrategy beforeSimulationStrategy;
+
 	private ProverAfterSimulationStrategy afterSimulationStrategy;
 
 	private AfterMoveStrategy afterMoveStrategy;
@@ -110,9 +113,9 @@ public class ProverMCTSManager extends MCTSManager {
 	public ProverMCTSManager(ProverSelectionStrategy selectionStrategy,
 			ProverExpansionStrategy expansionStrategy, ProverPlayoutStrategy playoutStrategy,
 			ProverBackpropagationStrategy backpropagationStrategy, ProverMoveChoiceStrategy moveChoiceStrategy,
-			ProverAfterSimulationStrategy afterSimulationStrategy, AfterMoveStrategy afterMoveStrategy,
-			ProverTreeNodeFactory theNodesFactory, StateMachine theMachine,
-			int gameStepOffset, int maxSearchDepth) {
+			BeforeSimulationStrategy beforeSimulationStrategy, ProverAfterSimulationStrategy afterSimulationStrategy,
+			AfterMoveStrategy afterMoveStrategy, ProverTreeNodeFactory theNodesFactory,
+			StateMachine theMachine, int gameStepOffset, int maxSearchDepth) {
 
 		//this.mctsType = mctsType;
 		this.selectionStrategy = selectionStrategy;
@@ -120,11 +123,15 @@ public class ProverMCTSManager extends MCTSManager {
 		this.playoutStrategy = playoutStrategy;
 		this.backpropagationStrategy = backpropagationStrategy;
 		this.moveChoiceStrategy = moveChoiceStrategy;
+
+		this.beforeSimulationStrategy = beforeSimulationStrategy;
 		this.afterSimulationStrategy = afterSimulationStrategy;
 		this.afterMoveStrategy = afterMoveStrategy;
 		this.theNodesFactory = theNodesFactory;
 		this.theMachine = theMachine;
+
 		this.transpositionTable = new ProverMCTSTranspositionTable(gameStepOffset);
+
 		this.maxSearchDepth = maxSearchDepth;
 		this.iterations = 0;
 		this.visitedNodes = 0;
@@ -152,7 +159,7 @@ public class ProverMCTSManager extends MCTSManager {
 		//this.strategies.add(this.playoutStrategy);
 		//this.strategies.add(this.moveChoiceStrategy);
 
-		String toLog = "MCTS manager initialized with the following state mahcine " + this.theMachine.getName();
+		String toLog = "MCTS manager initialized with the following state machine " + this.theMachine.getName();
 
 		toLog += "\nMCTS manager initialized with the following parameters: [maxSearchDepth = " + this.maxSearchDepth + "]";
 
@@ -169,6 +176,12 @@ public class ProverMCTSManager extends MCTSManager {
 		toLog += "\n" + this.playoutStrategy.printStrategy();
 		toLog += "\n" + this.backpropagationStrategy.printStrategy();
 		toLog += "\n" + this.moveChoiceStrategy.printStrategy();
+
+		if(this.beforeSimulationStrategy != null){
+			toLog += "\n" + this.beforeSimulationStrategy.printStrategy();
+		}else{
+			toLog += "\n[BEFORE_SIM_STRATEGY = null]";
+		}
 
 		if(this.afterSimulationStrategy != null){
 			toLog += "\n" + this.afterSimulationStrategy.printStrategy();
@@ -322,6 +335,10 @@ public class ProverMCTSManager extends MCTSManager {
 
 			//System.out.println();
 			//System.out.println("Iteration " + this.iterations);
+
+			if(this.beforeSimulationStrategy != null){
+				this.beforeSimulationStrategy.beforeSimulationActions();
+			}
 
 			ProverSimulationResult simulationResult = this.searchNext(initialState, initialNode);
 			this.iterations++;
@@ -546,13 +563,12 @@ public class ProverMCTSManager extends MCTSManager {
 					simulationResult = new ProverSimulationResult(this.theMachine.getSafeGoalsAvg(nextState));
 
 				}else{
-					int[] playoutVisitedNodes = new int[1];
 					// Note that if no depth is left for the playout, the playout itself will take care of
 					// returning the added-state goal values (if any) or the default tie goal values.
-					simulationResult = this.playoutStrategy.playout(nextState, playoutVisitedNodes, availableDepth);
-					this.currentIterationVisitedNodes += playoutVisitedNodes[0];
+					simulationResult = this.playoutStrategy.playout(nextState, availableDepth);
+					this.currentIterationVisitedNodes += simulationResult.getPlayoutLength();
 
-					this.backpropagationStrategy.processPlayoutResult(nextNode, simulationResult);
+					this.backpropagationStrategy.processPlayoutResult(nextNode, nextState, simulationResult);
 				}
 
 
@@ -577,7 +593,7 @@ public class ProverMCTSManager extends MCTSManager {
 		*/
 
 
-		this.backpropagationStrategy.update(currentNode, mctsJointMove, nextState, simulationResult);
+		this.backpropagationStrategy.update(currentNode, currentState, mctsJointMove, simulationResult);
 		return simulationResult;
 	}
 
