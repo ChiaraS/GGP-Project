@@ -479,7 +479,7 @@ public class StatsSummarizer {
 
 				playerRolesDirs = playerTypesDirs[i].listFiles();
 
-				// Iterate over all the folder corresponding to the different roles the player played
+				// Iterate over all the folders corresponding to the different roles the player played
 				for(int j = 0; j < playerRolesDirs.length; j++){
 
 					playerRole = playerRolesDirs[j].getName();

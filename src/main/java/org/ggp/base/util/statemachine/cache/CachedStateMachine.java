@@ -152,8 +152,8 @@ public final class CachedStateMachine extends StateMachine
 	@Override
     public String getName() {
         if(this.backingStateMachine != null) {
-            return "Cache(" + this.backingStateMachine.getName() + ")";
+            return this.getClass().getSimpleName() + "(" + this.backingStateMachine.getName() + ")";
         }
-        return "Cache(null)";
+        return this.getClass().getSimpleName() + "(null)";
     }
 }

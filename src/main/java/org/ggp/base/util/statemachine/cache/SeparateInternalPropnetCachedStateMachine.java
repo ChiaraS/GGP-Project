@@ -204,9 +204,9 @@ public final class SeparateInternalPropnetCachedStateMachine extends InternalPro
 	@Override
     public String getName() {
         if(this.backingStateMachine != null) {
-            return "PnCache(" + this.backingStateMachine.getName() + ")";
+            return this.getClass().getSimpleName() + "(" + this.backingStateMachine.getName() + ")";
         }
-        return "PnCache(null)";
+        return this.getClass().getSimpleName() + "(null)";
     }
 
 	@Override

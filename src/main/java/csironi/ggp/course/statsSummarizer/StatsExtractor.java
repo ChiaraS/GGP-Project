@@ -93,12 +93,60 @@ public class StatsExtractor {
 				}
 			}
 
+			// NOTE: when the MCTS player doesn't have enough time to perform the search for a step, or when it is set to not perform
+			// metagaming search, it logs speed stats anyway, using -1 for the stats that couldn't be computed (e.g. nodes/second,
+			// iterations/second). Thus, we must avoid considering these stats as samples, otherwise we'll have wrong data in the
+			// aggregated statistics.
+
+			boolean checkInvalid = false;
+
+			if(splitLine[0].equals("Game step") && splitLine[2].equals("Search time(ms)")){// Check if we are summarizing the SpeedStats
+
+				// If we are summarizing the SpeedStats we must remember to check for invalid samples for each line
+				checkInvalid = true;
+
+			}
+
 			// Read first line with data
 			theLine = br.readLine();
 
 			while(theLine != null){
 				// For each line, parse the parameters and add them to their statistic
 				splitLine = theLine.split(";");
+
+				// Check if we have to check for invalid stats
+				if(checkInvalid){
+
+					int gameStep;
+					long searchTime;
+
+					try{
+						gameStep = Integer.parseInt(splitLine[0]);
+					}catch(NumberFormatException e){ // The game step must be an integer number, if it's not there is some error
+						System.out.println("Detected invalid value for the \"Game step\" for the .csv file " + this.theCSVFile.getName() + ".");
+						System.out.println("Skipping summarization of the file.");
+						this.allStats = null;
+						br.close();
+						return;
+					}
+
+					try{
+						searchTime = Long.parseLong(splitLine[2]);
+					}catch(NumberFormatException e){ // The search time must be an long number, if it's not there is some error
+						System.out.println("Detected invalid value for the \"Search time(ms)\" for the .csv file " + this.theCSVFile.getName() + ".");
+						System.out.println("Skipping summarization of the file.");
+						this.allStats = null;
+						br.close();
+						return;
+					}
+
+					if(gameStep == 0 && searchTime == -1L){
+						theLine = br.readLine();
+						continue;
+					}
+				}
+
+
 				for(int i = 0; i < this.columnIndices.length; i++){
 
 					switch(this.columnTypes[i]){
