@@ -5,6 +5,8 @@ import java.util.List;
 import java.util.Map;
 
 import org.ggp.base.util.gdl.grammar.Gdl;
+import org.ggp.base.util.logging.GamerLogger;
+import org.ggp.base.util.logging.GamerLogger.FORMAT;
 import org.ggp.base.util.statemachine.MachineState;
 import org.ggp.base.util.statemachine.Move;
 import org.ggp.base.util.statemachine.Role;
@@ -157,7 +159,14 @@ public final class NoSyncRefactoredCachedStateMachine extends StateMachine
 	}
 
 	public void prune(){
+
+		int sizeBefore = this.ttlCache.size();
+
+		long timeBefore = System.currentTimeMillis();
+
 		this.ttlCache.prune();
+
+		GamerLogger.log(FORMAT.CSV_FORMAT, "CacheStats", sizeBefore + ";" + this.ttlCache.size() + ";" + (System.currentTimeMillis()-timeBefore) + ";");
 	}
 
 	@Override
