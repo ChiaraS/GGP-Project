@@ -80,6 +80,8 @@ public abstract class TDBackpropagation implements BackpropagationStrategy {
 		double delta;
 		double alpha;
 
+		double newScore;
+
 		for(int i = 0; i < this.numRoles; i++){
 
 			currentMoveStat = moves[i][movesIndices[i]];
@@ -96,7 +98,16 @@ public abstract class TDBackpropagation implements BackpropagationStrategy {
 			currentMoveStat.incrementVisits();
 			alpha = 1.0/((double)currentMoveStat.getVisits());
 
-			currentMoveStat.setScoreSum((qCurrent + alpha * this.deltaSum[i])*currentMoveStat.getVisits()); // Note that the statistics memorize the total sum of move values, thus we must multiply the new expected value by the number of visits of the move.
+			newScore = (qCurrent + alpha * this.deltaSum[i]);
+
+			if(newScore < 0.0){
+				GamerLogger.logError("MCTSManager", "Computed negative score when backpropagating: " + newScore);
+
+				newScore = 0.0;
+			}
+
+			currentMoveStat.setScoreSum(newScore*((double)currentMoveStat.getVisits())); // Note that the statistics memorize the total sum of move values, thus we must multiply the new expected value by the number of visits of the move.
+
 
 			this.qNext[i] = qCurrent;
 		}

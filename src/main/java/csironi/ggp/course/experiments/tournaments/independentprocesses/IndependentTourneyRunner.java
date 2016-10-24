@@ -393,7 +393,7 @@ public class IndependentTourneyRunner {
 		theSettings.add("java");
 		//theSettings.add("-Xmx:25g");
 		theSettings.add("-jar");
-		theSettings.add("IndependentSingleMatchRunner.jar");
+		theSettings.add("T070951001IndependentSingleMatchRunner.jar");
 		theSettings.add(ThreadContext.get("LOG_FOLDER"));
 		theSettings.add("" + 0);
 		theSettings.add(gameKey);

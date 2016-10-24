@@ -47,6 +47,7 @@ public abstract class UctMctsGamer extends MctsGamer {
 
 		this.unexploredMoveDefaultSelectionValue = Double.MAX_VALUE;
 
+
 	}
 
 }

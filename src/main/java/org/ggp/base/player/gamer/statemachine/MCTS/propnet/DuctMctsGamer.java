@@ -36,6 +36,9 @@ public class DuctMctsGamer extends UctMctsGamer {
 
 		//this.unexploredMoveDefaultSelectionValue = 1.0;
 
+		//Remove later
+		this.valueOffset = 0.01;
+
 	}
 
 	@Override
