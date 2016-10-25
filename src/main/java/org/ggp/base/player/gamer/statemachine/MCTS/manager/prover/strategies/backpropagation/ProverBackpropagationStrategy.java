@@ -1,10 +1,10 @@
 package org.ggp.base.player.gamer.statemachine.MCTS.manager.prover.strategies.backpropagation;
 
-import org.ggp.base.player.gamer.statemachine.MCTS.manager.propnet.strategies.Strategy;
-import org.ggp.base.player.gamer.statemachine.MCTS.manager.propnet.treestructure.MCTSNode;
-import org.ggp.base.player.gamer.statemachine.MCTS.manager.prover.treestructure.ProverMCTSJointMove;
-import org.ggp.base.player.gamer.statemachine.MCTS.manager.prover.treestructure.ProverSimulationResult;
-import org.ggp.base.util.statemachine.MachineState;
+import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.strategies.Strategy;
+import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.MCTSNode;
+import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.prover.ProverMCTSJointMove;
+import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.prover.ProverSimulationResult;
+import org.ggp.base.util.statemachine.proverStructure.ProverMachineState;
 
 public interface ProverBackpropagationStrategy  extends Strategy {
 
@@ -16,7 +16,7 @@ public interface ProverBackpropagationStrategy  extends Strategy {
 	 * @param nextState the state reached by playing the given joint move.
 	 * @param simulationResult the result obtained by the simulation that passed by this node.
 	 */
-	public void update(MCTSNode currentNode, MachineState currentState, ProverMCTSJointMove jointMove, ProverSimulationResult simulationResult);
+	public void update(MCTSNode currentNode, ProverMachineState currentState, ProverMCTSJointMove jointMove, ProverSimulationResult simulationResult);
 
 	/**
 	 * Method that processes the result of the playout if needed for the chosen selection and playout strategies.
@@ -30,6 +30,6 @@ public interface ProverBackpropagationStrategy  extends Strategy {
 	 * @param leafState state corresponding to the leaf node.
 	 * @param simulationResult the result of the playout starting from the terminal state up to the leaf node.
 	 */
-	public void processPlayoutResult(MCTSNode leafNode, MachineState leafState, ProverSimulationResult simulationResult);
+	public void processPlayoutResult(MCTSNode leafNode, ProverMachineState leafState, ProverSimulationResult simulationResult);
 
 }

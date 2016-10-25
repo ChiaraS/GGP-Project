@@ -6,7 +6,7 @@ import java.util.Set;
 
 import org.ggp.base.util.gdl.grammar.GdlSentence;
 import org.ggp.base.util.propnet.architecture.separateExtendedState.immutable.components.ImmutableProposition;
-import org.ggp.base.util.statemachine.Role;
+import org.ggp.base.util.statemachine.proverStructure.ProverRole;
 
 public class ImmutablePropNet implements Serializable{
 
@@ -21,7 +21,7 @@ public class ImmutablePropNet implements Serializable{
 	private final ImmutableComponent[] components;
 
 	/** A helper list of all of the roles. */
-	private final Role[] roles;
+	private final ProverRole[] roles;
 
 	/**
 	 * References to every BaseProposition in the PropNet.
@@ -53,7 +53,7 @@ public class ImmutablePropNet implements Serializable{
 
 	/********************************** Constructor *********************************/
 
-	public ImmutablePropNet(ImmutableComponent[] components, Role[] roles, ImmutableProposition[] basePropositions, ImmutableProposition[] inputPropositions, int[][] goalValues, Set<GdlSentence> alwaysTrueBases){
+	public ImmutablePropNet(ImmutableComponent[] components, ProverRole[] roles, ImmutableProposition[] basePropositions, ImmutableProposition[] inputPropositions, int[][] goalValues, Set<GdlSentence> alwaysTrueBases){
 		this.components = components;
 		this.roles = roles;
 		this.basePropositions = basePropositions;
@@ -78,7 +78,7 @@ public class ImmutablePropNet implements Serializable{
 	 *
 	 * @return ordered array of roles.
 	 */
-	public Role[] getRoles(){
+	public ProverRole[] getRoles(){
 	    return roles;
 	}
 

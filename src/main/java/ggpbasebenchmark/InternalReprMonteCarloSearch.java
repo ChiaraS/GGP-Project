@@ -3,12 +3,12 @@ package ggpbasebenchmark;
 import java.util.List;
 
 import org.ggp.base.util.statemachine.InternalPropnetStateMachine;
-import org.ggp.base.util.statemachine.MachineState;
 import org.ggp.base.util.statemachine.exceptions.MoveDefinitionException;
 import org.ggp.base.util.statemachine.exceptions.StateMachineException;
 import org.ggp.base.util.statemachine.exceptions.TransitionDefinitionException;
 import org.ggp.base.util.statemachine.inernalPropnetStructure.InternalPropnetMachineState;
 import org.ggp.base.util.statemachine.inernalPropnetStructure.InternalPropnetMove;
+import org.ggp.base.util.statemachine.proverStructure.ProverMachineState;
 
 public class InternalReprMonteCarloSearch extends SearchAlgorithm {
 
@@ -18,7 +18,7 @@ public class InternalReprMonteCarloSearch extends SearchAlgorithm {
 	}
 
 	@Override
-	public void doSearch(MachineState state) {
+	public void doSearch(ProverMachineState state) {
 		System.out.println("monteCarloSearch " + getPlayclock());
 
 		// Translate current state to internal state

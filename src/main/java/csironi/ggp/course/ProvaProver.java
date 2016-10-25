@@ -9,11 +9,11 @@ import org.ggp.base.util.gdl.factory.GdlFactory;
 import org.ggp.base.util.gdl.factory.exceptions.GdlFormatException;
 import org.ggp.base.util.gdl.grammar.Gdl;
 import org.ggp.base.util.gdl.grammar.GdlSentence;
-import org.ggp.base.util.statemachine.MachineState;
-import org.ggp.base.util.statemachine.Role;
 import org.ggp.base.util.statemachine.exceptions.GoalDefinitionException;
 import org.ggp.base.util.statemachine.exceptions.StateMachineException;
 import org.ggp.base.util.statemachine.implementation.prover.ProverStateMachine;
+import org.ggp.base.util.statemachine.proverStructure.ProverMachineState;
+import org.ggp.base.util.statemachine.proverStructure.ProverRole;
 import org.ggp.base.util.symbol.factory.SymbolFactory;
 import org.ggp.base.util.symbol.factory.exceptions.SymbolFormatException;
 import org.ggp.base.util.symbol.grammar.SymbolList;
@@ -52,14 +52,14 @@ public class ProvaProver {
 
             System.out.println(gdlState);
 
-            MachineState state = new MachineState(gdlState);
+            ProverMachineState state = new ProverMachineState(gdlState);
 
             System.out.println(state);
 
-            List<Role> roles = Role.computeRoles(description);
+            List<ProverRole> roles = ProverRole.computeRoles(description);
 
-            Role role = null;
-            for(Role r : roles){
+            ProverRole role = null;
+            for(ProverRole r : roles){
             	System.out.println(r);
             	if(r.toString().equals("x")){
             		role = r;

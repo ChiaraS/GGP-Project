@@ -13,7 +13,7 @@ import org.ggp.base.util.game.ManualUpdateLocalGameRepository;
 import org.ggp.base.util.gdl.grammar.Gdl;
 import org.ggp.base.util.logging.GamerLogger;
 import org.ggp.base.util.reflection.ProjectSearcher;
-import org.ggp.base.util.statemachine.Role;
+import org.ggp.base.util.statemachine.proverStructure.ProverRole;
 
 import csironi.ggp.course.experiments.tournaments.Combinator;
 
@@ -93,7 +93,7 @@ public class TourneyRunner {
 			return;
     	}
 
-    	int expectedRoles = Role.computeRoles(game.getRules()).size();
+    	int expectedRoles = ProverRole.computeRoles(game.getRules()).size();
     	/*if (gamersClasses.size() > expectedRoles) {
     		System.out.println("Impossible to start tourney: number of gamer types to test is bigger than the number of roles in the game.");
 			return;

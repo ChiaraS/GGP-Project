@@ -9,14 +9,14 @@ import org.ggp.base.player.gamer.statemachine.MCS.manager.MCSException;
 import org.ggp.base.player.gamer.statemachine.MCS.manager.propnet.InternalPropnetMCSManager;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.exceptions.MCTSException;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.propnet.InternalPropnetMCTSManager;
-import org.ggp.base.player.gamer.statemachine.MCTS.manager.propnet.strategies.backpropagation.StandardBackpropagation;
-import org.ggp.base.player.gamer.statemachine.MCTS.manager.propnet.strategies.expansion.RandomExpansion;
-import org.ggp.base.player.gamer.statemachine.MCTS.manager.propnet.strategies.movechoice.MaximumScoreChoice;
-import org.ggp.base.player.gamer.statemachine.MCTS.manager.propnet.strategies.playout.RandomPlayout;
-import org.ggp.base.player.gamer.statemachine.MCTS.manager.propnet.strategies.selection.UCTSelection;
-import org.ggp.base.player.gamer.statemachine.MCTS.manager.propnet.strategies.selection.evaluators.UCTEvaluator;
-import org.ggp.base.player.gamer.statemachine.MCTS.manager.propnet.treestructure.TreeNodeFactory;
-import org.ggp.base.player.gamer.statemachine.MCTS.manager.propnet.treestructure.decoupled.PnDecoupledTreeNodeFactory;
+import org.ggp.base.player.gamer.statemachine.MCTS.manager.propnet.strategies.backpropagation.PnStandardBackpropagation;
+import org.ggp.base.player.gamer.statemachine.MCTS.manager.propnet.strategies.expansion.PnRandomExpansion;
+import org.ggp.base.player.gamer.statemachine.MCTS.manager.propnet.strategies.movechoice.PnMaximumScoreChoice;
+import org.ggp.base.player.gamer.statemachine.MCTS.manager.propnet.strategies.playout.PnRandomPlayout;
+import org.ggp.base.player.gamer.statemachine.MCTS.manager.propnet.strategies.selection.PnUCTSelection;
+import org.ggp.base.player.gamer.statemachine.MCTS.manager.propnet.strategies.selection.evaluators.PnUCTEvaluator;
+import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.propnet.PnTreeNodeFactory;
+import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.propnet.decoupled.PnDecoupledTreeNodeFactory;
 import org.ggp.base.util.game.Game;
 import org.ggp.base.util.game.GameRepository;
 import org.ggp.base.util.game.ManualUpdateLocalGameRepository;
@@ -300,7 +300,7 @@ public class SingleRunPNMemTest {
 		        InternalPropnetRole internalPlayingRole = thePropnetMachine.getInternalRoles()[0];
 		        numRoles = thePropnetMachine.getInternalRoles().length;
 
-		        InternalPropnetMCSManager MCSmanager = new InternalPropnetMCSManager(new RandomPlayout(thePropnetMachine),
+		        InternalPropnetMCSManager MCSmanager = new InternalPropnetMCSManager(new PnRandomPlayout(thePropnetMachine),
 		        		thePropnetMachine, internalPlayingRole, maxSearchDepth, r);
 
 		        GamerLogger.log("SingleRunPNTester", "Starting MCS search.");
@@ -359,13 +359,13 @@ public class SingleRunPNMemTest {
 		        InternalPropnetRole internalPlayingRole = thePropnetMachine.getInternalRoles()[0];
 		        numRoles = thePropnetMachine.getInternalRoles().length;
 
-		        TreeNodeFactory theNodeFactory = new PnDecoupledTreeNodeFactory(thePropnetMachine);
+		        PnTreeNodeFactory theNodeFactory = new PnDecoupledTreeNodeFactory(thePropnetMachine);
 
 		        InternalPropnetMCTSManager MCTSmanager = new InternalPropnetMCTSManager(
-		        		new UCTSelection(numRoles, internalPlayingRole, r, uctOffset, new UCTEvaluator(c, unexploredMoveDefaultSelectionValue)),
-		        		new RandomExpansion(numRoles, internalPlayingRole, r), new RandomPlayout(thePropnetMachine),
-		        		new StandardBackpropagation(numRoles, internalPlayingRole),
-		        		new MaximumScoreChoice(internalPlayingRole, r), null, null, null, theNodeFactory,
+		        		new PnUCTSelection(numRoles, internalPlayingRole, r, uctOffset, new PnUCTEvaluator(c, unexploredMoveDefaultSelectionValue)),
+		        		new PnRandomExpansion(numRoles, internalPlayingRole, r), new PnRandomPlayout(thePropnetMachine),
+		        		new PnStandardBackpropagation(numRoles, internalPlayingRole),
+		        		new PnMaximumScoreChoice(internalPlayingRole, r), null, null, null, theNodeFactory,
 		        		thePropnetMachine, gameStepOffset, maxSearchDepth, false);
 
 		        GamerLogger.log("SingleRunPNTester", "Starting MCTS search.");

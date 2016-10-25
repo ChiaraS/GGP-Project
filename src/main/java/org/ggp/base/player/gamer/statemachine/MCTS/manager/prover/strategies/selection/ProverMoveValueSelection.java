@@ -4,14 +4,14 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
 
-import org.ggp.base.player.gamer.statemachine.MCTS.manager.propnet.treestructure.MCTSNode;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.prover.strategies.selection.evaluators.ProverMoveEvaluator;
-import org.ggp.base.player.gamer.statemachine.MCTS.manager.prover.treestructure.ProverMCTSJointMove;
-import org.ggp.base.player.gamer.statemachine.MCTS.manager.prover.treestructure.ProverSequDecMCTSJointMove;
-import org.ggp.base.player.gamer.statemachine.MCTS.manager.prover.treestructure.decoupled.ProverDecoupledMCTSMoveStats;
-import org.ggp.base.player.gamer.statemachine.MCTS.manager.prover.treestructure.decoupled.ProverDecoupledMCTSNode;
-import org.ggp.base.util.statemachine.Move;
-import org.ggp.base.util.statemachine.Role;
+import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.MCTSNode;
+import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.prover.ProverMCTSJointMove;
+import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.prover.ProverSequDecMCTSJointMove;
+import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.prover.decoupled.ProverDecoupledMCTSMoveStats;
+import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.prover.decoupled.ProverDecoupledMCTSNode;
+import org.ggp.base.util.statemachine.proverStructure.ProverMove;
+import org.ggp.base.util.statemachine.proverStructure.ProverRole;
 
 public abstract class ProverMoveValueSelection implements ProverSelectionStrategy {
 
@@ -33,7 +33,7 @@ public abstract class ProverMoveValueSelection implements ProverSelectionStrateg
 
 	protected ProverMoveEvaluator moveEvaluator;
 
-	public ProverMoveValueSelection(int numRoles, Role myRole, Random random, double valueOffset, ProverMoveEvaluator moveEvaluator) {
+	public ProverMoveValueSelection(int numRoles, ProverRole myRole, Random random, double valueOffset, ProverMoveEvaluator moveEvaluator) {
 		//this.numRoles = numRoles;
 		//this.myRole = myRole;
 		this.random = random;
@@ -76,7 +76,7 @@ public abstract class ProverMoveValueSelection implements ProverSelectionStrateg
 		}
 		*/
 
-		List<Move> selectedJointMove = new ArrayList<Move>();
+		List<ProverMove> selectedJointMove = new ArrayList<ProverMove>();
 		int[] movesIndices = new int[moves.length];
 
 		double maxMoveValue;

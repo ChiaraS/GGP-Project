@@ -17,7 +17,7 @@ import org.ggp.base.util.game.GameRepository;
 import org.ggp.base.util.game.ManualUpdateLocalGameRepository;
 import org.ggp.base.util.logging.GamerLogger;
 import org.ggp.base.util.reflection.ProjectSearcher;
-import org.ggp.base.util.statemachine.Role;
+import org.ggp.base.util.statemachine.proverStructure.ProverRole;
 
 import csironi.ggp.course.experiments.tournaments.Combinator;
 
@@ -317,7 +317,7 @@ public class IndependentTourneyRunner {
 
     	/** 3. Compute all combinations of gamer types. **/
 
-    	int expectedRoles = Role.computeRoles(game.getRules()).size();
+    	int expectedRoles = ProverRole.computeRoles(game.getRules()).size();
     	List<List<Integer>> combinations = Combinator.getCombinations(theGamersTypes.size(), expectedRoles);
 
     	int matchesPerCombination = (matchesPerGamerType / (Combinator.getLastCombinationsPerElement() * Combinator.getLastPermutationsPerCombination()));

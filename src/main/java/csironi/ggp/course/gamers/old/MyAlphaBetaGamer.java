@@ -12,14 +12,14 @@ import java.util.Map;
 
 import org.ggp.base.player.gamer.event.GamerSelectedMoveEvent;
 import org.ggp.base.player.gamer.statemachine.sample.SampleGamer;
-import org.ggp.base.util.statemachine.MachineState;
-import org.ggp.base.util.statemachine.Move;
-import org.ggp.base.util.statemachine.Role;
 import org.ggp.base.util.statemachine.StateMachine;
 import org.ggp.base.util.statemachine.exceptions.GoalDefinitionException;
 import org.ggp.base.util.statemachine.exceptions.MoveDefinitionException;
 import org.ggp.base.util.statemachine.exceptions.StateMachineException;
 import org.ggp.base.util.statemachine.exceptions.TransitionDefinitionException;
+import org.ggp.base.util.statemachine.proverStructure.ProverMachineState;
+import org.ggp.base.util.statemachine.proverStructure.ProverMove;
+import org.ggp.base.util.statemachine.proverStructure.ProverRole;
 
 /**
  * @author C.Sironi
@@ -40,18 +40,18 @@ public class MyAlphaBetaGamer extends SampleGamer {
 	 * @see org.ggp.base.player.gamer.statemachine.StateMachineGamer#stateMachineSelectMove(long)
 	 */
 	@Override
-	public Move stateMachineSelectMove(long timeout)
+	public ProverMove stateMachineSelectMove(long timeout)
 			throws TransitionDefinitionException, MoveDefinitionException,
 			GoalDefinitionException, StateMachineException {
 		long start = System.currentTimeMillis();
 
 		StateMachine stateMachine = getStateMachine();
-		MachineState state = getCurrentState();
-		Role myRole = getRole();
+		ProverMachineState state = getCurrentState();
+		ProverRole myRole = getRole();
 
-		List<Move> myMoves = stateMachine.getLegalMoves(state, myRole);
+		List<ProverMove> myMoves = stateMachine.getLegalMoves(state, myRole);
 
-		Move selection = myMoves.get(0);
+		ProverMove selection = myMoves.get(0);
 
 		try{
 			out = new PrintWriter(new BufferedWriter(new FileWriter("C:\\Users\\c.sironi\\BITBUCKET REPOS\\GGP-Base\\LOG\\mylogAlphaBeta.txt", true)));
@@ -81,14 +81,14 @@ public class MyAlphaBetaGamer extends SampleGamer {
 	 *
 	 *
 	 */
-	private Move bestmove(Role myRole, MachineState state)
+	private ProverMove bestmove(ProverRole myRole, ProverMachineState state)
 			throws TransitionDefinitionException, MoveDefinitionException,
 			GoalDefinitionException, StateMachineException{
 
 		StateMachine stateMachine = getStateMachine();
 
 		// Find out the index of my role in the list of roles
-		Map<Role,Integer> map = stateMachine.getRoleIndices();
+		Map<ProverRole,Integer> map = stateMachine.getRoleIndices();
 		int myIndex = map.get(myRole);
 		// Find out the index of the opponent's role in the list of roles
 		// NOTE: we are assuming that we are dealing only with two-players games
@@ -99,21 +99,21 @@ public class MyAlphaBetaGamer extends SampleGamer {
 		out.println("Opponent's index: " + opponentIndex);
 
 		// Check all my available moves to find the best one
-		List<Move> myMoves = stateMachine.getLegalMoves(state, myRole);
+		List<ProverMove> myMoves = stateMachine.getLegalMoves(state, myRole);
 
 		out.print("My moves: [ ");
-		for(Move move: myMoves){
+		for(ProverMove move: myMoves){
 			out.print(move + " ");
 		}
 		out.println("]");
 
-		Move selection = myMoves.get(0);
+		ProverMove selection = myMoves.get(0);
 
 		// Define alpha and beta
 		int alpha = 0;
 		int beta = 100;
 
-		for (Move move: myMoves){
+		for (ProverMove move: myMoves){
 
 			// Compute the score for the current move
 			int currentScore = minscore(state, myRole, move, myIndex, opponentIndex, alpha, beta);
@@ -146,28 +146,28 @@ public class MyAlphaBetaGamer extends SampleGamer {
 	 *
 	 *
 	 */
-	private int minscore(MachineState state, Role myRole, Move myMove, int myIndex, int opponentIndex, int alpha, int beta)
+	private int minscore(ProverMachineState state, ProverRole myRole, ProverMove myMove, int myIndex, int opponentIndex, int alpha, int beta)
 			throws TransitionDefinitionException, MoveDefinitionException,
 			GoalDefinitionException, StateMachineException{
 
 		StateMachine stateMachine = getStateMachine();
 
 		// Retrieve the list of all roles
-		List<Role> roles = stateMachine.getRoles();
+		List<ProverRole> roles = stateMachine.getRoles();
 
 		// Find legal moves for the opponent
-		List<Move> moves = stateMachine.getLegalMoves(state, roles.get(opponentIndex));
+		List<ProverMove> moves = stateMachine.getLegalMoves(state, roles.get(opponentIndex));
 
 		out.print("Opponent moves: [ ");
-		for(Move move: moves){
+		for(ProverMove move: moves){
 			out.print(move + " ");
 		}
 		out.println("]");
 
-		for (Move move: moves){
+		for (ProverMove move: moves){
 
 			// Create the list of joint moves for this state with the same capacity of 2 (= total number if roles)
-			ArrayList<Move> jointMoves = new ArrayList<Move>(2);
+			ArrayList<ProverMove> jointMoves = new ArrayList<ProverMove>(2);
 			// Initialization as null of all joint moves
 			for(int i=0; i<2; i++){
 				jointMoves.add(null);
@@ -196,7 +196,7 @@ public class MyAlphaBetaGamer extends SampleGamer {
 	 *
 	 *
 	 */
-	private int maxscore(MachineState state, Role myRole, int myIndex, int opponentIndex, int alpha, int beta)
+	private int maxscore(ProverMachineState state, ProverRole myRole, int myIndex, int opponentIndex, int alpha, int beta)
 			throws TransitionDefinitionException, MoveDefinitionException,
 			GoalDefinitionException, StateMachineException{
 
@@ -210,15 +210,15 @@ public class MyAlphaBetaGamer extends SampleGamer {
 		}
 
 		// Check all my available moves to find the best one
-		List<Move> myMoves = stateMachine.getLegalMoves(state, myRole);
+		List<ProverMove> myMoves = stateMachine.getLegalMoves(state, myRole);
 
 		out.print("My moves: [ ");
-		for(Move move: myMoves){
+		for(ProverMove move: myMoves){
 			out.print(move + " ");
 		}
 		out.println("]");
 
-		for (Move move: myMoves){
+		for (ProverMove move: myMoves){
 
 			// Compute the score for the current move
 			int currentScore = minscore(state, myRole, move, myIndex, opponentIndex, alpha, beta);

@@ -3,23 +3,23 @@
  */
 package org.ggp.base.player.gamer.statemachine.MCTS.manager.propnet;
 
-import org.ggp.base.player.gamer.statemachine.MCS.manager.propnet.CompleteMoveStats;
+import org.ggp.base.player.gamer.statemachine.MCS.manager.propnet.PnCompleteMoveStats;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.MCTSManager;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.exceptions.MCTSException;
-import org.ggp.base.player.gamer.statemachine.MCTS.manager.propnet.strategies.aftermove.AfterMoveStrategy;
-import org.ggp.base.player.gamer.statemachine.MCTS.manager.propnet.strategies.aftersimulation.AfterSimulationStrategy;
-import org.ggp.base.player.gamer.statemachine.MCTS.manager.propnet.strategies.backpropagation.BackpropagationStrategy;
-import org.ggp.base.player.gamer.statemachine.MCTS.manager.propnet.strategies.beforesimulation.BeforeSimulationStrategy;
-import org.ggp.base.player.gamer.statemachine.MCTS.manager.propnet.strategies.expansion.ExpansionStrategy;
-import org.ggp.base.player.gamer.statemachine.MCTS.manager.propnet.strategies.movechoice.MoveChoiceStrategy;
-import org.ggp.base.player.gamer.statemachine.MCTS.manager.propnet.strategies.playout.PlayoutStrategy;
-import org.ggp.base.player.gamer.statemachine.MCTS.manager.propnet.strategies.selection.SelectionStrategy;
-import org.ggp.base.player.gamer.statemachine.MCTS.manager.propnet.treestructure.MCTSJointMove;
-import org.ggp.base.player.gamer.statemachine.MCTS.manager.propnet.treestructure.MCTSNode;
-import org.ggp.base.player.gamer.statemachine.MCTS.manager.propnet.treestructure.MCTSTranspositionTable;
-import org.ggp.base.player.gamer.statemachine.MCTS.manager.propnet.treestructure.SimulationResult;
-import org.ggp.base.player.gamer.statemachine.MCTS.manager.propnet.treestructure.TreeNodeFactory;
-import org.ggp.base.player.gamer.statemachine.MCTS.manager.propnet.treestructure.AMAFDecoupled.PnAMAFDecoupledTreeNodeFactory;
+import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.strategies.aftermove.AfterMoveStrategy;
+import org.ggp.base.player.gamer.statemachine.MCTS.manager.propnet.strategies.aftersimulation.PnAfterSimulationStrategy;
+import org.ggp.base.player.gamer.statemachine.MCTS.manager.propnet.strategies.backpropagation.PnBackpropagationStrategy;
+import org.ggp.base.player.gamer.statemachine.MCTS.manager.propnet.strategies.beforesimulation.PnBeforeSimulationStrategy;
+import org.ggp.base.player.gamer.statemachine.MCTS.manager.propnet.strategies.expansion.PnExpansionStrategy;
+import org.ggp.base.player.gamer.statemachine.MCTS.manager.propnet.strategies.movechoice.PnMoveChoiceStrategy;
+import org.ggp.base.player.gamer.statemachine.MCTS.manager.propnet.strategies.playout.PnPlayoutStrategy;
+import org.ggp.base.player.gamer.statemachine.MCTS.manager.propnet.strategies.selection.PnSelectionStrategy;
+import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.MCTSNode;
+import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.propnet.PnMCTSJointMove;
+import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.propnet.PnMCTSTranspositionTable;
+import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.propnet.PnSimulationResult;
+import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.propnet.PnTreeNodeFactory;
+import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.propnet.amafdecoupled.PnAMAFDecoupledTreeNodeFactory;
 import org.ggp.base.util.logging.GamerLogger;
 import org.ggp.base.util.statemachine.InternalPropnetStateMachine;
 import org.ggp.base.util.statemachine.inernalPropnetStructure.InternalPropnetMachineState;
@@ -60,15 +60,15 @@ public class InternalPropnetMCTSManager extends MCTSManager {
 	/**
 	 * Strategies that the MCTSManger must use to perform the different MCTS phases.
 	 */
-	private SelectionStrategy selectionStrategy;
+	private PnSelectionStrategy selectionStrategy;
 
-	private ExpansionStrategy expansionStrategy;
+	private PnExpansionStrategy expansionStrategy;
 
-	private PlayoutStrategy playoutStrategy;
+	private PnPlayoutStrategy playoutStrategy;
 
-	private BackpropagationStrategy backpropagationStrategy;
+	private PnBackpropagationStrategy backpropagationStrategy;
 
-	private MoveChoiceStrategy moveChoiceStrategy;
+	private PnMoveChoiceStrategy moveChoiceStrategy;
 
 	/**
 	 * Some MCTS strategies require additional work before/after every simulation has been performed
@@ -76,9 +76,9 @@ public class InternalPropnetMCTSManager extends MCTSManager {
 	 * or decay some statistics). The following strategies allow to specify the actions to be taken in
 	 * such situations. If nothing has to be done, just set these strategies to null.
 	 */
-	private BeforeSimulationStrategy beforeSimulationStrategy;
+	private PnBeforeSimulationStrategy beforeSimulationStrategy;
 
-	private AfterSimulationStrategy afterSimulationStrategy;
+	private PnAfterSimulationStrategy afterSimulationStrategy;
 
 	private AfterMoveStrategy afterMoveStrategy;
 
@@ -93,7 +93,7 @@ public class InternalPropnetMCTSManager extends MCTSManager {
 	 * NOTE: always make sure when initializing the manager to assign it the correct node factory,
 	 * that creates nodes containing all the information that the strategies need.
 	 */
-	private TreeNodeFactory theNodesFactory;
+	private PnTreeNodeFactory theNodesFactory;
 
 	/** NOT NEEDED FOR NOW SINCE ALL STRATEGIES ARE SEPARATE
 	 * A set containing all the distinct concrete strategy classes only once.
@@ -111,16 +111,16 @@ public class InternalPropnetMCTSManager extends MCTSManager {
 	 * The transposition table (implemented with HashMap that uses the internal propnet state as key
 	 * and solves collisions with linked lists).
 	 */
-	private MCTSTranspositionTable transpositionTable;
+	private PnMCTSTranspositionTable transpositionTable;
 
 	/**
 	 *
 	 */
-	public InternalPropnetMCTSManager(SelectionStrategy selectionStrategy,
-			ExpansionStrategy expansionStrategy, PlayoutStrategy playoutStrategy,
-			BackpropagationStrategy backpropagationStrategy, MoveChoiceStrategy moveChoiceStrategy,
-			BeforeSimulationStrategy beforeSimulationStrategy, AfterSimulationStrategy afterSimulationStrategy,
-			AfterMoveStrategy afterMoveStrategy,TreeNodeFactory theNodesFactory,
+	public InternalPropnetMCTSManager(PnSelectionStrategy selectionStrategy,
+			PnExpansionStrategy expansionStrategy, PnPlayoutStrategy playoutStrategy,
+			PnBackpropagationStrategy backpropagationStrategy, PnMoveChoiceStrategy moveChoiceStrategy,
+			PnBeforeSimulationStrategy beforeSimulationStrategy, PnAfterSimulationStrategy afterSimulationStrategy,
+			AfterMoveStrategy afterMoveStrategy,PnTreeNodeFactory theNodesFactory,
 			InternalPropnetStateMachine theMachine, int gameStepOffset, int maxSearchDepth,
 			boolean logTranspositionTable) {
 
@@ -141,7 +141,7 @@ public class InternalPropnetMCTSManager extends MCTSManager {
 			logTranspositionTable = false;
 		}
 
-		this.transpositionTable = new MCTSTranspositionTable(gameStepOffset, logTranspositionTable);
+		this.transpositionTable = new PnMCTSTranspositionTable(gameStepOffset, logTranspositionTable);
 
 		this.maxSearchDepth = maxSearchDepth;
 		this.iterations = 0;
@@ -219,7 +219,7 @@ public class InternalPropnetMCTSManager extends MCTSManager {
 	 * it is either terminal or there is some problem with the computation of legal
 	 * moves (and thus corresponding statistics).
 	 */
-	public CompleteMoveStats getBestMove(MCTSNode theNode)throws MCTSException{
+	public PnCompleteMoveStats getBestMove(MCTSNode theNode)throws MCTSException{
 
 		// If the node is null or terminal we cannot return any move.
 		// Note that the node being terminal might mean that the state is not terminal but legal moves
@@ -356,7 +356,7 @@ public class InternalPropnetMCTSManager extends MCTSManager {
 				this.beforeSimulationStrategy.beforeSimulationActions();
 			}
 
-			SimulationResult simulationResult = this.searchNext(initialState, initialNode);
+			PnSimulationResult simulationResult = this.searchNext(initialState, initialNode);
 			this.iterations++;
 			this.visitedNodes += this.currentIterationVisitedNodes;
 
@@ -389,7 +389,7 @@ public class InternalPropnetMCTSManager extends MCTSManager {
 	 * @return the goals of all players, obtained by the current MCTS iteration and that
 	 *         must be backpropagated.
 	 */
-	private SimulationResult searchNext(InternalPropnetMachineState currentState, MCTSNode currentNode) {
+	private PnSimulationResult searchNext(InternalPropnetMachineState currentState, MCTSNode currentNode) {
 
 		//System.out.println();
 		//System.out.println("Search step:");
@@ -405,7 +405,7 @@ public class InternalPropnetMCTSManager extends MCTSManager {
 
 		//int[] goals;
 
-		SimulationResult simulationResult;
+		PnSimulationResult simulationResult;
 
 		// Check if the node is terminal, and if so, return as result the final goals (saved in the node) for all players.
 		// NOTE: even if the node is terminal the state might not be, but an error occurred when computing legal
@@ -433,7 +433,7 @@ public class InternalPropnetMCTSManager extends MCTSManager {
 			System.out.print(s);
 			*/
 
-			return new SimulationResult(currentNode.getGoals());
+			return new PnSimulationResult(currentNode.getGoals());
 		}
 
 		// If the state is not terminal (and no error occurred when computing legal moves),
@@ -461,14 +461,14 @@ public class InternalPropnetMCTSManager extends MCTSManager {
 			*/
 
 
-			return new SimulationResult(this.theMachine.getSafeGoalsAvg(currentState));
+			return new PnSimulationResult(this.theMachine.getSafeGoalsAvg(currentState));
 		}
 
 		this.currentIterationVisitedNodes++;
 
 		//System.out.println("Node: " + this.currentIterationVisitedNodes);
 
-		MCTSJointMove mctsJointMove;
+		PnMCTSJointMove mctsJointMove;
 		InternalPropnetMachineState nextState;
 		MCTSNode nextNode;
 
@@ -559,7 +559,7 @@ public class InternalPropnetMCTSManager extends MCTSManager {
 					throw new RuntimeException("Detected null goals for a treminal node in the tree.");
 				}
 
-				simulationResult = new SimulationResult(nextNode.getGoals());
+				simulationResult = new PnSimulationResult(nextNode.getGoals());
 			}else{
 
 				//System.out.println("Performing playout.");
@@ -570,7 +570,7 @@ public class InternalPropnetMCTSManager extends MCTSManager {
 
 				if(availableDepth == 0){
 
-					simulationResult = new SimulationResult(this.theMachine.getSafeGoalsAvg(nextState));
+					simulationResult = new PnSimulationResult(this.theMachine.getSafeGoalsAvg(nextState));
 
 				}else{
 

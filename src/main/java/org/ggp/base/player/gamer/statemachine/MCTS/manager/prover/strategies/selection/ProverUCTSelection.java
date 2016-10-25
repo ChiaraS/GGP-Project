@@ -3,11 +3,11 @@ package org.ggp.base.player.gamer.statemachine.MCTS.manager.prover.strategies.se
 import java.util.Random;
 
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.prover.strategies.selection.evaluators.ProverMoveEvaluator;
-import org.ggp.base.util.statemachine.Role;
+import org.ggp.base.util.statemachine.proverStructure.ProverRole;
 
 public class ProverUCTSelection extends ProverMoveValueSelection {
 
-	public ProverUCTSelection(int numRoles, Role myRole,
+	public ProverUCTSelection(int numRoles, ProverRole myRole,
 			Random random, double valueOffset, ProverMoveEvaluator moveEvaluator) {
 		super(numRoles, myRole, random, valueOffset, moveEvaluator);
 

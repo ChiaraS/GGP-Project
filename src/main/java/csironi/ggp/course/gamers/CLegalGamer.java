@@ -7,11 +7,11 @@ import java.util.List;
 
 import org.ggp.base.player.gamer.event.GamerSelectedMoveEvent;
 import org.ggp.base.player.gamer.statemachine.sample.SampleGamer;
-import org.ggp.base.util.statemachine.Move;
 import org.ggp.base.util.statemachine.exceptions.GoalDefinitionException;
 import org.ggp.base.util.statemachine.exceptions.MoveDefinitionException;
 import org.ggp.base.util.statemachine.exceptions.StateMachineException;
 import org.ggp.base.util.statemachine.exceptions.TransitionDefinitionException;
+import org.ggp.base.util.statemachine.proverStructure.ProverMove;
 
 /**
  * Legal gamer realized for the GGP course.
@@ -26,7 +26,7 @@ public class CLegalGamer extends SampleGamer {
 	 * @see org.ggp.base.player.gamer.statemachine.StateMachineGamer#stateMachineSelectMove(long)
 	 */
 	@Override
-	public Move stateMachineSelectMove(long timeout)
+	public ProverMove stateMachineSelectMove(long timeout)
 			throws TransitionDefinitionException, MoveDefinitionException,
 			GoalDefinitionException, StateMachineException {
 
@@ -39,10 +39,10 @@ public class CLegalGamer extends SampleGamer {
 		 * is to return one of these moves. The choice of which
 		 * Move to play is the goal of GGP.
 		 */
-		List<Move> moves = getStateMachine().getLegalMoves(getCurrentState(), getRole());
+		List<ProverMove> moves = getStateMachine().getLegalMoves(getCurrentState(), getRole());
 
 		// SampleLegalGamer is very simple : it picks the first legal move
-		Move selection = moves.get(0);
+		ProverMove selection = moves.get(0);
 
 		// We get the end time
 		// It is mandatory that stop<timeout

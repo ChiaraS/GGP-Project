@@ -1,34 +1,34 @@
 package org.ggp.base.util.statemachine.exceptions;
 
-import org.ggp.base.util.statemachine.MachineState;
-import org.ggp.base.util.statemachine.Role;
+import org.ggp.base.util.statemachine.proverStructure.ProverMachineState;
+import org.ggp.base.util.statemachine.proverStructure.ProverRole;
 
 @SuppressWarnings("serial")
 public final class GoalDefinitionException extends Exception
 {
 
-	private final Role role;
-	private final MachineState state;
+	private final ProverRole role;
+	private final ProverMachineState state;
 
-	public GoalDefinitionException(MachineState state, Role role)
+	public GoalDefinitionException(ProverMachineState state, ProverRole role)
 	{
 		this.state = state;
 		this.role = role;
 	}
 
-	public GoalDefinitionException(MachineState state, Role role, Throwable cause)
+	public GoalDefinitionException(ProverMachineState state, ProverRole role, Throwable cause)
 	{
 		super(cause);
 		this.state = state;
 		this.role = role;
 	}
 
-	public Role getRole()
+	public ProverRole getRole()
 	{
 		return role;
 	}
 
-	public MachineState getState()
+	public ProverMachineState getState()
 	{
 		return state;
 	}

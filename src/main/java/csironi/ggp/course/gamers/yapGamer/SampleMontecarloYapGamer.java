@@ -6,13 +6,13 @@ package csironi.ggp.course.gamers.yapGamer;
 import java.util.List;
 
 import org.ggp.base.player.gamer.event.GamerSelectedMoveEvent;
-import org.ggp.base.util.statemachine.MachineState;
-import org.ggp.base.util.statemachine.Move;
 import org.ggp.base.util.statemachine.exceptions.GoalDefinitionException;
 import org.ggp.base.util.statemachine.exceptions.MoveDefinitionException;
 import org.ggp.base.util.statemachine.exceptions.StateMachineException;
 import org.ggp.base.util.statemachine.exceptions.TransitionDefinitionException;
 import org.ggp.base.util.statemachine.hybrid.BackedYapStateMachine;
+import org.ggp.base.util.statemachine.proverStructure.ProverMachineState;
+import org.ggp.base.util.statemachine.proverStructure.ProverMove;
 
 
 /**
@@ -35,15 +35,15 @@ public final class SampleMontecarloYapGamer extends SampleYapGamer{
 	 * @throws StateMachineException
 	 */
 	@Override
-	public Move stateMachineSelectMove(long timeout) throws TransitionDefinitionException, MoveDefinitionException, GoalDefinitionException, StateMachineException
+	public ProverMove stateMachineSelectMove(long timeout) throws TransitionDefinitionException, MoveDefinitionException, GoalDefinitionException, StateMachineException
 	{
 		//StateMachine theMachine = getStateMachine();
 		BackedYapStateMachine theMachine = getYapStateMachine();
 		long start = System.currentTimeMillis();
 		long finishBy = timeout - 5000;
 
-		List<Move> moves = theMachine.getLegalMoves(getCurrentState(), getRole());
-		Move selection = moves.get(0);
+		List<ProverMove> moves = theMachine.getLegalMoves(getCurrentState(), getRole());
+		ProverMove selection = moves.get(0);
 		if (moves.size() > 1) {
 			int[] moveTotalPoints = new int[moves.size()];
 			int[] moveTotalAttempts = new int[moves.size()];
@@ -86,10 +86,10 @@ public final class SampleMontecarloYapGamer extends SampleYapGamer{
 	private int[] depth = new int[1];
 
 	//////////
-	private MachineState randomNextState;
+	private ProverMachineState randomNextState;
 	//////////
 
-	int performDepthChargeFromMove(MachineState theState, Move myMove) {
+	int performDepthChargeFromMove(ProverMachineState theState, ProverMove myMove) {
 		//StateMachine theMachine = getStateMachine();
 		BackedYapStateMachine theMachine = getYapStateMachine();
 		/*
@@ -111,7 +111,7 @@ public final class SampleMontecarloYapGamer extends SampleYapGamer{
 			randomNextState = theMachine.getRandomNextState(theState, getRole(), myMove);
 			if(randomNextState.equals(null)) return 0;
 			else{
-				MachineState finalState = theMachine.performDepthCharge(randomNextState, depth);
+				ProverMachineState finalState = theMachine.performDepthCharge(randomNextState, depth);
 				if(finalState.equals(null)) return 0;
 				else {
 					return theMachine.getGoal(finalState, getRole());

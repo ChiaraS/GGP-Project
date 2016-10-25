@@ -3,7 +3,6 @@ package org.ggp.base.validator;
 import java.util.List;
 
 import org.ggp.base.util.game.Game;
-import org.ggp.base.util.statemachine.MachineState;
 import org.ggp.base.util.statemachine.StateMachine;
 import org.ggp.base.util.statemachine.exceptions.GoalDefinitionException;
 import org.ggp.base.util.statemachine.exceptions.MoveDefinitionException;
@@ -11,6 +10,7 @@ import org.ggp.base.util.statemachine.exceptions.StateMachineException;
 import org.ggp.base.util.statemachine.exceptions.StateMachineInitializationException;
 import org.ggp.base.util.statemachine.exceptions.TransitionDefinitionException;
 import org.ggp.base.util.statemachine.implementation.prover.ProverStateMachine;
+import org.ggp.base.util.statemachine.proverStructure.ProverMachineState;
 
 import com.google.common.collect.ImmutableList;
 
@@ -35,7 +35,7 @@ public final class SimulationValidator implements GameValidator
 				throw new ValidatorException("Ran into a state machine initialization exception: " + sme);
 			}
 
-			MachineState state = stateMachine.getInitialState();
+			ProverMachineState state = stateMachine.getInitialState();
 			try {
 				for (int depth = 0; !stateMachine.isTerminal(state); depth++) {
 					if (depth == maxDepth) {

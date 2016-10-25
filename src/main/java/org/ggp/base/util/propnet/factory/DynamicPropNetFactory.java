@@ -56,7 +56,7 @@ import org.ggp.base.util.propnet.architecture.separateExtendedState.dynamic.comp
 import org.ggp.base.util.propnet.architecture.separateExtendedState.dynamic.components.DynamicProposition;
 import org.ggp.base.util.propnet.architecture.separateExtendedState.dynamic.components.DynamicTransition;
 import org.ggp.base.util.propnet.utils.PROP_TYPE;
-import org.ggp.base.util.statemachine.Role;
+import org.ggp.base.util.statemachine.proverStructure.ProverRole;
 
 import com.google.common.collect.HashMultiset;
 import com.google.common.collect.Lists;
@@ -173,7 +173,7 @@ public class DynamicPropNetFactory {
 		if(verbose)
 			System.out.println("done");
 
-		List<Role> roles = Role.computeRoles(description);
+		List<ProverRole> roles = ProverRole.computeRoles(description);
 		Map<GdlSentence, DynamicComponent> components = new HashMap<GdlSentence, DynamicComponent>();
 		Map<GdlSentence, DynamicComponent> negations = new HashMap<GdlSentence, DynamicComponent>();
 		DynamicConstant trueComponent = new DynamicConstant(true);

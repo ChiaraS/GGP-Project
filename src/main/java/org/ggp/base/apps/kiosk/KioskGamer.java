@@ -15,18 +15,18 @@ import org.ggp.base.util.game.Game;
 import org.ggp.base.util.gdl.grammar.GdlPool;
 import org.ggp.base.util.observer.Event;
 import org.ggp.base.util.observer.Observer;
-import org.ggp.base.util.statemachine.MachineState;
-import org.ggp.base.util.statemachine.Move;
-import org.ggp.base.util.statemachine.Role;
 import org.ggp.base.util.statemachine.StateMachine;
 import org.ggp.base.util.statemachine.exceptions.GoalDefinitionException;
 import org.ggp.base.util.statemachine.exceptions.MoveDefinitionException;
 import org.ggp.base.util.statemachine.exceptions.TransitionDefinitionException;
 import org.ggp.base.util.statemachine.implementation.prover.ProverStateMachine;
+import org.ggp.base.util.statemachine.proverStructure.ProverMachineState;
+import org.ggp.base.util.statemachine.proverStructure.ProverMove;
+import org.ggp.base.util.statemachine.proverStructure.ProverRole;
 
 
 public class KioskGamer extends StateMachineGamer implements Observer {
-    private BlockingQueue<Move> theQueue = new ArrayBlockingQueue<Move>(25);
+    private BlockingQueue<ProverMove> theQueue = new ArrayBlockingQueue<ProverMove>(25);
 
     private GameGUI theGUI;
     private JPanel theGUIPanel;
@@ -65,7 +65,7 @@ public class KioskGamer extends StateMachineGamer implements Observer {
     }
 
     @Override
-    public Move stateMachineSelectMove(long timeout)
+    public ProverMove stateMachineSelectMove(long timeout)
             throws TransitionDefinitionException, MoveDefinitionException,
             GoalDefinitionException {
     	theGUI.beginPlay();
@@ -89,12 +89,12 @@ public class KioskGamer extends StateMachineGamer implements Observer {
         return "GraphicalHumanGamer";
     }
 
-    private MachineState stateFromServer;
+    private ProverMachineState stateFromServer;
 
     @Override
     public void observe(Event event) {
         if(event instanceof MoveSelectedEvent) {
-            Move theMove = ((MoveSelectedEvent)event).getMove();
+            ProverMove theMove = ((MoveSelectedEvent)event).getMove();
             if(theQueue.size() < 2) {
                 theQueue.add(theMove);
             }
@@ -103,7 +103,7 @@ public class KioskGamer extends StateMachineGamer implements Observer {
         } else if(event instanceof ServerCompletedMatchEvent) {
             theGUI.updateGameState(stateFromServer);
 
-            List<Role> theRoles = getStateMachine().getRoles();
+            List<ProverRole> theRoles = getStateMachine().getRoles();
             List<Integer> theGoals = ((ServerCompletedMatchEvent)event).getGoals();
 
             StringBuilder finalMessage = new StringBuilder();
@@ -132,7 +132,7 @@ public class KioskGamer extends StateMachineGamer implements Observer {
 		// for a human to submit a move for the aborted match; instead we should
 		// finish it up as quickly as possible so we can display the next match
 		// when it arrives.
-		theQueue.add(new Move(GdlPool.getConstant("ABORT")));
+		theQueue.add(new ProverMove(GdlPool.getConstant("ABORT")));
 		if (theGUI != null) {
 			theGUI.showFinalMessage("Aborted");
 		}

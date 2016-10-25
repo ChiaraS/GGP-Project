@@ -4,22 +4,22 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.ggp.base.util.gdl.grammar.Gdl;
-import org.ggp.base.util.statemachine.MachineState;
-import org.ggp.base.util.statemachine.Move;
-import org.ggp.base.util.statemachine.Role;
 import org.ggp.base.util.statemachine.StateMachine;
 import org.ggp.base.util.statemachine.exceptions.GoalDefinitionException;
 import org.ggp.base.util.statemachine.exceptions.MoveDefinitionException;
 import org.ggp.base.util.statemachine.exceptions.StateMachineException;
 import org.ggp.base.util.statemachine.exceptions.TransitionDefinitionException;
+import org.ggp.base.util.statemachine.proverStructure.ProverMachineState;
+import org.ggp.base.util.statemachine.proverStructure.ProverMove;
+import org.ggp.base.util.statemachine.proverStructure.ProverRole;
 
 import com.google.common.collect.ImmutableList;
 
 public class FirstYapStateMachine extends StateMachine{
 
-	private MachineState initialState;
+	private ProverMachineState initialState;
 	private FirstYapEngine yapEngine;
-	private ImmutableList<Role> roles;
+	private ImmutableList<ProverRole> roles;
 
 	/*
 	 * The backing StateMachine to handle the InterProlog-Prolog crashes
@@ -97,11 +97,11 @@ public class FirstYapStateMachine extends StateMachine{
 		roles = computeRoles();
 	}
 
-	private MachineState computeInitialState()
+	private ProverMachineState computeInitialState()
 	{
 		return yapEngine.computeInitialStateGdl();
 	}
-	private ImmutableList<Role> computeRoles()
+	private ImmutableList<ProverRole> computeRoles()
 	{
 		return ImmutableList.copyOf(yapEngine.computeRoles());
 	}
@@ -123,7 +123,7 @@ public class FirstYapStateMachine extends StateMachine{
 	 * @throws StateMachineException
 	 */
 	@Override
-	public List<Integer> getOneRoleGoals(MachineState state, Role role) throws StateMachineException{
+	public List<Integer> getOneRoleGoals(ProverMachineState state, ProverRole role) throws StateMachineException{
 
 		List<Integer> goal = new ArrayList<Integer>();
 		goal.add(new Integer(yapEngine.getGoal(state, role)));
@@ -138,7 +138,7 @@ public class FirstYapStateMachine extends StateMachine{
 	 * @throws StateMachineException
 	 */
 	@Override
-	public boolean isTerminal(MachineState state) throws StateMachineException
+	public boolean isTerminal(ProverMachineState state) throws StateMachineException
 	{
 		return yapEngine.isTerminal(state);
 	}
@@ -149,11 +149,11 @@ public class FirstYapStateMachine extends StateMachine{
 	 * Returns a list of the roles in the game, in the same order as they
 	 * were defined in the game description.
 	 * <p>
-	 * The result will be the same as calling {@link Role#computeRoles(List)}
+	 * The result will be the same as calling {@link ProverRole#computeRoles(List)}
 	 * on the game rules used to initialize this state machine.
 	 */
 	@Override
-	public List<Role> getRoles()
+	public List<ProverRole> getRoles()
 	{
 		return this.roles;
 	}
@@ -164,7 +164,7 @@ public class FirstYapStateMachine extends StateMachine{
 	 * Returns the initial state of the game.
 	 */
 	@Override
-	public MachineState getInitialState()
+	public ProverMachineState getInitialState()
 	{
 		return this.initialState;
 	}
@@ -181,7 +181,7 @@ public class FirstYapStateMachine extends StateMachine{
 	 */
 	// TODO: There are philosophical reasons for this to return Set<Move> rather than List<Move>.
 	@Override
-	public List<Move> getLegalMoves(MachineState state, Role role) throws MoveDefinitionException, StateMachineException
+	public List<ProverMove> getLegalMoves(ProverMachineState state, ProverRole role) throws MoveDefinitionException, StateMachineException
 	{
 		return yapEngine.getLegalMoves(state, role);
 	}
@@ -199,7 +199,7 @@ public class FirstYapStateMachine extends StateMachine{
 	 * @throws StateMachineException
 	 */
 	@Override
-	public MachineState getNextState(MachineState state, List<Move> moves) throws TransitionDefinitionException, StateMachineException
+	public ProverMachineState getNextState(ProverMachineState state, List<ProverMove> moves) throws TransitionDefinitionException, StateMachineException
 	{
 		return yapEngine.getNextState(state, moves);
 	}

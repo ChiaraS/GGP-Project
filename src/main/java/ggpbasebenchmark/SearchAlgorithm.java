@@ -1,11 +1,11 @@
 package ggpbasebenchmark;
 
 import org.ggp.base.util.statemachine.InternalPropnetStateMachine;
-import org.ggp.base.util.statemachine.MachineState;
 import org.ggp.base.util.statemachine.StateMachine;
 import org.ggp.base.util.statemachine.exceptions.GoalDefinitionException;
 import org.ggp.base.util.statemachine.exceptions.StateMachineException;
 import org.ggp.base.util.statemachine.inernalPropnetStructure.InternalPropnetMachineState;
+import org.ggp.base.util.statemachine.proverStructure.ProverMachineState;
 
 public abstract class SearchAlgorithm {
 
@@ -23,7 +23,7 @@ public abstract class SearchAlgorithm {
 		this.playclock = playclock;
 	}
 
-	public void run(final MachineState state) {
+	public void run(final ProverMachineState state) {
 		reset();
 		if (playclock == Integer.MAX_VALUE) {
 			doSearch(state);
@@ -56,7 +56,7 @@ public abstract class SearchAlgorithm {
 		}
 	}
 
-	public abstract void doSearch(MachineState state);
+	public abstract void doSearch(ProverMachineState state);
 
 	public void reset() {
 		nbLegals = 0;
@@ -84,7 +84,7 @@ public abstract class SearchAlgorithm {
 		this.playclock = playclock;
 	}
 
-	public void evaluateGoals(MachineState state) throws StateMachineException {
+	public void evaluateGoals(ProverMachineState state) throws StateMachineException {
 		try {
 			stateMachine.getGoals(state);
 			++nbGoals;

@@ -15,15 +15,15 @@ import org.ggp.base.util.gdl.grammar.GdlSentence;
 import org.ggp.base.util.gdl.grammar.GdlTerm;
 import org.ggp.base.util.gdl.grammar.GdlVariable;
 import org.ggp.base.util.prover.aima.AimaProver;
-import org.ggp.base.util.statemachine.MachineState;
-import org.ggp.base.util.statemachine.Move;
-import org.ggp.base.util.statemachine.Role;
 import org.ggp.base.util.statemachine.StateMachine;
 import org.ggp.base.util.statemachine.exceptions.MoveDefinitionException;
 import org.ggp.base.util.statemachine.exceptions.StateMachineException;
 import org.ggp.base.util.statemachine.exceptions.StateMachineInitializationException;
 import org.ggp.base.util.statemachine.exceptions.TransitionDefinitionException;
 import org.ggp.base.util.statemachine.implementation.prover.ProverStateMachine;
+import org.ggp.base.util.statemachine.proverStructure.ProverMachineState;
+import org.ggp.base.util.statemachine.proverStructure.ProverMove;
+import org.ggp.base.util.statemachine.proverStructure.ProverRole;
 
 import com.google.common.collect.ImmutableList;
 
@@ -72,8 +72,8 @@ public class BasesInputsValidator implements GameValidator {
 				return ImmutableList.of();
 			}
 
-			MachineState initialState = sm.getInitialState();
-			MachineState state = initialState;
+			ProverMachineState initialState = sm.getInitialState();
+			ProverMachineState state = initialState;
 			long startTime = System.currentTimeMillis();
 			while (System.currentTimeMillis() < startTime + millisecondsToTest) {
 				//Check state against bases, inputs
@@ -88,9 +88,9 @@ public class BasesInputsValidator implements GameValidator {
 
 				if (!legalsFromInputs.isEmpty()) {
 					List<GdlSentence> legalSentences = new ArrayList<GdlSentence>();
-					for (Role role : sm.getRoles()) {
-						List<Move> legalMoves = sm.getLegalMoves(state, role);
-						for (Move move : legalMoves) {
+					for (ProverRole role : sm.getRoles()) {
+						List<ProverMove> legalMoves = sm.getLegalMoves(state, role);
+						for (ProverMove move : legalMoves) {
 							legalSentences.add(GdlPool.getRelation(LEGAL, new GdlTerm[] {role.getName(), move.getContents()}));
 						}
 					}

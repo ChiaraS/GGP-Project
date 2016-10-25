@@ -7,12 +7,12 @@ import java.util.List;
 
 import org.ggp.base.player.gamer.event.GamerSelectedMoveEvent;
 import org.ggp.base.player.gamer.statemachine.sample.SampleGamer;
-import org.ggp.base.util.statemachine.Move;
 import org.ggp.base.util.statemachine.StateMachine;
 import org.ggp.base.util.statemachine.exceptions.GoalDefinitionException;
 import org.ggp.base.util.statemachine.exceptions.MoveDefinitionException;
 import org.ggp.base.util.statemachine.exceptions.StateMachineException;
 import org.ggp.base.util.statemachine.exceptions.TransitionDefinitionException;
+import org.ggp.base.util.statemachine.proverStructure.ProverMove;
 
 import csironi.ggp.course.algorithms.MinMax;
 import csironi.ggp.course.evalfunctions.EvalZero;
@@ -34,7 +34,7 @@ public class CIterativeDeepeningGamer extends SampleGamer {
 	 * @see org.ggp.base.player.gamer.statemachine.StateMachineGamer#stateMachineSelectMove(long)
 	 */
 	@Override
-	public Move stateMachineSelectMove(long timeout)
+	public ProverMove stateMachineSelectMove(long timeout)
 			throws TransitionDefinitionException, MoveDefinitionException,
 			GoalDefinitionException, StateMachineException {
 
@@ -44,9 +44,9 @@ public class CIterativeDeepeningGamer extends SampleGamer {
 		long finishBy = timeout - 1000;
 
 		StateMachine stateMachine = getStateMachine();
-		List<Move> moves = stateMachine.getLegalMoves(getCurrentState(), getRole());
+		List<ProverMove> moves = stateMachine.getLegalMoves(getCurrentState(), getRole());
 
-		Move selection = moves.get(0);
+		ProverMove selection = moves.get(0);
 		// If there is more than one legal move available search the best one,
 		// otherwise return the only one available.
 
@@ -54,7 +54,7 @@ public class CIterativeDeepeningGamer extends SampleGamer {
 
 			MinMax search = new MinMax(true, "C:\\Users\\c.sironi\\BITBUCKET REPOS\\GGP-Base\\LOG\\IterativeDeepeningLog.txt", stateMachine);
 
-			Move currentBestMove;
+			ProverMove currentBestMove;
 
 			for(int i = 1; i <= Integer.MAX_VALUE; i++){
 

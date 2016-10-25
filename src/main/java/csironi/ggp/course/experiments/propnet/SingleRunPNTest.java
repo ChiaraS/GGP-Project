@@ -7,7 +7,7 @@ import java.util.Random;
 import org.apache.logging.log4j.ThreadContext;
 import org.ggp.base.player.gamer.statemachine.MCS.manager.MCSException;
 import org.ggp.base.player.gamer.statemachine.MCS.manager.propnet.InternalPropnetMCSManager;
-import org.ggp.base.player.gamer.statemachine.MCTS.manager.propnet.strategies.playout.RandomPlayout;
+import org.ggp.base.player.gamer.statemachine.MCTS.manager.propnet.strategies.playout.PnRandomPlayout;
 import org.ggp.base.util.game.Game;
 import org.ggp.base.util.game.GameRepository;
 import org.ggp.base.util.game.ManualUpdateLocalGameRepository;
@@ -353,7 +353,7 @@ public class SingleRunPNTest {
 		        InternalPropnetRole internalPlayingRole = thePropnetMachine.getInternalRoles()[0];
 		        numRoles = thePropnetMachine.getInternalRoles().length;
 
-		        InternalPropnetMCSManager MCSmanager = new InternalPropnetMCSManager(new RandomPlayout(thePropnetMachine),
+		        InternalPropnetMCSManager MCSmanager = new InternalPropnetMCSManager(new PnRandomPlayout(thePropnetMachine),
 		        		thePropnetMachine, internalPlayingRole, maxSearchDepth, r);
 
 		        GamerLogger.log("SingleRunPNTester", "Starting MCS search.");

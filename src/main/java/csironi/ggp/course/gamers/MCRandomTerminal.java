@@ -8,13 +8,13 @@ import java.util.List;
 import org.ggp.base.player.gamer.event.GamerSelectedMoveEvent;
 import org.ggp.base.player.gamer.statemachine.sample.SampleGamer;
 import org.ggp.base.util.logging.GamerLogger;
-import org.ggp.base.util.statemachine.MachineState;
-import org.ggp.base.util.statemachine.Move;
 import org.ggp.base.util.statemachine.StateMachine;
 import org.ggp.base.util.statemachine.exceptions.GoalDefinitionException;
 import org.ggp.base.util.statemachine.exceptions.MoveDefinitionException;
 import org.ggp.base.util.statemachine.exceptions.StateMachineException;
 import org.ggp.base.util.statemachine.exceptions.TransitionDefinitionException;
+import org.ggp.base.util.statemachine.proverStructure.ProverMachineState;
+import org.ggp.base.util.statemachine.proverStructure.ProverMove;
 
 /**
  * Random gamer realized for the GGP course.
@@ -43,7 +43,7 @@ public class MCRandomTerminal extends SampleGamer {
 	 * @see org.ggp.base.player.gamer.statemachine.StateMachineGamer#stateMachineSelectMove(long)
 	 */
 	@Override
-	public Move stateMachineSelectMove(long timeout)
+	public ProverMove stateMachineSelectMove(long timeout)
 			throws TransitionDefinitionException, MoveDefinitionException,
 			GoalDefinitionException, StateMachineException {
 
@@ -55,8 +55,8 @@ public class MCRandomTerminal extends SampleGamer {
 		this.failedCalls = 0;
 		this.numberOfIterations = 0;
 
-		List<Move> moves = theMachine.getLegalMoves(getCurrentState(), getRole());
-		Move selection = moves.get(0);
+		List<ProverMove> moves = theMachine.getLegalMoves(getCurrentState(), getRole());
+		ProverMove selection = moves.get(0);
 		if (moves.size() > 1) {
     		int[] moveTotalPoints = new int[moves.size()];
     		int[] moveTotalAttempts = new int[moves.size()];
@@ -109,10 +109,10 @@ public class MCRandomTerminal extends SampleGamer {
 
 	}
 
-	private int performPlayout(MachineState currentState, Move move) throws MoveDefinitionException, TransitionDefinitionException, GoalDefinitionException, StateMachineException{
+	private int performPlayout(ProverMachineState currentState, ProverMove move) throws MoveDefinitionException, TransitionDefinitionException, GoalDefinitionException, StateMachineException{
 
 		StateMachine theMachine = getStateMachine();
-		MachineState nextState = theMachine.getRandomNextState(currentState, getRole(), move);
+		ProverMachineState nextState = theMachine.getRandomNextState(currentState, getRole(), move);
 
 		while(!theMachine.isTerminal(nextState)){
 			nextState = theMachine.getRandomNextState(nextState);

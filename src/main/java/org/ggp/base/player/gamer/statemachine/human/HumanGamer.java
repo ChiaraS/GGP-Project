@@ -9,7 +9,6 @@ import org.ggp.base.player.gamer.statemachine.human.event.HumanNewMovesEvent;
 import org.ggp.base.player.gamer.statemachine.human.event.HumanTimeoutEvent;
 import org.ggp.base.player.gamer.statemachine.human.gui.HumanDetailPanel;
 import org.ggp.base.util.game.Game;
-import org.ggp.base.util.statemachine.Move;
 import org.ggp.base.util.statemachine.StateMachine;
 import org.ggp.base.util.statemachine.cache.CachedStateMachine;
 import org.ggp.base.util.statemachine.exceptions.GoalDefinitionException;
@@ -17,6 +16,7 @@ import org.ggp.base.util.statemachine.exceptions.MoveDefinitionException;
 import org.ggp.base.util.statemachine.exceptions.StateMachineException;
 import org.ggp.base.util.statemachine.exceptions.TransitionDefinitionException;
 import org.ggp.base.util.statemachine.implementation.prover.ProverStateMachine;
+import org.ggp.base.util.statemachine.proverStructure.ProverMove;
 
 /**
  * HumanGamer is a simple apparatus for letting a human control a player,
@@ -37,9 +37,9 @@ public final class HumanGamer extends StateMachineGamer
 	 * while the Human sets their move. This is done via the HumanDetailPanel.
 	 */
 	@Override
-	public synchronized Move stateMachineSelectMove(long timeout) throws TransitionDefinitionException, MoveDefinitionException, GoalDefinitionException, StateMachineException
+	public synchronized ProverMove stateMachineSelectMove(long timeout) throws TransitionDefinitionException, MoveDefinitionException, GoalDefinitionException, StateMachineException
 	{
-		List<Move> moves = getStateMachine().getLegalMoves(getCurrentState(), getRole());
+		List<ProverMove> moves = getStateMachine().getLegalMoves(getCurrentState(), getRole());
 		move = moves.get(0);
 
 		try {
@@ -53,8 +53,8 @@ public final class HumanGamer extends StateMachineGamer
 		return move;
 	}
 
-	private Move move;
-	public void setMove(Move move) {
+	private ProverMove move;
+	public void setMove(ProverMove move) {
 		this.move = move;
 	}
 

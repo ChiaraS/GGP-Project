@@ -18,12 +18,12 @@ import org.ggp.base.util.gdl.grammar.GdlSentence;
 import org.ggp.base.util.observer.Event;
 import org.ggp.base.util.observer.Observer;
 import org.ggp.base.util.observer.Subject;
-import org.ggp.base.util.statemachine.MachineState;
-import org.ggp.base.util.statemachine.Move;
-import org.ggp.base.util.statemachine.Role;
 import org.ggp.base.util.statemachine.StateMachine;
 import org.ggp.base.util.statemachine.exceptions.MoveDefinitionException;
 import org.ggp.base.util.statemachine.exceptions.StateMachineException;
+import org.ggp.base.util.statemachine.proverStructure.ProverMachineState;
+import org.ggp.base.util.statemachine.proverStructure.ProverMove;
+import org.ggp.base.util.statemachine.proverStructure.ProverRole;
 
 
 public abstract class GameCanvas extends JPanel implements Subject {
@@ -31,8 +31,8 @@ public abstract class GameCanvas extends JPanel implements Subject {
 
     // Store the information about the current state of the game
     protected StateMachine stateMachine;
-    protected MachineState gameState;
-    protected Role myRole;
+    protected ProverMachineState gameState;
+    protected ProverRole myRole;
 
     // Cache the location of the last click
     private int lastClickX;
@@ -88,7 +88,7 @@ public abstract class GameCanvas extends JPanel implements Subject {
     	stateMachine = s;
     }
 
-    public void setRole(Role r) {
+    public void setRole(ProverRole r) {
         myRole = r;
     }
 
@@ -127,20 +127,20 @@ public abstract class GameCanvas extends JPanel implements Subject {
             theObserver.observe(event);
     }
 
-    protected void submitWorkingMove(Move theMove) {
+    protected void submitWorkingMove(ProverMove theMove) {
         notifyObservers(new MoveSelectedEvent(theMove));
     }
 
-    protected void submitFinalMove(Move theMove) {
+    protected void submitFinalMove(ProverMove theMove) {
         notifyObservers(new MoveSelectedEvent(theMove, true));
     }
 
-    public void updateGameState(MachineState gameState) {
+    public void updateGameState(ProverMachineState gameState) {
         this.gameState = gameState;
         clearMoveSelection();
 
         try {
-            List<Move> legalMoves = stateMachine.getLegalMoves(gameState, myRole);
+            List<ProverMove> legalMoves = stateMachine.getLegalMoves(gameState, myRole);
             if(legalMoves.size() > 1) {
                 submitWorkingMove(null);
             } else {
@@ -190,8 +190,8 @@ public abstract class GameCanvas extends JPanel implements Subject {
 
     protected boolean gameStateHasLegalMove(String move) {
         try {
-            List<Move> legalMoves = stateMachine.getLegalMoves(gameState, myRole);
-            for(Move aMove : legalMoves) {
+            List<ProverMove> legalMoves = stateMachine.getLegalMoves(gameState, myRole);
+            for(ProverMove aMove : legalMoves) {
                 if(aMove.toString().equals(move))
                     return true;
             }
@@ -206,8 +206,8 @@ public abstract class GameCanvas extends JPanel implements Subject {
 
         Set<String> theMatches = new HashSet<String>();
         try {
-            List<Move> legalMoves = stateMachine.getLegalMoves(gameState, myRole);
-            for(Move theMove : legalMoves) {
+            List<ProverMove> legalMoves = stateMachine.getLegalMoves(gameState, myRole);
+            for(ProverMove theMove : legalMoves) {
                 Matcher matcher = pattern.matcher(theMove.toString());
                 if (matcher.find()) {
                     String match = matcher.group();
@@ -225,7 +225,7 @@ public abstract class GameCanvas extends JPanel implements Subject {
     }
 
 
-    protected Move stringToMove(String move) {
+    protected ProverMove stringToMove(String move) {
         try {
             return stateMachine.getMoveFromTerm(GdlFactory.createTerm(move));
         } catch(Exception e) {

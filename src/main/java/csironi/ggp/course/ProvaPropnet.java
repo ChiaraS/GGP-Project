@@ -42,8 +42,6 @@ import org.ggp.base.util.propnet.creationManager.optimizationcallers.RemoveOutpu
 import org.ggp.base.util.propnet.factory.ForwardInterruptingPropNetFactory;
 import org.ggp.base.util.propnet.state.ImmutableSeparatePropnetState;
 import org.ggp.base.util.statemachine.InternalPropnetStateMachine;
-import org.ggp.base.util.statemachine.MachineState;
-import org.ggp.base.util.statemachine.Move;
 import org.ggp.base.util.statemachine.exceptions.GoalDefinitionException;
 import org.ggp.base.util.statemachine.exceptions.MoveDefinitionException;
 import org.ggp.base.util.statemachine.exceptions.StateMachineException;
@@ -56,6 +54,8 @@ import org.ggp.base.util.statemachine.implementation.prover.ProverStateMachine;
 import org.ggp.base.util.statemachine.inernalPropnetStructure.InternalPropnetMachineState;
 import org.ggp.base.util.statemachine.inernalPropnetStructure.InternalPropnetMove;
 import org.ggp.base.util.statemachine.inernalPropnetStructure.InternalPropnetRole;
+import org.ggp.base.util.statemachine.proverStructure.ProverMachineState;
+import org.ggp.base.util.statemachine.proverStructure.ProverMove;
 import org.ggp.base.util.statemachine.safe.InitializationSafeStateMachine;
 
 /**
@@ -1269,8 +1269,8 @@ public class ProvaPropnet {
 
 	            //END OF PROPNET PRINTING
 
-	    		MachineState proverState = null;
-	    		MachineState propnetState = null;
+	    		ProverMachineState proverState = null;
+	    		ProverMachineState propnetState = null;
 
 	    		try {
 	                proverState = theReference.getInitialState();
@@ -1300,7 +1300,7 @@ public class ProvaPropnet {
 
 	    			step++;
 
-	    			List<Move> jointMove = null;
+	    			List<ProverMove> jointMove = null;
 	    			try {
 	    				jointMove = theReference.getRandomJointMove(proverState);
 	                    proverState = theReference.getNextState(proverState, jointMove);
@@ -1425,8 +1425,8 @@ public class ProvaPropnet {
 
 	            //END OF PROPNET PRINTING
 
-	    		MachineState proverState = null;
-	    		MachineState propnetState = null;
+	    		ProverMachineState proverState = null;
+	    		ProverMachineState propnetState = null;
 
 	    		try {
 	                proverState = theReference.getInitialState();
@@ -1456,7 +1456,7 @@ public class ProvaPropnet {
 
 	    			step++;
 
-	    			List<Move> jointMove = null;
+	    			List<ProverMove> jointMove = null;
 	    			try {
 	    				jointMove = theReference.getRandomJointMove(proverState);
 	                    proverState = theReference.getNextState(proverState, jointMove);
@@ -1605,8 +1605,8 @@ public class ProvaPropnet {
 
 	            //END OF PROPNET PRINTING
 
-	    		MachineState proverState = null;
-	    		MachineState propnetState = null;
+	    		ProverMachineState proverState = null;
+	    		ProverMachineState propnetState = null;
 
 	    		try {
 	                proverState = theReference.getInitialState();
@@ -1630,7 +1630,7 @@ public class ProvaPropnet {
 
 	    			step++;
 
-	    			List<Move> jointMove = null;
+	    			List<ProverMove> jointMove = null;
 	    			try {
 	    				jointMove = theReference.getRandomJointMove(proverState);
 	                    proverState = theReference.getNextState(proverState, jointMove);

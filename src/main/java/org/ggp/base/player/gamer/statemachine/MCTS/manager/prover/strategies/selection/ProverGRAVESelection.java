@@ -2,11 +2,11 @@ package org.ggp.base.player.gamer.statemachine.MCTS.manager.prover.strategies.se
 
 import java.util.Random;
 
-import org.ggp.base.player.gamer.statemachine.MCTS.manager.propnet.treestructure.MCTSNode;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.prover.strategies.selection.evaluators.GRAVE.ProverGRAVEEvaluator;
-import org.ggp.base.player.gamer.statemachine.MCTS.manager.prover.treestructure.ProverMCTSJointMove;
-import org.ggp.base.player.gamer.statemachine.MCTS.manager.prover.treestructure.AMAFDecoupled.ProverAMAFNode;
-import org.ggp.base.util.statemachine.Role;
+import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.MCTSNode;
+import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.prover.ProverMCTSJointMove;
+import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.prover.amafdecoulped.ProverAMAFNode;
+import org.ggp.base.util.statemachine.proverStructure.ProverRole;
 
 public class ProverGRAVESelection extends ProverMoveValueSelection {
 
@@ -15,7 +15,7 @@ public class ProverGRAVESelection extends ProverMoveValueSelection {
 	 */
 	private int minAMAFVisits;
 
-	public ProverGRAVESelection(int numRoles, Role myRole,
+	public ProverGRAVESelection(int numRoles, ProverRole myRole,
 			Random random, double valueOffset, int minAMAFVisits, ProverGRAVEEvaluator moveEvaluator) {
 
 		super(numRoles, myRole, random, valueOffset, moveEvaluator);

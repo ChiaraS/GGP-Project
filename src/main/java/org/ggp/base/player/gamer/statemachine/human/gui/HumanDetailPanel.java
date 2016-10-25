@@ -17,7 +17,7 @@ import org.ggp.base.player.event.PlayerTimeEvent;
 import org.ggp.base.player.gamer.statemachine.human.event.HumanNewMovesEvent;
 import org.ggp.base.player.gamer.statemachine.human.event.HumanTimeoutEvent;
 import org.ggp.base.util.observer.Event;
-import org.ggp.base.util.statemachine.Move;
+import org.ggp.base.util.statemachine.proverStructure.ProverMove;
 import org.ggp.base.util.ui.table.JZebraTable;
 import org.ggp.base.util.ui.timer.JTimerBar;
 
@@ -29,7 +29,7 @@ public final class HumanDetailPanel extends DetailPanel
 	private final JZebraTable moveTable;
 	private final JTextField moveTextField;
 	private final JButton selectButton;
-	private Move selection;
+	private ProverMove selection;
 	private final JTimerBar timerBar;
 
 	public HumanDetailPanel()
@@ -84,9 +84,9 @@ public final class HumanDetailPanel extends DetailPanel
 	{
 		DefaultTableModel model = (DefaultTableModel) moveTable.getModel();
 		model.setRowCount(0);
-		for (Move move : event.getMoves())
+		for (ProverMove move : event.getMoves())
 		{
-			model.addRow(new Move[] { move });
+			model.addRow(new ProverMove[] { move });
 		}
 
 		selection = event.getSelection();
@@ -115,7 +115,7 @@ public final class HumanDetailPanel extends DetailPanel
 				if (row != -1)
 				{
 					DefaultTableModel model = (DefaultTableModel) moveTable.getModel();
-					selection = (Move) model.getValueAt(row, 0);
+					selection = (ProverMove) model.getValueAt(row, 0);
 					moveTextField.setText(selection.toString());
 				}
 			}

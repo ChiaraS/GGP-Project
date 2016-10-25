@@ -13,12 +13,12 @@ import org.ggp.base.util.game.GameRepository;
 import org.ggp.base.util.game.ManualUpdateLocalGameRepository;
 import org.ggp.base.util.gdl.grammar.Gdl;
 import org.ggp.base.util.logging.GamerLogger;
-import org.ggp.base.util.statemachine.Role;
 import org.ggp.base.util.statemachine.StateMachine;
 import org.ggp.base.util.statemachine.cache.CachedStateMachine;
 import org.ggp.base.util.statemachine.cache.NoSyncRefactoredCachedStateMachine;
 import org.ggp.base.util.statemachine.exceptions.StateMachineInitializationException;
 import org.ggp.base.util.statemachine.implementation.prover.ProverStateMachine;
+import org.ggp.base.util.statemachine.proverStructure.ProverRole;
 
 /**
  * Inputs this program gets:
@@ -178,7 +178,7 @@ public class SingleRunProverTest {
 
 		    r = new Random();
 		    maxSearchDepth = 500;
-		    Role playingRole = theProverMachine.getRoles().get(0);
+		    ProverRole playingRole = theProverMachine.getRoles().get(0);
 		    numRoles = theProverMachine.getRoles().size();
 
 		    ProverMCSManager MCSmanager = new ProverMCSManager(new ProverRandomPlayout(theProverMachine),

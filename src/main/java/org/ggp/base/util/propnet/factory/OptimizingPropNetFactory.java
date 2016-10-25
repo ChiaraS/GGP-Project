@@ -54,7 +54,7 @@ import org.ggp.base.util.propnet.architecture.basic.components.Not;
 import org.ggp.base.util.propnet.architecture.basic.components.Or;
 import org.ggp.base.util.propnet.architecture.basic.components.Proposition;
 import org.ggp.base.util.propnet.architecture.basic.components.Transition;
-import org.ggp.base.util.statemachine.Role;
+import org.ggp.base.util.statemachine.proverStructure.ProverRole;
 
 import com.google.common.collect.HashMultiset;
 import com.google.common.collect.Iterables;
@@ -164,7 +164,7 @@ public class OptimizingPropNetFactory {
 		if(verbose)
 			System.out.println("done");
 
-		List<Role> roles = Role.computeRoles(description);
+		List<ProverRole> roles = ProverRole.computeRoles(description);
 		Map<GdlSentence, Component> components = new HashMap<GdlSentence, Component>();
 		Map<GdlSentence, Component> negations = new HashMap<GdlSentence, Component>();
 		Constant trueComponent = new Constant(true);

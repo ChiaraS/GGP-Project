@@ -55,7 +55,7 @@ import org.ggp.base.util.propnet.architecture.forwardInterrupting.components.For
 import org.ggp.base.util.propnet.architecture.forwardInterrupting.components.ForwardInterruptingOr;
 import org.ggp.base.util.propnet.architecture.forwardInterrupting.components.ForwardInterruptingProposition;
 import org.ggp.base.util.propnet.architecture.forwardInterrupting.components.ForwardInterruptingTransition;
-import org.ggp.base.util.statemachine.Role;
+import org.ggp.base.util.statemachine.proverStructure.ProverRole;
 
 import com.google.common.collect.HashMultiset;
 import com.google.common.collect.Iterables;
@@ -165,7 +165,7 @@ public class ForwardInterruptingPropNetFactory {
 		if(verbose)
 			System.out.println("done");
 
-		List<Role> roles = Role.computeRoles(description);
+		List<ProverRole> roles = ProverRole.computeRoles(description);
 		Map<GdlSentence, ForwardInterruptingComponent> components = new HashMap<GdlSentence, ForwardInterruptingComponent>();
 		Map<GdlSentence, ForwardInterruptingComponent> negations = new HashMap<GdlSentence, ForwardInterruptingComponent>();
 		ForwardInterruptingConstant trueComponent = new ForwardInterruptingConstant(true);

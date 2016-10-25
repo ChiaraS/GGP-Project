@@ -7,18 +7,18 @@ import java.util.Random;
 
 import org.ggp.base.player.gamer.event.GamerSelectedMoveEvent;
 import org.ggp.base.player.gamer.statemachine.MCS.manager.MCSException;
-import org.ggp.base.player.gamer.statemachine.MCS.manager.propnet.CompleteMoveStats;
+import org.ggp.base.player.gamer.statemachine.MCS.manager.propnet.PnCompleteMoveStats;
 import org.ggp.base.player.gamer.statemachine.MCS.manager.propnet.InternalPropnetMCSManager;
-import org.ggp.base.player.gamer.statemachine.MCTS.manager.propnet.strategies.playout.RandomPlayout;
+import org.ggp.base.player.gamer.statemachine.MCTS.manager.propnet.strategies.playout.PnRandomPlayout;
 import org.ggp.base.player.gamer.statemachine.propnet.InternalPropnetGamer;
 import org.ggp.base.util.logging.GamerLogger;
-import org.ggp.base.util.statemachine.Move;
 import org.ggp.base.util.statemachine.exceptions.GoalDefinitionException;
 import org.ggp.base.util.statemachine.exceptions.MoveDefinitionException;
 import org.ggp.base.util.statemachine.exceptions.StateMachineException;
 import org.ggp.base.util.statemachine.exceptions.TransitionDefinitionException;
 import org.ggp.base.util.statemachine.inernalPropnetStructure.InternalPropnetMachineState;
 import org.ggp.base.util.statemachine.inernalPropnetStructure.InternalPropnetRole;
+import org.ggp.base.util.statemachine.proverStructure.ProverMove;
 
 /**
  * This gamer performs Monte Carlo Search.
@@ -103,7 +103,7 @@ public class McsGamer extends InternalPropnetGamer {
 		InternalPropnetRole myRole = this.thePropnetMachine.roleToInternalRole(this.getRole());
 
 		// Create the MCS manager and start simulations.
-		this.mcsManager = new InternalPropnetMCSManager(new RandomPlayout(this.thePropnetMachine),
+		this.mcsManager = new InternalPropnetMCSManager(new PnRandomPlayout(this.thePropnetMachine),
 				this.thePropnetMachine,	myRole, maxSearchDepth, r);
 
 		// If there is enough time left start the MCT search.
@@ -149,7 +149,7 @@ public class McsGamer extends InternalPropnetGamer {
 	 * @see org.ggp.base.player.gamer.statemachine.StateMachineGamer#stateMachineSelectMove(long)
 	 */
 	@Override
-	public Move stateMachineSelectMove(long timeout)
+	public ProverMove stateMachineSelectMove(long timeout)
 			throws TransitionDefinitionException, MoveDefinitionException,
 			GoalDefinitionException, StateMachineException {
 
@@ -166,7 +166,7 @@ public class McsGamer extends InternalPropnetGamer {
     	int visitedNodes = -1;
     	double iterationsPerSecond = -1;
     	double nodesPerSecond = -1;
-    	Move theMove = null;
+    	ProverMove theMove = null;
     	double moveScoreSum = -1.0;
     	int moveVisits = -1;
     	double moveAvgScore = -1;
@@ -183,7 +183,7 @@ public class McsGamer extends InternalPropnetGamer {
 
 			try {
 				this.mcsManager.search(currentState, realTimeout);
-				CompleteMoveStats selectedMove = this.mcsManager.getBestMove();
+				PnCompleteMoveStats selectedMove = this.mcsManager.getBestMove();
 
 				searchTime = this.mcsManager.getSearchTime();
 				iterations = this.mcsManager.getIterations();

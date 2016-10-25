@@ -1,27 +1,27 @@
 package org.ggp.base.util.statemachine.exceptions;
 
-import org.ggp.base.util.statemachine.MachineState;
-import org.ggp.base.util.statemachine.Role;
+import org.ggp.base.util.statemachine.proverStructure.ProverMachineState;
+import org.ggp.base.util.statemachine.proverStructure.ProverRole;
 
 @SuppressWarnings("serial")
 public final class MoveDefinitionException extends Exception
 {
 
-	private final Role role;
-	private final MachineState state;
+	private final ProverRole role;
+	private final ProverMachineState state;
 
-	public MoveDefinitionException(MachineState state, Role role)
+	public MoveDefinitionException(ProverMachineState state, ProverRole role)
 	{
 		this.state = state;
 		this.role = role;
 	}
 
-	public Role getRole()
+	public ProverRole getRole()
 	{
 		return role;
 	}
 
-	public MachineState getState()
+	public ProverMachineState getState()
 	{
 		return state;
 	}

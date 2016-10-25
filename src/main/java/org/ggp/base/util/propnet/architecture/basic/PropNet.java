@@ -21,7 +21,7 @@ import org.ggp.base.util.propnet.architecture.basic.components.Not;
 import org.ggp.base.util.propnet.architecture.basic.components.Or;
 import org.ggp.base.util.propnet.architecture.basic.components.Proposition;
 import org.ggp.base.util.propnet.architecture.basic.components.Transition;
-import org.ggp.base.util.statemachine.Role;
+import org.ggp.base.util.statemachine.proverStructure.ProverRole;
 
 
 /**
@@ -81,10 +81,10 @@ public final class PropNet
 	private final Map<GdlSentence, Proposition> inputPropositions;
 
 	/** References to every LegalProposition in the PropNet, indexed by role. */
-	private final Map<Role, Set<Proposition>> legalPropositions;
+	private final Map<ProverRole, Set<Proposition>> legalPropositions;
 
 	/** References to every GoalProposition in the PropNet, indexed by role. */
-	private final Map<Role, Set<Proposition>> goalPropositions;
+	private final Map<ProverRole, Set<Proposition>> goalPropositions;
 
 	/** A reference to the single, unique, InitProposition. */
 	private final Proposition initProposition;
@@ -96,7 +96,7 @@ public final class PropNet
 	private final Map<Proposition, Proposition> legalInputMap;
 
 	/** A helper list of all of the roles. */
-	private final List<Role> roles;
+	private final List<ProverRole> roles;
 
 	public void addComponent(Component c)
 	{
@@ -111,7 +111,7 @@ public final class PropNet
 	 * @param components
 	 *            A list of Components.
 	 */
-	public PropNet(List<Role> roles, Set<Component> components)
+	public PropNet(List<ProverRole> roles, Set<Component> components)
 	{
 
 	    this.roles = roles;
@@ -126,7 +126,7 @@ public final class PropNet
 		this.legalInputMap = makeLegalInputMap();
 	}
 
-	public List<Role> getRoles()
+	public List<ProverRole> getRoles()
 	{
 	    return roles;
 	}
@@ -186,7 +186,7 @@ public final class PropNet
 	 * @return References to every GoalProposition in the PropNet, indexed by
 	 *         player name.
 	 */
-	public Map<Role, Set<Proposition>> getGoalPropositions()
+	public Map<ProverRole, Set<Proposition>> getGoalPropositions()
 	{
 		return goalPropositions;
 	}
@@ -218,7 +218,7 @@ public final class PropNet
 	 * @return References to every LegalProposition in the PropNet, indexed by
 	 *         player name.
 	 */
-	public Map<Role, Set<Proposition>> getLegalPropositions()
+	public Map<ProverRole, Set<Proposition>> getLegalPropositions()
 	{
 		return legalPropositions;
 	}
@@ -318,9 +318,9 @@ public final class PropNet
 	 *
 	 * @return An index over the GoalPropositions in the PropNet.
 	 */
-	private Map<Role, Set<Proposition>> recordGoalPropositions()
+	private Map<ProverRole, Set<Proposition>> recordGoalPropositions()
 	{
-		Map<Role, Set<Proposition>> goalPropositions = new HashMap<Role, Set<Proposition>>();
+		Map<ProverRole, Set<Proposition>> goalPropositions = new HashMap<ProverRole, Set<Proposition>>();
 		for (Proposition proposition : propositions)
 		{
 		    // Skip all propositions that aren't GdlRelations.
@@ -331,7 +331,7 @@ public final class PropNet
 			if (!relation.getName().getValue().equals("goal"))
 			    continue;
 
-			Role theRole = new Role((GdlConstant) relation.get(0));
+			ProverRole theRole = new ProverRole((GdlConstant) relation.get(0));
 			if (!goalPropositions.containsKey(theRole)) {
 				goalPropositions.put(theRole, new HashSet<Proposition>());
 			}
@@ -390,9 +390,9 @@ public final class PropNet
 	 *
 	 * @return An index over the LegalPropositions in the PropNet.
 	 */
-	private Map<Role, Set<Proposition>> recordLegalPropositions()
+	private Map<ProverRole, Set<Proposition>> recordLegalPropositions()
 	{
-		Map<Role, Set<Proposition>> legalPropositions = new HashMap<Role, Set<Proposition>>();
+		Map<ProverRole, Set<Proposition>> legalPropositions = new HashMap<ProverRole, Set<Proposition>>();
 		for (Proposition proposition : propositions)
 		{
 		    // Skip all propositions that aren't GdlRelations.
@@ -402,7 +402,7 @@ public final class PropNet
 			GdlRelation relation = (GdlRelation) proposition.getName();
 			if (relation.getName().getValue().equals("legal")) {
 				GdlConstant name = (GdlConstant) relation.get(0);
-				Role r = new Role(name);
+				ProverRole r = new ProverRole(name);
 				if (!legalPropositions.containsKey(r)) {
 					legalPropositions.put(r, new HashSet<Proposition>());
 				}

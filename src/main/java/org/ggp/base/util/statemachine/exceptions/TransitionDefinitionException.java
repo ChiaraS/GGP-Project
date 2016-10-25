@@ -2,29 +2,29 @@ package org.ggp.base.util.statemachine.exceptions;
 
 import java.util.List;
 
-import org.ggp.base.util.statemachine.MachineState;
-import org.ggp.base.util.statemachine.Move;
+import org.ggp.base.util.statemachine.proverStructure.ProverMachineState;
+import org.ggp.base.util.statemachine.proverStructure.ProverMove;
 
 
 @SuppressWarnings("serial")
 public final class TransitionDefinitionException extends Exception
 {
 
-	private final List<Move> moves;
-	private final MachineState state;
+	private final List<ProverMove> moves;
+	private final ProverMachineState state;
 
-	public TransitionDefinitionException(MachineState state, List<Move> moves)
+	public TransitionDefinitionException(ProverMachineState state, List<ProverMove> moves)
 	{
 		this.state = state;
 		this.moves = moves;
 	}
 
-	public List<Move> getMoves()
+	public List<ProverMove> getMoves()
 	{
 		return moves;
 	}
 
-	public MachineState getState()
+	public ProverMachineState getState()
 	{
 		return state;
 	}

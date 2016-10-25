@@ -2,11 +2,11 @@ package org.ggp.base.player.gamer.statemachine.MCTS.manager.prover.strategies.pl
 
 import java.util.List;
 
-import org.ggp.base.util.statemachine.MachineState;
-import org.ggp.base.util.statemachine.Move;
 import org.ggp.base.util.statemachine.StateMachine;
 import org.ggp.base.util.statemachine.exceptions.MoveDefinitionException;
 import org.ggp.base.util.statemachine.exceptions.StateMachineException;
+import org.ggp.base.util.statemachine.proverStructure.ProverMachineState;
+import org.ggp.base.util.statemachine.proverStructure.ProverMove;
 
 public class ProverRandomJointMoveSelector implements ProverJointMoveSelector {
 
@@ -17,7 +17,7 @@ public class ProverRandomJointMoveSelector implements ProverJointMoveSelector {
 	}
 
 	@Override
-	public List<Move> getJointMove(MachineState state) throws MoveDefinitionException, StateMachineException {
+	public List<ProverMove> getJointMove(ProverMachineState state) throws MoveDefinitionException, StateMachineException {
 		return this.theMachine.getRandomJointMove(state);
 	}
 

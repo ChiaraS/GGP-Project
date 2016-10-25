@@ -12,13 +12,13 @@ import org.ggp.base.player.gamer.statemachine.MCS.manager.prover.ProverMCSManage
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.prover.strategies.playout.ProverRandomPlayout;
 import org.ggp.base.player.gamer.statemachine.prover.ProverGamer;
 import org.ggp.base.util.logging.GamerLogger;
-import org.ggp.base.util.statemachine.MachineState;
-import org.ggp.base.util.statemachine.Move;
-import org.ggp.base.util.statemachine.Role;
 import org.ggp.base.util.statemachine.exceptions.GoalDefinitionException;
 import org.ggp.base.util.statemachine.exceptions.MoveDefinitionException;
 import org.ggp.base.util.statemachine.exceptions.StateMachineException;
 import org.ggp.base.util.statemachine.exceptions.TransitionDefinitionException;
+import org.ggp.base.util.statemachine.proverStructure.ProverMachineState;
+import org.ggp.base.util.statemachine.proverStructure.ProverMove;
+import org.ggp.base.util.statemachine.proverStructure.ProverRole;
 
 /**
  * This gamer performs Monte Carlo Search using the Prover.
@@ -86,7 +86,7 @@ public class ProverMcsGamer extends ProverGamer {
 
 		Random r = new Random();
 
-		Role myRole = this.getRole();
+		ProverRole myRole = this.getRole();
 
 		// Create the MCS manager and start simulations.
 		this.mcsManager = new ProverMCSManager(new ProverRandomPlayout(this.getStateMachine()),
@@ -135,7 +135,7 @@ public class ProverMcsGamer extends ProverGamer {
 	 * @see org.ggp.base.player.gamer.statemachine.StateMachineGamer#stateMachineSelectMove(long)
 	 */
 	@Override
-	public Move stateMachineSelectMove(long timeout)
+	public ProverMove stateMachineSelectMove(long timeout)
 			throws TransitionDefinitionException, MoveDefinitionException,
 			GoalDefinitionException, StateMachineException {
 
@@ -152,7 +152,7 @@ public class ProverMcsGamer extends ProverGamer {
     	int visitedNodes = -1;
     	double iterationsPerSecond = -1;
     	double nodesPerSecond = -1;
-    	Move theMove = null;
+    	ProverMove theMove = null;
     	double moveScoreSum = -1.0;
     	int moveVisits = -1;
     	double moveAvgScore = -1;
@@ -165,7 +165,7 @@ public class ProverMcsGamer extends ProverGamer {
 
 			GamerLogger.log("Gamer", "Selecting move using MCS.");
 
-			MachineState currentState = this.getCurrentState();
+			ProverMachineState currentState = this.getCurrentState();
 
 			try {
 				this.mcsManager.search(currentState, realTimeout);

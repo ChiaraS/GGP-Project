@@ -27,7 +27,7 @@ import org.ggp.base.util.propnet.architecture.separateExtendedState.dynamic.comp
 import org.ggp.base.util.propnet.architecture.separateExtendedState.dynamic.components.DynamicProposition;
 import org.ggp.base.util.propnet.architecture.separateExtendedState.dynamic.components.DynamicTransition;
 import org.ggp.base.util.propnet.utils.PROP_TYPE;
-import org.ggp.base.util.statemachine.Role;
+import org.ggp.base.util.statemachine.proverStructure.ProverRole;
 
 /**
  * NOTE: uncomment the parts with comments "PRECONDITION CHECK" to be able to use the class
@@ -53,7 +53,7 @@ public class DynamicPropNet implements Serializable {
 	private final Set<DynamicProposition> propositions;
 
 	/** A helper list of all of the roles. */
-	private final List<Role> roles;
+	private final List<ProverRole> roles;
 
 	/** Reference to the single TRUE constant in the propnet */
 	private DynamicConstant trueConstant;
@@ -94,17 +94,17 @@ public class DynamicPropNet implements Serializable {
 	 * The order of the input propositions for every role is the same as the order of the legal
 	 * propositions for the same role.
 	 */
-	private final Map<Role, List<DynamicProposition>> inputsPerRole;
+	private final Map<ProverRole, List<DynamicProposition>> inputsPerRole;
 
 	/**
 	 * References to every legal proposition in the PropNet, grouped by role.
 	 * The order of the legal propositions for every role is the same as the order of the input
 	 * propositions for the same role.
 	 */
-	private final Map<Role, List<DynamicProposition>> legalsPerRole;
+	private final Map<ProverRole, List<DynamicProposition>> legalsPerRole;
 
 	/** References to every GoalProposition in the PropNet, indexed by role. */
-	private final Map<Role, List<DynamicProposition>> goalsPerRole;
+	private final Map<ProverRole, List<DynamicProposition>> goalsPerRole;
 
 	/**
 	 * Number of AND and OR gates in the propnet.
@@ -163,7 +163,7 @@ public class DynamicPropNet implements Serializable {
 	 * @param components
 	 *            A list of Components.
 	 */
-	public DynamicPropNet(List<Role> roles, Set<DynamicComponent> components, DynamicConstant trueConstant, DynamicConstant falseConstant){
+	public DynamicPropNet(List<ProverRole> roles, Set<DynamicComponent> components, DynamicConstant trueConstant, DynamicConstant falseConstant){
 
 
 		/************ PRECONDITION CHECK - START *************
@@ -209,8 +209,8 @@ public class DynamicPropNet implements Serializable {
 		this.propositions = new HashSet<DynamicProposition>();
 		this.basePropositions = new ArrayList<DynamicProposition>();
 
-		this.inputsPerRole = new HashMap<Role, List<DynamicProposition>>();
-		this.legalsPerRole = new HashMap<Role, List<DynamicProposition>>();
+		this.inputsPerRole = new HashMap<ProverRole, List<DynamicProposition>>();
+		this.legalsPerRole = new HashMap<ProverRole, List<DynamicProposition>>();
 		//Map<Role, List<DynamicProposition>> inputsPerRole = new HashMap<Role, List<DynamicProposition>>();
 		//Map<Role, List<DynamicProposition>> legalsPerRole = new HashMap<Role, List<DynamicProposition>>();
 
@@ -222,14 +222,14 @@ public class DynamicPropNet implements Serializable {
 		//Map<Role, Integer> currentIndices = new HashMap<Role, Integer>();
 
 		/* ALG3 - START */
-		Map<Role, Map<List<GdlTerm>, DynamicProposition>> possibleInputs = new HashMap<Role, Map<List<GdlTerm>, DynamicProposition>>();
-		Map<Role, Map<List<GdlTerm>, DynamicProposition>> possibleLegals = new HashMap<Role, Map<List<GdlTerm>, DynamicProposition>>();
+		Map<ProverRole, Map<List<GdlTerm>, DynamicProposition>> possibleInputs = new HashMap<ProverRole, Map<List<GdlTerm>, DynamicProposition>>();
+		Map<ProverRole, Map<List<GdlTerm>, DynamicProposition>> possibleLegals = new HashMap<ProverRole, Map<List<GdlTerm>, DynamicProposition>>();
 		/* ALG3 - END */
 
 
-		this.goalsPerRole = new HashMap<Role, List<DynamicProposition>>();
+		this.goalsPerRole = new HashMap<ProverRole, List<DynamicProposition>>();
 
-		for(Role r : this.roles){
+		for(ProverRole r : this.roles){
 			this.inputsPerRole.put(r, new ArrayList<DynamicProposition>());
 			this.legalsPerRole.put(r, new ArrayList<DynamicProposition>());
 			//inputsPerRole.put(r, new ArrayList<DynamicProposition>());
@@ -313,7 +313,7 @@ public class DynamicPropNet implements Serializable {
 						List<GdlTerm> gdlMove = p.getName().getBody();
 						// Get the role performing the move
 						GdlConstant name = (GdlConstant) relation.get(0);
-						Role r = new Role(name);
+						ProverRole r = new ProverRole(name);
 
 						// Get the map of possible inputs for the role
 						Map<List<GdlTerm>, DynamicProposition> possibleInputsPerRole = possibleInputs.get(r);
@@ -340,7 +340,7 @@ public class DynamicPropNet implements Serializable {
 						List<GdlTerm> gdlMove = p.getName().getBody();
 						// Get the role performing the move
 						GdlConstant name = (GdlConstant) relation.get(0);
-						Role r = new Role(name);
+						ProverRole r = new ProverRole(name);
 
 						// Get the map of possible legals for the role
 						Map<List<GdlTerm>, DynamicProposition> possibleLegalsPerRole = possibleLegals.get(r);
@@ -361,7 +361,7 @@ public class DynamicPropNet implements Serializable {
 					}else if(relation.getName().getValue().equals("goal")){
 						GdlConstant name = (GdlConstant) relation.get(0);
 						//System.out.println(name);
-						Role r = new Role(name);
+						ProverRole r = new ProverRole(name);
 						if(this.roles.contains(r)){
 							this.goalsPerRole.get(r).add(p);
 							p.setPropositionType(PROP_TYPE.GOAL);
@@ -526,7 +526,7 @@ public class DynamicPropNet implements Serializable {
 		this.legalPropositions = new ArrayList<DynamicProposition>();
 
 		//int x = 0;
-		for(Role r : this.roles){
+		for(ProverRole r : this.roles){
 
 			/* ALG3 - START */
 			Map<List<GdlTerm>,DynamicProposition> possibleLegalsPerRole = possibleLegals.get(r);
@@ -705,7 +705,7 @@ public class DynamicPropNet implements Serializable {
 	 *
 	 * @return ordered list of roles.
 	 */
-	public List<Role> getRoles(){
+	public List<ProverRole> getRoles(){
 	    return roles;
 	}
 
@@ -782,7 +782,7 @@ public class DynamicPropNet implements Serializable {
 	 * @return References to every InputProposition in the PropNet, indexed by
 	 *         player name and ordered.
 	 */
-	public Map<Role, List<DynamicProposition>> getInputsPerRole(){
+	public Map<ProverRole, List<DynamicProposition>> getInputsPerRole(){
 		return this.inputsPerRole;
 	}
 
@@ -792,7 +792,7 @@ public class DynamicPropNet implements Serializable {
 	 * @return References to every LegalProposition in the PropNet, indexed by
 	 *         player name and ordered.
 	 */
-	public Map<Role, List<DynamicProposition>> getLegalsPerRole(){
+	public Map<ProverRole, List<DynamicProposition>> getLegalsPerRole(){
 		return this.legalsPerRole;
 	}
 
@@ -802,7 +802,7 @@ public class DynamicPropNet implements Serializable {
 	 * @return References to every GoalProposition in the PropNet, indexed by
 	 *         player name.
 	 */
-	public Map<Role, List<DynamicProposition>> getGoalsPerRole(){
+	public Map<ProverRole, List<DynamicProposition>> getGoalsPerRole(){
 		return this.goalsPerRole;
 	}
 
@@ -1360,7 +1360,7 @@ public class DynamicPropNet implements Serializable {
 			if(c instanceof DynamicProposition) {
 				DynamicProposition p = (DynamicProposition) c;
 
-				Role r;
+				ProverRole r;
 
 				switch(p.getPropositionType()){
 				case BASE:
@@ -1369,18 +1369,18 @@ public class DynamicPropNet implements Serializable {
 				case INPUT:
 					this.inputPropositions.remove(p);
 					// Find the role for this input
-					r = new Role((GdlConstant) ((GdlRelation) p.getName()).get(0));
+					r = new ProverRole((GdlConstant) ((GdlRelation) p.getName()).get(0));
 					this.inputsPerRole.get(r).remove(p);
 					break;
 				case LEGAL:
 					this.legalPropositions.remove(p);
 					// Find the role for this legal
-					r = new Role((GdlConstant) ((GdlRelation) p.getName()).get(0));
+					r = new ProverRole((GdlConstant) ((GdlRelation) p.getName()).get(0));
 					this.legalsPerRole.get(r).remove(p);
 					break;
 				case GOAL:
 					// Find the role for this goal
-					r = new Role((GdlConstant) ((GdlRelation) p.getName()).get(0));
+					r = new ProverRole((GdlConstant) ((GdlRelation) p.getName()).get(0));
 					this.goalsPerRole.get(r).remove(p);
 					break;
 				case TERMINAL:
@@ -1429,7 +1429,7 @@ public class DynamicPropNet implements Serializable {
 	 * @param p
 	 */
 	public void convertToOther(DynamicProposition p){
-		Role r;
+		ProverRole r;
 
 		switch(p.getPropositionType()){
 		case BASE:
@@ -1438,7 +1438,7 @@ public class DynamicPropNet implements Serializable {
 		case INPUT:
 			this.inputPropositions.remove(p);
 			// Find the role for this input
-			r = new Role((GdlConstant) ((GdlRelation) p.getName()).get(0));
+			r = new ProverRole((GdlConstant) ((GdlRelation) p.getName()).get(0));
 			this.inputsPerRole.get(r).remove(p);
 			break;
 		/*case LEGAL:

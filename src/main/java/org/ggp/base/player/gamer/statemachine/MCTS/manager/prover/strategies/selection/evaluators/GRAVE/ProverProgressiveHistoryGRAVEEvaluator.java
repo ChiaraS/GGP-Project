@@ -3,8 +3,8 @@ package org.ggp.base.player.gamer.statemachine.MCTS.manager.prover.strategies.se
 import java.util.Map;
 
 import org.ggp.base.player.gamer.statemachine.MCS.manager.MoveStats;
-import org.ggp.base.player.gamer.statemachine.MCTS.manager.propnet.strategies.selection.evaluators.GRAVE.BetaComputer;
-import org.ggp.base.util.statemachine.Move;
+import org.ggp.base.player.gamer.statemachine.MCTS.manager.propnet.strategies.selection.evaluators.GRAVE.PnBetaComputer;
+import org.ggp.base.util.statemachine.proverStructure.ProverMove;
 
 public class ProverProgressiveHistoryGRAVEEvaluator extends ProverGRAVEEvaluator {
 
@@ -13,7 +13,7 @@ public class ProverProgressiveHistoryGRAVEEvaluator extends ProverGRAVEEvaluator
 	 * These are the statistics of the node that corresponds to the current
 	 * game state in the real game.
 	 */
-	private Map<Move, MoveStats> currentRootAmafStats;
+	private Map<ProverMove, MoveStats> currentRootAmafStats;
 
 	/**
 	 * Parameter that determines the influence of progressive history.
@@ -21,7 +21,7 @@ public class ProverProgressiveHistoryGRAVEEvaluator extends ProverGRAVEEvaluator
 	private double w;
 
 	public ProverProgressiveHistoryGRAVEEvaluator(double c, double defaultValue,
-			BetaComputer betaComputer, double defaultExploration, double w) {
+			PnBetaComputer betaComputer, double defaultExploration, double w) {
 		super(c, defaultValue, betaComputer, defaultExploration);
 
 		this.currentRootAmafStats = null; // Before ever starting any selection we have no reference to any statistic
@@ -32,7 +32,7 @@ public class ProverProgressiveHistoryGRAVEEvaluator extends ProverGRAVEEvaluator
 
 	@Override
 	public double computeMoveValue(int nodeVisits,
-			Move theMove, MoveStats theMoveStats) {
+			ProverMove theMove, MoveStats theMoveStats) {
 
 		// This should never happen because we should set a new reference before performing the search at every game step.
 		if(this.currentRootAmafStats == null){
@@ -69,11 +69,11 @@ public class ProverProgressiveHistoryGRAVEEvaluator extends ProverGRAVEEvaluator
 
 	}
 
-	public void setCurrentRootAmafStats(Map<Move, MoveStats> currentRootAmafStats){
+	public void setCurrentRootAmafStats(Map<ProverMove, MoveStats> currentRootAmafStats){
 		this.currentRootAmafStats = currentRootAmafStats;
 	}
 
-	public Map<Move, MoveStats> getCurrentRootAmafStats(){
+	public Map<ProverMove, MoveStats> getCurrentRootAmafStats(){
 		return this.currentRootAmafStats;
 	}
 

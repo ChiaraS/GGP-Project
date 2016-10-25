@@ -5,14 +5,14 @@ import java.util.Collections;
 import java.util.List;
 
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.prover.strategies.playout.jointmoveselector.ProverJointMoveSelector;
-import org.ggp.base.player.gamer.statemachine.MCTS.manager.prover.treestructure.ProverSimulationResult;
+import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.prover.ProverSimulationResult;
 import org.ggp.base.util.logging.GamerLogger;
-import org.ggp.base.util.statemachine.MachineState;
-import org.ggp.base.util.statemachine.Move;
 import org.ggp.base.util.statemachine.StateMachine;
 import org.ggp.base.util.statemachine.exceptions.MoveDefinitionException;
 import org.ggp.base.util.statemachine.exceptions.StateMachineException;
 import org.ggp.base.util.statemachine.exceptions.TransitionDefinitionException;
+import org.ggp.base.util.statemachine.proverStructure.ProverMachineState;
+import org.ggp.base.util.statemachine.proverStructure.ProverMove;
 
 public class ProverMovesMemorizingStandardPlayout extends ProverStandardPlayout {
 
@@ -23,7 +23,7 @@ public class ProverMovesMemorizingStandardPlayout extends ProverStandardPlayout 
 	}
 
 	@Override
-	public ProverSimulationResult playout(MachineState state, int maxDepth) {
+	public ProverSimulationResult playout(ProverMachineState state, int maxDepth) {
 		//InternalPropnetMachineState lastState;
 
         boolean terminal = true;
@@ -54,9 +54,9 @@ public class ProverMovesMemorizingStandardPlayout extends ProverStandardPlayout 
 
         int nDepth = 0;
 
-        List<List<Move>> allJointMoves = new ArrayList<List<Move>>();
+        List<List<ProverMove>> allJointMoves = new ArrayList<List<ProverMove>>();
 
-        List<Move> jointMove;
+        List<ProverMove> jointMove;
 
         do{
 

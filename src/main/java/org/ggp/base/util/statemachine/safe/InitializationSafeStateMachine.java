@@ -14,14 +14,14 @@ import java.util.concurrent.TimeoutException;
 
 import org.ggp.base.util.gdl.grammar.Gdl;
 import org.ggp.base.util.logging.GamerLogger;
-import org.ggp.base.util.statemachine.MachineState;
-import org.ggp.base.util.statemachine.Move;
-import org.ggp.base.util.statemachine.Role;
 import org.ggp.base.util.statemachine.StateMachine;
 import org.ggp.base.util.statemachine.exceptions.MoveDefinitionException;
 import org.ggp.base.util.statemachine.exceptions.StateMachineException;
 import org.ggp.base.util.statemachine.exceptions.StateMachineInitializationException;
 import org.ggp.base.util.statemachine.exceptions.TransitionDefinitionException;
+import org.ggp.base.util.statemachine.proverStructure.ProverMachineState;
+import org.ggp.base.util.statemachine.proverStructure.ProverMove;
+import org.ggp.base.util.statemachine.proverStructure.ProverRole;
 
 /**
  * This state machine initializes the internal state machine in the given time limit.
@@ -136,7 +136,7 @@ public class InitializationSafeStateMachine extends StateMachine {
 	 * @see org.ggp.base.util.statemachine.StateMachine#getGoal(org.ggp.base.util.statemachine.MachineState, org.ggp.base.util.statemachine.Role)
 	 */
 	@Override
-	public List<Integer> getOneRoleGoals(MachineState state, Role role)
+	public List<Integer> getOneRoleGoals(ProverMachineState state, ProverRole role)
 			throws StateMachineException {
 		// We do not check if the real state machine is null, because if initialization succeeded this
 		// cannot happen and if initialization failed this state machine is not supposed to be used.
@@ -147,7 +147,7 @@ public class InitializationSafeStateMachine extends StateMachine {
 	 * @see org.ggp.base.util.statemachine.StateMachine#isTerminal(org.ggp.base.util.statemachine.MachineState)
 	 */
 	@Override
-	public boolean isTerminal(MachineState state) throws StateMachineException {
+	public boolean isTerminal(ProverMachineState state) throws StateMachineException {
 		return this.theRealMachine.isTerminal(state);
 	}
 
@@ -155,7 +155,7 @@ public class InitializationSafeStateMachine extends StateMachine {
 	 * @see org.ggp.base.util.statemachine.StateMachine#getRoles()
 	 */
 	@Override
-	public List<Role> getRoles() {
+	public List<ProverRole> getRoles() {
 		return this.theRealMachine.getRoles();
 	}
 
@@ -163,7 +163,7 @@ public class InitializationSafeStateMachine extends StateMachine {
 	 * @see org.ggp.base.util.statemachine.StateMachine#getInitialState()
 	 */
 	@Override
-	public MachineState getInitialState() {
+	public ProverMachineState getInitialState() {
 		return this.theRealMachine.getInitialState();
 	}
 
@@ -171,7 +171,7 @@ public class InitializationSafeStateMachine extends StateMachine {
 	 * @see org.ggp.base.util.statemachine.StateMachine#getLegalMoves(org.ggp.base.util.statemachine.MachineState, org.ggp.base.util.statemachine.Role)
 	 */
 	@Override
-	public List<Move> getLegalMoves(MachineState state, Role role)
+	public List<ProverMove> getLegalMoves(ProverMachineState state, ProverRole role)
 			throws MoveDefinitionException, StateMachineException {
 		return this.theRealMachine.getLegalMoves(state, role);
 	}
@@ -180,7 +180,7 @@ public class InitializationSafeStateMachine extends StateMachine {
 	 * @see org.ggp.base.util.statemachine.StateMachine#getNextState(org.ggp.base.util.statemachine.MachineState, java.util.List)
 	 */
 	@Override
-	public MachineState getNextState(MachineState state, List<Move> moves)
+	public ProverMachineState getNextState(ProverMachineState state, List<ProverMove> moves)
 			throws TransitionDefinitionException, StateMachineException {
 		return this.theRealMachine.getNextState(state, moves);
 	}

@@ -1,12 +1,13 @@
 package org.ggp.base.util.statemachine.inernalPropnetStructure;
 
 import org.apache.lucene.util.OpenBitSet;
+import org.ggp.base.util.statemachine.MmachineState;
 
 /**
  * @author C.Sironi
  *
  */
-public class InternalPropnetMachineState{
+public class InternalPropnetMachineState extends MmachineState{
 
 	private final OpenBitSet truthValues;
 

@@ -7,14 +7,14 @@ import java.util.concurrent.TimeUnit;
 
 import org.ggp.base.util.gdl.grammar.Gdl;
 import org.ggp.base.util.logging.GamerLogger;
-import org.ggp.base.util.statemachine.MachineState;
-import org.ggp.base.util.statemachine.Move;
-import org.ggp.base.util.statemachine.Role;
 import org.ggp.base.util.statemachine.StateMachine;
 import org.ggp.base.util.statemachine.exceptions.MoveDefinitionException;
 import org.ggp.base.util.statemachine.exceptions.StateMachineException;
 import org.ggp.base.util.statemachine.exceptions.StateMachineInitializationException;
 import org.ggp.base.util.statemachine.exceptions.TransitionDefinitionException;
+import org.ggp.base.util.statemachine.proverStructure.ProverMachineState;
+import org.ggp.base.util.statemachine.proverStructure.ProverMove;
+import org.ggp.base.util.statemachine.proverStructure.ProverRole;
 
 /**
  * This state machine gets as input a list of different state machines and chooses to use the
@@ -143,7 +143,7 @@ public class AdaptiveInitializationStateMachine extends StateMachine {
 
 				int totalVisitedNodes = 0;
 
-				MachineState initialState = theMachine.getInitialState();
+				ProverMachineState initialState = theMachine.getInitialState();
 
 				long startTime = System.currentTimeMillis();
 
@@ -351,34 +351,34 @@ public class AdaptiveInitializationStateMachine extends StateMachine {
 	}
 
 	@Override
-	public List<Integer> getOneRoleGoals(MachineState state, Role role)
+	public List<Integer> getOneRoleGoals(ProverMachineState state, ProverRole role)
 			throws StateMachineException {
 		return this.theFastestMachine.getOneRoleGoals(state, role);
 	}
 
 	@Override
-	public boolean isTerminal(MachineState state) throws StateMachineException {
+	public boolean isTerminal(ProverMachineState state) throws StateMachineException {
 		return this.theFastestMachine.isTerminal(state);
 	}
 
 	@Override
-	public List<Role> getRoles() {
+	public List<ProverRole> getRoles() {
 		return this.theFastestMachine.getRoles();
 	}
 
 	@Override
-	public MachineState getInitialState() {
+	public ProverMachineState getInitialState() {
 		return this.theFastestMachine.getInitialState();
 	}
 
 	@Override
-	public List<Move> getLegalMoves(MachineState state, Role role)
+	public List<ProverMove> getLegalMoves(ProverMachineState state, ProverRole role)
 			throws MoveDefinitionException, StateMachineException {
 		return this.theFastestMachine.getLegalMoves(state, role);
 	}
 
 	@Override
-	public MachineState getNextState(MachineState state, List<Move> moves)
+	public ProverMachineState getNextState(ProverMachineState state, List<ProverMove> moves)
 			throws TransitionDefinitionException, StateMachineException {
 		return this.theFastestMachine.getNextState(state, moves);
 	}

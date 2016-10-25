@@ -11,8 +11,6 @@ import org.ggp.base.player.gamer.event.GamerSelectedMoveEvent;
 import org.ggp.base.player.gamer.exception.GamePreviewException;
 import org.ggp.base.player.gamer.statemachine.StateMachineGamer;
 import org.ggp.base.util.game.Game;
-import org.ggp.base.util.statemachine.MachineState;
-import org.ggp.base.util.statemachine.Move;
 import org.ggp.base.util.statemachine.StateMachine;
 import org.ggp.base.util.statemachine.cache.CachedStateMachine;
 import org.ggp.base.util.statemachine.exceptions.GoalDefinitionException;
@@ -20,6 +18,8 @@ import org.ggp.base.util.statemachine.exceptions.MoveDefinitionException;
 import org.ggp.base.util.statemachine.exceptions.StateMachineException;
 import org.ggp.base.util.statemachine.exceptions.TransitionDefinitionException;
 import org.ggp.base.util.statemachine.implementation.prover.ProverStateMachine;
+import org.ggp.base.util.statemachine.proverStructure.ProverMachineState;
+import org.ggp.base.util.statemachine.proverStructure.ProverMove;
 
 /**
  * SampleSearchLightGamer is a simple state-machine-based Gamer. It will,
@@ -68,19 +68,19 @@ public final class SampleSearchLightGamer extends StateMachineGamer
 	 * @throws StateMachineException
 	 */
 	@Override
-	public Move stateMachineSelectMove(long timeout) throws TransitionDefinitionException, MoveDefinitionException, GoalDefinitionException, StateMachineException
+	public ProverMove stateMachineSelectMove(long timeout) throws TransitionDefinitionException, MoveDefinitionException, GoalDefinitionException, StateMachineException
 	{
 	    StateMachine theMachine = getStateMachine();
 		long start = System.currentTimeMillis();
 		long finishBy = timeout - 1000;
 
-		List<Move> moves = theMachine.getLegalMoves(getCurrentState(), getRole());
-		Move selection = (moves.get(theRandom.nextInt(moves.size())));
+		List<ProverMove> moves = theMachine.getLegalMoves(getCurrentState(), getRole());
+		ProverMove selection = (moves.get(theRandom.nextInt(moves.size())));
 
 		// Shuffle the moves into a random order, so that when we find the first
 		// move that doesn't give our opponent a forced win, we aren't always choosing
 		// the first legal move over and over (which is visibly repetitive).
-		moves = new ArrayList<Move>(moves);
+		moves = new ArrayList<ProverMove>(moves);
 		Collections.shuffle(moves);
 
 		// Go through all of the legal moves in a random over, and consider each one.
@@ -94,7 +94,7 @@ public final class SampleSearchLightGamer extends StateMachineGamer
 		// immediately take it.
 		boolean reasonableMoveFound = false;
 		int maxGoal = 0;
-		for(Move moveUnderConsideration : moves) {
+		for(ProverMove moveUnderConsideration : moves) {
 		    // Check to see if there's time to continue.
 		    if(System.currentTimeMillis() > finishBy) break;
 
@@ -109,7 +109,7 @@ public final class SampleSearchLightGamer extends StateMachineGamer
 		    // opponent's no-op. In a simultaneous-action game, however, the opponent
 		    // may have many moves, and so we will randomly pick one of our opponent's
 		    // possible actions and assume they do that.
-		    MachineState nextState = theMachine.getNextState(getCurrentState(), theMachine.getRandomJointMove(getCurrentState(), getRole(), moveUnderConsideration));
+		    ProverMachineState nextState = theMachine.getNextState(getCurrentState(), theMachine.getRandomJointMove(getCurrentState(), getRole(), moveUnderConsideration));
 
 		    // Does the move under consideration end the game? If it does, do we win
 		    // or lose? If we lose, don't bother considering it. If we win, then we
@@ -137,8 +137,8 @@ public final class SampleSearchLightGamer extends StateMachineGamer
 		    // to make us lose, and so if they are offered any move that will make us lose
 		    // they will take it.
 		    boolean forcedLoss = false;
-		    for(List<Move> jointMove : theMachine.getLegalJointMoves(nextState)) {
-		        MachineState nextNextState = theMachine.getNextState(nextState, jointMove);
+		    for(List<ProverMove> jointMove : theMachine.getLegalJointMoves(nextState)) {
+		        ProverMachineState nextNextState = theMachine.getNextState(nextState, jointMove);
 		        if(theMachine.isTerminal(nextNextState)) {
 		            if(theMachine.getGoal(nextNextState, getRole()) == 0) {
 		                forcedLoss = true;

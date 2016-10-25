@@ -25,7 +25,7 @@ import org.ggp.base.util.propnet.creationManager.optimizationcallers.RemoveOutpu
 import org.ggp.base.util.propnet.factory.DynamicPropNetFactory;
 import org.ggp.base.util.propnet.state.ImmutableSeparatePropnetState;
 import org.ggp.base.util.propnet.utils.PROP_TYPE;
-import org.ggp.base.util.statemachine.Role;
+import org.ggp.base.util.statemachine.proverStructure.ProverRole;
 
 /**
  * This class takes care of the followings:
@@ -360,10 +360,10 @@ public class SeparateInternalPropnetManager extends Thread{
 			ImmutableComponent[] immutableComponents = this.dynamicToImmutableComponents(this.dynamicPropNet.getComponents());
 
 			// 2. PREPARE THE ROLES
-			Role[] roles = new Role[this.dynamicPropNet.getRoles().size()];
+			ProverRole[] roles = new ProverRole[this.dynamicPropNet.getRoles().size()];
 			int i = 0;
-			for(Role r : this.dynamicPropNet.getRoles()){
-				roles[i] = new Role(r.getName());
+			for(ProverRole r : this.dynamicPropNet.getRoles()){
+				roles[i] = new ProverRole(r.getName());
 				i++;
 			}
 
@@ -431,7 +431,7 @@ public class SeparateInternalPropnetManager extends Thread{
 
 			i = 1;
 
-			Map<Role, List<DynamicProposition>> goalsPerRole = this.dynamicPropNet.getGoalsPerRole();
+			Map<ProverRole, List<DynamicProposition>> goalsPerRole = this.dynamicPropNet.getGoalsPerRole();
 
 			int[] firstGoalIndices = new int[roles.length+1];
 			int[][] goalValues = new int[roles.length][];
@@ -457,7 +457,7 @@ public class SeparateInternalPropnetManager extends Thread{
 			// 5C. LEGALS
 			// Set the correct state index for the legal propositions.
 
-			Map<Role, List<DynamicProposition>> legalsPerRole = this.dynamicPropNet.getLegalsPerRole();
+			Map<ProverRole, List<DynamicProposition>> legalsPerRole = this.dynamicPropNet.getLegalsPerRole();
 
 			int[] firstLegalIndices = new int[roles.length+1];
 

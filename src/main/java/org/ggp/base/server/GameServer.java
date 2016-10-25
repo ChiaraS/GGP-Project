@@ -34,21 +34,21 @@ import org.ggp.base.util.match.MatchPublisher;
 import org.ggp.base.util.observer.Event;
 import org.ggp.base.util.observer.Observer;
 import org.ggp.base.util.observer.Subject;
-import org.ggp.base.util.statemachine.MachineState;
-import org.ggp.base.util.statemachine.Move;
-import org.ggp.base.util.statemachine.Role;
 import org.ggp.base.util.statemachine.StateMachine;
 import org.ggp.base.util.statemachine.exceptions.GoalDefinitionException;
 import org.ggp.base.util.statemachine.exceptions.MoveDefinitionException;
 import org.ggp.base.util.statemachine.exceptions.StateMachineException;
 import org.ggp.base.util.statemachine.exceptions.StateMachineInitializationException;
 import org.ggp.base.util.statemachine.implementation.prover.ProverStateMachine;
+import org.ggp.base.util.statemachine.proverStructure.ProverMachineState;
+import org.ggp.base.util.statemachine.proverStructure.ProverMove;
+import org.ggp.base.util.statemachine.proverStructure.ProverRole;
 
 public final class GameServer extends Thread implements Subject
 {
     private final Match match;
     private final StateMachine stateMachine;
-    private MachineState currentState;
+    private ProverMachineState currentState;
 
     private final List<String> hosts;
     private final List<Integer> ports;
@@ -56,9 +56,9 @@ public final class GameServer extends Thread implements Subject
     private final Boolean[] playerPlaysRandomly;
 
     private final List<Observer> observers;
-    private List<Move> previousMoves;
+    private List<ProverMove> previousMoves;
 
-    private Map<Role,String> mostRecentErrors;
+    private Map<ProverRole,String> mostRecentErrors;
 
     private String saveToFilename;
     private String spectatorServerURL;
@@ -87,7 +87,7 @@ public final class GameServer extends Thread implements Subject
         currentState = stateMachine.getInitialState();
         previousMoves = null;
 
-        mostRecentErrors = new HashMap<Role,String>();
+        mostRecentErrors = new HashMap<ProverRole,String>();
 
         match.appendState(currentState.getContents());
 
@@ -113,7 +113,7 @@ public final class GameServer extends Thread implements Subject
 
     public List<Integer> getGoals() throws GoalDefinitionException, StateMachineException {
         List<Integer> goals = new ArrayList<Integer>();
-        for (Role role : stateMachine.getRoles()) {
+        for (ProverRole role : stateMachine.getRoles()) {
             goals.add(stateMachine.getGoal(currentState, role));
         }
 
@@ -148,7 +148,7 @@ public final class GameServer extends Thread implements Subject
     private void appendErrorsToMatchDescription() {
         List<String> theErrors = new ArrayList<String>();
         for (int i = 0; i < stateMachine.getRoles().size(); i++) {
-            Role r = stateMachine.getRoles().get(i);
+            ProverRole r = stateMachine.getRoles().get(i);
             if (mostRecentErrors.containsKey(r)) {
                 theErrors.add(mostRecentErrors.get(r));
             } else {
@@ -290,10 +290,10 @@ public final class GameServer extends Thread implements Subject
     	return spectatorServerKey;
     }
 
-    private synchronized List<Move> sendPlayRequests() throws InterruptedException, MoveDefinitionException, StateMachineException {
+    private synchronized List<ProverMove> sendPlayRequests() throws InterruptedException, MoveDefinitionException, StateMachineException {
         List<PlayRequestThread> threads = new ArrayList<PlayRequestThread>(hosts.size());
         for (int i = 0; i < hosts.size(); i++) {
-            List<Move> legalMoves = stateMachine.getLegalMoves(currentState, stateMachine.getRoles().get(i));
+            List<ProverMove> legalMoves = stateMachine.getLegalMoves(currentState, stateMachine.getRoles().get(i));
             if (playerPlaysRandomly[i]) {
             	threads.add(new RandomPlayRequestThread(match, legalMoves));
             } else {
@@ -308,7 +308,7 @@ public final class GameServer extends Thread implements Subject
             Thread.sleep(match.getPlayClock() * 1000);
         }
 
-        List<Move> moves = new ArrayList<Move>();
+        List<ProverMove> moves = new ArrayList<ProverMove>();
         for (PlayRequestThread thread : threads) {
             thread.join();
             moves.add(thread.getMove());
@@ -353,7 +353,7 @@ public final class GameServer extends Thread implements Subject
         }
     }
 
-    private synchronized void sendStopRequests(List<Move> previousMoves) throws InterruptedException {
+    private synchronized void sendStopRequests(List<ProverMove> previousMoves) throws InterruptedException {
         List<StopRequestThread> threads = new ArrayList<StopRequestThread>(hosts.size());
         for (int i = 0; i < hosts.size(); i++) {
         	if (!playerPlaysRandomly[i]) {

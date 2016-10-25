@@ -3,17 +3,17 @@ package org.ggp.base.player.gamer.statemachine.MCTS.prover;
 import org.ggp.base.player.gamer.event.GamerSelectedMoveEvent;
 import org.ggp.base.player.gamer.statemachine.MCS.manager.prover.ProverCompleteMoveStats;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.exceptions.MCTSException;
-import org.ggp.base.player.gamer.statemachine.MCTS.manager.propnet.treestructure.MCTSNode;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.prover.ProverMCTSManager;
+import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.MCTSNode;
 import org.ggp.base.player.gamer.statemachine.prover.ProverGamer;
 import org.ggp.base.util.logging.GamerLogger;
-import org.ggp.base.util.statemachine.MachineState;
-import org.ggp.base.util.statemachine.Move;
 import org.ggp.base.util.statemachine.StateMachine;
 import org.ggp.base.util.statemachine.exceptions.GoalDefinitionException;
 import org.ggp.base.util.statemachine.exceptions.MoveDefinitionException;
 import org.ggp.base.util.statemachine.exceptions.StateMachineException;
 import org.ggp.base.util.statemachine.exceptions.TransitionDefinitionException;
+import org.ggp.base.util.statemachine.proverStructure.ProverMachineState;
+import org.ggp.base.util.statemachine.proverStructure.ProverMove;
 
 public abstract class ProverMctsGamer extends ProverGamer {
 
@@ -139,7 +139,7 @@ public abstract class ProverMctsGamer extends ProverGamer {
 	 * @see org.ggp.base.player.gamer.statemachine.StateMachineGamer#stateMachineSelectMove(long)
 	 */
 	@Override
-	public Move stateMachineSelectMove(long timeout)
+	public ProverMove stateMachineSelectMove(long timeout)
 			throws TransitionDefinitionException, MoveDefinitionException,
 			GoalDefinitionException, StateMachineException {
 
@@ -156,7 +156,7 @@ public abstract class ProverMctsGamer extends ProverGamer {
     	int visitedNodes = -1;
     	double iterationsPerSecond = -1;
     	double nodesPerSecond = -1;
-    	Move theMove = null;
+    	ProverMove theMove = null;
     	double moveScoreSum = -1;
     	int moveVisits = -1;
     	double moveAvgScore = -1;
@@ -171,7 +171,7 @@ public abstract class ProverMctsGamer extends ProverGamer {
 
 			GamerLogger.log("Gamer", "Selecting move using MCTS.");
 
-			MachineState currentState = this.getCurrentState();
+			ProverMachineState currentState = this.getCurrentState();
 
 			try {
 				MCTSNode currentNode = this.mctsManager.search(currentState, realTimeout, gameStep);

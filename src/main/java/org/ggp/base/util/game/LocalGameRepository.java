@@ -12,7 +12,7 @@ import java.net.InetSocketAddress;
 import java.util.List;
 import java.util.Set;
 
-import org.ggp.base.util.statemachine.Role;
+import org.ggp.base.util.statemachine.proverStructure.ProverRole;
 
 import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpHandler;
@@ -318,7 +318,7 @@ public final class LocalGameRepository extends GameRepository {
     	 * @throws JSONException
     	 */
     	public static void completeMetadataFromRulesheet(JSONObject theMetaJSON, String theRulesheet) throws JSONException {
-    		List<Role> theRoles = Role.computeRoles(Game.createEphemeralGame(Game.preprocessRulesheet(theRulesheet)).getRules());
+    		List<ProverRole> theRoles = ProverRole.computeRoles(Game.createEphemeralGame(Game.preprocessRulesheet(theRulesheet)).getRules());
             theMetaJSON.put("roleNames", theRoles);
             theMetaJSON.put("numRoles", theRoles.size());
     	}

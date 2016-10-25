@@ -8,9 +8,9 @@ import org.ggp.base.apps.kiosk.GameCanvas;
 import org.ggp.base.util.gdl.grammar.GdlConstant;
 import org.ggp.base.util.gdl.grammar.GdlFunction;
 import org.ggp.base.util.gdl.grammar.GdlSentence;
-import org.ggp.base.util.statemachine.Move;
 import org.ggp.base.util.statemachine.exceptions.MoveDefinitionException;
 import org.ggp.base.util.statemachine.exceptions.StateMachineException;
+import org.ggp.base.util.statemachine.proverStructure.ProverMove;
 
 
 /**
@@ -79,9 +79,9 @@ public class TicTacToeCanvas_Reference extends GameCanvas {
         }
 
         try {
-            List<Move> legalMoves = stateMachine.getLegalMoves(gameState, myRole);
+            List<ProverMove> legalMoves = stateMachine.getLegalMoves(gameState, myRole);
 
-            for(Move legalMove : legalMoves) {
+            for(ProverMove legalMove : legalMoves) {
                 if(legalMove.getContents() instanceof GdlConstant)
                     continue;
 
@@ -122,13 +122,13 @@ public class TicTacToeCanvas_Reference extends GameCanvas {
         int height = mostRecentG.getClipBounds().height;
 
         try {
-            List<Move> legalMoves = stateMachine.getLegalMoves(gameState, myRole);
+            List<ProverMove> legalMoves = stateMachine.getLegalMoves(gameState, myRole);
 
             int xCell = 1+3*x/width;
             int yCell = 1+3*y/height;
 
             String moveString = "( mark " + xCell + " " + yCell + " )";
-            for(Move legalMove : legalMoves) {
+            for(ProverMove legalMove : legalMoves) {
                 if(legalMove.toString().equals(moveString)) {
                     submitWorkingMove(legalMove);
 

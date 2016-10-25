@@ -1,13 +1,13 @@
 package org.ggp.base.player.gamer.statemachine.MCTS.manager.prover.strategies.backpropagation;
 
-import org.ggp.base.player.gamer.statemachine.MCTS.manager.propnet.treestructure.MCTSNode;
-import org.ggp.base.player.gamer.statemachine.MCTS.manager.prover.treestructure.ProverMCTSJointMove;
-import org.ggp.base.player.gamer.statemachine.MCTS.manager.prover.treestructure.ProverSequDecMCTSJointMove;
-import org.ggp.base.player.gamer.statemachine.MCTS.manager.prover.treestructure.ProverSimulationResult;
-import org.ggp.base.player.gamer.statemachine.MCTS.manager.prover.treestructure.decoupled.ProverDecoupledMCTSMoveStats;
-import org.ggp.base.player.gamer.statemachine.MCTS.manager.prover.treestructure.decoupled.ProverDecoupledMCTSNode;
-import org.ggp.base.util.statemachine.MachineState;
-import org.ggp.base.util.statemachine.Role;
+import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.MCTSNode;
+import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.prover.ProverMCTSJointMove;
+import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.prover.ProverSequDecMCTSJointMove;
+import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.prover.ProverSimulationResult;
+import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.prover.decoupled.ProverDecoupledMCTSMoveStats;
+import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.prover.decoupled.ProverDecoupledMCTSNode;
+import org.ggp.base.util.statemachine.proverStructure.ProverMachineState;
+import org.ggp.base.util.statemachine.proverStructure.ProverRole;
 
 public class ProverStandardBackpropagation implements ProverBackpropagationStrategy {
 
@@ -23,7 +23,7 @@ public class ProverStandardBackpropagation implements ProverBackpropagationStrat
 	 */
 	//private Role myRole;
 
-	public ProverStandardBackpropagation(int numRoles, Role myRole){
+	public ProverStandardBackpropagation(int numRoles, ProverRole myRole){
 		//this.numRoles = numRoles;
 		//this.myRole = myRole;
 	}
@@ -33,7 +33,7 @@ public class ProverStandardBackpropagation implements ProverBackpropagationStrat
 	 * @see org.ggp.base.player.gamer.statemachine.MCTS.manager.strategies.backpropagation.BackpropagationStrategy#update(org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.InternalPropnetMCTSNode, org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.MCTSJointMove, int[])
 	 */
 	@Override
-	public void update(MCTSNode currentNode, MachineState currentState, ProverMCTSJointMove jointMove, ProverSimulationResult simulationResult){
+	public void update(MCTSNode currentNode, ProverMachineState currentState, ProverMCTSJointMove jointMove, ProverSimulationResult simulationResult){
 		if(currentNode instanceof ProverDecoupledMCTSNode && jointMove instanceof ProverSequDecMCTSJointMove){
 			this.decUpdate((ProverDecoupledMCTSNode)currentNode, currentState, (ProverSequDecMCTSJointMove)jointMove, simulationResult);
 		}/*else if(node instanceof PnSequentialMCTSNode && jointMove instanceof SequDecMCTSJointMove){
@@ -55,7 +55,7 @@ public class ProverStandardBackpropagation implements ProverBackpropagationStrat
 	 * @param jointMove the explored joint move.
 	 * @param goals the goals obtained by the simulation, to be used to update the statistics.
 	 */
-	private void decUpdate(ProverDecoupledMCTSNode currentNode, MachineState currentState, ProverSequDecMCTSJointMove jointMove, ProverSimulationResult simulationResult) {
+	private void decUpdate(ProverDecoupledMCTSNode currentNode, ProverMachineState currentState, ProverSequDecMCTSJointMove jointMove, ProverSimulationResult simulationResult) {
 
 		currentNode.incrementTotVisits();
 
@@ -180,7 +180,7 @@ public class ProverStandardBackpropagation implements ProverBackpropagationStrat
 	}*/
 
 	@Override
-	public void processPlayoutResult(MCTSNode leafNode,	MachineState leafState, ProverSimulationResult simulationResult) {
+	public void processPlayoutResult(MCTSNode leafNode,	ProverMachineState leafState, ProverSimulationResult simulationResult) {
 		// TODO Auto-generated method stub
 	}
 

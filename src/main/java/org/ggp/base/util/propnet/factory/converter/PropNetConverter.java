@@ -23,7 +23,7 @@ import org.ggp.base.util.propnet.architecture.basic.components.Not;
 import org.ggp.base.util.propnet.architecture.basic.components.Or;
 import org.ggp.base.util.propnet.architecture.basic.components.Proposition;
 import org.ggp.base.util.propnet.architecture.basic.components.Transition;
-import org.ggp.base.util.statemachine.Role;
+import org.ggp.base.util.statemachine.proverStructure.ProverRole;
 
 /**
  * The PropNetConverter class defines PropNet conversion for the PropNetFactory
@@ -52,7 +52,7 @@ public final class PropNetConverter
 	 *            A game description.
 	 * @return An equivalent PropNet.
 	 */
-	public PropNet convert(List<Role> roles, List<GdlRule> description)
+	public PropNet convert(List<ProverRole> roles, List<GdlRule> description)
 	{
 		propositions = new HashMap<GdlSentence, Proposition>();
 		components = new HashSet<Component>();

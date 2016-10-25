@@ -22,8 +22,8 @@ import org.ggp.base.util.gdl.grammar.GdlTerm;
 import org.ggp.base.util.gdl.scrambler.GdlScrambler;
 import org.ggp.base.util.gdl.scrambler.MappingGdlScrambler;
 import org.ggp.base.util.gdl.scrambler.NoOpGdlScrambler;
-import org.ggp.base.util.statemachine.Move;
-import org.ggp.base.util.statemachine.Role;
+import org.ggp.base.util.statemachine.proverStructure.ProverMove;
+import org.ggp.base.util.statemachine.proverStructure.ProverRole;
 import org.ggp.base.util.symbol.factory.SymbolFactory;
 import org.ggp.base.util.symbol.factory.exceptions.SymbolFormatException;
 import org.ggp.base.util.symbol.grammar.SymbolList;
@@ -88,7 +88,7 @@ public final class Match
 		this.isCompleted = false;
 		this.isAborted = false;
 
-		this.numRoles = Role.computeRoles(theGame.getRules()).size();
+		this.numRoles = ProverRole.computeRoles(theGame.getRules()).size();
 
 		this.moveHistory = new ArrayList<List<GdlTerm>>();
 		this.stateHistory = new ArrayList<Set<GdlSentence>>();
@@ -129,7 +129,7 @@ public final class Match
         	this.isAborted = false;
         }
 
-        this.numRoles = Role.computeRoles(this.theGame.getRules()).size();
+        this.numRoles = ProverRole.computeRoles(this.theGame.getRules()).size();
 
         this.moveHistory = new ArrayList<List<GdlTerm>>();
         this.stateHistory = new ArrayList<Set<GdlSentence>>();
@@ -228,12 +228,12 @@ public final class Match
 		moveHistory.add(moves);
 	}
 
-	public void appendMoves2(List<Move> moves) {
+	public void appendMoves2(List<ProverMove> moves) {
 	    // NOTE: This is appendMoves2 because it Java can't handle two
 	    // appendMove methods that both take List objects with different
 	    // templatized parameters.
 		List<GdlTerm> theMoves = new ArrayList<GdlTerm>();
-		for(Move m : moves) {
+		for(ProverMove m : moves) {
 			theMoves.add(m.getContents());
 		}
 		appendMoves(theMoves);

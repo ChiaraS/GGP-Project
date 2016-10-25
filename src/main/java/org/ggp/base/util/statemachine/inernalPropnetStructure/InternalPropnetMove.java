@@ -1,6 +1,6 @@
 package org.ggp.base.util.statemachine.inernalPropnetStructure;
 
-import java.io.Serializable;
+import org.ggp.base.util.statemachine.Mmove;
 
 /**
  * A Move represents a possible move that can be made by a role. Each
@@ -15,7 +15,7 @@ import java.io.Serializable;
  * array.
  */
 @SuppressWarnings("serial")
-public class InternalPropnetMove implements Serializable{
+public class InternalPropnetMove extends Mmove{
     private final int moveIndex;
 
     public InternalPropnetMove(int moveIndex){

@@ -12,15 +12,15 @@ import org.ggp.base.util.propnet.architecture.separateExtendedState.immutable.Im
 import org.ggp.base.util.propnet.architecture.separateExtendedState.immutable.components.ImmutableProposition;
 import org.ggp.base.util.propnet.state.ImmutableSeparatePropnetState;
 import org.ggp.base.util.statemachine.InternalPropnetStateMachine;
-import org.ggp.base.util.statemachine.MachineState;
-import org.ggp.base.util.statemachine.Move;
-import org.ggp.base.util.statemachine.Role;
 import org.ggp.base.util.statemachine.exceptions.MoveDefinitionException;
 import org.ggp.base.util.statemachine.exceptions.StateMachineInitializationException;
 import org.ggp.base.util.statemachine.implementation.prover.query.ProverQueryBuilder;
 import org.ggp.base.util.statemachine.inernalPropnetStructure.InternalPropnetMachineState;
 import org.ggp.base.util.statemachine.inernalPropnetStructure.InternalPropnetMove;
 import org.ggp.base.util.statemachine.inernalPropnetStructure.InternalPropnetRole;
+import org.ggp.base.util.statemachine.proverStructure.ProverMachineState;
+import org.ggp.base.util.statemachine.proverStructure.ProverMove;
+import org.ggp.base.util.statemachine.proverStructure.ProverRole;
 
 import com.google.common.collect.ImmutableList;
 
@@ -86,7 +86,7 @@ public class SeparateInternalPropnetStateMachine extends InternalPropnetStateMac
 	 * @return true if the state is terminal, false otherwise.
 	 */
 	@Override
-	public boolean isTerminal(MachineState state) {
+	public boolean isTerminal(ProverMachineState state) {
 		return this.isTerminal(this.stateToInternalState(state));
 	}
 
@@ -120,7 +120,7 @@ public class SeparateInternalPropnetStateMachine extends InternalPropnetStateMac
 	 * @param role
 	 */
 	@Override
-	public List<Integer> getOneRoleGoals(MachineState state, Role role) {
+	public List<Integer> getOneRoleGoals(ProverMachineState state, ProverRole role) {
 		return this.getOneRoleGoals(this.stateToInternalState(state), this.roleToInternalRole(role));
 	}
 
@@ -195,7 +195,7 @@ public class SeparateInternalPropnetStateMachine extends InternalPropnetStateMac
 	 * this state machine has not been initialized, NULL will be returned.
 	 */
 	@Override
-	public MachineState getInitialState() {
+	public ProverMachineState getInitialState() {
 
 		/*
 		if(this.initialState == null){
@@ -234,8 +234,8 @@ public class SeparateInternalPropnetStateMachine extends InternalPropnetStateMac
 	 * Since the state is not an internal propnet state, it is first transformed into one.
 	 */
 	@Override
-	public List<Move> getLegalMoves(MachineState state, Role role)throws MoveDefinitionException {
-		List<Move> moves = new ArrayList<Move>();
+	public List<ProverMove> getLegalMoves(ProverMachineState state, ProverRole role)throws MoveDefinitionException {
+		List<ProverMove> moves = new ArrayList<ProverMove>();
 		InternalPropnetRole externalRole = this.roleToInternalRole(role);
 		for(InternalPropnetMove m : this.getInternalLegalMoves(this.stateToInternalState(state), externalRole)){
 			moves.add(this.internalMoveToMove(m));
@@ -280,7 +280,7 @@ public class SeparateInternalPropnetStateMachine extends InternalPropnetStateMac
 	 * If the state is not an extended propnet state, it is first transformed into one.
 	 */
 	@Override
-	public MachineState getNextState(MachineState state, List<Move> moves){
+	public ProverMachineState getNextState(ProverMachineState state, List<ProverMove> moves){
 		return this.internalStateToState(this.getInternalNextState(this.stateToInternalState(state), this.movesToInternalMoves(moves)));
 	}
 
@@ -301,9 +301,9 @@ public class SeparateInternalPropnetStateMachine extends InternalPropnetStateMac
 
 	/* Already implemented for you */
 	@Override
-	public List<Role> getRoles() {
-		List<Role> roles = new ArrayList<Role>();
-		Role[] rolesArray = this.propNet.getRoles();
+	public List<ProverRole> getRoles() {
+		List<ProverRole> roles = new ArrayList<ProverRole>();
+		ProverRole[] rolesArray = this.propNet.getRoles();
 		for(InternalPropnetRole r : this.roles){
 			roles.add(rolesArray[r.getIndex()]);
 		}
@@ -330,7 +330,7 @@ public class SeparateInternalPropnetStateMachine extends InternalPropnetStateMac
 	 * @param moves the moves to be translated into 'does' propositions.
 	 * @return a list with the 'does' propositions corresponding to the given joint move.
 	 */
-	private List<GdlSentence> toDoes(List<Move> moves){
+	private List<GdlSentence> toDoes(List<ProverMove> moves){
 
 		//AGGIUNTA
     	//System.out.println("TO DOES");
@@ -377,8 +377,8 @@ public class SeparateInternalPropnetStateMachine extends InternalPropnetStateMac
 	 * @param p the proposition to be transformed into a move.
 	 * @return the move corresponding to the given proposition.
 	 */
-	public static Move getMoveFromProposition(ImmutableProposition p){
-		return new Move(p.getName().get(1));
+	public static ProverMove getMoveFromProposition(ImmutableProposition p){
+		return new ProverMove(p.getName().get(1));
 	}
 
 	/**
@@ -390,7 +390,7 @@ public class SeparateInternalPropnetStateMachine extends InternalPropnetStateMac
 	 * the state for each base proposition.
 	 */
 	@Override
-	public InternalPropnetMachineState stateToInternalState(MachineState state){
+	public InternalPropnetMachineState stateToInternalState(ProverMachineState state){
 		if(state != null){
 			ImmutableProposition[] baseProps = this.propNet.getBasePropositions();
 			OpenBitSet basePropsTruthValues = new OpenBitSet(baseProps.length);
@@ -409,7 +409,7 @@ public class SeparateInternalPropnetStateMachine extends InternalPropnetStateMac
 	}
 
 	@Override
-	public MachineState internalStateToState(InternalPropnetMachineState state){
+	public ProverMachineState internalStateToState(InternalPropnetMachineState state){
 		if(state != null){
 			ImmutableProposition[] baseProps = this.propNet.getBasePropositions();
 			OpenBitSet basePropsTruthValues = state.getTruthValues();
@@ -421,14 +421,14 @@ public class SeparateInternalPropnetStateMachine extends InternalPropnetStateMac
 				setIndex = basePropsTruthValues.nextSetBit(setIndex+1);
 			}
 
-			return new MachineState(contents);
+			return new ProverMachineState(contents);
 		}
 
 		return null;
 	}
 
 	@Override
-	public Role internalRoleToRole(InternalPropnetRole role){
+	public ProverRole internalRoleToRole(InternalPropnetRole role){
 		if(role != null){
 			return this.propNet.getRoles()[role.getIndex()];
 		}
@@ -437,10 +437,10 @@ public class SeparateInternalPropnetStateMachine extends InternalPropnetStateMac
 	}
 
 	@Override
-	public InternalPropnetRole roleToInternalRole(Role role){
+	public InternalPropnetRole roleToInternalRole(ProverRole role){
 		if(role != null){
 			// TODO check if index is -1 -> should never happen if the role given as input is a valid role.
-			Role[] roles = this.propNet.getRoles();
+			ProverRole[] roles = this.propNet.getRoles();
 			for(int i = 0; i < roles.length; i++){
 				if(role.equals(roles[i])){
 					return new InternalPropnetRole(i);
@@ -452,13 +452,13 @@ public class SeparateInternalPropnetStateMachine extends InternalPropnetStateMac
 	}
 
 	@Override
-	public Move internalMoveToMove(InternalPropnetMove move){
+	public ProverMove internalMoveToMove(InternalPropnetMove move){
 		return getMoveFromProposition(this.propNet.getInputPropositions()[move.getIndex()]);
 	}
 
 	@Override
-	public InternalPropnetMove moveToInternalMove(Move move){
-		List<Move> moveArray = new ArrayList<Move>();
+	public InternalPropnetMove moveToInternalMove(ProverMove move){
+		List<ProverMove> moveArray = new ArrayList<ProverMove>();
 		moveArray.add(move);
 		GdlSentence moveToDoes = this.toDoes(moveArray).get(0);
 
@@ -480,7 +480,7 @@ public class SeparateInternalPropnetStateMachine extends InternalPropnetStateMac
 	 * @return
 	 */
 	@Override
-	public List<InternalPropnetMove> movesToInternalMoves(List<Move> moves){
+	public List<InternalPropnetMove> movesToInternalMoves(List<ProverMove> moves){
 
 		List<InternalPropnetMove> transformedMoves = new ArrayList<InternalPropnetMove>();
 		List<GdlSentence> movesToDoes = this.toDoes(moves);

@@ -6,9 +6,9 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 
-import org.ggp.base.player.gamer.statemachine.MCS.manager.propnet.CompleteMoveStats;
+import org.ggp.base.player.gamer.statemachine.MCS.manager.propnet.PnCompleteMoveStats;
 import org.ggp.base.player.gamer.statemachine.MCS.manager.propnet.InternalPropnetMCSManager;
-import org.ggp.base.player.gamer.statemachine.MCTS.manager.propnet.strategies.playout.RandomPlayout;
+import org.ggp.base.player.gamer.statemachine.MCTS.manager.propnet.strategies.playout.PnRandomPlayout;
 import org.ggp.base.util.game.GameRepository;
 import org.ggp.base.util.gdl.grammar.Gdl;
 import org.ggp.base.util.gdl.grammar.GdlPool;
@@ -19,11 +19,11 @@ import org.ggp.base.util.propnet.architecture.separateExtendedState.immutable.Im
 import org.ggp.base.util.propnet.creationManager.SeparateInternalPropnetManager;
 import org.ggp.base.util.propnet.state.ImmutableSeparatePropnetState;
 import org.ggp.base.util.statemachine.InternalPropnetStateMachine;
-import org.ggp.base.util.statemachine.Move;
-import org.ggp.base.util.statemachine.Role;
 import org.ggp.base.util.statemachine.exceptions.StateMachineInitializationException;
 import org.ggp.base.util.statemachine.implementation.propnet.SeparateInternalPropnetStateMachine;
 import org.ggp.base.util.statemachine.inernalPropnetStructure.InternalPropnetRole;
+import org.ggp.base.util.statemachine.proverStructure.ProverMove;
+import org.ggp.base.util.statemachine.proverStructure.ProverRole;
 
 /**
 * This class checks the speed (nodes/second, iterations/second) of the MCS player
@@ -187,8 +187,8 @@ public class MCSSpeedTest {
 	        int visitedNodes = -1;
 	        double iterationsPerSecond = -1;
 	        double nodesPerSecond = -1;
-	        Role playingRole = null;
-	        Move chosenMove = null;
+	        ProverRole playingRole = null;
+	        ProverMove chosenMove = null;
 	        double scoresSum = -1.0;
 	        int visits = -1;
 	        double averageScore = -1;
@@ -220,14 +220,14 @@ public class MCSSpeedTest {
 		        playingRole = thePropnetMachine.internalRoleToRole(internalPlayingRole);
 		        numRoles = thePropnetMachine.getInternalRoles().length;
 
-		        InternalPropnetMCSManager MCSmanager = new InternalPropnetMCSManager(new RandomPlayout(thePropnetMachine),
+		        InternalPropnetMCSManager MCSmanager = new InternalPropnetMCSManager(new PnRandomPlayout(thePropnetMachine),
 		        		thePropnetMachine, internalPlayingRole, maxSearchDepth, r);
 
 		        try{
 		        	GamerLogger.log("MCSSpeedTest", "Starting search.");
 
 		        	MCSmanager.search(thePropnetMachine.getInternalInitialState(), System.currentTimeMillis() + testTime);
-		        	CompleteMoveStats finalMove = MCSmanager.getBestMove();
+		        	PnCompleteMoveStats finalMove = MCSmanager.getBestMove();
 
 		        	GamerLogger.log("MCSSpeedTest", "Search ended correctly.");
 		        	chosenMove = thePropnetMachine.internalMoveToMove(finalMove.getTheMove());

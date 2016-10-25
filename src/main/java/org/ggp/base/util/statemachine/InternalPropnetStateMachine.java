@@ -14,6 +14,9 @@ import org.ggp.base.util.statemachine.exceptions.TransitionDefinitionException;
 import org.ggp.base.util.statemachine.inernalPropnetStructure.InternalPropnetMachineState;
 import org.ggp.base.util.statemachine.inernalPropnetStructure.InternalPropnetMove;
 import org.ggp.base.util.statemachine.inernalPropnetStructure.InternalPropnetRole;
+import org.ggp.base.util.statemachine.proverStructure.ProverMachineState;
+import org.ggp.base.util.statemachine.proverStructure.ProverMove;
+import org.ggp.base.util.statemachine.proverStructure.ProverRole;
 
 /**
  * Provides the base class for all state machine implementations that are based on the version
@@ -95,17 +98,17 @@ public abstract class InternalPropnetStateMachine extends StateMachine{
 
 	/************************************** Translation methods **************************************/
 
-	public abstract InternalPropnetMachineState stateToInternalState(MachineState state);
+	public abstract InternalPropnetMachineState stateToInternalState(ProverMachineState state);
 
-	public abstract MachineState internalStateToState(InternalPropnetMachineState state);
+	public abstract ProverMachineState internalStateToState(InternalPropnetMachineState state);
 
-	public abstract Role internalRoleToRole(InternalPropnetRole role);
+	public abstract ProverRole internalRoleToRole(InternalPropnetRole role);
 
-	public abstract InternalPropnetRole roleToInternalRole(Role role);
+	public abstract InternalPropnetRole roleToInternalRole(ProverRole role);
 
-	public abstract Move internalMoveToMove(InternalPropnetMove move);
+	public abstract ProverMove internalMoveToMove(InternalPropnetMove move);
 
-	public abstract InternalPropnetMove moveToInternalMove(Move move);
+	public abstract InternalPropnetMove moveToInternalMove(ProverMove move);
 
 	/**
 	 * Useful when we need to translate a joint move. Faster than translating the moves one by one.
@@ -114,7 +117,7 @@ public abstract class InternalPropnetStateMachine extends StateMachine{
 	 * @param roleIndex
 	 * @return
 	 */
-	public abstract List<InternalPropnetMove> movesToInternalMoves(List<Move> moves);
+	public abstract List<InternalPropnetMove> movesToInternalMoves(List<ProverMove> moves);
 
 
 	/***************** Extra methods to replace the ones offered by the StateMachine *****************/

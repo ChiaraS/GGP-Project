@@ -7,7 +7,6 @@ import java.util.List;
 import java.util.Set;
 
 import org.ggp.base.util.loader.RemoteResourceLoader;
-import org.ggp.base.util.statemachine.Move;
 import org.ggp.base.util.statemachine.StateMachine;
 import org.ggp.base.util.statemachine.exceptions.GoalDefinitionException;
 import org.ggp.base.util.statemachine.exceptions.MoveDefinitionException;
@@ -15,6 +14,7 @@ import org.ggp.base.util.statemachine.exceptions.StateMachineException;
 import org.ggp.base.util.statemachine.exceptions.StateMachineInitializationException;
 import org.ggp.base.util.statemachine.exceptions.TransitionDefinitionException;
 import org.ggp.base.util.statemachine.implementation.prover.ProverStateMachine;
+import org.ggp.base.util.statemachine.proverStructure.ProverMove;
 import org.ggp.base.util.symbol.factory.exceptions.SymbolFormatException;
 
 import external.JSON.JSONArray;
@@ -92,12 +92,12 @@ public class ImportSanchoCases {
 			if (flipAcceptableMoves) {
 				StateMachine theMachine = new ProverStateMachine();
 				theMachine.initialize(PlayerTester.getMediasResGame(gameKey, theState).getRules(), Long.MAX_VALUE);
-				List<Move> legalMoves = theMachine.getLegalMoves(theMachine.getInitialState(), theMachine.getRoles().get(thePlayerID));
+				List<ProverMove> legalMoves = theMachine.getLegalMoves(theMachine.getInitialState(), theMachine.getRoles().get(thePlayerID));
 				Set<String> newAcceptableMoves = new HashSet<String>();
-				for (Move move : legalMoves) {
+				for (ProverMove move : legalMoves) {
 					if (!acceptableMoves.contains(move.toString())) newAcceptableMoves.add(move.toString());
 				}
-				if (acceptableMoves.size() + newAcceptableMoves.size() != legalMoves.size()) throw new RuntimeException("Acceptable move size mismatch: " + Arrays.deepToString(legalMoves.toArray(new Move[]{})) + " != " + Arrays.toString(acceptableMoves.toArray()) + " + " + Arrays.toString(newAcceptableMoves.toArray()));
+				if (acceptableMoves.size() + newAcceptableMoves.size() != legalMoves.size()) throw new RuntimeException("Acceptable move size mismatch: " + Arrays.deepToString(legalMoves.toArray(new ProverMove[]{})) + " != " + Arrays.toString(acceptableMoves.toArray()) + " + " + Arrays.toString(newAcceptableMoves.toArray()));
 				acceptableMoves = newAcceptableMoves;
 			}
 

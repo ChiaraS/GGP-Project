@@ -3,25 +3,25 @@ package org.ggp.base.player.gamer.event;
 import java.util.List;
 
 import org.ggp.base.util.observer.Event;
-import org.ggp.base.util.statemachine.Move;
+import org.ggp.base.util.statemachine.proverStructure.ProverMove;
 
 public final class GamerSelectedMoveEvent extends Event
 {
-	private final List<Move> moves;
-	private final Move selection;
+	private final List<ProverMove> moves;
+	private final ProverMove selection;
 	private final long time;
 
-	public GamerSelectedMoveEvent(List<Move> moves, Move selection, long time) {
+	public GamerSelectedMoveEvent(List<ProverMove> moves, ProverMove selection, long time) {
 		this.moves = moves;
 		this.selection = selection;
 		this.time = time;
 	}
 
-	public List<Move> getMoves() {
+	public List<ProverMove> getMoves() {
 		return moves;
 	}
 
-	public Move getSelection() {
+	public ProverMove getSelection() {
 		return selection;
 	}
 

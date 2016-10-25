@@ -1,12 +1,13 @@
 package org.ggp.base.util.statemachine.inernalPropnetStructure;
 
-import java.io.Serializable;
+import org.ggp.base.util.statemachine.Rrole;
+
 
 /**
  * This class represents a role as the index it has in the ordered list of roles.
  */
 @SuppressWarnings("serial")
-public class InternalPropnetRole implements Serializable{
+public class InternalPropnetRole extends Rrole{
 
     private final int index;
 

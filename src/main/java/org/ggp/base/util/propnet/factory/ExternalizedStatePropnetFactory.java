@@ -54,7 +54,7 @@ import org.ggp.base.util.propnet.architecture.externalizedState.components.Exter
 import org.ggp.base.util.propnet.architecture.externalizedState.components.ExternalizedStateProposition;
 import org.ggp.base.util.propnet.architecture.externalizedState.components.ExternalizedStateTransition;
 import org.ggp.base.util.propnet.utils.PROP_TYPE;
-import org.ggp.base.util.statemachine.Role;
+import org.ggp.base.util.statemachine.proverStructure.ProverRole;
 
 import com.google.common.collect.Lists;
 import com.google.common.collect.Multimap;
@@ -170,7 +170,7 @@ public class ExternalizedStatePropnetFactory {
 		if(verbose)
 			System.out.println("done");
 
-		List<Role> roles = Role.computeRoles(description);
+		List<ProverRole> roles = ProverRole.computeRoles(description);
 		Map<GdlSentence, ExternalizedStateComponent> components = new HashMap<GdlSentence, ExternalizedStateComponent>();
 		Map<GdlSentence, ExternalizedStateComponent> negations = new HashMap<GdlSentence, ExternalizedStateComponent>();
 		ExternalizedStateConstant trueComponent = new ExternalizedStateConstant(true);

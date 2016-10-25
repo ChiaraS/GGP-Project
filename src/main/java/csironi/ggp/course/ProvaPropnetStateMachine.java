@@ -4,9 +4,9 @@ import java.util.List;
 
 import org.ggp.base.util.game.Game;
 import org.ggp.base.util.gdl.grammar.Gdl;
-import org.ggp.base.util.statemachine.MachineState;
 import org.ggp.base.util.statemachine.exceptions.StateMachineInitializationException;
 import org.ggp.base.util.statemachine.implementation.propnet.CheckFwdInterrPropnetStateMachine;
+import org.ggp.base.util.statemachine.proverStructure.ProverMachineState;
 
 /**
  * This class checks if, given the GDL game description, the propnet state machine
@@ -26,7 +26,7 @@ public class ProvaPropnetStateMachine {
 		CheckFwdInterrPropnetStateMachine m = new CheckFwdInterrPropnetStateMachine(300000);
 		m.initialize(BeLList, Long.MAX_VALUE);
 
-		MachineState initialState = m.getInitialState();
+		ProverMachineState initialState = m.getInitialState();
 
 		if(initialState == null){
 			System.out.println("Something went wrong with initial state computation!");

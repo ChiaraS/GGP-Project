@@ -12,9 +12,6 @@ import org.ggp.base.util.game.GameRepository;
 import org.ggp.base.util.gdl.grammar.Gdl;
 import org.ggp.base.util.gdl.transforms.DistinctAndNotMover;
 import org.ggp.base.util.logging.GamerLogger;
-import org.ggp.base.util.statemachine.MachineState;
-import org.ggp.base.util.statemachine.Move;
-import org.ggp.base.util.statemachine.Role;
 import org.ggp.base.util.statemachine.exceptions.GoalDefinitionException;
 import org.ggp.base.util.statemachine.exceptions.MoveDefinitionException;
 import org.ggp.base.util.statemachine.exceptions.StateMachineException;
@@ -23,6 +20,9 @@ import org.ggp.base.util.statemachine.exceptions.TransitionDefinitionException;
 import org.ggp.base.util.statemachine.implementation.prover.ProverStateMachine;
 import org.ggp.base.util.statemachine.implementation.yapProlog.YapStateMachine;
 import org.ggp.base.util.statemachine.implementation.yapProlog.transform.YapRenderer;
+import org.ggp.base.util.statemachine.proverStructure.ProverMachineState;
+import org.ggp.base.util.statemachine.proverStructure.ProverMove;
+import org.ggp.base.util.statemachine.proverStructure.ProverRole;
 
 import com.declarativa.interprolog.YAPSubprocessEngine;
 
@@ -97,13 +97,13 @@ public class ProvaYap {
 		}
 
 		start = System.currentTimeMillis();
-		MachineState currentState = machine.getInitialState();
+		ProverMachineState currentState = machine.getInitialState();
 		System.out.println("GET_INITIAL_STATE: " + (System.currentTimeMillis() - start) + "ms.");
 
 		GamerLogger.log("ProvaStepByStep", "Initial state: " + currentState.toString());
 
 		start = System.currentTimeMillis();
-		List<Role> roles = machine.getRoles();
+		List<ProverRole> roles = machine.getRoles();
 		System.out.println("GET_ROLES: " + (System.currentTimeMillis() - start) + "ms.");
 
 		GamerLogger.log("ProvaStepByStep", "Roles: " + roles.toString());
@@ -122,10 +122,10 @@ public class ProvaYap {
 
 		while(!terminal){
 
-			List<Move> jointMove = new ArrayList<Move>();
+			List<ProverMove> jointMove = new ArrayList<ProverMove>();
 
-			for(Role r : roles){
-				List<Move> moves;
+			for(ProverRole r : roles){
+				List<ProverMove> moves;
 				start = System.currentTimeMillis();
 				try {
 					moves = machine.getLegalMoves(currentState, r);
@@ -179,7 +179,7 @@ public class ProvaYap {
 
 		}
 
-		for(Role r : roles){
+		for(ProverRole r : roles){
 			int goal;
 			start = System.currentTimeMillis();
 			try {

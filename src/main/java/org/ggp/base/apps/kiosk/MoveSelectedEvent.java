@@ -1,22 +1,22 @@
 package org.ggp.base.apps.kiosk;
 
 import org.ggp.base.util.observer.Event;
-import org.ggp.base.util.statemachine.Move;
+import org.ggp.base.util.statemachine.proverStructure.ProverMove;
 
 public class MoveSelectedEvent extends Event {
-    private Move theMove;
+    private ProverMove theMove;
     private boolean isFinal = false;
 
-    public MoveSelectedEvent(Move m) {
+    public MoveSelectedEvent(ProverMove m) {
         theMove = m;
     }
 
-    public MoveSelectedEvent(Move m, boolean isFinal) {
+    public MoveSelectedEvent(ProverMove m, boolean isFinal) {
     	theMove = m;
     	this.isFinal = isFinal;
     }
 
-    public Move getMove() {
+    public ProverMove getMove() {
         return theMove;
     }
 

@@ -1,10 +1,10 @@
 package org.ggp.base.player.gamer.statemachine.MCTS.manager.prover.strategies.playout;
 
-import org.ggp.base.player.gamer.statemachine.MCTS.manager.propnet.strategies.Strategy;
-import org.ggp.base.player.gamer.statemachine.MCTS.manager.prover.treestructure.ProverSimulationResult;
-import org.ggp.base.util.statemachine.MachineState;
+import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.strategies.Strategy;
+import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.prover.ProverSimulationResult;
+import org.ggp.base.util.statemachine.proverStructure.ProverMachineState;
 
 public interface ProverPlayoutStrategy extends Strategy{
 
-	public ProverSimulationResult playout(MachineState state, int maxDepth);
+	public ProverSimulationResult playout(ProverMachineState state, int maxDepth);
 }

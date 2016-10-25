@@ -7,19 +7,19 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 
 import org.apache.logging.log4j.ThreadContext;
-import org.ggp.base.player.gamer.statemachine.MCS.manager.propnet.CompleteMoveStats;
+import org.ggp.base.player.gamer.statemachine.MCS.manager.propnet.PnCompleteMoveStats;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.propnet.InternalPropnetMCTSManager;
-import org.ggp.base.player.gamer.statemachine.MCTS.manager.propnet.strategies.backpropagation.StandardBackpropagation;
-import org.ggp.base.player.gamer.statemachine.MCTS.manager.propnet.strategies.expansion.RandomExpansion;
-import org.ggp.base.player.gamer.statemachine.MCTS.manager.propnet.strategies.movechoice.MaximumScoreChoice;
-import org.ggp.base.player.gamer.statemachine.MCTS.manager.propnet.strategies.playout.RandomPlayout;
-import org.ggp.base.player.gamer.statemachine.MCTS.manager.propnet.strategies.selection.UCTSelection;
-import org.ggp.base.player.gamer.statemachine.MCTS.manager.propnet.strategies.selection.evaluators.UCTEvaluator;
-import org.ggp.base.player.gamer.statemachine.MCTS.manager.propnet.treestructure.MCTSNode;
-import org.ggp.base.player.gamer.statemachine.MCTS.manager.propnet.treestructure.TreeNodeFactory;
-import org.ggp.base.player.gamer.statemachine.MCTS.manager.propnet.treestructure.decoupled.PnDecoupledTreeNodeFactory;
-import org.ggp.base.player.gamer.statemachine.MCTS.manager.propnet.treestructure.sequential.PnSequentialTreeNodeFactory;
-import org.ggp.base.player.gamer.statemachine.MCTS.manager.propnet.treestructure.slowsequential.PnSlowSequentialTreeNodeFactory;
+import org.ggp.base.player.gamer.statemachine.MCTS.manager.propnet.strategies.backpropagation.PnStandardBackpropagation;
+import org.ggp.base.player.gamer.statemachine.MCTS.manager.propnet.strategies.expansion.PnRandomExpansion;
+import org.ggp.base.player.gamer.statemachine.MCTS.manager.propnet.strategies.movechoice.PnMaximumScoreChoice;
+import org.ggp.base.player.gamer.statemachine.MCTS.manager.propnet.strategies.playout.PnRandomPlayout;
+import org.ggp.base.player.gamer.statemachine.MCTS.manager.propnet.strategies.selection.PnUCTSelection;
+import org.ggp.base.player.gamer.statemachine.MCTS.manager.propnet.strategies.selection.evaluators.PnUCTEvaluator;
+import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.MCTSNode;
+import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.propnet.PnTreeNodeFactory;
+import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.propnet.decoupled.PnDecoupledTreeNodeFactory;
+import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.propnet.sequential.PnSequentialTreeNodeFactory;
+import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.propnet.slowsequential.PnSlowSequentialTreeNodeFactory;
 import org.ggp.base.util.game.GameRepository;
 import org.ggp.base.util.game.ManualUpdateLocalGameRepository;
 import org.ggp.base.util.gdl.grammar.Gdl;
@@ -31,13 +31,13 @@ import org.ggp.base.util.propnet.architecture.separateExtendedState.immutable.Im
 import org.ggp.base.util.propnet.creationManager.SeparateInternalPropnetManager;
 import org.ggp.base.util.propnet.state.ImmutableSeparatePropnetState;
 import org.ggp.base.util.statemachine.InternalPropnetStateMachine;
-import org.ggp.base.util.statemachine.Move;
-import org.ggp.base.util.statemachine.Role;
 import org.ggp.base.util.statemachine.exceptions.MoveDefinitionException;
 import org.ggp.base.util.statemachine.exceptions.StateMachineException;
 import org.ggp.base.util.statemachine.exceptions.StateMachineInitializationException;
 import org.ggp.base.util.statemachine.implementation.propnet.SeparateInternalPropnetStateMachine;
 import org.ggp.base.util.statemachine.inernalPropnetStructure.InternalPropnetRole;
+import org.ggp.base.util.statemachine.proverStructure.ProverMove;
+import org.ggp.base.util.statemachine.proverStructure.ProverRole;
 
 
 /**
@@ -219,8 +219,8 @@ public class MCTSSpeedTest {
 	        int visitedNodes = -1;
 	        double iterationsPerSecond = -1;
 	        double nodesPerSecond = -1;
-	        Role playingRole = null;
-	        Move chosenMove = null;
+	        ProverRole playingRole = null;
+	        ProverMove chosenMove = null;
 	        double scoresSum = -1.0;
 	        int visits = -1;
 	        double averageScore = -1;
@@ -270,7 +270,7 @@ public class MCTSSpeedTest {
 		        playingRole = thePropnetMachine.internalRoleToRole(internalPlayingRole);
 		        numRoles = thePropnetMachine.getInternalRoles().length;
 
-		        TreeNodeFactory theNodeFactory;
+		        PnTreeNodeFactory theNodeFactory;
 
 		        switch(mctsType){
 		        	case "SUCT":
@@ -285,17 +285,17 @@ public class MCTSSpeedTest {
 		        }
 
 		        InternalPropnetMCTSManager MCTSmanager = new InternalPropnetMCTSManager(
-		        		new UCTSelection(numRoles, internalPlayingRole, r, uctOffset, new UCTEvaluator(c, unexploredMoveDefaultSelectionValue)),
-		        		new RandomExpansion(numRoles, internalPlayingRole, r), new RandomPlayout(thePropnetMachine),
-		        		new StandardBackpropagation(numRoles, internalPlayingRole),
-		        		new MaximumScoreChoice(internalPlayingRole, r), null, null, null, theNodeFactory,
+		        		new PnUCTSelection(numRoles, internalPlayingRole, r, uctOffset, new PnUCTEvaluator(c, unexploredMoveDefaultSelectionValue)),
+		        		new PnRandomExpansion(numRoles, internalPlayingRole, r), new PnRandomPlayout(thePropnetMachine),
+		        		new PnStandardBackpropagation(numRoles, internalPlayingRole),
+		        		new PnMaximumScoreChoice(internalPlayingRole, r), null, null, null, theNodeFactory,
 		        		thePropnetMachine, gameStepOffset, maxSearchDepth, false);
 
 		        try{
 		        	GamerLogger.log(mctsType + "MCTSSpeedTest", "Starting search.");
 
 		        	MCTSNode initialNode = MCTSmanager.search(thePropnetMachine.getInternalInitialState(), System.currentTimeMillis() + testTime, gameStep);
-		        	CompleteMoveStats finalMove = MCTSmanager.getBestMove(initialNode);
+		        	PnCompleteMoveStats finalMove = MCTSmanager.getBestMove(initialNode);
 
 		        	GamerLogger.log(mctsType + "MCTSSpeedTest", "Search ended correctly.");
 		        	chosenMove = thePropnetMachine.internalMoveToMove(finalMove.getTheMove());

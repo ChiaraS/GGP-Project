@@ -13,9 +13,9 @@ import org.ggp.base.util.gdl.grammar.GdlPool;
 import org.ggp.base.util.logging.GamerLogger;
 import org.ggp.base.util.logging.GamerLogger.FORMAT;
 import org.ggp.base.util.match.Match;
-import org.ggp.base.util.statemachine.Move;
-import org.ggp.base.util.statemachine.Role;
 import org.ggp.base.util.statemachine.implementation.prover.ProverStateMachine;
+import org.ggp.base.util.statemachine.proverStructure.ProverMove;
+import org.ggp.base.util.statemachine.proverStructure.ProverRole;
 
 /**
 * This class checks the speed (nodes/second, iterations/second) of the MCS player
@@ -136,8 +136,8 @@ public class ProverMCSSpeedTest {
 	        int visitedNodes = -1;
 	        double iterationsPerSecond = -1;
 	        double nodesPerSecond = -1;
-	        Role playingRole = null;
-	        Move chosenMove = null;
+	        ProverRole playingRole = null;
+	        ProverMove chosenMove = null;
 	        double scoresSum = -1.0;
 	        int visits = -1;
 	        double averageScore = -1;

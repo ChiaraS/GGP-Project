@@ -1,19 +1,19 @@
 package org.ggp.base.server.event;
 
 import org.ggp.base.util.observer.Event;
-import org.ggp.base.util.statemachine.MachineState;
+import org.ggp.base.util.statemachine.proverStructure.ProverMachineState;
 
 
 public final class ServerNewGameStateEvent extends Event
 {
-	private final MachineState state;
+	private final ProverMachineState state;
 
-	public ServerNewGameStateEvent(MachineState state)
+	public ServerNewGameStateEvent(ProverMachineState state)
 	{
 		this.state = state;
 	}
 
-	public MachineState getState()
+	public ProverMachineState getState()
 	{
 		return state;
 	}

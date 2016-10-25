@@ -3,29 +3,29 @@ package org.ggp.base.server.event;
 import java.io.Serializable;
 
 import org.ggp.base.util.observer.Event;
-import org.ggp.base.util.statemachine.Move;
-import org.ggp.base.util.statemachine.Role;
+import org.ggp.base.util.statemachine.proverStructure.ProverMove;
+import org.ggp.base.util.statemachine.proverStructure.ProverRole;
 
 
 @SuppressWarnings("serial")
 public final class ServerIllegalMoveEvent extends Event implements Serializable
 {
 
-	private final Move move;
-	private final Role role;
+	private final ProverMove move;
+	private final ProverRole role;
 
-	public ServerIllegalMoveEvent(Role role, Move move)
+	public ServerIllegalMoveEvent(ProverRole role, ProverMove move)
 	{
 		this.role = role;
 		this.move = move;
 	}
 
-	public Move getMove()
+	public ProverMove getMove()
 	{
 		return move;
 	}
 
-	public Role getRole()
+	public ProverRole getRole()
 	{
 		return role;
 	}

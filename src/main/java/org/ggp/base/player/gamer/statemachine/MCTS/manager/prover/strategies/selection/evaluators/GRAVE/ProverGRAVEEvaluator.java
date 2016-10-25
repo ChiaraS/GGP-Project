@@ -3,9 +3,9 @@ package org.ggp.base.player.gamer.statemachine.MCTS.manager.prover.strategies.se
 import java.util.Map;
 
 import org.ggp.base.player.gamer.statemachine.MCS.manager.MoveStats;
-import org.ggp.base.player.gamer.statemachine.MCTS.manager.propnet.strategies.selection.evaluators.GRAVE.BetaComputer;
+import org.ggp.base.player.gamer.statemachine.MCTS.manager.propnet.strategies.selection.evaluators.GRAVE.PnBetaComputer;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.prover.strategies.selection.evaluators.ProverUCTEvaluator;
-import org.ggp.base.util.statemachine.Move;
+import org.ggp.base.util.statemachine.proverStructure.ProverMove;
 
 public class ProverGRAVEEvaluator extends ProverUCTEvaluator {
 
@@ -14,13 +14,13 @@ public class ProverGRAVEEvaluator extends ProverUCTEvaluator {
 	 * to make the statistics reliable. This reference will be updated every time the current
 	 * node being checked has enough visits to use its own AMAF statistics.
 	 */
-	private Map<Move, MoveStats> closerAmafStats;
+	private Map<ProverMove, MoveStats> closerAmafStats;
 
-	private BetaComputer betaComputer;
+	private PnBetaComputer betaComputer;
 
 	private double defaultExploration;
 
-	public ProverGRAVEEvaluator(double c, double defaultValue, BetaComputer betaComputer, double defaultExploration) {
+	public ProverGRAVEEvaluator(double c, double defaultValue, PnBetaComputer betaComputer, double defaultExploration) {
 		super(c, defaultValue);
 		this.betaComputer = betaComputer;
 		this.closerAmafStats = null;
@@ -28,7 +28,7 @@ public class ProverGRAVEEvaluator extends ProverUCTEvaluator {
 	}
 
 	@Override
-	protected double computeExploitation(int nodeVisits, Move theMove, MoveStats theMoveStats){
+	protected double computeExploitation(int nodeVisits, ProverMove theMove, MoveStats theMoveStats){
 
 		double uctExploitation = super.computeExploitation(nodeVisits, theMove, theMoveStats);
 
@@ -88,11 +88,11 @@ public class ProverGRAVEEvaluator extends ProverUCTEvaluator {
 
 	}
 
-	public void setCloserAmafStats(Map<Move, MoveStats> closerAmafStats){
+	public void setCloserAmafStats(Map<ProverMove, MoveStats> closerAmafStats){
 		this.closerAmafStats = closerAmafStats;
 	}
 
-	public Map<Move, MoveStats> getCloserAmafStats(){
+	public Map<ProverMove, MoveStats> getCloserAmafStats(){
 		return this.closerAmafStats;
 	}
 

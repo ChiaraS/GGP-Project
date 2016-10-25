@@ -5,16 +5,16 @@ import java.util.Random;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.evolution.Individual;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.evolution.SingleParameterEvolutionManager;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.propnet.InternalPropnetMCTSManager;
-import org.ggp.base.player.gamer.statemachine.MCTS.manager.propnet.strategies.aftermove.EvoAfterMove;
-import org.ggp.base.player.gamer.statemachine.MCTS.manager.propnet.strategies.aftersimulation.EvoAfterSimulation;
-import org.ggp.base.player.gamer.statemachine.MCTS.manager.propnet.strategies.backpropagation.StandardBackpropagation;
-import org.ggp.base.player.gamer.statemachine.MCTS.manager.propnet.strategies.beforesimulation.EvoBeforeSimulation;
-import org.ggp.base.player.gamer.statemachine.MCTS.manager.propnet.strategies.expansion.RandomExpansion;
-import org.ggp.base.player.gamer.statemachine.MCTS.manager.propnet.strategies.movechoice.MaximumScoreChoice;
-import org.ggp.base.player.gamer.statemachine.MCTS.manager.propnet.strategies.playout.RandomPlayout;
-import org.ggp.base.player.gamer.statemachine.MCTS.manager.propnet.strategies.selection.UCTSelection;
-import org.ggp.base.player.gamer.statemachine.MCTS.manager.propnet.strategies.selection.evaluators.UCTEvaluator;
-import org.ggp.base.player.gamer.statemachine.MCTS.manager.propnet.treestructure.decoupled.PnDecoupledTreeNodeFactory;
+import org.ggp.base.player.gamer.statemachine.MCTS.manager.propnet.strategies.aftermove.PnEvoAfterMove;
+import org.ggp.base.player.gamer.statemachine.MCTS.manager.propnet.strategies.aftersimulation.PnEvoAfterSimulation;
+import org.ggp.base.player.gamer.statemachine.MCTS.manager.propnet.strategies.backpropagation.PnStandardBackpropagation;
+import org.ggp.base.player.gamer.statemachine.MCTS.manager.propnet.strategies.beforesimulation.PnEvoBeforeSimulation;
+import org.ggp.base.player.gamer.statemachine.MCTS.manager.propnet.strategies.expansion.PnRandomExpansion;
+import org.ggp.base.player.gamer.statemachine.MCTS.manager.propnet.strategies.movechoice.PnMaximumScoreChoice;
+import org.ggp.base.player.gamer.statemachine.MCTS.manager.propnet.strategies.playout.PnRandomPlayout;
+import org.ggp.base.player.gamer.statemachine.MCTS.manager.propnet.strategies.selection.PnUCTSelection;
+import org.ggp.base.player.gamer.statemachine.MCTS.manager.propnet.strategies.selection.evaluators.PnUCTEvaluator;
+import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.propnet.decoupled.PnDecoupledTreeNodeFactory;
 import org.ggp.base.util.statemachine.inernalPropnetStructure.InternalPropnetRole;
 
 
@@ -56,7 +56,7 @@ public class CTunerDuctMctsGamer extends DuctMctsGamer {
 		InternalPropnetRole myRole = this.thePropnetMachine.roleToInternalRole(this.getRole());
 		int numRoles = this.thePropnetMachine.getInternalRoles().length;
 
-		UCTEvaluator evaluator = new UCTEvaluator(this.c, this.unexploredMoveDefaultSelectionValue);
+		PnUCTEvaluator evaluator = new PnUCTEvaluator(this.c, this.unexploredMoveDefaultSelectionValue);
 
 		Individual[] individuals = new Individual[this.individualsValues.length];
 
@@ -66,11 +66,11 @@ public class CTunerDuctMctsGamer extends DuctMctsGamer {
 
 		SingleParameterEvolutionManager evolutionManager = new SingleParameterEvolutionManager(r, this.evoC, this.evoValueOffset, individuals);
 
-		return new InternalPropnetMCTSManager(new UCTSelection(numRoles, myRole, r, this.valueOffset, evaluator),
-	       		new RandomExpansion(numRoles, myRole, r), new RandomPlayout(this.thePropnetMachine),
-	       		new StandardBackpropagation(numRoles, myRole), new MaximumScoreChoice(myRole, r),
-	       		new EvoBeforeSimulation(evolutionManager, evaluator), new EvoAfterSimulation(evolutionManager, myRole),
-	       		new EvoAfterMove(evolutionManager), new PnDecoupledTreeNodeFactory(this.thePropnetMachine),
+		return new InternalPropnetMCTSManager(new PnUCTSelection(numRoles, myRole, r, this.valueOffset, evaluator),
+	       		new PnRandomExpansion(numRoles, myRole, r), new PnRandomPlayout(this.thePropnetMachine),
+	       		new PnStandardBackpropagation(numRoles, myRole), new PnMaximumScoreChoice(myRole, r),
+	       		new PnEvoBeforeSimulation(evolutionManager, evaluator), new PnEvoAfterSimulation(evolutionManager, myRole),
+	       		new PnEvoAfterMove(evolutionManager), new PnDecoupledTreeNodeFactory(this.thePropnetMachine),
 	       		this.thePropnetMachine,	this.gameStepOffset, this.maxSearchDepth, this.logTranspositionTable);
 	}
 

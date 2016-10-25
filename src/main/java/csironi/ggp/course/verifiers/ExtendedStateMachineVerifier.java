@@ -6,14 +6,14 @@ import java.util.List;
 import java.util.Set;
 
 import org.ggp.base.util.logging.GamerLogger;
-import org.ggp.base.util.statemachine.MachineState;
-import org.ggp.base.util.statemachine.Move;
-import org.ggp.base.util.statemachine.Role;
 import org.ggp.base.util.statemachine.StateMachine;
 import org.ggp.base.util.statemachine.exceptions.GoalDefinitionException;
 import org.ggp.base.util.statemachine.exceptions.MoveDefinitionException;
 import org.ggp.base.util.statemachine.exceptions.StateMachineException;
 import org.ggp.base.util.statemachine.exceptions.TransitionDefinitionException;
+import org.ggp.base.util.statemachine.proverStructure.ProverMachineState;
+import org.ggp.base.util.statemachine.proverStructure.ProverMove;
+import org.ggp.base.util.statemachine.proverStructure.ProverRole;
 
 /**
  * This class has a method that verifies the consistency of the answers returned by a state machine
@@ -98,7 +98,7 @@ public class ExtendedStateMachineVerifier {
 
         		//System.out.print(".");
 
-            	MachineState[] theCurrentStates = new MachineState[theMachines.size()];
+            	ProverMachineState[] theCurrentStates = new ProverMachineState[theMachines.size()];
             	for(int i = 0; i < theMachines.size(); i++) {
             		theCurrentStates[i] = theMachines.get(i).getInitialState();
 
@@ -129,13 +129,13 @@ public class ExtendedStateMachineVerifier {
 				        // If check fails for current subject (NOT BECAUSE THE SUBJECT STATE MACHINE FAILS!),
 				    	// go check the next.
 				    	try{
-					    	for(Role theRole : theMachines.get(0).getRoles()) {
+					    	for(ProverRole theRole : theMachines.get(0).getRoles()) {
 					            // If check fails for current role (NOT BECAUSE THE SUBJECT STATE MACHINE FAILS!) go
 					    		// check the next.
 					        	try{
 
-					            	List<Move> referenceMoves = theMachines.get(0).getLegalMoves(theCurrentStates[0], theRole);
-					            	List<Move> subjectMoves = null;
+					            	List<ProverMove> referenceMoves = theMachines.get(0).getLegalMoves(theCurrentStates[0], theRole);
+					            	List<ProverMove> subjectMoves = null;
 
 					            	try{
 					            		// We can assume that if this instruction throws an exception is because of the
@@ -169,8 +169,8 @@ public class ExtendedStateMachineVerifier {
 					            	}
 
 					            	// Transform from lists to sets then check equality
-					            	Set<Move> referenceSet = new HashSet<Move>(referenceMoves);
-					            	Set<Move> subjectSet = new HashSet<Move>(subjectMoves);
+					            	Set<ProverMove> referenceSet = new HashSet<ProverMove>(referenceMoves);
+					            	Set<ProverMove> subjectSet = new HashSet<ProverMove>(subjectMoves);
 
 					                if(!(subjectMoves.size() == referenceMoves.size())) {
 					                    GamerLogger.log("Verifier", "Inconsistency between machine #" + i + " and ProverStateMachine over state " + theCurrentStates[0] + " vs " + theCurrentStates[i].getContents());
@@ -218,7 +218,7 @@ public class ExtendedStateMachineVerifier {
 
 				    // Proceed on to the next state with the reference state machine.
 				    // If these instructions throw an exception, proceed to check the next iteration.
-				    List<Move> theJointMove = theMachines.get(0).getRandomJointMove(theCurrentStates[0]);
+				    List<ProverMove> theJointMove = theMachines.get(0).getRandomJointMove(theCurrentStates[0]);
 				    theCurrentStates[0] = theMachines.get(0).getNextState(theCurrentStates[0], theJointMove);
 
 				    // Proceed on to the next state with all other subject state machines.
@@ -286,7 +286,7 @@ public class ExtendedStateMachineVerifier {
 						return false;
 					}
 
-	                for(Role theRole : theMachines.get(0).getRoles()){
+	                for(ProverRole theRole : theMachines.get(0).getRoles()){
 
 	                	int referenceGoal = -1;
 	                	int subjectGoal = -2;

@@ -8,12 +8,12 @@ import java.io.IOException;
 import org.ggp.base.util.game.Game;
 import org.ggp.base.util.logging.GamerLogger;
 import org.ggp.base.util.statemachine.InternalPropnetStateMachine;
-import org.ggp.base.util.statemachine.MachineState;
 import org.ggp.base.util.statemachine.StateMachine;
 import org.ggp.base.util.statemachine.exceptions.StateMachineException;
 import org.ggp.base.util.statemachine.exceptions.TransitionDefinitionException;
 import org.ggp.base.util.statemachine.implementation.propnet.SelfInitSeparateInternalPropNetStateMachine;
 import org.ggp.base.util.statemachine.implementation.prover.ProverStateMachine;
+import org.ggp.base.util.statemachine.proverStructure.ProverMachineState;
 
 public class Benchmark {
 
@@ -134,7 +134,7 @@ public class Benchmark {
 
 	private void runTrace(Trace trace) {
 		int stepCounter = 0;
-		MachineState state = stateMachine.getInitialState();
+		ProverMachineState state = stateMachine.getInitialState();
 		boolean isTerminal = false;
 		try {
 			isTerminal = stateMachine.isTerminal(state);

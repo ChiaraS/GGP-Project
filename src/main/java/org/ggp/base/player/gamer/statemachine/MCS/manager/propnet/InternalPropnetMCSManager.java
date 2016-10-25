@@ -8,8 +8,8 @@ import java.util.List;
 import java.util.Random;
 
 import org.ggp.base.player.gamer.statemachine.MCS.manager.MCSException;
-import org.ggp.base.player.gamer.statemachine.MCTS.manager.propnet.strategies.playout.PlayoutStrategy;
-import org.ggp.base.player.gamer.statemachine.MCTS.manager.propnet.treestructure.SimulationResult;
+import org.ggp.base.player.gamer.statemachine.MCTS.manager.propnet.strategies.playout.PnPlayoutStrategy;
+import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.propnet.PnSimulationResult;
 import org.ggp.base.util.logging.GamerLogger;
 import org.ggp.base.util.statemachine.InternalPropnetStateMachine;
 import org.ggp.base.util.statemachine.exceptions.MoveDefinitionException;
@@ -32,12 +32,12 @@ public class InternalPropnetMCSManager {
 	/**
 	 * The statistics for all the legal moves for myRole in the state currently being searched.
 	 */
-	private CompleteMoveStats[] currentMovesStatistics;
+	private PnCompleteMoveStats[] currentMovesStatistics;
 
 	/**
 	 * The strategy that this MCS manager must use to perform playouts.
 	 */
-	private PlayoutStrategy playoutStrategy;
+	private PnPlayoutStrategy playoutStrategy;
 
 	/**
 	 * The state machine that this MCTS manager uses to reason on the game
@@ -82,7 +82,7 @@ public class InternalPropnetMCSManager {
 	/**
 	 *
 	 */
-	public InternalPropnetMCSManager(PlayoutStrategy playoutStrategy, InternalPropnetStateMachine theMachine, InternalPropnetRole myRole, int maxSearchDepth, Random random) {
+	public InternalPropnetMCSManager(PnPlayoutStrategy playoutStrategy, InternalPropnetStateMachine theMachine, InternalPropnetRole myRole, int maxSearchDepth, Random random) {
 
 		this.currentState = null;
 		this.currentMovesStatistics = null;
@@ -114,7 +114,7 @@ public class InternalPropnetMCSManager {
 
 	}
 
-	public CompleteMoveStats getBestMove() throws MCSException{
+	public PnCompleteMoveStats getBestMove() throws MCSException{
 
 		if(this.currentMovesStatistics!=null){
 			List<Integer> chosenMovesIndices = new ArrayList<Integer>();
@@ -197,10 +197,10 @@ public class InternalPropnetMCSManager {
 				throw new MCSException("Impossible to perform search: legal moves cannot be computed and explored in the given state.", e);
 			}
 
-			this.currentMovesStatistics = new CompleteMoveStats[legalMoves.size()];
+			this.currentMovesStatistics = new PnCompleteMoveStats[legalMoves.size()];
 
 			for(int i = 0; i < this.currentMovesStatistics.length; i++){
-				this.currentMovesStatistics[i] = new CompleteMoveStats(legalMoves.get(i));
+				this.currentMovesStatistics[i] = new PnCompleteMoveStats(legalMoves.get(i));
 			}
 
 		} // Otherwise proceed with the search using the old statistics and updating them.
@@ -208,7 +208,7 @@ public class InternalPropnetMCSManager {
 		InternalPropnetMove myCurrentMove;
 		List<InternalPropnetMove> jointMove;
 		InternalPropnetMachineState nextState;
-		SimulationResult simulationResult;
+		PnSimulationResult simulationResult;
 		//int[] playoutVisitedNodes = new int[1];
 		int myGoal;
 

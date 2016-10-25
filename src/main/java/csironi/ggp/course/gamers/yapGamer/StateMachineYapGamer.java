@@ -13,15 +13,15 @@ import org.ggp.base.player.gamer.exception.MoveSelectionException;
 import org.ggp.base.player.gamer.exception.StoppingException;
 import org.ggp.base.util.gdl.grammar.GdlTerm;
 import org.ggp.base.util.logging.GamerLogger;
-import org.ggp.base.util.statemachine.MachineState;
-import org.ggp.base.util.statemachine.Move;
-import org.ggp.base.util.statemachine.Role;
 import org.ggp.base.util.statemachine.StateMachine;
 import org.ggp.base.util.statemachine.exceptions.GoalDefinitionException;
 import org.ggp.base.util.statemachine.exceptions.MoveDefinitionException;
 import org.ggp.base.util.statemachine.exceptions.StateMachineException;
 import org.ggp.base.util.statemachine.exceptions.StateMachineInitializationException;
 import org.ggp.base.util.statemachine.exceptions.TransitionDefinitionException;
+import org.ggp.base.util.statemachine.proverStructure.ProverMachineState;
+import org.ggp.base.util.statemachine.proverStructure.ProverMove;
+import org.ggp.base.util.statemachine.proverStructure.ProverRole;
 
 /**
  * The base class for Gamers that rely on representing games as state machines.
@@ -65,7 +65,7 @@ public abstract class StateMachineYapGamer extends Gamer {
      * @throws GoalDefinitionException
      * @throws StateMachineException
      */
-    public abstract Move stateMachineSelectMove(long timeout) throws TransitionDefinitionException, MoveDefinitionException, GoalDefinitionException, StateMachineException;
+    public abstract ProverMove stateMachineSelectMove(long timeout) throws TransitionDefinitionException, MoveDefinitionException, GoalDefinitionException, StateMachineException;
 
     /**
      * Defines any actions that the player takes upon the game cleanly ending.
@@ -84,7 +84,7 @@ public abstract class StateMachineYapGamer extends Gamer {
 	/**
 	 * Returns the current state of the game.
 	 */
-	public final MachineState getCurrentState()
+	public final ProverMachineState getCurrentState()
 	{
 		return currentState;
 	}
@@ -92,7 +92,7 @@ public abstract class StateMachineYapGamer extends Gamer {
 	/**
 	 * Returns the role that this gamer is playing as in the game.
 	 */
-	public final Role getRole()
+	public final ProverRole getRole()
 	{
 		return role;
 	}
@@ -132,13 +132,13 @@ public abstract class StateMachineYapGamer extends Gamer {
      */
     protected final void switchStateMachine(StateMachine newStateMachine) {
         try {
-            MachineState newCurrentState = newStateMachine.getInitialState();
-            Role newRole = newStateMachine.getRoleFromConstant(getRoleName());
+            ProverMachineState newCurrentState = newStateMachine.getInitialState();
+            ProverRole newRole = newStateMachine.getRoleFromConstant(getRoleName());
 
             // Attempt to run through the game history in the new machine
             List<List<GdlTerm>> theMoveHistory = getMatch().getMoveHistory();
             for(List<GdlTerm> nextMove : theMoveHistory) {
-                List<Move> theJointMove = new ArrayList<Move>();
+                List<ProverMove> theJointMove = new ArrayList<ProverMove>();
                 for(GdlTerm theSentence : nextMove)
                     theJointMove.add(newStateMachine.getMoveFromTerm(theSentence));
                 newCurrentState = newStateMachine.getNextStateDestructively(newCurrentState, theJointMove);
@@ -215,7 +215,7 @@ public abstract class StateMachineYapGamer extends Gamer {
 			List<GdlTerm> lastMoves = getMatch().getMostRecentMoves();
 			if (lastMoves != null)
 			{
-				List<Move> moves = new ArrayList<Move>();
+				List<ProverMove> moves = new ArrayList<ProverMove>();
 				for (GdlTerm sentence : lastMoves)
 				{
 					moves.add(stateMachine.getMoveFromTerm(sentence));
@@ -242,7 +242,7 @@ public abstract class StateMachineYapGamer extends Gamer {
 			List<GdlTerm> lastMoves = getMatch().getMostRecentMoves();
 			if (lastMoves != null)
 			{
-				List<Move> moves = new ArrayList<Move>();
+				List<ProverMove> moves = new ArrayList<ProverMove>();
 				for (GdlTerm sentence : lastMoves)
 				{
 					moves.add(stateMachine.getMoveFromTerm(sentence));
@@ -275,8 +275,8 @@ public abstract class StateMachineYapGamer extends Gamer {
 	}
 
     // Internal state about the current state of the state machine.
-    private Role role;
-    private MachineState currentState;
+    private ProverRole role;
+    private ProverMachineState currentState;
     private StateMachine stateMachine;
 
 }

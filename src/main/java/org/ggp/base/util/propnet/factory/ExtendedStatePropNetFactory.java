@@ -54,7 +54,7 @@ import org.ggp.base.util.propnet.architecture.extendedState.components.ExtendedS
 import org.ggp.base.util.propnet.architecture.extendedState.components.ExtendedStateOr;
 import org.ggp.base.util.propnet.architecture.extendedState.components.ExtendedStateProposition;
 import org.ggp.base.util.propnet.architecture.extendedState.components.ExtendedStateTransition;
-import org.ggp.base.util.statemachine.Role;
+import org.ggp.base.util.statemachine.proverStructure.ProverRole;
 
 import com.google.common.collect.HashMultiset;
 import com.google.common.collect.Iterables;
@@ -180,7 +180,7 @@ public class ExtendedStatePropNetFactory {
 			//GamerLogger.log("PropnetFactory", "done");
 		}
 
-		List<Role> roles = Role.computeRoles(description);
+		List<ProverRole> roles = ProverRole.computeRoles(description);
 		Map<GdlSentence, ExtendedStateComponent> components = new HashMap<GdlSentence, ExtendedStateComponent>();
 		Map<GdlSentence, ExtendedStateComponent> negations = new HashMap<GdlSentence, ExtendedStateComponent>();
 		ExtendedStateConstant trueComponent = new ExtendedStateConstant(true);

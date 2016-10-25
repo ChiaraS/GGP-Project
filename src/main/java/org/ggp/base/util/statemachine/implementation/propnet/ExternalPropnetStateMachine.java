@@ -15,9 +15,6 @@ import org.ggp.base.util.logging.GamerLogger;
 import org.ggp.base.util.propnet.architecture.externalizedState.ExternalizedStatePropNet;
 import org.ggp.base.util.propnet.architecture.externalizedState.components.ExternalizedStateProposition;
 import org.ggp.base.util.propnet.state.ImmutableSeparatePropnetState;
-import org.ggp.base.util.statemachine.MachineState;
-import org.ggp.base.util.statemachine.Move;
-import org.ggp.base.util.statemachine.Role;
 import org.ggp.base.util.statemachine.StateMachine;
 import org.ggp.base.util.statemachine.exceptions.MoveDefinitionException;
 import org.ggp.base.util.statemachine.exceptions.StateMachineException;
@@ -27,6 +24,9 @@ import org.ggp.base.util.statemachine.implementation.prover.query.ProverQueryBui
 import org.ggp.base.util.statemachine.inernalPropnetStructure.InternalPropnetMachineState;
 import org.ggp.base.util.statemachine.inernalPropnetStructure.InternalPropnetMove;
 import org.ggp.base.util.statemachine.inernalPropnetStructure.InternalPropnetRole;
+import org.ggp.base.util.statemachine.proverStructure.ProverMachineState;
+import org.ggp.base.util.statemachine.proverStructure.ProverMove;
+import org.ggp.base.util.statemachine.proverStructure.ProverRole;
 
 import com.google.common.collect.ImmutableList;
 
@@ -39,7 +39,7 @@ public class ExternalPropnetStateMachine extends StateMachine {
     private ImmutableSeparatePropnetState propnetState;
 
     /** The player roles */
-    private ImmutableList<Role> roles;
+    private ImmutableList<ProverRole> roles;
     /** The initial state */
     private InternalPropnetMachineState initialState;
 
@@ -81,7 +81,7 @@ public class ExternalPropnetStateMachine extends StateMachine {
 	 * @return true if the state is terminal, false otherwise.
 	 */
 	@Override
-	public boolean isTerminal(MachineState state) {
+	public boolean isTerminal(ProverMachineState state) {
 		return this.isTerminal(this.stateToExternalState(state));
 	}
 
@@ -121,7 +121,7 @@ public class ExternalPropnetStateMachine extends StateMachine {
 	//}
 
 	@Override
-	public List<Integer> getOneRoleGoals(MachineState state, Role role)
+	public List<Integer> getOneRoleGoals(ProverMachineState state, ProverRole role)
 			throws StateMachineException {
 		return this.getOneRoleGoals(this.stateToExternalState(state), this.roleToExternalRole(role));
 	}
@@ -176,7 +176,7 @@ public class ExternalPropnetStateMachine extends StateMachine {
 	 * this state machine has not been initialized, NULL will be returned.
 	 */
 	@Override
-	public MachineState getInitialState() {
+	public ProverMachineState getInitialState() {
 
 		/*
 		if(this.initialState == null){
@@ -214,8 +214,8 @@ public class ExternalPropnetStateMachine extends StateMachine {
 	 * If the state is not an extended propnet state, it is first transformed into one.
 	 */
 	@Override
-	public List<Move> getLegalMoves(MachineState state, Role role)throws MoveDefinitionException {
-		List<Move> moves = new ArrayList<Move>();
+	public List<ProverMove> getLegalMoves(ProverMachineState state, ProverRole role)throws MoveDefinitionException {
+		List<ProverMove> moves = new ArrayList<ProverMove>();
 		InternalPropnetRole externalRole = this.roleToExternalRole(role);
 		for(InternalPropnetMove m : this.getLegalMoves(this.stateToExternalState(state), externalRole)){
 			moves.add(this.externalMoveToMove(m));
@@ -259,7 +259,7 @@ public class ExternalPropnetStateMachine extends StateMachine {
 	 * If the state is not an extended propnet state, it is first transformed into one.
 	 */
 	@Override
-	public MachineState getNextState(MachineState state, List<Move> moves)throws TransitionDefinitionException {
+	public ProverMachineState getNextState(ProverMachineState state, List<ProverMove> moves)throws TransitionDefinitionException {
 		return this.externalStateToState(this.getNextState(this.stateToExternalState(state), this.moveToExternalMove(moves)));
 	}
 
@@ -279,7 +279,7 @@ public class ExternalPropnetStateMachine extends StateMachine {
 
 	/* Already implemented for you */
 	@Override
-	public List<Role> getRoles() {
+	public List<ProverRole> getRoles() {
 		return roles;
 	}
 
@@ -296,7 +296,7 @@ public class ExternalPropnetStateMachine extends StateMachine {
 	 * @param moves the moves to be translated into 'does' propositions.
 	 * @return a list with the 'does' propositions corresponding to the given joint move.
 	 */
-	private List<GdlSentence> toDoes(List<Move> moves){
+	private List<GdlSentence> toDoes(List<ProverMove> moves){
 
 		//AGGIUNTA
     	//System.out.println("TO DOES");
@@ -305,7 +305,7 @@ public class ExternalPropnetStateMachine extends StateMachine {
     	//FINE AGGIUNTA
 
 		List<GdlSentence> doeses = new ArrayList<GdlSentence>(moves.size());
-		Map<Role, Integer> roleIndices = getRoleIndices();
+		Map<ProverRole, Integer> roleIndices = getRoleIndices();
 
 		//AGGIUNTA
 		//System.out.println("ROLES");
@@ -346,8 +346,8 @@ public class ExternalPropnetStateMachine extends StateMachine {
 	 * @param p the proposition to be transformed into a move.
 	 * @return the move corresponding to the given proposition.
 	 */
-	public static Move getMoveFromProposition(ExternalizedStateProposition p){
-		return new Move(p.getName().get(1));
+	public static ProverMove getMoveFromProposition(ExternalizedStateProposition p){
+		return new ProverMove(p.getName().get(1));
 	}
 
 	/**
@@ -359,7 +359,7 @@ public class ExternalPropnetStateMachine extends StateMachine {
 	 * the state for each base proposition.
 	 */
 	// TODO IMPLEMENT
-	public InternalPropnetMachineState stateToExternalState(MachineState state){
+	public InternalPropnetMachineState stateToExternalState(ProverMachineState state){
 		if(state != null){
 			List<ExternalizedStateProposition> baseProps = this.propNet.getBasePropositions();
 			OpenBitSet basePropsTruthValues = new OpenBitSet(baseProps.size());
@@ -378,7 +378,7 @@ public class ExternalPropnetStateMachine extends StateMachine {
 	}
 
 	// TODO: IMPLEMENT
-	public MachineState externalStateToState(InternalPropnetMachineState state){
+	public ProverMachineState externalStateToState(InternalPropnetMachineState state){
 		if(state != null){
 			List<ExternalizedStateProposition> baseProps = this.propNet.getBasePropositions();
 			OpenBitSet basePropsTruthValues = state.getTruthValues();
@@ -390,14 +390,14 @@ public class ExternalPropnetStateMachine extends StateMachine {
 				setIndex = basePropsTruthValues.nextSetBit(setIndex+1);
 			}
 
-			return new MachineState(contents);
+			return new ProverMachineState(contents);
 		}
 
 		return null;
 	}
 
 	// TODO: IMPLEMENT
-	public Role externalRoleToRole(InternalPropnetRole role){
+	public ProverRole externalRoleToRole(InternalPropnetRole role){
 		if(role != null){
 			return this.roles.get(role.getIndex());
 		}
@@ -406,7 +406,7 @@ public class ExternalPropnetStateMachine extends StateMachine {
 	}
 
 	// TODO: IMPLEMENT
-	public InternalPropnetRole roleToExternalRole(Role role){
+	public InternalPropnetRole roleToExternalRole(ProverRole role){
 		if(role != null){
 			// TODO check if index is -1 -> should never happen if the role given as input is a valid role.
 			return new InternalPropnetRole(this.roles.indexOf(role));
@@ -416,13 +416,13 @@ public class ExternalPropnetStateMachine extends StateMachine {
 	}
 
 	// TODO: IMPLEMENT
-	public Move externalMoveToMove(InternalPropnetMove move){
+	public ProverMove externalMoveToMove(InternalPropnetMove move){
 		return getMoveFromProposition(this.propNet.getInputPropositions().get(move.getIndex()));
 	}
 
 	// TODO: IMPLEMENT
-	public InternalPropnetMove moveToExternalMove(Move move){
-		List<Move> moveArray = new ArrayList<Move>();
+	public InternalPropnetMove moveToExternalMove(ProverMove move){
+		List<ProverMove> moveArray = new ArrayList<ProverMove>();
 		moveArray.add(move);
 		GdlSentence moveToDoes = this.toDoes(moveArray).get(0);
 
@@ -444,7 +444,7 @@ public class ExternalPropnetStateMachine extends StateMachine {
 	 * @return
 	 */
 	// TODO: IMPLEMENT
-	public List<InternalPropnetMove> moveToExternalMove(List<Move> moves){
+	public List<InternalPropnetMove> moveToExternalMove(List<ProverMove> moves){
 
 		List<InternalPropnetMove> transformedMoves = new ArrayList<InternalPropnetMove>();
 		List<GdlSentence> movesToDoes = this.toDoes(moves);

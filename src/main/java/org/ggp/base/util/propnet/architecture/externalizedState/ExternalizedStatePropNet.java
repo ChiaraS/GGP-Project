@@ -22,7 +22,7 @@ import org.ggp.base.util.propnet.architecture.externalizedState.components.Exter
 import org.ggp.base.util.propnet.architecture.externalizedState.components.ExternalizedStateProposition;
 import org.ggp.base.util.propnet.architecture.externalizedState.components.ExternalizedStateTransition;
 import org.ggp.base.util.propnet.utils.PROP_TYPE;
-import org.ggp.base.util.statemachine.Role;
+import org.ggp.base.util.statemachine.proverStructure.ProverRole;
 
 public class ExternalizedStatePropNet {
 
@@ -42,7 +42,7 @@ public class ExternalizedStatePropNet {
 	private final Set<ExternalizedStateProposition> propositions;
 
 	/** A helper list of all of the roles. */
-	private final List<Role> roles;
+	private final List<ProverRole> roles;
 
 	/** Reference to the single TRUE constant in the propnet */
 	private ExternalizedStateConstant trueConstant;
@@ -83,23 +83,23 @@ public class ExternalizedStatePropNet {
 	 * The order of the input propositions for every role is the same as the order of the legal
 	 * propositions for the same role.
 	 */
-	private final Map<Role, List<ExternalizedStateProposition>> inputsPerRole;
+	private final Map<ProverRole, List<ExternalizedStateProposition>> inputsPerRole;
 
 	/**
 	 * References to every legal proposition in the PropNet, grouped by role.
 	 * The order of the legal propositions for every role is the same as the order of the input
 	 * propositions for the same role.
 	 */
-	private final Map<Role, List<ExternalizedStateProposition>> legalsPerRole;
+	private final Map<ProverRole, List<ExternalizedStateProposition>> legalsPerRole;
 
 	/** References to every GoalProposition in the PropNet, indexed by role. */
-	private final Map<Role, List<ExternalizedStateProposition>> goalsPerRole;
+	private final Map<ProverRole, List<ExternalizedStateProposition>> goalsPerRole;
 
 	/**
 	 * List of all the goals that corresponds to a goal proposition, grouped by role
 	 * and listed in the same order as the role propositions values in the ExternalPropnetState class.
 	 */
-	private Map<Role, List<Integer>> goalValues;
+	private Map<ProverRole, List<Integer>> goalValues;
 
 	/**
 	 * List of all the AND and OR gates.
@@ -129,7 +129,7 @@ public class ExternalizedStatePropNet {
 	 * @param components
 	 *            A list of Components.
 	 */
-	public ExternalizedStatePropNet(List<Role> roles, Set<ExternalizedStateComponent> components, ExternalizedStateConstant trueConstant, ExternalizedStateConstant falseConstant){
+	public ExternalizedStatePropNet(List<ProverRole> roles, Set<ExternalizedStateComponent> components, ExternalizedStateConstant trueConstant, ExternalizedStateConstant falseConstant){
 
 		/*
 		 * ALGORITHMS TO FIND INPUT AND LEGALS:
@@ -164,8 +164,8 @@ public class ExternalizedStatePropNet {
 		this.propositions = new HashSet<ExternalizedStateProposition>();
 		this.basePropositions = new ArrayList<ExternalizedStateProposition>();
 
-		this.inputsPerRole = new HashMap<Role, List<ExternalizedStateProposition>>();
-		this.legalsPerRole = new HashMap<Role, List<ExternalizedStateProposition>>();
+		this.inputsPerRole = new HashMap<ProverRole, List<ExternalizedStateProposition>>();
+		this.legalsPerRole = new HashMap<ProverRole, List<ExternalizedStateProposition>>();
 		//Map<Role, List<ExternalizedStateProposition>> inputsPerRole = new HashMap<Role, List<ExternalizedStateProposition>>();
 		//Map<Role, List<ExternalizedStateProposition>> legalsPerRole = new HashMap<Role, List<ExternalizedStateProposition>>();
 
@@ -178,8 +178,8 @@ public class ExternalizedStatePropNet {
 		ALG1 - END */
 
 		/* ALG2 - START */
-		Map<Role, Map<List<GdlTerm>, ExternalizedStateProposition>> possibleInputs = new HashMap<Role, Map<List<GdlTerm>, ExternalizedStateProposition>>();
-		Map<Role, Map<List<GdlTerm>, ExternalizedStateProposition>> possibleLegals = new HashMap<Role, Map<List<GdlTerm>, ExternalizedStateProposition>>();
+		Map<ProverRole, Map<List<GdlTerm>, ExternalizedStateProposition>> possibleInputs = new HashMap<ProverRole, Map<List<GdlTerm>, ExternalizedStateProposition>>();
+		Map<ProverRole, Map<List<GdlTerm>, ExternalizedStateProposition>> possibleLegals = new HashMap<ProverRole, Map<List<GdlTerm>, ExternalizedStateProposition>>();
 		/* ALG2 - END */
 
 		/* ALG3 - START
@@ -187,10 +187,10 @@ public class ExternalizedStatePropNet {
 		Map<Role, Map<List<GdlTerm>, ExternalizedStateProposition>> possibleLegals = new HashMap<Role, Map<List<GdlTerm>, ExternalizedStateProposition>>();
 		 ALG3 - END */
 
-		this.goalsPerRole = new HashMap<Role, List<ExternalizedStateProposition>>();
-		this.goalValues = new HashMap<Role, List<Integer>>();
+		this.goalsPerRole = new HashMap<ProverRole, List<ExternalizedStateProposition>>();
+		this.goalValues = new HashMap<ProverRole, List<Integer>>();
 
-		for(Role r : this.roles){
+		for(ProverRole r : this.roles){
 			this.inputsPerRole.put(r, new ArrayList<ExternalizedStateProposition>());
 			this.legalsPerRole.put(r, new ArrayList<ExternalizedStateProposition>());
 			//inputsPerRole.put(r, new ArrayList<ExternalizedStateProposition>());
@@ -266,7 +266,7 @@ public class ExternalizedStatePropNet {
 						List<GdlTerm> gdlMove = p.getName().getBody();
 						// Get the role performing the move
 						GdlConstant name = (GdlConstant) relation.get(0);
-						Role r = new Role(name);
+						ProverRole r = new ProverRole(name);
 
 						// Get the map of possible legals for the role
 						Map<List<GdlTerm>, ExternalizedStateProposition> possibleLegalsPerRole = possibleLegals.get(r);
@@ -334,7 +334,7 @@ public class ExternalizedStatePropNet {
 						List<GdlTerm> gdlMove = p.getName().getBody();
 						// Get the role performing the move
 						GdlConstant name = (GdlConstant) relation.get(0);
-						Role r = new Role(name);
+						ProverRole r = new ProverRole(name);
 
 						// Get the map of possible inputs for the role
 						Map<List<GdlTerm>, ExternalizedStateProposition> possibleInputsPerRole = possibleInputs.get(r);
@@ -383,7 +383,7 @@ public class ExternalizedStatePropNet {
 					}else if(relation.getName().getValue().equals("goal")){
 						GdlConstant name = (GdlConstant) relation.get(0);
 						//System.out.println(name);
-						Role r = new Role(name);
+						ProverRole r = new ProverRole(name);
 						if(this.roles.contains(r)){
 							this.goalsPerRole.get(r).add(p);
 							this.goalValues.get(r).add(this.getGoalValue(p));
@@ -492,7 +492,7 @@ public class ExternalizedStatePropNet {
 		this.legalPropositions = new ArrayList<ExternalizedStateProposition>();
 
 		//int x = 0;
-		for(Role r : this.roles){
+		for(ProverRole r : this.roles){
 
 			/* ALG3 - START
 			Map<List<GdlTerm>,ExternalizedStateProposition> possibleLegalsPerRole = possibleLegals.get(r);
@@ -570,7 +570,7 @@ public class ExternalizedStatePropNet {
 	 *
 	 * @return ordered list of roles.
 	 */
-	public List<Role> getRoles(){
+	public List<ProverRole> getRoles(){
 	    return roles;
 	}
 
@@ -647,7 +647,7 @@ public class ExternalizedStatePropNet {
 	 * @return References to every InputProposition in the PropNet, indexed by
 	 *         player name and ordered.
 	 */
-	public Map<Role, List<ExternalizedStateProposition>> getInputsPerRole(){
+	public Map<ProverRole, List<ExternalizedStateProposition>> getInputsPerRole(){
 		return this.inputsPerRole;
 	}
 
@@ -657,7 +657,7 @@ public class ExternalizedStatePropNet {
 	 * @return References to every LegalProposition in the PropNet, indexed by
 	 *         player name and ordered.
 	 */
-	public Map<Role, List<ExternalizedStateProposition>> getLegalsPerRole(){
+	public Map<ProverRole, List<ExternalizedStateProposition>> getLegalsPerRole(){
 		return this.legalsPerRole;
 	}
 
@@ -667,7 +667,7 @@ public class ExternalizedStatePropNet {
 	 * @return References to every GoalProposition in the PropNet, indexed by
 	 *         player name.
 	 */
-	public Map<Role, List<ExternalizedStateProposition>> getGoalsPerRole(){
+	public Map<ProverRole, List<ExternalizedStateProposition>> getGoalsPerRole(){
 		return this.goalsPerRole;
 	}
 
@@ -677,7 +677,7 @@ public class ExternalizedStatePropNet {
 	 * @return The goal values corresponding to each goal proposition, divided by role
 	 * 		   and in the same order as the goalsPerRole propositions.
 	 */
-	public Map<Role, List<Integer>> getGoalValues(){
+	public Map<ProverRole, List<Integer>> getGoalValues(){
 		return this.goalValues;
 	}
 
@@ -1209,7 +1209,7 @@ public class ExternalizedStatePropNet {
 		if(c instanceof ExternalizedStateProposition) {
 			ExternalizedStateProposition p = (ExternalizedStateProposition) c;
 
-			Role r;
+			ProverRole r;
 
 			switch(p.getPropositionType()){
 			case BASE:
@@ -1229,7 +1229,7 @@ public class ExternalizedStatePropNet {
 				break;
 			case GOAL:
 				// Find the role for this goal
-				r = new Role((GdlConstant) ((GdlRelation) p.getName()).get(0));
+				r = new ProverRole((GdlConstant) ((GdlRelation) p.getName()).get(0));
 				List<ExternalizedStateProposition> goals = this.goalsPerRole.get(r);
 				int index = goals.indexOf(p);
 				this.goalValues.get(r).remove(index);

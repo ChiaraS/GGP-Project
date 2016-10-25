@@ -35,10 +35,10 @@ import org.ggp.base.util.game.GameRepository;
 import org.ggp.base.util.gdl.grammar.GdlPool;
 import org.ggp.base.util.presence.PlayerPresence;
 import org.ggp.base.util.presence.PlayerPresenceManager.InvalidHostportException;
-import org.ggp.base.util.statemachine.Role;
 import org.ggp.base.util.statemachine.StateMachine;
 import org.ggp.base.util.statemachine.exceptions.StateMachineInitializationException;
 import org.ggp.base.util.statemachine.implementation.prover.ProverStateMachine;
+import org.ggp.base.util.statemachine.proverStructure.ProverRole;
 import org.ggp.base.util.ui.GameSelector;
 import org.ggp.base.util.ui.JLabelBold;
 import org.ggp.base.util.ui.NativeUI;
@@ -219,7 +219,7 @@ public final class Server extends JPanel implements ActionListener
 				e1.printStackTrace();
 				return;
 			}
-            List<Role> roles = stateMachine.getRoles();
+            List<ProverRole> roles = stateMachine.getRoles();
 
             int newRowCount = 11;
             for (int i = 0; i < roles.size(); i++) {

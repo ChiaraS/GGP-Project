@@ -19,9 +19,9 @@ import org.ggp.base.util.game.Game;
 import org.ggp.base.util.game.GameRepository;
 import org.ggp.base.util.match.Match;
 import org.ggp.base.util.reflection.ProjectSearcher;
-import org.ggp.base.util.statemachine.Role;
 import org.ggp.base.util.statemachine.exceptions.GoalDefinitionException;
 import org.ggp.base.util.statemachine.exceptions.StateMachineException;
+import org.ggp.base.util.statemachine.proverStructure.ProverRole;
 
 /**
  * @author C.Sironi
@@ -148,7 +148,7 @@ public class Experiment {
 
 		String matchName = tourneyName + "." + gameKey + "." + System.currentTimeMillis();
 
-		int expectedRoles = Role.computeRoles(game.getRules()).size();
+		int expectedRoles = ProverRole.computeRoles(game.getRules()).size();
 		if (hostNames.size() != expectedRoles) {
 			throw new RuntimeException("Invalid number of players for game " + gameKey + ": " + hostNames.size() + " vs " + expectedRoles);
 		}

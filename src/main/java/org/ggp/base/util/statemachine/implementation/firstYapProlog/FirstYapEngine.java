@@ -15,9 +15,6 @@ import java.util.concurrent.TimeoutException;
 
 import org.ggp.base.util.gdl.grammar.Gdl;
 import org.ggp.base.util.gdl.grammar.GdlSentence;
-import org.ggp.base.util.statemachine.MachineState;
-import org.ggp.base.util.statemachine.Move;
-import org.ggp.base.util.statemachine.Role;
 import org.ggp.base.util.statemachine.StateMachine;
 import org.ggp.base.util.statemachine.exceptions.GoalDefinitionException;
 import org.ggp.base.util.statemachine.exceptions.MoveDefinitionException;
@@ -25,6 +22,9 @@ import org.ggp.base.util.statemachine.exceptions.StateMachineException;
 import org.ggp.base.util.statemachine.exceptions.StateMachineInitializationException;
 import org.ggp.base.util.statemachine.exceptions.TransitionDefinitionException;
 import org.ggp.base.util.statemachine.implementation.firstYapProlog.firstTransform.FirstYapEngineSupport;
+import org.ggp.base.util.statemachine.proverStructure.ProverMachineState;
+import org.ggp.base.util.statemachine.proverStructure.ProverMove;
+import org.ggp.base.util.statemachine.proverStructure.ProverRole;
 
 import com.declarativa.interprolog.YAPSubprocessEngine;
 
@@ -57,7 +57,7 @@ public class FirstYapEngine {
 
 	// The list of the roles
 	// useful for "getRandomJointMove(MachineState)"
-	private static List<Role> roles;
+	private static List<ProverRole> roles;
 	private static List<String> fakeRoles;
 
 	// If 'true', use the queries objects and the executor
@@ -209,7 +209,7 @@ public class FirstYapEngine {
 	/**
 	 * Compute the initial state of the game
 	 */
-	public MachineState computeInitialStateGdl()
+	public ProverMachineState computeInitialStateGdl()
 	{
 		System.out.println("COMPUTE_INITIAL_STATE_GDL");
 
@@ -222,7 +222,7 @@ public class FirstYapEngine {
 				e.printStackTrace();
 				System.err.println("computeInitalStateGdl");
 			}
-			return new MachineState(currentState);
+			return new ProverMachineState(currentState);
 		}
 		else
 		{
@@ -250,7 +250,7 @@ public class FirstYapEngine {
 				reInitialize();
 				return backingStateMachine.getInitialState();
 			}
-			return new MachineState(currentState);
+			return new ProverMachineState(currentState);
 		}
 	}
 
@@ -259,7 +259,7 @@ public class FirstYapEngine {
 	/**
 	 * Compute the roles of the game
 	 */
-	public List<Role> computeRoles()
+	public List<ProverRole> computeRoles()
 	{
 		if(!THREAD)
 		{
@@ -304,7 +304,7 @@ public class FirstYapEngine {
 	 * Returns TRUE if the state is terminal, FALSE otherwise
 	 * @throws StateMachineException
 	 */
-	public boolean isTerminal(MachineState machine) throws StateMachineException
+	public boolean isTerminal(ProverMachineState machine) throws StateMachineException
 	{
 		//computeState(machine);
 
@@ -376,7 +376,7 @@ public class FirstYapEngine {
 	 * Returns the goal value for the given role in the given state
 	 * @throws StateMachineException
 	 */
-	public int getGoal(MachineState machine, Role role) throws StateMachineException
+	public int getGoal(ProverMachineState machine, ProverRole role) throws StateMachineException
 	{
 		//computeState(machine);
 
@@ -470,7 +470,7 @@ public class FirstYapEngine {
 	 * given state
 	 * @throws StateMachineException
 	 */
-	public List<Move> getLegalMoves(MachineState machine, Role role) throws StateMachineException
+	public List<ProverMove> getLegalMoves(ProverMachineState machine, ProverRole role) throws StateMachineException
 	{
 		//computeState(machine);
 
@@ -486,7 +486,7 @@ public class FirstYapEngine {
 				e.printStackTrace();
 				System.err.println("getLegalMoves");
 			}
-			return new LinkedList<Move>();
+			return new LinkedList<ProverMove>();
 		}
 		else
 		{
@@ -505,7 +505,7 @@ public class FirstYapEngine {
 				reInitialize();
 				try{
 					System.out.println("backingStateMachine : getLegalMoves");
-					List<Move> temp = backingStateMachine.getLegalMoves(machine, role);
+					List<ProverMove> temp = backingStateMachine.getLegalMoves(machine, role);
 					System.out.println("LEGALMOVES :"+temp);
 					return temp;
 				}
@@ -519,7 +519,7 @@ public class FirstYapEngine {
 				reInitialize();
 				try{
 					System.out.println("backingStateMachine : getLegalMoves");
-					List<Move> temp = backingStateMachine.getLegalMoves(machine, role);
+					List<ProverMove> temp = backingStateMachine.getLegalMoves(machine, role);
 					System.out.println("LEGALMOVES :"+temp);
 					return temp;
 				}
@@ -532,7 +532,7 @@ public class FirstYapEngine {
 				reInitialize();
 				try{
 					System.out.println("backingStateMachine : getLegalMoves");
-					List<Move> temp = backingStateMachine.getLegalMoves(machine, role);
+					List<ProverMove> temp = backingStateMachine.getLegalMoves(machine, role);
 					System.out.println("LEGALMOVES :"+temp);
 					return temp;
 				}
@@ -545,7 +545,7 @@ public class FirstYapEngine {
 				reInitialize();
 				try{
 					System.out.println("backingStateMachine : getLegalMoves");
-					List<Move> temp = backingStateMachine.getLegalMoves(machine, role);
+					List<ProverMove> temp = backingStateMachine.getLegalMoves(machine, role);
 					System.out.println("LEGALMOVES :"+temp);
 					return temp;
 				}
@@ -553,7 +553,7 @@ public class FirstYapEngine {
 					mde.printStackTrace();
 				}
 			}
-			return new LinkedList<Move>();
+			return new LinkedList<ProverMove>();
 		}
 	}
 
@@ -564,7 +564,7 @@ public class FirstYapEngine {
 	 * 	(in the same order)
 	 * @throws StateMachineException
 	 */
-	public MachineState getNextState(MachineState machine, List<Move> moves) throws StateMachineException
+	public ProverMachineState getNextState(ProverMachineState machine, List<ProverMove> moves) throws StateMachineException
 	{
 		//computeState(machine);
 
@@ -577,7 +577,7 @@ public class FirstYapEngine {
 				try{
 					computeState(machine);
 					currentState = support.askToState((String[]) engine.deterministicGoal("get_next_state("+fakeRoles+", "+support.getFakeMoves(moves)+", List), processList(List, LL), ipObjectTemplate('ArrayOfString',AS,_,[LL],_)", "[AS]") [0]);
-					return new MachineState(currentState);
+					return new ProverMachineState(currentState);
 				}
 				catch(Exception e){
 					e.printStackTrace();
@@ -601,7 +601,7 @@ public class FirstYapEngine {
 					reInitialize();
 					try{
 						System.out.println("backingStateMachine : getNextState");
-						MachineState temp = backingStateMachine.getNextState(machine, moves);
+						ProverMachineState temp = backingStateMachine.getNextState(machine, moves);
 						System.out.println("NEW MachineState :"+temp);
 						return temp;
 					}
@@ -615,7 +615,7 @@ public class FirstYapEngine {
 					reInitialize();
 					try{
 						System.out.println("backingStateMachine : getNextState");
-						MachineState temp = backingStateMachine.getNextState(machine, moves);
+						ProverMachineState temp = backingStateMachine.getNextState(machine, moves);
 						System.out.println("NEW MachineState :"+temp);
 						return temp;
 					}
@@ -628,7 +628,7 @@ public class FirstYapEngine {
 					reInitialize();
 					try{
 						System.out.println("backingStateMachine : getNextState");
-						MachineState temp = backingStateMachine.getNextState(machine, moves);
+						ProverMachineState temp = backingStateMachine.getNextState(machine, moves);
 						System.out.println("NEW MachineState :"+temp);
 						return temp;
 					}
@@ -641,7 +641,7 @@ public class FirstYapEngine {
 					reInitialize();
 					try{
 						System.out.println("backingStateMachine : getNextState");
-						MachineState temp = backingStateMachine.getNextState(machine, moves);
+						ProverMachineState temp = backingStateMachine.getNextState(machine, moves);
 						System.out.println("NEW MachineState :"+temp);
 						return temp;
 					}
@@ -649,7 +649,7 @@ public class FirstYapEngine {
 						tde.printStackTrace();
 					}
 				}
-				return new MachineState(currentState);
+				return new ProverMachineState(currentState);
 			}
 		}
 		return machine;
@@ -660,7 +660,7 @@ public class FirstYapEngine {
 	/**
 	 * Compute the given MachineState in the Prolog side
 	 */
-	private void computeState(MachineState machine)
+	private void computeState(ProverMachineState machine)
 	{
 		if(!currentState.equals(machine.getContents())){
 
@@ -713,7 +713,7 @@ public class FirstYapEngine {
 	 * Returns a random Move from the list containing all the legal moves for
 	 * the given role in the given state
 	 */
-	public Move getRandomMove(MachineState machine, Role role)
+	public ProverMove getRandomMove(ProverMachineState machine, ProverRole role)
 	{
 		//computeState(machine);
 
@@ -773,7 +773,7 @@ public class FirstYapEngine {
 	 * Returns a random joint move from among all the possible joint moves in
 	 * the given state
 	 */
-	public List<Move> getRandomJointMove(MachineState machine)
+	public List<ProverMove> getRandomJointMove(ProverMachineState machine)
 	{
 		//computeState(machine);
 
@@ -833,7 +833,7 @@ public class FirstYapEngine {
 	 * Returns a random joint move from among all the possible joint moves in
 	 * the given state in which the given role makes the given move
 	 */
-	public List<Move> getRandomJointMove(MachineState machine, Role role, Move move)
+	public List<ProverMove> getRandomJointMove(ProverMachineState machine, ProverRole role, ProverMove move)
 	{
 		//computeState(machine);
 
@@ -893,7 +893,7 @@ public class FirstYapEngine {
 	 * Returns a random next state of the game from the possible next states
 	 * resulting from the given role playing the given move
 	 */
-	public MachineState getRandomNextState(MachineState machine, Role role, Move move)
+	public ProverMachineState getRandomNextState(ProverMachineState machine, ProverRole role, ProverMove move)
 	{
 		//computeState(machine);
 
@@ -904,7 +904,7 @@ public class FirstYapEngine {
 			try{
 				computeState(machine);
 				currentState = support.askToState((String[]) engine.deterministicGoal("get_random_next_state("+fakeRoles+", "+support.getFakeRole(role)+", "+support.getFakeMove(move)+", List), processList(List, LL), ipObjectTemplate('ArrayOfString',AS,_,[LL],_)", "[AS]") [0]);
-				return new MachineState(currentState);
+				return new ProverMachineState(currentState);
 			}
 			catch(Exception e){
 				e.printStackTrace();
@@ -944,7 +944,7 @@ public class FirstYapEngine {
 				reInitialize();
 				return null;
 			}
-			return new MachineState(currentState);
+			return new ProverMachineState(currentState);
 		}
 		//return machine.getContents();
 		return null;
@@ -956,7 +956,7 @@ public class FirstYapEngine {
 	 * Returns a terminal state derived from repeatedly making random joint moves
 	 * until reaching the end of the game
 	 */
-	public MachineState performDepthCharge(MachineState machine, final int[] theDepth)
+	public ProverMachineState performDepthCharge(ProverMachineState machine, final int[] theDepth)
 	{
 		//computeState(machine);
 
@@ -967,7 +967,7 @@ public class FirstYapEngine {
 			try{
 				computeState(machine);
 				currentState = support.askToState((String[]) engine.deterministicGoal("perform_depth_charge("+fakeRoles+", List), processList(List, LL), ipObjectTemplate('ArrayOfString',AS,_,[LL],_)", "[AS]") [0]);
-				return new MachineState(currentState);
+				return new ProverMachineState(currentState);
 			}
 			catch(Exception e){
 				e.printStackTrace();
@@ -1008,7 +1008,7 @@ public class FirstYapEngine {
 				reInitialize();
 				return null;
 			}
-			return new MachineState(currentState);
+			return new ProverMachineState(currentState);
 		}
 		//return machine.getContents();
 		return null;

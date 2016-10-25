@@ -7,12 +7,13 @@ import java.util.Set;
 
 import org.apache.lucene.util.OpenBitSet;
 import org.ggp.base.util.gdl.grammar.GdlSentence;
+import org.ggp.base.util.statemachine.proverStructure.ProverMachineState;
 
 /**
  * @author C.Sironi
  *
  */
-public class ExtendedStatePropnetMachineState extends MachineState {
+public class ExtendedStatePropnetMachineState extends ProverMachineState {
 
 	private OpenBitSet basePropsTruthValue;
 
@@ -47,12 +48,12 @@ public class ExtendedStatePropnetMachineState extends MachineState {
 	@Override
 	public boolean equals(Object o)
     {
-        if ((o != null) && (o instanceof MachineState)){
+        if ((o != null) && (o instanceof ProverMachineState)){
         	if(o instanceof ExtendedStatePropnetMachineState){
         		ExtendedStatePropnetMachineState state = (ExtendedStatePropnetMachineState) o;
         		return state.getBasePropsTruthValue().equals(this.getBasePropsTruthValue());
         	}else{
-        		MachineState state = (MachineState) o;
+        		ProverMachineState state = (ProverMachineState) o;
         		return state.getContents().equals(this.getContents());
         	}
         }

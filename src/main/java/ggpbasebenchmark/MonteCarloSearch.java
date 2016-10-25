@@ -2,12 +2,12 @@ package ggpbasebenchmark;
 
 import java.util.List;
 
-import org.ggp.base.util.statemachine.MachineState;
-import org.ggp.base.util.statemachine.Move;
 import org.ggp.base.util.statemachine.StateMachine;
 import org.ggp.base.util.statemachine.exceptions.MoveDefinitionException;
 import org.ggp.base.util.statemachine.exceptions.StateMachineException;
 import org.ggp.base.util.statemachine.exceptions.TransitionDefinitionException;
+import org.ggp.base.util.statemachine.proverStructure.ProverMachineState;
+import org.ggp.base.util.statemachine.proverStructure.ProverMove;
 
 public class MonteCarloSearch extends SearchAlgorithm {
 
@@ -16,7 +16,7 @@ public class MonteCarloSearch extends SearchAlgorithm {
 	}
 
 	@Override
-	public void doSearch(MachineState state) {
+	public void doSearch(ProverMachineState state) {
 		System.out.println("monteCarloSearch " + getPlayclock());
 		long simulationCount = 0;
 		while (!timeout()) {
@@ -33,12 +33,12 @@ public class MonteCarloSearch extends SearchAlgorithm {
 		System.out.println("#simulations: " + simulationCount);
 	}
 
-	private void randomSimulation(MachineState unChangableState) throws MoveDefinitionException, TransitionDefinitionException, StateMachineException {
-		MachineState state = unChangableState.clone();
+	private void randomSimulation(ProverMachineState unChangableState) throws MoveDefinitionException, TransitionDefinitionException, StateMachineException {
+		ProverMachineState state = unChangableState.clone();
 		boolean terminal = stateMachine.isTerminal(state);
 		while (!terminal) {
 			if (timeout()) return;
-			List<Move> jointMove = stateMachine.getRandomJointMove(state);
+			List<ProverMove> jointMove = stateMachine.getRandomJointMove(state);
 			++nbLegals;
 			if (timeout()) return;
 			state = stateMachine.getNextStateDestructively(state, jointMove);

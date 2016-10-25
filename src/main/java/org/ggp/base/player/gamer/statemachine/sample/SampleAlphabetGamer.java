@@ -6,11 +6,11 @@ import java.util.Comparator;
 import java.util.List;
 
 import org.ggp.base.player.gamer.event.GamerSelectedMoveEvent;
-import org.ggp.base.util.statemachine.Move;
 import org.ggp.base.util.statemachine.exceptions.GoalDefinitionException;
 import org.ggp.base.util.statemachine.exceptions.MoveDefinitionException;
 import org.ggp.base.util.statemachine.exceptions.StateMachineException;
 import org.ggp.base.util.statemachine.exceptions.TransitionDefinitionException;
+import org.ggp.base.util.statemachine.proverStructure.ProverMove;
 
 /**
  * SampleAlphabetGamer is a minimal gamer which always plays the whichever
@@ -31,7 +31,7 @@ public final class SampleAlphabetGamer extends SampleGamer
 	 *
 	 */
 	@Override
-	public Move stateMachineSelectMove(long timeout) throws TransitionDefinitionException, MoveDefinitionException, GoalDefinitionException, StateMachineException
+	public ProverMove stateMachineSelectMove(long timeout) throws TransitionDefinitionException, MoveDefinitionException, GoalDefinitionException, StateMachineException
 	{
 		// We get the current start time
 		long start = System.currentTimeMillis();
@@ -42,20 +42,20 @@ public final class SampleAlphabetGamer extends SampleGamer
 		 * is to return one of these moves. Choosing the best
 		 * Move to play is the goal of GGP.
 		 */
-		List<Move> moves = getStateMachine().getLegalMoves(getCurrentState(), getRole());
+		List<ProverMove> moves = getStateMachine().getLegalMoves(getCurrentState(), getRole());
 
 		// Create a copy of the list of legal moves, so we can modify it.
-		moves = new ArrayList<Move>(moves);
+		moves = new ArrayList<ProverMove>(moves);
 
 		// Sort the list of moves alphabetically.
-		Collections.sort(moves, new Comparator<Move>(){
-            @Override public int compare(Move m1, Move m2) {
+		Collections.sort(moves, new Comparator<ProverMove>(){
+            @Override public int compare(ProverMove m1, ProverMove m2) {
                 return m1.toString().compareTo(m2.toString());
             }
         });
 
 		// Pick the move that comes first alphabetically.
-		Move selection = moves.get(0);
+		ProverMove selection = moves.get(0);
 
 		// Get the time when we finished.
 		// It is mandatory that "stop" be less than "timeout".

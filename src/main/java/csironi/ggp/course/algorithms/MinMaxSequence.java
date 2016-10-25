@@ -6,14 +6,14 @@ package csironi.ggp.course.algorithms;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.ggp.base.util.statemachine.MachineState;
-import org.ggp.base.util.statemachine.Move;
-import org.ggp.base.util.statemachine.Role;
 import org.ggp.base.util.statemachine.StateMachine;
 import org.ggp.base.util.statemachine.exceptions.GoalDefinitionException;
 import org.ggp.base.util.statemachine.exceptions.MoveDefinitionException;
 import org.ggp.base.util.statemachine.exceptions.StateMachineException;
 import org.ggp.base.util.statemachine.exceptions.TransitionDefinitionException;
+import org.ggp.base.util.statemachine.proverStructure.ProverMachineState;
+import org.ggp.base.util.statemachine.proverStructure.ProverMove;
+import org.ggp.base.util.statemachine.proverStructure.ProverRole;
 
 import csironi.ggp.course.utils.Pair;
 
@@ -41,7 +41,7 @@ public class MinMaxSequence extends SearchAlgorithm {
 	}
 
 
-	public List<Move> bestmove(MachineState state, Role role)
+	public List<ProverMove> bestmove(ProverMachineState state, ProverRole role)
 			throws TransitionDefinitionException, MoveDefinitionException,
 			GoalDefinitionException, StateMachineException {
 
@@ -49,31 +49,31 @@ public class MinMaxSequence extends SearchAlgorithm {
 
 
 		/*Only for log*/
-		List<Role> roles = stateMachine.getRoles();
+		List<ProverRole> roles = stateMachine.getRoles();
 		String toLog = "Roles: [ ";
-		for(Role r: roles){
+		for(ProverRole r: roles){
 			toLog += r + " ";
 		}
 		toLog += "]";
 		log(toLog);
 
-		Pair<List<Move>, Integer> result = maxscore(state, role);
+		Pair<List<ProverMove>, Integer> result = maxscore(state, role);
 
 		toLog = "Reversed actions sequence: [ ";
-		for(Move m: result.getFirst()){
+		for(ProverMove m: result.getFirst()){
 			toLog += m + " ";
 		}
 		toLog += "]";
 		log(toLog);
 
 		// Revert the order of the actions since they are listed from last to first wrt to the root.
-		List<Move> bestPathMoves = new ArrayList<Move>();
-		for(Move move: result.getFirst()){
+		List<ProverMove> bestPathMoves = new ArrayList<ProverMove>();
+		for(ProverMove move: result.getFirst()){
 			bestPathMoves.add(0, move);
 		}
 
 		toLog = "Actions sequence: [ ";
-		for(Move m: bestPathMoves){
+		for(ProverMove m: bestPathMoves){
 			toLog += m + " ";
 		}
 		toLog += "]";
@@ -84,7 +84,7 @@ public class MinMaxSequence extends SearchAlgorithm {
 	}
 
 
-	private Pair<List<Move>, Integer> maxscore(MachineState state, Role role)
+	private Pair<List<ProverMove>, Integer> maxscore(ProverMachineState state, ProverRole role)
 			throws TransitionDefinitionException, MoveDefinitionException,
 			GoalDefinitionException, StateMachineException{
 
@@ -94,29 +94,29 @@ public class MinMaxSequence extends SearchAlgorithm {
 		if(stateMachine.isTerminal(state)){
 			int goal = stateMachine.getGoal(state, role);
 			log("Terminal state goal: " + goal);
-			return new Pair<List<Move>, Integer> (new ArrayList<Move>(), goal);
+			return new Pair<List<ProverMove>, Integer> (new ArrayList<ProverMove>(), goal);
 		}
 
 		// Check all my available moves to find the best one
-		List<Move> moves = stateMachine.getLegalMoves(state, role);
+		List<ProverMove> moves = stateMachine.getLegalMoves(state, role);
 
 		String toLog = "My moves: [ ";
-		for(Move move: moves){
+		for(ProverMove move: moves){
 			toLog += move + " ";
 		}
 		toLog += "]";
 		log(toLog);
 
-		Pair<List<Move>, Integer> maxResult = new Pair<List<Move>, Integer>(new ArrayList<Move>(),0);
+		Pair<List<ProverMove>, Integer> maxResult = new Pair<List<ProverMove>, Integer>(new ArrayList<ProverMove>(),0);
 
-		for (Move move: moves){
+		for (ProverMove move: moves){
 
 			log("Move [ " + move + " ]");
 
-			Pair<List<Move>, Integer> currentResult;
+			Pair<List<ProverMove>, Integer> currentResult;
 
 			if(stateMachine.getRoles().size() == 1){
-				ArrayList<Move> jointMoves = new ArrayList<Move>();
+				ArrayList<ProverMove> jointMoves = new ArrayList<ProverMove>();
 				jointMoves.add(move);
 				currentResult = maxscore(stateMachine.getNextState(state, jointMoves), role);
 			}else{
@@ -136,7 +136,7 @@ public class MinMaxSequence extends SearchAlgorithm {
 		}
 
 		toLog = "Reversed actions sequence: [ ";
-		for(Move m: maxResult.getFirst()){
+		for(ProverMove m: maxResult.getFirst()){
 			toLog += m + " ";
 		}
 		toLog += "]";
@@ -145,27 +145,27 @@ public class MinMaxSequence extends SearchAlgorithm {
 		return maxResult;
 	}
 
-	private Pair<List<Move>, Integer> minscore(MachineState state, Role role, Move move)
+	private Pair<List<ProverMove>, Integer> minscore(ProverMachineState state, ProverRole role, ProverMove move)
 			throws TransitionDefinitionException, MoveDefinitionException,
 			GoalDefinitionException, StateMachineException{
 
 		log("Performing minscore");
 
 		// Find all legal joint moves given the current move of the player
-		List<List<Move>> jointMovesList = stateMachine.getLegalJointMoves(state, role, move);
+		List<List<ProverMove>> jointMovesList = stateMachine.getLegalJointMoves(state, role, move);
 
-		Pair<List<Move>, Integer> minResult = new Pair<List<Move>, Integer>(new ArrayList<Move>(),100);
+		Pair<List<ProverMove>, Integer> minResult = new Pair<List<ProverMove>, Integer>(new ArrayList<ProverMove>(),100);
 
-		for(List<Move> jointMoves: jointMovesList){
+		for(List<ProverMove> jointMoves: jointMovesList){
 
 			String toLog = "Joint moves: [ ";
-			for(Move m: jointMoves){
+			for(ProverMove m: jointMoves){
 				toLog += m + " ";
 			}
 			toLog += "]";
 			log(toLog);
 
-			Pair<List<Move>, Integer> currentResult;
+			Pair<List<ProverMove>, Integer> currentResult;
 
 			currentResult = maxscore(stateMachine.getNextState(state, jointMoves), role);
 			if(currentResult.getSecond().intValue() <= minResult.getSecond().intValue()){
@@ -175,7 +175,7 @@ public class MinMaxSequence extends SearchAlgorithm {
 		}
 
 		String toLog = "Reversed actions sequence: [ ";
-		for(Move m: minResult.getFirst()){
+		for(ProverMove m: minResult.getFirst()){
 			toLog += m + " ";
 		}
 		toLog += "]";

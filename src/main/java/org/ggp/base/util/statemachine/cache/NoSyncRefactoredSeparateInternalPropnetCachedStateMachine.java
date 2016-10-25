@@ -9,9 +9,6 @@ import org.ggp.base.util.gdl.grammar.Gdl;
 import org.ggp.base.util.logging.GamerLogger;
 import org.ggp.base.util.logging.GamerLogger.FORMAT;
 import org.ggp.base.util.statemachine.InternalPropnetStateMachine;
-import org.ggp.base.util.statemachine.MachineState;
-import org.ggp.base.util.statemachine.Move;
-import org.ggp.base.util.statemachine.Role;
 import org.ggp.base.util.statemachine.exceptions.MoveDefinitionException;
 import org.ggp.base.util.statemachine.exceptions.StateMachineException;
 import org.ggp.base.util.statemachine.exceptions.StateMachineInitializationException;
@@ -19,6 +16,9 @@ import org.ggp.base.util.statemachine.exceptions.TransitionDefinitionException;
 import org.ggp.base.util.statemachine.inernalPropnetStructure.InternalPropnetMachineState;
 import org.ggp.base.util.statemachine.inernalPropnetStructure.InternalPropnetMove;
 import org.ggp.base.util.statemachine.inernalPropnetStructure.InternalPropnetRole;
+import org.ggp.base.util.statemachine.proverStructure.ProverMachineState;
+import org.ggp.base.util.statemachine.proverStructure.ProverMove;
+import org.ggp.base.util.statemachine.proverStructure.ProverRole;
 
 import com.google.common.collect.ImmutableList;
 
@@ -76,7 +76,7 @@ public final class NoSyncRefactoredSeparateInternalPropnetCachedStateMachine ext
 	}
 
 	@Override
-	public List<Integer> getOneRoleGoals(MachineState state, Role role){
+	public List<Integer> getOneRoleGoals(ProverMachineState state, ProverRole role){
 
 		//System.out.println("PN: Wrong call of cache (goals)!");
 
@@ -106,11 +106,11 @@ public final class NoSyncRefactoredSeparateInternalPropnetCachedStateMachine ext
 	}
 
 	@Override
-	public List<Move> getLegalMoves(MachineState state, Role role) throws MoveDefinitionException, StateMachineException{
+	public List<ProverMove> getLegalMoves(ProverMachineState state, ProverRole role) throws MoveDefinitionException, StateMachineException{
 
 		//System.out.println("PN: Wrong call of cache (legal moves)!");
 
-		List<Move> moves = new ArrayList<Move>();
+		List<ProverMove> moves = new ArrayList<ProverMove>();
 		for(InternalPropnetMove m : this.getInternalLegalMoves(this.backingStateMachine.stateToInternalState(state), this.backingStateMachine.roleToInternalRole(role))){
 			moves.add(this.backingStateMachine.internalMoveToMove(m));
 		}
@@ -140,7 +140,7 @@ public final class NoSyncRefactoredSeparateInternalPropnetCachedStateMachine ext
 	}
 
 	@Override
-	public MachineState getNextState(MachineState state, List<Move> moves) throws TransitionDefinitionException, StateMachineException{
+	public ProverMachineState getNextState(ProverMachineState state, List<ProverMove> moves) throws TransitionDefinitionException, StateMachineException{
 
 		//System.out.println("PN: Wrong call of cache (next state)!");
 
@@ -169,7 +169,7 @@ public final class NoSyncRefactoredSeparateInternalPropnetCachedStateMachine ext
 	}
 
 	@Override
-	public boolean isTerminal(MachineState state) throws StateMachineException{
+	public boolean isTerminal(ProverMachineState state) throws StateMachineException{
 
 		//System.out.println("PN: Wrong call of cache (terminality)!");
 
@@ -216,13 +216,13 @@ public final class NoSyncRefactoredSeparateInternalPropnetCachedStateMachine ext
 	}
 
 	@Override
-	public List<Role> getRoles() {
+	public List<ProverRole> getRoles() {
 		// TODO: Should this be cached as well?
 		return this.backingStateMachine.getRoles();
 	}
 
 	@Override
-	public MachineState getInitialState() {
+	public ProverMachineState getInitialState() {
 		// TODO: Should this be cached as well?
 		return this.backingStateMachine.getInitialState();
 	}
@@ -253,37 +253,37 @@ public final class NoSyncRefactoredSeparateInternalPropnetCachedStateMachine ext
     }
 
 	@Override
-	public InternalPropnetMachineState stateToInternalState(MachineState state) {
+	public InternalPropnetMachineState stateToInternalState(ProverMachineState state) {
 		return this.backingStateMachine.stateToInternalState(state);
 	}
 
 	@Override
-	public MachineState internalStateToState(InternalPropnetMachineState state) {
+	public ProverMachineState internalStateToState(InternalPropnetMachineState state) {
 		return this.backingStateMachine.internalStateToState(state);
 	}
 
 	@Override
-	public Role internalRoleToRole(InternalPropnetRole role) {
+	public ProverRole internalRoleToRole(InternalPropnetRole role) {
 		return this.backingStateMachine.internalRoleToRole(role);
 	}
 
 	@Override
-	public InternalPropnetRole roleToInternalRole(Role role) {
+	public InternalPropnetRole roleToInternalRole(ProverRole role) {
 		return this.backingStateMachine.roleToInternalRole(role);
 	}
 
 	@Override
-	public Move internalMoveToMove(InternalPropnetMove move) {
+	public ProverMove internalMoveToMove(InternalPropnetMove move) {
 		return this.backingStateMachine.internalMoveToMove(move);
 	}
 
 	@Override
-	public InternalPropnetMove moveToInternalMove(Move move) {
+	public InternalPropnetMove moveToInternalMove(ProverMove move) {
 		return this.backingStateMachine.moveToInternalMove(move);
 	}
 
 	@Override
-	public List<InternalPropnetMove> movesToInternalMoves(List<Move> moves) {
+	public List<InternalPropnetMove> movesToInternalMoves(List<ProverMove> moves) {
 		return this.backingStateMachine.movesToInternalMoves(moves);
 	}
 

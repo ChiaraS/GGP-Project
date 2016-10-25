@@ -3,7 +3,7 @@
  */
 package csironi.ggp.course.MCTS.finalMoveChioce;
 
-import org.ggp.base.util.statemachine.Move;
+import org.ggp.base.util.statemachine.proverStructure.ProverMove;
 
 import csironi.ggp.course.MCTS.MCTNode;
 
@@ -20,6 +20,6 @@ public interface OldFinalMoveChoiceStrategy {
 	 * @param root the root node of the MCT.
 	 * @return the move to be played for this turn by the player.
 	 */
-	public Move chooseFinalMove(MCTNode root);
+	public ProverMove chooseFinalMove(MCTNode root);
 
 }

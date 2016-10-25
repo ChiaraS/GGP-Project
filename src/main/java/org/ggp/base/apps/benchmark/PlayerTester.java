@@ -23,8 +23,8 @@ import org.ggp.base.util.gdl.grammar.GdlRule;
 import org.ggp.base.util.match.Match;
 import org.ggp.base.util.observer.Event;
 import org.ggp.base.util.observer.Observer;
-import org.ggp.base.util.statemachine.Move;
-import org.ggp.base.util.statemachine.Role;
+import org.ggp.base.util.statemachine.proverStructure.ProverMove;
+import org.ggp.base.util.statemachine.proverStructure.ProverRole;
 import org.ggp.base.util.symbol.factory.SymbolFactory;
 import org.ggp.base.util.symbol.factory.exceptions.SymbolFormatException;
 import org.ggp.base.util.symbol.grammar.Symbol;
@@ -133,7 +133,7 @@ public class PlayerTester {
         // Set up fake players to pretend to play the game alongside the real player
         List<String> theHosts = new ArrayList<String>();
         List<Integer> thePorts = new ArrayList<Integer>();
-        for (int i = 0; i < Role.computeRoles(theGame.getRules()).size(); i++) {
+        for (int i = 0; i < ProverRole.computeRoles(theGame.getRules()).size(); i++) {
         	theHosts.add("SamplePlayer" + i);
         	thePorts.add(9147+i);
         }
@@ -150,7 +150,7 @@ public class PlayerTester {
         }
 
         final int theRole = theCase.nRole;
-        final Move[] theChosenMoveArr = new Move[1];
+        final ProverMove[] theChosenMoveArr = new ProverMove[1];
         theServer.addObserver(new Observer() {
 			@Override
 			public void observe(Event event) {

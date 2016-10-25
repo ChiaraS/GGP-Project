@@ -2,21 +2,21 @@ package org.ggp.base.player.gamer.statemachine.MCTS.propnet;
 
 import org.ggp.base.player.gamer.event.GamerSelectedMoveEvent;
 import org.ggp.base.player.gamer.statemachine.MCS.manager.MoveStats;
-import org.ggp.base.player.gamer.statemachine.MCS.manager.propnet.CompleteMoveStats;
+import org.ggp.base.player.gamer.statemachine.MCS.manager.propnet.PnCompleteMoveStats;
 import org.ggp.base.player.gamer.statemachine.MCS.manager.prover.ProverCompleteMoveStats;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.MCTSManager;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.exceptions.MCTSException;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.propnet.InternalPropnetMCTSManager;
-import org.ggp.base.player.gamer.statemachine.MCTS.manager.propnet.treestructure.MCTSNode;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.prover.ProverMCTSManager;
+import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.MCTSNode;
 import org.ggp.base.player.gamer.statemachine.propnet.InternalPropnetGamer;
 import org.ggp.base.util.logging.GamerLogger;
-import org.ggp.base.util.statemachine.Move;
 import org.ggp.base.util.statemachine.exceptions.GoalDefinitionException;
 import org.ggp.base.util.statemachine.exceptions.MoveDefinitionException;
 import org.ggp.base.util.statemachine.exceptions.StateMachineException;
 import org.ggp.base.util.statemachine.exceptions.TransitionDefinitionException;
 import org.ggp.base.util.statemachine.inernalPropnetStructure.InternalPropnetMachineState;
+import org.ggp.base.util.statemachine.proverStructure.ProverMove;
 
 public abstract class MctsGamer extends InternalPropnetGamer {
 
@@ -154,7 +154,7 @@ public abstract class MctsGamer extends InternalPropnetGamer {
 	 * @see org.ggp.base.player.gamer.statemachine.StateMachineGamer#stateMachineSelectMove(long)
 	 */
 	@Override
-	public Move stateMachineSelectMove(long timeout)
+	public ProverMove stateMachineSelectMove(long timeout)
 			throws TransitionDefinitionException, MoveDefinitionException,
 			GoalDefinitionException, StateMachineException {
 
@@ -171,7 +171,7 @@ public abstract class MctsGamer extends InternalPropnetGamer {
     	int visitedNodes = -1;
     	double iterationsPerSecond = -1;
     	double nodesPerSecond = -1;
-    	Move theMove = null;
+    	ProverMove theMove = null;
     	double moveScoreSum = -1.0;
     	int moveVisits = -1;
     	double moveAvgScore = -1;
@@ -222,7 +222,7 @@ public abstract class MctsGamer extends InternalPropnetGamer {
 
 				}else{
 
-					theMove = this.thePropnetMachine.internalMoveToMove(((CompleteMoveStats)selectedMove).getTheMove());
+					theMove = this.thePropnetMachine.internalMoveToMove(((PnCompleteMoveStats)selectedMove).getTheMove());
 
 				}
 

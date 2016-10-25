@@ -22,10 +22,10 @@ import org.ggp.base.util.match.Match;
 import org.ggp.base.util.propnet.creationManager.PropNetManagerRunner;
 import org.ggp.base.util.propnet.creationManager.SeparateInternalPropnetManager;
 import org.ggp.base.util.reflection.ProjectSearcher;
-import org.ggp.base.util.statemachine.Role;
 import org.ggp.base.util.statemachine.exceptions.GoalDefinitionException;
 import org.ggp.base.util.statemachine.exceptions.StateMachineException;
 import org.ggp.base.util.statemachine.implementation.propnet.SeparateInternalPropnetStateMachine;
+import org.ggp.base.util.statemachine.proverStructure.ProverRole;
 
 public class IndependentSingleMatchRunner {
 
@@ -119,7 +119,7 @@ public class IndependentSingleMatchRunner {
     		}
 		}
 
-    	int expectedRoles = Role.computeRoles(game.getRules()).size();
+    	int expectedRoles = ProverRole.computeRoles(game.getRules()).size();
 
     	if(theGamersClasses.size() != expectedRoles){
     		System.out.println("Impossible to start match runner, wrong input. Detected " + theGamersClasses.size() + " gamer types for a game with " + expectedRoles + " roles.");

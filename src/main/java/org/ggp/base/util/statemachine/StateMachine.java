@@ -19,6 +19,9 @@ import org.ggp.base.util.statemachine.exceptions.MoveDefinitionException;
 import org.ggp.base.util.statemachine.exceptions.StateMachineException;
 import org.ggp.base.util.statemachine.exceptions.StateMachineInitializationException;
 import org.ggp.base.util.statemachine.exceptions.TransitionDefinitionException;
+import org.ggp.base.util.statemachine.proverStructure.ProverMachineState;
+import org.ggp.base.util.statemachine.proverStructure.ProverMove;
+import org.ggp.base.util.statemachine.proverStructure.ProverRole;
 
 import com.google.common.collect.ImmutableMap;
 
@@ -76,7 +79,7 @@ public abstract class StateMachine
      * for the given role because of an error that occurred in the state machine and
      * couldn't be handled.
      */
-    public int getGoal(MachineState state, Role role) throws GoalDefinitionException, StateMachineException{
+    public int getGoal(ProverMachineState state, ProverRole role) throws GoalDefinitionException, StateMachineException{
 
     	List<Integer> goals = this.getOneRoleGoals(state, role);
 
@@ -104,7 +107,7 @@ public abstract class StateMachine
      * for the given role because of an error that occurred in the state machine and
      * couldn't be handled.
      */
-    public abstract List<Integer> getOneRoleGoals(MachineState state, Role role) throws StateMachineException;
+    public abstract List<Integer> getOneRoleGoals(ProverMachineState state, ProverRole role) throws StateMachineException;
 
 
     /**
@@ -114,20 +117,20 @@ public abstract class StateMachine
      * state is terminal because of an error that occurred in the state machine and
      * couldn't be handled.
      */
-    public abstract boolean isTerminal(MachineState state) throws StateMachineException;
+    public abstract boolean isTerminal(ProverMachineState state) throws StateMachineException;
 
     /**
      * Returns a list of the roles in the game, in the same order as they
      * were defined in the game description.
      * <p>
-     * The result will be the same as calling {@link Role#computeRoles(List)}
+     * The result will be the same as calling {@link ProverRole#computeRoles(List)}
      * on the game rules used to initialize this state machine.
      */
-    public abstract List<Role> getRoles();
+    public abstract List<ProverRole> getRoles();
     /**
      * Returns the initial state of the game.
      */
-    public abstract MachineState getInitialState();
+    public abstract ProverMachineState getInitialState();
 
     /**
      * Returns a list containing every move that is legal for the given role in the
@@ -140,7 +143,7 @@ public abstract class StateMachine
      * couldn't be handled.
      */
     // TODO: There are philosophical reasons for this to return Set<Move> rather than List<Move>.
-    public abstract List<Move> getLegalMoves(MachineState state, Role role) throws MoveDefinitionException, StateMachineException;
+    public abstract List<ProverMove> getLegalMoves(ProverMachineState state, ProverRole role) throws MoveDefinitionException, StateMachineException;
 
     /**
      * Returns the next state of the game given the current state and a joint move
@@ -154,7 +157,7 @@ public abstract class StateMachine
      * state for the given state and the given joint moves because of an error
      * that occurred in the state machine and couldn't be handled.
      */
-    public abstract MachineState getNextState(MachineState state, List<Move> moves) throws TransitionDefinitionException, StateMachineException;
+    public abstract ProverMachineState getNextState(ProverMachineState state, List<ProverMove> moves) throws TransitionDefinitionException, StateMachineException;
 
     /**
      * This method must allow to turn off the state machine (maybe temporarily), i.e.
@@ -185,14 +188,14 @@ public abstract class StateMachine
     // can look up/compute what some Gdl corresponds to in their representation.
     // They are implemented for convenience, using the default ways of generating
     // these objects, but they can be overridden to support machine-specific objects.
-    public MachineState getMachineStateFromSentenceList(Set<GdlSentence> sentenceList) {
-        return new MachineState(sentenceList);
+    public ProverMachineState getMachineStateFromSentenceList(Set<GdlSentence> sentenceList) {
+        return new ProverMachineState(sentenceList);
     }
-    public Role getRoleFromConstant(GdlConstant constant) {
-        return new Role(constant);
+    public ProverRole getRoleFromConstant(GdlConstant constant) {
+        return new ProverRole(constant);
     }
-    public Move getMoveFromTerm(GdlTerm term) {
-        return new Move(term);
+    public ProverMove getMoveFromTerm(GdlTerm term) {
+        return new ProverMove(term);
     }
 
     // ============================================
@@ -221,7 +224,7 @@ public abstract class StateMachine
      * state destructively for the given state and the given joint moves because
      * of an error that occurred in the state machine and couldn't be handled.
      */
-    public MachineState getNextStateDestructively(MachineState state, List<Move> moves) throws TransitionDefinitionException, StateMachineException {
+    public ProverMachineState getNextStateDestructively(ProverMachineState state, List<ProverMove> moves) throws TransitionDefinitionException, StateMachineException {
         return getNextState(state, moves);
     }
 
@@ -233,7 +236,7 @@ public abstract class StateMachine
      * CONTRACT: After calling this method, the state machine never deals with a state that
      *           is not "theState" or one of its descendants in the game tree.
      */
-    public void updateRoot(MachineState theState) {
+    public void updateRoot(ProverMachineState theState) {
         ;
     }
 
@@ -263,15 +266,15 @@ public abstract class StateMachine
      * joint moves for the given state because of an error that occurred in the
      * state machine and couldn't be handled.
      */
-    public List<List<Move>> getLegalJointMoves(MachineState state) throws MoveDefinitionException, StateMachineException
+    public List<List<ProverMove>> getLegalJointMoves(ProverMachineState state) throws MoveDefinitionException, StateMachineException
     {
-        List<List<Move>> legals = new ArrayList<List<Move>>();
-        for (Role role : getRoles()) {
+        List<List<ProverMove>> legals = new ArrayList<List<ProverMove>>();
+        for (ProverRole role : getRoles()) {
             legals.add(getLegalMoves(state, role));
         }
 
-        List<List<Move>> crossProduct = new ArrayList<List<Move>>();
-        crossProductLegalMoves(legals, crossProduct, new LinkedList<Move>());
+        List<List<ProverMove>> crossProduct = new ArrayList<List<ProverMove>>();
+        crossProductLegalMoves(legals, crossProduct, new LinkedList<ProverMove>());
 
         return crossProduct;
     }
@@ -279,7 +282,7 @@ public abstract class StateMachine
     /**
      * Returns a list of every joint move possible in the given state in which
      * the given role makes the given move. This will be a subset of the list
-     * of joint moves given by {@link #getLegalJointMoves(MachineState)}.
+     * of joint moves given by {@link #getLegalJointMoves(ProverMachineState)}.
      *
      * @throws MoveDefinitionException if a role has no legal moves. This indicates
      * an error in either the game description or the StateMachine implementation.
@@ -288,12 +291,12 @@ public abstract class StateMachine
      * move because of an error that occurred in the state machine and couldn't
      * be handled.
      */
-    public List<List<Move>> getLegalJointMoves(MachineState state, Role role, Move move) throws MoveDefinitionException, StateMachineException
+    public List<List<ProverMove>> getLegalJointMoves(ProverMachineState state, ProverRole role, ProverMove move) throws MoveDefinitionException, StateMachineException
     {
-        List<List<Move>> legals = new ArrayList<List<Move>>();
-        for (Role r : getRoles()) {
+        List<List<ProverMove>> legals = new ArrayList<List<ProverMove>>();
+        for (ProverRole r : getRoles()) {
             if (r.equals(role)) {
-                List<Move> m = new ArrayList<Move>();
+                List<ProverMove> m = new ArrayList<ProverMove>();
                 m.add(move);
                 legals.add(m);
             } else {
@@ -301,8 +304,8 @@ public abstract class StateMachine
             }
         }
 
-        List<List<Move>> crossProduct = new ArrayList<List<Move>>();
-        crossProductLegalMoves(legals, crossProduct, new LinkedList<Move>());
+        List<List<ProverMove>> crossProduct = new ArrayList<List<ProverMove>>();
+        crossProductLegalMoves(legals, crossProduct, new LinkedList<ProverMove>());
 
         return crossProduct;
     }
@@ -322,10 +325,10 @@ public abstract class StateMachine
      * because of an error that occurred in the state machine and couldn't be
      * handled.
      */
-    public List<MachineState> getNextStates(MachineState state) throws MoveDefinitionException, TransitionDefinitionException, StateMachineException
+    public List<ProverMachineState> getNextStates(ProverMachineState state) throws MoveDefinitionException, TransitionDefinitionException, StateMachineException
     {
-        List<MachineState> nextStates = new ArrayList<MachineState>();
-        for (List<Move> move : getLegalJointMoves(state)) {
+        List<ProverMachineState> nextStates = new ArrayList<ProverMachineState>();
+        for (List<ProverMove> move : getLegalJointMoves(state)) {
             nextStates.add(getNextState(state, move));
         }
 
@@ -348,14 +351,14 @@ public abstract class StateMachine
      * map with all the possible next states per role move because of an
      * error that occurred in the state machine and couldn't be handled.
      */
-    public Map<Move, List<MachineState>> getNextStates(MachineState state, Role role) throws MoveDefinitionException, TransitionDefinitionException, StateMachineException
+    public Map<ProverMove, List<ProverMachineState>> getNextStates(ProverMachineState state, ProverRole role) throws MoveDefinitionException, TransitionDefinitionException, StateMachineException
     {
-        Map<Move, List<MachineState>> nextStates = new HashMap<Move, List<MachineState>>();
-        Map<Role, Integer> roleIndices = getRoleIndices();
-        for (List<Move> moves : getLegalJointMoves(state)) {
-            Move move = moves.get(roleIndices.get(role));
+        Map<ProverMove, List<ProverMachineState>> nextStates = new HashMap<ProverMove, List<ProverMachineState>>();
+        Map<ProverRole, Integer> roleIndices = getRoleIndices();
+        for (List<ProverMove> moves : getLegalJointMoves(state)) {
+            ProverMove move = moves.get(roleIndices.get(role));
             if (!nextStates.containsKey(move)) {
-                nextStates.put(move, new ArrayList<MachineState>());
+                nextStates.put(move, new ArrayList<ProverMachineState>());
             }
             nextStates.get(move).add(getNextState(state, moves));
         }
@@ -363,12 +366,12 @@ public abstract class StateMachine
         return nextStates;
     }
 
-    protected void crossProductLegalMoves(List<List<Move>> legals, List<List<Move>> crossProduct, LinkedList<Move> partial)
+    protected void crossProductLegalMoves(List<List<ProverMove>> legals, List<List<ProverMove>> crossProduct, LinkedList<ProverMove> partial)
     {
         if (partial.size() == legals.size()) {
-            crossProduct.add(new ArrayList<Move>(partial));
+            crossProduct.add(new ArrayList<ProverMove>(partial));
         } else {
-            for (Move move : legals.get(partial.size())) {
+            for (ProverMove move : legals.get(partial.size())) {
                 partial.addLast(move);
                 crossProductLegalMoves(legals, crossProduct, partial);
                 partial.removeLast();
@@ -376,18 +379,18 @@ public abstract class StateMachine
         }
     }
 
-    private Map<Role,Integer> roleIndices = null;
+    private Map<ProverRole,Integer> roleIndices = null;
     /**
      * Returns a mapping from a role to the index of that role, as in
      * the list returned by {@link #getRoles()}. This may be a faster
      * way to check the index of a role than calling {@link List#indexOf(Object)}
      * on that list.
      */
-    public Map<Role, Integer> getRoleIndices()
+    public Map<ProverRole, Integer> getRoleIndices()
     {
         if (roleIndices == null) {
-        	ImmutableMap.Builder<Role, Integer> roleIndicesBuilder = ImmutableMap.builder();
-            List<Role> roles = getRoles();
+        	ImmutableMap.Builder<ProverRole, Integer> roleIndicesBuilder = ImmutableMap.builder();
+            List<ProverRole> roles = getRoles();
             for (int i = 0; i < roles.size(); i++) {
                 roleIndicesBuilder.put(roles.get(i), i);
             }
@@ -410,9 +413,9 @@ public abstract class StateMachine
      * with the goals for all the roles in the given state because of an error
      * that occurred in the state machine and couldn't be handled.
      */
-    public List<Integer> getGoals(MachineState state) throws GoalDefinitionException, StateMachineException {
+    public List<Integer> getGoals(ProverMachineState state) throws GoalDefinitionException, StateMachineException {
         List<Integer> theGoals = new ArrayList<Integer>(getRoles().size());
-        for(Role r : getRoles()) {
+        for(ProverRole r : getRoles()) {
             theGoals.add(getGoal(state, r));
         }
         return theGoals;
@@ -429,9 +432,9 @@ public abstract class StateMachine
      * with the goals for all the roles in the given state because of an error
      * that occurred in the state machine and couldn't be handled.
      */
-    public List<List<Integer>> getAllRolesGoals(MachineState state) throws GoalDefinitionException, StateMachineException {
+    public List<List<Integer>> getAllRolesGoals(ProverMachineState state) throws GoalDefinitionException, StateMachineException {
         List<List<Integer>> theGoals = new ArrayList<List<Integer>>();
-        for (Role r : getRoles()) {
+        for (ProverRole r : getRoles()) {
         	theGoals.add(getOneRoleGoals(state, r));
         }
         return theGoals;
@@ -454,8 +457,8 @@ public abstract class StateMachine
      *
      * @param state the state for which to compute the goals.
      */
-    public int[] getSafeGoals(MachineState state){
-    	List<Role> theRoles = this.getRoles();
+    public int[] getSafeGoals(ProverMachineState state){
+    	List<ProverRole> theRoles = this.getRoles();
     	int[] theGoals = new int[theRoles.size()];
         for (int i = 0; i < theRoles.size(); i++) {
             try {
@@ -488,8 +491,8 @@ public abstract class StateMachine
      * @param state the state for which to compute the goals.
 	 * @throws StateMachineException
      */
-    public int[] getSafeGoalsAvg(MachineState state){
-    	List<Role> theRoles = this.getRoles();
+    public int[] getSafeGoalsAvg(ProverMachineState state){
+    	List<ProverRole> theRoles = this.getRoles();
     	int[] theGoals = new int[theRoles.size()];
     	int avg;
     	List<Integer> roleGoals = null;
@@ -528,10 +531,10 @@ public abstract class StateMachine
      * joint move in the given state because of an error that occurred in the state
      * machine and couldn't be handled.
      */
-    public List<Move> getRandomJointMove(MachineState state) throws MoveDefinitionException, StateMachineException
+    public List<ProverMove> getRandomJointMove(ProverMachineState state) throws MoveDefinitionException, StateMachineException
     {
-        List<Move> random = new ArrayList<Move>();
-        for (Role role : getRoles()) {
+        List<ProverMove> random = new ArrayList<ProverMove>();
+        for (ProverRole role : getRoles()) {
             random.add(getRandomMove(state, role));
         }
 
@@ -548,10 +551,10 @@ public abstract class StateMachine
      * joint move in the given state with the given role performing the given move
      * because of an error that occurred in the state machine and couldn't be handled.
      */
-    public List<Move> getRandomJointMove(MachineState state, Role role, Move move) throws MoveDefinitionException, StateMachineException
+    public List<ProverMove> getRandomJointMove(ProverMachineState state, ProverRole role, ProverMove move) throws MoveDefinitionException, StateMachineException
     {
-        List<Move> random = new ArrayList<Move>();
-        for (Role r : getRoles()) {
+        List<ProverMove> random = new ArrayList<ProverMove>();
+        for (ProverRole r : getRoles()) {
             if (r.equals(role)) {
                 random.add(move);
             } else {
@@ -572,9 +575,9 @@ public abstract class StateMachine
      * random move for the given role in the given state because of an
      * error that occurred in the state machine and couldn't be handled.
      */
-    public Move getRandomMove(MachineState state, Role role) throws MoveDefinitionException, StateMachineException
+    public ProverMove getRandomMove(ProverMachineState state, ProverRole role) throws MoveDefinitionException, StateMachineException
     {
-        List<Move> legals = getLegalMoves(state, role);
+        List<ProverMove> legals = getLegalMoves(state, role);
         return legals.get(new Random().nextInt(legals.size()));
     }
 
@@ -594,9 +597,9 @@ public abstract class StateMachine
      * state from the given state because of an error that occurred in the state
      * machine and couldn't be handled.
      */
-    public MachineState getRandomNextState(MachineState state) throws MoveDefinitionException, TransitionDefinitionException, StateMachineException
+    public ProverMachineState getRandomNextState(ProverMachineState state) throws MoveDefinitionException, TransitionDefinitionException, StateMachineException
     {
-        List<Move> random = getRandomJointMove(state);
+        List<ProverMove> random = getRandomJointMove(state);
         return getNextState(state, random);
     }
 
@@ -619,9 +622,9 @@ public abstract class StateMachine
      * next state because of an error that occurred in the state machine and
      * couldn't be handled.
      */
-    public MachineState getRandomNextState(MachineState state, Role role, Move move) throws MoveDefinitionException, TransitionDefinitionException, StateMachineException
+    public ProverMachineState getRandomNextState(ProverMachineState state, ProverRole role, ProverMove move) throws MoveDefinitionException, TransitionDefinitionException, StateMachineException
     {
-        List<Move> random = getRandomJointMove(state, role, move);
+        List<ProverMove> random = getRandomJointMove(state, role, move);
         return getNextState(state, random);
     }
 
@@ -640,7 +643,7 @@ public abstract class StateMachine
      * playout of the game because of an error that occurred in the state machine and
      * couldn't be handled.
      */
-    public MachineState performDepthCharge(MachineState state, final int[] theDepth) throws TransitionDefinitionException, MoveDefinitionException, StateMachineException {
+    public ProverMachineState performDepthCharge(ProverMachineState state, final int[] theDepth) throws TransitionDefinitionException, MoveDefinitionException, StateMachineException {
         int nDepth = 0;
         while(!isTerminal(state)) {
             nDepth++;
@@ -671,7 +674,7 @@ public abstract class StateMachine
      * the number of state changes that were made until the current visited state.
      *
      */
-    public MachineState interruptiblePerformDepthCharge(MachineState state, final int[] theDepth) /*throws TransitionDefinitionException, MoveDefinitionException, StateMachineException*/ {
+    public ProverMachineState interruptiblePerformDepthCharge(ProverMachineState state, final int[] theDepth) /*throws TransitionDefinitionException, MoveDefinitionException, StateMachineException*/ {
         int nDepth = 0;
         try {
 	        while(!isTerminal(state)) {
@@ -694,14 +697,14 @@ public abstract class StateMachine
         return state;
     }
 
-    public void getAverageDiscountedScoresFromRepeatedDepthCharges(final MachineState state, final double[] avgScores, final double[] avgDepth, final double discountFactor, final int repetitions) throws TransitionDefinitionException, MoveDefinitionException, GoalDefinitionException, StateMachineException {
+    public void getAverageDiscountedScoresFromRepeatedDepthCharges(final ProverMachineState state, final double[] avgScores, final double[] avgDepth, final double discountFactor, final int repetitions) throws TransitionDefinitionException, MoveDefinitionException, GoalDefinitionException, StateMachineException {
     	avgDepth[0] = 0;
     	for (int j = 0; j < avgScores.length; j++) {
     		avgScores[j] = 0;
     	}
     	final int[] depth = new int[1];
     	for (int i = 0; i < repetitions; i++) {
-    		MachineState stateForCharge = state.clone();
+    		ProverMachineState stateForCharge = state.clone();
     		stateForCharge = performDepthCharge(stateForCharge, depth);
     		avgDepth[0] += depth[0];
     		final double accumulatedDiscountFactor = Math.pow(discountFactor, depth[0]);

@@ -12,7 +12,7 @@ import java.util.TreeSet;
 
 import org.ggp.base.apps.kiosk.templates.CommonGraphics;
 import org.ggp.base.apps.kiosk.templates.GameCanvas_SimpleGrid;
-import org.ggp.base.util.statemachine.MachineState;
+import org.ggp.base.util.statemachine.proverStructure.ProverMachineState;
 
 
 public class BlokboxSimpleCanvas extends GameCanvas_SimpleGrid {
@@ -212,7 +212,7 @@ public class BlokboxSimpleCanvas extends GameCanvas_SimpleGrid {
 
     // When the game state changes, clear our cache of known facts.
     @Override
-	public void updateGameState(MachineState gameState) {
+	public void updateGameState(ProverMachineState gameState) {
         factsCache.clear();
         super.updateGameState(gameState);
     }
