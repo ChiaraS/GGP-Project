@@ -3,10 +3,10 @@ package org.ggp.base.util.statemachine.proverStructure;
 import java.util.HashSet;
 import java.util.Set;
 
+import org.ggp.base.player.gamer.statemachine.MCS.manager.hybrid.structure.MachineState;
 import org.ggp.base.util.gdl.grammar.GdlSentence;
-import org.ggp.base.util.statemachine.MmachineState;
 
-public class ProverMachineState extends MmachineState{
+public class ProverMachineState implements MachineState{
     public ProverMachineState() {
         this.contents = null;
     }

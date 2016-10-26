@@ -1,7 +1,9 @@
 package org.ggp.base.util.statemachine.proverStructure;
 
+import java.io.Serializable;
+
+import org.ggp.base.player.gamer.statemachine.MCS.manager.hybrid.structure.Move;
 import org.ggp.base.util.gdl.grammar.GdlTerm;
-import org.ggp.base.util.statemachine.Mmove;
 
 /**
  * A Move represents a possible move that can be made by a role. Each
@@ -12,7 +14,7 @@ import org.ggp.base.util.statemachine.Mmove;
  * only express the action itself.
  */
 @SuppressWarnings("serial")
-public class ProverMove extends Mmove{
+public class ProverMove implements Serializable, Move{
     protected final GdlTerm contents;
 
     public ProverMove(GdlTerm contents)

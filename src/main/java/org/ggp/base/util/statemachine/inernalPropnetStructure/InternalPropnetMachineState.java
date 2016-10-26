@@ -1,13 +1,13 @@
 package org.ggp.base.util.statemachine.inernalPropnetStructure;
 
 import org.apache.lucene.util.OpenBitSet;
-import org.ggp.base.util.statemachine.MmachineState;
+import org.ggp.base.player.gamer.statemachine.MCS.manager.hybrid.structure.MachineState;
 
 /**
  * @author C.Sironi
  *
  */
-public class InternalPropnetMachineState extends MmachineState{
+public class InternalPropnetMachineState implements MachineState{
 
 	private final OpenBitSet truthValues;
 

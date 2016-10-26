@@ -2,8 +2,9 @@ package org.ggp.base.player.gamer.statemachine.MCTS.manager.propnet.strategies.b
 
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.evolution.OnlineTunableComponent;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.evolution.SingleParameterEvolutionManager;
+import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.strategies.beforesimualtion.BeforeSimulationStrategy;
 
-public class PnEvoBeforeSimulation implements PnBeforeSimulationStrategy {
+public class PnEvoBeforeSimulation implements BeforeSimulationStrategy {
 
 	private SingleParameterEvolutionManager evolutionManager;
 

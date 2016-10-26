@@ -1,6 +1,9 @@
 package org.ggp.base.util.statemachine.inernalPropnetStructure;
 
-import org.ggp.base.util.statemachine.Mmove;
+import java.io.Serializable;
+
+import org.ggp.base.player.gamer.statemachine.MCS.manager.hybrid.structure.Move;
+
 
 /**
  * A Move represents a possible move that can be made by a role. Each
@@ -15,7 +18,7 @@ import org.ggp.base.util.statemachine.Mmove;
  * array.
  */
 @SuppressWarnings("serial")
-public class InternalPropnetMove extends Mmove{
+public class InternalPropnetMove implements Serializable, Move{
     private final int moveIndex;
 
     public InternalPropnetMove(int moveIndex){

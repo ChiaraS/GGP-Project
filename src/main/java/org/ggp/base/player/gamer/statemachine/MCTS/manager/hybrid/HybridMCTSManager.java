@@ -1,7 +1,10 @@
 package org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid;
 
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.MCTSManager;
+import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.strategies.aftermove.AfterMoveStrategy;
+import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.strategies.aftersimulation.AfterSimulationStrategy;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.strategies.backpropagation.BackpropagationStrategy;
+import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.strategies.beforesimualtion.BeforeSimulationStrategy;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.strategies.expansion.ExpansionStrategy;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.strategies.movechoice.MoveChoiceStrategy;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.strategies.playout.PlayoutStrategy;
@@ -32,7 +35,7 @@ public class HybridMCTSManager extends MCTSManager {
 	 * or decay some statistics). The following strategies allow to specify the actions to be taken in
 	 * such situations. If nothing has to be done, just set these strategies to null.
 	 */
-/**	private BeforeSimulationStrategy beforeSimulationStrategy;
+	private BeforeSimulationStrategy beforeSimulationStrategy;
 
 	private AfterSimulationStrategy afterSimulationStrategy;
 

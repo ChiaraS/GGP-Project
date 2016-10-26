@@ -4,7 +4,7 @@ import org.ggp.base.player.gamer.statemachine.MCS.manager.prover.ProverCompleteM
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.MCTSManager;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.exceptions.MCTSException;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.strategies.aftermove.AfterMoveStrategy;
-import org.ggp.base.player.gamer.statemachine.MCTS.manager.propnet.strategies.beforesimulation.PnBeforeSimulationStrategy;
+import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.strategies.beforesimualtion.BeforeSimulationStrategy;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.prover.strategies.aftersimulation.ProverAfterSimulationStrategy;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.prover.strategies.backpropagation.ProverBackpropagationStrategy;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.prover.strategies.expansion.ProverExpansionStrategy;
@@ -70,7 +70,7 @@ public class ProverMCTSManager extends MCTSManager {
 	 * to specify the actions to be taken in such situations. If nothing has to be done, just set
 	 * these strategies to null.
 	 */
-	private PnBeforeSimulationStrategy beforeSimulationStrategy;
+	private BeforeSimulationStrategy beforeSimulationStrategy;
 
 	private ProverAfterSimulationStrategy afterSimulationStrategy;
 
@@ -113,7 +113,7 @@ public class ProverMCTSManager extends MCTSManager {
 	public ProverMCTSManager(ProverSelectionStrategy selectionStrategy,
 			ProverExpansionStrategy expansionStrategy, ProverPlayoutStrategy playoutStrategy,
 			ProverBackpropagationStrategy backpropagationStrategy, ProverMoveChoiceStrategy moveChoiceStrategy,
-			PnBeforeSimulationStrategy beforeSimulationStrategy, ProverAfterSimulationStrategy afterSimulationStrategy,
+			BeforeSimulationStrategy beforeSimulationStrategy, ProverAfterSimulationStrategy afterSimulationStrategy,
 			AfterMoveStrategy afterMoveStrategy, ProverTreeNodeFactory theNodesFactory,
 			StateMachine theMachine, int gameStepOffset, int maxSearchDepth) {
 

@@ -1,12 +1,13 @@
 package org.ggp.base.util.statemachine.proverStructure;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.ggp.base.player.gamer.statemachine.MCS.manager.hybrid.structure.Role;
 import org.ggp.base.util.gdl.grammar.Gdl;
 import org.ggp.base.util.gdl.grammar.GdlConstant;
 import org.ggp.base.util.gdl.grammar.GdlRelation;
-import org.ggp.base.util.statemachine.Rrole;
 
 
 /**
@@ -16,7 +17,7 @@ import org.ggp.base.util.statemachine.Rrole;
  * using the {@link #computeRoles(List)} method.
  */
 @SuppressWarnings("serial")
-public class ProverRole extends Rrole{
+public class ProverRole implements Serializable, Role{
     protected final GdlConstant name;
 
     public ProverRole(GdlConstant name)

@@ -7,9 +7,9 @@ import org.ggp.base.player.gamer.statemachine.MCS.manager.propnet.PnCompleteMove
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.MCTSManager;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.exceptions.MCTSException;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.strategies.aftermove.AfterMoveStrategy;
+import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.strategies.beforesimualtion.BeforeSimulationStrategy;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.propnet.strategies.aftersimulation.PnAfterSimulationStrategy;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.propnet.strategies.backpropagation.PnBackpropagationStrategy;
-import org.ggp.base.player.gamer.statemachine.MCTS.manager.propnet.strategies.beforesimulation.PnBeforeSimulationStrategy;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.propnet.strategies.expansion.PnExpansionStrategy;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.propnet.strategies.movechoice.PnMoveChoiceStrategy;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.propnet.strategies.playout.PnPlayoutStrategy;
@@ -76,7 +76,7 @@ public class InternalPropnetMCTSManager extends MCTSManager {
 	 * or decay some statistics). The following strategies allow to specify the actions to be taken in
 	 * such situations. If nothing has to be done, just set these strategies to null.
 	 */
-	private PnBeforeSimulationStrategy beforeSimulationStrategy;
+	private BeforeSimulationStrategy beforeSimulationStrategy;
 
 	private PnAfterSimulationStrategy afterSimulationStrategy;
 
@@ -119,7 +119,7 @@ public class InternalPropnetMCTSManager extends MCTSManager {
 	public InternalPropnetMCTSManager(PnSelectionStrategy selectionStrategy,
 			PnExpansionStrategy expansionStrategy, PnPlayoutStrategy playoutStrategy,
 			PnBackpropagationStrategy backpropagationStrategy, PnMoveChoiceStrategy moveChoiceStrategy,
-			PnBeforeSimulationStrategy beforeSimulationStrategy, PnAfterSimulationStrategy afterSimulationStrategy,
+			BeforeSimulationStrategy beforeSimulationStrategy, PnAfterSimulationStrategy afterSimulationStrategy,
 			AfterMoveStrategy afterMoveStrategy,PnTreeNodeFactory theNodesFactory,
 			InternalPropnetStateMachine theMachine, int gameStepOffset, int maxSearchDepth,
 			boolean logTranspositionTable) {
