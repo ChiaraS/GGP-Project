@@ -1,8 +1,8 @@
-package org.ggp.base.util.statemachine.inernalPropnetStructure;
+package org.ggp.base.util.statemachine.structure.compact;
 
 import java.io.Serializable;
 
-import org.ggp.base.player.gamer.statemachine.MCS.manager.hybrid.structure.Role;
+import org.ggp.base.util.statemachine.structure.Role;
 
 
 
@@ -10,19 +10,19 @@ import org.ggp.base.player.gamer.statemachine.MCS.manager.hybrid.structure.Role;
  * This class represents a role as the index it has in the ordered list of roles.
  */
 @SuppressWarnings("serial")
-public class InternalPropnetRole implements Serializable, Role{
+public class CompactRole implements Serializable, Role{
 
     private final int index;
 
-    public InternalPropnetRole(int index){
+    public CompactRole(int index){
         this.index = index;
     }
 
     @Override
     public boolean equals(Object o){
 
-        if ((o != null) && (o instanceof InternalPropnetRole)){
-        	InternalPropnetRole role = (InternalPropnetRole) o;
+        if ((o != null) && (o instanceof CompactRole)){
+        	CompactRole role = (CompactRole) o;
             return this.index == role.getIndex();
         }
 

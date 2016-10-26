@@ -6,8 +6,8 @@ import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.prover.
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.prover.ProverSimulationResult;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.prover.decoupled.ProverDecoupledMCTSMoveStats;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.prover.decoupled.ProverDecoupledMCTSNode;
-import org.ggp.base.util.statemachine.proverStructure.ProverMachineState;
-import org.ggp.base.util.statemachine.proverStructure.ProverRole;
+import org.ggp.base.util.statemachine.structure.explicit.ExplicitMachineState;
+import org.ggp.base.util.statemachine.structure.explicit.ExplicitRole;
 
 public class ProverStandardBackpropagation implements ProverBackpropagationStrategy {
 
@@ -23,7 +23,7 @@ public class ProverStandardBackpropagation implements ProverBackpropagationStrat
 	 */
 	//private Role myRole;
 
-	public ProverStandardBackpropagation(int numRoles, ProverRole myRole){
+	public ProverStandardBackpropagation(int numRoles, ExplicitRole myRole){
 		//this.numRoles = numRoles;
 		//this.myRole = myRole;
 	}
@@ -33,7 +33,7 @@ public class ProverStandardBackpropagation implements ProverBackpropagationStrat
 	 * @see org.ggp.base.player.gamer.statemachine.MCTS.manager.strategies.backpropagation.BackpropagationStrategy#update(org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.InternalPropnetMCTSNode, org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.MCTSJointMove, int[])
 	 */
 	@Override
-	public void update(MCTSNode currentNode, ProverMachineState currentState, ProverMCTSJointMove jointMove, ProverSimulationResult simulationResult){
+	public void update(MCTSNode currentNode, ExplicitMachineState currentState, ProverMCTSJointMove jointMove, ProverSimulationResult simulationResult){
 		if(currentNode instanceof ProverDecoupledMCTSNode && jointMove instanceof ProverSequDecMCTSJointMove){
 			this.decUpdate((ProverDecoupledMCTSNode)currentNode, currentState, (ProverSequDecMCTSJointMove)jointMove, simulationResult);
 		}/*else if(node instanceof PnSequentialMCTSNode && jointMove instanceof SequDecMCTSJointMove){
@@ -55,7 +55,7 @@ public class ProverStandardBackpropagation implements ProverBackpropagationStrat
 	 * @param jointMove the explored joint move.
 	 * @param goals the goals obtained by the simulation, to be used to update the statistics.
 	 */
-	private void decUpdate(ProverDecoupledMCTSNode currentNode, ProverMachineState currentState, ProverSequDecMCTSJointMove jointMove, ProverSimulationResult simulationResult) {
+	private void decUpdate(ProverDecoupledMCTSNode currentNode, ExplicitMachineState currentState, ProverSequDecMCTSJointMove jointMove, ProverSimulationResult simulationResult) {
 
 		currentNode.incrementTotVisits();
 
@@ -180,7 +180,7 @@ public class ProverStandardBackpropagation implements ProverBackpropagationStrat
 	}*/
 
 	@Override
-	public void processPlayoutResult(MCTSNode leafNode,	ProverMachineState leafState, ProverSimulationResult simulationResult) {
+	public void processPlayoutResult(MCTSNode leafNode,	ExplicitMachineState leafState, ProverSimulationResult simulationResult) {
 		// TODO Auto-generated method stub
 	}
 

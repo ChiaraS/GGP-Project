@@ -3,8 +3,8 @@ package org.ggp.base.player.gamer.statemachine.MCTS.manager.propnet.strategies.b
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.MCTSNode;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.propnet.PnMCTSJointMove;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.propnet.PnSimulationResult;
-import org.ggp.base.util.statemachine.inernalPropnetStructure.InternalPropnetMachineState;
-import org.ggp.base.util.statemachine.inernalPropnetStructure.InternalPropnetRole;
+import org.ggp.base.util.statemachine.structure.compact.CompactMachineState;
+import org.ggp.base.util.statemachine.structure.compact.CompactRole;
 
 public class PnGRAVEBackpropagation implements PnBackpropagationStrategy {
 
@@ -12,13 +12,13 @@ public class PnGRAVEBackpropagation implements PnBackpropagationStrategy {
 
 	private PnGRAVEUpdate graveUpdate;
 
-	public PnGRAVEBackpropagation(int numRoles, InternalPropnetRole myRole) {
+	public PnGRAVEBackpropagation(int numRoles, CompactRole myRole) {
 		this.stdBackpropagation = new PnStandardBackpropagation(numRoles, myRole);
 		this.graveUpdate = new PnGRAVEUpdate();
 	}
 
 	@Override
-	public void update(MCTSNode currentNode, InternalPropnetMachineState currentState, PnMCTSJointMove jointMove, PnSimulationResult simulationResult) {
+	public void update(MCTSNode currentNode, CompactMachineState currentState, PnMCTSJointMove jointMove, PnSimulationResult simulationResult) {
 
 		this.stdBackpropagation.update(currentNode, currentState, jointMove, simulationResult);
 		this.graveUpdate.update(currentNode, currentState, jointMove, simulationResult);
@@ -26,7 +26,7 @@ public class PnGRAVEBackpropagation implements PnBackpropagationStrategy {
 	}
 
 	@Override
-	public void processPlayoutResult(MCTSNode leafNode, InternalPropnetMachineState leafState, PnSimulationResult simulationResult) {
+	public void processPlayoutResult(MCTSNode leafNode, CompactMachineState leafState, PnSimulationResult simulationResult) {
 
 		this.graveUpdate.processPlayoutResult(leafNode, leafState, simulationResult);
 

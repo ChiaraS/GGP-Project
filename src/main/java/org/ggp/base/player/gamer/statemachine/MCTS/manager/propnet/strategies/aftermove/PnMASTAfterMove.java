@@ -6,15 +6,15 @@ import java.util.Map.Entry;
 
 import org.ggp.base.player.gamer.statemachine.MCS.manager.MoveStats;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.strategies.aftermove.AfterMoveStrategy;
-import org.ggp.base.util.statemachine.inernalPropnetStructure.InternalPropnetMove;
+import org.ggp.base.util.statemachine.structure.compact.CompactMove;
 
 public class PnMASTAfterMove implements AfterMoveStrategy {
 
-	private Map<InternalPropnetMove, MoveStats> mastStatistics;
+	private Map<CompactMove, MoveStats> mastStatistics;
 
 	private double decayFactor;
 
-	public PnMASTAfterMove(Map<InternalPropnetMove, MoveStats> mastStatistics, double decayFactor) {
+	public PnMASTAfterMove(Map<CompactMove, MoveStats> mastStatistics, double decayFactor) {
 		this.mastStatistics = mastStatistics;
 		this.decayFactor = decayFactor;
 	}
@@ -48,8 +48,8 @@ public class PnMASTAfterMove implements AfterMoveStrategy {
 		// removing the statistic object for a move that will be explored again during the next steps
 		// and we will have to recreate the object (in this case we'll consider as garbage an object
 		// that instead we would have needed again).
-		Iterator<Entry<InternalPropnetMove,MoveStats>> iterator = this.mastStatistics.entrySet().iterator();
-		Entry<InternalPropnetMove,MoveStats> theEntry;
+		Iterator<Entry<CompactMove,MoveStats>> iterator = this.mastStatistics.entrySet().iterator();
+		Entry<CompactMove,MoveStats> theEntry;
 		while(iterator.hasNext()){
 			theEntry = iterator.next();
 			theEntry.getValue().decreaseByFactor(this.decayFactor);

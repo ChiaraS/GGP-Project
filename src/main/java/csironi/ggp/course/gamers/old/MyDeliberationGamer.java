@@ -13,9 +13,9 @@ import org.ggp.base.util.statemachine.exceptions.GoalDefinitionException;
 import org.ggp.base.util.statemachine.exceptions.MoveDefinitionException;
 import org.ggp.base.util.statemachine.exceptions.StateMachineException;
 import org.ggp.base.util.statemachine.exceptions.TransitionDefinitionException;
-import org.ggp.base.util.statemachine.proverStructure.ProverMachineState;
-import org.ggp.base.util.statemachine.proverStructure.ProverMove;
-import org.ggp.base.util.statemachine.proverStructure.ProverRole;
+import org.ggp.base.util.statemachine.structure.explicit.ExplicitMachineState;
+import org.ggp.base.util.statemachine.structure.explicit.ExplicitMove;
+import org.ggp.base.util.statemachine.structure.explicit.ExplicitRole;
 
 /**
  * Implementation of a Compulsive Deliberation player for the GGP course.
@@ -38,18 +38,18 @@ public class MyDeliberationGamer extends SampleGamer {
 	 * @see org.ggp.base.player.gamer.statemachine.StateMachineGamer#stateMachineSelectMove(long)
 	 */
 	@Override
-	public ProverMove stateMachineSelectMove(long timeout)
+	public ExplicitMove stateMachineSelectMove(long timeout)
 			throws TransitionDefinitionException, MoveDefinitionException,
 			GoalDefinitionException, StateMachineException {
 
 		long start = System.currentTimeMillis();
 
 		StateMachine stateMachine = getStateMachine();
-		ProverMachineState state = getCurrentState();
-		ProverRole role = getRole();
-		List<ProverMove> moves = stateMachine.getLegalMoves(state, role);
+		ExplicitMachineState state = getCurrentState();
+		ExplicitRole role = getRole();
+		List<ExplicitMove> moves = stateMachine.getLegalMoves(state, role);
 
-		ProverMove selection = bestmove(role, state);
+		ExplicitMove selection = bestmove(role, state);
 
 
 		long stop = System.currentTimeMillis();
@@ -63,17 +63,17 @@ public class MyDeliberationGamer extends SampleGamer {
 	 *
 	 *
 	 */
-	private ProverMove bestmove(ProverRole role, ProverMachineState state)
+	private ExplicitMove bestmove(ExplicitRole role, ExplicitMachineState state)
 			throws TransitionDefinitionException, MoveDefinitionException,
 			GoalDefinitionException, StateMachineException{
 
 		StateMachine stateMachine = getStateMachine();
-		List<ProverMove> moves = stateMachine.getLegalMoves(state, role);
-		ProverMove selection = moves.get(0);
+		List<ExplicitMove> moves = stateMachine.getLegalMoves(state, role);
+		ExplicitMove selection = moves.get(0);
 		int maxScore = 0;
 
-		for (ProverMove move: moves){
-			ArrayList<ProverMove> jointMoves = new ArrayList<ProverMove>();
+		for (ExplicitMove move: moves){
+			ArrayList<ExplicitMove> jointMoves = new ArrayList<ExplicitMove>();
 			jointMoves.add(move);
 			int currentScore = maxscore(role, stateMachine.getNextState(state, jointMoves));
 			if(currentScore == 100){
@@ -94,7 +94,7 @@ public class MyDeliberationGamer extends SampleGamer {
 	 *
 	 *
 	 */
-	private int maxscore(ProverRole role, ProverMachineState state)
+	private int maxscore(ExplicitRole role, ExplicitMachineState state)
 			throws TransitionDefinitionException, MoveDefinitionException,
 			GoalDefinitionException, StateMachineException{
 
@@ -104,11 +104,11 @@ public class MyDeliberationGamer extends SampleGamer {
 			return stateMachine.getGoal(state, role);
 		}
 
-		List<ProverMove> moves = stateMachine.getLegalMoves(state, role);
+		List<ExplicitMove> moves = stateMachine.getLegalMoves(state, role);
 		int maxScore = 0;
 
-		for (ProverMove move: moves){
-			ArrayList<ProverMove> jointMoves = new ArrayList<ProverMove>();
+		for (ExplicitMove move: moves){
+			ArrayList<ExplicitMove> jointMoves = new ArrayList<ExplicitMove>();
 			jointMoves.add(move);
 			int currentScore = maxscore(role, stateMachine.getNextState(state, jointMoves));
 			if(currentScore > maxScore){

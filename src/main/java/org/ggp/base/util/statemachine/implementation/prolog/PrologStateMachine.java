@@ -14,9 +14,9 @@ import org.ggp.base.util.statemachine.exceptions.TransitionDefinitionException;
 import org.ggp.base.util.statemachine.implementation.prolog.prover.PrologProver;
 import org.ggp.base.util.statemachine.implementation.prolog.prover.PrologProverException;
 import org.ggp.base.util.statemachine.implementation.yapProlog.transform.YapEngineSupport;
-import org.ggp.base.util.statemachine.proverStructure.ProverMachineState;
-import org.ggp.base.util.statemachine.proverStructure.ProverMove;
-import org.ggp.base.util.statemachine.proverStructure.ProverRole;
+import org.ggp.base.util.statemachine.structure.explicit.ExplicitMachineState;
+import org.ggp.base.util.statemachine.structure.explicit.ExplicitMove;
+import org.ggp.base.util.statemachine.structure.explicit.ExplicitRole;
 import org.ggp.base.util.symbol.factory.exceptions.SymbolFormatException;
 
 import com.google.common.collect.ImmutableList;
@@ -85,7 +85,7 @@ public class PrologStateMachine extends StateMachine {
 	 * This variable can be used to avoid running "computeState(MachineState)" on
 	 * Prolog side when the game state registered on it is already the one we need.
 	 */
-	private ProverMachineState currentPrologState;
+	private ExplicitMachineState currentPrologState;
 
 	/**
 	 * The list of the roles as strings. Used to build as a string the query goals
@@ -99,12 +99,12 @@ public class PrologStateMachine extends StateMachine {
 	/**
 	 * Initial state of the current game.
 	 */
-	private ProverMachineState initialState;
+	private ExplicitMachineState initialState;
 
 	/**
 	 * Ordered list of roles in the current game.
 	 */
-	private ImmutableList<ProverRole> roles;
+	private ImmutableList<ExplicitRole> roles;
 
 	// SUPPORT CLASS THAT TAKES CARE OF TRANSLATIONS BETWEEN GDL AND PROLOG SYNTAX
 
@@ -193,7 +193,7 @@ public class PrologStateMachine extends StateMachine {
 	 * @throws StateMachineException if something went wrong and the initial
 	 * state could not be computed.
 	 */
-	private ProverMachineState computeInitialState() throws StateMachineException
+	private ExplicitMachineState computeInitialState() throws StateMachineException
 	{
 		Object[] bindings;
 
@@ -227,7 +227,7 @@ public class PrologStateMachine extends StateMachine {
 
 		// Compute the machine state using the Prolog answer (note that it could be an empty array of strings in case
 		// no propositions are true in the initial state. In this case the content of the machine state will be an empty HashSet)
-		this.currentPrologState = new ProverMachineState(support.askToState((String[]) bindings[0]));
+		this.currentPrologState = new ExplicitMachineState(support.askToState((String[]) bindings[0]));
 
 		return currentPrologState.clone();
 	}
@@ -241,7 +241,7 @@ public class PrologStateMachine extends StateMachine {
 	 * @throws StateMachineException if something went wrong and the game roles
 	 * could not be computed.
 	 */
-	private ImmutableList<ProverRole> computeRoles() throws StateMachineException	{
+	private ImmutableList<ExplicitRole> computeRoles() throws StateMachineException	{
 
 		Object[] bindings;
 
@@ -269,7 +269,7 @@ public class PrologStateMachine extends StateMachine {
 			throw new StateMachineException("Got no results for the computation of the game roles, while expecting at least one role.");
 		}
 
-		List<ProverRole> tmpRoles = new ArrayList<ProverRole>();
+		List<ExplicitRole> tmpRoles = new ArrayList<ExplicitRole>();
 
 		try{
 			tmpRoles = support.askToRoles((String[]) bindings[0]);
@@ -292,7 +292,7 @@ public class PrologStateMachine extends StateMachine {
 	 * TODO: ATTNETION! This method has never been tested.
 	 */
 	@Override
-	public List<Integer> getOneRoleGoals(ProverMachineState state, ProverRole role)	throws StateMachineException {
+	public List<Integer> getOneRoleGoals(ExplicitMachineState state, ExplicitRole role)	throws StateMachineException {
 
 		updatePrologState(state);
 
@@ -348,7 +348,7 @@ public class PrologStateMachine extends StateMachine {
 	 * @see org.ggp.base.util.statemachine.StateMachine#isTerminal(org.ggp.base.util.statemachine.MachineState)
 	 */
 	@Override
-	public boolean isTerminal(ProverMachineState state) throws StateMachineException {
+	public boolean isTerminal(ExplicitMachineState state) throws StateMachineException {
 
 		updatePrologState(state);
 
@@ -380,7 +380,7 @@ public class PrologStateMachine extends StateMachine {
 	 * @see org.ggp.base.util.statemachine.StateMachine#getRoles()
 	 */
 	@Override
-	public List<ProverRole> getRoles() {
+	public List<ExplicitRole> getRoles() {
 		return this.roles;
 	}
 
@@ -388,7 +388,7 @@ public class PrologStateMachine extends StateMachine {
 	 * @see org.ggp.base.util.statemachine.StateMachine#getInitialState()
 	 */
 	@Override
-	public ProverMachineState getInitialState() {
+	public ExplicitMachineState getInitialState() {
 		return this.initialState;
 	}
 
@@ -396,7 +396,7 @@ public class PrologStateMachine extends StateMachine {
 	 * @see org.ggp.base.util.statemachine.StateMachine#getLegalMoves(org.ggp.base.util.statemachine.MachineState, org.ggp.base.util.statemachine.Role)
 	 */
 	@Override
-	public List<ProverMove> getLegalMoves(ProverMachineState state, ProverRole role)
+	public List<ExplicitMove> getLegalMoves(ExplicitMachineState state, ExplicitRole role)
 			throws MoveDefinitionException, StateMachineException {
 
 		// TODO: should I catch the state machine exception before re-throwing it?
@@ -436,7 +436,7 @@ public class PrologStateMachine extends StateMachine {
 			throw new MoveDefinitionException(state, role);
 		}
 
-		List<ProverMove> moves = support.askToMoves(prologMoves);
+		List<ExplicitMove> moves = support.askToMoves(prologMoves);
 
 		return moves;
 	}
@@ -445,7 +445,7 @@ public class PrologStateMachine extends StateMachine {
 	 * @see org.ggp.base.util.statemachine.StateMachine#getNextState(org.ggp.base.util.statemachine.MachineState, java.util.List)
 	 */
 	@Override
-	public ProverMachineState getNextState(ProverMachineState state, List<ProverMove> moves)
+	public ExplicitMachineState getNextState(ExplicitMachineState state, List<ExplicitMove> moves)
 			throws TransitionDefinitionException, StateMachineException {
 
 		updatePrologState(state);
@@ -478,7 +478,7 @@ public class PrologStateMachine extends StateMachine {
 
 		// Compute the machine state using the Prolog answer (note that it could be an empty array of strings in case no
 		// propositions are true in the computed next state. In this case the content of the machine state will be an empty HashSet)
-		this.currentPrologState = new ProverMachineState(support.askToState((String[]) bindings[0]));
+		this.currentPrologState = new ExplicitMachineState(support.askToState((String[]) bindings[0]));
 
 		return this.currentPrologState.clone();
 	}
@@ -488,7 +488,7 @@ public class PrologStateMachine extends StateMachine {
 	 *
 	 * @throws StateMachineException if something went wrong and the state could not be updated.
 	 */
-	private void updatePrologState(ProverMachineState state) throws StateMachineException{
+	private void updatePrologState(ExplicitMachineState state) throws StateMachineException{
 
 		if(currentPrologState==null||!currentPrologState.equals(state)){
 
@@ -577,7 +577,7 @@ public class PrologStateMachine extends StateMachine {
 	 *
 	 * @param state the initial state.
 	 */
-	public void setInitialState(ProverMachineState state){
+	public void setInitialState(ExplicitMachineState state){
 		this.initialState = state;
 	}
 
@@ -590,7 +590,7 @@ public class PrologStateMachine extends StateMachine {
 	 *
 	 * @param roles the list of game roles.
 	 */
-	public void setRoles(List<ProverRole> roles){
+	public void setRoles(List<ExplicitRole> roles){
 		this.roles = ImmutableList.copyOf(roles);
 		this.fakeRoles = support.getFakeRoles(roles);
 	}

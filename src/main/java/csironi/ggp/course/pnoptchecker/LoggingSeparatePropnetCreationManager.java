@@ -21,7 +21,7 @@ import org.ggp.base.util.propnet.architecture.separateExtendedState.immutable.co
 import org.ggp.base.util.propnet.factory.DynamicPropNetFactory;
 import org.ggp.base.util.propnet.state.ImmutableSeparatePropnetState;
 import org.ggp.base.util.propnet.utils.PROP_TYPE;
-import org.ggp.base.util.statemachine.proverStructure.ProverRole;
+import org.ggp.base.util.statemachine.structure.explicit.ExplicitRole;
 
 /**
  * This class is the same as org.ggp.base.util.propnet.creationManager.SeparatePropnetCreationManager.
@@ -388,10 +388,10 @@ public class LoggingSeparatePropnetCreationManager extends Thread{
 			ImmutableComponent[] immutableComponents = this.dynamicToImmutableComponents(this.dynamicPropNet.getComponents());
 
 			// 2. PREPARE THE ROLES
-			ProverRole[] roles = new ProverRole[this.dynamicPropNet.getRoles().size()];
+			ExplicitRole[] roles = new ExplicitRole[this.dynamicPropNet.getRoles().size()];
 			int i = 0;
-			for(ProverRole r : this.dynamicPropNet.getRoles()){
-				roles[i] = new ProverRole(r.getName());
+			for(ExplicitRole r : this.dynamicPropNet.getRoles()){
+				roles[i] = new ExplicitRole(r.getName());
 				i++;
 			}
 
@@ -461,7 +461,7 @@ public class LoggingSeparatePropnetCreationManager extends Thread{
 
 			i = 1;
 
-			Map<ProverRole, List<DynamicProposition>> goalsPerRole = this.dynamicPropNet.getGoalsPerRole();
+			Map<ExplicitRole, List<DynamicProposition>> goalsPerRole = this.dynamicPropNet.getGoalsPerRole();
 
 			int[] firstGoalIndices = new int[roles.length+1];
 			int[][] goalValues = new int[roles.length][];
@@ -487,7 +487,7 @@ public class LoggingSeparatePropnetCreationManager extends Thread{
 			// 5C. LEGALS
 			// Set the correct state index for the legal propositions.
 
-			Map<ProverRole, List<DynamicProposition>> legalsPerRole = this.dynamicPropNet.getLegalsPerRole();
+			Map<ExplicitRole, List<DynamicProposition>> legalsPerRole = this.dynamicPropNet.getLegalsPerRole();
 
 			int[] firstLegalIndices = new int[roles.length+1];
 

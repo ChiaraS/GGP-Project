@@ -12,7 +12,7 @@ import org.ggp.base.util.statemachine.exceptions.GoalDefinitionException;
 import org.ggp.base.util.statemachine.exceptions.MoveDefinitionException;
 import org.ggp.base.util.statemachine.exceptions.StateMachineException;
 import org.ggp.base.util.statemachine.exceptions.TransitionDefinitionException;
-import org.ggp.base.util.statemachine.proverStructure.ProverMove;
+import org.ggp.base.util.statemachine.structure.explicit.ExplicitMove;
 
 import csironi.ggp.course.algorithms.MinMax;
 import csironi.ggp.course.evalfunctions.EvalProximity;
@@ -34,7 +34,7 @@ public class CIterativeProximityGamer extends SampleGamer {
 	 * @see org.ggp.base.player.gamer.statemachine.StateMachineGamer#stateMachineSelectMove(long)
 	 */
 	@Override
-	public ProverMove stateMachineSelectMove(long timeout)
+	public ExplicitMove stateMachineSelectMove(long timeout)
 			throws TransitionDefinitionException, MoveDefinitionException,
 			GoalDefinitionException, StateMachineException {
 		// We get the current start time
@@ -43,9 +43,9 @@ public class CIterativeProximityGamer extends SampleGamer {
 		long finishBy = timeout - 1000;
 
 		StateMachine stateMachine = getStateMachine();
-		List<ProverMove> moves = stateMachine.getLegalMoves(getCurrentState(), getRole());
+		List<ExplicitMove> moves = stateMachine.getLegalMoves(getCurrentState(), getRole());
 
-		ProverMove selection = moves.get(0);
+		ExplicitMove selection = moves.get(0);
 		// If there is more than one legal move available search the best one,
 		// otherwise return the only one available.
 
@@ -53,7 +53,7 @@ public class CIterativeProximityGamer extends SampleGamer {
 
 			MinMax search = new MinMax(true, "C:\\Users\\c.sironi\\BITBUCKET REPOS\\GGP-Base\\LOG\\IterativeDeepeningLog.txt", stateMachine);
 
-			ProverMove currentBestMove;
+			ExplicitMove currentBestMove;
 
 			for(int i = 1; i <= Integer.MAX_VALUE; i++){
 

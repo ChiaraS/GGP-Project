@@ -6,8 +6,8 @@ import org.ggp.base.util.statemachine.StateMachine;
 import org.ggp.base.util.statemachine.exceptions.MoveDefinitionException;
 import org.ggp.base.util.statemachine.exceptions.StateMachineException;
 import org.ggp.base.util.statemachine.exceptions.TransitionDefinitionException;
-import org.ggp.base.util.statemachine.proverStructure.ProverMachineState;
-import org.ggp.base.util.statemachine.proverStructure.ProverMove;
+import org.ggp.base.util.statemachine.structure.explicit.ExplicitMachineState;
+import org.ggp.base.util.statemachine.structure.explicit.ExplicitMove;
 
 public class IterativeDeepeningSearch extends SearchAlgorithm {
 
@@ -19,7 +19,7 @@ public class IterativeDeepeningSearch extends SearchAlgorithm {
 	}
 
 	@Override
-	public void doSearch(ProverMachineState state) {
+	public void doSearch(ExplicitMachineState state) {
 		if(upperDepthLimit == Integer.MAX_VALUE) {
 			System.out.println("iterativeDeepening " + getPlayclock());
 		} else {
@@ -47,7 +47,7 @@ public class IterativeDeepeningSearch extends SearchAlgorithm {
 	 * @throws TransitionDefinitionException
 	 * @throws StateMachineException
 	 */
-	private boolean dfs(ProverMachineState state, int depth) throws MoveDefinitionException, TransitionDefinitionException, StateMachineException {
+	private boolean dfs(ExplicitMachineState state, int depth) throws MoveDefinitionException, TransitionDefinitionException, StateMachineException {
 		if (timeout()) return false;
 		if (stateMachine.isTerminal(state)) {
 	        evaluateGoals(state);
@@ -57,12 +57,12 @@ public class IterativeDeepeningSearch extends SearchAlgorithm {
 		if (depth <= 0) {
 			return false;
 		}
-		List<List<ProverMove>> jointMoves = stateMachine.getLegalJointMoves(state);
+		List<List<ExplicitMove>> jointMoves = stateMachine.getLegalJointMoves(state);
 		nbLegals++;
 		boolean finished = true;
-		for (List<ProverMove> jointMove : jointMoves) {
+		for (List<ExplicitMove> jointMove : jointMoves) {
 			if (timeout()) return false;
-			ProverMachineState nextState = stateMachine.getNextState(state, jointMove);
+			ExplicitMachineState nextState = stateMachine.getNextState(state, jointMove);
 			++nbUpdates;
 			finished = dfs(nextState, depth-1) && finished; // order matters here!
 		}

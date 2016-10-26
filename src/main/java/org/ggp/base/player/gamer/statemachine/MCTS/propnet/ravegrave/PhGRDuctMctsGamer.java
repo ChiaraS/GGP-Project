@@ -22,8 +22,8 @@ import org.ggp.base.player.gamer.statemachine.MCTS.manager.prover.strategies.sel
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.prover.strategies.selection.evaluators.GRAVE.ProverProgressiveHistoryGRAVEEvaluator;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.propnet.amafdecoupled.PnAMAFDecoupledTreeNodeFactory;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.prover.amafdecoulped.ProverAMAFDecoupledTreeNodeFactory;
-import org.ggp.base.util.statemachine.inernalPropnetStructure.InternalPropnetRole;
-import org.ggp.base.util.statemachine.proverStructure.ProverRole;
+import org.ggp.base.util.statemachine.structure.compact.CompactRole;
+import org.ggp.base.util.statemachine.structure.explicit.ExplicitRole;
 
 public abstract class PhGRDuctMctsGamer extends GRDuctMctsGamer {
 
@@ -42,7 +42,7 @@ public abstract class PhGRDuctMctsGamer extends GRDuctMctsGamer {
 
 		Random r = new Random();
 
-		InternalPropnetRole myRole = this.thePropnetMachine.roleToInternalRole(this.getRole());
+		CompactRole myRole = this.thePropnetMachine.roleToInternalRole(this.getRole());
 		int numRoles = this.thePropnetMachine.getInternalRoles().length;
 
 		PnProgressiveHistoryGRAVESelection graveSelection = new PnProgressiveHistoryGRAVESelection(numRoles, myRole, r,	this.valueOffset, this.minAMAFVisits,
@@ -61,7 +61,7 @@ public abstract class PhGRDuctMctsGamer extends GRDuctMctsGamer {
 
 		Random r = new Random();
 
-		ProverRole myRole = this.getRole();
+		ExplicitRole myRole = this.getRole();
 		int numRoles = this.getStateMachine().getRoles().size();
 
 		int myRoleIndex = this.getStateMachine().getRoleIndices().get(this.getRole());

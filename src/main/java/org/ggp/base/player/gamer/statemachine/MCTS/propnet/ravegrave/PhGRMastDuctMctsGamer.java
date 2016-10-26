@@ -18,8 +18,8 @@ import org.ggp.base.player.gamer.statemachine.MCTS.manager.propnet.strategies.se
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.propnet.strategies.selection.evaluators.GRAVE.PnProgressiveHistoryGRAVEEvaluator;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.prover.ProverMCTSManager;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.propnet.amafdecoupled.PnAMAFDecoupledTreeNodeFactory;
-import org.ggp.base.util.statemachine.inernalPropnetStructure.InternalPropnetMove;
-import org.ggp.base.util.statemachine.inernalPropnetStructure.InternalPropnetRole;
+import org.ggp.base.util.statemachine.structure.compact.CompactMove;
+import org.ggp.base.util.statemachine.structure.compact.CompactRole;
 
 public abstract class PhGRMastDuctMctsGamer extends GRMastDuctMctsGamer {
 
@@ -38,12 +38,12 @@ public abstract class PhGRMastDuctMctsGamer extends GRMastDuctMctsGamer {
 
 		Random r = new Random();
 
-		InternalPropnetRole myRole = this.thePropnetMachine.roleToInternalRole(this.getRole());
+		CompactRole myRole = this.thePropnetMachine.roleToInternalRole(this.getRole());
 		int numRoles = this.thePropnetMachine.getInternalRoles().length;
 
 		PnProgressiveHistoryGRAVESelection graveSelection = new PnProgressiveHistoryGRAVESelection(numRoles, myRole, r, this.valueOffset, this.minAMAFVisits, new PnProgressiveHistoryGRAVEEvaluator(this.c, this.unexploredMoveDefaultSelectionValue, this.betaComputer, this.defaultExploration, this.w));
 
-		Map<InternalPropnetMove, MoveStats> mastStatistics = new HashMap<InternalPropnetMove, MoveStats>();
+		Map<CompactMove, MoveStats> mastStatistics = new HashMap<CompactMove, MoveStats>();
 
 		// Note that the after simulation strategy GRAVEAfterSimulation already performs all the after simulation
 		// actions needed by the MAST strategy, so we don't need to change it when we use GRAVE and MAST together.

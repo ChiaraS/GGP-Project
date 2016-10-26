@@ -9,8 +9,8 @@ import org.ggp.base.util.statemachine.StateMachine;
 import org.ggp.base.util.statemachine.exceptions.MoveDefinitionException;
 import org.ggp.base.util.statemachine.exceptions.StateMachineException;
 import org.ggp.base.util.statemachine.exceptions.TransitionDefinitionException;
-import org.ggp.base.util.statemachine.proverStructure.ProverMachineState;
-import org.ggp.base.util.statemachine.proverStructure.ProverMove;
+import org.ggp.base.util.statemachine.structure.explicit.ExplicitMachineState;
+import org.ggp.base.util.statemachine.structure.explicit.ExplicitMove;
 
 public class ProverStandardPlayout implements ProverPlayoutStrategy {
 
@@ -24,7 +24,7 @@ public class ProverStandardPlayout implements ProverPlayoutStrategy {
 	}
 
 	@Override
-	public ProverSimulationResult playout(ProverMachineState state, int maxDepth) {
+	public ProverSimulationResult playout(ExplicitMachineState state, int maxDepth) {
 		//MachineState lastState;
 
         boolean terminal = true;
@@ -58,7 +58,7 @@ public class ProverStandardPlayout implements ProverPlayoutStrategy {
 
         int nDepth = 0;
 
-        List<ProverMove> jointMove;
+        List<ExplicitMove> jointMove;
 
         do{
 

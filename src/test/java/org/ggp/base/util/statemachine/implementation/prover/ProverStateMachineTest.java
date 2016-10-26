@@ -10,9 +10,9 @@ import org.ggp.base.util.gdl.grammar.Gdl;
 import org.ggp.base.util.gdl.grammar.GdlConstant;
 import org.ggp.base.util.gdl.grammar.GdlPool;
 import org.ggp.base.util.gdl.grammar.GdlTerm;
-import org.ggp.base.util.statemachine.proverStructure.ProverMachineState;
-import org.ggp.base.util.statemachine.proverStructure.ProverMove;
-import org.ggp.base.util.statemachine.proverStructure.ProverRole;
+import org.ggp.base.util.statemachine.structure.explicit.ExplicitMachineState;
+import org.ggp.base.util.statemachine.structure.explicit.ExplicitMove;
+import org.ggp.base.util.statemachine.structure.explicit.ExplicitRole;
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -31,44 +31,44 @@ public class ProverStateMachineTest extends Assert {
     public void testProverOnTicTacToe() throws Exception {
         List<Gdl> ticTacToeDesc = new TestGameRepository().getGame("ticTacToe").getRules();
         sm.initialize(ticTacToeDesc, Long.MAX_VALUE);
-        ProverMachineState state = sm.getInitialState();
+        ExplicitMachineState state = sm.getInitialState();
         assertFalse(sm.isTerminal(state));
         GdlConstant X_PLAYER = GdlPool.getConstant("xplayer");
         GdlConstant O_PLAYER = GdlPool.getConstant("oplayer");
-        ProverRole xRole = new ProverRole(X_PLAYER);
-        ProverRole oRole = new ProverRole(O_PLAYER);
-        List<ProverRole> roles = Arrays.asList(xRole, oRole);
+        ExplicitRole xRole = new ExplicitRole(X_PLAYER);
+        ExplicitRole oRole = new ExplicitRole(O_PLAYER);
+        List<ExplicitRole> roles = Arrays.asList(xRole, oRole);
         assertEquals(roles, sm.getRoles());
 
         assertEquals(9, sm.getLegalJointMoves(state).size());
         assertEquals(9, sm.getLegalMoves(state, xRole).size());
         assertEquals(1, sm.getLegalMoves(state, oRole).size());
-        ProverMove noop = new ProverMove(GdlPool.getConstant("noop"));
+        ExplicitMove noop = new ExplicitMove(GdlPool.getConstant("noop"));
         assertEquals(noop, sm.getLegalMoves(state, oRole).get(0));
 
-        ProverMove m11 = move("mark 1 1");
+        ExplicitMove m11 = move("mark 1 1");
         assertTrue(sm.getLegalMoves(state, xRole).contains(m11));
-        state = sm.getNextState(state, Arrays.asList(new ProverMove[] {m11, noop}));
+        state = sm.getNextState(state, Arrays.asList(new ExplicitMove[] {m11, noop}));
         assertFalse(sm.isTerminal(state));
 
-        ProverMove m13 = move("mark 1 3");
+        ExplicitMove m13 = move("mark 1 3");
         assertTrue(sm.getLegalMoves(state, oRole).contains(m13));
-        state = sm.getNextState(state, Arrays.asList(new ProverMove[] {noop, m13}));
+        state = sm.getNextState(state, Arrays.asList(new ExplicitMove[] {noop, m13}));
         assertFalse(sm.isTerminal(state));
 
-        ProverMove m31 = move("mark 3 1");
+        ExplicitMove m31 = move("mark 3 1");
         assertTrue(sm.getLegalMoves(state, xRole).contains(m31));
-        state = sm.getNextState(state, Arrays.asList(new ProverMove[] {m31, noop}));
+        state = sm.getNextState(state, Arrays.asList(new ExplicitMove[] {m31, noop}));
         assertFalse(sm.isTerminal(state));
 
-        ProverMove m22 = move("mark 2 2");
+        ExplicitMove m22 = move("mark 2 2");
         assertTrue(sm.getLegalMoves(state, oRole).contains(m22));
-        state = sm.getNextState(state, Arrays.asList(new ProverMove[] {noop, m22}));
+        state = sm.getNextState(state, Arrays.asList(new ExplicitMove[] {noop, m22}));
         assertFalse(sm.isTerminal(state));
 
-        ProverMove m21 = move("mark 2 1");
+        ExplicitMove m21 = move("mark 2 1");
         assertTrue(sm.getLegalMoves(state, xRole).contains(m21));
-        state = sm.getNextState(state, Arrays.asList(new ProverMove[] {m21, noop}));
+        state = sm.getNextState(state, Arrays.asList(new ExplicitMove[] {m21, noop}));
         assertTrue(sm.isTerminal(state));
         assertEquals(100, sm.getGoal(state, xRole));
         assertEquals(0, sm.getGoal(state, oRole));
@@ -88,8 +88,8 @@ public class ProverStateMachineTest extends Assert {
     public void testCase1A() throws Exception {
         List<Gdl> desc = new TestGameRepository().getGame("test_case_1a").getRules();
         sm.initialize(desc, Long.MAX_VALUE);
-        ProverMachineState state = sm.getInitialState();
-        ProverRole you = new ProverRole(GdlPool.getConstant("you"));
+        ExplicitMachineState state = sm.getInitialState();
+        ExplicitRole you = new ExplicitRole(GdlPool.getConstant("you"));
         assertFalse(sm.isTerminal(state));
         assertEquals(100, sm.getGoal(state, you));
         assertEquals(Collections.singletonList(100), sm.getGoals(state));
@@ -103,8 +103,8 @@ public class ProverStateMachineTest extends Assert {
     public void testCase3C() throws Exception {
         List<Gdl> desc = new TestGameRepository().getGame("test_case_3c").getRules();
         sm.initialize(desc, Long.MAX_VALUE);
-        ProverMachineState state = sm.getInitialState();
-        ProverRole xplayer = new ProverRole(GdlPool.getConstant("xplayer"));
+        ExplicitMachineState state = sm.getInitialState();
+        ExplicitRole xplayer = new ExplicitRole(GdlPool.getConstant("xplayer"));
         assertFalse(sm.isTerminal(state));
         assertEquals(1, sm.getLegalMoves(state, xplayer).size());
         assertEquals(move("win"), sm.getLegalMoves(state, xplayer).get(0));
@@ -118,8 +118,8 @@ public class ProverStateMachineTest extends Assert {
     public void testCase5A() throws Exception {
         List<Gdl> desc = new TestGameRepository().getGame("test_case_5a").getRules();
         sm.initialize(desc, Long.MAX_VALUE);
-        ProverMachineState state = sm.getInitialState();
-        ProverRole you = new ProverRole(GdlPool.getConstant("you"));
+        ExplicitMachineState state = sm.getInitialState();
+        ExplicitRole you = new ExplicitRole(GdlPool.getConstant("you"));
         assertFalse(sm.isTerminal(state));
         assertEquals(1, sm.getLegalMoves(state, you).size());
         assertEquals(move("proceed"), sm.getLegalMoves(state, you).get(0));
@@ -133,8 +133,8 @@ public class ProverStateMachineTest extends Assert {
     public void testCase5B() throws Exception {
         List<Gdl> desc = new TestGameRepository().getGame("test_case_5b").getRules();
         sm.initialize(desc, Long.MAX_VALUE);
-        ProverMachineState state = sm.getInitialState();
-        ProverRole you = new ProverRole(GdlPool.getConstant("you"));
+        ExplicitMachineState state = sm.getInitialState();
+        ExplicitRole you = new ExplicitRole(GdlPool.getConstant("you"));
         assertFalse(sm.isTerminal(state));
         assertEquals(1, sm.getLegalMoves(state, you).size());
         assertEquals(move("draw 1 1 1 2"), sm.getLegalMoves(state, you).get(0));
@@ -146,8 +146,8 @@ public class ProverStateMachineTest extends Assert {
     public void testCase5C() throws Exception {
         List<Gdl> desc = new TestGameRepository().getGame("test_case_5c").getRules();
         sm.initialize(desc, Long.MAX_VALUE);
-        ProverMachineState state = sm.getInitialState();
-        ProverRole you = new ProverRole(GdlPool.getConstant("you"));
+        ExplicitMachineState state = sm.getInitialState();
+        ExplicitRole you = new ExplicitRole(GdlPool.getConstant("you"));
         assertFalse(sm.isTerminal(state));
         assertEquals(1, sm.getLegalMoves(state, you).size());
         assertEquals(move("proceed"), sm.getLegalMoves(state, you).get(0));
@@ -161,8 +161,8 @@ public class ProverStateMachineTest extends Assert {
     public void testCase5D() throws Exception {
         List<Gdl> desc = new TestGameRepository().getGame("test_case_5d").getRules();
         sm.initialize(desc, Long.MAX_VALUE);
-        ProverMachineState state = sm.getInitialState();
-        ProverRole you = new ProverRole(GdlPool.getConstant("you"));
+        ExplicitMachineState state = sm.getInitialState();
+        ExplicitRole you = new ExplicitRole(GdlPool.getConstant("you"));
         assertFalse(sm.isTerminal(state));
         assertEquals(1, sm.getLegalMoves(state, you).size());
         assertEquals(move("proceed"), sm.getLegalMoves(state, you).get(0));
@@ -176,8 +176,8 @@ public class ProverStateMachineTest extends Assert {
     public void testCase5E() throws Exception {
         List<Gdl> desc = new TestGameRepository().getGame("test_case_5e").getRules();
         sm.initialize(desc, Long.MAX_VALUE);
-        ProverMachineState state = sm.getInitialState();
-        ProverRole robot = new ProverRole(GdlPool.getConstant("robot"));
+        ExplicitMachineState state = sm.getInitialState();
+        ExplicitRole robot = new ExplicitRole(GdlPool.getConstant("robot"));
         assertFalse(sm.isTerminal(state));
         System.out.println(sm.getLegalMoves(state, robot));
         assertEquals(7, sm.getLegalMoves(state, robot).size());
@@ -196,8 +196,8 @@ public class ProverStateMachineTest extends Assert {
     public void testDistinctAtBeginningOfRule() throws Exception {
         List<Gdl> desc = new TestGameRepository().getGame("test_distinct_beginning_rule").getRules();
         sm.initialize(desc, Long.MAX_VALUE);
-        ProverMachineState state = sm.getInitialState();
-        ProverRole you = new ProverRole(GdlPool.getConstant("you"));
+        ExplicitMachineState state = sm.getInitialState();
+        ExplicitRole you = new ExplicitRole(GdlPool.getConstant("you"));
         assertFalse(sm.isTerminal(state));
         assertEquals(2, sm.getLegalMoves(state, you).size());
         state = sm.getNextState(state, Collections.singletonList(move("do a b")));
@@ -206,15 +206,15 @@ public class ProverStateMachineTest extends Assert {
         assertEquals(Collections.singletonList(100), sm.getGoals(state));
     }
 
-    protected ProverMove move(String description) {
+    protected ExplicitMove move(String description) {
         String[] parts = description.split(" ");
         GdlConstant head = GdlPool.getConstant(parts[0]);
         if(parts.length == 1)
-            return new ProverMove(head);
+            return new ExplicitMove(head);
         List<GdlTerm> body = new ArrayList<GdlTerm>();
         for(int i = 1; i < parts.length; i++) {
             body.add(GdlPool.getConstant(parts[i]));
         }
-        return new ProverMove(GdlPool.getFunction(head, body));
+        return new ExplicitMove(GdlPool.getFunction(head, body));
     }
 }

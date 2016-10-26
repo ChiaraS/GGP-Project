@@ -6,11 +6,11 @@ import org.ggp.base.player.gamer.statemachine.MCTS.manager.propnet.strategies.se
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.MCTSNode;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.propnet.PnMCTSJointMove;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.propnet.amafdecoupled.PnAMAFNode;
-import org.ggp.base.util.statemachine.inernalPropnetStructure.InternalPropnetRole;
+import org.ggp.base.util.statemachine.structure.compact.CompactRole;
 
 public class PnProgressiveHistoryGRAVESelection extends PnGRAVESelection{
 
-	public PnProgressiveHistoryGRAVESelection(int numRoles, InternalPropnetRole myRole,
+	public PnProgressiveHistoryGRAVESelection(int numRoles, CompactRole myRole,
 			Random random, double valueOffset, int minAMAFVisits, PnProgressiveHistoryGRAVEEvaluator moveEvaluator) {
 		super(numRoles, myRole, random, valueOffset, minAMAFVisits, moveEvaluator);
 

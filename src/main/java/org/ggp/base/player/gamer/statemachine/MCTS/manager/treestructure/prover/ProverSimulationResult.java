@@ -3,10 +3,9 @@ package org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.prover
 import java.util.ArrayList;
 import java.util.List;
 
-import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.SimulationResult;
-import org.ggp.base.util.statemachine.proverStructure.ProverMove;
+import org.ggp.base.util.statemachine.structure.explicit.ExplicitMove;
 
-public class ProverSimulationResult extends SimulationResult{
+public class ProverSimulationResult{
 
 	/**
 	 * The length of the playout.
@@ -38,7 +37,7 @@ public class ProverSimulationResult extends SimulationResult{
 	 * save the goals of each state in the simulation, from root to last state, but in the last state we have
 	 * no joint move to memorize).
 	 */
-	private List<List<ProverMove>> allJointMoves;
+	private List<List<ExplicitMove>> allJointMoves;
 
 	/**
 	 * The goals of each role in each state reached by performing the corresponding joint moves
@@ -59,7 +58,7 @@ public class ProverSimulationResult extends SimulationResult{
 	 */
 	public ProverSimulationResult() {
 
-		this(0, new ArrayList<List<ProverMove>>(), new ArrayList<int[]>());
+		this(0, new ArrayList<List<ExplicitMove>>(), new ArrayList<int[]>());
 
 	}
 
@@ -81,7 +80,7 @@ public class ProverSimulationResult extends SimulationResult{
 	 */
 	public ProverSimulationResult(int playoutLength, int[] terminalGoals) {
 
-		this(playoutLength, new ArrayList<List<ProverMove>>(), new ArrayList<int[]>());
+		this(playoutLength, new ArrayList<List<ExplicitMove>>(), new ArrayList<int[]>());
 
 		this.intermediateGoals.add(terminalGoals);
 
@@ -89,11 +88,11 @@ public class ProverSimulationResult extends SimulationResult{
 
 	public ProverSimulationResult(int playoutLength, List<int[]> intermediateGoals) {
 
-		this(playoutLength, new ArrayList<List<ProverMove>>(), intermediateGoals);
+		this(playoutLength, new ArrayList<List<ExplicitMove>>(), intermediateGoals);
 
 	}
 
-	public ProverSimulationResult(int playoutLength, int[] terminalGoals, List<List<ProverMove>> allJointMoves) {
+	public ProverSimulationResult(int playoutLength, int[] terminalGoals, List<List<ExplicitMove>> allJointMoves) {
 
 		this(playoutLength, allJointMoves, new ArrayList<int[]>());
 
@@ -101,12 +100,12 @@ public class ProverSimulationResult extends SimulationResult{
 
 	}
 
-	public ProverSimulationResult(int playoutLength, List<List<ProverMove>> allJointMoves, List<int[]> intermediateGoals) {
+	public ProverSimulationResult(int playoutLength, List<List<ExplicitMove>> allJointMoves, List<int[]> intermediateGoals) {
 
 		this.playoutLength = playoutLength;
 
 		if(allJointMoves == null){
-			allJointMoves = new ArrayList<List<ProverMove>>();
+			allJointMoves = new ArrayList<List<ExplicitMove>>();
 		}
 
 		if(intermediateGoals == null){
@@ -123,7 +122,7 @@ public class ProverSimulationResult extends SimulationResult{
 		return this.playoutLength;
 	}
 
-	public List<List<ProverMove>> getAllJointMoves(){
+	public List<List<ExplicitMove>> getAllJointMoves(){
 
 		return this.allJointMoves;
 
@@ -144,7 +143,7 @@ public class ProverSimulationResult extends SimulationResult{
 		return this.intermediateGoals.get(0);
 	}
 
-	public void addJointMove(List<ProverMove> jointMove){
+	public void addJointMove(List<ExplicitMove> jointMove){
 
 		this.allJointMoves.add(jointMove);
 

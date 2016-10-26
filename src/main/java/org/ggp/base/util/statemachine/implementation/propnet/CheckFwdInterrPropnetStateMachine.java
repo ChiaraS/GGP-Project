@@ -20,9 +20,9 @@ import org.ggp.base.util.statemachine.exceptions.MoveDefinitionException;
 import org.ggp.base.util.statemachine.exceptions.StateMachineInitializationException;
 import org.ggp.base.util.statemachine.exceptions.TransitionDefinitionException;
 import org.ggp.base.util.statemachine.implementation.prover.query.ProverQueryBuilder;
-import org.ggp.base.util.statemachine.proverStructure.ProverMachineState;
-import org.ggp.base.util.statemachine.proverStructure.ProverMove;
-import org.ggp.base.util.statemachine.proverStructure.ProverRole;
+import org.ggp.base.util.statemachine.structure.explicit.ExplicitMachineState;
+import org.ggp.base.util.statemachine.structure.explicit.ExplicitMove;
+import org.ggp.base.util.statemachine.structure.explicit.ExplicitRole;
 
 import com.google.common.collect.ImmutableList;
 
@@ -31,9 +31,9 @@ public class CheckFwdInterrPropnetStateMachine extends StateMachine {
     /** The underlying proposition network  */
     private ForwardInterruptingPropNet propNet;
     /** The player roles */
-    private ImmutableList<ProverRole> roles;
+    private ImmutableList<ExplicitRole> roles;
     /** The initial state */
-    private ProverMachineState initialState;
+    private ExplicitMachineState initialState;
 
     /** The maximum time (in milliseconds) that this state machine can spend to create the propnet */
     private long maxPropnetCreationTime;
@@ -146,7 +146,7 @@ public class CheckFwdInterrPropnetStateMachine extends StateMachine {
 		        if(init != null){
 		        	this.initialState = this.computeInitialState();
 		        }else{
-		        	this.initialState = new ProverMachineState(new HashSet<GdlSentence>());
+		        	this.initialState = new ExplicitMachineState(new HashSet<GdlSentence>());
 		        }
     		}else{
     			//...or it encountered an OutOfMemory error or some other error or Exception,
@@ -168,7 +168,7 @@ public class CheckFwdInterrPropnetStateMachine extends StateMachine {
 	 *
      * @return the next state.
      */
-    private ProverMachineState computeInitialState(){
+    private ExplicitMachineState computeInitialState(){
 
     	//AGGIUNTA
     	//System.out.println("COMPUTING INIT STATE");
@@ -187,7 +187,7 @@ public class CheckFwdInterrPropnetStateMachine extends StateMachine {
 			}
 		}
 
-		return new ProverMachineState(contents);
+		return new ExplicitMachineState(contents);
     }
 
     /**
@@ -200,7 +200,7 @@ public class CheckFwdInterrPropnetStateMachine extends StateMachine {
 	 *
      * @return the next state.
      */
-    private ProverMachineState computeNextState(){
+    private ExplicitMachineState computeNextState(){
 
     	//AGGIUNTA
     	//System.out.println("COMPUTING NEXT STATE");
@@ -216,7 +216,7 @@ public class CheckFwdInterrPropnetStateMachine extends StateMachine {
 			}
 		}
 
-		return new ProverMachineState(contents);
+		return new ExplicitMachineState(contents);
     }
 
 	/**
@@ -224,13 +224,13 @@ public class CheckFwdInterrPropnetStateMachine extends StateMachine {
 	 * of the terminal proposition for the state.
 	 */
 	@Override
-	public boolean isTerminal(ProverMachineState state) {
+	public boolean isTerminal(ExplicitMachineState state) {
 		this.markBases(state);
 		return this.propNet.getTerminalProposition().getValue();
 	}
 
 	@Override
-	public List<Integer> getOneRoleGoals(ProverMachineState state, ProverRole role) {
+	public List<Integer> getOneRoleGoals(ExplicitMachineState state, ExplicitRole role) {
 		// Mark base propositions according to state.
 		this.markBases(state);
 
@@ -264,7 +264,7 @@ public class CheckFwdInterrPropnetStateMachine extends StateMachine {
 	 * this state machine has not been initialized, NULL will be returned.
 	 */
 	@Override
-	public ProverMachineState getInitialState() {
+	public ExplicitMachineState getInitialState() {
 		return this.initialState;
 	}
 
@@ -272,7 +272,7 @@ public class CheckFwdInterrPropnetStateMachine extends StateMachine {
 	 * Computes the legal moves for role in state.
 	 */
 	@Override
-	public List<ProverMove> getLegalMoves(ProverMachineState state, ProverRole role)
+	public List<ExplicitMove> getLegalMoves(ExplicitMachineState state, ExplicitRole role)
 	throws MoveDefinitionException {
 		// Mark base propositions according to state.
 		this.markBases(state);
@@ -281,7 +281,7 @@ public class CheckFwdInterrPropnetStateMachine extends StateMachine {
 		Set<ForwardInterruptingProposition> legalPropsForRole = this.propNet.getLegalPropositions().get(role);
 
 		// Create the list of legal moves.
-		List<ProverMove> legalMovesForRole = new ArrayList<ProverMove>();
+		List<ExplicitMove> legalMovesForRole = new ArrayList<ExplicitMove>();
 		for(ForwardInterruptingProposition legalProp : legalPropsForRole){
 			if(legalProp.getValue()){
 				legalMovesForRole.add(getMoveFromProposition(legalProp));
@@ -300,7 +300,7 @@ public class CheckFwdInterrPropnetStateMachine extends StateMachine {
 	 * Computes the next state given a state and the list of moves.
 	 */
 	@Override
-	public ProverMachineState getNextState(ProverMachineState state, List<ProverMove> moves)
+	public ExplicitMachineState getNextState(ExplicitMachineState state, List<ExplicitMove> moves)
 	throws TransitionDefinitionException {
 		// Mark base propositions according to state.
 		this.markBases(state);
@@ -314,7 +314,7 @@ public class CheckFwdInterrPropnetStateMachine extends StateMachine {
 
 	/* Already implemented for you */
 	@Override
-	public List<ProverRole> getRoles() {
+	public List<ExplicitRole> getRoles() {
 		return roles;
 	}
 
@@ -331,7 +331,7 @@ public class CheckFwdInterrPropnetStateMachine extends StateMachine {
 	 * @param moves the moves to be translated into 'does' propositions.
 	 * @return a list with the 'does' propositions corresponding to the given joint move.
 	 */
-	private List<GdlSentence> toDoes(List<ProverMove> moves){
+	private List<GdlSentence> toDoes(List<ExplicitMove> moves){
 
 		//AGGIUNTA
     	//System.out.println("TO DOES");
@@ -340,7 +340,7 @@ public class CheckFwdInterrPropnetStateMachine extends StateMachine {
     	//FINE AGGIUNTA
 
 		List<GdlSentence> doeses = new ArrayList<GdlSentence>(moves.size());
-		Map<ProverRole, Integer> roleIndices = getRoleIndices();
+		Map<ExplicitRole, Integer> roleIndices = getRoleIndices();
 
 		//AGGIUNTA
 		//System.out.println("ROLES");
@@ -379,8 +379,8 @@ public class CheckFwdInterrPropnetStateMachine extends StateMachine {
 	 * @param p the proposition to be transformed into a move.
 	 * @return the legal move corresponding to the given proposition.
 	 */
-	public static ProverMove getMoveFromProposition(ForwardInterruptingProposition p){
-		return new ProverMove(p.getName().get(1));
+	public static ExplicitMove getMoveFromProposition(ForwardInterruptingProposition p){
+		return new ExplicitMove(p.getName().get(1));
 	}
 
 	/**
@@ -400,7 +400,7 @@ public class CheckFwdInterrPropnetStateMachine extends StateMachine {
      *
      * @param state the machine state to be set in the propnet.
      */
-	private void markBases(ProverMachineState state){
+	private void markBases(ExplicitMachineState state){
 
 		//AGGIUNTA
     	//System.out.println("MARKING BASES");
@@ -423,7 +423,7 @@ public class CheckFwdInterrPropnetStateMachine extends StateMachine {
      *
      * @param moves the moves to be set as performed in the propnet.
      */
-	private void markInputs(List<ProverMove> moves){
+	private void markInputs(List<ExplicitMove> moves){
 
 		//AGGIUNTA
     	//System.out.println("MARKING INPUTS");

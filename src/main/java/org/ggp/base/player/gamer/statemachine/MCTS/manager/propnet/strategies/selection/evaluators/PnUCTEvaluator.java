@@ -2,7 +2,7 @@ package org.ggp.base.player.gamer.statemachine.MCTS.manager.propnet.strategies.s
 
 import org.ggp.base.player.gamer.statemachine.MCS.manager.MoveStats;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.evolution.OnlineTunableComponent;
-import org.ggp.base.util.statemachine.inernalPropnetStructure.InternalPropnetMove;
+import org.ggp.base.util.statemachine.structure.compact.CompactMove;
 
 public class PnUCTEvaluator implements PnMoveEvaluator, OnlineTunableComponent {
 
@@ -21,7 +21,7 @@ public class PnUCTEvaluator implements PnMoveEvaluator, OnlineTunableComponent {
 
 	@Override
 	public double computeMoveValue(int nodeVisits,
-			InternalPropnetMove theMove, MoveStats theMoveStats) {
+			CompactMove theMove, MoveStats theMoveStats) {
 
 		double exploitation = this.computeExploitation(nodeVisits, theMove, theMoveStats);
 		double exploration = this.computeExploration(nodeVisits, theMoveStats);
@@ -33,7 +33,7 @@ public class PnUCTEvaluator implements PnMoveEvaluator, OnlineTunableComponent {
 		}
 	}
 
-	protected double computeExploitation(int nodeVisits, InternalPropnetMove theMove,  MoveStats theMoveStats){
+	protected double computeExploitation(int nodeVisits, CompactMove theMove,  MoveStats theMoveStats){
 
 		double moveVisits = theMoveStats.getVisits();
 		double score = theMoveStats.getScoreSum();

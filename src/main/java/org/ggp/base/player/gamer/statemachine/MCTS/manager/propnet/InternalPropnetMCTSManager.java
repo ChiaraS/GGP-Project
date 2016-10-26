@@ -22,7 +22,7 @@ import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.propnet
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.propnet.amafdecoupled.PnAMAFDecoupledTreeNodeFactory;
 import org.ggp.base.util.logging.GamerLogger;
 import org.ggp.base.util.statemachine.InternalPropnetStateMachine;
-import org.ggp.base.util.statemachine.inernalPropnetStructure.InternalPropnetMachineState;
+import org.ggp.base.util.statemachine.structure.compact.CompactMachineState;
 
 /**
  * @author C.Sironi
@@ -254,7 +254,7 @@ public class InternalPropnetMCTSManager extends MCTSManager {
 	 * state is either terminal or there is some problem with the computation of legal
 	 * moves (and thus corresponding statistics).
 	 */
-	public MCTSNode search(InternalPropnetMachineState initialState, long timeout, int gameStep) throws MCTSException{
+	public MCTSNode search(CompactMachineState initialState, long timeout, int gameStep) throws MCTSException{
 
 		MCTSNode initialNode = this.prepareForSearch(initialState, gameStep);
 
@@ -285,7 +285,7 @@ public class InternalPropnetMCTSManager extends MCTSManager {
 	 * 				   the steps as starting from 1. 0 or less are not valid!
 	 * @return the tree node corresponding to the given initial state.
 	 */
-	private MCTSNode prepareForSearch(InternalPropnetMachineState initialState, int gameStep){
+	private MCTSNode prepareForSearch(CompactMachineState initialState, int gameStep){
 
 		this.iterations = 0;
 		this.visitedNodes = 0;
@@ -344,7 +344,7 @@ public class InternalPropnetMCTSManager extends MCTSManager {
 	 * 					  the search (making it the root of the currently searched tree).
 	 * @param timeout the time (in milliseconds) by when the search must end.
 	 */
-	private void performSearch(InternalPropnetMachineState initialState, MCTSNode initialNode, long timeout){
+	private void performSearch(CompactMachineState initialState, MCTSNode initialNode, long timeout){
 		this.searchStart = System.currentTimeMillis();
 		while(System.currentTimeMillis() < timeout){
 			this.currentIterationVisitedNodes = 0;
@@ -389,7 +389,7 @@ public class InternalPropnetMCTSManager extends MCTSManager {
 	 * @return the goals of all players, obtained by the current MCTS iteration and that
 	 *         must be backpropagated.
 	 */
-	private PnSimulationResult searchNext(InternalPropnetMachineState currentState, MCTSNode currentNode) {
+	private PnSimulationResult searchNext(CompactMachineState currentState, MCTSNode currentNode) {
 
 		//System.out.println();
 		//System.out.println("Search step:");
@@ -469,7 +469,7 @@ public class InternalPropnetMCTSManager extends MCTSManager {
 		//System.out.println("Node: " + this.currentIterationVisitedNodes);
 
 		PnMCTSJointMove mctsJointMove;
-		InternalPropnetMachineState nextState;
+		CompactMachineState nextState;
 		MCTSNode nextNode;
 
 		/*

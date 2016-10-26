@@ -5,7 +5,7 @@ import java.util.Map;
 import org.ggp.base.player.gamer.statemachine.MCS.manager.MoveStats;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.propnet.strategies.selection.evaluators.GRAVE.PnBetaComputer;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.prover.strategies.selection.evaluators.ProverUCTEvaluator;
-import org.ggp.base.util.statemachine.proverStructure.ProverMove;
+import org.ggp.base.util.statemachine.structure.explicit.ExplicitMove;
 
 public class ProverGRAVEEvaluator extends ProverUCTEvaluator {
 
@@ -14,7 +14,7 @@ public class ProverGRAVEEvaluator extends ProverUCTEvaluator {
 	 * to make the statistics reliable. This reference will be updated every time the current
 	 * node being checked has enough visits to use its own AMAF statistics.
 	 */
-	private Map<ProverMove, MoveStats> closerAmafStats;
+	private Map<ExplicitMove, MoveStats> closerAmafStats;
 
 	private PnBetaComputer betaComputer;
 
@@ -28,7 +28,7 @@ public class ProverGRAVEEvaluator extends ProverUCTEvaluator {
 	}
 
 	@Override
-	protected double computeExploitation(int nodeVisits, ProverMove theMove, MoveStats theMoveStats){
+	protected double computeExploitation(int nodeVisits, ExplicitMove theMove, MoveStats theMoveStats){
 
 		double uctExploitation = super.computeExploitation(nodeVisits, theMove, theMoveStats);
 
@@ -88,11 +88,11 @@ public class ProverGRAVEEvaluator extends ProverUCTEvaluator {
 
 	}
 
-	public void setCloserAmafStats(Map<ProverMove, MoveStats> closerAmafStats){
+	public void setCloserAmafStats(Map<ExplicitMove, MoveStats> closerAmafStats){
 		this.closerAmafStats = closerAmafStats;
 	}
 
-	public Map<ProverMove, MoveStats> getCloserAmafStats(){
+	public Map<ExplicitMove, MoveStats> getCloserAmafStats(){
 		return this.closerAmafStats;
 	}
 

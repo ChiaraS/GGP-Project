@@ -21,8 +21,8 @@ import org.ggp.base.player.gamer.statemachine.MCTS.manager.prover.strategies.sel
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.prover.strategies.selection.evaluators.ProverUCTEvaluator;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.propnet.decoupled.PnDecoupledTreeNodeFactory;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.prover.decoupled.ProverDecoupledTreeNodeFactory;
-import org.ggp.base.util.statemachine.inernalPropnetStructure.InternalPropnetRole;
-import org.ggp.base.util.statemachine.proverStructure.ProverRole;
+import org.ggp.base.util.statemachine.structure.compact.CompactRole;
+import org.ggp.base.util.statemachine.structure.explicit.ExplicitRole;
 
 
 /**
@@ -46,7 +46,7 @@ public class DuctMctsGamer extends UctMctsGamer {
 
 		Random r = new Random();
 
-		InternalPropnetRole myRole = this.thePropnetMachine.roleToInternalRole(this.getRole());
+		CompactRole myRole = this.thePropnetMachine.roleToInternalRole(this.getRole());
 		int numRoles = this.thePropnetMachine.getInternalRoles().length;
 
 		return new InternalPropnetMCTSManager(new PnUCTSelection(numRoles, myRole, r, this.valueOffset, new PnUCTEvaluator(this.c, this.unexploredMoveDefaultSelectionValue)),
@@ -63,7 +63,7 @@ public class DuctMctsGamer extends UctMctsGamer {
 
 		Random r = new Random();
 
-		ProverRole myRole = this.getRole();
+		ExplicitRole myRole = this.getRole();
 		int numRoles = this.getStateMachine().getRoles().size();
 
 		int myRoleIndex = this.getStateMachine().getRoleIndices().get(this.getRole());

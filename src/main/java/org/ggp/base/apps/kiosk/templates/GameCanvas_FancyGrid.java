@@ -8,7 +8,7 @@ import java.util.Set;
 import java.util.SortedSet;
 import java.util.TreeSet;
 
-import org.ggp.base.util.statemachine.proverStructure.ProverMachineState;
+import org.ggp.base.util.statemachine.structure.explicit.ExplicitMachineState;
 
 
 /**
@@ -141,7 +141,7 @@ public abstract class GameCanvas_FancyGrid extends GameCanvas_SimpleGrid {
 
     // When the game state changes, clear our cache of known facts.
     @Override
-	public void updateGameState(ProverMachineState gameState) {
+	public void updateGameState(ExplicitMachineState gameState) {
         factsCache.clear();
         super.updateGameState(gameState);
     }

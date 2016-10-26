@@ -6,8 +6,8 @@ import org.ggp.base.util.game.TestGameRepository;
 import org.ggp.base.util.gdl.grammar.Gdl;
 import org.ggp.base.util.statemachine.StateMachine;
 import org.ggp.base.util.statemachine.implementation.prover.ProverStateMachine;
-import org.ggp.base.util.statemachine.proverStructure.ProverMachineState;
-import org.ggp.base.util.statemachine.proverStructure.ProverRole;
+import org.ggp.base.util.statemachine.structure.explicit.ExplicitMachineState;
+import org.ggp.base.util.statemachine.structure.explicit.ExplicitRole;
 import org.ggp.base.validator.StaticValidator;
 import org.junit.Assert;
 import org.junit.Test;
@@ -23,9 +23,9 @@ public class GdlCleanerTest extends Assert {
 
         StateMachine sm = new ProverStateMachine();
         sm.initialize(description, Long.MAX_VALUE);
-        ProverMachineState state = sm.getInitialState();
+        ExplicitMachineState state = sm.getInitialState();
         assertEquals(1, sm.getRoles().size());
-        ProverRole player = sm.getRoles().get(0);
+        ExplicitRole player = sm.getRoles().get(0);
         assertEquals(1, sm.getLegalMoves(state, player).size());
         state = sm.getNextStates(state).get(0);
         assertTrue(sm.isTerminal(state));

@@ -19,9 +19,9 @@ import org.ggp.base.util.statemachine.exceptions.MoveDefinitionException;
 import org.ggp.base.util.statemachine.exceptions.StateMachineException;
 import org.ggp.base.util.statemachine.exceptions.StateMachineInitializationException;
 import org.ggp.base.util.statemachine.exceptions.TransitionDefinitionException;
-import org.ggp.base.util.statemachine.proverStructure.ProverMachineState;
-import org.ggp.base.util.statemachine.proverStructure.ProverMove;
-import org.ggp.base.util.statemachine.proverStructure.ProverRole;
+import org.ggp.base.util.statemachine.structure.explicit.ExplicitMachineState;
+import org.ggp.base.util.statemachine.structure.explicit.ExplicitMove;
+import org.ggp.base.util.statemachine.structure.explicit.ExplicitRole;
 
 /**
  * The base class for Gamers that rely on representing games as state machines.
@@ -65,7 +65,7 @@ public abstract class StateMachineYapGamer extends Gamer {
      * @throws GoalDefinitionException
      * @throws StateMachineException
      */
-    public abstract ProverMove stateMachineSelectMove(long timeout) throws TransitionDefinitionException, MoveDefinitionException, GoalDefinitionException, StateMachineException;
+    public abstract ExplicitMove stateMachineSelectMove(long timeout) throws TransitionDefinitionException, MoveDefinitionException, GoalDefinitionException, StateMachineException;
 
     /**
      * Defines any actions that the player takes upon the game cleanly ending.
@@ -84,7 +84,7 @@ public abstract class StateMachineYapGamer extends Gamer {
 	/**
 	 * Returns the current state of the game.
 	 */
-	public final ProverMachineState getCurrentState()
+	public final ExplicitMachineState getCurrentState()
 	{
 		return currentState;
 	}
@@ -92,7 +92,7 @@ public abstract class StateMachineYapGamer extends Gamer {
 	/**
 	 * Returns the role that this gamer is playing as in the game.
 	 */
-	public final ProverRole getRole()
+	public final ExplicitRole getRole()
 	{
 		return role;
 	}
@@ -132,13 +132,13 @@ public abstract class StateMachineYapGamer extends Gamer {
      */
     protected final void switchStateMachine(StateMachine newStateMachine) {
         try {
-            ProverMachineState newCurrentState = newStateMachine.getInitialState();
-            ProverRole newRole = newStateMachine.getRoleFromConstant(getRoleName());
+            ExplicitMachineState newCurrentState = newStateMachine.getInitialState();
+            ExplicitRole newRole = newStateMachine.getRoleFromConstant(getRoleName());
 
             // Attempt to run through the game history in the new machine
             List<List<GdlTerm>> theMoveHistory = getMatch().getMoveHistory();
             for(List<GdlTerm> nextMove : theMoveHistory) {
-                List<ProverMove> theJointMove = new ArrayList<ProverMove>();
+                List<ExplicitMove> theJointMove = new ArrayList<ExplicitMove>();
                 for(GdlTerm theSentence : nextMove)
                     theJointMove.add(newStateMachine.getMoveFromTerm(theSentence));
                 newCurrentState = newStateMachine.getNextStateDestructively(newCurrentState, theJointMove);
@@ -215,7 +215,7 @@ public abstract class StateMachineYapGamer extends Gamer {
 			List<GdlTerm> lastMoves = getMatch().getMostRecentMoves();
 			if (lastMoves != null)
 			{
-				List<ProverMove> moves = new ArrayList<ProverMove>();
+				List<ExplicitMove> moves = new ArrayList<ExplicitMove>();
 				for (GdlTerm sentence : lastMoves)
 				{
 					moves.add(stateMachine.getMoveFromTerm(sentence));
@@ -242,7 +242,7 @@ public abstract class StateMachineYapGamer extends Gamer {
 			List<GdlTerm> lastMoves = getMatch().getMostRecentMoves();
 			if (lastMoves != null)
 			{
-				List<ProverMove> moves = new ArrayList<ProverMove>();
+				List<ExplicitMove> moves = new ArrayList<ExplicitMove>();
 				for (GdlTerm sentence : lastMoves)
 				{
 					moves.add(stateMachine.getMoveFromTerm(sentence));
@@ -275,8 +275,8 @@ public abstract class StateMachineYapGamer extends Gamer {
 	}
 
     // Internal state about the current state of the state machine.
-    private ProverRole role;
-    private ProverMachineState currentState;
+    private ExplicitRole role;
+    private ExplicitMachineState currentState;
     private StateMachine stateMachine;
 
 }

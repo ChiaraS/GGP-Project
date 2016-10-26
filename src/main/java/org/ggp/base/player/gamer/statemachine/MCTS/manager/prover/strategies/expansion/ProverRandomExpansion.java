@@ -9,8 +9,8 @@ import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.prover.
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.prover.ProverSequDecMCTSJointMove;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.prover.decoupled.ProverDecoupledMCTSMoveStats;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.prover.decoupled.ProverDecoupledMCTSNode;
-import org.ggp.base.util.statemachine.proverStructure.ProverMove;
-import org.ggp.base.util.statemachine.proverStructure.ProverRole;
+import org.ggp.base.util.statemachine.structure.explicit.ExplicitMove;
+import org.ggp.base.util.statemachine.structure.explicit.ExplicitRole;
 
 public class ProverRandomExpansion implements ProverExpansionStrategy {
 
@@ -28,7 +28,7 @@ public class ProverRandomExpansion implements ProverExpansionStrategy {
 
 	private Random random;
 
-	public ProverRandomExpansion(int numRoles, ProverRole myRole, Random random){
+	public ProverRandomExpansion(int numRoles, ExplicitRole myRole, Random random){
 		//this.numRoles = numRoles;
 		//this.myRole = myRole;
 		this.random = random;
@@ -106,7 +106,7 @@ public class ProverRandomExpansion implements ProverExpansionStrategy {
 		ProverDecoupledMCTSMoveStats[][] moves = node.getMoves();
 		int[] unexploredMovesCount = node.getUnexploredMovesCount();
 
-		List<ProverMove> jointMove = new ArrayList<ProverMove>();
+		List<ExplicitMove> jointMove = new ArrayList<ExplicitMove>();
 		int[] movesIndices = new int[moves.length];
 
 		// For each role...

@@ -22,7 +22,7 @@ import org.ggp.base.util.propnet.architecture.extendedState.components.ExtendedS
 import org.ggp.base.util.propnet.architecture.extendedState.components.ExtendedStateOr;
 import org.ggp.base.util.propnet.architecture.extendedState.components.ExtendedStateProposition;
 import org.ggp.base.util.propnet.architecture.extendedState.components.ExtendedStateTransition;
-import org.ggp.base.util.statemachine.proverStructure.ProverRole;
+import org.ggp.base.util.statemachine.structure.explicit.ExplicitRole;
 
 /**
  * The PropNet class is designed to represent Propositional Networks.
@@ -84,10 +84,10 @@ public final class ExtendedStatePropNet
 	private final Map<GdlSentence, ExtendedStateProposition> inputPropositions;
 
 	/** References to every LegalProposition in the PropNet, indexed by role. */
-	private final Map<ProverRole, Set<ExtendedStateProposition>> legalPropositions;
+	private final Map<ExplicitRole, Set<ExtendedStateProposition>> legalPropositions;
 
 	/** References to every GoalProposition in the PropNet, indexed by role. */
-	private final Map<ProverRole, Set<ExtendedStateProposition>> goalPropositions;
+	private final Map<ExplicitRole, Set<ExtendedStateProposition>> goalPropositions;
 
 	/** A reference to the single, unique, InitProposition. */
 	private final ExtendedStateProposition initProposition;
@@ -99,7 +99,7 @@ public final class ExtendedStatePropNet
 	private final Map<ExtendedStateProposition, ExtendedStateProposition> legalInputMap;
 
 	/** A helper list of all of the roles. */
-	private final List<ProverRole> roles;
+	private final List<ExplicitRole> roles;
 
 	/** The truth values of the base propositions in the next state, given the currently set state in the propnet. */
 	private OpenBitSet nextState;
@@ -127,7 +127,7 @@ public final class ExtendedStatePropNet
 	 * @param components
 	 *            A list of Components.
 	 */
-	public ExtendedStatePropNet(List<ProverRole> roles, Set<ExtendedStateComponent> components)
+	public ExtendedStatePropNet(List<ExplicitRole> roles, Set<ExtendedStateComponent> components)
 	{
 
 	    this.roles = roles;
@@ -143,7 +143,7 @@ public final class ExtendedStatePropNet
 		this.legalInputMap = makeLegalInputMap();
 	}
 
-	public List<ProverRole> getRoles()
+	public List<ExplicitRole> getRoles()
 	{
 	    return roles;
 	}
@@ -224,7 +224,7 @@ public final class ExtendedStatePropNet
 	 * @return References to every GoalProposition in the PropNet, indexed by
 	 *         player name.
 	 */
-	public Map<ProverRole, Set<ExtendedStateProposition>> getGoalPropositions()
+	public Map<ExplicitRole, Set<ExtendedStateProposition>> getGoalPropositions()
 	{
 		return goalPropositions;
 	}
@@ -256,7 +256,7 @@ public final class ExtendedStatePropNet
 	 * @return References to every LegalProposition in the PropNet, indexed by
 	 *         player name.
 	 */
-	public Map<ProverRole, Set<ExtendedStateProposition>> getLegalPropositions()
+	public Map<ExplicitRole, Set<ExtendedStateProposition>> getLegalPropositions()
 	{
 		return legalPropositions;
 	}
@@ -389,9 +389,9 @@ public final class ExtendedStatePropNet
 	 *
 	 * @return An index over the GoalPropositions in the PropNet.
 	 */
-	private Map<ProverRole, Set<ExtendedStateProposition>> recordGoalPropositions()
+	private Map<ExplicitRole, Set<ExtendedStateProposition>> recordGoalPropositions()
 	{
-		Map<ProverRole, Set<ExtendedStateProposition>> goalPropositions = new HashMap<ProverRole, Set<ExtendedStateProposition>>();
+		Map<ExplicitRole, Set<ExtendedStateProposition>> goalPropositions = new HashMap<ExplicitRole, Set<ExtendedStateProposition>>();
 		for (ExtendedStateProposition proposition : propositions)
 		{
 		    // Skip all propositions that aren't GdlRelations.
@@ -402,7 +402,7 @@ public final class ExtendedStatePropNet
 			if (!relation.getName().getValue().equals("goal"))
 			    continue;
 
-			ProverRole theRole = new ProverRole((GdlConstant) relation.get(0));
+			ExplicitRole theRole = new ExplicitRole((GdlConstant) relation.get(0));
 			if (!goalPropositions.containsKey(theRole)) {
 				goalPropositions.put(theRole, new HashSet<ExtendedStateProposition>());
 			}
@@ -461,9 +461,9 @@ public final class ExtendedStatePropNet
 	 *
 	 * @return An index over the LegalPropositions in the PropNet.
 	 */
-	private Map<ProverRole, Set<ExtendedStateProposition>> recordLegalPropositions()
+	private Map<ExplicitRole, Set<ExtendedStateProposition>> recordLegalPropositions()
 	{
-		Map<ProverRole, Set<ExtendedStateProposition>> legalPropositions = new HashMap<ProverRole, Set<ExtendedStateProposition>>();
+		Map<ExplicitRole, Set<ExtendedStateProposition>> legalPropositions = new HashMap<ExplicitRole, Set<ExtendedStateProposition>>();
 		for (ExtendedStateProposition proposition : propositions)
 		{
 		    // Skip all propositions that aren't GdlRelations.
@@ -473,7 +473,7 @@ public final class ExtendedStatePropNet
 			GdlRelation relation = (GdlRelation) proposition.getName();
 			if (relation.getName().getValue().equals("legal")) {
 				GdlConstant name = (GdlConstant) relation.get(0);
-				ProverRole r = new ProverRole(name);
+				ExplicitRole r = new ExplicitRole(name);
 				if (!legalPropositions.containsKey(r)) {
 					legalPropositions.put(r, new HashSet<ExtendedStateProposition>());
 				}

@@ -10,8 +10,8 @@ import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.prover.
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.prover.ProverSequDecMCTSJointMove;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.prover.decoupled.ProverDecoupledMCTSMoveStats;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.prover.decoupled.ProverDecoupledMCTSNode;
-import org.ggp.base.util.statemachine.proverStructure.ProverMove;
-import org.ggp.base.util.statemachine.proverStructure.ProverRole;
+import org.ggp.base.util.statemachine.structure.explicit.ExplicitMove;
+import org.ggp.base.util.statemachine.structure.explicit.ExplicitRole;
 
 public abstract class ProverMoveValueSelection implements ProverSelectionStrategy {
 
@@ -33,7 +33,7 @@ public abstract class ProverMoveValueSelection implements ProverSelectionStrateg
 
 	protected ProverMoveEvaluator moveEvaluator;
 
-	public ProverMoveValueSelection(int numRoles, ProverRole myRole, Random random, double valueOffset, ProverMoveEvaluator moveEvaluator) {
+	public ProverMoveValueSelection(int numRoles, ExplicitRole myRole, Random random, double valueOffset, ProverMoveEvaluator moveEvaluator) {
 		//this.numRoles = numRoles;
 		//this.myRole = myRole;
 		this.random = random;
@@ -76,7 +76,7 @@ public abstract class ProverMoveValueSelection implements ProverSelectionStrateg
 		}
 		*/
 
-		List<ProverMove> selectedJointMove = new ArrayList<ProverMove>();
+		List<ExplicitMove> selectedJointMove = new ArrayList<ExplicitMove>();
 		int[] movesIndices = new int[moves.length];
 
 		double maxMoveValue;

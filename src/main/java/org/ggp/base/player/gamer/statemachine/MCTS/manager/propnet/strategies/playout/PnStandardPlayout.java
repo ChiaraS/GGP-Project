@@ -7,8 +7,8 @@ import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.propnet
 import org.ggp.base.util.logging.GamerLogger;
 import org.ggp.base.util.statemachine.InternalPropnetStateMachine;
 import org.ggp.base.util.statemachine.exceptions.MoveDefinitionException;
-import org.ggp.base.util.statemachine.inernalPropnetStructure.InternalPropnetMachineState;
-import org.ggp.base.util.statemachine.inernalPropnetStructure.InternalPropnetMove;
+import org.ggp.base.util.statemachine.structure.compact.CompactMachineState;
+import org.ggp.base.util.statemachine.structure.compact.CompactMove;
 
 public class PnStandardPlayout implements PnPlayoutStrategy {
 
@@ -22,7 +22,7 @@ public class PnStandardPlayout implements PnPlayoutStrategy {
 	}
 
 	@Override
-	public PnSimulationResult playout(InternalPropnetMachineState state, int maxDepth) {
+	public PnSimulationResult playout(CompactMachineState state, int maxDepth) {
 		//InternalPropnetMachineState lastState;
 
 		// NOTE that this is just an extra check: if the state is terminal or the depth limit has been reached,
@@ -43,7 +43,7 @@ public class PnStandardPlayout implements PnPlayoutStrategy {
 
         int nDepth = 0;
 
-        List<InternalPropnetMove> jointMove;
+        List<CompactMove> jointMove;
 
         do{
 

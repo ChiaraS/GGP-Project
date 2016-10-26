@@ -12,9 +12,9 @@ import org.ggp.base.util.statemachine.exceptions.GoalDefinitionException;
 import org.ggp.base.util.statemachine.exceptions.MoveDefinitionException;
 import org.ggp.base.util.statemachine.exceptions.StateMachineException;
 import org.ggp.base.util.statemachine.exceptions.TransitionDefinitionException;
-import org.ggp.base.util.statemachine.proverStructure.ProverMachineState;
-import org.ggp.base.util.statemachine.proverStructure.ProverMove;
-import org.ggp.base.util.statemachine.proverStructure.ProverRole;
+import org.ggp.base.util.statemachine.structure.explicit.ExplicitMachineState;
+import org.ggp.base.util.statemachine.structure.explicit.ExplicitMove;
+import org.ggp.base.util.statemachine.structure.explicit.ExplicitRole;
 
 import csironi.ggp.course.MCTS.finalMoveChioce.OldFinalMoveChoiceStrategy;
 import csironi.ggp.course.MCTS.selection.OldSelectionStrategy;
@@ -51,10 +51,10 @@ public class MCTSController {
 	}
 
 
-	public ProverMove selectBestMove(long finishBy, StateMachine stateMachine, int myRoleIndex, ProverMachineState currentState) throws MoveDefinitionException, TransitionDefinitionException, GoalDefinitionException, StateMachineException{
+	public ExplicitMove selectBestMove(long finishBy, StateMachine stateMachine, int myRoleIndex, ExplicitMachineState currentState) throws MoveDefinitionException, TransitionDefinitionException, GoalDefinitionException, StateMachineException{
 
-		List<ProverRole> roles = stateMachine.getRoles();
-		List<ProverMove> jointMove = new ArrayList<ProverMove>();
+		List<ExplicitRole> roles = stateMachine.getRoles();
+		List<ExplicitMove> jointMove = new ArrayList<ExplicitMove>();
 		for(int i = 0; i < roles.size(); i++){
 			jointMove.add(null);
 		}

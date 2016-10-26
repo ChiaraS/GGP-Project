@@ -4,7 +4,7 @@ import java.util.Map;
 
 import org.ggp.base.player.gamer.statemachine.MCS.manager.MoveStats;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.propnet.strategies.selection.evaluators.PnUCTEvaluator;
-import org.ggp.base.util.statemachine.inernalPropnetStructure.InternalPropnetMove;
+import org.ggp.base.util.statemachine.structure.compact.CompactMove;
 
 /**
  * Experiment: compute the grave value as a weighted combination of UCT value and AMAF average
@@ -22,7 +22,7 @@ public class PnInvGRAVEEvaluator extends PnUCTEvaluator {
 	 * to make the statistics reliable. This reference will be updated every time the current
 	 * node being checked has enough visits to use its own AMAF statistics.
 	 */
-	private Map<InternalPropnetMove, MoveStats> amafStats;
+	private Map<CompactMove, MoveStats> amafStats;
 
 	private PnBetaComputer betaComputer;
 
@@ -33,17 +33,17 @@ public class PnInvGRAVEEvaluator extends PnUCTEvaluator {
 		//this.bias = bias;
 	}
 
-	public void setAmafStats(Map<InternalPropnetMove, MoveStats> amafStats){
+	public void setAmafStats(Map<CompactMove, MoveStats> amafStats){
 		this.amafStats = amafStats;
 	}
 
-	public Map<InternalPropnetMove, MoveStats> getAmafStats(){
+	public Map<CompactMove, MoveStats> getAmafStats(){
 		return this.amafStats;
 	}
 
 	@Override
 	public double computeMoveValue(int allMoveVisits,
-			InternalPropnetMove theMove, MoveStats theMoveStats) {
+			CompactMove theMove, MoveStats theMoveStats) {
 
 		if(this.amafStats == null){
 

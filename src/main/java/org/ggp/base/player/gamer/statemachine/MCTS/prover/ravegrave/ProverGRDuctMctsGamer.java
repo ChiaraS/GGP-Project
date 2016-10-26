@@ -14,7 +14,7 @@ import org.ggp.base.player.gamer.statemachine.MCTS.manager.prover.strategies.sel
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.prover.strategies.selection.evaluators.GRAVE.ProverGRAVEEvaluator;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.prover.amafdecoulped.ProverAMAFDecoupledTreeNodeFactory;
 import org.ggp.base.player.gamer.statemachine.MCTS.prover.ProverDuctMctsGamer;
-import org.ggp.base.util.statemachine.proverStructure.ProverRole;
+import org.ggp.base.util.statemachine.structure.explicit.ExplicitRole;
 
 public class ProverGRDuctMctsGamer extends ProverDuctMctsGamer {
 
@@ -44,7 +44,7 @@ public class ProverGRDuctMctsGamer extends ProverDuctMctsGamer {
 
 		Random r = new Random();
 
-		ProverRole myRole = this.getRole();
+		ExplicitRole myRole = this.getRole();
 		int numRoles = this.getStateMachine().getRoles().size();
 
 		int myRoleIndex = this.getStateMachine().getRoleIndices().get(this.getRole());

@@ -7,9 +7,9 @@ import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.propnet
 import org.ggp.base.util.logging.GamerLogger;
 import org.ggp.base.util.statemachine.InternalPropnetStateMachine;
 import org.ggp.base.util.statemachine.exceptions.MoveDefinitionException;
-import org.ggp.base.util.statemachine.inernalPropnetStructure.InternalPropnetMachineState;
-import org.ggp.base.util.statemachine.inernalPropnetStructure.InternalPropnetMove;
-import org.ggp.base.util.statemachine.inernalPropnetStructure.InternalPropnetRole;
+import org.ggp.base.util.statemachine.structure.compact.CompactMachineState;
+import org.ggp.base.util.statemachine.structure.compact.CompactMove;
+import org.ggp.base.util.statemachine.structure.compact.CompactRole;
 
 public class PnDecoupledTreeNodeFactory implements PnTreeNodeFactory {
 
@@ -47,7 +47,7 @@ public class PnDecoupledTreeNodeFactory implements PnTreeNodeFactory {
 	 * @return the tree node corresponding to the state.
 	 */
 	@Override
-	public MCTSNode createNewNode(InternalPropnetMachineState state) {
+	public MCTSNode createNewNode(CompactMachineState state) {
 
 		//System.out.println("Creating new node.");
 
@@ -93,13 +93,13 @@ public class PnDecoupledTreeNodeFactory implements PnTreeNodeFactory {
 	 * @param state the state for which to create the moves statistics.
 	 * @return the moves statistics, if the moves can be computed, null otherwise.
 	 */
-	protected PnDecoupledMCTSMoveStats[][] createDUCTMCTSMoves(InternalPropnetMachineState state){
+	protected PnDecoupledMCTSMoveStats[][] createDUCTMCTSMoves(CompactMachineState state){
 
-		InternalPropnetRole[] roles = this.theMachine.getInternalRoles();
+		CompactRole[] roles = this.theMachine.getInternalRoles();
 		PnDecoupledMCTSMoveStats[][] moves = new PnDecoupledMCTSMoveStats[roles.length][];
 
 		try{
-			List<InternalPropnetMove> legalMoves;
+			List<CompactMove> legalMoves;
 
 			for(int i = 0; i < roles.length; i++){
 

@@ -3,21 +3,21 @@ package org.ggp.base.server.event;
 import java.io.Serializable;
 
 import org.ggp.base.util.observer.Event;
-import org.ggp.base.util.statemachine.proverStructure.ProverRole;
+import org.ggp.base.util.statemachine.structure.explicit.ExplicitRole;
 
 
 @SuppressWarnings("serial")
 public final class ServerTimeoutEvent extends Event implements Serializable
 {
 
-	private final ProverRole role;
+	private final ExplicitRole role;
 
-	public ServerTimeoutEvent(ProverRole role)
+	public ServerTimeoutEvent(ExplicitRole role)
 	{
 		this.role = role;
 	}
 
-	public ProverRole getRole()
+	public ExplicitRole getRole()
 	{
 		return role;
 	}

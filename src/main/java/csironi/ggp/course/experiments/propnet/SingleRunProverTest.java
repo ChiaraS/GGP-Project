@@ -18,7 +18,7 @@ import org.ggp.base.util.statemachine.cache.CachedStateMachine;
 import org.ggp.base.util.statemachine.cache.NoSyncRefactoredCachedStateMachine;
 import org.ggp.base.util.statemachine.exceptions.StateMachineInitializationException;
 import org.ggp.base.util.statemachine.implementation.prover.ProverStateMachine;
-import org.ggp.base.util.statemachine.proverStructure.ProverRole;
+import org.ggp.base.util.statemachine.structure.explicit.ExplicitRole;
 
 /**
  * Inputs this program gets:
@@ -178,7 +178,7 @@ public class SingleRunProverTest {
 
 		    r = new Random();
 		    maxSearchDepth = 500;
-		    ProverRole playingRole = theProverMachine.getRoles().get(0);
+		    ExplicitRole playingRole = theProverMachine.getRoles().get(0);
 		    numRoles = theProverMachine.getRoles().size();
 
 		    ProverMCSManager MCSmanager = new ProverMCSManager(new ProverRandomPlayout(theProverMachine),

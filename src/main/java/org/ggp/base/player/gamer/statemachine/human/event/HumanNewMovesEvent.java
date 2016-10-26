@@ -5,29 +5,29 @@ import java.util.Comparator;
 import java.util.List;
 
 import org.ggp.base.util.observer.Event;
-import org.ggp.base.util.statemachine.proverStructure.ProverMove;
+import org.ggp.base.util.statemachine.structure.explicit.ExplicitMove;
 
 
 public final class HumanNewMovesEvent extends Event
 {
 
-	private final List<ProverMove> moves;
-	private final ProverMove selection;
+	private final List<ExplicitMove> moves;
+	private final ExplicitMove selection;
 
-	public HumanNewMovesEvent(List<ProverMove> moves, ProverMove selection)
+	public HumanNewMovesEvent(List<ExplicitMove> moves, ExplicitMove selection)
 	{
-	    Collections.sort(moves, new Comparator<ProverMove>(){@Override
-		public int compare(ProverMove o1, ProverMove o2) {return o1.toString().compareTo(o2.toString());}});
+	    Collections.sort(moves, new Comparator<ExplicitMove>(){@Override
+		public int compare(ExplicitMove o1, ExplicitMove o2) {return o1.toString().compareTo(o2.toString());}});
 		this.moves = moves;
 		this.selection = selection;
 	}
 
-	public List<ProverMove> getMoves()
+	public List<ExplicitMove> getMoves()
 	{
 		return moves;
 	}
 
-	public ProverMove getSelection()
+	public ExplicitMove getSelection()
 	{
 		return selection;
 	}

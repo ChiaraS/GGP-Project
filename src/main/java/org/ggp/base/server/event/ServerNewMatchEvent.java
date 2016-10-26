@@ -3,28 +3,28 @@ package org.ggp.base.server.event;
 import java.util.List;
 
 import org.ggp.base.util.observer.Event;
-import org.ggp.base.util.statemachine.proverStructure.ProverMachineState;
-import org.ggp.base.util.statemachine.proverStructure.ProverRole;
+import org.ggp.base.util.statemachine.structure.explicit.ExplicitMachineState;
+import org.ggp.base.util.statemachine.structure.explicit.ExplicitRole;
 
 
 public final class ServerNewMatchEvent extends Event
 {
 
-	private final List<ProverRole> roles;
-	private final ProverMachineState initialState;
+	private final List<ExplicitRole> roles;
+	private final ExplicitMachineState initialState;
 
-	public ServerNewMatchEvent(List<ProverRole> roles, ProverMachineState initialState)
+	public ServerNewMatchEvent(List<ExplicitRole> roles, ExplicitMachineState initialState)
 	{
 		this.roles = roles;
 		this.initialState = initialState;
 	}
 
-	public List<ProverRole> getRoles()
+	public List<ExplicitRole> getRoles()
 	{
 		return roles;
 	}
 
-	public ProverMachineState getInitialState()
+	public ExplicitMachineState getInitialState()
 	{
 		return initialState;
 	}

@@ -4,7 +4,7 @@ import java.util.Map;
 
 import org.ggp.base.player.gamer.statemachine.MCS.manager.MoveStats;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.propnet.strategies.selection.evaluators.PnUCTEvaluator;
-import org.ggp.base.util.statemachine.inernalPropnetStructure.InternalPropnetMove;
+import org.ggp.base.util.statemachine.structure.compact.CompactMove;
 
 public class PnGRAVEEvaluator extends PnUCTEvaluator {
 
@@ -13,7 +13,7 @@ public class PnGRAVEEvaluator extends PnUCTEvaluator {
 	 * to make the statistics reliable. This reference will be updated every time the current
 	 * node being checked has enough visits to use its own AMAF statistics.
 	 */
-	private Map<InternalPropnetMove, MoveStats> closerAmafStats;
+	private Map<CompactMove, MoveStats> closerAmafStats;
 
 	private PnBetaComputer betaComputer;
 
@@ -27,7 +27,7 @@ public class PnGRAVEEvaluator extends PnUCTEvaluator {
 	}
 
 	@Override
-	protected double computeExploitation(int nodeVisits, InternalPropnetMove theMove, MoveStats theMoveStats){
+	protected double computeExploitation(int nodeVisits, CompactMove theMove, MoveStats theMoveStats){
 
 		double uctExploitation = super.computeExploitation(nodeVisits, theMove, theMoveStats);
 
@@ -87,11 +87,11 @@ public class PnGRAVEEvaluator extends PnUCTEvaluator {
 
 	}
 
-	public void setCloserAmafStats(Map<InternalPropnetMove, MoveStats> closerAmafStats){
+	public void setCloserAmafStats(Map<CompactMove, MoveStats> closerAmafStats){
 		this.closerAmafStats = closerAmafStats;
 	}
 
-	public Map<InternalPropnetMove, MoveStats> getCloserAmafStats(){
+	public Map<CompactMove, MoveStats> getCloserAmafStats(){
 		return this.closerAmafStats;
 	}
 

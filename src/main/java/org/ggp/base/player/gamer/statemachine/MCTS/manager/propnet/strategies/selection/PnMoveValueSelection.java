@@ -15,8 +15,8 @@ import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.propnet
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.propnet.slowsequential.PnSlowSeqentialMCTSNode;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.propnet.slowsequential.PnSlowSequentialMCTSJointMove;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.propnet.slowsequential.PnSlowSequentialMCTSMoveStats;
-import org.ggp.base.util.statemachine.inernalPropnetStructure.InternalPropnetMove;
-import org.ggp.base.util.statemachine.inernalPropnetStructure.InternalPropnetRole;
+import org.ggp.base.util.statemachine.structure.compact.CompactMove;
+import org.ggp.base.util.statemachine.structure.compact.CompactRole;
 
 public abstract class PnMoveValueSelection implements PnSelectionStrategy {
 
@@ -30,7 +30,7 @@ public abstract class PnMoveValueSelection implements PnSelectionStrategy {
 	 * The role that is actually performing the search.
 	 * Needed by the Sequential version of MCTS.
 	 */
-	private InternalPropnetRole myRole;
+	private CompactRole myRole;
 
 	private Random random;
 
@@ -38,7 +38,7 @@ public abstract class PnMoveValueSelection implements PnSelectionStrategy {
 
 	protected PnMoveEvaluator moveEvaluator;
 
-	public PnMoveValueSelection(int numRoles, InternalPropnetRole myRole, Random random, double valueOffset, PnMoveEvaluator moveEvaluator) {
+	public PnMoveValueSelection(int numRoles, CompactRole myRole, Random random, double valueOffset, PnMoveEvaluator moveEvaluator) {
 		this.numRoles = numRoles;
 		this.myRole = myRole;
 		this.random = random;
@@ -81,7 +81,7 @@ public abstract class PnMoveValueSelection implements PnSelectionStrategy {
 		}
 		*/
 
-		List<InternalPropnetMove> selectedJointMove = new ArrayList<InternalPropnetMove>();
+		List<CompactMove> selectedJointMove = new ArrayList<CompactMove>();
 		int[] movesIndices = new int[moves.length];
 
 		double maxMoveValue;
@@ -149,7 +149,7 @@ public abstract class PnMoveValueSelection implements PnSelectionStrategy {
 
 	private PnMCTSJointMove seqSelect(PnSequentialMCTSNode currentNode){
 
-		List<InternalPropnetMove> jointMove = new ArrayList<InternalPropnetMove>(this.numRoles);
+		List<CompactMove> jointMove = new ArrayList<CompactMove>(this.numRoles);
 		int[] movesIndices = new int[this.numRoles];
 
 		// Initialize ArrayList with numRoles null elements.
@@ -216,7 +216,7 @@ public abstract class PnMoveValueSelection implements PnSelectionStrategy {
 
 	private PnMCTSJointMove sseqSelect(PnSlowSeqentialMCTSNode currentNode){
 
-		List<InternalPropnetMove> jointMove = new ArrayList<InternalPropnetMove>(this.numRoles);
+		List<CompactMove> jointMove = new ArrayList<CompactMove>(this.numRoles);
 
 		// Initialize ArrayList with numRoles null elements.
 		for(int i = 0; i < this.numRoles; i++){

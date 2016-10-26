@@ -8,9 +8,9 @@ import org.ggp.base.util.logging.GamerLogger;
 import org.ggp.base.util.statemachine.StateMachine;
 import org.ggp.base.util.statemachine.exceptions.MoveDefinitionException;
 import org.ggp.base.util.statemachine.exceptions.StateMachineException;
-import org.ggp.base.util.statemachine.proverStructure.ProverMachineState;
-import org.ggp.base.util.statemachine.proverStructure.ProverMove;
-import org.ggp.base.util.statemachine.proverStructure.ProverRole;
+import org.ggp.base.util.statemachine.structure.explicit.ExplicitMachineState;
+import org.ggp.base.util.statemachine.structure.explicit.ExplicitMove;
+import org.ggp.base.util.statemachine.structure.explicit.ExplicitRole;
 
 public class ProverDecoupledTreeNodeFactory implements ProverTreeNodeFactory{
 
@@ -48,7 +48,7 @@ public class ProverDecoupledTreeNodeFactory implements ProverTreeNodeFactory{
 	 * @return the tree node corresponding to the state.
 	 */
 	@Override
-	public MCTSNode createNewNode(ProverMachineState state) {
+	public MCTSNode createNewNode(ExplicitMachineState state) {
 
 		//System.out.println("Creating new node.");
 
@@ -101,13 +101,13 @@ public class ProverDecoupledTreeNodeFactory implements ProverTreeNodeFactory{
 	 * @param state the state for which to create the moves statistics.
 	 * @return the moves statistics, if the moves can be computed, null otherwise.
 	 */
-	protected ProverDecoupledMCTSMoveStats[][] createDUCTMCTSMoves(ProverMachineState state){
+	protected ProverDecoupledMCTSMoveStats[][] createDUCTMCTSMoves(ExplicitMachineState state){
 
-		List<ProverRole> roles = this.theMachine.getRoles();
+		List<ExplicitRole> roles = this.theMachine.getRoles();
 		ProverDecoupledMCTSMoveStats[][] moves = new ProverDecoupledMCTSMoveStats[roles.size()][];
 
 		try{
-			List<ProverMove> legalMoves;
+			List<ExplicitMove> legalMoves;
 
 			for(int i = 0; i < roles.size(); i++){
 

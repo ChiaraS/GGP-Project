@@ -4,21 +4,21 @@ import java.io.Serializable;
 import java.util.List;
 
 import org.ggp.base.util.observer.Event;
-import org.ggp.base.util.statemachine.proverStructure.ProverMove;
+import org.ggp.base.util.statemachine.structure.explicit.ExplicitMove;
 
 
 @SuppressWarnings("serial")
 public final class ServerNewMovesEvent extends Event implements Serializable
 {
 
-	private final List<ProverMove> moves;
+	private final List<ExplicitMove> moves;
 
-	public ServerNewMovesEvent(List<ProverMove> moves)
+	public ServerNewMovesEvent(List<ExplicitMove> moves)
 	{
 		this.moves = moves;
 	}
 
-	public List<ProverMove> getMoves()
+	public List<ExplicitMove> getMoves()
 	{
 		return moves;
 	}

@@ -1,23 +1,23 @@
 package org.ggp.base.player.gamer.statemachine.MCS.manager.prover;
 
 import org.ggp.base.player.gamer.statemachine.MCS.manager.MoveStats;
-import org.ggp.base.util.statemachine.proverStructure.ProverMove;
+import org.ggp.base.util.statemachine.structure.explicit.ExplicitMove;
 
 public class ProverCompleteMoveStats extends MoveStats{
 
-	protected ProverMove theMove;
+	protected ExplicitMove theMove;
 
-	public ProverCompleteMoveStats(ProverMove theMove){
+	public ProverCompleteMoveStats(ExplicitMove theMove){
 		super();
 		this.theMove = theMove;
 	}
 
-	public ProverCompleteMoveStats(int visits, double scoreSum, ProverMove theMove){
+	public ProverCompleteMoveStats(int visits, double scoreSum, ExplicitMove theMove){
 		super(visits, scoreSum);
 		this.theMove = theMove;
 	}
 
-	public ProverMove getTheMove() {
+	public ExplicitMove getTheMove() {
 		return this.theMove;
 	}
 

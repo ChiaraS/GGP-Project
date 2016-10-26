@@ -16,7 +16,7 @@ import org.ggp.base.util.statemachine.exceptions.MoveDefinitionException;
 import org.ggp.base.util.statemachine.exceptions.StateMachineException;
 import org.ggp.base.util.statemachine.exceptions.TransitionDefinitionException;
 import org.ggp.base.util.statemachine.implementation.prover.ProverStateMachine;
-import org.ggp.base.util.statemachine.proverStructure.ProverMove;
+import org.ggp.base.util.statemachine.structure.explicit.ExplicitMove;
 
 /**
  * HumanGamer is a simple apparatus for letting a human control a player,
@@ -37,9 +37,9 @@ public final class HumanGamer extends StateMachineGamer
 	 * while the Human sets their move. This is done via the HumanDetailPanel.
 	 */
 	@Override
-	public synchronized ProverMove stateMachineSelectMove(long timeout) throws TransitionDefinitionException, MoveDefinitionException, GoalDefinitionException, StateMachineException
+	public synchronized ExplicitMove stateMachineSelectMove(long timeout) throws TransitionDefinitionException, MoveDefinitionException, GoalDefinitionException, StateMachineException
 	{
-		List<ProverMove> moves = getStateMachine().getLegalMoves(getCurrentState(), getRole());
+		List<ExplicitMove> moves = getStateMachine().getLegalMoves(getCurrentState(), getRole());
 		move = moves.get(0);
 
 		try {
@@ -53,8 +53,8 @@ public final class HumanGamer extends StateMachineGamer
 		return move;
 	}
 
-	private ProverMove move;
-	public void setMove(ProverMove move) {
+	private ExplicitMove move;
+	public void setMove(ExplicitMove move) {
 		this.move = move;
 	}
 

@@ -4,13 +4,13 @@ import java.util.List;
 
 import org.ggp.base.util.gdl.grammar.Gdl;
 import org.ggp.base.util.gdl.scrambler.GdlScrambler;
-import org.ggp.base.util.statemachine.proverStructure.ProverMove;
-import org.ggp.base.util.statemachine.proverStructure.ProverRole;
+import org.ggp.base.util.statemachine.structure.explicit.ExplicitMove;
+import org.ggp.base.util.statemachine.structure.explicit.ExplicitRole;
 
 
 public final class RequestBuilder
 {
-	public static String getPlayRequest(String matchId, List<ProverMove> moves, GdlScrambler scrambler)
+	public static String getPlayRequest(String matchId, List<ExplicitMove> moves, GdlScrambler scrambler)
 	{
 		if (moves == null) {
 			return "( PLAY " + matchId + " NIL )";
@@ -18,7 +18,7 @@ public final class RequestBuilder
 			StringBuilder sb = new StringBuilder();
 
 			sb.append("( PLAY " + matchId + " (");
-			for (ProverMove move : moves)
+			for (ExplicitMove move : moves)
 			{
 				sb.append(scrambler.scramble(move.getContents()) + " ");
 			}
@@ -28,7 +28,7 @@ public final class RequestBuilder
 		}
 	}
 
-	public static String getStartRequest(String matchId, ProverRole role, List<Gdl> description, int startClock, int playClock, GdlScrambler scrambler)
+	public static String getStartRequest(String matchId, ExplicitRole role, List<Gdl> description, int startClock, int playClock, GdlScrambler scrambler)
 	{
 		StringBuilder sb = new StringBuilder();
 
@@ -56,7 +56,7 @@ public final class RequestBuilder
 		return sb.toString();
 	}
 
-	public static String getStopRequest(String matchId, List<ProverMove> moves, GdlScrambler scrambler)
+	public static String getStopRequest(String matchId, List<ExplicitMove> moves, GdlScrambler scrambler)
 	{
 		if (moves == null) {
 			return "( STOP " + matchId + " NIL )";
@@ -64,7 +64,7 @@ public final class RequestBuilder
 			StringBuilder sb = new StringBuilder();
 
 			sb.append("( STOP " + matchId + " (");
-			for (ProverMove move : moves)
+			for (ExplicitMove move : moves)
 			{
 				sb.append(scrambler.scramble(move.getContents()) + " ");
 			}

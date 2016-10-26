@@ -4,7 +4,7 @@
 package org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.propnet.slowsequential;
 
 import org.ggp.base.player.gamer.statemachine.MCS.manager.propnet.PnCompleteMoveStats;
-import org.ggp.base.util.statemachine.inernalPropnetStructure.InternalPropnetMove;
+import org.ggp.base.util.statemachine.structure.compact.CompactMove;
 
 /**
  * @author C.Sironi
@@ -40,7 +40,7 @@ public class PnSlowSequentialMCTSMoveStats extends PnCompleteMoveStats {
 	 * as input are a copy of the array only belonging to this SUCTMove, otherwise
 	 * the statistics will be messed up.
 	 */
-	public PnSlowSequentialMCTSMoveStats(InternalPropnetMove theMove, int moveIndex, PnSlowSequentialMCTSMoveStats[] nextRoleMovesStats) {
+	public PnSlowSequentialMCTSMoveStats(CompactMove theMove, int moveIndex, PnSlowSequentialMCTSMoveStats[] nextRoleMovesStats) {
 		super(theMove);
 		this.moveIndex = moveIndex;
 		this.previousRoleMoveStats = null;

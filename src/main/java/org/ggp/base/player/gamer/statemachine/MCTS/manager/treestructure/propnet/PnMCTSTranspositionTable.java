@@ -11,7 +11,7 @@ import java.util.Map.Entry;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.MCTSNode;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.propnet.amafdecoupled.PnAMAFDecoupledMCTSNode;
 import org.ggp.base.util.logging.GamerLogger;
-import org.ggp.base.util.statemachine.inernalPropnetStructure.InternalPropnetMachineState;
+import org.ggp.base.util.statemachine.structure.compact.CompactMachineState;
 
 /**
  * @author C.Sironi
@@ -29,7 +29,7 @@ public class PnMCTSTranspositionTable {
 	 * The transposition table (implemented with HashMap that uses the internal propnet state as key
 	 * and solves collisions with linked lists).
 	 */
-	private Map<InternalPropnetMachineState,MCTSNode> transpositionTable;
+	private Map<CompactMachineState,MCTSNode> transpositionTable;
 
 	/**
 	 *
@@ -46,7 +46,7 @@ public class PnMCTSTranspositionTable {
 	public PnMCTSTranspositionTable(int gameStepOffset, boolean log){
 		this.log = log;
 		this.currentGameStepStamp = 1;
-		this.transpositionTable = new HashMap<InternalPropnetMachineState,MCTSNode>();
+		this.transpositionTable = new HashMap<CompactMachineState,MCTSNode>();
 		this.gameStepOffset = gameStepOffset;
 
 		if(this.log){
@@ -55,7 +55,7 @@ public class PnMCTSTranspositionTable {
 		}
 	}
 
-	public MCTSNode getNode(InternalPropnetMachineState state){
+	public MCTSNode getNode(CompactMachineState state){
 		MCTSNode node = this.transpositionTable.get(state);
 		if(node != null){
 			//System.out.println("Found");
@@ -66,7 +66,7 @@ public class PnMCTSTranspositionTable {
 		return node;
 	}
 
-	public void putNode(InternalPropnetMachineState state, MCTSNode node){
+	public void putNode(CompactMachineState state, MCTSNode node){
 		if(node != null){
 			this.transpositionTable.put(state, node);
 			node.setGameStepStamp(this.currentGameStepStamp);
@@ -97,9 +97,9 @@ public class PnMCTSTranspositionTable {
 			//if(newGameStepStamp != this.currentGameStepStamp){
 			this.currentGameStepStamp = newGameStepStamp;
 			// Remove all nodes last accessed earlier than the game step (newGameStepStamp-gameStepOffset)
-			Iterator<Entry<InternalPropnetMachineState,MCTSNode>> iterator = this.transpositionTable.entrySet().iterator();
+			Iterator<Entry<CompactMachineState,MCTSNode>> iterator = this.transpositionTable.entrySet().iterator();
 			while(iterator.hasNext()){
-				Entry<InternalPropnetMachineState,MCTSNode> entry = iterator.next();
+				Entry<CompactMachineState,MCTSNode> entry = iterator.next();
 
 				if(entry.getValue() instanceof PnAMAFDecoupledMCTSNode){
 					int actionsStats = ((PnAMAFDecoupledMCTSNode) entry.getValue()).getActionsStatsNumber();
@@ -149,9 +149,9 @@ public class PnMCTSTranspositionTable {
 
 			this.currentGameStepStamp = newGameStepStamp;
 			// Remove all nodes last accessed earlier than the game step (newGameStepStamp-gameStepOffset)
-			Iterator<Entry<InternalPropnetMachineState,MCTSNode>> iterator = this.transpositionTable.entrySet().iterator();
+			Iterator<Entry<CompactMachineState,MCTSNode>> iterator = this.transpositionTable.entrySet().iterator();
 			while(iterator.hasNext()){
-				Entry<InternalPropnetMachineState,MCTSNode> entry = iterator.next();
+				Entry<CompactMachineState,MCTSNode> entry = iterator.next();
 
 				if(entry.getValue().getGameStepStamp() < (this.currentGameStepStamp-this.gameStepOffset)){
 					iterator.remove();

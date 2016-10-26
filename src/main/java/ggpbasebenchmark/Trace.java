@@ -7,12 +7,12 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.ggp.base.util.gdl.factory.GdlFactory;
-import org.ggp.base.util.statemachine.proverStructure.ProverMove;
+import org.ggp.base.util.statemachine.structure.explicit.ExplicitMove;
 import org.ggp.base.util.symbol.factory.SymbolFactory;
 import org.ggp.base.util.symbol.grammar.SymbolAtom;
 import org.ggp.base.util.symbol.grammar.SymbolList;
 
-public class Trace extends ArrayList<List<ProverMove>> {
+public class Trace extends ArrayList<List<ExplicitMove>> {
 
 
 	/**
@@ -35,10 +35,10 @@ public class Trace extends ArrayList<List<ProverMove>> {
 					 throw new Exception("Wrong format of trace file! Unrecognized line: " + line);
 				}
 				// built a joint move out of the moves in the line
-				List<ProverMove> moves = new ArrayList<ProverMove>();
+				List<ExplicitMove> moves = new ArrayList<ExplicitMove>();
 				for (int i = 1; i < list.size(); i++)
 				{
-					moves.add(new ProverMove(GdlFactory.createTerm(list.get(i))));
+					moves.add(new ExplicitMove(GdlFactory.createTerm(list.get(i))));
 				}
 				result.add(moves);
 			}

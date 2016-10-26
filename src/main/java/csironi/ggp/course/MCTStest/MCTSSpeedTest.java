@@ -35,9 +35,9 @@ import org.ggp.base.util.statemachine.exceptions.MoveDefinitionException;
 import org.ggp.base.util.statemachine.exceptions.StateMachineException;
 import org.ggp.base.util.statemachine.exceptions.StateMachineInitializationException;
 import org.ggp.base.util.statemachine.implementation.propnet.SeparateInternalPropnetStateMachine;
-import org.ggp.base.util.statemachine.inernalPropnetStructure.InternalPropnetRole;
-import org.ggp.base.util.statemachine.proverStructure.ProverMove;
-import org.ggp.base.util.statemachine.proverStructure.ProverRole;
+import org.ggp.base.util.statemachine.structure.compact.CompactRole;
+import org.ggp.base.util.statemachine.structure.explicit.ExplicitMove;
+import org.ggp.base.util.statemachine.structure.explicit.ExplicitRole;
 
 
 /**
@@ -219,8 +219,8 @@ public class MCTSSpeedTest {
 	        int visitedNodes = -1;
 	        double iterationsPerSecond = -1;
 	        double nodesPerSecond = -1;
-	        ProverRole playingRole = null;
-	        ProverMove chosenMove = null;
+	        ExplicitRole playingRole = null;
+	        ExplicitMove chosenMove = null;
 	        double scoresSum = -1.0;
 	        int visits = -1;
 	        double averageScore = -1;
@@ -266,7 +266,7 @@ public class MCTSSpeedTest {
 
 
 
-		        InternalPropnetRole internalPlayingRole = thePropnetMachine.getInternalRoles()[0];
+		        CompactRole internalPlayingRole = thePropnetMachine.getInternalRoles()[0];
 		        playingRole = thePropnetMachine.internalRoleToRole(internalPlayingRole);
 		        numRoles = thePropnetMachine.getInternalRoles().length;
 

@@ -14,9 +14,9 @@ import org.ggp.base.util.statemachine.exceptions.GoalDefinitionException;
 import org.ggp.base.util.statemachine.exceptions.MoveDefinitionException;
 import org.ggp.base.util.statemachine.exceptions.TransitionDefinitionException;
 import org.ggp.base.util.statemachine.implementation.prover.ProverStateMachine;
-import org.ggp.base.util.statemachine.proverStructure.ProverMachineState;
-import org.ggp.base.util.statemachine.proverStructure.ProverMove;
-import org.ggp.base.util.statemachine.proverStructure.ProverRole;
+import org.ggp.base.util.statemachine.structure.explicit.ExplicitMachineState;
+import org.ggp.base.util.statemachine.structure.explicit.ExplicitMove;
+import org.ggp.base.util.statemachine.structure.explicit.ExplicitRole;
 
 
 /**
@@ -116,7 +116,7 @@ public class FailsafeStateMachine extends StateMachine
     }
 
     @Override
-    public List<Integer> getOneRoleGoals(ProverMachineState state, ProverRole role) {
+    public List<Integer> getOneRoleGoals(ExplicitMachineState state, ExplicitRole role) {
         if(theBackingMachine == null){
             List<Integer> goals = new ArrayList<Integer>();
             goals.add(new Integer(0));
@@ -138,7 +138,7 @@ public class FailsafeStateMachine extends StateMachine
     }
 
     @Override
-    public ProverMachineState getInitialState() {
+    public ExplicitMachineState getInitialState() {
         if(theBackingMachine == null)
             return null;
 
@@ -158,7 +158,7 @@ public class FailsafeStateMachine extends StateMachine
     }
 
     @Override
-    public List<ProverMove> getLegalMoves(ProverMachineState state, ProverRole role) throws MoveDefinitionException {
+    public List<ExplicitMove> getLegalMoves(ExplicitMachineState state, ExplicitRole role) throws MoveDefinitionException {
         if(theBackingMachine == null)
             return null;
 
@@ -180,7 +180,7 @@ public class FailsafeStateMachine extends StateMachine
     }
 
     @Override
-    public ProverMove getRandomMove(ProverMachineState state, ProverRole role) throws MoveDefinitionException {
+    public ExplicitMove getRandomMove(ExplicitMachineState state, ExplicitRole role) throws MoveDefinitionException {
         if(theBackingMachine == null)
             return null;
 
@@ -202,7 +202,7 @@ public class FailsafeStateMachine extends StateMachine
     }
 
     @Override
-    public ProverMachineState getMachineStateFromSentenceList(Set<GdlSentence> sentenceList) {
+    public ExplicitMachineState getMachineStateFromSentenceList(Set<GdlSentence> sentenceList) {
         if(theBackingMachine == null)
             return null;
 
@@ -222,7 +222,7 @@ public class FailsafeStateMachine extends StateMachine
     }
 
     @Override
-    public ProverMove getMoveFromTerm(GdlTerm term) {
+    public ExplicitMove getMoveFromTerm(GdlTerm term) {
         if(theBackingMachine == null)
             return null;
 
@@ -242,7 +242,7 @@ public class FailsafeStateMachine extends StateMachine
     }
 
     @Override
-    public ProverMachineState getNextState(ProverMachineState state, List<ProverMove> moves) throws TransitionDefinitionException {
+    public ExplicitMachineState getNextState(ExplicitMachineState state, List<ExplicitMove> moves) throws TransitionDefinitionException {
         if(theBackingMachine == null)
             return null;
 
@@ -264,7 +264,7 @@ public class FailsafeStateMachine extends StateMachine
     }
 
     @Override
-    public ProverMachineState getNextStateDestructively(ProverMachineState state, List<ProverMove> moves) throws TransitionDefinitionException {
+    public ExplicitMachineState getNextStateDestructively(ExplicitMachineState state, List<ExplicitMove> moves) throws TransitionDefinitionException {
         if(theBackingMachine == null)
             return null;
 
@@ -286,7 +286,7 @@ public class FailsafeStateMachine extends StateMachine
     }
 
     @Override
-    public ProverRole getRoleFromConstant(GdlConstant constant) {
+    public ExplicitRole getRoleFromConstant(GdlConstant constant) {
         if(theBackingMachine == null)
             return null;
 
@@ -306,7 +306,7 @@ public class FailsafeStateMachine extends StateMachine
     }
 
     @Override
-    public List<ProverRole> getRoles() {
+    public List<ExplicitRole> getRoles() {
         if(theBackingMachine == null)
             return null;
 
@@ -326,7 +326,7 @@ public class FailsafeStateMachine extends StateMachine
     }
 
     @Override
-    public boolean isTerminal(ProverMachineState state) {
+    public boolean isTerminal(ExplicitMachineState state) {
         if(theBackingMachine == null)
             return false;
 
@@ -346,7 +346,7 @@ public class FailsafeStateMachine extends StateMachine
     }
 
     @Override
-    public ProverMachineState performDepthCharge(ProverMachineState state, int[] theDepth) throws TransitionDefinitionException, MoveDefinitionException {
+    public ExplicitMachineState performDepthCharge(ExplicitMachineState state, int[] theDepth) throws TransitionDefinitionException, MoveDefinitionException {
         if(theBackingMachine == null)
             return null;
 
@@ -370,7 +370,7 @@ public class FailsafeStateMachine extends StateMachine
     }
 
     @Override
-    public void getAverageDiscountedScoresFromRepeatedDepthCharges(ProverMachineState state, double[] avgScores, double[] avgDepth, double discountFactor, int repetitions) throws TransitionDefinitionException, MoveDefinitionException, GoalDefinitionException {
+    public void getAverageDiscountedScoresFromRepeatedDepthCharges(ExplicitMachineState state, double[] avgScores, double[] avgDepth, double discountFactor, int repetitions) throws TransitionDefinitionException, MoveDefinitionException, GoalDefinitionException {
         if(theBackingMachine == null)
             return;
 
@@ -397,7 +397,7 @@ public class FailsafeStateMachine extends StateMachine
     }
 
     @Override
-    public void updateRoot(ProverMachineState theState) {
+    public void updateRoot(ExplicitMachineState theState) {
         if(theBackingMachine == null)
             return;
 

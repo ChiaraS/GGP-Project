@@ -10,21 +10,21 @@ import org.ggp.base.server.request.RequestBuilder;
 import org.ggp.base.util.gdl.factory.GdlFactory;
 import org.ggp.base.util.gdl.factory.exceptions.GdlFormatException;
 import org.ggp.base.util.match.Match;
-import org.ggp.base.util.statemachine.proverStructure.ProverMove;
-import org.ggp.base.util.statemachine.proverStructure.ProverRole;
+import org.ggp.base.util.statemachine.structure.explicit.ExplicitMove;
+import org.ggp.base.util.statemachine.structure.explicit.ExplicitRole;
 import org.ggp.base.util.symbol.factory.exceptions.SymbolFormatException;
 
 
 public class PlayRequestThread extends RequestThread
 {
 	private final GameServer gameServer;
-	private final List<ProverMove> legalMoves;
+	private final List<ExplicitMove> legalMoves;
 	private final Match match;
-	private final ProverRole role;
+	private final ExplicitRole role;
 
-	private ProverMove move;
+	private ExplicitMove move;
 
-	public PlayRequestThread(GameServer gameServer, Match match, List<ProverMove> previousMoves, List<ProverMove> legalMoves, ProverRole role, String host, int port, String playerName, boolean unlimitedTime)
+	public PlayRequestThread(GameServer gameServer, Match match, List<ExplicitMove> previousMoves, List<ExplicitMove> legalMoves, ExplicitRole role, String host, int port, String playerName, boolean unlimitedTime)
 	{
 		super(gameServer, role, host, port, playerName, unlimitedTime ? -1 : (match.getPlayClock() * 1000 + 1000), RequestBuilder.getPlayRequest(match.getMatchId(), previousMoves, match.getGdlScrambler()));
 		this.gameServer = gameServer;
@@ -35,7 +35,7 @@ public class PlayRequestThread extends RequestThread
 		move = legalMoves.get(new Random().nextInt(legalMoves.size()));
 	}
 
-	public ProverMove getMove()
+	public ExplicitMove getMove()
 	{
 		return move;
 	}
@@ -43,8 +43,8 @@ public class PlayRequestThread extends RequestThread
 	@Override
 	protected void handleResponse(String response) {
 		try {
-			ProverMove candidateMove = gameServer.getStateMachine().getMoveFromTerm(GdlFactory.createTerm(match.getGdlScrambler().unscramble(response).toString()));
-			if (new HashSet<ProverMove>(legalMoves).contains(candidateMove)) {
+			ExplicitMove candidateMove = gameServer.getStateMachine().getMoveFromTerm(GdlFactory.createTerm(match.getGdlScrambler().unscramble(response).toString()));
+			if (new HashSet<ExplicitMove>(legalMoves).contains(candidateMove)) {
 				move = candidateMove;
 			} else {
 				gameServer.notifyObservers(new ServerIllegalMoveEvent(role, candidateMove));

@@ -22,7 +22,7 @@ import org.ggp.base.util.propnet.architecture.forwardInterrupting.components.For
 import org.ggp.base.util.propnet.architecture.forwardInterrupting.components.ForwardInterruptingOr;
 import org.ggp.base.util.propnet.architecture.forwardInterrupting.components.ForwardInterruptingProposition;
 import org.ggp.base.util.propnet.architecture.forwardInterrupting.components.ForwardInterruptingTransition;
-import org.ggp.base.util.statemachine.proverStructure.ProverRole;
+import org.ggp.base.util.statemachine.structure.explicit.ExplicitRole;
 
 
 /**
@@ -95,10 +95,10 @@ public final class ForwardInterruptingPropNet
 	private final Map<GdlSentence, ForwardInterruptingProposition> inputPropositions;
 
 	/** References to every LegalProposition in the PropNet, indexed by role. */
-	private final Map<ProverRole, Set<ForwardInterruptingProposition>> legalPropositions;
+	private final Map<ExplicitRole, Set<ForwardInterruptingProposition>> legalPropositions;
 
 	/** References to every GoalProposition in the PropNet, indexed by role. */
-	private final Map<ProverRole, Set<ForwardInterruptingProposition>> goalPropositions;
+	private final Map<ExplicitRole, Set<ForwardInterruptingProposition>> goalPropositions;
 
 	/** A reference to the single, unique, InitProposition. */
 	private final ForwardInterruptingProposition initProposition;
@@ -110,7 +110,7 @@ public final class ForwardInterruptingPropNet
 	private final Map<ForwardInterruptingProposition, ForwardInterruptingProposition> legalInputMap;
 
 	/** A helper list of all of the roles. */
-	private final List<ProverRole> roles;
+	private final List<ExplicitRole> roles;
 
 	public void addComponent(ForwardInterruptingComponent c)
 	{
@@ -125,7 +125,7 @@ public final class ForwardInterruptingPropNet
 	 * @param components
 	 *            A list of Components.
 	 */
-	public ForwardInterruptingPropNet(List<ProverRole> roles, Set<ForwardInterruptingComponent> components)
+	public ForwardInterruptingPropNet(List<ExplicitRole> roles, Set<ForwardInterruptingComponent> components)
 	{
 		long start = System.currentTimeMillis();
 
@@ -144,7 +144,7 @@ public final class ForwardInterruptingPropNet
 		this.initTime = System.currentTimeMillis() - start;
 	}
 
-	public List<ProverRole> getRoles()
+	public List<ExplicitRole> getRoles()
 	{
 	    return roles;
 	}
@@ -204,7 +204,7 @@ public final class ForwardInterruptingPropNet
 	 * @return References to every GoalProposition in the PropNet, indexed by
 	 *         player name.
 	 */
-	public Map<ProverRole, Set<ForwardInterruptingProposition>> getGoalPropositions()
+	public Map<ExplicitRole, Set<ForwardInterruptingProposition>> getGoalPropositions()
 	{
 		return goalPropositions;
 	}
@@ -236,7 +236,7 @@ public final class ForwardInterruptingPropNet
 	 * @return References to every LegalProposition in the PropNet, indexed by
 	 *         player name.
 	 */
-	public Map<ProverRole, Set<ForwardInterruptingProposition>> getLegalPropositions()
+	public Map<ExplicitRole, Set<ForwardInterruptingProposition>> getLegalPropositions()
 	{
 		return legalPropositions;
 	}
@@ -348,9 +348,9 @@ public final class ForwardInterruptingPropNet
 	 *
 	 * @return An index over the GoalPropositions in the PropNet.
 	 */
-	private Map<ProverRole, Set<ForwardInterruptingProposition>> recordGoalPropositions()
+	private Map<ExplicitRole, Set<ForwardInterruptingProposition>> recordGoalPropositions()
 	{
-		Map<ProverRole, Set<ForwardInterruptingProposition>> goalPropositions = new HashMap<ProverRole, Set<ForwardInterruptingProposition>>();
+		Map<ExplicitRole, Set<ForwardInterruptingProposition>> goalPropositions = new HashMap<ExplicitRole, Set<ForwardInterruptingProposition>>();
 		for (ForwardInterruptingProposition proposition : propositions)
 		{
 		    // Skip all propositions that aren't GdlRelations.
@@ -361,7 +361,7 @@ public final class ForwardInterruptingPropNet
 			if (!relation.getName().getValue().equals("goal"))
 			    continue;
 
-			ProverRole theRole = new ProverRole((GdlConstant) relation.get(0));
+			ExplicitRole theRole = new ExplicitRole((GdlConstant) relation.get(0));
 			if (!goalPropositions.containsKey(theRole)) {
 				goalPropositions.put(theRole, new HashSet<ForwardInterruptingProposition>());
 			}
@@ -420,9 +420,9 @@ public final class ForwardInterruptingPropNet
 	 *
 	 * @return An index over the LegalPropositions in the PropNet.
 	 */
-	private Map<ProverRole, Set<ForwardInterruptingProposition>> recordLegalPropositions()
+	private Map<ExplicitRole, Set<ForwardInterruptingProposition>> recordLegalPropositions()
 	{
-		Map<ProverRole, Set<ForwardInterruptingProposition>> legalPropositions = new HashMap<ProverRole, Set<ForwardInterruptingProposition>>();
+		Map<ExplicitRole, Set<ForwardInterruptingProposition>> legalPropositions = new HashMap<ExplicitRole, Set<ForwardInterruptingProposition>>();
 		for (ForwardInterruptingProposition proposition : propositions)
 		{
 		    // Skip all propositions that aren't GdlRelations.
@@ -432,7 +432,7 @@ public final class ForwardInterruptingPropNet
 			GdlRelation relation = (GdlRelation) proposition.getName();
 			if (relation.getName().getValue().equals("legal")) {
 				GdlConstant name = (GdlConstant) relation.get(0);
-				ProverRole r = new ProverRole(name);
+				ExplicitRole r = new ExplicitRole(name);
 				if (!legalPropositions.containsKey(r)) {
 					legalPropositions.put(r, new HashSet<ForwardInterruptingProposition>());
 				}
@@ -521,7 +521,7 @@ public final class ForwardInterruptingPropNet
 
 	public int getNumLegals() {
 		int num = 0;
-		for(ProverRole r : this.roles){
+		for(ExplicitRole r : this.roles){
 			num += this.legalPropositions.get(r).size();
 		}
 		return num;
@@ -529,7 +529,7 @@ public final class ForwardInterruptingPropNet
 
 	public int getNumGoals() {
 		int num = 0;
-		for(ProverRole r : this.roles){
+		for(ExplicitRole r : this.roles){
 			num += this.goalPropositions.get(r).size();
 		}
 		return num;

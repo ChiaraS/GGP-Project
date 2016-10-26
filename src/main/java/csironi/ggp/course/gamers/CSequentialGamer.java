@@ -12,7 +12,7 @@ import org.ggp.base.util.statemachine.exceptions.GoalDefinitionException;
 import org.ggp.base.util.statemachine.exceptions.MoveDefinitionException;
 import org.ggp.base.util.statemachine.exceptions.StateMachineException;
 import org.ggp.base.util.statemachine.exceptions.TransitionDefinitionException;
-import org.ggp.base.util.statemachine.proverStructure.ProverMove;
+import org.ggp.base.util.statemachine.structure.explicit.ExplicitMove;
 
 import csironi.ggp.course.algorithms.MinMaxSequence;
 
@@ -38,7 +38,7 @@ public class CSequentialGamer extends SampleGamer {
 	/**
 	 * Sequence of the best moves to play for each step of the game.
 	 */
-	private List<ProverMove> bestPlan;
+	private List<ExplicitMove> bestPlan;
 
 	/*
 	 * (non-Javadoc)
@@ -60,7 +60,7 @@ public class CSequentialGamer extends SampleGamer {
 	 * @see org.ggp.base.player.gamer.statemachine.StateMachineGamer#stateMachineSelectMove(long)
 	 */
 	@Override
-	public ProverMove stateMachineSelectMove(long timeout)
+	public ExplicitMove stateMachineSelectMove(long timeout)
 			throws TransitionDefinitionException, MoveDefinitionException,
 			GoalDefinitionException, StateMachineException {
 
@@ -69,10 +69,10 @@ public class CSequentialGamer extends SampleGamer {
 
 		// Get state machine and list of available legal moves for the player
 		StateMachine stateMachine = getStateMachine();
-		List<ProverMove> moves = stateMachine.getLegalMoves(getCurrentState(), getRole());
+		List<ExplicitMove> moves = stateMachine.getLegalMoves(getCurrentState(), getRole());
 
 		// Return and remove the best move for the current step from the sequence of best moves
-		ProverMove selection = bestPlan.remove(0);
+		ExplicitMove selection = bestPlan.remove(0);
 
 		// We get the end time
 		// It is mandatory that stop<timeout

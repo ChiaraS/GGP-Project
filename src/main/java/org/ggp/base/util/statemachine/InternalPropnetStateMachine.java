@@ -11,12 +11,12 @@ import org.ggp.base.util.statemachine.exceptions.GoalDefinitionException;
 import org.ggp.base.util.statemachine.exceptions.MoveDefinitionException;
 import org.ggp.base.util.statemachine.exceptions.StateMachineException;
 import org.ggp.base.util.statemachine.exceptions.TransitionDefinitionException;
-import org.ggp.base.util.statemachine.inernalPropnetStructure.InternalPropnetMachineState;
-import org.ggp.base.util.statemachine.inernalPropnetStructure.InternalPropnetMove;
-import org.ggp.base.util.statemachine.inernalPropnetStructure.InternalPropnetRole;
-import org.ggp.base.util.statemachine.proverStructure.ProverMachineState;
-import org.ggp.base.util.statemachine.proverStructure.ProverMove;
-import org.ggp.base.util.statemachine.proverStructure.ProverRole;
+import org.ggp.base.util.statemachine.structure.compact.CompactMachineState;
+import org.ggp.base.util.statemachine.structure.compact.CompactMove;
+import org.ggp.base.util.statemachine.structure.compact.CompactRole;
+import org.ggp.base.util.statemachine.structure.explicit.ExplicitMachineState;
+import org.ggp.base.util.statemachine.structure.explicit.ExplicitMove;
+import org.ggp.base.util.statemachine.structure.explicit.ExplicitRole;
 
 /**
  * Provides the base class for all state machine implementations that are based on the version
@@ -34,7 +34,7 @@ public abstract class InternalPropnetStateMachine extends StateMachine{
 	 * @state a machine state.
 	 * @return true if the state is terminal, false otherwise.
 	 */
-	public abstract boolean isTerminal(InternalPropnetMachineState state);
+	public abstract boolean isTerminal(CompactMachineState state);
 
 	/**
 	 * Computes the goal for a role in the given state.
@@ -43,7 +43,7 @@ public abstract class InternalPropnetStateMachine extends StateMachine{
 	 * proposition true for that role, then you should throw a
 	 * GoalDefinitionException because the goal is ill-defined.
 	 */
-	public int getGoal(InternalPropnetMachineState state, InternalPropnetRole role) throws GoalDefinitionException{
+	public int getGoal(CompactMachineState state, CompactRole role) throws GoalDefinitionException{
 		List<Integer> goals = this.getOneRoleGoals(state, role);
 
 		if(goals.size() > 1){
@@ -69,46 +69,46 @@ public abstract class InternalPropnetStateMachine extends StateMachine{
      * for the given role because of an error that occurred in the state machine and
      * couldn't be handled.
      */
-    public abstract List<Integer> getOneRoleGoals(InternalPropnetMachineState state, InternalPropnetRole role);
+    public abstract List<Integer> getOneRoleGoals(CompactMachineState state, CompactRole role);
 
 
 	/**
 	 * Returns the initial state. If the initial state has not been computed yet because
 	 * this state machine has not been initialized, NULL will be returned.
 	 */
-	public abstract InternalPropnetMachineState getInternalInitialState();
+	public abstract CompactMachineState getInternalInitialState();
 
 	/**
 	 * Returns the internal representation of roles.
 	 *
 	 * @return the internal representation of roles.
 	 */
-	public abstract InternalPropnetRole[] getInternalRoles();
+	public abstract CompactRole[] getInternalRoles();
 
 	/**
 	 * Computes the legal moves for role in state.
 	 */
-	public abstract List<InternalPropnetMove> getInternalLegalMoves(InternalPropnetMachineState state, InternalPropnetRole role)throws MoveDefinitionException;
+	public abstract List<CompactMove> getInternalLegalMoves(CompactMachineState state, CompactRole role)throws MoveDefinitionException;
 
 	/**
 	 * Computes the next state given a state and the list of moves.
 	 */
-	public abstract InternalPropnetMachineState getInternalNextState(InternalPropnetMachineState state, List<InternalPropnetMove> moves);
+	public abstract CompactMachineState getInternalNextState(CompactMachineState state, List<CompactMove> moves);
 
 
 	/************************************** Translation methods **************************************/
 
-	public abstract InternalPropnetMachineState stateToInternalState(ProverMachineState state);
+	public abstract CompactMachineState stateToInternalState(ExplicitMachineState state);
 
-	public abstract ProverMachineState internalStateToState(InternalPropnetMachineState state);
+	public abstract ExplicitMachineState internalStateToState(CompactMachineState state);
 
-	public abstract ProverRole internalRoleToRole(InternalPropnetRole role);
+	public abstract ExplicitRole internalRoleToRole(CompactRole role);
 
-	public abstract InternalPropnetRole roleToInternalRole(ProverRole role);
+	public abstract CompactRole roleToInternalRole(ExplicitRole role);
 
-	public abstract ProverMove internalMoveToMove(InternalPropnetMove move);
+	public abstract ExplicitMove internalMoveToMove(CompactMove move);
 
-	public abstract InternalPropnetMove moveToInternalMove(ProverMove move);
+	public abstract CompactMove moveToInternalMove(ExplicitMove move);
 
 	/**
 	 * Useful when we need to translate a joint move. Faster than translating the moves one by one.
@@ -117,7 +117,7 @@ public abstract class InternalPropnetStateMachine extends StateMachine{
 	 * @param roleIndex
 	 * @return
 	 */
-	public abstract List<InternalPropnetMove> movesToInternalMoves(List<ProverMove> moves);
+	public abstract List<CompactMove> movesToInternalMoves(List<ExplicitMove> moves);
 
 
 	/***************** Extra methods to replace the ones offered by the StateMachine *****************/
@@ -135,8 +135,8 @@ public abstract class InternalPropnetStateMachine extends StateMachine{
      * with the goals for all the roles in the given state because of an error
      * that occurred in the state machine and couldn't be handled.
      */
-    public List<Integer> getGoals(InternalPropnetMachineState state) throws GoalDefinitionException{
-    	InternalPropnetRole[] theRoles = this.getInternalRoles();
+    public List<Integer> getGoals(CompactMachineState state) throws GoalDefinitionException{
+    	CompactRole[] theRoles = this.getInternalRoles();
     	List<Integer> theGoals = new ArrayList<Integer>(theRoles.length);
         for(int i = 0; i < theRoles.length; i++) {
             theGoals.add(getGoal(state, theRoles[i]));
@@ -155,11 +155,11 @@ public abstract class InternalPropnetStateMachine extends StateMachine{
      * with the goals for all the roles in the given state because of an error
      * that occurred in the state machine and couldn't be handled.
      */
-    public List<List<Integer>> getAllRolesGoals(InternalPropnetMachineState state) throws StateMachineException {
-    	InternalPropnetRole[] theRoles = this.getInternalRoles();
+    public List<List<Integer>> getAllRolesGoals(CompactMachineState state) throws StateMachineException {
+    	CompactRole[] theRoles = this.getInternalRoles();
     	List<List<Integer>> theGoals = new ArrayList<List<Integer>>(theRoles.length);
 
-    	for(InternalPropnetRole r : this.getInternalRoles()) {
+    	for(CompactRole r : this.getInternalRoles()) {
             theGoals.add(this.getOneRoleGoals(state, r));
         }
 
@@ -182,7 +182,7 @@ public abstract class InternalPropnetStateMachine extends StateMachine{
      * playout of the game because of an error that occurred in the state machine and
      * couldn't be handled.
      */
-	public InternalPropnetMachineState performDepthCharge(InternalPropnetMachineState state, final int[] theDepth) throws TransitionDefinitionException, MoveDefinitionException, StateMachineException {
+	public CompactMachineState performDepthCharge(CompactMachineState state, final int[] theDepth) throws TransitionDefinitionException, MoveDefinitionException, StateMachineException {
         int nDepth = 0;
         while(!isTerminal(state)) {
             nDepth++;
@@ -207,12 +207,12 @@ public abstract class InternalPropnetStateMachine extends StateMachine{
      * Note: this method is safe, meaning that it won't throw any checked Exception,
      * but it will always return a state (that might not be terminal).
      */
-	public InternalPropnetMachineState performSafeLimitedDepthCharge(InternalPropnetMachineState state, final int[] theDepth, int maxDepth){
+	public CompactMachineState performSafeLimitedDepthCharge(CompactMachineState state, final int[] theDepth, int maxDepth){
         int nDepth = 0;
 
         while(nDepth < maxDepth && !isTerminal(state)) {
 
-        	List<InternalPropnetMove> jointMove = null;
+        	List<CompactMove> jointMove = null;
 			try {
 				jointMove = getRandomJointMove(state);
 			} catch (MoveDefinitionException e) {
@@ -243,7 +243,7 @@ public abstract class InternalPropnetStateMachine extends StateMachine{
      * the number of state changes that were made until the current visited state.
      *
      */
-	public InternalPropnetMachineState interruptiblePerformDepthCharge(InternalPropnetMachineState state, final int[] theDepth) /*throws TransitionDefinitionException, MoveDefinitionException, StateMachineException*/ {
+	public CompactMachineState interruptiblePerformDepthCharge(CompactMachineState state, final int[] theDepth) /*throws TransitionDefinitionException, MoveDefinitionException, StateMachineException*/ {
         int nDepth = 0;
         try {
 	        while(!isTerminal(state)) {
@@ -276,9 +276,9 @@ public abstract class InternalPropnetStateMachine extends StateMachine{
      * joint move in the given state because of an error that occurred in the state
      * machine and couldn't be handled.
      */
-	public List<InternalPropnetMove> getRandomJointMove(InternalPropnetMachineState state) throws MoveDefinitionException{
-        List<InternalPropnetMove> random = new ArrayList<InternalPropnetMove>();
-        for(InternalPropnetRole role : this.getInternalRoles()) {
+	public List<CompactMove> getRandomJointMove(CompactMachineState state) throws MoveDefinitionException{
+        List<CompactMove> random = new ArrayList<CompactMove>();
+        for(CompactRole role : this.getInternalRoles()) {
             random.add(getRandomMove(state, role));
         }
 
@@ -295,10 +295,10 @@ public abstract class InternalPropnetStateMachine extends StateMachine{
      * joint move in the given state with the given role performing the given move
      * because of an error that occurred in the state machine and couldn't be handled.
      */
-    public List<InternalPropnetMove> getRandomJointMove(InternalPropnetMachineState state, InternalPropnetRole role, InternalPropnetMove move) throws MoveDefinitionException, StateMachineException
+    public List<CompactMove> getRandomJointMove(CompactMachineState state, CompactRole role, CompactMove move) throws MoveDefinitionException, StateMachineException
     {
-        List<InternalPropnetMove> random = new ArrayList<InternalPropnetMove>();
-        for (InternalPropnetRole r : getInternalRoles()) {
+        List<CompactMove> random = new ArrayList<CompactMove>();
+        for (CompactRole r : getInternalRoles()) {
             if (r.equals(role)) {
                 random.add(move);
             }else{
@@ -319,8 +319,8 @@ public abstract class InternalPropnetStateMachine extends StateMachine{
      * random move for the given role in the given state because of an
      * error that occurred in the state machine and couldn't be handled.
      */
-	public InternalPropnetMove getRandomMove(InternalPropnetMachineState state, InternalPropnetRole role) throws MoveDefinitionException{
-        List<InternalPropnetMove> legals = getInternalLegalMoves(state, role);
+	public CompactMove getRandomMove(CompactMachineState state, CompactRole role) throws MoveDefinitionException{
+        List<CompactMove> legals = getInternalLegalMoves(state, role);
         return legals.get(new Random().nextInt(legals.size()));
     }
 
@@ -376,8 +376,8 @@ public abstract class InternalPropnetStateMachine extends StateMachine{
      *
      * @param state the state for which to compute the goals.
      */
-    public int[] getSafeGoalsAvg(InternalPropnetMachineState state){
-    	InternalPropnetRole[] theRoles = this.getInternalRoles();
+    public int[] getSafeGoalsAvg(CompactMachineState state){
+    	CompactRole[] theRoles = this.getInternalRoles();
     	int[] theGoals = new int[theRoles.length];
     	int avg;
     	List<Integer> roleGoals = null;
@@ -419,8 +419,8 @@ public abstract class InternalPropnetStateMachine extends StateMachine{
      *
      * @param state the state for which to compute the goals.
      */
-    public int[] getSafeGoals(InternalPropnetMachineState state){
-    	InternalPropnetRole[] theRoles = this.getInternalRoles();
+    public int[] getSafeGoals(CompactMachineState state){
+    	CompactRole[] theRoles = this.getInternalRoles();
     	int[] theGoals = new int[theRoles.length];
         for (int i = 0; i < theRoles.length; i++) {
             try {
@@ -457,8 +457,8 @@ public abstract class InternalPropnetStateMachine extends StateMachine{
      *
      * @param state the state for which to compute the goals.
      */
-    public int[] getSafeGoalsTie(InternalPropnetMachineState state){
-    	InternalPropnetRole[] theRoles = this.getInternalRoles();
+    public int[] getSafeGoalsTie(CompactMachineState state){
+    	CompactRole[] theRoles = this.getInternalRoles();
     	int failures = 0;
     	int[] theGoals = new int[theRoles.length];
         for (int i = 0; i < theRoles.length; i++) {
@@ -499,11 +499,11 @@ public abstract class InternalPropnetStateMachine extends StateMachine{
      * @return
      * @throws MoveDefinitionException
      */
-    public List<List<InternalPropnetMove>> getAllLegalMoves(InternalPropnetMachineState state) throws MoveDefinitionException{
+    public List<List<CompactMove>> getAllLegalMoves(CompactMachineState state) throws MoveDefinitionException{
     	if(this.isTerminal(state)){
     		return null;
     	}else{
-    		List<List<InternalPropnetMove>> legalMoves = new ArrayList<List<InternalPropnetMove>>();
+    		List<List<CompactMove>> legalMoves = new ArrayList<List<CompactMove>>();
 
     		// Get legal moves for all players.
     		for(int i = 0; i < this.getInternalRoles().length; i++){
@@ -532,25 +532,25 @@ public abstract class InternalPropnetStateMachine extends StateMachine{
      * joint moves for the given state because of an error that occurred in the
      * state machine and couldn't be handled.
      */
-    public List<List<InternalPropnetMove>> getLegalJointMoves(InternalPropnetMachineState state) throws MoveDefinitionException, StateMachineException
+    public List<List<CompactMove>> getLegalJointMoves(CompactMachineState state) throws MoveDefinitionException, StateMachineException
     {
-        List<List<InternalPropnetMove>> legals = new ArrayList<List<InternalPropnetMove>>();
-        for (InternalPropnetRole role : getInternalRoles()) {
+        List<List<CompactMove>> legals = new ArrayList<List<CompactMove>>();
+        for (CompactRole role : getInternalRoles()) {
             legals.add(getInternalLegalMoves(state, role));
         }
 
-        List<List<InternalPropnetMove>> crossProduct = new ArrayList<List<InternalPropnetMove>>();
-        crossProductInternalLegalMoves(legals, crossProduct, new LinkedList<InternalPropnetMove>());
+        List<List<CompactMove>> crossProduct = new ArrayList<List<CompactMove>>();
+        crossProductInternalLegalMoves(legals, crossProduct, new LinkedList<CompactMove>());
 
         return crossProduct;
     }
 
-    protected void crossProductInternalLegalMoves(List<List<InternalPropnetMove>> legals, List<List<InternalPropnetMove>> crossProduct, LinkedList<InternalPropnetMove> partial)
+    protected void crossProductInternalLegalMoves(List<List<CompactMove>> legals, List<List<CompactMove>> crossProduct, LinkedList<CompactMove> partial)
     {
         if (partial.size() == legals.size()) {
-            crossProduct.add(new ArrayList<InternalPropnetMove>(partial));
+            crossProduct.add(new ArrayList<CompactMove>(partial));
         } else {
-            for (InternalPropnetMove move : legals.get(partial.size())) {
+            for (CompactMove move : legals.get(partial.size())) {
                 partial.addLast(move);
                 crossProductInternalLegalMoves(legals, crossProduct, partial);
                 partial.removeLast();

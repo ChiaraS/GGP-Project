@@ -10,29 +10,29 @@ import org.ggp.base.util.statemachine.exceptions.MoveDefinitionException;
 import org.ggp.base.util.statemachine.exceptions.StateMachineException;
 import org.ggp.base.util.statemachine.exceptions.StateMachineInitializationException;
 import org.ggp.base.util.statemachine.exceptions.TransitionDefinitionException;
-import org.ggp.base.util.statemachine.proverStructure.ProverMachineState;
-import org.ggp.base.util.statemachine.proverStructure.ProverMove;
-import org.ggp.base.util.statemachine.proverStructure.ProverRole;
+import org.ggp.base.util.statemachine.structure.explicit.ExplicitMachineState;
+import org.ggp.base.util.statemachine.structure.explicit.ExplicitMove;
+import org.ggp.base.util.statemachine.structure.explicit.ExplicitRole;
 
 import com.google.common.collect.ImmutableList;
 
 public final class CachedStateMachine extends StateMachine
 {
 	private final StateMachine backingStateMachine;
-	private final TtlCache<ProverMachineState, Entry> ttlCache;
+	private final TtlCache<ExplicitMachineState, Entry> ttlCache;
 
 	private final class Entry
 	{
-		public Map<ProverRole, List<Integer>> goals;
-		public Map<ProverRole, List<ProverMove>> moves;
-		public Map<List<ProverMove>, ProverMachineState> nexts;
+		public Map<ExplicitRole, List<Integer>> goals;
+		public Map<ExplicitRole, List<ExplicitMove>> moves;
+		public Map<List<ExplicitMove>, ExplicitMachineState> nexts;
 		public Boolean terminal;
 
 		public Entry()
 		{
-			goals = new HashMap<ProverRole, List<Integer>>();
-			moves = new HashMap<ProverRole, List<ProverMove>>();
-			nexts = new HashMap<List<ProverMove>, ProverMachineState>();
+			goals = new HashMap<ExplicitRole, List<Integer>>();
+			moves = new HashMap<ExplicitRole, List<ExplicitMove>>();
+			nexts = new HashMap<List<ExplicitMove>, ExplicitMachineState>();
 			terminal = null;
 		}
 	}
@@ -40,10 +40,10 @@ public final class CachedStateMachine extends StateMachine
 	public CachedStateMachine(StateMachine backingStateMachine)
 	{
 		this.backingStateMachine = backingStateMachine;
-		ttlCache = new TtlCache<ProverMachineState, Entry>(1);
+		ttlCache = new TtlCache<ExplicitMachineState, Entry>(1);
 	}
 
-	private Entry getEntry(ProverMachineState state)
+	private Entry getEntry(ExplicitMachineState state)
 	{
 		if (!ttlCache.containsKey(state))
 		{
@@ -54,7 +54,7 @@ public final class CachedStateMachine extends StateMachine
 	}
 
 	@Override
-	public List<Integer> getOneRoleGoals(ProverMachineState state, ProverRole role)
+	public List<Integer> getOneRoleGoals(ExplicitMachineState state, ExplicitRole role)
 			throws StateMachineException {
 
 		Entry entry = getEntry(state);
@@ -70,7 +70,7 @@ public final class CachedStateMachine extends StateMachine
 	}
 
 	@Override
-	public List<ProverMove> getLegalMoves(ProverMachineState state, ProverRole role) throws MoveDefinitionException, StateMachineException
+	public List<ExplicitMove> getLegalMoves(ExplicitMachineState state, ExplicitRole role) throws MoveDefinitionException, StateMachineException
 	{
 		Entry entry = getEntry(state);
 		synchronized (entry)
@@ -85,7 +85,7 @@ public final class CachedStateMachine extends StateMachine
 	}
 
 	@Override
-	public ProverMachineState getNextState(ProverMachineState state, List<ProverMove> moves) throws TransitionDefinitionException, StateMachineException
+	public ExplicitMachineState getNextState(ExplicitMachineState state, List<ExplicitMove> moves) throws TransitionDefinitionException, StateMachineException
 	{
 		Entry entry = getEntry(state);
 		synchronized (entry)
@@ -100,7 +100,7 @@ public final class CachedStateMachine extends StateMachine
 	}
 
 	@Override
-	public boolean isTerminal(ProverMachineState state) throws StateMachineException
+	public boolean isTerminal(ExplicitMachineState state) throws StateMachineException
 	{
 		Entry entry = getEntry(state);
 		synchronized (entry)
@@ -131,13 +131,13 @@ public final class CachedStateMachine extends StateMachine
 	}
 
 	@Override
-	public List<ProverRole> getRoles() {
+	public List<ExplicitRole> getRoles() {
 		// TODO(schreib): Should this be cached as well?
 		return backingStateMachine.getRoles();
 	}
 
 	@Override
-	public ProverMachineState getInitialState() {
+	public ExplicitMachineState getInitialState() {
 		// TODO(schreib): Should this be cached as well?
 		return backingStateMachine.getInitialState();
 	}

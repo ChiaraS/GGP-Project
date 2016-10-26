@@ -13,7 +13,7 @@ import org.ggp.base.util.statemachine.exceptions.StateMachineException;
 import org.ggp.base.util.statemachine.exceptions.TransitionDefinitionException;
 import org.ggp.base.util.statemachine.implementation.propnet.SelfInitSeparateInternalPropNetStateMachine;
 import org.ggp.base.util.statemachine.implementation.prover.ProverStateMachine;
-import org.ggp.base.util.statemachine.proverStructure.ProverMachineState;
+import org.ggp.base.util.statemachine.structure.explicit.ExplicitMachineState;
 
 public class Benchmark {
 
@@ -134,7 +134,7 @@ public class Benchmark {
 
 	private void runTrace(Trace trace) {
 		int stepCounter = 0;
-		ProverMachineState state = stateMachine.getInitialState();
+		ExplicitMachineState state = stateMachine.getInitialState();
 		boolean isTerminal = false;
 		try {
 			isTerminal = stateMachine.isTerminal(state);

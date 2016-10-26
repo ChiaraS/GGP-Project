@@ -20,9 +20,9 @@ import org.ggp.base.util.statemachine.exceptions.TransitionDefinitionException;
 import org.ggp.base.util.statemachine.implementation.prover.ProverStateMachine;
 import org.ggp.base.util.statemachine.implementation.yapProlog.YapStateMachine;
 import org.ggp.base.util.statemachine.implementation.yapProlog.transform.YapRenderer;
-import org.ggp.base.util.statemachine.proverStructure.ProverMachineState;
-import org.ggp.base.util.statemachine.proverStructure.ProverMove;
-import org.ggp.base.util.statemachine.proverStructure.ProverRole;
+import org.ggp.base.util.statemachine.structure.explicit.ExplicitMachineState;
+import org.ggp.base.util.statemachine.structure.explicit.ExplicitMove;
+import org.ggp.base.util.statemachine.structure.explicit.ExplicitRole;
 
 import com.declarativa.interprolog.YAPSubprocessEngine;
 
@@ -97,13 +97,13 @@ public class ProvaYap {
 		}
 
 		start = System.currentTimeMillis();
-		ProverMachineState currentState = machine.getInitialState();
+		ExplicitMachineState currentState = machine.getInitialState();
 		System.out.println("GET_INITIAL_STATE: " + (System.currentTimeMillis() - start) + "ms.");
 
 		GamerLogger.log("ProvaStepByStep", "Initial state: " + currentState.toString());
 
 		start = System.currentTimeMillis();
-		List<ProverRole> roles = machine.getRoles();
+		List<ExplicitRole> roles = machine.getRoles();
 		System.out.println("GET_ROLES: " + (System.currentTimeMillis() - start) + "ms.");
 
 		GamerLogger.log("ProvaStepByStep", "Roles: " + roles.toString());
@@ -122,10 +122,10 @@ public class ProvaYap {
 
 		while(!terminal){
 
-			List<ProverMove> jointMove = new ArrayList<ProverMove>();
+			List<ExplicitMove> jointMove = new ArrayList<ExplicitMove>();
 
-			for(ProverRole r : roles){
-				List<ProverMove> moves;
+			for(ExplicitRole r : roles){
+				List<ExplicitMove> moves;
 				start = System.currentTimeMillis();
 				try {
 					moves = machine.getLegalMoves(currentState, r);
@@ -179,7 +179,7 @@ public class ProvaYap {
 
 		}
 
-		for(ProverRole r : roles){
+		for(ExplicitRole r : roles){
 			int goal;
 			start = System.currentTimeMillis();
 			try {

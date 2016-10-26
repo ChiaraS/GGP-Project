@@ -8,9 +8,9 @@ import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.propnet
 import org.ggp.base.util.logging.GamerLogger;
 import org.ggp.base.util.statemachine.InternalPropnetStateMachine;
 import org.ggp.base.util.statemachine.exceptions.MoveDefinitionException;
-import org.ggp.base.util.statemachine.inernalPropnetStructure.InternalPropnetMachineState;
-import org.ggp.base.util.statemachine.inernalPropnetStructure.InternalPropnetMove;
-import org.ggp.base.util.statemachine.inernalPropnetStructure.InternalPropnetRole;
+import org.ggp.base.util.statemachine.structure.compact.CompactMachineState;
+import org.ggp.base.util.statemachine.structure.compact.CompactMove;
+import org.ggp.base.util.statemachine.structure.compact.CompactRole;
 
 public class PnSlowSequentialTreeNodeFactory implements PnTreeNodeFactory {
 
@@ -20,19 +20,19 @@ public class PnSlowSequentialTreeNodeFactory implements PnTreeNodeFactory {
 	 * The role that is actually performing the search.
 	 * Needed by the SUCT version of MCTS.
 	 */
-	private InternalPropnetRole myRole;
+	private CompactRole myRole;
 
-	public PnSlowSequentialTreeNodeFactory(InternalPropnetStateMachine theMachine, InternalPropnetRole myRole) {
+	public PnSlowSequentialTreeNodeFactory(InternalPropnetStateMachine theMachine, CompactRole myRole) {
 		this.theMachine = theMachine;
 		this.myRole = myRole;
 	}
 
 	@Override
-	public MCTSNode createNewNode(InternalPropnetMachineState state) {
+	public MCTSNode createNewNode(CompactMachineState state) {
 
 		int goals[] = null;
 		boolean terminal = false;
-		List<List<InternalPropnetMove>> allLegalMoves = null;
+		List<List<CompactMove>> allLegalMoves = null;
 
 		PnSlowSequentialMCTSMoveStats[] ssuctMovesStats = null;
 		List<PnSlowSequentialMCTSMoveStats> unvisitedLeaves = null;
@@ -83,15 +83,15 @@ public class PnSlowSequentialTreeNodeFactory implements PnTreeNodeFactory {
 		return new PnSlowSeqentialMCTSNode(ssuctMovesStats, unvisitedLeaves, goals, terminal);
 	}
 
-	private PnSlowSequentialMCTSMoveStats[] createSlowSUCTMCTSMoves(List<List<InternalPropnetMove>> allLegalMoves, List<PnSlowSequentialMCTSMoveStats> unvisitedLeaves){
+	private PnSlowSequentialMCTSMoveStats[] createSlowSUCTMCTSMoves(List<List<CompactMove>> allLegalMoves, List<PnSlowSequentialMCTSMoveStats> unvisitedLeaves){
 
-		InternalPropnetRole[] roles = this.theMachine.getInternalRoles();
+		CompactRole[] roles = this.theMachine.getInternalRoles();
 
 		// For all the moves of my role (i.e. the role actually performing the search)
 		// create the SUCT move containing the move statistics.
 		int myIndex = this.myRole.getIndex();
 
-		List<InternalPropnetMove> myLegalMoves = allLegalMoves.get(myIndex);
+		List<CompactMove> myLegalMoves = allLegalMoves.get(myIndex);
 		PnSlowSequentialMCTSMoveStats[] moves = new PnSlowSequentialMCTSMoveStats[myLegalMoves.size()];
 		for(int i = 0; i < myLegalMoves.size(); i++){
 			moves[i] = new PnSlowSequentialMCTSMoveStats(myLegalMoves.get(i), i, createSlowSUCTMCTSMoves((myIndex+1)%(roles.length), roles.length, allLegalMoves, unvisitedLeaves));
@@ -103,13 +103,13 @@ public class PnSlowSequentialTreeNodeFactory implements PnTreeNodeFactory {
 		return moves;
 	}
 
-	private PnSlowSequentialMCTSMoveStats[] createSlowSUCTMCTSMoves(int roleIndex, int numRoles, List<List<InternalPropnetMove>> legalMoves, List<PnSlowSequentialMCTSMoveStats> unvisitedLeaves){
+	private PnSlowSequentialMCTSMoveStats[] createSlowSUCTMCTSMoves(int roleIndex, int numRoles, List<List<CompactMove>> legalMoves, List<PnSlowSequentialMCTSMoveStats> unvisitedLeaves){
 
 		if(roleIndex == this.myRole.getIndex()){
 			return null;
 		}
 
-		List<InternalPropnetMove> roleLegalMoves = legalMoves.get(roleIndex);
+		List<CompactMove> roleLegalMoves = legalMoves.get(roleIndex);
 		PnSlowSequentialMCTSMoveStats[] moves = new PnSlowSequentialMCTSMoveStats[roleLegalMoves.size()];
 		for(int i = 0; i <roleLegalMoves.size(); i++){
 			moves[i] = new PnSlowSequentialMCTSMoveStats(roleLegalMoves.get(i), i, createSlowSUCTMCTSMoves((roleIndex+1)%(numRoles), numRoles, legalMoves, unvisitedLeaves));

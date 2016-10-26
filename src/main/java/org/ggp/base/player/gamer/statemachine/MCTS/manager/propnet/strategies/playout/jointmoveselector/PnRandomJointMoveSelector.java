@@ -4,8 +4,8 @@ import java.util.List;
 
 import org.ggp.base.util.statemachine.InternalPropnetStateMachine;
 import org.ggp.base.util.statemachine.exceptions.MoveDefinitionException;
-import org.ggp.base.util.statemachine.inernalPropnetStructure.InternalPropnetMachineState;
-import org.ggp.base.util.statemachine.inernalPropnetStructure.InternalPropnetMove;
+import org.ggp.base.util.statemachine.structure.compact.CompactMachineState;
+import org.ggp.base.util.statemachine.structure.compact.CompactMove;
 
 public class PnRandomJointMoveSelector implements PnJointMoveSelector {
 
@@ -16,7 +16,7 @@ public class PnRandomJointMoveSelector implements PnJointMoveSelector {
 	}
 
 	@Override
-	public List<InternalPropnetMove> getJointMove(InternalPropnetMachineState state) throws MoveDefinitionException {
+	public List<CompactMove> getJointMove(CompactMachineState state) throws MoveDefinitionException {
 		return this.theMachine.getRandomJointMove(state);
 	}
 

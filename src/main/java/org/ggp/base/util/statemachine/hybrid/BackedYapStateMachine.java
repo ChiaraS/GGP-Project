@@ -14,9 +14,9 @@ import org.ggp.base.util.statemachine.exceptions.StateMachineInitializationExcep
 import org.ggp.base.util.statemachine.exceptions.TransitionDefinitionException;
 import org.ggp.base.util.statemachine.implementation.prover.ProverStateMachine;
 import org.ggp.base.util.statemachine.implementation.yapProlog.YapStateMachine;
-import org.ggp.base.util.statemachine.proverStructure.ProverMachineState;
-import org.ggp.base.util.statemachine.proverStructure.ProverMove;
-import org.ggp.base.util.statemachine.proverStructure.ProverRole;
+import org.ggp.base.util.statemachine.structure.explicit.ExplicitMachineState;
+import org.ggp.base.util.statemachine.structure.explicit.ExplicitMove;
+import org.ggp.base.util.statemachine.structure.explicit.ExplicitRole;
 
 /**
  * This class implements a state machine based on Yap Prolog that is backed up by the
@@ -121,7 +121,7 @@ public class BackedYapStateMachine extends StateMachine {
 	 * @see org.ggp.base.util.statemachine.StateMachine#getRoles()
 	 */
 	@Override
-	public List<ProverRole> getRoles() {
+	public List<ExplicitRole> getRoles() {
 		if(this.mainMachine != null){
 			return this.mainMachine.getRoles();
 		}else{
@@ -133,7 +133,7 @@ public class BackedYapStateMachine extends StateMachine {
 	 * @see org.ggp.base.util.statemachine.StateMachine#getInitialState()
 	 */
 	@Override
-	public ProverMachineState getInitialState() {
+	public ExplicitMachineState getInitialState() {
 		if(this.mainMachine != null){
 			return this.mainMachine.getInitialState();
 		}else{
@@ -142,7 +142,7 @@ public class BackedYapStateMachine extends StateMachine {
 	}
 
 	@Override
-	public List<Integer> getOneRoleGoals(ProverMachineState state, ProverRole role)
+	public List<Integer> getOneRoleGoals(ExplicitMachineState state, ExplicitRole role)
 			throws StateMachineException {
 
 		if(this.mainMachine != null){
@@ -161,7 +161,7 @@ public class BackedYapStateMachine extends StateMachine {
 	 * @see org.ggp.base.util.statemachine.StateMachine#isTerminal(org.ggp.base.util.statemachine.MachineState)
 	 */
 	@Override
-	public boolean isTerminal(ProverMachineState state) /*throws StateMachineException*/ {
+	public boolean isTerminal(ExplicitMachineState state) /*throws StateMachineException*/ {
 
 		if(this.mainMachine != null){
 			try{
@@ -179,7 +179,7 @@ public class BackedYapStateMachine extends StateMachine {
 	 * @see org.ggp.base.util.statemachine.StateMachine#getLegalMoves(org.ggp.base.util.statemachine.MachineState, org.ggp.base.util.statemachine.Role)
 	 */
 	@Override
-	public List<ProverMove> getLegalMoves(ProverMachineState state, ProverRole role)
+	public List<ExplicitMove> getLegalMoves(ExplicitMachineState state, ExplicitRole role)
 			throws MoveDefinitionException/*, StateMachineException*/ {
 
 		if(this.mainMachine != null){
@@ -198,7 +198,7 @@ public class BackedYapStateMachine extends StateMachine {
 	 * @see org.ggp.base.util.statemachine.StateMachine#getNextState(org.ggp.base.util.statemachine.MachineState, java.util.List)
 	 */
 	@Override
-	public ProverMachineState getNextState(ProverMachineState state, List<ProverMove> moves)
+	public ExplicitMachineState getNextState(ExplicitMachineState state, List<ExplicitMove> moves)
 			throws TransitionDefinitionException/*, StateMachineException*/ {
 
 		if(this.mainMachine != null){

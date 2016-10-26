@@ -6,7 +6,7 @@ import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.prover.
 import org.ggp.base.util.logging.GamerLogger;
 import org.ggp.base.util.statemachine.StateMachine;
 import org.ggp.base.util.statemachine.exceptions.StateMachineException;
-import org.ggp.base.util.statemachine.proverStructure.ProverMachineState;
+import org.ggp.base.util.statemachine.structure.explicit.ExplicitMachineState;
 
 public class ProverAMAFDecoupledTreeNodeFactory extends ProverDecoupledTreeNodeFactory{
 
@@ -15,7 +15,7 @@ public class ProverAMAFDecoupledTreeNodeFactory extends ProverDecoupledTreeNodeF
 	}
 
 	@Override
-	public MCTSNode createNewNode(ProverMachineState state) {
+	public MCTSNode createNewNode(ExplicitMachineState state) {
 
 		//System.out.println("Creating new node.");
 

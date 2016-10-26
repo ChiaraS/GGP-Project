@@ -20,7 +20,7 @@ import org.ggp.base.util.logging.GamerLogger;
 import org.ggp.base.util.statemachine.StateMachine;
 import org.ggp.base.util.statemachine.exceptions.StateMachineException;
 import org.ggp.base.util.statemachine.exceptions.TransitionDefinitionException;
-import org.ggp.base.util.statemachine.proverStructure.ProverMachineState;
+import org.ggp.base.util.statemachine.structure.explicit.ExplicitMachineState;
 
 public class ProverMCTSManager extends MCTSManager {
 
@@ -243,7 +243,7 @@ public class ProverMCTSManager extends MCTSManager {
 	 * state is either terminal or there is some problem with the computation of legal
 	 * moves (and thus corresponding statistics).
 	 */
-	public MCTSNode search(ProverMachineState initialState, long timeout, int gameStep) throws MCTSException{
+	public MCTSNode search(ExplicitMachineState initialState, long timeout, int gameStep) throws MCTSException{
 
 		MCTSNode initialNode = this.prepareForSearch(initialState, gameStep);
 
@@ -274,7 +274,7 @@ public class ProverMCTSManager extends MCTSManager {
 	 * 				   the steps as starting from 1. 0 or less are not valid!
 	 * @return the tree node corresponding to the given initial state.
 	 */
-	private MCTSNode prepareForSearch(ProverMachineState initialState, int gameStep){
+	private MCTSNode prepareForSearch(ExplicitMachineState initialState, int gameStep){
 
 		this.iterations = 0;
 		this.visitedNodes = 0;
@@ -328,7 +328,7 @@ public class ProverMCTSManager extends MCTSManager {
 	 * 					  the search (making it the root of the currently searched tree).
 	 * @param timeout the time (in milliseconds) by when the search must end.
 	 */
-	private void performSearch(ProverMachineState initialState, MCTSNode initialNode, long timeout){
+	private void performSearch(ExplicitMachineState initialState, MCTSNode initialNode, long timeout){
 		this.searchStart = System.currentTimeMillis();
 		while(System.currentTimeMillis() < timeout){
 			this.currentIterationVisitedNodes = 0;
@@ -373,7 +373,7 @@ public class ProverMCTSManager extends MCTSManager {
 	 * @return the goals of all players, obtained by the current MCTS iteration and that
 	 *         must be backpropagated.
 	 */
-	private ProverSimulationResult searchNext(ProverMachineState currentState, MCTSNode currentNode) {
+	private ProverSimulationResult searchNext(ExplicitMachineState currentState, MCTSNode currentNode) {
 
 		//System.out.println();
 		//System.out.println("Search step:");
@@ -452,7 +452,7 @@ public class ProverMCTSManager extends MCTSManager {
 		//System.out.println("Node: " + this.currentIterationVisitedNodes);
 
 		ProverMCTSJointMove mctsJointMove;
-		ProverMachineState nextState;
+		ExplicitMachineState nextState;
 		MCTSNode nextNode;
 
 		/*

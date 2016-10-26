@@ -38,7 +38,7 @@ import org.ggp.base.util.presence.PlayerPresenceManager.InvalidHostportException
 import org.ggp.base.util.statemachine.StateMachine;
 import org.ggp.base.util.statemachine.exceptions.StateMachineInitializationException;
 import org.ggp.base.util.statemachine.implementation.prover.ProverStateMachine;
-import org.ggp.base.util.statemachine.proverStructure.ProverRole;
+import org.ggp.base.util.statemachine.structure.explicit.ExplicitRole;
 import org.ggp.base.util.ui.GameSelector;
 import org.ggp.base.util.ui.JLabelBold;
 import org.ggp.base.util.ui.NativeUI;
@@ -219,7 +219,7 @@ public final class Server extends JPanel implements ActionListener
 				e1.printStackTrace();
 				return;
 			}
-            List<ProverRole> roles = stateMachine.getRoles();
+            List<ExplicitRole> roles = stateMachine.getRoles();
 
             int newRowCount = 11;
             for (int i = 0; i < roles.size(); i++) {

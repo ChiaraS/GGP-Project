@@ -5,7 +5,7 @@ package org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.propne
 
 import java.util.List;
 
-import org.ggp.base.util.statemachine.inernalPropnetStructure.InternalPropnetMove;
+import org.ggp.base.util.statemachine.structure.compact.CompactMove;
 
 /**
  * @author C.Sironi
@@ -22,7 +22,7 @@ public class PnSequDecMCTSJointMove extends PnMCTSJointMove {
 	 * @param jointMove
 	 * @param movesIndices
 	 */
-	public PnSequDecMCTSJointMove(List<InternalPropnetMove> jointMove, int[] movesIndices) {
+	public PnSequDecMCTSJointMove(List<CompactMove> jointMove, int[] movesIndices) {
 		super(jointMove);
 		this.movesIndices = movesIndices;
 	}

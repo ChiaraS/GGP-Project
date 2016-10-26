@@ -19,9 +19,9 @@ import org.ggp.base.util.statemachine.StateMachine;
 import org.ggp.base.util.statemachine.exceptions.MoveDefinitionException;
 import org.ggp.base.util.statemachine.exceptions.TransitionDefinitionException;
 import org.ggp.base.util.statemachine.implementation.prover.query.ProverQueryBuilder;
-import org.ggp.base.util.statemachine.proverStructure.ProverMachineState;
-import org.ggp.base.util.statemachine.proverStructure.ProverMove;
-import org.ggp.base.util.statemachine.proverStructure.ProverRole;
+import org.ggp.base.util.statemachine.structure.explicit.ExplicitMachineState;
+import org.ggp.base.util.statemachine.structure.explicit.ExplicitMove;
+import org.ggp.base.util.statemachine.structure.explicit.ExplicitRole;
 
 
 @SuppressWarnings("unused")
@@ -31,7 +31,7 @@ public class SamplePropNetStateMachine extends StateMachine {
     /** The topological ordering of the propositions */
     private List<Proposition> ordering;
     /** The player roles */
-    private List<ProverRole> roles;
+    private List<ExplicitRole> roles;
 
     /**
      * Initializes the PropNetStateMachine. You should compute the topological
@@ -54,7 +54,7 @@ public class SamplePropNetStateMachine extends StateMachine {
 	 * of the terminal proposition for the state.
 	 */
 	@Override
-	public boolean isTerminal(ProverMachineState state) {
+	public boolean isTerminal(ExplicitMachineState state) {
 		// TODO: Compute whether the MachineState is terminal.
 		return false;
 	}
@@ -67,7 +67,7 @@ public class SamplePropNetStateMachine extends StateMachine {
 	 * GoalDefinitionException because the goal is ill-defined.
 	 */
 	@Override
-	public List<Integer> getOneRoleGoals(ProverMachineState state, ProverRole role) {
+	public List<Integer> getOneRoleGoals(ExplicitMachineState state, ExplicitRole role) {
 		// TODO: Compute the goal for role in state.
 		return null;
 	}
@@ -78,7 +78,7 @@ public class SamplePropNetStateMachine extends StateMachine {
 	 * and then computing the resulting state.
 	 */
 	@Override
-	public ProverMachineState getInitialState() {
+	public ExplicitMachineState getInitialState() {
 		// TODO: Compute the initial state.
 		return null;
 	}
@@ -87,7 +87,7 @@ public class SamplePropNetStateMachine extends StateMachine {
 	 * Computes the legal moves for role in state.
 	 */
 	@Override
-	public List<ProverMove> getLegalMoves(ProverMachineState state, ProverRole role)
+	public List<ExplicitMove> getLegalMoves(ExplicitMachineState state, ExplicitRole role)
 	throws MoveDefinitionException {
 		// TODO: Compute legal moves.
 		return null;
@@ -97,7 +97,7 @@ public class SamplePropNetStateMachine extends StateMachine {
 	 * Computes the next state given state and the list of moves.
 	 */
 	@Override
-	public ProverMachineState getNextState(ProverMachineState state, List<ProverMove> moves)
+	public ExplicitMachineState getNextState(ExplicitMachineState state, List<ExplicitMove> moves)
 	throws TransitionDefinitionException {
 		// TODO: Compute the next state.
 		return null;
@@ -135,7 +135,7 @@ public class SamplePropNetStateMachine extends StateMachine {
 
 	/* Already implemented for you */
 	@Override
-	public List<ProverRole> getRoles() {
+	public List<ExplicitRole> getRoles() {
 		return roles;
 	}
 
@@ -152,10 +152,10 @@ public class SamplePropNetStateMachine extends StateMachine {
 	 * @param moves
 	 * @return
 	 */
-	private List<GdlSentence> toDoes(List<ProverMove> moves)
+	private List<GdlSentence> toDoes(List<ExplicitMove> moves)
 	{
 		List<GdlSentence> doeses = new ArrayList<GdlSentence>(moves.size());
-		Map<ProverRole, Integer> roleIndices = getRoleIndices();
+		Map<ExplicitRole, Integer> roleIndices = getRoleIndices();
 
 		for (int i = 0; i < roles.size(); i++)
 		{
@@ -170,9 +170,9 @@ public class SamplePropNetStateMachine extends StateMachine {
 	 * @param p
 	 * @return a PropNetMove
 	 */
-	public static ProverMove getMoveFromProposition(Proposition p)
+	public static ExplicitMove getMoveFromProposition(Proposition p)
 	{
-		return new ProverMove(p.getName().get(1));
+		return new ExplicitMove(p.getName().get(1));
 	}
 
 	/**
@@ -193,7 +193,7 @@ public class SamplePropNetStateMachine extends StateMachine {
 	 * You need not use this method!
 	 * @return PropNetMachineState
 	 */
-	public ProverMachineState getStateFromBase()
+	public ExplicitMachineState getStateFromBase()
 	{
 		Set<GdlSentence> contents = new HashSet<GdlSentence>();
 		for (Proposition p : propNet.getBasePropositions().values())
@@ -205,7 +205,7 @@ public class SamplePropNetStateMachine extends StateMachine {
 			}
 
 		}
-		return new ProverMachineState(contents);
+		return new ExplicitMachineState(contents);
 	}
 
 	/*

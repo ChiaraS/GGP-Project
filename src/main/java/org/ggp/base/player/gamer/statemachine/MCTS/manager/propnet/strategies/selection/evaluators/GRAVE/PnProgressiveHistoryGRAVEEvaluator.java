@@ -3,7 +3,7 @@ package org.ggp.base.player.gamer.statemachine.MCTS.manager.propnet.strategies.s
 import java.util.Map;
 
 import org.ggp.base.player.gamer.statemachine.MCS.manager.MoveStats;
-import org.ggp.base.util.statemachine.inernalPropnetStructure.InternalPropnetMove;
+import org.ggp.base.util.statemachine.structure.compact.CompactMove;
 
 public class PnProgressiveHistoryGRAVEEvaluator extends PnGRAVEEvaluator {
 
@@ -12,7 +12,7 @@ public class PnProgressiveHistoryGRAVEEvaluator extends PnGRAVEEvaluator {
 	 * These are the statistics of the node that corresponds to the current
 	 * game state in the real game.
 	 */
-	private Map<InternalPropnetMove, MoveStats> currentRootAmafStats;
+	private Map<CompactMove, MoveStats> currentRootAmafStats;
 
 	/**
 	 * Parameter that determines the influence of progressive history.
@@ -31,7 +31,7 @@ public class PnProgressiveHistoryGRAVEEvaluator extends PnGRAVEEvaluator {
 
 	@Override
 	public double computeMoveValue(int nodeVisits,
-			InternalPropnetMove theMove, MoveStats theMoveStats) {
+			CompactMove theMove, MoveStats theMoveStats) {
 
 		// This should never happen because we should set a new reference before performing the search at every game step.
 		if(this.currentRootAmafStats == null){
@@ -68,11 +68,11 @@ public class PnProgressiveHistoryGRAVEEvaluator extends PnGRAVEEvaluator {
 
 	}
 
-	public void setCurrentRootAmafStats(Map<InternalPropnetMove, MoveStats> currentRootAmafStats){
+	public void setCurrentRootAmafStats(Map<CompactMove, MoveStats> currentRootAmafStats){
 		this.currentRootAmafStats = currentRootAmafStats;
 	}
 
-	public Map<InternalPropnetMove, MoveStats> getCurrentRootAmafStats(){
+	public Map<CompactMove, MoveStats> getCurrentRootAmafStats(){
 		return this.currentRootAmafStats;
 	}
 

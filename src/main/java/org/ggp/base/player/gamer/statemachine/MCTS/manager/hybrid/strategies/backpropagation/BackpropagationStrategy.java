@@ -1,10 +1,10 @@
 package org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.strategies.backpropagation;
 
-import org.ggp.base.player.gamer.statemachine.MCS.manager.hybrid.structure.MachineState;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.strategies.Strategy;
-import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.MCTSJointMove;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.MCTSNode;
-import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.SimulationResult;
+import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.hybrid.MCTSJointMove;
+import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.hybrid.SimulationResult;
+import org.ggp.base.util.statemachine.structure.MachineState;
 
 public interface BackpropagationStrategy extends Strategy {
 

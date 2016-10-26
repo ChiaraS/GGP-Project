@@ -8,8 +8,8 @@ import java.util.Random;
 import org.ggp.base.player.gamer.statemachine.MCS.manager.MoveStats;
 import org.ggp.base.util.statemachine.InternalPropnetStateMachine;
 import org.ggp.base.util.statemachine.exceptions.MoveDefinitionException;
-import org.ggp.base.util.statemachine.inernalPropnetStructure.InternalPropnetMachineState;
-import org.ggp.base.util.statemachine.inernalPropnetStructure.InternalPropnetMove;
+import org.ggp.base.util.statemachine.structure.compact.CompactMachineState;
+import org.ggp.base.util.statemachine.structure.compact.CompactMove;
 
 public class PnMASTJointMoveSelector implements PnJointMoveSelector {
 
@@ -17,39 +17,39 @@ public class PnMASTJointMoveSelector implements PnJointMoveSelector {
 
 	private Random random;
 
-	private Map<InternalPropnetMove, MoveStats> mastStatistics;
+	private Map<CompactMove, MoveStats> mastStatistics;
 
-	public PnMASTJointMoveSelector(InternalPropnetStateMachine theMachine, Random random, Map<InternalPropnetMove, MoveStats> mastStatistics) {
+	public PnMASTJointMoveSelector(InternalPropnetStateMachine theMachine, Random random, Map<CompactMove, MoveStats> mastStatistics) {
 		this.theMachine = theMachine;
 		this.random = random;
 		this.mastStatistics = mastStatistics;
 	}
 
 	@Override
-	public List<InternalPropnetMove> getJointMove(
-			InternalPropnetMachineState state) throws MoveDefinitionException {
+	public List<CompactMove> getJointMove(
+			CompactMachineState state) throws MoveDefinitionException {
 
-		List<InternalPropnetMove> jointMove = new ArrayList<InternalPropnetMove>();
-        List<List<InternalPropnetMove>> allLegalMoves;
+		List<CompactMove> jointMove = new ArrayList<CompactMove>();
+        List<List<CompactMove>> allLegalMoves;
 
     	allLegalMoves = this.theMachine.getAllLegalMoves(state);
 
-    	for(List<InternalPropnetMove> moves : allLegalMoves){
+    	for(List<CompactMove> moves : allLegalMoves){
     		jointMove.add(this.getMASTMove(moves));
     	}
 
 		return jointMove;
 	}
 
-	private InternalPropnetMove getMASTMove(List<InternalPropnetMove> moves) {
+	private CompactMove getMASTMove(List<CompactMove> moves) {
 
-		List<InternalPropnetMove> chosenMoves = new ArrayList<InternalPropnetMove>();
+		List<CompactMove> chosenMoves = new ArrayList<CompactMove>();
 		MoveStats moveStats;
 		double maxAvgScore = -1;
 		double currentAvgScore;
 
 		// For each legal move check the average score
-		for(InternalPropnetMove move : moves){
+		for(CompactMove move : moves){
 
 			moveStats = this.mastStatistics.get(move);
 

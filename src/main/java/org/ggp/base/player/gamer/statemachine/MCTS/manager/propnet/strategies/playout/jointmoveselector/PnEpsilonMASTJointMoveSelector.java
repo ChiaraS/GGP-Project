@@ -7,8 +7,8 @@ import java.util.Random;
 import org.ggp.base.player.gamer.statemachine.MCS.manager.MoveStats;
 import org.ggp.base.util.statemachine.InternalPropnetStateMachine;
 import org.ggp.base.util.statemachine.exceptions.MoveDefinitionException;
-import org.ggp.base.util.statemachine.inernalPropnetStructure.InternalPropnetMachineState;
-import org.ggp.base.util.statemachine.inernalPropnetStructure.InternalPropnetMove;
+import org.ggp.base.util.statemachine.structure.compact.CompactMachineState;
+import org.ggp.base.util.statemachine.structure.compact.CompactMove;
 
 public class PnEpsilonMASTJointMoveSelector implements PnJointMoveSelector {
 
@@ -20,7 +20,7 @@ public class PnEpsilonMASTJointMoveSelector implements PnJointMoveSelector {
 
 	private double epsilon;
 
-	public PnEpsilonMASTJointMoveSelector(InternalPropnetStateMachine theMachine, Random random, Map<InternalPropnetMove, MoveStats> mastStatistics, double epsilon) {
+	public PnEpsilonMASTJointMoveSelector(InternalPropnetStateMachine theMachine, Random random, Map<CompactMove, MoveStats> mastStatistics, double epsilon) {
 		this.mastSelector = new PnMASTJointMoveSelector(theMachine, random, mastStatistics);
 		this.randomSelector = new PnRandomJointMoveSelector(theMachine);
 		this.random = random;
@@ -28,8 +28,8 @@ public class PnEpsilonMASTJointMoveSelector implements PnJointMoveSelector {
 	}
 
 	@Override
-	public List<InternalPropnetMove> getJointMove(
-			InternalPropnetMachineState state) throws MoveDefinitionException {
+	public List<CompactMove> getJointMove(
+			CompactMachineState state) throws MoveDefinitionException {
 
 		if(this.random.nextDouble() < this.epsilon){
     		// Choose random action with probability epsilon

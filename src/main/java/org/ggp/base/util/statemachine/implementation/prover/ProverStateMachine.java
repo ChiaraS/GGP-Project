@@ -17,18 +17,18 @@ import org.ggp.base.util.statemachine.exceptions.MoveDefinitionException;
 import org.ggp.base.util.statemachine.exceptions.TransitionDefinitionException;
 import org.ggp.base.util.statemachine.implementation.prover.query.ProverQueryBuilder;
 import org.ggp.base.util.statemachine.implementation.prover.result.ProverResultParser;
-import org.ggp.base.util.statemachine.proverStructure.ProverMachineState;
-import org.ggp.base.util.statemachine.proverStructure.ProverMove;
-import org.ggp.base.util.statemachine.proverStructure.ProverRole;
+import org.ggp.base.util.statemachine.structure.explicit.ExplicitMachineState;
+import org.ggp.base.util.statemachine.structure.explicit.ExplicitMove;
+import org.ggp.base.util.statemachine.structure.explicit.ExplicitRole;
 
 import com.google.common.collect.ImmutableList;
 
 
 public class ProverStateMachine extends StateMachine
 {
-	private ProverMachineState initialState;
+	private ExplicitMachineState initialState;
 	private Prover prover;
-	private ImmutableList<ProverRole> roles;
+	private ImmutableList<ExplicitRole> roles;
 
 	/**
 	 * Initialize must be called before using the StateMachine
@@ -42,11 +42,11 @@ public class ProverStateMachine extends StateMachine
 	public void initialize(List<Gdl> description, long timeout)
 	{
 		prover = new AimaProver(description);
-		roles = ImmutableList.copyOf(ProverRole.computeRoles(description));
+		roles = ImmutableList.copyOf(ExplicitRole.computeRoles(description));
 		initialState = computeInitialState();
 	}
 
-	private ProverMachineState computeInitialState()
+	private ExplicitMachineState computeInitialState()
 	{
 		Set<GdlSentence> results = prover.askAll(ProverQueryBuilder.getInitQuery(), new HashSet<GdlSentence>());
 		return new ProverResultParser().toState(results);
@@ -79,7 +79,7 @@ public class ProverStateMachine extends StateMachine
 	*/
 
 	@Override
-	public List<Integer> getOneRoleGoals(ProverMachineState state, ProverRole role)	{
+	public List<Integer> getOneRoleGoals(ExplicitMachineState state, ExplicitRole role)	{
 		Set<GdlSentence> results = prover.askAll(ProverQueryBuilder.getGoalQuery(role), ProverQueryBuilder.getContext(state));
 
 		if (results.size() != 1) {
@@ -108,13 +108,13 @@ public class ProverStateMachine extends StateMachine
 	}
 
 	@Override
-	public ProverMachineState getInitialState()
+	public ExplicitMachineState getInitialState()
 	{
 		return initialState;
 	}
 
 	@Override
-	public List<ProverMove> getLegalMoves(ProverMachineState state, ProverRole role) throws MoveDefinitionException
+	public List<ExplicitMove> getLegalMoves(ExplicitMachineState state, ExplicitRole role) throws MoveDefinitionException
 	{
 		Set<GdlSentence> results = prover.askAll(ProverQueryBuilder.getLegalQuery(role), ProverQueryBuilder.getContext(state));
 
@@ -128,7 +128,7 @@ public class ProverStateMachine extends StateMachine
 	}
 
 	@Override
-	public ProverMachineState getNextState(ProverMachineState state, List<ProverMove> moves) throws TransitionDefinitionException
+	public ExplicitMachineState getNextState(ExplicitMachineState state, List<ExplicitMove> moves) throws TransitionDefinitionException
 	{
 		Set<GdlSentence> results = prover.askAll(ProverQueryBuilder.getNextQuery(), ProverQueryBuilder.getContext(state, getRoles(), moves));
 
@@ -144,7 +144,7 @@ public class ProverStateMachine extends StateMachine
 	}
 
 	@Override
-	public List<ProverRole> getRoles()
+	public List<ExplicitRole> getRoles()
 	{
 		return roles;
 	}
@@ -154,7 +154,7 @@ public class ProverStateMachine extends StateMachine
 	 * @see org.ggp.base.util.statemachine.StateMachine#isTerminal(org.ggp.base.util.statemachine.MachineState)
 	 */
 	@Override
-	public boolean isTerminal(ProverMachineState state)
+	public boolean isTerminal(ExplicitMachineState state)
 	{
 		return prover.prove(ProverQueryBuilder.getTerminalQuery(), ProverQueryBuilder.getContext(state));
 	}

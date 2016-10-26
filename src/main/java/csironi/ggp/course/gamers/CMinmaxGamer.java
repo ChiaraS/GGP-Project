@@ -12,7 +12,7 @@ import org.ggp.base.util.statemachine.exceptions.GoalDefinitionException;
 import org.ggp.base.util.statemachine.exceptions.MoveDefinitionException;
 import org.ggp.base.util.statemachine.exceptions.StateMachineException;
 import org.ggp.base.util.statemachine.exceptions.TransitionDefinitionException;
-import org.ggp.base.util.statemachine.proverStructure.ProverMove;
+import org.ggp.base.util.statemachine.structure.explicit.ExplicitMove;
 
 import csironi.ggp.course.algorithms.MinMaxSequence;
 
@@ -36,22 +36,22 @@ public class CMinmaxGamer extends SampleGamer {
 	 * @see org.ggp.base.player.gamer.statemachine.StateMachineGamer#stateMachineSelectMove(long)
 	 */
 	@Override
-	public ProverMove stateMachineSelectMove(long timeout)
+	public ExplicitMove stateMachineSelectMove(long timeout)
 			throws TransitionDefinitionException, MoveDefinitionException,
 			GoalDefinitionException, StateMachineException {
 		// We get the current start time
 		long start = System.currentTimeMillis();
 
 		StateMachine stateMachine = getStateMachine();
-		List<ProverMove> moves = stateMachine.getLegalMoves(getCurrentState(), getRole());
+		List<ExplicitMove> moves = stateMachine.getLegalMoves(getCurrentState(), getRole());
 
-		ProverMove selection = moves.get(0);
+		ExplicitMove selection = moves.get(0);
 		// If there is more than one legal move available search the best one,
 		// otherwise return the only one available.
 		if(moves.size() != 1){
 
 			MinMaxSequence search = new MinMaxSequence(true, "C:\\Users\\c.sironi\\BITBUCKET REPOS\\GGP-Base\\LOG\\MinmaxLog.txt", stateMachine);
-			List<ProverMove> bestPathMoves = search.bestmove(getCurrentState(), getRole());
+			List<ExplicitMove> bestPathMoves = search.bestmove(getCurrentState(), getRole());
 			selection = bestPathMoves.get(0);
 		}
 

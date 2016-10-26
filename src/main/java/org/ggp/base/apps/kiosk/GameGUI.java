@@ -16,15 +16,15 @@ import javax.swing.JPanel;
 import org.ggp.base.util.observer.Event;
 import org.ggp.base.util.observer.Observer;
 import org.ggp.base.util.observer.Subject;
-import org.ggp.base.util.statemachine.proverStructure.ProverMachineState;
-import org.ggp.base.util.statemachine.proverStructure.ProverMove;
-import org.ggp.base.util.statemachine.proverStructure.ProverRole;
+import org.ggp.base.util.statemachine.structure.explicit.ExplicitMachineState;
+import org.ggp.base.util.statemachine.structure.explicit.ExplicitMove;
+import org.ggp.base.util.statemachine.structure.explicit.ExplicitRole;
 
 public class GameGUI extends JPanel implements Subject, Observer, ActionListener {
     public static final long serialVersionUID = 0x1;
 
     private GameCanvas theCanvas;
-    private ProverMove workingMove;
+    private ExplicitMove workingMove;
 
     private JLabel workingMoveLabel;
     private JButton submitMoveButton;
@@ -82,13 +82,13 @@ public class GameGUI extends JPanel implements Subject, Observer, ActionListener
     	updateControls();
     }
 
-    public void updateGameState(ProverMachineState gameState) {
+    public void updateGameState(ExplicitMachineState gameState) {
     	moveBeingSubmitted = false;
         theCanvas.updateGameState(gameState);
         updateControls();
     }
 
-    public void setRole(ProverRole r) {
+    public void setRole(ExplicitRole r) {
         theCanvas.setRole(r);
     }
 

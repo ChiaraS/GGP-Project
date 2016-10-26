@@ -51,12 +51,12 @@ import org.ggp.base.util.statemachine.implementation.propnet.CheckFwdInterrPropn
 import org.ggp.base.util.statemachine.implementation.propnet.FwdInterrPropnetStateMachine;
 import org.ggp.base.util.statemachine.implementation.propnet.SeparateInternalPropnetStateMachine;
 import org.ggp.base.util.statemachine.implementation.prover.ProverStateMachine;
-import org.ggp.base.util.statemachine.inernalPropnetStructure.InternalPropnetMachineState;
-import org.ggp.base.util.statemachine.inernalPropnetStructure.InternalPropnetMove;
-import org.ggp.base.util.statemachine.inernalPropnetStructure.InternalPropnetRole;
-import org.ggp.base.util.statemachine.proverStructure.ProverMachineState;
-import org.ggp.base.util.statemachine.proverStructure.ProverMove;
 import org.ggp.base.util.statemachine.safe.InitializationSafeStateMachine;
+import org.ggp.base.util.statemachine.structure.compact.CompactMachineState;
+import org.ggp.base.util.statemachine.structure.compact.CompactMove;
+import org.ggp.base.util.statemachine.structure.compact.CompactRole;
+import org.ggp.base.util.statemachine.structure.explicit.ExplicitMachineState;
+import org.ggp.base.util.statemachine.structure.explicit.ExplicitMove;
 
 /**
  * @author C.Sironi
@@ -463,19 +463,19 @@ public class ProvaPropnet {
 
 		thePropnetMachine.initialize(description, Long.MAX_VALUE);
 
-		InternalPropnetMachineState state = thePropnetMachine.getInternalInitialState();
+		CompactMachineState state = thePropnetMachine.getInternalInitialState();
 
 		System.out.println(state);
 
-		InternalPropnetRole[] roles = thePropnetMachine.getInternalRoles();
+		CompactRole[] roles = thePropnetMachine.getInternalRoles();
 
 		System.out.println(roles.length);
 		System.out.println(roles[0]);
 
 		System.out.println(thePropnetMachine.isTerminal(state));
 
-		List<InternalPropnetMove> m = thePropnetMachine.getInternalLegalMoves(state, roles[0]);
-		InternalPropnetMachineState next = thePropnetMachine.getInternalNextState(state, m);
+		List<CompactMove> m = thePropnetMachine.getInternalLegalMoves(state, roles[0]);
+		CompactMachineState next = thePropnetMachine.getInternalNextState(state, m);
 
 		System.out.println(next);
 
@@ -1269,8 +1269,8 @@ public class ProvaPropnet {
 
 	            //END OF PROPNET PRINTING
 
-	    		ProverMachineState proverState = null;
-	    		ProverMachineState propnetState = null;
+	    		ExplicitMachineState proverState = null;
+	    		ExplicitMachineState propnetState = null;
 
 	    		try {
 	                proverState = theReference.getInitialState();
@@ -1300,7 +1300,7 @@ public class ProvaPropnet {
 
 	    			step++;
 
-	    			List<ProverMove> jointMove = null;
+	    			List<ExplicitMove> jointMove = null;
 	    			try {
 	    				jointMove = theReference.getRandomJointMove(proverState);
 	                    proverState = theReference.getNextState(proverState, jointMove);
@@ -1425,8 +1425,8 @@ public class ProvaPropnet {
 
 	            //END OF PROPNET PRINTING
 
-	    		ProverMachineState proverState = null;
-	    		ProverMachineState propnetState = null;
+	    		ExplicitMachineState proverState = null;
+	    		ExplicitMachineState propnetState = null;
 
 	    		try {
 	                proverState = theReference.getInitialState();
@@ -1456,7 +1456,7 @@ public class ProvaPropnet {
 
 	    			step++;
 
-	    			List<ProverMove> jointMove = null;
+	    			List<ExplicitMove> jointMove = null;
 	    			try {
 	    				jointMove = theReference.getRandomJointMove(proverState);
 	                    proverState = theReference.getNextState(proverState, jointMove);
@@ -1605,8 +1605,8 @@ public class ProvaPropnet {
 
 	            //END OF PROPNET PRINTING
 
-	    		ProverMachineState proverState = null;
-	    		ProverMachineState propnetState = null;
+	    		ExplicitMachineState proverState = null;
+	    		ExplicitMachineState propnetState = null;
 
 	    		try {
 	                proverState = theReference.getInitialState();
@@ -1630,7 +1630,7 @@ public class ProvaPropnet {
 
 	    			step++;
 
-	    			List<ProverMove> jointMove = null;
+	    			List<ExplicitMove> jointMove = null;
 	    			try {
 	    				jointMove = theReference.getRandomJointMove(proverState);
 	                    proverState = theReference.getNextState(proverState, jointMove);

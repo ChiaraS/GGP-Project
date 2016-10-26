@@ -4,7 +4,7 @@ import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.strategies.Str
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.MCTSNode;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.propnet.PnMCTSJointMove;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.propnet.PnSimulationResult;
-import org.ggp.base.util.statemachine.inernalPropnetStructure.InternalPropnetMachineState;
+import org.ggp.base.util.statemachine.structure.compact.CompactMachineState;
 
 public interface PnBackpropagationStrategy extends Strategy {
 
@@ -16,7 +16,7 @@ public interface PnBackpropagationStrategy extends Strategy {
 	 * @param nextState the state reached by playing the given joint move.
 	 * @param simulationResult the result obtained by the simulation that passed by this node.
 	 */
-	public void update(MCTSNode currentNode, InternalPropnetMachineState currentState, PnMCTSJointMove jointMove, PnSimulationResult simulationResult);
+	public void update(MCTSNode currentNode, CompactMachineState currentState, PnMCTSJointMove jointMove, PnSimulationResult simulationResult);
 
 	/**
 	 * Method that processes the result of the playout if needed for the chosen selection and playout strategies.
@@ -30,6 +30,6 @@ public interface PnBackpropagationStrategy extends Strategy {
 	 * @param leafState state corresponding to the leaf node.
 	 * @param simulationResult the result of the playout starting from the terminal state up to the leaf node.
 	 */
-	public void processPlayoutResult(MCTSNode leafNode, InternalPropnetMachineState leafState, PnSimulationResult simulationResult);
+	public void processPlayoutResult(MCTSNode leafNode, CompactMachineState leafState, PnSimulationResult simulationResult);
 
 }

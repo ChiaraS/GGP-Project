@@ -2,15 +2,15 @@ package org.ggp.base.player.gamer.statemachine.MCTS.manager.propnet.strategies.a
 
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.evolution.SingleParameterEvolutionManager;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.propnet.PnSimulationResult;
-import org.ggp.base.util.statemachine.inernalPropnetStructure.InternalPropnetRole;
+import org.ggp.base.util.statemachine.structure.compact.CompactRole;
 
 public class PnEvoAfterSimulation implements PnAfterSimulationStrategy {
 
 	private SingleParameterEvolutionManager evolutionManager;
 
-	private InternalPropnetRole myRole;
+	private CompactRole myRole;
 
-	public PnEvoAfterSimulation(SingleParameterEvolutionManager evolutionManager, InternalPropnetRole myRole) {
+	public PnEvoAfterSimulation(SingleParameterEvolutionManager evolutionManager, CompactRole myRole) {
 
 		this.evolutionManager = evolutionManager;
 

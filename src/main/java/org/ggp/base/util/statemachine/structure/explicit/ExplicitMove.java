@@ -1,9 +1,9 @@
-package org.ggp.base.util.statemachine.proverStructure;
+package org.ggp.base.util.statemachine.structure.explicit;
 
 import java.io.Serializable;
 
-import org.ggp.base.player.gamer.statemachine.MCS.manager.hybrid.structure.Move;
 import org.ggp.base.util.gdl.grammar.GdlTerm;
+import org.ggp.base.util.statemachine.structure.Move;
 
 /**
  * A Move represents a possible move that can be made by a role. Each
@@ -14,10 +14,10 @@ import org.ggp.base.util.gdl.grammar.GdlTerm;
  * only express the action itself.
  */
 @SuppressWarnings("serial")
-public class ProverMove implements Serializable, Move{
+public class ExplicitMove implements Serializable, Move{
     protected final GdlTerm contents;
 
-    public ProverMove(GdlTerm contents)
+    public ExplicitMove(GdlTerm contents)
     {
         this.contents = contents;
     }
@@ -25,8 +25,8 @@ public class ProverMove implements Serializable, Move{
     @Override
     public boolean equals(Object o)
     {
-        if ((o != null) && (o instanceof ProverMove)) {
-            ProverMove move = (ProverMove) o;
+        if ((o != null) && (o instanceof ExplicitMove)) {
+            ExplicitMove move = (ExplicitMove) o;
             return move.contents.equals(contents);
         }
 

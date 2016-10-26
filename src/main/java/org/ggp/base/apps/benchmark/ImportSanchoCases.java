@@ -14,7 +14,7 @@ import org.ggp.base.util.statemachine.exceptions.StateMachineException;
 import org.ggp.base.util.statemachine.exceptions.StateMachineInitializationException;
 import org.ggp.base.util.statemachine.exceptions.TransitionDefinitionException;
 import org.ggp.base.util.statemachine.implementation.prover.ProverStateMachine;
-import org.ggp.base.util.statemachine.proverStructure.ProverMove;
+import org.ggp.base.util.statemachine.structure.explicit.ExplicitMove;
 import org.ggp.base.util.symbol.factory.exceptions.SymbolFormatException;
 
 import external.JSON.JSONArray;
@@ -92,12 +92,12 @@ public class ImportSanchoCases {
 			if (flipAcceptableMoves) {
 				StateMachine theMachine = new ProverStateMachine();
 				theMachine.initialize(PlayerTester.getMediasResGame(gameKey, theState).getRules(), Long.MAX_VALUE);
-				List<ProverMove> legalMoves = theMachine.getLegalMoves(theMachine.getInitialState(), theMachine.getRoles().get(thePlayerID));
+				List<ExplicitMove> legalMoves = theMachine.getLegalMoves(theMachine.getInitialState(), theMachine.getRoles().get(thePlayerID));
 				Set<String> newAcceptableMoves = new HashSet<String>();
-				for (ProverMove move : legalMoves) {
+				for (ExplicitMove move : legalMoves) {
 					if (!acceptableMoves.contains(move.toString())) newAcceptableMoves.add(move.toString());
 				}
-				if (acceptableMoves.size() + newAcceptableMoves.size() != legalMoves.size()) throw new RuntimeException("Acceptable move size mismatch: " + Arrays.deepToString(legalMoves.toArray(new ProverMove[]{})) + " != " + Arrays.toString(acceptableMoves.toArray()) + " + " + Arrays.toString(newAcceptableMoves.toArray()));
+				if (acceptableMoves.size() + newAcceptableMoves.size() != legalMoves.size()) throw new RuntimeException("Acceptable move size mismatch: " + Arrays.deepToString(legalMoves.toArray(new ExplicitMove[]{})) + " != " + Arrays.toString(acceptableMoves.toArray()) + " + " + Arrays.toString(newAcceptableMoves.toArray()));
 				acceptableMoves = newAcceptableMoves;
 			}
 

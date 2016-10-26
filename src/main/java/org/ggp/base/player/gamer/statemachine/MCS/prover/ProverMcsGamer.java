@@ -16,9 +16,9 @@ import org.ggp.base.util.statemachine.exceptions.GoalDefinitionException;
 import org.ggp.base.util.statemachine.exceptions.MoveDefinitionException;
 import org.ggp.base.util.statemachine.exceptions.StateMachineException;
 import org.ggp.base.util.statemachine.exceptions.TransitionDefinitionException;
-import org.ggp.base.util.statemachine.proverStructure.ProverMachineState;
-import org.ggp.base.util.statemachine.proverStructure.ProverMove;
-import org.ggp.base.util.statemachine.proverStructure.ProverRole;
+import org.ggp.base.util.statemachine.structure.explicit.ExplicitMachineState;
+import org.ggp.base.util.statemachine.structure.explicit.ExplicitMove;
+import org.ggp.base.util.statemachine.structure.explicit.ExplicitRole;
 
 /**
  * This gamer performs Monte Carlo Search using the Prover.
@@ -86,7 +86,7 @@ public class ProverMcsGamer extends ProverGamer {
 
 		Random r = new Random();
 
-		ProverRole myRole = this.getRole();
+		ExplicitRole myRole = this.getRole();
 
 		// Create the MCS manager and start simulations.
 		this.mcsManager = new ProverMCSManager(new ProverRandomPlayout(this.getStateMachine()),
@@ -135,7 +135,7 @@ public class ProverMcsGamer extends ProverGamer {
 	 * @see org.ggp.base.player.gamer.statemachine.StateMachineGamer#stateMachineSelectMove(long)
 	 */
 	@Override
-	public ProverMove stateMachineSelectMove(long timeout)
+	public ExplicitMove stateMachineSelectMove(long timeout)
 			throws TransitionDefinitionException, MoveDefinitionException,
 			GoalDefinitionException, StateMachineException {
 
@@ -152,7 +152,7 @@ public class ProverMcsGamer extends ProverGamer {
     	int visitedNodes = -1;
     	double iterationsPerSecond = -1;
     	double nodesPerSecond = -1;
-    	ProverMove theMove = null;
+    	ExplicitMove theMove = null;
     	double moveScoreSum = -1.0;
     	int moveVisits = -1;
     	double moveAvgScore = -1;
@@ -165,7 +165,7 @@ public class ProverMcsGamer extends ProverGamer {
 
 			GamerLogger.log("Gamer", "Selecting move using MCS.");
 
-			ProverMachineState currentState = this.getCurrentState();
+			ExplicitMachineState currentState = this.getCurrentState();
 
 			try {
 				this.mcsManager.search(currentState, realTimeout);

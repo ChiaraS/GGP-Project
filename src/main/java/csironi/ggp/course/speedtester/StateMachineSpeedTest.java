@@ -7,8 +7,8 @@ import org.ggp.base.util.statemachine.exceptions.MoveDefinitionException;
 import org.ggp.base.util.statemachine.exceptions.StateMachineException;
 import org.ggp.base.util.statemachine.exceptions.TransitionDefinitionException;
 import org.ggp.base.util.statemachine.implementation.propnet.ExternalPropnetStateMachine;
-import org.ggp.base.util.statemachine.inernalPropnetStructure.InternalPropnetMachineState;
-import org.ggp.base.util.statemachine.proverStructure.ProverMachineState;
+import org.ggp.base.util.statemachine.structure.compact.CompactMachineState;
+import org.ggp.base.util.statemachine.structure.explicit.ExplicitMachineState;
 
 /**
  * This class computes the nodes visits and the Monte Carlo iterations that a state machine
@@ -41,7 +41,7 @@ public class StateMachineSpeedTest {
 
 		int[] lastIterationVisitedNodes = new int[1];
 
-		ProverMachineState initialState = theMachine.getInitialState();
+		ExplicitMachineState initialState = theMachine.getInitialState();
 
 		long startTime = System.currentTimeMillis();
 
@@ -89,7 +89,7 @@ public class StateMachineSpeedTest {
 
 		int[] lastIterationVisitedNodes = new int[1];
 
-		InternalPropnetMachineState initialState = theMachine.getPropnetInitialState();
+		CompactMachineState initialState = theMachine.getPropnetInitialState();
 
 		long startTime = System.currentTimeMillis();
 
@@ -137,7 +137,7 @@ public class StateMachineSpeedTest {
 
 		int[] lastIterationVisitedNodes = new int[1];
 
-		InternalPropnetMachineState initialState = theMachine.getInternalInitialState();
+		CompactMachineState initialState = theMachine.getInternalInitialState();
 
 		long startTime = System.currentTimeMillis();
 

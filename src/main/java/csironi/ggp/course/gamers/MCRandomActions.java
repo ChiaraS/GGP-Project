@@ -13,8 +13,8 @@ import org.ggp.base.util.statemachine.exceptions.GoalDefinitionException;
 import org.ggp.base.util.statemachine.exceptions.MoveDefinitionException;
 import org.ggp.base.util.statemachine.exceptions.StateMachineException;
 import org.ggp.base.util.statemachine.exceptions.TransitionDefinitionException;
-import org.ggp.base.util.statemachine.proverStructure.ProverMachineState;
-import org.ggp.base.util.statemachine.proverStructure.ProverMove;
+import org.ggp.base.util.statemachine.structure.explicit.ExplicitMachineState;
+import org.ggp.base.util.statemachine.structure.explicit.ExplicitMove;
 
 /**
  * Random gamer realized for test.
@@ -45,7 +45,7 @@ public class MCRandomActions extends SampleGamer {
 	 * @see org.ggp.base.player.gamer.statemachine.StateMachineGamer#stateMachineSelectMove(long)
 	 */
 	@Override
-	public ProverMove stateMachineSelectMove(long timeout)
+	public ExplicitMove stateMachineSelectMove(long timeout)
 			throws TransitionDefinitionException, MoveDefinitionException,
 			GoalDefinitionException, StateMachineException {
 
@@ -57,8 +57,8 @@ public class MCRandomActions extends SampleGamer {
 		this.failedCalls = 0;
 		this.numberOfIterations = 0;
 
-		List<ProverMove> moves = theMachine.getLegalMoves(getCurrentState(), getRole());
-		ProverMove selection = moves.get(0);
+		List<ExplicitMove> moves = theMachine.getLegalMoves(getCurrentState(), getRole());
+		ExplicitMove selection = moves.get(0);
 		if (moves.size() > 1) {
     		int[] moveTotalPoints = new int[moves.size()];
     		int[] moveTotalAttempts = new int[moves.size()];
@@ -113,10 +113,10 @@ public class MCRandomActions extends SampleGamer {
 
 	}
 
-	private int performPlayout(ProverMachineState currentState, ProverMove move) throws MoveDefinitionException, TransitionDefinitionException, GoalDefinitionException, StateMachineException{
+	private int performPlayout(ExplicitMachineState currentState, ExplicitMove move) throws MoveDefinitionException, TransitionDefinitionException, GoalDefinitionException, StateMachineException{
 
 		StateMachine theMachine = getStateMachine();
-		ProverMachineState nextState = theMachine.getRandomNextState(currentState, getRole(), move);
+		ExplicitMachineState nextState = theMachine.getRandomNextState(currentState, getRole(), move);
 
 		List<Integer> goals = null;
 

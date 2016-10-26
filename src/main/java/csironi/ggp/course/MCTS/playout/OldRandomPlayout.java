@@ -11,9 +11,9 @@ import org.ggp.base.util.statemachine.exceptions.GoalDefinitionException;
 import org.ggp.base.util.statemachine.exceptions.MoveDefinitionException;
 import org.ggp.base.util.statemachine.exceptions.StateMachineException;
 import org.ggp.base.util.statemachine.exceptions.TransitionDefinitionException;
-import org.ggp.base.util.statemachine.proverStructure.ProverMachineState;
-import org.ggp.base.util.statemachine.proverStructure.ProverMove;
-import org.ggp.base.util.statemachine.proverStructure.ProverRole;
+import org.ggp.base.util.statemachine.structure.explicit.ExplicitMachineState;
+import org.ggp.base.util.statemachine.structure.explicit.ExplicitMove;
+import org.ggp.base.util.statemachine.structure.explicit.ExplicitRole;
 
 import csironi.ggp.course.MCTS.MCTNode;
 
@@ -51,7 +51,7 @@ public class OldRandomPlayout implements OldPlayoutStrategy {
 	public List<Integer> playout(MCTNode expandedNode) throws MoveDefinitionException, TransitionDefinitionException, GoalDefinitionException, StateMachineException {
 
 
-		ProverMachineState currentState = expandedNode.getState();
+		ExplicitMachineState currentState = expandedNode.getState();
 
 		// For each new game state, my moves are always investigated first.
 		// It might be that the play-out starts from a node where it is not my turn to play.
@@ -61,19 +61,19 @@ public class OldRandomPlayout implements OldPlayoutStrategy {
 		if(!expandedNode.isMyTurn()){
 
 			// Joint moves list built so far.
-			List<ProverMove> jointMoves = expandedNode.getJointMoves();
+			List<ExplicitMove> jointMoves = expandedNode.getJointMoves();
 
 			// List of all roles (players) in the game.
-			List<ProverRole> roles = this.stateMachine.getRoles();
+			List<ExplicitRole> roles = this.stateMachine.getRoles();
 
 			// Randomly complete the list of joint moves.
 			for(int i=0; i < jointMoves.size(); i++){
 				// If the move for a player has not been added yet in the list of random moves,
 				// add a random one.
 				if(jointMoves.get(i) == null){
-					ProverRole moveRole = roles.get(i);
-					List<ProverMove> legalMoves = stateMachine.getLegalMoves(currentState, moveRole);
-					ProverMove randomMove = legalMoves.get(random.nextInt(legalMoves.size()));
+					ExplicitRole moveRole = roles.get(i);
+					List<ExplicitMove> legalMoves = stateMachine.getLegalMoves(currentState, moveRole);
+					ExplicitMove randomMove = legalMoves.get(random.nextInt(legalMoves.size()));
 					jointMoves.set(i, randomMove);
 				}
 			}
@@ -100,18 +100,18 @@ public class OldRandomPlayout implements OldPlayoutStrategy {
 	 * @throws TransitionDefinitionException
 	 * @throws StateMachineException
 	 */
-	private List<Integer> continuePlayout(ProverMachineState state) throws GoalDefinitionException, MoveDefinitionException, TransitionDefinitionException, StateMachineException{
+	private List<Integer> continuePlayout(ExplicitMachineState state) throws GoalDefinitionException, MoveDefinitionException, TransitionDefinitionException, StateMachineException{
 
 		if(stateMachine.isTerminal(state)){
 			return stateMachine.getGoals(state);
 		}
 
 		// Get all possible combinations of moves for the players in this state.
-		List<List<ProverMove>> allJointMoves = stateMachine.getLegalJointMoves(state);
+		List<List<ExplicitMove>> allJointMoves = stateMachine.getLegalJointMoves(state);
 
-		List<ProverMove> randomJointMoves = allJointMoves.get(this.random.nextInt(allJointMoves.size()));
+		List<ExplicitMove> randomJointMoves = allJointMoves.get(this.random.nextInt(allJointMoves.size()));
 
-		ProverMachineState nextState = this.stateMachine.getNextState(state, randomJointMoves);
+		ExplicitMachineState nextState = this.stateMachine.getNextState(state, randomJointMoves);
 
 		return this.continuePlayout(nextState);
 

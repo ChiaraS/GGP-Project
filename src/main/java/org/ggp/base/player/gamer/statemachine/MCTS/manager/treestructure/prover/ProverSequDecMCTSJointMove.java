@@ -2,7 +2,7 @@ package org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.prover
 
 import java.util.List;
 
-import org.ggp.base.util.statemachine.proverStructure.ProverMove;
+import org.ggp.base.util.statemachine.structure.explicit.ExplicitMove;
 
 public class ProverSequDecMCTSJointMove extends ProverMCTSJointMove {
 
@@ -15,7 +15,7 @@ public class ProverSequDecMCTSJointMove extends ProverMCTSJointMove {
 	 * @param jointMove
 	 * @param movesIndices
 	 */
-	public ProverSequDecMCTSJointMove(List<ProverMove> jointMove, int[] movesIndices) {
+	public ProverSequDecMCTSJointMove(List<ExplicitMove> jointMove, int[] movesIndices) {
 		super(jointMove);
 		this.movesIndices = movesIndices;
 	}

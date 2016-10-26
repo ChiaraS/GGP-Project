@@ -1,13 +1,13 @@
-package org.ggp.base.util.statemachine.proverStructure;
+package org.ggp.base.util.statemachine.structure.explicit;
 
 import java.util.HashSet;
 import java.util.Set;
 
-import org.ggp.base.player.gamer.statemachine.MCS.manager.hybrid.structure.MachineState;
 import org.ggp.base.util.gdl.grammar.GdlSentence;
+import org.ggp.base.util.statemachine.structure.MachineState;
 
-public class ProverMachineState implements MachineState{
-    public ProverMachineState() {
+public class ExplicitMachineState implements MachineState{
+    public ExplicitMachineState() {
         this.contents = null;
     }
 
@@ -17,7 +17,7 @@ public class ProverMachineState implements MachineState{
      * many cases this will do exactly what we want.
      */
     private final Set<GdlSentence> contents;
-    public ProverMachineState(Set<GdlSentence> contents)
+    public ExplicitMachineState(Set<GdlSentence> contents)
     {
         this.contents = contents;
     }
@@ -33,8 +33,8 @@ public class ProverMachineState implements MachineState{
     }
 
 	@Override
-	public ProverMachineState clone() {
-		return new ProverMachineState(new HashSet<GdlSentence>(contents));
+	public ExplicitMachineState clone() {
+		return new ExplicitMachineState(new HashSet<GdlSentence>(contents));
 	}
 
 	/* Utility methods */
@@ -57,9 +57,9 @@ public class ProverMachineState implements MachineState{
     @Override
 	public boolean equals(Object o)
     {
-        if ((o != null) && (o instanceof ProverMachineState))
+        if ((o != null) && (o instanceof ExplicitMachineState))
         {
-            ProverMachineState state = (ProverMachineState) o;
+            ExplicitMachineState state = (ExplicitMachineState) o;
             return state.getContents().equals(getContents());
         }
 

@@ -14,9 +14,9 @@ import org.ggp.base.util.logging.GamerLogger;
 import org.ggp.base.util.statemachine.InternalPropnetStateMachine;
 import org.ggp.base.util.statemachine.exceptions.MoveDefinitionException;
 import org.ggp.base.util.statemachine.exceptions.StateMachineException;
-import org.ggp.base.util.statemachine.inernalPropnetStructure.InternalPropnetMachineState;
-import org.ggp.base.util.statemachine.inernalPropnetStructure.InternalPropnetMove;
-import org.ggp.base.util.statemachine.inernalPropnetStructure.InternalPropnetRole;
+import org.ggp.base.util.statemachine.structure.compact.CompactMachineState;
+import org.ggp.base.util.statemachine.structure.compact.CompactMove;
+import org.ggp.base.util.statemachine.structure.compact.CompactRole;
 
 /**
  * @author C.Sironi
@@ -27,7 +27,7 @@ public class InternalPropnetMCSManager {
 	/**
 	 * The game state currently being searched.
 	 */
-	private InternalPropnetMachineState currentState;
+	private CompactMachineState currentState;
 
 	/**
 	 * The statistics for all the legal moves for myRole in the state currently being searched.
@@ -47,7 +47,7 @@ public class InternalPropnetMCSManager {
 	/**
 	 * The role performing the search.
 	 */
-	private InternalPropnetRole myRole;
+	private CompactRole myRole;
 
 	/**
 	 * Maximum depth that the MCTS algorithm must visit.
@@ -82,7 +82,7 @@ public class InternalPropnetMCSManager {
 	/**
 	 *
 	 */
-	public InternalPropnetMCSManager(PnPlayoutStrategy playoutStrategy, InternalPropnetStateMachine theMachine, InternalPropnetRole myRole, int maxSearchDepth, Random random) {
+	public InternalPropnetMCSManager(PnPlayoutStrategy playoutStrategy, InternalPropnetStateMachine theMachine, CompactRole myRole, int maxSearchDepth, Random random) {
 
 		this.currentState = null;
 		this.currentMovesStatistics = null;
@@ -172,7 +172,7 @@ public class InternalPropnetMCSManager {
 	}
 
 
-	public void search(InternalPropnetMachineState state, long timeout) throws MCSException{
+	public void search(CompactMachineState state, long timeout) throws MCSException{
 
 		// Reset so that if the search fails we'll have a duration of 0ms for it
 		// instead of the duration of the previous search.
@@ -188,7 +188,7 @@ public class InternalPropnetMCSManager {
 
 			this.currentState = state;
 
-			List<InternalPropnetMove> legalMoves;
+			List<CompactMove> legalMoves;
 			try {
 				legalMoves = this.theMachine.getInternalLegalMoves(this.currentState, this.myRole);
 			} catch (MoveDefinitionException e) {
@@ -205,9 +205,9 @@ public class InternalPropnetMCSManager {
 
 		} // Otherwise proceed with the search using the old statistics and updating them.
 
-		InternalPropnetMove myCurrentMove;
-		List<InternalPropnetMove> jointMove;
-		InternalPropnetMachineState nextState;
+		CompactMove myCurrentMove;
+		List<CompactMove> jointMove;
+		CompactMachineState nextState;
 		PnSimulationResult simulationResult;
 		//int[] playoutVisitedNodes = new int[1];
 		int myGoal;

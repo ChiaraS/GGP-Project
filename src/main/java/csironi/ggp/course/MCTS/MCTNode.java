@@ -11,9 +11,9 @@ import org.ggp.base.util.statemachine.exceptions.GoalDefinitionException;
 import org.ggp.base.util.statemachine.exceptions.MoveDefinitionException;
 import org.ggp.base.util.statemachine.exceptions.StateMachineException;
 import org.ggp.base.util.statemachine.exceptions.TransitionDefinitionException;
-import org.ggp.base.util.statemachine.proverStructure.ProverMachineState;
-import org.ggp.base.util.statemachine.proverStructure.ProverMove;
-import org.ggp.base.util.statemachine.proverStructure.ProverRole;
+import org.ggp.base.util.statemachine.structure.explicit.ExplicitMachineState;
+import org.ggp.base.util.statemachine.structure.explicit.ExplicitMove;
+import org.ggp.base.util.statemachine.structure.explicit.ExplicitRole;
 
 import csironi.ggp.course.MCTS.backpropagation.OldBackpropagationStrategy;
 
@@ -31,7 +31,7 @@ public class MCTNode implements OldBackpropagationStrategy {
 	/**
 	 * The state being analyzed in this MCT node.
 	 */
-	private ProverMachineState state;
+	private ExplicitMachineState state;
 
 	/**
 	 * The index in the list of roles of the player whose moves are being analyzed in this MCT node.
@@ -58,14 +58,14 @@ public class MCTNode implements OldBackpropagationStrategy {
 	/**
 	 * The move that from the parent allowed to reach this tree node.
 	 */
-	private ProverMove moveFromParent;
+	private ExplicitMove moveFromParent;
 
 	/**
 	 * List containing a move for each player. The entry for a player contains the move that
 	 * the player has chosen from the current state if this player has already been analyzed,
 	 * null otherwise.
 	 */
-	private List<ProverMove> jointMoves;
+	private List<ExplicitMove> jointMoves;
 
 	/**
 	 * List of all the children that have been visited at least once (and thus added to the MCT).
@@ -81,7 +81,7 @@ public class MCTNode implements OldBackpropagationStrategy {
 	/**
 	 *
 	 */
-	public MCTNode(StateMachine stateMachine, ProverMachineState state, int playingRoleIndex, int myRoleIndex, ProverMove moveFromParent, List<ProverMove> jointMoves) {
+	public MCTNode(StateMachine stateMachine, ExplicitMachineState state, int playingRoleIndex, int myRoleIndex, ExplicitMove moveFromParent, List<ExplicitMove> jointMoves) {
 
 		this.stateMachine = stateMachine;
 		this.state = state;
@@ -115,20 +115,20 @@ public class MCTNode implements OldBackpropagationStrategy {
 		// If state is terminal there are no children to add because there are no legal moves
 		// If it is not terminal, add all children
 		if(!this.stateMachine.isTerminal(this.state)){
-			List<ProverRole> roles = this.stateMachine.getRoles();
-			ProverRole playingRole = roles.get(this.playingRoleIndex);
+			List<ExplicitRole> roles = this.stateMachine.getRoles();
+			ExplicitRole playingRole = roles.get(this.playingRoleIndex);
 			// Get all legal moves for this player in this game state
-			List<ProverMove> moves = this.stateMachine.getLegalMoves(state, playingRole);
+			List<ExplicitMove> moves = this.stateMachine.getLegalMoves(state, playingRole);
 
 			int nextPlayingRoleIndex = (this.playingRoleIndex+1)%roles.size();
 
 			// Add a child for each move
-			for(ProverMove move: moves){
+			for(ExplicitMove move: moves){
 				// In the list of joint moves for the child, memorize which action this player took to get to the child.
-				List<ProverMove> childJointMoves = new ArrayList<ProverMove>(this.jointMoves);
+				List<ExplicitMove> childJointMoves = new ArrayList<ExplicitMove>(this.jointMoves);
 				childJointMoves.set(this.playingRoleIndex, move);
 
-				ProverMachineState childState = this.state;
+				ExplicitMachineState childState = this.state;
 
 				// If for this turn each player has already selected a move, advance to the next state
 				// using the list of joint moves that now is complete. Then reset to null values all
@@ -165,11 +165,11 @@ public class MCTNode implements OldBackpropagationStrategy {
 		return this.unvisitedChildren.size();
 	}
 
-	public ProverMachineState getState(){
+	public ExplicitMachineState getState(){
 		return this.state;
 	}
 
-	public List<ProverMove> getJointMoves(){
+	public List<ExplicitMove> getJointMoves(){
 		return this.jointMoves;
 	}
 
@@ -224,7 +224,7 @@ public class MCTNode implements OldBackpropagationStrategy {
 		return this.scoreSum;
 	}
 
-	public ProverMove getMoveFromParent(){
+	public ExplicitMove getMoveFromParent(){
 		return this.moveFromParent;
 	}
 

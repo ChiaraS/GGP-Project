@@ -10,37 +10,37 @@ import org.ggp.base.util.statemachine.exceptions.MoveDefinitionException;
 import org.ggp.base.util.statemachine.exceptions.StateMachineException;
 import org.ggp.base.util.statemachine.exceptions.StateMachineInitializationException;
 import org.ggp.base.util.statemachine.exceptions.TransitionDefinitionException;
-import org.ggp.base.util.statemachine.proverStructure.ProverMachineState;
-import org.ggp.base.util.statemachine.proverStructure.ProverMove;
-import org.ggp.base.util.statemachine.proverStructure.ProverRole;
+import org.ggp.base.util.statemachine.structure.explicit.ExplicitMachineState;
+import org.ggp.base.util.statemachine.structure.explicit.ExplicitMove;
+import org.ggp.base.util.statemachine.structure.explicit.ExplicitRole;
 
 import com.google.common.collect.ImmutableList;
 
 public class RefactoredCachedStateMachine extends StateMachine{
 
 	private final StateMachine backingStateMachine;
-	private final RefactoredTtlCache<ProverMachineState, MachineStateEntry> ttlCache;
+	private final RefactoredTtlCache<ExplicitMachineState, MachineStateEntry> ttlCache;
 
 	private final class MachineStateEntry{
-		public Map<ProverRole, List<Integer>> goals;
-		public Map<ProverRole, List<ProverMove>> moves;
-		public Map<List<ProverMove>, ProverMachineState> nexts;
+		public Map<ExplicitRole, List<Integer>> goals;
+		public Map<ExplicitRole, List<ExplicitMove>> moves;
+		public Map<List<ExplicitMove>, ExplicitMachineState> nexts;
 		public Boolean terminal;
 
 		public MachineStateEntry(){
-			goals = new HashMap<ProverRole, List<Integer>>();
-			moves = new HashMap<ProverRole, List<ProverMove>>();
-			nexts = new HashMap<List<ProverMove>, ProverMachineState>();
+			goals = new HashMap<ExplicitRole, List<Integer>>();
+			moves = new HashMap<ExplicitRole, List<ExplicitMove>>();
+			nexts = new HashMap<List<ExplicitMove>, ExplicitMachineState>();
 			terminal = null;
 		}
 	}
 
 	public RefactoredCachedStateMachine(StateMachine backingStateMachine){
 		this.backingStateMachine = backingStateMachine;
-		ttlCache = new RefactoredTtlCache<ProverMachineState, MachineStateEntry>(1);
+		ttlCache = new RefactoredTtlCache<ExplicitMachineState, MachineStateEntry>(1);
 	}
 
-	private MachineStateEntry getEntry(ProverMachineState state){
+	private MachineStateEntry getEntry(ExplicitMachineState state){
 
 		MachineStateEntry entry = ttlCache.get(state);
 
@@ -53,7 +53,7 @@ public class RefactoredCachedStateMachine extends StateMachine{
 	}
 
 	@Override
-	public List<Integer> getOneRoleGoals(ProverMachineState state, ProverRole role) throws StateMachineException{
+	public List<Integer> getOneRoleGoals(ExplicitMachineState state, ExplicitRole role) throws StateMachineException{
 		MachineStateEntry entry = getEntry(state);
 		synchronized (entry){
 			List<Integer> goals = entry.goals.get(role);
@@ -68,11 +68,11 @@ public class RefactoredCachedStateMachine extends StateMachine{
 	}
 
 	@Override
-	public List<ProverMove> getLegalMoves(ProverMachineState state, ProverRole role) throws MoveDefinitionException, StateMachineException{
+	public List<ExplicitMove> getLegalMoves(ExplicitMachineState state, ExplicitRole role) throws MoveDefinitionException, StateMachineException{
 		MachineStateEntry entry = getEntry(state);
 		synchronized (entry){
 
-			List<ProverMove> moves = entry.moves.get(role);
+			List<ExplicitMove> moves = entry.moves.get(role);
 
 			if (moves == null){
 				moves = ImmutableList.copyOf(backingStateMachine.getLegalMoves(state, role));
@@ -84,11 +84,11 @@ public class RefactoredCachedStateMachine extends StateMachine{
 	}
 
 	@Override
-	public ProverMachineState getNextState(ProverMachineState state, List<ProverMove> moves) throws TransitionDefinitionException, StateMachineException{
+	public ExplicitMachineState getNextState(ExplicitMachineState state, List<ExplicitMove> moves) throws TransitionDefinitionException, StateMachineException{
 		MachineStateEntry entry = getEntry(state);
 		synchronized (entry){
 
-			ProverMachineState nextState = entry.nexts.get(moves);
+			ExplicitMachineState nextState = entry.nexts.get(moves);
 
 			if(nextState == null){
 
@@ -101,7 +101,7 @@ public class RefactoredCachedStateMachine extends StateMachine{
 	}
 
 	@Override
-	public boolean isTerminal(ProverMachineState state) throws StateMachineException{
+	public boolean isTerminal(ExplicitMachineState state) throws StateMachineException{
 		MachineStateEntry entry = getEntry(state);
 		synchronized (entry){
 
@@ -128,13 +128,13 @@ public class RefactoredCachedStateMachine extends StateMachine{
 	}
 
 	@Override
-	public List<ProverRole> getRoles(){
+	public List<ExplicitRole> getRoles(){
 		// TODO(schreib): Should this be cached as well?
 		return this.backingStateMachine.getRoles();
 	}
 
 	@Override
-	public ProverMachineState getInitialState(){
+	public ExplicitMachineState getInitialState(){
 		// TODO(schreib): Should this be cached as well?
 		return this.backingStateMachine.getInitialState();
 	}

@@ -15,7 +15,7 @@ import org.ggp.base.server.event.ServerNewMovesEvent;
 import org.ggp.base.server.event.ServerTimeEvent;
 import org.ggp.base.util.observer.Event;
 import org.ggp.base.util.observer.Observer;
-import org.ggp.base.util.statemachine.proverStructure.ProverRole;
+import org.ggp.base.util.statemachine.structure.explicit.ExplicitRole;
 import org.ggp.base.util.ui.table.JZebraTable;
 import org.ggp.base.util.ui.timer.JTimerBar;
 
@@ -90,7 +90,7 @@ public final class HistoryPanel extends JPanel implements Observer
 		DefaultTableModel model = (DefaultTableModel) historyTable.getModel();
 
 		model.addColumn("Step");
-		for (ProverRole role : event.getRoles())
+		for (ExplicitRole role : event.getRoles())
 		{
 			model.addColumn(role.toString());
 		}

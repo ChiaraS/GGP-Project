@@ -20,8 +20,8 @@ import org.ggp.base.util.gdl.grammar.GdlSentence;
 import org.ggp.base.util.match.Match;
 import org.ggp.base.util.observer.Event;
 import org.ggp.base.util.observer.Observer;
-import org.ggp.base.util.statemachine.proverStructure.ProverMachineState;
-import org.ggp.base.util.statemachine.proverStructure.ProverRole;
+import org.ggp.base.util.statemachine.structure.explicit.ExplicitMachineState;
+import org.ggp.base.util.statemachine.structure.explicit.ExplicitRole;
 
 import external.JSON.JSONException;
 import external.JSON.JSONObject;
@@ -62,7 +62,7 @@ public class SimpleGameSim {
         // Set up fake players to pretend to play the game
         List<String> fakeHosts = new ArrayList<String>();
         List<Integer> fakePorts = new ArrayList<Integer>();
-        for (int i = 0; i < ProverRole.computeRoles(theGame.getRules()).size(); i++) {
+        for (int i = 0; i < ExplicitRole.computeRoles(theGame.getRules()).size(); i++) {
         	fakeHosts.add("SamplePlayer" + i);
         	fakePorts.add(9147+i);
         }
@@ -82,7 +82,7 @@ public class SimpleGameSim {
 			@Override
 			public void observe(Event event) {
 				if (event instanceof ServerNewGameStateEvent) {
-					ProverMachineState theCurrentState = ((ServerNewGameStateEvent)event).getState();
+					ExplicitMachineState theCurrentState = ((ServerNewGameStateEvent)event).getState();
 	                if(nState[0] > 0) System.out.print("State[" + nState[0] + "]: ");
 	                Set<GdlSentence> newContents = theCurrentState.getContents();
 	                for(GdlSentence newSentence : newContents) {

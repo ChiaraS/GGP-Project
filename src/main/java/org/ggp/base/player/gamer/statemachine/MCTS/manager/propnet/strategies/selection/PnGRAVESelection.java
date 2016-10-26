@@ -7,7 +7,7 @@ import org.ggp.base.player.gamer.statemachine.MCTS.manager.propnet.strategies.se
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.MCTSNode;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.propnet.PnMCTSJointMove;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.propnet.amafdecoupled.PnAMAFNode;
-import org.ggp.base.util.statemachine.inernalPropnetStructure.InternalPropnetRole;
+import org.ggp.base.util.statemachine.structure.compact.CompactRole;
 
 public class PnGRAVESelection extends PnMoveValueSelection implements OnlineTunableComponent{
 
@@ -16,7 +16,7 @@ public class PnGRAVESelection extends PnMoveValueSelection implements OnlineTuna
 	 */
 	private int minAMAFVisits;
 
-	public PnGRAVESelection(int numRoles, InternalPropnetRole myRole,
+	public PnGRAVESelection(int numRoles, CompactRole myRole,
 			Random random, double valueOffset, int minAMAFVisits, PnGRAVEEvaluator moveEvaluator) {
 
 		super(numRoles, myRole, random, valueOffset, moveEvaluator);

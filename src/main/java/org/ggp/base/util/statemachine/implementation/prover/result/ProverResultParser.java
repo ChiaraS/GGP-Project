@@ -9,9 +9,9 @@ import org.ggp.base.util.gdl.grammar.GdlConstant;
 import org.ggp.base.util.gdl.grammar.GdlPool;
 import org.ggp.base.util.gdl.grammar.GdlSentence;
 import org.ggp.base.util.gdl.grammar.GdlTerm;
-import org.ggp.base.util.statemachine.proverStructure.ProverMachineState;
-import org.ggp.base.util.statemachine.proverStructure.ProverMove;
-import org.ggp.base.util.statemachine.proverStructure.ProverRole;
+import org.ggp.base.util.statemachine.structure.explicit.ExplicitMachineState;
+import org.ggp.base.util.statemachine.structure.explicit.ExplicitMove;
+import org.ggp.base.util.statemachine.structure.explicit.ExplicitRole;
 
 
 public final class ProverResultParser
@@ -19,36 +19,36 @@ public final class ProverResultParser
 
 	private final static GdlConstant TRUE = GdlPool.getConstant("true");
 
-	public List<ProverMove> toMoves(Set<GdlSentence> results)
+	public List<ExplicitMove> toMoves(Set<GdlSentence> results)
 	{
-		List<ProverMove> moves = new ArrayList<ProverMove>();
+		List<ExplicitMove> moves = new ArrayList<ExplicitMove>();
 		for (GdlSentence result : results)
 		{
-			moves.add(new ProverMove(result.get(1)));
+			moves.add(new ExplicitMove(result.get(1)));
 		}
 
 		return moves;
 	}
 
-	public List<ProverRole> toRoles(List<GdlSentence> results)
+	public List<ExplicitRole> toRoles(List<GdlSentence> results)
 	{
-		List<ProverRole> roles = new ArrayList<ProverRole>();
+		List<ExplicitRole> roles = new ArrayList<ExplicitRole>();
 		for (GdlSentence result : results)
 		{
 			GdlConstant name = (GdlConstant) result.get(0);
-			roles.add(new ProverRole(name));
+			roles.add(new ExplicitRole(name));
 		}
 
 		return roles;
 	}
 
-	public ProverMachineState toState(Set<GdlSentence> results)
+	public ExplicitMachineState toState(Set<GdlSentence> results)
 	{
 		Set<GdlSentence> trues = new HashSet<GdlSentence>();
 		for (GdlSentence result : results)
 		{
 			trues.add(GdlPool.getRelation(TRUE, new GdlTerm[] { result.get(0) }));
 		}
-		return new ProverMachineState(trues);
+		return new ExplicitMachineState(trues);
 	}
 }

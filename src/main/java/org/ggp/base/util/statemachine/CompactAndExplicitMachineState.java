@@ -7,20 +7,20 @@ import java.util.Set;
 
 import org.apache.lucene.util.OpenBitSet;
 import org.ggp.base.util.gdl.grammar.GdlSentence;
-import org.ggp.base.util.statemachine.proverStructure.ProverMachineState;
+import org.ggp.base.util.statemachine.structure.explicit.ExplicitMachineState;
 
 /**
  * @author C.Sironi
  *
  */
-public class ExtendedStatePropnetMachineState extends ProverMachineState {
+public class CompactAndExplicitMachineState extends ExplicitMachineState {
 
 	private OpenBitSet basePropsTruthValue;
 
 	/**
 	 *
 	 */
-	public ExtendedStatePropnetMachineState() {
+	public CompactAndExplicitMachineState() {
 		super();
 		this.basePropsTruthValue = null;
 	}
@@ -28,7 +28,7 @@ public class ExtendedStatePropnetMachineState extends ProverMachineState {
 	/**
 	 * @param contents
 	 */
-	public ExtendedStatePropnetMachineState(Set<GdlSentence> contents) {
+	public CompactAndExplicitMachineState(Set<GdlSentence> contents) {
 		super(contents);
 		this.basePropsTruthValue = null;
 	}
@@ -36,7 +36,7 @@ public class ExtendedStatePropnetMachineState extends ProverMachineState {
 	/**
 	 * @param contents
 	 */
-	public ExtendedStatePropnetMachineState(Set<GdlSentence> contents, OpenBitSet basePropsTruthValue) {
+	public CompactAndExplicitMachineState(Set<GdlSentence> contents, OpenBitSet basePropsTruthValue) {
 		super(contents);
 		this.basePropsTruthValue = basePropsTruthValue;
 	}
@@ -48,12 +48,12 @@ public class ExtendedStatePropnetMachineState extends ProverMachineState {
 	@Override
 	public boolean equals(Object o)
     {
-        if ((o != null) && (o instanceof ProverMachineState)){
-        	if(o instanceof ExtendedStatePropnetMachineState){
-        		ExtendedStatePropnetMachineState state = (ExtendedStatePropnetMachineState) o;
+        if ((o != null) && (o instanceof ExplicitMachineState)){
+        	if(o instanceof CompactAndExplicitMachineState){
+        		CompactAndExplicitMachineState state = (CompactAndExplicitMachineState) o;
         		return state.getBasePropsTruthValue().equals(this.getBasePropsTruthValue());
         	}else{
-        		ProverMachineState state = (ProverMachineState) o;
+        		ExplicitMachineState state = (ExplicitMachineState) o;
         		return state.getContents().equals(this.getContents());
         	}
         }

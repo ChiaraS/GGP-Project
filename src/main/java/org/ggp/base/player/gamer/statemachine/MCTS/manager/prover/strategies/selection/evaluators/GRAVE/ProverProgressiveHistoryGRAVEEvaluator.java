@@ -4,7 +4,7 @@ import java.util.Map;
 
 import org.ggp.base.player.gamer.statemachine.MCS.manager.MoveStats;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.propnet.strategies.selection.evaluators.GRAVE.PnBetaComputer;
-import org.ggp.base.util.statemachine.proverStructure.ProverMove;
+import org.ggp.base.util.statemachine.structure.explicit.ExplicitMove;
 
 public class ProverProgressiveHistoryGRAVEEvaluator extends ProverGRAVEEvaluator {
 
@@ -13,7 +13,7 @@ public class ProverProgressiveHistoryGRAVEEvaluator extends ProverGRAVEEvaluator
 	 * These are the statistics of the node that corresponds to the current
 	 * game state in the real game.
 	 */
-	private Map<ProverMove, MoveStats> currentRootAmafStats;
+	private Map<ExplicitMove, MoveStats> currentRootAmafStats;
 
 	/**
 	 * Parameter that determines the influence of progressive history.
@@ -32,7 +32,7 @@ public class ProverProgressiveHistoryGRAVEEvaluator extends ProverGRAVEEvaluator
 
 	@Override
 	public double computeMoveValue(int nodeVisits,
-			ProverMove theMove, MoveStats theMoveStats) {
+			ExplicitMove theMove, MoveStats theMoveStats) {
 
 		// This should never happen because we should set a new reference before performing the search at every game step.
 		if(this.currentRootAmafStats == null){
@@ -69,11 +69,11 @@ public class ProverProgressiveHistoryGRAVEEvaluator extends ProverGRAVEEvaluator
 
 	}
 
-	public void setCurrentRootAmafStats(Map<ProverMove, MoveStats> currentRootAmafStats){
+	public void setCurrentRootAmafStats(Map<ExplicitMove, MoveStats> currentRootAmafStats){
 		this.currentRootAmafStats = currentRootAmafStats;
 	}
 
-	public Map<ProverMove, MoveStats> getCurrentRootAmafStats(){
+	public Map<ExplicitMove, MoveStats> getCurrentRootAmafStats(){
 		return this.currentRootAmafStats;
 	}
 

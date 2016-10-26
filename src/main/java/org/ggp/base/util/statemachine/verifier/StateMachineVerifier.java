@@ -6,9 +6,9 @@ import java.util.List;
 import org.ggp.base.util.logging.GamerLogger;
 import org.ggp.base.util.statemachine.StateMachine;
 import org.ggp.base.util.statemachine.exceptions.StateMachineException;
-import org.ggp.base.util.statemachine.proverStructure.ProverMachineState;
-import org.ggp.base.util.statemachine.proverStructure.ProverMove;
-import org.ggp.base.util.statemachine.proverStructure.ProverRole;
+import org.ggp.base.util.statemachine.structure.explicit.ExplicitMachineState;
+import org.ggp.base.util.statemachine.structure.explicit.ExplicitMove;
+import org.ggp.base.util.statemachine.structure.explicit.ExplicitRole;
 
 
 public class StateMachineVerifier {
@@ -27,7 +27,7 @@ public class StateMachineVerifier {
             nRound++;
 
             GamerLogger.emitToConsole(".");
-            ProverMachineState[] theCurrentStates = new ProverMachineState[theMachines.size()];
+            ExplicitMachineState[] theCurrentStates = new ExplicitMachineState[theMachines.size()];
             for(int i = 0; i < theMachines.size(); i++) {
                 try {
                     theCurrentStates[i] = theMachines.get(i).getInitialState();
@@ -44,7 +44,7 @@ public class StateMachineVerifier {
 
 				    // Do per-state consistency checks
 				    for(int i = 1; i < theMachines.size(); i++) {
-				        for(ProverRole theRole : theMachines.get(0).getRoles()) {
+				        for(ExplicitRole theRole : theMachines.get(0).getRoles()) {
 				            try {
 				                if(!(theMachines.get(i).getLegalMoves(theCurrentStates[i], theRole).size() == theMachines.get(0).getLegalMoves(theCurrentStates[0], theRole).size())) {
 				                    GamerLogger.log("StateMachine", "Inconsistency between machine #" + i + " and ProverStateMachine over state " + theCurrentStates[0] + " vs " + theCurrentStates[i].getContents());
@@ -60,7 +60,7 @@ public class StateMachineVerifier {
 
 				    try {
 				        //Proceed on to the next state.
-				        List<ProverMove> theJointMove = theMachines.get(0).getRandomJointMove(theCurrentStates[0]);
+				        List<ExplicitMove> theJointMove = theMachines.get(0).getRandomJointMove(theCurrentStates[0]);
 
 				        for(int i = 0; i < theMachines.size(); i++) {
 				            try {
@@ -92,7 +92,7 @@ public class StateMachineVerifier {
 					GamerLogger.log("StateMachine", "Inconsistency between machine #" + i + " and ProverStateMachine over terminal-ness of state " + theCurrentStates[0] + " vs " + theCurrentStates[i]);
 				    return false;
 				}
-                for(ProverRole theRole : theMachines.get(0).getRoles()) {
+                for(ExplicitRole theRole : theMachines.get(0).getRoles()) {
                     try {
                         theMachines.get(0).getGoal(theCurrentStates[0], theRole);
                     } catch(Exception e) {

@@ -6,9 +6,9 @@ import org.ggp.base.player.gamer.statemachine.MCS.manager.MoveStats;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.MCTSNode;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.propnet.PnMCTSJointMove;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.propnet.PnSimulationResult;
-import org.ggp.base.util.statemachine.inernalPropnetStructure.InternalPropnetMachineState;
-import org.ggp.base.util.statemachine.inernalPropnetStructure.InternalPropnetMove;
-import org.ggp.base.util.statemachine.inernalPropnetStructure.InternalPropnetRole;
+import org.ggp.base.util.statemachine.structure.compact.CompactMachineState;
+import org.ggp.base.util.statemachine.structure.compact.CompactMove;
+import org.ggp.base.util.statemachine.structure.compact.CompactRole;
 
 public class PnMASTGRAVEBackpropagation implements PnBackpropagationStrategy {
 
@@ -18,14 +18,14 @@ public class PnMASTGRAVEBackpropagation implements PnBackpropagationStrategy {
 
 	private PnGRAVEUpdate graveUpdate;
 
-	public PnMASTGRAVEBackpropagation(int numRoles, InternalPropnetRole myRole,  Map<InternalPropnetMove, MoveStats> mastStatistics) {
+	public PnMASTGRAVEBackpropagation(int numRoles, CompactRole myRole,  Map<CompactMove, MoveStats> mastStatistics) {
 		this.stdBackpropagation = new PnStandardBackpropagation(numRoles, myRole);
 		this.mastUpdate = new PnMASTUpdate(mastStatistics);
 		this.graveUpdate = new PnGRAVEUpdate();
 	}
 
 	@Override
-	public void update(MCTSNode currentNode, InternalPropnetMachineState currentState, PnMCTSJointMove jointMove, PnSimulationResult simulationResult) {
+	public void update(MCTSNode currentNode, CompactMachineState currentState, PnMCTSJointMove jointMove, PnSimulationResult simulationResult) {
 
 		this.stdBackpropagation.update(currentNode, currentState, jointMove, simulationResult);
 		this.mastUpdate.update(currentNode, currentState, jointMove, simulationResult);
@@ -34,7 +34,7 @@ public class PnMASTGRAVEBackpropagation implements PnBackpropagationStrategy {
 	}
 
 	@Override
-	public void processPlayoutResult(MCTSNode leafNode, InternalPropnetMachineState leafState, PnSimulationResult simulationResult) {
+	public void processPlayoutResult(MCTSNode leafNode, CompactMachineState leafState, PnSimulationResult simulationResult) {
 
 		this.stdBackpropagation.processPlayoutResult(leafNode, leafState, simulationResult);
 		this.mastUpdate.processPlayoutResult(leafNode, leafState, simulationResult);

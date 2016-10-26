@@ -1,6 +1,8 @@
 package org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid;
 
+import org.ggp.base.player.gamer.statemachine.MCS.manager.hybrid.CompleteMoveStats;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.MCTSManager;
+import org.ggp.base.player.gamer.statemachine.MCTS.manager.exceptions.MCTSException;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.strategies.aftermove.AfterMoveStrategy;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.strategies.aftersimulation.AfterSimulationStrategy;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.strategies.backpropagation.BackpropagationStrategy;
@@ -9,6 +11,17 @@ import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.strategies.exp
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.strategies.movechoice.MoveChoiceStrategy;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.strategies.playout.PlayoutStrategy;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.strategies.selection.SelectionStrategy;
+import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.MCTSNode;
+import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.hybrid.MCTSJointMove;
+import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.hybrid.MCTSTranspositionTable;
+import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.hybrid.SimulationResult;
+import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.hybrid.TreeNodeFactory;
+import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.hybrid.amafdecoupled.AMAFDecoupledTreeNodeFactory;
+import org.ggp.base.util.logging.GamerLogger;
+import org.ggp.base.util.statemachine.AbstractStateMachine;
+import org.ggp.base.util.statemachine.exceptions.StateMachineException;
+import org.ggp.base.util.statemachine.exceptions.TransitionDefinitionException;
+import org.ggp.base.util.statemachine.structure.MachineState;
 
 /**
  * @author C.Sironi
@@ -52,7 +65,7 @@ public class HybridMCTSManager extends MCTSManager {
 	 * NOTE: always make sure when initializing the manager to assign it the correct node factory,
 	 * that creates nodes containing all the information that the strategies need.
 	 */
-/**	private TreeNodeFactory theNodesFactory;
+	private TreeNodeFactory theNodesFactory;
 
 	/** NOT NEEDED FOR NOW SINCE ALL STRATEGIES ARE SEPARATE
 	 * A set containing all the distinct concrete strategy classes only once.
@@ -64,23 +77,23 @@ public class HybridMCTSManager extends MCTSManager {
 	/**
 	 * The state machine that this MCTS manager uses to reason on the game
 	 */
-/**	private QualeStateMachine? theMachine;
+	private AbstractStateMachine theMachine;
 
 	/**
 	 * The transposition table (implemented with HashMap that uses the internal propnet state as key
 	 * and solves collisions with linked lists).
 	 */
-/**	private MCTSTranspositionTable transpositionTable;
+	private MCTSTranspositionTable transpositionTable;
 
 	/**
 	 *
 	 */
-/**	public InternalPropnetMCTSManager(SelectionStrategy selectionStrategy,
+	public HybridMCTSManager(SelectionStrategy selectionStrategy,
 			ExpansionStrategy expansionStrategy, PlayoutStrategy playoutStrategy,
 			BackpropagationStrategy backpropagationStrategy, MoveChoiceStrategy moveChoiceStrategy,
 			BeforeSimulationStrategy beforeSimulationStrategy, AfterSimulationStrategy afterSimulationStrategy,
 			AfterMoveStrategy afterMoveStrategy,TreeNodeFactory theNodesFactory,
-			InternalPropnetStateMachine theMachine, int gameStepOffset, int maxSearchDepth,
+			AbstractStateMachine theMachine, int gameStepOffset, int maxSearchDepth,
 			boolean logTranspositionTable) {
 
 		//this.mctsType = mctsType;
@@ -96,7 +109,7 @@ public class HybridMCTSManager extends MCTSManager {
 		this.theNodesFactory = theNodesFactory;
 		this.theMachine = theMachine;
 
-		if(!(theNodesFactory instanceof PnAMAFDecoupledTreeNodeFactory)){
+		if(!(theNodesFactory instanceof AMAFDecoupledTreeNodeFactory)){
 			logTranspositionTable = false;
 		}
 
@@ -129,7 +142,7 @@ public class HybridMCTSManager extends MCTSManager {
 		//this.strategies.add(this.playoutStrategy);
 		//this.strategies.add(this.moveChoiceStrategy);
 
-/**		String toLog = "MCTS manager initialized with the following state machine " + this.theMachine.getName();
+		String toLog = "MCTS manager initialized with the following state machine " + this.theMachine.getName();
 
 		toLog += "\nMCTS manager initialized with the following parameters: [maxSearchDepth = " + this.maxSearchDepth + ", logTranspositionTable = " + logTranspositionTable + "]";
 
@@ -178,7 +191,7 @@ public class HybridMCTSManager extends MCTSManager {
 	 * it is either terminal or there is some problem with the computation of legal
 	 * moves (and thus corresponding statistics).
 	 */
-/**	public CompleteMoveStats getBestMove(MCTSNode theNode)throws MCTSException{
+	public CompleteMoveStats getBestMove(MCTSNode theNode)throws MCTSException{
 
 		// If the node is null or terminal we cannot return any move.
 		// Note that the node being terminal might mean that the state is not terminal but legal moves
@@ -213,7 +226,7 @@ public class HybridMCTSManager extends MCTSManager {
 	 * state is either terminal or there is some problem with the computation of legal
 	 * moves (and thus corresponding statistics).
 	 */
-/**	public MCTSNode search(InternalPropnetMachineState initialState, long timeout, int gameStep) throws MCTSException{
+	public MCTSNode search(MachineState initialState, long timeout, int gameStep) throws MCTSException{
 
 		MCTSNode initialNode = this.prepareForSearch(initialState, gameStep);
 
@@ -244,7 +257,7 @@ public class HybridMCTSManager extends MCTSManager {
 	 * 				   the steps as starting from 1. 0 or less are not valid!
 	 * @return the tree node corresponding to the given initial state.
 	 */
-/**	private MCTSNode prepareForSearch(InternalPropnetMachineState initialState, int gameStep){
+	private MCTSNode prepareForSearch(MachineState initialState, int gameStep){
 
 		this.iterations = 0;
 		this.visitedNodes = 0;
@@ -303,7 +316,7 @@ public class HybridMCTSManager extends MCTSManager {
 	 * 					  the search (making it the root of the currently searched tree).
 	 * @param timeout the time (in milliseconds) by when the search must end.
 	 */
-/**	private void performSearch(InternalPropnetMachineState initialState, MCTSNode initialNode, long timeout){
+	private void performSearch(MachineState initialState, MCTSNode initialNode, long timeout){
 		this.searchStart = System.currentTimeMillis();
 		while(System.currentTimeMillis() < timeout){
 			this.currentIterationVisitedNodes = 0;
@@ -348,7 +361,7 @@ public class HybridMCTSManager extends MCTSManager {
 	 * @return the goals of all players, obtained by the current MCTS iteration and that
 	 *         must be backpropagated.
 	 */
-/**	private SimulationResult searchNext(InternalPropnetMachineState currentState, MCTSNode currentNode) {
+	private SimulationResult searchNext(MachineState currentState, MCTSNode currentNode) {
 
 		//System.out.println();
 		//System.out.println("Search step:");
@@ -392,7 +405,7 @@ public class HybridMCTSManager extends MCTSManager {
 			System.out.print(s);
 			*/
 
-/**			return new SimulationResult(currentNode.getGoals());
+			return new SimulationResult(currentNode.getGoals());
 		}
 
 		// If the state is not terminal (and no error occurred when computing legal moves),
@@ -420,7 +433,7 @@ public class HybridMCTSManager extends MCTSManager {
 			*/
 
 
-/**			return new SimulationResult(this.theMachine.getSafeGoalsAvg(currentState));
+			return new SimulationResult(this.theMachine.getSafeGoalsAvgForAllRoles(currentState));
 		}
 
 		this.currentIterationVisitedNodes++;
@@ -428,7 +441,7 @@ public class HybridMCTSManager extends MCTSManager {
 		//System.out.println("Node: " + this.currentIterationVisitedNodes);
 
 		MCTSJointMove mctsJointMove;
-		InternalPropnetMachineState nextState;
+		MachineState nextState;
 		MCTSNode nextNode;
 
 		/*
@@ -451,7 +464,7 @@ public class HybridMCTSManager extends MCTSManager {
 
 		// If the state is not terminal we must check if we have to expand it or if we have to continue the selection.
 		// Depending on what needs to be done, get the joint move to be expanded/selected.
-/**		boolean expansionRequired = this.expansionStrategy.expansionRequired(currentNode);
+		boolean expansionRequired = this.expansionStrategy.expansionRequired(currentNode);
 		if(expansionRequired){
 
 			//System.out.println("Expanding.");
@@ -474,7 +487,15 @@ public class HybridMCTSManager extends MCTSManager {
 		//System.out.println("Computing next state and next node.");
 
 		// Get the next state according to the joint move...
-		nextState = this.theMachine.getInternalNextState(currentState, mctsJointMove.getJointMove());
+		try {
+			nextState = this.theMachine.getNextState(currentState, mctsJointMove.getJointMove());
+		} catch (TransitionDefinitionException | StateMachineException e) {
+			GamerLogger.logError("MCTSManager", "Cannot compute next state. Stopping iteration and returning safe goals.");
+
+			this.currentIterationVisitedNodes--;
+			return new SimulationResult(this.theMachine.getSafeGoalsAvgForAllRoles(currentState));
+		}
+
 		// ...and get the corresponding MCT node from the transposition table.
 		nextNode = this.transpositionTable.getNode(nextState);
 
@@ -529,7 +550,7 @@ public class HybridMCTSManager extends MCTSManager {
 
 				if(availableDepth == 0){
 
-					simulationResult = new SimulationResult(this.theMachine.getSafeGoalsAvg(nextState));
+					simulationResult = new SimulationResult(this.theMachine.getSafeGoalsAvgForAllRoles(nextState));
 
 				}else{
 
@@ -563,7 +584,7 @@ public class HybridMCTSManager extends MCTSManager {
 		*/
 
 
-/**		this.backpropagationStrategy.update(currentNode, currentState, mctsJointMove, simulationResult);
+		this.backpropagationStrategy.update(currentNode, currentState, mctsJointMove, simulationResult);
 		return simulationResult;
 	}
 

@@ -11,9 +11,9 @@ import org.ggp.base.util.gdl.grammar.GdlRelation;
 import org.ggp.base.util.gdl.grammar.GdlSentence;
 import org.ggp.base.util.gdl.grammar.GdlTerm;
 import org.ggp.base.util.gdl.grammar.GdlVariable;
-import org.ggp.base.util.statemachine.proverStructure.ProverMachineState;
-import org.ggp.base.util.statemachine.proverStructure.ProverMove;
-import org.ggp.base.util.statemachine.proverStructure.ProverRole;
+import org.ggp.base.util.statemachine.structure.explicit.ExplicitMachineState;
+import org.ggp.base.util.statemachine.structure.explicit.ExplicitMove;
+import org.ggp.base.util.statemachine.structure.explicit.ExplicitRole;
 
 
 public final class ProverQueryBuilder
@@ -28,12 +28,12 @@ public final class ProverQueryBuilder
 	private final static GdlProposition TERMINAL_QUERY = GdlPool.getProposition(GdlPool.getConstant("terminal"));
 	private final static GdlVariable VARIABLE = GdlPool.getVariable("?x");
 
-	public static Set<GdlSentence> getContext(ProverMachineState state)
+	public static Set<GdlSentence> getContext(ExplicitMachineState state)
 	{
 		return state.getContents();
 	}
 
-	public static Set<GdlSentence> getContext(ProverMachineState state, List<ProverRole> roles, List<ProverMove> moves)
+	public static Set<GdlSentence> getContext(ExplicitMachineState state, List<ExplicitRole> roles, List<ExplicitMove> moves)
 	{
 		Set<GdlSentence> context = new HashSet<GdlSentence>(state.getContents());
 		for (int i = 0; i < roles.size(); i++)
@@ -43,7 +43,7 @@ public final class ProverQueryBuilder
 		return context;
 	}
 
-	public static GdlRelation getGoalQuery(ProverRole role)
+	public static GdlRelation getGoalQuery(ExplicitRole role)
 	{
 		return GdlPool.getRelation(GOAL, new GdlTerm[] { role.getName(), VARIABLE });
 	}
@@ -53,7 +53,7 @@ public final class ProverQueryBuilder
 		return INIT_QUERY;
 	}
 
-	public static GdlRelation getLegalQuery(ProverRole role)
+	public static GdlRelation getLegalQuery(ExplicitRole role)
 	{
 		return GdlPool.getRelation(LEGAL, new GdlTerm[] { role.getName(), VARIABLE });
 	}
@@ -73,7 +73,7 @@ public final class ProverQueryBuilder
 		return TERMINAL_QUERY;
 	}
 
-	public static GdlRelation toDoes(ProverRole role, ProverMove move)
+	public static GdlRelation toDoes(ExplicitRole role, ExplicitMove move)
 	{
 		return GdlPool.getRelation(DOES, new GdlTerm[] { role.getName(), move.getContents() });
 	}

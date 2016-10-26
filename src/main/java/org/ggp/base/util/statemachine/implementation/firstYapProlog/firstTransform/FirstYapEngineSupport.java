@@ -12,8 +12,8 @@ import org.ggp.base.util.gdl.factory.exceptions.GdlFormatException;
 import org.ggp.base.util.gdl.grammar.Gdl;
 import org.ggp.base.util.gdl.grammar.GdlConstant;
 import org.ggp.base.util.gdl.grammar.GdlSentence;
-import org.ggp.base.util.statemachine.proverStructure.ProverMove;
-import org.ggp.base.util.statemachine.proverStructure.ProverRole;
+import org.ggp.base.util.statemachine.structure.explicit.ExplicitMove;
+import org.ggp.base.util.statemachine.structure.explicit.ExplicitRole;
 import org.ggp.base.util.symbol.factory.exceptions.SymbolFormatException;
 
 public class FirstYapEngineSupport {
@@ -37,11 +37,11 @@ public class FirstYapEngineSupport {
 		sentenceMapping = new HashMap<String, GdlSentence>();
 		unsentenceMapping = new HashMap<GdlSentence, String>();
 
-		moveMapping = new HashMap<String, ProverMove>();
-		unmoveMapping = new HashMap<ProverMove, String>();
+		moveMapping = new HashMap<String, ExplicitMove>();
+		unmoveMapping = new HashMap<ExplicitMove, String>();
 
-		roleMapping = new HashMap<String, ProverRole>();
-		unroleMapping = new HashMap<ProverRole, String>();
+		roleMapping = new HashMap<String, ExplicitRole>();
+		unroleMapping = new HashMap<ExplicitRole, String>();
 	}
 
 
@@ -226,16 +226,16 @@ public class FirstYapEngineSupport {
 
 
 
-	private Map<String, ProverRole> roleMapping;
-	private Map<ProverRole, String> unroleMapping;
+	private Map<String, ExplicitRole> roleMapping;
+	private Map<ExplicitRole, String> unroleMapping;
 	/**
 	 * Translation Yap Prolog -> Gdl syntax
 	 * 		List<Role>
 	 * AFTER calling deterministicGoal
 	 */
-	public List<ProverRole> askToRoles(String[] response)
+	public List<ExplicitRole> askToRoles(String[] response)
 	{
-		List<ProverRole> roles = new LinkedList<ProverRole>();
+		List<ExplicitRole> roles = new LinkedList<ExplicitRole>();
 
 		for(String s : response)
 			roles.add(mapRole(s));
@@ -244,12 +244,12 @@ public class FirstYapEngineSupport {
 		return roles;
 	}
 
-	private ProverRole mapRole(String fakeRole)
+	private ExplicitRole mapRole(String fakeRole)
 	{
 		try{
 			if(!roleMapping.containsKey(fakeRole))
 			{
-				ProverRole realRole = new ProverRole((GdlConstant) GdlFactory.createTerm(toGdlConstant(fakeRole)));
+				ExplicitRole realRole = new ExplicitRole((GdlConstant) GdlFactory.createTerm(toGdlConstant(fakeRole)));
 				roleMapping.put(fakeRole, realRole);
 				unroleMapping.put(realRole, fakeRole);
 			}
@@ -264,16 +264,16 @@ public class FirstYapEngineSupport {
 
 
 
-	private Map<String, ProverMove> moveMapping;
-	private Map<ProverMove, String> unmoveMapping;
+	private Map<String, ExplicitMove> moveMapping;
+	private Map<ExplicitMove, String> unmoveMapping;
 	/**
 	 * Translation Yap Prolog -> Gdl syntax
 	 * 		List<Move>
 	 * AFTER calling deterministicGoal
 	 */
-	public List<ProverMove> askToMoves(String[] response)
+	public List<ExplicitMove> askToMoves(String[] response)
 	{
-		List<ProverMove> moves = new LinkedList<ProverMove>();
+		List<ExplicitMove> moves = new LinkedList<ExplicitMove>();
 
 		for(String s : response)
 			moves.add(mapMove(s));
@@ -282,17 +282,17 @@ public class FirstYapEngineSupport {
 		return moves;
 	}
 
-	public ProverMove askToMove(String response)
+	public ExplicitMove askToMove(String response)
 	{
 		return mapMove(response);
 	}
 
-	private ProverMove mapMove(String fakeMove)
+	private ExplicitMove mapMove(String fakeMove)
 	{
 		try{
 			if(!moveMapping.containsKey(fakeMove))
 			{
-				ProverMove realMove = new ProverMove (GdlFactory.createTerm(toGdlTerm(fakeMove)));
+				ExplicitMove realMove = new ExplicitMove (GdlFactory.createTerm(toGdlTerm(fakeMove)));
 				moveMapping.put(fakeMove, realMove);
 				unmoveMapping.put(realMove, fakeMove);
 			}
@@ -313,7 +313,7 @@ public class FirstYapEngineSupport {
 	 * 		Role -> String
 	 * BEFORE deterministicGoal
 	 */
-	public String getFakeRole(ProverRole realRole)
+	public String getFakeRole(ExplicitRole realRole)
 	{
 		if(!unroleMapping.containsKey(realRole))
 		{
@@ -330,7 +330,7 @@ public class FirstYapEngineSupport {
 	 * 		Move -> String
 	 * BEFORE deterministicGoal
 	 */
-	public String getFakeMove(ProverMove realMove)
+	public String getFakeMove(ExplicitMove realMove)
 	{
 		if(!unmoveMapping.containsKey(realMove))
 		{
@@ -411,11 +411,11 @@ public class FirstYapEngineSupport {
 	 * 		List<Role> -> List<String> for [getRandomJointMove(_)]
 	 * BEFORE deterministicGoal
 	 */
-	public List<String> getFakeRoles(List<ProverRole> roles)
+	public List<String> getFakeRoles(List<ExplicitRole> roles)
 	{
 		List<String> list = new LinkedList<String>();
 
-		for(ProverRole role : roles)
+		for(ExplicitRole role : roles)
 			list.add(getFakeRole(role));
 
 		return list;
@@ -427,11 +427,11 @@ public class FirstYapEngineSupport {
 	 * 		List<Move> -> List<String> for [getNextState(_)]
 	 * BEFORE deterministicGoal
 	 */
-	public List<String> getFakeMoves(List<ProverMove> moves)
+	public List<String> getFakeMoves(List<ExplicitMove> moves)
 	{
 		List<String> list = new LinkedList<String>();
 
-		for(ProverMove move : moves)
+		for(ExplicitMove move : moves)
 			list.add(getFakeMove(move));
 
 		return list;

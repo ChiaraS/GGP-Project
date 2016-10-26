@@ -36,7 +36,7 @@ import org.ggp.base.util.statemachine.InternalPropnetStateMachine;
 import org.ggp.base.util.statemachine.cache.SeparateInternalPropnetCachedStateMachine;
 import org.ggp.base.util.statemachine.exceptions.StateMachineInitializationException;
 import org.ggp.base.util.statemachine.implementation.propnet.SeparateInternalPropnetStateMachine;
-import org.ggp.base.util.statemachine.inernalPropnetStructure.InternalPropnetRole;
+import org.ggp.base.util.statemachine.structure.compact.CompactRole;
 
 /**
  * TO DELETE!
@@ -297,7 +297,7 @@ public class SingleRunPNMemTest {
 
 		        r = new Random();
 		        maxSearchDepth = 500;
-		        InternalPropnetRole internalPlayingRole = thePropnetMachine.getInternalRoles()[0];
+		        CompactRole internalPlayingRole = thePropnetMachine.getInternalRoles()[0];
 		        numRoles = thePropnetMachine.getInternalRoles().length;
 
 		        InternalPropnetMCSManager MCSmanager = new InternalPropnetMCSManager(new PnRandomPlayout(thePropnetMachine),
@@ -356,7 +356,7 @@ public class SingleRunPNMemTest {
 		        int gameStep = 1;
 		        int gameStepOffset = 2;
 
-		        InternalPropnetRole internalPlayingRole = thePropnetMachine.getInternalRoles()[0];
+		        CompactRole internalPlayingRole = thePropnetMachine.getInternalRoles()[0];
 		        numRoles = thePropnetMachine.getInternalRoles().length;
 
 		        PnTreeNodeFactory theNodeFactory = new PnDecoupledTreeNodeFactory(thePropnetMachine);

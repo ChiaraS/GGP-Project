@@ -9,8 +9,8 @@ import org.ggp.base.util.statemachine.exceptions.GoalDefinitionException;
 import org.ggp.base.util.statemachine.exceptions.MoveDefinitionException;
 import org.ggp.base.util.statemachine.exceptions.StateMachineException;
 import org.ggp.base.util.statemachine.exceptions.TransitionDefinitionException;
-import org.ggp.base.util.statemachine.proverStructure.ProverMachineState;
-import org.ggp.base.util.statemachine.proverStructure.ProverMove;
+import org.ggp.base.util.statemachine.structure.explicit.ExplicitMachineState;
+import org.ggp.base.util.statemachine.structure.explicit.ExplicitMove;
 
 /**
  * SampleMonteCarloGamer is a simple state-machine-based Gamer. It will use a
@@ -31,7 +31,7 @@ public final class SampleMonteCarloGamer extends SampleGamer
 	 * Employs a simple sample "Monte Carlo" algorithm.
 	 */
 	@Override
-	public ProverMove stateMachineSelectMove(long timeout) throws TransitionDefinitionException, MoveDefinitionException, GoalDefinitionException, StateMachineException
+	public ExplicitMove stateMachineSelectMove(long timeout) throws TransitionDefinitionException, MoveDefinitionException, GoalDefinitionException, StateMachineException
 	{
 	    StateMachine theMachine = getStateMachine();
 		long start = System.currentTimeMillis();
@@ -40,8 +40,8 @@ public final class SampleMonteCarloGamer extends SampleGamer
 		int visitedNodes = 0;
 		int iterations = 0;
 
-		List<ProverMove> moves = theMachine.getLegalMoves(getCurrentState(), getRole());
-		ProverMove selection = moves.get(0);
+		List<ExplicitMove> moves = theMachine.getLegalMoves(getCurrentState(), getRole());
+		ExplicitMove selection = moves.get(0);
 		if (moves.size() > 1) {
     		int[] moveTotalPoints = new int[moves.size()];
     		int[] moveTotalAttempts = new int[moves.size()];
@@ -89,10 +89,10 @@ public final class SampleMonteCarloGamer extends SampleGamer
 	}
 
 	private int[] depth = new int[1];
-	int performDepthChargeFromMove(ProverMachineState theState, ProverMove myMove) {
+	int performDepthChargeFromMove(ExplicitMachineState theState, ExplicitMove myMove) {
 	    StateMachine theMachine = getStateMachine();
 	    try {
-            ProverMachineState finalState = theMachine.performDepthCharge(theMachine.getRandomNextState(theState, getRole(), myMove), depth);
+            ExplicitMachineState finalState = theMachine.performDepthCharge(theMachine.getRandomNextState(theState, getRole(), myMove), depth);
             return theMachine.getGoal(finalState, getRole());
         } catch (Exception e) {
             e.printStackTrace();

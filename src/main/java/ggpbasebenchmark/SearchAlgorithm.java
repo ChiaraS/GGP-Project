@@ -4,8 +4,8 @@ import org.ggp.base.util.statemachine.InternalPropnetStateMachine;
 import org.ggp.base.util.statemachine.StateMachine;
 import org.ggp.base.util.statemachine.exceptions.GoalDefinitionException;
 import org.ggp.base.util.statemachine.exceptions.StateMachineException;
-import org.ggp.base.util.statemachine.inernalPropnetStructure.InternalPropnetMachineState;
-import org.ggp.base.util.statemachine.proverStructure.ProverMachineState;
+import org.ggp.base.util.statemachine.structure.compact.CompactMachineState;
+import org.ggp.base.util.statemachine.structure.explicit.ExplicitMachineState;
 
 public abstract class SearchAlgorithm {
 
@@ -23,7 +23,7 @@ public abstract class SearchAlgorithm {
 		this.playclock = playclock;
 	}
 
-	public void run(final ProverMachineState state) {
+	public void run(final ExplicitMachineState state) {
 		reset();
 		if (playclock == Integer.MAX_VALUE) {
 			doSearch(state);
@@ -56,7 +56,7 @@ public abstract class SearchAlgorithm {
 		}
 	}
 
-	public abstract void doSearch(ProverMachineState state);
+	public abstract void doSearch(ExplicitMachineState state);
 
 	public void reset() {
 		nbLegals = 0;
@@ -84,7 +84,7 @@ public abstract class SearchAlgorithm {
 		this.playclock = playclock;
 	}
 
-	public void evaluateGoals(ProverMachineState state) throws StateMachineException {
+	public void evaluateGoals(ExplicitMachineState state) throws StateMachineException {
 		try {
 			stateMachine.getGoals(state);
 			++nbGoals;
@@ -93,7 +93,7 @@ public abstract class SearchAlgorithm {
 		}
 	}
 
-	public void evaluateGoals(InternalPropnetMachineState internalState) throws StateMachineException {
+	public void evaluateGoals(CompactMachineState internalState) throws StateMachineException {
 		try {
 			((InternalPropnetStateMachine) this.stateMachine).getGoals(internalState);
 			++nbGoals;

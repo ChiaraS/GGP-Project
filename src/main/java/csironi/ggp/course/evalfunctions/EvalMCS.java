@@ -8,8 +8,8 @@ import org.ggp.base.util.statemachine.exceptions.GoalDefinitionException;
 import org.ggp.base.util.statemachine.exceptions.MoveDefinitionException;
 import org.ggp.base.util.statemachine.exceptions.StateMachineException;
 import org.ggp.base.util.statemachine.exceptions.TransitionDefinitionException;
-import org.ggp.base.util.statemachine.proverStructure.ProverMachineState;
-import org.ggp.base.util.statemachine.proverStructure.ProverRole;
+import org.ggp.base.util.statemachine.structure.explicit.ExplicitMachineState;
+import org.ggp.base.util.statemachine.structure.explicit.ExplicitRole;
 
 /**
  * @author C.Sironi
@@ -35,7 +35,7 @@ public class EvalMCS extends EvaluationFunction {
 	 * @see csironi.ggp.course.evalfunctions.EvaluationFunction#eval(org.ggp.base.util.statemachine.MachineState, org.ggp.base.util.statemachine.Role)
 	 */
 	@Override
-	public int eval(ProverMachineState state, ProverRole role)
+	public int eval(ExplicitMachineState state, ExplicitRole role)
 			throws MoveDefinitionException, GoalDefinitionException, TransitionDefinitionException, StateMachineException {
 
 		int stateScore = 0;
@@ -47,7 +47,7 @@ public class EvalMCS extends EvaluationFunction {
 		return stateScore/this.nPlayouts;
 	}
 
-	private int randomPlayout(ProverMachineState state, ProverRole role) throws GoalDefinitionException, MoveDefinitionException, TransitionDefinitionException, StateMachineException{
+	private int randomPlayout(ExplicitMachineState state, ExplicitRole role) throws GoalDefinitionException, MoveDefinitionException, TransitionDefinitionException, StateMachineException{
 
 		if(this.stateMachine.isTerminal(state)){
 			return this.stateMachine.getGoal(state, role);

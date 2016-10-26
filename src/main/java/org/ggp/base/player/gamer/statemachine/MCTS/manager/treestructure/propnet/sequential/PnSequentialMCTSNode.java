@@ -6,7 +6,7 @@ package org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.propne
 import java.util.List;
 
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.MCTSNode;
-import org.ggp.base.util.statemachine.inernalPropnetStructure.InternalPropnetMove;
+import org.ggp.base.util.statemachine.structure.compact.CompactMove;
 
 /**
  * @author C.Sironi
@@ -59,7 +59,7 @@ public class PnSequentialMCTSNode extends MCTSNode {
 	 * (NOTE! The roles are not re-ordered to have the playing role as the first,
 	 * but are in the standard order as returned by the state machine).
 	 */
-	private List<List<InternalPropnetMove>> allLegalMoves;
+	private List<List<CompactMove>> allLegalMoves;
 
 	/**
 	 * Number of joint moves that haven't been visited yet from this node.
@@ -72,7 +72,7 @@ public class PnSequentialMCTSNode extends MCTSNode {
 	 * @param goals
 	 * @param terminal
 	 */
-	public PnSequentialMCTSNode(List<List<InternalPropnetMove>> allLegalMoves, PnSequentialMCTSMoveStats[] movesStats, int[] goals, boolean terminal, int unvisitedLeaves) {
+	public PnSequentialMCTSNode(List<List<CompactMove>> allLegalMoves, PnSequentialMCTSMoveStats[] movesStats, int[] goals, boolean terminal, int unvisitedLeaves) {
 		super(goals, terminal);
 		this.movesStats = movesStats;
 		this.allLegalMoves = allLegalMoves;
@@ -83,7 +83,7 @@ public class PnSequentialMCTSNode extends MCTSNode {
 		return this.movesStats;
 	}
 
-	public List<List<InternalPropnetMove>> getAllLegalMoves(){
+	public List<List<CompactMove>> getAllLegalMoves(){
 		return this.allLegalMoves;
 	}
 

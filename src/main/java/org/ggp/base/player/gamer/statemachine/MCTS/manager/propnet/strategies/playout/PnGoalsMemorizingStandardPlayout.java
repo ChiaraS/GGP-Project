@@ -9,8 +9,8 @@ import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.propnet
 import org.ggp.base.util.logging.GamerLogger;
 import org.ggp.base.util.statemachine.InternalPropnetStateMachine;
 import org.ggp.base.util.statemachine.exceptions.MoveDefinitionException;
-import org.ggp.base.util.statemachine.inernalPropnetStructure.InternalPropnetMachineState;
-import org.ggp.base.util.statemachine.inernalPropnetStructure.InternalPropnetMove;
+import org.ggp.base.util.statemachine.structure.compact.CompactMachineState;
+import org.ggp.base.util.statemachine.structure.compact.CompactMove;
 
 public class PnGoalsMemorizingStandardPlayout extends PnStandardPlayout {
 
@@ -21,7 +21,7 @@ public class PnGoalsMemorizingStandardPlayout extends PnStandardPlayout {
 	}
 
 	@Override
-	public PnSimulationResult playout(InternalPropnetMachineState state, int maxDepth) {
+	public PnSimulationResult playout(CompactMachineState state, int maxDepth) {
 		//InternalPropnetMachineState lastState;
 
 		// NOTE that this is just an extra check: if the state is terminal or the depth limit has been reached,
@@ -44,7 +44,7 @@ public class PnGoalsMemorizingStandardPlayout extends PnStandardPlayout {
 
         List<int[]> allGoals = new ArrayList<int[]>();
 
-        List<InternalPropnetMove> jointMove;
+        List<CompactMove> jointMove;
 
         allGoals.add(this.theMachine.getSafeGoalsAvg(state));
 

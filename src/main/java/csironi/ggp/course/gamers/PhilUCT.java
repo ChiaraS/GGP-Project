@@ -14,8 +14,8 @@ import org.ggp.base.util.statemachine.exceptions.GoalDefinitionException;
 import org.ggp.base.util.statemachine.exceptions.MoveDefinitionException;
 import org.ggp.base.util.statemachine.exceptions.StateMachineException;
 import org.ggp.base.util.statemachine.exceptions.TransitionDefinitionException;
-import org.ggp.base.util.statemachine.proverStructure.ProverMove;
-import org.ggp.base.util.statemachine.proverStructure.ProverRole;
+import org.ggp.base.util.statemachine.structure.explicit.ExplicitMove;
+import org.ggp.base.util.statemachine.structure.explicit.ExplicitRole;
 
 import csironi.ggp.course.MCTS.MCTSController;
 import csironi.ggp.course.MCTS.expansion.OldRandomExpansion;
@@ -41,7 +41,7 @@ public class PhilUCT extends SampleGamer {
 	 * @see org.ggp.base.player.gamer.statemachine.StateMachineGamer#stateMachineSelectMove(long)
 	 */
 	@Override
-	public ProverMove stateMachineSelectMove(long timeout)
+	public ExplicitMove stateMachineSelectMove(long timeout)
 			throws TransitionDefinitionException, MoveDefinitionException,
 			GoalDefinitionException, StateMachineException {
 
@@ -57,17 +57,17 @@ public class PhilUCT extends SampleGamer {
 		StateMachine stateMachine = getStateMachine();
 
 		// Get all available moves
-		List<ProverMove> moves = stateMachine.getLegalMoves(getCurrentState(), getRole());
+		List<ExplicitMove> moves = stateMachine.getLegalMoves(getCurrentState(), getRole());
 
-		ProverMove selection = moves.get(0);
+		ExplicitMove selection = moves.get(0);
 		// If there is more than one legal move available search the best one,
 		// otherwise return the only one available.
 		if(moves.size() != 1){
 
 			MCTSController manager = new MCTSController(new OldUCTSelection(new OldRandomExpansion(), new OldRandomPlayout(stateMachine), 1.0/Math.sqrt(2)), new OldMaxAvgScoreMoveChoice());
 
-			ProverRole myRole = getRole();
-			Map<ProverRole, Integer> roleIndexes = stateMachine.getRoleIndices();
+			ExplicitRole myRole = getRole();
+			Map<ExplicitRole, Integer> roleIndexes = stateMachine.getRoleIndices();
 			int myRoleIndex = roleIndexes.get(myRole);
 
 			selection = manager.selectBestMove(finishBy, stateMachine, myRoleIndex, getCurrentState());

@@ -12,7 +12,7 @@ import org.ggp.base.util.statemachine.exceptions.GoalDefinitionException;
 import org.ggp.base.util.statemachine.exceptions.MoveDefinitionException;
 import org.ggp.base.util.statemachine.exceptions.StateMachineException;
 import org.ggp.base.util.statemachine.exceptions.TransitionDefinitionException;
-import org.ggp.base.util.statemachine.proverStructure.ProverMove;
+import org.ggp.base.util.statemachine.structure.explicit.ExplicitMove;
 
 /**
  * Random gamer realized for the GGP course.
@@ -27,14 +27,14 @@ public class CRandomGamer extends SampleGamer {
 	 * @see org.ggp.base.player.gamer.statemachine.StateMachineGamer#stateMachineSelectMove(long)
 	 */
 	@Override
-	public ProverMove stateMachineSelectMove(long timeout)
+	public ExplicitMove stateMachineSelectMove(long timeout)
 			throws TransitionDefinitionException, MoveDefinitionException,
 			GoalDefinitionException, StateMachineException {
 
 		long start = System.currentTimeMillis();
 
-		List<ProverMove> moves = getStateMachine().getLegalMoves(getCurrentState(), getRole());
-		ProverMove selection = (moves.get(new Random().nextInt(moves.size())));
+		List<ExplicitMove> moves = getStateMachine().getLegalMoves(getCurrentState(), getRole());
+		ExplicitMove selection = (moves.get(new Random().nextInt(moves.size())));
 
 		long stop = System.currentTimeMillis();
 

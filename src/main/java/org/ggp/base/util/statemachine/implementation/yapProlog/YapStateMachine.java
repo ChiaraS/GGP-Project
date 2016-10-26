@@ -17,9 +17,9 @@ import org.ggp.base.util.statemachine.exceptions.TransitionDefinitionException;
 import org.ggp.base.util.statemachine.implementation.yapProlog.prover.YapProver;
 import org.ggp.base.util.statemachine.implementation.yapProlog.prover.YapProverException;
 import org.ggp.base.util.statemachine.implementation.yapProlog.transform.YapEngineSupport;
-import org.ggp.base.util.statemachine.proverStructure.ProverMachineState;
-import org.ggp.base.util.statemachine.proverStructure.ProverMove;
-import org.ggp.base.util.statemachine.proverStructure.ProverRole;
+import org.ggp.base.util.statemachine.structure.explicit.ExplicitMachineState;
+import org.ggp.base.util.statemachine.structure.explicit.ExplicitMove;
+import org.ggp.base.util.statemachine.structure.explicit.ExplicitRole;
 import org.ggp.base.util.symbol.factory.exceptions.SymbolFormatException;
 
 import com.google.common.collect.ImmutableList;
@@ -83,7 +83,7 @@ public class YapStateMachine extends StateMachine {
 	 * This variable can be used to avoid running "computeState(MachineState)" on YAP
 	 * Prolog side when the game state registered on it is already the one we need.
 	 */
-	private ProverMachineState currentYapState;
+	private ExplicitMachineState currentYapState;
 
 	/**
 	 * The list of the roles as strings. Used to build as a string the query goals
@@ -97,12 +97,12 @@ public class YapStateMachine extends StateMachine {
 	/**
 	 * Initial state of the current game.
 	 */
-	private ProverMachineState initialState;
+	private ExplicitMachineState initialState;
 
 	/**
 	 * Ordered list of roles in the current game.
 	 */
-	private ImmutableList<ProverRole> roles;
+	private ImmutableList<ExplicitRole> roles;
 
 	// SUPPORT CLASS THAT TAKES CARE OF TRANSLATIONS BETWEEN GDL AND PROLOG SYNTAX
 
@@ -180,7 +180,7 @@ public class YapStateMachine extends StateMachine {
 	 * @throws StateMachineException if something went wrong and the initial
 	 * state could not be computed.
 	 */
-	private ProverMachineState computeInitialState() throws StateMachineException
+	private ExplicitMachineState computeInitialState() throws StateMachineException
 	{
 		Object[] bindings;
 
@@ -214,7 +214,7 @@ public class YapStateMachine extends StateMachine {
 
 		// Compute the machine state using the Yap Prolog answer (note that it could be an empty array of strings in case
 		// no propositions are true in the initial state. In this case the content of the machine state will be an empty HashSet)
-		this.currentYapState = new ProverMachineState(support.askToState((String[]) bindings[0]));
+		this.currentYapState = new ExplicitMachineState(support.askToState((String[]) bindings[0]));
 
 		return currentYapState.clone();
 	}
@@ -228,7 +228,7 @@ public class YapStateMachine extends StateMachine {
 	 * @throws StateMachineException if something went wrong and the game roles
 	 * could not be computed.
 	 */
-	private ImmutableList<ProverRole> computeRoles() throws StateMachineException	{
+	private ImmutableList<ExplicitRole> computeRoles() throws StateMachineException	{
 
 		Object[] bindings;
 
@@ -256,7 +256,7 @@ public class YapStateMachine extends StateMachine {
 			throw new StateMachineException("Got no results for the computation of the game roles, while expecting at least one role.");
 		}
 
-		List<ProverRole> tmpRoles = new ArrayList<ProverRole>();
+		List<ExplicitRole> tmpRoles = new ArrayList<ExplicitRole>();
 
 		try{
 			tmpRoles = support.askToRoles((String[]) bindings[0]);
@@ -276,7 +276,7 @@ public class YapStateMachine extends StateMachine {
 	 * @see org.ggp.base.util.statemachine.StateMachine#getGoal(org.ggp.base.util.statemachine.MachineState, org.ggp.base.util.statemachine.Role)
 	 */
 	@Override
-	public List<Integer> getOneRoleGoals(ProverMachineState state, ProverRole role)
+	public List<Integer> getOneRoleGoals(ExplicitMachineState state, ExplicitRole role)
 			throws StateMachineException {
 
 		updateYapState(state);
@@ -335,7 +335,7 @@ public class YapStateMachine extends StateMachine {
 	 * @see org.ggp.base.util.statemachine.StateMachine#isTerminal(org.ggp.base.util.statemachine.MachineState)
 	 */
 	@Override
-	public boolean isTerminal(ProverMachineState state) throws StateMachineException {
+	public boolean isTerminal(ExplicitMachineState state) throws StateMachineException {
 
 		updateYapState(state);
 
@@ -367,7 +367,7 @@ public class YapStateMachine extends StateMachine {
 	 * @see org.ggp.base.util.statemachine.StateMachine#getRoles()
 	 */
 	@Override
-	public List<ProverRole> getRoles() {
+	public List<ExplicitRole> getRoles() {
 		return this.roles;
 	}
 
@@ -375,7 +375,7 @@ public class YapStateMachine extends StateMachine {
 	 * @see org.ggp.base.util.statemachine.StateMachine#getInitialState()
 	 */
 	@Override
-	public ProverMachineState getInitialState() {
+	public ExplicitMachineState getInitialState() {
 		return this.initialState;
 	}
 
@@ -383,7 +383,7 @@ public class YapStateMachine extends StateMachine {
 	 * @see org.ggp.base.util.statemachine.StateMachine#getLegalMoves(org.ggp.base.util.statemachine.MachineState, org.ggp.base.util.statemachine.Role)
 	 */
 	@Override
-	public List<ProverMove> getLegalMoves(ProverMachineState state, ProverRole role)
+	public List<ExplicitMove> getLegalMoves(ExplicitMachineState state, ExplicitRole role)
 			throws MoveDefinitionException, StateMachineException {
 
 		// TODO: should I catch the state machine exception before re-throwing it?
@@ -423,7 +423,7 @@ public class YapStateMachine extends StateMachine {
 			throw new MoveDefinitionException(state, role);
 		}
 
-		List<ProverMove> moves = support.askToMoves(yapMoves);
+		List<ExplicitMove> moves = support.askToMoves(yapMoves);
 
 		return moves;
 	}
@@ -432,7 +432,7 @@ public class YapStateMachine extends StateMachine {
 	 * @see org.ggp.base.util.statemachine.StateMachine#getNextState(org.ggp.base.util.statemachine.MachineState, java.util.List)
 	 */
 	@Override
-	public ProverMachineState getNextState(ProverMachineState state, List<ProverMove> moves)
+	public ExplicitMachineState getNextState(ExplicitMachineState state, List<ExplicitMove> moves)
 			throws TransitionDefinitionException, StateMachineException {
 
 		updateYapState(state);
@@ -465,7 +465,7 @@ public class YapStateMachine extends StateMachine {
 
 		// Compute the machine state using the Yap Prolog answer (note that it could be an empty array of strings in case no
 		// propositions are true in the computed next state. In this case the content of the machine state will be an empty HashSet)
-		this.currentYapState = new ProverMachineState(support.askToState((String[]) bindings[0]));
+		this.currentYapState = new ExplicitMachineState(support.askToState((String[]) bindings[0]));
 
 		return this.currentYapState.clone();
 	}
@@ -475,7 +475,7 @@ public class YapStateMachine extends StateMachine {
 	 *
 	 * @throws StateMachineException if something went wrong and the state could not be updated.
 	 */
-	private void updateYapState(ProverMachineState state) throws StateMachineException{
+	private void updateYapState(ExplicitMachineState state) throws StateMachineException{
 
 		if(currentYapState==null||!currentYapState.equals(state)){
 
@@ -564,7 +564,7 @@ public class YapStateMachine extends StateMachine {
 	 *
 	 * @param state the initial state.
 	 */
-	public void setInitialState(ProverMachineState state){
+	public void setInitialState(ExplicitMachineState state){
 		this.initialState = state;
 	}
 
@@ -577,7 +577,7 @@ public class YapStateMachine extends StateMachine {
 	 *
 	 * @param roles the list of game roles.
 	 */
-	public void setRoles(List<ProverRole> roles){
+	public void setRoles(List<ExplicitRole> roles){
 		this.roles = ImmutableList.copyOf(roles);
 		this.fakeRoles = support.getFakeRoles(roles);
 	}

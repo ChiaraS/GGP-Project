@@ -9,16 +9,16 @@ import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.prover.
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.prover.ProverSimulationResult;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.prover.amafdecoulped.ProverAMAFNode;
 import org.ggp.base.util.logging.GamerLogger;
-import org.ggp.base.util.statemachine.proverStructure.ProverMachineState;
-import org.ggp.base.util.statemachine.proverStructure.ProverMove;
+import org.ggp.base.util.statemachine.structure.explicit.ExplicitMachineState;
+import org.ggp.base.util.statemachine.structure.explicit.ExplicitMove;
 
 public class ProverGRAVEUpdate {
 
-	public void update(MCTSNode currentNode, ProverMachineState currentState, ProverMCTSJointMove jointMove, ProverSimulationResult simulationResult) {
+	public void update(MCTSNode currentNode, ExplicitMachineState currentState, ProverMCTSJointMove jointMove, ProverSimulationResult simulationResult) {
 
 		if(currentNode instanceof ProverAMAFNode){
 
-			List<List<ProverMove>> allJointMoves = simulationResult.getAllJointMoves();
+			List<List<ExplicitMove>> allJointMoves = simulationResult.getAllJointMoves();
 
 			int[] goals = simulationResult.getTerminalGoals();
 
@@ -32,13 +32,13 @@ public class ProverGRAVEUpdate {
 				throw new RuntimeException("No joint moves in the simulation result.");
 			}
 
-			Map<ProverMove, MoveStats> amafStats = ((ProverAMAFNode)currentNode).getAmafStats();
+			Map<ExplicitMove, MoveStats> amafStats = ((ProverAMAFNode)currentNode).getAmafStats();
 
 			allJointMoves.add(jointMove.getJointMove());
 
 			MoveStats moveStats;
 
-	        for(List<ProverMove> jM : allJointMoves){
+	        for(List<ExplicitMove> jM : allJointMoves){
 	        	for(int i = 0; i<jM.size(); i++){
 	        		moveStats = amafStats.get(jM.get(i));
 	        		if(moveStats == null){
@@ -56,11 +56,11 @@ public class ProverGRAVEUpdate {
 		}
 	}
 
-	public void processPlayoutResult(MCTSNode leafNode,	ProverMachineState leafState, ProverSimulationResult simulationResult) {
+	public void processPlayoutResult(MCTSNode leafNode,	ExplicitMachineState leafState, ProverSimulationResult simulationResult) {
 
 		if(leafNode instanceof ProverAMAFNode){
 
-			List<List<ProverMove>> allJointMoves = simulationResult.getAllJointMoves();
+			List<List<ExplicitMove>> allJointMoves = simulationResult.getAllJointMoves();
 
 			int[] goals = simulationResult.getTerminalGoals();
 
@@ -74,11 +74,11 @@ public class ProverGRAVEUpdate {
 				throw new RuntimeException("No joint moves in the simulation result.");
 			}
 
-			Map<ProverMove, MoveStats> amafStats = ((ProverAMAFNode)leafNode).getAmafStats();
+			Map<ExplicitMove, MoveStats> amafStats = ((ProverAMAFNode)leafNode).getAmafStats();
 
 			MoveStats moveStats;
 
-	        for(List<ProverMove> jM : allJointMoves){
+	        for(List<ExplicitMove> jM : allJointMoves){
 	        	for(int i = 0; i<jM.size(); i++){
 	        		moveStats = amafStats.get(jM.get(i));
 	        		if(moveStats == null){

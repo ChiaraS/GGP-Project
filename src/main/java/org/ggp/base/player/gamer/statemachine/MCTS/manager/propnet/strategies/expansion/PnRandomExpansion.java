@@ -14,8 +14,8 @@ import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.propnet
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.propnet.slowsequential.PnSlowSeqentialMCTSNode;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.propnet.slowsequential.PnSlowSequentialMCTSJointMove;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.propnet.slowsequential.PnSlowSequentialMCTSMoveStats;
-import org.ggp.base.util.statemachine.inernalPropnetStructure.InternalPropnetMove;
-import org.ggp.base.util.statemachine.inernalPropnetStructure.InternalPropnetRole;
+import org.ggp.base.util.statemachine.structure.compact.CompactMove;
+import org.ggp.base.util.statemachine.structure.compact.CompactRole;
 
 public class PnRandomExpansion implements PnExpansionStrategy {
 
@@ -29,11 +29,11 @@ public class PnRandomExpansion implements PnExpansionStrategy {
 	 * The role that is actually performing the search.
 	 * Needed by the sequential version of MCTS.
 	 */
-	private InternalPropnetRole myRole;
+	private CompactRole myRole;
 
 	private Random random;
 
-	public PnRandomExpansion(int numRoles, InternalPropnetRole myRole, Random random){
+	public PnRandomExpansion(int numRoles, CompactRole myRole, Random random){
 		this.numRoles = numRoles;
 		this.myRole = myRole;
 		this.random = random;
@@ -108,7 +108,7 @@ public class PnRandomExpansion implements PnExpansionStrategy {
 		PnDecoupledMCTSMoveStats[][] moves = node.getMoves();
 		int[] unexploredMovesCount = node.getUnexploredMovesCount();
 
-		List<InternalPropnetMove> jointMove = new ArrayList<InternalPropnetMove>();
+		List<CompactMove> jointMove = new ArrayList<CompactMove>();
 		int[] movesIndices = new int[moves.length];
 
 		// For each role...
@@ -162,7 +162,7 @@ public class PnRandomExpansion implements PnExpansionStrategy {
 	 */
 	private PnMCTSJointMove seqExpand(PnSequentialMCTSNode node){
 
-		List<InternalPropnetMove> jointMove = new ArrayList<InternalPropnetMove>(this.numRoles);
+		List<CompactMove> jointMove = new ArrayList<CompactMove>(this.numRoles);
 		int[] movesIndices = new int[this.numRoles];
 
 		// Initialize ArrayList with numRoles null elements.
@@ -173,7 +173,7 @@ public class PnRandomExpansion implements PnExpansionStrategy {
 		if(node.getUnvisitedLeaves() == 0){
 			// Get random joint move
 			int i = 0;
-			for(List<InternalPropnetMove> legalMoves : node.getAllLegalMoves()){
+			for(List<CompactMove> legalMoves : node.getAllLegalMoves()){
 				movesIndices[i] = this.random.nextInt(legalMoves.size());
 				jointMove.add(legalMoves.get(movesIndices[i]));
 			}
@@ -241,7 +241,7 @@ public class PnRandomExpansion implements PnExpansionStrategy {
 			return this.getRandomMove(node);
 		}
 
-		List<InternalPropnetMove> jointMove = new ArrayList<InternalPropnetMove>(this.numRoles);
+		List<CompactMove> jointMove = new ArrayList<CompactMove>(this.numRoles);
 
 		// Initialize ArrayList with numRoles null elements.
 		for(int i = 0; i < this.numRoles; i++){
@@ -280,7 +280,7 @@ public class PnRandomExpansion implements PnExpansionStrategy {
 	 */
 	private PnMCTSJointMove getRandomMove(PnSlowSeqentialMCTSNode node){
 
-		List<InternalPropnetMove> jointMove = new ArrayList<InternalPropnetMove>(this.numRoles);
+		List<CompactMove> jointMove = new ArrayList<CompactMove>(this.numRoles);
 
 		// Initialize ArrayList with numRoles null elements.
 		for(int i = 0; i < this.numRoles; i++){

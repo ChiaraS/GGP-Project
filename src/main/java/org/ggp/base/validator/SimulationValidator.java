@@ -10,7 +10,7 @@ import org.ggp.base.util.statemachine.exceptions.StateMachineException;
 import org.ggp.base.util.statemachine.exceptions.StateMachineInitializationException;
 import org.ggp.base.util.statemachine.exceptions.TransitionDefinitionException;
 import org.ggp.base.util.statemachine.implementation.prover.ProverStateMachine;
-import org.ggp.base.util.statemachine.proverStructure.ProverMachineState;
+import org.ggp.base.util.statemachine.structure.explicit.ExplicitMachineState;
 
 import com.google.common.collect.ImmutableList;
 
@@ -35,7 +35,7 @@ public final class SimulationValidator implements GameValidator
 				throw new ValidatorException("Ran into a state machine initialization exception: " + sme);
 			}
 
-			ProverMachineState state = stateMachine.getInitialState();
+			ExplicitMachineState state = stateMachine.getInitialState();
 			try {
 				for (int depth = 0; !stateMachine.isTerminal(state); depth++) {
 					if (depth == maxDepth) {

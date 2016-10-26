@@ -31,7 +31,7 @@ import org.ggp.base.util.statemachine.cache.RefactoredSeparateInternalPropnetCac
 import org.ggp.base.util.statemachine.cache.SeparateInternalPropnetCachedStateMachine;
 import org.ggp.base.util.statemachine.exceptions.StateMachineInitializationException;
 import org.ggp.base.util.statemachine.implementation.propnet.SeparateInternalPropnetStateMachine;
-import org.ggp.base.util.statemachine.inernalPropnetStructure.InternalPropnetRole;
+import org.ggp.base.util.statemachine.structure.compact.CompactRole;
 
 /**
  * Inputs this program gets:
@@ -350,7 +350,7 @@ public class SingleRunPNTest {
 
 		        r = new Random();
 		        maxSearchDepth = 500;
-		        InternalPropnetRole internalPlayingRole = thePropnetMachine.getInternalRoles()[0];
+		        CompactRole internalPlayingRole = thePropnetMachine.getInternalRoles()[0];
 		        numRoles = thePropnetMachine.getInternalRoles().length;
 
 		        InternalPropnetMCSManager MCSmanager = new InternalPropnetMCSManager(new PnRandomPlayout(thePropnetMachine),

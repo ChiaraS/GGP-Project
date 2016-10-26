@@ -21,12 +21,12 @@ import org.ggp.base.util.statemachine.exceptions.StateMachineException;
 import org.ggp.base.util.statemachine.exceptions.StateMachineInitializationException;
 import org.ggp.base.util.statemachine.exceptions.TransitionDefinitionException;
 import org.ggp.base.util.statemachine.implementation.prover.query.ProverQueryBuilder;
-import org.ggp.base.util.statemachine.inernalPropnetStructure.InternalPropnetMachineState;
-import org.ggp.base.util.statemachine.inernalPropnetStructure.InternalPropnetMove;
-import org.ggp.base.util.statemachine.inernalPropnetStructure.InternalPropnetRole;
-import org.ggp.base.util.statemachine.proverStructure.ProverMachineState;
-import org.ggp.base.util.statemachine.proverStructure.ProverMove;
-import org.ggp.base.util.statemachine.proverStructure.ProverRole;
+import org.ggp.base.util.statemachine.structure.compact.CompactMachineState;
+import org.ggp.base.util.statemachine.structure.compact.CompactMove;
+import org.ggp.base.util.statemachine.structure.compact.CompactRole;
+import org.ggp.base.util.statemachine.structure.explicit.ExplicitMachineState;
+import org.ggp.base.util.statemachine.structure.explicit.ExplicitMove;
+import org.ggp.base.util.statemachine.structure.explicit.ExplicitRole;
 
 import com.google.common.collect.ImmutableList;
 
@@ -39,9 +39,9 @@ public class ExternalPropnetStateMachine extends StateMachine {
     private ImmutableSeparatePropnetState propnetState;
 
     /** The player roles */
-    private ImmutableList<ProverRole> roles;
+    private ImmutableList<ExplicitRole> roles;
     /** The initial state */
-    private InternalPropnetMachineState initialState;
+    private CompactMachineState initialState;
 
 	public ExternalPropnetStateMachine(ExternalizedStatePropNet propNet, ImmutableSeparatePropnetState propnetState){
 		this.propNet = propNet;
@@ -59,7 +59,7 @@ public class ExternalPropnetStateMachine extends StateMachine {
     public void initialize(List<Gdl> description, long timeout) throws StateMachineInitializationException {
     	if(this.propNet != null && this.propnetState != null){
     		this.roles = ImmutableList.copyOf(this.propNet.getRoles());
-    		this.initialState = new InternalPropnetMachineState(this.propnetState.getCurrentState().clone());
+    		this.initialState = new CompactMachineState(this.propnetState.getCurrentState().clone());
     	}else{
     		GamerLogger.log("StateMachine", "[ExternalPropnet] State machine initialized with at least one among the propnet structure and the propnet state set to null. Impossible to reason on the game!");
     		throw new StateMachineInitializationException("Null parameter passed during instantiaton of the state mahcine: cannot reason on the game with null propnet or null propnet state.");
@@ -81,7 +81,7 @@ public class ExternalPropnetStateMachine extends StateMachine {
 	 * @return true if the state is terminal, false otherwise.
 	 */
 	@Override
-	public boolean isTerminal(ProverMachineState state) {
+	public boolean isTerminal(ExplicitMachineState state) {
 		return this.isTerminal(this.stateToExternalState(state));
 	}
 
@@ -92,7 +92,7 @@ public class ExternalPropnetStateMachine extends StateMachine {
 	 * @state a machine state.
 	 * @return true if the state is terminal, false otherwise.
 	 */
-	public boolean isTerminal(InternalPropnetMachineState state) {
+	public boolean isTerminal(CompactMachineState state) {
 		this.markBases(state);
 		return this.propnetState.isTerminal();
 	}
@@ -121,7 +121,7 @@ public class ExternalPropnetStateMachine extends StateMachine {
 	//}
 
 	@Override
-	public List<Integer> getOneRoleGoals(ProverMachineState state, ProverRole role)
+	public List<Integer> getOneRoleGoals(ExplicitMachineState state, ExplicitRole role)
 			throws StateMachineException {
 		return this.getOneRoleGoals(this.stateToExternalState(state), this.roleToExternalRole(role));
 	}
@@ -133,7 +133,7 @@ public class ExternalPropnetStateMachine extends StateMachine {
 	 *
 	 * ATTENTION! This method has not been tested!
 	 */
-	public List<Integer> getOneRoleGoals(InternalPropnetMachineState state, InternalPropnetRole role) {
+	public List<Integer> getOneRoleGoals(CompactMachineState state, CompactRole role) {
 
 		// Mark base propositions according to state.
 		this.markBases(state);
@@ -176,7 +176,7 @@ public class ExternalPropnetStateMachine extends StateMachine {
 	 * this state machine has not been initialized, NULL will be returned.
 	 */
 	@Override
-	public ProverMachineState getInitialState() {
+	public ExplicitMachineState getInitialState() {
 
 		/*
 		if(this.initialState == null){
@@ -205,7 +205,7 @@ public class ExternalPropnetStateMachine extends StateMachine {
 	 * Returns the initial state. If the initial state has not been computed yet because
 	 * this state machine has not been initialized, NULL will be returned.
 	 */
-	public InternalPropnetMachineState getPropnetInitialState() {
+	public CompactMachineState getPropnetInitialState() {
 		return this.initialState;
 	}
 
@@ -214,10 +214,10 @@ public class ExternalPropnetStateMachine extends StateMachine {
 	 * If the state is not an extended propnet state, it is first transformed into one.
 	 */
 	@Override
-	public List<ProverMove> getLegalMoves(ProverMachineState state, ProverRole role)throws MoveDefinitionException {
-		List<ProverMove> moves = new ArrayList<ProverMove>();
-		InternalPropnetRole externalRole = this.roleToExternalRole(role);
-		for(InternalPropnetMove m : this.getLegalMoves(this.stateToExternalState(state), externalRole)){
+	public List<ExplicitMove> getLegalMoves(ExplicitMachineState state, ExplicitRole role)throws MoveDefinitionException {
+		List<ExplicitMove> moves = new ArrayList<ExplicitMove>();
+		CompactRole externalRole = this.roleToExternalRole(role);
+		for(CompactMove m : this.getLegalMoves(this.stateToExternalState(state), externalRole)){
 			moves.add(this.externalMoveToMove(m));
 		}
 		return moves;
@@ -226,11 +226,11 @@ public class ExternalPropnetStateMachine extends StateMachine {
 	/**
 	 * Computes the legal moves for role in state.
 	 */
-	public List<InternalPropnetMove> getLegalMoves(InternalPropnetMachineState state, InternalPropnetRole role)throws MoveDefinitionException {
+	public List<CompactMove> getLegalMoves(CompactMachineState state, CompactRole role)throws MoveDefinitionException {
 		// Mark base propositions according to state.
 		this.markBases(state);
 
-		List<InternalPropnetMove> legalMoves = new ArrayList<InternalPropnetMove>();
+		List<CompactMove> legalMoves = new ArrayList<CompactMove>();
 
 		// Get all the otehrProposition values (the legal propositions are included there).
 		OpenBitSet otherComponents = this.propnetState.getOtherComponents();
@@ -242,7 +242,7 @@ public class ExternalPropnetStateMachine extends StateMachine {
 		int trueLegalIndex = otherComponents.nextSetBit(firstLegalIndices[role.getIndex()]);
 
 		while(trueLegalIndex < firstLegalIndices[role.getIndex()+1] && trueLegalIndex != -1){
-			legalMoves.add(new InternalPropnetMove(trueLegalIndex - firstLegalIndices[0]));
+			legalMoves.add(new CompactMove(trueLegalIndex - firstLegalIndices[0]));
 			trueLegalIndex = otherComponents.nextSetBit(trueLegalIndex+1);
 		}
 
@@ -259,14 +259,14 @@ public class ExternalPropnetStateMachine extends StateMachine {
 	 * If the state is not an extended propnet state, it is first transformed into one.
 	 */
 	@Override
-	public ProverMachineState getNextState(ProverMachineState state, List<ProverMove> moves)throws TransitionDefinitionException {
+	public ExplicitMachineState getNextState(ExplicitMachineState state, List<ExplicitMove> moves)throws TransitionDefinitionException {
 		return this.externalStateToState(this.getNextState(this.stateToExternalState(state), this.moveToExternalMove(moves)));
 	}
 
 	/**
 	 * Computes the next state given a state and the list of moves.
 	 */
-	public InternalPropnetMachineState getNextState(InternalPropnetMachineState state, List<InternalPropnetMove> moves) throws TransitionDefinitionException {
+	public CompactMachineState getNextState(CompactMachineState state, List<CompactMove> moves) throws TransitionDefinitionException {
 		// Mark base propositions according to state.
 		this.markBases(state);
 
@@ -274,12 +274,12 @@ public class ExternalPropnetStateMachine extends StateMachine {
 		this.markInputs(moves);
 
 		// Compute next state for each base proposition from the corresponding transition.
-		return new InternalPropnetMachineState(this.propnetState.getNextState().clone());
+		return new CompactMachineState(this.propnetState.getNextState().clone());
 	}
 
 	/* Already implemented for you */
 	@Override
-	public List<ProverRole> getRoles() {
+	public List<ExplicitRole> getRoles() {
 		return roles;
 	}
 
@@ -296,7 +296,7 @@ public class ExternalPropnetStateMachine extends StateMachine {
 	 * @param moves the moves to be translated into 'does' propositions.
 	 * @return a list with the 'does' propositions corresponding to the given joint move.
 	 */
-	private List<GdlSentence> toDoes(List<ProverMove> moves){
+	private List<GdlSentence> toDoes(List<ExplicitMove> moves){
 
 		//AGGIUNTA
     	//System.out.println("TO DOES");
@@ -305,7 +305,7 @@ public class ExternalPropnetStateMachine extends StateMachine {
     	//FINE AGGIUNTA
 
 		List<GdlSentence> doeses = new ArrayList<GdlSentence>(moves.size());
-		Map<ProverRole, Integer> roleIndices = getRoleIndices();
+		Map<ExplicitRole, Integer> roleIndices = getRoleIndices();
 
 		//AGGIUNTA
 		//System.out.println("ROLES");
@@ -346,8 +346,8 @@ public class ExternalPropnetStateMachine extends StateMachine {
 	 * @param p the proposition to be transformed into a move.
 	 * @return the move corresponding to the given proposition.
 	 */
-	public static ProverMove getMoveFromProposition(ExternalizedStateProposition p){
-		return new ProverMove(p.getName().get(1));
+	public static ExplicitMove getMoveFromProposition(ExternalizedStateProposition p){
+		return new ExplicitMove(p.getName().get(1));
 	}
 
 	/**
@@ -359,7 +359,7 @@ public class ExternalPropnetStateMachine extends StateMachine {
 	 * the state for each base proposition.
 	 */
 	// TODO IMPLEMENT
-	public InternalPropnetMachineState stateToExternalState(ProverMachineState state){
+	public CompactMachineState stateToExternalState(ExplicitMachineState state){
 		if(state != null){
 			List<ExternalizedStateProposition> baseProps = this.propNet.getBasePropositions();
 			OpenBitSet basePropsTruthValues = new OpenBitSet(baseProps.size());
@@ -371,14 +371,14 @@ public class ExternalPropnetStateMachine extends StateMachine {
 					}
 				}
 			}
-			return new InternalPropnetMachineState(basePropsTruthValues);
+			return new CompactMachineState(basePropsTruthValues);
 		}
 
 		return null;
 	}
 
 	// TODO: IMPLEMENT
-	public ProverMachineState externalStateToState(InternalPropnetMachineState state){
+	public ExplicitMachineState externalStateToState(CompactMachineState state){
 		if(state != null){
 			List<ExternalizedStateProposition> baseProps = this.propNet.getBasePropositions();
 			OpenBitSet basePropsTruthValues = state.getTruthValues();
@@ -390,14 +390,14 @@ public class ExternalPropnetStateMachine extends StateMachine {
 				setIndex = basePropsTruthValues.nextSetBit(setIndex+1);
 			}
 
-			return new ProverMachineState(contents);
+			return new ExplicitMachineState(contents);
 		}
 
 		return null;
 	}
 
 	// TODO: IMPLEMENT
-	public ProverRole externalRoleToRole(InternalPropnetRole role){
+	public ExplicitRole externalRoleToRole(CompactRole role){
 		if(role != null){
 			return this.roles.get(role.getIndex());
 		}
@@ -406,23 +406,23 @@ public class ExternalPropnetStateMachine extends StateMachine {
 	}
 
 	// TODO: IMPLEMENT
-	public InternalPropnetRole roleToExternalRole(ProverRole role){
+	public CompactRole roleToExternalRole(ExplicitRole role){
 		if(role != null){
 			// TODO check if index is -1 -> should never happen if the role given as input is a valid role.
-			return new InternalPropnetRole(this.roles.indexOf(role));
+			return new CompactRole(this.roles.indexOf(role));
 		}
 
 		return null;
 	}
 
 	// TODO: IMPLEMENT
-	public ProverMove externalMoveToMove(InternalPropnetMove move){
+	public ExplicitMove externalMoveToMove(CompactMove move){
 		return getMoveFromProposition(this.propNet.getInputPropositions().get(move.getIndex()));
 	}
 
 	// TODO: IMPLEMENT
-	public InternalPropnetMove moveToExternalMove(ProverMove move){
-		List<ProverMove> moveArray = new ArrayList<ProverMove>();
+	public CompactMove moveToExternalMove(ExplicitMove move){
+		List<ExplicitMove> moveArray = new ArrayList<ExplicitMove>();
 		moveArray.add(move);
 		GdlSentence moveToDoes = this.toDoes(moveArray).get(0);
 
@@ -433,7 +433,7 @@ public class ExternalPropnetStateMachine extends StateMachine {
 			}
 			i++;
 		}
-		return new InternalPropnetMove(i);
+		return new CompactMove(i);
 	}
 
 	/**
@@ -444,16 +444,16 @@ public class ExternalPropnetStateMachine extends StateMachine {
 	 * @return
 	 */
 	// TODO: IMPLEMENT
-	public List<InternalPropnetMove> moveToExternalMove(List<ProverMove> moves){
+	public List<CompactMove> moveToExternalMove(List<ExplicitMove> moves){
 
-		List<InternalPropnetMove> transformedMoves = new ArrayList<InternalPropnetMove>();
+		List<CompactMove> transformedMoves = new ArrayList<CompactMove>();
 		List<GdlSentence> movesToDoes = this.toDoes(moves);
 
 		List<ExternalizedStateProposition> inputs = this.propNet.getInputPropositions();
 
 		for(int i = 0; i < inputs.size(); i++){
 			if(movesToDoes.contains(inputs.get(i).getName())){
-				transformedMoves.add(new InternalPropnetMove(i));
+				transformedMoves.add(new CompactMove(i));
 			}
 		}
 
@@ -469,7 +469,7 @@ public class ExternalPropnetStateMachine extends StateMachine {
      *
      * @param state the machine state to be set in the propnet.
      */
-	private void markBases(InternalPropnetMachineState state){
+	private void markBases(CompactMachineState state){
 
 		// Clone the currently set state to avoid modifying it here.
 		OpenBitSet bitsToFlip = this.propnetState.getCurrentState().clone();
@@ -500,7 +500,7 @@ public class ExternalPropnetStateMachine extends StateMachine {
      *
      * @param state the machine state to be set in the propnet.
      */
-	private void markBases2(InternalPropnetMachineState state){
+	private void markBases2(CompactMachineState state){
 
 		// Clone the currently set state to avoid modifying it here.
 		OpenBitSet bitsToChange = state.getTruthValues().clone();
@@ -543,14 +543,14 @@ public class ExternalPropnetStateMachine extends StateMachine {
      *
      * TODO: instead of using a Move object just use an array of int.
      */
-	private void markInputs2(List<InternalPropnetMove> moves){
+	private void markInputs2(List<CompactMove> moves){
 
 		// Clone the currently set move to avoid modifying it here.
 		OpenBitSet bitsToFlip = this.propnetState.getCurrentJointMove().clone();
 
 		// Translate the indexes into a bitset.
 		OpenBitSet newJointMove = new OpenBitSet(bitsToFlip.capacity());
-		for(InternalPropnetMove move : moves){
+		for(CompactMove move : moves){
 			newJointMove.fastSet(move.getIndex());
 		}
 
@@ -582,7 +582,7 @@ public class ExternalPropnetStateMachine extends StateMachine {
      *
      * TODO: instead of using a Move object just use an array of int.
      */
-	private void markInputs(List<InternalPropnetMove> moves){
+	private void markInputs(List<CompactMove> moves){
 
 		// Get the currently set move
 		OpenBitSet currentJointMove = this.propnetState.getCurrentJointMove();
@@ -590,7 +590,7 @@ public class ExternalPropnetStateMachine extends StateMachine {
 		// Translate the indexes into a bitset
 		OpenBitSet newJointMove = new OpenBitSet(currentJointMove.capacity());
 
-		for(InternalPropnetMove move : moves){
+		for(CompactMove move : moves){
 			newJointMove.fastSet(move.getIndex());
 		}
 
@@ -656,7 +656,7 @@ public class ExternalPropnetStateMachine extends StateMachine {
      * playout of the game because of an error that occurred in the state machine and
      * couldn't be handled.
      */
-    public InternalPropnetMachineState performDepthCharge(InternalPropnetMachineState state, final int[] theDepth) throws TransitionDefinitionException, MoveDefinitionException, StateMachineException {
+    public CompactMachineState performDepthCharge(CompactMachineState state, final int[] theDepth) throws TransitionDefinitionException, MoveDefinitionException, StateMachineException {
         int nDepth = 0;
         while(!isTerminal(state)) {
             nDepth++;
@@ -682,7 +682,7 @@ public class ExternalPropnetStateMachine extends StateMachine {
      * the number of state changes that were made until the current visited state.
      *
      */
-    public InternalPropnetMachineState interruptiblePerformDepthCharge(InternalPropnetMachineState state, final int[] theDepth) /*throws TransitionDefinitionException, MoveDefinitionException, StateMachineException*/ {
+    public CompactMachineState interruptiblePerformDepthCharge(CompactMachineState state, final int[] theDepth) /*throws TransitionDefinitionException, MoveDefinitionException, StateMachineException*/ {
         int nDepth = 0;
         try {
 	        while(!isTerminal(state)) {
@@ -715,11 +715,11 @@ public class ExternalPropnetStateMachine extends StateMachine {
      * joint move in the given state because of an error that occurred in the state
      * machine and couldn't be handled.
      */
-    public List<InternalPropnetMove> getRandomJointMove(InternalPropnetMachineState state) throws MoveDefinitionException, StateMachineException
+    public List<CompactMove> getRandomJointMove(CompactMachineState state) throws MoveDefinitionException, StateMachineException
     {
-        List<InternalPropnetMove> random = new ArrayList<InternalPropnetMove>();
+        List<CompactMove> random = new ArrayList<CompactMove>();
         for(int i = 0; i < this.roles.size();i++) {
-            random.add(getRandomMove(state, new InternalPropnetRole(i)));
+            random.add(getRandomMove(state, new CompactRole(i)));
         }
 
         return random;
@@ -735,9 +735,9 @@ public class ExternalPropnetStateMachine extends StateMachine {
      * random move for the given role in the given state because of an
      * error that occurred in the state machine and couldn't be handled.
      */
-    public InternalPropnetMove getRandomMove(InternalPropnetMachineState state, InternalPropnetRole role) throws MoveDefinitionException, StateMachineException
+    public CompactMove getRandomMove(CompactMachineState state, CompactRole role) throws MoveDefinitionException, StateMachineException
     {
-        List<InternalPropnetMove> legals = getLegalMoves(state, role);
+        List<CompactMove> legals = getLegalMoves(state, role);
         return legals.get(new Random().nextInt(legals.size()));
     }
 

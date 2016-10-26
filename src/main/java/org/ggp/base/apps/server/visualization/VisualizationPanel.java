@@ -22,7 +22,7 @@ import org.ggp.base.util.observer.Observer;
 import org.ggp.base.util.statemachine.StateMachine;
 import org.ggp.base.util.statemachine.cache.CachedStateMachine;
 import org.ggp.base.util.statemachine.implementation.prover.ProverStateMachine;
-import org.ggp.base.util.statemachine.proverStructure.ProverMachineState;
+import org.ggp.base.util.statemachine.structure.explicit.ExplicitMachineState;
 import org.ggp.base.util.ui.GameStateRenderer;
 import org.ggp.base.util.ui.timer.JTimerBar;
 
@@ -52,7 +52,7 @@ public final class VisualizationPanel extends JPanel implements Observer
 	public void observe(Event event)
 	{
 	    if (event instanceof ServerNewGameStateEvent) {
-	        ProverMachineState s = ((ServerNewGameStateEvent)event).getState();
+	        ExplicitMachineState s = ((ServerNewGameStateEvent)event).getState();
 	        rt.submit(s, stepCount++);
 	    } else if (event instanceof ServerTimeEvent) {
 	        timerBar.time(((ServerTimeEvent) event).getTime(), 500);
@@ -60,7 +60,7 @@ public final class VisualizationPanel extends JPanel implements Observer
 	        rt.finish();
 	        timerBar.stop();
 	    } else if (event instanceof ServerNewMatchEvent) {
-	        ProverMachineState s = ((ServerNewMatchEvent) event).getInitialState();
+	        ExplicitMachineState s = ((ServerNewMatchEvent) event).getInitialState();
 	        rt.submit(s, stepCount);
 		}
 	}
@@ -85,10 +85,10 @@ public final class VisualizationPanel extends JPanel implements Observer
 	    }
 
 	    private final class RenderJob extends VizJob {
-	        private ProverMachineState state;
+	        private ExplicitMachineState state;
 	        private int stepNum;
 
-	        public RenderJob(ProverMachineState state, int stepNum) {
+	        public RenderJob(ExplicitMachineState state, int stepNum) {
 	            this.state = state;
 	            this.stepNum = stepNum;
 	        }
@@ -129,7 +129,7 @@ public final class VisualizationPanel extends JPanel implements Observer
 	        }
 	    }
 
-	    public void submit(ProverMachineState state, int stepNum) {
+	    public void submit(ExplicitMachineState state, int stepNum) {
 	        queue.add(new RenderJob(state, stepNum));
 	    }
 
@@ -177,7 +177,7 @@ public final class VisualizationPanel extends JPanel implements Observer
         StateMachine theMachine = new CachedStateMachine(new ProverStateMachine());
         try {
         	theMachine.initialize(theGame.getRules(), Long.MAX_VALUE);
-            ProverMachineState theCurrentState = theMachine.getInitialState();
+            ExplicitMachineState theCurrentState = theMachine.getInitialState();
             do {
                 theVisual.observe(new ServerNewGameStateEvent(theCurrentState));
                 theCurrentState = theMachine.getRandomNextState(theCurrentState);

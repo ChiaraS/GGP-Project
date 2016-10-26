@@ -1,7 +1,7 @@
 package org.ggp.base.player.gamer.statemachine.MCTS.manager.prover.strategies.selection.evaluators;
 
 import org.ggp.base.player.gamer.statemachine.MCS.manager.MoveStats;
-import org.ggp.base.util.statemachine.proverStructure.ProverMove;
+import org.ggp.base.util.statemachine.structure.explicit.ExplicitMove;
 
 public class ProverUCTEvaluator implements ProverMoveEvaluator {
 
@@ -20,7 +20,7 @@ public class ProverUCTEvaluator implements ProverMoveEvaluator {
 
 	@Override
 	public double computeMoveValue(int allMoveVisits,
-			ProverMove theMove, MoveStats theMoveStats) {
+			ExplicitMove theMove, MoveStats theMoveStats) {
 
 		double exploitation = this.computeExploitation(allMoveVisits, theMove, theMoveStats);
 		double exploration = this.computeExploration(allMoveVisits, theMoveStats);
@@ -32,7 +32,7 @@ public class ProverUCTEvaluator implements ProverMoveEvaluator {
 		}
 	}
 
-	protected double computeExploitation(int allMoveVisits, ProverMove theMove,  MoveStats theMoveStats){
+	protected double computeExploitation(int allMoveVisits, ExplicitMove theMove,  MoveStats theMoveStats){
 
 		double moveVisits = theMoveStats.getVisits();
 		double score = theMoveStats.getScoreSum();

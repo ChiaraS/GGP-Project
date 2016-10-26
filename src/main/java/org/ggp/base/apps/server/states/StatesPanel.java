@@ -14,7 +14,7 @@ import org.ggp.base.server.event.ServerNewGameStateEvent;
 import org.ggp.base.util.gdl.grammar.GdlSentence;
 import org.ggp.base.util.observer.Event;
 import org.ggp.base.util.observer.Observer;
-import org.ggp.base.util.statemachine.proverStructure.ProverMachineState;
+import org.ggp.base.util.statemachine.structure.explicit.ExplicitMachineState;
 
 
 @SuppressWarnings("serial")
@@ -31,7 +31,7 @@ public class StatesPanel extends JPanel implements Observer {
 	public void observe(Event event) {
 		if (event instanceof ServerNewGameStateEvent)
 		{
-	        ProverMachineState s = ((ServerNewGameStateEvent)event).getState();
+	        ExplicitMachineState s = ((ServerNewGameStateEvent)event).getState();
 	        // TODO: Perhaps this should run in a separate thread, as in the
 	        // VisualizationPanel, in case these states are very large.
 	        JPanel statePanel = new JPanel();

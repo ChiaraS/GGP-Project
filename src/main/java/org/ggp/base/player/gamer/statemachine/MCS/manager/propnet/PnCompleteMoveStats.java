@@ -1,23 +1,23 @@
 package org.ggp.base.player.gamer.statemachine.MCS.manager.propnet;
 
 import org.ggp.base.player.gamer.statemachine.MCS.manager.MoveStats;
-import org.ggp.base.util.statemachine.inernalPropnetStructure.InternalPropnetMove;
+import org.ggp.base.util.statemachine.structure.compact.CompactMove;
 
 public class PnCompleteMoveStats extends MoveStats{
 
-	protected InternalPropnetMove theMove;
+	protected CompactMove theMove;
 
-	public PnCompleteMoveStats(InternalPropnetMove theMove){
+	public PnCompleteMoveStats(CompactMove theMove){
 		super();
 		this.theMove = theMove;
 	}
 
-	public PnCompleteMoveStats(int visits, double scoreSum, InternalPropnetMove theMove){
+	public PnCompleteMoveStats(int visits, double scoreSum, CompactMove theMove){
 		super(visits, scoreSum);
 		this.theMove = theMove;
 	}
 
-	public InternalPropnetMove getTheMove() {
+	public CompactMove getTheMove() {
 		return this.theMove;
 	}
 

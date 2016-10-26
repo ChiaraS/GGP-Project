@@ -12,9 +12,9 @@ import org.ggp.base.util.statemachine.exceptions.GoalDefinitionException;
 import org.ggp.base.util.statemachine.exceptions.MoveDefinitionException;
 import org.ggp.base.util.statemachine.exceptions.StateMachineException;
 import org.ggp.base.util.statemachine.exceptions.TransitionDefinitionException;
-import org.ggp.base.util.statemachine.proverStructure.ProverMachineState;
-import org.ggp.base.util.statemachine.proverStructure.ProverMove;
-import org.ggp.base.util.statemachine.proverStructure.ProverRole;
+import org.ggp.base.util.statemachine.structure.explicit.ExplicitMachineState;
+import org.ggp.base.util.statemachine.structure.explicit.ExplicitMove;
+import org.ggp.base.util.statemachine.structure.explicit.ExplicitRole;
 
 import csironi.ggp.course.evalfunctions.EvaluationFunction;
 
@@ -33,7 +33,7 @@ public class MinMax extends SearchAlgorithm {
 		super(log, logFileName, stateMachine);
 	}
 
-	public ProverMove bestmove(long finishBy, ProverMachineState state, ProverRole role, Boolean prune, int alpha, int beta, int limit, boolean shuffleTop, boolean shuffleInt, EvaluationFunction stateEval)
+	public ExplicitMove bestmove(long finishBy, ExplicitMachineState state, ExplicitRole role, Boolean prune, int alpha, int beta, int limit, boolean shuffleTop, boolean shuffleInt, EvaluationFunction stateEval)
 			throws TransitionDefinitionException, MoveDefinitionException,
 			GoalDefinitionException, StateMachineException {
 
@@ -41,24 +41,24 @@ public class MinMax extends SearchAlgorithm {
 
 
 		/*Only for log*/
-		List<ProverRole> roles = stateMachine.getRoles();
+		List<ExplicitRole> roles = stateMachine.getRoles();
 		String toLog = "Roles: [ ";
-		for(ProverRole r: roles){
+		for(ExplicitRole r: roles){
 			toLog += r + " ";
 		}
 		toLog += "]";
 		log(toLog);
 
-		List<ProverMove> moves = stateMachine.getLegalMoves(state, role);
+		List<ExplicitMove> moves = stateMachine.getLegalMoves(state, role);
 
 		toLog = "My moves: [ ";
-		for(ProverMove move: moves){
+		for(ExplicitMove move: moves){
 			toLog += move + " ";
 		}
 		toLog += "]";
 		log(toLog);
 
-		ProverMove selection = moves.get(0);
+		ExplicitMove selection = moves.get(0);
 
 		if(shuffleTop){
 
@@ -92,12 +92,12 @@ public class MinMax extends SearchAlgorithm {
 
 				for (Integer i: indexes){
 
-					ProverMove move = moves.get(i);
+					ExplicitMove move = moves.get(i);
 
 					int currentScore;
 
 					if(stateMachine.getRoles().size() == 1){
-						ArrayList<ProverMove> jointMoves = new ArrayList<ProverMove>();
+						ArrayList<ExplicitMove> jointMoves = new ArrayList<ExplicitMove>();
 						jointMoves.add(move);
 						currentScore = maxscore(finishBy, stateMachine.getNextState(state, jointMoves), role, alpha, beta, 1, limit, shuffleInt, stateEval);
 					}else{
@@ -140,12 +140,12 @@ public class MinMax extends SearchAlgorithm {
 
 				for (Integer i: indexes){
 
-					ProverMove move = moves.get(i);
+					ExplicitMove move = moves.get(i);
 
 					int currentScore;
 
 					if(stateMachine.getRoles().size() == 1){
-						ArrayList<ProverMove> jointMoves = new ArrayList<ProverMove>();
+						ArrayList<ExplicitMove> jointMoves = new ArrayList<ExplicitMove>();
 						jointMoves.add(move);
 						currentScore = maxscore(finishBy, stateMachine.getNextState(state, jointMoves), role, 1, limit, shuffleInt, stateEval);
 					}else{
@@ -193,12 +193,12 @@ public class MinMax extends SearchAlgorithm {
 
 			if(prune){
 
-				for (ProverMove move: moves){
+				for (ExplicitMove move: moves){
 
 					int currentScore;
 
 					if(stateMachine.getRoles().size() == 1){
-						ArrayList<ProverMove> jointMoves = new ArrayList<ProverMove>();
+						ArrayList<ExplicitMove> jointMoves = new ArrayList<ExplicitMove>();
 						jointMoves.add(move);
 						currentScore = maxscore(finishBy, stateMachine.getNextState(state, jointMoves), role, alpha, beta, 1, limit, shuffleInt, stateEval);
 					}else{
@@ -239,12 +239,12 @@ public class MinMax extends SearchAlgorithm {
 			}else{
 				int maxScore = 0;
 
-				for (ProverMove move: moves){
+				for (ExplicitMove move: moves){
 
 					int currentScore;
 
 					if(stateMachine.getRoles().size() == 1){
-						ArrayList<ProverMove> jointMoves = new ArrayList<ProverMove>();
+						ArrayList<ExplicitMove> jointMoves = new ArrayList<ExplicitMove>();
 						jointMoves.add(move);
 						currentScore = maxscore(finishBy, stateMachine.getNextState(state, jointMoves), role, 1, limit, shuffleInt, stateEval);
 					}else{
@@ -291,7 +291,7 @@ public class MinMax extends SearchAlgorithm {
 	}
 
 
-	private int maxscore(long finishBy, ProverMachineState state, ProverRole role, int level, int limit, boolean shuffle, EvaluationFunction stateEval)
+	private int maxscore(long finishBy, ExplicitMachineState state, ExplicitRole role, int level, int limit, boolean shuffle, EvaluationFunction stateEval)
 			throws TransitionDefinitionException, MoveDefinitionException,
 			GoalDefinitionException, StateMachineException{
 
@@ -319,7 +319,7 @@ public class MinMax extends SearchAlgorithm {
 		}
 
 		// Check all my available moves to find the best one
-		List<ProverMove> moves = stateMachine.getLegalMoves(state, role);
+		List<ExplicitMove> moves = stateMachine.getLegalMoves(state, role);
 
 		int maxScore = 0;
 
@@ -344,14 +344,14 @@ public class MinMax extends SearchAlgorithm {
 
 			for (Integer i: indexes){
 
-				ProverMove move = moves.get(i);
+				ExplicitMove move = moves.get(i);
 
 				log("Move [ " + move + " ]");
 
 				int currentScore;
 
 				if(stateMachine.getRoles().size() == 1){
-					ArrayList<ProverMove> jointMoves = new ArrayList<ProverMove>();
+					ArrayList<ExplicitMove> jointMoves = new ArrayList<ExplicitMove>();
 					jointMoves.add(move);
 					currentScore = maxscore(finishBy, stateMachine.getNextState(state, jointMoves), role, level+1, limit, shuffle, stateEval);
 				}else{
@@ -379,20 +379,20 @@ public class MinMax extends SearchAlgorithm {
 		}else{
 
 			String toLog = "My moves: [ ";
-			for(ProverMove move: moves){
+			for(ExplicitMove move: moves){
 				toLog += move + " ";
 			}
 			toLog += "]";
 			log(toLog);
 
-			for (ProverMove move: moves){
+			for (ExplicitMove move: moves){
 
 				log("Move [ " + move + " ]");
 
 				int currentScore;
 
 				if(stateMachine.getRoles().size() == 1){
-					ArrayList<ProverMove> jointMoves = new ArrayList<ProverMove>();
+					ArrayList<ExplicitMove> jointMoves = new ArrayList<ExplicitMove>();
 					jointMoves.add(move);
 					currentScore = maxscore(finishBy, stateMachine.getNextState(state, jointMoves), role, level+1, limit, shuffle, stateEval);
 				}else{
@@ -419,21 +419,21 @@ public class MinMax extends SearchAlgorithm {
 		return maxScore;
 	}
 
-	private int minscore(long finishBy, ProverMachineState state, ProverRole role, ProverMove move, int level, int limit, boolean shuffle, EvaluationFunction stateEval)
+	private int minscore(long finishBy, ExplicitMachineState state, ExplicitRole role, ExplicitMove move, int level, int limit, boolean shuffle, EvaluationFunction stateEval)
 			throws TransitionDefinitionException, MoveDefinitionException,
 			GoalDefinitionException, StateMachineException{
 
 		log("Performing minscore");
 
 		// Find all legal joint moves given the current move of the player
-		List<List<ProverMove>> jointMovesList = stateMachine.getLegalJointMoves(state, role, move);
+		List<List<ExplicitMove>> jointMovesList = stateMachine.getLegalJointMoves(state, role, move);
 
 		int minScore = 100;
 
-		for(List<ProverMove> jointMoves: jointMovesList){
+		for(List<ExplicitMove> jointMoves: jointMovesList){
 
 			String toLog = "Joint moves: [ ";
-			for(ProverMove m: jointMoves){
+			for(ExplicitMove m: jointMoves){
 				toLog += m + " ";
 			}
 			toLog += "]";
@@ -458,7 +458,7 @@ public class MinMax extends SearchAlgorithm {
 	}
 
 
-	private int maxscore(long finishBy, ProverMachineState state, ProverRole role, int alpha, int beta, int level, int limit, boolean shuffle, EvaluationFunction stateEval)
+	private int maxscore(long finishBy, ExplicitMachineState state, ExplicitRole role, int alpha, int beta, int level, int limit, boolean shuffle, EvaluationFunction stateEval)
 			throws TransitionDefinitionException, MoveDefinitionException,
 			GoalDefinitionException, StateMachineException{
 
@@ -485,7 +485,7 @@ public class MinMax extends SearchAlgorithm {
 		}
 
 		// Check all my available moves to find the best one
-		List<ProverMove> moves = stateMachine.getLegalMoves(state, role);
+		List<ExplicitMove> moves = stateMachine.getLegalMoves(state, role);
 
 		if(shuffle){
 
@@ -508,14 +508,14 @@ public class MinMax extends SearchAlgorithm {
 
 			for (Integer i: indexes){
 
-				ProverMove move = moves.get(i);
+				ExplicitMove move = moves.get(i);
 
 				log("Move [ " + move + " ]");
 
 				int currentScore;
 
 				if(stateMachine.getRoles().size() == 1){
-					ArrayList<ProverMove> jointMoves = new ArrayList<ProverMove>();
+					ArrayList<ExplicitMove> jointMoves = new ArrayList<ExplicitMove>();
 					jointMoves.add(move);
 					currentScore = maxscore(finishBy, stateMachine.getNextState(state, jointMoves), role, alpha, beta, level+1, limit, shuffle, stateEval);
 				}else{
@@ -547,20 +547,20 @@ public class MinMax extends SearchAlgorithm {
 		}else{
 
 			String toLog = "My moves: [ ";
-			for(ProverMove move: moves){
+			for(ExplicitMove move: moves){
 				toLog += move + " ";
 			}
 			toLog += "]";
 			log(toLog);
 
-			for (ProverMove move: moves){
+			for (ExplicitMove move: moves){
 
 				log("Move [ " + move + " ]");
 
 				int currentScore;
 
 				if(stateMachine.getRoles().size() == 1){
-					ArrayList<ProverMove> jointMoves = new ArrayList<ProverMove>();
+					ArrayList<ExplicitMove> jointMoves = new ArrayList<ExplicitMove>();
 					jointMoves.add(move);
 					currentScore = maxscore(finishBy, stateMachine.getNextState(state, jointMoves), role, alpha, beta, level+1, limit, shuffle, stateEval);
 				}else{
@@ -594,19 +594,19 @@ public class MinMax extends SearchAlgorithm {
 		return alpha;
 	}
 
-	private int minscore(long finishBy, ProverMachineState state, ProverRole role, ProverMove move, int alpha, int beta, int level, int limit, boolean shuffle, EvaluationFunction stateEval)
+	private int minscore(long finishBy, ExplicitMachineState state, ExplicitRole role, ExplicitMove move, int alpha, int beta, int level, int limit, boolean shuffle, EvaluationFunction stateEval)
 			throws TransitionDefinitionException, MoveDefinitionException,
 			GoalDefinitionException, StateMachineException{
 
 		log("Performing minscore");
 
 		// Find all legal joint moves given the current move of the player
-		List<List<ProverMove>> jointMovesList = stateMachine.getLegalJointMoves(state, role, move);
+		List<List<ExplicitMove>> jointMovesList = stateMachine.getLegalJointMoves(state, role, move);
 
-		for(List<ProverMove> jointMoves: jointMovesList){
+		for(List<ExplicitMove> jointMoves: jointMovesList){
 
 			String toLog = "Joint moves: [ ";
-			for(ProverMove m: jointMoves){
+			for(ExplicitMove m: jointMoves){
 				toLog += m + " ";
 			}
 			toLog += "]";

@@ -1,21 +1,21 @@
-package org.ggp.base.util.statemachine.inernalPropnetStructure;
+package org.ggp.base.util.statemachine.structure.compact;
 
 import org.apache.lucene.util.OpenBitSet;
-import org.ggp.base.player.gamer.statemachine.MCS.manager.hybrid.structure.MachineState;
+import org.ggp.base.util.statemachine.structure.MachineState;
 
 /**
  * @author C.Sironi
  *
  */
-public class InternalPropnetMachineState implements MachineState{
+public class CompactMachineState implements MachineState{
 
 	private final OpenBitSet truthValues;
 
-	public InternalPropnetMachineState(){
+	public CompactMachineState(){
 		this.truthValues = null;
 	}
 
-	public InternalPropnetMachineState(OpenBitSet truthValues){
+	public CompactMachineState(OpenBitSet truthValues){
 		this.truthValues = truthValues;
 	}
 
@@ -24,8 +24,8 @@ public class InternalPropnetMachineState implements MachineState{
 	}
 
 	@Override
-	public InternalPropnetMachineState clone() {
-		return new InternalPropnetMachineState(this.truthValues.clone());
+	public CompactMachineState clone() {
+		return new CompactMachineState(this.truthValues.clone());
 	}
 
 	/* Utility methods */
@@ -54,8 +54,8 @@ public class InternalPropnetMachineState implements MachineState{
 
 	@Override
 	public boolean equals(Object o){
-		if ((o != null) && (o instanceof InternalPropnetMachineState)){
-			InternalPropnetMachineState state = (InternalPropnetMachineState) o;
+		if ((o != null) && (o instanceof CompactMachineState)){
+			CompactMachineState state = (CompactMachineState) o;
 			if(this.truthValues == null){
 				return state.getTruthValues() == null;
 			}else{

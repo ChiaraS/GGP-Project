@@ -15,8 +15,8 @@ import org.ggp.base.util.statemachine.exceptions.GoalDefinitionException;
 import org.ggp.base.util.statemachine.exceptions.MoveDefinitionException;
 import org.ggp.base.util.statemachine.exceptions.StateMachineException;
 import org.ggp.base.util.statemachine.exceptions.TransitionDefinitionException;
-import org.ggp.base.util.statemachine.inernalPropnetStructure.InternalPropnetMachineState;
-import org.ggp.base.util.statemachine.proverStructure.ProverMove;
+import org.ggp.base.util.statemachine.structure.compact.CompactMachineState;
+import org.ggp.base.util.statemachine.structure.explicit.ExplicitMove;
 
 public abstract class MctsGamer extends InternalPropnetGamer {
 
@@ -154,7 +154,7 @@ public abstract class MctsGamer extends InternalPropnetGamer {
 	 * @see org.ggp.base.player.gamer.statemachine.StateMachineGamer#stateMachineSelectMove(long)
 	 */
 	@Override
-	public ProverMove stateMachineSelectMove(long timeout)
+	public ExplicitMove stateMachineSelectMove(long timeout)
 			throws TransitionDefinitionException, MoveDefinitionException,
 			GoalDefinitionException, StateMachineException {
 
@@ -171,7 +171,7 @@ public abstract class MctsGamer extends InternalPropnetGamer {
     	int visitedNodes = -1;
     	double iterationsPerSecond = -1;
     	double nodesPerSecond = -1;
-    	ProverMove theMove = null;
+    	ExplicitMove theMove = null;
     	double moveScoreSum = -1.0;
     	int moveVisits = -1;
     	double moveAvgScore = -1;
@@ -197,7 +197,7 @@ public abstract class MctsGamer extends InternalPropnetGamer {
 
 				}else{
 
-					InternalPropnetMachineState currentState = this.thePropnetMachine.stateToInternalState(this.getCurrentState());
+					CompactMachineState currentState = this.thePropnetMachine.stateToInternalState(this.getCurrentState());
 
 					currentNode = ((InternalPropnetMCTSManager) this.mctsManager).search(currentState, realTimeout, gameStep);
 

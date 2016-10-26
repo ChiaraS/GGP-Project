@@ -8,7 +8,7 @@ import org.ggp.base.server.GameServer;
 import org.ggp.base.server.event.ServerConnectionErrorEvent;
 import org.ggp.base.server.event.ServerTimeoutEvent;
 import org.ggp.base.util.http.HttpRequest;
-import org.ggp.base.util.statemachine.proverStructure.ProverRole;
+import org.ggp.base.util.statemachine.structure.explicit.ExplicitRole;
 
 
 /**
@@ -29,10 +29,10 @@ public abstract class RequestThread extends Thread
 	private final int port;
 	private final String playerName;
 	private final int timeout;
-	private final ProverRole role;
+	private final ExplicitRole role;
 	private final String request;
 
-	public RequestThread(GameServer gameServer, ProverRole role, String host, int port, String playerName, int timeout, String request)
+	public RequestThread(GameServer gameServer, ExplicitRole role, String host, int port, String playerName, int timeout, String request)
 	{
 		this.gameServer = gameServer;
 		this.role = role;

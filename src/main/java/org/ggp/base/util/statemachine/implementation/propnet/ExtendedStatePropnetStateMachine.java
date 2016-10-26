@@ -17,16 +17,16 @@ import org.ggp.base.util.propnet.architecture.extendedState.ExtendedStatePropNet
 import org.ggp.base.util.propnet.architecture.extendedState.components.ExtendedStateProposition;
 import org.ggp.base.util.propnet.architecture.extendedState.components.ExtendedStateTransition;
 import org.ggp.base.util.propnet.factory.ExtendedStatePropNetFactory;
-import org.ggp.base.util.statemachine.ExtendedStatePropnetMachineState;
+import org.ggp.base.util.statemachine.CompactAndExplicitMachineState;
 import org.ggp.base.util.statemachine.StateMachine;
 import org.ggp.base.util.statemachine.exceptions.GoalDefinitionException;
 import org.ggp.base.util.statemachine.exceptions.MoveDefinitionException;
 import org.ggp.base.util.statemachine.exceptions.StateMachineInitializationException;
 import org.ggp.base.util.statemachine.exceptions.TransitionDefinitionException;
 import org.ggp.base.util.statemachine.implementation.prover.query.ProverQueryBuilder;
-import org.ggp.base.util.statemachine.proverStructure.ProverMachineState;
-import org.ggp.base.util.statemachine.proverStructure.ProverMove;
-import org.ggp.base.util.statemachine.proverStructure.ProverRole;
+import org.ggp.base.util.statemachine.structure.explicit.ExplicitMachineState;
+import org.ggp.base.util.statemachine.structure.explicit.ExplicitMove;
+import org.ggp.base.util.statemachine.structure.explicit.ExplicitRole;
 
 import com.google.common.collect.ImmutableList;
 
@@ -34,9 +34,9 @@ public class ExtendedStatePropnetStateMachine extends StateMachine {
     /** The underlying proposition network  */
     private ExtendedStatePropNet propNet;
     /** The player roles */
-    private ImmutableList<ProverRole> roles;
+    private ImmutableList<ExplicitRole> roles;
     /** The initial state */
-    private ProverMachineState initialState;
+    private ExplicitMachineState initialState;
 
     /** The currently set move */
     private List<GdlSentence> currentMove;
@@ -110,7 +110,7 @@ public class ExtendedStatePropnetStateMachine extends StateMachine {
 		if(init != null){
 		   	this.initialState = this.computeInitialState();
 		}else{
-			this.initialState = new ProverMachineState(new HashSet<GdlSentence>());
+			this.initialState = new ExplicitMachineState(new HashSet<GdlSentence>());
 		}
     }
 
@@ -127,7 +127,7 @@ public class ExtendedStatePropnetStateMachine extends StateMachine {
 	 *
      * @return the initial state.
      */
-    private ProverMachineState computeInitialState(){
+    private ExplicitMachineState computeInitialState(){
 
     	//AGGIUNTA
     	//System.out.println("COMPUTING INIT STATE");
@@ -150,7 +150,7 @@ public class ExtendedStatePropnetStateMachine extends StateMachine {
 
 		basePropsTruthValue.and(this.propNet.getDependOnInit());
 
-		return new ExtendedStatePropnetMachineState(contents, basePropsTruthValue);
+		return new CompactAndExplicitMachineState(contents, basePropsTruthValue);
     }
 
     /**
@@ -163,13 +163,13 @@ public class ExtendedStatePropnetStateMachine extends StateMachine {
 	 *
      * @return the next state.
      */
-    private ProverMachineState computeNextState(){
+    private ExplicitMachineState computeNextState(){
 
     	//AGGIUNTA
     	//System.out.println("COMPUTING NEXT STATE");
     	//FINE AGGIUNTA
 
-		return new ExtendedStatePropnetMachineState(new HashSet<GdlSentence>(this.propNet.getNextStateContents()), this.propNet.getNextState().clone());
+		return new CompactAndExplicitMachineState(new HashSet<GdlSentence>(this.propNet.getNextStateContents()), this.propNet.getNextState().clone());
     }
 
 	/**
@@ -183,11 +183,11 @@ public class ExtendedStatePropnetStateMachine extends StateMachine {
 	 * @return true if the state is terminal, false otherwise.
 	 */
 	@Override
-	public boolean isTerminal(ProverMachineState state) {
-		if(!(state instanceof ExtendedStatePropnetMachineState)){
+	public boolean isTerminal(ExplicitMachineState state) {
+		if(!(state instanceof CompactAndExplicitMachineState)){
 			state = this.stateToExtendedState(state);
 		}
-		return this.isTerminal((ExtendedStatePropnetMachineState)state);
+		return this.isTerminal((CompactAndExplicitMachineState)state);
 	}
 
 	/**
@@ -197,7 +197,7 @@ public class ExtendedStatePropnetStateMachine extends StateMachine {
 	 * @state a machine state.
 	 * @return true if the state is terminal, false otherwise.
 	 */
-	public boolean isTerminal(ExtendedStatePropnetMachineState state) {
+	public boolean isTerminal(CompactAndExplicitMachineState state) {
 		this.markBases(state);
 		return this.propNet.getTerminalProposition().getValue();
 	}
@@ -209,12 +209,12 @@ public class ExtendedStatePropnetStateMachine extends StateMachine {
 	 * is true for that role.
 	 */
 	@Override
-	public List<Integer> getOneRoleGoals(ProverMachineState state, ProverRole role){
-		if(!(state instanceof ExtendedStatePropnetMachineState)){
+	public List<Integer> getOneRoleGoals(ExplicitMachineState state, ExplicitRole role){
+		if(!(state instanceof CompactAndExplicitMachineState)){
 			state = this.stateToExtendedState(state);
 		}
 
-		return this.getOneRoleGoals((ExtendedStatePropnetMachineState) state, role);
+		return this.getOneRoleGoals((CompactAndExplicitMachineState) state, role);
 
 	}
 
@@ -225,7 +225,7 @@ public class ExtendedStatePropnetStateMachine extends StateMachine {
 	 * proposition true for that role, then you should throw a
 	 * GoalDefinitionException because the goal is ill-defined.
 	 */
-	public int getGoal(ExtendedStatePropnetMachineState state, ProverRole role)
+	public int getGoal(CompactAndExplicitMachineState state, ExplicitRole role)
 	throws GoalDefinitionException {
 
     	List<Integer> goals = this.getOneRoleGoals(state, role);
@@ -251,7 +251,7 @@ public class ExtendedStatePropnetStateMachine extends StateMachine {
 	 * Should return the value of the goal proposition that
 	 * is true for that role.
 	 */
-	public List<Integer> getOneRoleGoals(ExtendedStatePropnetMachineState state, ProverRole role) {
+	public List<Integer> getOneRoleGoals(CompactAndExplicitMachineState state, ExplicitRole role) {
 		// Mark base propositions according to state.
 		this.markBases(state);
 
@@ -287,7 +287,7 @@ public class ExtendedStatePropnetStateMachine extends StateMachine {
 	 * this state machine has not been initialized, NULL will be returned.
 	 */
 	@Override
-	public ProverMachineState getInitialState() {
+	public ExplicitMachineState getInitialState() {
 		return this.initialState;
 	}
 
@@ -296,20 +296,20 @@ public class ExtendedStatePropnetStateMachine extends StateMachine {
 	 * If the state is not an extended propnet state, it is first transformed into one.
 	 */
 	@Override
-	public List<ProverMove> getLegalMoves(ProverMachineState state, ProverRole role)
+	public List<ExplicitMove> getLegalMoves(ExplicitMachineState state, ExplicitRole role)
 	throws MoveDefinitionException {
 
-		if(!(state instanceof ExtendedStatePropnetMachineState)){
+		if(!(state instanceof CompactAndExplicitMachineState)){
 			state = this.stateToExtendedState(state);
 		}
 
-		return this.getLegalMoves((ExtendedStatePropnetMachineState) state, role);
+		return this.getLegalMoves((CompactAndExplicitMachineState) state, role);
 	}
 
 	/**
 	 * Computes the legal moves for role in state.
 	 */
-	public List<ProverMove> getLegalMoves(ExtendedStatePropnetMachineState state, ProverRole role)
+	public List<ExplicitMove> getLegalMoves(CompactAndExplicitMachineState state, ExplicitRole role)
 	throws MoveDefinitionException {
 		// Mark base propositions according to state.
 		this.markBases(state);
@@ -318,7 +318,7 @@ public class ExtendedStatePropnetStateMachine extends StateMachine {
 		Set<ExtendedStateProposition> legalPropsForRole = this.propNet.getLegalPropositions().get(role);
 
 		// Create the list of legal moves.
-		List<ProverMove> legalMovesForRole = new ArrayList<ProverMove>();
+		List<ExplicitMove> legalMovesForRole = new ArrayList<ExplicitMove>();
 		for(ExtendedStateProposition legalProp : legalPropsForRole){
 			if(legalProp.getValue()){
 				legalMovesForRole.add(getMoveFromProposition(legalProp));
@@ -338,21 +338,21 @@ public class ExtendedStatePropnetStateMachine extends StateMachine {
 	 * If the state is not an extended propnet state, it is first transformed into one.
 	 */
 	@Override
-	public ProverMachineState getNextState(ProverMachineState state, List<ProverMove> moves)
+	public ExplicitMachineState getNextState(ExplicitMachineState state, List<ExplicitMove> moves)
 	throws TransitionDefinitionException {
 
-		if(!(state instanceof ExtendedStatePropnetMachineState)){
+		if(!(state instanceof CompactAndExplicitMachineState)){
 			state = this.stateToExtendedState(state);
 		}
 
 		// Compute next state for each base proposition from the corresponding transition.
-		return this.getNextState((ExtendedStatePropnetMachineState) state, moves);
+		return this.getNextState((CompactAndExplicitMachineState) state, moves);
 	}
 
 	/**
 	 * Computes the next state given a state and the list of moves.
 	 */
-	public ProverMachineState getNextState(ExtendedStatePropnetMachineState state, List<ProverMove> moves)
+	public ExplicitMachineState getNextState(CompactAndExplicitMachineState state, List<ExplicitMove> moves)
 	throws TransitionDefinitionException {
 		// Mark base propositions according to state.
 		this.markBases(state);
@@ -366,7 +366,7 @@ public class ExtendedStatePropnetStateMachine extends StateMachine {
 
 	/* Already implemented for you */
 	@Override
-	public List<ProverRole> getRoles() {
+	public List<ExplicitRole> getRoles() {
 		return roles;
 	}
 
@@ -383,7 +383,7 @@ public class ExtendedStatePropnetStateMachine extends StateMachine {
 	 * @param moves the moves to be translated into 'does' propositions.
 	 * @return a list with the 'does' propositions corresponding to the given joint move.
 	 */
-	private List<GdlSentence> toDoes(List<ProverMove> moves){
+	private List<GdlSentence> toDoes(List<ExplicitMove> moves){
 
 		//AGGIUNTA
     	//System.out.println("TO DOES");
@@ -392,7 +392,7 @@ public class ExtendedStatePropnetStateMachine extends StateMachine {
     	//FINE AGGIUNTA
 
 		List<GdlSentence> doeses = new ArrayList<GdlSentence>(moves.size());
-		Map<ProverRole, Integer> roleIndices = getRoleIndices();
+		Map<ExplicitRole, Integer> roleIndices = getRoleIndices();
 
 		//AGGIUNTA
 		//System.out.println("ROLES");
@@ -431,8 +431,8 @@ public class ExtendedStatePropnetStateMachine extends StateMachine {
 	 * @param p the proposition to be transformed into a move.
 	 * @return the legal move corresponding to the given proposition.
 	 */
-	public static ProverMove getMoveFromProposition(ExtendedStateProposition p){
-		return new ProverMove(p.getName().get(1));
+	public static ExplicitMove getMoveFromProposition(ExtendedStateProposition p){
+		return new ExplicitMove(p.getName().get(1));
 	}
 
 	/**
@@ -443,7 +443,7 @@ public class ExtendedStatePropnetStateMachine extends StateMachine {
 	 * @return a machine state extended with the bit array representing the truth value in
 	 * the state for each base proposition.
 	 */
-	public ExtendedStatePropnetMachineState stateToExtendedState(ProverMachineState state){
+	public CompactAndExplicitMachineState stateToExtendedState(ExplicitMachineState state){
 		if(state != null){
 			ExtendedStateProposition[] baseProps = this.propNet.getBasePropositionsArray();
 			OpenBitSet basePropsTruthValue = new OpenBitSet(baseProps.length);
@@ -455,7 +455,7 @@ public class ExtendedStatePropnetStateMachine extends StateMachine {
 					}
 				}
 			}
-			return new ExtendedStatePropnetMachineState(new HashSet<GdlSentence>(contents), basePropsTruthValue);
+			return new CompactAndExplicitMachineState(new HashSet<GdlSentence>(contents), basePropsTruthValue);
 		}
 
 		return null;
@@ -478,7 +478,7 @@ public class ExtendedStatePropnetStateMachine extends StateMachine {
      *
      * @param state the machine state to be set in the propnet.
      */
-	private void markBases(ExtendedStatePropnetMachineState state){
+	private void markBases(CompactAndExplicitMachineState state){
 
 		//AGGIUNTA
     	//System.out.println("MARKING BASES");
@@ -509,7 +509,7 @@ public class ExtendedStatePropnetStateMachine extends StateMachine {
      *
      * @param moves the moves to be set as performed in the propnet.
      */
-	private void markInputs(List<ProverMove> moves){
+	private void markInputs(List<ExplicitMove> moves){
 
 		//AGGIUNTA
     	//System.out.println("MARKING INPUTS");

@@ -6,9 +6,9 @@ import org.ggp.base.player.gamer.statemachine.MCS.manager.MoveStats;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.MCTSNode;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.propnet.PnMCTSJointMove;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.propnet.PnSimulationResult;
-import org.ggp.base.util.statemachine.inernalPropnetStructure.InternalPropnetMachineState;
-import org.ggp.base.util.statemachine.inernalPropnetStructure.InternalPropnetMove;
-import org.ggp.base.util.statemachine.inernalPropnetStructure.InternalPropnetRole;
+import org.ggp.base.util.statemachine.structure.compact.CompactMachineState;
+import org.ggp.base.util.statemachine.structure.compact.CompactMove;
+import org.ggp.base.util.statemachine.structure.compact.CompactRole;
 
 public class PnMASTBackpropagation implements PnBackpropagationStrategy {
 
@@ -16,14 +16,14 @@ public class PnMASTBackpropagation implements PnBackpropagationStrategy {
 
 	private PnMASTUpdate mastUpdate;
 
-	public PnMASTBackpropagation(int numRoles, InternalPropnetRole myRole, Map<InternalPropnetMove, MoveStats> mastStatistics) {
+	public PnMASTBackpropagation(int numRoles, CompactRole myRole, Map<CompactMove, MoveStats> mastStatistics) {
 
 		this.stdBackpropagation = new PnStandardBackpropagation(numRoles, myRole);
 		this.mastUpdate = new PnMASTUpdate(mastStatistics);
 	}
 
 	@Override
-	public void update(MCTSNode currentNode, InternalPropnetMachineState currentState, PnMCTSJointMove jointMove, PnSimulationResult simulationResult) {
+	public void update(MCTSNode currentNode, CompactMachineState currentState, PnMCTSJointMove jointMove, PnSimulationResult simulationResult) {
 
 		this.stdBackpropagation.update(currentNode, currentState, jointMove, simulationResult);
 		this.mastUpdate.update(currentNode, currentState, jointMove, simulationResult);
@@ -31,7 +31,7 @@ public class PnMASTBackpropagation implements PnBackpropagationStrategy {
 	}
 
 	@Override
-	public void processPlayoutResult(MCTSNode leafNode, InternalPropnetMachineState leafState,	PnSimulationResult simulationResult) {
+	public void processPlayoutResult(MCTSNode leafNode, CompactMachineState leafState,	PnSimulationResult simulationResult) {
 
 		this.mastUpdate.processPlayoutResult(leafNode, leafState, simulationResult);
 

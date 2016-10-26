@@ -15,9 +15,9 @@ import org.ggp.base.util.statemachine.StateMachine;
 import org.ggp.base.util.statemachine.exceptions.MoveDefinitionException;
 import org.ggp.base.util.statemachine.exceptions.StateMachineException;
 import org.ggp.base.util.statemachine.exceptions.TransitionDefinitionException;
-import org.ggp.base.util.statemachine.proverStructure.ProverMachineState;
-import org.ggp.base.util.statemachine.proverStructure.ProverMove;
-import org.ggp.base.util.statemachine.proverStructure.ProverRole;
+import org.ggp.base.util.statemachine.structure.explicit.ExplicitMachineState;
+import org.ggp.base.util.statemachine.structure.explicit.ExplicitMove;
+import org.ggp.base.util.statemachine.structure.explicit.ExplicitRole;
 
 /**
  * @author C.Sironi
@@ -28,7 +28,7 @@ public class ProverMCSManager {
 	/**
 	 * The game state currently being searched.
 	 */
-	private ProverMachineState currentState;
+	private ExplicitMachineState currentState;
 
 	/**
 	 * The statistics for all the legal moves for myRole in the state currently being searched.
@@ -48,7 +48,7 @@ public class ProverMCSManager {
 	/**
 	 * The role performing the search.
 	 */
-	private ProverRole myRole;
+	private ExplicitRole myRole;
 	private int myRoleIndex;
 
 	/**
@@ -84,7 +84,7 @@ public class ProverMCSManager {
 	/**
 	 *
 	 */
-	public ProverMCSManager(ProverPlayoutStrategy playoutStrategy, StateMachine theMachine, ProverRole myRole, int maxSearchDepth, Random random) {
+	public ProverMCSManager(ProverPlayoutStrategy playoutStrategy, StateMachine theMachine, ExplicitRole myRole, int maxSearchDepth, Random random) {
 
 		this.currentState = null;
 		this.currentMovesStatistics = null;
@@ -175,7 +175,7 @@ public class ProverMCSManager {
 	}
 
 
-	public void search(ProverMachineState state, long timeout) throws MCSException{
+	public void search(ExplicitMachineState state, long timeout) throws MCSException{
 
 		// Reset so that if the search fails we'll have a duration of 0ms for it
 		// instead of the duration of the previous search.
@@ -191,7 +191,7 @@ public class ProverMCSManager {
 
 			this.currentState = state;
 
-			List<ProverMove> legalMoves;
+			List<ExplicitMove> legalMoves;
 			try {
 				legalMoves = this.theMachine.getLegalMoves(this.currentState, this.myRole);
 			} catch (MoveDefinitionException | StateMachineException e) {
@@ -208,9 +208,9 @@ public class ProverMCSManager {
 
 		} // Otherwise proceed with the search using the old statistics and updating them.
 
-		ProverMove myCurrentMove;
-		List<ProverMove> jointMove;
-		ProverMachineState nextState;
+		ExplicitMove myCurrentMove;
+		List<ExplicitMove> jointMove;
+		ExplicitMachineState nextState;
 		ProverSimulationResult simulationResult;
 		int myGoal;
 

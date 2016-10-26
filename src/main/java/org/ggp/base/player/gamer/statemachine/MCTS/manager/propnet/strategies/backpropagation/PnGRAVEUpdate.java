@@ -9,16 +9,16 @@ import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.propnet
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.propnet.PnSimulationResult;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.propnet.amafdecoupled.PnAMAFNode;
 import org.ggp.base.util.logging.GamerLogger;
-import org.ggp.base.util.statemachine.inernalPropnetStructure.InternalPropnetMachineState;
-import org.ggp.base.util.statemachine.inernalPropnetStructure.InternalPropnetMove;
+import org.ggp.base.util.statemachine.structure.compact.CompactMachineState;
+import org.ggp.base.util.statemachine.structure.compact.CompactMove;
 
 public class PnGRAVEUpdate {
 
-	public void update(MCTSNode currentNode, InternalPropnetMachineState currentState, PnMCTSJointMove jointMove, PnSimulationResult simulationResult) {
+	public void update(MCTSNode currentNode, CompactMachineState currentState, PnMCTSJointMove jointMove, PnSimulationResult simulationResult) {
 
 		if(currentNode instanceof PnAMAFNode){
 
-			List<List<InternalPropnetMove>> allJointMoves = simulationResult.getAllJointMoves();
+			List<List<CompactMove>> allJointMoves = simulationResult.getAllJointMoves();
 
 			int[] goals = simulationResult.getTerminalGoals();
 
@@ -32,13 +32,13 @@ public class PnGRAVEUpdate {
 				throw new RuntimeException("No joint moves in the simulation result.");
 			}
 
-			Map<InternalPropnetMove, MoveStats> amafStats = ((PnAMAFNode)currentNode).getAmafStats();
+			Map<CompactMove, MoveStats> amafStats = ((PnAMAFNode)currentNode).getAmafStats();
 
 			allJointMoves.add(jointMove.getJointMove());
 
 			MoveStats moveStats;
 
-	        for(List<InternalPropnetMove> jM : allJointMoves){
+	        for(List<CompactMove> jM : allJointMoves){
 	        	for(int i = 0; i<jM.size(); i++){
 	        		moveStats = amafStats.get(jM.get(i));
 	        		if(moveStats == null){
@@ -56,11 +56,11 @@ public class PnGRAVEUpdate {
 		}
 	}
 
-	public void processPlayoutResult(MCTSNode leafNode,	InternalPropnetMachineState leafState, PnSimulationResult simulationResult) {
+	public void processPlayoutResult(MCTSNode leafNode,	CompactMachineState leafState, PnSimulationResult simulationResult) {
 
 		if(leafNode instanceof PnAMAFNode){
 
-			List<List<InternalPropnetMove>> allJointMoves = simulationResult.getAllJointMoves();
+			List<List<CompactMove>> allJointMoves = simulationResult.getAllJointMoves();
 
 			int[] goals = simulationResult.getTerminalGoals();
 
@@ -74,11 +74,11 @@ public class PnGRAVEUpdate {
 				throw new RuntimeException("No joint moves in the simulation result.");
 			}
 
-			Map<InternalPropnetMove, MoveStats> amafStats = ((PnAMAFNode)leafNode).getAmafStats();
+			Map<CompactMove, MoveStats> amafStats = ((PnAMAFNode)leafNode).getAmafStats();
 
 			MoveStats moveStats;
 
-	        for(List<InternalPropnetMove> jM : allJointMoves){
+	        for(List<CompactMove> jM : allJointMoves){
 	        	for(int i = 0; i<jM.size(); i++){
 	        		moveStats = amafStats.get(jM.get(i));
 	        		if(moveStats == null){

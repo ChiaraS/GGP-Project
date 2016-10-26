@@ -6,7 +6,7 @@ import org.ggp.base.util.gdl.grammar.GdlPool;
 import org.ggp.base.util.statemachine.exceptions.GoalDefinitionException;
 import org.ggp.base.util.statemachine.exceptions.MoveDefinitionException;
 import org.ggp.base.util.statemachine.exceptions.TransitionDefinitionException;
-import org.ggp.base.util.statemachine.proverStructure.ProverMove;
+import org.ggp.base.util.statemachine.structure.explicit.ExplicitMove;
 
 /**
  * SampleNoopGamer is a minimal gamer which always plays NOOP regardless
@@ -15,9 +15,9 @@ import org.ggp.base.util.statemachine.proverStructure.ProverMove;
 public final class SampleNoopGamer extends SampleGamer
 {
 	@Override
-	public ProverMove stateMachineSelectMove(long timeout) throws TransitionDefinitionException, MoveDefinitionException, GoalDefinitionException
+	public ExplicitMove stateMachineSelectMove(long timeout) throws TransitionDefinitionException, MoveDefinitionException, GoalDefinitionException
 	{
-		return new ProverMove(GdlPool.getConstant("NOOP"));
+		return new ExplicitMove(GdlPool.getConstant("NOOP"));
 	}
 
 	@Override

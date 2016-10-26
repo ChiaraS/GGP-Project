@@ -1,8 +1,8 @@
-package org.ggp.base.util.statemachine.inernalPropnetStructure;
+package org.ggp.base.util.statemachine.structure.compact;
 
 import java.io.Serializable;
 
-import org.ggp.base.player.gamer.statemachine.MCS.manager.hybrid.structure.Move;
+import org.ggp.base.util.statemachine.structure.Move;
 
 
 /**
@@ -18,17 +18,17 @@ import org.ggp.base.player.gamer.statemachine.MCS.manager.hybrid.structure.Move;
  * array.
  */
 @SuppressWarnings("serial")
-public class InternalPropnetMove implements Serializable, Move{
+public class CompactMove implements Serializable, Move{
     private final int moveIndex;
 
-    public InternalPropnetMove(int moveIndex){
+    public CompactMove(int moveIndex){
         this.moveIndex = moveIndex;
     }
 
     @Override
     public boolean equals(Object o){
-        if ((o != null) && (o instanceof InternalPropnetMove)) {
-        	InternalPropnetMove move = (InternalPropnetMove) o;
+        if ((o != null) && (o instanceof CompactMove)) {
+        	CompactMove move = (CompactMove) o;
             return this.moveIndex == move.getIndex();
         }
 

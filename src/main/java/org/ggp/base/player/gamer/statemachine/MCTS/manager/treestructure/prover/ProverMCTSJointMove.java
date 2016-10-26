@@ -2,28 +2,27 @@ package org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.prover
 
 import java.util.List;
 
-import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.MCTSJointMove;
-import org.ggp.base.util.statemachine.proverStructure.ProverMove;
+import org.ggp.base.util.statemachine.structure.explicit.ExplicitMove;
 
-public class ProverMCTSJointMove extends MCTSJointMove{
+public class ProverMCTSJointMove{
 
 	/**
 	 * The joint move computed by the selection or expansion strategy.
 	 */
-	protected List<ProverMove> jointMove;
+	protected List<ExplicitMove> jointMove;
 
-	public ProverMCTSJointMove(List<ProverMove> jointMove) {
+	public ProverMCTSJointMove(List<ExplicitMove> jointMove) {
 		this.jointMove = jointMove;
 	}
 
-	public List<ProverMove> getJointMove() {
+	public List<ExplicitMove> getJointMove() {
 		return jointMove;
 	}
 
 	@Override
 	public String toString(){
 		String s = "[ ";
-		for(ProverMove m : this.jointMove){
+		for(ExplicitMove m : this.jointMove){
 			s += m + " ";
 		}
 		s += " ]";

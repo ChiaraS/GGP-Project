@@ -6,25 +6,25 @@ import java.util.Map;
 import org.ggp.base.player.gamer.statemachine.MCS.manager.MoveStats;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.prover.decoupled.ProverDecoupledMCTSMoveStats;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.prover.decoupled.ProverDecoupledMCTSNode;
-import org.ggp.base.util.statemachine.proverStructure.ProverMove;
+import org.ggp.base.util.statemachine.structure.explicit.ExplicitMove;
 
 public class ProverAMAFDecoupledMCTSNode  extends ProverDecoupledMCTSNode implements ProverAMAFNode{
 
 	/**
 	 * Table that collects the AMAF statistics for the node for each move.
 	 */
-	private Map<ProverMove, MoveStats> amafStats;
+	private Map<ExplicitMove, MoveStats> amafStats;
 
 	public ProverAMAFDecoupledMCTSNode(ProverDecoupledMCTSMoveStats[][] movesStats, int[] goals, boolean terminal) {
 		super(movesStats, goals, terminal);
 
 		if(!terminal){
-			this.amafStats = new HashMap<ProverMove, MoveStats>();
+			this.amafStats = new HashMap<ExplicitMove, MoveStats>();
 		} // If the node is terminal we'll never use the AMAF stats, so we can leave them pointing to null.
 	}
 
 	@Override
-	public Map<ProverMove, MoveStats> getAmafStats(){
+	public Map<ExplicitMove, MoveStats> getAmafStats(){
 		return this.amafStats;
 	}
 

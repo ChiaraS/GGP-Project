@@ -13,18 +13,18 @@ import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.propnet
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.propnet.sequential.PnSequentialMCTSNode;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.propnet.slowsequential.PnSlowSeqentialMCTSNode;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.propnet.slowsequential.PnSlowSequentialMCTSMoveStats;
-import org.ggp.base.util.statemachine.inernalPropnetStructure.InternalPropnetRole;
+import org.ggp.base.util.statemachine.structure.compact.CompactRole;
 
 public class PnMaximumScoreChoice implements PnMoveChoiceStrategy {
 
 	/**
 	 * The role performing the search and for which the best move will be computed.
 	 */
-	private InternalPropnetRole myRole;
+	private CompactRole myRole;
 
 	private Random random;
 
-	public PnMaximumScoreChoice(InternalPropnetRole myRole, Random random){
+	public PnMaximumScoreChoice(CompactRole myRole, Random random){
 		this.myRole = myRole;
 		this.random = random;
 	}

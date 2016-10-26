@@ -6,9 +6,9 @@ import org.ggp.base.util.statemachine.InternalPropnetStateMachine;
 import org.ggp.base.util.statemachine.exceptions.MoveDefinitionException;
 import org.ggp.base.util.statemachine.exceptions.StateMachineException;
 import org.ggp.base.util.statemachine.exceptions.TransitionDefinitionException;
-import org.ggp.base.util.statemachine.inernalPropnetStructure.InternalPropnetMachineState;
-import org.ggp.base.util.statemachine.inernalPropnetStructure.InternalPropnetMove;
-import org.ggp.base.util.statemachine.proverStructure.ProverMachineState;
+import org.ggp.base.util.statemachine.structure.compact.CompactMachineState;
+import org.ggp.base.util.statemachine.structure.compact.CompactMove;
+import org.ggp.base.util.statemachine.structure.explicit.ExplicitMachineState;
 
 public class InternalReprIterativeDeepeningSearch extends SearchAlgorithm {
 
@@ -20,7 +20,7 @@ public class InternalReprIterativeDeepeningSearch extends SearchAlgorithm {
 	}
 
 	@Override
-	public void doSearch(ProverMachineState state) {
+	public void doSearch(ExplicitMachineState state) {
 		if(upperDepthLimit == Integer.MAX_VALUE) {
 			System.out.println("iterativeDeepening " + getPlayclock());
 		} else {
@@ -28,7 +28,7 @@ public class InternalReprIterativeDeepeningSearch extends SearchAlgorithm {
 		}
 
 		// Translate current state to internal state
-		InternalPropnetMachineState internalState = ((InternalPropnetStateMachine)this.stateMachine).stateToInternalState(state);
+		CompactMachineState internalState = ((InternalPropnetStateMachine)this.stateMachine).stateToInternalState(state);
 
 		int depthLimit = 0;
 		boolean finished = false;
@@ -52,7 +52,7 @@ public class InternalReprIterativeDeepeningSearch extends SearchAlgorithm {
 	 * @throws TransitionDefinitionException
 	 * @throws StateMachineException
 	 */
-	private boolean dfs(InternalPropnetMachineState internalState, int depth) throws MoveDefinitionException, TransitionDefinitionException, StateMachineException {
+	private boolean dfs(CompactMachineState internalState, int depth) throws MoveDefinitionException, TransitionDefinitionException, StateMachineException {
 		if (timeout()) return false;
 
 		InternalPropnetStateMachine internalReprStateMachine = (InternalPropnetStateMachine) this.stateMachine;
@@ -65,12 +65,12 @@ public class InternalReprIterativeDeepeningSearch extends SearchAlgorithm {
 		if (depth <= 0) {
 			return false;
 		}
-		List<List<InternalPropnetMove>> internalJointMoves = internalReprStateMachine.getLegalJointMoves(internalState);
+		List<List<CompactMove>> internalJointMoves = internalReprStateMachine.getLegalJointMoves(internalState);
 		nbLegals++;
 		boolean finished = true;
-		for (List<InternalPropnetMove> internalJointMove : internalJointMoves) {
+		for (List<CompactMove> internalJointMove : internalJointMoves) {
 			if (timeout()) return false;
-			InternalPropnetMachineState nextState = internalReprStateMachine.getInternalNextState(internalState, internalJointMove);
+			CompactMachineState nextState = internalReprStateMachine.getInternalNextState(internalState, internalJointMove);
 			++nbUpdates;
 			finished = dfs(nextState, depth-1) && finished; // order matters here!
 		}

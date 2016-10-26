@@ -21,9 +21,9 @@ import org.ggp.base.util.statemachine.exceptions.StateMachineException;
 import org.ggp.base.util.statemachine.exceptions.StateMachineInitializationException;
 import org.ggp.base.util.statemachine.exceptions.TransitionDefinitionException;
 import org.ggp.base.util.statemachine.implementation.prover.ProverStateMachine;
-import org.ggp.base.util.statemachine.proverStructure.ProverMachineState;
-import org.ggp.base.util.statemachine.proverStructure.ProverMove;
-import org.ggp.base.util.statemachine.proverStructure.ProverRole;
+import org.ggp.base.util.statemachine.structure.explicit.ExplicitMachineState;
+import org.ggp.base.util.statemachine.structure.explicit.ExplicitMove;
+import org.ggp.base.util.statemachine.structure.explicit.ExplicitRole;
 
 import com.google.common.collect.ImmutableList;
 
@@ -72,8 +72,8 @@ public class BasesInputsValidator implements GameValidator {
 				return ImmutableList.of();
 			}
 
-			ProverMachineState initialState = sm.getInitialState();
-			ProverMachineState state = initialState;
+			ExplicitMachineState initialState = sm.getInitialState();
+			ExplicitMachineState state = initialState;
 			long startTime = System.currentTimeMillis();
 			while (System.currentTimeMillis() < startTime + millisecondsToTest) {
 				//Check state against bases, inputs
@@ -88,9 +88,9 @@ public class BasesInputsValidator implements GameValidator {
 
 				if (!legalsFromInputs.isEmpty()) {
 					List<GdlSentence> legalSentences = new ArrayList<GdlSentence>();
-					for (ProverRole role : sm.getRoles()) {
-						List<ProverMove> legalMoves = sm.getLegalMoves(state, role);
-						for (ProverMove move : legalMoves) {
+					for (ExplicitRole role : sm.getRoles()) {
+						List<ExplicitMove> legalMoves = sm.getLegalMoves(state, role);
+						for (ExplicitMove move : legalMoves) {
 							legalSentences.add(GdlPool.getRelation(LEGAL, new GdlTerm[] {role.getName(), move.getContents()}));
 						}
 					}

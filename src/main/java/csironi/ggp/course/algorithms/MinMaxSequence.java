@@ -11,9 +11,9 @@ import org.ggp.base.util.statemachine.exceptions.GoalDefinitionException;
 import org.ggp.base.util.statemachine.exceptions.MoveDefinitionException;
 import org.ggp.base.util.statemachine.exceptions.StateMachineException;
 import org.ggp.base.util.statemachine.exceptions.TransitionDefinitionException;
-import org.ggp.base.util.statemachine.proverStructure.ProverMachineState;
-import org.ggp.base.util.statemachine.proverStructure.ProverMove;
-import org.ggp.base.util.statemachine.proverStructure.ProverRole;
+import org.ggp.base.util.statemachine.structure.explicit.ExplicitMachineState;
+import org.ggp.base.util.statemachine.structure.explicit.ExplicitMove;
+import org.ggp.base.util.statemachine.structure.explicit.ExplicitRole;
 
 import csironi.ggp.course.utils.Pair;
 
@@ -41,7 +41,7 @@ public class MinMaxSequence extends SearchAlgorithm {
 	}
 
 
-	public List<ProverMove> bestmove(ProverMachineState state, ProverRole role)
+	public List<ExplicitMove> bestmove(ExplicitMachineState state, ExplicitRole role)
 			throws TransitionDefinitionException, MoveDefinitionException,
 			GoalDefinitionException, StateMachineException {
 
@@ -49,31 +49,31 @@ public class MinMaxSequence extends SearchAlgorithm {
 
 
 		/*Only for log*/
-		List<ProverRole> roles = stateMachine.getRoles();
+		List<ExplicitRole> roles = stateMachine.getRoles();
 		String toLog = "Roles: [ ";
-		for(ProverRole r: roles){
+		for(ExplicitRole r: roles){
 			toLog += r + " ";
 		}
 		toLog += "]";
 		log(toLog);
 
-		Pair<List<ProverMove>, Integer> result = maxscore(state, role);
+		Pair<List<ExplicitMove>, Integer> result = maxscore(state, role);
 
 		toLog = "Reversed actions sequence: [ ";
-		for(ProverMove m: result.getFirst()){
+		for(ExplicitMove m: result.getFirst()){
 			toLog += m + " ";
 		}
 		toLog += "]";
 		log(toLog);
 
 		// Revert the order of the actions since they are listed from last to first wrt to the root.
-		List<ProverMove> bestPathMoves = new ArrayList<ProverMove>();
-		for(ProverMove move: result.getFirst()){
+		List<ExplicitMove> bestPathMoves = new ArrayList<ExplicitMove>();
+		for(ExplicitMove move: result.getFirst()){
 			bestPathMoves.add(0, move);
 		}
 
 		toLog = "Actions sequence: [ ";
-		for(ProverMove m: bestPathMoves){
+		for(ExplicitMove m: bestPathMoves){
 			toLog += m + " ";
 		}
 		toLog += "]";
@@ -84,7 +84,7 @@ public class MinMaxSequence extends SearchAlgorithm {
 	}
 
 
-	private Pair<List<ProverMove>, Integer> maxscore(ProverMachineState state, ProverRole role)
+	private Pair<List<ExplicitMove>, Integer> maxscore(ExplicitMachineState state, ExplicitRole role)
 			throws TransitionDefinitionException, MoveDefinitionException,
 			GoalDefinitionException, StateMachineException{
 
@@ -94,29 +94,29 @@ public class MinMaxSequence extends SearchAlgorithm {
 		if(stateMachine.isTerminal(state)){
 			int goal = stateMachine.getGoal(state, role);
 			log("Terminal state goal: " + goal);
-			return new Pair<List<ProverMove>, Integer> (new ArrayList<ProverMove>(), goal);
+			return new Pair<List<ExplicitMove>, Integer> (new ArrayList<ExplicitMove>(), goal);
 		}
 
 		// Check all my available moves to find the best one
-		List<ProverMove> moves = stateMachine.getLegalMoves(state, role);
+		List<ExplicitMove> moves = stateMachine.getLegalMoves(state, role);
 
 		String toLog = "My moves: [ ";
-		for(ProverMove move: moves){
+		for(ExplicitMove move: moves){
 			toLog += move + " ";
 		}
 		toLog += "]";
 		log(toLog);
 
-		Pair<List<ProverMove>, Integer> maxResult = new Pair<List<ProverMove>, Integer>(new ArrayList<ProverMove>(),0);
+		Pair<List<ExplicitMove>, Integer> maxResult = new Pair<List<ExplicitMove>, Integer>(new ArrayList<ExplicitMove>(),0);
 
-		for (ProverMove move: moves){
+		for (ExplicitMove move: moves){
 
 			log("Move [ " + move + " ]");
 
-			Pair<List<ProverMove>, Integer> currentResult;
+			Pair<List<ExplicitMove>, Integer> currentResult;
 
 			if(stateMachine.getRoles().size() == 1){
-				ArrayList<ProverMove> jointMoves = new ArrayList<ProverMove>();
+				ArrayList<ExplicitMove> jointMoves = new ArrayList<ExplicitMove>();
 				jointMoves.add(move);
 				currentResult = maxscore(stateMachine.getNextState(state, jointMoves), role);
 			}else{
@@ -136,7 +136,7 @@ public class MinMaxSequence extends SearchAlgorithm {
 		}
 
 		toLog = "Reversed actions sequence: [ ";
-		for(ProverMove m: maxResult.getFirst()){
+		for(ExplicitMove m: maxResult.getFirst()){
 			toLog += m + " ";
 		}
 		toLog += "]";
@@ -145,27 +145,27 @@ public class MinMaxSequence extends SearchAlgorithm {
 		return maxResult;
 	}
 
-	private Pair<List<ProverMove>, Integer> minscore(ProverMachineState state, ProverRole role, ProverMove move)
+	private Pair<List<ExplicitMove>, Integer> minscore(ExplicitMachineState state, ExplicitRole role, ExplicitMove move)
 			throws TransitionDefinitionException, MoveDefinitionException,
 			GoalDefinitionException, StateMachineException{
 
 		log("Performing minscore");
 
 		// Find all legal joint moves given the current move of the player
-		List<List<ProverMove>> jointMovesList = stateMachine.getLegalJointMoves(state, role, move);
+		List<List<ExplicitMove>> jointMovesList = stateMachine.getLegalJointMoves(state, role, move);
 
-		Pair<List<ProverMove>, Integer> minResult = new Pair<List<ProverMove>, Integer>(new ArrayList<ProverMove>(),100);
+		Pair<List<ExplicitMove>, Integer> minResult = new Pair<List<ExplicitMove>, Integer>(new ArrayList<ExplicitMove>(),100);
 
-		for(List<ProverMove> jointMoves: jointMovesList){
+		for(List<ExplicitMove> jointMoves: jointMovesList){
 
 			String toLog = "Joint moves: [ ";
-			for(ProverMove m: jointMoves){
+			for(ExplicitMove m: jointMoves){
 				toLog += m + " ";
 			}
 			toLog += "]";
 			log(toLog);
 
-			Pair<List<ProverMove>, Integer> currentResult;
+			Pair<List<ExplicitMove>, Integer> currentResult;
 
 			currentResult = maxscore(stateMachine.getNextState(state, jointMoves), role);
 			if(currentResult.getSecond().intValue() <= minResult.getSecond().intValue()){
@@ -175,7 +175,7 @@ public class MinMaxSequence extends SearchAlgorithm {
 		}
 
 		String toLog = "Reversed actions sequence: [ ";
-		for(ProverMove m: minResult.getFirst()){
+		for(ExplicitMove m: minResult.getFirst()){
 			toLog += m + " ";
 		}
 		toLog += "]";

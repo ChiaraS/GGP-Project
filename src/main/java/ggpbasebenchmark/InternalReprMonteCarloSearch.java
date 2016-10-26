@@ -6,9 +6,9 @@ import org.ggp.base.util.statemachine.InternalPropnetStateMachine;
 import org.ggp.base.util.statemachine.exceptions.MoveDefinitionException;
 import org.ggp.base.util.statemachine.exceptions.StateMachineException;
 import org.ggp.base.util.statemachine.exceptions.TransitionDefinitionException;
-import org.ggp.base.util.statemachine.inernalPropnetStructure.InternalPropnetMachineState;
-import org.ggp.base.util.statemachine.inernalPropnetStructure.InternalPropnetMove;
-import org.ggp.base.util.statemachine.proverStructure.ProverMachineState;
+import org.ggp.base.util.statemachine.structure.compact.CompactMachineState;
+import org.ggp.base.util.statemachine.structure.compact.CompactMove;
+import org.ggp.base.util.statemachine.structure.explicit.ExplicitMachineState;
 
 public class InternalReprMonteCarloSearch extends SearchAlgorithm {
 
@@ -18,11 +18,11 @@ public class InternalReprMonteCarloSearch extends SearchAlgorithm {
 	}
 
 	@Override
-	public void doSearch(ProverMachineState state) {
+	public void doSearch(ExplicitMachineState state) {
 		System.out.println("monteCarloSearch " + getPlayclock());
 
 		// Translate current state to internal state
-		InternalPropnetMachineState internalState = ((InternalPropnetStateMachine)this.stateMachine).stateToInternalState(state);
+		CompactMachineState internalState = ((InternalPropnetStateMachine)this.stateMachine).stateToInternalState(state);
 
 		long simulationCount = 0;
 		while (!timeout()) {
@@ -40,15 +40,15 @@ public class InternalReprMonteCarloSearch extends SearchAlgorithm {
 
 	}
 
-	private void randomSimulation(InternalPropnetMachineState unChangableState) throws MoveDefinitionException, TransitionDefinitionException, StateMachineException {
-		InternalPropnetMachineState internalState = unChangableState.clone();
+	private void randomSimulation(CompactMachineState unChangableState) throws MoveDefinitionException, TransitionDefinitionException, StateMachineException {
+		CompactMachineState internalState = unChangableState.clone();
 
 		InternalPropnetStateMachine internalReprStateMachine = (InternalPropnetStateMachine) this.stateMachine;
 
 		boolean terminal = internalReprStateMachine.isTerminal(internalState);
 		while (!terminal) {
 			if (timeout()) return;
-			List<InternalPropnetMove> internalJointMove = internalReprStateMachine.getRandomJointMove(internalState);
+			List<CompactMove> internalJointMove = internalReprStateMachine.getRandomJointMove(internalState);
 			++nbLegals;
 			if (timeout()) return;
 			internalState = internalReprStateMachine.getInternalNextState(internalState, internalJointMove);

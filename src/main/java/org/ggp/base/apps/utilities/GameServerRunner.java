@@ -16,7 +16,7 @@ import org.ggp.base.util.gdl.factory.exceptions.GdlFormatException;
 import org.ggp.base.util.match.Match;
 import org.ggp.base.util.statemachine.exceptions.GoalDefinitionException;
 import org.ggp.base.util.statemachine.exceptions.StateMachineException;
-import org.ggp.base.util.statemachine.proverStructure.ProverRole;
+import org.ggp.base.util.statemachine.structure.explicit.ExplicitRole;
 import org.ggp.base.util.symbol.factory.exceptions.SymbolFormatException;
 
 /**
@@ -66,7 +66,7 @@ public final class GameServerRunner
 			portNumbers.add(port);
 			playerNames.add(name);
 		}
-		int expectedRoles = ProverRole.computeRoles(game.getRules()).size();
+		int expectedRoles = ExplicitRole.computeRoles(game.getRules()).size();
 		if (hostNames.size() != expectedRoles) {
 			throw new RuntimeException("Invalid number of players for game " + gameKey + ": " + hostNames.size() + " vs " + expectedRoles);
 		}

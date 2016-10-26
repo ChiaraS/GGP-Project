@@ -1,13 +1,13 @@
-package org.ggp.base.util.statemachine.proverStructure;
+package org.ggp.base.util.statemachine.structure.explicit;
 
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.ggp.base.player.gamer.statemachine.MCS.manager.hybrid.structure.Role;
 import org.ggp.base.util.gdl.grammar.Gdl;
 import org.ggp.base.util.gdl.grammar.GdlConstant;
 import org.ggp.base.util.gdl.grammar.GdlRelation;
+import org.ggp.base.util.statemachine.structure.Role;
 
 
 /**
@@ -17,10 +17,10 @@ import org.ggp.base.util.gdl.grammar.GdlRelation;
  * using the {@link #computeRoles(List)} method.
  */
 @SuppressWarnings("serial")
-public class ProverRole implements Serializable, Role{
+public class ExplicitRole implements Serializable, Role{
     protected final GdlConstant name;
 
-    public ProverRole(GdlConstant name)
+    public ExplicitRole(GdlConstant name)
     {
         this.name = name;
     }
@@ -28,9 +28,9 @@ public class ProverRole implements Serializable, Role{
     @Override
     public boolean equals(Object o)
     {
-        if ((o != null) && (o instanceof ProverRole))
+        if ((o != null) && (o instanceof ExplicitRole))
         {
-            ProverRole role = (ProverRole) o;
+            ExplicitRole role = (ExplicitRole) o;
             return role.name.equals(name);
         }
 
@@ -62,14 +62,14 @@ public class ProverRole implements Serializable, Role{
      * the moves. This function will give an ordered list in which the roles
      * have that correct order.
      */
-    public static List<ProverRole> computeRoles(List<? extends Gdl> description)
+    public static List<ExplicitRole> computeRoles(List<? extends Gdl> description)
     {
-        List<ProverRole> roles = new ArrayList<ProverRole>();
+        List<ExplicitRole> roles = new ArrayList<ExplicitRole>();
         for (Gdl gdl : description) {
             if (gdl instanceof GdlRelation) {
                 GdlRelation relation = (GdlRelation) gdl;
                 if (relation.getName().getValue().equals("role")) {
-                    roles.add(new ProverRole((GdlConstant) relation.get(0)));
+                    roles.add(new ExplicitRole((GdlConstant) relation.get(0)));
                 }
             }
         }

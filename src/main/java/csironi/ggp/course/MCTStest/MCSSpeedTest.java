@@ -21,9 +21,9 @@ import org.ggp.base.util.propnet.state.ImmutableSeparatePropnetState;
 import org.ggp.base.util.statemachine.InternalPropnetStateMachine;
 import org.ggp.base.util.statemachine.exceptions.StateMachineInitializationException;
 import org.ggp.base.util.statemachine.implementation.propnet.SeparateInternalPropnetStateMachine;
-import org.ggp.base.util.statemachine.inernalPropnetStructure.InternalPropnetRole;
-import org.ggp.base.util.statemachine.proverStructure.ProverMove;
-import org.ggp.base.util.statemachine.proverStructure.ProverRole;
+import org.ggp.base.util.statemachine.structure.compact.CompactRole;
+import org.ggp.base.util.statemachine.structure.explicit.ExplicitMove;
+import org.ggp.base.util.statemachine.structure.explicit.ExplicitRole;
 
 /**
 * This class checks the speed (nodes/second, iterations/second) of the MCS player
@@ -187,8 +187,8 @@ public class MCSSpeedTest {
 	        int visitedNodes = -1;
 	        double iterationsPerSecond = -1;
 	        double nodesPerSecond = -1;
-	        ProverRole playingRole = null;
-	        ProverMove chosenMove = null;
+	        ExplicitRole playingRole = null;
+	        ExplicitMove chosenMove = null;
 	        double scoresSum = -1.0;
 	        int visits = -1;
 	        double averageScore = -1;
@@ -216,7 +216,7 @@ public class MCSSpeedTest {
 
 		        GamerLogger.log("MCSSpeedTest", "Starting speed test.");
 
-		        InternalPropnetRole internalPlayingRole = thePropnetMachine.getInternalRoles()[0];
+		        CompactRole internalPlayingRole = thePropnetMachine.getInternalRoles()[0];
 		        playingRole = thePropnetMachine.internalRoleToRole(internalPlayingRole);
 		        numRoles = thePropnetMachine.getInternalRoles().length;
 

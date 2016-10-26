@@ -16,7 +16,7 @@ import org.ggp.base.util.propnet.architecture.externalizedState.components.Exter
 import org.ggp.base.util.propnet.factory.ExternalizedStatePropnetFactory;
 import org.ggp.base.util.propnet.state.ImmutableSeparatePropnetState;
 import org.ggp.base.util.propnet.utils.PROP_TYPE;
-import org.ggp.base.util.statemachine.proverStructure.ProverRole;
+import org.ggp.base.util.statemachine.structure.explicit.ExplicitRole;
 
 /**
  * This class takes care of the followings:
@@ -157,17 +157,17 @@ public class ExternalStatePropnetCreationManager extends Thread{
 
 		this.propNet.getTerminalProposition().setIndex(0);
 
-		List<ProverRole> roles = this.propNet.getRoles();
+		List<ExplicitRole> roles = this.propNet.getRoles();
 
 		i = 1;
 
-		Map<ProverRole, List<ExternalizedStateProposition>> goalsPerRole = this.propNet.getGoalsPerRole();
+		Map<ExplicitRole, List<ExternalizedStateProposition>> goalsPerRole = this.propNet.getGoalsPerRole();
 		int[] firstGoalIndices = new int[roles.size()+1];
 
 		int j;
 		for(j = 0; j < roles.size(); j++){
 			firstGoalIndices[j] = i;
-			ProverRole r = roles.get(j);
+			ExplicitRole r = roles.get(j);
 			for(ExternalizedStateProposition roleGoals : goalsPerRole.get(r)){
 				roleGoals.setIndex(i);
 				i++;
@@ -175,12 +175,12 @@ public class ExternalStatePropnetCreationManager extends Thread{
 		}
 		firstGoalIndices[j] = i;
 
-		Map<ProverRole, List<ExternalizedStateProposition>> legalsPerRole = this.propNet.getLegalsPerRole();
+		Map<ExplicitRole, List<ExternalizedStateProposition>> legalsPerRole = this.propNet.getLegalsPerRole();
 		int[] firstLegalIndices = new int[roles.size()+1];
 
 		for(j = 0; j < roles.size(); j++){
 			firstLegalIndices[j] = i;
-			ProverRole r = roles.get(j);
+			ExplicitRole r = roles.get(j);
 			for(ExternalizedStateProposition roleLegals : legalsPerRole.get(r)){
 				roleLegals.setIndex(i);
 				i++;

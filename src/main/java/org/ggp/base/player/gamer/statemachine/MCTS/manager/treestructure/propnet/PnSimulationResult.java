@@ -3,8 +3,7 @@ package org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.propne
 import java.util.ArrayList;
 import java.util.List;
 
-import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.SimulationResult;
-import org.ggp.base.util.statemachine.inernalPropnetStructure.InternalPropnetMove;
+import org.ggp.base.util.statemachine.structure.compact.CompactMove;
 
 /**
  * This class represents one episode (i.e. one simulation) using a list of all the joint moves
@@ -21,7 +20,7 @@ import org.ggp.base.util.statemachine.inernalPropnetStructure.InternalPropnetMov
  * @author c.sironi
  *
  */
-public class PnSimulationResult extends SimulationResult{
+public class PnSimulationResult{
 
 	/**
 	 * The length of the playout.
@@ -53,7 +52,7 @@ public class PnSimulationResult extends SimulationResult{
 	 * save the goals of each state in the simulation, from root to last state, but in the last state we have
 	 * no joint move to memorize).
 	 */
-	private List<List<InternalPropnetMove>> allJointMoves;
+	private List<List<CompactMove>> allJointMoves;
 
 	/**
 	 * The goals of each role in each state reached by performing the corresponding joint moves
@@ -74,7 +73,7 @@ public class PnSimulationResult extends SimulationResult{
 	 */
 	public PnSimulationResult() {
 
-		this(0, new ArrayList<List<InternalPropnetMove>>(), new ArrayList<int[]>());
+		this(0, new ArrayList<List<CompactMove>>(), new ArrayList<int[]>());
 
 	}
 
@@ -96,7 +95,7 @@ public class PnSimulationResult extends SimulationResult{
 	 */
 	public PnSimulationResult(int playoutLength, int[] terminalGoals) {
 
-		this(playoutLength, new ArrayList<List<InternalPropnetMove>>(), new ArrayList<int[]>());
+		this(playoutLength, new ArrayList<List<CompactMove>>(), new ArrayList<int[]>());
 
 		this.intermediateGoals.add(terminalGoals);
 
@@ -104,11 +103,11 @@ public class PnSimulationResult extends SimulationResult{
 
 	public PnSimulationResult(int playoutLength, List<int[]> intermediateGoals) {
 
-		this(playoutLength, new ArrayList<List<InternalPropnetMove>>(), intermediateGoals);
+		this(playoutLength, new ArrayList<List<CompactMove>>(), intermediateGoals);
 
 	}
 
-	public PnSimulationResult(int playoutLength, int[] terminalGoals, List<List<InternalPropnetMove>> allJointMoves) {
+	public PnSimulationResult(int playoutLength, int[] terminalGoals, List<List<CompactMove>> allJointMoves) {
 
 		this(playoutLength, allJointMoves, new ArrayList<int[]>());
 
@@ -116,12 +115,12 @@ public class PnSimulationResult extends SimulationResult{
 
 	}
 
-	public PnSimulationResult(int playoutLength, List<List<InternalPropnetMove>> allJointMoves, List<int[]> intermediateGoals) {
+	public PnSimulationResult(int playoutLength, List<List<CompactMove>> allJointMoves, List<int[]> intermediateGoals) {
 
 		this.playoutLength = playoutLength;
 
 		if(allJointMoves == null){
-			allJointMoves = new ArrayList<List<InternalPropnetMove>>();
+			allJointMoves = new ArrayList<List<CompactMove>>();
 		}
 
 		if(intermediateGoals == null){
@@ -138,7 +137,7 @@ public class PnSimulationResult extends SimulationResult{
 		return this.playoutLength;
 	}
 
-	public List<List<InternalPropnetMove>> getAllJointMoves(){
+	public List<List<CompactMove>> getAllJointMoves(){
 
 		return this.allJointMoves;
 
@@ -159,7 +158,7 @@ public class PnSimulationResult extends SimulationResult{
 		return this.intermediateGoals.get(0);
 	}
 
-	public void addJointMove(List<InternalPropnetMove> jointMove){
+	public void addJointMove(List<CompactMove> jointMove){
 
 		//if(this.allJointMoves == null){
 		//	GamerLogger.logError("MCTSManager", "Simulation result not initialized to memorize all the joint moves. Probably a wrong combination of strategies has been set!");

@@ -7,9 +7,9 @@ import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.propnet
 import org.ggp.base.util.logging.GamerLogger;
 import org.ggp.base.util.statemachine.InternalPropnetStateMachine;
 import org.ggp.base.util.statemachine.exceptions.MoveDefinitionException;
-import org.ggp.base.util.statemachine.inernalPropnetStructure.InternalPropnetMachineState;
-import org.ggp.base.util.statemachine.inernalPropnetStructure.InternalPropnetMove;
-import org.ggp.base.util.statemachine.inernalPropnetStructure.InternalPropnetRole;
+import org.ggp.base.util.statemachine.structure.compact.CompactMachineState;
+import org.ggp.base.util.statemachine.structure.compact.CompactMove;
+import org.ggp.base.util.statemachine.structure.compact.CompactRole;
 
 public class PnSequentialTreeNodeFactory implements PnTreeNodeFactory {
 
@@ -19,20 +19,20 @@ public class PnSequentialTreeNodeFactory implements PnTreeNodeFactory {
 	 * The role that is actually performing the search.
 	 * Needed by the SUCT version of MCTS.
 	 */
-	private InternalPropnetRole myRole;
+	private CompactRole myRole;
 
-	public PnSequentialTreeNodeFactory(InternalPropnetStateMachine theMachine, InternalPropnetRole myRole) {
+	public PnSequentialTreeNodeFactory(InternalPropnetStateMachine theMachine, CompactRole myRole) {
 		this.theMachine = theMachine;
 		this.myRole = myRole;
 	}
 
 	@Override
-	public MCTSNode createNewNode(InternalPropnetMachineState state) {
+	public MCTSNode createNewNode(CompactMachineState state) {
 		//System.out.println("Creating new node.");
 
 		int goals[] = null;
 		boolean terminal = false;
-		List<List<InternalPropnetMove>> allLegalMoves = null;
+		List<List<CompactMove>> allLegalMoves = null;
 
 		PnSequentialMCTSMoveStats[] suctMovesStats = null;
 		int unvisitedLeavesCount = 0;
@@ -92,9 +92,9 @@ public class PnSequentialTreeNodeFactory implements PnTreeNodeFactory {
 
 	}
 
-	private PnSequentialMCTSMoveStats[] createSUCTMCTSMoves(List<List<InternalPropnetMove>> allLegalMoves){
+	private PnSequentialMCTSMoveStats[] createSUCTMCTSMoves(List<List<CompactMove>> allLegalMoves){
 
-		InternalPropnetRole[] roles = this.theMachine.getInternalRoles();
+		CompactRole[] roles = this.theMachine.getInternalRoles();
 
 		// Get legal moves for all players.
 		/*try {
@@ -113,7 +113,7 @@ public class PnSequentialTreeNodeFactory implements PnTreeNodeFactory {
 		// create the SUCT move containing the move statistics.
 		int myIndex = this.myRole.getIndex();
 
-		List<InternalPropnetMove> myLegalMoves = allLegalMoves.get(myIndex);
+		List<CompactMove> myLegalMoves = allLegalMoves.get(myIndex);
 		PnSequentialMCTSMoveStats[] moves = new PnSequentialMCTSMoveStats[myLegalMoves.size()];
 		for(int i = 0; i < myLegalMoves.size(); i++){
 			moves[i] = new PnSequentialMCTSMoveStats(createSUCTMCTSMoves((myIndex+1)%(roles.length), roles.length, allLegalMoves));
@@ -122,13 +122,13 @@ public class PnSequentialTreeNodeFactory implements PnTreeNodeFactory {
 		return moves;
 	}
 
-	private PnSequentialMCTSMoveStats[] createSUCTMCTSMoves(int roleIndex, int numRoles, List<List<InternalPropnetMove>> allLegalMoves){
+	private PnSequentialMCTSMoveStats[] createSUCTMCTSMoves(int roleIndex, int numRoles, List<List<CompactMove>> allLegalMoves){
 
 		if(roleIndex == this.myRole.getIndex()){
 			return null;
 		}
 
-		List<InternalPropnetMove> roleLegalMoves = allLegalMoves.get(roleIndex);
+		List<CompactMove> roleLegalMoves = allLegalMoves.get(roleIndex);
 		PnSequentialMCTSMoveStats[] moves = new PnSequentialMCTSMoveStats[roleLegalMoves.size()];
 		for(int i = 0; i < roleLegalMoves.size(); i++){
 			moves[i] = new PnSequentialMCTSMoveStats(createSUCTMCTSMoves((roleIndex+1)%(numRoles), numRoles, allLegalMoves));

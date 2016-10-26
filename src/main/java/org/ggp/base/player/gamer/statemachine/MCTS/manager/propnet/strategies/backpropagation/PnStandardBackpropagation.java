@@ -11,8 +11,8 @@ import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.propnet
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.propnet.slowsequential.PnSlowSeqentialMCTSNode;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.propnet.slowsequential.PnSlowSequentialMCTSJointMove;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.propnet.slowsequential.PnSlowSequentialMCTSMoveStats;
-import org.ggp.base.util.statemachine.inernalPropnetStructure.InternalPropnetMachineState;
-import org.ggp.base.util.statemachine.inernalPropnetStructure.InternalPropnetRole;
+import org.ggp.base.util.statemachine.structure.compact.CompactMachineState;
+import org.ggp.base.util.statemachine.structure.compact.CompactRole;
 
 public class PnStandardBackpropagation implements PnBackpropagationStrategy {
 
@@ -26,9 +26,9 @@ public class PnStandardBackpropagation implements PnBackpropagationStrategy {
 	 * The role that is actually performing the search.
 	 * Needed by the sequential version of MCTS.
 	 */
-	private InternalPropnetRole myRole;
+	private CompactRole myRole;
 
-	public PnStandardBackpropagation(int numRoles, InternalPropnetRole myRole){
+	public PnStandardBackpropagation(int numRoles, CompactRole myRole){
 		this.numRoles = numRoles;
 		this.myRole = myRole;
 	}
@@ -38,7 +38,7 @@ public class PnStandardBackpropagation implements PnBackpropagationStrategy {
 	 * @see org.ggp.base.player.gamer.statemachine.MCTS.manager.strategies.backpropagation.BackpropagationStrategy#update(org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.InternalPropnetMCTSNode, org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.MCTSJointMove, int[])
 	 */
 	@Override
-	public void update(MCTSNode currentNode, InternalPropnetMachineState currentState, PnMCTSJointMove jointMove, PnSimulationResult simulationResult){
+	public void update(MCTSNode currentNode, CompactMachineState currentState, PnMCTSJointMove jointMove, PnSimulationResult simulationResult){
 		if(currentNode instanceof PnDecoupledMCTSNode && jointMove instanceof PnSequDecMCTSJointMove){
 			this.decUpdate((PnDecoupledMCTSNode)currentNode, currentState, (PnSequDecMCTSJointMove)jointMove, simulationResult);
 		}else if(currentNode instanceof PnSequentialMCTSNode && jointMove instanceof PnSequDecMCTSJointMove){
@@ -60,7 +60,7 @@ public class PnStandardBackpropagation implements PnBackpropagationStrategy {
 	 * @param jointMove the explored joint move.
 	 * @param goals the goals obtained by the simulation, to be used to update the statistics.
 	 */
-	private void decUpdate(PnDecoupledMCTSNode currentNode, InternalPropnetMachineState currentState, PnSequDecMCTSJointMove jointMove, PnSimulationResult simulationResult) {
+	private void decUpdate(PnDecoupledMCTSNode currentNode, CompactMachineState currentState, PnSequDecMCTSJointMove jointMove, PnSimulationResult simulationResult) {
 
 		currentNode.incrementTotVisits();
 
@@ -97,7 +97,7 @@ public class PnStandardBackpropagation implements PnBackpropagationStrategy {
 	 * @param jointMove the explored joint move.
 	 * @param goals the goals obtained by the simulation, to be used to update the statistics.
 	 */
-	private void seqUpdate(PnSequentialMCTSNode currentNode, InternalPropnetMachineState currentState, PnSequDecMCTSJointMove jointMove, PnSimulationResult simulationResult) {
+	private void seqUpdate(PnSequentialMCTSNode currentNode, CompactMachineState currentState, PnSequDecMCTSJointMove jointMove, PnSimulationResult simulationResult) {
 
 		currentNode.incrementTotVisits();
 
@@ -149,7 +149,7 @@ public class PnStandardBackpropagation implements PnBackpropagationStrategy {
 	 * @param jointMove the explored joint move.
 	 * @param goals the goals obtained by the simulation, to be used to update the statistics.
 	 */
-	private void sseqUpdate(PnSlowSeqentialMCTSNode currentNode, InternalPropnetMachineState currentState, PnSlowSequentialMCTSJointMove jointMove, PnSimulationResult simulationResult) {
+	private void sseqUpdate(PnSlowSeqentialMCTSNode currentNode, CompactMachineState currentState, PnSlowSequentialMCTSJointMove jointMove, PnSimulationResult simulationResult) {
 
 		currentNode.incrementTotVisits();
 
@@ -185,7 +185,7 @@ public class PnStandardBackpropagation implements PnBackpropagationStrategy {
 	}
 
 	@Override
-	public void processPlayoutResult(MCTSNode leafNode, InternalPropnetMachineState leafState,	PnSimulationResult simulationResult) {
+	public void processPlayoutResult(MCTSNode leafNode, CompactMachineState leafState,	PnSimulationResult simulationResult) {
 		// TODO Auto-generated method stub
 	}
 

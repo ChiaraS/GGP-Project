@@ -11,40 +11,40 @@ import org.ggp.base.util.statemachine.exceptions.MoveDefinitionException;
 import org.ggp.base.util.statemachine.exceptions.StateMachineException;
 import org.ggp.base.util.statemachine.exceptions.StateMachineInitializationException;
 import org.ggp.base.util.statemachine.exceptions.TransitionDefinitionException;
-import org.ggp.base.util.statemachine.inernalPropnetStructure.InternalPropnetMachineState;
-import org.ggp.base.util.statemachine.inernalPropnetStructure.InternalPropnetMove;
-import org.ggp.base.util.statemachine.inernalPropnetStructure.InternalPropnetRole;
-import org.ggp.base.util.statemachine.proverStructure.ProverMachineState;
-import org.ggp.base.util.statemachine.proverStructure.ProverMove;
-import org.ggp.base.util.statemachine.proverStructure.ProverRole;
+import org.ggp.base.util.statemachine.structure.compact.CompactMachineState;
+import org.ggp.base.util.statemachine.structure.compact.CompactMove;
+import org.ggp.base.util.statemachine.structure.compact.CompactRole;
+import org.ggp.base.util.statemachine.structure.explicit.ExplicitMachineState;
+import org.ggp.base.util.statemachine.structure.explicit.ExplicitMove;
+import org.ggp.base.util.statemachine.structure.explicit.ExplicitRole;
 
 import com.google.common.collect.ImmutableList;
 
 public final class RefactoredSeparateInternalPropnetCachedStateMachine extends InternalPropnetStateMachine{
 
 	private final InternalPropnetStateMachine backingStateMachine;
-	private final RefactoredTtlCache<InternalPropnetMachineState, PropnetMachineStateEntry> internalStateTtlCache;
+	private final RefactoredTtlCache<CompactMachineState, PropnetMachineStateEntry> internalStateTtlCache;
 
 	private final class PropnetMachineStateEntry{
-		public Map<InternalPropnetRole, List<Integer>> goals;
-		public Map<InternalPropnetRole, List<InternalPropnetMove>> moves;
-		public Map<List<InternalPropnetMove>, InternalPropnetMachineState> nexts;
+		public Map<CompactRole, List<Integer>> goals;
+		public Map<CompactRole, List<CompactMove>> moves;
+		public Map<List<CompactMove>, CompactMachineState> nexts;
 		public Boolean terminal;
 
 		public PropnetMachineStateEntry(){
-			goals = new HashMap<InternalPropnetRole, List<Integer>>();
-			moves = new HashMap<InternalPropnetRole, List<InternalPropnetMove>>();
-			nexts = new HashMap<List<InternalPropnetMove>, InternalPropnetMachineState>();
+			goals = new HashMap<CompactRole, List<Integer>>();
+			moves = new HashMap<CompactRole, List<CompactMove>>();
+			nexts = new HashMap<List<CompactMove>, CompactMachineState>();
 			terminal = null;
 		}
 	}
 
 	public RefactoredSeparateInternalPropnetCachedStateMachine(InternalPropnetStateMachine backingStateMachine){
 		this.backingStateMachine = backingStateMachine;
-		this.internalStateTtlCache = new RefactoredTtlCache<InternalPropnetMachineState, PropnetMachineStateEntry>(1);
+		this.internalStateTtlCache = new RefactoredTtlCache<CompactMachineState, PropnetMachineStateEntry>(1);
 	}
 
-	private PropnetMachineStateEntry getPropnetEntry(InternalPropnetMachineState state){
+	private PropnetMachineStateEntry getPropnetEntry(CompactMachineState state){
 
 		PropnetMachineStateEntry entry = internalStateTtlCache.get(state);
 
@@ -57,12 +57,12 @@ public final class RefactoredSeparateInternalPropnetCachedStateMachine extends I
 	}
 
 	@Override
-	public List<Integer> getOneRoleGoals(ProverMachineState state, ProverRole role) throws StateMachineException{
+	public List<Integer> getOneRoleGoals(ExplicitMachineState state, ExplicitRole role) throws StateMachineException{
 		return this.getOneRoleGoals(this.backingStateMachine.stateToInternalState(state), this.backingStateMachine.roleToInternalRole(role));
 	}
 
 	@Override
-	public List<Integer> getOneRoleGoals(InternalPropnetMachineState state, InternalPropnetRole role) {
+	public List<Integer> getOneRoleGoals(CompactMachineState state, CompactRole role) {
 		PropnetMachineStateEntry entry = getPropnetEntry(state);
 		synchronized (entry){
 			List<Integer> goal = entry.goals.get(role);
@@ -77,20 +77,20 @@ public final class RefactoredSeparateInternalPropnetCachedStateMachine extends I
 	}
 
 	@Override
-	public List<ProverMove> getLegalMoves(ProverMachineState state, ProverRole role) throws MoveDefinitionException, StateMachineException{
-		List<ProverMove> moves = new ArrayList<ProverMove>();
-		for(InternalPropnetMove m : this.getInternalLegalMoves(this.backingStateMachine.stateToInternalState(state), this.backingStateMachine.roleToInternalRole(role))){
+	public List<ExplicitMove> getLegalMoves(ExplicitMachineState state, ExplicitRole role) throws MoveDefinitionException, StateMachineException{
+		List<ExplicitMove> moves = new ArrayList<ExplicitMove>();
+		for(CompactMove m : this.getInternalLegalMoves(this.backingStateMachine.stateToInternalState(state), this.backingStateMachine.roleToInternalRole(role))){
 			moves.add(this.backingStateMachine.internalMoveToMove(m));
 		}
 		return moves;
 	}
 
 	@Override
-	public List<InternalPropnetMove> getInternalLegalMoves(InternalPropnetMachineState state, InternalPropnetRole role) throws MoveDefinitionException{
+	public List<CompactMove> getInternalLegalMoves(CompactMachineState state, CompactRole role) throws MoveDefinitionException{
 		PropnetMachineStateEntry entry = getPropnetEntry(state);
 		synchronized (entry){
 
-			List<InternalPropnetMove> moves = entry.moves.get(role);
+			List<CompactMove> moves = entry.moves.get(role);
 
 			if (moves == null){
 				moves = ImmutableList.copyOf(this.backingStateMachine.getInternalLegalMoves(state, role));
@@ -102,16 +102,16 @@ public final class RefactoredSeparateInternalPropnetCachedStateMachine extends I
 	}
 
 	@Override
-	public ProverMachineState getNextState(ProverMachineState state, List<ProverMove> moves) throws TransitionDefinitionException, StateMachineException{
+	public ExplicitMachineState getNextState(ExplicitMachineState state, List<ExplicitMove> moves) throws TransitionDefinitionException, StateMachineException{
 		return this.backingStateMachine.internalStateToState(this.getInternalNextState(this.backingStateMachine.stateToInternalState(state), this.backingStateMachine.movesToInternalMoves(moves)));
 	}
 
 	@Override
-	public InternalPropnetMachineState getInternalNextState(InternalPropnetMachineState state, List<InternalPropnetMove> moves){
+	public CompactMachineState getInternalNextState(CompactMachineState state, List<CompactMove> moves){
 		PropnetMachineStateEntry entry = getPropnetEntry(state);
 		synchronized (entry){
 
-			InternalPropnetMachineState nextState = entry.nexts.get(moves);
+			CompactMachineState nextState = entry.nexts.get(moves);
 
 			if (nextState == null){
 
@@ -124,12 +124,12 @@ public final class RefactoredSeparateInternalPropnetCachedStateMachine extends I
 	}
 
 	@Override
-	public boolean isTerminal(ProverMachineState state) throws StateMachineException{
+	public boolean isTerminal(ExplicitMachineState state) throws StateMachineException{
 		return this.isTerminal(this.backingStateMachine.stateToInternalState(state));
 	}
 
 	@Override
-	public boolean isTerminal(InternalPropnetMachineState state){
+	public boolean isTerminal(CompactMachineState state){
 		PropnetMachineStateEntry entry = getPropnetEntry(state);
 		synchronized (entry){
 
@@ -156,24 +156,24 @@ public final class RefactoredSeparateInternalPropnetCachedStateMachine extends I
 	}
 
 	@Override
-	public List<ProverRole> getRoles() {
+	public List<ExplicitRole> getRoles() {
 		// TODO: Should this be cached as well?
 		return this.backingStateMachine.getRoles();
 	}
 
 	@Override
-	public ProverMachineState getInitialState() {
+	public ExplicitMachineState getInitialState() {
 		// TODO: Should this be cached as well?
 		return this.backingStateMachine.getInitialState();
 	}
 
 	@Override
-	public InternalPropnetMachineState getInternalInitialState() {
+	public CompactMachineState getInternalInitialState() {
 		return this.backingStateMachine.getInternalInitialState();
 	}
 
 	@Override
-	public InternalPropnetRole[] getInternalRoles() {
+	public CompactRole[] getInternalRoles() {
 		return this.backingStateMachine.getInternalRoles();
 	}
 
@@ -193,37 +193,37 @@ public final class RefactoredSeparateInternalPropnetCachedStateMachine extends I
     }
 
 	@Override
-	public InternalPropnetMachineState stateToInternalState(ProverMachineState state) {
+	public CompactMachineState stateToInternalState(ExplicitMachineState state) {
 		return this.backingStateMachine.stateToInternalState(state);
 	}
 
 	@Override
-	public ProverMachineState internalStateToState(InternalPropnetMachineState state) {
+	public ExplicitMachineState internalStateToState(CompactMachineState state) {
 		return this.backingStateMachine.internalStateToState(state);
 	}
 
 	@Override
-	public ProverRole internalRoleToRole(InternalPropnetRole role) {
+	public ExplicitRole internalRoleToRole(CompactRole role) {
 		return this.backingStateMachine.internalRoleToRole(role);
 	}
 
 	@Override
-	public InternalPropnetRole roleToInternalRole(ProverRole role) {
+	public CompactRole roleToInternalRole(ExplicitRole role) {
 		return this.backingStateMachine.roleToInternalRole(role);
 	}
 
 	@Override
-	public ProverMove internalMoveToMove(InternalPropnetMove move) {
+	public ExplicitMove internalMoveToMove(CompactMove move) {
 		return this.backingStateMachine.internalMoveToMove(move);
 	}
 
 	@Override
-	public InternalPropnetMove moveToInternalMove(ProverMove move) {
+	public CompactMove moveToInternalMove(ExplicitMove move) {
 		return this.backingStateMachine.moveToInternalMove(move);
 	}
 
 	@Override
-	public List<InternalPropnetMove> movesToInternalMoves(List<ProverMove> moves) {
+	public List<CompactMove> movesToInternalMoves(List<ExplicitMove> moves) {
 		return this.backingStateMachine.movesToInternalMoves(moves);
 	}
 

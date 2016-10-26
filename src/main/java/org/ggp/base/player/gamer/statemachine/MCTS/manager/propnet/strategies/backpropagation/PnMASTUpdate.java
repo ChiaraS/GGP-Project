@@ -8,18 +8,18 @@ import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.MCTSNod
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.propnet.PnMCTSJointMove;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.propnet.PnSimulationResult;
 import org.ggp.base.util.logging.GamerLogger;
-import org.ggp.base.util.statemachine.inernalPropnetStructure.InternalPropnetMachineState;
-import org.ggp.base.util.statemachine.inernalPropnetStructure.InternalPropnetMove;
+import org.ggp.base.util.statemachine.structure.compact.CompactMachineState;
+import org.ggp.base.util.statemachine.structure.compact.CompactMove;
 
 public class PnMASTUpdate {
 
-	private Map<InternalPropnetMove, MoveStats> mastStatistics;
+	private Map<CompactMove, MoveStats> mastStatistics;
 
-	public PnMASTUpdate(Map<InternalPropnetMove, MoveStats> mastStatistics) {
+	public PnMASTUpdate(Map<CompactMove, MoveStats> mastStatistics) {
 		this.mastStatistics = mastStatistics;
 	}
 
-	public void update(MCTSNode currentNode, InternalPropnetMachineState currentState, PnMCTSJointMove jointMove, PnSimulationResult simulationResult) {
+	public void update(MCTSNode currentNode, CompactMachineState currentState, PnMCTSJointMove jointMove, PnSimulationResult simulationResult) {
 
 		//System.out.println("MASTBP");
 
@@ -30,7 +30,7 @@ public class PnMASTUpdate {
 			throw new RuntimeException("Null terminal goals in the simulation result.");
 		}
 
-		List<InternalPropnetMove> internalJointMove = jointMove.getJointMove();
+		List<CompactMove> internalJointMove = jointMove.getJointMove();
 		MoveStats moveStats;
 
 		for(int i = 0; i < internalJointMove.size(); i++){
@@ -45,11 +45,11 @@ public class PnMASTUpdate {
 
 	}
 
-	public void processPlayoutResult(MCTSNode leafNode,	InternalPropnetMachineState leafState, PnSimulationResult simulationResult) {
+	public void processPlayoutResult(MCTSNode leafNode,	CompactMachineState leafState, PnSimulationResult simulationResult) {
 
 		int[] goals = simulationResult.getTerminalGoals();
 
-		List<List<InternalPropnetMove>> allJointMoves = simulationResult.getAllJointMoves();
+		List<List<CompactMove>> allJointMoves = simulationResult.getAllJointMoves();
 
 		if(goals == null){
 			GamerLogger.logError("MCTSManager", "Found null terminal goals in the simulation result when updating the MAST statistics with the playout moves. Probably a wrong combination of strategies has been set!");
@@ -62,7 +62,7 @@ public class PnMASTUpdate {
 		}
 
 	    MoveStats moveStats;
-	    for(List<InternalPropnetMove> jM : allJointMoves){
+	    for(List<CompactMove> jM : allJointMoves){
 	    	for(int i = 0; i<jM.size(); i++){
 	    		moveStats = this.mastStatistics.get(jM.get(i));
 	        	if(moveStats == null){
