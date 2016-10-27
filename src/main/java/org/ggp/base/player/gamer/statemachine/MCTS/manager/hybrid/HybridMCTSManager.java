@@ -80,7 +80,7 @@ public class HybridMCTSManager extends MCTSManager {
 	private AbstractStateMachine theMachine;
 
 	/**
-	 * The transposition table (implemented with HashMap that uses the internal propnet state as key
+	 * The transposition table (implemented with HashMap that uses the state as key
 	 * and solves collisions with linked lists).
 	 */
 	private MCTSTranspositionTable transpositionTable;
@@ -96,7 +96,6 @@ public class HybridMCTSManager extends MCTSManager {
 			AbstractStateMachine theMachine, int gameStepOffset, int maxSearchDepth,
 			boolean logTranspositionTable) {
 
-		//this.mctsType = mctsType;
 		this.selectionStrategy = selectionStrategy;
 		this.expansionStrategy = expansionStrategy;
 		this.playoutStrategy = playoutStrategy;
@@ -121,20 +120,6 @@ public class HybridMCTSManager extends MCTSManager {
 		this.currentIterationVisitedNodes = 0;
 		this.searchStart = 0;
 		this.searchEnd = 0;
-
-		/*
-		switch(this.mctsType){
-		case DUCT:
-			GamerLogger.log("MCTSManager", "MCTS manager initialized to perform DUCT MCTS with maximum search dept " + this.maxSearchDepth + ".");
-			break;
-		case SUCT:
-			GamerLogger.log("MCTSManager", "MCTS manager initialized to perform SUCT MCTS with maximum search dept " + this.maxSearchDepth + ".");
-			break;
-		case SLOW_SUCT:
-			GamerLogger.log("MCTSManager", "MCTS manager initialized to perform SLOW_SUCT MCTS with maximum search dept " + this.maxSearchDepth + ".");
-			break;
-		}
-		*/
 
 		//this.strategies.add(this.expansionStrategy);
 		//this.strategies.add(this.selectionStrategy);
@@ -332,7 +317,7 @@ public class HybridMCTSManager extends MCTSManager {
 			this.iterations++;
 			this.visitedNodes += this.currentIterationVisitedNodes;
 
-			//((PnAMAFDecoupledMCTSNode)initialNode).printAMAF();
+			//((AMAFDecoupledMCTSNode)initialNode).printAMAF();
 
 
 			if(this.afterSimulationStrategy != null){
@@ -451,10 +436,10 @@ public class HybridMCTSManager extends MCTSManager {
 		case DUCT:
 			break;
 		case SUCT: // SUCT version of MCTS.
-			printSUCTMovesTree(((InternalPropnetSUCTMCTSNode)currentNode).getMovesStats(), "");
+			printSUCTMovesTree(((SUCTMCTSNode)currentNode).getMovesStats(), "");
 			break;
 		case SLOW_SUCT: // Slow SUCT version of MCTS.
-			printMovesTree(((InternalPropnetSlowSUCTMCTSNode)currentNode).getMovesStats(), "");
+			printMovesTree(((SlowSUCTMCTSNode)currentNode).getMovesStats(), "");
 			break;
 		default:
 			throw new RuntimeException("Someone added a new MCTS Node type and forgot to deal with it here, when creating a new tree node.");
@@ -615,13 +600,13 @@ public class HybridMCTSManager extends MCTSManager {
 	 * @param state the state for which to crate the tree node.
 	 * @return the tree node corresponding to the state.
 	 */
-/*	private PnMCTSNode createNewNode(InternalPropnetMachineState state){
+/*	private MCTSNode createNewNode(MachineState state){
 
 		//System.out.println("Creating new node.");
 
 		int goals[] = null;
 		boolean terminal = false;
-		List<List<InternalPropnetMove>> allLegalMoves = null;
+		List<List<Move>> allLegalMoves = null;
 
 		switch(this.mctsType){
 		// DUCT version of MCTS.
@@ -656,7 +641,7 @@ public class HybridMCTSManager extends MCTSManager {
 				// If the legal moves can be computed for every player, there is no need to compute the goals.
 			}
 
-			return new PnDUCTMCTSNode(ductMovesStats, goals, terminal);
+			return new DUCTMCTSNode(ductMovesStats, goals, terminal);
 		case SUCT: // SUCT version of MCTS.
 
 			SUCTMCTSMoveStats[] suctMovesStats = null;
@@ -675,10 +660,10 @@ public class HybridMCTSManager extends MCTSManager {
 
 
 					//int r = 0;
-					//for(List<InternalPropnetMove> legalPerRole : allLegalMoves){
+					//for(List<Move> legalPerRole : allLegalMoves){
 					//	System.out.println("Legal moves for role " + r);
 					//	System.out.print("[ ");
-					//	for(InternalPropnetMove m : legalPerRole){
+					//	for(Move m : legalPerRole){
 					//		System.out.print("(" + m.getIndex() + ", " + this.theMachine.internalMoveToMove(m) + ") ");
 					//	}
 					//	System.out.println("]");
@@ -712,7 +697,7 @@ public class HybridMCTSManager extends MCTSManager {
 				// If the legal moves can be computed for every player, there is no need to compute the goals.
 			}
 
-			return new PnSUCTMCTSNode(allLegalMoves, suctMovesStats, goals, terminal, unvisitedLeavesCount);
+			return new SUCTMCTSNode(allLegalMoves, suctMovesStats, goals, terminal, unvisitedLeavesCount);
 
 		case SLOW_SUCT: // Slow SUCT version of MCTS.
 
@@ -762,7 +747,7 @@ public class HybridMCTSManager extends MCTSManager {
 				// If the legal moves can be computed for every player, there is no need to compute the goals.
 			}
 
-			return new PnSlowSUCTMCTSNode(ssuctMovesStats, unvisitedLeaves, goals, terminal);
+			return new SlowSUCTMCTSNode(ssuctMovesStats, unvisitedLeaves, goals, terminal);
 		default:
 			throw new RuntimeException("Someone added a new MCTS Node type and forgot to del with it here, when creating a new tree node.");
 		}
@@ -777,13 +762,13 @@ public class HybridMCTSManager extends MCTSManager {
 	 * @param state the state for which to create the moves statistics.
 	 * @return the moves statistics, if the moves can be computed, null otherwise.
 	 */
-/*	private DUCTMCTSMoveStats[][] createDUCTMCTSMoves(InternalPropnetMachineState state){
+/*	private DUCTMCTSMoveStats[][] createDUCTMCTSMoves(MachineState state){
 
-		InternalPropnetRole[] roles = this.theMachine.getInternalRoles();
+		Role[] roles = this.theMachine.getInternalRoles();
 		DUCTMCTSMoveStats[][] moves = new DUCTMCTSMoveStats[roles.length][];
 
 		try{
-			List<InternalPropnetMove> legalMoves;
+			List<Move> legalMoves;
 
 			for(int i = 0; i < roles.length; i++){
 
@@ -806,15 +791,15 @@ public class HybridMCTSManager extends MCTSManager {
 	}
 */
 
-/*	private SlowSUCTMCTSMoveStats[] createSlowSUCTMCTSMoves(List<List<InternalPropnetMove>> allLegalMoves, List<SlowSUCTMCTSMoveStats> unvisitedLeaves){
+/*	private SlowSUCTMCTSMoveStats[] createSlowSUCTMCTSMoves(List<List<Move>> allLegalMoves, List<SlowSUCTMCTSMoveStats> unvisitedLeaves){
 
-		InternalPropnetRole[] roles = this.theMachine.getInternalRoles();
+		Role[] roles = this.theMachine.getInternalRoles();
 
 		// For all the moves of my role (i.e. the role actually performing the search)
 		// create the SUCT move containing the move statistics.
 		int myIndex = this.myRole.getIndex();
 
-		List<InternalPropnetMove> myLegalMoves = allLegalMoves.get(myIndex);
+		List<Move> myLegalMoves = allLegalMoves.get(myIndex);
 		SlowSUCTMCTSMoveStats[] moves = new SlowSUCTMCTSMoveStats[myLegalMoves.size()];
 		for(int i = 0; i < myLegalMoves.size(); i++){
 			moves[i] = new SlowSUCTMCTSMoveStats(myLegalMoves.get(i), i, createSlowSUCTMCTSMoves((myIndex+1)%(roles.length), roles.length, allLegalMoves, unvisitedLeaves));
@@ -826,13 +811,13 @@ public class HybridMCTSManager extends MCTSManager {
 		return moves;
 	}
 
-	private SlowSUCTMCTSMoveStats[] createSlowSUCTMCTSMoves(int roleIndex, int numRoles, List<List<InternalPropnetMove>> legalMoves, List<SlowSUCTMCTSMoveStats> unvisitedLeaves){
+	private SlowSUCTMCTSMoveStats[] createSlowSUCTMCTSMoves(int roleIndex, int numRoles, List<List<Move>> legalMoves, List<SlowSUCTMCTSMoveStats> unvisitedLeaves){
 
 		if(roleIndex == this.myRole.getIndex()){
 			return null;
 		}
 
-		List<InternalPropnetMove> roleLegalMoves = legalMoves.get(roleIndex);
+		List<Move> roleLegalMoves = legalMoves.get(roleIndex);
 		SlowSUCTMCTSMoveStats[] moves = new SlowSUCTMCTSMoveStats[roleLegalMoves.size()];
 		for(int i = 0; i <roleLegalMoves.size(); i++){
 			moves[i] = new SlowSUCTMCTSMoveStats(roleLegalMoves.get(i), i, createSlowSUCTMCTSMoves((roleIndex+1)%(numRoles), numRoles, legalMoves, unvisitedLeaves));
@@ -846,9 +831,9 @@ public class HybridMCTSManager extends MCTSManager {
 
 
 
-	private SUCTMCTSMoveStats[] createSUCTMCTSMoves(List<List<InternalPropnetMove>> allLegalMoves){
+	private SUCTMCTSMoveStats[] createSUCTMCTSMoves(List<List<Move>> allLegalMoves){
 
-		InternalPropnetRole[] roles = this.theMachine.getInternalRoles();
+		Role[] roles = this.theMachine.getInternalRoles();
 
 		// Get legal moves for all players.
 		//try {
@@ -867,7 +852,7 @@ public class HybridMCTSManager extends MCTSManager {
 		// create the SUCT move containing the move statistics.
 		int myIndex = this.myRole.getIndex();
 
-		List<InternalPropnetMove> myLegalMoves = allLegalMoves.get(myIndex);
+		List<Move> myLegalMoves = allLegalMoves.get(myIndex);
 		SUCTMCTSMoveStats[] moves = new SUCTMCTSMoveStats[myLegalMoves.size()];
 		for(int i = 0; i < myLegalMoves.size(); i++){
 			moves[i] = new SUCTMCTSMoveStats(createSUCTMCTSMoves((myIndex+1)%(roles.length), roles.length, allLegalMoves));
@@ -876,13 +861,13 @@ public class HybridMCTSManager extends MCTSManager {
 		return moves;
 	}
 
-	private SUCTMCTSMoveStats[] createSUCTMCTSMoves(int roleIndex, int numRoles, List<List<InternalPropnetMove>> allLegalMoves){
+	private SUCTMCTSMoveStats[] createSUCTMCTSMoves(int roleIndex, int numRoles, List<List<Move>> allLegalMoves){
 
 		if(roleIndex == this.myRole.getIndex()){
 			return null;
 		}
 
-		List<InternalPropnetMove> roleLegalMoves = allLegalMoves.get(roleIndex);
+		List<Move> roleLegalMoves = allLegalMoves.get(roleIndex);
 		SUCTMCTSMoveStats[] moves = new SUCTMCTSMoveStats[roleLegalMoves.size()];
 		for(int i = 0; i < roleLegalMoves.size(); i++){
 			moves[i] = new SUCTMCTSMoveStats(createSUCTMCTSMoves((roleIndex+1)%(numRoles), numRoles, allLegalMoves));

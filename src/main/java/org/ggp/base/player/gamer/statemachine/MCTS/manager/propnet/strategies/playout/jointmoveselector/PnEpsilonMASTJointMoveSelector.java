@@ -28,8 +28,7 @@ public class PnEpsilonMASTJointMoveSelector implements PnJointMoveSelector {
 	}
 
 	@Override
-	public List<CompactMove> getJointMove(
-			CompactMachineState state) throws MoveDefinitionException {
+	public List<CompactMove> getJointMove(CompactMachineState state) throws MoveDefinitionException {
 
 		if(this.random.nextDouble() < this.epsilon){
     		// Choose random action with probability epsilon

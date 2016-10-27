@@ -2,8 +2,8 @@ package org.ggp.base.player.gamer.statemachine.MCTS.prover.ravegrave;
 
 import java.util.Random;
 
-import org.ggp.base.player.gamer.statemachine.MCTS.manager.propnet.strategies.selection.evaluators.GRAVE.PnBetaComputer;
-import org.ggp.base.player.gamer.statemachine.MCTS.manager.propnet.strategies.selection.evaluators.GRAVE.PnCADIABetaComputer;
+import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.strategies.selection.evaluators.grave.BetaComputer;
+import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.strategies.selection.evaluators.grave.CADIABetaComputer;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.prover.ProverMCTSManager;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.prover.strategies.aftersimulation.ProverGRAVEAfterSimulation;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.prover.strategies.backpropagation.ProverGRAVEBackpropagation;
@@ -20,7 +20,7 @@ public class ProverGRDuctMctsGamer extends ProverDuctMctsGamer {
 
 	protected int minAMAFVisits;
 
-	protected PnBetaComputer betaComputer;
+	protected BetaComputer betaComputer;
 
 	protected double defaultExploration;
 
@@ -34,7 +34,7 @@ public class ProverGRDuctMctsGamer extends ProverDuctMctsGamer {
 		this.logTranspositionTable = true;
 
 		this.minAMAFVisits = 0;
-		this.betaComputer = new PnCADIABetaComputer(250);
+		this.betaComputer = new CADIABetaComputer(250);
 		this.defaultExploration = 1.0;
 
 	}

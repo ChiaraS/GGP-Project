@@ -69,7 +69,6 @@ public class DecoupledTreeNodeFactory implements TreeNodeFactory {
 		if(terminal){
 
 			goals = this.theMachine.getSafeGoalsAvgForAllRoles(state);
-			terminal = true;
 
 		}else{// Non-terminal state:
 

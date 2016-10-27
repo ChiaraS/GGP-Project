@@ -491,9 +491,9 @@ public abstract class InternalPropnetStateMachine extends StateMachine{
     }
 
     /**
-     * This method returns the legal moves for all players in the state.
-     * The order of the roles in the list is the standard role order (i.e.
-     * the same as the one of the list with roles).
+     * This method returns a list. Each element in the list is a list of legal moves
+     * for a role in the state. These lists are ordered per role with the standard role
+     * order (i.e. the same as the one of the list with roles).
      *
      * @param state
      * @return

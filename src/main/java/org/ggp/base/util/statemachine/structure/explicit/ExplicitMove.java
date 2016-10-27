@@ -1,7 +1,5 @@
 package org.ggp.base.util.statemachine.structure.explicit;
 
-import java.io.Serializable;
-
 import org.ggp.base.util.gdl.grammar.GdlTerm;
 import org.ggp.base.util.statemachine.structure.Move;
 
@@ -14,7 +12,7 @@ import org.ggp.base.util.statemachine.structure.Move;
  * only express the action itself.
  */
 @SuppressWarnings("serial")
-public class ExplicitMove implements Serializable, Move{
+public class ExplicitMove extends Move{
     protected final GdlTerm contents;
 
     public ExplicitMove(GdlTerm contents)

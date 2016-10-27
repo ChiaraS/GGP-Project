@@ -1,9 +1,9 @@
-package org.ggp.base.player.gamer.statemachine.MCTS.manager.propnet.strategies.selection.evaluators.GRAVE;
+package org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.strategies.selection.evaluators.grave;
 
 import org.ggp.base.player.gamer.statemachine.MCS.manager.MoveStats;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.evolution.OnlineTunableComponent;
 
-public abstract class PnBetaComputer implements OnlineTunableComponent {
+public abstract class BetaComputer implements OnlineTunableComponent {
 
 	/**
 	 * Computes the value of the weight beta used by the GRAVE move evaluator during selection.

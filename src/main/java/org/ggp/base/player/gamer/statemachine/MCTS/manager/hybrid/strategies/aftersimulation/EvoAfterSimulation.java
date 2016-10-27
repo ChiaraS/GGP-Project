@@ -2,31 +2,28 @@ package org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.strategies.af
 
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.evolution.SingleParameterEvolutionManager;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.hybrid.SimulationResult;
-import org.ggp.base.util.statemachine.AbstractStateMachine;
-import org.ggp.base.util.statemachine.structure.Role;
 
 public class EvoAfterSimulation implements AfterSimulationStrategy {
 
-	private AbstractStateMachine theMachine;
-
 	private SingleParameterEvolutionManager evolutionManager;
 
-	private Role myRole;
+	/**
+	 * The index in the default list of roles of the role that is actually performing the search.
+	 */
+	private int myRoleIndex;
 
-	public EvoAfterSimulation(AbstractStateMachine theMachine, SingleParameterEvolutionManager evolutionManager, Role myRole) {
-
-		this.theMachine = theMachine;
+	public EvoAfterSimulation(SingleParameterEvolutionManager evolutionManager, int myRoleIndex){
 
 		this.evolutionManager = evolutionManager;
 
-		this.myRole = myRole;
+		this.myRoleIndex = myRoleIndex;
 
 	}
 
 	@Override
 	public void afterSimulationActions(SimulationResult simulationResult) {
 
-		this.evolutionManager.updateFitness(simulationResult.getTerminalGoals()[this.theMachine.getRoleIndex(this.myRole)]);
+		this.evolutionManager.updateFitness(simulationResult.getTerminalGoals()[this.myRoleIndex]);
 
 	}
 

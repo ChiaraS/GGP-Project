@@ -7,7 +7,7 @@ import org.ggp.base.util.statemachine.structure.MachineState;
  * @author C.Sironi
  *
  */
-public class CompactMachineState implements MachineState{
+public class CompactMachineState extends MachineState{
 
 	private final OpenBitSet truthValues;
 

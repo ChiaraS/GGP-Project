@@ -15,9 +15,9 @@ public class MASTBackpropagation implements BackpropagationStrategy {
 
 	private MASTUpdate mastUpdate;
 
-	public MASTBackpropagation(int numRoles, Role myRole, Map<Move, MoveStats> mastStatistics) {
+	public MASTBackpropagation(int numRoles, int myRoleIndex, Map<Move, MoveStats> mastStatistics) {
 
-		this.stdBackpropagation = new StandardBackpropagation(numRoles, myRole);
+		this.stdBackpropagation = new StandardBackpropagation(numRoles, myRoleIndex);
 		this.mastUpdate = new MASTUpdate(mastStatistics);
 	}
 

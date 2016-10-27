@@ -3,6 +3,7 @@ package org.ggp.base.player.gamer.statemachine.MCTS.manager.propnet.strategies.s
 import java.util.Map;
 
 import org.ggp.base.player.gamer.statemachine.MCS.manager.MoveStats;
+import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.strategies.selection.evaluators.grave.BetaComputer;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.propnet.strategies.selection.evaluators.PnUCTEvaluator;
 import org.ggp.base.util.statemachine.structure.compact.CompactMove;
 
@@ -24,9 +25,9 @@ public class PnInvGRAVEEvaluator extends PnUCTEvaluator {
 	 */
 	private Map<CompactMove, MoveStats> amafStats;
 
-	private PnBetaComputer betaComputer;
+	private BetaComputer betaComputer;
 
-	public PnInvGRAVEEvaluator(double c, double defaultValue, PnBetaComputer betaComputer) {
+	public PnInvGRAVEEvaluator(double c, double defaultValue, BetaComputer betaComputer) {
 		super(c, defaultValue);
 		this.betaComputer = betaComputer;
 		this.amafStats = null;

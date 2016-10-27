@@ -11,7 +11,7 @@ import org.ggp.base.util.statemachine.exceptions.MoveDefinitionException;
 import org.ggp.base.util.statemachine.structure.compact.CompactMachineState;
 import org.ggp.base.util.statemachine.structure.compact.CompactMove;
 
-public class PnMASTJointMoveSelector implements PnJointMoveSelector {
+public class PnMASTJointMoveSelector implements PnJointMoveSelector{
 
 	private InternalPropnetStateMachine theMachine;
 
@@ -26,8 +26,7 @@ public class PnMASTJointMoveSelector implements PnJointMoveSelector {
 	}
 
 	@Override
-	public List<CompactMove> getJointMove(
-			CompactMachineState state) throws MoveDefinitionException {
+	public List<CompactMove> getJointMove(CompactMachineState state) throws MoveDefinitionException {
 
 		List<CompactMove> jointMove = new ArrayList<CompactMove>();
         List<List<CompactMove>> allLegalMoves;

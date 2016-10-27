@@ -2,11 +2,13 @@ package org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.strategies.ba
 
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.MCTSNode;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.hybrid.MCTSJointMove;
+import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.hybrid.SequDecMCTSJointMove;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.hybrid.SimulationResult;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.hybrid.decoupled.DecoupledMCTSMoveStats;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.hybrid.decoupled.DecoupledMCTSNode;
+import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.hybrid.sequential.SequentialMCTSMoveStats;
+import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.hybrid.sequential.SequentialMCTSNode;
 import org.ggp.base.util.statemachine.structure.MachineState;
-import org.ggp.base.util.statemachine.structure.Role;
 
 public class StandardBackpropagation implements BackpropagationStrategy {
 
@@ -17,19 +19,19 @@ public class StandardBackpropagation implements BackpropagationStrategy {
 	private int numRoles;
 
 	/**
-	 * The role that is actually performing the search.
+	 * The index in the default list of roles of the role that is actually performing the search.
 	 * Needed by the sequential version of MCTS.
 	 */
-	private Role myRole;
+	private int myRoleIndex;
 
-	public StandardBackpropagation(int numRoles, Role myRole){
+	public StandardBackpropagation(int numRoles, int myRoleIndex){
 		this.numRoles = numRoles;
-		this.myRole = myRole;
+		this.myRoleIndex = myRoleIndex;
 	}
 
 	/*
 	 * (non-Javadoc)
-	 * @see org.ggp.base.player.gamer.statemachine.MCTS.manager.strategies.backpropagation.BackpropagationStrategy#update(org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.InternalPropnetMCTSNode, org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.MCTSJointMove, int[])
+	 * @see org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.strategies.backpropagation.BackpropagationStrategy#update(org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.MCTSNode, org.ggp.base.util.statemachine.structure.MachineState, org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.hybrid.MCTSJointMove, org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.hybrid.SimulationResult)
 	 */
 	@Override
 	public void update(MCTSNode currentNode, MachineState currentState, MCTSJointMove jointMove, SimulationResult simulationResult){
@@ -37,9 +39,9 @@ public class StandardBackpropagation implements BackpropagationStrategy {
 			this.decUpdate((DecoupledMCTSNode)currentNode, currentState, (SequDecMCTSJointMove)jointMove, simulationResult);
 		}else if(currentNode instanceof SequentialMCTSNode && jointMove instanceof SequDecMCTSJointMove){
 			this.seqUpdate((SequentialMCTSNode)currentNode, currentState, (SequDecMCTSJointMove)jointMove, simulationResult);
-		}else if(currentNode instanceof SlowSeqentialMCTSNode && jointMove instanceof SlowSequentialMCTSJointMove){
+		}/*else if(currentNode instanceof SlowSeqentialMCTSNode && jointMove instanceof SlowSequentialMCTSJointMove){
 			this.sseqUpdate((SlowSeqentialMCTSNode)currentNode, currentState, (SlowSequentialMCTSJointMove)jointMove, simulationResult);
-		}else{
+		}*/else{
 			throw new RuntimeException("StandardBackpropagation-update(): detected wrong combination of types for node (" + currentNode.getClass().getSimpleName() + ") and joint move (" + jointMove.getClass().getSimpleName() + ").");
 		}
 	}
@@ -95,11 +97,11 @@ public class StandardBackpropagation implements BackpropagationStrategy {
 
 		currentNode.incrementTotVisits();
 
-		int currentRoleIndex = this.myRole.getIndex();
+		int currentRoleIndex = this.myRoleIndex;
 
 		SequentialMCTSMoveStats currentStatsToUpdate = currentNode.getMovesStats()[jointMove.getMovesIndices()[currentRoleIndex]];
 
-		while(currentRoleIndex != ((this.myRole.getIndex()-1+this.numRoles)%this.numRoles)){
+		while(currentRoleIndex != ((this.myRoleIndex-1+this.numRoles)%this.numRoles)){
 			currentStatsToUpdate.incrementVisits();
 			currentStatsToUpdate.incrementScoreSum(simulationResult.getTerminalGoals()[currentRoleIndex]);
 			currentRoleIndex = (currentRoleIndex+1)%this.numRoles;
@@ -116,11 +118,11 @@ public class StandardBackpropagation implements BackpropagationStrategy {
 		// If it's the first visit for this leaf, it's also the first visit of the joint move and
 		// we must decrement by 1 the unvisitedSubleaves count of all the moves in this joint move.
 		if(currentStatsToUpdate.getUnvisitedSubleaves() == 1){
-			currentRoleIndex = this.myRole.getIndex();
+			currentRoleIndex = this.myRoleIndex;
 
 			currentStatsToUpdate = currentNode.getMovesStats()[jointMove.getMovesIndices()[currentRoleIndex]];
 
-			while(currentRoleIndex != ((this.myRole.getIndex()-1+this.numRoles)%this.numRoles)){
+			while(currentRoleIndex != ((this.myRoleIndex-1+this.numRoles)%this.numRoles)){
 				currentStatsToUpdate.decreaseUnvisitedSubLeaves();
 				currentRoleIndex = (currentRoleIndex+1)%this.numRoles;
 				currentStatsToUpdate = currentStatsToUpdate.getNextRoleMovesStats()[jointMove.getMovesIndices()[currentRoleIndex]];
@@ -143,6 +145,7 @@ public class StandardBackpropagation implements BackpropagationStrategy {
 	 * @param jointMove the explored joint move.
 	 * @param goals the goals obtained by the simulation, to be used to update the statistics.
 	 */
+	/*
 	private void sseqUpdate(SlowSeqentialMCTSNode currentNode, MachineState currentState, SlowSequentialMCTSJointMove jointMove, SimulationResult simulationResult) {
 
 		currentNode.incrementTotVisits();
@@ -177,6 +180,7 @@ public class StandardBackpropagation implements BackpropagationStrategy {
 			theMoveToUpdate = theMoveToUpdate.getPreviousRoleMoveStats();
 		}
 	}
+	*/
 
 	@Override
 	public void processPlayoutResult(MCTSNode leafNode, MachineState leafState,	SimulationResult simulationResult) {

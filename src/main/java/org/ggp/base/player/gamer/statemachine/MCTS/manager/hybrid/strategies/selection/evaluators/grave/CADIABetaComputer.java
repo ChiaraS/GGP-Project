@@ -1,8 +1,8 @@
-package org.ggp.base.player.gamer.statemachine.MCTS.manager.propnet.strategies.selection.evaluators.GRAVE;
+package org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.strategies.selection.evaluators.grave;
 
 import org.ggp.base.player.gamer.statemachine.MCS.manager.MoveStats;
 
-public class PnCADIABetaComputer extends PnBetaComputer{
+public class CADIABetaComputer extends BetaComputer{
 
 	/**
 	 * Equivalence parameter: number of node visits needed to consider as equal
@@ -10,7 +10,7 @@ public class PnCADIABetaComputer extends PnBetaComputer{
 	 */
 	private int k;
 
-	public PnCADIABetaComputer(int k) {
+	public CADIABetaComputer(int k) {
 		this.k = k;
 	}
 

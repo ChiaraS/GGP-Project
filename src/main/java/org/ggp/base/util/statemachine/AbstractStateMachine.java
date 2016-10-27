@@ -495,6 +495,31 @@ public abstract class AbstractStateMachine {
     }
 
     /**
+     * This method returns a list. Each element in the list is a list of legal moves
+     * for a role in the state. These lists are ordered per role with the standard role
+     * order (i.e. the same as the one of the list with roles).
+     *
+     * @param state
+     * @return
+     * @throws MoveDefinitionException
+     * @throws StateMachineException
+     */
+    public List<List<Move>> getAllLegalMovesForAllRoles(MachineState state) throws MoveDefinitionException, StateMachineException{
+    	if(this.isTerminal(state)){
+    		return null;
+    	}else{
+    		List<List<Move>> legalMoves = new ArrayList<List<Move>>();
+
+    		// Get legal moves for all players.
+    		for(Role r: this.getRoles()){
+    			legalMoves.add(this.getLegalMoves(state, r));
+    		}
+    		return legalMoves;
+
+    	}
+    }
+
+    /**
      * Returns a random joint move from among all the possible joint moves in
      * the given state.
      *

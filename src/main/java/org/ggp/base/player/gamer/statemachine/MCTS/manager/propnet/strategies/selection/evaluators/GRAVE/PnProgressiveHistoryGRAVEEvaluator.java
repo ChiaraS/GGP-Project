@@ -3,6 +3,7 @@ package org.ggp.base.player.gamer.statemachine.MCTS.manager.propnet.strategies.s
 import java.util.Map;
 
 import org.ggp.base.player.gamer.statemachine.MCS.manager.MoveStats;
+import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.strategies.selection.evaluators.grave.BetaComputer;
 import org.ggp.base.util.statemachine.structure.compact.CompactMove;
 
 public class PnProgressiveHistoryGRAVEEvaluator extends PnGRAVEEvaluator {
@@ -20,7 +21,7 @@ public class PnProgressiveHistoryGRAVEEvaluator extends PnGRAVEEvaluator {
 	private double w;
 
 	public PnProgressiveHistoryGRAVEEvaluator(double c, double defaultValue,
-			PnBetaComputer betaComputer, double defaultExploration, double w) {
+			BetaComputer betaComputer, double defaultExploration, double w) {
 		super(c, defaultValue, betaComputer, defaultExploration);
 
 		this.currentRootAmafStats = null; // Before ever starting any selection we have no reference to any statistic

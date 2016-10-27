@@ -1,5 +1,17 @@
 package org.ggp.base.util.statemachine.structure;
 
-public interface Move {
+import java.io.Serializable;
+
+@SuppressWarnings("serial")
+public abstract class Move implements Serializable{
+
+	@Override
+	public abstract boolean equals(Object o);
+
+	@Override
+	public abstract int hashCode();
+
+	@Override
+	public abstract String toString();
 
 }

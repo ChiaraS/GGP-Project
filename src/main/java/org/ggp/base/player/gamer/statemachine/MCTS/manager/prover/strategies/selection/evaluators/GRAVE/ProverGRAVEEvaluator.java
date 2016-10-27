@@ -3,7 +3,7 @@ package org.ggp.base.player.gamer.statemachine.MCTS.manager.prover.strategies.se
 import java.util.Map;
 
 import org.ggp.base.player.gamer.statemachine.MCS.manager.MoveStats;
-import org.ggp.base.player.gamer.statemachine.MCTS.manager.propnet.strategies.selection.evaluators.GRAVE.PnBetaComputer;
+import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.strategies.selection.evaluators.grave.BetaComputer;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.prover.strategies.selection.evaluators.ProverUCTEvaluator;
 import org.ggp.base.util.statemachine.structure.explicit.ExplicitMove;
 
@@ -16,11 +16,11 @@ public class ProverGRAVEEvaluator extends ProverUCTEvaluator {
 	 */
 	private Map<ExplicitMove, MoveStats> closerAmafStats;
 
-	private PnBetaComputer betaComputer;
+	private BetaComputer betaComputer;
 
 	private double defaultExploration;
 
-	public ProverGRAVEEvaluator(double c, double defaultValue, PnBetaComputer betaComputer, double defaultExploration) {
+	public ProverGRAVEEvaluator(double c, double defaultValue, BetaComputer betaComputer, double defaultExploration) {
 		super(c, defaultValue);
 		this.betaComputer = betaComputer;
 		this.closerAmafStats = null;

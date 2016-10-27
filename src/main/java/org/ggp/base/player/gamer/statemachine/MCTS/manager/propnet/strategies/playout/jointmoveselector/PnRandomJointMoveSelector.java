@@ -7,7 +7,7 @@ import org.ggp.base.util.statemachine.exceptions.MoveDefinitionException;
 import org.ggp.base.util.statemachine.structure.compact.CompactMachineState;
 import org.ggp.base.util.statemachine.structure.compact.CompactMove;
 
-public class PnRandomJointMoveSelector implements PnJointMoveSelector {
+public class PnRandomJointMoveSelector implements PnJointMoveSelector{
 
 	protected InternalPropnetStateMachine theMachine;
 

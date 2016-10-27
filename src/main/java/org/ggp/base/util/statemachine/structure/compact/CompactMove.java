@@ -1,7 +1,5 @@
 package org.ggp.base.util.statemachine.structure.compact;
 
-import java.io.Serializable;
-
 import org.ggp.base.util.statemachine.structure.Move;
 
 
@@ -18,7 +16,7 @@ import org.ggp.base.util.statemachine.structure.Move;
  * array.
  */
 @SuppressWarnings("serial")
-public class CompactMove implements Serializable, Move{
+public class CompactMove extends Move{
     private final int moveIndex;
 
     public CompactMove(int moveIndex){

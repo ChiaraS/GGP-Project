@@ -19,7 +19,7 @@ public class MCTSTranspositionTable {
 	private int gameStepOffset;
 
 	/**
-	 * The transposition table (implemented with HashMap that uses the internal propnet state as key
+	 * The transposition table (implemented with HashMap that uses the state as key
 	 * and solves collisions with linked lists).
 	 */
 	private Map<MachineState,MCTSNode> transpositionTable;

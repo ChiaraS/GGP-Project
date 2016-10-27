@@ -2,6 +2,7 @@ package org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.strategies.ba
 
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.MCTSNode;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.hybrid.MCTSJointMove;
+import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.hybrid.SequDecMCTSJointMove;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.hybrid.SimulationResult;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.hybrid.decoupled.DecoupledMCTSMoveStats;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.hybrid.decoupled.DecoupledMCTSNode;
@@ -90,7 +91,7 @@ public abstract class TDBackpropagation implements BackpropagationStrategy {
 				qCurrent = currentMoveStat.getScoreSum()/((double)currentMoveStat.getVisits());
 			}
 
-			delta = returnValuesForRoles[i] + this.gamma * this.qNext[i] - qCurrent;
+			delta = ((double)returnValuesForRoles[i]) + this.gamma * this.qNext[i] - qCurrent;
 			this.deltaSum[i] = this.lambda * this.gamma * this.deltaSum[i] + delta;
 
 			currentMoveStat.incrementVisits();

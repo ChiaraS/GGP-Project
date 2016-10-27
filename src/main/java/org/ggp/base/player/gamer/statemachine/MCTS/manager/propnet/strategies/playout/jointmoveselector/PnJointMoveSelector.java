@@ -6,7 +6,7 @@ import org.ggp.base.util.statemachine.exceptions.MoveDefinitionException;
 import org.ggp.base.util.statemachine.structure.compact.CompactMachineState;
 import org.ggp.base.util.statemachine.structure.compact.CompactMove;
 
-public interface PnJointMoveSelector {
+public interface PnJointMoveSelector{
 
 	public List<CompactMove> getJointMove(CompactMachineState state) throws MoveDefinitionException;
 

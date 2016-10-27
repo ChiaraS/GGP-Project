@@ -1,6 +1,5 @@
 package org.ggp.base.util.statemachine.structure.explicit;
 
-import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -17,7 +16,7 @@ import org.ggp.base.util.statemachine.structure.Role;
  * using the {@link #computeRoles(List)} method.
  */
 @SuppressWarnings("serial")
-public class ExplicitRole implements Serializable, Role{
+public class ExplicitRole extends Role{
     protected final GdlConstant name;
 
     public ExplicitRole(GdlConstant name)

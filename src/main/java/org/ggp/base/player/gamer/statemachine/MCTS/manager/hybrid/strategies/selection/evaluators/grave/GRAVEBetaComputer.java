@@ -1,12 +1,12 @@
-package org.ggp.base.player.gamer.statemachine.MCTS.manager.propnet.strategies.selection.evaluators.GRAVE;
+package org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.strategies.selection.evaluators.grave;
 
 import org.ggp.base.player.gamer.statemachine.MCS.manager.MoveStats;
 
-public class PnGRAVEBetaComputer extends PnBetaComputer {
+public class GRAVEBetaComputer extends BetaComputer {
 
 	private double bias;
 
-	public PnGRAVEBetaComputer(double bias) {
+	public GRAVEBetaComputer(double bias) {
 		this.bias = bias;
 	}
 

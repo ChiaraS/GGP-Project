@@ -11,8 +11,8 @@ public class GRAVEBackpropagation implements BackpropagationStrategy {
 
 	private GRAVEUpdate graveUpdate;
 
-	public GRAVEBackpropagation(int numRoles, Role myRole) {
-		this.stdBackpropagation = new StandardBackpropagation(numRoles, myRole);
+	public GRAVEBackpropagation(int numRoles, int myRoleIndex) {
+		this.stdBackpropagation = new StandardBackpropagation(numRoles, myRoleIndex);
 		this.graveUpdate = new GRAVEUpdate();
 	}
 

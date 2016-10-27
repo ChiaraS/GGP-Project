@@ -6,7 +6,7 @@ import java.util.Set;
 import org.ggp.base.util.gdl.grammar.GdlSentence;
 import org.ggp.base.util.statemachine.structure.MachineState;
 
-public class ExplicitMachineState implements MachineState{
+public class ExplicitMachineState extends MachineState{
     public ExplicitMachineState() {
         this.contents = null;
     }

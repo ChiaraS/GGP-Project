@@ -1,7 +1,5 @@
 package org.ggp.base.util.statemachine.structure.compact;
 
-import java.io.Serializable;
-
 import org.ggp.base.util.statemachine.structure.Role;
 
 
@@ -10,7 +8,7 @@ import org.ggp.base.util.statemachine.structure.Role;
  * This class represents a role as the index it has in the ordered list of roles.
  */
 @SuppressWarnings("serial")
-public class CompactRole implements Serializable, Role{
+public class CompactRole extends Role{
 
     private final int index;
 
