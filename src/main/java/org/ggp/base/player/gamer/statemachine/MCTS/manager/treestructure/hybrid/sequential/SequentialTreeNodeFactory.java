@@ -5,12 +5,12 @@ import java.util.List;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.MCTSNode;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.hybrid.TreeNodeFactory;
 import org.ggp.base.util.logging.GamerLogger;
-import org.ggp.base.util.statemachine.AbstractStateMachine;
 import org.ggp.base.util.statemachine.exceptions.MoveDefinitionException;
 import org.ggp.base.util.statemachine.exceptions.StateMachineException;
 import org.ggp.base.util.statemachine.structure.MachineState;
 import org.ggp.base.util.statemachine.structure.Move;
 import org.ggp.base.util.statemachine.structure.Role;
+import org.ggp.base.util.statemachinenew.AbstractStateMachine;
 
 public class SequentialTreeNodeFactory implements TreeNodeFactory {
 

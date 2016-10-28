@@ -18,10 +18,10 @@ import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.hybrid.
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.hybrid.TreeNodeFactory;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.hybrid.amafdecoupled.AMAFDecoupledTreeNodeFactory;
 import org.ggp.base.util.logging.GamerLogger;
-import org.ggp.base.util.statemachine.AbstractStateMachine;
 import org.ggp.base.util.statemachine.exceptions.StateMachineException;
 import org.ggp.base.util.statemachine.exceptions.TransitionDefinitionException;
 import org.ggp.base.util.statemachine.structure.MachineState;
+import org.ggp.base.util.statemachinenew.AbstractStateMachine;
 
 /**
  * @author C.Sironi

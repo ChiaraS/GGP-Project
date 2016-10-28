@@ -29,8 +29,7 @@ import com.google.common.collect.ImmutableMap;
 /**
  * Provides the base class for all state machine implementations.
  */
-public abstract class StateMachine
-{
+public abstract class StateMachine {
     // ============================================
     //          Stubs for implementations
     // ============================================

@@ -1,7 +1,7 @@
 package org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.strategies.playout;
 
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.strategies.playout.jointmoveselector.RandomJointMoveSelector;
-import org.ggp.base.util.statemachine.AbstractStateMachine;
+import org.ggp.base.util.statemachinenew.AbstractStateMachine;
 
 public class RandomPlayout extends StandardPlayout {
 

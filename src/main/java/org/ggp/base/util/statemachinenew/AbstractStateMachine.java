@@ -1,4 +1,4 @@
-package org.ggp.base.util.statemachine;
+package org.ggp.base.util.statemachinenew;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -22,6 +22,26 @@ import org.ggp.base.util.statemachine.structure.explicit.ExplicitMachineState;
 import org.ggp.base.util.statemachine.structure.explicit.ExplicitMove;
 import org.ggp.base.util.statemachine.structure.explicit.ExplicitRole;
 
+/**
+ * This class gives a new abstract structure for a state machine.
+ * This class computes the dynamics of a game (i.e. next states, legal moves, roles, goals, ...)
+ * independently of the structure used for moves, states and roles. Each concrete implementation
+ * of this class will use its own representation for moves, states and roles, and this representation
+ * will be hidden from the outside so that any class that needs a state machine can interchangeably
+ * use any implemented version.
+ *
+ * For example, with this class the MCSManager and the MCTSManager can ignore the implementation details of
+ * the moves, states and roles and we don't need a different versions of MCSManager and MCTSManager for each
+ * type of representation of moves, states and roles.
+ *
+ * Note: if we want to use an AbstractStateMachine not only in the MCS/MCTSManager but also to advance the real
+ * state of the current game and return moves to the Game manager we need an extra method. Since the Game Manager
+ * expects moves to be returned in a GDL format, each State Machine that uses a different format to represent the
+ * moves (e.g. OpenBitSets) must implement a method that translates such moves in the GDL format.
+ *
+ * @author C.Sironi
+ *
+ */
 public abstract class AbstractStateMachine {
 
 	//--------------------------------- METHODS TO INITIALIZE THE STATE MACHINE ---------------------------------//
