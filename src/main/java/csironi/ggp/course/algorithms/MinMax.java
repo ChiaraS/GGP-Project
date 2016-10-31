@@ -41,7 +41,7 @@ public class MinMax extends SearchAlgorithm {
 
 
 		/*Only for log*/
-		List<ExplicitRole> roles = stateMachine.getRoles();
+		List<ExplicitRole> roles = stateMachine.getExplicitRoles();
 		String toLog = "Roles: [ ";
 		for(ExplicitRole r: roles){
 			toLog += r + " ";
@@ -49,7 +49,7 @@ public class MinMax extends SearchAlgorithm {
 		toLog += "]";
 		log(toLog);
 
-		List<ExplicitMove> moves = stateMachine.getLegalMoves(state, role);
+		List<ExplicitMove> moves = stateMachine.getExplicitLegalMoves(state, role);
 
 		toLog = "My moves: [ ";
 		for(ExplicitMove move: moves){
@@ -96,10 +96,10 @@ public class MinMax extends SearchAlgorithm {
 
 					int currentScore;
 
-					if(stateMachine.getRoles().size() == 1){
+					if(stateMachine.getExplicitRoles().size() == 1){
 						ArrayList<ExplicitMove> jointMoves = new ArrayList<ExplicitMove>();
 						jointMoves.add(move);
-						currentScore = maxscore(finishBy, stateMachine.getNextState(state, jointMoves), role, alpha, beta, 1, limit, shuffleInt, stateEval);
+						currentScore = maxscore(finishBy, stateMachine.getExplicitNextState(state, jointMoves), role, alpha, beta, 1, limit, shuffleInt, stateEval);
 					}else{
 						currentScore = minscore(finishBy, state, role, move, alpha, beta, 0, limit, shuffleInt, stateEval);
 					}
@@ -144,10 +144,10 @@ public class MinMax extends SearchAlgorithm {
 
 					int currentScore;
 
-					if(stateMachine.getRoles().size() == 1){
+					if(stateMachine.getExplicitRoles().size() == 1){
 						ArrayList<ExplicitMove> jointMoves = new ArrayList<ExplicitMove>();
 						jointMoves.add(move);
-						currentScore = maxscore(finishBy, stateMachine.getNextState(state, jointMoves), role, 1, limit, shuffleInt, stateEval);
+						currentScore = maxscore(finishBy, stateMachine.getExplicitNextState(state, jointMoves), role, 1, limit, shuffleInt, stateEval);
 					}else{
 						currentScore = minscore(finishBy, state, role, move, 0, limit, shuffleInt, stateEval);
 					}
@@ -197,10 +197,10 @@ public class MinMax extends SearchAlgorithm {
 
 					int currentScore;
 
-					if(stateMachine.getRoles().size() == 1){
+					if(stateMachine.getExplicitRoles().size() == 1){
 						ArrayList<ExplicitMove> jointMoves = new ArrayList<ExplicitMove>();
 						jointMoves.add(move);
-						currentScore = maxscore(finishBy, stateMachine.getNextState(state, jointMoves), role, alpha, beta, 1, limit, shuffleInt, stateEval);
+						currentScore = maxscore(finishBy, stateMachine.getExplicitNextState(state, jointMoves), role, alpha, beta, 1, limit, shuffleInt, stateEval);
 					}else{
 						currentScore = minscore(finishBy, state, role, move, alpha, beta, 0, limit, shuffleInt, stateEval);
 					}
@@ -243,10 +243,10 @@ public class MinMax extends SearchAlgorithm {
 
 					int currentScore;
 
-					if(stateMachine.getRoles().size() == 1){
+					if(stateMachine.getExplicitRoles().size() == 1){
 						ArrayList<ExplicitMove> jointMoves = new ArrayList<ExplicitMove>();
 						jointMoves.add(move);
-						currentScore = maxscore(finishBy, stateMachine.getNextState(state, jointMoves), role, 1, limit, shuffleInt, stateEval);
+						currentScore = maxscore(finishBy, stateMachine.getExplicitNextState(state, jointMoves), role, 1, limit, shuffleInt, stateEval);
 					}else{
 						currentScore = minscore(finishBy, state, role, move, 0, limit, shuffleInt, stateEval);
 					}
@@ -319,7 +319,7 @@ public class MinMax extends SearchAlgorithm {
 		}
 
 		// Check all my available moves to find the best one
-		List<ExplicitMove> moves = stateMachine.getLegalMoves(state, role);
+		List<ExplicitMove> moves = stateMachine.getExplicitLegalMoves(state, role);
 
 		int maxScore = 0;
 
@@ -350,10 +350,10 @@ public class MinMax extends SearchAlgorithm {
 
 				int currentScore;
 
-				if(stateMachine.getRoles().size() == 1){
+				if(stateMachine.getExplicitRoles().size() == 1){
 					ArrayList<ExplicitMove> jointMoves = new ArrayList<ExplicitMove>();
 					jointMoves.add(move);
-					currentScore = maxscore(finishBy, stateMachine.getNextState(state, jointMoves), role, level+1, limit, shuffle, stateEval);
+					currentScore = maxscore(finishBy, stateMachine.getExplicitNextState(state, jointMoves), role, level+1, limit, shuffle, stateEval);
 				}else{
 					currentScore = minscore(finishBy, state, role, move, level, limit, shuffle, stateEval);
 				}
@@ -391,10 +391,10 @@ public class MinMax extends SearchAlgorithm {
 
 				int currentScore;
 
-				if(stateMachine.getRoles().size() == 1){
+				if(stateMachine.getExplicitRoles().size() == 1){
 					ArrayList<ExplicitMove> jointMoves = new ArrayList<ExplicitMove>();
 					jointMoves.add(move);
-					currentScore = maxscore(finishBy, stateMachine.getNextState(state, jointMoves), role, level+1, limit, shuffle, stateEval);
+					currentScore = maxscore(finishBy, stateMachine.getExplicitNextState(state, jointMoves), role, level+1, limit, shuffle, stateEval);
 				}else{
 					currentScore = minscore(finishBy, state, role, move, level, limit, shuffle, stateEval);
 				}
@@ -441,7 +441,7 @@ public class MinMax extends SearchAlgorithm {
 
 			int currentScore;
 
-			currentScore = maxscore(finishBy, stateMachine.getNextState(state, jointMoves), role, level+1, limit, shuffle, stateEval);
+			currentScore = maxscore(finishBy, stateMachine.getExplicitNextState(state, jointMoves), role, level+1, limit, shuffle, stateEval);
 
 			if(timedOut){
 				log("Stopping minscore.");
@@ -485,7 +485,7 @@ public class MinMax extends SearchAlgorithm {
 		}
 
 		// Check all my available moves to find the best one
-		List<ExplicitMove> moves = stateMachine.getLegalMoves(state, role);
+		List<ExplicitMove> moves = stateMachine.getExplicitLegalMoves(state, role);
 
 		if(shuffle){
 
@@ -514,10 +514,10 @@ public class MinMax extends SearchAlgorithm {
 
 				int currentScore;
 
-				if(stateMachine.getRoles().size() == 1){
+				if(stateMachine.getExplicitRoles().size() == 1){
 					ArrayList<ExplicitMove> jointMoves = new ArrayList<ExplicitMove>();
 					jointMoves.add(move);
-					currentScore = maxscore(finishBy, stateMachine.getNextState(state, jointMoves), role, alpha, beta, level+1, limit, shuffle, stateEval);
+					currentScore = maxscore(finishBy, stateMachine.getExplicitNextState(state, jointMoves), role, alpha, beta, level+1, limit, shuffle, stateEval);
 				}else{
 					currentScore = minscore(finishBy, state, role, move, alpha, beta, level, limit, shuffle, stateEval);
 				}
@@ -559,10 +559,10 @@ public class MinMax extends SearchAlgorithm {
 
 				int currentScore;
 
-				if(stateMachine.getRoles().size() == 1){
+				if(stateMachine.getExplicitRoles().size() == 1){
 					ArrayList<ExplicitMove> jointMoves = new ArrayList<ExplicitMove>();
 					jointMoves.add(move);
-					currentScore = maxscore(finishBy, stateMachine.getNextState(state, jointMoves), role, alpha, beta, level+1, limit, shuffle, stateEval);
+					currentScore = maxscore(finishBy, stateMachine.getExplicitNextState(state, jointMoves), role, alpha, beta, level+1, limit, shuffle, stateEval);
 				}else{
 					currentScore = minscore(finishBy, state, role, move, alpha, beta, level, limit, shuffle, stateEval);
 				}
@@ -614,7 +614,7 @@ public class MinMax extends SearchAlgorithm {
 
 			int currentScore;
 
-			currentScore = maxscore(finishBy, stateMachine.getNextState(state, jointMoves), role, alpha, beta, level+1, limit, shuffle, stateEval);
+			currentScore = maxscore(finishBy, stateMachine.getExplicitNextState(state, jointMoves), role, alpha, beta, level+1, limit, shuffle, stateEval);
 
 			if(timedOut){
 				log("Stopping maxscore.");

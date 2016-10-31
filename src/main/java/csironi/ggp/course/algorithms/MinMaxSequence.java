@@ -49,7 +49,7 @@ public class MinMaxSequence extends SearchAlgorithm {
 
 
 		/*Only for log*/
-		List<ExplicitRole> roles = stateMachine.getRoles();
+		List<ExplicitRole> roles = stateMachine.getExplicitRoles();
 		String toLog = "Roles: [ ";
 		for(ExplicitRole r: roles){
 			toLog += r + " ";
@@ -98,7 +98,7 @@ public class MinMaxSequence extends SearchAlgorithm {
 		}
 
 		// Check all my available moves to find the best one
-		List<ExplicitMove> moves = stateMachine.getLegalMoves(state, role);
+		List<ExplicitMove> moves = stateMachine.getExplicitLegalMoves(state, role);
 
 		String toLog = "My moves: [ ";
 		for(ExplicitMove move: moves){
@@ -115,10 +115,10 @@ public class MinMaxSequence extends SearchAlgorithm {
 
 			Pair<List<ExplicitMove>, Integer> currentResult;
 
-			if(stateMachine.getRoles().size() == 1){
+			if(stateMachine.getExplicitRoles().size() == 1){
 				ArrayList<ExplicitMove> jointMoves = new ArrayList<ExplicitMove>();
 				jointMoves.add(move);
-				currentResult = maxscore(stateMachine.getNextState(state, jointMoves), role);
+				currentResult = maxscore(stateMachine.getExplicitNextState(state, jointMoves), role);
 			}else{
 				currentResult = minscore(state, role, move);
 			}
@@ -167,7 +167,7 @@ public class MinMaxSequence extends SearchAlgorithm {
 
 			Pair<List<ExplicitMove>, Integer> currentResult;
 
-			currentResult = maxscore(stateMachine.getNextState(state, jointMoves), role);
+			currentResult = maxscore(stateMachine.getExplicitNextState(state, jointMoves), role);
 			if(currentResult.getSecond().intValue() <= minResult.getSecond().intValue()){
 				minResult = currentResult;
 			}

@@ -42,7 +42,7 @@ public final class SampleMontecarloYapGamer extends SampleYapGamer{
 		long start = System.currentTimeMillis();
 		long finishBy = timeout - 5000;
 
-		List<ExplicitMove> moves = theMachine.getLegalMoves(getCurrentState(), getRole());
+		List<ExplicitMove> moves = theMachine.getExplicitLegalMoves(getCurrentState(), getRole());
 		ExplicitMove selection = moves.get(0);
 		if (moves.size() > 1) {
 			int[] moveTotalPoints = new int[moves.size()];

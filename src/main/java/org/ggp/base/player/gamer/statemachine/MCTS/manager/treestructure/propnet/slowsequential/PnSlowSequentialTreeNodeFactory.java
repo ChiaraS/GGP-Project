@@ -85,7 +85,7 @@ public class PnSlowSequentialTreeNodeFactory implements PnTreeNodeFactory {
 
 	private PnSlowSequentialMCTSMoveStats[] createSlowSUCTMCTSMoves(List<List<CompactMove>> allLegalMoves, List<PnSlowSequentialMCTSMoveStats> unvisitedLeaves){
 
-		CompactRole[] roles = this.theMachine.getInternalRoles();
+		List<CompactRole> roles = this.theMachine.getCompactRoles();
 
 		// For all the moves of my role (i.e. the role actually performing the search)
 		// create the SUCT move containing the move statistics.
@@ -94,7 +94,7 @@ public class PnSlowSequentialTreeNodeFactory implements PnTreeNodeFactory {
 		List<CompactMove> myLegalMoves = allLegalMoves.get(myIndex);
 		PnSlowSequentialMCTSMoveStats[] moves = new PnSlowSequentialMCTSMoveStats[myLegalMoves.size()];
 		for(int i = 0; i < myLegalMoves.size(); i++){
-			moves[i] = new PnSlowSequentialMCTSMoveStats(myLegalMoves.get(i), i, createSlowSUCTMCTSMoves((myIndex+1)%(roles.length), roles.length, allLegalMoves, unvisitedLeaves));
+			moves[i] = new PnSlowSequentialMCTSMoveStats(myLegalMoves.get(i), i, createSlowSUCTMCTSMoves((myIndex+1)%(roles.size()), roles.size(), allLegalMoves, unvisitedLeaves));
 			if(moves[i].getNextRoleMovesStats() == null){
 				unvisitedLeaves.add(moves[i]);
 			}

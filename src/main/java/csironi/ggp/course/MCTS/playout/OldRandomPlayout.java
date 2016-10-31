@@ -64,7 +64,7 @@ public class OldRandomPlayout implements OldPlayoutStrategy {
 			List<ExplicitMove> jointMoves = expandedNode.getJointMoves();
 
 			// List of all roles (players) in the game.
-			List<ExplicitRole> roles = this.stateMachine.getRoles();
+			List<ExplicitRole> roles = this.stateMachine.getExplicitRoles();
 
 			// Randomly complete the list of joint moves.
 			for(int i=0; i < jointMoves.size(); i++){
@@ -72,14 +72,14 @@ public class OldRandomPlayout implements OldPlayoutStrategy {
 				// add a random one.
 				if(jointMoves.get(i) == null){
 					ExplicitRole moveRole = roles.get(i);
-					List<ExplicitMove> legalMoves = stateMachine.getLegalMoves(currentState, moveRole);
+					List<ExplicitMove> legalMoves = stateMachine.getExplicitLegalMoves(currentState, moveRole);
 					ExplicitMove randomMove = legalMoves.get(random.nextInt(legalMoves.size()));
 					jointMoves.set(i, randomMove);
 				}
 			}
 
 			// Go to the next state applying the joint move
-			currentState = stateMachine.getNextState(currentState, jointMoves);
+			currentState = stateMachine.getExplicitNextState(currentState, jointMoves);
 
 		}
 
@@ -111,7 +111,7 @@ public class OldRandomPlayout implements OldPlayoutStrategy {
 
 		List<ExplicitMove> randomJointMoves = allJointMoves.get(this.random.nextInt(allJointMoves.size()));
 
-		ExplicitMachineState nextState = this.stateMachine.getNextState(state, randomJointMoves);
+		ExplicitMachineState nextState = this.stateMachine.getExplicitNextState(state, randomJointMoves);
 
 		return this.continuePlayout(nextState);
 

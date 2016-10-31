@@ -70,7 +70,7 @@ public final class NoSyncRefactoredCachedStateMachine extends StateMachine
 	}
 
 	@Override
-	public List<Integer> getOneRoleGoals(ExplicitMachineState state, ExplicitRole role) throws StateMachineException{
+	public List<Integer> getAllGoalsForOneRole(ExplicitMachineState state, ExplicitRole role) throws StateMachineException{
 		MachineStateEntry entry = getEntry(state);
 
 		//System.out.println("Prover: Looking for goals in the entry!");
@@ -81,7 +81,7 @@ public final class NoSyncRefactoredCachedStateMachine extends StateMachine
 
 			//System.out.println("Prover: Goals not found!");
 
-			goals = this.backingStateMachine.getOneRoleGoals(state, role);
+			goals = this.backingStateMachine.getAllGoalsForOneRole(state, role);
 			entry.goals.put(role,goals);
 		}//else{
 			//System.out.println("Prover: Goals found!");
@@ -92,7 +92,7 @@ public final class NoSyncRefactoredCachedStateMachine extends StateMachine
 	}
 
 	@Override
-	public List<ExplicitMove> getLegalMoves(ExplicitMachineState state, ExplicitRole role) throws MoveDefinitionException, StateMachineException{
+	public List<ExplicitMove> getExplicitLegalMoves(ExplicitMachineState state, ExplicitRole role) throws MoveDefinitionException, StateMachineException{
 		MachineStateEntry entry = getEntry(state);
 
 		//System.out.println("Prover: Looking for legal moves in the cache!");
@@ -103,7 +103,7 @@ public final class NoSyncRefactoredCachedStateMachine extends StateMachine
 
 			//System.out.println("Prover: Legal moves not found!");
 
-			moves = ImmutableList.copyOf(this.backingStateMachine.getLegalMoves(state, role));
+			moves = ImmutableList.copyOf(this.backingStateMachine.getExplicitLegalMoves(state, role));
 			entry.moves.put(role, moves);
 		}//else{
 			//System.out.println("Prover: Legal moves found!");
@@ -114,7 +114,7 @@ public final class NoSyncRefactoredCachedStateMachine extends StateMachine
 	}
 
 	@Override
-	public ExplicitMachineState getNextState(ExplicitMachineState state, List<ExplicitMove> moves) throws TransitionDefinitionException, StateMachineException{
+	public ExplicitMachineState getExplicitNextState(ExplicitMachineState state, List<ExplicitMove> moves) throws TransitionDefinitionException, StateMachineException{
 		MachineStateEntry entry = getEntry(state);
 
 		//System.out.println("Prover: Looking for next state in the cache!");
@@ -125,7 +125,7 @@ public final class NoSyncRefactoredCachedStateMachine extends StateMachine
 
 			//System.out.println("Prover: Next state not found!");
 
-			nextState = this.backingStateMachine.getNextState(state, moves);
+			nextState = this.backingStateMachine.getExplicitNextState(state, moves);
 			entry.nexts.put(moves, nextState);
 		}//else{
 			//System.out.println("Prover: Next state found!");
@@ -175,15 +175,15 @@ public final class NoSyncRefactoredCachedStateMachine extends StateMachine
 	}
 
 	@Override
-	public List<ExplicitRole> getRoles() {
+	public List<ExplicitRole> getExplicitRoles() {
 		// TODO(schreib): Should this be cached as well?
-		return this.backingStateMachine.getRoles();
+		return this.backingStateMachine.getExplicitRoles();
 	}
 
 	@Override
-	public ExplicitMachineState getInitialState() {
+	public ExplicitMachineState getExplicitInitialState() {
 		// TODO(schreib): Should this be cached as well?
-		return this.backingStateMachine.getInitialState();
+		return this.backingStateMachine.getExplicitInitialState();
 	}
 
 	@Override

@@ -100,7 +100,7 @@ public class McsGamer extends InternalPropnetGamer {
 
 		Random r = new Random();
 
-		CompactRole myRole = this.thePropnetMachine.roleToInternalRole(this.getRole());
+		CompactRole myRole = this.thePropnetMachine.convertToCompactRole(this.getRole());
 
 		// Create the MCS manager and start simulations.
 		this.mcsManager = new InternalPropnetMCSManager(new PnRandomPlayout(this.thePropnetMachine),
@@ -115,7 +115,7 @@ public class McsGamer extends InternalPropnetGamer {
 			GamerLogger.log("Gamer", "Starting search during metagame.");
 
 			try {
-				this.mcsManager.search(this.thePropnetMachine.getInternalInitialState(), realTimeout);
+				this.mcsManager.search(this.thePropnetMachine.getCompactInitialState(), realTimeout);
 
 				GamerLogger.log("Gamer", "Done searching during metagame.");
 				searchTime = this.mcsManager.getSearchTime();
@@ -179,7 +179,7 @@ public class McsGamer extends InternalPropnetGamer {
 
 			GamerLogger.log("Gamer", "Selecting move using MCS.");
 
-			CompactMachineState currentState = this.thePropnetMachine.stateToInternalState(this.getCurrentState());
+			CompactMachineState currentState = this.thePropnetMachine.convertToCompactMachineState(this.getCurrentState());
 
 			try {
 				this.mcsManager.search(currentState, realTimeout);
@@ -195,7 +195,7 @@ public class McsGamer extends InternalPropnetGamer {
 	        		iterationsPerSecond = 0;
 	        		nodesPerSecond = 0;
 	        	}
-		    	theMove = this.thePropnetMachine.internalMoveToMove(selectedMove.getTheMove());
+		    	theMove = this.thePropnetMachine.convertToExplicitMove(selectedMove.getTheMove());
 		    	moveScoreSum = selectedMove.getScoreSum();
 		    	moveVisits = selectedMove.getVisits();
 		    	moveAvgScore = moveScoreSum / ((double) moveVisits);
@@ -220,7 +220,7 @@ public class McsGamer extends InternalPropnetGamer {
 		GamerLogger.log(GamerLogger.FORMAT.CSV_FORMAT, "Stats", this.gameStep + ";" + thinkingTime + ";" + searchTime + ";" + iterations + ";" + visitedNodes + ";" + iterationsPerSecond + ";" + nodesPerSecond + ";" + theMove + ";" + moveScoreSum + ";" + moveVisits + ";" + moveAvgScore + ";");
 
 		// TODO: IS THIS NEEDED? WHEN?
-		notifyObservers(new GamerSelectedMoveEvent(this.thePropnetMachine.getLegalMoves(this.getCurrentState(), this.getRole()), theMove, thinkingTime));
+		notifyObservers(new GamerSelectedMoveEvent(this.thePropnetMachine.getExplicitLegalMoves(this.getCurrentState(), this.getRole()), theMove, thinkingTime));
 
 		return theMove;
 	}

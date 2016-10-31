@@ -116,14 +116,14 @@ public class FailsafeStateMachine extends StateMachine
     }
 
     @Override
-    public List<Integer> getOneRoleGoals(ExplicitMachineState state, ExplicitRole role) {
+    public List<Integer> getAllGoalsForOneRole(ExplicitMachineState state, ExplicitRole role) {
         if(theBackingMachine == null){
             List<Integer> goals = new ArrayList<Integer>();
             goals.add(new Integer(0));
         }
 
         try {
-            return theBackingMachine.getOneRoleGoals(state, role);
+            return theBackingMachine.getAllGoalsForOneRole(state, role);
         } catch(Exception e) {
             failGracefully(e, null);
         } catch(ThreadDeath d) {
@@ -134,16 +134,16 @@ public class FailsafeStateMachine extends StateMachine
             failGracefully(null, e);
         }
 
-        return getOneRoleGoals(state, role);
+        return getAllGoalsForOneRole(state, role);
     }
 
     @Override
-    public ExplicitMachineState getInitialState() {
+    public ExplicitMachineState getExplicitInitialState() {
         if(theBackingMachine == null)
             return null;
 
         try {
-            return theBackingMachine.getInitialState();
+            return theBackingMachine.getExplicitInitialState();
         } catch(Exception e) {
             failGracefully(e, null);
         } catch(ThreadDeath d) {
@@ -154,16 +154,16 @@ public class FailsafeStateMachine extends StateMachine
             failGracefully(null, e);
         }
 
-        return getInitialState();
+        return getExplicitInitialState();
     }
 
     @Override
-    public List<ExplicitMove> getLegalMoves(ExplicitMachineState state, ExplicitRole role) throws MoveDefinitionException {
+    public List<ExplicitMove> getExplicitLegalMoves(ExplicitMachineState state, ExplicitRole role) throws MoveDefinitionException {
         if(theBackingMachine == null)
             return null;
 
         try {
-            return theBackingMachine.getLegalMoves(state, role);
+            return theBackingMachine.getExplicitLegalMoves(state, role);
         } catch(MoveDefinitionException me) {
             throw me;
         } catch(Exception e) {
@@ -176,7 +176,7 @@ public class FailsafeStateMachine extends StateMachine
             failGracefully(null, e);
         }
 
-        return getLegalMoves(state, role);
+        return getExplicitLegalMoves(state, role);
     }
 
     @Override
@@ -242,12 +242,12 @@ public class FailsafeStateMachine extends StateMachine
     }
 
     @Override
-    public ExplicitMachineState getNextState(ExplicitMachineState state, List<ExplicitMove> moves) throws TransitionDefinitionException {
+    public ExplicitMachineState getExplicitNextState(ExplicitMachineState state, List<ExplicitMove> moves) throws TransitionDefinitionException {
         if(theBackingMachine == null)
             return null;
 
         try {
-            return theBackingMachine.getNextState(state, moves);
+            return theBackingMachine.getExplicitNextState(state, moves);
         } catch(TransitionDefinitionException te) {
             throw te;
         } catch(Exception e) {
@@ -260,7 +260,7 @@ public class FailsafeStateMachine extends StateMachine
             failGracefully(null, e);
         }
 
-        return getNextState(state, moves);
+        return getExplicitNextState(state, moves);
     }
 
     @Override
@@ -306,12 +306,12 @@ public class FailsafeStateMachine extends StateMachine
     }
 
     @Override
-    public List<ExplicitRole> getRoles() {
+    public List<ExplicitRole> getExplicitRoles() {
         if(theBackingMachine == null)
             return null;
 
         try {
-            return theBackingMachine.getRoles();
+            return theBackingMachine.getExplicitRoles();
         } catch(Exception e) {
             failGracefully(e, null);
         } catch(ThreadDeath d) {
@@ -322,7 +322,7 @@ public class FailsafeStateMachine extends StateMachine
             failGracefully(null, e);
         }
 
-        return getRoles();
+        return getExplicitRoles();
     }
 
     @Override

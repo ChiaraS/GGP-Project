@@ -24,7 +24,7 @@ import org.ggp.base.util.statemachine.structure.explicit.ExplicitRole;
 
 import com.google.common.collect.ImmutableList;
 
-public class SeparateInternalPropnetStateMachine extends InternalPropnetStateMachine {
+public class SeparateInternalPropnetStateMachine extends InternalPropnetStateMachine{
 
 	/** The underlying proposition network  */
     protected ImmutablePropNet propNet;
@@ -33,7 +33,7 @@ public class SeparateInternalPropnetStateMachine extends InternalPropnetStateMac
     protected ImmutableSeparatePropnetState propnetState;
 
     /** The player roles */
-    protected CompactRole[] roles;
+    protected List<CompactRole> roles;
     /** The initial state */
     protected CompactMachineState initialState;
 
@@ -59,13 +59,15 @@ public class SeparateInternalPropnetStateMachine extends InternalPropnetStateMac
      */
     @Override
     public void initialize(List<Gdl> description, long timeout) throws StateMachineInitializationException {
+
     	if(this.propNet == null || this.propnetState == null){
     		GamerLogger.log("StateMachine", "[ExternalPropnet] State machine initialized with at least one among the propnet structure and the propnet state set to null. Impossible to reason on the game!");
     		throw new StateMachineInitializationException("Null parameter passed during instantiaton of the state machine: cannot reason on the game with null propnet or null propnet state.");
     	}else{
-    		this.roles = new CompactRole[this.propNet.getRoles().length];
-    		for(int i = 0; i < this.roles.length; i++){
-    			this.roles[i] = new CompactRole(i);
+
+    		this.roles = new ArrayList<CompactRole>(this.propNet.getRoles().length);
+    		for(int i = 0; i < this.propNet.getRoles().length; i++){
+    			this.roles.add(new CompactRole(i));
     		}
     		this.initialState = new CompactMachineState(this.propnetState.getCurrentState().clone());
     	}
@@ -87,7 +89,7 @@ public class SeparateInternalPropnetStateMachine extends InternalPropnetStateMac
 	 */
 	@Override
 	public boolean isTerminal(ExplicitMachineState state) {
-		return this.isTerminal(this.stateToInternalState(state));
+		return this.isTerminal(this.convertToCompactMachineState(state));
 	}
 
 	/**
@@ -120,8 +122,8 @@ public class SeparateInternalPropnetStateMachine extends InternalPropnetStateMac
 	 * @param role
 	 */
 	@Override
-	public List<Integer> getOneRoleGoals(ExplicitMachineState state, ExplicitRole role) {
-		return this.getOneRoleGoals(this.stateToInternalState(state), this.roleToInternalRole(role));
+	public List<Integer> getAllGoalsForOneRole(ExplicitMachineState state, ExplicitRole role) {
+		return this.getAllGoalsForOneRole(this.convertToCompactMachineState(state), this.convertToCompactRole(role));
 	}
 
 	/**
@@ -132,7 +134,7 @@ public class SeparateInternalPropnetStateMachine extends InternalPropnetStateMac
 	 * GoalDefinitionException because the goal is ill-defined.
 	 */
 	@Override
-	public List<Integer> getOneRoleGoals(CompactMachineState state, CompactRole role) {
+	public List<Integer> getAllGoalsForOneRole(CompactMachineState state, CompactRole role) {
 
 		// Mark base propositions according to state.
 		this.markBases(state);
@@ -158,12 +160,12 @@ public class SeparateInternalPropnetStateMachine extends InternalPropnetStateMac
 		}
 
 		if(trueGoalValues.size() > 1){
-			GamerLogger.logError("StateMachine", "[Propnet] Got more than one true goal in state " + this.internalStateToState(state) + " for role " + this.internalRoleToRole(role) + ".");
+			GamerLogger.logError("StateMachine", "[Propnet] Got more than one true goal in state " + this.convertToExplicitMachineState(state) + " for role " + this.convertToExplicitRole(role) + ".");
 		}
 
 		// If there is no true goal proposition for the role in this state throw an exception.
 		if(trueGoalValues.isEmpty()){
-			GamerLogger.logError("StateMachine", "[Propnet] Got no true goal in state " + this.internalStateToState(state) + " for role " + this.internalRoleToRole(role) + ".");
+			GamerLogger.logError("StateMachine", "[Propnet] Got no true goal in state " + this.convertToExplicitMachineState(state) + " for role " + this.convertToExplicitRole(role) + ".");
 		}
 
 		return trueGoalValues;
@@ -195,7 +197,7 @@ public class SeparateInternalPropnetStateMachine extends InternalPropnetStateMac
 	 * this state machine has not been initialized, NULL will be returned.
 	 */
 	@Override
-	public ExplicitMachineState getInitialState() {
+	public ExplicitMachineState getExplicitInitialState() {
 
 		/*
 		if(this.initialState == null){
@@ -217,7 +219,7 @@ public class SeparateInternalPropnetStateMachine extends InternalPropnetStateMac
 		*/
 
 
-		return this.internalStateToState(this.initialState);
+		return this.convertToExplicitMachineState(this.initialState);
 	}
 
 	/**
@@ -225,7 +227,7 @@ public class SeparateInternalPropnetStateMachine extends InternalPropnetStateMac
 	 * this state machine has not been initialized, NULL will be returned.
 	 */
 	@Override
-	public CompactMachineState getInternalInitialState() {
+	public CompactMachineState getCompactInitialState() {
 		return this.initialState;
 	}
 
@@ -234,11 +236,11 @@ public class SeparateInternalPropnetStateMachine extends InternalPropnetStateMac
 	 * Since the state is not an internal propnet state, it is first transformed into one.
 	 */
 	@Override
-	public List<ExplicitMove> getLegalMoves(ExplicitMachineState state, ExplicitRole role)throws MoveDefinitionException {
+	public List<ExplicitMove> getExplicitLegalMoves(ExplicitMachineState state, ExplicitRole role)throws MoveDefinitionException {
 		List<ExplicitMove> moves = new ArrayList<ExplicitMove>();
-		CompactRole externalRole = this.roleToInternalRole(role);
-		for(CompactMove m : this.getInternalLegalMoves(this.stateToInternalState(state), externalRole)){
-			moves.add(this.internalMoveToMove(m));
+		CompactRole externalRole = this.convertToCompactRole(role);
+		for(CompactMove m : this.getCompactLegalMoves(this.convertToCompactMachineState(state), externalRole)){
+			moves.add(this.convertToExplicitMove(m));
 		}
 		return moves;
 	}
@@ -247,7 +249,7 @@ public class SeparateInternalPropnetStateMachine extends InternalPropnetStateMac
 	 * Computes the legal moves for role in state.
 	 */
 	@Override
-	public List<CompactMove> getInternalLegalMoves(CompactMachineState state, CompactRole role)throws MoveDefinitionException {
+	public List<CompactMove> getCompactLegalMoves(CompactMachineState state, CompactRole role)throws MoveDefinitionException {
 		// Mark base propositions according to state.
 		this.markBases(state);
 
@@ -269,7 +271,7 @@ public class SeparateInternalPropnetStateMachine extends InternalPropnetStateMac
 
 		// If there are no legal moves for the role in this state throw an exception.
 		if(legalMoves.size() == 0){
-			throw new MoveDefinitionException(this.internalStateToState(state), this.internalRoleToRole(role));
+			throw new MoveDefinitionException(this.convertToExplicitMachineState(state), this.convertToExplicitRole(role));
 		}
 
 		return legalMoves;
@@ -280,15 +282,15 @@ public class SeparateInternalPropnetStateMachine extends InternalPropnetStateMac
 	 * If the state is not an extended propnet state, it is first transformed into one.
 	 */
 	@Override
-	public ExplicitMachineState getNextState(ExplicitMachineState state, List<ExplicitMove> moves){
-		return this.internalStateToState(this.getInternalNextState(this.stateToInternalState(state), this.movesToInternalMoves(moves)));
+	public ExplicitMachineState getExplicitNextState(ExplicitMachineState state, List<ExplicitMove> moves){
+		return this.convertToExplicitMachineState(this.getCompactNextState(this.convertToCompactMachineState(state), this.movesToInternalMoves(moves)));
 	}
 
 	/**
 	 * Computes the next state given a state and the list of moves.
 	 */
 	@Override
-	public CompactMachineState getInternalNextState(CompactMachineState state, List<CompactMove> moves){
+	public CompactMachineState getCompactNextState(CompactMachineState state, List<CompactMove> moves){
 		// Mark base propositions according to state.
 		this.markBases(state);
 
@@ -301,7 +303,7 @@ public class SeparateInternalPropnetStateMachine extends InternalPropnetStateMac
 
 	/* Already implemented for you */
 	@Override
-	public List<ExplicitRole> getRoles() {
+	public List<ExplicitRole> getExplicitRoles() {
 		List<ExplicitRole> roles = new ArrayList<ExplicitRole>();
 		ExplicitRole[] rolesArray = this.propNet.getRoles();
 		for(CompactRole r : this.roles){
@@ -312,7 +314,10 @@ public class SeparateInternalPropnetStateMachine extends InternalPropnetStateMac
 
 
 	@Override
-	public CompactRole[] getInternalRoles() {
+	public List<CompactRole> getCompactRoles() {
+
+		//System.out.println("Returning roles " + this.roles.size());
+
 		return this.roles;
 	}
 
@@ -350,13 +355,13 @@ public class SeparateInternalPropnetStateMachine extends InternalPropnetStateMac
 
 		// TODO: both the roles and the moves should be already in the correct order so no need
 		// to retrieve the roles indices!!
-		for (int i = 0; i < this.roles.length; i++){
+		for (int i = 0; i < this.roles.size(); i++){
 
 			//AGGIUNTA
 	    	//System.out.println("i=" + i);
 	    	//FINE AGGIUNTA
 
-			doeses.add(ProverQueryBuilder.toDoes(this.internalRoleToRole(this.roles[i]), moves.get(i)));
+			doeses.add(ProverQueryBuilder.toDoes(this.convertToExplicitRole(this.roles.get(i)), moves.get(i)));
 		}
 
 		//AGGIUNTA
@@ -390,7 +395,7 @@ public class SeparateInternalPropnetStateMachine extends InternalPropnetStateMac
 	 * the state for each base proposition.
 	 */
 	@Override
-	public CompactMachineState stateToInternalState(ExplicitMachineState state){
+	public CompactMachineState convertToCompactMachineState(ExplicitMachineState state){
 		if(state != null){
 			ImmutableProposition[] baseProps = this.propNet.getBasePropositions();
 			OpenBitSet basePropsTruthValues = new OpenBitSet(baseProps.length);
@@ -409,7 +414,7 @@ public class SeparateInternalPropnetStateMachine extends InternalPropnetStateMac
 	}
 
 	@Override
-	public ExplicitMachineState internalStateToState(CompactMachineState state){
+	public ExplicitMachineState convertToExplicitMachineState(CompactMachineState state){
 		if(state != null){
 			ImmutableProposition[] baseProps = this.propNet.getBasePropositions();
 			OpenBitSet basePropsTruthValues = state.getTruthValues();
@@ -428,7 +433,7 @@ public class SeparateInternalPropnetStateMachine extends InternalPropnetStateMac
 	}
 
 	@Override
-	public ExplicitRole internalRoleToRole(CompactRole role){
+	public ExplicitRole convertToExplicitRole(CompactRole role){
 		if(role != null){
 			return this.propNet.getRoles()[role.getIndex()];
 		}
@@ -437,7 +442,7 @@ public class SeparateInternalPropnetStateMachine extends InternalPropnetStateMac
 	}
 
 	@Override
-	public CompactRole roleToInternalRole(ExplicitRole role){
+	public CompactRole convertToCompactRole(ExplicitRole role){
 		if(role != null){
 			// TODO check if index is -1 -> should never happen if the role given as input is a valid role.
 			ExplicitRole[] roles = this.propNet.getRoles();
@@ -452,12 +457,12 @@ public class SeparateInternalPropnetStateMachine extends InternalPropnetStateMac
 	}
 
 	@Override
-	public ExplicitMove internalMoveToMove(CompactMove move){
+	public ExplicitMove convertToExplicitMove(CompactMove move){
 		return getMoveFromProposition(this.propNet.getInputPropositions()[move.getIndex()]);
 	}
 
 	@Override
-	public CompactMove moveToInternalMove(ExplicitMove move){
+	public CompactMove convertToCompactMove(ExplicitMove move){
 		List<ExplicitMove> moveArray = new ArrayList<ExplicitMove>();
 		moveArray.add(move);
 		GdlSentence moveToDoes = this.toDoes(moveArray).get(0);

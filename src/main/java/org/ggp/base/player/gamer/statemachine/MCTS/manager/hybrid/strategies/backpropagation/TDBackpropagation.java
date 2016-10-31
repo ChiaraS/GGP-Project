@@ -7,8 +7,8 @@ import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.hybrid.
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.hybrid.decoupled.DecoupledMCTSMoveStats;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.hybrid.decoupled.DecoupledMCTSNode;
 import org.ggp.base.util.logging.GamerLogger;
+import org.ggp.base.util.statemachine.abstractsm.AbstractStateMachine;
 import org.ggp.base.util.statemachine.structure.MachineState;
-import org.ggp.base.util.statemachinenew.AbstractStateMachine;
 
 public abstract class TDBackpropagation implements BackpropagationStrategy {
 

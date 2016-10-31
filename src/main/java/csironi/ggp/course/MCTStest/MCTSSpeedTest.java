@@ -266,9 +266,9 @@ public class MCTSSpeedTest {
 
 
 
-		        CompactRole internalPlayingRole = thePropnetMachine.getInternalRoles()[0];
-		        playingRole = thePropnetMachine.internalRoleToRole(internalPlayingRole);
-		        numRoles = thePropnetMachine.getInternalRoles().length;
+		        CompactRole internalPlayingRole = thePropnetMachine.getCompactRoles().get(0);
+		        playingRole = thePropnetMachine.convertToExplicitRole(internalPlayingRole);
+		        numRoles = thePropnetMachine.getCompactRoles().size();
 
 		        PnTreeNodeFactory theNodeFactory;
 
@@ -294,11 +294,11 @@ public class MCTSSpeedTest {
 		        try{
 		        	GamerLogger.log(mctsType + "MCTSSpeedTest", "Starting search.");
 
-		        	MCTSNode initialNode = MCTSmanager.search(thePropnetMachine.getInternalInitialState(), System.currentTimeMillis() + testTime, gameStep);
+		        	MCTSNode initialNode = MCTSmanager.search(thePropnetMachine.getCompactInitialState(), System.currentTimeMillis() + testTime, gameStep);
 		        	PnCompleteMoveStats finalMove = MCTSmanager.getBestMove(initialNode);
 
 		        	GamerLogger.log(mctsType + "MCTSSpeedTest", "Search ended correctly.");
-		        	chosenMove = thePropnetMachine.internalMoveToMove(finalMove.getTheMove());
+		        	chosenMove = thePropnetMachine.convertToExplicitMove(finalMove.getTheMove());
 		 	        scoresSum = finalMove.getScoreSum();
 		 	        visits = finalMove.getVisits();
 		 	        if(visits != 0){

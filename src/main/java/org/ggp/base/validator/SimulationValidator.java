@@ -35,7 +35,7 @@ public final class SimulationValidator implements GameValidator
 				throw new ValidatorException("Ran into a state machine initialization exception: " + sme);
 			}
 
-			ExplicitMachineState state = stateMachine.getInitialState();
+			ExplicitMachineState state = stateMachine.getExplicitInitialState();
 			try {
 				for (int depth = 0; !stateMachine.isTerminal(state); depth++) {
 					if (depth == maxDepth) {

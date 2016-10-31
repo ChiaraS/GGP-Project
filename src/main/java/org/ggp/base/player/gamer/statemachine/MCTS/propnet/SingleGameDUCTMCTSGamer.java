@@ -5,6 +5,13 @@ package org.ggp.base.player.gamer.statemachine.MCTS.propnet;
 
 import java.util.Random;
 
+import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.HybridMCTSManager;
+import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.strategies.backpropagation.StandardBackpropagation;
+import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.strategies.expansion.RandomExpansion;
+import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.strategies.movechoice.MaximumScoreChoice;
+import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.strategies.playout.RandomPlayout;
+import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.strategies.selection.UCTSelection;
+import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.strategies.selection.evaluators.UCTEvaluator;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.propnet.InternalPropnetMCTSManager;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.propnet.strategies.backpropagation.PnStandardBackpropagation;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.propnet.strategies.expansion.PnRandomExpansion;
@@ -19,8 +26,12 @@ import org.ggp.base.player.gamer.statemachine.MCTS.manager.prover.strategies.mov
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.prover.strategies.playout.ProverRandomPlayout;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.prover.strategies.selection.ProverUCTSelection;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.prover.strategies.selection.evaluators.ProverUCTEvaluator;
+import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.hybrid.decoupled.DecoupledTreeNodeFactory;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.propnet.decoupled.PnDecoupledTreeNodeFactory;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.prover.decoupled.ProverDecoupledTreeNodeFactory;
+import org.ggp.base.util.statemachine.abstractsm.AbstractStateMachine;
+import org.ggp.base.util.statemachine.abstractsm.CompactStateMachine;
+import org.ggp.base.util.statemachine.abstractsm.ExplicitStateMachine;
 import org.ggp.base.util.statemachine.structure.compact.CompactRole;
 import org.ggp.base.util.statemachine.structure.explicit.ExplicitRole;
 
@@ -43,8 +54,8 @@ public class SingleGameDUCTMCTSGamer extends UctMctsGamer{
 
 		Random r = new Random();
 
-		CompactRole myRole = this.thePropnetMachine.roleToInternalRole(this.getRole());
-		int numRoles = this.thePropnetMachine.getInternalRoles().length;
+		CompactRole myRole = this.thePropnetMachine.convertToCompactRole(this.getRole());
+		int numRoles = this.thePropnetMachine.getCompactRoles().size();
 
 		return new InternalPropnetMCTSManager(new PnUCTSelection(numRoles, myRole, r, this.valueOffset, new PnUCTEvaluator(this.c, this.unexploredMoveDefaultSelectionValue)),
 	       		new PnRandomExpansion(numRoles, myRole, r), new PnRandomPlayout(this.thePropnetMachine),
@@ -60,7 +71,7 @@ public class SingleGameDUCTMCTSGamer extends UctMctsGamer{
 		Random r = new Random();
 
 		ExplicitRole myRole = this.getRole();
-		int numRoles = this.getStateMachine().getRoles().size();
+		int numRoles = this.getStateMachine().getExplicitRoles().size();
 
 		int myRoleIndex = this.getStateMachine().getRoleIndices().get(this.getRole());
 
@@ -70,6 +81,33 @@ public class SingleGameDUCTMCTSGamer extends UctMctsGamer{
 	       		null, null, new ProverDecoupledTreeNodeFactory(this.getStateMachine()), this.getStateMachine(),
 	       		this.gameStepOffset, this.maxSearchDepth);
 
+	}
+
+	@Override
+	public HybridMCTSManager createHybridMCTSManager() {
+
+		Random r = new Random();
+
+		int myRoleIndex;
+		int numRoles;
+
+		AbstractStateMachine theMachine;
+
+		if(this.thePropnetMachine != null){
+			theMachine = new CompactStateMachine(this.thePropnetMachine);
+			myRoleIndex = this.thePropnetMachine.convertToCompactRole(this.getRole()).getIndex();
+			numRoles = this.thePropnetMachine.getCompactRoles().size();
+		}else{
+			theMachine = new ExplicitStateMachine(this.getStateMachine());
+			numRoles = this.getStateMachine().getExplicitRoles().size();
+			myRoleIndex = this.getStateMachine().getRoleIndices().get(this.getRole());
+		}
+
+		return new HybridMCTSManager(new UCTSelection(numRoles, myRoleIndex, r, this.valueOffset, new UCTEvaluator(this.c, this.unexploredMoveDefaultSelectionValue)),
+	       		new RandomExpansion(numRoles, myRoleIndex, r), new RandomPlayout(theMachine),
+	       		new StandardBackpropagation(numRoles, myRoleIndex), new MaximumScoreChoice(myRoleIndex, r), null,
+	       		null, null, new DecoupledTreeNodeFactory(theMachine), theMachine,
+	       		this.gameStepOffset, this.maxSearchDepth, this.logTranspositionTable);
 	}
 
 }

@@ -69,7 +69,7 @@ public class CSequentialGamer extends SampleGamer {
 
 		// Get state machine and list of available legal moves for the player
 		StateMachine stateMachine = getStateMachine();
-		List<ExplicitMove> moves = stateMachine.getLegalMoves(getCurrentState(), getRole());
+		List<ExplicitMove> moves = stateMachine.getExplicitLegalMoves(getCurrentState(), getRole());
 
 		// Return and remove the best move for the current step from the sequence of best moves
 		ExplicitMove selection = bestPlan.remove(0);

@@ -463,24 +463,24 @@ public class ProvaPropnet {
 
 		thePropnetMachine.initialize(description, Long.MAX_VALUE);
 
-		CompactMachineState state = thePropnetMachine.getInternalInitialState();
+		CompactMachineState state = thePropnetMachine.getCompactInitialState();
 
 		System.out.println(state);
 
-		CompactRole[] roles = thePropnetMachine.getInternalRoles();
+		List<CompactRole> roles = thePropnetMachine.getCompactRoles();
 
-		System.out.println(roles.length);
-		System.out.println(roles[0]);
+		System.out.println(roles.size());
+		System.out.println(roles.get(0));
 
 		System.out.println(thePropnetMachine.isTerminal(state));
 
-		List<CompactMove> m = thePropnetMachine.getInternalLegalMoves(state, roles[0]);
-		CompactMachineState next = thePropnetMachine.getInternalNextState(state, m);
+		List<CompactMove> m = thePropnetMachine.getCompactLegalMoves(state, roles.get(0));
+		CompactMachineState next = thePropnetMachine.getCompactNextState(state, m);
 
 		System.out.println(next);
 
 		System.out.println(thePropnetMachine.isTerminal(next));
-		System.out.println(thePropnetMachine.getGoal(next, roles[0]));
+		System.out.println(thePropnetMachine.getGoal(next, roles.get(0)));
 
 
 
@@ -1273,13 +1273,13 @@ public class ProvaPropnet {
 	    		ExplicitMachineState propnetState = null;
 
 	    		try {
-	                proverState = theReference.getInitialState();
+	                proverState = theReference.getExplicitInitialState();
 	            } catch(Exception e) {
 	                GamerLogger.log("StateMachine", "Prover machine failed to generate an initial state!");
 	                e.printStackTrace();
 	            }
 	    		try {
-	                propnetState = thePropNetMachine.getInitialState();
+	                propnetState = thePropNetMachine.getExplicitInitialState();
 	            } catch(Exception e) {
 	                GamerLogger.log("StateMachine", "Propnet machine failed to generate an initial state!");
 	                e.printStackTrace();
@@ -1303,13 +1303,13 @@ public class ProvaPropnet {
 	    			List<ExplicitMove> jointMove = null;
 	    			try {
 	    				jointMove = theReference.getRandomJointMove(proverState);
-	                    proverState = theReference.getNextState(proverState, jointMove);
+	                    proverState = theReference.getExplicitNextState(proverState, jointMove);
 	                } catch(Exception e) {
 	                    GamerLogger.log("StateMachine", "Prover machine failed to generate the next state!");
 	                    e.printStackTrace();
 	                }
 	        		try {
-	                    propnetState = thePropNetMachine.getNextState(propnetState, jointMove);
+	                    propnetState = thePropNetMachine.getExplicitNextState(propnetState, jointMove);
 	                } catch(Exception e) {
 	                    GamerLogger.log("StateMachine", "Propnet machine failed to generate the next state!");
 	                    e.printStackTrace();
@@ -1429,13 +1429,13 @@ public class ProvaPropnet {
 	    		ExplicitMachineState propnetState = null;
 
 	    		try {
-	                proverState = theReference.getInitialState();
+	                proverState = theReference.getExplicitInitialState();
 	            } catch(Exception e) {
 	                GamerLogger.log("StateMachine", "Prover machine failed to generate an initial state!");
 	                e.printStackTrace();
 	            }
 	    		try {
-	                propnetState = thePropNetMachine.getInitialState();
+	                propnetState = thePropNetMachine.getExplicitInitialState();
 	            } catch(Exception e) {
 	                GamerLogger.log("StateMachine", "Propnet machine failed to generate an initial state!");
 	                e.printStackTrace();
@@ -1459,13 +1459,13 @@ public class ProvaPropnet {
 	    			List<ExplicitMove> jointMove = null;
 	    			try {
 	    				jointMove = theReference.getRandomJointMove(proverState);
-	                    proverState = theReference.getNextState(proverState, jointMove);
+	                    proverState = theReference.getExplicitNextState(proverState, jointMove);
 	                } catch(Exception e) {
 	                    GamerLogger.log("StateMachine", "Prover machine failed to generate the next state!");
 	                    e.printStackTrace();
 	                }
 	        		try {
-	                    propnetState = thePropNetMachine.getNextState(propnetState, jointMove);
+	                    propnetState = thePropNetMachine.getExplicitNextState(propnetState, jointMove);
 	                } catch(Exception e) {
 	                    GamerLogger.log("StateMachine", "Propnet machine failed to generate the next state!");
 	                    e.printStackTrace();
@@ -1609,13 +1609,13 @@ public class ProvaPropnet {
 	    		ExplicitMachineState propnetState = null;
 
 	    		try {
-	                proverState = theReference.getInitialState();
+	                proverState = theReference.getExplicitInitialState();
 	            } catch(Exception e) {
 	                GamerLogger.log("StateMachine", "Prover machine failed to generate an initial state!");
 	                e.printStackTrace();
 	            }
 	    		try {
-	                propnetState = thePropNetMachine.getInitialState();
+	                propnetState = thePropNetMachine.getExplicitInitialState();
 	            } catch(Exception e) {
 	                GamerLogger.log("StateMachine", "Propnet machine failed to generate an initial state!");
 	                e.printStackTrace();
@@ -1633,13 +1633,13 @@ public class ProvaPropnet {
 	    			List<ExplicitMove> jointMove = null;
 	    			try {
 	    				jointMove = theReference.getRandomJointMove(proverState);
-	                    proverState = theReference.getNextState(proverState, jointMove);
+	                    proverState = theReference.getExplicitNextState(proverState, jointMove);
 	                } catch(Exception e) {
 	                    GamerLogger.log("StateMachine", "Prover machine failed to generate the next state!");
 	                    e.printStackTrace();
 	                }
 	        		try {
-	                    propnetState = thePropNetMachine.getNextState(propnetState, jointMove);
+	                    propnetState = thePropNetMachine.getExplicitNextState(propnetState, jointMove);
 	                } catch(Exception e) {
 	                    GamerLogger.log("StateMachine", "Propnet machine failed to generate the next state!");
 	                    e.printStackTrace();

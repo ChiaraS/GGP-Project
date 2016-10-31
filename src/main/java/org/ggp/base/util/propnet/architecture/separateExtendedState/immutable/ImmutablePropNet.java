@@ -79,7 +79,7 @@ public class ImmutablePropNet implements Serializable{
 	 * @return ordered array of roles.
 	 */
 	public ExplicitRole[] getRoles(){
-	    return roles;
+	    return this.roles;
 	}
 
 	/**

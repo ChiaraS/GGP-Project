@@ -41,7 +41,7 @@ public class StateMachineSpeedTest {
 
 		int[] lastIterationVisitedNodes = new int[1];
 
-		ExplicitMachineState initialState = theMachine.getInitialState();
+		ExplicitMachineState initialState = theMachine.getExplicitInitialState();
 
 		long startTime = System.currentTimeMillis();
 
@@ -137,7 +137,7 @@ public class StateMachineSpeedTest {
 
 		int[] lastIterationVisitedNodes = new int[1];
 
-		CompactMachineState initialState = theMachine.getInternalInitialState();
+		CompactMachineState initialState = theMachine.getCompactInitialState();
 
 		long startTime = System.currentTimeMillis();
 

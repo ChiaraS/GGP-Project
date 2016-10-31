@@ -67,7 +67,7 @@ public class SamplePropNetStateMachine extends StateMachine {
 	 * GoalDefinitionException because the goal is ill-defined.
 	 */
 	@Override
-	public List<Integer> getOneRoleGoals(ExplicitMachineState state, ExplicitRole role) {
+	public List<Integer> getAllGoalsForOneRole(ExplicitMachineState state, ExplicitRole role) {
 		// TODO: Compute the goal for role in state.
 		return null;
 	}
@@ -78,7 +78,7 @@ public class SamplePropNetStateMachine extends StateMachine {
 	 * and then computing the resulting state.
 	 */
 	@Override
-	public ExplicitMachineState getInitialState() {
+	public ExplicitMachineState getExplicitInitialState() {
 		// TODO: Compute the initial state.
 		return null;
 	}
@@ -87,7 +87,7 @@ public class SamplePropNetStateMachine extends StateMachine {
 	 * Computes the legal moves for role in state.
 	 */
 	@Override
-	public List<ExplicitMove> getLegalMoves(ExplicitMachineState state, ExplicitRole role)
+	public List<ExplicitMove> getExplicitLegalMoves(ExplicitMachineState state, ExplicitRole role)
 	throws MoveDefinitionException {
 		// TODO: Compute legal moves.
 		return null;
@@ -97,7 +97,7 @@ public class SamplePropNetStateMachine extends StateMachine {
 	 * Computes the next state given state and the list of moves.
 	 */
 	@Override
-	public ExplicitMachineState getNextState(ExplicitMachineState state, List<ExplicitMove> moves)
+	public ExplicitMachineState getExplicitNextState(ExplicitMachineState state, List<ExplicitMove> moves)
 	throws TransitionDefinitionException {
 		// TODO: Compute the next state.
 		return null;
@@ -135,7 +135,7 @@ public class SamplePropNetStateMachine extends StateMachine {
 
 	/* Already implemented for you */
 	@Override
-	public List<ExplicitRole> getRoles() {
+	public List<ExplicitRole> getExplicitRoles() {
 		return roles;
 	}
 

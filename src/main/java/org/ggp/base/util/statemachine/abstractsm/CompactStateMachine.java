@@ -1,4 +1,4 @@
-package org.ggp.base.util.statemachinenew;
+package org.ggp.base.util.statemachine.abstractsm;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -64,7 +64,7 @@ public class CompactStateMachine extends AbstractStateMachine {
 	@Override
 	public MachineState getInitialState() {
 
-		return this.theMachine.getInitialState();
+		return this.theMachine.getCompactInitialState();
 
 	}
 
@@ -73,7 +73,7 @@ public class CompactStateMachine extends AbstractStateMachine {
 
 		if(state instanceof CompactMachineState && role instanceof CompactRole){
 
-			return new ArrayList<Move>(this.theMachine.getLegalMoves((CompactMachineState)state, (CompactRole)role));
+			return new ArrayList<Move>(this.theMachine.getCompactLegalMoves((CompactMachineState)state, (CompactRole)role));
 
 		}else{
 			// Not throwing StateMachineException because failure here is not the fault of the state machine but
@@ -88,7 +88,7 @@ public class CompactStateMachine extends AbstractStateMachine {
 
 		if(state instanceof CompactMachineState){
 
-			return this.theMachine.getNextState((CompactMachineState)state, this.convertListOfMoves(moves));
+			return this.theMachine.getCompactNextState((CompactMachineState)state, this.convertListOfMoves(moves));
 
 		}else{
 			// Not throwing StateMachineException because failure here is not the fault of the state machine but
@@ -147,7 +147,7 @@ public class CompactStateMachine extends AbstractStateMachine {
 	@Override
 	protected List<Role> computeRoles() {
 
-		return new ArrayList<Role>(this.theMachine.getRoles());
+		return new ArrayList<Role>(this.theMachine.getCompactRoles());
 	}
 
 	private List<CompactMove> convertListOfMoves(List<Move> moves){

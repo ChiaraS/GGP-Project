@@ -79,7 +79,7 @@ public class TicTacToeCanvas_Reference extends GameCanvas {
         }
 
         try {
-            List<ExplicitMove> legalMoves = stateMachine.getLegalMoves(gameState, myRole);
+            List<ExplicitMove> legalMoves = stateMachine.getExplicitLegalMoves(gameState, myRole);
 
             for(ExplicitMove legalMove : legalMoves) {
                 if(legalMove.getContents() instanceof GdlConstant)
@@ -122,7 +122,7 @@ public class TicTacToeCanvas_Reference extends GameCanvas {
         int height = mostRecentG.getClipBounds().height;
 
         try {
-            List<ExplicitMove> legalMoves = stateMachine.getLegalMoves(gameState, myRole);
+            List<ExplicitMove> legalMoves = stateMachine.getExplicitLegalMoves(gameState, myRole);
 
             int xCell = 1+3*x/width;
             int yCell = 1+3*y/height;

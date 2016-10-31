@@ -30,7 +30,7 @@ public class ProverDuctMctsGamer extends ProverUctMctsGamer {
 
 	int myRoleIndex = this.getStateMachine().getRoleIndices().get(this.getRole());
 
-	int numRoles = this.getStateMachine().getRoles().size();
+	int numRoles = this.getStateMachine().getExplicitRoles().size();
 
 	return new ProverMCTSManager(new ProverUCTSelection(numRoles, this.getRole(), r, this.valueOffset, new ProverUCTEvaluator(this.c, this.unexploredMoveDefaultSelectionValue)),
        		new ProverNoExpansion(), new ProverRandomPlayout(this.getStateMachine()),

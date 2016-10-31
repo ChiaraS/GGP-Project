@@ -94,7 +94,7 @@ public class PnSequentialTreeNodeFactory implements PnTreeNodeFactory {
 
 	private PnSequentialMCTSMoveStats[] createSUCTMCTSMoves(List<List<CompactMove>> allLegalMoves){
 
-		CompactRole[] roles = this.theMachine.getInternalRoles();
+		List<CompactRole> roles = this.theMachine.getCompactRoles();
 
 		// Get legal moves for all players.
 		/*try {
@@ -116,7 +116,7 @@ public class PnSequentialTreeNodeFactory implements PnTreeNodeFactory {
 		List<CompactMove> myLegalMoves = allLegalMoves.get(myIndex);
 		PnSequentialMCTSMoveStats[] moves = new PnSequentialMCTSMoveStats[myLegalMoves.size()];
 		for(int i = 0; i < myLegalMoves.size(); i++){
-			moves[i] = new PnSequentialMCTSMoveStats(createSUCTMCTSMoves((myIndex+1)%(roles.length), roles.length, allLegalMoves));
+			moves[i] = new PnSequentialMCTSMoveStats(createSUCTMCTSMoves((myIndex+1)%(roles.size()), roles.size(), allLegalMoves));
 		}
 
 		return moves;

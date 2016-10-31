@@ -103,7 +103,7 @@ public class ProverDecoupledTreeNodeFactory implements ProverTreeNodeFactory{
 	 */
 	protected ProverDecoupledMCTSMoveStats[][] createDUCTMCTSMoves(ExplicitMachineState state){
 
-		List<ExplicitRole> roles = this.theMachine.getRoles();
+		List<ExplicitRole> roles = this.theMachine.getExplicitRoles();
 		ProverDecoupledMCTSMoveStats[][] moves = new ProverDecoupledMCTSMoveStats[roles.size()][];
 
 		try{
@@ -111,7 +111,7 @@ public class ProverDecoupledTreeNodeFactory implements ProverTreeNodeFactory{
 
 			for(int i = 0; i < roles.size(); i++){
 
-				legalMoves = this.theMachine.getLegalMoves(state, roles.get(i));
+				legalMoves = this.theMachine.getExplicitLegalMoves(state, roles.get(i));
 
 				moves[i] = new ProverDecoupledMCTSMoveStats[legalMoves.size()];
 				for(int j = 0; j < legalMoves.size(); j++){

@@ -219,7 +219,7 @@ public final class Server extends JPanel implements ActionListener
 				e1.printStackTrace();
 				return;
 			}
-            List<ExplicitRole> roles = stateMachine.getRoles();
+            List<ExplicitRole> roles = stateMachine.getExplicitRoles();
 
             int newRowCount = 11;
             for (int i = 0; i < roles.size(); i++) {

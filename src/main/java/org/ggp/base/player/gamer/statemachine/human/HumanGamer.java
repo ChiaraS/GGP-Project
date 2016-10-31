@@ -39,7 +39,7 @@ public final class HumanGamer extends StateMachineGamer
 	@Override
 	public synchronized ExplicitMove stateMachineSelectMove(long timeout) throws TransitionDefinitionException, MoveDefinitionException, GoalDefinitionException, StateMachineException
 	{
-		List<ExplicitMove> moves = getStateMachine().getLegalMoves(getCurrentState(), getRole());
+		List<ExplicitMove> moves = getStateMachine().getExplicitLegalMoves(getCurrentState(), getRole());
 		move = moves.get(0);
 
 		try {

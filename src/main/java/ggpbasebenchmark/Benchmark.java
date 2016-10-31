@@ -134,7 +134,7 @@ public class Benchmark {
 
 	private void runTrace(Trace trace) {
 		int stepCounter = 0;
-		ExplicitMachineState state = stateMachine.getInitialState();
+		ExplicitMachineState state = stateMachine.getExplicitInitialState();
 		boolean isTerminal = false;
 		try {
 			isTerminal = stateMachine.isTerminal(state);
@@ -153,7 +153,7 @@ public class Benchmark {
 			nbGoals += algorithm.getNbGoals();
 
 			try {
-				state = stateMachine.getNextState(state, trace.remove(0));
+				state = stateMachine.getExplicitNextState(state, trace.remove(0));
 			} catch (TransitionDefinitionException | StateMachineException e) {
 	        	System.out.println("ERROR: with state update: " + state + "\n" + e.getMessage());
 			}

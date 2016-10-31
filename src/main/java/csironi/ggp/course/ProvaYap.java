@@ -97,13 +97,13 @@ public class ProvaYap {
 		}
 
 		start = System.currentTimeMillis();
-		ExplicitMachineState currentState = machine.getInitialState();
+		ExplicitMachineState currentState = machine.getExplicitInitialState();
 		System.out.println("GET_INITIAL_STATE: " + (System.currentTimeMillis() - start) + "ms.");
 
 		GamerLogger.log("ProvaStepByStep", "Initial state: " + currentState.toString());
 
 		start = System.currentTimeMillis();
-		List<ExplicitRole> roles = machine.getRoles();
+		List<ExplicitRole> roles = machine.getExplicitRoles();
 		System.out.println("GET_ROLES: " + (System.currentTimeMillis() - start) + "ms.");
 
 		GamerLogger.log("ProvaStepByStep", "Roles: " + roles.toString());
@@ -128,7 +128,7 @@ public class ProvaYap {
 				List<ExplicitMove> moves;
 				start = System.currentTimeMillis();
 				try {
-					moves = machine.getLegalMoves(currentState, r);
+					moves = machine.getExplicitLegalMoves(currentState, r);
 					System.out.println("GET_LEGAL_MOVES: " + (System.currentTimeMillis() - start) + "ms.");
 				} catch (MoveDefinitionException e) {
 					System.out.println("GET_LEGAL_MOVES: " + (System.currentTimeMillis() - start) + "ms.");
@@ -150,7 +150,7 @@ public class ProvaYap {
 
 			start = System.currentTimeMillis();
 			try {
-				currentState = machine.getNextState(currentState, jointMove);
+				currentState = machine.getExplicitNextState(currentState, jointMove);
 				System.out.println("GET_NEXT_STATE: " + (System.currentTimeMillis() - start) + "ms.");
 			} catch (TransitionDefinitionException e) {
 				System.out.println("GET_NEXT_STATE: " + (System.currentTimeMillis() - start) + "ms.");

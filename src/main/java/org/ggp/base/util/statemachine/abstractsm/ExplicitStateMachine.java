@@ -1,4 +1,4 @@
-package org.ggp.base.util.statemachinenew;
+package org.ggp.base.util.statemachine.abstractsm;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -11,18 +11,18 @@ import org.ggp.base.util.statemachine.exceptions.TransitionDefinitionException;
 import org.ggp.base.util.statemachine.structure.MachineState;
 import org.ggp.base.util.statemachine.structure.Move;
 import org.ggp.base.util.statemachine.structure.Role;
-import org.ggp.base.util.statemachine.structure.compact.CompactMachineState;
-import org.ggp.base.util.statemachine.structure.compact.CompactMove;
-import org.ggp.base.util.statemachine.structure.compact.CompactRole;
 import org.ggp.base.util.statemachine.structure.explicit.ExplicitMachineState;
 import org.ggp.base.util.statemachine.structure.explicit.ExplicitMove;
 import org.ggp.base.util.statemachine.structure.explicit.ExplicitRole;
 
-public class ExplicitAndCompactStateMachine extends AbstractStateMachine {
+/**
+ * TOTO: using instanceof is not elegant. Find a better way to deal with state machines using different types of moves, states and roles.
+ */
+public class ExplicitStateMachine extends AbstractStateMachine {
 
-	private ExplicitAndCompactStateMachineInterface theMachine;
+	private ExplicitStateMachineInterface theMachine;
 
-	public ExplicitAndCompactStateMachine(ExplicitAndCompactStateMachineInterface theMachine) {
+	public ExplicitStateMachine(ExplicitStateMachineInterface theMachine) {
 
 		this.theMachine = theMachine;
 
@@ -41,14 +41,10 @@ public class ExplicitAndCompactStateMachine extends AbstractStateMachine {
 
 			return this.theMachine.getAllGoalsForOneRole((ExplicitMachineState)state, (ExplicitRole)role);
 
-		}else if(state instanceof CompactMachineState && role instanceof CompactRole){
-
-			return this.theMachine.getAllGoalsForOneRole((CompactMachineState)state, (CompactRole)role);
-
 		}else{
 			// Not throwing StateMachineException because failure here is not the fault of the state machine but
 			// the fault of some programming error that caused the wrong state and role formats to end up here.
-			throw new RuntimeException("ExplicitAndCompactStateMachine-getAllGoalsForOneRole(): detected wrong type for machine state and/or role: [" + state.getClass().getSimpleName() + ", " + role.getClass().getSimpleName() + "].");
+			throw new RuntimeException("ExplicitStateMachine-getAllGoalsForOneRole(): detected wrong type for machine state and/or role: [" + state.getClass().getSimpleName() + ", " + role.getClass().getSimpleName() + "].");
 		}
 	}
 
@@ -58,21 +54,17 @@ public class ExplicitAndCompactStateMachine extends AbstractStateMachine {
 
 			return this.theMachine.isTerminal((ExplicitMachineState)state);
 
-		}else if(state instanceof CompactMachineState){
-
-			return this.theMachine.isTerminal((CompactMachineState)state);
-
 		}else{
 			// Not throwing StateMachineException because failure here is not the fault of the state machine but
 			// the fault of some programming error that caused the wrong state and role formats to end up here.
-			throw new RuntimeException("ExplicitAndCompactStateMachine-isTerminal(): detected wrong type for machine state : [" + state.getClass().getSimpleName() + "].");
+			throw new RuntimeException("ExplicitStateMachine-isTerminal(): detected wrong type for machine state : [" + state.getClass().getSimpleName() + "].");
 		}
 	}
 
 	@Override
 	public MachineState getInitialState() {
 
-		return this.theMachine.getInitialState();
+		return this.theMachine.getExplicitInitialState();
 
 	}
 
@@ -81,16 +73,12 @@ public class ExplicitAndCompactStateMachine extends AbstractStateMachine {
 
 		if(state instanceof ExplicitMachineState && role instanceof ExplicitRole){
 
-			return new ArrayList<Move>(this.theMachine.getLegalMoves((ExplicitMachineState)state, (ExplicitRole)role));
-
-		}else if(state instanceof CompactMachineState && role instanceof CompactRole){
-
-			return new ArrayList<Move>(this.theMachine.getLegalMoves((CompactMachineState)state, (CompactRole)role));
+			return new ArrayList<Move>(this.theMachine.getExplicitLegalMoves((ExplicitMachineState)state, (ExplicitRole)role));
 
 		}else{
 			// Not throwing StateMachineException because failure here is not the fault of the state machine but
 			// the fault of some programming error that caused the wrong state and role formats to end up here.
-			throw new RuntimeException("ExplicitAndCompactStateMachine-getLegalMoves(): detected wrong type for machine state and/or role: [" + state.getClass().getSimpleName() + ", " + role.getClass().getSimpleName() + "].");
+			throw new RuntimeException("ExplicitStateMachine-getLegalMoves(): detected wrong type for machine state and/or role: [" + state.getClass().getSimpleName() + ", " + role.getClass().getSimpleName() + "].");
 		}
 
 	}
@@ -100,16 +88,12 @@ public class ExplicitAndCompactStateMachine extends AbstractStateMachine {
 
 		if(state instanceof ExplicitMachineState){
 
-			return this.theMachine.getNextState((ExplicitMachineState)state, this.convertListOfExplicitMoves(moves));
-
-		}else if(state instanceof CompactMachineState){
-
-			return this.theMachine.getNextState((CompactMachineState)state, this.convertListOfCompactMoves(moves));
+			return this.theMachine.getExplicitNextState((ExplicitMachineState)state, this.convertListOfMoves(moves));
 
 		}else{
 			// Not throwing StateMachineException because failure here is not the fault of the state machine but
 			// the fault of some programming error that caused the wrong state and role formats to end up here.
-			throw new RuntimeException("ExplicitAndCompactStateMachine-getNextState(): detected wrong type for machine state: [" + state.getClass().getSimpleName() + "].");
+			throw new RuntimeException("ExplicitStateMachine-getNextState(): detected wrong type for machine state: [" + state.getClass().getSimpleName() + "].");
 		}
 
 	}
@@ -120,14 +104,10 @@ public class ExplicitAndCompactStateMachine extends AbstractStateMachine {
 
 			return (ExplicitMachineState)state;
 
-		}else if(state instanceof CompactMachineState){
-
-			return this.theMachine.convertToExplicitMachineState((CompactMachineState)state);
-
 		}else{
 			// Not throwing StateMachineException because failure here is not the fault of the state machine but
 			// the fault of some programming error that caused the wrong state and role formats to end up here.
-			throw new RuntimeException("ExplicitAndCompactStateMachine-convertToExplicitMachineState(): detected wrong type for machine state: [" + state.getClass().getSimpleName() + "].");
+			throw new RuntimeException("ExplicitStateMachine-convertToExplicitMachineState(): detected wrong type for machine state: [" + state.getClass().getSimpleName() + "].");
 		}
 	}
 
@@ -137,14 +117,10 @@ public class ExplicitAndCompactStateMachine extends AbstractStateMachine {
 
 			return (ExplicitMove)move;
 
-		}else if(move instanceof CompactMove){
-
-			return this.theMachine.convertToExplicitMove((CompactMove)move);
-
 		}else{
 			// Not throwing StateMachineException because failure here is not the fault of the state machine but
 			// the fault of some programming error that caused the wrong state and role formats to end up here.
-			throw new RuntimeException("ExplicitAndCompactStateMachine-convertToExplicitMove(): detected wrong type for move: [" + move.getClass().getSimpleName() + "].");
+			throw new RuntimeException("ExplicitStateMachine-convertToExplicitMove(): detected wrong type for move: [" + move.getClass().getSimpleName() + "].");
 		}
 	}
 
@@ -154,14 +130,10 @@ public class ExplicitAndCompactStateMachine extends AbstractStateMachine {
 
 			return (ExplicitRole)role;
 
-		}else if(role instanceof CompactRole){
-
-			return this.theMachine.convertToExplicitRole((CompactRole)role);
-
 		}else{
 			// Not throwing StateMachineException because failure here is not the fault of the state machine but
 			// the fault of some programming error that caused the wrong state and role formats to end up here.
-			throw new RuntimeException("ExplicitAndCompactStateMachine-convertToExplicitRole(): detected wrong type for role: [" + role.getClass().getSimpleName() + "].");
+			throw new RuntimeException("ExplicitStateMachine-convertToExplicitRole(): detected wrong type for role: [" + role.getClass().getSimpleName() + "].");
 		}
 	}
 
@@ -175,10 +147,10 @@ public class ExplicitAndCompactStateMachine extends AbstractStateMachine {
 	@Override
 	protected List<Role> computeRoles() {
 
-		return new ArrayList<Role>(this.theMachine.getRoles());
+		return new ArrayList<Role>(this.theMachine.getExplicitRoles());
 	}
 
-	private List<ExplicitMove> convertListOfExplicitMoves(List<Move> moves){
+	private List<ExplicitMove> convertListOfMoves(List<Move> moves){
 
 		List<ExplicitMove> explicitMoves = new ArrayList<ExplicitMove>();
 
@@ -191,34 +163,12 @@ public class ExplicitAndCompactStateMachine extends AbstractStateMachine {
 			}else{
 				// Not throwing StateMachineException because failure here is not the fault of the state machine but
 				// the fault of some programming error that caused the wrong state and role formats to end up here.
-				throw new RuntimeException("ExplicitAndCompactStateMachine-checkListOfMoves(): detected wrong type for move: [" + m.getClass().getSimpleName() + "].");
+				throw new RuntimeException("ExplicitStateMachine-checkListOfMoves(): detected wrong type for move: [" + m.getClass().getSimpleName() + "].");
 			}
 
 		}
 
 		return explicitMoves;
-
-	}
-
-	private List<CompactMove> convertListOfCompactMoves(List<Move> moves){
-
-		List<CompactMove> compactMoves = new ArrayList<CompactMove>();
-
-		for(Move m : moves){
-
-			if(m instanceof CompactMove){
-
-				compactMoves.add((CompactMove)m);
-
-			}else{
-				// Not throwing StateMachineException because failure here is not the fault of the state machine but
-				// the fault of some programming error that caused the wrong state and role formats to end up here.
-				throw new RuntimeException("ExplicitAndCompactStateMachine-checkListOfMoves(): detected wrong type for move: [" + m.getClass().getSimpleName() + "].");
-			}
-
-		}
-
-		return compactMoves;
 
 	}
 

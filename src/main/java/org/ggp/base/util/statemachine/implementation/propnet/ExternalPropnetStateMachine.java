@@ -121,7 +121,7 @@ public class ExternalPropnetStateMachine extends StateMachine {
 	//}
 
 	@Override
-	public List<Integer> getOneRoleGoals(ExplicitMachineState state, ExplicitRole role)
+	public List<Integer> getAllGoalsForOneRole(ExplicitMachineState state, ExplicitRole role)
 			throws StateMachineException {
 		return this.getOneRoleGoals(this.stateToExternalState(state), this.roleToExternalRole(role));
 	}
@@ -176,7 +176,7 @@ public class ExternalPropnetStateMachine extends StateMachine {
 	 * this state machine has not been initialized, NULL will be returned.
 	 */
 	@Override
-	public ExplicitMachineState getInitialState() {
+	public ExplicitMachineState getExplicitInitialState() {
 
 		/*
 		if(this.initialState == null){
@@ -214,7 +214,7 @@ public class ExternalPropnetStateMachine extends StateMachine {
 	 * If the state is not an extended propnet state, it is first transformed into one.
 	 */
 	@Override
-	public List<ExplicitMove> getLegalMoves(ExplicitMachineState state, ExplicitRole role)throws MoveDefinitionException {
+	public List<ExplicitMove> getExplicitLegalMoves(ExplicitMachineState state, ExplicitRole role)throws MoveDefinitionException {
 		List<ExplicitMove> moves = new ArrayList<ExplicitMove>();
 		CompactRole externalRole = this.roleToExternalRole(role);
 		for(CompactMove m : this.getLegalMoves(this.stateToExternalState(state), externalRole)){
@@ -259,7 +259,7 @@ public class ExternalPropnetStateMachine extends StateMachine {
 	 * If the state is not an extended propnet state, it is first transformed into one.
 	 */
 	@Override
-	public ExplicitMachineState getNextState(ExplicitMachineState state, List<ExplicitMove> moves)throws TransitionDefinitionException {
+	public ExplicitMachineState getExplicitNextState(ExplicitMachineState state, List<ExplicitMove> moves)throws TransitionDefinitionException {
 		return this.externalStateToState(this.getNextState(this.stateToExternalState(state), this.moveToExternalMove(moves)));
 	}
 
@@ -279,7 +279,7 @@ public class ExternalPropnetStateMachine extends StateMachine {
 
 	/* Already implemented for you */
 	@Override
-	public List<ExplicitRole> getRoles() {
+	public List<ExplicitRole> getExplicitRoles() {
 		return roles;
 	}
 

@@ -5,6 +5,7 @@ package org.ggp.base.player.gamer.statemachine.MCTS.propnet;
 
 import java.util.Random;
 
+import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.HybridMCTSManager;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.propnet.InternalPropnetMCTSManager;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.propnet.strategies.backpropagation.PnStandardBackpropagation;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.propnet.strategies.expansion.PnRandomExpansion;
@@ -36,8 +37,8 @@ public class SlowSUCTMCTSGamer extends UctMctsGamer {
 
 		Random r = new Random();
 
-		CompactRole myRole = this.thePropnetMachine.roleToInternalRole(this.getRole());
-		int numRoles = this.thePropnetMachine.getInternalRoles().length;
+		CompactRole myRole = this.thePropnetMachine.convertToCompactRole(this.getRole());
+		int numRoles = this.thePropnetMachine.getCompactRoles().size();
 
 		return new InternalPropnetMCTSManager(new PnUCTSelection(numRoles, myRole, r, this.valueOffset, new PnUCTEvaluator(this.c, this.unexploredMoveDefaultSelectionValue)),
 	       		new PnRandomExpansion(numRoles, myRole, r), new PnRandomPlayout(this.thePropnetMachine),
@@ -55,6 +56,12 @@ public class SlowSUCTMCTSGamer extends UctMctsGamer {
 		return null;
 
 
+	}
+
+	@Override
+	public HybridMCTSManager createHybridMCTSManager() {
+		// TODO Auto-generated method stub
+		return null;
 	}
 
 	/**

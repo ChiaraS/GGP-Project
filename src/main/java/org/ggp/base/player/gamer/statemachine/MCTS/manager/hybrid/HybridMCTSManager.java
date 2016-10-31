@@ -18,10 +18,10 @@ import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.hybrid.
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.hybrid.TreeNodeFactory;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.hybrid.amafdecoupled.AMAFDecoupledTreeNodeFactory;
 import org.ggp.base.util.logging.GamerLogger;
+import org.ggp.base.util.statemachine.abstractsm.AbstractStateMachine;
 import org.ggp.base.util.statemachine.exceptions.StateMachineException;
 import org.ggp.base.util.statemachine.exceptions.TransitionDefinitionException;
 import org.ggp.base.util.statemachine.structure.MachineState;
-import org.ggp.base.util.statemachinenew.AbstractStateMachine;
 
 /**
  * @author C.Sironi
@@ -127,7 +127,9 @@ public class HybridMCTSManager extends MCTSManager {
 		//this.strategies.add(this.playoutStrategy);
 		//this.strategies.add(this.moveChoiceStrategy);
 
-		String toLog = "MCTS manager initialized with the following state machine " + this.theMachine.getName();
+		String toLog = "MCTS manager type: " + this.getClass().getSimpleName();
+
+		toLog += "MCTS manager initialized with the following state machine " + this.theMachine.getName();
 
 		toLog += "\nMCTS manager initialized with the following parameters: [maxSearchDepth = " + this.maxSearchDepth + ", logTranspositionTable = " + logTranspositionTable + "]";
 

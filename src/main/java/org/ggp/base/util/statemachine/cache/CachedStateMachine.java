@@ -54,7 +54,7 @@ public final class CachedStateMachine extends StateMachine
 	}
 
 	@Override
-	public List<Integer> getOneRoleGoals(ExplicitMachineState state, ExplicitRole role)
+	public List<Integer> getAllGoalsForOneRole(ExplicitMachineState state, ExplicitRole role)
 			throws StateMachineException {
 
 		Entry entry = getEntry(state);
@@ -62,7 +62,7 @@ public final class CachedStateMachine extends StateMachine
 		{
 			if (!entry.goals.containsKey(role))
 			{
-				entry.goals.put(role, backingStateMachine.getOneRoleGoals(state, role));
+				entry.goals.put(role, backingStateMachine.getAllGoalsForOneRole(state, role));
 			}
 
 			return entry.goals.get(role);
@@ -70,14 +70,14 @@ public final class CachedStateMachine extends StateMachine
 	}
 
 	@Override
-	public List<ExplicitMove> getLegalMoves(ExplicitMachineState state, ExplicitRole role) throws MoveDefinitionException, StateMachineException
+	public List<ExplicitMove> getExplicitLegalMoves(ExplicitMachineState state, ExplicitRole role) throws MoveDefinitionException, StateMachineException
 	{
 		Entry entry = getEntry(state);
 		synchronized (entry)
 		{
 			if (!entry.moves.containsKey(role))
 			{
-				entry.moves.put(role, ImmutableList.copyOf(backingStateMachine.getLegalMoves(state, role)));
+				entry.moves.put(role, ImmutableList.copyOf(backingStateMachine.getExplicitLegalMoves(state, role)));
 			}
 
 			return entry.moves.get(role);
@@ -85,14 +85,14 @@ public final class CachedStateMachine extends StateMachine
 	}
 
 	@Override
-	public ExplicitMachineState getNextState(ExplicitMachineState state, List<ExplicitMove> moves) throws TransitionDefinitionException, StateMachineException
+	public ExplicitMachineState getExplicitNextState(ExplicitMachineState state, List<ExplicitMove> moves) throws TransitionDefinitionException, StateMachineException
 	{
 		Entry entry = getEntry(state);
 		synchronized (entry)
 		{
 			if (!entry.nexts.containsKey(moves))
 			{
-				entry.nexts.put(moves, backingStateMachine.getNextState(state, moves));
+				entry.nexts.put(moves, backingStateMachine.getExplicitNextState(state, moves));
 			}
 
 			return entry.nexts.get(moves);
@@ -131,15 +131,15 @@ public final class CachedStateMachine extends StateMachine
 	}
 
 	@Override
-	public List<ExplicitRole> getRoles() {
+	public List<ExplicitRole> getExplicitRoles() {
 		// TODO(schreib): Should this be cached as well?
-		return backingStateMachine.getRoles();
+		return backingStateMachine.getExplicitRoles();
 	}
 
 	@Override
-	public ExplicitMachineState getInitialState() {
+	public ExplicitMachineState getExplicitInitialState() {
 		// TODO(schreib): Should this be cached as well?
-		return backingStateMachine.getInitialState();
+		return backingStateMachine.getExplicitInitialState();
 	}
 
 	@Override

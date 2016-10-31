@@ -57,18 +57,18 @@ public final class RefactoredSeparateInternalPropnetCachedStateMachine extends I
 	}
 
 	@Override
-	public List<Integer> getOneRoleGoals(ExplicitMachineState state, ExplicitRole role) throws StateMachineException{
-		return this.getOneRoleGoals(this.backingStateMachine.stateToInternalState(state), this.backingStateMachine.roleToInternalRole(role));
+	public List<Integer> getAllGoalsForOneRole(ExplicitMachineState state, ExplicitRole role) throws StateMachineException{
+		return this.getAllGoalsForOneRole(this.backingStateMachine.convertToCompactMachineState(state), this.backingStateMachine.convertToCompactRole(role));
 	}
 
 	@Override
-	public List<Integer> getOneRoleGoals(CompactMachineState state, CompactRole role) {
+	public List<Integer> getAllGoalsForOneRole(CompactMachineState state, CompactRole role) {
 		PropnetMachineStateEntry entry = getPropnetEntry(state);
 		synchronized (entry){
 			List<Integer> goal = entry.goals.get(role);
 
 			if (goal == null){
-				goal = this.backingStateMachine.getOneRoleGoals(state, role);
+				goal = this.backingStateMachine.getAllGoalsForOneRole(state, role);
 				entry.goals.put(role, goal);
 			}
 
@@ -77,23 +77,23 @@ public final class RefactoredSeparateInternalPropnetCachedStateMachine extends I
 	}
 
 	@Override
-	public List<ExplicitMove> getLegalMoves(ExplicitMachineState state, ExplicitRole role) throws MoveDefinitionException, StateMachineException{
+	public List<ExplicitMove> getExplicitLegalMoves(ExplicitMachineState state, ExplicitRole role) throws MoveDefinitionException, StateMachineException{
 		List<ExplicitMove> moves = new ArrayList<ExplicitMove>();
-		for(CompactMove m : this.getInternalLegalMoves(this.backingStateMachine.stateToInternalState(state), this.backingStateMachine.roleToInternalRole(role))){
-			moves.add(this.backingStateMachine.internalMoveToMove(m));
+		for(CompactMove m : this.getCompactLegalMoves(this.backingStateMachine.convertToCompactMachineState(state), this.backingStateMachine.convertToCompactRole(role))){
+			moves.add(this.backingStateMachine.convertToExplicitMove(m));
 		}
 		return moves;
 	}
 
 	@Override
-	public List<CompactMove> getInternalLegalMoves(CompactMachineState state, CompactRole role) throws MoveDefinitionException{
+	public List<CompactMove> getCompactLegalMoves(CompactMachineState state, CompactRole role) throws MoveDefinitionException{
 		PropnetMachineStateEntry entry = getPropnetEntry(state);
 		synchronized (entry){
 
 			List<CompactMove> moves = entry.moves.get(role);
 
 			if (moves == null){
-				moves = ImmutableList.copyOf(this.backingStateMachine.getInternalLegalMoves(state, role));
+				moves = ImmutableList.copyOf(this.backingStateMachine.getCompactLegalMoves(state, role));
 				entry.moves.put(role, moves);
 			}
 
@@ -102,12 +102,12 @@ public final class RefactoredSeparateInternalPropnetCachedStateMachine extends I
 	}
 
 	@Override
-	public ExplicitMachineState getNextState(ExplicitMachineState state, List<ExplicitMove> moves) throws TransitionDefinitionException, StateMachineException{
-		return this.backingStateMachine.internalStateToState(this.getInternalNextState(this.backingStateMachine.stateToInternalState(state), this.backingStateMachine.movesToInternalMoves(moves)));
+	public ExplicitMachineState getExplicitNextState(ExplicitMachineState state, List<ExplicitMove> moves) throws TransitionDefinitionException, StateMachineException{
+		return this.backingStateMachine.convertToExplicitMachineState(this.getCompactNextState(this.backingStateMachine.convertToCompactMachineState(state), this.backingStateMachine.movesToInternalMoves(moves)));
 	}
 
 	@Override
-	public CompactMachineState getInternalNextState(CompactMachineState state, List<CompactMove> moves){
+	public CompactMachineState getCompactNextState(CompactMachineState state, List<CompactMove> moves){
 		PropnetMachineStateEntry entry = getPropnetEntry(state);
 		synchronized (entry){
 
@@ -115,7 +115,7 @@ public final class RefactoredSeparateInternalPropnetCachedStateMachine extends I
 
 			if (nextState == null){
 
-				nextState = this.backingStateMachine.getInternalNextState(state, moves);
+				nextState = this.backingStateMachine.getCompactNextState(state, moves);
 				entry.nexts.put(moves, nextState);
 			}
 
@@ -125,7 +125,7 @@ public final class RefactoredSeparateInternalPropnetCachedStateMachine extends I
 
 	@Override
 	public boolean isTerminal(ExplicitMachineState state) throws StateMachineException{
-		return this.isTerminal(this.backingStateMachine.stateToInternalState(state));
+		return this.isTerminal(this.backingStateMachine.convertToCompactMachineState(state));
 	}
 
 	@Override
@@ -156,25 +156,25 @@ public final class RefactoredSeparateInternalPropnetCachedStateMachine extends I
 	}
 
 	@Override
-	public List<ExplicitRole> getRoles() {
+	public List<ExplicitRole> getExplicitRoles() {
 		// TODO: Should this be cached as well?
-		return this.backingStateMachine.getRoles();
+		return this.backingStateMachine.getExplicitRoles();
 	}
 
 	@Override
-	public ExplicitMachineState getInitialState() {
+	public ExplicitMachineState getExplicitInitialState() {
 		// TODO: Should this be cached as well?
-		return this.backingStateMachine.getInitialState();
+		return this.backingStateMachine.getExplicitInitialState();
 	}
 
 	@Override
-	public CompactMachineState getInternalInitialState() {
-		return this.backingStateMachine.getInternalInitialState();
+	public CompactMachineState getCompactInitialState() {
+		return this.backingStateMachine.getCompactInitialState();
 	}
 
 	@Override
-	public CompactRole[] getInternalRoles() {
-		return this.backingStateMachine.getInternalRoles();
+	public List<CompactRole> getCompactRoles() {
+		return this.backingStateMachine.getCompactRoles();
 	}
 
 	@Override
@@ -193,33 +193,33 @@ public final class RefactoredSeparateInternalPropnetCachedStateMachine extends I
     }
 
 	@Override
-	public CompactMachineState stateToInternalState(ExplicitMachineState state) {
-		return this.backingStateMachine.stateToInternalState(state);
+	public CompactMachineState convertToCompactMachineState(ExplicitMachineState state) {
+		return this.backingStateMachine.convertToCompactMachineState(state);
 	}
 
 	@Override
-	public ExplicitMachineState internalStateToState(CompactMachineState state) {
-		return this.backingStateMachine.internalStateToState(state);
+	public ExplicitMachineState convertToExplicitMachineState(CompactMachineState state) {
+		return this.backingStateMachine.convertToExplicitMachineState(state);
 	}
 
 	@Override
-	public ExplicitRole internalRoleToRole(CompactRole role) {
-		return this.backingStateMachine.internalRoleToRole(role);
+	public ExplicitRole convertToExplicitRole(CompactRole role) {
+		return this.backingStateMachine.convertToExplicitRole(role);
 	}
 
 	@Override
-	public CompactRole roleToInternalRole(ExplicitRole role) {
-		return this.backingStateMachine.roleToInternalRole(role);
+	public CompactRole convertToCompactRole(ExplicitRole role) {
+		return this.backingStateMachine.convertToCompactRole(role);
 	}
 
 	@Override
-	public ExplicitMove internalMoveToMove(CompactMove move) {
-		return this.backingStateMachine.internalMoveToMove(move);
+	public ExplicitMove convertToExplicitMove(CompactMove move) {
+		return this.backingStateMachine.convertToExplicitMove(move);
 	}
 
 	@Override
-	public CompactMove moveToInternalMove(ExplicitMove move) {
-		return this.backingStateMachine.moveToInternalMove(move);
+	public CompactMove convertToCompactMove(ExplicitMove move) {
+		return this.backingStateMachine.convertToCompactMove(move);
 	}
 
 	@Override

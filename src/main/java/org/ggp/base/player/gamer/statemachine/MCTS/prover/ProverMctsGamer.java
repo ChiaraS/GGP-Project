@@ -100,7 +100,7 @@ public abstract class ProverMctsGamer extends ProverGamer {
 				GamerLogger.log("Gamer", "Starting search during metagame.");
 
 				try {
-					this.mctsManager.search(this.getStateMachine().getInitialState(), realTimeout, this.gameStep+1);
+					this.mctsManager.search(this.getStateMachine().getExplicitInitialState(), realTimeout, this.gameStep+1);
 
 					GamerLogger.log("Gamer", "Done searching during metagame.");
 					searchTime = this.mctsManager.getSearchTime();
@@ -212,7 +212,7 @@ public abstract class ProverMctsGamer extends ProverGamer {
 		GamerLogger.log(GamerLogger.FORMAT.CSV_FORMAT, "Stats", this.gameStep + ";" + thinkingTime + ";" + searchTime + ";" + iterations + ";" + visitedNodes + ";" + iterationsPerSecond + ";" + nodesPerSecond + ";" + theMove + ";" + moveScoreSum + ";" + moveVisits + ";" + moveAvgScore + ";");
 
 		// TODO: IS THIS NEEDED? WHEN?
-		notifyObservers(new GamerSelectedMoveEvent(theMachine.getLegalMoves(this.getCurrentState(), this.getRole()), theMove, thinkingTime));
+		notifyObservers(new GamerSelectedMoveEvent(theMachine.getExplicitLegalMoves(this.getCurrentState(), this.getRole()), theMove, thinkingTime));
 
 		return theMove;
 	}

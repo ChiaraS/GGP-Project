@@ -47,7 +47,7 @@ public class MyDeliberationGamer extends SampleGamer {
 		StateMachine stateMachine = getStateMachine();
 		ExplicitMachineState state = getCurrentState();
 		ExplicitRole role = getRole();
-		List<ExplicitMove> moves = stateMachine.getLegalMoves(state, role);
+		List<ExplicitMove> moves = stateMachine.getExplicitLegalMoves(state, role);
 
 		ExplicitMove selection = bestmove(role, state);
 
@@ -68,14 +68,14 @@ public class MyDeliberationGamer extends SampleGamer {
 			GoalDefinitionException, StateMachineException{
 
 		StateMachine stateMachine = getStateMachine();
-		List<ExplicitMove> moves = stateMachine.getLegalMoves(state, role);
+		List<ExplicitMove> moves = stateMachine.getExplicitLegalMoves(state, role);
 		ExplicitMove selection = moves.get(0);
 		int maxScore = 0;
 
 		for (ExplicitMove move: moves){
 			ArrayList<ExplicitMove> jointMoves = new ArrayList<ExplicitMove>();
 			jointMoves.add(move);
-			int currentScore = maxscore(role, stateMachine.getNextState(state, jointMoves));
+			int currentScore = maxscore(role, stateMachine.getExplicitNextState(state, jointMoves));
 			if(currentScore == 100){
 				return move;
 			}
@@ -104,13 +104,13 @@ public class MyDeliberationGamer extends SampleGamer {
 			return stateMachine.getGoal(state, role);
 		}
 
-		List<ExplicitMove> moves = stateMachine.getLegalMoves(state, role);
+		List<ExplicitMove> moves = stateMachine.getExplicitLegalMoves(state, role);
 		int maxScore = 0;
 
 		for (ExplicitMove move: moves){
 			ArrayList<ExplicitMove> jointMoves = new ArrayList<ExplicitMove>();
 			jointMoves.add(move);
-			int currentScore = maxscore(role, stateMachine.getNextState(state, jointMoves));
+			int currentScore = maxscore(role, stateMachine.getExplicitNextState(state, jointMoves));
 			if(currentScore > maxScore){
 				maxScore = currentScore;
 			}

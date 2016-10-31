@@ -42,7 +42,7 @@ public final class SampleAlphabetGamer extends SampleGamer
 		 * is to return one of these moves. Choosing the best
 		 * Move to play is the goal of GGP.
 		 */
-		List<ExplicitMove> moves = getStateMachine().getLegalMoves(getCurrentState(), getRole());
+		List<ExplicitMove> moves = getStateMachine().getExplicitLegalMoves(getCurrentState(), getRole());
 
 		// Create a copy of the list of legal moves, so we can modify it.
 		moves = new ArrayList<ExplicitMove>(moves);

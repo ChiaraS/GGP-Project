@@ -19,12 +19,10 @@ import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.hybrid.
 public class NoExpansion implements ExpansionStrategy {
 
 	public NoExpansion() {
-		// TODO Auto-generated constructor stub
 	}
 
 	@Override
 	public String getStrategyParameters() {
-		// TODO Auto-generated method stub
 		return null;
 	}
 
@@ -41,13 +39,11 @@ public class NoExpansion implements ExpansionStrategy {
 
 	@Override
 	public boolean expansionRequired(MCTSNode node) {
-		// TODO Auto-generated method stub
 		return false;
 	}
 
 	@Override
 	public MCTSJointMove expand(MCTSNode node) {
-		// TODO Auto-generated method stub
 		return null;
 	}
 }

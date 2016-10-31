@@ -39,7 +39,7 @@ public class CLegalGamer extends SampleGamer {
 		 * is to return one of these moves. The choice of which
 		 * Move to play is the goal of GGP.
 		 */
-		List<ExplicitMove> moves = getStateMachine().getLegalMoves(getCurrentState(), getRole());
+		List<ExplicitMove> moves = getStateMachine().getExplicitLegalMoves(getCurrentState(), getRole());
 
 		// SampleLegalGamer is very simple : it picks the first legal move
 		ExplicitMove selection = moves.get(0);

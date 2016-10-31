@@ -53,13 +53,13 @@ public class RefactoredCachedStateMachine extends StateMachine{
 	}
 
 	@Override
-	public List<Integer> getOneRoleGoals(ExplicitMachineState state, ExplicitRole role) throws StateMachineException{
+	public List<Integer> getAllGoalsForOneRole(ExplicitMachineState state, ExplicitRole role) throws StateMachineException{
 		MachineStateEntry entry = getEntry(state);
 		synchronized (entry){
 			List<Integer> goals = entry.goals.get(role);
 
 			if(goals == null){ // If it's null because there is no such entry or because the entry is null, we must create a new one anyway.
-				goals = this.backingStateMachine.getOneRoleGoals(state, role);
+				goals = this.backingStateMachine.getAllGoalsForOneRole(state, role);
 				entry.goals.put(role, goals);
 			}
 
@@ -68,14 +68,14 @@ public class RefactoredCachedStateMachine extends StateMachine{
 	}
 
 	@Override
-	public List<ExplicitMove> getLegalMoves(ExplicitMachineState state, ExplicitRole role) throws MoveDefinitionException, StateMachineException{
+	public List<ExplicitMove> getExplicitLegalMoves(ExplicitMachineState state, ExplicitRole role) throws MoveDefinitionException, StateMachineException{
 		MachineStateEntry entry = getEntry(state);
 		synchronized (entry){
 
 			List<ExplicitMove> moves = entry.moves.get(role);
 
 			if (moves == null){
-				moves = ImmutableList.copyOf(backingStateMachine.getLegalMoves(state, role));
+				moves = ImmutableList.copyOf(backingStateMachine.getExplicitLegalMoves(state, role));
 				entry.moves.put(role, moves);
 			}
 
@@ -84,7 +84,7 @@ public class RefactoredCachedStateMachine extends StateMachine{
 	}
 
 	@Override
-	public ExplicitMachineState getNextState(ExplicitMachineState state, List<ExplicitMove> moves) throws TransitionDefinitionException, StateMachineException{
+	public ExplicitMachineState getExplicitNextState(ExplicitMachineState state, List<ExplicitMove> moves) throws TransitionDefinitionException, StateMachineException{
 		MachineStateEntry entry = getEntry(state);
 		synchronized (entry){
 
@@ -92,7 +92,7 @@ public class RefactoredCachedStateMachine extends StateMachine{
 
 			if(nextState == null){
 
-				nextState = this.backingStateMachine.getNextState(state, moves);
+				nextState = this.backingStateMachine.getExplicitNextState(state, moves);
 				entry.nexts.put(moves, nextState);
 			}
 
@@ -128,15 +128,15 @@ public class RefactoredCachedStateMachine extends StateMachine{
 	}
 
 	@Override
-	public List<ExplicitRole> getRoles(){
+	public List<ExplicitRole> getExplicitRoles(){
 		// TODO(schreib): Should this be cached as well?
-		return this.backingStateMachine.getRoles();
+		return this.backingStateMachine.getExplicitRoles();
 	}
 
 	@Override
-	public ExplicitMachineState getInitialState(){
+	public ExplicitMachineState getExplicitInitialState(){
 		// TODO(schreib): Should this be cached as well?
-		return this.backingStateMachine.getInitialState();
+		return this.backingStateMachine.getExplicitInitialState();
 	}
 
 	@Override

@@ -100,7 +100,7 @@ public class ExtendedStateMachineVerifier {
 
             	ExplicitMachineState[] theCurrentStates = new ExplicitMachineState[theMachines.size()];
             	for(int i = 0; i < theMachines.size(); i++) {
-            		theCurrentStates[i] = theMachines.get(i).getInitialState();
+            		theCurrentStates[i] = theMachines.get(i).getExplicitInitialState();
 
             		/*
             		if(!(theCurrentStates[i].equals(theCurrentStates[0]))){
@@ -129,12 +129,12 @@ public class ExtendedStateMachineVerifier {
 				        // If check fails for current subject (NOT BECAUSE THE SUBJECT STATE MACHINE FAILS!),
 				    	// go check the next.
 				    	try{
-					    	for(ExplicitRole theRole : theMachines.get(0).getRoles()) {
+					    	for(ExplicitRole theRole : theMachines.get(0).getExplicitRoles()) {
 					            // If check fails for current role (NOT BECAUSE THE SUBJECT STATE MACHINE FAILS!) go
 					    		// check the next.
 					        	try{
 
-					            	List<ExplicitMove> referenceMoves = theMachines.get(0).getLegalMoves(theCurrentStates[0], theRole);
+					            	List<ExplicitMove> referenceMoves = theMachines.get(0).getExplicitLegalMoves(theCurrentStates[0], theRole);
 					            	List<ExplicitMove> subjectMoves = null;
 
 					            	try{
@@ -144,7 +144,7 @@ public class ExtendedStateMachineVerifier {
 					            		// Since we checked at the start of this method, we can be sure that theMachines.get(i)
 					            		// is not a null pointer exception and since this test fails when the computation of the
 					            		// next state fails, we can be sure that theCurrentStates[i] will exist.
-					            		subjectMoves = theMachines.get(i).getLegalMoves(theCurrentStates[i], theRole);
+					            		subjectMoves = theMachines.get(i).getExplicitLegalMoves(theCurrentStates[i], theRole);
 					            		//System.out.println("Getting legal moves for machine " + i);
 					            	}catch(StateMachineException sme){
 					            		GamerLogger.log("Verifier", "Machine #" + i + " failed computation of legal moves for state " + theCurrentStates[i] + " and role " + theRole + ".");
@@ -219,12 +219,12 @@ public class ExtendedStateMachineVerifier {
 				    // Proceed on to the next state with the reference state machine.
 				    // If these instructions throw an exception, proceed to check the next iteration.
 				    List<ExplicitMove> theJointMove = theMachines.get(0).getRandomJointMove(theCurrentStates[0]);
-				    theCurrentStates[0] = theMachines.get(0).getNextState(theCurrentStates[0], theJointMove);
+				    theCurrentStates[0] = theMachines.get(0).getExplicitNextState(theCurrentStates[0], theJointMove);
 
 				    // Proceed on to the next state with all other subject state machines.
 				    for(int i = 1; i < theMachines.size(); i++) {
 			            try {
-			                theCurrentStates[i] = theMachines.get(i).getNextState(theCurrentStates[i], theJointMove);
+			                theCurrentStates[i] = theMachines.get(i).getExplicitNextState(theCurrentStates[i], theJointMove);
 			                /*
 			                if(!theCurrentStates[i].equals(theCurrentStates[0])){
 			                	GamerLogger.log("Verifier", "Machine #" + i + " has a next state that's different from the one of Machine #0.");
@@ -286,7 +286,7 @@ public class ExtendedStateMachineVerifier {
 						return false;
 					}
 
-	                for(ExplicitRole theRole : theMachines.get(0).getRoles()){
+	                for(ExplicitRole theRole : theMachines.get(0).getExplicitRoles()){
 
 	                	int referenceGoal = -1;
 	                	int subjectGoal = -2;

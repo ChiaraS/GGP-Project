@@ -64,26 +64,26 @@ public class PnDecoupledTreeNodeFactory implements PnTreeNodeFactory {
 
 		}else{// Non-terminal state:
 
-				ductMovesStats = this.createDUCTMCTSMoves(state);
+			ductMovesStats = this.createDUCTMCTSMoves(state);
 
-				// Error when computing moves.
-				// If for at least one player the legal moves cannot be computed (an thus the moves
-				// are returned as a null value), we consider this node "pseudo-terminal" (i.e. the
-				// corresponding state is not terminal but we cannot explore any of the next states,
-				// so we treat it as terminal during the MCT search). This means that we will need
-				// the goal values in this node and they will not change for all the rest of the
-				// search, so we compute them and memorize them.
-				if(ductMovesStats == null){
-					// Compute the goals for each player. We are in a non terminal state so the goal might not be defined.
-					// We use the state machine method that will return default goal values for the player for which goal
-					// values cannot be computed in this state.
-					goals = this.theMachine.getSafeGoalsAvg(state);
-					terminal = true;
-				}
-				// If the legal moves can be computed for every player, there is no need to compute the goals.
+			// Error when computing moves.
+			// If for at least one player the legal moves cannot be computed (an thus the moves
+			// are returned as a null value), we consider this node "pseudo-terminal" (i.e. the
+			// corresponding state is not terminal but we cannot explore any of the next states,
+			// so we treat it as terminal during the MCT search). This means that we will need
+			// the goal values in this node and they will not change for all the rest of the
+			// search, so we compute them and memorize them.
+			if(ductMovesStats == null){
+				// Compute the goals for each player. We are in a non terminal state so the goal might not be defined.
+				// We use the state machine method that will return default goal values for the player for which goal
+				// values cannot be computed in this state.
+				goals = this.theMachine.getSafeGoalsAvg(state);
+				terminal = true;
 			}
+			// If the legal moves can be computed for every player, there is no need to compute the goals.
+		}
 
-			return new PnDecoupledMCTSNode(ductMovesStats, goals, terminal);
+		return new PnDecoupledMCTSNode(ductMovesStats, goals, terminal);
 	}
 
 	/**
@@ -95,15 +95,15 @@ public class PnDecoupledTreeNodeFactory implements PnTreeNodeFactory {
 	 */
 	protected PnDecoupledMCTSMoveStats[][] createDUCTMCTSMoves(CompactMachineState state){
 
-		CompactRole[] roles = this.theMachine.getInternalRoles();
-		PnDecoupledMCTSMoveStats[][] moves = new PnDecoupledMCTSMoveStats[roles.length][];
+		List<CompactRole> roles = this.theMachine.getCompactRoles();
+		PnDecoupledMCTSMoveStats[][] moves = new PnDecoupledMCTSMoveStats[roles.size()][];
 
 		try{
 			List<CompactMove> legalMoves;
 
-			for(int i = 0; i < roles.length; i++){
+			for(int i = 0; i < roles.size(); i++){
 
-				legalMoves = this.theMachine.getInternalLegalMoves(state, roles[i]);
+				legalMoves = this.theMachine.getCompactLegalMoves(state, roles.get(i));
 
 				moves[i] = new PnDecoupledMCTSMoveStats[legalMoves.size()];
 				for(int j = 0; j < legalMoves.size(); j++){

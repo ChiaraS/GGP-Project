@@ -292,7 +292,7 @@ public class PrologStateMachine extends StateMachine {
 	 * TODO: ATTNETION! This method has never been tested.
 	 */
 	@Override
-	public List<Integer> getOneRoleGoals(ExplicitMachineState state, ExplicitRole role)	throws StateMachineException {
+	public List<Integer> getAllGoalsForOneRole(ExplicitMachineState state, ExplicitRole role)	throws StateMachineException {
 
 		updatePrologState(state);
 
@@ -380,7 +380,7 @@ public class PrologStateMachine extends StateMachine {
 	 * @see org.ggp.base.util.statemachine.StateMachine#getRoles()
 	 */
 	@Override
-	public List<ExplicitRole> getRoles() {
+	public List<ExplicitRole> getExplicitRoles() {
 		return this.roles;
 	}
 
@@ -388,7 +388,7 @@ public class PrologStateMachine extends StateMachine {
 	 * @see org.ggp.base.util.statemachine.StateMachine#getInitialState()
 	 */
 	@Override
-	public ExplicitMachineState getInitialState() {
+	public ExplicitMachineState getExplicitInitialState() {
 		return this.initialState;
 	}
 
@@ -396,7 +396,7 @@ public class PrologStateMachine extends StateMachine {
 	 * @see org.ggp.base.util.statemachine.StateMachine#getLegalMoves(org.ggp.base.util.statemachine.MachineState, org.ggp.base.util.statemachine.Role)
 	 */
 	@Override
-	public List<ExplicitMove> getLegalMoves(ExplicitMachineState state, ExplicitRole role)
+	public List<ExplicitMove> getExplicitLegalMoves(ExplicitMachineState state, ExplicitRole role)
 			throws MoveDefinitionException, StateMachineException {
 
 		// TODO: should I catch the state machine exception before re-throwing it?
@@ -445,7 +445,7 @@ public class PrologStateMachine extends StateMachine {
 	 * @see org.ggp.base.util.statemachine.StateMachine#getNextState(org.ggp.base.util.statemachine.MachineState, java.util.List)
 	 */
 	@Override
-	public ExplicitMachineState getNextState(ExplicitMachineState state, List<ExplicitMove> moves)
+	public ExplicitMachineState getExplicitNextState(ExplicitMachineState state, List<ExplicitMove> moves)
 			throws TransitionDefinitionException, StateMachineException {
 
 		updatePrologState(state);

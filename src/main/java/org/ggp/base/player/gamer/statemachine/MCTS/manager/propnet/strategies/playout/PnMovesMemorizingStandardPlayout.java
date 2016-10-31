@@ -59,7 +59,7 @@ public class PnMovesMemorizingStandardPlayout extends PnStandardPlayout {
 			}
 
 			//state = this.getNextState(state, jointMove);
-			state = this.theMachine.getInternalNextState(state, jointMove);
+			state = this.theMachine.getCompactNextState(state, jointMove);
 
 			allJointMoves.add(jointMove);
 

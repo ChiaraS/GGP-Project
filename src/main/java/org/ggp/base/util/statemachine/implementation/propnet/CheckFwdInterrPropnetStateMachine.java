@@ -230,7 +230,7 @@ public class CheckFwdInterrPropnetStateMachine extends StateMachine {
 	}
 
 	@Override
-	public List<Integer> getOneRoleGoals(ExplicitMachineState state, ExplicitRole role) {
+	public List<Integer> getAllGoalsForOneRole(ExplicitMachineState state, ExplicitRole role) {
 		// Mark base propositions according to state.
 		this.markBases(state);
 
@@ -264,7 +264,7 @@ public class CheckFwdInterrPropnetStateMachine extends StateMachine {
 	 * this state machine has not been initialized, NULL will be returned.
 	 */
 	@Override
-	public ExplicitMachineState getInitialState() {
+	public ExplicitMachineState getExplicitInitialState() {
 		return this.initialState;
 	}
 
@@ -272,7 +272,7 @@ public class CheckFwdInterrPropnetStateMachine extends StateMachine {
 	 * Computes the legal moves for role in state.
 	 */
 	@Override
-	public List<ExplicitMove> getLegalMoves(ExplicitMachineState state, ExplicitRole role)
+	public List<ExplicitMove> getExplicitLegalMoves(ExplicitMachineState state, ExplicitRole role)
 	throws MoveDefinitionException {
 		// Mark base propositions according to state.
 		this.markBases(state);
@@ -300,7 +300,7 @@ public class CheckFwdInterrPropnetStateMachine extends StateMachine {
 	 * Computes the next state given a state and the list of moves.
 	 */
 	@Override
-	public ExplicitMachineState getNextState(ExplicitMachineState state, List<ExplicitMove> moves)
+	public ExplicitMachineState getExplicitNextState(ExplicitMachineState state, List<ExplicitMove> moves)
 	throws TransitionDefinitionException {
 		// Mark base propositions according to state.
 		this.markBases(state);
@@ -314,7 +314,7 @@ public class CheckFwdInterrPropnetStateMachine extends StateMachine {
 
 	/* Already implemented for you */
 	@Override
-	public List<ExplicitRole> getRoles() {
+	public List<ExplicitRole> getExplicitRoles() {
 		return roles;
 	}
 

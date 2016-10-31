@@ -84,7 +84,7 @@ public final class GameServer extends Thread implements Subject
 			GamerLogger.logError("GameServer", "Impossible to create game server! Failed inititalization of state machine for current match.");
 			throw new GameServerException("Impossible to create the game server.", e);
 		}
-        currentState = stateMachine.getInitialState();
+        currentState = stateMachine.getExplicitInitialState();
         previousMoves = null;
 
         mostRecentErrors = new HashMap<ExplicitRole,String>();
@@ -113,7 +113,7 @@ public final class GameServer extends Thread implements Subject
 
     public List<Integer> getGoals() throws GoalDefinitionException, StateMachineException {
         List<Integer> goals = new ArrayList<Integer>();
-        for (ExplicitRole role : stateMachine.getRoles()) {
+        for (ExplicitRole role : stateMachine.getExplicitRoles()) {
             goals.add(stateMachine.getGoal(currentState, role));
         }
 
@@ -147,8 +147,8 @@ public final class GameServer extends Thread implements Subject
     // caused by players and write them into the match description.
     private void appendErrorsToMatchDescription() {
         List<String> theErrors = new ArrayList<String>();
-        for (int i = 0; i < stateMachine.getRoles().size(); i++) {
-            ExplicitRole r = stateMachine.getRoles().get(i);
+        for (int i = 0; i < stateMachine.getExplicitRoles().size(); i++) {
+            ExplicitRole r = stateMachine.getExplicitRoles().get(i);
             if (mostRecentErrors.containsKey(r)) {
                 theErrors.add(mostRecentErrors.get(r));
             } else {
@@ -175,7 +175,7 @@ public final class GameServer extends Thread implements Subject
         		sendPreviewRequests();
         	}
 
-            notifyObservers(new ServerNewMatchEvent(stateMachine.getRoles(), currentState));
+            notifyObservers(new ServerNewMatchEvent(stateMachine.getExplicitRoles(), currentState));
             notifyObservers(new ServerTimeEvent(match.getStartClock() * 1000));
             sendStartRequests();
             appendErrorsToMatchDescription();
@@ -189,7 +189,7 @@ public final class GameServer extends Thread implements Subject
                 previousMoves = sendPlayRequests();
 
                 notifyObservers(new ServerNewMovesEvent(previousMoves));
-                currentState = stateMachine.getNextState(currentState, previousMoves);
+                currentState = stateMachine.getExplicitNextState(currentState, previousMoves);
 
                 match.appendMoves2(previousMoves);
                 match.appendState(currentState.getContents());
@@ -293,11 +293,11 @@ public final class GameServer extends Thread implements Subject
     private synchronized List<ExplicitMove> sendPlayRequests() throws InterruptedException, MoveDefinitionException, StateMachineException {
         List<PlayRequestThread> threads = new ArrayList<PlayRequestThread>(hosts.size());
         for (int i = 0; i < hosts.size(); i++) {
-            List<ExplicitMove> legalMoves = stateMachine.getLegalMoves(currentState, stateMachine.getRoles().get(i));
+            List<ExplicitMove> legalMoves = stateMachine.getExplicitLegalMoves(currentState, stateMachine.getExplicitRoles().get(i));
             if (playerPlaysRandomly[i]) {
             	threads.add(new RandomPlayRequestThread(match, legalMoves));
             } else {
-                threads.add(new PlayRequestThread(this, match, previousMoves, legalMoves, stateMachine.getRoles().get(i), hosts.get(i), ports.get(i), getPlayerNameFromMatchForRequest(i), playerGetsUnlimitedTime[i]));
+                threads.add(new PlayRequestThread(this, match, previousMoves, legalMoves, stateMachine.getExplicitRoles().get(i), hosts.get(i), ports.get(i), getPlayerNameFromMatchForRequest(i), playerGetsUnlimitedTime[i]));
             }
         }
         for (PlayRequestThread thread : threads) {
@@ -321,7 +321,7 @@ public final class GameServer extends Thread implements Subject
         List<PreviewRequestThread> threads = new ArrayList<PreviewRequestThread>(hosts.size());
         for (int i = 0; i < hosts.size(); i++) {
         	if (!playerPlaysRandomly[i]) {
-        		threads.add(new PreviewRequestThread(this, match, stateMachine.getRoles().get(i), hosts.get(i), ports.get(i), getPlayerNameFromMatchForRequest(i)));
+        		threads.add(new PreviewRequestThread(this, match, stateMachine.getExplicitRoles().get(i), hosts.get(i), ports.get(i), getPlayerNameFromMatchForRequest(i)));
         	}
         }
         for (PreviewRequestThread thread : threads) {
@@ -339,7 +339,7 @@ public final class GameServer extends Thread implements Subject
         List<StartRequestThread> threads = new ArrayList<StartRequestThread>(hosts.size());
         for (int i = 0; i < hosts.size(); i++) {
         	if (!playerPlaysRandomly[i]) {
-        		threads.add(new StartRequestThread(this, match, stateMachine.getRoles().get(i), hosts.get(i), ports.get(i), getPlayerNameFromMatchForRequest(i)));
+        		threads.add(new StartRequestThread(this, match, stateMachine.getExplicitRoles().get(i), hosts.get(i), ports.get(i), getPlayerNameFromMatchForRequest(i)));
         	}
         }
         for (StartRequestThread thread : threads) {
@@ -357,7 +357,7 @@ public final class GameServer extends Thread implements Subject
         List<StopRequestThread> threads = new ArrayList<StopRequestThread>(hosts.size());
         for (int i = 0; i < hosts.size(); i++) {
         	if (!playerPlaysRandomly[i]) {
-        		threads.add(new StopRequestThread(this, match, previousMoves, stateMachine.getRoles().get(i), hosts.get(i), ports.get(i), getPlayerNameFromMatchForRequest(i)));
+        		threads.add(new StopRequestThread(this, match, previousMoves, stateMachine.getExplicitRoles().get(i), hosts.get(i), ports.get(i), getPlayerNameFromMatchForRequest(i)));
         	}
         }
         for (StopRequestThread thread : threads) {
@@ -372,7 +372,7 @@ public final class GameServer extends Thread implements Subject
         List<AbortRequestThread> threads = new ArrayList<AbortRequestThread>(hosts.size());
         for (int i = 0; i < hosts.size(); i++) {
         	if (!playerPlaysRandomly[i]) {
-        		threads.add(new AbortRequestThread(this, match, stateMachine.getRoles().get(i), hosts.get(i), ports.get(i), getPlayerNameFromMatchForRequest(i)));
+        		threads.add(new AbortRequestThread(this, match, stateMachine.getExplicitRoles().get(i), hosts.get(i), ports.get(i), getPlayerNameFromMatchForRequest(i)));
         	}
         }
         for (AbortRequestThread thread : threads) {

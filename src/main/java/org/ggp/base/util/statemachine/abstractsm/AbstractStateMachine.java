@@ -1,4 +1,4 @@
-package org.ggp.base.util.statemachinenew;
+package org.ggp.base.util.statemachine.abstractsm;
 
 import java.util.ArrayList;
 import java.util.HashMap;

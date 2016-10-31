@@ -170,7 +170,9 @@ public class InternalPropnetMCTSManager extends MCTSManager {
 		//this.strategies.add(this.playoutStrategy);
 		//this.strategies.add(this.moveChoiceStrategy);
 
-		String toLog = "MCTS manager initialized with the following state machine " + this.theMachine.getName();
+		String toLog = "MCTS manager type: " + this.getClass().getSimpleName();
+
+		toLog += "MCTS manager initialized with the following state machine " + this.theMachine.getName();
 
 		toLog += "\nMCTS manager initialized with the following parameters: [maxSearchDepth = " + this.maxSearchDepth + ", logTranspositionTable = " + logTranspositionTable + "]";
 
@@ -515,7 +517,7 @@ public class InternalPropnetMCTSManager extends MCTSManager {
 		//System.out.println("Computing next state and next node.");
 
 		// Get the next state according to the joint move...
-		nextState = this.theMachine.getInternalNextState(currentState, mctsJointMove.getJointMove());
+		nextState = this.theMachine.getCompactNextState(currentState, mctsJointMove.getJointMove());
 		// ...and get the corresponding MCT node from the transposition table.
 		nextNode = this.transpositionTable.getNode(nextState);
 

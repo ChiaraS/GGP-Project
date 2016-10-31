@@ -178,15 +178,15 @@ public class SingleRunProverTest {
 
 		    r = new Random();
 		    maxSearchDepth = 500;
-		    ExplicitRole playingRole = theProverMachine.getRoles().get(0);
-		    numRoles = theProverMachine.getRoles().size();
+		    ExplicitRole playingRole = theProverMachine.getExplicitRoles().get(0);
+		    numRoles = theProverMachine.getExplicitRoles().size();
 
 		    ProverMCSManager MCSmanager = new ProverMCSManager(new ProverRandomPlayout(theProverMachine),
 		    		theProverMachine, playingRole, maxSearchDepth, r);
 
 		    GamerLogger.log("SingleRunProverTester", "Starting MCS search.");
 
-		    MCSmanager.search(theProverMachine.getInitialState(), System.currentTimeMillis() + searchTime);
+		    MCSmanager.search(theProverMachine.getExplicitInitialState(), System.currentTimeMillis() + searchTime);
 
 		    GamerLogger.log("SingleRunProverTester", "MCS search ended correctly.");
 

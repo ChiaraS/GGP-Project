@@ -55,7 +55,7 @@ public class MyMinmaxPlusGamer extends SampleGamer {
 		ExplicitMachineState state = getCurrentState();
 		ExplicitRole myRole = getRole();
 
-		List<ExplicitMove> myMoves = stateMachine.getLegalMoves(state, myRole);
+		List<ExplicitMove> myMoves = stateMachine.getExplicitLegalMoves(state, myRole);
 		ExplicitMove selection = myMoves.get(0);
 
 		try{
@@ -112,7 +112,7 @@ public class MyMinmaxPlusGamer extends SampleGamer {
 		out.println("Next opponent index: " + nextOpponentIndex);
 
 		// Retrieve the list of all roles
-		List<ExplicitRole> roles = stateMachine.getRoles();
+		List<ExplicitRole> roles = stateMachine.getExplicitRoles();
 
 		out.print("Roles: [ ");
 		for(ExplicitRole role: roles){
@@ -124,7 +124,7 @@ public class MyMinmaxPlusGamer extends SampleGamer {
 		out.println("Number of roles: " + numberOfRoles);
 
 		// Check all my available moves to find the best one
-		List<ExplicitMove> myMoves = stateMachine.getLegalMoves(state, myRole);
+		List<ExplicitMove> myMoves = stateMachine.getExplicitLegalMoves(state, myRole);
 
 		out.print("My moves: [ ");
 		for(ExplicitMove move: myMoves){
@@ -185,7 +185,7 @@ public class MyMinmaxPlusGamer extends SampleGamer {
 		StateMachine stateMachine = getStateMachine();
 
 		// Find legal moves for the current opponent
-		List<ExplicitMove> moves = stateMachine.getLegalMoves(state, roles.get(thisOpponentIndex));
+		List<ExplicitMove> moves = stateMachine.getExplicitLegalMoves(state, roles.get(thisOpponentIndex));
 
 		out.print("Opponent moves: [ ");
 		for(ExplicitMove move: moves){
@@ -209,7 +209,7 @@ public class MyMinmaxPlusGamer extends SampleGamer {
 			int currentScore = 0;
 			if(nextOpponentIndex >= roles.size()){
 				// Advance the state
-				ExplicitMachineState nextState = stateMachine.getNextState(state, newJointMoves);
+				ExplicitMachineState nextState = stateMachine.getExplicitNextState(state, newJointMoves);
 				currentScore = maxscore(nextState, myRole, roles, myIndex);
 			}else{
 				currentScore = minscore(state, myRole, roles, newJointMoves, myIndex, nextOpponentIndex);
@@ -250,7 +250,7 @@ public class MyMinmaxPlusGamer extends SampleGamer {
 		}
 
 		// Check all my available moves to find the best one
-		List<ExplicitMove> myMoves = stateMachine.getLegalMoves(state, myRole);
+		List<ExplicitMove> myMoves = stateMachine.getExplicitLegalMoves(state, myRole);
 
 		out.print("My moves: [ ");
 		for(ExplicitMove move: myMoves){

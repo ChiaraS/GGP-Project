@@ -40,7 +40,7 @@ public final class SampleMonteCarloGamer extends SampleGamer
 		int visitedNodes = 0;
 		int iterations = 0;
 
-		List<ExplicitMove> moves = theMachine.getLegalMoves(getCurrentState(), getRole());
+		List<ExplicitMove> moves = theMachine.getExplicitLegalMoves(getCurrentState(), getRole());
 		ExplicitMove selection = moves.get(0);
 		if (moves.size() > 1) {
     		int[] moveTotalPoints = new int[moves.size()];

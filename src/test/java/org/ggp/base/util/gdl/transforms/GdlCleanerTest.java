@@ -23,10 +23,10 @@ public class GdlCleanerTest extends Assert {
 
         StateMachine sm = new ProverStateMachine();
         sm.initialize(description, Long.MAX_VALUE);
-        ExplicitMachineState state = sm.getInitialState();
-        assertEquals(1, sm.getRoles().size());
-        ExplicitRole player = sm.getRoles().get(0);
-        assertEquals(1, sm.getLegalMoves(state, player).size());
+        ExplicitMachineState state = sm.getExplicitInitialState();
+        assertEquals(1, sm.getExplicitRoles().size());
+        ExplicitRole player = sm.getExplicitRoles().get(0);
+        assertEquals(1, sm.getExplicitLegalMoves(state, player).size());
         state = sm.getNextStates(state).get(0);
         assertTrue(sm.isTerminal(state));
         assertEquals(100, sm.getGoal(state, player));

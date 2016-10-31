@@ -7,6 +7,8 @@ import java.util.Random;
 
 import org.ggp.base.util.concurrency.ConcurrencyUtils;
 import org.ggp.base.util.logging.GamerLogger;
+import org.ggp.base.util.statemachine.abstractsm.CompactStateMachineInterface;
+import org.ggp.base.util.statemachine.abstractsm.ExplicitAndCompactStateMachineInterface;
 import org.ggp.base.util.statemachine.exceptions.GoalDefinitionException;
 import org.ggp.base.util.statemachine.exceptions.MoveDefinitionException;
 import org.ggp.base.util.statemachine.exceptions.StateMachineException;
@@ -23,7 +25,7 @@ import org.ggp.base.util.statemachine.structure.explicit.ExplicitRole;
  * of the propnet that provides an alternative internal representation of the machine states,
  * the moves and the roles.
  */
-public abstract class InternalPropnetStateMachine extends StateMachine{
+public abstract class InternalPropnetStateMachine extends StateMachine implements CompactStateMachineInterface, ExplicitAndCompactStateMachineInterface{
 
 	/** Standard state machine methods rewritten using internal representation for states, moves and roles. **/
 
@@ -34,6 +36,7 @@ public abstract class InternalPropnetStateMachine extends StateMachine{
 	 * @state a machine state.
 	 * @return true if the state is terminal, false otherwise.
 	 */
+	@Override
 	public abstract boolean isTerminal(CompactMachineState state);
 
 	/**
@@ -44,17 +47,17 @@ public abstract class InternalPropnetStateMachine extends StateMachine{
 	 * GoalDefinitionException because the goal is ill-defined.
 	 */
 	public int getGoal(CompactMachineState state, CompactRole role) throws GoalDefinitionException{
-		List<Integer> goals = this.getOneRoleGoals(state, role);
+		List<Integer> goals = this.getAllGoalsForOneRole(state, role);
 
 		if(goals.size() > 1){
 			GamerLogger.logError("StateMachine", "[Propnet] Got more than one true goal in state " + state + " for role " + role + ".");
-			throw new GoalDefinitionException(this.internalStateToState(state), this.internalRoleToRole(role));
+			throw new GoalDefinitionException(this.convertToExplicitMachineState(state), this.convertToExplicitRole(role));
 		}
 
 		// If there is no true goal proposition for the role in this state throw an exception.
 		if(goals.size() == 0){
 			GamerLogger.logError("StateMachine", "[Propnet] Got no true goal in state " + state + " for role " + role + ".");
-			throw new GoalDefinitionException(this.internalStateToState(state), this.internalRoleToRole(role));
+			throw new GoalDefinitionException(this.convertToExplicitMachineState(state), this.convertToExplicitRole(role));
 		}
 
 		// Return the single goal for the given role in the given state.
@@ -69,46 +72,54 @@ public abstract class InternalPropnetStateMachine extends StateMachine{
      * for the given role because of an error that occurred in the state machine and
      * couldn't be handled.
      */
-    public abstract List<Integer> getOneRoleGoals(CompactMachineState state, CompactRole role);
+    @Override
+	public abstract List<Integer> getAllGoalsForOneRole(CompactMachineState state, CompactRole role);
 
 
 	/**
 	 * Returns the initial state. If the initial state has not been computed yet because
 	 * this state machine has not been initialized, NULL will be returned.
 	 */
-	public abstract CompactMachineState getInternalInitialState();
+	@Override
+	public abstract CompactMachineState getCompactInitialState();
 
 	/**
 	 * Returns the internal representation of roles.
 	 *
 	 * @return the internal representation of roles.
 	 */
-	public abstract CompactRole[] getInternalRoles();
+	@Override
+	public abstract List<CompactRole> getCompactRoles();
 
 	/**
 	 * Computes the legal moves for role in state.
 	 */
-	public abstract List<CompactMove> getInternalLegalMoves(CompactMachineState state, CompactRole role)throws MoveDefinitionException;
+	@Override
+	public abstract List<CompactMove> getCompactLegalMoves(CompactMachineState state, CompactRole role)throws MoveDefinitionException;
 
 	/**
 	 * Computes the next state given a state and the list of moves.
 	 */
-	public abstract CompactMachineState getInternalNextState(CompactMachineState state, List<CompactMove> moves);
+	public abstract CompactMachineState getCompactNextState(CompactMachineState state, List<CompactMove> moves);
 
 
 	/************************************** Translation methods **************************************/
 
-	public abstract CompactMachineState stateToInternalState(ExplicitMachineState state);
+	@Override
+	public abstract ExplicitMachineState convertToExplicitMachineState(CompactMachineState state);
 
-	public abstract ExplicitMachineState internalStateToState(CompactMachineState state);
+	@Override
+	public abstract ExplicitMove convertToExplicitMove(CompactMove move);
 
-	public abstract ExplicitRole internalRoleToRole(CompactRole role);
+	@Override
+	public abstract ExplicitRole convertToExplicitRole(CompactRole role);
 
-	public abstract CompactRole roleToInternalRole(ExplicitRole role);
 
-	public abstract ExplicitMove internalMoveToMove(CompactMove move);
+	public abstract CompactMachineState convertToCompactMachineState(ExplicitMachineState state);
 
-	public abstract CompactMove moveToInternalMove(ExplicitMove move);
+	public abstract CompactMove convertToCompactMove(ExplicitMove move);
+
+	public abstract CompactRole convertToCompactRole(ExplicitRole role);
 
 	/**
 	 * Useful when we need to translate a joint move. Faster than translating the moves one by one.
@@ -125,7 +136,7 @@ public abstract class InternalPropnetStateMachine extends StateMachine{
     /**
      * Returns the goal values for each role in the given state. The goal values
      * are listed in the same order the roles are listed in the game rules, which
-     * is the same order in which they're returned by {@link #getRoles()}.
+     * is the same order in which they're returned by {@link #getExplicitRoles()}.
      *
      * @throws GoalDefinitionException if there is no goal value or more than one
      * goal value for any one role in the given state. If this occurs when this
@@ -136,10 +147,10 @@ public abstract class InternalPropnetStateMachine extends StateMachine{
      * that occurred in the state machine and couldn't be handled.
      */
     public List<Integer> getGoals(CompactMachineState state) throws GoalDefinitionException{
-    	CompactRole[] theRoles = this.getInternalRoles();
-    	List<Integer> theGoals = new ArrayList<Integer>(theRoles.length);
-        for(int i = 0; i < theRoles.length; i++) {
-            theGoals.add(getGoal(state, theRoles[i]));
+    	List<CompactRole> theRoles = this.getCompactRoles();
+    	List<Integer> theGoals = new ArrayList<Integer>(theRoles.size());
+        for(int i = 0; i < theRoles.size(); i++) {
+            theGoals.add(getGoal(state, theRoles.get(i)));
         }
         return theGoals;
     }
@@ -148,7 +159,7 @@ public abstract class InternalPropnetStateMachine extends StateMachine{
      * Returns a list containing a list for each role with all the goal values for
      * that role in the given state. The lists of goal values are listed in the
      * same order the roles are listed in the game rules, which is the same order
-     * in which they're returned by {@link #getRoles()}. If a list is empty it means
+     * in which they're returned by {@link #getExplicitRoles()}. If a list is empty it means
      * that the role has no goals in the given state.
      *
      * @throws StateMachineException if it was not possible to compute the list
@@ -156,11 +167,11 @@ public abstract class InternalPropnetStateMachine extends StateMachine{
      * that occurred in the state machine and couldn't be handled.
      */
     public List<List<Integer>> getAllRolesGoals(CompactMachineState state) throws StateMachineException {
-    	CompactRole[] theRoles = this.getInternalRoles();
-    	List<List<Integer>> theGoals = new ArrayList<List<Integer>>(theRoles.length);
+    	List<CompactRole> theRoles = this.getCompactRoles();
+    	List<List<Integer>> theGoals = new ArrayList<List<Integer>>(theRoles.size());
 
-    	for(CompactRole r : this.getInternalRoles()) {
-            theGoals.add(this.getOneRoleGoals(state, r));
+    	for(CompactRole r : this.getCompactRoles()) {
+            theGoals.add(this.getAllGoalsForOneRole(state, r));
         }
 
         return theGoals;
@@ -186,7 +197,7 @@ public abstract class InternalPropnetStateMachine extends StateMachine{
         int nDepth = 0;
         while(!isTerminal(state)) {
             nDepth++;
-            state = getInternalNextState(state, getRandomJointMove(state));
+            state = getCompactNextState(state, getRandomJointMove(state));
         }
         if(theDepth != null)
             theDepth[0] = nDepth;
@@ -220,7 +231,7 @@ public abstract class InternalPropnetStateMachine extends StateMachine{
 				GamerLogger.logStackTrace("StateMachine", e);
 				break;
 			}
-			state = getInternalNextState(state, jointMove);
+			state = getCompactNextState(state, jointMove);
             nDepth++;
         }
         if(theDepth != null)
@@ -248,7 +259,7 @@ public abstract class InternalPropnetStateMachine extends StateMachine{
         try {
 	        while(!isTerminal(state)) {
 
-	            state = getInternalNextState(state, getRandomJointMove(state));
+	            state = getCompactNextState(state, getRandomJointMove(state));
 
 	            nDepth++;
 
@@ -278,7 +289,7 @@ public abstract class InternalPropnetStateMachine extends StateMachine{
      */
 	public List<CompactMove> getRandomJointMove(CompactMachineState state) throws MoveDefinitionException{
         List<CompactMove> random = new ArrayList<CompactMove>();
-        for(CompactRole role : this.getInternalRoles()) {
+        for(CompactRole role : this.getCompactRoles()) {
             random.add(getRandomMove(state, role));
         }
 
@@ -298,7 +309,7 @@ public abstract class InternalPropnetStateMachine extends StateMachine{
     public List<CompactMove> getRandomJointMove(CompactMachineState state, CompactRole role, CompactMove move) throws MoveDefinitionException, StateMachineException
     {
         List<CompactMove> random = new ArrayList<CompactMove>();
-        for (CompactRole r : getInternalRoles()) {
+        for (CompactRole r : getCompactRoles()) {
             if (r.equals(role)) {
                 random.add(move);
             }else{
@@ -320,7 +331,7 @@ public abstract class InternalPropnetStateMachine extends StateMachine{
      * error that occurred in the state machine and couldn't be handled.
      */
 	public CompactMove getRandomMove(CompactMachineState state, CompactRole role) throws MoveDefinitionException{
-        List<CompactMove> legals = getInternalLegalMoves(state, role);
+        List<CompactMove> legals = getCompactLegalMoves(state, role);
         return legals.get(new Random().nextInt(legals.size()));
     }
 
@@ -364,7 +375,7 @@ public abstract class InternalPropnetStateMachine extends StateMachine{
      * the description or because the state is non-terminal and so goals haven't
      * been defined), the corresponding goal value is set to 0 (loss).
      * The goal values are listed in the same order the roles are listed in the game
-     * rules, which is the same order in which they're returned by {@link #getRoles()}.
+     * rules, which is the same order in which they're returned by {@link #getExplicitRoles()}.
      *
      * This method is safe, meaning that it won't throw any GoalDefinitionException,
      * but it will set a zero value for the goals when they cannot be computed or an
@@ -377,14 +388,14 @@ public abstract class InternalPropnetStateMachine extends StateMachine{
      * @param state the state for which to compute the goals.
      */
     public int[] getSafeGoalsAvg(CompactMachineState state){
-    	CompactRole[] theRoles = this.getInternalRoles();
-    	int[] theGoals = new int[theRoles.length];
+    	List<CompactRole> theRoles = this.getCompactRoles();
+    	int[] theGoals = new int[theRoles.size()];
     	int avg;
     	List<Integer> roleGoals = null;
 
-    	for (int i = 0; i < theRoles.length; i++) {
+    	for (int i = 0; i < theRoles.size(); i++) {
 
-        	roleGoals = this.getOneRoleGoals(state, theRoles[i]);
+        	roleGoals = this.getAllGoalsForOneRole(state, theRoles.get(i));
 
         	if(roleGoals != null && !roleGoals.isEmpty()){
 
@@ -408,7 +419,7 @@ public abstract class InternalPropnetStateMachine extends StateMachine{
      * the description or because the state is non-terminal and so goals haven't
      * been defined), the corresponding goal value is set to 0 (loss).
      * The goal values are listed in the same order the roles are listed in the game
-     * rules, which is the same order in which they're returned by {@link #getRoles()}.
+     * rules, which is the same order in which they're returned by {@link #getExplicitRoles()}.
      *
      * This method is safe, meaning that it won't throw any GoalDefinitionException,
      * but it will set a zero value for the goals when they cannot be computed.
@@ -420,11 +431,11 @@ public abstract class InternalPropnetStateMachine extends StateMachine{
      * @param state the state for which to compute the goals.
      */
     public int[] getSafeGoals(CompactMachineState state){
-    	CompactRole[] theRoles = this.getInternalRoles();
-    	int[] theGoals = new int[theRoles.length];
-        for (int i = 0; i < theRoles.length; i++) {
+    	List<CompactRole> theRoles = this.getCompactRoles();
+    	int[] theGoals = new int[theRoles.size()];
+        for (int i = 0; i < theRoles.size(); i++) {
             try {
-				theGoals[i] = getGoal(state, theRoles[i]);
+				theGoals[i] = getGoal(state, theRoles.get(i));
 			} catch (GoalDefinitionException e){
 				GamerLogger.logError("StateMachine", "Failed to compute a goal value when computing safe goals.");
 				GamerLogger.logStackTrace("StateMachine", e);
@@ -442,7 +453,7 @@ public abstract class InternalPropnetStateMachine extends StateMachine{
      * If the goals cannot be computed for all players, then each of them will get
      * a tie goal (i.e. 100/#roles when #roles > 1, 50 when there is only one goal).
      * The goal values are listed in the same order the roles are listed in the game
-     * rules, which is the same order in which they're returned by {@link #getRoles()}.
+     * rules, which is the same order in which they're returned by {@link #getExplicitRoles()}.
      *
      * This method is safe, meaning that it won't throw any GoalDefinitionException,
      * but it will set a zero value for the goals when they cannot be computed.
@@ -458,12 +469,12 @@ public abstract class InternalPropnetStateMachine extends StateMachine{
      * @param state the state for which to compute the goals.
      */
     public int[] getSafeGoalsTie(CompactMachineState state){
-    	CompactRole[] theRoles = this.getInternalRoles();
+    	List<CompactRole> theRoles = this.getCompactRoles();
     	int failures = 0;
-    	int[] theGoals = new int[theRoles.length];
-        for (int i = 0; i < theRoles.length; i++) {
+    	int[] theGoals = new int[theRoles.size()];
+        for (int i = 0; i < theRoles.size(); i++) {
             try {
-				theGoals[i] = getGoal(state, theRoles[i]);
+				theGoals[i] = getGoal(state, theRoles.get(i));
 			} catch (GoalDefinitionException e){
 				GamerLogger.logError("StateMachine", "Failed to compute a goal value when computing safe goals with tie default.");
 				GamerLogger.logStackTrace("StateMachine", e);
@@ -473,12 +484,12 @@ public abstract class InternalPropnetStateMachine extends StateMachine{
         }
 
         // If computation of goal failed for all players...
-        if(failures == theRoles.length){
+        if(failures == theRoles.size()){
         	// Distinguish the single-player case from the multi-player case.
-        	if(theRoles.length == 1){
+        	if(theRoles.size() == 1){
         		theGoals[0] = 50;
         	}else{
-        		int defaultGoal = (int) Math.round(100.0 / ((double)theRoles.length));
+        		int defaultGoal = (int) Math.round(100.0 / ((double)theRoles.size()));
         		for(int i = 0; i < theGoals.length; i++){
         			// Attention! Since this rounds the goals to the next integer, it might make a zero-sum game loose
         			// the property of being zero-sum. However, this doesn't influence our MCTS implementation.
@@ -506,8 +517,8 @@ public abstract class InternalPropnetStateMachine extends StateMachine{
     		List<List<CompactMove>> legalMoves = new ArrayList<List<CompactMove>>();
 
     		// Get legal moves for all players.
-    		for(int i = 0; i < this.getInternalRoles().length; i++){
-    			legalMoves.add(this.getInternalLegalMoves(state, this.getInternalRoles()[i]));
+    		for(int i = 0; i < this.getCompactRoles().size(); i++){
+    			legalMoves.add(this.getCompactLegalMoves(state, this.getCompactRoles().get(i)));
     		}
     		return legalMoves;
 
@@ -517,7 +528,7 @@ public abstract class InternalPropnetStateMachine extends StateMachine{
     /**
      * Returns a list containing every joint move possible in the given state.
      * A joint move consists of one move for each role, with the moves in the
-     * same ordering that their roles have in {@link #getRoles()}.
+     * same ordering that their roles have in {@link #getExplicitRoles()}.
      * <p>
      * The list of possible joint moves is the Cartesian product of the lists
      * of legal moves available for each player.
@@ -535,8 +546,8 @@ public abstract class InternalPropnetStateMachine extends StateMachine{
     public List<List<CompactMove>> getLegalJointMoves(CompactMachineState state) throws MoveDefinitionException, StateMachineException
     {
         List<List<CompactMove>> legals = new ArrayList<List<CompactMove>>();
-        for (CompactRole role : getInternalRoles()) {
-            legals.add(getInternalLegalMoves(state, role));
+        for (CompactRole role : getCompactRoles()) {
+            legals.add(getCompactLegalMoves(state, role));
         }
 
         List<List<CompactMove>> crossProduct = new ArrayList<List<CompactMove>>();

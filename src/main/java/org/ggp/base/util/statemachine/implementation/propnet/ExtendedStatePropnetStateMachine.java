@@ -209,7 +209,7 @@ public class ExtendedStatePropnetStateMachine extends StateMachine {
 	 * is true for that role.
 	 */
 	@Override
-	public List<Integer> getOneRoleGoals(ExplicitMachineState state, ExplicitRole role){
+	public List<Integer> getAllGoalsForOneRole(ExplicitMachineState state, ExplicitRole role){
 		if(!(state instanceof CompactAndExplicitMachineState)){
 			state = this.stateToExtendedState(state);
 		}
@@ -287,7 +287,7 @@ public class ExtendedStatePropnetStateMachine extends StateMachine {
 	 * this state machine has not been initialized, NULL will be returned.
 	 */
 	@Override
-	public ExplicitMachineState getInitialState() {
+	public ExplicitMachineState getExplicitInitialState() {
 		return this.initialState;
 	}
 
@@ -296,7 +296,7 @@ public class ExtendedStatePropnetStateMachine extends StateMachine {
 	 * If the state is not an extended propnet state, it is first transformed into one.
 	 */
 	@Override
-	public List<ExplicitMove> getLegalMoves(ExplicitMachineState state, ExplicitRole role)
+	public List<ExplicitMove> getExplicitLegalMoves(ExplicitMachineState state, ExplicitRole role)
 	throws MoveDefinitionException {
 
 		if(!(state instanceof CompactAndExplicitMachineState)){
@@ -338,7 +338,7 @@ public class ExtendedStatePropnetStateMachine extends StateMachine {
 	 * If the state is not an extended propnet state, it is first transformed into one.
 	 */
 	@Override
-	public ExplicitMachineState getNextState(ExplicitMachineState state, List<ExplicitMove> moves)
+	public ExplicitMachineState getExplicitNextState(ExplicitMachineState state, List<ExplicitMove> moves)
 	throws TransitionDefinitionException {
 
 		if(!(state instanceof CompactAndExplicitMachineState)){
@@ -366,7 +366,7 @@ public class ExtendedStatePropnetStateMachine extends StateMachine {
 
 	/* Already implemented for you */
 	@Override
-	public List<ExplicitRole> getRoles() {
+	public List<ExplicitRole> getExplicitRoles() {
 		return roles;
 	}
 

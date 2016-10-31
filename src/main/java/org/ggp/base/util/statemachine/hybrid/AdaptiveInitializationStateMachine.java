@@ -143,7 +143,7 @@ public class AdaptiveInitializationStateMachine extends StateMachine {
 
 				int totalVisitedNodes = 0;
 
-				ExplicitMachineState initialState = theMachine.getInitialState();
+				ExplicitMachineState initialState = theMachine.getExplicitInitialState();
 
 				long startTime = System.currentTimeMillis();
 
@@ -351,9 +351,9 @@ public class AdaptiveInitializationStateMachine extends StateMachine {
 	}
 
 	@Override
-	public List<Integer> getOneRoleGoals(ExplicitMachineState state, ExplicitRole role)
+	public List<Integer> getAllGoalsForOneRole(ExplicitMachineState state, ExplicitRole role)
 			throws StateMachineException {
-		return this.theFastestMachine.getOneRoleGoals(state, role);
+		return this.theFastestMachine.getAllGoalsForOneRole(state, role);
 	}
 
 	@Override
@@ -362,25 +362,25 @@ public class AdaptiveInitializationStateMachine extends StateMachine {
 	}
 
 	@Override
-	public List<ExplicitRole> getRoles() {
-		return this.theFastestMachine.getRoles();
+	public List<ExplicitRole> getExplicitRoles() {
+		return this.theFastestMachine.getExplicitRoles();
 	}
 
 	@Override
-	public ExplicitMachineState getInitialState() {
-		return this.theFastestMachine.getInitialState();
+	public ExplicitMachineState getExplicitInitialState() {
+		return this.theFastestMachine.getExplicitInitialState();
 	}
 
 	@Override
-	public List<ExplicitMove> getLegalMoves(ExplicitMachineState state, ExplicitRole role)
+	public List<ExplicitMove> getExplicitLegalMoves(ExplicitMachineState state, ExplicitRole role)
 			throws MoveDefinitionException, StateMachineException {
-		return this.theFastestMachine.getLegalMoves(state, role);
+		return this.theFastestMachine.getExplicitLegalMoves(state, role);
 	}
 
 	@Override
-	public ExplicitMachineState getNextState(ExplicitMachineState state, List<ExplicitMove> moves)
+	public ExplicitMachineState getExplicitNextState(ExplicitMachineState state, List<ExplicitMove> moves)
 			throws TransitionDefinitionException, StateMachineException {
-		return this.theFastestMachine.getNextState(state, moves);
+		return this.theFastestMachine.getExplicitNextState(state, moves);
 	}
 
 	@Override

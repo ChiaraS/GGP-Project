@@ -45,14 +45,14 @@ public class EndgameCaseGenerator {
         // Load the game and create a state machine for it
 		Game theGame = GameRepository.getDefaultRepository().getGame(gameKey);
         theMachine.initialize(theGame.getRules(), Long.MAX_VALUE);
-        ExplicitRole ourRole = theMachine.getRoles().get(nRole);
+        ExplicitRole ourRole = theMachine.getExplicitRoles().get(nRole);
 
         // Once the game is loaded, run depth charges until we find a suitable
         // endgame backoff state that can be used to produce a test case.
         while (true) {
 	        // Find a state that's nBackoff steps from a terminal state
 	        List<ExplicitMachineState> theStates = new ArrayList<ExplicitMachineState>();
-	        ExplicitMachineState theChargeState = theMachine.getInitialState();
+	        ExplicitMachineState theChargeState = theMachine.getExplicitInitialState();
 	        while (!theMachine.isTerminal(theChargeState)) {
 	        	theStates.add(theChargeState);
 	        	theChargeState = theMachine.getRandomNextState(theChargeState);
@@ -66,7 +66,7 @@ public class EndgameCaseGenerator {
 	        int worstScore = 100;
 	        List<Pair<ExplicitMove, Integer>> scoredMoves = new ArrayList<Pair<ExplicitMove, Integer>>();
 	        Set<ExplicitMove> unscoredMoves = new HashSet<ExplicitMove>();
-	        for (ExplicitMove ourMove : theMachine.getLegalMoves(theState, ourRole)) {
+	        for (ExplicitMove ourMove : theMachine.getExplicitLegalMoves(theState, ourRole)) {
 	        	Pair<Integer, Integer> theScore = minimax(theMachine, nRole, ourRole, theMachine.getRandomNextState(theState, ourRole, ourMove), nMaxDepth);
 	        	if (theScore.left == theScore.right) {
 		        	bestScore = Math.max(bestScore, theScore.left);
@@ -136,11 +136,11 @@ public class EndgameCaseGenerator {
         // Otherwise, perform recursive descent to compute the state's value.
         List<List<ExplicitMove>> legalMoves = machine.getLegalJointMoves(currentState);
         Pair<Integer, Integer> overallScore = Pair.of(0, 0);
-        for (ExplicitMove ourMove : machine.getLegalMoves(currentState, ourRole)) {
+        for (ExplicitMove ourMove : machine.getExplicitLegalMoves(currentState, ourRole)) {
         	Pair<Integer, Integer> worstMove = Pair.of(100, 100);
             for (List<ExplicitMove> jointMove : legalMoves) {
                 if (jointMove.get(ourRoleIndex).equals(ourMove)) {
-                    ExplicitMachineState newState = machine.getNextState(currentState, jointMove);
+                    ExplicitMachineState newState = machine.getExplicitNextState(currentState, jointMove);
                     Pair<Integer, Integer> score = minimax(machine, ourRoleIndex, ourRole, newState, depth - 1);
                     worstMove = Pair.of(Math.min(worstMove.left, score.left), Math.min(worstMove.right, score.right));
                     if(score.right == 0)

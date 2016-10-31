@@ -136,11 +136,11 @@ public class InitializationSafeStateMachine extends StateMachine {
 	 * @see org.ggp.base.util.statemachine.StateMachine#getGoal(org.ggp.base.util.statemachine.MachineState, org.ggp.base.util.statemachine.Role)
 	 */
 	@Override
-	public List<Integer> getOneRoleGoals(ExplicitMachineState state, ExplicitRole role)
+	public List<Integer> getAllGoalsForOneRole(ExplicitMachineState state, ExplicitRole role)
 			throws StateMachineException {
 		// We do not check if the real state machine is null, because if initialization succeeded this
 		// cannot happen and if initialization failed this state machine is not supposed to be used.
-		return this.theRealMachine.getOneRoleGoals(state, role);
+		return this.theRealMachine.getAllGoalsForOneRole(state, role);
 	}
 
 	/* (non-Javadoc)
@@ -155,34 +155,34 @@ public class InitializationSafeStateMachine extends StateMachine {
 	 * @see org.ggp.base.util.statemachine.StateMachine#getRoles()
 	 */
 	@Override
-	public List<ExplicitRole> getRoles() {
-		return this.theRealMachine.getRoles();
+	public List<ExplicitRole> getExplicitRoles() {
+		return this.theRealMachine.getExplicitRoles();
 	}
 
 	/* (non-Javadoc)
 	 * @see org.ggp.base.util.statemachine.StateMachine#getInitialState()
 	 */
 	@Override
-	public ExplicitMachineState getInitialState() {
-		return this.theRealMachine.getInitialState();
+	public ExplicitMachineState getExplicitInitialState() {
+		return this.theRealMachine.getExplicitInitialState();
 	}
 
 	/* (non-Javadoc)
 	 * @see org.ggp.base.util.statemachine.StateMachine#getLegalMoves(org.ggp.base.util.statemachine.MachineState, org.ggp.base.util.statemachine.Role)
 	 */
 	@Override
-	public List<ExplicitMove> getLegalMoves(ExplicitMachineState state, ExplicitRole role)
+	public List<ExplicitMove> getExplicitLegalMoves(ExplicitMachineState state, ExplicitRole role)
 			throws MoveDefinitionException, StateMachineException {
-		return this.theRealMachine.getLegalMoves(state, role);
+		return this.theRealMachine.getExplicitLegalMoves(state, role);
 	}
 
 	/* (non-Javadoc)
 	 * @see org.ggp.base.util.statemachine.StateMachine#getNextState(org.ggp.base.util.statemachine.MachineState, java.util.List)
 	 */
 	@Override
-	public ExplicitMachineState getNextState(ExplicitMachineState state, List<ExplicitMove> moves)
+	public ExplicitMachineState getExplicitNextState(ExplicitMachineState state, List<ExplicitMove> moves)
 			throws TransitionDefinitionException, StateMachineException {
-		return this.theRealMachine.getNextState(state, moves);
+		return this.theRealMachine.getExplicitNextState(state, moves);
 	}
 
 	/* (non-Javadoc)

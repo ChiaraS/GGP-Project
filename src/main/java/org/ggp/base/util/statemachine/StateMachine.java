@@ -14,6 +14,7 @@ import org.ggp.base.util.gdl.grammar.GdlConstant;
 import org.ggp.base.util.gdl.grammar.GdlSentence;
 import org.ggp.base.util.gdl.grammar.GdlTerm;
 import org.ggp.base.util.logging.GamerLogger;
+import org.ggp.base.util.statemachine.abstractsm.ExplicitStateMachineInterface;
 import org.ggp.base.util.statemachine.exceptions.GoalDefinitionException;
 import org.ggp.base.util.statemachine.exceptions.MoveDefinitionException;
 import org.ggp.base.util.statemachine.exceptions.StateMachineException;
@@ -29,7 +30,7 @@ import com.google.common.collect.ImmutableMap;
 /**
  * Provides the base class for all state machine implementations.
  */
-public abstract class StateMachine {
+public abstract class StateMachine implements ExplicitStateMachineInterface{
     // ============================================
     //          Stubs for implementations
     // ============================================
@@ -80,7 +81,7 @@ public abstract class StateMachine {
      */
     public int getGoal(ExplicitMachineState state, ExplicitRole role) throws GoalDefinitionException, StateMachineException{
 
-    	List<Integer> goals = this.getOneRoleGoals(state, role);
+    	List<Integer> goals = this.getAllGoalsForOneRole(state, role);
 
 		if(goals.size() > 1){
 			GamerLogger.logError("StateMachine", "[Propnet] Got more than one true goal in state " + state + " for role " + role + ".");
@@ -106,7 +107,7 @@ public abstract class StateMachine {
      * for the given role because of an error that occurred in the state machine and
      * couldn't be handled.
      */
-    public abstract List<Integer> getOneRoleGoals(ExplicitMachineState state, ExplicitRole role) throws StateMachineException;
+    public abstract List<Integer> getAllGoalsForOneRole(ExplicitMachineState state, ExplicitRole role) throws StateMachineException;
 
 
     /**
@@ -125,11 +126,11 @@ public abstract class StateMachine {
      * The result will be the same as calling {@link ExplicitRole#computeRoles(List)}
      * on the game rules used to initialize this state machine.
      */
-    public abstract List<ExplicitRole> getRoles();
+    public abstract List<ExplicitRole> getExplicitRoles();
     /**
      * Returns the initial state of the game.
      */
-    public abstract ExplicitMachineState getInitialState();
+    public abstract ExplicitMachineState getExplicitInitialState();
 
     /**
      * Returns a list containing every move that is legal for the given role in the
@@ -142,21 +143,21 @@ public abstract class StateMachine {
      * couldn't be handled.
      */
     // TODO: There are philosophical reasons for this to return Set<Move> rather than List<Move>.
-    public abstract List<ExplicitMove> getLegalMoves(ExplicitMachineState state, ExplicitRole role) throws MoveDefinitionException, StateMachineException;
+    public abstract List<ExplicitMove> getExplicitLegalMoves(ExplicitMachineState state, ExplicitRole role) throws MoveDefinitionException, StateMachineException;
 
     /**
      * Returns the next state of the game given the current state and a joint move
      * list containing one move per role.
      *
      * @param moves A list containing one move per role. The moves should be
-     * listed in the same order as roles are listed by {@link #getRoles()}.
+     * listed in the same order as roles are listed by {@link #getExplicitRoles()}.
      * @throws TransitionDefinitionException indicates an error in either the
      * game description or the StateMachine implementation.
      * @throws StateMachineException if it was not possible to compute the next
      * state for the given state and the given joint moves because of an error
      * that occurred in the state machine and couldn't be handled.
      */
-    public abstract ExplicitMachineState getNextState(ExplicitMachineState state, List<ExplicitMove> moves) throws TransitionDefinitionException, StateMachineException;
+    public abstract ExplicitMachineState getExplicitNextState(ExplicitMachineState state, List<ExplicitMove> moves) throws TransitionDefinitionException, StateMachineException;
 
     /**
      * This method must allow to turn off the state machine (maybe temporarily), i.e.
@@ -224,7 +225,7 @@ public abstract class StateMachine {
      * of an error that occurred in the state machine and couldn't be handled.
      */
     public ExplicitMachineState getNextStateDestructively(ExplicitMachineState state, List<ExplicitMove> moves) throws TransitionDefinitionException, StateMachineException {
-        return getNextState(state, moves);
+        return getExplicitNextState(state, moves);
     }
 
     /** Override this to allow the state machine to be conditioned on a particular current state.
@@ -250,7 +251,7 @@ public abstract class StateMachine {
     /**
      * Returns a list containing every joint move possible in the given state.
      * A joint move consists of one move for each role, with the moves in the
-     * same ordering that their roles have in {@link #getRoles()}.
+     * same ordering that their roles have in {@link #getExplicitRoles()}.
      * <p>
      * The list of possible joint moves is the Cartesian product of the lists
      * of legal moves available for each player.
@@ -268,8 +269,8 @@ public abstract class StateMachine {
     public List<List<ExplicitMove>> getLegalJointMoves(ExplicitMachineState state) throws MoveDefinitionException, StateMachineException
     {
         List<List<ExplicitMove>> legals = new ArrayList<List<ExplicitMove>>();
-        for (ExplicitRole role : getRoles()) {
-            legals.add(getLegalMoves(state, role));
+        for (ExplicitRole role : getExplicitRoles()) {
+            legals.add(getExplicitLegalMoves(state, role));
         }
 
         List<List<ExplicitMove>> crossProduct = new ArrayList<List<ExplicitMove>>();
@@ -293,13 +294,13 @@ public abstract class StateMachine {
     public List<List<ExplicitMove>> getLegalJointMoves(ExplicitMachineState state, ExplicitRole role, ExplicitMove move) throws MoveDefinitionException, StateMachineException
     {
         List<List<ExplicitMove>> legals = new ArrayList<List<ExplicitMove>>();
-        for (ExplicitRole r : getRoles()) {
+        for (ExplicitRole r : getExplicitRoles()) {
             if (r.equals(role)) {
                 List<ExplicitMove> m = new ArrayList<ExplicitMove>();
                 m.add(move);
                 legals.add(m);
             } else {
-                legals.add(getLegalMoves(state, r));
+                legals.add(getExplicitLegalMoves(state, r));
             }
         }
 
@@ -328,7 +329,7 @@ public abstract class StateMachine {
     {
         List<ExplicitMachineState> nextStates = new ArrayList<ExplicitMachineState>();
         for (List<ExplicitMove> move : getLegalJointMoves(state)) {
-            nextStates.add(getNextState(state, move));
+            nextStates.add(getExplicitNextState(state, move));
         }
 
         return nextStates;
@@ -359,7 +360,7 @@ public abstract class StateMachine {
             if (!nextStates.containsKey(move)) {
                 nextStates.put(move, new ArrayList<ExplicitMachineState>());
             }
-            nextStates.get(move).add(getNextState(state, moves));
+            nextStates.get(move).add(getExplicitNextState(state, moves));
         }
 
         return nextStates;
@@ -381,7 +382,7 @@ public abstract class StateMachine {
     private Map<ExplicitRole,Integer> roleIndices = null;
     /**
      * Returns a mapping from a role to the index of that role, as in
-     * the list returned by {@link #getRoles()}. This may be a faster
+     * the list returned by {@link #getExplicitRoles()}. This may be a faster
      * way to check the index of a role than calling {@link List#indexOf(Object)}
      * on that list.
      */
@@ -389,7 +390,7 @@ public abstract class StateMachine {
     {
         if (roleIndices == null) {
         	ImmutableMap.Builder<ExplicitRole, Integer> roleIndicesBuilder = ImmutableMap.builder();
-            List<ExplicitRole> roles = getRoles();
+            List<ExplicitRole> roles = getExplicitRoles();
             for (int i = 0; i < roles.size(); i++) {
                 roleIndicesBuilder.put(roles.get(i), i);
             }
@@ -402,7 +403,7 @@ public abstract class StateMachine {
     /**
      * Returns the goal values for each role in the given state. The goal values
      * are listed in the same order the roles are listed in the game rules, which
-     * is the same order in which they're returned by {@link #getRoles()}.
+     * is the same order in which they're returned by {@link #getExplicitRoles()}.
      *
      * @throws GoalDefinitionException if there is no goal value or more than one
      * goal value for any one role in the given state. If this occurs when this
@@ -413,8 +414,8 @@ public abstract class StateMachine {
      * that occurred in the state machine and couldn't be handled.
      */
     public List<Integer> getGoals(ExplicitMachineState state) throws GoalDefinitionException, StateMachineException {
-        List<Integer> theGoals = new ArrayList<Integer>(getRoles().size());
-        for(ExplicitRole r : getRoles()) {
+        List<Integer> theGoals = new ArrayList<Integer>(getExplicitRoles().size());
+        for(ExplicitRole r : getExplicitRoles()) {
             theGoals.add(getGoal(state, r));
         }
         return theGoals;
@@ -424,7 +425,7 @@ public abstract class StateMachine {
      * Returns a list containing a list for each role with all the goal values for
      * that role in the given state. The lists of goal values are listed in the
      * same order the roles are listed in the game rules, which is the same order
-     * in which they're returned by {@link #getRoles()}. If a list is empty it means
+     * in which they're returned by {@link #getExplicitRoles()}. If a list is empty it means
      * that the role has no goals in the given state.
      *
      * @throws StateMachineException if it was not possible to compute the list
@@ -433,8 +434,8 @@ public abstract class StateMachine {
      */
     public List<List<Integer>> getAllRolesGoals(ExplicitMachineState state) throws GoalDefinitionException, StateMachineException {
         List<List<Integer>> theGoals = new ArrayList<List<Integer>>();
-        for (ExplicitRole r : getRoles()) {
-        	theGoals.add(getOneRoleGoals(state, r));
+        for (ExplicitRole r : getExplicitRoles()) {
+        	theGoals.add(getAllGoalsForOneRole(state, r));
         }
         return theGoals;
     }
@@ -445,7 +446,7 @@ public abstract class StateMachine {
      * the description or because the state is non-terminal and so goals haven't
      * been defined), the corresponding goal value is set to 0 (loss).
      * The goal values are listed in the same order the roles are listed in the game
-     * rules, which is the same order in which they're returned by {@link #getRoles()}.
+     * rules, which is the same order in which they're returned by {@link #getExplicitRoles()}.
      *
      * This method is safe, meaning that it won't throw any GoalDefinitionException,
      * but it will set a zero value for the goals when they cannot be computed.
@@ -457,7 +458,7 @@ public abstract class StateMachine {
      * @param state the state for which to compute the goals.
      */
     public int[] getSafeGoals(ExplicitMachineState state){
-    	List<ExplicitRole> theRoles = this.getRoles();
+    	List<ExplicitRole> theRoles = this.getExplicitRoles();
     	int[] theGoals = new int[theRoles.size()];
         for (int i = 0; i < theRoles.size(); i++) {
             try {
@@ -477,7 +478,7 @@ public abstract class StateMachine {
      * the description or because the state is non-terminal and so goals haven't
      * been defined), the corresponding goal value is set to 0 (loss).
      * The goal values are listed in the same order the roles are listed in the game
-     * rules, which is the same order in which they're returned by {@link #getRoles()}.
+     * rules, which is the same order in which they're returned by {@link #getExplicitRoles()}.
      *
      * This method is safe, meaning that it won't throw any GoalDefinitionException,
      * but it will set a zero value for the goals when they cannot be computed or an
@@ -491,7 +492,7 @@ public abstract class StateMachine {
 	 * @throws StateMachineException
      */
     public int[] getSafeGoalsAvg(ExplicitMachineState state){
-    	List<ExplicitRole> theRoles = this.getRoles();
+    	List<ExplicitRole> theRoles = this.getExplicitRoles();
     	int[] theGoals = new int[theRoles.size()];
     	int avg;
     	List<Integer> roleGoals = null;
@@ -499,7 +500,7 @@ public abstract class StateMachine {
     	for(int i = 0; i < theRoles.size(); i++) {
 
         	try{
-        		roleGoals = this.getOneRoleGoals(state, theRoles.get(i));
+        		roleGoals = this.getAllGoalsForOneRole(state, theRoles.get(i));
 
         		if(roleGoals != null && !roleGoals.isEmpty()){
 
@@ -533,7 +534,7 @@ public abstract class StateMachine {
     public List<ExplicitMove> getRandomJointMove(ExplicitMachineState state) throws MoveDefinitionException, StateMachineException
     {
         List<ExplicitMove> random = new ArrayList<ExplicitMove>();
-        for (ExplicitRole role : getRoles()) {
+        for (ExplicitRole role : getExplicitRoles()) {
             random.add(getRandomMove(state, role));
         }
 
@@ -553,7 +554,7 @@ public abstract class StateMachine {
     public List<ExplicitMove> getRandomJointMove(ExplicitMachineState state, ExplicitRole role, ExplicitMove move) throws MoveDefinitionException, StateMachineException
     {
         List<ExplicitMove> random = new ArrayList<ExplicitMove>();
-        for (ExplicitRole r : getRoles()) {
+        for (ExplicitRole r : getExplicitRoles()) {
             if (r.equals(role)) {
                 random.add(move);
             } else {
@@ -576,7 +577,7 @@ public abstract class StateMachine {
      */
     public ExplicitMove getRandomMove(ExplicitMachineState state, ExplicitRole role) throws MoveDefinitionException, StateMachineException
     {
-        List<ExplicitMove> legals = getLegalMoves(state, role);
+        List<ExplicitMove> legals = getExplicitLegalMoves(state, role);
         return legals.get(new Random().nextInt(legals.size()));
     }
 
@@ -599,7 +600,7 @@ public abstract class StateMachine {
     public ExplicitMachineState getRandomNextState(ExplicitMachineState state) throws MoveDefinitionException, TransitionDefinitionException, StateMachineException
     {
         List<ExplicitMove> random = getRandomJointMove(state);
-        return getNextState(state, random);
+        return getExplicitNextState(state, random);
     }
 
     /**
@@ -624,7 +625,7 @@ public abstract class StateMachine {
     public ExplicitMachineState getRandomNextState(ExplicitMachineState state, ExplicitRole role, ExplicitMove move) throws MoveDefinitionException, TransitionDefinitionException, StateMachineException
     {
         List<ExplicitMove> random = getRandomJointMove(state, role, move);
-        return getNextState(state, random);
+        return getExplicitNextState(state, random);
     }
 
     /**
@@ -708,7 +709,7 @@ public abstract class StateMachine {
     		avgDepth[0] += depth[0];
     		final double accumulatedDiscountFactor = Math.pow(discountFactor, depth[0]);
     		for (int j = 0; j < avgScores.length; j++) {
-    			avgScores[j] += getGoal(stateForCharge, getRoles().get(j)) * accumulatedDiscountFactor;
+    			avgScores[j] += getGoal(stateForCharge, getExplicitRoles().get(j)) * accumulatedDiscountFactor;
     		}
     	}
     	avgDepth[0] /= repetitions;

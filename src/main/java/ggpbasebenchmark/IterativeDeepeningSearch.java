@@ -62,7 +62,7 @@ public class IterativeDeepeningSearch extends SearchAlgorithm {
 		boolean finished = true;
 		for (List<ExplicitMove> jointMove : jointMoves) {
 			if (timeout()) return false;
-			ExplicitMachineState nextState = stateMachine.getNextState(state, jointMove);
+			ExplicitMachineState nextState = stateMachine.getExplicitNextState(state, jointMove);
 			++nbUpdates;
 			finished = dfs(nextState, depth-1) && finished; // order matters here!
 		}

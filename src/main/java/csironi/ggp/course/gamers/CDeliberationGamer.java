@@ -44,7 +44,7 @@ public class CDeliberationGamer extends SampleGamer {
 
 		// Get state machine and list of available legal moves for the player
 		StateMachine stateMachine = getStateMachine();
-		List<ExplicitMove> moves = stateMachine.getLegalMoves(getCurrentState(), getRole());
+		List<ExplicitMove> moves = stateMachine.getExplicitLegalMoves(getCurrentState(), getRole());
 
 		ExplicitMove selection = moves.get(0);
 		// If there is more than one legal move available search the best one,

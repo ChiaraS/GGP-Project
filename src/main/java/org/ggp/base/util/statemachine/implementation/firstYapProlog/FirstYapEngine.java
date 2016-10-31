@@ -233,22 +233,22 @@ public class FirstYapEngine {
 				System.err.println("INTERRUPTED : computeInitalStateGdl");
 				reInitialize();
 				Thread.currentThread().interrupt();
-				return backingStateMachine.getInitialState();
+				return backingStateMachine.getExplicitInitialState();
 			}
 			catch(TimeoutException te){
 				System.err.println("TIMEOUT : computeInitalStateGdl");
 				reInitialize();
-				return backingStateMachine.getInitialState();
+				return backingStateMachine.getExplicitInitialState();
 			}
 			catch(NullPointerException ne){
 				System.err.println("NULL : computeInitalStateGdl");
 				reInitialize();
-				return backingStateMachine.getInitialState();
+				return backingStateMachine.getExplicitInitialState();
 			}
 			catch(Exception e){
 				System.err.println("THREAD : computeInitalStateGdl");
 				reInitialize();
-				return backingStateMachine.getInitialState();
+				return backingStateMachine.getExplicitInitialState();
 			}
 			return new ExplicitMachineState(currentState);
 		}
@@ -278,22 +278,22 @@ public class FirstYapEngine {
 				System.err.println("INTERRUPTED : computeRoles");
 				reInitialize();
 				Thread.currentThread().interrupt();
-				return backingStateMachine.getRoles();
+				return backingStateMachine.getExplicitRoles();
 			}
 			catch(TimeoutException te){
 				System.err.println("TIMEOUT : computeRoles");
 				reInitialize();
-				return backingStateMachine.getRoles();
+				return backingStateMachine.getExplicitRoles();
 			}
 			catch(NullPointerException ne){
 				System.err.println("NULL : computeRoles");
 				reInitialize();
-				return backingStateMachine.getRoles();
+				return backingStateMachine.getExplicitRoles();
 			}
 			catch(Exception e){
 				System.err.println("THREAD : computeRoles");
 				reInitialize();
-				return backingStateMachine.getRoles();
+				return backingStateMachine.getExplicitRoles();
 			}
 		}
 	}
@@ -505,7 +505,7 @@ public class FirstYapEngine {
 				reInitialize();
 				try{
 					System.out.println("backingStateMachine : getLegalMoves");
-					List<ExplicitMove> temp = backingStateMachine.getLegalMoves(machine, role);
+					List<ExplicitMove> temp = backingStateMachine.getExplicitLegalMoves(machine, role);
 					System.out.println("LEGALMOVES :"+temp);
 					return temp;
 				}
@@ -519,7 +519,7 @@ public class FirstYapEngine {
 				reInitialize();
 				try{
 					System.out.println("backingStateMachine : getLegalMoves");
-					List<ExplicitMove> temp = backingStateMachine.getLegalMoves(machine, role);
+					List<ExplicitMove> temp = backingStateMachine.getExplicitLegalMoves(machine, role);
 					System.out.println("LEGALMOVES :"+temp);
 					return temp;
 				}
@@ -532,7 +532,7 @@ public class FirstYapEngine {
 				reInitialize();
 				try{
 					System.out.println("backingStateMachine : getLegalMoves");
-					List<ExplicitMove> temp = backingStateMachine.getLegalMoves(machine, role);
+					List<ExplicitMove> temp = backingStateMachine.getExplicitLegalMoves(machine, role);
 					System.out.println("LEGALMOVES :"+temp);
 					return temp;
 				}
@@ -545,7 +545,7 @@ public class FirstYapEngine {
 				reInitialize();
 				try{
 					System.out.println("backingStateMachine : getLegalMoves");
-					List<ExplicitMove> temp = backingStateMachine.getLegalMoves(machine, role);
+					List<ExplicitMove> temp = backingStateMachine.getExplicitLegalMoves(machine, role);
 					System.out.println("LEGALMOVES :"+temp);
 					return temp;
 				}
@@ -601,7 +601,7 @@ public class FirstYapEngine {
 					reInitialize();
 					try{
 						System.out.println("backingStateMachine : getNextState");
-						ExplicitMachineState temp = backingStateMachine.getNextState(machine, moves);
+						ExplicitMachineState temp = backingStateMachine.getExplicitNextState(machine, moves);
 						System.out.println("NEW MachineState :"+temp);
 						return temp;
 					}
@@ -615,7 +615,7 @@ public class FirstYapEngine {
 					reInitialize();
 					try{
 						System.out.println("backingStateMachine : getNextState");
-						ExplicitMachineState temp = backingStateMachine.getNextState(machine, moves);
+						ExplicitMachineState temp = backingStateMachine.getExplicitNextState(machine, moves);
 						System.out.println("NEW MachineState :"+temp);
 						return temp;
 					}
@@ -628,7 +628,7 @@ public class FirstYapEngine {
 					reInitialize();
 					try{
 						System.out.println("backingStateMachine : getNextState");
-						ExplicitMachineState temp = backingStateMachine.getNextState(machine, moves);
+						ExplicitMachineState temp = backingStateMachine.getExplicitNextState(machine, moves);
 						System.out.println("NEW MachineState :"+temp);
 						return temp;
 					}
@@ -641,7 +641,7 @@ public class FirstYapEngine {
 					reInitialize();
 					try{
 						System.out.println("backingStateMachine : getNextState");
-						ExplicitMachineState temp = backingStateMachine.getNextState(machine, moves);
+						ExplicitMachineState temp = backingStateMachine.getExplicitNextState(machine, moves);
 						System.out.println("NEW MachineState :"+temp);
 						return temp;
 					}

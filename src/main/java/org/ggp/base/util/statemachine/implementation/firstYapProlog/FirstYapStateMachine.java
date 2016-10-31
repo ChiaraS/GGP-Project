@@ -123,7 +123,7 @@ public class FirstYapStateMachine extends StateMachine{
 	 * @throws StateMachineException
 	 */
 	@Override
-	public List<Integer> getOneRoleGoals(ExplicitMachineState state, ExplicitRole role) throws StateMachineException{
+	public List<Integer> getAllGoalsForOneRole(ExplicitMachineState state, ExplicitRole role) throws StateMachineException{
 
 		List<Integer> goal = new ArrayList<Integer>();
 		goal.add(new Integer(yapEngine.getGoal(state, role)));
@@ -153,7 +153,7 @@ public class FirstYapStateMachine extends StateMachine{
 	 * on the game rules used to initialize this state machine.
 	 */
 	@Override
-	public List<ExplicitRole> getRoles()
+	public List<ExplicitRole> getExplicitRoles()
 	{
 		return this.roles;
 	}
@@ -164,7 +164,7 @@ public class FirstYapStateMachine extends StateMachine{
 	 * Returns the initial state of the game.
 	 */
 	@Override
-	public ExplicitMachineState getInitialState()
+	public ExplicitMachineState getExplicitInitialState()
 	{
 		return this.initialState;
 	}
@@ -181,7 +181,7 @@ public class FirstYapStateMachine extends StateMachine{
 	 */
 	// TODO: There are philosophical reasons for this to return Set<Move> rather than List<Move>.
 	@Override
-	public List<ExplicitMove> getLegalMoves(ExplicitMachineState state, ExplicitRole role) throws MoveDefinitionException, StateMachineException
+	public List<ExplicitMove> getExplicitLegalMoves(ExplicitMachineState state, ExplicitRole role) throws MoveDefinitionException, StateMachineException
 	{
 		return yapEngine.getLegalMoves(state, role);
 	}
@@ -193,13 +193,13 @@ public class FirstYapStateMachine extends StateMachine{
 	 * list containing one move per role.
 	 *
 	 * @param moves A list containing one move per role. The moves should be
-	 * listed in the same order as roles are listed by {@link #getRoles()}.
+	 * listed in the same order as roles are listed by {@link #getExplicitRoles()}.
 	 * @throws TransitionDefinitionException indicates an error in either the
 	 * game description or the StateMachine implementation.
 	 * @throws StateMachineException
 	 */
 	@Override
-	public ExplicitMachineState getNextState(ExplicitMachineState state, List<ExplicitMove> moves) throws TransitionDefinitionException, StateMachineException
+	public ExplicitMachineState getExplicitNextState(ExplicitMachineState state, List<ExplicitMove> moves) throws TransitionDefinitionException, StateMachineException
 	{
 		return yapEngine.getNextState(state, moves);
 	}

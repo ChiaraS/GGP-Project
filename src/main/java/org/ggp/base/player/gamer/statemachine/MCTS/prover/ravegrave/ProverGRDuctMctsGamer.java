@@ -45,7 +45,7 @@ public class ProverGRDuctMctsGamer extends ProverDuctMctsGamer {
 		Random r = new Random();
 
 		ExplicitRole myRole = this.getRole();
-		int numRoles = this.getStateMachine().getRoles().size();
+		int numRoles = this.getStateMachine().getExplicitRoles().size();
 
 		int myRoleIndex = this.getStateMachine().getRoleIndices().get(this.getRole());
 

@@ -4,6 +4,18 @@ import java.util.Random;
 
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.evolution.Individual;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.evolution.SingleParameterEvolutionManager;
+import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.HybridMCTSManager;
+import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.strategies.aftermove.EvoAfterMove;
+import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.strategies.aftersimulation.EvoAfterSimulation;
+import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.strategies.aftersimulation.EvoGRAVEAfterSimulation;
+import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.strategies.aftersimulation.GRAVEAfterSimulation;
+import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.strategies.backpropagation.GRAVEBackpropagation;
+import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.strategies.beforesimualtion.EvoBeforeSimulation;
+import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.strategies.expansion.NoExpansion;
+import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.strategies.movechoice.MaximumScoreChoice;
+import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.strategies.playout.GRAVEPlayout;
+import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.strategies.selection.GRAVESelection;
+import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.strategies.selection.evaluators.grave.GRAVEEvaluator;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.propnet.InternalPropnetMCTSManager;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.propnet.strategies.aftermove.PnEvoAfterMove;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.propnet.strategies.aftersimulation.PnEvoAfterSimulation;
@@ -17,7 +29,11 @@ import org.ggp.base.player.gamer.statemachine.MCTS.manager.propnet.strategies.pl
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.propnet.strategies.selection.PnGRAVESelection;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.propnet.strategies.selection.evaluators.GRAVE.PnGRAVEEvaluator;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.prover.ProverMCTSManager;
+import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.hybrid.amafdecoupled.AMAFDecoupledTreeNodeFactory;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.propnet.amafdecoupled.PnAMAFDecoupledTreeNodeFactory;
+import org.ggp.base.util.statemachine.abstractsm.AbstractStateMachine;
+import org.ggp.base.util.statemachine.abstractsm.CompactStateMachine;
+import org.ggp.base.util.statemachine.abstractsm.ExplicitStateMachine;
 import org.ggp.base.util.statemachine.structure.compact.CompactRole;
 
 public class CadiaKTunerRaveDuctMctsGamer extends CadiaRaveDuctMctsGamer {
@@ -54,8 +70,8 @@ public class CadiaKTunerRaveDuctMctsGamer extends CadiaRaveDuctMctsGamer {
 
 		Random r = new Random();
 
-		CompactRole myRole = this.thePropnetMachine.roleToInternalRole(this.getRole());
-		int numRoles = this.thePropnetMachine.getInternalRoles().length;
+		CompactRole myRole = this.thePropnetMachine.convertToCompactRole(this.getRole());
+		int numRoles = this.thePropnetMachine.getCompactRoles().size();
 
 		PnGRAVESelection graveSelection = new PnGRAVESelection(numRoles, myRole, r, this.valueOffset, this.minAMAFVisits, new PnGRAVEEvaluator(this.c, this.unexploredMoveDefaultSelectionValue, this.betaComputer, this.defaultExploration));
 
@@ -102,6 +118,45 @@ public class CadiaKTunerRaveDuctMctsGamer extends CadiaRaveDuctMctsGamer {
 	    */
 
 		return null;
+	}
+
+	@Override
+	public HybridMCTSManager createHybridMCTSManager() {
+
+		Random r = new Random();
+
+		int myRoleIndex;
+		int numRoles;
+
+		AbstractStateMachine theMachine;
+
+		if(this.thePropnetMachine != null){
+			theMachine = new CompactStateMachine(this.thePropnetMachine);
+			myRoleIndex = this.thePropnetMachine.convertToCompactRole(this.getRole()).getIndex();
+			numRoles = this.thePropnetMachine.getCompactRoles().size();
+		}else{
+			theMachine = new ExplicitStateMachine(this.getStateMachine());
+			numRoles = this.getStateMachine().getExplicitRoles().size();
+			myRoleIndex = this.getStateMachine().getRoleIndices().get(this.getRole());
+		}
+
+		GRAVESelection graveSelection = new GRAVESelection(numRoles, myRoleIndex, r, this.valueOffset, this.minAMAFVisits, new GRAVEEvaluator(this.c, this.unexploredMoveDefaultSelectionValue, this.betaComputer, this.defaultExploration));
+
+		Individual[] individuals = new Individual[this.individualsValues.length];
+
+		for(int i = 0; i < this.individualsValues.length; i++){
+			individuals[i] = new Individual(this.individualsValues[i]);
+		}
+
+		SingleParameterEvolutionManager evolutionManager = new SingleParameterEvolutionManager(r, this.evoC, this.evoValueOffset, individuals);
+
+		return new HybridMCTSManager(graveSelection, new NoExpansion() /*new RandomExpansion(numRoles, myRole, r)*/,
+				new GRAVEPlayout(theMachine), new GRAVEBackpropagation(numRoles, myRoleIndex), new MaximumScoreChoice(myRoleIndex, r),
+				new EvoBeforeSimulation(evolutionManager, this.betaComputer),
+				new EvoGRAVEAfterSimulation(new GRAVEAfterSimulation(graveSelection), new EvoAfterSimulation(evolutionManager, myRoleIndex)),
+				new EvoAfterMove(evolutionManager), new AMAFDecoupledTreeNodeFactory(theMachine),
+				theMachine, this.gameStepOffset, this.maxSearchDepth, this.logTranspositionTable);
+
 	}
 
 }

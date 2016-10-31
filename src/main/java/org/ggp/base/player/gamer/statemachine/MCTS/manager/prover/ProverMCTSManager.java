@@ -159,7 +159,9 @@ public class ProverMCTSManager extends MCTSManager {
 		//this.strategies.add(this.playoutStrategy);
 		//this.strategies.add(this.moveChoiceStrategy);
 
-		String toLog = "MCTS manager initialized with the following state machine " + this.theMachine.getName();
+		String toLog = "MCTS manager type: " + this.getClass().getSimpleName();
+
+		toLog += "MCTS manager initialized with the following state machine " + this.theMachine.getName();
 
 		toLog += "\nMCTS manager initialized with the following parameters: [maxSearchDepth = " + this.maxSearchDepth + "]";
 
@@ -499,7 +501,7 @@ public class ProverMCTSManager extends MCTSManager {
 
 		// Get the next state according to the joint move...
 		try {
-			nextState = this.theMachine.getNextState(currentState, mctsJointMove.getJointMove());
+			nextState = this.theMachine.getExplicitNextState(currentState, mctsJointMove.getJointMove());
 		} catch (TransitionDefinitionException | StateMachineException e) {
 			GamerLogger.logError("MCTSManager", "Cannot compute next state. Stopping iteration and returning safe goals.");
 

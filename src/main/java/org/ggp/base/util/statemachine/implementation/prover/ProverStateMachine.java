@@ -79,7 +79,7 @@ public class ProverStateMachine extends StateMachine
 	*/
 
 	@Override
-	public List<Integer> getOneRoleGoals(ExplicitMachineState state, ExplicitRole role)	{
+	public List<Integer> getAllGoalsForOneRole(ExplicitMachineState state, ExplicitRole role)	{
 		Set<GdlSentence> results = prover.askAll(ProverQueryBuilder.getGoalQuery(role), ProverQueryBuilder.getContext(state));
 
 		if (results.size() != 1) {
@@ -108,13 +108,13 @@ public class ProverStateMachine extends StateMachine
 	}
 
 	@Override
-	public ExplicitMachineState getInitialState()
+	public ExplicitMachineState getExplicitInitialState()
 	{
 		return initialState;
 	}
 
 	@Override
-	public List<ExplicitMove> getLegalMoves(ExplicitMachineState state, ExplicitRole role) throws MoveDefinitionException
+	public List<ExplicitMove> getExplicitLegalMoves(ExplicitMachineState state, ExplicitRole role) throws MoveDefinitionException
 	{
 		Set<GdlSentence> results = prover.askAll(ProverQueryBuilder.getLegalQuery(role), ProverQueryBuilder.getContext(state));
 
@@ -128,9 +128,9 @@ public class ProverStateMachine extends StateMachine
 	}
 
 	@Override
-	public ExplicitMachineState getNextState(ExplicitMachineState state, List<ExplicitMove> moves) throws TransitionDefinitionException
+	public ExplicitMachineState getExplicitNextState(ExplicitMachineState state, List<ExplicitMove> moves) throws TransitionDefinitionException
 	{
-		Set<GdlSentence> results = prover.askAll(ProverQueryBuilder.getNextQuery(), ProverQueryBuilder.getContext(state, getRoles(), moves));
+		Set<GdlSentence> results = prover.askAll(ProverQueryBuilder.getNextQuery(), ProverQueryBuilder.getContext(state, getExplicitRoles(), moves));
 
 		for (GdlSentence sentence : results)
 		{
@@ -144,7 +144,7 @@ public class ProverStateMachine extends StateMachine
 	}
 
 	@Override
-	public List<ExplicitRole> getRoles()
+	public List<ExplicitRole> getExplicitRoles()
 	{
 		return roles;
 	}

@@ -53,7 +53,7 @@ public class MCTSController {
 
 	public ExplicitMove selectBestMove(long finishBy, StateMachine stateMachine, int myRoleIndex, ExplicitMachineState currentState) throws MoveDefinitionException, TransitionDefinitionException, GoalDefinitionException, StateMachineException{
 
-		List<ExplicitRole> roles = stateMachine.getRoles();
+		List<ExplicitRole> roles = stateMachine.getExplicitRoles();
 		List<ExplicitMove> jointMove = new ArrayList<ExplicitMove>();
 		for(int i = 0; i < roles.size(); i++){
 			jointMove.add(null);

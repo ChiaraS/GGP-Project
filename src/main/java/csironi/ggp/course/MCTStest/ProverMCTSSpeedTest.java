@@ -197,8 +197,8 @@ public class ProverMCTSSpeedTest {
 
 
 
-			playingRole = theProverMachine.getRoles().get(0);
-			numRoles = theProverMachine.getRoles().size();
+			playingRole = theProverMachine.getExplicitRoles().get(0);
+			numRoles = theProverMachine.getExplicitRoles().size();
 
 			ProverTreeNodeFactory theNodeFactory;
 
@@ -224,7 +224,7 @@ public class ProverMCTSSpeedTest {
 			try{
 				GamerLogger.log(mctsType + "MCTSSpeedTest", "Starting search.");
 
-				MCTSNode initialNode = MCTSmanager.search(theProverMachine.getInitialState(), System.currentTimeMillis() + testTime, gameStep);
+				MCTSNode initialNode = MCTSmanager.search(theProverMachine.getExplicitInitialState(), System.currentTimeMillis() + testTime, gameStep);
 				ProverCompleteMoveStats finalMove = MCTSmanager.getBestMove(initialNode);
 
 				GamerLogger.log(mctsType + "MCTSSpeedTest", "Search ended correctly.");

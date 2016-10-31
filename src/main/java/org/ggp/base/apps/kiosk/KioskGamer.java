@@ -51,7 +51,7 @@ public class KioskGamer extends StateMachineGamer implements Observer {
         theGUI = new GameGUI(theCanvas);
         theGUI.setRole(getRole());
         theGUI.setBackground(theGUIPanel.getBackground());
-        theGUI.updateGameState(getStateMachine().getInitialState());
+        theGUI.updateGameState(getStateMachine().getExplicitInitialState());
         theGUI.addObserver(this);
 
         theGUIPanel.removeAll();
@@ -103,7 +103,7 @@ public class KioskGamer extends StateMachineGamer implements Observer {
         } else if(event instanceof ServerCompletedMatchEvent) {
             theGUI.updateGameState(stateFromServer);
 
-            List<ExplicitRole> theRoles = getStateMachine().getRoles();
+            List<ExplicitRole> theRoles = getStateMachine().getExplicitRoles();
             List<Integer> theGoals = ((ServerCompletedMatchEvent)event).getGoals();
 
             StringBuilder finalMessage = new StringBuilder();

@@ -190,7 +190,7 @@ public class InternalPropnetMCSManager {
 
 			List<CompactMove> legalMoves;
 			try {
-				legalMoves = this.theMachine.getInternalLegalMoves(this.currentState, this.myRole);
+				legalMoves = this.theMachine.getCompactLegalMoves(this.currentState, this.myRole);
 			} catch (MoveDefinitionException e) {
 				GamerLogger.log("MCSManager", "Error when computing legal moves for my role in the root state before starting Monte Carlo search.");
 				GamerLogger.logStackTrace("MCSManager", e);
@@ -231,7 +231,7 @@ public class InternalPropnetMCSManager {
 		    	// Get a random joint move where my role plays its currently analyzed move.
 				jointMove = this.theMachine.getRandomJointMove(this.currentState, this.myRole, myCurrentMove);
 				// Get the state reachable with this joint move.
-				nextState =  this.theMachine.getInternalNextState(this.currentState, jointMove);
+				nextState =  this.theMachine.getCompactNextState(this.currentState, jointMove);
 				// Get the goals obtained by performing playouts from this state.
 				simulationResult = this.playoutStrategy.playout(nextState, this.maxSearchDepth-1);
 				this.visitedNodes += simulationResult.getPlayoutLength();

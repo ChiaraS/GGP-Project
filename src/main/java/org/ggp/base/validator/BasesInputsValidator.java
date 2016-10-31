@@ -72,7 +72,7 @@ public class BasesInputsValidator implements GameValidator {
 				return ImmutableList.of();
 			}
 
-			ExplicitMachineState initialState = sm.getInitialState();
+			ExplicitMachineState initialState = sm.getExplicitInitialState();
 			ExplicitMachineState state = initialState;
 			long startTime = System.currentTimeMillis();
 			while (System.currentTimeMillis() < startTime + millisecondsToTest) {
@@ -88,8 +88,8 @@ public class BasesInputsValidator implements GameValidator {
 
 				if (!legalsFromInputs.isEmpty()) {
 					List<GdlSentence> legalSentences = new ArrayList<GdlSentence>();
-					for (ExplicitRole role : sm.getRoles()) {
-						List<ExplicitMove> legalMoves = sm.getLegalMoves(state, role);
+					for (ExplicitRole role : sm.getExplicitRoles()) {
+						List<ExplicitMove> legalMoves = sm.getExplicitLegalMoves(state, role);
 						for (ExplicitMove move : legalMoves) {
 							legalSentences.add(GdlPool.getRelation(LEGAL, new GdlTerm[] {role.getName(), move.getContents()}));
 						}

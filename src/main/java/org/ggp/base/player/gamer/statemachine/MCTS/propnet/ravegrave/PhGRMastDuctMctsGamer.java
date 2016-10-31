@@ -5,6 +5,17 @@ import java.util.Map;
 import java.util.Random;
 
 import org.ggp.base.player.gamer.statemachine.MCS.manager.MoveStats;
+import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.HybridMCTSManager;
+import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.strategies.aftermove.MASTAfterMove;
+import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.strategies.aftermove.PhMASTAfterMove;
+import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.strategies.aftermove.ProgressiveHistoryAfterMove;
+import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.strategies.aftersimulation.GRAVEAfterSimulation;
+import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.strategies.backpropagation.MASTGRAVEBackpropagation;
+import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.strategies.expansion.NoExpansion;
+import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.strategies.movechoice.MaximumScoreChoice;
+import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.strategies.playout.MASTPlayout;
+import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.strategies.selection.ProgressiveHistoryGRAVESelection;
+import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.strategies.selection.evaluators.grave.ProgressiveHistoryGRAVEEvaluator;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.propnet.InternalPropnetMCTSManager;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.propnet.strategies.aftermove.PnMASTAfterMove;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.propnet.strategies.aftermove.PnPhMASTAfterMove;
@@ -17,7 +28,12 @@ import org.ggp.base.player.gamer.statemachine.MCTS.manager.propnet.strategies.pl
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.propnet.strategies.selection.PnProgressiveHistoryGRAVESelection;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.propnet.strategies.selection.evaluators.GRAVE.PnProgressiveHistoryGRAVEEvaluator;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.prover.ProverMCTSManager;
+import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.hybrid.amafdecoupled.AMAFDecoupledTreeNodeFactory;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.propnet.amafdecoupled.PnAMAFDecoupledTreeNodeFactory;
+import org.ggp.base.util.statemachine.abstractsm.AbstractStateMachine;
+import org.ggp.base.util.statemachine.abstractsm.CompactStateMachine;
+import org.ggp.base.util.statemachine.abstractsm.ExplicitStateMachine;
+import org.ggp.base.util.statemachine.structure.Move;
 import org.ggp.base.util.statemachine.structure.compact.CompactMove;
 import org.ggp.base.util.statemachine.structure.compact.CompactRole;
 
@@ -38,8 +54,8 @@ public abstract class PhGRMastDuctMctsGamer extends GRMastDuctMctsGamer {
 
 		Random r = new Random();
 
-		CompactRole myRole = this.thePropnetMachine.roleToInternalRole(this.getRole());
-		int numRoles = this.thePropnetMachine.getInternalRoles().length;
+		CompactRole myRole = this.thePropnetMachine.convertToCompactRole(this.getRole());
+		int numRoles = this.thePropnetMachine.getCompactRoles().size();
 
 		PnProgressiveHistoryGRAVESelection graveSelection = new PnProgressiveHistoryGRAVESelection(numRoles, myRole, r, this.valueOffset, this.minAMAFVisits, new PnProgressiveHistoryGRAVEEvaluator(this.c, this.unexploredMoveDefaultSelectionValue, this.betaComputer, this.defaultExploration, this.w));
 
@@ -62,6 +78,41 @@ public abstract class PhGRMastDuctMctsGamer extends GRMastDuctMctsGamer {
 		// ZZZ!
 
 		return null;
+
+
+	}
+
+	@Override
+	public HybridMCTSManager createHybridMCTSManager(){
+
+		Random r = new Random();
+
+		int myRoleIndex;
+		int numRoles;
+
+		AbstractStateMachine theMachine;
+
+		if(this.thePropnetMachine != null){
+			theMachine = new CompactStateMachine(this.thePropnetMachine);
+			myRoleIndex = this.thePropnetMachine.convertToCompactRole(this.getRole()).getIndex();
+			numRoles = this.thePropnetMachine.getCompactRoles().size();
+		}else{
+			theMachine = new ExplicitStateMachine(this.getStateMachine());
+			numRoles = this.getStateMachine().getExplicitRoles().size();
+			myRoleIndex = this.getStateMachine().getRoleIndices().get(this.getRole());
+		}
+
+		ProgressiveHistoryGRAVESelection graveSelection = new ProgressiveHistoryGRAVESelection(numRoles, myRoleIndex, r, this.valueOffset, this.minAMAFVisits, new ProgressiveHistoryGRAVEEvaluator(this.c, this.unexploredMoveDefaultSelectionValue, this.betaComputer, this.defaultExploration, this.w));
+
+		Map<Move, MoveStats> mastStatistics = new HashMap<Move, MoveStats>();
+
+		// Note that the after simulation strategy GRAVEAfterSimulation already performs all the after simulation
+		// actions needed by the MAST strategy, so we don't need to change it when we use GRAVE and MAST together.
+		return new HybridMCTSManager(graveSelection, new NoExpansion() /*new RandomExpansion(numRoles, myRole, r)*/,
+				new MASTPlayout(theMachine, r, mastStatistics, this.epsilon), new MASTGRAVEBackpropagation(numRoles, myRoleIndex, mastStatistics),
+				new MaximumScoreChoice(myRoleIndex, r), null, new GRAVEAfterSimulation(graveSelection),
+				new PhMASTAfterMove(new MASTAfterMove(mastStatistics, this.decayFactor), new ProgressiveHistoryAfterMove(graveSelection)),
+				new AMAFDecoupledTreeNodeFactory(theMachine), theMachine, this.gameStepOffset, this.maxSearchDepth, this.logTranspositionTable);
 
 
 	}

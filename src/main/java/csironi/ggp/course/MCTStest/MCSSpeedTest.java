@@ -6,8 +6,8 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 
-import org.ggp.base.player.gamer.statemachine.MCS.manager.propnet.PnCompleteMoveStats;
 import org.ggp.base.player.gamer.statemachine.MCS.manager.propnet.InternalPropnetMCSManager;
+import org.ggp.base.player.gamer.statemachine.MCS.manager.propnet.PnCompleteMoveStats;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.propnet.strategies.playout.PnRandomPlayout;
 import org.ggp.base.util.game.GameRepository;
 import org.ggp.base.util.gdl.grammar.Gdl;
@@ -216,9 +216,9 @@ public class MCSSpeedTest {
 
 		        GamerLogger.log("MCSSpeedTest", "Starting speed test.");
 
-		        CompactRole internalPlayingRole = thePropnetMachine.getInternalRoles()[0];
-		        playingRole = thePropnetMachine.internalRoleToRole(internalPlayingRole);
-		        numRoles = thePropnetMachine.getInternalRoles().length;
+		        CompactRole internalPlayingRole = thePropnetMachine.getCompactRoles().get(0);
+		        playingRole = thePropnetMachine.convertToExplicitRole(internalPlayingRole);
+		        numRoles = thePropnetMachine.getCompactRoles().size();
 
 		        InternalPropnetMCSManager MCSmanager = new InternalPropnetMCSManager(new PnRandomPlayout(thePropnetMachine),
 		        		thePropnetMachine, internalPlayingRole, maxSearchDepth, r);
@@ -226,11 +226,11 @@ public class MCSSpeedTest {
 		        try{
 		        	GamerLogger.log("MCSSpeedTest", "Starting search.");
 
-		        	MCSmanager.search(thePropnetMachine.getInternalInitialState(), System.currentTimeMillis() + testTime);
+		        	MCSmanager.search(thePropnetMachine.getCompactInitialState(), System.currentTimeMillis() + testTime);
 		        	PnCompleteMoveStats finalMove = MCSmanager.getBestMove();
 
 		        	GamerLogger.log("MCSSpeedTest", "Search ended correctly.");
-		        	chosenMove = thePropnetMachine.internalMoveToMove(finalMove.getTheMove());
+		        	chosenMove = thePropnetMachine.convertToExplicitMove(finalMove.getTheMove());
 		 	        scoresSum = finalMove.getScoreSum();
 		 	        visits = finalMove.getVisits();
 		 	        if(visits != 0){

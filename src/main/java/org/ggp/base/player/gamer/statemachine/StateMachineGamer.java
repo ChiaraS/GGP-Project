@@ -130,7 +130,7 @@ public abstract class StateMachineGamer extends Gamer
      */
     protected final void switchStateMachine(StateMachine newStateMachine) {
         try {
-            ExplicitMachineState newCurrentState = newStateMachine.getInitialState();
+            ExplicitMachineState newCurrentState = newStateMachine.getExplicitInitialState();
             ExplicitRole newRole = newStateMachine.getRoleFromConstant(getRoleName());
 
             // Attempt to run through the game history in the new machine
@@ -191,7 +191,7 @@ public abstract class StateMachineGamer extends Gamer
 		{
 			stateMachine = getInitialStateMachine();
 			stateMachine.initialize(getMatch().getGame().getRules(), timeout);
-			currentState = stateMachine.getInitialState();
+			currentState = stateMachine.getExplicitInitialState();
 			role = stateMachine.getRoleFromConstant(getRoleName());
 			getMatch().appendState(currentState.getContents());
 
@@ -226,7 +226,7 @@ public abstract class StateMachineGamer extends Gamer
 					moves.add(stateMachine.getMoveFromTerm(sentence));
 				}
 
-				currentState = stateMachine.getNextState(currentState, moves);
+				currentState = stateMachine.getExplicitNextState(currentState, moves);
 				getMatch().appendState(currentState.getContents());
 			}
 
@@ -253,7 +253,7 @@ public abstract class StateMachineGamer extends Gamer
 					moves.add(stateMachine.getMoveFromTerm(sentence));
 				}
 
-				currentState = stateMachine.getNextState(currentState, moves);
+				currentState = stateMachine.getExplicitNextState(currentState, moves);
 				getMatch().appendState(currentState.getContents());
 
 				List<Integer> allGoals = new ArrayList<Integer>();

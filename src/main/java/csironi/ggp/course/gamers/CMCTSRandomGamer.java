@@ -49,7 +49,7 @@ public class CMCTSRandomGamer extends SampleGamer {
 		StateMachine stateMachine = getStateMachine();
 
 		// Get all available moves
-		List<ExplicitMove> moves = stateMachine.getLegalMoves(getCurrentState(), getRole());
+		List<ExplicitMove> moves = stateMachine.getExplicitLegalMoves(getCurrentState(), getRole());
 
 		ExplicitMove selection = moves.get(0);
 		// If there is more than one legal move available search the best one,

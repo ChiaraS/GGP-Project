@@ -59,7 +59,7 @@ public class PnGoalsMemorizingStandardPlayout extends PnStandardPlayout {
 				break;
 			}
 
-			state = this.theMachine.getInternalNextState(state, jointMove);
+			state = this.theMachine.getCompactNextState(state, jointMove);
 
 			allGoals.add(this.theMachine.getSafeGoalsAvg(state));
 

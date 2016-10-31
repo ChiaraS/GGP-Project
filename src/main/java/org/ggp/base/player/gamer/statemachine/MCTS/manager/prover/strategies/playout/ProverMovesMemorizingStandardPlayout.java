@@ -69,7 +69,7 @@ public class ProverMovesMemorizingStandardPlayout extends ProverStandardPlayout 
 				break;
 			}
 			try {
-				state = this.theMachine.getNextState(state, jointMove);
+				state = this.theMachine.getExplicitNextState(state, jointMove);
 			} catch (TransitionDefinitionException | StateMachineException e) {
 				GamerLogger.logError("MCTSManager", "Exception getting the next state while performing a playout.");
 				GamerLogger.logStackTrace("MCTSManager", e);

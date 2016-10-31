@@ -26,7 +26,7 @@ public class ProvaPropnetStateMachine {
 		CheckFwdInterrPropnetStateMachine m = new CheckFwdInterrPropnetStateMachine(300000);
 		m.initialize(BeLList, Long.MAX_VALUE);
 
-		ExplicitMachineState initialState = m.getInitialState();
+		ExplicitMachineState initialState = m.getExplicitInitialState();
 
 		if(initialState == null){
 			System.out.println("Something went wrong with initial state computation!");

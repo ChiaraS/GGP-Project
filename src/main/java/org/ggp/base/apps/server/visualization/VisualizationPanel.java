@@ -177,7 +177,7 @@ public final class VisualizationPanel extends JPanel implements Observer
         StateMachine theMachine = new CachedStateMachine(new ProverStateMachine());
         try {
         	theMachine.initialize(theGame.getRules(), Long.MAX_VALUE);
-            ExplicitMachineState theCurrentState = theMachine.getInitialState();
+            ExplicitMachineState theCurrentState = theMachine.getExplicitInitialState();
             do {
                 theVisual.observe(new ServerNewGameStateEvent(theCurrentState));
                 theCurrentState = theMachine.getRandomNextState(theCurrentState);

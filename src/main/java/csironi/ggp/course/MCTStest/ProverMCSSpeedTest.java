@@ -160,9 +160,9 @@ public class ProverMCSSpeedTest {
 
 			GamerLogger.log("MCSSpeedTest", "Starting speed test.");
 
-			playingRole = theProverMachine.getRoles().get(0);
+			playingRole = theProverMachine.getExplicitRoles().get(0);
 
-			numRoles = theProverMachine.getRoles().size();
+			numRoles = theProverMachine.getExplicitRoles().size();
 
 			ProverMCSManager MCSmanager = new ProverMCSManager(new ProverRandomPlayout(theProverMachine),
 					theProverMachine, playingRole, maxSearchDepth, r);
@@ -170,7 +170,7 @@ public class ProverMCSSpeedTest {
 			try{
 				GamerLogger.log("MCSSpeedTest", "Starting search.");
 
-				MCSmanager.search(theProverMachine.getInitialState(), System.currentTimeMillis() + testTime);
+				MCSmanager.search(theProverMachine.getExplicitInitialState(), System.currentTimeMillis() + testTime);
 				ProverCompleteMoveStats finalMove = MCSmanager.getBestMove();
 
 				GamerLogger.log("MCSSpeedTest", "Search ended correctly.");

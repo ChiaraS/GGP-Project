@@ -140,7 +140,7 @@ public abstract class GameCanvas extends JPanel implements Subject {
         clearMoveSelection();
 
         try {
-            List<ExplicitMove> legalMoves = stateMachine.getLegalMoves(gameState, myRole);
+            List<ExplicitMove> legalMoves = stateMachine.getExplicitLegalMoves(gameState, myRole);
             if(legalMoves.size() > 1) {
                 submitWorkingMove(null);
             } else {
@@ -190,7 +190,7 @@ public abstract class GameCanvas extends JPanel implements Subject {
 
     protected boolean gameStateHasLegalMove(String move) {
         try {
-            List<ExplicitMove> legalMoves = stateMachine.getLegalMoves(gameState, myRole);
+            List<ExplicitMove> legalMoves = stateMachine.getExplicitLegalMoves(gameState, myRole);
             for(ExplicitMove aMove : legalMoves) {
                 if(aMove.toString().equals(move))
                     return true;
@@ -206,7 +206,7 @@ public abstract class GameCanvas extends JPanel implements Subject {
 
         Set<String> theMatches = new HashSet<String>();
         try {
-            List<ExplicitMove> legalMoves = stateMachine.getLegalMoves(gameState, myRole);
+            List<ExplicitMove> legalMoves = stateMachine.getExplicitLegalMoves(gameState, myRole);
             for(ExplicitMove theMove : legalMoves) {
                 Matcher matcher = pattern.matcher(theMove.toString());
                 if (matcher.find()) {

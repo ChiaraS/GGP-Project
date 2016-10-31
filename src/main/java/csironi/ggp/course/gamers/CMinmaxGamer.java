@@ -43,7 +43,7 @@ public class CMinmaxGamer extends SampleGamer {
 		long start = System.currentTimeMillis();
 
 		StateMachine stateMachine = getStateMachine();
-		List<ExplicitMove> moves = stateMachine.getLegalMoves(getCurrentState(), getRole());
+		List<ExplicitMove> moves = stateMachine.getExplicitLegalMoves(getCurrentState(), getRole());
 
 		ExplicitMove selection = moves.get(0);
 		// If there is more than one legal move available search the best one,

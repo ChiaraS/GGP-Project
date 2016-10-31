@@ -33,7 +33,7 @@ public class EvalMobility extends EvaluationFunction {
 	@Override
 	public int eval(ExplicitMachineState state, ExplicitRole role) throws MoveDefinitionException, StateMachineException {
 
-		List<ExplicitMove> legalMoves = stateMachine.getLegalMoves(state, role);
+		List<ExplicitMove> legalMoves = stateMachine.getExplicitLegalMoves(state, role);
 
 		return 0;
 	}

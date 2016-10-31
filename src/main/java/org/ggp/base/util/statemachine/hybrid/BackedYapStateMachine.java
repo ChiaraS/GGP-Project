@@ -102,11 +102,11 @@ public class BackedYapStateMachine extends StateMachine {
 				GamerLogger.logError("StateMachine", "[BACKED YAP] Initialization of the main state machine failed. Recovering!");
 				GamerLogger.logStackTrace("StateMachine", e);
 
-				if(this.mainMachine.getInitialState() == null){
-					this.mainMachine.setInitialState(this.backupMachine.getInitialState());
+				if(this.mainMachine.getExplicitInitialState() == null){
+					this.mainMachine.setInitialState(this.backupMachine.getExplicitInitialState());
 				}
-				if(this.mainMachine.getRoles() == null){
-					this.mainMachine.setRoles(this.backupMachine.getRoles());
+				if(this.mainMachine.getExplicitRoles() == null){
+					this.mainMachine.setRoles(this.backupMachine.getExplicitRoles());
 				}
 			}else{
 				GamerLogger.logError("StateMachine", "[BACKED YAP] Initialization of the main state machine failed. Using only backup state machine!");
@@ -121,11 +121,11 @@ public class BackedYapStateMachine extends StateMachine {
 	 * @see org.ggp.base.util.statemachine.StateMachine#getRoles()
 	 */
 	@Override
-	public List<ExplicitRole> getRoles() {
+	public List<ExplicitRole> getExplicitRoles() {
 		if(this.mainMachine != null){
-			return this.mainMachine.getRoles();
+			return this.mainMachine.getExplicitRoles();
 		}else{
-			return this.backupMachine.getRoles();
+			return this.backupMachine.getExplicitRoles();
 		}
 	}
 
@@ -133,28 +133,28 @@ public class BackedYapStateMachine extends StateMachine {
 	 * @see org.ggp.base.util.statemachine.StateMachine#getInitialState()
 	 */
 	@Override
-	public ExplicitMachineState getInitialState() {
+	public ExplicitMachineState getExplicitInitialState() {
 		if(this.mainMachine != null){
-			return this.mainMachine.getInitialState();
+			return this.mainMachine.getExplicitInitialState();
 		}else{
-			return this.backupMachine.getInitialState();
+			return this.backupMachine.getExplicitInitialState();
 		}
 	}
 
 	@Override
-	public List<Integer> getOneRoleGoals(ExplicitMachineState state, ExplicitRole role)
+	public List<Integer> getAllGoalsForOneRole(ExplicitMachineState state, ExplicitRole role)
 			throws StateMachineException {
 
 		if(this.mainMachine != null){
 			try{
-				return this.mainMachine.getOneRoleGoals(state, role);
+				return this.mainMachine.getAllGoalsForOneRole(state, role);
 			}catch(StateMachineException e){
 				GamerLogger.logError("StateMachine", "[BACKED YAP] Failed to get one role goals. Falling back to backup machine.");
 				GamerLogger.logStackTrace("StateMachine", e);
 			}
 		}
 
-		return this.backupMachine.getOneRoleGoals(state, role);
+		return this.backupMachine.getAllGoalsForOneRole(state, role);
 	}
 
 	/* (non-Javadoc)
@@ -179,38 +179,38 @@ public class BackedYapStateMachine extends StateMachine {
 	 * @see org.ggp.base.util.statemachine.StateMachine#getLegalMoves(org.ggp.base.util.statemachine.MachineState, org.ggp.base.util.statemachine.Role)
 	 */
 	@Override
-	public List<ExplicitMove> getLegalMoves(ExplicitMachineState state, ExplicitRole role)
+	public List<ExplicitMove> getExplicitLegalMoves(ExplicitMachineState state, ExplicitRole role)
 			throws MoveDefinitionException/*, StateMachineException*/ {
 
 		if(this.mainMachine != null){
 			try{
-				return this.mainMachine.getLegalMoves(state, role);
+				return this.mainMachine.getExplicitLegalMoves(state, role);
 			}catch(MoveDefinitionException | StateMachineException e){
 				GamerLogger.logError("StateMachine", "[BACKED YAP] Failed to get legal moves. Falling back to backup machine.");
 				GamerLogger.logStackTrace("StateMachine", e);
 			}
 		}
 
-		return this.backupMachine.getLegalMoves(state, role);
+		return this.backupMachine.getExplicitLegalMoves(state, role);
 	}
 
 	/* (non-Javadoc)
 	 * @see org.ggp.base.util.statemachine.StateMachine#getNextState(org.ggp.base.util.statemachine.MachineState, java.util.List)
 	 */
 	@Override
-	public ExplicitMachineState getNextState(ExplicitMachineState state, List<ExplicitMove> moves)
+	public ExplicitMachineState getExplicitNextState(ExplicitMachineState state, List<ExplicitMove> moves)
 			throws TransitionDefinitionException/*, StateMachineException*/ {
 
 		if(this.mainMachine != null){
 			try{
-				return this.mainMachine.getNextState(state, moves);
+				return this.mainMachine.getExplicitNextState(state, moves);
 			}catch(TransitionDefinitionException | StateMachineException e){
 				GamerLogger.logError("StateMachine", "[BACKED YAP] Failed to get next state. Falling back to backup machine.");
 				GamerLogger.logStackTrace("StateMachine", e);
 			}
 		}
 
-		return this.backupMachine.getNextState(state, moves);
+		return this.backupMachine.getExplicitNextState(state, moves);
 	}
 
 	/* (non-Javadoc)

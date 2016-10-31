@@ -74,7 +74,7 @@ public final class SampleSearchLightGamer extends StateMachineGamer
 		long start = System.currentTimeMillis();
 		long finishBy = timeout - 1000;
 
-		List<ExplicitMove> moves = theMachine.getLegalMoves(getCurrentState(), getRole());
+		List<ExplicitMove> moves = theMachine.getExplicitLegalMoves(getCurrentState(), getRole());
 		ExplicitMove selection = (moves.get(theRandom.nextInt(moves.size())));
 
 		// Shuffle the moves into a random order, so that when we find the first
@@ -109,7 +109,7 @@ public final class SampleSearchLightGamer extends StateMachineGamer
 		    // opponent's no-op. In a simultaneous-action game, however, the opponent
 		    // may have many moves, and so we will randomly pick one of our opponent's
 		    // possible actions and assume they do that.
-		    ExplicitMachineState nextState = theMachine.getNextState(getCurrentState(), theMachine.getRandomJointMove(getCurrentState(), getRole(), moveUnderConsideration));
+		    ExplicitMachineState nextState = theMachine.getExplicitNextState(getCurrentState(), theMachine.getRandomJointMove(getCurrentState(), getRole(), moveUnderConsideration));
 
 		    // Does the move under consideration end the game? If it does, do we win
 		    // or lose? If we lose, don't bother considering it. If we win, then we
@@ -138,7 +138,7 @@ public final class SampleSearchLightGamer extends StateMachineGamer
 		    // they will take it.
 		    boolean forcedLoss = false;
 		    for(List<ExplicitMove> jointMove : theMachine.getLegalJointMoves(nextState)) {
-		        ExplicitMachineState nextNextState = theMachine.getNextState(nextState, jointMove);
+		        ExplicitMachineState nextNextState = theMachine.getExplicitNextState(nextState, jointMove);
 		        if(theMachine.isTerminal(nextNextState)) {
 		            if(theMachine.getGoal(nextNextState, getRole()) == 0) {
 		                forcedLoss = true;

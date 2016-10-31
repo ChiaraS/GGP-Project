@@ -4,6 +4,16 @@ import java.util.Random;
 
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.evolution.Individual;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.evolution.SingleParameterEvolutionManager;
+import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.HybridMCTSManager;
+import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.strategies.aftermove.EvoAfterMove;
+import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.strategies.aftersimulation.EvoAfterSimulation;
+import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.strategies.backpropagation.StandardBackpropagation;
+import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.strategies.beforesimualtion.EvoBeforeSimulation;
+import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.strategies.expansion.RandomExpansion;
+import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.strategies.movechoice.MaximumScoreChoice;
+import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.strategies.playout.RandomPlayout;
+import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.strategies.selection.UCTSelection;
+import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.strategies.selection.evaluators.UCTEvaluator;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.propnet.InternalPropnetMCTSManager;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.propnet.strategies.aftermove.PnEvoAfterMove;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.propnet.strategies.aftersimulation.PnEvoAfterSimulation;
@@ -14,7 +24,11 @@ import org.ggp.base.player.gamer.statemachine.MCTS.manager.propnet.strategies.mo
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.propnet.strategies.playout.PnRandomPlayout;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.propnet.strategies.selection.PnUCTSelection;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.propnet.strategies.selection.evaluators.PnUCTEvaluator;
+import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.hybrid.decoupled.DecoupledTreeNodeFactory;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.propnet.decoupled.PnDecoupledTreeNodeFactory;
+import org.ggp.base.util.statemachine.abstractsm.AbstractStateMachine;
+import org.ggp.base.util.statemachine.abstractsm.CompactStateMachine;
+import org.ggp.base.util.statemachine.abstractsm.ExplicitStateMachine;
 import org.ggp.base.util.statemachine.structure.compact.CompactRole;
 
 
@@ -53,8 +67,8 @@ public class CTunerDuctMctsGamer extends DuctMctsGamer {
 
 		Random r = new Random();
 
-		CompactRole myRole = this.thePropnetMachine.roleToInternalRole(this.getRole());
-		int numRoles = this.thePropnetMachine.getInternalRoles().length;
+		CompactRole myRole = this.thePropnetMachine.convertToCompactRole(this.getRole());
+		int numRoles = this.thePropnetMachine.getCompactRoles().size();
 
 		PnUCTEvaluator evaluator = new PnUCTEvaluator(this.c, this.unexploredMoveDefaultSelectionValue);
 
@@ -94,4 +108,42 @@ public class CTunerDuctMctsGamer extends DuctMctsGamer {
 
 	}
 */
+
+	@Override
+	public HybridMCTSManager createHybridMCTSManager(){
+
+		Random r = new Random();
+
+		int myRoleIndex;
+		int numRoles;
+
+		AbstractStateMachine theMachine;
+
+		if(this.thePropnetMachine != null){
+			theMachine = new CompactStateMachine(this.thePropnetMachine);
+			myRoleIndex = this.thePropnetMachine.convertToCompactRole(this.getRole()).getIndex();
+			numRoles = this.thePropnetMachine.getCompactRoles().size();
+		}else{
+			theMachine = new ExplicitStateMachine(this.getStateMachine());
+			numRoles = this.getStateMachine().getExplicitRoles().size();
+			myRoleIndex = this.getStateMachine().getRoleIndices().get(this.getRole());
+		}
+
+		UCTEvaluator evaluator = new UCTEvaluator(this.c, this.unexploredMoveDefaultSelectionValue);
+
+		Individual[] individuals = new Individual[this.individualsValues.length];
+
+		for(int i = 0; i < this.individualsValues.length; i++){
+			individuals[i] = new Individual(this.individualsValues[i]);
+		}
+
+		SingleParameterEvolutionManager evolutionManager = new SingleParameterEvolutionManager(r, this.evoC, this.evoValueOffset, individuals);
+
+		return new HybridMCTSManager(new UCTSelection(numRoles, myRoleIndex, r, this.valueOffset, evaluator),
+	       		new RandomExpansion(numRoles, myRoleIndex, r), new RandomPlayout(theMachine),
+	       		new StandardBackpropagation(numRoles, myRoleIndex), new MaximumScoreChoice(myRoleIndex, r),
+	       		new EvoBeforeSimulation(evolutionManager, evaluator), new EvoAfterSimulation(evolutionManager, myRoleIndex),
+	       		new EvoAfterMove(evolutionManager), new DecoupledTreeNodeFactory(theMachine),
+	       		theMachine,	this.gameStepOffset, this.maxSearchDepth, this.logTranspositionTable);
+	}
 }

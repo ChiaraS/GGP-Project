@@ -28,7 +28,7 @@ public class InternalReprIterativeDeepeningSearch extends SearchAlgorithm {
 		}
 
 		// Translate current state to internal state
-		CompactMachineState internalState = ((InternalPropnetStateMachine)this.stateMachine).stateToInternalState(state);
+		CompactMachineState internalState = ((InternalPropnetStateMachine)this.stateMachine).convertToCompactMachineState(state);
 
 		int depthLimit = 0;
 		boolean finished = false;
@@ -70,7 +70,7 @@ public class InternalReprIterativeDeepeningSearch extends SearchAlgorithm {
 		boolean finished = true;
 		for (List<CompactMove> internalJointMove : internalJointMoves) {
 			if (timeout()) return false;
-			CompactMachineState nextState = internalReprStateMachine.getInternalNextState(internalState, internalJointMove);
+			CompactMachineState nextState = internalReprStateMachine.getCompactNextState(internalState, internalJointMove);
 			++nbUpdates;
 			finished = dfs(nextState, depth-1) && finished; // order matters here!
 		}

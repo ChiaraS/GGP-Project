@@ -57,7 +57,7 @@ public class MyMinmaxGamer extends SampleGamer {
 		ExplicitMachineState state = getCurrentState();
 		ExplicitRole myRole = getRole();
 
-		List<ExplicitMove> myMoves = stateMachine.getLegalMoves(state, myRole);
+		List<ExplicitMove> myMoves = stateMachine.getExplicitLegalMoves(state, myRole);
 
 		ExplicitMove selection = myMoves.get(0);
 
@@ -107,7 +107,7 @@ public class MyMinmaxGamer extends SampleGamer {
 		out.println("Opponent's index: " + opponentIndex);
 
 		// Check all my available moves to find the best one
-		List<ExplicitMove> myMoves = stateMachine.getLegalMoves(state, myRole);
+		List<ExplicitMove> myMoves = stateMachine.getExplicitLegalMoves(state, myRole);
 
 		out.print("My moves: [ ");
 		for(ExplicitMove move: myMoves){
@@ -153,10 +153,10 @@ public class MyMinmaxGamer extends SampleGamer {
 		StateMachine stateMachine = getStateMachine();
 
 		// Retrieve the list of all roles
-		List<ExplicitRole> roles = stateMachine.getRoles();
+		List<ExplicitRole> roles = stateMachine.getExplicitRoles();
 
 		// Find legal moves for the opponent
-		List<ExplicitMove> moves = stateMachine.getLegalMoves(state, roles.get(opponentIndex));
+		List<ExplicitMove> moves = stateMachine.getExplicitLegalMoves(state, roles.get(opponentIndex));
 
 		out.print("Opponent moves: [ ");
 		for(ExplicitMove move: moves){
@@ -177,7 +177,7 @@ public class MyMinmaxGamer extends SampleGamer {
 			jointMoves.set(myIndex, myMove);
 			jointMoves.set(opponentIndex, move);
 
-			int currentScore = maxscore(stateMachine.getNextState(state, jointMoves), myRole, myIndex, opponentIndex);
+			int currentScore = maxscore(stateMachine.getExplicitNextState(state, jointMoves), myRole, myIndex, opponentIndex);
 			if(currentScore < minScore){
 				minScore = currentScore;
 			}
@@ -206,7 +206,7 @@ public class MyMinmaxGamer extends SampleGamer {
 		}
 
 		// Check all my available moves to find the best one
-		List<ExplicitMove> myMoves = stateMachine.getLegalMoves(state, myRole);
+		List<ExplicitMove> myMoves = stateMachine.getExplicitLegalMoves(state, myRole);
 
 		out.print("My moves: [ ");
 		for(ExplicitMove move: myMoves){

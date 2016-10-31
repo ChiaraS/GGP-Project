@@ -71,7 +71,7 @@ public class ProverStandardPlayout implements ProverPlayoutStrategy {
 				break;
 			}
 			try {
-				state = this.theMachine.getNextState(state, jointMove);
+				state = this.theMachine.getExplicitNextState(state, jointMove);
 			} catch (TransitionDefinitionException | StateMachineException e) {
 				GamerLogger.logError("MCTSManager", "Exception getting the next state while performing a playout.");
 				GamerLogger.logStackTrace("MCTSManager", e);

@@ -193,7 +193,7 @@ public class ProverMCSManager {
 
 			List<ExplicitMove> legalMoves;
 			try {
-				legalMoves = this.theMachine.getLegalMoves(this.currentState, this.myRole);
+				legalMoves = this.theMachine.getExplicitLegalMoves(this.currentState, this.myRole);
 			} catch (MoveDefinitionException | StateMachineException e) {
 				GamerLogger.log("MCSManager", "Error when computing legal moves for my role in the root state before starting Monte Carlo search.");
 				GamerLogger.logStackTrace("MCSManager", e);
@@ -233,7 +233,7 @@ public class ProverMCSManager {
 		    	// Get a random joint move where my role plays its currently analyzed move.
 				jointMove = this.theMachine.getRandomJointMove(this.currentState, this.myRole, myCurrentMove);
 				// Get the state reachable with this joint move.
-				nextState =  this.theMachine.getNextState(this.currentState, jointMove);
+				nextState =  this.theMachine.getExplicitNextState(this.currentState, jointMove);
 				// Get the goals obtained by performing playouts from this state.
 				simulationResult = this.playoutStrategy.playout(nextState, this.maxSearchDepth-1);
 				this.visitedNodes += simulationResult.getPlayoutLength();

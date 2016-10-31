@@ -297,15 +297,15 @@ public class SingleRunPNMemTest {
 
 		        r = new Random();
 		        maxSearchDepth = 500;
-		        CompactRole internalPlayingRole = thePropnetMachine.getInternalRoles()[0];
-		        numRoles = thePropnetMachine.getInternalRoles().length;
+		        CompactRole internalPlayingRole = thePropnetMachine.getCompactRoles().get(0);
+		        numRoles = thePropnetMachine.getCompactRoles().size();
 
 		        InternalPropnetMCSManager MCSmanager = new InternalPropnetMCSManager(new PnRandomPlayout(thePropnetMachine),
 		        		thePropnetMachine, internalPlayingRole, maxSearchDepth, r);
 
 		        GamerLogger.log("SingleRunPNTester", "Starting MCS search.");
 
-		       	MCSmanager.search(thePropnetMachine.getInternalInitialState(), System.currentTimeMillis() + searchTime);
+		       	MCSmanager.search(thePropnetMachine.getCompactInitialState(), System.currentTimeMillis() + searchTime);
 
 		       	GamerLogger.log("SingleRunPNTester", "MCS search ended correctly.");
 
@@ -356,8 +356,8 @@ public class SingleRunPNMemTest {
 		        int gameStep = 1;
 		        int gameStepOffset = 2;
 
-		        CompactRole internalPlayingRole = thePropnetMachine.getInternalRoles()[0];
-		        numRoles = thePropnetMachine.getInternalRoles().length;
+		        CompactRole internalPlayingRole = thePropnetMachine.getCompactRoles().get(0);
+		        numRoles = thePropnetMachine.getCompactRoles().size();
 
 		        PnTreeNodeFactory theNodeFactory = new PnDecoupledTreeNodeFactory(thePropnetMachine);
 
@@ -370,7 +370,7 @@ public class SingleRunPNMemTest {
 
 		        GamerLogger.log("SingleRunPNTester", "Starting MCTS search.");
 
-	        	MCTSmanager.search(thePropnetMachine.getInternalInitialState(), System.currentTimeMillis() + searchTime, gameStep);
+	        	MCTSmanager.search(thePropnetMachine.getCompactInitialState(), System.currentTimeMillis() + searchTime, gameStep);
 
 	        	GamerLogger.log("SingleRunPNTester", "MCTS search ended correctly.");
 

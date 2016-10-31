@@ -2,7 +2,7 @@ package org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.strategies.ba
 
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.hybrid.SimulationResult;
 import org.ggp.base.util.logging.GamerLogger;
-import org.ggp.base.util.statemachinenew.AbstractStateMachine;
+import org.ggp.base.util.statemachine.abstractsm.AbstractStateMachine;
 
 public class TerminalTDBackpropagation extends TDBackpropagation {
 

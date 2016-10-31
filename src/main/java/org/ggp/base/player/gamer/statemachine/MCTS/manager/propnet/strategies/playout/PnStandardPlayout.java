@@ -57,7 +57,7 @@ public class PnStandardPlayout implements PnPlayoutStrategy {
 				break;
 			}
 			//state = this.getNextState(state, jointMove);
-			state = this.theMachine.getInternalNextState(state, jointMove);
+			state = this.theMachine.getCompactNextState(state, jointMove);
 
 			nDepth++;
 

@@ -40,7 +40,7 @@ public final class MonteCarloUCTGamer extends StateMachineGamer {
 			GoalDefinitionException, StateMachineException {
 		long start = System.currentTimeMillis();
 
-		List<ExplicitMove> moves = getStateMachine().getLegalMoves(getCurrentState(), getRole());
+		List<ExplicitMove> moves = getStateMachine().getExplicitLegalMoves(getCurrentState(), getRole());
 		ExplicitMove selection = (moves.get(new Random().nextInt(moves.size())));
 
 		long stop = System.currentTimeMillis();

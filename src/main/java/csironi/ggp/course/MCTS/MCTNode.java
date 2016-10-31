@@ -115,10 +115,10 @@ public class MCTNode implements OldBackpropagationStrategy {
 		// If state is terminal there are no children to add because there are no legal moves
 		// If it is not terminal, add all children
 		if(!this.stateMachine.isTerminal(this.state)){
-			List<ExplicitRole> roles = this.stateMachine.getRoles();
+			List<ExplicitRole> roles = this.stateMachine.getExplicitRoles();
 			ExplicitRole playingRole = roles.get(this.playingRoleIndex);
 			// Get all legal moves for this player in this game state
-			List<ExplicitMove> moves = this.stateMachine.getLegalMoves(state, playingRole);
+			List<ExplicitMove> moves = this.stateMachine.getExplicitLegalMoves(state, playingRole);
 
 			int nextPlayingRoleIndex = (this.playingRoleIndex+1)%roles.size();
 
@@ -135,7 +135,7 @@ public class MCTNode implements OldBackpropagationStrategy {
 				// the moves in the list of joint moves for the children.
 
 				if(nextPlayingRoleIndex == this.myRoleIndex){
-					childState = this.stateMachine.getNextState(this.state, childJointMoves);
+					childState = this.stateMachine.getExplicitNextState(this.state, childJointMoves);
 
 					for(int i = 0; i < childJointMoves.size(); i++){
 						childJointMoves.set(i, null);

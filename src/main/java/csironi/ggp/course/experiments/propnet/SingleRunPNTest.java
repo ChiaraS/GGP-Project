@@ -350,15 +350,15 @@ public class SingleRunPNTest {
 
 		        r = new Random();
 		        maxSearchDepth = 500;
-		        CompactRole internalPlayingRole = thePropnetMachine.getInternalRoles()[0];
-		        numRoles = thePropnetMachine.getInternalRoles().length;
+		        CompactRole internalPlayingRole = thePropnetMachine.getCompactRoles().get(0);
+		        numRoles = thePropnetMachine.getCompactRoles().size();
 
 		        InternalPropnetMCSManager MCSmanager = new InternalPropnetMCSManager(new PnRandomPlayout(thePropnetMachine),
 		        		thePropnetMachine, internalPlayingRole, maxSearchDepth, r);
 
 		        GamerLogger.log("SingleRunPNTester", "Starting MCS search.");
 
-		       	MCSmanager.search(thePropnetMachine.getInternalInitialState(), System.currentTimeMillis() + searchTime);
+		       	MCSmanager.search(thePropnetMachine.getCompactInitialState(), System.currentTimeMillis() + searchTime);
 
 		       	GamerLogger.log("SingleRunPNTester", "MCS search ended correctly.");
 

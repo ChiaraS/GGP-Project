@@ -22,7 +22,7 @@ public class InternalReprMonteCarloSearch extends SearchAlgorithm {
 		System.out.println("monteCarloSearch " + getPlayclock());
 
 		// Translate current state to internal state
-		CompactMachineState internalState = ((InternalPropnetStateMachine)this.stateMachine).stateToInternalState(state);
+		CompactMachineState internalState = ((InternalPropnetStateMachine)this.stateMachine).convertToCompactMachineState(state);
 
 		long simulationCount = 0;
 		while (!timeout()) {
@@ -51,7 +51,7 @@ public class InternalReprMonteCarloSearch extends SearchAlgorithm {
 			List<CompactMove> internalJointMove = internalReprStateMachine.getRandomJointMove(internalState);
 			++nbLegals;
 			if (timeout()) return;
-			internalState = internalReprStateMachine.getInternalNextState(internalState, internalJointMove);
+			internalState = internalReprStateMachine.getCompactNextState(internalState, internalJointMove);
 			++nbUpdates;
 			terminal = internalReprStateMachine.isTerminal(internalState);
 		}
