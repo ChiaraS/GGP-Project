@@ -22,6 +22,8 @@ import org.ggp.base.util.statemachine.structure.explicit.ExplicitMachineState;
 import org.ggp.base.util.statemachine.structure.explicit.ExplicitMove;
 import org.ggp.base.util.statemachine.structure.explicit.ExplicitRole;
 
+import com.google.common.collect.ImmutableMap;
+
 /**
  * This class gives a new abstract structure for a state machine.
  * This class computes the dynamics of a game (i.e. next states, legal moves, roles, goals, ...)
@@ -97,15 +99,6 @@ public abstract class AbstractStateMachine {
      * couldn't be handled.
      */
     public abstract boolean isTerminal(MachineState state) throws StateMachineException;
-
-    /**
-     * Returns a list of the roles in the game, in the same order as they
-     * were defined in the game description.
-     * <p>
-     * The result will be the same as calling {@link ExplicitRole#computeRoles(List)}
-     * on the game rules used to initialize this state machine.
-     */
-    public abstract List<Role> getRoles();
 
     /**
      * Returns the initial state of the game.
@@ -197,7 +190,34 @@ public abstract class AbstractStateMachine {
 
 	//------------------ OTHER STATE MACHINE GENERAL-USE METHODS THAT DEPEND ON BASIC METHODS ------------------//
 
+    protected List<Role> roles = null;
+
     private Map<Role,Integer> roleIndices = null;
+
+    /**
+     * Returns a list of the roles in the game, in the same order as they
+     * were defined in the game description.
+     * <p>
+     * The result will be the same as calling {@link ExplicitRole#computeRoles(List)}
+     * on the game rules used to initialize this state machine.
+     */
+    public List<Role> getRoles(){
+    	if(this.roles == null){
+    		this.roles = this.computeRoles();
+    	}
+
+    	return this.roles;
+    }
+
+    /**
+     * Computes a list of the roles in the game, in the same order as they
+     * were defined in the game description.
+     * <p>
+     * The result will be the same as calling {@link ExplicitRole#computeRoles(List)}
+     * on the game rules used to initialize this state machine.
+     */
+    protected abstract List<Role> computeRoles();
+
     /**
      * Returns a mapping from a role to the index of that role, as in
      * the list returned by {@link #getRoles()}. This may be a faster
@@ -206,15 +226,16 @@ public abstract class AbstractStateMachine {
      */
     public Map<Role, Integer> getRoleIndices(){
     	if(this.roleIndices == null){
-    		this.roleIndices = this.computeRoleIndices();
+    		ImmutableMap.Builder<Role, Integer> roleIndicesBuilder = ImmutableMap.builder();
+            List<Role> roles = this.getRoles();
+            for (int i = 0; i < roles.size(); i++) {
+                roleIndicesBuilder.put(roles.get(i), i);
+            }
+            this.roleIndices = roleIndicesBuilder.build();
     	}
 
     	return this.roleIndices;
     }
-
-    protected abstract Map<Role, Integer> computeRoleIndices();
-
-    public abstract int getRoleIndex(Role role);
 
     /** Override this to provide memory-saving destructive-next-state functionality.
      * <p>

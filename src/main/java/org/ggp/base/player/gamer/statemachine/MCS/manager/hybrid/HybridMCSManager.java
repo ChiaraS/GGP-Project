@@ -229,7 +229,7 @@ public class HybridMCSManager {
 				// Get the goals obtained by performing playouts from this state.
 				simulationResult = this.playoutStrategy.playout(nextState, this.maxSearchDepth-1);
 				this.visitedNodes += simulationResult.getPlayoutLength();
-				myGoal = simulationResult.getTerminalGoals()[this.theMachine.getRoleIndex(this.myRole)];
+				myGoal = simulationResult.getTerminalGoals()[this.theMachine.getRoleIndices().get(this.myRole)];
 
 			} catch (StateMachineException | MoveDefinitionException | TransitionDefinitionException e) {
 
