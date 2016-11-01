@@ -50,6 +50,9 @@ public class LatexTabCreator {
 		gameKeyMap.put("ttcc4_2player","TTCC4 2P");
 		gameKeyMap.put("zhadu","Zhadu");
 		gameKeyMap.put("ttcc4","TTCC4 3P");
+		gameKeyMap.put("ticTacToe","TicTacToe");
+		gameKeyMap.put("connect4","Connect 4");
+
 
 
 		/*********** GAMES KEY MAP FOR PN PAPER *************
@@ -106,6 +109,8 @@ public class LatexTabCreator {
 		gamesOrder.add("ttcc4_2player");
 		gamesOrder.add("zhadu");
 		gamesOrder.add("ttcc4");
+		gamesOrder.add("connect4");
+		gamesOrder.add("ticTacToe");
 		/*********** GAMES ORDER FOR GRAVE PAPER -END *************/
 
 		gamesOrder.add("OverallAvg");

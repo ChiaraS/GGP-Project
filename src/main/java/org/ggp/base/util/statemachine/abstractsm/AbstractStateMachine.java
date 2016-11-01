@@ -184,9 +184,7 @@ public abstract class AbstractStateMachine {
         ;
     }
 
-    public String getName() {
-        return this.getClass().getSimpleName();
-    }
+    public abstract String getName();
 
 	//------------------ OTHER STATE MACHINE GENERAL-USE METHODS THAT DEPEND ON BASIC METHODS ------------------//
 

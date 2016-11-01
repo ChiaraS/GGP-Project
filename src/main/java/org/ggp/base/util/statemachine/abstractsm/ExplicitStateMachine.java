@@ -172,4 +172,11 @@ public class ExplicitStateMachine extends AbstractStateMachine {
 
 	}
 
+	@Override
+	public String getName() {
+
+		return this.getClass().getSimpleName() + "(" + this.theMachine.getName() + ")";
+
+	}
+
 }

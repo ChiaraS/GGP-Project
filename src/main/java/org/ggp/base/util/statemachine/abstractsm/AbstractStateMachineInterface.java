@@ -13,4 +13,6 @@ public interface AbstractStateMachineInterface {
 
     public void shutdown();
 
+    public String getName();
+
 }

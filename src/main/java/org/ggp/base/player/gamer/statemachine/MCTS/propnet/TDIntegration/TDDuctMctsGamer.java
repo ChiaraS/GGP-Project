@@ -18,7 +18,7 @@ public abstract class TDDuctMctsGamer extends UctMctsGamer {
 
 		this.qPlayout = 0.0;
 
-		this.lambda = 0.95;
+		this.lambda = 0.8;
 
 		this.gamma = 1.0;
 
