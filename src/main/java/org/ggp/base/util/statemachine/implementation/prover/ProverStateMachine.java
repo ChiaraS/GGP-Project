@@ -82,10 +82,12 @@ public class ProverStateMachine extends StateMachine
 	public List<Integer> getAllGoalsForOneRole(ExplicitMachineState state, ExplicitRole role)	{
 		Set<GdlSentence> results = prover.askAll(ProverQueryBuilder.getGoalQuery(role), ProverQueryBuilder.getContext(state));
 
+		/*
 		if (results.size() != 1) {
 		    GamerLogger.logError("StateMachine", "[Prover] Got goal results of size: " + results.size() + " when expecting size one.");
 			//throw new GoalDefinitionException(state, role);
 		}
+		*/
 
 		List<Integer> goalValues = new ArrayList<Integer>();
 

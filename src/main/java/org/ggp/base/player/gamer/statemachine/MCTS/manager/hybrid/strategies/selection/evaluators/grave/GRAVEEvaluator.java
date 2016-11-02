@@ -4,6 +4,7 @@ import java.util.Map;
 
 import org.ggp.base.player.gamer.statemachine.MCS.manager.MoveStats;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.strategies.selection.evaluators.UCTEvaluator;
+import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.MCTSNode;
 import org.ggp.base.util.statemachine.structure.Move;
 
 public class GRAVEEvaluator extends UCTEvaluator{
@@ -27,9 +28,11 @@ public class GRAVEEvaluator extends UCTEvaluator{
 	}
 
 	@Override
-	protected double computeExploitation(int nodeVisits, Move theMove, MoveStats theMoveStats){
+	protected double computeExploitation(MCTSNode theNode, Move theMove, MoveStats theMoveStats){
 
-		double uctExploitation = super.computeExploitation(nodeVisits, theMove, theMoveStats);
+		int nodeVisits = theNode.getTotVisits();
+
+		double uctExploitation = super.computeExploitation(theNode, theMove, theMoveStats);
 
 		double amafExploitation = -1.0;
 
@@ -73,9 +76,9 @@ public class GRAVEEvaluator extends UCTEvaluator{
 	}
 
 	@Override
-	protected double computeExploration(int nodeVisits, MoveStats theMoveStats){
+	protected double computeExploration(MCTSNode theNode, MoveStats theMoveStats){
 
-		double exploration = super.computeExploration(nodeVisits, theMoveStats);
+		double exploration = super.computeExploration(theNode, theMoveStats);
 
 		if(exploration != -1){
 			//System.out.println("returning exploration = " + exploration);

@@ -159,14 +159,15 @@ public class SeparateInternalPropnetStateMachine extends InternalPropnetStateMac
 			trueGoalIndex =	otherComponents.nextSetBit(trueGoalIndex+1);
 		}
 
+		/*
 		if(trueGoalValues.size() > 1){
 			GamerLogger.logError("StateMachine", "[Propnet] Got more than one true goal in state " + this.convertToExplicitMachineState(state) + " for role " + this.convertToExplicitRole(role) + ".");
 		}
 
-		// If there is no true goal proposition for the role in this state throw an exception.
 		if(trueGoalValues.isEmpty()){
 			GamerLogger.logError("StateMachine", "[Propnet] Got no true goal in state " + this.convertToExplicitMachineState(state) + " for role " + this.convertToExplicitRole(role) + ".");
 		}
+		*/
 
 		return trueGoalValues;
 

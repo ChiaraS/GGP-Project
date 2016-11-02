@@ -303,16 +303,19 @@ public class YapStateMachine extends StateMachine {
 		}
 
 		if(bindings == null){
-			GamerLogger.logError("StateMachine", "[YAP] Got no goal when expecting at least one.");
+			//GamerLogger.logError("StateMachine", "[YAP] Got no goal when expecting at least one.");
 			//throw new GoalDefinitionException(state, role);
+			return new ArrayList<Integer>();
 		}
 
 		String[] goals = (String[]) bindings[0];
 
+		/*
 		if(goals.length != 1){
 			GamerLogger.logError("StateMachine", "[YAP] Got goal results of size: " + goals.length + " when expecting size one.");
 			//throw new GoalDefinitionException(state, role);
 		}
+		*/
 
 		List<Integer> goalValues = new ArrayList<Integer>();
 

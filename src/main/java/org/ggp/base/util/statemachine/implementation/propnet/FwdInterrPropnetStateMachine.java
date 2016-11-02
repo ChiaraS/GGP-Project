@@ -248,6 +248,7 @@ public class FwdInterrPropnetStateMachine extends StateMachine {
 			}
 		}
 
+		/*
 		if(trueGoals.size() > 1){
 			GamerLogger.logError("StateMachine", "[Propnet] Got more than one true goal in state " + state + " for role " + role + ".");
 		}
@@ -256,6 +257,7 @@ public class FwdInterrPropnetStateMachine extends StateMachine {
 		if(trueGoals.isEmpty()){
 			GamerLogger.logError("StateMachine", "[Propnet] Got no true goal in state " + state + " for role " + role + ".");
 		}
+		*/
 
 		// Return the single goal for the given role in the given state.
 		return trueGoals;

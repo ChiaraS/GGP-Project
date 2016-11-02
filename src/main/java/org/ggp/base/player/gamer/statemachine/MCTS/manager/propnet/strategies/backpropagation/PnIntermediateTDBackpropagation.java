@@ -49,11 +49,31 @@ public class PnIntermediateTDBackpropagation extends PnTDBackpropagation {
 		int[] nextStateGoals = allIntermediateGoals.get(this.goalsIndex);
 		int[] currentStateGoals = allIntermediateGoals.get(this.goalsIndex+1);
 
-		for(int i = 0; i < this.numRoles; i++){
+		/*
+		System.out.println();
+		System.out.print("NextStateGoals=[ ");
+		for(int i = 0; i < nextStateGoals.length; i++){
+			System.out.print(nextStateGoals[i] + " ");
+		}
+		System.out.println("]");
+
+		System.out.print("CurrentStateGoals=[ ");
+		for(int i = 0; i < currentStateGoals.length; i++){
+			System.out.print(currentStateGoals[i] + " ");
+		}
+		System.out.println("]");
+
+		System.out.print("IntermediateReturnValues=[ ");
+		*/
+
+		for(int i = 0; i < intermediateReturnValues.length; i++){
 
 			intermediateReturnValues[i] = nextStateGoals[i] - currentStateGoals[i];
+			//System.out.print(intermediateReturnValues[i] + " ");
 
 		}
+
+		//System.out.println("]");
 
 		this.goalsIndex++;
 

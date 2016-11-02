@@ -2,6 +2,7 @@ package org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.strategies.se
 
 import org.ggp.base.player.gamer.statemachine.MCS.manager.MoveStats;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.evolution.OnlineTunableComponent;
+import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.MCTSNode;
 import org.ggp.base.util.statemachine.structure.Move;
 
 public class UCTEvaluator implements MoveEvaluator, OnlineTunableComponent {
@@ -20,10 +21,10 @@ public class UCTEvaluator implements MoveEvaluator, OnlineTunableComponent {
 	}
 
 	@Override
-	public double computeMoveValue(int nodeVisits, Move theMove, MoveStats theMoveStats) {
+	public double computeMoveValue(MCTSNode theNode, Move theMove, MoveStats theMoveStats) {
 
-		double exploitation = this.computeExploitation(nodeVisits, theMove, theMoveStats);
-		double exploration = this.computeExploration(nodeVisits, theMoveStats);
+		double exploitation = this.computeExploitation(theNode, theMove, theMoveStats);
+		double exploration = this.computeExploration(theNode, theMoveStats);
 
 		if(exploitation != -1 && exploration != -1){
 			return exploitation + exploration;
@@ -32,7 +33,7 @@ public class UCTEvaluator implements MoveEvaluator, OnlineTunableComponent {
 		}
 	}
 
-	protected double computeExploitation(int nodeVisits, Move theMove,  MoveStats theMoveStats){
+	protected double computeExploitation(MCTSNode theNode, Move theMove,  MoveStats theMoveStats){
 
 		double moveVisits = theMoveStats.getVisits();
 		double score = theMoveStats.getScoreSum();
@@ -45,7 +46,9 @@ public class UCTEvaluator implements MoveEvaluator, OnlineTunableComponent {
 
 	}
 
-	protected double computeExploration(int nodeVisits, MoveStats theMoveStats){
+	protected double computeExploration(MCTSNode theNode, MoveStats theMoveStats){
+
+		int nodeVisits = theNode.getTotVisits();
 
 		double moveVisits = theMoveStats.getVisits();
 

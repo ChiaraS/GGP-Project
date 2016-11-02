@@ -660,7 +660,7 @@ public class StatsSummarizer {
 		File treeLogsFolder = new File(treeLogsFolderPath);
 
 		if(!treeLogsFolder.isDirectory()){
-			System.out.println("Impossible to find the tree logs directory to summarize: " + treeLogsFolder.getPath());
+			//System.out.println("Impossible to find the tree logs directory to summarize: " + treeLogsFolder.getPath());
 			return;
 		}
 
@@ -1130,7 +1130,7 @@ public class StatsSummarizer {
 		File treeLogsFolder = new File(treeLogsFolderPath);
 
 		if(!treeLogsFolder.isDirectory()){
-			System.out.println("Impossible to find the tree logs directory to process: " + treeLogsFolder.getPath());
+			//System.out.println("Impossible to find the tree logs directory to process: " + treeLogsFolder.getPath());
 			return;
 		}
 

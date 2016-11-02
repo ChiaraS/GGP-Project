@@ -3,6 +3,7 @@ package org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.strategies.se
 import java.util.Map;
 
 import org.ggp.base.player.gamer.statemachine.MCS.manager.MoveStats;
+import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.MCTSNode;
 import org.ggp.base.util.statemachine.structure.Move;
 
 public class ProgressiveHistoryGRAVEEvaluator extends GRAVEEvaluator {
@@ -30,8 +31,7 @@ public class ProgressiveHistoryGRAVEEvaluator extends GRAVEEvaluator {
 	}
 
 	@Override
-	public double computeMoveValue(int nodeVisits,
-			Move theMove, MoveStats theMoveStats) {
+	public double computeMoveValue(MCTSNode theNode, Move theMove, MoveStats theMoveStats) {
 
 		// This should never happen because we should set a new reference before performing the search at every game step.
 		if(this.currentRootAmafStats == null){
@@ -64,7 +64,7 @@ public class ProgressiveHistoryGRAVEEvaluator extends GRAVEEvaluator {
 			progressiveHistory = rootAmafAvg * (this.w / ( (1.0 - moveScoreAvg) * moveVisits + 1.0));
 		}
 
-		return (super.computeMoveValue(nodeVisits, theMove, theMoveStats) + progressiveHistory);
+		return (super.computeMoveValue(theNode, theMove, theMoveStats) + progressiveHistory);
 
 	}
 

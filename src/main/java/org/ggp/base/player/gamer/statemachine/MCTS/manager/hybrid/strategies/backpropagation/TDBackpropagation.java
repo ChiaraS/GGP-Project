@@ -5,7 +5,7 @@ import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.hybrid.
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.hybrid.SequDecMCTSJointMove;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.hybrid.SimulationResult;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.hybrid.decoupled.DecoupledMCTSMoveStats;
-import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.hybrid.decoupled.DecoupledMCTSNode;
+import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.hybrid.tddecoupled.TDDecoupledMCTSNode;
 import org.ggp.base.util.logging.GamerLogger;
 import org.ggp.base.util.statemachine.abstractsm.AbstractStateMachine;
 import org.ggp.base.util.statemachine.structure.MachineState;
@@ -56,15 +56,15 @@ public abstract class TDBackpropagation implements BackpropagationStrategy {
 	public void update(MCTSNode currentNode, MachineState currentState,
 			MCTSJointMove jointMove, SimulationResult simulationResult) {
 
-		if(currentNode instanceof DecoupledMCTSNode && jointMove instanceof SequDecMCTSJointMove){
-			this.decUpdate((DecoupledMCTSNode)currentNode, currentState, (SequDecMCTSJointMove)jointMove, simulationResult);
+		if(currentNode instanceof TDDecoupledMCTSNode && jointMove instanceof SequDecMCTSJointMove){
+			this.decUpdate((TDDecoupledMCTSNode)currentNode, currentState, (SequDecMCTSJointMove)jointMove, simulationResult);
 		}else{
-			throw new RuntimeException("StandardBackpropagation-update(): no method implemented to manage backpropagation for node type (" + currentNode.getClass().getSimpleName() + ") and joint move type (" + jointMove.getClass().getSimpleName() + ").");
+			throw new RuntimeException("TDBackpropagation-update(): no method implemented to manage backpropagation for node type (" + currentNode.getClass().getSimpleName() + ") and joint move type (" + jointMove.getClass().getSimpleName() + ").");
 		}
 
 	}
 
-	protected void decUpdate(DecoupledMCTSNode currentNode, MachineState currentState, SequDecMCTSJointMove jointMove, SimulationResult simulationResult){
+	protected void decUpdate(TDDecoupledMCTSNode currentNode, MachineState currentState, SequDecMCTSJointMove jointMove, SimulationResult simulationResult){
 
 		currentNode.incrementTotVisits();
 
@@ -99,14 +99,23 @@ public abstract class TDBackpropagation implements BackpropagationStrategy {
 
 			newScore = (qCurrent + alpha * this.deltaSum[i]);
 
+			/*
 			if(newScore < 0.0){
 				GamerLogger.logError("MCTSManager", "Computed negative score when backpropagating: " + newScore);
 
-				newScore = 0.0;
+				//newScore = 0.0;
 			}
+			*/
 
 			currentMoveStat.setScoreSum(newScore*((double)currentMoveStat.getVisits())); // Note that the statistics memorize the total sum of move values, thus we must multiply the new expected value by the number of visits of the move.
 
+			if(newScore > currentNode.getMaxStateActionValue()){
+				currentNode.setMaxStateActionValue(newScore);
+			}
+
+			if(newScore < currentNode.getMinStateActionValue()){
+				currentNode.setMinStateActionValue(newScore);
+			}
 
 			this.qNext[i] = qCurrent;
 		}

@@ -318,15 +318,17 @@ public class PrologStateMachine extends StateMachine {
 		}
 
 		if(bindings == null){
-			GamerLogger.logError("StateMachine", "[" + this.prologType + " PROLOG] Got no goal when expecting at least one.");
+			//GamerLogger.logError("StateMachine", "[" + this.prologType + " PROLOG] Got no goal when expecting at least one.");
 			return new ArrayList<Integer>();
 		}
 
 		String[] goals = (String[]) bindings[0];
 
+		/*
 		if(goals.length != 1){
 			GamerLogger.logError("StateMachine", "[" + this.prologType + " PROLOG] Got goal results of size: " + goals.length + " when expecting size one.");
 		}
+		*/
 
 		List<Integer> goalValues = new ArrayList<Integer>();
 

@@ -158,6 +158,7 @@ public class ExternalPropnetStateMachine extends StateMachine {
 			trueGoalIndex =	otherComponents.nextSetBit(trueGoalIndex+1);
 		}
 
+		/*
 		if(trueGoalValues.size() > 1){
 			GamerLogger.logError("StateMachine", "[Propnet] Got more than one true goal in state " + state + " for role " + role + ".");
 		}
@@ -166,6 +167,7 @@ public class ExternalPropnetStateMachine extends StateMachine {
 		if(trueGoalValues.isEmpty()){
 			GamerLogger.logError("StateMachine", "[Propnet] Got no true goal in state " + state + " for role " + role + ".");
 		}
+		*/
 
 		return trueGoalValues;
 
