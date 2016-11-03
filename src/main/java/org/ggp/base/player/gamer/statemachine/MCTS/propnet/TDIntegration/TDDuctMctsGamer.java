@@ -10,6 +10,10 @@ public abstract class TDDuctMctsGamer extends UctMctsGamer {
 
 	protected double gamma;
 
+	protected double defaultGlobalMinValue;
+
+	protected double defaultGlobalMaxValue;
+
 	public TDDuctMctsGamer() {
 
 		this.c = 0.7;
@@ -18,9 +22,16 @@ public abstract class TDDuctMctsGamer extends UctMctsGamer {
 
 		this.qPlayout = 0.0;
 
-		this.lambda = 0.8;
+		this.lambda = 1.0;
 
 		this.gamma = 1.0;
+
+		this.defaultGlobalMinValue = 0.0;
+
+		this.defaultGlobalMaxValue = 100.0;
+
+
+		this.hybridManager = true;
 
 	}
 

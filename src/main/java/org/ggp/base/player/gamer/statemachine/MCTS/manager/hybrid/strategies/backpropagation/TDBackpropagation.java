@@ -1,5 +1,6 @@
 package org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.strategies.backpropagation;
 
+import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.strategies.selection.evaluators.td.GlobalExtremeValues;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.MCTSNode;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.hybrid.MCTSJointMove;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.hybrid.SequDecMCTSJointMove;
@@ -15,6 +16,8 @@ public abstract class TDBackpropagation implements BackpropagationStrategy {
 	protected AbstractStateMachine theMachine;
 
 	protected int numRoles;
+
+	protected GlobalExtremeValues globalExtremeValues;
 
 	/**
 	 * Strategy parameters.
@@ -36,10 +39,11 @@ public abstract class TDBackpropagation implements BackpropagationStrategy {
 	protected double[] qNext;
 
 
-	public TDBackpropagation(AbstractStateMachine theMachine, int numRoles, double qPlayout, double lambda, double gamma) {
+	public TDBackpropagation(AbstractStateMachine theMachine, int numRoles, GlobalExtremeValues globalExtremeValues, double qPlayout, double lambda, double gamma) {
 
 		this.theMachine = theMachine;
 		this.numRoles = numRoles;
+		this.globalExtremeValues = globalExtremeValues;
 
 		this.qPlayout = qPlayout;
 		this.lambda = lambda;
@@ -111,10 +115,24 @@ public abstract class TDBackpropagation implements BackpropagationStrategy {
 
 			if(newScore > currentNode.getMaxStateActionValue()){
 				currentNode.setMaxStateActionValue(newScore);
+
+				// Note: this check is here because if the new score is lower than the maximum value of
+				// the current node then it's also lower than the maximum overall value and no update
+				// would be needed.
+				if(newScore > this.globalExtremeValues.getGlobalMaxValue()){
+					this.globalExtremeValues.setGlobalMaxValue(newScore);
+				}
 			}
 
 			if(newScore < currentNode.getMinStateActionValue()){
 				currentNode.setMinStateActionValue(newScore);
+
+				// Note: this check is here because if the new score is higher than the mminimum value of
+				// the current node then it's also higher than the minimum overall value and no update
+				// would be needed.
+				if(newScore < this.globalExtremeValues.getGlobalMinValue()){
+					this.globalExtremeValues.setGlobalMinValue(newScore);
+				}
 			}
 
 			this.qNext[i] = qCurrent;
@@ -156,7 +174,7 @@ public abstract class TDBackpropagation implements BackpropagationStrategy {
 
 	@Override
 	public String getStrategyParameters() {
-		return "Q_PLAYOUT = " + this.qPlayout + ", LAMBDA = " + this.lambda + ", GAMMA = " + this.gamma;
+		return "Q_PLAYOUT = " + this.qPlayout + ", LAMBDA = " + this.lambda + ", GAMMA = " + this.gamma + ", DEFAUL_GLOBAL_MIN_VALUE = " + this.globalExtremeValues.getDefaultGlobalMinValue() + ", DEFAUL_GLOBAL_MAX_VALUE = " + this.globalExtremeValues.getDefaultGlobalMaxValue();
 	}
 
 	@Override

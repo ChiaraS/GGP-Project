@@ -11,7 +11,8 @@ import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.strategies.mov
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.strategies.playout.GoalsMemorizingStandardPlayout;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.strategies.playout.jointmoveselector.RandomJointMoveSelector;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.strategies.selection.UCTSelection;
-import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.strategies.selection.evaluators.UCTEvaluator;
+import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.strategies.selection.evaluators.TDUCTEvaluator;
+import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.strategies.selection.evaluators.td.GlobalExtremeValues;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.propnet.InternalPropnetMCTSManager;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.propnet.strategies.aftersimulation.PnTDAfterSimulation;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.propnet.strategies.backpropagation.PnIntermediateTDBackpropagation;
@@ -23,7 +24,7 @@ import org.ggp.base.player.gamer.statemachine.MCTS.manager.propnet.strategies.pl
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.propnet.strategies.selection.PnUCTSelection;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.propnet.strategies.selection.evaluators.PnUCTEvaluator;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.prover.ProverMCTSManager;
-import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.hybrid.decoupled.DecoupledTreeNodeFactory;
+import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.hybrid.tddecoupled.TDDecoupledTreeNodeFactory;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.propnet.decoupled.PnDecoupledTreeNodeFactory;
 import org.ggp.base.util.statemachine.abstractsm.AbstractStateMachine;
 import org.ggp.base.util.statemachine.abstractsm.CompactStateMachine;
@@ -74,12 +75,14 @@ public class IntermediateTDDuctMctsGamer extends TDDuctMctsGamer {
 			myRoleIndex = this.getStateMachine().getRoleIndices().get(this.getRole());
 		}
 
-		TDBackpropagation backpropagation = new IntermediateTDBackpropagation(theMachine, numRoles, this.qPlayout, this.lambda, this.gamma);
+		GlobalExtremeValues globalExtremeValues = new GlobalExtremeValues(this.defaultGlobalMinValue, this.defaultGlobalMaxValue);
 
-		return new HybridMCTSManager(new UCTSelection(numRoles, myRoleIndex, r, this.valueOffset, new UCTEvaluator(this.c, this.unexploredMoveDefaultSelectionValue)),
+		TDBackpropagation backpropagation = new IntermediateTDBackpropagation(theMachine, numRoles, globalExtremeValues, this.qPlayout, this.lambda, this.gamma);
+
+		return new HybridMCTSManager(new UCTSelection(numRoles, myRoleIndex, r, this.valueOffset, new TDUCTEvaluator(this.c, this.unexploredMoveDefaultSelectionValue, globalExtremeValues)),
 	       		new NoExpansion(), new GoalsMemorizingStandardPlayout(theMachine, new RandomJointMoveSelector(theMachine)),
 	       		backpropagation, new MaximumScoreChoice(myRoleIndex, r), null, new TDAfterSimulation(backpropagation), null,
-	       		new DecoupledTreeNodeFactory(theMachine), theMachine,
+	       		new TDDecoupledTreeNodeFactory(theMachine), theMachine,
 	       		this.gameStepOffset, this.maxSearchDepth, this.logTranspositionTable);
 	}
 

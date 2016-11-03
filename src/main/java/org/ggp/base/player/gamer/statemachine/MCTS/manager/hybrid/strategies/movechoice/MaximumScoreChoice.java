@@ -52,7 +52,7 @@ public class MaximumScoreChoice implements MoveChoiceStrategy {
 
 		List<Integer> chosenMovesIndices = new ArrayList<Integer>();
 
-		double maxAvgScore = -1;
+		double maxAvgScore = -Double.MAX_VALUE;
 		double currentAvgScore;
 
 		// For each legal move check the average score
@@ -69,14 +69,20 @@ public class MaximumScoreChoice implements MoveChoiceStrategy {
 			//System.out.println("Score sum: " + scoreSum);
 
 			/**
-			 * Extra check to make sure that neither the visits nor the
-			 * scoreSum exceed the maximum feasible value for an int type.
+			 * Extra check to make sure that the visits exceed the maximum
+			 * feasible value for an int type.
 			 * TODO: remove this check once you are reasonably sure that
 			 * this can never happen.
 			 */
-			if(visits < 0 || scoreSum < 0.0){
-				throw new RuntimeException("Negative value for visits and/or scores sum : VISITS=" + visits + ", SCORE_SUM=" + scoreSum + ".");
+			if(visits < 0){
+				throw new RuntimeException("Negative value for visits : VISITS=" + visits + ".");
 			}
+
+			/*
+			if(scoreSum < 0.0){
+				throw new RuntimeException("Negative value for scores sum : "SCORE_SUM=" + scoreSum + ".");
+			}
+			*/
 
 			if(visits == 0){
 				// Default score for unvisited moves

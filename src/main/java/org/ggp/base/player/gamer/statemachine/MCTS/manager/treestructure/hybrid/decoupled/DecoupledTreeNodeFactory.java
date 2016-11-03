@@ -91,6 +91,10 @@ public class DecoupledTreeNodeFactory implements TreeNodeFactory {
 			// If the legal moves can be computed for every player, there is no need to compute the goals.
 		}
 
+		return createActualNewNode(ductMovesStats, goals, terminal);
+	}
+
+	protected MCTSNode createActualNewNode(DecoupledMCTSMoveStats[][] ductMovesStats, int[] goals, boolean terminal){
 		return new DecoupledMCTSNode(ductMovesStats, goals, terminal);
 	}
 
