@@ -68,9 +68,9 @@ public class PnGRAVESelection extends PnMoveValueSelection implements OnlineTuna
 	}
 
 	@Override
-	public void setNewValue(double newValue) {
+	public void setNewValue(double[] newValue) {
 
-		this.minAMAFVisits = (int) newValue;
+		this.minAMAFVisits = (int) newValue[0];
 
 	}
 

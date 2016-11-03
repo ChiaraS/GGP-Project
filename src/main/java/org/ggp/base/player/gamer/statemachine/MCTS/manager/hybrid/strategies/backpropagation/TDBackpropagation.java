@@ -113,25 +113,25 @@ public abstract class TDBackpropagation implements BackpropagationStrategy {
 
 			currentMoveStat.setScoreSum(newScore*((double)currentMoveStat.getVisits())); // Note that the statistics memorize the total sum of move values, thus we must multiply the new expected value by the number of visits of the move.
 
-			if(newScore > currentNode.getMaxStateActionValue()){
-				currentNode.setMaxStateActionValue(newScore);
+			if(newScore > currentNode.getMaxStateActionValueForRole(i)){
+				currentNode.setMaxStateActionValueForRole(newScore, i);
 
 				// Note: this check is here because if the new score is lower than the maximum value of
 				// the current node then it's also lower than the maximum overall value and no update
 				// would be needed.
-				if(newScore > this.globalExtremeValues.getGlobalMaxValue()){
-					this.globalExtremeValues.setGlobalMaxValue(newScore);
+				if(newScore > this.globalExtremeValues.getGlobalMaxValueForRole(i)){
+					this.globalExtremeValues.setGlobalMaxValueForRole(newScore, i);
 				}
 			}
 
-			if(newScore < currentNode.getMinStateActionValue()){
-				currentNode.setMinStateActionValue(newScore);
+			if(newScore < currentNode.getMinStateActionValueForRole(i)){
+				currentNode.setMinStateActionValueForRole(newScore, i);
 
 				// Note: this check is here because if the new score is higher than the mminimum value of
 				// the current node then it's also higher than the minimum overall value and no update
 				// would be needed.
-				if(newScore < this.globalExtremeValues.getGlobalMinValue()){
-					this.globalExtremeValues.setGlobalMinValue(newScore);
+				if(newScore < this.globalExtremeValues.getGlobalMinValueForRole(i)){
+					this.globalExtremeValues.setGlobalMinValueForRole(newScore, i);
 				}
 			}
 

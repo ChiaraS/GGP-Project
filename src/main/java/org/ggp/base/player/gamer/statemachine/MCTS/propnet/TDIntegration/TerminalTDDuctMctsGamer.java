@@ -11,8 +11,8 @@ import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.strategies.mov
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.strategies.playout.StandardPlayout;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.strategies.playout.jointmoveselector.RandomJointMoveSelector;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.strategies.selection.UCTSelection;
-import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.strategies.selection.evaluators.TDUCTEvaluator;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.strategies.selection.evaluators.td.GlobalExtremeValues;
+import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.strategies.selection.evaluators.td.TDUCTEvaluator;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.propnet.InternalPropnetMCTSManager;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.propnet.strategies.aftersimulation.PnTDAfterSimulation;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.propnet.strategies.backpropagation.PnTDBackpropagation;
@@ -78,11 +78,11 @@ public class TerminalTDDuctMctsGamer extends TDDuctMctsGamer {
 			myRoleIndex = this.getStateMachine().getRoleIndices().get(this.getRole());
 		}
 
-		GlobalExtremeValues globalExtremeValues = new GlobalExtremeValues(this.defaultGlobalMinValue, this.defaultGlobalMaxValue);
+		GlobalExtremeValues globalExtremeValues = new GlobalExtremeValues(numRoles, this.defaultGlobalMinValue, this.defaultGlobalMaxValue);
 
 		TDBackpropagation backpropagation = new TerminalTDBackpropagation(theMachine, numRoles, globalExtremeValues, this.qPlayout, this.lambda, this.gamma);
 
-		return new HybridMCTSManager(new UCTSelection(numRoles, myRoleIndex, r, this.valueOffset, new TDUCTEvaluator(this.c, this.unexploredMoveDefaultSelectionValue, globalExtremeValues)),
+		return new HybridMCTSManager(new UCTSelection(numRoles, myRoleIndex, r, this.valueOffset, new TDUCTEvaluator(this.c, this.unexploredMoveDefaultSelectionValue, globalExtremeValues, numRoles)),
 	       		new NoExpansion(), new StandardPlayout(theMachine, new RandomJointMoveSelector(theMachine)),
 	       		backpropagation, new MaximumScoreChoice(myRoleIndex, r), null, new TDAfterSimulation(backpropagation), null,
 	       		new TDDecoupledTreeNodeFactory(theMachine), theMachine,

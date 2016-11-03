@@ -13,7 +13,7 @@ public class TDDecoupledTreeNodeFactory extends DecoupledTreeNodeFactory {
 
 	@Override
 	protected MCTSNode createActualNewNode(DecoupledMCTSMoveStats[][] ductMovesStats, int[] goals, boolean terminal) {
-		return new TDDecoupledMCTSNode(ductMovesStats, goals, terminal);
+		return new TDDecoupledMCTSNode(ductMovesStats, goals, terminal, this.theMachine.getRoles().size());
 	}
 
 }

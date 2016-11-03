@@ -1,7 +1,7 @@
-package org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.strategies.selection.evaluators;
+package org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.strategies.selection.evaluators.td;
 
 import org.ggp.base.player.gamer.statemachine.MCS.manager.MoveStats;
-import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.strategies.selection.evaluators.td.GlobalExtremeValues;
+import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.strategies.selection.evaluators.UCTEvaluator;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.MCTSNode;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.hybrid.tddecoupled.TDDecoupledMCTSNode;
 import org.ggp.base.util.statemachine.structure.Move;
@@ -10,14 +10,14 @@ public class TDUCTEvaluator extends UCTEvaluator {
 
 	private GlobalExtremeValues globalExtremeValues;
 
-	public TDUCTEvaluator(double c, double defaultValue, GlobalExtremeValues globalExtremeValues) {
-		super(c, defaultValue);
+	public TDUCTEvaluator(double c, double defaultValue, GlobalExtremeValues globalExtremeValues, int numRoles) {
+		super(c, defaultValue, numRoles);
 
 		this.globalExtremeValues = globalExtremeValues;
 	}
 
 	@Override
-	protected double computeExploitation(MCTSNode theNode, Move theMove,  MoveStats theMoveStats){
+	protected double computeExploitation(MCTSNode theNode, Move theMove, int roleIndex, MoveStats theMoveStats){
 
 		if(theNode instanceof TDDecoupledMCTSNode){
 
@@ -30,15 +30,15 @@ public class TDUCTEvaluator extends UCTEvaluator {
 
 				TDDecoupledMCTSNode theTDNode = (TDDecoupledMCTSNode)theNode;
 
-				double minValue = theTDNode.getMinStateActionValue();
-				double maxValue = theTDNode.getMinStateActionValue();
+				double minValue = theTDNode.getMinStateActionValueForRole(roleIndex);
+				double maxValue = theTDNode.getMinStateActionValueForRole(roleIndex);
 
 				// The only case when minValue > maxValue is if both values are not set yet
 				// (thus have the default values of +Double.MAX_VALUE and -infinity respectively).
 				// So if they are not set or have the same value, we use the global values.
 				if(minValue >= maxValue){
-					minValue = this.globalExtremeValues.getGlobalMinValue();
-					maxValue = this.globalExtremeValues.getGlobalMaxValue();
+					minValue = this.globalExtremeValues.getGlobalMinValueForRole(roleIndex);
+					maxValue = this.globalExtremeValues.getGlobalMaxValueForRole(roleIndex);
 				}
 
 				// Same check as before, even though it's more unlikely to be true

@@ -129,7 +129,7 @@ public class CTunerDuctMctsGamer extends DuctMctsGamer {
 			myRoleIndex = this.getStateMachine().getRoleIndices().get(this.getRole());
 		}
 
-		UCTEvaluator evaluator = new UCTEvaluator(this.c, this.unexploredMoveDefaultSelectionValue);
+		UCTEvaluator evaluator = new UCTEvaluator(this.c, this.unexploredMoveDefaultSelectionValue, numRoles);
 
 		Individual[] individuals = new Individual[this.individualsValues.length];
 

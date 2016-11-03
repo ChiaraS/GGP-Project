@@ -6,7 +6,7 @@ import org.ggp.base.util.statemachine.structure.Move;
 
 public interface MoveEvaluator {
 
-	public double computeMoveValue(MCTSNode theNode, Move theMove, MoveStats theMoveStats);
+	public double computeMoveValue(MCTSNode theNode, Move theMove, int roleIndex, MoveStats theMoveStats);
 
 	public String getEvaluatorParameters();
 

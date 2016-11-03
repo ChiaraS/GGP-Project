@@ -75,9 +75,9 @@ public class PnUCTEvaluator implements PnMoveEvaluator, OnlineTunableComponent {
 	}
 
 	@Override
-	public void setNewValue(double newValue) {
+	public void setNewValue(double[] newValue) {
 
-		this.c = newValue;
+		this.c = newValue[0];
 
 	}
 

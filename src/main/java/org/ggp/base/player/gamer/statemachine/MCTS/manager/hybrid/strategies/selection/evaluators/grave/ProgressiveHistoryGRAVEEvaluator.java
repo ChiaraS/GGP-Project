@@ -21,8 +21,8 @@ public class ProgressiveHistoryGRAVEEvaluator extends GRAVEEvaluator {
 	private double w;
 
 	public ProgressiveHistoryGRAVEEvaluator(double c, double defaultValue,
-			BetaComputer betaComputer, double defaultExploration, double w) {
-		super(c, defaultValue, betaComputer, defaultExploration);
+			BetaComputer betaComputer, double defaultExploration, double w, int numRoles) {
+		super(c, defaultValue, betaComputer, defaultExploration, numRoles);
 
 		this.currentRootAmafStats = null; // Before ever starting any selection we have no reference to any statistic
 
@@ -31,7 +31,7 @@ public class ProgressiveHistoryGRAVEEvaluator extends GRAVEEvaluator {
 	}
 
 	@Override
-	public double computeMoveValue(MCTSNode theNode, Move theMove, MoveStats theMoveStats) {
+	public double computeMoveValue(MCTSNode theNode, Move theMove, int roleIndex, MoveStats theMoveStats) {
 
 		// This should never happen because we should set a new reference before performing the search at every game step.
 		if(this.currentRootAmafStats == null){
@@ -64,7 +64,7 @@ public class ProgressiveHistoryGRAVEEvaluator extends GRAVEEvaluator {
 			progressiveHistory = rootAmafAvg * (this.w / ( (1.0 - moveScoreAvg) * moveVisits + 1.0));
 		}
 
-		return (super.computeMoveValue(theNode, theMove, theMoveStats) + progressiveHistory);
+		return (super.computeMoveValue(theNode, theMove, roleIndex, theMoveStats) + progressiveHistory);
 
 	}
 

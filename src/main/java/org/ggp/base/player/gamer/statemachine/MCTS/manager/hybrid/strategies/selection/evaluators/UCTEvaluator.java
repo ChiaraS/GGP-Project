@@ -7,24 +7,33 @@ import org.ggp.base.util.statemachine.structure.Move;
 
 public class UCTEvaluator implements MoveEvaluator, OnlineTunableComponent {
 
-	protected double c;
+	/**
+	 * This is an array so that it can memorize a different value for C for each role in the game.
+	 * If a single value has to be used then all values in the array will be the same.
+	 */
+	protected double[] c;
 
 	/**
 	 * Default value to assign to an unexplored move.
 	 */
 	protected double defaultValue;
 
-	public UCTEvaluator(double c, double defaultValue) {
-		this.c = c;
+	public UCTEvaluator(double initialC, double defaultValue, int numRoles) {
+		this.c = new double[numRoles];
+
+		for(int i = 0; i < numRoles; i++){
+			this.c[i] = initialC;
+		}
+
 		this.defaultValue = defaultValue;
 
 	}
 
 	@Override
-	public double computeMoveValue(MCTSNode theNode, Move theMove, MoveStats theMoveStats) {
+	public double computeMoveValue(MCTSNode theNode, Move theMove, int roleIndex, MoveStats theMoveStats) {
 
-		double exploitation = this.computeExploitation(theNode, theMove, theMoveStats);
-		double exploration = this.computeExploration(theNode, theMoveStats);
+		double exploitation = this.computeExploitation(theNode, theMove, roleIndex, theMoveStats);
+		double exploration = this.computeExploration(theNode, roleIndex, theMoveStats);
 
 		if(exploitation != -1 && exploration != -1){
 			return exploitation + exploration;
@@ -33,7 +42,7 @@ public class UCTEvaluator implements MoveEvaluator, OnlineTunableComponent {
 		}
 	}
 
-	protected double computeExploitation(MCTSNode theNode, Move theMove,  MoveStats theMoveStats){
+	protected double computeExploitation(MCTSNode theNode, Move theMove, int roleIndex, MoveStats theMoveStats){
 
 		double moveVisits = theMoveStats.getVisits();
 		double score = theMoveStats.getScoreSum();
@@ -46,14 +55,14 @@ public class UCTEvaluator implements MoveEvaluator, OnlineTunableComponent {
 
 	}
 
-	protected double computeExploration(MCTSNode theNode, MoveStats theMoveStats){
+	protected double computeExploration(MCTSNode theNode, int roleIndex, MoveStats theMoveStats){
 
 		int nodeVisits = theNode.getTotVisits();
 
 		double moveVisits = theMoveStats.getVisits();
 
 		if(nodeVisits != 0 && moveVisits != 0){
-			return (this.c * (Math.sqrt(Math.log(nodeVisits)/moveVisits)));
+			return (this.c[roleIndex] * (Math.sqrt(Math.log(nodeVisits)/moveVisits)));
 		}else{
 			return -1.0;
 		}
@@ -77,7 +86,7 @@ public class UCTEvaluator implements MoveEvaluator, OnlineTunableComponent {
 	}
 
 	@Override
-	public void setNewValue(double newValue) {
+	public void setNewValue(double[] newValue) {
 
 		this.c = newValue;
 

@@ -3,21 +3,23 @@ package org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.strategies.se
 public class GlobalExtremeValues {
 
 	/**
-	 * Minimum value for a state-action pair seen so far during the whole search.
+	 * List containing for each role the minimum value for a state-action pair seen so far during the
+	 * whole search.
 	 */
-	private double globalMinValue;
+	private double[] globalMinValue;
 
 	/**
-	 * Maximum value for a state-action pair seen so far during the whole search.
+	 * List containing for each role the maximum value for a state-action pair seen so far during the
+	 * whole search.
 	 */
-	private double globalMaxValue;
+	private double[] globalMaxValue;
 
 	/**
-	 * Default value to be used when the globalMinValue has not been set yet or has the same value as
-	 * globalMaxValue.
+	 * Default value to be used when the globalMinValue for a role has not been set yet or has
+	 * the same value as the corresponding globalMaxValue.
 	 *
-	 * NOTE: if globalMinValue has not been set then also globalMaxValue has not been set yet,
-	 * otherwise they are both set (they could still be set to the same value).
+	 * NOTE: if for a role globalMinValue has not been set then also globalMaxValue has not been
+	 * set yet, otherwise they are both set (they could still be set to the same value).
 	 */
 	private double defaultGlobalMinValue;
 
@@ -36,30 +38,35 @@ public class GlobalExtremeValues {
 	 */
 	private double defaultGlobalMaxValue;
 
-	public GlobalExtremeValues(double defaultGlobalMinValue, double defaultGlobalMaxValue) {
+	public GlobalExtremeValues(int numRoles, double defaultGlobalMinValue, double defaultGlobalMaxValue) {
 
-		this.globalMinValue = Double.MAX_VALUE;
-		this.globalMaxValue = -Double.MAX_VALUE;
+		this.globalMinValue = new double[numRoles];
+		this.globalMaxValue = new double[numRoles];
+
+		for(int i = 0; i < numRoles; i++){
+			this.globalMinValue[i] = Double.MAX_VALUE;
+			this.globalMaxValue[i] = -Double.MAX_VALUE;
+		}
 
 		this.defaultGlobalMinValue = defaultGlobalMinValue;
 		this.defaultGlobalMaxValue = defaultGlobalMaxValue;
 
 	}
 
-	public void setGlobalMinValue(double globalMinValue){
-		this.globalMinValue = globalMinValue;
+	public void setGlobalMinValueForRole(double globalMinValue, int roleIndex){
+		this.globalMinValue[roleIndex] = globalMinValue;
 	}
 
-	public void setGlobalMaxValue(double globalMaxValue){
-		this.globalMaxValue = globalMaxValue;
+	public void setGlobalMaxValueForRole(double globalMaxValue, int roleIndex){
+		this.globalMaxValue[roleIndex] = globalMaxValue;
 	}
 
-	public double getGlobalMinValue(){
-		return this.globalMinValue;
+	public double getGlobalMinValueForRole(int roleIndex){
+		return this.globalMinValue[roleIndex];
 	}
 
-	public double getGlobalMaxValue(){
-		return this.globalMaxValue;
+	public double getGlobalMaxValueForRole(int roleIndex){
+		return this.globalMaxValue[roleIndex];
 	}
 
 	public double getDefaultGlobalMinValue(){

@@ -29,10 +29,10 @@ public class CADIABetaComputer extends BetaComputer{
 	}
 
 	@Override
-	public void setNewValue(double newValue){
+	public void setNewValue(double[] newValue){
 
 		// TODO: fix this not-so-nice casting
-		this.k = (int) newValue;
+		this.k = (int) newValue[0];
 
 		//System.out.println(k);
 	}

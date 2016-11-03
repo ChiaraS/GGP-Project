@@ -27,8 +27,8 @@ public class InvGRAVEEvaluator extends UCTEvaluator{
 
 	private BetaComputer betaComputer;
 
-	public InvGRAVEEvaluator(double c, double defaultValue, BetaComputer betaComputer) {
-		super(c, defaultValue);
+	public InvGRAVEEvaluator(double c, double defaultValue, BetaComputer betaComputer, int numRoles) {
+		super(c, defaultValue, numRoles);
 		this.betaComputer = betaComputer;
 		this.amafStats = null;
 		//this.bias = bias;
@@ -43,7 +43,7 @@ public class InvGRAVEEvaluator extends UCTEvaluator{
 	}
 
 	@Override
-	public double computeMoveValue(MCTSNode theNode, Move theMove, MoveStats theMoveStats) {
+	public double computeMoveValue(MCTSNode theNode, Move theMove, int roleIndex, MoveStats theMoveStats) {
 
 		if(this.amafStats == null){
 
@@ -51,7 +51,7 @@ public class InvGRAVEEvaluator extends UCTEvaluator{
 
 			//System.out.println("returning " + super.computeMoveValue(theNode, theMove, theMoveStats));
 
-			return super.computeMoveValue(theNode, theMove, theMoveStats);
+			return super.computeMoveValue(theNode, theMove, roleIndex, theMoveStats);
 		}
 
 		MoveStats moveAmafStats = this.amafStats.get(theMove);
@@ -62,13 +62,13 @@ public class InvGRAVEEvaluator extends UCTEvaluator{
 
 			//System.out.println("returning " + super.computeMoveValue(theNode, theMove, theMoveStats));
 
-			return super.computeMoveValue(theNode, theMove, theMoveStats);
+			return super.computeMoveValue(theNode, theMove, roleIndex, theMoveStats);
 		}
 
 		double amafScore = moveAmafStats.getScoreSum();
 		double amafVisits = moveAmafStats.getVisits();
 
-		double uct = super.computeMoveValue(theNode, theMove, theMoveStats);
+		double uct = super.computeMoveValue(theNode, theMove, roleIndex, theMoveStats);
 
 		double amafAvg = (amafScore / amafVisits) / 100.0;
 

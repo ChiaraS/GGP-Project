@@ -5,32 +5,43 @@ import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.hybrid.
 
 public class TDDecoupledMCTSNode extends DecoupledMCTSNode {
 
-	private double maxStateActionValue;
+	/**
+	 * List that contains for each role the minimum state-action value estimate seen so far in this state.
+	 */
+	private double[] minStateActionValue;
 
-	private double minStateActionValue;
+	/**
+	 * List that contains for each role the maximum state-action value estimate seen so far in this state.
+	 */
+	private double[] maxStateActionValue;
 
-	public TDDecoupledMCTSNode(DecoupledMCTSMoveStats[][] movesStats, int[] goals, boolean terminal){
+	public TDDecoupledMCTSNode(DecoupledMCTSMoveStats[][] movesStats, int[] goals, boolean terminal, int numRoles){
 		super(movesStats, goals, terminal);
 
-		this.maxStateActionValue = -Double.MAX_VALUE;
-		this.minStateActionValue = Double.MAX_VALUE;
+		this.minStateActionValue = new double[numRoles];
+		this.maxStateActionValue = new double[numRoles];
+
+		for(int i = 0; i < numRoles; i++){
+			this.minStateActionValue[i] = Double.MAX_VALUE;
+			this.maxStateActionValue[i] = -Double.MAX_VALUE;
+		}
 
 	}
 
-	public double getMaxStateActionValue(){
-		return this.maxStateActionValue;
+	public double getMinStateActionValueForRole(int roleIndex){
+		return this.minStateActionValue[roleIndex];
 	}
 
-	public double getMinStateActionValue(){
-		return this.minStateActionValue;
+	public double getMaxStateActionValueForRole(int roleIndex){
+		return this.maxStateActionValue[roleIndex];
 	}
 
-	public void setMaxStateActionValue(double newMaxStateActionValue){
-		this.maxStateActionValue = newMaxStateActionValue;
+	public void setMinStateActionValueForRole(double newMinStateActionValue, int roleIndex){
+		this.minStateActionValue[roleIndex] = newMinStateActionValue;
 	}
 
-	public void setMinStateActionValue(double newMinStateActionValue){
-		this.minStateActionValue = newMinStateActionValue;
+	public void setMaxStateActionValueForRole(double newMaxStateActionValue, int roleIndex){
+		this.maxStateActionValue[roleIndex] = newMaxStateActionValue;
 	}
 
 }

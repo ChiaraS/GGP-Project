@@ -104,7 +104,7 @@ public class MastDuctMctsGamer extends DuctMctsGamer {
 
 		Map<Move, MoveStats> mastStatistics = new HashMap<Move, MoveStats>();
 
-		return new HybridMCTSManager(new UCTSelection(numRoles, myRoleIndex, r, this.valueOffset, new UCTEvaluator(this.c, this.unexploredMoveDefaultSelectionValue)),
+		return new HybridMCTSManager(new UCTSelection(numRoles, myRoleIndex, r, this.valueOffset, new UCTEvaluator(this.c, this.unexploredMoveDefaultSelectionValue, numRoles)),
 	       		new RandomExpansion(numRoles, myRoleIndex, r), new MASTPlayout(theMachine, r, mastStatistics, this.epsilon),
 	       		new MASTBackpropagation(numRoles, myRoleIndex, mastStatistics),
 	       		new MaximumScoreChoice(myRoleIndex, r), null, null,
