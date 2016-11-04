@@ -103,7 +103,7 @@ public class SingleGameDUCTMCTSGamer extends UctMctsGamer{
 			myRoleIndex = this.getStateMachine().getRoleIndices().get(this.getRole());
 		}
 
-		return new HybridMCTSManager(new UCTSelection(numRoles, myRoleIndex, r, this.valueOffset, new UCTEvaluator(this.c, this.unexploredMoveDefaultSelectionValue, numRoles)),
+		return new HybridMCTSManager(new UCTSelection(numRoles, myRoleIndex, r, this.valueOffset, new UCTEvaluator(this.c, this.unexploredMoveDefaultSelectionValue, numRoles, myRoleIndex)),
 	       		new RandomExpansion(numRoles, myRoleIndex, r), new RandomPlayout(theMachine),
 	       		new StandardBackpropagation(numRoles, myRoleIndex), new MaximumScoreChoice(myRoleIndex, r), null,
 	       		null, null, new DecoupledTreeNodeFactory(theMachine), theMachine,

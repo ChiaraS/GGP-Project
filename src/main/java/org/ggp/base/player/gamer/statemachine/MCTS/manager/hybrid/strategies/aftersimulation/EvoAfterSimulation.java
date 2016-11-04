@@ -23,7 +23,22 @@ public class EvoAfterSimulation implements AfterSimulationStrategy {
 	@Override
 	public void afterSimulationActions(SimulationResult simulationResult) {
 
-		this.evolutionManager.updateFitness(simulationResult.getTerminalGoals()[this.myRoleIndex]);
+		int[] goals;
+
+		// We have to check if the EvolutionManager is evolving parameters only for the playing role
+		// or for all roles and update the fitness with appropriate goals.
+		if(this.evolutionManager.getNumPopulations() == 1){
+
+			goals = new int[1];
+			goals[0] = simulationResult.getTerminalGoals()[this.myRoleIndex];
+
+		}else{
+
+			goals = simulationResult.getTerminalGoals();
+
+		}
+
+		this.evolutionManager.updateFitness(goals);
 
 	}
 

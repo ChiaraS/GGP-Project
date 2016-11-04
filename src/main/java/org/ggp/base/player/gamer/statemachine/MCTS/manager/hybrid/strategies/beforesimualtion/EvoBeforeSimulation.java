@@ -22,7 +22,7 @@ public class EvoBeforeSimulation implements BeforeSimulationStrategy {
 	@Override
 	public void beforeSimulationActions() {
 
-		this.tunableComponent.setNewValue(this.evolutionManager.selectNextIndividual());
+		this.tunableComponent.setNewValues(this.evolutionManager.selectNextIndividuals());
 
 	}
 

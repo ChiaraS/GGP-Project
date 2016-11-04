@@ -27,8 +27,8 @@ public class InvGRAVEEvaluator extends UCTEvaluator{
 
 	private BetaComputer betaComputer;
 
-	public InvGRAVEEvaluator(double c, double defaultValue, BetaComputer betaComputer, int numRoles) {
-		super(c, defaultValue, numRoles);
+	public InvGRAVEEvaluator(double c, double defaultValue, BetaComputer betaComputer, int numRoles, int myRoleIndex) {
+		super(c, defaultValue, numRoles, myRoleIndex);
 		this.betaComputer = betaComputer;
 		this.amafStats = null;
 		//this.bias = bias;

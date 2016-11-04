@@ -29,7 +29,7 @@ public class CADIABetaComputer extends BetaComputer{
 	}
 
 	@Override
-	public void setNewValue(double[] newValue){
+	public void setNewValues(double[] newValue){
 
 		// TODO: fix this not-so-nice casting
 		this.k = (int) newValue[0];

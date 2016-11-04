@@ -4,7 +4,7 @@ import org.ggp.base.player.gamer.statemachine.MCS.manager.MoveStats;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.evolution.OnlineTunableComponent;
 import org.ggp.base.util.statemachine.structure.compact.CompactMove;
 
-public class PnUCTEvaluator implements PnMoveEvaluator, OnlineTunableComponent {
+public class PnUCTEvaluator implements PnMoveEvaluator, OnlineTunableComponent{
 
 	protected double c;
 
@@ -75,7 +75,7 @@ public class PnUCTEvaluator implements PnMoveEvaluator, OnlineTunableComponent {
 	}
 
 	@Override
-	public void setNewValue(double[] newValue) {
+	public void setNewValues(double[] newValue) {
 
 		this.c = newValue[0];
 

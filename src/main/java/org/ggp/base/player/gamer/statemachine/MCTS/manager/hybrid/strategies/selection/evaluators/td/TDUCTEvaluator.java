@@ -10,8 +10,8 @@ public class TDUCTEvaluator extends UCTEvaluator {
 
 	private GlobalExtremeValues globalExtremeValues;
 
-	public TDUCTEvaluator(double c, double defaultValue, GlobalExtremeValues globalExtremeValues, int numRoles) {
-		super(c, defaultValue, numRoles);
+	public TDUCTEvaluator(double c, double defaultValue, GlobalExtremeValues globalExtremeValues, int numRoles, int myRoleIndex) {
+		super(c, defaultValue, numRoles, myRoleIndex);
 
 		this.globalExtremeValues = globalExtremeValues;
 	}

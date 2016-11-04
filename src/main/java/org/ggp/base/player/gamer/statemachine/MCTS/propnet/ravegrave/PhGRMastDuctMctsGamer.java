@@ -102,7 +102,7 @@ public abstract class PhGRMastDuctMctsGamer extends GRMastDuctMctsGamer {
 			myRoleIndex = this.getStateMachine().getRoleIndices().get(this.getRole());
 		}
 
-		ProgressiveHistoryGRAVESelection graveSelection = new ProgressiveHistoryGRAVESelection(numRoles, myRoleIndex, r, this.valueOffset, this.minAMAFVisits, new ProgressiveHistoryGRAVEEvaluator(this.c, this.unexploredMoveDefaultSelectionValue, this.betaComputer, this.defaultExploration, this.w, numRoles));
+		ProgressiveHistoryGRAVESelection graveSelection = new ProgressiveHistoryGRAVESelection(numRoles, myRoleIndex, r, this.valueOffset, this.minAMAFVisits, new ProgressiveHistoryGRAVEEvaluator(this.c, this.unexploredMoveDefaultSelectionValue, this.betaComputer, this.defaultExploration, this.w, numRoles, myRoleIndex));
 
 		Map<Move, MoveStats> mastStatistics = new HashMap<Move, MoveStats>();
 

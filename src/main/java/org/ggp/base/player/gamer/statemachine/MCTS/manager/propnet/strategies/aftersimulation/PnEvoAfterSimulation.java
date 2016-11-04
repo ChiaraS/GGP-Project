@@ -21,7 +21,22 @@ public class PnEvoAfterSimulation implements PnAfterSimulationStrategy {
 	@Override
 	public void afterSimulationActions(PnSimulationResult simulationResult) {
 
-		this.evolutionManager.updateFitness(simulationResult.getTerminalGoals()[this.myRole.getIndex()]);
+		int[] goals;
+
+		// We have to check if the EvolutionManager is evolving parameters only for the playing role
+		// or for all roles and update the fitness with appropriate goals.
+		if(this.evolutionManager.getNumPopulations() == 1){
+
+			goals = new int[1];
+			goals[0] = simulationResult.getTerminalGoals()[this.myRole.getIndex()];
+
+		}else{
+
+			goals = simulationResult.getTerminalGoals();
+
+		}
+
+		this.evolutionManager.updateFitness(goals);
 
 	}
 

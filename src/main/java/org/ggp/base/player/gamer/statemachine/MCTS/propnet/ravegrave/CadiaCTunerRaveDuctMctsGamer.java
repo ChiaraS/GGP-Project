@@ -38,14 +38,25 @@ import org.ggp.base.util.statemachine.structure.compact.CompactRole;
 
 public class CadiaCTunerRaveDuctMctsGamer extends CadiaRaveDuctMctsGamer {
 
+	/**
+	 * True if the EvolutionManager must be set to tune the value for each role
+	 * independently. False if it must tune only the value of the role being
+	 * played by the agent in the real game.
+	 */
+	protected boolean tuneAllRoles;
+
 	protected double evoC;
 
 	protected double evoValueOffset;
 
 	protected double[] individualsValues;
 
+	protected boolean useNormalization;
+
 	public CadiaCTunerRaveDuctMctsGamer() {
 		super();
+
+		this.tuneAllRoles = false;
 
 		this.evoC = 0.05;
 
@@ -63,6 +74,8 @@ public class CadiaCTunerRaveDuctMctsGamer extends CadiaRaveDuctMctsGamer {
 		this.individualsValues[7] = 0.8;
 		this.individualsValues[8] = 0.9;
 
+		this.useNormalization = false;
+
 	}
 
 	@Override
@@ -77,13 +90,14 @@ public class CadiaCTunerRaveDuctMctsGamer extends CadiaRaveDuctMctsGamer {
 
 		PnGRAVESelection graveSelection = new PnGRAVESelection(numRoles, myRole, r, this.valueOffset, this.minAMAFVisits, evaluator);
 
-		Individual[] individuals = new Individual[this.individualsValues.length];
+		Individual[][] population = new Individual[1][];
+		population[0] = new Individual[this.individualsValues.length];
 
 		for(int i = 0; i < this.individualsValues.length; i++){
-			individuals[i] = new Individual(this.individualsValues[i]);
+			population[0][i] = new Individual(this.individualsValues[i]);
 		}
 
-		SingleParameterEvolutionManager evolutionManager = new SingleParameterEvolutionManager(r, this.evoC, this.evoValueOffset, individuals);
+		SingleParameterEvolutionManager evolutionManager = new SingleParameterEvolutionManager(r, this.evoC, this.evoValueOffset, population, this.useNormalization);
 
 		return new InternalPropnetMCTSManager(graveSelection, new PnNoExpansion() /*new RandomExpansion(numRoles, myRole, r)*/,
 				new PnGRAVEPlayout(this.thePropnetMachine), new PnGRAVEBackpropagation(numRoles, myRole), new PnMaximumScoreChoice(myRole, r),
@@ -142,17 +156,32 @@ public class CadiaCTunerRaveDuctMctsGamer extends CadiaRaveDuctMctsGamer {
 			myRoleIndex = this.getStateMachine().getRoleIndices().get(this.getRole());
 		}
 
-		GRAVEEvaluator evaluator = new GRAVEEvaluator(this.c, this.unexploredMoveDefaultSelectionValue, this.betaComputer, this.defaultExploration, numRoles);
+		GRAVEEvaluator evaluator = new GRAVEEvaluator(this.c, this.unexploredMoveDefaultSelectionValue, this.betaComputer, this.defaultExploration, numRoles, myRoleIndex);
 
 		GRAVESelection graveSelection = new GRAVESelection(numRoles, myRoleIndex, r, this.valueOffset, this.minAMAFVisits, evaluator);
 
-		Individual[] individuals = new Individual[this.individualsValues.length];
+		Individual[][] populations;
 
-		for(int i = 0; i < this.individualsValues.length; i++){
-			individuals[i] = new Individual(this.individualsValues[i]);
+		int numPopulations;
+
+		if(this.tuneAllRoles){
+			numPopulations = numRoles;
+		}else{
+			numPopulations = 1;
 		}
 
-		SingleParameterEvolutionManager evolutionManager = new SingleParameterEvolutionManager(r, this.evoC, this.evoValueOffset, individuals);
+		populations = new Individual[numPopulations][];
+
+		for(int i = 0; i < populations.length; i++){
+
+			populations[i] = new Individual[this.individualsValues.length];
+
+			for(int j = 0; j < populations[i].length; j++){
+				populations[i][j] = new Individual(this.individualsValues[j]);
+			}
+		}
+
+		SingleParameterEvolutionManager evolutionManager = new SingleParameterEvolutionManager(r, this.evoC, this.evoValueOffset, populations, this.useNormalization);
 
 		return new HybridMCTSManager(graveSelection, new NoExpansion() /*new RandomExpansion(numRoles, myRole, r)*/,
 				new GRAVEPlayout(theMachine), new GRAVEBackpropagation(numRoles, myRoleIndex), new MaximumScoreChoice(myRoleIndex, r),

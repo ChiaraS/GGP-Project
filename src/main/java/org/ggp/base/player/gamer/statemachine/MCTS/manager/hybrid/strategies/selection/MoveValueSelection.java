@@ -74,7 +74,7 @@ public abstract class MoveValueSelection implements SelectionStrategy {
 		for(int i = 0; i < moves.length; i++){
 
 			// Compute move value for all moves.
-			maxMoveValue = -1;
+			maxMoveValue = -Double.MAX_VALUE;
 			moveValues = new double[moves[i].length];
 
 			// For each legal move check the moveValue.

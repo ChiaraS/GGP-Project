@@ -73,7 +73,7 @@ public abstract class MctsGamer extends InternalPropnetGamer {
 		this.maxSearchDepth = 500;
 		this.logTranspositionTable = false;
 
-		this.hybridManager = false;
+		this.hybridManager = true;
 	}
 
 	/* (non-Javadoc)

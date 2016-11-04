@@ -5,7 +5,7 @@ import org.ggp.base.player.gamer.statemachine.MCTS.manager.evolution.OnlineTunab
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.MCTSNode;
 import org.ggp.base.util.statemachine.structure.Move;
 
-public class UCTEvaluator implements MoveEvaluator, OnlineTunableComponent {
+public class UCTEvaluator implements MoveEvaluator, OnlineTunableComponent{
 
 	/**
 	 * This is an array so that it can memorize a different value for C for each role in the game.
@@ -18,7 +18,9 @@ public class UCTEvaluator implements MoveEvaluator, OnlineTunableComponent {
 	 */
 	protected double defaultValue;
 
-	public UCTEvaluator(double initialC, double defaultValue, int numRoles) {
+	protected int myRoleIndex;
+
+	public UCTEvaluator(double initialC, double defaultValue, int numRoles, int myRoleIndex) {
 		this.c = new double[numRoles];
 
 		for(int i = 0; i < numRoles; i++){
@@ -26,6 +28,8 @@ public class UCTEvaluator implements MoveEvaluator, OnlineTunableComponent {
 		}
 
 		this.defaultValue = defaultValue;
+
+		this.myRoleIndex = myRoleIndex;
 
 	}
 
@@ -62,6 +66,7 @@ public class UCTEvaluator implements MoveEvaluator, OnlineTunableComponent {
 		double moveVisits = theMoveStats.getVisits();
 
 		if(nodeVisits != 0 && moveVisits != 0){
+
 			return (this.c[roleIndex] * (Math.sqrt(Math.log(nodeVisits)/moveVisits)));
 		}else{
 			return -1.0;
@@ -71,7 +76,18 @@ public class UCTEvaluator implements MoveEvaluator, OnlineTunableComponent {
 
 	@Override
 	public String getEvaluatorParameters() {
-		return "C_CONSTANT = " + this.c + ", DEFAULT_VALUE = " + this.defaultValue;
+
+		String constants = "[ ";
+
+		for(int i = 0; i <this.c.length; i++){
+
+			constants += this.c[i] + " ";
+
+		}
+
+		constants += "]";
+
+		return "C_CONSTANTS = " + constants + ", DEFAULT_VALUE = " + this.defaultValue;
 	}
 
 	@Override
@@ -86,9 +102,19 @@ public class UCTEvaluator implements MoveEvaluator, OnlineTunableComponent {
 	}
 
 	@Override
-	public void setNewValue(double[] newValue) {
+	public void setNewValues(double[] newValues){
 
-		this.c = newValue;
+		// We are tuning only the constant of myRole
+		if(newValues.length == 1){
+			this.c[this.myRoleIndex] = newValues[0];
+
+			//System.out.println("C = " + this.c[this.myRoleIndex]);
+
+		}else{ // We are tuning all constants
+			for(int i = 0; i <this.c.length; i++){
+				this.c[i] = newValues[i];
+			}
+		}
 
 	}
 

@@ -67,7 +67,7 @@ public class GRAVESelection extends MoveValueSelection implements OnlineTunableC
 	}
 
 	@Override
-	public void setNewValue(double[] newValue) {
+	public void setNewValues(double[] newValue) {
 
 		this.minAMAFVisits = (int) newValue[0];
 

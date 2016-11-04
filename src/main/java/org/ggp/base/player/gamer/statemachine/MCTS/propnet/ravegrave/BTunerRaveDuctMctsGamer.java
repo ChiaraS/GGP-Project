@@ -38,15 +38,26 @@ import org.ggp.base.util.statemachine.structure.compact.CompactRole;
 
 public class BTunerRaveDuctMctsGamer extends RaveDuctMctsGamer {
 
+	/**
+	 * True if the EvolutionManager must be set to tune the value for each role
+	 * independently. False if it must tune only the value of the role being
+	 * played by the agent in the real game.
+	 */
+	protected boolean tuneAllRoles;
+
 	protected double evoC;
 
 	protected double evoValueOffset;
 
 	protected double[] individualsValues;
 
+	protected boolean useNormalization;
+
 	public BTunerRaveDuctMctsGamer() {
 
 		super();
+
+		this.tuneAllRoles = false;
 
 		this.evoC = 0.05;
 
@@ -63,6 +74,8 @@ public class BTunerRaveDuctMctsGamer extends RaveDuctMctsGamer {
 		this.individualsValues[6] = 0.001;
 		this.individualsValues[7] = 0.0001;
 
+		this.useNormalization = false;
+
 	}
 
 	@Override
@@ -75,13 +88,14 @@ public class BTunerRaveDuctMctsGamer extends RaveDuctMctsGamer {
 
 		PnGRAVESelection graveSelection = new PnGRAVESelection(numRoles, myRole, r, this.valueOffset, this.minAMAFVisits, new PnGRAVEEvaluator(this.c, this.unexploredMoveDefaultSelectionValue, this.betaComputer, this.defaultExploration));
 
-		Individual[] individuals = new Individual[this.individualsValues.length];
+		Individual[][] population = new Individual[1][];
+		population[0] = new Individual[this.individualsValues.length];
 
 		for(int i = 0; i < this.individualsValues.length; i++){
-			individuals[i] = new Individual(this.individualsValues[i]);
+			population[0][i] = new Individual(this.individualsValues[i]);
 		}
 
-		SingleParameterEvolutionManager evolutionManager = new SingleParameterEvolutionManager(r, this.evoC, this.evoValueOffset, individuals);
+		SingleParameterEvolutionManager evolutionManager = new SingleParameterEvolutionManager(r, this.evoC, this.evoValueOffset, population, this.useNormalization);
 
 		return new InternalPropnetMCTSManager(graveSelection, new PnNoExpansion() /*new RandomExpansion(numRoles, myRole, r)*/,
 				new PnGRAVEPlayout(this.thePropnetMachine), new PnGRAVEBackpropagation(numRoles, myRole), new PnMaximumScoreChoice(myRole, r),
@@ -140,7 +154,28 @@ public class BTunerRaveDuctMctsGamer extends RaveDuctMctsGamer {
 			myRoleIndex = this.getStateMachine().getRoleIndices().get(this.getRole());
 		}
 
-		GRAVESelection graveSelection = new GRAVESelection(numRoles, myRoleIndex, r, this.valueOffset, this.minAMAFVisits, new GRAVEEvaluator(this.c, this.unexploredMoveDefaultSelectionValue, this.betaComputer, this.defaultExploration, numRoles));
+		GRAVESelection graveSelection = new GRAVESelection(numRoles, myRoleIndex, r, this.valueOffset, this.minAMAFVisits, new GRAVEEvaluator(this.c, this.unexploredMoveDefaultSelectionValue, this.betaComputer, this.defaultExploration, numRoles, myRoleIndex));
+
+		Individual[][] populations;
+
+		int numPopulations;
+
+		if(this.tuneAllRoles){
+			numPopulations = numRoles;
+		}else{
+			numPopulations = 1;
+		}
+
+		populations = new Individual[numPopulations][];
+
+		for(int i = 0; i < populations.length; i++){
+
+			populations[i] = new Individual[this.individualsValues.length];
+
+			for(int j = 0; j < populations[i].length; j++){
+				populations[i][j] = new Individual(this.individualsValues[j]);
+			}
+		}
 
 		Individual[] individuals = new Individual[this.individualsValues.length];
 
@@ -148,7 +183,7 @@ public class BTunerRaveDuctMctsGamer extends RaveDuctMctsGamer {
 			individuals[i] = new Individual(this.individualsValues[i]);
 		}
 
-		SingleParameterEvolutionManager evolutionManager = new SingleParameterEvolutionManager(r, this.evoC, this.evoValueOffset, individuals);
+		SingleParameterEvolutionManager evolutionManager = new SingleParameterEvolutionManager(r, this.evoC, this.evoValueOffset, populations, this.useNormalization);
 
 		return new HybridMCTSManager(graveSelection, new NoExpansion() /*new RandomExpansion(numRoles, myRole, r)*/,
 				new GRAVEPlayout(theMachine), new GRAVEBackpropagation(numRoles, myRoleIndex), new MaximumScoreChoice(myRoleIndex, r),

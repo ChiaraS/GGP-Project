@@ -21,8 +21,8 @@ public class ProgressiveHistoryGRAVEEvaluator extends GRAVEEvaluator {
 	private double w;
 
 	public ProgressiveHistoryGRAVEEvaluator(double c, double defaultValue,
-			BetaComputer betaComputer, double defaultExploration, double w, int numRoles) {
-		super(c, defaultValue, betaComputer, defaultExploration, numRoles);
+			BetaComputer betaComputer, double defaultExploration, double w, int numRoles, int myRoleIndex) {
+		super(c, defaultValue, betaComputer, defaultExploration, numRoles, myRoleIndex);
 
 		this.currentRootAmafStats = null; // Before ever starting any selection we have no reference to any statistic
 

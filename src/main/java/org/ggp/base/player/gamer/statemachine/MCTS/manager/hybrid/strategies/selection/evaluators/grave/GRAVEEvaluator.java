@@ -20,8 +20,8 @@ public class GRAVEEvaluator extends UCTEvaluator{
 
 	private double defaultExploration;
 
-	public GRAVEEvaluator(double c, double defaultValue, BetaComputer betaComputer, double defaultExploration, int numRoles) {
-		super(c, defaultValue, numRoles);
+	public GRAVEEvaluator(double c, double defaultValue, BetaComputer betaComputer, double defaultExploration, int numRoles, int myRoleIndex) {
+		super(c, defaultValue, numRoles, myRoleIndex);
 		this.betaComputer = betaComputer;
 		this.closerAmafStats = null;
 		this.defaultExploration = defaultExploration;

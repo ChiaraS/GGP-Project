@@ -30,7 +30,7 @@ public class GRAVEBetaComputer extends BetaComputer {
 	}
 
 	@Override
-	public void setNewValue(double[] newValue) {
+	public void setNewValues(double[] newValue) {
 
 		this.bias = newValue[0];
 

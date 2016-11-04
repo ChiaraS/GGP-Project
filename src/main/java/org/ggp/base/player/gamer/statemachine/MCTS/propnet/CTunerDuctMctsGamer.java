@@ -34,17 +34,28 @@ import org.ggp.base.util.statemachine.structure.compact.CompactRole;
 
 public class CTunerDuctMctsGamer extends DuctMctsGamer {
 
+	/**
+	 * True if the EvolutionManager must be set to tune the value for each role
+	 * independently. False if it must tune only the value of the role being
+	 * played by the agent in the real game.
+	 */
+	protected boolean tuneAllRoles;
+
 	protected double evoC;
 
 	protected double evoValueOffset;
 
 	protected double[] individualsValues;
 
+	protected boolean useNormalization;
+
 	public CTunerDuctMctsGamer() {
 
 		super();
 
-		this.evoC = 0.2;
+		this.tuneAllRoles = false;
+
+		this.evoC = 0.7;
 
 		this.evoValueOffset = 0.01;
 
@@ -60,6 +71,8 @@ public class CTunerDuctMctsGamer extends DuctMctsGamer {
 		this.individualsValues[7] = 0.8;
 		this.individualsValues[8] = 0.9;
 
+		this.useNormalization = false;
+
 	}
 
 	@Override
@@ -72,13 +85,14 @@ public class CTunerDuctMctsGamer extends DuctMctsGamer {
 
 		PnUCTEvaluator evaluator = new PnUCTEvaluator(this.c, this.unexploredMoveDefaultSelectionValue);
 
-		Individual[] individuals = new Individual[this.individualsValues.length];
+		Individual[][] population = new Individual[1][];
+		population[0] = new Individual[this.individualsValues.length];
 
 		for(int i = 0; i < this.individualsValues.length; i++){
-			individuals[i] = new Individual(this.individualsValues[i]);
+			population[0][i] = new Individual(this.individualsValues[i]);
 		}
 
-		SingleParameterEvolutionManager evolutionManager = new SingleParameterEvolutionManager(r, this.evoC, this.evoValueOffset, individuals);
+		SingleParameterEvolutionManager evolutionManager = new SingleParameterEvolutionManager(r, this.evoC, this.evoValueOffset, population, this.useNormalization);
 
 		return new InternalPropnetMCTSManager(new PnUCTSelection(numRoles, myRole, r, this.valueOffset, evaluator),
 	       		new PnRandomExpansion(numRoles, myRole, r), new PnRandomPlayout(this.thePropnetMachine),
@@ -129,15 +143,30 @@ public class CTunerDuctMctsGamer extends DuctMctsGamer {
 			myRoleIndex = this.getStateMachine().getRoleIndices().get(this.getRole());
 		}
 
-		UCTEvaluator evaluator = new UCTEvaluator(this.c, this.unexploredMoveDefaultSelectionValue, numRoles);
+		UCTEvaluator evaluator = new UCTEvaluator(this.c, this.unexploredMoveDefaultSelectionValue, numRoles, myRoleIndex);
 
-		Individual[] individuals = new Individual[this.individualsValues.length];
+		Individual[][] populations;
 
-		for(int i = 0; i < this.individualsValues.length; i++){
-			individuals[i] = new Individual(this.individualsValues[i]);
+		int numPopulations;
+
+		if(this.tuneAllRoles){
+			numPopulations = numRoles;
+		}else{
+			numPopulations = 1;
 		}
 
-		SingleParameterEvolutionManager evolutionManager = new SingleParameterEvolutionManager(r, this.evoC, this.evoValueOffset, individuals);
+		populations = new Individual[numPopulations][];
+
+		for(int i = 0; i < populations.length; i++){
+
+			populations[i] = new Individual[this.individualsValues.length];
+
+			for(int j = 0; j < populations[i].length; j++){
+				populations[i][j] = new Individual(this.individualsValues[j]);
+			}
+		}
+
+		SingleParameterEvolutionManager evolutionManager = new SingleParameterEvolutionManager(r, this.evoC, this.evoValueOffset, populations, this.useNormalization);
 
 		return new HybridMCTSManager(new UCTSelection(numRoles, myRoleIndex, r, this.valueOffset, evaluator),
 	       		new RandomExpansion(numRoles, myRoleIndex, r), new RandomPlayout(theMachine),
