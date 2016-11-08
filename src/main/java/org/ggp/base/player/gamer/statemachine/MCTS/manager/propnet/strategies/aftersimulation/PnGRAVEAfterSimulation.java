@@ -13,7 +13,7 @@ public class PnGRAVEAfterSimulation implements PnAfterSimulationStrategy {
 
 	@Override
 	public void afterSimulationActions(PnSimulationResult simulationResult) {
-		this.graveSelection.resetCloserAmafStats();
+		this.graveSelection.resetClosestAmafStats();
 	}
 
 	@Override

@@ -129,7 +129,7 @@ public class HybridMCTSManager extends MCTSManager {
 
 		String toLog = "MCTS manager type: " + this.getClass().getSimpleName();
 
-		toLog += "MCTS manager initialized with the following state machine " + this.theMachine.getName();
+		toLog += "\nMCTS manager initialized with the following state machine: " + this.theMachine.getName();
 
 		toLog += "\nMCTS manager initialized with the following parameters: [maxSearchDepth = " + this.maxSearchDepth + ", logTranspositionTable = " + logTranspositionTable + "]";
 

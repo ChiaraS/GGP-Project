@@ -13,7 +13,7 @@ public class GRAVEAfterSimulation implements AfterSimulationStrategy {
 
 	@Override
 	public void afterSimulationActions(SimulationResult simulationResult) {
-		this.graveSelection.resetCloserAmafStats();
+		this.graveSelection.resetClosestAmafStats();
 	}
 
 	@Override

@@ -13,7 +13,7 @@ public class ProverGRAVEAfterSimulation implements ProverAfterSimulationStrategy
 
 	@Override
 	public void afterSimulationActions(ProverSimulationResult simulationResult) {
-		this.graveSelection.resetCloserAmafStats();
+		this.graveSelection.resetClosestAmafStats();
 	}
 
 	@Override

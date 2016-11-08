@@ -35,13 +35,13 @@ public class ProverGRAVESelection extends ProverMoveValueSelection {
 
 			// TODO: uncomment the check. This will make sure that if no stats have visits higher than the threshold at least
 			// the root stats will be used rather than ignoring amaf values.
-			if((((ProverGRAVEEvaluator)this.moveEvaluator).getCloserAmafStats()) == null || currentNode.getTotVisits() >= this.minAMAFVisits){
+			if((((ProverGRAVEEvaluator)this.moveEvaluator).getClosestAmafStats()) == null || currentNode.getTotVisits() >= this.minAMAFVisits){
 
-				//if((((GRAVEEvaluator)this.moveEvaluator).getCloserAmafStats()) == null){
+				//if((((GRAVEEvaluator)this.moveEvaluator).getClosestAmafStats()) == null){
 				//	System.out.print("Null reference: ");
 				//}
 				//System.out.println("change");
-				((ProverGRAVEEvaluator)this.moveEvaluator).setCloserAmafStats(((ProverAMAFNode)currentNode).getAmafStats());
+				((ProverGRAVEEvaluator)this.moveEvaluator).setClosestAmafStats(((ProverAMAFNode)currentNode).getAmafStats());
 			}
 
 			return super.select(currentNode);
@@ -51,8 +51,8 @@ public class ProverGRAVESelection extends ProverMoveValueSelection {
 		}
 	}
 
-	public void resetCloserAmafStats(){
-		((ProverGRAVEEvaluator)this.moveEvaluator).setCloserAmafStats(null);
+	public void resetClosestAmafStats(){
+		((ProverGRAVEEvaluator)this.moveEvaluator).setClosestAmafStats(null);
 	}
 
 	@Override

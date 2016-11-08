@@ -174,5 +174,7 @@ public class CTunerDuctMctsGamer extends DuctMctsGamer {
 	       		new EvoBeforeSimulation(evolutionManager, evaluator), new EvoAfterSimulation(evolutionManager, myRoleIndex),
 	       		new EvoAfterMove(evolutionManager), new DecoupledTreeNodeFactory(theMachine),
 	       		theMachine,	this.gameStepOffset, this.maxSearchDepth, this.logTranspositionTable);
+
 	}
+
 }

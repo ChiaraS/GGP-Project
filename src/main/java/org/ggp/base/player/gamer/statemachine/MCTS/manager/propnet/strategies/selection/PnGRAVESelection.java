@@ -36,13 +36,13 @@ public class PnGRAVESelection extends PnMoveValueSelection implements OnlineTuna
 
 			// This will make sure that if no stats have visits higher than the threshold at least
 			// the root stats will be used rather than ignoring amaf values.
-			if((((PnGRAVEEvaluator)this.moveEvaluator).getCloserAmafStats()) == null || currentNode.getTotVisits() >= this.minAMAFVisits){
+			if((((PnGRAVEEvaluator)this.moveEvaluator).getClosestAmafStats()) == null || currentNode.getTotVisits() >= this.minAMAFVisits){
 
-				//if((((GRAVEEvaluator)this.moveEvaluator).getCloserAmafStats()) == null){
+				//if((((GRAVEEvaluator)this.moveEvaluator).getClosestAmafStats()) == null){
 				//	System.out.print("Null reference: ");
 				//}
 				//System.out.println("change");
-				((PnGRAVEEvaluator)this.moveEvaluator).setCloserAmafStats(((PnAMAFNode)currentNode).getAmafStats());
+				((PnGRAVEEvaluator)this.moveEvaluator).setClosestAmafStats(((PnAMAFNode)currentNode).getAmafStats());
 			}
 
 			return super.select(currentNode);
@@ -52,8 +52,8 @@ public class PnGRAVESelection extends PnMoveValueSelection implements OnlineTuna
 		}
 	}
 
-	public void resetCloserAmafStats(){
-		((PnGRAVEEvaluator)this.moveEvaluator).setCloserAmafStats(null);
+	public void resetClosestAmafStats(){
+		((PnGRAVEEvaluator)this.moveEvaluator).setClosestAmafStats(null);
 	}
 
 	@Override

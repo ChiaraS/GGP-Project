@@ -3,7 +3,6 @@ package org.ggp.base.player.gamer.statemachine.MCTS.manager.propnet.strategies.s
 import java.util.Map;
 
 import org.ggp.base.player.gamer.statemachine.MCS.manager.MoveStats;
-import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.strategies.selection.evaluators.grave.BetaComputer;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.propnet.strategies.selection.evaluators.PnUCTEvaluator;
 import org.ggp.base.util.statemachine.structure.compact.CompactMove;
 
@@ -14,16 +13,16 @@ public class PnGRAVEEvaluator extends PnUCTEvaluator {
 	 * to make the statistics reliable. This reference will be updated every time the current
 	 * node being checked has enough visits to use its own AMAF statistics.
 	 */
-	private Map<CompactMove, MoveStats> closerAmafStats;
+	private Map<CompactMove, MoveStats> closestAmafStats;
 
-	private BetaComputer betaComputer;
+	private PnProverBetaComputer betaComputer;
 
 	private double defaultExploration;
 
-	public PnGRAVEEvaluator(double c, double defaultValue, BetaComputer betaComputer, double defaultExploration) {
+	public PnGRAVEEvaluator(double c, double defaultValue, PnProverBetaComputer betaComputer, double defaultExploration) {
 		super(c, defaultValue);
 		this.betaComputer = betaComputer;
-		this.closerAmafStats = null;
+		this.closestAmafStats = null;
 		this.defaultExploration = defaultExploration;
 	}
 
@@ -36,9 +35,9 @@ public class PnGRAVEEvaluator extends PnUCTEvaluator {
 
 		MoveStats moveAmafStats = null;
 
-		if(this.closerAmafStats != null){
+		if(this.closestAmafStats != null){
 
-			moveAmafStats = this.closerAmafStats.get(theMove);
+			moveAmafStats = this.closestAmafStats.get(theMove);
 
 			if(moveAmafStats != null && moveAmafStats.getVisits() != 0){
 				double amafVisits = moveAmafStats.getVisits();
@@ -88,12 +87,12 @@ public class PnGRAVEEvaluator extends PnUCTEvaluator {
 
 	}
 
-	public void setCloserAmafStats(Map<CompactMove, MoveStats> closerAmafStats){
-		this.closerAmafStats = closerAmafStats;
+	public void setClosestAmafStats(Map<CompactMove, MoveStats> closestAmafStats){
+		this.closestAmafStats = closestAmafStats;
 	}
 
-	public Map<CompactMove, MoveStats> getCloserAmafStats(){
-		return this.closerAmafStats;
+	public Map<CompactMove, MoveStats> getClosestAmafStats(){
+		return this.closestAmafStats;
 	}
 
 	@Override

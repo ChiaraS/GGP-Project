@@ -15,6 +15,7 @@ import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.strategies.pla
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.strategies.selection.GRAVESelection;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.strategies.selection.evaluators.grave.BetaComputer;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.strategies.selection.evaluators.grave.CADIABetaComputer;
+import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.strategies.selection.evaluators.grave.GRAVEBetaComputer;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.strategies.selection.evaluators.grave.GRAVEEvaluator;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.propnet.InternalPropnetMCTSManager;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.propnet.strategies.aftermove.PnMASTAfterMove;
@@ -24,6 +25,9 @@ import org.ggp.base.player.gamer.statemachine.MCTS.manager.propnet.strategies.ex
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.propnet.strategies.movechoice.PnMaximumScoreChoice;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.propnet.strategies.playout.PnMASTPlayout;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.propnet.strategies.selection.PnGRAVESelection;
+import org.ggp.base.player.gamer.statemachine.MCTS.manager.propnet.strategies.selection.evaluators.GRAVE.PnProverBetaComputer;
+import org.ggp.base.player.gamer.statemachine.MCTS.manager.propnet.strategies.selection.evaluators.GRAVE.PnProverCADIABetaComputer;
+import org.ggp.base.player.gamer.statemachine.MCTS.manager.propnet.strategies.selection.evaluators.GRAVE.PnProverGRAVEBetaComputer;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.propnet.strategies.selection.evaluators.GRAVE.PnGRAVEEvaluator;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.prover.ProverMCTSManager;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.hybrid.amafdecoupled.AMAFDecoupledTreeNodeFactory;
@@ -40,7 +44,20 @@ public abstract class GRMastDuctMctsGamer extends MastDuctMctsGamer {
 
 	protected int minAMAFVisits;
 
-	protected BetaComputer betaComputer;
+	/**
+	 * True if the player must use the CADIABetaComputer, false if it must use the GRAVEBetaComputer
+	 */
+	protected boolean cadiaBetaComputer;
+
+	/**
+	 * Value for k to use when the player uses the CADIABetaComputer.
+	 */
+	protected int k;
+
+	/**
+	 * Value for bias to use when the player uses the GRAVEBetaComputer.
+	 */
+	protected double bias;
 
 	protected double defaultExploration;
 
@@ -54,7 +71,10 @@ public abstract class GRMastDuctMctsGamer extends MastDuctMctsGamer {
 		this.logTranspositionTable = true;
 
 		this.minAMAFVisits = 0;
-		this.betaComputer = new CADIABetaComputer(250);
+
+		this.cadiaBetaComputer = true;
+		this.k = 250;
+
 		this.defaultExploration = 1.0;
 	}
 
@@ -66,7 +86,15 @@ public abstract class GRMastDuctMctsGamer extends MastDuctMctsGamer {
 		CompactRole myRole = this.thePropnetMachine.convertToCompactRole(this.getRole());
 		int numRoles = this.thePropnetMachine.getCompactRoles().size();
 
-		PnGRAVESelection graveSelection = new PnGRAVESelection(numRoles, myRole, r, this.valueOffset, this.minAMAFVisits, new PnGRAVEEvaluator(this.c, this.unexploredMoveDefaultSelectionValue, this.betaComputer, this.defaultExploration));
+		PnProverBetaComputer pnProverBetaComputer;
+
+		if(this.cadiaBetaComputer){
+			pnProverBetaComputer = new PnProverCADIABetaComputer(this.k);
+		}else{
+			pnProverBetaComputer = new PnProverGRAVEBetaComputer(this.bias);
+		}
+
+		PnGRAVESelection graveSelection = new PnGRAVESelection(numRoles, myRole, r, this.valueOffset, this.minAMAFVisits, new PnGRAVEEvaluator(this.c, this.unexploredMoveDefaultSelectionValue, pnProverBetaComputer, this.defaultExploration));
 
 		Map<CompactMove, MoveStats> mastStatistics = new HashMap<CompactMove, MoveStats>();
 
@@ -110,16 +138,27 @@ public abstract class GRMastDuctMctsGamer extends MastDuctMctsGamer {
 			myRoleIndex = this.getStateMachine().getRoleIndices().get(this.getRole());
 		}
 
-		GRAVESelection graveSelection = new GRAVESelection(numRoles, myRoleIndex, r, this.valueOffset, this.minAMAFVisits, new GRAVEEvaluator(this.c, this.unexploredMoveDefaultSelectionValue, this.betaComputer, this.defaultExploration, numRoles, myRoleIndex));
+		BetaComputer betaComputer;
+
+		if(this.cadiaBetaComputer){
+			betaComputer = new CADIABetaComputer(this.k, numRoles, myRoleIndex);
+		}else{
+			betaComputer = new GRAVEBetaComputer(this.bias, numRoles, myRoleIndex);
+		}
+
+		GRAVESelection graveSelection = new GRAVESelection(numRoles, myRoleIndex, r, this.valueOffset, this.minAMAFVisits, new GRAVEEvaluator(this.c, this.unexploredMoveDefaultSelectionValue, betaComputer, this.defaultExploration, numRoles, myRoleIndex));
 
 		Map<Move, MoveStats> mastStatistics = new HashMap<Move, MoveStats>();
 
 		// Note that the after simulation strategy GRAVEAfterSimulation already performs all the after simulation
 		// actions needed by the MAST strategy, so we don't need to change it when we use GRAVE and MAST together.
 		return new HybridMCTSManager(graveSelection, new NoExpansion() /*new RandomExpansion(numRoles, myRole, r)*/,
-				new MASTPlayout(theMachine, r, mastStatistics, this.epsilon), new MASTGRAVEBackpropagation(numRoles, myRoleIndex, mastStatistics),
-				new MaximumScoreChoice(myRoleIndex, r), null, new GRAVEAfterSimulation(graveSelection),
-				new MASTAfterMove(mastStatistics, this.decayFactor), new AMAFDecoupledTreeNodeFactory(theMachine),
+				new MASTPlayout(theMachine, r, mastStatistics, this.epsilon),
+				new MASTGRAVEBackpropagation(numRoles, myRoleIndex, mastStatistics),
+				new MaximumScoreChoice(myRoleIndex, r), null,
+				new GRAVEAfterSimulation(graveSelection),
+				new MASTAfterMove(mastStatistics, this.decayFactor),
+				new AMAFDecoupledTreeNodeFactory(theMachine),
 				theMachine,	this.gameStepOffset, this.maxSearchDepth, this.logTranspositionTable);
 	}
 

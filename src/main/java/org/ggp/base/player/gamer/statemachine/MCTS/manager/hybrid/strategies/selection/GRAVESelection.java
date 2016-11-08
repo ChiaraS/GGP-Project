@@ -13,14 +13,18 @@ public class GRAVESelection extends MoveValueSelection implements OnlineTunableC
 	/**
 	 * Minimum number of visits that the node must have to be allowed to use its own AMAF statistics.
 	 */
-	private int minAMAFVisits;
+	private int[] minAMAFVisits;
 
 	public GRAVESelection(int numRoles, int myRoleIndex, Random random,	double valueOffset,
-			int minAMAFVisits, GRAVEEvaluator moveEvaluator) {
+			int initialMinAMAFVisits, GRAVEEvaluator moveEvaluator) {
 
 		super(numRoles, myRoleIndex, random, valueOffset, moveEvaluator);
 
-		this.minAMAFVisits = minAMAFVisits;
+		this.minAMAFVisits = new int[numRoles];
+
+		for(int i = 0; i < numRoles; i++){
+			this.minAMAFVisits[i] = initialMinAMAFVisits;
+		}
 
 	}
 
@@ -33,15 +37,27 @@ public class GRAVESelection extends MoveValueSelection implements OnlineTunableC
 
 			//System.out.println("tot node visits: " + currentNode.getTotVisits());
 
-			// This will make sure that if no stats have visits higher than the threshold at least
-			// the root stats will be used rather than ignoring amaf values.
-			if((((GRAVEEvaluator)this.moveEvaluator).getCloserAmafStats()) == null || currentNode.getTotVisits() >= this.minAMAFVisits){
+			// For each role we must check if we have to change the reference to the closest AMAF statistics
+			// that have a number of visits higher than the corresponding minAMAFVisits threshold for the role.
 
-				//if((((GRAVEEvaluator)this.moveEvaluator).getCloserAmafStats()) == null){
-				//	System.out.print("Null reference: ");
-				//}
-				//System.out.println("change");
-				((GRAVEEvaluator)this.moveEvaluator).setCloserAmafStats(((AMAFNode)currentNode).getAmafStats());
+			for(int i = 0; i < this.minAMAFVisits.length; i++){
+				// For each role first we check if there is no reference to any AMAF statistics, and if so we set
+				// the reference to the statistics of the current node (note that this will happen only the first
+				// time selection is performed during a simulation, so the current node will be the root).
+				// Otherwise, if there is a reference to the closest AMAF statistics for the role, we check if the
+				// current node has enough visits (according to the threshold for the role (i.e. minAMAFVisits[roleIndex]))
+				// to have its statistics substituted to the currently set ones.
+				// This will make sure that if no stats have visits higher than the threshold at least
+				// the root stats will be used rather than ignoring amaf values.
+				if((((GRAVEEvaluator)this.moveEvaluator).getClosestAmafStats().get(i)) == null || currentNode.getTotVisits() >= this.minAMAFVisits[i]){
+					// i.e.: if(ClosestAmafStatsForRole == null || VisitsOfCurrentNode >= ThresholdForRole)
+
+					//if((((GRAVEEvaluator)this.moveEvaluator).getClosestAmafStats()) == null){
+					//	System.out.print("Null reference: ");
+					//}
+					//System.out.println("change");
+					((GRAVEEvaluator)this.moveEvaluator).setClosestAmafStats(i, ((AMAFNode)currentNode).getAmafStats());
+				}
 			}
 
 			return super.select(currentNode);
@@ -51,25 +67,49 @@ public class GRAVESelection extends MoveValueSelection implements OnlineTunableC
 		}
 	}
 
-	public void resetCloserAmafStats(){
-		((GRAVEEvaluator)this.moveEvaluator).setCloserAmafStats(null);
+	public void resetClosestAmafStats(){
+
+		for(int i = 0; i < ((GRAVEEvaluator)this.moveEvaluator).getClosestAmafStats().size(); i++){
+			((GRAVEEvaluator)this.moveEvaluator).setClosestAmafStats(i, null);
+		}
+
 	}
 
 	@Override
 	public String getStrategyParameters(){
 		String params = super.getStrategyParameters();
 
+		String roleParams = "[ ";
+
+		for(int i = 0; i <this.minAMAFVisits.length; i++){
+
+			roleParams += this.minAMAFVisits[i] + " ";
+
+		}
+
+		roleParams += "]";
+
 		if(params == null){
-			return "MIN_AMAF_VISITS = " + this.minAMAFVisits;
+			return "MIN_AMAF_VISITS = " + roleParams;
 		}else{
-			return params + ", MIN_AMAF_VISITS = " + this.minAMAFVisits;
+			return params + ", MIN_AMAF_VISITS = " + roleParams;
 		}
 	}
 
 	@Override
-	public void setNewValues(double[] newValue) {
+	public void setNewValues(double[] newValues) {
 
-		this.minAMAFVisits = (int) newValue[0];
+		// We are tuning only the value of myRole
+		if(newValues.length == 1){
+			this.minAMAFVisits[this.myRoleIndex] = (int) newValues[0];
+
+			//System.out.println("C = " + this.c[this.myRoleIndex]);
+
+		}else{ // We are tuning all constants
+			for(int i = 0; i <this.minAMAFVisits.length; i++){
+				this.minAMAFVisits[i] = (int) newValues[i];
+			}
+		}
 
 	}
 

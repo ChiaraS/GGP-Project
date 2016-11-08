@@ -1,19 +1,24 @@
 package org.ggp.base.player.gamer.statemachine.MCTS.propnet.ravegrave;
 
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Random;
 
+import org.ggp.base.player.gamer.statemachine.MCS.manager.MoveStats;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.evolution.Individual;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.evolution.SingleParameterEvolutionManager;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.HybridMCTSManager;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.strategies.aftermove.EvoAfterMove;
+import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.strategies.aftermove.EvoMASTAfterMove;
+import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.strategies.aftermove.MASTAfterMove;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.strategies.aftersimulation.EvoAfterSimulation;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.strategies.aftersimulation.EvoGRAVEAfterSimulation;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.strategies.aftersimulation.GRAVEAfterSimulation;
-import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.strategies.backpropagation.GRAVEBackpropagation;
+import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.strategies.backpropagation.MASTGRAVEBackpropagation;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.strategies.beforesimualtion.EvoBeforeSimulation;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.strategies.expansion.NoExpansion;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.strategies.movechoice.MaximumScoreChoice;
-import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.strategies.playout.GRAVEPlayout;
+import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.strategies.playout.MASTPlayout;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.strategies.selection.GRAVESelection;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.strategies.selection.evaluators.grave.BetaComputer;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.strategies.selection.evaluators.grave.CADIABetaComputer;
@@ -40,9 +45,10 @@ import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.propnet
 import org.ggp.base.util.statemachine.abstractsm.AbstractStateMachine;
 import org.ggp.base.util.statemachine.abstractsm.CompactStateMachine;
 import org.ggp.base.util.statemachine.abstractsm.ExplicitStateMachine;
+import org.ggp.base.util.statemachine.structure.Move;
 import org.ggp.base.util.statemachine.structure.compact.CompactRole;
 
-public class CadiaKTunerRaveDuctMctsGamer extends CadiaRaveDuctMctsGamer {
+public class CadiaCTunerRaveMastDuctMctsGamer extends CadiaRaveMastDuctMctsGamer {
 
 	/**
 	 * True if the EvolutionManager must be set to tune the value for each role
@@ -59,26 +65,26 @@ public class CadiaKTunerRaveDuctMctsGamer extends CadiaRaveDuctMctsGamer {
 
 	protected boolean useNormalization;
 
-	public CadiaKTunerRaveDuctMctsGamer() {
-
+	public CadiaCTunerRaveMastDuctMctsGamer() {
 		super();
 
 		this.tuneAllRoles = false;
 
-		this.evoC = 0.05;
+		this.evoC = 0.3;
 
 		this.evoValueOffset = 0.01;
 
-		this.individualsValues = new double[8];
+		this.individualsValues = new double[9];
 
-		this.individualsValues[0] = 10;
-		this.individualsValues[1] = 50;
-		this.individualsValues[2] = 100;
-		this.individualsValues[3] = 250;
-		this.individualsValues[4] = 500;
-		this.individualsValues[5] = 750;
-		this.individualsValues[6] = 1000;
-		this.individualsValues[7] = 2000;
+		this.individualsValues[0] = 0.1;
+		this.individualsValues[1] = 0.2;
+		this.individualsValues[2] = 0.3;
+		this.individualsValues[3] = 0.4;
+		this.individualsValues[4] = 0.5;
+		this.individualsValues[5] = 0.6;
+		this.individualsValues[6] = 0.7;
+		this.individualsValues[7] = 0.8;
+		this.individualsValues[8] = 0.9;
 
 		this.useNormalization = false;
 
@@ -100,7 +106,9 @@ public class CadiaKTunerRaveDuctMctsGamer extends CadiaRaveDuctMctsGamer {
 			pnProverBetaComputer = new PnProverGRAVEBetaComputer(this.bias);
 		}
 
-		PnGRAVESelection graveSelection = new PnGRAVESelection(numRoles, myRole, r, this.valueOffset, this.minAMAFVisits, new PnGRAVEEvaluator(this.c, this.unexploredMoveDefaultSelectionValue, pnProverBetaComputer, this.defaultExploration));
+		PnGRAVEEvaluator evaluator = new PnGRAVEEvaluator(this.c, this.unexploredMoveDefaultSelectionValue, pnProverBetaComputer, this.defaultExploration);
+
+		PnGRAVESelection graveSelection = new PnGRAVESelection(numRoles, myRole, r, this.valueOffset, this.minAMAFVisits, evaluator);
 
 		Individual[][] population = new Individual[1][];
 		population[0] = new Individual[this.individualsValues.length];
@@ -113,7 +121,7 @@ public class CadiaKTunerRaveDuctMctsGamer extends CadiaRaveDuctMctsGamer {
 
 		return new InternalPropnetMCTSManager(graveSelection, new PnNoExpansion() /*new RandomExpansion(numRoles, myRole, r)*/,
 				new PnGRAVEPlayout(this.thePropnetMachine), new PnGRAVEBackpropagation(numRoles, myRole), new PnMaximumScoreChoice(myRole, r),
-				new PnEvoBeforeSimulation(evolutionManager, pnProverBetaComputer),
+				new PnEvoBeforeSimulation(evolutionManager, evaluator),
 				new PnEvoGRAVEAfterSimulation(new PnGRAVEAfterSimulation(graveSelection), new PnEvoAfterSimulation(evolutionManager, myRole)),
 				new PnEvoAfterMove(evolutionManager), new PnAMAFDecoupledTreeNodeFactory(this.thePropnetMachine),
 				this.thePropnetMachine, this.gameStepOffset, this.maxSearchDepth, this.logTranspositionTable);
@@ -176,7 +184,11 @@ public class CadiaKTunerRaveDuctMctsGamer extends CadiaRaveDuctMctsGamer {
 			betaComputer = new GRAVEBetaComputer(this.bias, numRoles, myRoleIndex);
 		}
 
-		GRAVESelection graveSelection = new GRAVESelection(numRoles, myRoleIndex, r, this.valueOffset, this.minAMAFVisits, new GRAVEEvaluator(this.c, this.unexploredMoveDefaultSelectionValue, betaComputer, this.defaultExploration, numRoles, myRoleIndex));
+		GRAVEEvaluator evaluator = new GRAVEEvaluator(this.c, this.unexploredMoveDefaultSelectionValue, betaComputer, this.defaultExploration, numRoles, myRoleIndex);
+
+		GRAVESelection graveSelection = new GRAVESelection(numRoles, myRoleIndex, r, this.valueOffset, this.minAMAFVisits, evaluator);
+
+		Map<Move, MoveStats> mastStatistics = new HashMap<Move, MoveStats>();
 
 		Individual[][] populations;
 
@@ -202,12 +214,16 @@ public class CadiaKTunerRaveDuctMctsGamer extends CadiaRaveDuctMctsGamer {
 		SingleParameterEvolutionManager evolutionManager = new SingleParameterEvolutionManager(r, this.evoC, this.evoValueOffset, populations, this.useNormalization);
 
 		return new HybridMCTSManager(graveSelection, new NoExpansion() /*new RandomExpansion(numRoles, myRole, r)*/,
-				new GRAVEPlayout(theMachine), new GRAVEBackpropagation(numRoles, myRoleIndex), new MaximumScoreChoice(myRoleIndex, r),
-				new EvoBeforeSimulation(evolutionManager, betaComputer),
+				new MASTPlayout(theMachine, r, mastStatistics, this.epsilon),
+				new MASTGRAVEBackpropagation(numRoles, myRoleIndex, mastStatistics),
+				new MaximumScoreChoice(myRoleIndex, r),
+				new EvoBeforeSimulation(evolutionManager, evaluator),
 				new EvoGRAVEAfterSimulation(new GRAVEAfterSimulation(graveSelection), new EvoAfterSimulation(evolutionManager, myRoleIndex)),
-				new EvoAfterMove(evolutionManager), new AMAFDecoupledTreeNodeFactory(theMachine),
+				new EvoMASTAfterMove(new MASTAfterMove(mastStatistics, this.decayFactor), new EvoAfterMove(evolutionManager)),
+				new AMAFDecoupledTreeNodeFactory(theMachine),
 				theMachine, this.gameStepOffset, this.maxSearchDepth, this.logTranspositionTable);
 
 	}
+
 
 }

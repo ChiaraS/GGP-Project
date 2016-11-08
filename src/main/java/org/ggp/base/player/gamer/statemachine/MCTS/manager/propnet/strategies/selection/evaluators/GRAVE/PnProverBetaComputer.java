@@ -1,15 +1,9 @@
-package org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.strategies.selection.evaluators.grave;
+package org.ggp.base.player.gamer.statemachine.MCTS.manager.propnet.strategies.selection.evaluators.GRAVE;
 
 import org.ggp.base.player.gamer.statemachine.MCS.manager.MoveStats;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.evolution.OnlineTunableComponent;
 
-public abstract class BetaComputer implements OnlineTunableComponent {
-
-	protected int myRoleIndex;
-
-	public BetaComputer(int myRoleIndex){
-		this.myRoleIndex = myRoleIndex;
-	}
+public abstract class PnProverBetaComputer implements OnlineTunableComponent {
 
 	/**
 	 * Computes the value of the weight beta used by the GRAVE move evaluator during selection.
@@ -19,7 +13,7 @@ public abstract class BetaComputer implements OnlineTunableComponent {
 	 * @param nodeVisits the visits of the node for which this move is being evaluated.
 	 * @return the weight to be used in the computation of the value of the move.
 	 */
-	public abstract double computeBeta(MoveStats theMoveStats, MoveStats theAmafMoveStats, int nodeVisits, int roleIndex);
+	public abstract double computeBeta(MoveStats theMoveStats, MoveStats theAmafMoveStats, int nodeVisits);
 
 	public abstract String getBetaComputerParameters();
 

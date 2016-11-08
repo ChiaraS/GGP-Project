@@ -10,6 +10,9 @@ import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.strategies.exp
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.strategies.movechoice.MaximumScoreChoice;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.strategies.playout.GRAVEPlayout;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.strategies.selection.ProgressiveHistoryGRAVESelection;
+import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.strategies.selection.evaluators.grave.BetaComputer;
+import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.strategies.selection.evaluators.grave.CADIABetaComputer;
+import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.strategies.selection.evaluators.grave.GRAVEBetaComputer;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.strategies.selection.evaluators.grave.ProgressiveHistoryGRAVEEvaluator;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.propnet.InternalPropnetMCTSManager;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.propnet.strategies.aftermove.PnProgressiveHistoryAfterMove;
@@ -19,6 +22,9 @@ import org.ggp.base.player.gamer.statemachine.MCTS.manager.propnet.strategies.ex
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.propnet.strategies.movechoice.PnMaximumScoreChoice;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.propnet.strategies.playout.PnGRAVEPlayout;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.propnet.strategies.selection.PnProgressiveHistoryGRAVESelection;
+import org.ggp.base.player.gamer.statemachine.MCTS.manager.propnet.strategies.selection.evaluators.GRAVE.PnProverBetaComputer;
+import org.ggp.base.player.gamer.statemachine.MCTS.manager.propnet.strategies.selection.evaluators.GRAVE.PnProverCADIABetaComputer;
+import org.ggp.base.player.gamer.statemachine.MCTS.manager.propnet.strategies.selection.evaluators.GRAVE.PnProverGRAVEBetaComputer;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.propnet.strategies.selection.evaluators.GRAVE.PnProgressiveHistoryGRAVEEvaluator;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.prover.ProverMCTSManager;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.prover.strategies.aftermove.ProverProgressiveHistoryAfterMove;
@@ -58,8 +64,16 @@ public abstract class PhGRDuctMctsGamer extends GRDuctMctsGamer {
 		CompactRole myRole = this.thePropnetMachine.convertToCompactRole(this.getRole());
 		int numRoles = this.thePropnetMachine.getCompactRoles().size();
 
+		PnProverBetaComputer pnProverBetaComputer;
+
+		if(this.cadiaBetaComputer){
+			pnProverBetaComputer = new PnProverCADIABetaComputer(this.k);
+		}else{
+			pnProverBetaComputer = new PnProverGRAVEBetaComputer(this.bias);
+		}
+
 		PnProgressiveHistoryGRAVESelection graveSelection = new PnProgressiveHistoryGRAVESelection(numRoles, myRole, r,	this.valueOffset, this.minAMAFVisits,
-				new PnProgressiveHistoryGRAVEEvaluator(this.c, this.unexploredMoveDefaultSelectionValue, this.betaComputer, this.defaultExploration, this.w));
+				new PnProgressiveHistoryGRAVEEvaluator(this.c, this.unexploredMoveDefaultSelectionValue, pnProverBetaComputer, this.defaultExploration, this.w));
 
 		return new InternalPropnetMCTSManager(graveSelection, new PnNoExpansion() /*new RandomExpansion(numRoles, myRole, r)*/,
 				new PnGRAVEPlayout(this.thePropnetMachine), new PnGRAVEBackpropagation(numRoles, myRole),
@@ -79,8 +93,16 @@ public abstract class PhGRDuctMctsGamer extends GRDuctMctsGamer {
 
 		int myRoleIndex = this.getStateMachine().getRoleIndices().get(this.getRole());
 
+		PnProverBetaComputer pnProverBetaComputer;
+
+		if(this.cadiaBetaComputer){
+			pnProverBetaComputer = new PnProverCADIABetaComputer(this.k);
+		}else{
+			pnProverBetaComputer = new PnProverGRAVEBetaComputer(this.bias);
+		}
+
 		ProverProgressiveHistoryGRAVESelection graveSelection = new ProverProgressiveHistoryGRAVESelection(numRoles, myRole, r,	this.valueOffset, this.minAMAFVisits,
-				new ProverProgressiveHistoryGRAVEEvaluator(this.c, this.unexploredMoveDefaultSelectionValue, this.betaComputer, this.defaultExploration, this.w));
+				new ProverProgressiveHistoryGRAVEEvaluator(this.c, this.unexploredMoveDefaultSelectionValue, pnProverBetaComputer, this.defaultExploration, this.w));
 
 		return new ProverMCTSManager(graveSelection, new ProverNoExpansion() /*new RandomExpansion(numRoles, myRole, r)*/,
 				new ProverGRAVEPlayout(this.getStateMachine()), new ProverGRAVEBackpropagation(numRoles, myRole),
@@ -111,8 +133,16 @@ public abstract class PhGRDuctMctsGamer extends GRDuctMctsGamer {
 			myRoleIndex = this.getStateMachine().getRoleIndices().get(this.getRole());
 		}
 
+		BetaComputer betaComputer;
+
+		if(this.cadiaBetaComputer){
+			betaComputer = new CADIABetaComputer(this.k, numRoles, myRoleIndex);
+		}else{
+			betaComputer = new GRAVEBetaComputer(this.bias, numRoles, myRoleIndex);
+		}
+
 		ProgressiveHistoryGRAVESelection graveSelection = new ProgressiveHistoryGRAVESelection(numRoles, myRoleIndex, r,	this.valueOffset, this.minAMAFVisits,
-				new ProgressiveHistoryGRAVEEvaluator(this.c, this.unexploredMoveDefaultSelectionValue, this.betaComputer, this.defaultExploration, this.w, numRoles, myRoleIndex));
+				new ProgressiveHistoryGRAVEEvaluator(this.c, this.unexploredMoveDefaultSelectionValue, betaComputer, this.defaultExploration, this.w, numRoles, myRoleIndex));
 
 		return new HybridMCTSManager(graveSelection, new NoExpansion() /*new RandomExpansion(numRoles, myRole, r)*/,
 				new GRAVEPlayout(theMachine), new GRAVEBackpropagation(numRoles, myRoleIndex),

@@ -20,13 +20,13 @@ public abstract class MoveValueSelection implements SelectionStrategy {
 	 * The total number of roles in the game.
 	 * Needed by the Sequential version of MCTS.
 	 */
-	private int numRoles;
+	protected int numRoles;
 
 	/**
 	 * The index in the default list of roles of the role that is actually performing the search.
 	 * Needed by the Sequential version of MCTS.
 	 */
-	private int myRoleIndex;
+	protected int myRoleIndex;
 
 	private Random random;
 

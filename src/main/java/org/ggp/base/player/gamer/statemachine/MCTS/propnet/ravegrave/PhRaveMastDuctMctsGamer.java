@@ -1,6 +1,5 @@
 package org.ggp.base.player.gamer.statemachine.MCTS.propnet.ravegrave;
 
-import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.strategies.selection.evaluators.grave.GRAVEBetaComputer;
 
 public class PhRaveMastDuctMctsGamer extends PhGRMastDuctMctsGamer {
 
@@ -8,7 +7,8 @@ public class PhRaveMastDuctMctsGamer extends PhGRMastDuctMctsGamer {
 
 		super();
 
-		this.betaComputer = new GRAVEBetaComputer(0.00001);
+		this.cadiaBetaComputer = false;
+		this.bias = 0.00001;
 	}
 
 }

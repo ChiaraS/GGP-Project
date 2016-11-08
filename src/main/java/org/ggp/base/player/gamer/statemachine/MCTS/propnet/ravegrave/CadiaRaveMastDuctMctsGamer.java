@@ -1,6 +1,5 @@
 package org.ggp.base.player.gamer.statemachine.MCTS.propnet.ravegrave;
 
-import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.strategies.selection.evaluators.grave.CADIABetaComputer;
 
 public class CadiaRaveMastDuctMctsGamer extends GRMastDuctMctsGamer {
 
@@ -8,7 +7,8 @@ public class CadiaRaveMastDuctMctsGamer extends GRMastDuctMctsGamer {
 
 		super();
 
-		this.betaComputer = new CADIABetaComputer(250);
+		this.cadiaBetaComputer = true;
+		this.k = 250;
 
 	}
 

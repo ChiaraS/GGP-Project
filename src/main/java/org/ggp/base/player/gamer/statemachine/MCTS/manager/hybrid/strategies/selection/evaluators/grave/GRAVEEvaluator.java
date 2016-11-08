@@ -1,5 +1,7 @@
 package org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.strategies.selection.evaluators.grave;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 
 import org.ggp.base.player.gamer.statemachine.MCS.manager.MoveStats;
@@ -13,8 +15,12 @@ public class GRAVEEvaluator extends UCTEvaluator{
 	 * Reference to the AMAF statistics of the ancestor of this node that has enough visits
 	 * to make the statistics reliable. This reference will be updated every time the current
 	 * node being checked has enough visits to use its own AMAF statistics.
+	 *
+	 * Note: each role has its own reference to the closest ancestor with enough number of visits
+	 * because each role might have a different value for the threshold on the number of visits
+	 * (i.e. the parameter minAMAFVisits, or as called in the paper, "ref").
 	 */
-	private Map<Move, MoveStats> closerAmafStats;
+	private List<Map<Move, MoveStats>> closestAmafStats;
 
 	private BetaComputer betaComputer;
 
@@ -23,7 +29,13 @@ public class GRAVEEvaluator extends UCTEvaluator{
 	public GRAVEEvaluator(double c, double defaultValue, BetaComputer betaComputer, double defaultExploration, int numRoles, int myRoleIndex) {
 		super(c, defaultValue, numRoles, myRoleIndex);
 		this.betaComputer = betaComputer;
-		this.closerAmafStats = null;
+
+		this.closestAmafStats = new ArrayList<Map<Move, MoveStats>>(numRoles);
+		// Initialize to null the closest AMAF stats for each role
+		for(int i = 0; i < numRoles; i++){
+			this.closestAmafStats.add(null);
+		}
+
 		this.defaultExploration = defaultExploration;
 	}
 
@@ -38,9 +50,12 @@ public class GRAVEEvaluator extends UCTEvaluator{
 
 		MoveStats moveAmafStats = null;
 
-		if(this.closerAmafStats != null){
+		// Get the closest AMAF stats for the role for which we are selecting the move
+		Map<Move, MoveStats> closestAmafStatsForRole = this.closestAmafStats.get(roleIndex);
 
-			moveAmafStats = this.closerAmafStats.get(theMove);
+		if(closestAmafStatsForRole != null){
+
+			moveAmafStats = closestAmafStatsForRole.get(theMove);
 
 			if(moveAmafStats != null && moveAmafStats.getVisits() != 0){
 				double amafVisits = moveAmafStats.getVisits();
@@ -58,7 +73,7 @@ public class GRAVEEvaluator extends UCTEvaluator{
 			return uctExploitation;
 		}
 
-		double beta = this.betaComputer.computeBeta(theMoveStats, moveAmafStats, nodeVisits);
+		double beta = this.betaComputer.computeBeta(theMoveStats, moveAmafStats, nodeVisits, roleIndex);
 
 		//System.out.println("uct = " + uctExploitation);
 		//System.out.println("amaf = " + amafExploitation);
@@ -90,12 +105,12 @@ public class GRAVEEvaluator extends UCTEvaluator{
 
 	}
 
-	public void setCloserAmafStats(Map<Move, MoveStats> closerAmafStats){
-		this.closerAmafStats = closerAmafStats;
+	public void setClosestAmafStats(int roleIndex, Map<Move, MoveStats> closestAmafStats){
+		this.closestAmafStats.set(roleIndex, closestAmafStats);
 	}
 
-	public Map<Move, MoveStats> getCloserAmafStats(){
-		return this.closerAmafStats;
+	public List<Map<Move, MoveStats>> getClosestAmafStats(){
+		return this.closestAmafStats;
 	}
 
 	@Override

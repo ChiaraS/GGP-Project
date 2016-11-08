@@ -23,13 +23,13 @@ public class GRAVEUpdate {
 			int[] goals = simulationResult.getTerminalGoals();
 
 			if(goals == null){
-				GamerLogger.logError("MCTSManager", "Found null terminal goals in the simulation result when updating the AMAF statistics. Probably a wrong combination of strategies has been set!");
+				GamerLogger.logError("MCTSManager", "Found null terminal goals in the simulation result when updating the AMAF statistics.");
 				throw new RuntimeException("Null terminal goals in the simulation result.");
 			}
 
-			if(allJointMoves == null || allJointMoves.size() == 0){ // This method should be called only if the playout has actually been performed, so there must be at least one joint move
-				GamerLogger.logError("MCTSManager", "Found no joint moves in the simulation result when updating the AMAF statistics. Probably a wrong combination of strategies has been set!");
-				throw new RuntimeException("No joint moves in the simulation result.");
+			if(allJointMoves == null /*|| allJointMoves.size() == 0*/){
+				GamerLogger.logError("MCTSManager", "Found null joint moves in the simulation result when updating the AMAF statistics.");
+				throw new RuntimeException("Null joint moves in the simulation result.");
 			}
 
 			Map<Move, MoveStats> amafStats = ((AMAFNode)currentNode).getAmafStats();

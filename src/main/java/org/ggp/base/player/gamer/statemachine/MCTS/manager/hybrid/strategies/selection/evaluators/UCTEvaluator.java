@@ -77,17 +77,17 @@ public class UCTEvaluator implements MoveEvaluator, OnlineTunableComponent{
 	@Override
 	public String getEvaluatorParameters() {
 
-		String constants = "[ ";
+		String roleParams = "[ ";
 
 		for(int i = 0; i <this.c.length; i++){
 
-			constants += this.c[i] + " ";
+			roleParams += this.c[i] + " ";
 
 		}
 
-		constants += "]";
+		roleParams += "]";
 
-		return "C_CONSTANTS = " + constants + ", DEFAULT_VALUE = " + this.defaultValue;
+		return "C_CONSTANTS = " + roleParams + ", DEFAULT_VALUE = " + this.defaultValue;
 	}
 
 	@Override

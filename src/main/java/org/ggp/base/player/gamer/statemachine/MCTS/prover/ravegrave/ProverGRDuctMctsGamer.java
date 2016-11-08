@@ -2,8 +2,9 @@ package org.ggp.base.player.gamer.statemachine.MCTS.prover.ravegrave;
 
 import java.util.Random;
 
-import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.strategies.selection.evaluators.grave.BetaComputer;
-import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.strategies.selection.evaluators.grave.CADIABetaComputer;
+import org.ggp.base.player.gamer.statemachine.MCTS.manager.propnet.strategies.selection.evaluators.GRAVE.PnProverBetaComputer;
+import org.ggp.base.player.gamer.statemachine.MCTS.manager.propnet.strategies.selection.evaluators.GRAVE.PnProverCADIABetaComputer;
+import org.ggp.base.player.gamer.statemachine.MCTS.manager.propnet.strategies.selection.evaluators.GRAVE.PnProverGRAVEBetaComputer;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.prover.ProverMCTSManager;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.prover.strategies.aftersimulation.ProverGRAVEAfterSimulation;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.prover.strategies.backpropagation.ProverGRAVEBackpropagation;
@@ -20,7 +21,20 @@ public class ProverGRDuctMctsGamer extends ProverDuctMctsGamer {
 
 	protected int minAMAFVisits;
 
-	protected BetaComputer betaComputer;
+	/**
+	 * True if the player must use the CADIABetaComputer, false if it must use the GRAVEBetaComputer
+	 */
+	protected boolean cadiaBetaComputer;
+
+	/**
+	 * Value for k to use when the player uses the CADIABetaComputer.
+	 */
+	protected int k;
+
+	/**
+	 * Value for bias to use when the player uses the GRAVEBetaComputer.
+	 */
+	protected double bias;
 
 	protected double defaultExploration;
 
@@ -34,7 +48,10 @@ public class ProverGRDuctMctsGamer extends ProverDuctMctsGamer {
 		this.logTranspositionTable = true;
 
 		this.minAMAFVisits = 0;
-		this.betaComputer = new CADIABetaComputer(250);
+
+		this.cadiaBetaComputer = true;
+		this.k = 250;
+
 		this.defaultExploration = 1.0;
 
 	}
@@ -49,7 +66,15 @@ public class ProverGRDuctMctsGamer extends ProverDuctMctsGamer {
 
 		int myRoleIndex = this.getStateMachine().getRoleIndices().get(this.getRole());
 
-		ProverGRAVESelection graveSelection = new ProverGRAVESelection(numRoles, myRole, r, this.valueOffset, this.minAMAFVisits, new ProverGRAVEEvaluator(this.c, this.unexploredMoveDefaultSelectionValue, this.betaComputer, this.defaultExploration));
+		PnProverBetaComputer pnProverBetaComputer;
+
+		if(this.cadiaBetaComputer){
+			pnProverBetaComputer = new PnProverCADIABetaComputer(this.k);
+		}else{
+			pnProverBetaComputer = new PnProverGRAVEBetaComputer(this.bias);
+		}
+
+		ProverGRAVESelection graveSelection = new ProverGRAVESelection(numRoles, myRole, r, this.valueOffset, this.minAMAFVisits, new ProverGRAVEEvaluator(this.c, this.unexploredMoveDefaultSelectionValue, pnProverBetaComputer, this.defaultExploration));
 
 		return new ProverMCTSManager(graveSelection, new ProverNoExpansion() /*new RandomExpansion(numRoles, myRole, r)*/,
 				new ProverGRAVEPlayout(this.getStateMachine()), new ProverGRAVEBackpropagation(numRoles, myRole),

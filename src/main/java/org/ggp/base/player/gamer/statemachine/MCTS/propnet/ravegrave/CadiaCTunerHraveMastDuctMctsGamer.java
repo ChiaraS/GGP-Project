@@ -1,9 +1,9 @@
 package org.ggp.base.player.gamer.statemachine.MCTS.propnet.ravegrave;
 
 
-public class CadiaCTunerHraveDuctMctsGamer extends CadiaCTunerRaveDuctMctsGamer {
+public class CadiaCTunerHraveMastDuctMctsGamer extends CadiaCTunerRaveMastDuctMctsGamer {
 
-	public CadiaCTunerHraveDuctMctsGamer() {
+	public CadiaCTunerHraveMastDuctMctsGamer() {
 		super();
 
 		this.cadiaBetaComputer = true;
