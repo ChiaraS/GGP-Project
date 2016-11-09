@@ -1,4 +1,4 @@
-package org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.strategies.playout.jointmoveselector;
+package org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.strategies.playout.singlemoveselector;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -12,7 +12,7 @@ import org.ggp.base.util.statemachine.exceptions.StateMachineException;
 import org.ggp.base.util.statemachine.structure.MachineState;
 import org.ggp.base.util.statemachine.structure.Move;
 
-public class MASTJointMoveSelector implements JointMoveSelector {
+public class MASTSingleMoveSelector implements SingleMoveSelector {
 
 	private AbstractStateMachine theMachine;
 
@@ -20,32 +20,29 @@ public class MASTJointMoveSelector implements JointMoveSelector {
 
 	private Map<Move, MoveStats> mastStatistics;
 
-	public MASTJointMoveSelector(AbstractStateMachine theMachine, Random random, Map<Move, MoveStats> mastStatistics) {
+	public MASTSingleMoveSelector(AbstractStateMachine theMachine, Random random, Map<Move, MoveStats> mastStatistics) {
 		this.theMachine = theMachine;
 		this.random = random;
 		this.mastStatistics = mastStatistics;
 	}
 
+
+
 	/**
-	 * This method returns a joint move according to the MAST strategy.
-	 * For each role it gets the list of all its legal moves in the state and picks the one with highest MAST expected score.
-	 * @throws StateMachineException
+	 * This method returns a move according to the MAST strategy.
+	 * For the given role it gets the list of all its legal moves in the state
+	 * and picks the one with highest MAST expected score.
+	 *
+	 * @throws MoveDefinitionException, StateMachineException
 	 */
 	@Override
-	public List<Move> getJointMove(MachineState state) throws MoveDefinitionException, StateMachineException {
+	public Move getMoveForRole(MachineState state, int roleIndex) throws MoveDefinitionException, StateMachineException {
 
-		List<Move> jointMove = new ArrayList<Move>();
-        List<List<Move>> allLegalMoves;
+		// Get the list of all legal moves for the rle in the state
+        List<Move> legalMovesForRole = this.theMachine.getLegalMoves(state, this.theMachine.getRoles().get(roleIndex));
 
-        // Get a list containing for each player a lists of legal moves.
-    	allLegalMoves = this.theMachine.getAllLegalMovesForAllRoles(state);
-
-    	// For the list of legal moves of each player, pick the one with highest MAST value.
-    	for(List<Move> moves : allLegalMoves){
-    		jointMove.add(this.getMASTMove(moves));
-    	}
-
-		return jointMove;
+    	// Pick the move with highest MAST value.
+		return this.getMASTMove(legalMovesForRole);
 	}
 
 	private Move getMASTMove(List<Move> moves) {
@@ -81,18 +78,18 @@ public class MASTJointMoveSelector implements JointMoveSelector {
 	}
 
 	@Override
-	public String getJointMoveSelectorParameters() {
+	public String getSingleMoveSelectorParameters() {
 		return null;
 	}
 
 	@Override
-	public String printJointMoveSelector() {
-		String params = this.getJointMoveSelectorParameters();
+	public String printSingleMoveSelector() {
+		String params = this.getSingleMoveSelectorParameters();
 
 		if(params != null){
-			return "(JOINT_MOVE_SEL = " + this.getClass().getSimpleName() + ", " + params + ")";
+			return "(SINGLE_MOVE_SEL = " + this.getClass().getSimpleName() + ", " + params + ")";
 		}else{
-			return "(JOINT_MOVE_SEL = " + this.getClass().getSimpleName() + ")";
+			return "(SINGLE_MOVE_SEL = " + this.getClass().getSimpleName() + ")";
 		}
 	}
 

@@ -11,6 +11,7 @@ import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.strategies.bac
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.strategies.expansion.RandomExpansion;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.strategies.movechoice.MaximumScoreChoice;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.strategies.playout.MASTPlayout;
+import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.strategies.playout.jointmoveselector.EpsilonMASTJointMoveSelector;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.strategies.selection.UCTSelection;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.strategies.selection.evaluators.UCTEvaluator;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.propnet.InternalPropnetMCTSManager;
@@ -105,7 +106,7 @@ public class MastDuctMctsGamer extends DuctMctsGamer {
 		Map<Move, MoveStats> mastStatistics = new HashMap<Move, MoveStats>();
 
 		return new HybridMCTSManager(new UCTSelection(numRoles, myRoleIndex, r, this.valueOffset, new UCTEvaluator(this.c, this.unexploredMoveDefaultSelectionValue, numRoles, myRoleIndex)),
-	       		new RandomExpansion(numRoles, myRoleIndex, r), new MASTPlayout(theMachine, r, mastStatistics, this.epsilon),
+	       		new RandomExpansion(numRoles, myRoleIndex, r), new MASTPlayout(theMachine, new EpsilonMASTJointMoveSelector(theMachine, r, mastStatistics, this.epsilon, numRoles, myRoleIndex)),
 	       		new MASTBackpropagation(numRoles, myRoleIndex, mastStatistics),
 	       		new MaximumScoreChoice(myRoleIndex, r), null, null,
 	       		new MASTAfterMove(mastStatistics, this.decayFactor),
