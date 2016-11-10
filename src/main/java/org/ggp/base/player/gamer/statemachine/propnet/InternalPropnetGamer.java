@@ -62,6 +62,32 @@ public abstract class InternalPropnetGamer extends StateMachineGamer {
     	ALWAYS, ONCE, NEVER
     }
 
+    /*------------------------- THE PROPNET STATE MACHINE ---------------------------*/
+
+	/**
+	 * The personal reference to the propnet machine.
+	 */
+	protected InternalPropnetStateMachine thePropnetMachine;
+
+	/*----------------------- SETTINGS FOR THE STATE MACHINE ------------------------*/
+
+	/**
+	 * True if this gamer must directly use the Prover without even trying to build the
+	 * PropNet. If fale the gamer will first try to use the PropNet, and fall back to
+	 * the Prover if the PropNet cannot be built.
+	 */
+	protected boolean useProver;
+
+	/**
+	 * Its value tells how this gamer should deal with the propnet state machine:
+	 * - build a new propnet for every new match
+	 * - build the propnet only once for the first played game and then re-use always the same
+	 *   (assumes the gamer will always play the same game).
+	 * - never build the propnet but always use the one set from outside. NOTE that in this case
+	 *   if no PropNet has been set the gamer will automatically fall back to the Prover
+	 */
+	protected PROPNET_BUILD propnetBuild;
+
 	/**
 	 * The player must complete metagaming with by the time [timeout - safetyMargin(ms)]
 	 * to increase the certainty of answering to the Game Manager in time.
@@ -69,33 +95,11 @@ public abstract class InternalPropnetGamer extends StateMachineGamer {
 	protected long buildPnSafetyMargin;
 
 	/**
-	 * The player must complete the executions of methods with a timeout by the time
-	 * [timeout - safetyMargin(ms)] to increase the certainty of answering to the Game
-	 * Manager in time.
-	 */
-	protected long selectMoveSafetyMargin;
-
-	/**
-	 * The personal reference to the propnet machine.
-	 */
-	protected InternalPropnetStateMachine thePropnetMachine;
-
-	/**
-	 * Its value tells how this gamer should deal with the propnet state machine:
-	 * - build a new propnet for every new match
-	 * - build the propnet only once for the first played game and then re-use always the same
-	 *   (assumes the gamer will always play the same game).
-	 * - never build the propnet but always use the one given as input to the constructor.
-	 */
-	protected PROPNET_BUILD propnetBuild;
-
-	/**
 	 * True if this gamer never tried to build a propnet before.
 	 * It is used when the gamer is assumed to play always the same game and returns the
 	 * initial state machine. If this gamer has no state machine it might be because it is
-	 * the first time the player is being used
-	 * or because it already tried to build a state machine based on the propnet and failed,
-	 * so we should avoid trying again.
+	 * the first time the player is being used or because it already tried to build a state
+	 * machine based on the propnet and failed, so we should avoid trying again.
 	 */
 	private boolean firstTry;
 
@@ -109,19 +113,28 @@ public abstract class InternalPropnetGamer extends StateMachineGamer {
 	 */
 	protected boolean pnCache;
 
+	/*---------------------- SETTINGS FOR THE GAMER -------------------------*/
+
+	/**
+	 * The player must complete the executions of methods with a timeout by the time
+	 * [timeout - safetyMargin(ms)] to increase the certainty of answering to the Game
+	 * Manager in time.
+	 */
+	protected long selectMoveSafetyMargin;
+
 	/**
 	 *
 	 */
 	public InternalPropnetGamer() {
 		// TODO: change code so that the parameters can be set from outside.
-		this.buildPnSafetyMargin = 5000L;
-		this.selectMoveSafetyMargin = 10000L;
 		this.thePropnetMachine = null;
+		this.useProver = false;
 		this.propnetBuild = PROPNET_BUILD.ALWAYS;
+		this.buildPnSafetyMargin = 5000L;
 		this.firstTry = true;
 		this.proverCache = true;
 		this.pnCache = false;
-
+		this.selectMoveSafetyMargin = 10000L;
 	}
 
 	/**
@@ -163,50 +176,57 @@ public abstract class InternalPropnetGamer extends StateMachineGamer {
 
 		GamerLogger.log("Gamer", "Returning initial state machine.");
 
-		switch(this.propnetBuild){
-		case ALWAYS: // Create a new state machine for every game:
-			GamerLogger.log("Gamer", "Standard gamer (not single-game).");
-			GamerLogger.log("Gamer", "Creating state machine for the game.");
+		if(this.useProver){
+			// We don't need a PropNet if we always use the Prover
+			this.thePropnetMachine = null;
+			// This should be already true, but to be sure we set it to null so the code after
+			// the if-else will return the Prover (with or without cache as specified).
+		}else{
+			switch(this.propnetBuild){
+			case ALWAYS: // Create a new state machine for every game:
+				GamerLogger.log("Gamer", "Standard gamer (not single-game).");
+				GamerLogger.log("Gamer", "Creating state machine for the game.");
 
-			this.thePropnetMachine = this.createStateMachine();
-			//return this.createStateMachine();
-			break;
-		case ONCE: // Build once, then re-use:
+				this.thePropnetMachine = this.createStateMachine();
+				//return this.createStateMachine();
+				break;
+			case ONCE: // Build once, then re-use:
 
-			GamerLogger.log("Gamer", "Single-game gamer.");
+				GamerLogger.log("Gamer", "Single-game gamer.");
 
-			// If the propnet machine already exists, return it.
-			if(this.thePropnetMachine != null){
+				// If the propnet machine already exists, return it.
+				if(this.thePropnetMachine != null){
 
-				GamerLogger.log("Gamer", "Propnet state machine already created for the game. Returning same state machine.");
-				//System.out.println("Returning SAME propnet state machine.");
+					GamerLogger.log("Gamer", "Propnet state machine already created for the game. Returning same state machine.");
+					//System.out.println("Returning SAME propnet state machine.");
 
-				//return this.thePropnetMachine;
-			}else{
-
-				// Otherwise, if it doesn't exist because we never tried to build a propnet,
-				// create it and return it.
-				if(this.firstTry){
-
-					this.firstTry = false;
-
-					GamerLogger.log("Gamer", "First try to create the propnet state machine.");
-
-					this.thePropnetMachine = this.createStateMachine();
-					//return this.createStateMachine();
-
+					//return this.thePropnetMachine;
 				}else{
 
-					GamerLogger.log("Gamer", "Already tried to build propnet and failed. Returning prover state machine.");
-					//System.out.println("Already FAILED with propnet, not gonna try again: returning prover state machine.");
+					// Otherwise, if it doesn't exist because we never tried to build a propnet,
+					// create it and return it.
+					if(this.firstTry){
 
-					//return new CachedStateMachine(new ProverStateMachine());
+						this.firstTry = false;
+
+						GamerLogger.log("Gamer", "First try to create the propnet state machine.");
+
+						this.thePropnetMachine = this.createStateMachine();
+						//return this.createStateMachine();
+
+					}else{
+
+						GamerLogger.log("Gamer", "Already tried to build propnet and failed. Returning prover state machine.");
+						//System.out.println("Already FAILED with propnet, not gonna try again: returning prover state machine.");
+
+						//return new CachedStateMachine(new ProverStateMachine());
+					}
 				}
+				break;
+			case NEVER:
+				//return this.thePropnetMachine;
+				break;
 			}
-			break;
-		case NEVER:
-			//return this.thePropnetMachine;
-			break;
 		}
 
 		if(this.thePropnetMachine != null){

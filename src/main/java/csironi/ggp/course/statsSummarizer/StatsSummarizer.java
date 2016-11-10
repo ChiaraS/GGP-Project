@@ -1027,7 +1027,7 @@ public class StatsSummarizer {
             	try {
 					if(!stepErrors.getString(k).equals("")){
 						System.out.println("Found an error for a player in the match corresponding to the JSON file.");
-						//!!!!!!!return null;
+						return null;
 					}
 				} catch (JSONException e) {
 					System.out.println("Information (\"errors\" array of single step) improperly formatted in the JSON file.");

@@ -86,6 +86,32 @@ public class HybridMCTSManager extends MCTSManager {
 	private MCTSTranspositionTable transpositionTable;
 
 	/**
+	 * Number of simulations per search that this MCTS manager can perform.
+	 * NOTE that if this number is set to a positive number then the manager
+	 * will ignore any time limit and always perform the exact number of
+	 * simulations specified by this parameter.
+	 */
+	private int numExpectedIterations;
+
+	/**
+	 *
+	 */
+	public HybridMCTSManager(SelectionStrategy selectionStrategy,
+			ExpansionStrategy expansionStrategy, PlayoutStrategy playoutStrategy,
+			BackpropagationStrategy backpropagationStrategy, MoveChoiceStrategy moveChoiceStrategy,
+			BeforeSimulationStrategy beforeSimulationStrategy, AfterSimulationStrategy afterSimulationStrategy,
+			AfterMoveStrategy afterMoveStrategy, TreeNodeFactory theNodesFactory,
+			AbstractStateMachine theMachine, int gameStepOffset, int maxSearchDepth,
+			boolean logTranspositionTable) {
+
+		this(selectionStrategy, expansionStrategy, playoutStrategy, backpropagationStrategy,
+				moveChoiceStrategy, beforeSimulationStrategy, afterSimulationStrategy,
+				afterMoveStrategy, theNodesFactory, theMachine, gameStepOffset, maxSearchDepth,
+				logTranspositionTable, -1);
+
+	}
+
+	/**
 	 *
 	 */
 	public HybridMCTSManager(SelectionStrategy selectionStrategy,
@@ -94,7 +120,7 @@ public class HybridMCTSManager extends MCTSManager {
 			BeforeSimulationStrategy beforeSimulationStrategy, AfterSimulationStrategy afterSimulationStrategy,
 			AfterMoveStrategy afterMoveStrategy,TreeNodeFactory theNodesFactory,
 			AbstractStateMachine theMachine, int gameStepOffset, int maxSearchDepth,
-			boolean logTranspositionTable) {
+			boolean logTranspositionTable, int numExpectedIterations) {
 
 		this.selectionStrategy = selectionStrategy;
 		this.expansionStrategy = expansionStrategy;
@@ -114,6 +140,8 @@ public class HybridMCTSManager extends MCTSManager {
 
 		this.transpositionTable = new MCTSTranspositionTable(gameStepOffset, logTranspositionTable);
 
+		this.numExpectedIterations = numExpectedIterations;
+
 		this.maxSearchDepth = maxSearchDepth;
 		this.iterations = 0;
 		this.visitedNodes = 0;
@@ -131,7 +159,7 @@ public class HybridMCTSManager extends MCTSManager {
 
 		toLog += "\nMCTS manager initialized with the following state machine: " + this.theMachine.getName();
 
-		toLog += "\nMCTS manager initialized with the following parameters: [maxSearchDepth = " + this.maxSearchDepth + ", logTranspositionTable = " + logTranspositionTable + "]";
+		toLog += "\nMCTS manager initialized with the following parameters: [maxSearchDepth = " + this.maxSearchDepth + ", logTranspositionTable = " + logTranspositionTable + ", numExpectedIterations = " + numExpectedIterations + "]";
 
 		toLog += "\nMCTS manager initialized with the following tree node factory: " + this.theNodesFactory.getClass().getSimpleName() + ".";
 
@@ -305,7 +333,7 @@ public class HybridMCTSManager extends MCTSManager {
 	 */
 	private void performSearch(MachineState initialState, MCTSNode initialNode, long timeout){
 		this.searchStart = System.currentTimeMillis();
-		while(System.currentTimeMillis() < timeout){
+		while(! this.timeToStopSearch(timeout)){
 			this.currentIterationVisitedNodes = 0;
 
 			//System.out.println();
@@ -573,6 +601,23 @@ public class HybridMCTSManager extends MCTSManager {
 
 		this.backpropagationStrategy.update(currentNode, currentState, mctsJointMove, simulationResult);
 		return simulationResult;
+	}
+
+	/**
+	 * Method that checks when it's time to stop the search.
+	 */
+	private boolean timeToStopSearch(long timeout){
+
+		if(this.numExpectedIterations > 0){
+
+			return this.iterations == this.numExpectedIterations;
+
+		}else{
+
+			return System.currentTimeMillis() >= timeout;
+
+		}
+
 	}
 
 	/**

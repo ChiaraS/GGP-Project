@@ -31,7 +31,7 @@ public class TDUCTEvaluator extends UCTEvaluator {
 				TDDecoupledMCTSNode theTDNode = (TDDecoupledMCTSNode)theNode;
 
 				double minValue = theTDNode.getMinStateActionValueForRole(roleIndex);
-				double maxValue = theTDNode.getMinStateActionValueForRole(roleIndex);
+				double maxValue = theTDNode.getMaxStateActionValueForRole(roleIndex);
 
 				// The only case when minValue > maxValue is if both values are not set yet
 				// (thus have the default values of +Double.MAX_VALUE and -infinity respectively).
@@ -63,7 +63,7 @@ public class TDUCTEvaluator extends UCTEvaluator {
 
 	@Override
 	public String getEvaluatorParameters() {
-		return super.getEvaluatorParameters() + "DEFAUL_GLOBAL_MIN_VALUE = " + this.globalExtremeValues.getDefaultGlobalMinValue() + ", DEFAUL_GLOBAL_MAX_VALUE = " + this.globalExtremeValues.getDefaultGlobalMaxValue();
+		return super.getEvaluatorParameters() + ", DEFAUL_GLOBAL_MIN_VALUE = " + this.globalExtremeValues.getDefaultGlobalMinValue() + ", DEFAUL_GLOBAL_MAX_VALUE = " + this.globalExtremeValues.getDefaultGlobalMaxValue();
 	}
 
 }

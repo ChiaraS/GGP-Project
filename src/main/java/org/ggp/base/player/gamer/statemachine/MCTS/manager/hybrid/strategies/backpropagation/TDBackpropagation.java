@@ -79,12 +79,21 @@ public abstract class TDBackpropagation implements BackpropagationStrategy {
 
 		int[] returnValuesForRoles = this.getReturnValuesForRolesInPlayout(simulationResult); // Here the index is useless so we set it to 0
 
+		/*
+		System.out.print("R = [ ");
+		for(int i = 0; i < returnValuesForRoles.length; i++){
+			System.out.print(returnValuesForRoles[i] + " ");
+		}
+		System.out.println("]");
+		*/
+
 		double qCurrent;
 		double delta;
 		double alpha;
 
 		double newScore;
 
+		//System.out.print("S = [ ");
 		for(int i = 0; i < this.numRoles; i++){
 
 			currentMoveStat = moves[i][movesIndices[i]];
@@ -110,6 +119,8 @@ public abstract class TDBackpropagation implements BackpropagationStrategy {
 				//newScore = 0.0;
 			}
 			*/
+
+			//System.out.print(newScore + " ");
 
 			currentMoveStat.setScoreSum(newScore*((double)currentMoveStat.getVisits())); // Note that the statistics memorize the total sum of move values, thus we must multiply the new expected value by the number of visits of the move.
 
@@ -137,6 +148,8 @@ public abstract class TDBackpropagation implements BackpropagationStrategy {
 
 			this.qNext[i] = qCurrent;
 		}
+
+		//System.out.println("]");
 
 	}
 

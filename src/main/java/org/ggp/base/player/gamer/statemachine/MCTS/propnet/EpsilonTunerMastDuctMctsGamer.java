@@ -50,11 +50,11 @@ public class EpsilonTunerMastDuctMctsGamer extends MastDuctMctsGamer {
 
 		this.tuneAllRoles = false;
 
-		this.evoC = 0.7;
+		this.evoC = 0.3;
 
 		this.evoValueOffset = 0.01;
 
-		this.individualsValues = new double[9];
+		this.individualsValues = new double[11];
 
 		this.individualsValues[0] = 0.0;
 		this.individualsValues[1] = 0.1;
