@@ -2,12 +2,12 @@ package org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.strategies.ba
 
 import java.util.List;
 
+import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.GameDependentParameters;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.strategies.selection.evaluators.td.GlobalExtremeValues;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.hybrid.SequDecMCTSJointMove;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.hybrid.SimulationResult;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.hybrid.tddecoupled.TDDecoupledMCTSNode;
 import org.ggp.base.util.logging.GamerLogger;
-import org.ggp.base.util.statemachine.abstractsm.AbstractStateMachine;
 import org.ggp.base.util.statemachine.structure.MachineState;
 
 public class IntermediateTDBackpropagation extends TDBackpropagation {
@@ -18,9 +18,9 @@ public class IntermediateTDBackpropagation extends TDBackpropagation {
 	 */
 	protected int goalsIndex;
 
-	public IntermediateTDBackpropagation(AbstractStateMachine theMachine, int numRoles, GlobalExtremeValues globalExtremeValues, double qPlayout,
+	public IntermediateTDBackpropagation(GameDependentParameters gameDependentParameters, GlobalExtremeValues globalExtremeValues, double qPlayout,
 			double lambda, double gamma) {
-		super(theMachine, numRoles, globalExtremeValues, qPlayout, lambda, gamma);
+		super(gameDependentParameters, globalExtremeValues, qPlayout, lambda, gamma);
 
 		this.goalsIndex = 0;
 
@@ -29,7 +29,7 @@ public class IntermediateTDBackpropagation extends TDBackpropagation {
 	@Override
 	protected void decUpdate(TDDecoupledMCTSNode currentNode, MachineState currentState, SequDecMCTSJointMove jointMove, SimulationResult simulationResult){
 
-		simulationResult.addGoals(this.theMachine.getSafeGoalsAvgForAllRoles(currentState));
+		simulationResult.addGoals(this.gameDependentParameters.getTheMachine().getSafeGoalsAvgForAllRoles(currentState));
 
 		super.decUpdate(currentNode, currentState, jointMove, simulationResult);
 
@@ -46,11 +46,11 @@ public class IntermediateTDBackpropagation extends TDBackpropagation {
 			throw new RuntimeException("Necessary intermediate goals not found in the simulation result.");
 		}
 
-		int[] intermediateReturnValues = new int[this.numRoles];
+		int[] intermediateReturnValues = new int[this.gameDependentParameters.getNumRoles()];
 		int[] nextStateGoals = allIntermediateGoals.get(this.goalsIndex);
 		int[] currentStateGoals = allIntermediateGoals.get(this.goalsIndex+1);
 
-		for(int i = 0; i < this.numRoles; i++){
+		for(int i = 0; i < this.gameDependentParameters.getNumRoles(); i++){
 
 			intermediateReturnValues[i] = nextStateGoals[i] - currentStateGoals[i];
 

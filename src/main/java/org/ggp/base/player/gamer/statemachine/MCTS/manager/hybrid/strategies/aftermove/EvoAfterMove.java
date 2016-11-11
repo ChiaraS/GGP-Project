@@ -1,12 +1,15 @@
 package org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.strategies.aftermove;
 
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.evolution.SingleParameterEvolutionManager;
+import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.GameDependentParameters;
 
-public class EvoAfterMove implements AfterMoveStrategy {
+public class EvoAfterMove extends AfterMoveStrategy {
 
 	private SingleParameterEvolutionManager evolutionManager;
 
-	public EvoAfterMove(SingleParameterEvolutionManager evolutionManager) {
+	public EvoAfterMove(GameDependentParameters gameDependentParameters, SingleParameterEvolutionManager evolutionManager) {
+
+		super(gameDependentParameters);
 
 		this.evolutionManager = evolutionManager;
 	}

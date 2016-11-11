@@ -2,10 +2,11 @@ package org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.strategies.se
 
 import org.ggp.base.player.gamer.statemachine.MCS.manager.MoveStats;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.evolution.OnlineTunableComponent;
+import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.GameDependentParameters;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.MCTSNode;
 import org.ggp.base.util.statemachine.structure.Move;
 
-public class UCTEvaluator implements MoveEvaluator, OnlineTunableComponent{
+public class UCTEvaluator extends MoveEvaluator implements OnlineTunableComponent{
 
 	/**
 	 * This is an array so that it can memorize a different value for C for each role in the game.
@@ -13,24 +14,33 @@ public class UCTEvaluator implements MoveEvaluator, OnlineTunableComponent{
 	 */
 	protected double[] c;
 
+	protected double initialC;
+
 	/**
 	 * Default value to assign to an unexplored move.
 	 */
 	protected double defaultValue;
 
-	protected int myRoleIndex;
+	public UCTEvaluator(GameDependentParameters gameDependentParameters, double initialC, double defaultValue){
 
-	public UCTEvaluator(double initialC, double defaultValue, int numRoles, int myRoleIndex) {
-		this.c = new double[numRoles];
+		super(gameDependentParameters);
 
-		for(int i = 0; i < numRoles; i++){
-			this.c[i] = initialC;
-		}
-
+		this.c = null;
+		this.initialC = initialC;
 		this.defaultValue = defaultValue;
 
-		this.myRoleIndex = myRoleIndex;
+	}
 
+	public void clearComponent(){
+		this.c = null;
+	}
+
+	public void resetComponent(){
+		this.c = new double[this.gameDependentParameters.getNumRoles()];
+
+		for(int i = 0; i < this.gameDependentParameters.getNumRoles(); i++){
+			this.c[i] = initialC;
+		}
 	}
 
 	@Override
@@ -106,9 +116,9 @@ public class UCTEvaluator implements MoveEvaluator, OnlineTunableComponent{
 
 		// We are tuning only the constant of myRole
 		if(newValues.length == 1){
-			this.c[this.myRoleIndex] = newValues[0];
+			this.c[this.gameDependentParameters.getMyRoleIndex()] = newValues[0];
 
-			//System.out.println("C = " + this.c[this.myRoleIndex]);
+			//System.out.println("C = " + this.c[this.gameDependentParameters.getMyRoleIndex()]);
 
 		}else{ // We are tuning all constants
 			for(int i = 0; i <this.c.length; i++){

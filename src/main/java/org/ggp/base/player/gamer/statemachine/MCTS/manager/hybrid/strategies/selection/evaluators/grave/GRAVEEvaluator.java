@@ -5,6 +5,7 @@ import java.util.List;
 import java.util.Map;
 
 import org.ggp.base.player.gamer.statemachine.MCS.manager.MoveStats;
+import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.GameDependentParameters;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.strategies.selection.evaluators.UCTEvaluator;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.MCTSNode;
 import org.ggp.base.util.statemachine.structure.Move;
@@ -26,17 +27,28 @@ public class GRAVEEvaluator extends UCTEvaluator{
 
 	private double defaultExploration;
 
-	public GRAVEEvaluator(double c, double defaultValue, BetaComputer betaComputer, double defaultExploration, int numRoles, int myRoleIndex) {
-		super(c, defaultValue, numRoles, myRoleIndex);
+	public GRAVEEvaluator(GameDependentParameters gameDependentParameters, double c, double defaultValue, BetaComputer betaComputer, double defaultExploration) {
+		super(gameDependentParameters, c, defaultValue);
 		this.betaComputer = betaComputer;
 
-		this.closestAmafStats = new ArrayList<Map<Move, MoveStats>>(numRoles);
+		this.closestAmafStats = null;
+
+		this.defaultExploration = defaultExploration;
+	}
+
+	@Override
+	public void clearComponent(){
+		this.closestAmafStats = null;
+	}
+
+	public void setUpComponent(){
+
+		this.closestAmafStats = new ArrayList<Map<Move, MoveStats>>(this.gameDependentParameters.getNumRoles());
 		// Initialize to null the closest AMAF stats for each role
-		for(int i = 0; i < numRoles; i++){
+		for(int i = 0; i < this.gameDependentParameters.getNumRoles(); i++){
 			this.closestAmafStats.add(null);
 		}
 
-		this.defaultExploration = defaultExploration;
 	}
 
 	@Override

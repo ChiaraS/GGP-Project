@@ -1,6 +1,7 @@
 package org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.strategies.selection.evaluators.grave;
 
 import org.ggp.base.player.gamer.statemachine.MCS.manager.MoveStats;
+import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.GameDependentParameters;
 
 public class CADIABetaComputer extends BetaComputer{
 
@@ -11,16 +12,28 @@ public class CADIABetaComputer extends BetaComputer{
 	 */
 	private int[] k;
 
-	public CADIABetaComputer(int initialK, int numRoles, int myRoleIndex) {
+	private int initialK;
 
-		super(myRoleIndex);
+	public CADIABetaComputer(GameDependentParameters gameDependentParameters, int initialK) {
 
-		this.k = new int[numRoles];
+		super(gameDependentParameters);
 
-		for(int i = 0; i < numRoles; i++){
-			this.k[i] = initialK;
+		this.k = null;
+
+		this.initialK = initialK;
+
+	}
+
+	public void clearComponent(){
+		this.k = null;
+	}
+
+	public void setUpComponent(){
+		this.k = new int[this.gameDependentParameters.getNumRoles()];
+
+		for(int i = 0; i < this.gameDependentParameters.getNumRoles(); i++){
+			this.k[i] = this.initialK;
 		}
-
 	}
 
 	@Override
@@ -56,9 +69,9 @@ public class CADIABetaComputer extends BetaComputer{
 		if(newValues.length == 1){
 
 			// TODO: fix this not-so-nice casting
-			this.k[this.myRoleIndex] = (int) newValues[0];
+			this.k[this.gameDependentParameters.getMyRoleIndex()] = (int) newValues[0];
 
-			//System.out.println("C = " + this.c[this.myRoleIndex]);
+			//System.out.println("C = " + this.c[this.gameDependentParameters.getMyRoleIndex()]);
 
 		}else{ // We are tuning all constants
 			for(int i = 0; i <this.k.length; i++){

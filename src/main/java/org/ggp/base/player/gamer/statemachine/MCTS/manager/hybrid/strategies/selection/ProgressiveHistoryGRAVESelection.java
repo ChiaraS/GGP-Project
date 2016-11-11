@@ -2,6 +2,7 @@ package org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.strategies.se
 
 import java.util.Random;
 
+import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.GameDependentParameters;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.strategies.selection.evaluators.grave.ProgressiveHistoryGRAVEEvaluator;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.MCTSNode;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.hybrid.MCTSJointMove;
@@ -9,9 +10,9 @@ import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.hybrid.
 
 public class ProgressiveHistoryGRAVESelection extends GRAVESelection {
 
-	public ProgressiveHistoryGRAVESelection(int numRoles, int myRoleIndex, Random random, double valueOffset,
+	public ProgressiveHistoryGRAVESelection(GameDependentParameters gameDependentParameters, Random random, double valueOffset,
 			int minAMAFVisits, ProgressiveHistoryGRAVEEvaluator moveEvaluator) {
-		super(numRoles, myRoleIndex, random, valueOffset, minAMAFVisits, moveEvaluator);
+		super(gameDependentParameters, random, valueOffset, minAMAFVisits, moveEvaluator);
 
 	}
 

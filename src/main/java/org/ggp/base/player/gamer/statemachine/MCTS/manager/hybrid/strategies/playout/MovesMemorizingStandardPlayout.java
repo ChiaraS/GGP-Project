@@ -4,10 +4,10 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
+import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.GameDependentParameters;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.strategies.playout.jointmoveselector.JointMoveSelector;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.hybrid.SimulationResult;
 import org.ggp.base.util.logging.GamerLogger;
-import org.ggp.base.util.statemachine.abstractsm.AbstractStateMachine;
 import org.ggp.base.util.statemachine.exceptions.MoveDefinitionException;
 import org.ggp.base.util.statemachine.exceptions.StateMachineException;
 import org.ggp.base.util.statemachine.exceptions.TransitionDefinitionException;
@@ -16,9 +16,10 @@ import org.ggp.base.util.statemachine.structure.Move;
 
 public class MovesMemorizingStandardPlayout extends StandardPlayout{
 
-	public MovesMemorizingStandardPlayout(AbstractStateMachine theMachine,
+	public MovesMemorizingStandardPlayout(GameDependentParameters gameDependentParameters,
 			JointMoveSelector jointMoveSelector) {
-		super(theMachine, jointMoveSelector);
+
+		super(gameDependentParameters, jointMoveSelector);
 
 	}
 
@@ -32,7 +33,7 @@ public class MovesMemorizingStandardPlayout extends StandardPlayout{
         boolean terminal = true;
 
         try {
-			terminal = this.theMachine.isTerminal(state);
+			terminal = this.gameDependentParameters.getTheMachine().isTerminal(state);
 		} catch (StateMachineException e) {
 			GamerLogger.logError("MCTSManager", "Exception computing state terminality while performing a playout.");
 			GamerLogger.logStackTrace("MCTSManager", e);
@@ -43,7 +44,7 @@ public class MovesMemorizingStandardPlayout extends StandardPlayout{
 
 			GamerLogger.logError("MCTSManager", "Playout strategy shouldn't be called on a terminal node. The MCTSManager must take care of computing the simulation result in this case.");
 
-			return new SimulationResult(0, this.theMachine.getSafeGoalsAvgForAllRoles(state));
+			return new SimulationResult(0, this.gameDependentParameters.getTheMachine().getSafeGoalsAvgForAllRoles(state));
 
 		}
 
@@ -64,7 +65,7 @@ public class MovesMemorizingStandardPlayout extends StandardPlayout{
 				break;
 			}
 			try {
-				state = this.theMachine.getNextState(state, jointMove);
+				state = this.gameDependentParameters.getTheMachine().getNextState(state, jointMove);
 			} catch (TransitionDefinitionException | StateMachineException e) {
 				GamerLogger.logError("MCTSManager", "Exception getting the next state while performing a playout.");
 				GamerLogger.logStackTrace("MCTSManager", e);
@@ -76,7 +77,7 @@ public class MovesMemorizingStandardPlayout extends StandardPlayout{
 			nDepth++;
 
             try {
-				terminal = this.theMachine.isTerminal(state);
+				terminal = this.gameDependentParameters.getTheMachine().isTerminal(state);
 			} catch (StateMachineException e) {
 				GamerLogger.logError("MCTSManager", "Exception computing state terminality while performing a playout.");
 				GamerLogger.logStackTrace("MCTSManager", e);
@@ -88,7 +89,7 @@ public class MovesMemorizingStandardPlayout extends StandardPlayout{
 
         Collections.reverse(allJointMoves);
 
-        return new SimulationResult(nDepth, this.theMachine.getSafeGoalsAvgForAllRoles(state), allJointMoves);
+        return new SimulationResult(nDepth, this.gameDependentParameters.getTheMachine().getSafeGoalsAvgForAllRoles(state), allJointMoves);
 
 	}
 

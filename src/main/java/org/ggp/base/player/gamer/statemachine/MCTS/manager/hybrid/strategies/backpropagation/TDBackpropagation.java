@@ -1,5 +1,6 @@
 package org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.strategies.backpropagation;
 
+import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.GameDependentParameters;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.strategies.selection.evaluators.td.GlobalExtremeValues;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.MCTSNode;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.hybrid.MCTSJointMove;
@@ -8,14 +9,9 @@ import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.hybrid.
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.hybrid.decoupled.DecoupledMCTSMoveStats;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.hybrid.tddecoupled.TDDecoupledMCTSNode;
 import org.ggp.base.util.logging.GamerLogger;
-import org.ggp.base.util.statemachine.abstractsm.AbstractStateMachine;
 import org.ggp.base.util.statemachine.structure.MachineState;
 
-public abstract class TDBackpropagation implements BackpropagationStrategy {
-
-	protected AbstractStateMachine theMachine;
-
-	protected int numRoles;
+public abstract class TDBackpropagation extends BackpropagationStrategy {
 
 	protected GlobalExtremeValues globalExtremeValues;
 
@@ -39,20 +35,32 @@ public abstract class TDBackpropagation implements BackpropagationStrategy {
 	protected double[] qNext;
 
 
-	public TDBackpropagation(AbstractStateMachine theMachine, int numRoles, GlobalExtremeValues globalExtremeValues, double qPlayout, double lambda, double gamma) {
+	public TDBackpropagation(GameDependentParameters gameDependentParameters, GlobalExtremeValues globalExtremeValues, double qPlayout, double lambda, double gamma) {
 
-		this.theMachine = theMachine;
-		this.numRoles = numRoles;
+		super(gameDependentParameters);
+
 		this.globalExtremeValues = globalExtremeValues;
 
 		this.qPlayout = qPlayout;
 		this.lambda = lambda;
 		this.gamma = gamma;
 
-		this.deltaSum = new double[numRoles];
-		this.qNext = new double[numRoles];
+		this.deltaSum = null;
+		this.qNext = null;
 
 		this.resetSimulationParameters();
+
+	}
+
+	public void clearStrategy(){
+		this.deltaSum = null;
+		this.qNext = null;
+	}
+
+	public void resetStrategy(){
+
+		this.deltaSum = new double[this.gameDependentParameters.getNumRoles()];
+		this.qNext = new double[this.gameDependentParameters.getNumRoles()];
 
 	}
 
@@ -94,7 +102,7 @@ public abstract class TDBackpropagation implements BackpropagationStrategy {
 		double newScore;
 
 		//System.out.print("S = [ ");
-		for(int i = 0; i < this.numRoles; i++){
+		for(int i = 0; i < this.gameDependentParameters.getNumRoles(); i++){
 
 			currentMoveStat = moves[i][movesIndices[i]];
 
@@ -173,7 +181,7 @@ public abstract class TDBackpropagation implements BackpropagationStrategy {
 
 			returnValuesForRoles = this.getReturnValuesForRolesInPlayout(simulationResult);
 
-			for(int j = 0; j < this.numRoles; j++){
+			for(int j = 0; j < this.gameDependentParameters.getNumRoles(); j++){
 
 				delta = ((double)returnValuesForRoles[j]) + this.gamma * this.qNext[j] - this.qPlayout;
 

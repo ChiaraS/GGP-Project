@@ -6,22 +6,22 @@ import java.util.Map;
 import java.util.Random;
 
 import org.ggp.base.player.gamer.statemachine.MCS.manager.MoveStats;
-import org.ggp.base.util.statemachine.abstractsm.AbstractStateMachine;
+import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.GameDependentParameters;
 import org.ggp.base.util.statemachine.exceptions.MoveDefinitionException;
 import org.ggp.base.util.statemachine.exceptions.StateMachineException;
 import org.ggp.base.util.statemachine.structure.MachineState;
 import org.ggp.base.util.statemachine.structure.Move;
 
-public class MASTJointMoveSelector implements JointMoveSelector {
-
-	private AbstractStateMachine theMachine;
+public class MASTJointMoveSelector extends JointMoveSelector {
 
 	private Random random;
 
 	private Map<Move, MoveStats> mastStatistics;
 
-	public MASTJointMoveSelector(AbstractStateMachine theMachine, Random random, Map<Move, MoveStats> mastStatistics) {
-		this.theMachine = theMachine;
+	public MASTJointMoveSelector(GameDependentParameters gameDependentParameters, Random random, Map<Move, MoveStats> mastStatistics){
+
+		super(gameDependentParameters);
+
 		this.random = random;
 		this.mastStatistics = mastStatistics;
 	}
@@ -38,7 +38,7 @@ public class MASTJointMoveSelector implements JointMoveSelector {
         List<List<Move>> allLegalMoves;
 
         // Get a list containing for each player a lists of legal moves.
-    	allLegalMoves = this.theMachine.getAllLegalMovesForAllRoles(state);
+    	allLegalMoves = this.gameDependentParameters.getTheMachine().getAllLegalMovesForAllRoles(state);
 
     	// For the list of legal moves of each player, pick the one with highest MAST value.
     	for(List<Move> moves : allLegalMoves){

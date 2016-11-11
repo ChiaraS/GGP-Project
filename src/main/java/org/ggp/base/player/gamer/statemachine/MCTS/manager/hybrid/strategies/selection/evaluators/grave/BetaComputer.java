@@ -2,13 +2,13 @@ package org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.strategies.se
 
 import org.ggp.base.player.gamer.statemachine.MCS.manager.MoveStats;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.evolution.OnlineTunableComponent;
+import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.GameDependentParameters;
+import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.SearchManagerComponent;
 
-public abstract class BetaComputer implements OnlineTunableComponent {
+public abstract class BetaComputer extends SearchManagerComponent implements OnlineTunableComponent {
 
-	protected int myRoleIndex;
-
-	public BetaComputer(int myRoleIndex){
-		this.myRoleIndex = myRoleIndex;
+	public BetaComputer(GameDependentParameters gameDependentParameters){
+		super(gameDependentParameters);
 	}
 
 	/**

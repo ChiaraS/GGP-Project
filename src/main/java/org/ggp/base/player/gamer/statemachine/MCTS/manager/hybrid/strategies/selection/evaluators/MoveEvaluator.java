@@ -1,10 +1,16 @@
 package org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.strategies.selection.evaluators;
 
 import org.ggp.base.player.gamer.statemachine.MCS.manager.MoveStats;
+import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.GameDependentParameters;
+import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.SearchManagerComponent;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.MCTSNode;
 import org.ggp.base.util.statemachine.structure.Move;
 
-public interface MoveEvaluator {
+public abstract class MoveEvaluator extends SearchManagerComponent{
+
+	public MoveEvaluator(GameDependentParameters gameDependentParameters) {
+		super(gameDependentParameters);
+	}
 
 	/**
 	 * Computes the value of the move that will be used by the selection strategy to choose the best move.
@@ -17,11 +23,11 @@ public interface MoveEvaluator {
 	 * @param theMoveStats the statistics collected during search for the move we want to evaluate.
 	 * @return the value of the move.
 	 */
-	public double computeMoveValue(MCTSNode theNode, Move theMove, int roleIndex, MoveStats theMoveStats);
+	public abstract double computeMoveValue(MCTSNode theNode, Move theMove, int roleIndex, MoveStats theMoveStats);
 
-	public String getEvaluatorParameters();
+	public abstract String getEvaluatorParameters();
 
-	public String printEvaluator();
+	public abstract String printEvaluator();
 
 
 }

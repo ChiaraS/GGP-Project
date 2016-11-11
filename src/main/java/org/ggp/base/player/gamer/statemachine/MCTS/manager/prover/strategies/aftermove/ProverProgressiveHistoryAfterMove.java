@@ -1,9 +1,9 @@
 package org.ggp.base.player.gamer.statemachine.MCTS.manager.prover.strategies.aftermove;
 
-import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.strategies.aftermove.AfterMoveStrategy;
+import org.ggp.base.player.gamer.statemachine.MCTS.manager.propnet.strategies.aftermove.PnAfterMoveStrategy;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.prover.strategies.selection.ProverProgressiveHistoryGRAVESelection;
 
-public class ProverProgressiveHistoryAfterMove implements AfterMoveStrategy {
+public class ProverProgressiveHistoryAfterMove implements PnAfterMoveStrategy {
 
 	private ProverProgressiveHistoryGRAVESelection phSelection;
 

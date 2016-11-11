@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
 
+import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.GameDependentParameters;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.MCTSNode;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.hybrid.MCTSJointMove;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.hybrid.SequDecMCTSJointMove;
@@ -13,25 +14,14 @@ import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.hybrid.
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.hybrid.sequential.SequentialMCTSNode;
 import org.ggp.base.util.statemachine.structure.Move;
 
-public class RandomExpansion implements ExpansionStrategy {
-
-	/**
-	 * The total number of roles in the game.
-	 * Needed by the sequential version of MCTS.
-	 */
-	private int numRoles;
-
-	/**
-	 * The index in the default list of roles of the role that is actually performing the search.
-	 * Needed by the sequential version of MCTS.
-	 */
-	private int myRoleIndex;
+public class RandomExpansion extends ExpansionStrategy {
 
 	private Random random;
 
-	public RandomExpansion(int numRoles, int myRoleIndex, Random random){
-		this.numRoles = numRoles;
-		this.myRoleIndex = myRoleIndex;
+	public RandomExpansion(GameDependentParameters gameDependentParameters, Random random){
+
+		super(gameDependentParameters);
+
 		this.random = random;
 	}
 
@@ -160,11 +150,11 @@ public class RandomExpansion implements ExpansionStrategy {
 	 */
 	private MCTSJointMove seqExpand(SequentialMCTSNode node){
 
-		List<Move> jointMove = new ArrayList<Move>(this.numRoles);
-		int[] movesIndices = new int[this.numRoles];
+		List<Move> jointMove = new ArrayList<Move>(this.gameDependentParameters.getNumRoles());
+		int[] movesIndices = new int[this.gameDependentParameters.getNumRoles()];
 
 		// Initialize ArrayList with numRoles null elements.
-		for(int i = 0; i < this.numRoles; i++){
+		for(int i = 0; i < this.gameDependentParameters.getNumRoles(); i++){
 			jointMove.add(null);
 		}
 
@@ -194,7 +184,7 @@ public class RandomExpansion implements ExpansionStrategy {
 		int selLeafMove = this.random.nextInt(node.getUnvisitedLeaves());
 
 		// Get the index of myRole.
-		int roleIndex = this.myRoleIndex;
+		int roleIndex = this.gameDependentParameters.getMyRoleIndex();
 
 		// Get the moves stats for myRole.
 		SequentialMCTSMoveStats[] movesStats = node.getMovesStats();
@@ -214,7 +204,7 @@ public class RandomExpansion implements ExpansionStrategy {
 				}
 			}
 
-			roleIndex = (roleIndex + 1)%this.numRoles;
+			roleIndex = (roleIndex + 1)%this.gameDependentParameters.getNumRoles();
 		}
 
 		return new SequDecMCTSJointMove(jointMove, movesIndices);

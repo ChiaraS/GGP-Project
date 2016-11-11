@@ -5,15 +5,19 @@ import java.util.Map;
 import java.util.Map.Entry;
 
 import org.ggp.base.player.gamer.statemachine.MCS.manager.MoveStats;
+import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.GameDependentParameters;
 import org.ggp.base.util.statemachine.structure.Move;
 
-public class MASTAfterMove implements AfterMoveStrategy {
+public class MASTAfterMove extends AfterMoveStrategy {
 
 	private Map<Move, MoveStats> mastStatistics;
 
 	private double decayFactor;
 
-	public MASTAfterMove(Map<Move, MoveStats> mastStatistics, double decayFactor) {
+	public MASTAfterMove(GameDependentParameters gameDependentParameters, Map<Move, MoveStats> mastStatistics, double decayFactor) {
+
+		super(gameDependentParameters);
+
 		this.mastStatistics = mastStatistics;
 		this.decayFactor = decayFactor;
 	}

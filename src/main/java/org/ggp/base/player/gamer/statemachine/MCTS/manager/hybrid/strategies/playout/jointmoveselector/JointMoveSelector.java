@@ -2,18 +2,24 @@ package org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.strategies.pl
 
 import java.util.List;
 
+import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.GameDependentParameters;
+import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.SearchManagerComponent;
 import org.ggp.base.util.statemachine.exceptions.MoveDefinitionException;
 import org.ggp.base.util.statemachine.exceptions.StateMachineException;
 import org.ggp.base.util.statemachine.structure.MachineState;
 import org.ggp.base.util.statemachine.structure.Move;
 
-public interface JointMoveSelector {
+public abstract class JointMoveSelector extends SearchManagerComponent{
 
-	public List<Move> getJointMove(MachineState state) throws MoveDefinitionException, StateMachineException;
+	public JointMoveSelector(GameDependentParameters gameDependentParameters){
+		super(gameDependentParameters);
+	}
 
-	public String getJointMoveSelectorParameters();
+	public abstract List<Move> getJointMove(MachineState state) throws MoveDefinitionException, StateMachineException;
 
-	public String printJointMoveSelector();
+	public abstract String getJointMoveSelectorParameters();
+
+	public abstract String printJointMoveSelector();
 
 
 }

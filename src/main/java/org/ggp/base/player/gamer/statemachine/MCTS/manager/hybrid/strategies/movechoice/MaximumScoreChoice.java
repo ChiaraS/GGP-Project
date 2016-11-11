@@ -6,23 +6,20 @@ import java.util.Random;
 
 import org.ggp.base.player.gamer.statemachine.MCS.manager.MoveStats;
 import org.ggp.base.player.gamer.statemachine.MCS.manager.hybrid.CompleteMoveStats;
+import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.GameDependentParameters;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.MCTSNode;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.hybrid.decoupled.DecoupledMCTSMoveStats;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.hybrid.decoupled.DecoupledMCTSNode;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.hybrid.sequential.SequentialMCTSMoveStats;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.hybrid.sequential.SequentialMCTSNode;
 
-public class MaximumScoreChoice implements MoveChoiceStrategy {
-
-	/**
-	 * The index in the default list of roles of the role that is actually performing the search and for which the best move will be computed.
-	 */
-	private int myRoleIndex;
+public class MaximumScoreChoice extends MoveChoiceStrategy {
 
 	private Random random;
 
-	public MaximumScoreChoice(int myRoleIndex, Random random){
-		this.myRoleIndex =  myRoleIndex;
+	public MaximumScoreChoice(GameDependentParameters gameDependentParameters, Random random){
+
+		super(gameDependentParameters);
 		this.random = random;
 	}
 
@@ -36,7 +33,7 @@ public class MaximumScoreChoice implements MoveChoiceStrategy {
 		MoveStats[] myMovesStats;
 
 		if(initialNode instanceof DecoupledMCTSNode){
-			myMovesStats = ((DecoupledMCTSNode)initialNode).getMoves()[this.myRoleIndex];
+			myMovesStats = ((DecoupledMCTSNode)initialNode).getMoves()[this.gameDependentParameters.getMyRoleIndex()];
 		}else if(initialNode instanceof SequentialMCTSNode){
 			myMovesStats = ((SequentialMCTSNode)initialNode).getMovesStats();
 		}/*else if(initialNode instanceof SlowSeqentialMCTSNode){
@@ -123,7 +120,7 @@ public class MaximumScoreChoice implements MoveChoiceStrategy {
 		if(toReturn instanceof DecoupledMCTSMoveStats){
 			return (DecoupledMCTSMoveStats)toReturn;
 		}else if(toReturn instanceof SequentialMCTSMoveStats){
-			return new CompleteMoveStats(toReturn.getVisits(), toReturn.getScoreSum(), ((SequentialMCTSNode)initialNode).getAllLegalMoves().get(this.myRoleIndex).get(bestMoveIndex));
+			return new CompleteMoveStats(toReturn.getVisits(), toReturn.getScoreSum(), ((SequentialMCTSNode)initialNode).getAllLegalMoves().get(this.gameDependentParameters.getMyRoleIndex()).get(bestMoveIndex));
 		}/*else if(toReturn instanceof SlowSequentialMCTSMoveStats){
 			return (SlowSequentialMCTSMoveStats)toReturn;
 		}*/else{

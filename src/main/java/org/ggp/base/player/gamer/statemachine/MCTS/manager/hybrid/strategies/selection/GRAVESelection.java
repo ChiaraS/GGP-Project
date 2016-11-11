@@ -3,6 +3,7 @@ package org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.strategies.se
 import java.util.Random;
 
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.evolution.OnlineTunableComponent;
+import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.GameDependentParameters;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.strategies.selection.evaluators.grave.GRAVEEvaluator;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.MCTSNode;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.hybrid.MCTSJointMove;
@@ -15,15 +16,31 @@ public class GRAVESelection extends MoveValueSelection implements OnlineTunableC
 	 */
 	private int[] minAMAFVisits;
 
-	public GRAVESelection(int numRoles, int myRoleIndex, Random random,	double valueOffset,
+	private int initialMinAMAFVisits;
+
+	public GRAVESelection(GameDependentParameters gameDependentParameters, Random random, double valueOffset,
 			int initialMinAMAFVisits, GRAVEEvaluator moveEvaluator) {
 
-		super(numRoles, myRoleIndex, random, valueOffset, moveEvaluator);
+		super(gameDependentParameters, random, valueOffset, moveEvaluator);
 
-		this.minAMAFVisits = new int[numRoles];
+		this.minAMAFVisits = null;
 
-		for(int i = 0; i < numRoles; i++){
-			this.minAMAFVisits[i] = initialMinAMAFVisits;
+		this.initialMinAMAFVisits = initialMinAMAFVisits;
+
+	}
+
+	public void clearStrategy(){
+
+		this.minAMAFVisits = null;
+
+	}
+
+	public void resetStrategy(){
+
+		this.minAMAFVisits = new int[this.gameDependentParameters.getNumRoles()];
+
+		for(int i = 0; i < this.gameDependentParameters.getNumRoles(); i++){
+			this.minAMAFVisits[i] = this.initialMinAMAFVisits;
 		}
 
 	}
@@ -101,9 +118,9 @@ public class GRAVESelection extends MoveValueSelection implements OnlineTunableC
 
 		// We are tuning only the value of myRole
 		if(newValues.length == 1){
-			this.minAMAFVisits[this.myRoleIndex] = (int) newValues[0];
+			this.minAMAFVisits[this.gameDependentParameters.getMyRoleIndex()] = (int) newValues[0];
 
-			//System.out.println("C = " + this.c[this.myRoleIndex]);
+			//System.out.println("C = " + this.c[this.gameDependentParameters.getMyRoleIndex()]);
 
 		}else{ // We are tuning all constants
 			for(int i = 0; i <this.minAMAFVisits.length; i++){

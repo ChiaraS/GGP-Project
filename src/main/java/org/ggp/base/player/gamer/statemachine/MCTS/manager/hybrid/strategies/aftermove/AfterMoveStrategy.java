@@ -1,9 +1,14 @@
 package org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.strategies.aftermove;
 
+import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.GameDependentParameters;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.strategies.Strategy;
 
-public interface AfterMoveStrategy extends Strategy {
+public abstract class AfterMoveStrategy extends Strategy {
 
-	public void afterMoveActions();
+	public AfterMoveStrategy(GameDependentParameters gameDependentParameters) {
+		super(gameDependentParameters);
+	}
+
+	public abstract void afterMoveActions();
 
 }

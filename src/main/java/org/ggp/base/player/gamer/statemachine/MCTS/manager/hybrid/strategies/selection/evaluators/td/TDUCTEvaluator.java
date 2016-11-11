@@ -1,6 +1,7 @@
 package org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.strategies.selection.evaluators.td;
 
 import org.ggp.base.player.gamer.statemachine.MCS.manager.MoveStats;
+import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.GameDependentParameters;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.strategies.selection.evaluators.UCTEvaluator;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.MCTSNode;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.hybrid.tddecoupled.TDDecoupledMCTSNode;
@@ -10,8 +11,8 @@ public class TDUCTEvaluator extends UCTEvaluator {
 
 	private GlobalExtremeValues globalExtremeValues;
 
-	public TDUCTEvaluator(double c, double defaultValue, GlobalExtremeValues globalExtremeValues, int numRoles, int myRoleIndex) {
-		super(c, defaultValue, numRoles, myRoleIndex);
+	public TDUCTEvaluator(GameDependentParameters gameDependentParameters, double c, double defaultValue, GlobalExtremeValues globalExtremeValues) {
+		super(gameDependentParameters, c, defaultValue);
 
 		this.globalExtremeValues = globalExtremeValues;
 	}

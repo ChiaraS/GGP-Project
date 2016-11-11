@@ -1,5 +1,6 @@
 package org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.strategies.expansion;
 
+import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.GameDependentParameters;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.MCTSNode;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.hybrid.MCTSJointMove;
 
@@ -16,9 +17,12 @@ import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.hybrid.
  * @author C.Sironi
  *
  */
-public class NoExpansion implements ExpansionStrategy {
+public class NoExpansion extends ExpansionStrategy {
 
-	public NoExpansion() {
+
+
+	public NoExpansion(GameDependentParameters gameDependentParameters) {
+		super(gameDependentParameters);
 	}
 
 	@Override

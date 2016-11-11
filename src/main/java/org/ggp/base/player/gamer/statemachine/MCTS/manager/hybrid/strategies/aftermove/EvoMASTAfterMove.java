@@ -1,13 +1,17 @@
 package org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.strategies.aftermove;
 
+import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.GameDependentParameters;
 
-public class EvoMASTAfterMove implements AfterMoveStrategy {
+
+public class EvoMASTAfterMove extends AfterMoveStrategy {
 
 	private MASTAfterMove mastAfterMove;
 
 	private EvoAfterMove evoAfterMove;
 
-	public EvoMASTAfterMove(MASTAfterMove mastAfterMove, EvoAfterMove evoAfterMove){
+	public EvoMASTAfterMove(GameDependentParameters gameDependentParameters, MASTAfterMove mastAfterMove, EvoAfterMove evoAfterMove){
+
+		super(gameDependentParameters);
 
 		this.mastAfterMove = mastAfterMove;
 

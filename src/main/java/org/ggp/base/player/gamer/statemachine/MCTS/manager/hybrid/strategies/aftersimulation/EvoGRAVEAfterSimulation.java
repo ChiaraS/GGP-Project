@@ -1,14 +1,17 @@
 package org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.strategies.aftersimulation;
 
+import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.GameDependentParameters;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.hybrid.SimulationResult;
 
-public class EvoGRAVEAfterSimulation implements AfterSimulationStrategy {
+public class EvoGRAVEAfterSimulation extends AfterSimulationStrategy {
 
 	private GRAVEAfterSimulation graveAfterSimulation;
 
 	private EvoAfterSimulation evoAfterSimulation;
 
-	public EvoGRAVEAfterSimulation(GRAVEAfterSimulation graveAfterSimulation, EvoAfterSimulation evoAfterSimulation) {
+	public EvoGRAVEAfterSimulation(GameDependentParameters gameDependentParameters, GRAVEAfterSimulation graveAfterSimulation, EvoAfterSimulation evoAfterSimulation) {
+
+		super(gameDependentParameters);
 
 		this.graveAfterSimulation = graveAfterSimulation;
 

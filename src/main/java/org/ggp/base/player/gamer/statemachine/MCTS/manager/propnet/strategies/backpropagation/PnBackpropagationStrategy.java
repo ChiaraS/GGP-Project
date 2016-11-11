@@ -1,12 +1,12 @@
 package org.ggp.base.player.gamer.statemachine.MCTS.manager.propnet.strategies.backpropagation;
 
-import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.strategies.Strategy;
+import org.ggp.base.player.gamer.statemachine.MCTS.manager.propnet.strategies.PnStrategy;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.MCTSNode;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.propnet.PnMCTSJointMove;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.propnet.PnSimulationResult;
 import org.ggp.base.util.statemachine.structure.compact.CompactMachineState;
 
-public interface PnBackpropagationStrategy extends Strategy {
+public interface PnBackpropagationStrategy extends PnStrategy {
 
 	/**
 	 * Method that updates the given node in the tree with the result of the simulation.

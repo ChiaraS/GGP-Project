@@ -3,6 +3,7 @@ package org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.strategies.se
 import java.util.Map;
 
 import org.ggp.base.player.gamer.statemachine.MCS.manager.MoveStats;
+import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.GameDependentParameters;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.strategies.selection.evaluators.UCTEvaluator;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.MCTSNode;
 import org.ggp.base.util.statemachine.structure.Move;
@@ -27,11 +28,10 @@ public class InvGRAVEEvaluator extends UCTEvaluator{
 
 	private BetaComputer betaComputer;
 
-	public InvGRAVEEvaluator(double c, double defaultValue, BetaComputer betaComputer, int numRoles, int myRoleIndex) {
-		super(c, defaultValue, numRoles, myRoleIndex);
+	public InvGRAVEEvaluator(GameDependentParameters gameDependentParameters, double c, double defaultValue, BetaComputer betaComputer) {
+		super(gameDependentParameters, c, defaultValue);
 		this.betaComputer = betaComputer;
 		this.amafStats = null;
-		//this.bias = bias;
 	}
 
 	public void setAmafStats(Map<Move, MoveStats> amafStats){

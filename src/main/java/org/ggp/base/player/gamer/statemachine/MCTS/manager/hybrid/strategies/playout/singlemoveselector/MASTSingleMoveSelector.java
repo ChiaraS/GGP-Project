@@ -6,22 +6,22 @@ import java.util.Map;
 import java.util.Random;
 
 import org.ggp.base.player.gamer.statemachine.MCS.manager.MoveStats;
-import org.ggp.base.util.statemachine.abstractsm.AbstractStateMachine;
+import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.GameDependentParameters;
 import org.ggp.base.util.statemachine.exceptions.MoveDefinitionException;
 import org.ggp.base.util.statemachine.exceptions.StateMachineException;
 import org.ggp.base.util.statemachine.structure.MachineState;
 import org.ggp.base.util.statemachine.structure.Move;
 
-public class MASTSingleMoveSelector implements SingleMoveSelector {
-
-	private AbstractStateMachine theMachine;
+public class MASTSingleMoveSelector extends SingleMoveSelector {
 
 	private Random random;
 
 	private Map<Move, MoveStats> mastStatistics;
 
-	public MASTSingleMoveSelector(AbstractStateMachine theMachine, Random random, Map<Move, MoveStats> mastStatistics) {
-		this.theMachine = theMachine;
+	public MASTSingleMoveSelector(GameDependentParameters gameDependentParameters, Random random, Map<Move, MoveStats> mastStatistics) {
+
+		super(gameDependentParameters);
+
 		this.random = random;
 		this.mastStatistics = mastStatistics;
 	}
@@ -39,7 +39,7 @@ public class MASTSingleMoveSelector implements SingleMoveSelector {
 	public Move getMoveForRole(MachineState state, int roleIndex) throws MoveDefinitionException, StateMachineException {
 
 		// Get the list of all legal moves for the rle in the state
-        List<Move> legalMovesForRole = this.theMachine.getLegalMoves(state, this.theMachine.getRoles().get(roleIndex));
+        List<Move> legalMovesForRole = this.gameDependentParameters.getTheMachine().getLegalMoves(state, this.gameDependentParameters.getTheMachine().getRoles().get(roleIndex));
 
     	// Pick the move with highest MAST value.
 		return this.getMASTMove(legalMovesForRole);

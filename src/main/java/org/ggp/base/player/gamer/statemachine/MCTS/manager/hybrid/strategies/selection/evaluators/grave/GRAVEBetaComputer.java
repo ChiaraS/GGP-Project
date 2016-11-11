@@ -1,18 +1,32 @@
 package org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.strategies.selection.evaluators.grave;
 
 import org.ggp.base.player.gamer.statemachine.MCS.manager.MoveStats;
+import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.GameDependentParameters;
 
 public class GRAVEBetaComputer extends BetaComputer {
 
 	private double[] bias;
 
-	public GRAVEBetaComputer(double initialBias, int numRoles, int myRoleIndex) {
+	private double initialBias;
 
-		super(myRoleIndex);
+	public GRAVEBetaComputer(GameDependentParameters gameDependentParameters, double initialBias) {
 
-		this.bias = new double[numRoles];
+		super(gameDependentParameters);
 
-		for(int i = 0; i < numRoles; i++){
+		this.bias = null;
+		this.initialBias = initialBias;
+
+	}
+
+	public void clearComponent(){
+		this.bias = null;
+	}
+
+	public void setUpComponent(){
+
+		this.bias = new double[this.gameDependentParameters.getNumRoles()];
+
+		for(int i = 0; i < this.gameDependentParameters.getNumRoles(); i++){
 			this.bias[i] = initialBias;
 		}
 
@@ -56,9 +70,9 @@ public class GRAVEBetaComputer extends BetaComputer {
 		if(newValues.length == 1){
 
 			// TODO: fix this not-so-nice casting
-			this.bias[this.myRoleIndex] = newValues[0];
+			this.bias[this.gameDependentParameters.getMyRoleIndex()] = newValues[0];
 
-			//System.out.println("C = " + this.c[this.myRoleIndex]);
+			//System.out.println("C = " + this.c[this.gameDependentParameters.getMyRoleIndex()]);
 
 		}else{ // We are tuning all constants
 			for(int i = 0; i <this.bias.length; i++){

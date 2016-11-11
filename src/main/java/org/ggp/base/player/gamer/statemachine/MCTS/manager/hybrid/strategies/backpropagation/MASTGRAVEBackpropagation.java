@@ -3,13 +3,14 @@ package org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.strategies.ba
 import java.util.Map;
 
 import org.ggp.base.player.gamer.statemachine.MCS.manager.MoveStats;
+import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.GameDependentParameters;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.MCTSNode;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.hybrid.MCTSJointMove;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.hybrid.SimulationResult;
 import org.ggp.base.util.statemachine.structure.MachineState;
 import org.ggp.base.util.statemachine.structure.Move;
 
-public class MASTGRAVEBackpropagation implements BackpropagationStrategy {
+public class MASTGRAVEBackpropagation extends BackpropagationStrategy {
 
 	private StandardBackpropagation stdBackpropagation;
 
@@ -17,8 +18,11 @@ public class MASTGRAVEBackpropagation implements BackpropagationStrategy {
 
 	private GRAVEUpdate graveUpdate;
 
-	public MASTGRAVEBackpropagation(int numRoles, int myRoleIndex,  Map<Move, MoveStats> mastStatistics) {
-		this.stdBackpropagation = new StandardBackpropagation(numRoles, myRoleIndex);
+	public MASTGRAVEBackpropagation(GameDependentParameters gameDependentParameters,  Map<Move, MoveStats> mastStatistics) {
+
+		super(gameDependentParameters);
+
+		this.stdBackpropagation = new StandardBackpropagation(gameDependentParameters);
 		this.mastUpdate = new MASTUpdate(mastStatistics);
 		this.graveUpdate = new GRAVEUpdate();
 	}

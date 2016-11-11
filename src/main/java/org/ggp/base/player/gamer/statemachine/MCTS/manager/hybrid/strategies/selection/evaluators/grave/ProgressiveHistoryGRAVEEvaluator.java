@@ -3,6 +3,7 @@ package org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.strategies.se
 import java.util.Map;
 
 import org.ggp.base.player.gamer.statemachine.MCS.manager.MoveStats;
+import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.GameDependentParameters;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.MCTSNode;
 import org.ggp.base.util.statemachine.structure.Move;
 
@@ -20,9 +21,9 @@ public class ProgressiveHistoryGRAVEEvaluator extends GRAVEEvaluator {
 	 */
 	private double w;
 
-	public ProgressiveHistoryGRAVEEvaluator(double c, double defaultValue,
-			BetaComputer betaComputer, double defaultExploration, double w, int numRoles, int myRoleIndex) {
-		super(c, defaultValue, betaComputer, defaultExploration, numRoles, myRoleIndex);
+	public ProgressiveHistoryGRAVEEvaluator(GameDependentParameters gameDependentParameters, double c, double defaultValue,
+			BetaComputer betaComputer, double defaultExploration, double w) {
+		super(gameDependentParameters, c, defaultValue, betaComputer, defaultExploration);
 
 		this.currentRootAmafStats = null; // Before ever starting any selection we have no reference to any statistic
 

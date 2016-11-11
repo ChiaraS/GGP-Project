@@ -1,13 +1,17 @@
 package org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.strategies.aftermove;
 
+import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.GameDependentParameters;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.strategies.selection.ProgressiveHistoryGRAVESelection;
 
 
-public class ProgressiveHistoryAfterMove implements AfterMoveStrategy {
+public class ProgressiveHistoryAfterMove extends AfterMoveStrategy {
 
 	private ProgressiveHistoryGRAVESelection phSelection;
 
-	public ProgressiveHistoryAfterMove(ProgressiveHistoryGRAVESelection phSelection) {
+	public ProgressiveHistoryAfterMove(GameDependentParameters gameDependentParameters, ProgressiveHistoryGRAVESelection phSelection) {
+
+		super(gameDependentParameters);
+
 		this.phSelection = phSelection;
 	}
 

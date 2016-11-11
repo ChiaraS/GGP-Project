@@ -5,10 +5,9 @@ import java.util.Map;
 import java.util.Map.Entry;
 
 import org.ggp.base.player.gamer.statemachine.MCS.manager.MoveStats;
-import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.strategies.aftermove.AfterMoveStrategy;
 import org.ggp.base.util.statemachine.structure.compact.CompactMove;
 
-public class PnMASTAfterMove implements AfterMoveStrategy {
+public class PnMASTAfterMove implements PnAfterMoveStrategy {
 
 	private Map<CompactMove, MoveStats> mastStatistics;
 

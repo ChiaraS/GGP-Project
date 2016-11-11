@@ -1,22 +1,18 @@
 package org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.strategies.aftersimulation;
 
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.evolution.SingleParameterEvolutionManager;
+import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.GameDependentParameters;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.hybrid.SimulationResult;
 
-public class EvoAfterSimulation implements AfterSimulationStrategy {
+public class EvoAfterSimulation extends AfterSimulationStrategy {
 
 	private SingleParameterEvolutionManager evolutionManager;
 
-	/**
-	 * The index in the default list of roles of the role that is actually performing the search.
-	 */
-	private int myRoleIndex;
+	public EvoAfterSimulation(GameDependentParameters gameDependentParameters, SingleParameterEvolutionManager evolutionManager){
 
-	public EvoAfterSimulation(SingleParameterEvolutionManager evolutionManager, int myRoleIndex){
+		super(gameDependentParameters);
 
 		this.evolutionManager = evolutionManager;
-
-		this.myRoleIndex = myRoleIndex;
 
 	}
 
@@ -30,7 +26,7 @@ public class EvoAfterSimulation implements AfterSimulationStrategy {
 		if(this.evolutionManager.getNumPopulations() == 1){
 
 			goals = new int[1];
-			goals[0] = simulationResult.getTerminalGoals()[this.myRoleIndex];
+			goals[0] = simulationResult.getTerminalGoals()[this.gameDependentParameters.getMyRoleIndex()];
 
 		}else{
 

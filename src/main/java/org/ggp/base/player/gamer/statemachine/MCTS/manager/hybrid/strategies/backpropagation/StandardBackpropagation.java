@@ -1,5 +1,6 @@
 package org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.strategies.backpropagation;
 
+import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.GameDependentParameters;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.MCTSNode;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.hybrid.MCTSJointMove;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.hybrid.SequDecMCTSJointMove;
@@ -10,23 +11,12 @@ import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.hybrid.
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.hybrid.sequential.SequentialMCTSNode;
 import org.ggp.base.util.statemachine.structure.MachineState;
 
-public class StandardBackpropagation implements BackpropagationStrategy {
+public class StandardBackpropagation extends BackpropagationStrategy {
 
-	/**
-	 * The total number of roles in the game.
-	 * Needed by the sequential version of MCTS.
-	 */
-	private int numRoles;
+	public StandardBackpropagation(GameDependentParameters gameDependentParameters){
 
-	/**
-	 * The index in the default list of roles of the role that is actually performing the search.
-	 * Needed by the sequential version of MCTS.
-	 */
-	private int myRoleIndex;
+		super(gameDependentParameters);
 
-	public StandardBackpropagation(int numRoles, int myRoleIndex){
-		this.numRoles = numRoles;
-		this.myRoleIndex = myRoleIndex;
 	}
 
 	/*
@@ -97,14 +87,14 @@ public class StandardBackpropagation implements BackpropagationStrategy {
 
 		currentNode.incrementTotVisits();
 
-		int currentRoleIndex = this.myRoleIndex;
+		int currentRoleIndex = this.gameDependentParameters.getMyRoleIndex();
 
 		SequentialMCTSMoveStats currentStatsToUpdate = currentNode.getMovesStats()[jointMove.getMovesIndices()[currentRoleIndex]];
 
-		while(currentRoleIndex != ((this.myRoleIndex-1+this.numRoles)%this.numRoles)){
+		while(currentRoleIndex != ((this.gameDependentParameters.getMyRoleIndex()-1+this.gameDependentParameters.getNumRoles())%this.gameDependentParameters.getNumRoles())){
 			currentStatsToUpdate.incrementVisits();
 			currentStatsToUpdate.incrementScoreSum(simulationResult.getTerminalGoals()[currentRoleIndex]);
-			currentRoleIndex = (currentRoleIndex+1)%this.numRoles;
+			currentRoleIndex = (currentRoleIndex+1)%this.gameDependentParameters.getNumRoles();
 			currentStatsToUpdate = currentStatsToUpdate.getNextRoleMovesStats()[jointMove.getMovesIndices()[currentRoleIndex]];
 		}
 
@@ -118,13 +108,13 @@ public class StandardBackpropagation implements BackpropagationStrategy {
 		// If it's the first visit for this leaf, it's also the first visit of the joint move and
 		// we must decrement by 1 the unvisitedSubleaves count of all the moves in this joint move.
 		if(currentStatsToUpdate.getUnvisitedSubleaves() == 1){
-			currentRoleIndex = this.myRoleIndex;
+			currentRoleIndex = this.gameDependentParameters.getMyRoleIndex();
 
 			currentStatsToUpdate = currentNode.getMovesStats()[jointMove.getMovesIndices()[currentRoleIndex]];
 
-			while(currentRoleIndex != ((this.myRoleIndex-1+this.numRoles)%this.numRoles)){
+			while(currentRoleIndex != ((this.gameDependentParameters.getMyRoleIndex()-1+this.gameDependentParameters.getNumRoles())%this.gameDependentParameters.getNumRoles())){
 				currentStatsToUpdate.decreaseUnvisitedSubLeaves();
-				currentRoleIndex = (currentRoleIndex+1)%this.numRoles;
+				currentRoleIndex = (currentRoleIndex+1)%this.gameDependentParameters.getNumRoles();
 				currentStatsToUpdate = currentStatsToUpdate.getNextRoleMovesStats()[jointMove.getMovesIndices()[currentRoleIndex]];
 			}
 

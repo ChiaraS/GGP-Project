@@ -1,12 +1,17 @@
 package org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.strategies.backpropagation;
 
+import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.GameDependentParameters;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.strategies.Strategy;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.MCTSNode;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.hybrid.MCTSJointMove;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.hybrid.SimulationResult;
 import org.ggp.base.util.statemachine.structure.MachineState;
 
-public interface BackpropagationStrategy extends Strategy {
+public abstract class BackpropagationStrategy extends Strategy {
+
+	public BackpropagationStrategy(GameDependentParameters gameDependentParameters) {
+		super(gameDependentParameters);
+	}
 
 	/**
 	 * Method that updates the given node in the tree with the result of the simulation.
@@ -16,7 +21,7 @@ public interface BackpropagationStrategy extends Strategy {
 	 * @param nextState the state reached by playing the given joint move.
 	 * @param simulationResult the result obtained by the simulation that passed by this node.
 	 */
-	public void update(MCTSNode currentNode, MachineState currentState, MCTSJointMove jointMove, SimulationResult simulationResult);
+	public abstract void update(MCTSNode currentNode, MachineState currentState, MCTSJointMove jointMove, SimulationResult simulationResult);
 
 	/**
 	 * Method that processes the result of the playout if needed for the chosen selection and playout strategies.
@@ -30,7 +35,7 @@ public interface BackpropagationStrategy extends Strategy {
 	 * @param leafState state corresponding to the leaf node.
 	 * @param simulationResult the result of the playout starting from the terminal state up to the leaf node.
 	 */
-	public void processPlayoutResult(MCTSNode leafNode, MachineState leafState, SimulationResult simulationResult);
+	public abstract void processPlayoutResult(MCTSNode leafNode, MachineState leafState, SimulationResult simulationResult);
 
 
 }

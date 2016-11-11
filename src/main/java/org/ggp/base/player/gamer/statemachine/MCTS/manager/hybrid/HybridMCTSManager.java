@@ -18,7 +18,6 @@ import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.hybrid.
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.hybrid.TreeNodeFactory;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.hybrid.amafdecoupled.AMAFDecoupledTreeNodeFactory;
 import org.ggp.base.util.logging.GamerLogger;
-import org.ggp.base.util.statemachine.abstractsm.AbstractStateMachine;
 import org.ggp.base.util.statemachine.exceptions.StateMachineException;
 import org.ggp.base.util.statemachine.exceptions.TransitionDefinitionException;
 import org.ggp.base.util.statemachine.structure.MachineState;
@@ -75,9 +74,10 @@ public class HybridMCTSManager extends MCTSManager {
 	//private Set<Strategy> strategies = new HashSet<Strategy>();
 
 	/**
-	 * The state machine that this MCTS manager uses to reason on the game
+	 * All the game-dependent parameters needed by the MCTSManager and its strategies.
+	 * Must be reset between games.
 	 */
-	private AbstractStateMachine theMachine;
+	private GameDependentParameters gameDependentParameters;
 
 	/**
 	 * The transposition table (implemented with HashMap that uses the state as key
@@ -96,17 +96,16 @@ public class HybridMCTSManager extends MCTSManager {
 	/**
 	 *
 	 */
-	public HybridMCTSManager(SelectionStrategy selectionStrategy,
+	public HybridMCTSManager(GameDependentParameters gameDependentParameters, SelectionStrategy selectionStrategy,
 			ExpansionStrategy expansionStrategy, PlayoutStrategy playoutStrategy,
 			BackpropagationStrategy backpropagationStrategy, MoveChoiceStrategy moveChoiceStrategy,
 			BeforeSimulationStrategy beforeSimulationStrategy, AfterSimulationStrategy afterSimulationStrategy,
 			AfterMoveStrategy afterMoveStrategy, TreeNodeFactory theNodesFactory,
-			AbstractStateMachine theMachine, int gameStepOffset, int maxSearchDepth,
-			boolean logTranspositionTable) {
+			int gameStepOffset, int maxSearchDepth,	boolean logTranspositionTable) {
 
-		this(selectionStrategy, expansionStrategy, playoutStrategy, backpropagationStrategy,
+		this(gameDependentParameters, selectionStrategy, expansionStrategy, playoutStrategy, backpropagationStrategy,
 				moveChoiceStrategy, beforeSimulationStrategy, afterSimulationStrategy,
-				afterMoveStrategy, theNodesFactory, theMachine, gameStepOffset, maxSearchDepth,
+				afterMoveStrategy, theNodesFactory, gameStepOffset, maxSearchDepth,
 				logTranspositionTable, -1);
 
 	}
@@ -114,13 +113,14 @@ public class HybridMCTSManager extends MCTSManager {
 	/**
 	 *
 	 */
-	public HybridMCTSManager(SelectionStrategy selectionStrategy,
+	public HybridMCTSManager(GameDependentParameters gameDependentParameters, SelectionStrategy selectionStrategy,
 			ExpansionStrategy expansionStrategy, PlayoutStrategy playoutStrategy,
 			BackpropagationStrategy backpropagationStrategy, MoveChoiceStrategy moveChoiceStrategy,
 			BeforeSimulationStrategy beforeSimulationStrategy, AfterSimulationStrategy afterSimulationStrategy,
 			AfterMoveStrategy afterMoveStrategy,TreeNodeFactory theNodesFactory,
-			AbstractStateMachine theMachine, int gameStepOffset, int maxSearchDepth,
-			boolean logTranspositionTable, int numExpectedIterations) {
+			int gameStepOffset, int maxSearchDepth,	boolean logTranspositionTable, int numExpectedIterations) {
+
+		this.gameDependentParameters = gameDependentParameters;
 
 		this.selectionStrategy = selectionStrategy;
 		this.expansionStrategy = expansionStrategy;
@@ -132,7 +132,6 @@ public class HybridMCTSManager extends MCTSManager {
 		this.afterSimulationStrategy = afterSimulationStrategy;
 		this.afterMoveStrategy = afterMoveStrategy;
 		this.theNodesFactory = theNodesFactory;
-		this.theMachine = theMachine;
 
 		if(!(theNodesFactory instanceof AMAFDecoupledTreeNodeFactory)){
 			logTranspositionTable = false;
@@ -157,7 +156,7 @@ public class HybridMCTSManager extends MCTSManager {
 
 		String toLog = "MCTS manager type: " + this.getClass().getSimpleName();
 
-		toLog += "\nMCTS manager initialized with the following state machine: " + this.theMachine.getName();
+		//toLog += "\nMCTS manager initialized with the following state machine: " + this.theMachine.getName();
 
 		toLog += "\nMCTS manager initialized with the following parameters: [maxSearchDepth = " + this.maxSearchDepth + ", logTranspositionTable = " + logTranspositionTable + ", numExpectedIterations = " + numExpectedIterations + "]";
 
@@ -448,7 +447,7 @@ public class HybridMCTSManager extends MCTSManager {
 			*/
 
 
-			return new SimulationResult(this.theMachine.getSafeGoalsAvgForAllRoles(currentState));
+			return new SimulationResult(this.gameDependentParameters.getTheMachine().getSafeGoalsAvgForAllRoles(currentState));
 		}
 
 		this.currentIterationVisitedNodes++;
@@ -503,12 +502,12 @@ public class HybridMCTSManager extends MCTSManager {
 
 		// Get the next state according to the joint move...
 		try {
-			nextState = this.theMachine.getNextState(currentState, mctsJointMove.getJointMove());
+			nextState = this.gameDependentParameters.getTheMachine().getNextState(currentState, mctsJointMove.getJointMove());
 		} catch (TransitionDefinitionException | StateMachineException e) {
 			GamerLogger.logError("MCTSManager", "Cannot compute next state. Stopping iteration and returning safe goals.");
 
 			this.currentIterationVisitedNodes--;
-			return new SimulationResult(this.theMachine.getSafeGoalsAvgForAllRoles(currentState));
+			return new SimulationResult(this.gameDependentParameters.getTheMachine().getSafeGoalsAvgForAllRoles(currentState));
 		}
 
 		// ...and get the corresponding MCT node from the transposition table.
@@ -565,7 +564,7 @@ public class HybridMCTSManager extends MCTSManager {
 
 				if(availableDepth == 0){
 
-					simulationResult = new SimulationResult(this.theMachine.getSafeGoalsAvgForAllRoles(nextState));
+					simulationResult = new SimulationResult(this.gameDependentParameters.getTheMachine().getSafeGoalsAvgForAllRoles(nextState));
 
 				}else{
 

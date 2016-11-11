@@ -26,6 +26,16 @@ public class SingleParameterEvolutionManager {
 	private double valueOffset;
 
 	/**
+	 * If true the manager will re-scale the individuals'fintness between 0 and 1 with respect
+	 * to the maximum and the minimum fitness of the currently considered individuals.
+	 * If false the values will be rescaled using [0, 100] as extremes, like normally.
+	 *
+	 * NOTE: normalization should help stretching the values more, thus making more evident the difference
+	 * between them and steering the manager towards using even more often the best values.
+	 */
+	private boolean useNormalization;
+
+	/**
 	 *  For each population, number of times any of the individuals in the population had its fitness updated.
 	 *
 	 *  Note that since for every simulation each population has one individual updated we could only keep a
@@ -39,54 +49,36 @@ public class SingleParameterEvolutionManager {
 	private Individual[][] populations;
 
 	// For each population, the index in the corresponding array of individuals of the currently selected individual.
-	private int[] currentSelectedIndividual;
+	private int[] currentSelectedIndividuals;
 
-	/**
-	 * If true the manager will re-scale the individuals'fintness between 0 and 1 with respect
-	 * to the maximum and the minimum fitness of the currently considered individuals.
-	 * If false the values will be rescaled using [0, 100] as extremes, like normally.
-	 *
-	 * NOTE: normalization should help stretching the values more, thus making more evident the difference
-	 * between them and steering the manager towards using even more often the best values.
-	 */
-	private boolean useNormalization;
-
-	public SingleParameterEvolutionManager(Random random, double explorationConstant, double valueOffset, Individual[][] populations, boolean useNormalization) {
+	public SingleParameterEvolutionManager(Random random, double explorationConstant, double valueOffset, boolean useNormalization) {
 
 		this.random = random;
-
 		this.explorationConstant = explorationConstant;
-
 		this.valueOffset = valueOffset;
+		this.useNormalization = useNormalization;
 
-		//this.numUpdates = 0;
+		this.populations = null;
+		this.numUpdates = null;
+		this.currentSelectedIndividuals = null;
 
+	}
+
+	public void clear(){
+		this.populations = null;
+		this.numUpdates = null;
+		this.currentSelectedIndividuals = null;
+	}
+
+	public void setUp(Individual[][] populations){
 		this.populations = populations;
-
-		/*
-		individuals = new Individual[8];
-
-		individuals[0] = new Individual(10);
-		individuals[1] = new Individual(50);
-		individuals[2] = new Individual(100);
-		individuals[3] = new Individual(250);
-		individuals[4] = new Individual(500);
-		individuals[5] = new Individual(750);
-		individuals[6] = new Individual(1000);
-		individuals[7] = new Individual(2000);
-
-		*/
-
 		this.numUpdates = new int[this.populations.length];
-		this.currentSelectedIndividual = new int[this.populations.length];
+		this.currentSelectedIndividuals = new int[this.populations.length];
 
 		for(int i = 0; i < this.populations.length; i++){
 			this.numUpdates[i] = 0;
-			this.currentSelectedIndividual[i] = -1;
+			this.currentSelectedIndividuals[i] = -1;
 		}
-
-		this.useNormalization = useNormalization;
-
 	}
 
 	// TODO: this shouldn't return a double but the set of the parameters that the individual is evaluating
@@ -102,8 +94,8 @@ public class SingleParameterEvolutionManager {
 			// This should mean that the fitness hasn't been computed for any of the individuals yet,
 			// thus we return a random one.
 			if(this.numUpdates[i] == 0){
-				this.currentSelectedIndividual[i] = random.nextInt(this.populations[i].length);
-				nextIndividuals[i] = this.populations[i][this.currentSelectedIndividual[i]].getParameter();
+				this.currentSelectedIndividuals[i] = random.nextInt(this.populations[i].length);
+				nextIndividuals[i] = this.populations[i][this.currentSelectedIndividuals[i]].getParameter();
 			}else{
 
 				double minExtreme = 0.0;
@@ -186,8 +178,8 @@ public class SingleParameterEvolutionManager {
 					throw new RuntimeException("Evolution manager, K selection: detected no individuals with fitness value higher than -1.");
 				}
 
-				this.currentSelectedIndividual[i] = selectedIndividualsIndices.get(this.random.nextInt(selectedIndividualsIndices.size())).intValue();
-				nextIndividuals[i] = this.populations[i][this.currentSelectedIndividual[i]].getParameter();
+				this.currentSelectedIndividuals[i] = selectedIndividualsIndices.get(this.random.nextInt(selectedIndividualsIndices.size())).intValue();
+				nextIndividuals[i] = this.populations[i][this.currentSelectedIndividuals[i]].getParameter();
 
 			}
 
@@ -254,7 +246,7 @@ public class SingleParameterEvolutionManager {
 	public void updateFitness(int[] goal){
 
 		for(int i = 0; i < goal.length; i++){
-			this.populations[i][this.currentSelectedIndividual[i]].updateFitness(goal[i]);
+			this.populations[i][this.currentSelectedIndividuals[i]].updateFitness(goal[i]);
 
 			this.numUpdates[i]++;
 		}

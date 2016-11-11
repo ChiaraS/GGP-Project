@@ -7,15 +7,15 @@ import java.util.Random;
 
 import org.ggp.base.player.gamer.statemachine.MCS.manager.MoveStats;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.evolution.OnlineTunableComponent;
+import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.GameDependentParameters;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.strategies.playout.singlemoveselector.MASTSingleMoveSelector;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.strategies.playout.singlemoveselector.RandomSingleMoveSelector;
-import org.ggp.base.util.statemachine.abstractsm.AbstractStateMachine;
 import org.ggp.base.util.statemachine.exceptions.MoveDefinitionException;
 import org.ggp.base.util.statemachine.exceptions.StateMachineException;
 import org.ggp.base.util.statemachine.structure.MachineState;
 import org.ggp.base.util.statemachine.structure.Move;
 
-public class EpsilonMASTJointMoveSelector implements JointMoveSelector, OnlineTunableComponent {
+public class EpsilonMASTJointMoveSelector extends JointMoveSelector implements OnlineTunableComponent {
 
 	private MASTSingleMoveSelector mastSelector;
 
@@ -25,20 +25,34 @@ public class EpsilonMASTJointMoveSelector implements JointMoveSelector, OnlineTu
 
 	private double[] epsilon;
 
-	private int myRoleIndex;
+	private double initialEpsilon;
 
-	public EpsilonMASTJointMoveSelector(AbstractStateMachine theMachine, Random random, Map<Move, MoveStats> mastStatistics, double initialEpsilon, int numRoles, int myRoleIndex) {
-		this.mastSelector = new MASTSingleMoveSelector(theMachine, random, mastStatistics);
-		this.randomSelector = new RandomSingleMoveSelector(theMachine);
+	public EpsilonMASTJointMoveSelector(GameDependentParameters gameDependentParameters, Random random, Map<Move, MoveStats> mastStatistics, double initialEpsilon){
+
+		super(gameDependentParameters);
+
+		this.mastSelector = new MASTSingleMoveSelector(gameDependentParameters, random, mastStatistics);
+		this.randomSelector = new RandomSingleMoveSelector(gameDependentParameters);
 		this.random = random;
 
-		this.epsilon = new double[numRoles];
+		this.epsilon = null;
 
-		for(int i = 0; i < numRoles; i++){
-			this.epsilon[i] = initialEpsilon;
+		this.initialEpsilon = initialEpsilon;
+
+	}
+
+	public void clearSelector(){
+
+		this.epsilon = null;
+
+	}
+
+	public void resetSelector(){
+		this.epsilon = new double[this.gameDependentParameters.getNumRoles()];
+
+		for(int i = 0; i < this.gameDependentParameters.getNumRoles(); i++){
+			this.epsilon[i] = this.initialEpsilon;
 		}
-
-		this.myRoleIndex = myRoleIndex;
 
 	}
 
@@ -94,7 +108,7 @@ public class EpsilonMASTJointMoveSelector implements JointMoveSelector, OnlineTu
 	public void setNewValues(double[] newValues) {
 		// We are tuning only the constant of myRole
 		if(newValues.length == 1){
-			this.epsilon[this.myRoleIndex] = newValues[0];
+			this.epsilon[this.gameDependentParameters.getMyRoleIndex()] = newValues[0];
 		}else{ // We are tuning all constants
 			for(int i = 0; i <this.epsilon.length; i++){
 				this.epsilon[i] = newValues[i];

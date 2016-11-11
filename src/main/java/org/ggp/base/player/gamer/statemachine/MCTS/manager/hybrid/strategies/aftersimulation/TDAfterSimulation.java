@@ -1,13 +1,16 @@
 package org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.strategies.aftersimulation;
 
+import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.GameDependentParameters;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.strategies.backpropagation.TDBackpropagation;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.hybrid.SimulationResult;
 
-public class TDAfterSimulation implements AfterSimulationStrategy {
+public class TDAfterSimulation extends AfterSimulationStrategy {
 
 	private TDBackpropagation backpropagation;
 
-	public TDAfterSimulation(TDBackpropagation backpropagation) {
+	public TDAfterSimulation(GameDependentParameters gameDependentParameters, TDBackpropagation backpropagation) {
+
+		super(gameDependentParameters);
 
 		this.backpropagation = backpropagation;
 	}

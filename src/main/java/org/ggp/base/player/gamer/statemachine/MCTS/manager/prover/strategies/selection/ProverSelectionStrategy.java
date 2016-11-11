@@ -1,10 +1,10 @@
 package org.ggp.base.player.gamer.statemachine.MCTS.manager.prover.strategies.selection;
 
-import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.strategies.Strategy;
+import org.ggp.base.player.gamer.statemachine.MCTS.manager.propnet.strategies.PnStrategy;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.MCTSNode;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.prover.ProverMCTSJointMove;
 
-public interface ProverSelectionStrategy extends Strategy {
+public interface ProverSelectionStrategy extends PnStrategy {
 
 	/**
 	 * This method selects the next move to visit in the given tree node.

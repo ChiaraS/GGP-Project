@@ -1,9 +1,8 @@
 package org.ggp.base.player.gamer.statemachine.MCTS.manager.propnet.strategies.aftermove;
 
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.evolution.SingleParameterEvolutionManager;
-import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.strategies.aftermove.AfterMoveStrategy;
 
-public class PnEvoAfterMove implements AfterMoveStrategy {
+public class PnEvoAfterMove implements PnAfterMoveStrategy {
 
 	private SingleParameterEvolutionManager evolutionManager;
 

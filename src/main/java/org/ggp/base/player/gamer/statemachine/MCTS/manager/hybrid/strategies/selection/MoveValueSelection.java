@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
 
+import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.GameDependentParameters;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.strategies.selection.evaluators.MoveEvaluator;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.MCTSNode;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.hybrid.MCTSJointMove;
@@ -14,19 +15,7 @@ import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.hybrid.
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.hybrid.sequential.SequentialMCTSNode;
 import org.ggp.base.util.statemachine.structure.Move;
 
-public abstract class MoveValueSelection implements SelectionStrategy {
-
-	/**
-	 * The total number of roles in the game.
-	 * Needed by the Sequential version of MCTS.
-	 */
-	protected int numRoles;
-
-	/**
-	 * The index in the default list of roles of the role that is actually performing the search.
-	 * Needed by the Sequential version of MCTS.
-	 */
-	protected int myRoleIndex;
+public abstract class MoveValueSelection extends SelectionStrategy {
 
 	private Random random;
 
@@ -34,9 +23,10 @@ public abstract class MoveValueSelection implements SelectionStrategy {
 
 	protected MoveEvaluator moveEvaluator;
 
-	public MoveValueSelection(int numRoles, int myRoleIndex, Random random, double valueOffset, MoveEvaluator moveEvaluator) {
-		this.numRoles = numRoles;
-		this.myRoleIndex = myRoleIndex;
+	public MoveValueSelection(GameDependentParameters gameDependentParameters, Random random, double valueOffset, MoveEvaluator moveEvaluator) {
+
+		super(gameDependentParameters);
+
 		this.random = random;
 		this.valueOffset = valueOffset;
 		this.moveEvaluator = moveEvaluator;
@@ -114,16 +104,16 @@ public abstract class MoveValueSelection implements SelectionStrategy {
 
 	private MCTSJointMove seqSelect(SequentialMCTSNode currentNode){
 
-		List<Move> jointMove = new ArrayList<Move>(this.numRoles);
-		int[] movesIndices = new int[this.numRoles];
+		List<Move> jointMove = new ArrayList<Move>(this.gameDependentParameters.getNumRoles());
+		int[] movesIndices = new int[this.gameDependentParameters.getNumRoles()];
 
 		// Initialize ArrayList with numRoles null elements.
-		for(int i = 0; i < this.numRoles; i++){
+		for(int i = 0; i < this.gameDependentParameters.getNumRoles(); i++){
 			jointMove.add(null);
 		}
 
 		// Get the index of myRole.
-		int roleIndex = this.myRoleIndex;
+		int roleIndex = this.gameDependentParameters.getMyRoleIndex();
 
 		// Get the moves for myRole.
 		SequentialMCTSMoveStats[] movesStats = currentNode.getMovesStats();
@@ -171,7 +161,7 @@ public abstract class MoveValueSelection implements SelectionStrategy {
 			movesStats = movesStats[movesIndices[roleIndex]].getNextRoleMovesStats();
 
 			// Compute the index for the next role
-			roleIndex = (roleIndex+1)%this.numRoles;
+			roleIndex = (roleIndex+1)%this.gameDependentParameters.getNumRoles();
 
 		}
 
