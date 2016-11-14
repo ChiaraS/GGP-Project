@@ -38,4 +38,14 @@ public abstract class BackpropagationStrategy extends Strategy {
 	public abstract void processPlayoutResult(MCTSNode leafNode, MachineState leafState, SimulationResult simulationResult);
 
 
+	@Override
+	public String printStrategy() {
+		String params = this.getStrategyParameters();
+		if(params != null){
+			return "[BACKPROPAGATION_STRATEGY = " + this.getClass().getSimpleName() + ", " + params + "]";
+		}else{
+			return "[BACKPROPAGATION_STRATEGY = " + this.getClass().getSimpleName() + "]";
+		}
+	}
+
 }

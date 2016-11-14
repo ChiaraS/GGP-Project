@@ -14,10 +14,14 @@ import org.ggp.base.util.logging.GamerLogger;
  * each role in the game independently. Or only evolve one population of parameter settings
  * for the role being played by the agent.
  *
+ * NOTE: this class is not considered as a component of the search manager because as opposite
+ * to other components it doesn't need to know details about the game being played to perform
+ * its actions.
+ *
  * @author C.Sironi
  *
  */
-public class SingleParameterEvolutionManager {
+public class SingleParameterEvolutionManager{
 
 	private Random random;
 

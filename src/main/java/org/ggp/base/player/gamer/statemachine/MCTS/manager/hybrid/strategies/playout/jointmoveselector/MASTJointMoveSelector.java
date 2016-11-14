@@ -26,6 +26,16 @@ public class MASTJointMoveSelector extends JointMoveSelector {
 		this.mastStatistics = mastStatistics;
 	}
 
+	@Override
+	public void clearComponent() {
+		// Do nothing
+	}
+
+	@Override
+	public void setUpComponent() {
+		// Do nothing
+	}
+
 	/**
 	 * This method returns a joint move according to the MAST strategy.
 	 * For each role it gets the list of all its legal moves in the state and picks the one with highest MAST expected score.

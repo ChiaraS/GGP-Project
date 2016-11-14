@@ -24,6 +24,16 @@ public class StandardPlayout extends PlayoutStrategy {
 	}
 
 	@Override
+	public void clearComponent() {
+		this.jointMoveSelector.clearComponent();
+	}
+
+	@Override
+	public void setUpComponent() {
+		this.jointMoveSelector.setUpComponent();
+	}
+
+	@Override
 	public SimulationResult playout(MachineState state, int maxDepth) {
 
 		// NOTE that this is just an extra check: if the state is terminal or the depth limit has been reached,

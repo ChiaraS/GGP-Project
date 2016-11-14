@@ -33,6 +33,16 @@ public abstract class MoveValueSelection extends SelectionStrategy {
 	}
 
 	@Override
+	public void clearComponent(){
+		this.moveEvaluator.clearComponent();
+	}
+
+	@Override
+	public void setUpComponent(){
+		this.moveEvaluator.setUpComponent();
+	}
+
+	@Override
 	public MCTSJointMove select(MCTSNode currentNode) {
 		if(currentNode instanceof DecoupledMCTSNode){
 			return this.decSelect((DecoupledMCTSNode)currentNode);

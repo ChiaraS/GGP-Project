@@ -38,8 +38,8 @@ public class TDUCTEvaluator extends UCTEvaluator {
 				// (thus have the default values of +Double.MAX_VALUE and -infinity respectively).
 				// So if they are not set or have the same value, we use the global values.
 				if(minValue >= maxValue){
-					minValue = this.globalExtremeValues.getGlobalMinValueForRole(roleIndex);
-					maxValue = this.globalExtremeValues.getGlobalMaxValueForRole(roleIndex);
+					minValue = this.globalExtremeValues.getGlobalMinValues()[roleIndex];
+					maxValue = this.globalExtremeValues.getGlobalMaxValues()[roleIndex];
 				}
 
 				// Same check as before, even though it's more unlikely to be true

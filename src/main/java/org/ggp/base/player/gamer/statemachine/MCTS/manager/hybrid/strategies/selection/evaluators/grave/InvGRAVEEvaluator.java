@@ -34,6 +34,20 @@ public class InvGRAVEEvaluator extends UCTEvaluator{
 		this.amafStats = null;
 	}
 
+	@Override
+	public void clearComponent(){
+		super.clearComponent();
+		this.amafStats = null;
+		this.betaComputer.clearComponent();
+	}
+
+	@Override
+	public void setUpComponent(){
+		super.setUpComponent();
+		this.amafStats = null;
+		this.betaComputer.setUpComponent();
+	}
+
 	public void setAmafStats(Map<Move, MoveStats> amafStats){
 		this.amafStats = amafStats;
 	}

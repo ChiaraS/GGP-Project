@@ -23,6 +23,16 @@ public class MaximumScoreChoice extends MoveChoiceStrategy {
 		this.random = random;
 	}
 
+	@Override
+	public void clearComponent() {
+		// Do nothing
+	}
+
+	@Override
+	public void setUpComponent() {
+		// Do nothing
+	}
+
 	/*
 	 * (non-Javadoc)
 	 * @see org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.strategies.movechoice.MoveChoiceStrategy#chooseBestMove(org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.MCTSNode)

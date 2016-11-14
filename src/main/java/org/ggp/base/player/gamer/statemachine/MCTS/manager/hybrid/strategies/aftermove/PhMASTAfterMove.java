@@ -20,6 +20,16 @@ public class PhMASTAfterMove extends AfterMoveStrategy {
 	}
 
 	@Override
+	public void clearComponent() {
+		// Do nothing
+	}
+
+	@Override
+	public void setUpComponent() {
+		// Do nothing
+	}
+
+	@Override
 	public String getStrategyParameters() {
 		return "AFTER_MOVE_1 = " + this.mastAfterMove.printStrategy() + ", AFTER_MOVE_2 = " + this.phAfterMove.printStrategy();
 	}

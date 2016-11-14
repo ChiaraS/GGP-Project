@@ -41,13 +41,22 @@ public class EpsilonMASTJointMoveSelector extends JointMoveSelector implements O
 
 	}
 
-	public void clearSelector(){
+	@Override
+	public void clearComponent(){
+
+		this.mastSelector.clearComponent();
+		this.randomSelector.clearComponent();
 
 		this.epsilon = null;
 
 	}
 
-	public void resetSelector(){
+	@Override
+	public void setUpComponent(){
+
+		this.mastSelector.setUpComponent();
+		this.randomSelector.setUpComponent();
+
 		this.epsilon = new double[this.gameDependentParameters.getNumRoles()];
 
 		for(int i = 0; i < this.gameDependentParameters.getNumRoles(); i++){

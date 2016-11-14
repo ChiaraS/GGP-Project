@@ -15,6 +15,16 @@ public class RandomJointMoveSelector extends JointMoveSelector{
 	}
 
 	@Override
+	public void clearComponent() {
+		// Do nothing
+	}
+
+	@Override
+	public void setUpComponent() {
+		// Do nothing
+	}
+
+	@Override
 	public List<Move> getJointMove(MachineState state) throws MoveDefinitionException, StateMachineException {
 		return this.gameDependentParameters.getTheMachine().getRandomJointMove(state);
 	}

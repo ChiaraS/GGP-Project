@@ -16,6 +16,16 @@ public class ProgressiveHistoryAfterMove extends AfterMoveStrategy {
 	}
 
 	@Override
+	public void clearComponent() {
+		// Do nothing
+	}
+
+	@Override
+	public void setUpComponent() {
+		// Do nothing
+	}
+
+	@Override
 	public String getStrategyParameters() {
 		return null;
 	}

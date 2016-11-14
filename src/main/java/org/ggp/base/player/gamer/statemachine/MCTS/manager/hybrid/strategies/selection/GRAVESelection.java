@@ -29,13 +29,18 @@ public class GRAVESelection extends MoveValueSelection implements OnlineTunableC
 
 	}
 
-	public void clearStrategy(){
+	@Override
+	public void clearComponent(){
 
+		super.clearComponent();
 		this.minAMAFVisits = null;
 
 	}
 
-	public void resetStrategy(){
+	@Override
+	public void setUpComponent(){
+
+		super.setUpComponent();
 
 		this.minAMAFVisits = new int[this.gameDependentParameters.getNumRoles()];
 

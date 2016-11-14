@@ -25,6 +25,16 @@ public class RandomExpansion extends ExpansionStrategy {
 		this.random = random;
 	}
 
+	@Override
+	public void clearComponent() {
+		// Do nothing
+	}
+
+	@Override
+	public void setUpComponent() {
+		// Do nothing
+	}
+
 	/*
 	 * (non-Javadoc)
 	 * @see org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.strategies.expansion.ExpansionStrategy#expansionRequired(org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.MCTSNode)

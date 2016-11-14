@@ -23,6 +23,17 @@ public class MASTAfterMove extends AfterMoveStrategy {
 	}
 
 	@Override
+	public void clearComponent() {
+		// Do nothing (because the MAST statistics will be already cleared by the strategy that populates them,
+		// i.e. the backpropagation strategy that uses the MASTUpdater).
+	}
+
+	@Override
+	public void setUpComponent() {
+		// Do nothing
+	}
+
+	@Override
 	public String getStrategyParameters() {
 		return "DECAY_FACTOR = " + this.decayFactor;
 	}

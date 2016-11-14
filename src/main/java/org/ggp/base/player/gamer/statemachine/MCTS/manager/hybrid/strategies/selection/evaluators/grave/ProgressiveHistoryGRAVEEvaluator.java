@@ -32,6 +32,18 @@ public class ProgressiveHistoryGRAVEEvaluator extends GRAVEEvaluator {
 	}
 
 	@Override
+	public void clearComponent(){
+		super.clearComponent();
+		this.currentRootAmafStats = null;
+	}
+
+	@Override
+	public void setUpComponent(){
+		super.setUpComponent();
+		this.currentRootAmafStats = null;
+	}
+
+	@Override
 	public double computeMoveValue(MCTSNode theNode, Move theMove, int roleIndex, MoveStats theMoveStats) {
 
 		// This should never happen because we should set a new reference before performing the search at every game step.

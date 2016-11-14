@@ -17,6 +17,16 @@ public class EvoAfterSimulation extends AfterSimulationStrategy {
 	}
 
 	@Override
+	public void clearComponent() {
+		// Do nothing
+	}
+
+	@Override
+	public void setUpComponent() {
+		// Do nothing
+	}
+
+	@Override
 	public void afterSimulationActions(SimulationResult simulationResult) {
 
 		int[] goals;

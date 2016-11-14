@@ -31,11 +31,13 @@ public class UCTEvaluator extends MoveEvaluator implements OnlineTunableComponen
 
 	}
 
+	@Override
 	public void clearComponent(){
 		this.c = null;
 	}
 
-	public void resetComponent(){
+	@Override
+	public void setUpComponent(){
 		this.c = new double[this.gameDependentParameters.getNumRoles()];
 
 		for(int i = 0; i < this.gameDependentParameters.getNumRoles(); i++){

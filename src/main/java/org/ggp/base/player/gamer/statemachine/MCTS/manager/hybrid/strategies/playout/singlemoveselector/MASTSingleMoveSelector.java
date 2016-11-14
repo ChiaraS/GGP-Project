@@ -26,7 +26,15 @@ public class MASTSingleMoveSelector extends SingleMoveSelector {
 		this.mastStatistics = mastStatistics;
 	}
 
+	@Override
+	public void clearComponent() {
+		// Do nothing
+	}
 
+	@Override
+	public void setUpComponent() {
+		// Do nothing
+	}
 
 	/**
 	 * This method returns a move according to the MAST strategy.

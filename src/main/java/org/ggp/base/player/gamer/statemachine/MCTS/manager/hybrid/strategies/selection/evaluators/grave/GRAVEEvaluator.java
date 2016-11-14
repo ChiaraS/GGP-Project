@@ -38,16 +38,23 @@ public class GRAVEEvaluator extends UCTEvaluator{
 
 	@Override
 	public void clearComponent(){
+		super.clearComponent();
 		this.closestAmafStats = null;
+		this.betaComputer.clearComponent();
 	}
 
+	@Override
 	public void setUpComponent(){
+
+		super.setUpComponent();
 
 		this.closestAmafStats = new ArrayList<Map<Move, MoveStats>>(this.gameDependentParameters.getNumRoles());
 		// Initialize to null the closest AMAF stats for each role
 		for(int i = 0; i < this.gameDependentParameters.getNumRoles(); i++){
 			this.closestAmafStats.add(null);
 		}
+
+		this.betaComputer.setUpComponent();
 
 	}
 

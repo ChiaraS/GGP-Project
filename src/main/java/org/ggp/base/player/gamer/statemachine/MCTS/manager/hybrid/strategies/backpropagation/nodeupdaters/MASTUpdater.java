@@ -1,9 +1,10 @@
-package org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.strategies.backpropagation;
+package org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.strategies.backpropagation.nodeupdaters;
 
 import java.util.List;
 import java.util.Map;
 
 import org.ggp.base.player.gamer.statemachine.MCS.manager.MoveStats;
+import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.GameDependentParameters;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.MCTSNode;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.hybrid.MCTSJointMove;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.hybrid.SimulationResult;
@@ -11,14 +12,28 @@ import org.ggp.base.util.logging.GamerLogger;
 import org.ggp.base.util.statemachine.structure.MachineState;
 import org.ggp.base.util.statemachine.structure.Move;
 
-public class MASTUpdate {
+public class MASTUpdater extends NodeUpdater{
 
 	private Map<Move, MoveStats> mastStatistics;
 
-	public MASTUpdate(Map<Move, MoveStats> mastStatistics) {
+	public MASTUpdater(GameDependentParameters gameDependentParameters, Map<Move, MoveStats> mastStatistics) {
+
+		super(gameDependentParameters);
+
 		this.mastStatistics = mastStatistics;
 	}
 
+	@Override
+	public void clearComponent() {
+		this.mastStatistics.clear();
+	}
+
+	@Override
+	public void setUpComponent() {
+		// Do nothing
+	}
+
+	@Override
 	public void update(MCTSNode currentNode, MachineState currentState, MCTSJointMove jointMove, SimulationResult simulationResult) {
 
 		//System.out.println("MASTBP");
@@ -45,6 +60,7 @@ public class MASTUpdate {
 
 	}
 
+	@Override
 	public void processPlayoutResult(MCTSNode leafNode,	MachineState leafState, SimulationResult simulationResult) {
 
 		int[] goals = simulationResult.getTerminalGoals();

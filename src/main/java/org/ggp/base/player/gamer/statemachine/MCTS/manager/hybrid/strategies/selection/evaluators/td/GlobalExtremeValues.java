@@ -38,8 +38,9 @@ public class GlobalExtremeValues {
 	 */
 	private double defaultGlobalMaxValue;
 
-	public GlobalExtremeValues(int numRoles, double defaultGlobalMinValue, double defaultGlobalMaxValue) {
+	public GlobalExtremeValues(double defaultGlobalMinValue, double defaultGlobalMaxValue) {
 
+		/*
 		this.globalMinValue = new double[numRoles];
 		this.globalMaxValue = new double[numRoles];
 
@@ -47,12 +48,17 @@ public class GlobalExtremeValues {
 			this.globalMinValue[i] = Double.MAX_VALUE;
 			this.globalMaxValue[i] = -Double.MAX_VALUE;
 		}
+		*/
+
+		this.globalMaxValue = null;
+		this.globalMinValue = null;
 
 		this.defaultGlobalMinValue = defaultGlobalMinValue;
 		this.defaultGlobalMaxValue = defaultGlobalMaxValue;
 
 	}
 
+	/*
 	public void setGlobalMinValueForRole(double globalMinValue, int roleIndex){
 		this.globalMinValue[roleIndex] = globalMinValue;
 	}
@@ -60,13 +66,22 @@ public class GlobalExtremeValues {
 	public void setGlobalMaxValueForRole(double globalMaxValue, int roleIndex){
 		this.globalMaxValue[roleIndex] = globalMaxValue;
 	}
+	*/
 
-	public double getGlobalMinValueForRole(int roleIndex){
-		return this.globalMinValue[roleIndex];
+	public double[] getGlobalMinValues(){
+		return this.globalMinValue;
 	}
 
-	public double getGlobalMaxValueForRole(int roleIndex){
-		return this.globalMaxValue[roleIndex];
+	public double[] getGlobalMaxValues(){
+		return this.globalMaxValue;
+	}
+
+	public void setGlobalMinValues(double[] globalMinValue){
+		this.globalMinValue = globalMinValue;
+	}
+
+	public void setGlobalMaxValues(double[] globalMaxValue){
+		this.globalMaxValue = globalMaxValue;
 	}
 
 	public double getDefaultGlobalMinValue(){

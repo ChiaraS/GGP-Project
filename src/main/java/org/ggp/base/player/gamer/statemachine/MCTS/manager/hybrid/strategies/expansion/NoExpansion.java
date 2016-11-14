@@ -19,10 +19,18 @@ import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.hybrid.
  */
 public class NoExpansion extends ExpansionStrategy {
 
-
-
 	public NoExpansion(GameDependentParameters gameDependentParameters) {
 		super(gameDependentParameters);
+	}
+
+	@Override
+	public void clearComponent() {
+		// Do nothing
+	}
+
+	@Override
+	public void setUpComponent() {
+		// Do nothing
 	}
 
 	@Override

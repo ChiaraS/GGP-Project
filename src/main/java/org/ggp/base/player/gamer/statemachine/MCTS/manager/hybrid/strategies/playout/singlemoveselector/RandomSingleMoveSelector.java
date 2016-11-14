@@ -13,6 +13,16 @@ public class RandomSingleMoveSelector extends SingleMoveSelector{
 	}
 
 	@Override
+	public void clearComponent() {
+		// Do nothing
+	}
+
+	@Override
+	public void setUpComponent() {
+		// Do nothing
+	}
+
+	@Override
 	public Move getMoveForRole(MachineState state, int roleIndex) throws MoveDefinitionException, StateMachineException {
 		return this.gameDependentParameters.getTheMachine().getRandomMove(state, this.gameDependentParameters.getTheMachine().getRoles().get(roleIndex));
 	}

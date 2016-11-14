@@ -20,6 +20,16 @@ public class EvoGRAVEAfterSimulation extends AfterSimulationStrategy {
 	}
 
 	@Override
+	public void clearComponent() {
+		// Do nothing
+	}
+
+	@Override
+	public void setUpComponent() {
+		// Do nothing
+	}
+
+	@Override
 	public void afterSimulationActions(SimulationResult simulationResult){
 
 		this.graveAfterSimulation.afterSimulationActions(simulationResult);

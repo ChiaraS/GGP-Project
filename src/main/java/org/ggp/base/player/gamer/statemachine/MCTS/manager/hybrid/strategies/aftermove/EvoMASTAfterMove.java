@@ -29,6 +29,16 @@ public class EvoMASTAfterMove extends AfterMoveStrategy {
 	}
 
 	@Override
+	public void clearComponent() {
+		// Do nothing
+	}
+
+	@Override
+	public void setUpComponent() {
+		// Do nothing
+	}
+
+	@Override
 	public String getStrategyParameters() {
 		return "(SUB_AFTER_MOVE_STRATEGY = " + this.mastAfterMove.printStrategy() + ", SUB_AFTER_SIM_STRATEGY = " + this.evoAfterMove.printStrategy() + ")";
 	}

@@ -13,8 +13,6 @@ import org.ggp.base.util.statemachine.structure.MachineState;
 
 public abstract class TDBackpropagation extends BackpropagationStrategy {
 
-	protected GlobalExtremeValues globalExtremeValues;
-
 	/**
 	 * Strategy parameters.
 	 */
@@ -24,6 +22,8 @@ public abstract class TDBackpropagation extends BackpropagationStrategy {
 	protected double lambda;
 
 	protected double gamma;
+
+	protected GlobalExtremeValues globalExtremeValues;
 
 	/**
 	 * Simulation parameters that must be reset after each simulation is concluded
@@ -41,6 +41,9 @@ public abstract class TDBackpropagation extends BackpropagationStrategy {
 
 		this.globalExtremeValues = globalExtremeValues;
 
+		this.globalExtremeValues.setGlobalMinValues(null);
+		this.globalExtremeValues.setGlobalMaxValues(null);
+
 		this.qPlayout = qPlayout;
 		this.lambda = lambda;
 		this.gamma = gamma;
@@ -48,19 +51,34 @@ public abstract class TDBackpropagation extends BackpropagationStrategy {
 		this.deltaSum = null;
 		this.qNext = null;
 
-		this.resetSimulationParameters();
-
 	}
 
-	public void clearStrategy(){
+	@Override
+	public void clearComponent(){
+
+		this.globalExtremeValues.setGlobalMinValues(null);
+		this.globalExtremeValues.setGlobalMaxValues(null);
+
 		this.deltaSum = null;
 		this.qNext = null;
+
 	}
 
-	public void resetStrategy(){
+	@Override
+	public void setUpComponent(){
+
+		this.globalExtremeValues.setGlobalMinValues(new double[this.gameDependentParameters.getNumRoles()]);
+		this.globalExtremeValues.setGlobalMaxValues(new double[this.gameDependentParameters.getNumRoles()]);
+
+		for(int i = 0; i < this.gameDependentParameters.getNumRoles(); i++){
+			this.globalExtremeValues.getGlobalMinValues()[i] = Double.MAX_VALUE;
+			this.globalExtremeValues.getGlobalMaxValues()[i] = -Double.MAX_VALUE;
+		}
 
 		this.deltaSum = new double[this.gameDependentParameters.getNumRoles()];
 		this.qNext = new double[this.gameDependentParameters.getNumRoles()];
+
+		this.resetSimulationParameters();
 
 	}
 
@@ -138,8 +156,8 @@ public abstract class TDBackpropagation extends BackpropagationStrategy {
 				// Note: this check is here because if the new score is lower than the maximum value of
 				// the current node then it's also lower than the maximum overall value and no update
 				// would be needed.
-				if(newScore > this.globalExtremeValues.getGlobalMaxValueForRole(i)){
-					this.globalExtremeValues.setGlobalMaxValueForRole(newScore, i);
+				if(newScore > this.globalExtremeValues.getGlobalMaxValues()[i]){
+					this.globalExtremeValues.getGlobalMaxValues()[i] = newScore;
 				}
 			}
 
@@ -149,8 +167,8 @@ public abstract class TDBackpropagation extends BackpropagationStrategy {
 				// Note: this check is here because if the new score is higher than the mminimum value of
 				// the current node then it's also higher than the minimum overall value and no update
 				// would be needed.
-				if(newScore < this.globalExtremeValues.getGlobalMinValueForRole(i)){
-					this.globalExtremeValues.setGlobalMinValueForRole(newScore, i);
+				if(newScore < this.globalExtremeValues.getGlobalMinValues()[i]){
+					this.globalExtremeValues.getGlobalMinValues()[i] = newScore;
 				}
 			}
 
@@ -196,17 +214,6 @@ public abstract class TDBackpropagation extends BackpropagationStrategy {
 	@Override
 	public String getStrategyParameters() {
 		return "Q_PLAYOUT = " + this.qPlayout + ", LAMBDA = " + this.lambda + ", GAMMA = " + this.gamma + ", DEFAUL_GLOBAL_MIN_VALUE = " + this.globalExtremeValues.getDefaultGlobalMinValue() + ", DEFAUL_GLOBAL_MAX_VALUE = " + this.globalExtremeValues.getDefaultGlobalMaxValue();
-	}
-
-	@Override
-	public String printStrategy() {
-		String params = this.getStrategyParameters();
-
-		if(params != null){
-			return "[BACKPROPAGATION_STRATEGY = " + this.getClass().getSimpleName() + ", " + params + "]";
-		}else{
-			return "[BACKPROPAGATION_STRATEGY = " + this.getClass().getSimpleName() + "]";
-		}
 	}
 
 	public void resetSimulationParameters(){

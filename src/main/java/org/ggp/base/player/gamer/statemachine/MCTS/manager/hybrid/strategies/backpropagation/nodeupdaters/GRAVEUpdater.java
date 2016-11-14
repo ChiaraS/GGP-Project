@@ -1,9 +1,10 @@
-package org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.strategies.backpropagation;
+package org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.strategies.backpropagation.nodeupdaters;
 
 import java.util.List;
 import java.util.Map;
 
 import org.ggp.base.player.gamer.statemachine.MCS.manager.MoveStats;
+import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.GameDependentParameters;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.MCTSNode;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.hybrid.MCTSJointMove;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.hybrid.SimulationResult;
@@ -12,8 +13,23 @@ import org.ggp.base.util.logging.GamerLogger;
 import org.ggp.base.util.statemachine.structure.MachineState;
 import org.ggp.base.util.statemachine.structure.Move;
 
-public class GRAVEUpdate {
+public class GRAVEUpdater extends NodeUpdater{
 
+	public GRAVEUpdater(GameDependentParameters gameDependentParameters) {
+		super(gameDependentParameters);
+	}
+
+	@Override
+	public void clearComponent() {
+		// Do nothing
+	}
+
+	@Override
+	public void setUpComponent() {
+		// Do nothing
+	}
+
+	@Override
 	public void update(MCTSNode currentNode, MachineState currentState, MCTSJointMove jointMove, SimulationResult simulationResult) {
 
 		if(currentNode instanceof AMAFNode){
@@ -56,6 +72,7 @@ public class GRAVEUpdate {
 		}
 	}
 
+	@Override
 	public void processPlayoutResult(MCTSNode leafNode,	MachineState leafState, SimulationResult simulationResult) {
 
 		if(leafNode instanceof AMAFNode){
