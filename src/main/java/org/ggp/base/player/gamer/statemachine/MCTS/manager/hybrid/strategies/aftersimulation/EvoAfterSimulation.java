@@ -1,16 +1,20 @@
 package org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.strategies.aftersimulation;
 
+import java.util.Properties;
+import java.util.Random;
+
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.evolution.SingleParameterEvolutionManager;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.GameDependentParameters;
+import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.SharedReferencesCollector;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.hybrid.SimulationResult;
 
 public class EvoAfterSimulation extends AfterSimulationStrategy {
 
 	private SingleParameterEvolutionManager evolutionManager;
 
-	public EvoAfterSimulation(GameDependentParameters gameDependentParameters, SingleParameterEvolutionManager evolutionManager){
+	public EvoAfterSimulation(GameDependentParameters gameDependentParameters, Random random, Properties properties, SharedReferencesCollector sharedReferencesCollector, SingleParameterEvolutionManager evolutionManager){
 
-		super(gameDependentParameters);
+		super(gameDependentParameters, random, properties, sharedReferencesCollector);
 
 		this.evolutionManager = evolutionManager;
 
@@ -49,21 +53,10 @@ public class EvoAfterSimulation extends AfterSimulationStrategy {
 	}
 
 	@Override
-	public String getStrategyParameters() {
+	public String getComponentParameters() {
 
 			return this.evolutionManager.printEvolutionManager();
 
-	}
-
-	@Override
-	public String printStrategy() {
-		String params = this.getStrategyParameters();
-
-		if(params != null){
-			return "[AFTER_SIM_STRATEGY = " + this.getClass().getSimpleName() + ", " + params + "]";
-		}else{
-			return "[AFTER_SIM_STRATEGY = " + this.getClass().getSimpleName() + "]";
-		}
 	}
 
 }

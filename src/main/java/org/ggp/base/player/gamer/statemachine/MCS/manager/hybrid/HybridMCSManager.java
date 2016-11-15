@@ -102,7 +102,7 @@ public class HybridMCSManager {
 		//	toLog += "\n" + s.printStrategy();
 		//}
 
-		toLog += "\n" + this.playoutStrategy.printStrategy();
+		toLog += "\n" + this.playoutStrategy.printComponent();
 
 		GamerLogger.log("MCSManager", toLog);
 

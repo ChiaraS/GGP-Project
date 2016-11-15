@@ -1,6 +1,10 @@
 package org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.strategies.backpropagation.nodeupdaters;
 
+import java.util.Properties;
+import java.util.Random;
+
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.GameDependentParameters;
+import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.SharedReferencesCollector;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.MCTSNode;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.hybrid.MCTSJointMove;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.hybrid.SequDecMCTSJointMove;
@@ -13,8 +17,8 @@ import org.ggp.base.util.statemachine.structure.MachineState;
 
 public class StandardUpdater extends NodeUpdater {
 
-	public StandardUpdater(GameDependentParameters gameDependentParameters) {
-		super(gameDependentParameters);
+	public StandardUpdater(GameDependentParameters gameDependentParameters, Random random, Properties properties, SharedReferencesCollector sharedReferencesCollector) {
+		super(gameDependentParameters, random, properties, sharedReferencesCollector);
 	}
 
 	@Override

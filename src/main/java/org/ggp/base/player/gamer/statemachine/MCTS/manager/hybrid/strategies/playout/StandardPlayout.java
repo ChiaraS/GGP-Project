@@ -1,8 +1,11 @@
 package org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.strategies.playout;
 
 import java.util.List;
+import java.util.Properties;
+import java.util.Random;
 
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.GameDependentParameters;
+import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.SharedReferencesCollector;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.strategies.playout.jointmoveselector.JointMoveSelector;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.hybrid.SimulationResult;
 import org.ggp.base.util.logging.GamerLogger;
@@ -16,9 +19,9 @@ public class StandardPlayout extends PlayoutStrategy {
 
 	protected JointMoveSelector jointMoveSelector;
 
-	public StandardPlayout(GameDependentParameters gameDependentParameters, JointMoveSelector jointMoveSelector) {
+	public StandardPlayout(GameDependentParameters gameDependentParameters, Random random, Properties properties, SharedReferencesCollector sharedReferencesCollector, JointMoveSelector jointMoveSelector) {
 
-		super(gameDependentParameters);
+		super(gameDependentParameters, random, properties, sharedReferencesCollector);
 
 		this.jointMoveSelector = jointMoveSelector;
 	}
@@ -98,19 +101,8 @@ public class StandardPlayout extends PlayoutStrategy {
 	}
 
 	@Override
-	public String getStrategyParameters() {
-		return this.jointMoveSelector.printJointMoveSelector();
-	}
-
-	@Override
-	public String printStrategy() {
-		String params = this.getStrategyParameters();
-
-		if(params != null){
-			return "[PLAYOUT_STRATEGY = " + this.getClass().getSimpleName() + ", " + params + "]";
-		}else{
-			return "[PLAYOUT_STRATEGY = " + this.getClass().getSimpleName() + "]";
-		}
+	public String getComponentParameters() {
+		return this.jointMoveSelector.printComponent();
 	}
 
 }

@@ -3,8 +3,11 @@ package org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.strategies.pl
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Properties;
+import java.util.Random;
 
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.GameDependentParameters;
+import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.SharedReferencesCollector;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.strategies.playout.jointmoveselector.JointMoveSelector;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.hybrid.SimulationResult;
 import org.ggp.base.util.logging.GamerLogger;
@@ -17,9 +20,9 @@ import org.ggp.base.util.statemachine.structure.Move;
 public class AllMemorizingStandardPlayout extends StandardPlayout {
 
 	public AllMemorizingStandardPlayout(GameDependentParameters gameDependentParameters,
-			JointMoveSelector jointMoveSelector) {
+			Random random, Properties properties, SharedReferencesCollector sharedReferencesCollector, JointMoveSelector jointMoveSelector) {
 
-		super(gameDependentParameters, jointMoveSelector);
+		super(gameDependentParameters, random, properties, sharedReferencesCollector, jointMoveSelector);
 
 	}
 

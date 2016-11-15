@@ -1,6 +1,10 @@
 package org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.strategies.playout.singlemoveselector;
 
+import java.util.Properties;
+import java.util.Random;
+
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.GameDependentParameters;
+import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.SharedReferencesCollector;
 import org.ggp.base.util.statemachine.exceptions.MoveDefinitionException;
 import org.ggp.base.util.statemachine.exceptions.StateMachineException;
 import org.ggp.base.util.statemachine.structure.MachineState;
@@ -8,8 +12,14 @@ import org.ggp.base.util.statemachine.structure.Move;
 
 public class RandomSingleMoveSelector extends SingleMoveSelector{
 
-	public RandomSingleMoveSelector(GameDependentParameters gameDependentParameters){
-		super(gameDependentParameters);
+	public RandomSingleMoveSelector(GameDependentParameters gameDependentParameters, Random random,
+			Properties properties, SharedReferencesCollector sharedReferencesCollector){
+		super(gameDependentParameters, random, properties, sharedReferencesCollector);
+	}
+
+	@Override
+	public void setReferences(SharedReferencesCollector sharedReferencesCollector) {
+		// No need for any reference
 	}
 
 	@Override
@@ -28,19 +38,10 @@ public class RandomSingleMoveSelector extends SingleMoveSelector{
 	}
 
 	@Override
-	public String getSingleMoveSelectorParameters() {
+	public String getComponentParameters() {
 		return null;
 	}
 
-	@Override
-	public String printSingleMoveSelector() {
-		String params = this.getSingleMoveSelectorParameters();
 
-		if(params != null){
-			return "(SINGLE_MOVE_SEL = " + this.getClass().getSimpleName() + ", " + params + ")";
-		}else{
-			return "(SINGLE_MOVE_SEL = " + this.getClass().getSimpleName() + ")";
-		}
-	}
 
 }

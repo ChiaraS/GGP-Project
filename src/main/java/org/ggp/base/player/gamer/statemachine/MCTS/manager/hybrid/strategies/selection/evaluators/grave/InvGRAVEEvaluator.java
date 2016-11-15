@@ -1,9 +1,12 @@
 package org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.strategies.selection.evaluators.grave;
 
 import java.util.Map;
+import java.util.Properties;
+import java.util.Random;
 
 import org.ggp.base.player.gamer.statemachine.MCS.manager.MoveStats;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.GameDependentParameters;
+import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.SharedReferencesCollector;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.strategies.selection.evaluators.UCTEvaluator;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.MCTSNode;
 import org.ggp.base.util.statemachine.structure.Move;
@@ -28,8 +31,8 @@ public class InvGRAVEEvaluator extends UCTEvaluator{
 
 	private BetaComputer betaComputer;
 
-	public InvGRAVEEvaluator(GameDependentParameters gameDependentParameters, double c, double defaultValue, BetaComputer betaComputer) {
-		super(gameDependentParameters, c, defaultValue);
+	public InvGRAVEEvaluator(GameDependentParameters gameDependentParameters, Random random, Properties properties, SharedReferencesCollector sharedReferencesCollector, double c, double defaultValue, BetaComputer betaComputer) {
+		super(gameDependentParameters, random, properties, sharedReferencesCollector, c, defaultValue);
 		this.betaComputer = betaComputer;
 		this.amafStats = null;
 	}
@@ -99,13 +102,13 @@ public class InvGRAVEEvaluator extends UCTEvaluator{
 	}
 
 	@Override
-	public String getEvaluatorParameters() {
-		String params = super.getEvaluatorParameters();
+	public String getComponentParameters() {
+		String params = super.getComponentParameters();
 
 		if(params != null){
-			return params + ", " + this.betaComputer.printBetaComputer();
+			return params + ", " + this.betaComputer.printComponent();
 		}else{
-			return this.betaComputer.printBetaComputer();
+			return this.betaComputer.printComponent();
 		}
 	}
 

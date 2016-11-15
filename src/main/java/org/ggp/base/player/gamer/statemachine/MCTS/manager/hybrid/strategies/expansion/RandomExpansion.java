@@ -2,9 +2,11 @@ package org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.strategies.ex
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Properties;
 import java.util.Random;
 
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.GameDependentParameters;
+import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.SharedReferencesCollector;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.MCTSNode;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.hybrid.MCTSJointMove;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.hybrid.SequDecMCTSJointMove;
@@ -16,13 +18,10 @@ import org.ggp.base.util.statemachine.structure.Move;
 
 public class RandomExpansion extends ExpansionStrategy {
 
-	private Random random;
+	public RandomExpansion(GameDependentParameters gameDependentParameters, Random random, Properties properties, SharedReferencesCollector sharedReferencesCollector){
 
-	public RandomExpansion(GameDependentParameters gameDependentParameters, Random random){
+		super(gameDependentParameters, random, properties, sharedReferencesCollector);
 
-		super(gameDependentParameters);
-
-		this.random = random;
 	}
 
 	@Override
@@ -316,19 +315,8 @@ public class RandomExpansion extends ExpansionStrategy {
 	*/
 
 	@Override
-	public String getStrategyParameters() {
+	public String getComponentParameters() {
 		return null;
-	}
-
-	@Override
-	public String printStrategy() {
-		String params = this.getStrategyParameters();
-
-		if(params != null){
-			return "[EXPANSION_STRATEGY = " + this.getClass().getSimpleName() + ", " + params + "]";
-		}else{
-			return "[EXPANSION_STRATEGY = " + this.getClass().getSimpleName() + "]";
-		}
 	}
 
 }

@@ -1,6 +1,10 @@
 package org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.strategies.aftermove;
 
+import java.util.Properties;
+import java.util.Random;
+
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.GameDependentParameters;
+import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.SharedReferencesCollector;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.strategies.selection.ProgressiveHistoryGRAVESelection;
 
 
@@ -8,9 +12,9 @@ public class ProgressiveHistoryAfterMove extends AfterMoveStrategy {
 
 	private ProgressiveHistoryGRAVESelection phSelection;
 
-	public ProgressiveHistoryAfterMove(GameDependentParameters gameDependentParameters, ProgressiveHistoryGRAVESelection phSelection) {
+	public ProgressiveHistoryAfterMove(GameDependentParameters gameDependentParameters, Random random, Properties properties, SharedReferencesCollector sharedReferencesCollector, ProgressiveHistoryGRAVESelection phSelection) {
 
-		super(gameDependentParameters);
+		super(gameDependentParameters, random, properties, sharedReferencesCollector);
 
 		this.phSelection = phSelection;
 	}
@@ -26,19 +30,8 @@ public class ProgressiveHistoryAfterMove extends AfterMoveStrategy {
 	}
 
 	@Override
-	public String getStrategyParameters() {
+	public String getComponentParameters() {
 		return null;
-	}
-
-	@Override
-	public String printStrategy() {
-		String params = this.getStrategyParameters();
-
-		if(params != null){
-			return "[AFTER_MOVE_STRATEGY = " + this.getClass().getSimpleName() + ", " + params + "]";
-		}else{
-			return "[AFTER_MOVE_STRATEGY = " + this.getClass().getSimpleName() + "]";
-		}
 	}
 
 	@Override

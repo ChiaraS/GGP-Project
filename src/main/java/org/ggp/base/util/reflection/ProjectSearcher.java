@@ -4,6 +4,19 @@ import java.lang.reflect.Modifier;
 
 import org.ggp.base.apps.kiosk.GameCanvas;
 import org.ggp.base.player.gamer.Gamer;
+import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.strategies.aftermove.AfterMoveStrategy;
+import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.strategies.aftersimulation.AfterSimulationStrategy;
+import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.strategies.backpropagation.BackpropagationStrategy;
+import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.strategies.backpropagation.nodeupdaters.NodeUpdater;
+import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.strategies.beforesimualtion.BeforeSimulationStrategy;
+import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.strategies.expansion.ExpansionStrategy;
+import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.strategies.movechoice.MoveChoiceStrategy;
+import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.strategies.playout.PlayoutStrategy;
+import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.strategies.playout.jointmoveselector.JointMoveSelector;
+import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.strategies.playout.singlemoveselector.SingleMoveSelector;
+import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.strategies.selection.SelectionStrategy;
+import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.strategies.selection.evaluators.MoveEvaluator;
+import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.strategies.selection.evaluators.grave.BetaComputer;
 import org.ggp.base.player.gamer.statemachine.propnet.InternalPropnetGamer;
 import org.ggp.base.player.gamer.statemachine.prover.ProverGamer;
 import org.reflections.Reflections;
@@ -28,6 +41,22 @@ public class ProjectSearcher {
     public static final LoadedClasses<ProverGamer> PROVER_GAMERS = new LoadedClasses<ProverGamer>(ProverGamer.class);
     public static final LoadedClasses<InternalPropnetGamer> INTERNAL_PROPNET_GAMERS = new LoadedClasses<InternalPropnetGamer>(InternalPropnetGamer.class);
     public static final LoadedClasses<GameCanvas> GAME_CANVASES = new LoadedClasses<GameCanvas>(GameCanvas.class);
+
+    // Classes needed to create the search manager
+    public static final LoadedClasses<BetaComputer> BETA_COMPUTERS = new LoadedClasses<BetaComputer>(BetaComputer.class);
+    public static final LoadedClasses<JointMoveSelector> JOINT_MOVE_SELECTORS = new LoadedClasses<JointMoveSelector>(JointMoveSelector.class);
+    public static final LoadedClasses<MoveEvaluator> MOVE_EVALUATORS = new LoadedClasses<MoveEvaluator>(MoveEvaluator.class);
+    public static final LoadedClasses<NodeUpdater> NODE_UPDATERS = new LoadedClasses<NodeUpdater>(NodeUpdater.class);
+    public static final LoadedClasses<SingleMoveSelector> SINGLE_MOVE_SELECTORS = new LoadedClasses<SingleMoveSelector>(SingleMoveSelector.class);
+    // Strategies
+    public static final LoadedClasses<AfterMoveStrategy> AFTER_MOVE_STRATEGIES = new LoadedClasses<AfterMoveStrategy>(AfterMoveStrategy.class);
+    public static final LoadedClasses<AfterSimulationStrategy> AFTER_SIMULATION_STRATEGIES = new LoadedClasses<AfterSimulationStrategy>(AfterSimulationStrategy.class);
+    public static final LoadedClasses<BackpropagationStrategy> BACKPROPAGATION_STRATEGIES = new LoadedClasses<BackpropagationStrategy>(BackpropagationStrategy.class);
+    public static final LoadedClasses<BeforeSimulationStrategy> BEFORE_SIMULATION_STRATEGIES = new LoadedClasses<BeforeSimulationStrategy>(BeforeSimulationStrategy.class);
+    public static final LoadedClasses<ExpansionStrategy> EXPANSION_STRATEGIES = new LoadedClasses<ExpansionStrategy>(ExpansionStrategy.class);
+    public static final LoadedClasses<MoveChoiceStrategy> MOVE_CHOICE_STRATEGIES = new LoadedClasses<MoveChoiceStrategy>(MoveChoiceStrategy.class);
+    public static final LoadedClasses<PlayoutStrategy> PLAYOUT_STRATEGIES = new LoadedClasses<PlayoutStrategy>(PlayoutStrategy.class);
+    public static final LoadedClasses<SelectionStrategy> SELECTION_STRATEGIES = new LoadedClasses<SelectionStrategy>(SelectionStrategy.class);
 
     public static final <T> ImmutableSet<Class<? extends T>> getAllClassesThatAre(Class<T> klass) {
     	return new LoadedClasses<T>(klass).getConcreteClasses();

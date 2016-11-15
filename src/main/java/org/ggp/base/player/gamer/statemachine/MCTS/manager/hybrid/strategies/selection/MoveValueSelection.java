@@ -2,9 +2,11 @@ package org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.strategies.se
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Properties;
 import java.util.Random;
 
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.GameDependentParameters;
+import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.SharedReferencesCollector;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.strategies.selection.evaluators.MoveEvaluator;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.MCTSNode;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.hybrid.MCTSJointMove;
@@ -17,17 +19,14 @@ import org.ggp.base.util.statemachine.structure.Move;
 
 public abstract class MoveValueSelection extends SelectionStrategy {
 
-	private Random random;
-
 	private double valueOffset;
 
 	protected MoveEvaluator moveEvaluator;
 
-	public MoveValueSelection(GameDependentParameters gameDependentParameters, Random random, double valueOffset, MoveEvaluator moveEvaluator) {
+	public MoveValueSelection(GameDependentParameters gameDependentParameters, Random random, Properties properties, SharedReferencesCollector sharedReferencesCollector, double valueOffset, MoveEvaluator moveEvaluator) {
 
-		super(gameDependentParameters);
+		super(gameDependentParameters, random, properties, sharedReferencesCollector);
 
-		this.random = random;
 		this.valueOffset = valueOffset;
 		this.moveEvaluator = moveEvaluator;
 	}
@@ -180,20 +179,9 @@ public abstract class MoveValueSelection extends SelectionStrategy {
 	}
 
 	@Override
-	public String getStrategyParameters(){
+	public String getComponentParameters(){
 
-		return "VALUE_OFFSET = " + this.valueOffset + ", " + this.moveEvaluator.printEvaluator();
-	}
-
-	@Override
-	public String printStrategy(){
-		String params = this.getStrategyParameters();
-
-		if(params != null){
-			return "[SELECTION_STRATEGY = " + this.getClass().getSimpleName() + ", " + params + "]";
-		}else{
-			return "[SELECTION_STRATEGY = " + this.getClass().getSimpleName() + "]";
-		}
+		return "VALUE_OFFSET = " + this.valueOffset + ", " + this.moveEvaluator.printComponent();
 	}
 
 }

@@ -1,9 +1,12 @@
 package org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.strategies.backpropagation;
 
 import java.util.Map;
+import java.util.Properties;
+import java.util.Random;
 
 import org.ggp.base.player.gamer.statemachine.MCS.manager.MoveStats;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.GameDependentParameters;
+import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.SharedReferencesCollector;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.strategies.backpropagation.nodeupdaters.GRAVEUpdater;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.strategies.backpropagation.nodeupdaters.MASTUpdater;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.strategies.backpropagation.nodeupdaters.StandardUpdater;
@@ -21,13 +24,13 @@ public class MASTGRAVEBackpropagation extends BackpropagationStrategy {
 
 	private GRAVEUpdater graveUpdater;
 
-	public MASTGRAVEBackpropagation(GameDependentParameters gameDependentParameters, Map<Move, MoveStats> mastStatistics) {
+	public MASTGRAVEBackpropagation(GameDependentParameters gameDependentParameters, Random random, Properties properties, SharedReferencesCollector sharedReferencesCollector, Map<Move, MoveStats> mastStatistics) {
 
-		super(gameDependentParameters);
+		super(gameDependentParameters, random, properties, sharedReferencesCollector);
 
-		this.standardUpdater = new StandardUpdater(gameDependentParameters);
-		this.mastUpdater = new MASTUpdater(gameDependentParameters, mastStatistics);
-		this.graveUpdater = new GRAVEUpdater(gameDependentParameters);
+		this.standardUpdater = new StandardUpdater(gameDependentParameters, random, properties, sharedReferencesCollector);
+		this.mastUpdater = new MASTUpdater(gameDependentParameters, random, properties, sharedReferencesCollector, mastStatistics);
+		this.graveUpdater = new GRAVEUpdater(gameDependentParameters, random, properties, sharedReferencesCollector);
 	}
 
 	@Override
@@ -64,8 +67,8 @@ public class MASTGRAVEBackpropagation extends BackpropagationStrategy {
 	}
 
 	@Override
-	public String getStrategyParameters() {
-		return "(UPDATER_1 = " + this.standardUpdater.printNodeUpdater() + ", UPDATER_2 = "  + this.mastUpdater.printNodeUpdater() + ", UPDATER_3 = " + this.graveUpdater.printNodeUpdater() + ")";
+	public String getComponentParameters() {
+		return "(UPDATER_1 = " + this.standardUpdater.printComponent() + ", UPDATER_2 = "  + this.mastUpdater.printComponent() + ", UPDATER_3 = " + this.graveUpdater.printComponent() + ")";
 	}
 
 }

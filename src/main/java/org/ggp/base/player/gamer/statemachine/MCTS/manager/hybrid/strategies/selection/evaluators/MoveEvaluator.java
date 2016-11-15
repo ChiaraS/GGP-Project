@@ -1,15 +1,19 @@
 package org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.strategies.selection.evaluators;
 
+import java.util.Properties;
+import java.util.Random;
+
 import org.ggp.base.player.gamer.statemachine.MCS.manager.MoveStats;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.GameDependentParameters;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.SearchManagerComponent;
+import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.SharedReferencesCollector;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.MCTSNode;
 import org.ggp.base.util.statemachine.structure.Move;
 
 public abstract class MoveEvaluator extends SearchManagerComponent{
 
-	public MoveEvaluator(GameDependentParameters gameDependentParameters) {
-		super(gameDependentParameters);
+	public MoveEvaluator(GameDependentParameters gameDependentParameters, Random random, Properties properties, SharedReferencesCollector sharedReferencesCollector) {
+		super(gameDependentParameters, random, properties, sharedReferencesCollector);
 	}
 
 	/**
@@ -25,9 +29,16 @@ public abstract class MoveEvaluator extends SearchManagerComponent{
 	 */
 	public abstract double computeMoveValue(MCTSNode theNode, Move theMove, int roleIndex, MoveStats theMoveStats);
 
-	public abstract String getEvaluatorParameters();
+	@Override
+	public String printComponent() {
+		String params = this.getComponentParameters();
 
-	public abstract String printEvaluator();
+		if(params != null){
+			return "(EVALUATOR_TYPE = " + this.getClass().getSimpleName() + ", " + params + ")";
+		}else{
+			return "(EVALUATOR_TYPE = " + this.getClass().getSimpleName() + ")";
+		}
+	}
 
 
 }

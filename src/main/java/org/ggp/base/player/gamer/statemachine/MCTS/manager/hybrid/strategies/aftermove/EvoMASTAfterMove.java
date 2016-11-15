@@ -1,6 +1,10 @@
 package org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.strategies.aftermove;
 
+import java.util.Properties;
+import java.util.Random;
+
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.GameDependentParameters;
+import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.SharedReferencesCollector;
 
 
 public class EvoMASTAfterMove extends AfterMoveStrategy {
@@ -9,9 +13,9 @@ public class EvoMASTAfterMove extends AfterMoveStrategy {
 
 	private EvoAfterMove evoAfterMove;
 
-	public EvoMASTAfterMove(GameDependentParameters gameDependentParameters, MASTAfterMove mastAfterMove, EvoAfterMove evoAfterMove){
+	public EvoMASTAfterMove(GameDependentParameters gameDependentParameters, Random random, Properties properties, SharedReferencesCollector sharedReferencesCollector, MASTAfterMove mastAfterMove, EvoAfterMove evoAfterMove){
 
-		super(gameDependentParameters);
+		super(gameDependentParameters, random, properties, sharedReferencesCollector);
 
 		this.mastAfterMove = mastAfterMove;
 
@@ -39,19 +43,8 @@ public class EvoMASTAfterMove extends AfterMoveStrategy {
 	}
 
 	@Override
-	public String getStrategyParameters() {
-		return "(SUB_AFTER_MOVE_STRATEGY = " + this.mastAfterMove.printStrategy() + ", SUB_AFTER_SIM_STRATEGY = " + this.evoAfterMove.printStrategy() + ")";
-	}
-
-	@Override
-	public String printStrategy() {
-		String params = this.getStrategyParameters();
-
-		if(params != null){
-			return "[AFTER_MOVE_STRATEGY = " + this.getClass().getSimpleName() + ", " + params + "]";
-		}else{
-			return "[AFTER_MOVE_STRATEGY = " + this.getClass().getSimpleName() + "]";
-		}
+	public String getComponentParameters() {
+		return "(SUB_AFTER_MOVE_STRATEGY = " + this.mastAfterMove.printComponent() + ", SUB_AFTER_SIM_STRATEGY = " + this.evoAfterMove.printComponent() + ")";
 	}
 
 }

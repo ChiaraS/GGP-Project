@@ -3,10 +3,12 @@ package org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.strategies.pl
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Properties;
 import java.util.Random;
 
 import org.ggp.base.player.gamer.statemachine.MCS.manager.MoveStats;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.GameDependentParameters;
+import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.SharedReferencesCollector;
 import org.ggp.base.util.statemachine.exceptions.MoveDefinitionException;
 import org.ggp.base.util.statemachine.exceptions.StateMachineException;
 import org.ggp.base.util.statemachine.structure.MachineState;
@@ -14,16 +16,18 @@ import org.ggp.base.util.statemachine.structure.Move;
 
 public class MASTJointMoveSelector extends JointMoveSelector {
 
-	private Random random;
-
 	private Map<Move, MoveStats> mastStatistics;
 
-	public MASTJointMoveSelector(GameDependentParameters gameDependentParameters, Random random, Map<Move, MoveStats> mastStatistics){
+	public MASTJointMoveSelector(GameDependentParameters gameDependentParameters, Random random,
+			Properties properties, SharedReferencesCollector sharedReferencesCollector){
 
-		super(gameDependentParameters);
+		super(gameDependentParameters, random, properties, sharedReferencesCollector);
 
-		this.random = random;
-		this.mastStatistics = mastStatistics;
+	}
+
+	@Override
+	public void setReferences(SharedReferencesCollector sharedReferencesCollector) {
+		this.mastStatistics = sharedReferencesCollector.getMastStatistics();
 	}
 
 	@Override
@@ -91,19 +95,8 @@ public class MASTJointMoveSelector extends JointMoveSelector {
 	}
 
 	@Override
-	public String getJointMoveSelectorParameters() {
+	public String getComponentParameters() {
 		return null;
-	}
-
-	@Override
-	public String printJointMoveSelector() {
-		String params = this.getJointMoveSelectorParameters();
-
-		if(params != null){
-			return "(JOINT_MOVE_SEL = " + this.getClass().getSimpleName() + ", " + params + ")";
-		}else{
-			return "(JOINT_MOVE_SEL = " + this.getClass().getSimpleName() + ")";
-		}
 	}
 
 }

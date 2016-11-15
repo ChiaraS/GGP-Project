@@ -1,7 +1,11 @@
 package org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.strategies.selection.evaluators.grave;
 
+import java.util.Properties;
+import java.util.Random;
+
 import org.ggp.base.player.gamer.statemachine.MCS.manager.MoveStats;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.GameDependentParameters;
+import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.SharedReferencesCollector;
 
 public class CADIABetaComputer extends BetaComputer{
 
@@ -14,20 +18,37 @@ public class CADIABetaComputer extends BetaComputer{
 
 	private int initialK;
 
-	public CADIABetaComputer(GameDependentParameters gameDependentParameters, int initialK) {
+	public CADIABetaComputer(GameDependentParameters gameDependentParameters, Random random,
+			Properties properties, SharedReferencesCollector sharedReferencesCollector) {
 
-		super(gameDependentParameters);
+		super(gameDependentParameters, random, properties, sharedReferencesCollector);
 
 		this.k = null;
 
-		this.initialK = initialK;
+		this.initialK = Integer.parseInt(properties.getProperty("BetaComputer.initialK"));
+
+		// If this component must be tuned online, then we should add its reference to the sharedReferencesCollector
+		String toTuneString = properties.getProperty("BetaComputer.tune");
+		if(toTuneString != null){
+			boolean toTune = Boolean.parseBoolean(toTuneString);
+			if(toTune){
+				sharedReferencesCollector.setTheComponentToTune(this);
+			}
+		}
 
 	}
 
+	@Override
+	public void setReferences(SharedReferencesCollector sharedReferencesCollector) {
+		// No need for any reference
+	}
+
+	@Override
 	public void clearComponent(){
 		this.k = null;
 	}
 
+	@Override
 	public void setUpComponent(){
 		this.k = new int[this.gameDependentParameters.getNumRoles()];
 
@@ -46,7 +67,7 @@ public class CADIABetaComputer extends BetaComputer{
 	}
 
 	@Override
-	public String getBetaComputerParameters() {
+	public String getComponentParameters() {
 
 		String roleParams = "[ ";
 

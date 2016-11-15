@@ -3,9 +3,12 @@ package org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.strategies.se
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Properties;
+import java.util.Random;
 
 import org.ggp.base.player.gamer.statemachine.MCS.manager.MoveStats;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.GameDependentParameters;
+import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.SharedReferencesCollector;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.strategies.selection.evaluators.UCTEvaluator;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.MCTSNode;
 import org.ggp.base.util.statemachine.structure.Move;
@@ -27,8 +30,8 @@ public class GRAVEEvaluator extends UCTEvaluator{
 
 	private double defaultExploration;
 
-	public GRAVEEvaluator(GameDependentParameters gameDependentParameters, double c, double defaultValue, BetaComputer betaComputer, double defaultExploration) {
-		super(gameDependentParameters, c, defaultValue);
+	public GRAVEEvaluator(GameDependentParameters gameDependentParameters, Random random, Properties properties, SharedReferencesCollector sharedReferencesCollector, double c, double defaultValue, BetaComputer betaComputer, double defaultExploration) {
+		super(gameDependentParameters, random, properties, sharedReferencesCollector, c, defaultValue);
 		this.betaComputer = betaComputer;
 
 		this.closestAmafStats = null;
@@ -133,13 +136,13 @@ public class GRAVEEvaluator extends UCTEvaluator{
 	}
 
 	@Override
-	public String getEvaluatorParameters() {
-		String params = super.getEvaluatorParameters();
+	public String getComponentParameters() {
+		String params = super.getComponentParameters();
 
 		if(params != null){
-			return params + ", " + this.betaComputer.printBetaComputer() + ", DEFAULT_EXPLORATION = " + this.defaultExploration;
+			return params + ", " + this.betaComputer.printComponent() + ", DEFAULT_EXPLORATION = " + this.defaultExploration;
 		}else{
-			return this.betaComputer.printBetaComputer() + ", DEFAULT_EXPLORATION = " + this.defaultExploration;
+			return this.betaComputer.printComponent() + ", DEFAULT_EXPLORATION = " + this.defaultExploration;
 		}
 	}
 

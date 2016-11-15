@@ -1,6 +1,10 @@
 package org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.strategies.aftersimulation;
 
+import java.util.Properties;
+import java.util.Random;
+
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.GameDependentParameters;
+import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.SharedReferencesCollector;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.strategies.backpropagation.TDBackpropagation;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.hybrid.SimulationResult;
 
@@ -8,9 +12,9 @@ public class TDAfterSimulation extends AfterSimulationStrategy {
 
 	private TDBackpropagation backpropagation;
 
-	public TDAfterSimulation(GameDependentParameters gameDependentParameters, TDBackpropagation backpropagation) {
+	public TDAfterSimulation(GameDependentParameters gameDependentParameters, Random random, Properties properties, SharedReferencesCollector sharedReferencesCollector, TDBackpropagation backpropagation) {
 
-		super(gameDependentParameters);
+		super(gameDependentParameters, random, properties, sharedReferencesCollector);
 
 		this.backpropagation = backpropagation;
 	}
@@ -26,19 +30,8 @@ public class TDAfterSimulation extends AfterSimulationStrategy {
 	}
 
 	@Override
-	public String getStrategyParameters() {
+	public String getComponentParameters() {
 		return null;
-	}
-
-	@Override
-	public String printStrategy() {
-		String params = this.getStrategyParameters();
-
-		if(params != null){
-			return "[AFTER_SIM_STRATEGY = " + this.getClass().getSimpleName() + ", " + params + "]";
-		}else{
-			return "[AFTER_SIM_STRATEGY = " + this.getClass().getSimpleName() + "]";
-		}
 	}
 
 	@Override

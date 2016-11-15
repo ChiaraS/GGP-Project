@@ -1,5 +1,10 @@
 package org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid;
 
+import java.util.Properties;
+import java.util.Random;
+
+import com.google.common.collect.ImmutableSet;
+
 /**
  * This class specifies parameters and methods that must be common to all components of the search manager
  * (the components of the search manager are strategies (e.g. selection, playout, before/after simulation,
@@ -22,14 +27,83 @@ package org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid;
  */
 public abstract class SearchManagerComponent {
 
-	protected GameDependentParameters gameDependentParameters;
+	/**
+	 * This method looks in the given list of classes for the class with the given name.
+	 *
+	 * @param allClasses
+	 * @param searchManagerComponentName
+	 * @return
+	 */
+	public static Class<?> createSearchManagerComponent(ImmutableSet<Class<?>> allClasses, String searchManagerComponentName){
 
-	public SearchManagerComponent(GameDependentParameters gameDependentParameters) {
-		this.gameDependentParameters = gameDependentParameters;
+		Class<?> theCorrespondingClass = null;
+		for (Class<?> componentClass : allClasses) {
+    		if(componentClass.getSimpleName().equals(searchManagerComponentName)){
+    			theCorrespondingClass = componentClass;
+    		}
+    	}
+
+		if(theCorrespondingClass == null){
+			throw new RuntimeException("Cannot create search manager. Impossible to find SearchManagerComponent with name " + searchManagerComponentName + ".");
+		}else{
+			return theCorrespondingClass;
+		}
+
 	}
 
+
+	protected GameDependentParameters gameDependentParameters;
+
+	protected Random random;
+
+	/**
+	 * The constructor must initialize all the primitive parameters according to the values specified in the properties,
+	 * create the objects using the types specified in the properties and make sure that all the objects created by the
+	 * class in the constructor that must be shared are also set in the sharedReferencesCollector.
+	 *
+	 * @param gameDependentParameters parameters that depend on the game being played (e.g. number of roles, index of my
+	 * role, the state machine of the game, ...).
+	 * @param random
+	 * @param properties map built from the properties file that specifies the settings of the gamer (i.e. which strategies
+	 * it must use, which types of components, which values for the parameters, ecc ...)
+	 * @param sharedReferencesCollector collects the references to parameters created by the constructor that other search
+	 * manager components also need to have.
+	 */
+	public SearchManagerComponent(GameDependentParameters gameDependentParameters, Random random, Properties properties, SharedReferencesCollector sharedReferencesCollector) {
+		this.gameDependentParameters = gameDependentParameters;
+		this.random = random;
+	}
+
+	public abstract void setReferences(SharedReferencesCollector sharedReferencesCollector);
+
+	/**
+	 * Clears all the parameters and references to object that are game dependent (e.g.
+	 * the reference to the state machine, the number of roles, statistics collected so
+	 * far, ecc...).
+	 *
+	 * BE CAREFUL!: when clearing objects, don't change the reference to them (except for
+	 * the state machine), but only clear their content, since they might be shared on
+	 * purpose with other strategies. If possible make the reference FINAL.
+	 */
 	public abstract void clearComponent();
 
 	public abstract void setUpComponent();
+
+	/**
+	 * Creates a string representing the component parameters and their values
+	 * to be used for logging purposes.
+	 *
+	 * @return a string representing the component parameters and their values.
+	 */
+	public abstract String getComponentParameters();
+
+	/**
+	 * Creates a string representing the exact name of the component and the parameters
+	 * it is using as returned by getStrategyParameters().
+	 *
+	 * @return a string representing the exact name of the component and the parameters
+	 * it is using.
+	 */
+	public abstract String printComponent();
 
 }

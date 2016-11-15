@@ -2,11 +2,13 @@ package org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.strategies.mo
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Properties;
 import java.util.Random;
 
 import org.ggp.base.player.gamer.statemachine.MCS.manager.MoveStats;
 import org.ggp.base.player.gamer.statemachine.MCS.manager.hybrid.CompleteMoveStats;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.GameDependentParameters;
+import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.SharedReferencesCollector;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.MCTSNode;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.hybrid.decoupled.DecoupledMCTSMoveStats;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.hybrid.decoupled.DecoupledMCTSNode;
@@ -15,12 +17,10 @@ import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.hybrid.
 
 public class MaximumScoreChoice extends MoveChoiceStrategy {
 
-	private Random random;
+	public MaximumScoreChoice(GameDependentParameters gameDependentParameters, Random random, Properties properties, SharedReferencesCollector sharedReferencesCollector){
 
-	public MaximumScoreChoice(GameDependentParameters gameDependentParameters, Random random){
+		super(gameDependentParameters, random, properties, sharedReferencesCollector);
 
-		super(gameDependentParameters);
-		this.random = random;
 	}
 
 	@Override
@@ -139,18 +139,8 @@ public class MaximumScoreChoice extends MoveChoiceStrategy {
 	}
 
 	@Override
-	public String getStrategyParameters() {
+	public String getComponentParameters() {
 		return null;
 	}
 
-	@Override
-	public String printStrategy() {
-		String params = this.getStrategyParameters();
-
-		if(params != null){
-			return "[MOVE_CHOICE_STRATEGY = " + this.getClass().getSimpleName() + ", " + params + "]";
-		}else{
-			return "[MOVE_CHOICE_STRATEGY = " + this.getClass().getSimpleName() + "]";
-		}
-	}
 }

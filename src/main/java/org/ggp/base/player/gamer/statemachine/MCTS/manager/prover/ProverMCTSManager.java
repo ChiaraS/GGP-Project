@@ -180,7 +180,7 @@ public class ProverMCTSManager extends MCTSManager {
 		toLog += "\n" + this.moveChoiceStrategy.printStrategy();
 
 		if(this.beforeSimulationStrategy != null){
-			toLog += "\n" + this.beforeSimulationStrategy.printStrategy();
+			toLog += "\n" + this.beforeSimulationStrategy.printComponent();
 		}else{
 			toLog += "\n[BEFORE_SIM_STRATEGY = null]";
 		}
@@ -192,7 +192,7 @@ public class ProverMCTSManager extends MCTSManager {
 		}
 
 		if(this.afterMoveStrategy != null){
-			toLog += "\n" + this.afterMoveStrategy.printStrategy();
+			toLog += "\n" + this.afterMoveStrategy.printComponent();
 		}else{
 			toLog += "\n[AFTER_MOVE_STRATEGY = null]";
 		}

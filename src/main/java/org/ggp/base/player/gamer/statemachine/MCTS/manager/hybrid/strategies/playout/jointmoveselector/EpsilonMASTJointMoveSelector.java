@@ -2,12 +2,12 @@ package org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.strategies.pl
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
+import java.util.Properties;
 import java.util.Random;
 
-import org.ggp.base.player.gamer.statemachine.MCS.manager.MoveStats;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.evolution.OnlineTunableComponent;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.GameDependentParameters;
+import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.SharedReferencesCollector;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.strategies.playout.singlemoveselector.MASTSingleMoveSelector;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.strategies.playout.singlemoveselector.RandomSingleMoveSelector;
 import org.ggp.base.util.statemachine.exceptions.MoveDefinitionException;
@@ -21,24 +21,36 @@ public class EpsilonMASTJointMoveSelector extends JointMoveSelector implements O
 
 	private RandomSingleMoveSelector randomSelector;
 
-	private Random random;
-
 	private double[] epsilon;
 
 	private double initialEpsilon;
 
-	public EpsilonMASTJointMoveSelector(GameDependentParameters gameDependentParameters, Random random, Map<Move, MoveStats> mastStatistics, double initialEpsilon){
+	public EpsilonMASTJointMoveSelector(GameDependentParameters gameDependentParameters, Random random,
+			Properties properties, SharedReferencesCollector sharedReferencesCollector){
 
-		super(gameDependentParameters);
+		super(gameDependentParameters, random, properties, sharedReferencesCollector);
 
-		this.mastSelector = new MASTSingleMoveSelector(gameDependentParameters, random, mastStatistics);
-		this.randomSelector = new RandomSingleMoveSelector(gameDependentParameters);
-		this.random = random;
+		this.mastSelector = new MASTSingleMoveSelector(gameDependentParameters, random, properties, sharedReferencesCollector);
+		this.randomSelector = new RandomSingleMoveSelector(gameDependentParameters, random, properties, sharedReferencesCollector);
 
 		this.epsilon = null;
 
-		this.initialEpsilon = initialEpsilon;
+		this.initialEpsilon = Double.parseDouble(properties.getProperty("JointMoveSelector.initialEpsilon"));
 
+		// If this component must be tuned online, then we should add its reference to the sharedReferencesCollector
+		String toTuneString = properties.getProperty("JointMoveSelector.tune");
+		if(toTuneString != null){
+			boolean toTune = Boolean.parseBoolean(toTuneString);
+			if(toTune){
+				sharedReferencesCollector.setTheComponentToTune(this);
+			}
+		}
+
+	}
+
+	@Override
+	public void setReferences(SharedReferencesCollector sharedReferencesCollector) {
+		// No need for any reference
 	}
 
 	@Override
@@ -87,7 +99,7 @@ public class EpsilonMASTJointMoveSelector extends JointMoveSelector implements O
 	}
 
 	@Override
-	public String getJointMoveSelectorParameters() {
+	public String getComponentParameters() {
 
 		String roleParams = "[ ";
 
@@ -99,18 +111,7 @@ public class EpsilonMASTJointMoveSelector extends JointMoveSelector implements O
 
 		roleParams += "]";
 
-		return "SUB_SELECTOR1 = " + this.mastSelector.printSingleMoveSelector() + ", SUB_SELECTOR2 = " + this.randomSelector.printSingleMoveSelector() + ", EPSILON = " + roleParams;
-	}
-
-	@Override
-	public String printJointMoveSelector() {
-		String params = this.getJointMoveSelectorParameters();
-
-		if(params != null){
-			return "(JOINT_MOVE_SEL = " + this.getClass().getSimpleName() + ", " + params + ")";
-		}else{
-			return "(JOINT_MOVE_SEL = " + this.getClass().getSimpleName() + ")";
-		}
+		return "SUB_SELECTOR1 = " + this.mastSelector.printComponent() + ", SUB_SELECTOR2 = " + this.randomSelector.printComponent() + ", EPSILON = " + roleParams;
 	}
 
 	@Override
@@ -127,7 +128,7 @@ public class EpsilonMASTJointMoveSelector extends JointMoveSelector implements O
 
 	@Override
 	public String printOnlineTunableComponent() {
-		return "(ONLINE_TUNABLE_COMPONENT = " + this.printJointMoveSelector() + ")";
+		return "(ONLINE_TUNABLE_COMPONENT = " + this.printComponent() + ")";
 	}
 
 }

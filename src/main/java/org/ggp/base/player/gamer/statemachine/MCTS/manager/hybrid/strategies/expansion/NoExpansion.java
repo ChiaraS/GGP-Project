@@ -1,6 +1,10 @@
 package org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.strategies.expansion;
 
+import java.util.Properties;
+import java.util.Random;
+
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.GameDependentParameters;
+import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.SharedReferencesCollector;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.MCTSNode;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.hybrid.MCTSJointMove;
 
@@ -19,8 +23,8 @@ import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.hybrid.
  */
 public class NoExpansion extends ExpansionStrategy {
 
-	public NoExpansion(GameDependentParameters gameDependentParameters) {
-		super(gameDependentParameters);
+	public NoExpansion(GameDependentParameters gameDependentParameters, Random random, Properties properties, SharedReferencesCollector sharedReferencesCollector) {
+		super(gameDependentParameters, random, properties, sharedReferencesCollector);
 	}
 
 	@Override
@@ -34,19 +38,8 @@ public class NoExpansion extends ExpansionStrategy {
 	}
 
 	@Override
-	public String getStrategyParameters() {
+	public String getComponentParameters() {
 		return null;
-	}
-
-	@Override
-	public String printStrategy() {
-		String params = this.getStrategyParameters();
-
-		if(params != null){
-			return "[EXPANSION_STRATEGY = " + this.getClass().getSimpleName() + ", " + params + "]";
-		}else{
-			return "[EXPANSION_STRATEGY = " + this.getClass().getSimpleName() + "]";
-		}
 	}
 
 	@Override

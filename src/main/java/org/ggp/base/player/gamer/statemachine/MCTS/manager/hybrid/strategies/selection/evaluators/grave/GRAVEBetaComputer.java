@@ -1,7 +1,11 @@
 package org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.strategies.selection.evaluators.grave;
 
+import java.util.Properties;
+import java.util.Random;
+
 import org.ggp.base.player.gamer.statemachine.MCS.manager.MoveStats;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.GameDependentParameters;
+import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.SharedReferencesCollector;
 
 public class GRAVEBetaComputer extends BetaComputer {
 
@@ -9,19 +13,37 @@ public class GRAVEBetaComputer extends BetaComputer {
 
 	private double initialBias;
 
-	public GRAVEBetaComputer(GameDependentParameters gameDependentParameters, double initialBias) {
+	public GRAVEBetaComputer(GameDependentParameters gameDependentParameters, Random random,
+			Properties properties, SharedReferencesCollector sharedReferencesCollector) {
 
-		super(gameDependentParameters);
+		super(gameDependentParameters, random, properties, sharedReferencesCollector);
 
 		this.bias = null;
-		this.initialBias = initialBias;
+
+		this.initialBias = Double.parseDouble(properties.getProperty("BetaComputer.initialBias"));
+
+		// If this component must be tuned online, then we should add its reference to the sharedReferencesCollector
+		String toTuneString = properties.getProperty("BetaComputer.tune");
+		if(toTuneString != null){
+			boolean toTune = Boolean.parseBoolean(toTuneString);
+			if(toTune){
+				sharedReferencesCollector.setTheComponentToTune(this);
+			}
+		}
 
 	}
 
+	@Override
+	public void setReferences(SharedReferencesCollector sharedReferencesCollector) {
+		// No need for any reference
+	}
+
+	@Override
 	public void clearComponent(){
 		this.bias = null;
 	}
 
+	@Override
 	public void setUpComponent(){
 
 		this.bias = new double[this.gameDependentParameters.getNumRoles()];
@@ -47,7 +69,7 @@ public class GRAVEBetaComputer extends BetaComputer {
 	}
 
 	@Override
-	public String getBetaComputerParameters() {
+	public String getComponentParameters() {
 
 		String roleParams = "[ ";
 

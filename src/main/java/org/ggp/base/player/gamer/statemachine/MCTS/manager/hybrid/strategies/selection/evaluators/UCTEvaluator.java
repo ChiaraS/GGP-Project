@@ -1,8 +1,12 @@
 package org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.strategies.selection.evaluators;
 
+import java.util.Properties;
+import java.util.Random;
+
 import org.ggp.base.player.gamer.statemachine.MCS.manager.MoveStats;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.evolution.OnlineTunableComponent;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.GameDependentParameters;
+import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.SharedReferencesCollector;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.MCTSNode;
 import org.ggp.base.util.statemachine.structure.Move;
 
@@ -21,9 +25,9 @@ public class UCTEvaluator extends MoveEvaluator implements OnlineTunableComponen
 	 */
 	protected double defaultValue;
 
-	public UCTEvaluator(GameDependentParameters gameDependentParameters, double initialC, double defaultValue){
+	public UCTEvaluator(GameDependentParameters gameDependentParameters, Random random, Properties properties, SharedReferencesCollector sharedReferencesCollector, double initialC, double defaultValue){
 
-		super(gameDependentParameters);
+		super(gameDependentParameters, random, properties, sharedReferencesCollector);
 
 		this.c = null;
 		this.initialC = initialC;
@@ -87,7 +91,7 @@ public class UCTEvaluator extends MoveEvaluator implements OnlineTunableComponen
 	}
 
 	@Override
-	public String getEvaluatorParameters() {
+	public String getComponentParameters() {
 
 		String roleParams = "[ ";
 
@@ -100,17 +104,6 @@ public class UCTEvaluator extends MoveEvaluator implements OnlineTunableComponen
 		roleParams += "]";
 
 		return "C_CONSTANTS = " + roleParams + ", DEFAULT_VALUE = " + this.defaultValue;
-	}
-
-	@Override
-	public String printEvaluator() {
-		String params = this.getEvaluatorParameters();
-
-		if(params != null){
-			return "(EVALUATOR_TYPE = " + this.getClass().getSimpleName() + ", " + params + ")";
-		}else{
-			return "(EVALUATOR_TYPE = " + this.getClass().getSimpleName() + ")";
-		}
 	}
 
 	@Override
@@ -133,7 +126,7 @@ public class UCTEvaluator extends MoveEvaluator implements OnlineTunableComponen
 	@Override
 	public String printOnlineTunableComponent() {
 
-		return "(ONLINE_TUNABLE_COMPONENT = " + this.printEvaluator() + ")";
+		return "(ONLINE_TUNABLE_COMPONENT = " + this.printComponent() + ")";
 
 	}
 

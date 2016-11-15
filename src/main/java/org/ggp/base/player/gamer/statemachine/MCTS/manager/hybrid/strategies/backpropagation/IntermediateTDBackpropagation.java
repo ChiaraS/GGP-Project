@@ -1,8 +1,11 @@
 package org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.strategies.backpropagation;
 
 import java.util.List;
+import java.util.Properties;
+import java.util.Random;
 
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.GameDependentParameters;
+import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.SharedReferencesCollector;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.strategies.selection.evaluators.td.GlobalExtremeValues;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.hybrid.SequDecMCTSJointMove;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.hybrid.SimulationResult;
@@ -18,9 +21,9 @@ public class IntermediateTDBackpropagation extends TDBackpropagation {
 	 */
 	protected int goalsIndex;
 
-	public IntermediateTDBackpropagation(GameDependentParameters gameDependentParameters, GlobalExtremeValues globalExtremeValues, double qPlayout,
+	public IntermediateTDBackpropagation(GameDependentParameters gameDependentParameters, Random random, Properties properties, SharedReferencesCollector sharedReferencesCollector, GlobalExtremeValues globalExtremeValues, double qPlayout,
 			double lambda, double gamma) {
-		super(gameDependentParameters, globalExtremeValues, qPlayout, lambda, gamma);
+		super(gameDependentParameters, random, properties, sharedReferencesCollector, globalExtremeValues, qPlayout, lambda, gamma);
 
 		this.goalsIndex = 0;
 

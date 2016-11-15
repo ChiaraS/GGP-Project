@@ -1,6 +1,10 @@
 package org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.strategies.backpropagation;
 
+import java.util.Properties;
+import java.util.Random;
+
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.GameDependentParameters;
+import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.SharedReferencesCollector;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.strategies.backpropagation.nodeupdaters.StandardUpdater;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.MCTSNode;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.hybrid.MCTSJointMove;
@@ -11,8 +15,8 @@ public class StandardBackpropagation extends BackpropagationStrategy {
 
 	private StandardUpdater standardUpdater;
 
-	public StandardBackpropagation(GameDependentParameters gameDependentParameters, StandardUpdater standardUpdater){
-		super(gameDependentParameters);
+	public StandardBackpropagation(GameDependentParameters gameDependentParameters, Random random, Properties properties, SharedReferencesCollector sharedReferencesCollector, StandardUpdater standardUpdater){
+		super(gameDependentParameters, random, properties, sharedReferencesCollector);
 
 		this.standardUpdater = standardUpdater;
 	}
@@ -42,8 +46,8 @@ public class StandardBackpropagation extends BackpropagationStrategy {
 	}
 
 	@Override
-	public String getStrategyParameters() {
-		return "(UPDATER = " + this.standardUpdater.printNodeUpdater() + ")";
+	public String getComponentParameters() {
+		return "(UPDATER = " + this.standardUpdater.printComponent() + ")";
 	}
 
 }

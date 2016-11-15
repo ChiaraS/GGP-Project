@@ -1,9 +1,11 @@
 package org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.strategies.selection;
 
+import java.util.Properties;
 import java.util.Random;
 
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.evolution.OnlineTunableComponent;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.GameDependentParameters;
+import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.SharedReferencesCollector;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.strategies.selection.evaluators.grave.GRAVEEvaluator;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.MCTSNode;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.hybrid.MCTSJointMove;
@@ -18,10 +20,10 @@ public class GRAVESelection extends MoveValueSelection implements OnlineTunableC
 
 	private int initialMinAMAFVisits;
 
-	public GRAVESelection(GameDependentParameters gameDependentParameters, Random random, double valueOffset,
+	public GRAVESelection(GameDependentParameters gameDependentParameters, Random random, Properties properties, SharedReferencesCollector sharedReferencesCollector, double valueOffset,
 			int initialMinAMAFVisits, GRAVEEvaluator moveEvaluator) {
 
-		super(gameDependentParameters, random, valueOffset, moveEvaluator);
+		super(gameDependentParameters, random, properties, sharedReferencesCollector, valueOffset, moveEvaluator);
 
 		this.minAMAFVisits = null;
 
@@ -98,8 +100,8 @@ public class GRAVESelection extends MoveValueSelection implements OnlineTunableC
 	}
 
 	@Override
-	public String getStrategyParameters(){
-		String params = super.getStrategyParameters();
+	public String getComponentParameters(){
+		String params = super.getComponentParameters();
 
 		String roleParams = "[ ";
 
@@ -138,7 +140,7 @@ public class GRAVESelection extends MoveValueSelection implements OnlineTunableC
 	@Override
 	public String printOnlineTunableComponent() {
 
-		return "(ONLINE_TUNABLE_COMPONENT = " + this.printStrategy() + ")";
+		return "(ONLINE_TUNABLE_COMPONENT = " + this.printComponent() + ")";
 
 	}
 

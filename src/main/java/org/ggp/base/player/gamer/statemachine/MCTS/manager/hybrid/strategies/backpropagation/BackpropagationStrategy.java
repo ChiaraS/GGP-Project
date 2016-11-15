@@ -1,6 +1,10 @@
 package org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.strategies.backpropagation;
 
+import java.util.Properties;
+import java.util.Random;
+
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.GameDependentParameters;
+import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.SharedReferencesCollector;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.strategies.Strategy;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.MCTSNode;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.hybrid.MCTSJointMove;
@@ -9,8 +13,8 @@ import org.ggp.base.util.statemachine.structure.MachineState;
 
 public abstract class BackpropagationStrategy extends Strategy {
 
-	public BackpropagationStrategy(GameDependentParameters gameDependentParameters) {
-		super(gameDependentParameters);
+	public BackpropagationStrategy(GameDependentParameters gameDependentParameters, Random random, Properties properties, SharedReferencesCollector sharedReferencesCollector) {
+		super(gameDependentParameters, random, properties, sharedReferencesCollector);
 	}
 
 	/**
@@ -39,8 +43,8 @@ public abstract class BackpropagationStrategy extends Strategy {
 
 
 	@Override
-	public String printStrategy() {
-		String params = this.getStrategyParameters();
+	public String printComponent() {
+		String params = this.getComponentParameters();
 		if(params != null){
 			return "[BACKPROPAGATION_STRATEGY = " + this.getClass().getSimpleName() + ", " + params + "]";
 		}else{

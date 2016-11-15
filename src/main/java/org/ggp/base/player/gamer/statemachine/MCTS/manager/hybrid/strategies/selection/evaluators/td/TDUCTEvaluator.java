@@ -1,7 +1,11 @@
 package org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.strategies.selection.evaluators.td;
 
+import java.util.Properties;
+import java.util.Random;
+
 import org.ggp.base.player.gamer.statemachine.MCS.manager.MoveStats;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.GameDependentParameters;
+import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.SharedReferencesCollector;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.strategies.selection.evaluators.UCTEvaluator;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.MCTSNode;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.hybrid.tddecoupled.TDDecoupledMCTSNode;
@@ -11,8 +15,8 @@ public class TDUCTEvaluator extends UCTEvaluator {
 
 	private GlobalExtremeValues globalExtremeValues;
 
-	public TDUCTEvaluator(GameDependentParameters gameDependentParameters, double c, double defaultValue, GlobalExtremeValues globalExtremeValues) {
-		super(gameDependentParameters, c, defaultValue);
+	public TDUCTEvaluator(GameDependentParameters gameDependentParameters, Random random, Properties properties, SharedReferencesCollector sharedReferencesCollector, double c, double defaultValue, GlobalExtremeValues globalExtremeValues) {
+		super(gameDependentParameters, random, properties, sharedReferencesCollector, c, defaultValue);
 
 		this.globalExtremeValues = globalExtremeValues;
 	}
@@ -63,8 +67,8 @@ public class TDUCTEvaluator extends UCTEvaluator {
 	}
 
 	@Override
-	public String getEvaluatorParameters() {
-		return super.getEvaluatorParameters() + ", DEFAUL_GLOBAL_MIN_VALUE = " + this.globalExtremeValues.getDefaultGlobalMinValue() + ", DEFAUL_GLOBAL_MAX_VALUE = " + this.globalExtremeValues.getDefaultGlobalMaxValue();
+	public String getComponentParameters() {
+		return super.getComponentParameters() + ", DEFAUL_GLOBAL_MIN_VALUE = " + this.globalExtremeValues.getDefaultGlobalMinValue() + ", DEFAUL_GLOBAL_MAX_VALUE = " + this.globalExtremeValues.getDefaultGlobalMaxValue();
 	}
 
 }

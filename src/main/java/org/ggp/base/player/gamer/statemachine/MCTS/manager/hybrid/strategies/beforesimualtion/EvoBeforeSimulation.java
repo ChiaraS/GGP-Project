@@ -1,9 +1,13 @@
 package org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.strategies.beforesimualtion;
 
+import java.util.Properties;
+import java.util.Random;
+
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.evolution.Individual;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.evolution.OnlineTunableComponent;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.evolution.SingleParameterEvolutionManager;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.GameDependentParameters;
+import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.SharedReferencesCollector;
 
 public class EvoBeforeSimulation extends BeforeSimulationStrategy {
 
@@ -15,9 +19,9 @@ public class EvoBeforeSimulation extends BeforeSimulationStrategy {
 
 	private OnlineTunableComponent tunableComponent;
 
-	public EvoBeforeSimulation(GameDependentParameters gameDependentParameters, SingleParameterEvolutionManager evolutionManager, double[] individualsValues, boolean tuneAllRoles, OnlineTunableComponent tunableComponent) {
+	public EvoBeforeSimulation(GameDependentParameters gameDependentParameters, Random random, Properties properties, SharedReferencesCollector sharedReferencesCollector, SingleParameterEvolutionManager evolutionManager, double[] individualsValues, boolean tuneAllRoles, OnlineTunableComponent tunableComponent) {
 
-		super(gameDependentParameters);
+		super(gameDependentParameters, random, properties, sharedReferencesCollector);
 
 		this.evolutionManager = evolutionManager;
 
@@ -35,6 +39,7 @@ public class EvoBeforeSimulation extends BeforeSimulationStrategy {
 
 	}
 
+	@Override
 	public void clearComponent(){
 		// It's not the job of this class to clear the tunable component because the component
 		// is for sure either another strategy or part of another strategy. A class must be
@@ -42,6 +47,7 @@ public class EvoBeforeSimulation extends BeforeSimulationStrategy {
 		this.evolutionManager.clear();
 	}
 
+	@Override
 	public void setUpComponent(){
 
 		Individual[][] populations;
@@ -76,20 +82,9 @@ public class EvoBeforeSimulation extends BeforeSimulationStrategy {
 	}
 
 	@Override
-	public String getStrategyParameters() {
+	public String getComponentParameters() {
 
 		return this.tunableComponent.printOnlineTunableComponent() + ", " + this.evolutionManager.printEvolutionManager();
-	}
-
-	@Override
-	public String printStrategy() {
-		String params = this.getStrategyParameters();
-
-		if(params != null){
-			return "[BEFORE_SIM_STRATEGY = " + this.getClass().getSimpleName() + ", " + params + "]";
-		}else{
-			return "[BEFORE_SIM_STRATEGY = " + this.getClass().getSimpleName() + "]";
-		}
 	}
 
 }

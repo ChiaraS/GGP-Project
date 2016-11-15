@@ -3,9 +3,12 @@ package org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.strategies.af
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Properties;
+import java.util.Random;
 
 import org.ggp.base.player.gamer.statemachine.MCS.manager.MoveStats;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.GameDependentParameters;
+import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.SharedReferencesCollector;
 import org.ggp.base.util.statemachine.structure.Move;
 
 public class MASTAfterMove extends AfterMoveStrategy {
@@ -14,9 +17,9 @@ public class MASTAfterMove extends AfterMoveStrategy {
 
 	private double decayFactor;
 
-	public MASTAfterMove(GameDependentParameters gameDependentParameters, Map<Move, MoveStats> mastStatistics, double decayFactor) {
+	public MASTAfterMove(GameDependentParameters gameDependentParameters, Random random, Properties properties, SharedReferencesCollector sharedReferencesCollector, Map<Move, MoveStats> mastStatistics, double decayFactor) {
 
-		super(gameDependentParameters);
+		super(gameDependentParameters, random, properties, sharedReferencesCollector);
 
 		this.mastStatistics = mastStatistics;
 		this.decayFactor = decayFactor;
@@ -34,20 +37,8 @@ public class MASTAfterMove extends AfterMoveStrategy {
 	}
 
 	@Override
-	public String getStrategyParameters() {
+	public String getComponentParameters() {
 		return "DECAY_FACTOR = " + this.decayFactor;
-	}
-
-	@Override
-	public String printStrategy() {
-
-		String params = this.getStrategyParameters();
-
-		if(params != null){
-			return "[AFTER_MOVE_STRATEGY = " + this.getClass().getSimpleName() + ", " + params + "]";
-		}else{
-			return "[AFTER_MOVE_STRATEGY = " + this.getClass().getSimpleName() + "]";
-		}
 	}
 
 	@Override

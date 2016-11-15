@@ -1,8 +1,11 @@
 package org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.strategies.playout.jointmoveselector;
 
 import java.util.List;
+import java.util.Properties;
+import java.util.Random;
 
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.GameDependentParameters;
+import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.SharedReferencesCollector;
 import org.ggp.base.util.statemachine.exceptions.MoveDefinitionException;
 import org.ggp.base.util.statemachine.exceptions.StateMachineException;
 import org.ggp.base.util.statemachine.structure.MachineState;
@@ -10,8 +13,14 @@ import org.ggp.base.util.statemachine.structure.Move;
 
 public class RandomJointMoveSelector extends JointMoveSelector{
 
-	public RandomJointMoveSelector(GameDependentParameters gameDependentParameters){
-		super(gameDependentParameters);
+	public RandomJointMoveSelector(GameDependentParameters gameDependentParameters, Random random,
+			Properties properties, SharedReferencesCollector sharedReferencesCollector){
+		super(gameDependentParameters, random, properties, sharedReferencesCollector);
+	}
+
+	@Override
+	public void setReferences(SharedReferencesCollector sharedReferencesCollector) {
+		// No need for any reference
 	}
 
 	@Override
@@ -30,19 +39,8 @@ public class RandomJointMoveSelector extends JointMoveSelector{
 	}
 
 	@Override
-	public String getJointMoveSelectorParameters() {
+	public String getComponentParameters() {
 		return null;
-	}
-
-	@Override
-	public String printJointMoveSelector() {
-		String params = this.getJointMoveSelectorParameters();
-
-		if(params != null){
-			return "(JOINT_MOVE_SEL = " + this.getClass().getSimpleName() + ", " + params + ")";
-		}else{
-			return "(JOINT_MOVE_SEL = " + this.getClass().getSimpleName() + ")";
-		}
 	}
 
 }

@@ -1,6 +1,10 @@
 package org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.strategies.aftersimulation;
 
+import java.util.Properties;
+import java.util.Random;
+
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.GameDependentParameters;
+import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.SharedReferencesCollector;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.hybrid.SimulationResult;
 
 public class EvoGRAVEAfterSimulation extends AfterSimulationStrategy {
@@ -9,9 +13,9 @@ public class EvoGRAVEAfterSimulation extends AfterSimulationStrategy {
 
 	private EvoAfterSimulation evoAfterSimulation;
 
-	public EvoGRAVEAfterSimulation(GameDependentParameters gameDependentParameters, GRAVEAfterSimulation graveAfterSimulation, EvoAfterSimulation evoAfterSimulation) {
+	public EvoGRAVEAfterSimulation(GameDependentParameters gameDependentParameters, Random random, Properties properties, SharedReferencesCollector sharedReferencesCollector, GRAVEAfterSimulation graveAfterSimulation, EvoAfterSimulation evoAfterSimulation) {
 
-		super(gameDependentParameters);
+		super(gameDependentParameters, random, properties, sharedReferencesCollector);
 
 		this.graveAfterSimulation = graveAfterSimulation;
 
@@ -39,19 +43,8 @@ public class EvoGRAVEAfterSimulation extends AfterSimulationStrategy {
 	}
 
 	@Override
-	public String getStrategyParameters() {
-		return "(SUB_AFTER_SIM_STRATEGY = " + this.graveAfterSimulation.printStrategy() + ", SUB_AFTER_SIM_STRATEGY = " + this.evoAfterSimulation.printStrategy() + ")";
-	}
-
-	@Override
-	public String printStrategy() {
-		String params = this.getStrategyParameters();
-
-		if(params != null){
-			return "[AFTER_SIM_STRATEGY = " + this.getClass().getSimpleName() + ", " + params + "]";
-		}else{
-			return "[AFTER_SIM_STRATEGY = " + this.getClass().getSimpleName() + "]";
-		}
+	public String getComponentParameters() {
+		return "(SUB_AFTER_SIM_STRATEGY = " + this.graveAfterSimulation.printComponent() + ", SUB_AFTER_SIM_STRATEGY = " + this.evoAfterSimulation.printComponent() + ")";
 	}
 
 }

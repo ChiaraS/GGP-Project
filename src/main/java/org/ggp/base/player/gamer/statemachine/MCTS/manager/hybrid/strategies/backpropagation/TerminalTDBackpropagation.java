@@ -1,6 +1,10 @@
 package org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.strategies.backpropagation;
 
+import java.util.Properties;
+import java.util.Random;
+
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.GameDependentParameters;
+import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.SharedReferencesCollector;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.strategies.selection.evaluators.td.GlobalExtremeValues;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.hybrid.SimulationResult;
 import org.ggp.base.util.logging.GamerLogger;
@@ -14,9 +18,9 @@ public class TerminalTDBackpropagation extends TDBackpropagation {
 	 */
 	private boolean firstUpdate;
 
-	public TerminalTDBackpropagation(GameDependentParameters gameDependentParameters, GlobalExtremeValues globalExtremeValues, double qPlayout,
-			double lambda, double gamma) {
-		super(gameDependentParameters, globalExtremeValues, qPlayout, lambda, gamma);
+	public TerminalTDBackpropagation(GameDependentParameters gameDependentParameters, Random random, Properties properties, SharedReferencesCollector sharedReferencesCollector, GlobalExtremeValues globalExtremeValues, double qPlayout,
+			double lambda, double gamma){
+		super(gameDependentParameters, random, properties, sharedReferencesCollector, globalExtremeValues, qPlayout, lambda, gamma);
 
 		this.firstUpdate = true;
 	}

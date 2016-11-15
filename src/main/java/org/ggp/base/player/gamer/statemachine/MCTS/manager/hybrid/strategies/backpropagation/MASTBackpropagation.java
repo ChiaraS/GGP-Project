@@ -1,9 +1,12 @@
 package org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.strategies.backpropagation;
 
 import java.util.Map;
+import java.util.Properties;
+import java.util.Random;
 
 import org.ggp.base.player.gamer.statemachine.MCS.manager.MoveStats;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.GameDependentParameters;
+import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.SharedReferencesCollector;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.strategies.backpropagation.nodeupdaters.MASTUpdater;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.strategies.backpropagation.nodeupdaters.StandardUpdater;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.MCTSNode;
@@ -18,12 +21,12 @@ public class MASTBackpropagation extends BackpropagationStrategy {
 
 	private MASTUpdater mastUpdater;
 
-	public MASTBackpropagation(GameDependentParameters gameDependentParameters, Map<Move, MoveStats> mastStatistics) {
+	public MASTBackpropagation(GameDependentParameters gameDependentParameters, Random random, Properties properties, SharedReferencesCollector sharedReferencesCollector, Map<Move, MoveStats> mastStatistics) {
 
-		super(gameDependentParameters);
+		super(gameDependentParameters, random, properties, sharedReferencesCollector);
 
-		this.standardUpdater = new StandardUpdater(gameDependentParameters);
-		this.mastUpdater = new MASTUpdater(gameDependentParameters, mastStatistics);
+		this.standardUpdater = new StandardUpdater(gameDependentParameters, random, properties, sharedReferencesCollector);
+		this.mastUpdater = new MASTUpdater(gameDependentParameters, random, properties, sharedReferencesCollector, mastStatistics);
 	}
 
 	@Override
@@ -54,8 +57,8 @@ public class MASTBackpropagation extends BackpropagationStrategy {
 	}
 
 	@Override
-	public String getStrategyParameters() {
-		return "(UPDATER_1 = " + this.standardUpdater.printNodeUpdater() + ", UPDATER_2 = " + this.mastUpdater.printNodeUpdater() + ")";
+	public String getComponentParameters() {
+		return "(UPDATER_1 = " + this.standardUpdater.printComponent() + ", UPDATER_2 = " + this.mastUpdater.printComponent() + ")";
 	}
 
 }

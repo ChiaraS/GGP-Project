@@ -168,26 +168,26 @@ public class HybridMCTSManager extends MCTSManager {
 		//	toLog += "\n" + s.printStrategy();
 		//}
 
-		toLog += "\n" + this.selectionStrategy.printStrategy();
-		toLog += "\n" + this.expansionStrategy.printStrategy();
-		toLog += "\n" + this.playoutStrategy.printStrategy();
-		toLog += "\n" + this.backpropagationStrategy.printStrategy();
-		toLog += "\n" + this.moveChoiceStrategy.printStrategy();
+		toLog += "\n" + this.selectionStrategy.printComponent();
+		toLog += "\n" + this.expansionStrategy.printComponent();
+		toLog += "\n" + this.playoutStrategy.printComponent();
+		toLog += "\n" + this.backpropagationStrategy.printComponent();
+		toLog += "\n" + this.moveChoiceStrategy.printComponent();
 
 		if(this.beforeSimulationStrategy != null){
-			toLog += "\n" + this.beforeSimulationStrategy.printStrategy();
+			toLog += "\n" + this.beforeSimulationStrategy.printComponent();
 		}else{
 			toLog += "\n[BEFORE_SIM_STRATEGY = null]";
 		}
 
 		if(this.afterSimulationStrategy != null){
-			toLog += "\n" + this.afterSimulationStrategy.printStrategy();
+			toLog += "\n" + this.afterSimulationStrategy.printComponent();
 		}else{
 			toLog += "\n[AFTER_SIM_STRATEGY = null]";
 		}
 
 		if(this.afterMoveStrategy != null){
-			toLog += "\n" + this.afterMoveStrategy.printStrategy();
+			toLog += "\n" + this.afterMoveStrategy.printComponent();
 		}else{
 			toLog += "\n[AFTER_MOVE_STRATEGY = null]";
 		}
