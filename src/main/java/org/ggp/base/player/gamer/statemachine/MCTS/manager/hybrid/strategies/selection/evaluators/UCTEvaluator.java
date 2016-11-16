@@ -1,11 +1,11 @@
 package org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.strategies.selection.evaluators;
 
-import java.util.Properties;
 import java.util.Random;
 
 import org.ggp.base.player.gamer.statemachine.MCS.manager.MoveStats;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.evolution.OnlineTunableComponent;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.GameDependentParameters;
+import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.GamerConfiguration;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.SharedReferencesCollector;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.MCTSNode;
 import org.ggp.base.util.statemachine.structure.Move;
@@ -20,19 +20,44 @@ public class UCTEvaluator extends MoveEvaluator implements OnlineTunableComponen
 
 	protected double initialC;
 
+	private double[] valuesForC;
 	/**
 	 * Default value to assign to an unexplored move.
 	 */
 	protected double defaultValue;
 
-	public UCTEvaluator(GameDependentParameters gameDependentParameters, Random random, Properties properties, SharedReferencesCollector sharedReferencesCollector, double initialC, double defaultValue){
+	public UCTEvaluator(GameDependentParameters gameDependentParameters, Random random,
+			GamerConfiguration gamerConfiguration, SharedReferencesCollector sharedReferencesCollector){
 
-		super(gameDependentParameters, random, properties, sharedReferencesCollector);
+		super(gameDependentParameters, random, gamerConfiguration, sharedReferencesCollector);
 
 		this.c = null;
-		this.initialC = initialC;
-		this.defaultValue = defaultValue;
 
+		this.initialC = Double.parseDouble(gamerConfiguration.getPropertyValue("MoveEvaluator.initialC"));
+
+		this.defaultValue = Double.parseDouble(gamerConfiguration.getPropertyValue("MoveEvaluator.unexploredMoveDefaultValue"));
+
+		// If this component must be tuned online, then we should add its reference to the sharedReferencesCollector
+		String toTuneString = gamerConfiguration.getPropertyValue("MoveEvaluator.tune");
+		boolean toTune = Boolean.parseBoolean(toTuneString);
+		if(toTune){
+			// If we have to tune the component then we look in the setting for all the values that we must use
+			// Note: the format for these values in the file must be the following:
+			// BetaComputer.valuesForK=v1;v2;...;vn
+			// The values are listed separated by ; with no spaces
+			String[] values = gamerConfiguration.getPropertyMultiValue("MoveEvaluator.valuesForC");
+			this.valuesForC = new double[values.length];
+			for(int i = 0; i < values.length; i++){
+				this.valuesForC[i] = Integer.parseInt(values[i]);
+			}
+			sharedReferencesCollector.setTheComponentToTune(this);
+		}
+
+	}
+
+	@Override
+	public void setReferences(SharedReferencesCollector sharedReferencesCollector) {
+		// No need for any reference
 	}
 
 	@Override
@@ -103,7 +128,7 @@ public class UCTEvaluator extends MoveEvaluator implements OnlineTunableComponen
 
 		roleParams += "]";
 
-		return "C_CONSTANTS = " + roleParams + ", DEFAULT_VALUE = " + this.defaultValue;
+		return "C_CONSTANTS = " + roleParams + ", UNEXPLORED_MOVE_DEFAULT_VALUE = " + this.defaultValue;
 	}
 
 	@Override
@@ -128,6 +153,11 @@ public class UCTEvaluator extends MoveEvaluator implements OnlineTunableComponen
 
 		return "(ONLINE_TUNABLE_COMPONENT = " + this.printComponent() + ")";
 
+	}
+
+	@Override
+	public double[] getPossibleValues() {
+		return this.valuesForC;
 	}
 
 }

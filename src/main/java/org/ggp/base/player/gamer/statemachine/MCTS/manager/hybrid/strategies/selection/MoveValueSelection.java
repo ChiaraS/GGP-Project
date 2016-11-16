@@ -2,10 +2,10 @@ package org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.strategies.se
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Properties;
 import java.util.Random;
 
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.GameDependentParameters;
+import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.GamerConfiguration;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.SharedReferencesCollector;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.strategies.selection.evaluators.MoveEvaluator;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.MCTSNode;
@@ -23,9 +23,12 @@ public abstract class MoveValueSelection extends SelectionStrategy {
 
 	protected MoveEvaluator moveEvaluator;
 
-	public MoveValueSelection(GameDependentParameters gameDependentParameters, Random random, Properties properties, SharedReferencesCollector sharedReferencesCollector, double valueOffset, MoveEvaluator moveEvaluator) {
+	public MoveValueSelection(GameDependentParameters gameDependentParameters, Random random,
+			GamerConfiguration gamerConfiguration, SharedReferencesCollector sharedReferencesCollector, double valueOffset, MoveEvaluator moveEvaluator) {
 
-		super(gameDependentParameters, random, properties, sharedReferencesCollector);
+		super(gameDependentParameters, random, gamerConfiguration, sharedReferencesCollector);
+
+		!!!
 
 		this.valueOffset = valueOffset;
 		this.moveEvaluator = moveEvaluator;

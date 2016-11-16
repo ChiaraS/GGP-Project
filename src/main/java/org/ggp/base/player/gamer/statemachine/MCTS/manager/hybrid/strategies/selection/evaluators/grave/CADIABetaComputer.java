@@ -1,10 +1,10 @@
 package org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.strategies.selection.evaluators.grave;
 
-import java.util.Properties;
 import java.util.Random;
 
 import org.ggp.base.player.gamer.statemachine.MCS.manager.MoveStats;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.GameDependentParameters;
+import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.GamerConfiguration;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.SharedReferencesCollector;
 
 public class CADIABetaComputer extends BetaComputer{
@@ -18,22 +18,34 @@ public class CADIABetaComputer extends BetaComputer{
 
 	private int initialK;
 
-	public CADIABetaComputer(GameDependentParameters gameDependentParameters, Random random,
-			Properties properties, SharedReferencesCollector sharedReferencesCollector) {
+	/**
+	 * Array with all the values for K that must be used to tune the parameter.
+	 * These values will be used for al roles.
+	 */
+	private double[] valuesForK;
 
-		super(gameDependentParameters, random, properties, sharedReferencesCollector);
+	public CADIABetaComputer(GameDependentParameters gameDependentParameters, Random random,
+			GamerConfiguration gamerConfiguration, SharedReferencesCollector sharedReferencesCollector) {
+
+		super(gameDependentParameters, random, gamerConfiguration, sharedReferencesCollector);
 
 		this.k = null;
 
-		this.initialK = Integer.parseInt(properties.getProperty("BetaComputer.initialK"));
+		this.initialK = Integer.parseInt(gamerConfiguration.getPropertyValue("BetaComputer.initialK"));
 
 		// If this component must be tuned online, then we should add its reference to the sharedReferencesCollector
-		String toTuneString = properties.getProperty("BetaComputer.tune");
-		if(toTuneString != null){
-			boolean toTune = Boolean.parseBoolean(toTuneString);
-			if(toTune){
-				sharedReferencesCollector.setTheComponentToTune(this);
+		String toTuneString = gamerConfiguration.getPropertyValue("BetaComputer.tune");
+		if(Boolean.parseBoolean(toTuneString)){
+			// If we have to tune the component then we look in the setting for all the values that we must use
+			// Note: the format for these values in the file must be the following:
+			// BetaComputer.valuesForK=v1;v2;...;vn
+			// The values are listed separated by ; with no spaces
+			String[] values = gamerConfiguration.getPropertyMultiValue("BetaComputer.valuesForK");
+			this.valuesForK = new double[values.length];
+			for(int i = 0; i < values.length; i++){
+				this.valuesForK[i] = Integer.parseInt(values[i]);
 			}
+			sharedReferencesCollector.setTheComponentToTune(this);
 		}
 
 	}
@@ -103,6 +115,11 @@ public class CADIABetaComputer extends BetaComputer{
 		}
 
 		//System.out.println(k);
+	}
+
+	@Override
+	public double[] getPossibleValues() {
+		return this.valuesForK;
 	}
 
 }

@@ -1,9 +1,9 @@
 package org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.strategies.aftermove;
 
-import java.util.Properties;
 import java.util.Random;
 
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.GameDependentParameters;
+import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.GamerConfiguration;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.SharedReferencesCollector;
 
 
@@ -13,23 +13,20 @@ public class EvoMASTAfterMove extends AfterMoveStrategy {
 
 	private EvoAfterMove evoAfterMove;
 
-	public EvoMASTAfterMove(GameDependentParameters gameDependentParameters, Random random, Properties properties, SharedReferencesCollector sharedReferencesCollector, MASTAfterMove mastAfterMove, EvoAfterMove evoAfterMove){
+	public EvoMASTAfterMove(GameDependentParameters gameDependentParameters, Random random,
+			GamerConfiguration gamerConfiguration, SharedReferencesCollector sharedReferencesCollector, MASTAfterMove mastAfterMove, EvoAfterMove evoAfterMove){
 
-		super(gameDependentParameters, random, properties, sharedReferencesCollector);
+		super(gameDependentParameters, random, gamerConfiguration, sharedReferencesCollector);
 
-		this.mastAfterMove = mastAfterMove;
+		this.mastAfterMove = new MASTAfterMove(gameDependentParameters, random, gamerConfiguration, sharedReferencesCollector);
 
-		this.evoAfterMove = evoAfterMove;
+		this.evoAfterMove = new EvoAfterMove(gameDependentParameters, random, gamerConfiguration, sharedReferencesCollector);
 
 	}
 
 	@Override
-	public void afterMoveActions(){
-
-		this.mastAfterMove.afterMoveActions();
-
-		this.evoAfterMove.afterMoveActions();
-
+	public void setReferences(SharedReferencesCollector sharedReferencesCollector) {
+		// No need for any reference
 	}
 
 	@Override
@@ -40,6 +37,15 @@ public class EvoMASTAfterMove extends AfterMoveStrategy {
 	@Override
 	public void setUpComponent() {
 		// Do nothing
+	}
+
+	@Override
+	public void afterMoveActions(){
+
+		this.mastAfterMove.afterMoveActions();
+
+		this.evoAfterMove.afterMoveActions();
+
 	}
 
 	@Override

@@ -1,18 +1,19 @@
 package org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.strategies.movechoice;
 
-import java.util.Properties;
 import java.util.Random;
 
 import org.ggp.base.player.gamer.statemachine.MCS.manager.hybrid.CompleteMoveStats;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.GameDependentParameters;
+import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.GamerConfiguration;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.SharedReferencesCollector;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.strategies.Strategy;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.MCTSNode;
 
 public abstract class MoveChoiceStrategy extends Strategy {
 
-	public MoveChoiceStrategy(GameDependentParameters gameDependentParameters, Random random, Properties properties, SharedReferencesCollector sharedReferencesCollector) {
-		super(gameDependentParameters, random, properties, sharedReferencesCollector);
+	public MoveChoiceStrategy(GameDependentParameters gameDependentParameters, Random random,
+			GamerConfiguration gamerConfiguration, SharedReferencesCollector sharedReferencesCollector) {
+		super(gameDependentParameters, random, gamerConfiguration, sharedReferencesCollector);
 	}
 
 	public abstract CompleteMoveStats chooseBestMove(MCTSNode initialNode);

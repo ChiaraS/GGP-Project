@@ -1,10 +1,10 @@
 package org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.strategies.selection.evaluators;
 
-import java.util.Properties;
 import java.util.Random;
 
 import org.ggp.base.player.gamer.statemachine.MCS.manager.MoveStats;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.GameDependentParameters;
+import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.GamerConfiguration;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.SearchManagerComponent;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.SharedReferencesCollector;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.MCTSNode;
@@ -12,13 +12,14 @@ import org.ggp.base.util.statemachine.structure.Move;
 
 public abstract class MoveEvaluator extends SearchManagerComponent{
 
-	public MoveEvaluator(GameDependentParameters gameDependentParameters, Random random, Properties properties, SharedReferencesCollector sharedReferencesCollector) {
-		super(gameDependentParameters, random, properties, sharedReferencesCollector);
+	public MoveEvaluator(GameDependentParameters gameDependentParameters, Random random,
+			GamerConfiguration gamerConfiguration, SharedReferencesCollector sharedReferencesCollector) {
+		super(gameDependentParameters, random, gamerConfiguration, sharedReferencesCollector);
 	}
 
 	/**
 	 * Computes the value of the move that will be used by the selection strategy to choose the best move.
-	 * This value could be for example computed as the UCT value fo the move.
+	 * This value could be for example computed as the UCT value for the move.
 	 *
 	 * @param theNode the MCTS tree node for which we want to select the best move.
 	 * @param theMove the move in the node for which we currently want to compute the value that will be

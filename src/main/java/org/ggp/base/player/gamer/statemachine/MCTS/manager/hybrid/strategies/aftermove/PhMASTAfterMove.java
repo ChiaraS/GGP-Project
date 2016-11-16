@@ -1,9 +1,9 @@
 package org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.strategies.aftermove;
 
-import java.util.Properties;
 import java.util.Random;
 
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.GameDependentParameters;
+import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.GamerConfiguration;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.SharedReferencesCollector;
 
 
@@ -13,14 +13,20 @@ public class PhMASTAfterMove extends AfterMoveStrategy {
 
 	private ProgressiveHistoryAfterMove phAfterMove;
 
-	public PhMASTAfterMove(GameDependentParameters gameDependentParameters, Random random, Properties properties, SharedReferencesCollector sharedReferencesCollector, MASTAfterMove mastAfterMove, ProgressiveHistoryAfterMove phAfterMove) {
+	public PhMASTAfterMove(GameDependentParameters gameDependentParameters, Random random,
+			GamerConfiguration gamerConfiguration, SharedReferencesCollector sharedReferencesCollector, MASTAfterMove mastAfterMove, ProgressiveHistoryAfterMove phAfterMove) {
 
-		super(gameDependentParameters, random, properties, sharedReferencesCollector);
+		super(gameDependentParameters, random, gamerConfiguration, sharedReferencesCollector);
 
-		this.mastAfterMove = mastAfterMove;
+		this.mastAfterMove = new MASTAfterMove(gameDependentParameters, random, gamerConfiguration, sharedReferencesCollector);
 
-		this.phAfterMove = phAfterMove;
+		this.phAfterMove = new ProgressiveHistoryAfterMove(gameDependentParameters, random, gamerConfiguration, sharedReferencesCollector);
 
+	}
+
+	@Override
+	public void setReferences(SharedReferencesCollector sharedReferencesCollector) {
+		// No need for any reference
 	}
 
 	@Override

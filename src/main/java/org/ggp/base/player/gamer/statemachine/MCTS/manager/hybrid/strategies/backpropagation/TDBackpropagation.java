@@ -1,9 +1,9 @@
 package org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.strategies.backpropagation;
 
-import java.util.Properties;
 import java.util.Random;
 
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.GameDependentParameters;
+import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.GamerConfiguration;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.SharedReferencesCollector;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.strategies.selection.evaluators.td.GlobalExtremeValues;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.MCTSNode;
@@ -39,22 +39,32 @@ public abstract class TDBackpropagation extends BackpropagationStrategy {
 	protected double[] qNext;
 
 
-	public TDBackpropagation(GameDependentParameters gameDependentParameters, Random random, Properties properties, SharedReferencesCollector sharedReferencesCollector, GlobalExtremeValues globalExtremeValues, double qPlayout, double lambda, double gamma) {
+	public TDBackpropagation(GameDependentParameters gameDependentParameters, Random random,
+			GamerConfiguration gamerConfiguration, SharedReferencesCollector sharedReferencesCollector) {
 
-		super(gameDependentParameters, random, properties, sharedReferencesCollector);
+		super(gameDependentParameters, random, gamerConfiguration, sharedReferencesCollector);
 
-		this.globalExtremeValues = globalExtremeValues;
+		this.qPlayout = Double.parseDouble(gamerConfiguration.getPropertyValue("BackpropagationStrategy.qPlayout"));
+		this.lambda = Double.parseDouble(gamerConfiguration.getPropertyValue("BackpropagationStrategy.lambda"));
+		this.gamma = Double.parseDouble(gamerConfiguration.getPropertyValue("BackpropagationStrategy.gamma"));
 
+		double defaultGlobalMinValue = Double.parseDouble(gamerConfiguration.getPropertyValue("MoveEvaluator.defaultGlobalMinValue"));
+		double defaultGlobalMaxValue = Double.parseDouble(gamerConfiguration.getPropertyValue("MoveEvaluator.defaultGlobalMaxValue"));
+		this.globalExtremeValues = new GlobalExtremeValues(defaultGlobalMinValue, defaultGlobalMaxValue);
 		this.globalExtremeValues.setGlobalMinValues(null);
 		this.globalExtremeValues.setGlobalMaxValues(null);
-
-		this.qPlayout = qPlayout;
-		this.lambda = lambda;
-		this.gamma = gamma;
+		sharedReferencesCollector.setGlobalExtremeValues(globalExtremeValues);
 
 		this.deltaSum = null;
 		this.qNext = null;
 
+		sharedReferencesCollector.setTDBackpropagation(this);
+
+	}
+
+	@Override
+	public void setReferences(SharedReferencesCollector sharedReferencesCollector) {
+		// No need for any reference
 	}
 
 	@Override

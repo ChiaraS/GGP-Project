@@ -25,9 +25,9 @@ public class SingleParameterEvolutionManager{
 
 	private Random random;
 
-	private double explorationConstant;
+	private double evoC;
 
-	private double valueOffset;
+	private double evoValueOffset;
 
 	/**
 	 * If true the manager will re-scale the individuals'fintness between 0 and 1 with respect
@@ -58,8 +58,8 @@ public class SingleParameterEvolutionManager{
 	public SingleParameterEvolutionManager(Random random, double explorationConstant, double valueOffset, boolean useNormalization) {
 
 		this.random = random;
-		this.explorationConstant = explorationConstant;
-		this.valueOffset = valueOffset;
+		this.evoC = explorationConstant;
+		this.evoValueOffset = valueOffset;
 		this.useNormalization = useNormalization;
 
 		this.populations = null;
@@ -171,7 +171,7 @@ public class SingleParameterEvolutionManager{
 				// there is an individual that has a value higher than (Double.MAX_VALUE-this.valueOffset).
 				if(maxValue < Double.MAX_VALUE){
 					for(int j = 0; j < individualsValues.length; j++){
-						if(individualsValues[j] >= (maxValue-this.valueOffset)){
+						if(individualsValues[j] >= (maxValue-this.evoValueOffset)){
 							selectedIndividualsIndices.add(new Integer(j));
 						}
 					}
@@ -243,7 +243,7 @@ public class SingleParameterEvolutionManager{
 
 	private double computeExploration(int totPopulationEvaluations, int individualEvaluations){
 
-		return (this.explorationConstant * (Math.sqrt(Math.log(totPopulationEvaluations)/((double)individualEvaluations))));
+		return (this.evoC * (Math.sqrt(Math.log(totPopulationEvaluations)/((double)individualEvaluations))));
 
 	}
 
@@ -272,7 +272,7 @@ public class SingleParameterEvolutionManager{
 	}
 
 	public String getEvolutionManagerParameters() {
-		return "EXPLORATION_CONSTANT = " + this.explorationConstant + ", VALUE_OFFSET = " + this.valueOffset + ", NUM_POPULATIONS = " + this.populations.length + ", USE_NORMALIZATION = " + this.useNormalization;
+		return "EXPLORATION_CONSTANT = " + this.evoC + ", VALUE_OFFSET = " + this.evoValueOffset + ", NUM_POPULATIONS = " + this.populations.length + ", USE_NORMALIZATION = " + this.useNormalization;
 	}
 
 	public String printEvolutionManager() {

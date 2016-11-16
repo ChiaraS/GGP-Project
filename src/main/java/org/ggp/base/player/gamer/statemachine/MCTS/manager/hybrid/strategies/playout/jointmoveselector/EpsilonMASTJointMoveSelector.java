@@ -2,11 +2,11 @@ package org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.strategies.pl
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Properties;
 import java.util.Random;
 
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.evolution.OnlineTunableComponent;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.GameDependentParameters;
+import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.GamerConfiguration;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.SharedReferencesCollector;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.strategies.playout.singlemoveselector.MASTSingleMoveSelector;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.strategies.playout.singlemoveselector.RandomSingleMoveSelector;
@@ -25,25 +25,34 @@ public class EpsilonMASTJointMoveSelector extends JointMoveSelector implements O
 
 	private double initialEpsilon;
 
+	private double[] valuesForEpsilon;
+
 	public EpsilonMASTJointMoveSelector(GameDependentParameters gameDependentParameters, Random random,
-			Properties properties, SharedReferencesCollector sharedReferencesCollector){
+			GamerConfiguration gamerConfiguration, SharedReferencesCollector sharedReferencesCollector){
 
-		super(gameDependentParameters, random, properties, sharedReferencesCollector);
+		super(gameDependentParameters, random, gamerConfiguration, sharedReferencesCollector);
 
-		this.mastSelector = new MASTSingleMoveSelector(gameDependentParameters, random, properties, sharedReferencesCollector);
-		this.randomSelector = new RandomSingleMoveSelector(gameDependentParameters, random, properties, sharedReferencesCollector);
+		this.mastSelector = new MASTSingleMoveSelector(gameDependentParameters, random, gamerConfiguration, sharedReferencesCollector);
+		this.randomSelector = new RandomSingleMoveSelector(gameDependentParameters, random, gamerConfiguration, sharedReferencesCollector);
 
 		this.epsilon = null;
 
-		this.initialEpsilon = Double.parseDouble(properties.getProperty("JointMoveSelector.initialEpsilon"));
+		this.initialEpsilon = Double.parseDouble(gamerConfiguration.getPropertyValue("JointMoveSelector.initialEpsilon"));
 
 		// If this component must be tuned online, then we should add its reference to the sharedReferencesCollector
-		String toTuneString = properties.getProperty("JointMoveSelector.tune");
-		if(toTuneString != null){
-			boolean toTune = Boolean.parseBoolean(toTuneString);
-			if(toTune){
-				sharedReferencesCollector.setTheComponentToTune(this);
+		String toTuneString = gamerConfiguration.getPropertyValue("JointMoveSelector.tune");
+		boolean toTune = Boolean.parseBoolean(toTuneString);
+		if(toTune){
+			// If we have to tune the component then we look in the setting for all the values that we must use
+			// Note: the format for these values in the file must be the following:
+			// BetaComputer.valuesForK=v1;v2;...;vn
+			// The values are listed separated by ; with no spaces
+			String[] values = gamerConfiguration.getPropertyMultiValue("JointMoveSelector.valuesForEpsilon");
+			this.valuesForEpsilon = new double[values.length];
+			for(int i = 0; i < values.length; i++){
+				this.valuesForEpsilon[i] = Double.parseDouble(values[i]);
 			}
+			sharedReferencesCollector.setTheComponentToTune(this);
 		}
 
 	}
@@ -129,6 +138,11 @@ public class EpsilonMASTJointMoveSelector extends JointMoveSelector implements O
 	@Override
 	public String printOnlineTunableComponent() {
 		return "(ONLINE_TUNABLE_COMPONENT = " + this.printComponent() + ")";
+	}
+
+	@Override
+	public double[] getPossibleValues() {
+		return this.valuesForEpsilon;
 	}
 
 }

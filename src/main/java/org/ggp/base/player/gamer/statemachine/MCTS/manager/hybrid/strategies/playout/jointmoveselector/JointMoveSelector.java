@@ -1,10 +1,10 @@
 package org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.strategies.playout.jointmoveselector;
 
 import java.util.List;
-import java.util.Properties;
 import java.util.Random;
 
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.GameDependentParameters;
+import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.GamerConfiguration;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.SearchManagerComponent;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.SharedReferencesCollector;
 import org.ggp.base.util.statemachine.exceptions.MoveDefinitionException;
@@ -14,8 +14,9 @@ import org.ggp.base.util.statemachine.structure.Move;
 
 public abstract class JointMoveSelector extends SearchManagerComponent{
 
-	public JointMoveSelector(GameDependentParameters gameDependentParameters, Random random, Properties properties, SharedReferencesCollector sharedReferencesCollector){
-		super(gameDependentParameters, random, properties, sharedReferencesCollector);
+	public JointMoveSelector(GameDependentParameters gameDependentParameters, Random random,
+			GamerConfiguration gamerConfiguration, SharedReferencesCollector sharedReferencesCollector){
+		super(gameDependentParameters, random, gamerConfiguration, sharedReferencesCollector);
 	}
 
 	public abstract List<Move> getJointMove(MachineState state) throws MoveDefinitionException, StateMachineException;

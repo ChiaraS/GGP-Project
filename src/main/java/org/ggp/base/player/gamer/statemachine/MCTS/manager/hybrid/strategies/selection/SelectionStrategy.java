@@ -1,9 +1,9 @@
 package org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.strategies.selection;
 
-import java.util.Properties;
 import java.util.Random;
 
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.GameDependentParameters;
+import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.GamerConfiguration;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.SharedReferencesCollector;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.strategies.Strategy;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.MCTSNode;
@@ -11,8 +11,9 @@ import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.hybrid.
 
 public abstract class SelectionStrategy extends Strategy {
 
-	public SelectionStrategy(GameDependentParameters gameDependentParameters, Random random, Properties properties, SharedReferencesCollector sharedReferencesCollector) {
-		super(gameDependentParameters, random, properties, sharedReferencesCollector);
+	public SelectionStrategy(GameDependentParameters gameDependentParameters, Random random,
+			GamerConfiguration gamerConfiguration, SharedReferencesCollector sharedReferencesCollector) {
+		super(gameDependentParameters, random, gamerConfiguration, sharedReferencesCollector);
 	}
 
 	/**

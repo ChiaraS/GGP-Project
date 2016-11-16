@@ -1,10 +1,10 @@
 package org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.strategies.selection.evaluators.grave;
 
-import java.util.Properties;
 import java.util.Random;
 
 import org.ggp.base.player.gamer.statemachine.MCS.manager.MoveStats;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.GameDependentParameters;
+import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.GamerConfiguration;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.SharedReferencesCollector;
 
 public class GRAVEBetaComputer extends BetaComputer {
@@ -13,22 +13,31 @@ public class GRAVEBetaComputer extends BetaComputer {
 
 	private double initialBias;
 
-	public GRAVEBetaComputer(GameDependentParameters gameDependentParameters, Random random,
-			Properties properties, SharedReferencesCollector sharedReferencesCollector) {
+	private double[] valuesForBias;
 
-		super(gameDependentParameters, random, properties, sharedReferencesCollector);
+	public GRAVEBetaComputer(GameDependentParameters gameDependentParameters, Random random,
+			GamerConfiguration gamerConfiguration, SharedReferencesCollector sharedReferencesCollector) {
+
+		super(gameDependentParameters, random, gamerConfiguration, sharedReferencesCollector);
 
 		this.bias = null;
 
-		this.initialBias = Double.parseDouble(properties.getProperty("BetaComputer.initialBias"));
+		this.initialBias = Double.parseDouble(gamerConfiguration.getPropertyValue("BetaComputer.initialBias"));
 
 		// If this component must be tuned online, then we should add its reference to the sharedReferencesCollector
-		String toTuneString = properties.getProperty("BetaComputer.tune");
-		if(toTuneString != null){
-			boolean toTune = Boolean.parseBoolean(toTuneString);
-			if(toTune){
-				sharedReferencesCollector.setTheComponentToTune(this);
+		String toTuneString = gamerConfiguration.getPropertyValue("BetaComputer.tune");
+		boolean toTune = Boolean.parseBoolean(toTuneString);
+		if(toTune){
+			// If we have to tune the component then we look in the setting for all the values that we must use
+			// Note: the format for these values in the file must be the following:
+			// BetaComputer.valuesForK=v1;v2;...;vn
+			// The values are listed separated by ; with no spaces
+			String[] values = gamerConfiguration.getPropertyMultiValue("BetaComputer.valuesForBias");
+			this.valuesForBias = new double[values.length];
+			for(int i = 0; i < values.length; i++){
+				this.valuesForBias[i] = Double.parseDouble(values[i]);
 			}
+			sharedReferencesCollector.setTheComponentToTune(this);
 		}
 
 	}
@@ -104,6 +113,11 @@ public class GRAVEBetaComputer extends BetaComputer {
 			}
 		}
 
+	}
+
+	@Override
+	public double[] getPossibleValues() {
+		return this.valuesForBias;
 	}
 
 }

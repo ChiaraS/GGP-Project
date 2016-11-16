@@ -1,11 +1,11 @@
 package org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.strategies.backpropagation;
 
 import java.util.Map;
-import java.util.Properties;
 import java.util.Random;
 
 import org.ggp.base.player.gamer.statemachine.MCS.manager.MoveStats;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.GameDependentParameters;
+import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.GamerConfiguration;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.SharedReferencesCollector;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.strategies.backpropagation.nodeupdaters.MASTUpdater;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.strategies.backpropagation.nodeupdaters.StandardUpdater;
@@ -21,12 +21,18 @@ public class MASTBackpropagation extends BackpropagationStrategy {
 
 	private MASTUpdater mastUpdater;
 
-	public MASTBackpropagation(GameDependentParameters gameDependentParameters, Random random, Properties properties, SharedReferencesCollector sharedReferencesCollector, Map<Move, MoveStats> mastStatistics) {
+	public MASTBackpropagation(GameDependentParameters gameDependentParameters, Random random,
+			GamerConfiguration gamerConfiguration, SharedReferencesCollector sharedReferencesCollector, Map<Move, MoveStats> mastStatistics) {
 
-		super(gameDependentParameters, random, properties, sharedReferencesCollector);
+		super(gameDependentParameters, random, gamerConfiguration, sharedReferencesCollector);
 
-		this.standardUpdater = new StandardUpdater(gameDependentParameters, random, properties, sharedReferencesCollector);
-		this.mastUpdater = new MASTUpdater(gameDependentParameters, random, properties, sharedReferencesCollector, mastStatistics);
+		this.standardUpdater = new StandardUpdater(gameDependentParameters, random, gamerConfiguration, sharedReferencesCollector);
+		this.mastUpdater = new MASTUpdater(gameDependentParameters, random, gamerConfiguration, sharedReferencesCollector);
+	}
+
+	@Override
+	public void setReferences(SharedReferencesCollector sharedReferencesCollector) {
+		// No need for any reference
 	}
 
 	@Override

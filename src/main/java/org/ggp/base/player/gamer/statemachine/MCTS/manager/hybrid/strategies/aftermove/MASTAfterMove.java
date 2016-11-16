@@ -3,11 +3,11 @@ package org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.strategies.af
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Map.Entry;
-import java.util.Properties;
 import java.util.Random;
 
 import org.ggp.base.player.gamer.statemachine.MCS.manager.MoveStats;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.GameDependentParameters;
+import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.GamerConfiguration;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.SharedReferencesCollector;
 import org.ggp.base.util.statemachine.structure.Move;
 
@@ -17,12 +17,17 @@ public class MASTAfterMove extends AfterMoveStrategy {
 
 	private double decayFactor;
 
-	public MASTAfterMove(GameDependentParameters gameDependentParameters, Random random, Properties properties, SharedReferencesCollector sharedReferencesCollector, Map<Move, MoveStats> mastStatistics, double decayFactor) {
+	public MASTAfterMove(GameDependentParameters gameDependentParameters, Random random,
+			GamerConfiguration gamerConfiguration, SharedReferencesCollector sharedReferencesCollector) {
 
-		super(gameDependentParameters, random, properties, sharedReferencesCollector);
+		super(gameDependentParameters, random, gamerConfiguration, sharedReferencesCollector);
 
-		this.mastStatistics = mastStatistics;
-		this.decayFactor = decayFactor;
+		this.decayFactor = Double.parseDouble(gamerConfiguration.getPropertyValue("AfterMoveStrategy.decayFactor"));
+	}
+
+	@Override
+	public void setReferences(SharedReferencesCollector sharedReferencesCollector) {
+		this.mastStatistics = sharedReferencesCollector.getMastStatistics();
 	}
 
 	@Override

@@ -1,9 +1,9 @@
 package org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.strategies.aftersimulation;
 
-import java.util.Properties;
 import java.util.Random;
 
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.GameDependentParameters;
+import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.GamerConfiguration;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.SharedReferencesCollector;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.hybrid.SimulationResult;
 
@@ -13,14 +13,20 @@ public class EvoGRAVEAfterSimulation extends AfterSimulationStrategy {
 
 	private EvoAfterSimulation evoAfterSimulation;
 
-	public EvoGRAVEAfterSimulation(GameDependentParameters gameDependentParameters, Random random, Properties properties, SharedReferencesCollector sharedReferencesCollector, GRAVEAfterSimulation graveAfterSimulation, EvoAfterSimulation evoAfterSimulation) {
+	public EvoGRAVEAfterSimulation(GameDependentParameters gameDependentParameters, Random random,
+			GamerConfiguration gamerConfiguration, SharedReferencesCollector sharedReferencesCollector) {
 
-		super(gameDependentParameters, random, properties, sharedReferencesCollector);
+		super(gameDependentParameters, random, gamerConfiguration, sharedReferencesCollector);
 
-		this.graveAfterSimulation = graveAfterSimulation;
+		this.graveAfterSimulation = new GRAVEAfterSimulation(gameDependentParameters, random, gamerConfiguration, sharedReferencesCollector);
 
-		this.evoAfterSimulation = evoAfterSimulation;
+		this.evoAfterSimulation = new EvoAfterSimulation(gameDependentParameters, random, gamerConfiguration, sharedReferencesCollector);
 
+	}
+
+	@Override
+	public void setReferences(SharedReferencesCollector sharedReferencesCollector) {
+		// No need for any reference
 	}
 
 	@Override

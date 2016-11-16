@@ -1,11 +1,9 @@
 package org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.strategies.backpropagation;
 
-import java.util.Map;
-import java.util.Properties;
 import java.util.Random;
 
-import org.ggp.base.player.gamer.statemachine.MCS.manager.MoveStats;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.GameDependentParameters;
+import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.GamerConfiguration;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.SharedReferencesCollector;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.strategies.backpropagation.nodeupdaters.GRAVEUpdater;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.strategies.backpropagation.nodeupdaters.MASTUpdater;
@@ -14,7 +12,6 @@ import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.MCTSNod
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.hybrid.MCTSJointMove;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.hybrid.SimulationResult;
 import org.ggp.base.util.statemachine.structure.MachineState;
-import org.ggp.base.util.statemachine.structure.Move;
 
 public class MASTGRAVEBackpropagation extends BackpropagationStrategy {
 
@@ -24,13 +21,19 @@ public class MASTGRAVEBackpropagation extends BackpropagationStrategy {
 
 	private GRAVEUpdater graveUpdater;
 
-	public MASTGRAVEBackpropagation(GameDependentParameters gameDependentParameters, Random random, Properties properties, SharedReferencesCollector sharedReferencesCollector, Map<Move, MoveStats> mastStatistics) {
+	public MASTGRAVEBackpropagation(GameDependentParameters gameDependentParameters, Random random,
+			GamerConfiguration gamerConfiguration, SharedReferencesCollector sharedReferencesCollector) {
 
-		super(gameDependentParameters, random, properties, sharedReferencesCollector);
+		super(gameDependentParameters, random, gamerConfiguration, sharedReferencesCollector);
 
-		this.standardUpdater = new StandardUpdater(gameDependentParameters, random, properties, sharedReferencesCollector);
-		this.mastUpdater = new MASTUpdater(gameDependentParameters, random, properties, sharedReferencesCollector, mastStatistics);
-		this.graveUpdater = new GRAVEUpdater(gameDependentParameters, random, properties, sharedReferencesCollector);
+		this.standardUpdater = new StandardUpdater(gameDependentParameters, random, gamerConfiguration, sharedReferencesCollector);
+		this.mastUpdater = new MASTUpdater(gameDependentParameters, random, gamerConfiguration, sharedReferencesCollector);
+		this.graveUpdater = new GRAVEUpdater(gameDependentParameters, random, gamerConfiguration, sharedReferencesCollector);
+	}
+
+	@Override
+	public void setReferences(SharedReferencesCollector sharedReferencesCollector) {
+		// No need for any reference
 	}
 
 	@Override

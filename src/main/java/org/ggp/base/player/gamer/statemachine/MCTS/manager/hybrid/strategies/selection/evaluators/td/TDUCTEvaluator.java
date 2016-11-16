@@ -1,10 +1,10 @@
 package org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.strategies.selection.evaluators.td;
 
-import java.util.Properties;
 import java.util.Random;
 
 import org.ggp.base.player.gamer.statemachine.MCS.manager.MoveStats;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.GameDependentParameters;
+import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.GamerConfiguration;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.SharedReferencesCollector;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.strategies.selection.evaluators.UCTEvaluator;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.MCTSNode;
@@ -15,10 +15,15 @@ public class TDUCTEvaluator extends UCTEvaluator {
 
 	private GlobalExtremeValues globalExtremeValues;
 
-	public TDUCTEvaluator(GameDependentParameters gameDependentParameters, Random random, Properties properties, SharedReferencesCollector sharedReferencesCollector, double c, double defaultValue, GlobalExtremeValues globalExtremeValues) {
-		super(gameDependentParameters, random, properties, sharedReferencesCollector, c, defaultValue);
+	public TDUCTEvaluator(GameDependentParameters gameDependentParameters, Random random,
+			GamerConfiguration gamerConfiguration, SharedReferencesCollector sharedReferencesCollector, GlobalExtremeValues globalExtremeValues) {
+		super(gameDependentParameters, random, gamerConfiguration, sharedReferencesCollector);
 
-		this.globalExtremeValues = globalExtremeValues;
+	}
+
+	@Override
+	public void setReferences(SharedReferencesCollector sharedReferencesCollector) {
+		this.globalExtremeValues = sharedReferencesCollector.getGlobalExtremeValues();
 	}
 
 	@Override

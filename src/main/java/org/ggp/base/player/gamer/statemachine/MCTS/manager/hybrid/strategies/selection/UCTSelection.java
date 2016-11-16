@@ -1,18 +1,19 @@
 package org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.strategies.selection;
 
-import java.util.Properties;
 import java.util.Random;
 
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.GameDependentParameters;
+import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.GamerConfiguration;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.SharedReferencesCollector;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.strategies.selection.evaluators.MoveEvaluator;
 
 public class UCTSelection extends MoveValueSelection {
 
-	public UCTSelection(GameDependentParameters gameDependentParameters, Random random, Properties properties, SharedReferencesCollector sharedReferencesCollector,
+	public UCTSelection(GameDependentParameters gameDependentParameters, Random random,
+			GamerConfiguration gamerConfiguration, SharedReferencesCollector sharedReferencesCollector,
 			double valueOffset, MoveEvaluator moveEvaluator) {
 
-		super(gameDependentParameters, random, properties, sharedReferencesCollector, valueOffset, moveEvaluator);
+		super(gameDependentParameters, random, gamerConfiguration, sharedReferencesCollector, valueOffset, moveEvaluator);
 
 	}
 

@@ -1,16 +1,20 @@
 package org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.strategies.selection.evaluators.grave;
 
+import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-import java.util.Properties;
 import java.util.Random;
 
 import org.ggp.base.player.gamer.statemachine.MCS.manager.MoveStats;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.GameDependentParameters;
+import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.GamerConfiguration;
+import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.SearchManagerComponent;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.SharedReferencesCollector;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.strategies.selection.evaluators.UCTEvaluator;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.MCTSNode;
+import org.ggp.base.util.logging.GamerLogger;
+import org.ggp.base.util.reflection.ProjectSearcher;
 import org.ggp.base.util.statemachine.structure.Move;
 
 public class GRAVEEvaluator extends UCTEvaluator{
@@ -30,13 +34,24 @@ public class GRAVEEvaluator extends UCTEvaluator{
 
 	private double defaultExploration;
 
-	public GRAVEEvaluator(GameDependentParameters gameDependentParameters, Random random, Properties properties, SharedReferencesCollector sharedReferencesCollector, double c, double defaultValue, BetaComputer betaComputer, double defaultExploration) {
-		super(gameDependentParameters, random, properties, sharedReferencesCollector, c, defaultValue);
-		this.betaComputer = betaComputer;
+	public GRAVEEvaluator(GameDependentParameters gameDependentParameters, Random random,
+			GamerConfiguration gamerConfiguration, SharedReferencesCollector sharedReferencesCollector) {
+		super(gameDependentParameters, random, gamerConfiguration, sharedReferencesCollector);
 
 		this.closestAmafStats = null;
 
-		this.defaultExploration = defaultExploration;
+		try {
+			this.betaComputer = (BetaComputer) SearchManagerComponent.getConstructorForSearchManagerComponent(ProjectSearcher.BETA_COMPUTERS.getConcreteClasses(),
+					gamerConfiguration.getPropertyValue("MoveEvaluator.betaComputerType")).newInstance(gameDependentParameters, random, gamerConfiguration, sharedReferencesCollector);
+		} catch (InstantiationException | IllegalAccessException
+				| IllegalArgumentException | InvocationTargetException e) {
+			// TODO: fix this!
+			GamerLogger.logError("SearchManagerCreation", "Error when instantiating BetaComputer " + gamerConfiguration.getPropertyValue("MoveEvaluator.betaComputerType") + ".");
+			GamerLogger.logStackTrace("SearchManagerCreation", e);
+			throw new RuntimeException(e);
+		}
+
+		this.defaultExploration = Double.parseDouble(gamerConfiguration.getPropertyValue("MoveEvaluator.defaultExplorationValue"));
 	}
 
 	@Override

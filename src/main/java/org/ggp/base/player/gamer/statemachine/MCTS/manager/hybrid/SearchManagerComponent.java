@@ -1,7 +1,9 @@
 package org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid;
 
-import java.util.Properties;
+import java.lang.reflect.Constructor;
 import java.util.Random;
+
+import org.ggp.base.util.logging.GamerLogger;
 
 import com.google.common.collect.ImmutableSet;
 
@@ -28,13 +30,19 @@ import com.google.common.collect.ImmutableSet;
 public abstract class SearchManagerComponent {
 
 	/**
+	 * Arguments of the constructor.
+	 */
+	public static Class<?>[] CONSTRUCTOR_ARGS = new Class[] {GameDependentParameters.class, Random.class,
+		GamerConfiguration.class, SharedReferencesCollector.class};
+
+	/**
 	 * This method looks in the given list of classes for the class with the given name.
 	 *
 	 * @param allClasses
 	 * @param searchManagerComponentName
 	 * @return
 	 */
-	public static Class<?> createSearchManagerComponent(ImmutableSet<Class<?>> allClasses, String searchManagerComponentName){
+	public static <T> Constructor<?> getConstructorForSearchManagerComponent(ImmutableSet<Class<? extends T>> allClasses, String searchManagerComponentName){
 
 		Class<?> theCorrespondingClass = null;
 		for (Class<?> componentClass : allClasses) {
@@ -44,10 +52,21 @@ public abstract class SearchManagerComponent {
     	}
 
 		if(theCorrespondingClass == null){
-			throw new RuntimeException("Cannot create search manager. Impossible to find SearchManagerComponent with name " + searchManagerComponentName + ".");
-		}else{
-			return theCorrespondingClass;
+			GamerLogger.logError("SearchManagerCreation", "Cannot find class " + searchManagerComponentName + " to create SearchManagerComponent.");
+			throw new RuntimeException("Cannot find class " + searchManagerComponentName + " to create SearchManagerComponent.");
 		}
+
+		Constructor<?> constructor;
+		try {
+			constructor = theCorrespondingClass.getConstructor(CONSTRUCTOR_ARGS);
+		} catch (NoSuchMethodException | SecurityException e) {
+			// TODO: fix this!
+			GamerLogger.logError("SearchManagerCreation", "Error when retrieving cnstructor for class " + searchManagerComponentName + ".");
+			GamerLogger.logStackTrace("SearchManagerCreation", e);
+			throw new RuntimeException(e);
+		}
+
+		return constructor;
 
 	}
 
@@ -64,12 +83,13 @@ public abstract class SearchManagerComponent {
 	 * @param gameDependentParameters parameters that depend on the game being played (e.g. number of roles, index of my
 	 * role, the state machine of the game, ...).
 	 * @param random
-	 * @param properties map built from the properties file that specifies the settings of the gamer (i.e. which strategies
+	 * @param gamerConfiguration map built from the properties file that specifies the settings of the gamer (i.e. which strategies
 	 * it must use, which types of components, which values for the parameters, ecc ...)
 	 * @param sharedReferencesCollector collects the references to parameters created by the constructor that other search
 	 * manager components also need to have.
 	 */
-	public SearchManagerComponent(GameDependentParameters gameDependentParameters, Random random, Properties properties, SharedReferencesCollector sharedReferencesCollector) {
+	public SearchManagerComponent(GameDependentParameters gameDependentParameters, Random random,
+			GamerConfiguration gamerConfiguration, SharedReferencesCollector sharedReferencesCollector) {
 		this.gameDependentParameters = gameDependentParameters;
 		this.random = random;
 	}

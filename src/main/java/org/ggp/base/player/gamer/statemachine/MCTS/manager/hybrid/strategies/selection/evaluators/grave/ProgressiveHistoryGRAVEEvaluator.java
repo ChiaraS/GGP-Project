@@ -1,11 +1,11 @@
 package org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.strategies.selection.evaluators.grave;
 
 import java.util.Map;
-import java.util.Properties;
 import java.util.Random;
 
 import org.ggp.base.player.gamer.statemachine.MCS.manager.MoveStats;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.GameDependentParameters;
+import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.GamerConfiguration;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.SharedReferencesCollector;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.MCTSNode;
 import org.ggp.base.util.statemachine.structure.Move;
@@ -24,13 +24,13 @@ public class ProgressiveHistoryGRAVEEvaluator extends GRAVEEvaluator {
 	 */
 	private double w;
 
-	public ProgressiveHistoryGRAVEEvaluator(GameDependentParameters gameDependentParameters, Random random, Properties properties, SharedReferencesCollector sharedReferencesCollector, double c, double defaultValue,
-			BetaComputer betaComputer, double defaultExploration, double w) {
-		super(gameDependentParameters, random, properties, sharedReferencesCollector, c, defaultValue, betaComputer, defaultExploration);
+	public ProgressiveHistoryGRAVEEvaluator(GameDependentParameters gameDependentParameters, Random random,
+			GamerConfiguration gamerConfiguration, SharedReferencesCollector sharedReferencesCollector, double w) {
+		super(gameDependentParameters, random, gamerConfiguration, sharedReferencesCollector);
 
 		this.currentRootAmafStats = null; // Before ever starting any selection we have no reference to any statistic
 
-		this.w = w;
+		this.w = Double.parseDouble(gamerConfiguration.getPropertyValue("MoveEvaluator.w"));
 
 	}
 

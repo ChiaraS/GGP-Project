@@ -3,12 +3,11 @@ package org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.strategies.pl
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import java.util.Properties;
 import java.util.Random;
 
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.GameDependentParameters;
+import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.GamerConfiguration;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.SharedReferencesCollector;
-import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.strategies.playout.jointmoveselector.JointMoveSelector;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.hybrid.SimulationResult;
 import org.ggp.base.util.logging.GamerLogger;
 import org.ggp.base.util.statemachine.exceptions.MoveDefinitionException;
@@ -19,9 +18,9 @@ import org.ggp.base.util.statemachine.structure.Move;
 
 public class GoalsMemorizingStandardPlayout extends StandardPlayout{
 
-	public GoalsMemorizingStandardPlayout(GameDependentParameters gameDependentParameters,
-			Random random, Properties properties, SharedReferencesCollector sharedReferencesCollector, JointMoveSelector jointMoveSelector){
-		super(gameDependentParameters, random, properties, sharedReferencesCollector, jointMoveSelector);
+	public GoalsMemorizingStandardPlayout(GameDependentParameters gameDependentParameters, Random random,
+			GamerConfiguration gamerConfiguration, SharedReferencesCollector sharedReferencesCollector){
+		super(gameDependentParameters, random, gamerConfiguration, sharedReferencesCollector);
 	}
 
 	@Override

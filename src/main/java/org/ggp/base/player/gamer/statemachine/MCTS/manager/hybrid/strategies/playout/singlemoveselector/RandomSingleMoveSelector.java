@@ -1,9 +1,9 @@
 package org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.strategies.playout.singlemoveselector;
 
-import java.util.Properties;
 import java.util.Random;
 
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.GameDependentParameters;
+import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.GamerConfiguration;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.SharedReferencesCollector;
 import org.ggp.base.util.statemachine.exceptions.MoveDefinitionException;
 import org.ggp.base.util.statemachine.exceptions.StateMachineException;
@@ -13,8 +13,8 @@ import org.ggp.base.util.statemachine.structure.Move;
 public class RandomSingleMoveSelector extends SingleMoveSelector{
 
 	public RandomSingleMoveSelector(GameDependentParameters gameDependentParameters, Random random,
-			Properties properties, SharedReferencesCollector sharedReferencesCollector){
-		super(gameDependentParameters, random, properties, sharedReferencesCollector);
+			GamerConfiguration gamerConfiguration, SharedReferencesCollector sharedReferencesCollector){
+		super(gameDependentParameters, random, gamerConfiguration, sharedReferencesCollector);
 	}
 
 	@Override

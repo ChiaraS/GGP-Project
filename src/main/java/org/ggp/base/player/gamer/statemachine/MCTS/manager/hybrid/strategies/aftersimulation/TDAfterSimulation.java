@@ -1,22 +1,27 @@
 package org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.strategies.aftersimulation;
 
-import java.util.Properties;
 import java.util.Random;
 
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.GameDependentParameters;
+import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.GamerConfiguration;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.SharedReferencesCollector;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.strategies.backpropagation.TDBackpropagation;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.hybrid.SimulationResult;
 
 public class TDAfterSimulation extends AfterSimulationStrategy {
 
-	private TDBackpropagation backpropagation;
+	private TDBackpropagation tdBackpropagation;
 
-	public TDAfterSimulation(GameDependentParameters gameDependentParameters, Random random, Properties properties, SharedReferencesCollector sharedReferencesCollector, TDBackpropagation backpropagation) {
+	public TDAfterSimulation(GameDependentParameters gameDependentParameters, Random random,
+			GamerConfiguration gamerConfiguration, SharedReferencesCollector sharedReferencesCollector) {
 
-		super(gameDependentParameters, random, properties, sharedReferencesCollector);
+		super(gameDependentParameters, random, gamerConfiguration, sharedReferencesCollector);
 
-		this.backpropagation = backpropagation;
+	}
+
+	@Override
+	public void setReferences(SharedReferencesCollector sharedReferencesCollector) {
+		this.tdBackpropagation = sharedReferencesCollector.getTDBackpropagation();
 	}
 
 	@Override
@@ -37,7 +42,7 @@ public class TDAfterSimulation extends AfterSimulationStrategy {
 	@Override
 	public void afterSimulationActions(SimulationResult simulationResult) {
 
-		this.backpropagation.resetSimulationParameters();
+		this.tdBackpropagation.resetSimulationParameters();
 
 	}
 }
