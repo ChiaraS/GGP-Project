@@ -1,30 +1,42 @@
 package org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.hybrid.sequential;
 
 import java.util.List;
+import java.util.Random;
 
+import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.GameDependentParameters;
+import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.GamerConfiguration;
+import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.SharedReferencesCollector;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.MCTSNode;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.hybrid.TreeNodeFactory;
 import org.ggp.base.util.logging.GamerLogger;
-import org.ggp.base.util.statemachine.abstractsm.AbstractStateMachine;
 import org.ggp.base.util.statemachine.exceptions.MoveDefinitionException;
 import org.ggp.base.util.statemachine.exceptions.StateMachineException;
 import org.ggp.base.util.statemachine.structure.MachineState;
 import org.ggp.base.util.statemachine.structure.Move;
 import org.ggp.base.util.statemachine.structure.Role;
 
-public class SequentialTreeNodeFactory implements TreeNodeFactory {
+public class SequentialTreeNodeFactory extends TreeNodeFactory {
 
-	private AbstractStateMachine theMachine;
+	public SequentialTreeNodeFactory(GameDependentParameters gameDependentParameters, Random random,
+			GamerConfiguration gamerConfiguration, SharedReferencesCollector sharedReferencesCollector) {
+		super(gameDependentParameters, random, gamerConfiguration, sharedReferencesCollector);
+	}
 
-	/**
-	 * The index in the default list of roles of the role that is actually performing the search.
-	 * Needed by the SUCT version of MCTS.
-	 */
-	private int myRoleIndex;
+	@Override
+	public void setReferences(SharedReferencesCollector sharedReferencesCollector) {
+		// No need for any reference
+	}
 
-	public SequentialTreeNodeFactory(AbstractStateMachine theMachine, int myRoleIndex) {
-		this.theMachine = theMachine;
-		this.myRoleIndex = myRoleIndex;
+	@Override
+	public void clearComponent() {
+		// Do nothing
+
+	}
+
+	@Override
+	public void setUpComponent() {
+		// Do nothing
+
 	}
 
 	@Override
@@ -39,7 +51,7 @@ public class SequentialTreeNodeFactory implements TreeNodeFactory {
 		int unvisitedLeavesCount = 0;
 
 		try {
-			terminal = this.theMachine.isTerminal(state);
+			terminal = this.gameDependentParameters.getTheMachine().isTerminal(state);
 		} catch (StateMachineException e) {
 			GamerLogger.logError("MCTSManager", "Failed to compute state terminality when creating new tree node. Considering node terminal.");
 			GamerLogger.logStackTrace("MCTSManager", e);
@@ -49,12 +61,12 @@ public class SequentialTreeNodeFactory implements TreeNodeFactory {
 		// Terminal state:
 		if(terminal){
 
-			goals = this.theMachine.getSafeGoalsAvgForAllRoles(state);
+			goals = this.gameDependentParameters.getTheMachine().getSafeGoalsAvgForAllRoles(state);
 
 		}else{// Non-terminal state:
 
 			try {
-				allLegalMoves = this.theMachine.getAllLegalMovesForAllRoles(state);
+				allLegalMoves = this.gameDependentParameters.getTheMachine().getAllLegalMovesForAllRoles(state);
 
 				suctMovesStats = this.createSUCTMCTSMoves(allLegalMoves);
 				unvisitedLeavesCount = suctMovesStats[0].getUnvisitedSubleaves() * suctMovesStats.length;
@@ -76,7 +88,7 @@ public class SequentialTreeNodeFactory implements TreeNodeFactory {
 				//System.out.println("Null moves in non terminal state!");
 
 				allLegalMoves = null;
-				goals = this.theMachine.getSafeGoalsAvgForAllRoles(state);
+				goals = this.gameDependentParameters.getTheMachine().getSafeGoalsAvgForAllRoles(state);
 				terminal = true;
 				unvisitedLeavesCount = 0;
 			}
@@ -89,7 +101,7 @@ public class SequentialTreeNodeFactory implements TreeNodeFactory {
 
 	private SequentialMCTSMoveStats[] createSUCTMCTSMoves(List<List<Move>> allLegalMoves){
 
-		List<Role> roles = this.theMachine.getRoles();
+		List<Role> roles = this.gameDependentParameters.getTheMachine().getRoles();
 
 		// Get legal moves for all players.
 		/*try {
@@ -107,10 +119,10 @@ public class SequentialTreeNodeFactory implements TreeNodeFactory {
 		// For all the moves of my role (i.e. the role actually performing the search)
 		// create the SUCT move containing the move statistics.
 
-		List<Move> myLegalMoves = allLegalMoves.get(this.myRoleIndex);
+		List<Move> myLegalMoves = allLegalMoves.get(this.gameDependentParameters.getMyRoleIndex());
 		SequentialMCTSMoveStats[] moves = new SequentialMCTSMoveStats[myLegalMoves.size()];
 		for(int i = 0; i < myLegalMoves.size(); i++){
-			moves[i] = new SequentialMCTSMoveStats(createSUCTMCTSMoves((this.myRoleIndex+1)%(roles.size()), roles.size(), allLegalMoves));
+			moves[i] = new SequentialMCTSMoveStats(createSUCTMCTSMoves((this.gameDependentParameters.getMyRoleIndex()+1)%(roles.size()), roles.size(), allLegalMoves));
 		}
 
 		return moves;
@@ -118,7 +130,7 @@ public class SequentialTreeNodeFactory implements TreeNodeFactory {
 
 	private SequentialMCTSMoveStats[] createSUCTMCTSMoves(int roleIndex, int numRoles, List<List<Move>> allLegalMoves){
 
-		if(roleIndex == this.myRoleIndex){
+		if(roleIndex == this.gameDependentParameters.getMyRoleIndex()){
 			return null;
 		}
 
@@ -129,6 +141,11 @@ public class SequentialTreeNodeFactory implements TreeNodeFactory {
 		}
 
 		return moves;
+	}
+
+	@Override
+	public String getComponentParameters() {
+		return null;
 	}
 
 }

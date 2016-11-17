@@ -14,7 +14,7 @@ public class EvoMASTAfterMove extends AfterMoveStrategy {
 	private EvoAfterMove evoAfterMove;
 
 	public EvoMASTAfterMove(GameDependentParameters gameDependentParameters, Random random,
-			GamerConfiguration gamerConfiguration, SharedReferencesCollector sharedReferencesCollector, MASTAfterMove mastAfterMove, EvoAfterMove evoAfterMove){
+			GamerConfiguration gamerConfiguration, SharedReferencesCollector sharedReferencesCollector){
 
 		super(gameDependentParameters, random, gamerConfiguration, sharedReferencesCollector);
 
@@ -26,17 +26,20 @@ public class EvoMASTAfterMove extends AfterMoveStrategy {
 
 	@Override
 	public void setReferences(SharedReferencesCollector sharedReferencesCollector) {
-		// No need for any reference
+		this.mastAfterMove.setReferences(sharedReferencesCollector);
+		this.evoAfterMove.setReferences(sharedReferencesCollector);
 	}
 
 	@Override
 	public void clearComponent() {
-		// Do nothing
+		this.mastAfterMove.clearComponent();
+		this.evoAfterMove.clearComponent();
 	}
 
 	@Override
 	public void setUpComponent() {
-		// Do nothing
+		this.mastAfterMove.setUpComponent();
+		this.evoAfterMove.setUpComponent();
 	}
 
 	@Override

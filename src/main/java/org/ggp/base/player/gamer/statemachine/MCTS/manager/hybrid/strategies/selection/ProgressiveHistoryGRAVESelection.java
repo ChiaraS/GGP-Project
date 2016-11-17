@@ -13,9 +13,8 @@ import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.hybrid.
 public class ProgressiveHistoryGRAVESelection extends GRAVESelection {
 
 	public ProgressiveHistoryGRAVESelection(GameDependentParameters gameDependentParameters, Random random,
-			GamerConfiguration gamerConfiguration, SharedReferencesCollector sharedReferencesCollector, double valueOffset,
-			int minAMAFVisits, ProgressiveHistoryGRAVEEvaluator moveEvaluator) {
-		super(gameDependentParameters, random, gamerConfiguration, sharedReferencesCollector, valueOffset, minAMAFVisits, moveEvaluator);
+			GamerConfiguration gamerConfiguration, SharedReferencesCollector sharedReferencesCollector) {
+		super(gameDependentParameters, random, gamerConfiguration, sharedReferencesCollector);
 
 		sharedReferencesCollector.setProgressiveHistoryGraveSelection(this);
 

@@ -81,4 +81,10 @@ public class PnGRAVESelection extends PnMoveValueSelection implements OnlineTuna
 
 	}
 
+	@Override
+	public double[] getPossibleValues() {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
 }

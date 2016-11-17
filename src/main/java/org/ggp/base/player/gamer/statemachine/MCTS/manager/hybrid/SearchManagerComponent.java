@@ -24,6 +24,12 @@ import com.google.common.collect.ImmutableSet;
  * whenever a new game must be played is due to the fact that like this we can clear memory (and run GC) between
  * games without wasting the metagame time for that).
  *
+ * NOTE: each instance of SearchManagerComponent in the methods setReferences(), clearComponent() and setUpComponent()
+ * must make sure to call the same methods for all of its parameters that extend SearchManagerComponent, but ONLY
+ * if those parameters were created by such SearchManagerComponent (e.g. the component GRAVEAfterSimulation has a
+ * reference to the GRAVESelection, but it sets it in the setReferences() method,  doesn't create the GRAVESelection
+ * itself, thus it doesn't have to call setReferences(), clearComponent() and setUpComponent() for the GRAVESelection).
+ *
  * @author c.sironi
  *
  */

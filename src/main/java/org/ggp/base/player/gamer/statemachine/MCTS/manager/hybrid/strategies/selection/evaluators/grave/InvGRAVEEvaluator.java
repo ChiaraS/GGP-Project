@@ -56,6 +56,12 @@ public class InvGRAVEEvaluator extends UCTEvaluator{
 	}
 
 	@Override
+	public void setReferences(SharedReferencesCollector sharedReferencesCollector) {
+		super.setReferences(sharedReferencesCollector);
+		this.betaComputer.setReferences(sharedReferencesCollector);
+	}
+
+	@Override
 	public void clearComponent(){
 		super.clearComponent();
 		this.amafStats = null;

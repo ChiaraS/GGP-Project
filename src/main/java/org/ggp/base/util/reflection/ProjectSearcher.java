@@ -17,6 +17,7 @@ import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.strategies.pla
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.strategies.selection.SelectionStrategy;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.strategies.selection.evaluators.MoveEvaluator;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.strategies.selection.evaluators.grave.BetaComputer;
+import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.hybrid.TreeNodeFactory;
 import org.ggp.base.player.gamer.statemachine.propnet.InternalPropnetGamer;
 import org.ggp.base.player.gamer.statemachine.prover.ProverGamer;
 import org.reflections.Reflections;
@@ -57,6 +58,8 @@ public class ProjectSearcher {
     public static final LoadedClasses<MoveChoiceStrategy> MOVE_CHOICE_STRATEGIES = new LoadedClasses<MoveChoiceStrategy>(MoveChoiceStrategy.class);
     public static final LoadedClasses<PlayoutStrategy> PLAYOUT_STRATEGIES = new LoadedClasses<PlayoutStrategy>(PlayoutStrategy.class);
     public static final LoadedClasses<SelectionStrategy> SELECTION_STRATEGIES = new LoadedClasses<SelectionStrategy>(SelectionStrategy.class);
+    // Tree node factory
+    public static final LoadedClasses<TreeNodeFactory> TREE_NODE_FACTORIES = new LoadedClasses<TreeNodeFactory>(TreeNodeFactory.class);
 
     public static final <T> ImmutableSet<Class<? extends T>> getAllClassesThatAre(Class<T> klass) {
     	return new LoadedClasses<T>(klass).getConcreteClasses();

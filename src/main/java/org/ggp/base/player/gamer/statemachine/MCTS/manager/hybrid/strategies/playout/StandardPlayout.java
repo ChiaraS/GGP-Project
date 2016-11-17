@@ -48,7 +48,7 @@ public class StandardPlayout extends PlayoutStrategy {
 
 	@Override
 	public void setReferences(SharedReferencesCollector sharedReferencesCollector) {
-		// No need for any reference
+		this.jointMoveSelector.setReferences(sharedReferencesCollector);
 	}
 
 	@Override

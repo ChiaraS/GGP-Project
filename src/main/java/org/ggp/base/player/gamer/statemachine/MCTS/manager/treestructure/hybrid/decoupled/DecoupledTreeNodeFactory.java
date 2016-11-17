@@ -1,23 +1,42 @@
 package org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.hybrid.decoupled;
 
 import java.util.List;
+import java.util.Random;
 
+import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.GameDependentParameters;
+import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.GamerConfiguration;
+import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.SharedReferencesCollector;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.MCTSNode;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.hybrid.TreeNodeFactory;
 import org.ggp.base.util.logging.GamerLogger;
-import org.ggp.base.util.statemachine.abstractsm.AbstractStateMachine;
 import org.ggp.base.util.statemachine.exceptions.MoveDefinitionException;
 import org.ggp.base.util.statemachine.exceptions.StateMachineException;
 import org.ggp.base.util.statemachine.structure.MachineState;
 import org.ggp.base.util.statemachine.structure.Move;
 import org.ggp.base.util.statemachine.structure.Role;
 
-public class DecoupledTreeNodeFactory implements TreeNodeFactory {
+public class DecoupledTreeNodeFactory extends TreeNodeFactory {
 
-	protected AbstractStateMachine theMachine;
+	public DecoupledTreeNodeFactory(GameDependentParameters gameDependentParameters, Random random,
+			GamerConfiguration gamerConfiguration, SharedReferencesCollector sharedReferencesCollector) {
+		super(gameDependentParameters, random, gamerConfiguration, sharedReferencesCollector);
+	}
 
-	public DecoupledTreeNodeFactory(AbstractStateMachine theMachine) {
-		this.theMachine = theMachine;
+	@Override
+	public void setReferences(SharedReferencesCollector sharedReferencesCollector) {
+		// No need for any reference
+	}
+
+	@Override
+	public void clearComponent() {
+		// Do nothing
+
+	}
+
+	@Override
+	public void setUpComponent() {
+		// Do nothing
+
 	}
 
 	/**
@@ -58,7 +77,7 @@ public class DecoupledTreeNodeFactory implements TreeNodeFactory {
 		DecoupledMCTSMoveStats[][] ductMovesStats = null;
 
 		try {
-			terminal = this.theMachine.isTerminal(state);
+			terminal = this.gameDependentParameters.getTheMachine().isTerminal(state);
 		} catch (StateMachineException e) {
 			GamerLogger.logError("MCTSManager", "Failed to compute state terminality when creating new tree node. Considering node terminal.");
 			GamerLogger.logStackTrace("MCTSManager", e);
@@ -68,7 +87,7 @@ public class DecoupledTreeNodeFactory implements TreeNodeFactory {
 		// Terminal state:
 		if(terminal){
 
-			goals = this.theMachine.getSafeGoalsAvgForAllRoles(state);
+			goals = this.gameDependentParameters.getTheMachine().getSafeGoalsAvgForAllRoles(state);
 
 		}else{// Non-terminal state:
 
@@ -85,7 +104,7 @@ public class DecoupledTreeNodeFactory implements TreeNodeFactory {
 				// Compute the goals for each player. We are in a non terminal state so the goal might not be defined.
 				// We use the state machine method that will return default goal values for the player for which goal
 				// values cannot be computed in this state.
-				goals = this.theMachine.getSafeGoalsAvgForAllRoles(state);
+				goals = this.gameDependentParameters.getTheMachine().getSafeGoalsAvgForAllRoles(state);
 				terminal = true;
 			}
 			// If the legal moves can be computed for every player, there is no need to compute the goals.
@@ -107,7 +126,7 @@ public class DecoupledTreeNodeFactory implements TreeNodeFactory {
 	 */
 	protected DecoupledMCTSMoveStats[][] createDUCTMCTSMoves(MachineState state){
 
-		List<Role> roles = this.theMachine.getRoles();
+		List<Role> roles = this.gameDependentParameters.getTheMachine().getRoles();
 
 		//System.out.println("NUMROLES = " + roles.size());
 
@@ -118,7 +137,7 @@ public class DecoupledTreeNodeFactory implements TreeNodeFactory {
 
 			for(int i = 0; i < roles.size(); i++){
 
-				legalMoves = this.theMachine.getLegalMoves(state, roles.get(i));
+				legalMoves = this.gameDependentParameters.getTheMachine().getLegalMoves(state, roles.get(i));
 
 				moves[i] = new DecoupledMCTSMoveStats[legalMoves.size()];
 				for(int j = 0; j < legalMoves.size(); j++){
@@ -134,6 +153,11 @@ public class DecoupledTreeNodeFactory implements TreeNodeFactory {
 		}
 
 		return moves;
+	}
+
+	@Override
+	public String getComponentParameters() {
+		return null;
 	}
 
 }

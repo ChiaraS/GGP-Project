@@ -1,11 +1,13 @@
 package org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.strategies.selection;
 
+import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
 
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.GameDependentParameters;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.GamerConfiguration;
+import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.SearchManagerComponent;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.SharedReferencesCollector;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.strategies.selection.evaluators.MoveEvaluator;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.MCTSNode;
@@ -15,23 +17,44 @@ import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.hybrid.
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.hybrid.decoupled.DecoupledMCTSNode;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.hybrid.sequential.SequentialMCTSMoveStats;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.hybrid.sequential.SequentialMCTSNode;
+import org.ggp.base.util.logging.GamerLogger;
+import org.ggp.base.util.reflection.ProjectSearcher;
 import org.ggp.base.util.statemachine.structure.Move;
 
 public abstract class MoveValueSelection extends SelectionStrategy {
 
 	private double valueOffset;
 
+	/**
+	 * NOTE: to obtain the desired selection type set the MoveEvaluator as follows:
+	 * UCT SELECTION = UCTEvaluator
+	 * GRAVE SELECTION = GRAVEEvaluator (and use the subclass GRAVESelection)
+	 */
 	protected MoveEvaluator moveEvaluator;
 
 	public MoveValueSelection(GameDependentParameters gameDependentParameters, Random random,
-			GamerConfiguration gamerConfiguration, SharedReferencesCollector sharedReferencesCollector, double valueOffset, MoveEvaluator moveEvaluator) {
+			GamerConfiguration gamerConfiguration, SharedReferencesCollector sharedReferencesCollector) {
 
 		super(gameDependentParameters, random, gamerConfiguration, sharedReferencesCollector);
 
-		!!!
+		this.valueOffset = Double.parseDouble(gamerConfiguration.getPropertyValue("SelectionStrategy.valueOffset"));
 
-		this.valueOffset = valueOffset;
-		this.moveEvaluator = moveEvaluator;
+		try {
+			this.moveEvaluator = (MoveEvaluator) SearchManagerComponent.getConstructorForSearchManagerComponent(ProjectSearcher.MOVE_EVALUATORS.getConcreteClasses(),
+					gamerConfiguration.getPropertyValue("SelectionStrategy.moveEvaluatorType")).newInstance(gameDependentParameters, random, gamerConfiguration, sharedReferencesCollector);
+		} catch (InstantiationException | IllegalAccessException
+				| IllegalArgumentException | InvocationTargetException e) {
+			// TODO: fix this!
+			GamerLogger.logError("SearchManagerCreation", "Error when instantiating MoveEvaluator " + gamerConfiguration.getPropertyValue("SelectionStrategy.moveEvaluatorType") + ".");
+			GamerLogger.logStackTrace("SearchManagerCreation", e);
+			throw new RuntimeException(e);
+		}
+
+	}
+
+	@Override
+	public void setReferences(SharedReferencesCollector sharedReferencesCollector) {
+		this.moveEvaluator.setReferences(sharedReferencesCollector);
 	}
 
 	@Override

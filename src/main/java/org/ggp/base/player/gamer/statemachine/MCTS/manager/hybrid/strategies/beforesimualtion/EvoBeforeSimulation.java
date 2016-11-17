@@ -18,7 +18,7 @@ public class EvoBeforeSimulation extends BeforeSimulationStrategy {
 	private OnlineTunableComponent tunableComponent;
 
 	public EvoBeforeSimulation(GameDependentParameters gameDependentParameters, Random random,
-			GamerConfiguration gamerConfiguration, SharedReferencesCollector sharedReferencesCollector, SingleParameterEvolutionManager evolutionManager, double[] individualsValues, boolean tuneAllRoles, OnlineTunableComponent tunableComponent) {
+			GamerConfiguration gamerConfiguration, SharedReferencesCollector sharedReferencesCollector) {
 
 		super(gameDependentParameters, random, gamerConfiguration, sharedReferencesCollector);
 

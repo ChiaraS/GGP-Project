@@ -17,6 +17,14 @@ public class GamerConfiguration {
 
 	}
 
+	public boolean specifiesProperty(String propertyName){
+
+		String propertyValue = this.properties.getProperty(propertyName);
+
+		return !(propertyValue == null || propertyValue.equals("") || propertyValue.equals("null"));
+
+	}
+
 	public String getPropertyValue(String propertyName){
 
 		String propertyValue = this.properties.getProperty(propertyName);

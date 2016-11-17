@@ -40,4 +40,10 @@ public class PnProverCADIABetaComputer extends PnProverBetaComputer {
 		//System.out.println(k);
 	}
 
+	@Override
+	public double[] getPossibleValues() {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
 }

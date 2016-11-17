@@ -39,4 +39,10 @@ public class PnProverGRAVEBetaComputer extends PnProverBetaComputer {
 		this.bias = newValue[0];
 
 	}
+
+	@Override
+	public double[] getPossibleValues() {
+		// TODO Auto-generated method stub
+		return null;
+	}
 }

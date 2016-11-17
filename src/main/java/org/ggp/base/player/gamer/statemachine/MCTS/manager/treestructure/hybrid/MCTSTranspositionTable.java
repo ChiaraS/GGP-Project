@@ -48,6 +48,18 @@ public class MCTSTranspositionTable {
 		}
 	}
 
+	public void clearTranspositionTable(){
+		this.transpositionTable.clear();
+	}
+
+	public void setupTranspositionTable(){
+		this.currentGameStepStamp = 1;
+		if(this.log){
+			GamerLogger.log(GamerLogger.FORMAT.CSV_FORMAT, "TreeSizeStatistics", "Step;Start/End;#Nodes;#ActionsStats;#RAVE_AMAFStats;#GRAVE_AMAFStats;ActionsStats/Node;RAVE_AMAFStats/Node;GRAVE_AMAFStats/Node;");
+			GamerLogger.log(GamerLogger.FORMAT.CSV_FORMAT, "TreeSizeStatistics", "1;Start;0;0;0;0;0;0;0;");
+		}
+	}
+
 	public MCTSNode getNode(MachineState state){
 		MCTSNode node = this.transpositionTable.get(state);
 		if(node != null){

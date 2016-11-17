@@ -26,17 +26,20 @@ public class EvoGRAVEAfterSimulation extends AfterSimulationStrategy {
 
 	@Override
 	public void setReferences(SharedReferencesCollector sharedReferencesCollector) {
-		// No need for any reference
+		this.graveAfterSimulation.setReferences(sharedReferencesCollector);
+		this.evoAfterSimulation.setReferences(sharedReferencesCollector);
 	}
 
 	@Override
 	public void clearComponent() {
-		// Do nothing
+		this.graveAfterSimulation.clearComponent();
+		this.evoAfterSimulation.clearComponent();
 	}
 
 	@Override
 	public void setUpComponent() {
-		// Do nothing
+		this.graveAfterSimulation.setUpComponent();
+		this.evoAfterSimulation.setUpComponent();
 	}
 
 	@Override

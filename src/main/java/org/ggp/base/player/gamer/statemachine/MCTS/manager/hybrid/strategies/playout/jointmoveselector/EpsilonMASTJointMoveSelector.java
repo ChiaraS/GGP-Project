@@ -59,7 +59,8 @@ public class EpsilonMASTJointMoveSelector extends JointMoveSelector implements O
 
 	@Override
 	public void setReferences(SharedReferencesCollector sharedReferencesCollector) {
-		// No need for any reference
+		this.mastSelector.setReferences(sharedReferencesCollector);
+		this.randomSelector.setReferences(sharedReferencesCollector);
 	}
 
 	@Override

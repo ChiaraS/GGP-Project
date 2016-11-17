@@ -25,7 +25,7 @@ public class ProgressiveHistoryGRAVEEvaluator extends GRAVEEvaluator {
 	private double w;
 
 	public ProgressiveHistoryGRAVEEvaluator(GameDependentParameters gameDependentParameters, Random random,
-			GamerConfiguration gamerConfiguration, SharedReferencesCollector sharedReferencesCollector, double w) {
+			GamerConfiguration gamerConfiguration, SharedReferencesCollector sharedReferencesCollector) {
 		super(gameDependentParameters, random, gamerConfiguration, sharedReferencesCollector);
 
 		this.currentRootAmafStats = null; // Before ever starting any selection we have no reference to any statistic

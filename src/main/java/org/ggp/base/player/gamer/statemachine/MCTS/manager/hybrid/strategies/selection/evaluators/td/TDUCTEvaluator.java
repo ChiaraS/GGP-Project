@@ -16,13 +16,14 @@ public class TDUCTEvaluator extends UCTEvaluator {
 	private GlobalExtremeValues globalExtremeValues;
 
 	public TDUCTEvaluator(GameDependentParameters gameDependentParameters, Random random,
-			GamerConfiguration gamerConfiguration, SharedReferencesCollector sharedReferencesCollector, GlobalExtremeValues globalExtremeValues) {
+			GamerConfiguration gamerConfiguration, SharedReferencesCollector sharedReferencesCollector) {
 		super(gameDependentParameters, random, gamerConfiguration, sharedReferencesCollector);
 
 	}
 
 	@Override
 	public void setReferences(SharedReferencesCollector sharedReferencesCollector) {
+		super.setReferences(sharedReferencesCollector);
 		this.globalExtremeValues = sharedReferencesCollector.getGlobalExtremeValues();
 	}
 

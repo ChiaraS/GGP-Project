@@ -1,7 +1,9 @@
 package org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid;
 
+import java.lang.reflect.InvocationTargetException;
+import java.util.Random;
+
 import org.ggp.base.player.gamer.statemachine.MCS.manager.hybrid.CompleteMoveStats;
-import org.ggp.base.player.gamer.statemachine.MCTS.manager.MCTSManager;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.exceptions.MCTSException;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.strategies.aftermove.AfterMoveStrategy;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.strategies.aftersimulation.AfterSimulationStrategy;
@@ -18,6 +20,8 @@ import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.hybrid.
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.hybrid.TreeNodeFactory;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.hybrid.amafdecoupled.AMAFDecoupledTreeNodeFactory;
 import org.ggp.base.util.logging.GamerLogger;
+import org.ggp.base.util.reflection.ProjectSearcher;
+import org.ggp.base.util.statemachine.abstractsm.AbstractStateMachine;
 import org.ggp.base.util.statemachine.exceptions.StateMachineException;
 import org.ggp.base.util.statemachine.exceptions.TransitionDefinitionException;
 import org.ggp.base.util.statemachine.structure.MachineState;
@@ -26,7 +30,53 @@ import org.ggp.base.util.statemachine.structure.MachineState;
  * @author C.Sironi
  *
  */
-public class HybridMCTSManager extends MCTSManager {
+public class HybridMCTSManager {
+
+	//--- Parameters used to collect details about search (duration, number of iterations, ecc...) ---//
+
+	/**
+	 * Number of performed iterations.
+	 */
+	private int iterations;
+	/**
+	 * Number of all visited states since the start of the search.
+	 */
+	private int visitedNodes;
+	/**
+	 * Number of visited nodes in the current iteration so far.
+	 */
+	private int currentIterationVisitedNodes;
+	/**
+	 * Start time of last performed search.
+	 */
+	private long searchStart;
+	/**
+	 * End time of last performed search.
+	 */
+	private long searchEnd;
+
+	//-------------------------- Parameters needed to perform the search -----------------------------//
+
+	/**
+	 * Maximum depth that the MCTS algorithm must visit.
+	 */
+	private int maxSearchDepth;
+
+	/**
+	 * Number of simulations per search that this MCTS manager can perform.
+	 * NOTE that if this number is set to a positive number then the manager
+	 * will ignore any time limit and always perform the exact number of
+	 * simulations specified by this parameter.
+	 */
+	private int numExpectedIterations;
+
+	/**
+	 * All the game-dependent parameters needed by the MCTSManager and its strategies.
+	 * Must be reset between games.
+	 */
+	private GameDependentParameters gameDependentParameters;
+
+	//----------------------------------------- Strategies -------------------------------------------//
 
 	/**
 	 * Strategies that the MCTSManger must use to perform the different MCTS phases.
@@ -64,7 +114,15 @@ public class HybridMCTSManager extends MCTSManager {
 	 * NOTE: always make sure when initializing the manager to assign it the correct node factory,
 	 * that creates nodes containing all the information that the strategies need.
 	 */
-	private TreeNodeFactory theNodesFactory;
+	private TreeNodeFactory treeNodeFactory;
+
+	//------------------------------------ Transposition table -------------------------------------//
+
+	/**
+	 * The transposition table (implemented with HashMap that uses the state as key
+	 * and solves collisions with linked lists).
+	 */
+	private MCTSTranspositionTable transpositionTable;
 
 	/** NOT NEEDED FOR NOW SINCE ALL STRATEGIES ARE SEPARATE
 	 * A set containing all the distinct concrete strategy classes only once.
@@ -73,80 +131,169 @@ public class HybridMCTSManager extends MCTSManager {
 	 */
 	//private Set<Strategy> strategies = new HashSet<Strategy>();
 
-	/**
-	 * All the game-dependent parameters needed by the MCTSManager and its strategies.
-	 * Must be reset between games.
-	 */
-	private GameDependentParameters gameDependentParameters;
+	public HybridMCTSManager(Random random, GamerConfiguration gamerConfiguration) {
 
-	/**
-	 * The transposition table (implemented with HashMap that uses the state as key
-	 * and solves collisions with linked lists).
-	 */
-	private MCTSTranspositionTable transpositionTable;
-
-	/**
-	 * Number of simulations per search that this MCTS manager can perform.
-	 * NOTE that if this number is set to a positive number then the manager
-	 * will ignore any time limit and always perform the exact number of
-	 * simulations specified by this parameter.
-	 */
-	private int numExpectedIterations;
-
-	/**
-	 *
-	 */
-	public HybridMCTSManager(GameDependentParameters gameDependentParameters, SelectionStrategy selectionStrategy,
-			ExpansionStrategy expansionStrategy, PlayoutStrategy playoutStrategy,
-			BackpropagationStrategy backpropagationStrategy, MoveChoiceStrategy moveChoiceStrategy,
-			BeforeSimulationStrategy beforeSimulationStrategy, AfterSimulationStrategy afterSimulationStrategy,
-			AfterMoveStrategy afterMoveStrategy, TreeNodeFactory theNodesFactory,
-			int gameStepOffset, int maxSearchDepth,	boolean logTranspositionTable) {
-
-		this(gameDependentParameters, selectionStrategy, expansionStrategy, playoutStrategy, backpropagationStrategy,
-				moveChoiceStrategy, beforeSimulationStrategy, afterSimulationStrategy,
-				afterMoveStrategy, theNodesFactory, gameStepOffset, maxSearchDepth,
-				logTranspositionTable, -1);
-
-	}
-
-	/**
-	 *
-	 */
-	public HybridMCTSManager(GameDependentParameters gameDependentParameters, SelectionStrategy selectionStrategy,
-			ExpansionStrategy expansionStrategy, PlayoutStrategy playoutStrategy,
-			BackpropagationStrategy backpropagationStrategy, MoveChoiceStrategy moveChoiceStrategy,
-			BeforeSimulationStrategy beforeSimulationStrategy, AfterSimulationStrategy afterSimulationStrategy,
-			AfterMoveStrategy afterMoveStrategy,TreeNodeFactory theNodesFactory,
-			int gameStepOffset, int maxSearchDepth,	boolean logTranspositionTable, int numExpectedIterations) {
-
-		this.gameDependentParameters = gameDependentParameters;
-
-		this.selectionStrategy = selectionStrategy;
-		this.expansionStrategy = expansionStrategy;
-		this.playoutStrategy = playoutStrategy;
-		this.backpropagationStrategy = backpropagationStrategy;
-		this.moveChoiceStrategy = moveChoiceStrategy;
-
-		this.beforeSimulationStrategy = beforeSimulationStrategy;
-		this.afterSimulationStrategy = afterSimulationStrategy;
-		this.afterMoveStrategy = afterMoveStrategy;
-		this.theNodesFactory = theNodesFactory;
-
-		if(!(theNodesFactory instanceof AMAFDecoupledTreeNodeFactory)){
-			logTranspositionTable = false;
-		}
-
-		this.transpositionTable = new MCTSTranspositionTable(gameStepOffset, logTranspositionTable);
-
-		this.numExpectedIterations = numExpectedIterations;
-
-		this.maxSearchDepth = maxSearchDepth;
 		this.iterations = 0;
 		this.visitedNodes = 0;
 		this.currentIterationVisitedNodes = 0;
 		this.searchStart = 0;
 		this.searchEnd = 0;
+
+		this.maxSearchDepth = Integer.parseInt(gamerConfiguration.getPropertyValue("SearchManager.maxSearchDepth"));
+
+		if(gamerConfiguration.specifiesProperty("SearchManager.numExpectedIterations")){
+			this.numExpectedIterations = Integer.parseInt(gamerConfiguration.getPropertyValue("SearchManager.numExpectedIterations"));
+		}else{
+			this.numExpectedIterations = -1;
+		}
+		this.gameDependentParameters = new GameDependentParameters();
+
+		// Create strategies according to the types specified in the gamer configuration
+		SharedReferencesCollector sharedReferencesCollector = new SharedReferencesCollector();
+
+		String propertyValue = gamerConfiguration.getPropertyValue("SearchManager.selectionStrategyType");
+		try {
+			this.selectionStrategy = (SelectionStrategy) SearchManagerComponent.getConstructorForSearchManagerComponent(ProjectSearcher.SELECTION_STRATEGIES.getConcreteClasses(),
+					propertyValue).newInstance(gameDependentParameters, random, gamerConfiguration, sharedReferencesCollector);
+		} catch (InstantiationException | IllegalAccessException
+				| IllegalArgumentException | InvocationTargetException e) {
+			// TODO: fix this!
+			GamerLogger.logError("SearchManagerCreation", "Error when instantiating SelectionStrategy " + propertyValue + ".");
+			GamerLogger.logStackTrace("SearchManagerCreation", e);
+			throw new RuntimeException(e);
+		}
+
+		propertyValue = gamerConfiguration.getPropertyValue("SearchManager.expansionStrategyType");
+		try {
+			this.expansionStrategy = (ExpansionStrategy) SearchManagerComponent.getConstructorForSearchManagerComponent(ProjectSearcher.EXPANSION_STRATEGIES.getConcreteClasses(),
+					propertyValue).newInstance(gameDependentParameters, random, gamerConfiguration, sharedReferencesCollector);
+		} catch (InstantiationException | IllegalAccessException
+				| IllegalArgumentException | InvocationTargetException e) {
+			// TODO: fix this!
+			GamerLogger.logError("SearchManagerCreation", "Error when instantiating ExpansionStrategy " + propertyValue + ".");
+			GamerLogger.logStackTrace("SearchManagerCreation", e);
+			throw new RuntimeException(e);
+		}
+
+		propertyValue = gamerConfiguration.getPropertyValue("SearchManager.playoutStrategyType");
+		try {
+			this.playoutStrategy = (PlayoutStrategy) SearchManagerComponent.getConstructorForSearchManagerComponent(ProjectSearcher.PLAYOUT_STRATEGIES.getConcreteClasses(),
+					propertyValue).newInstance(gameDependentParameters, random, gamerConfiguration, sharedReferencesCollector);
+		} catch (InstantiationException | IllegalAccessException
+				| IllegalArgumentException | InvocationTargetException e) {
+			// TODO: fix this!
+			GamerLogger.logError("SearchManagerCreation", "Error when instantiating PlayoutStrategy " + propertyValue + ".");
+			GamerLogger.logStackTrace("SearchManagerCreation", e);
+			throw new RuntimeException(e);
+		}
+
+		propertyValue = gamerConfiguration.getPropertyValue("SearchManager.backpropagationStrategyType");
+		try {
+			this.backpropagationStrategy = (BackpropagationStrategy) SearchManagerComponent.getConstructorForSearchManagerComponent(ProjectSearcher.BACKPROPAGATION_STRATEGIES.getConcreteClasses(),
+					propertyValue).newInstance(gameDependentParameters, random, gamerConfiguration, sharedReferencesCollector);
+		} catch (InstantiationException | IllegalAccessException
+				| IllegalArgumentException | InvocationTargetException e) {
+			// TODO: fix this!
+			GamerLogger.logError("SearchManagerCreation", "Error when instantiating BackpropagationStrategy " + propertyValue + ".");
+			GamerLogger.logStackTrace("SearchManagerCreation", e);
+			throw new RuntimeException(e);
+		}
+
+		propertyValue = gamerConfiguration.getPropertyValue("SearchManager.moveChoiceStrategyType");
+		try {
+			this.moveChoiceStrategy = (MoveChoiceStrategy) SearchManagerComponent.getConstructorForSearchManagerComponent(ProjectSearcher.MOVE_CHOICE_STRATEGIES.getConcreteClasses(),
+					propertyValue).newInstance(gameDependentParameters, random, gamerConfiguration, sharedReferencesCollector);
+		} catch (InstantiationException | IllegalAccessException
+				| IllegalArgumentException | InvocationTargetException e) {
+			// TODO: fix this!
+			GamerLogger.logError("SearchManagerCreation", "Error when instantiating MoveChoiceStrategy " + propertyValue + ".");
+			GamerLogger.logStackTrace("SearchManagerCreation", e);
+			throw new RuntimeException(e);
+		}
+
+		if(gamerConfiguration.specifiesProperty("SearchManager.beforeSimulationStrategyType")){
+
+			propertyValue = gamerConfiguration.getPropertyValue("SearchManager.beforeSimulationStrategyType");
+			try {
+				this.beforeSimulationStrategy = (BeforeSimulationStrategy) SearchManagerComponent.getConstructorForSearchManagerComponent(ProjectSearcher.BEFORE_SIMULATION_STRATEGIES.getConcreteClasses(),
+						propertyValue).newInstance(gameDependentParameters, random, gamerConfiguration, sharedReferencesCollector);
+			} catch (InstantiationException | IllegalAccessException
+					| IllegalArgumentException | InvocationTargetException e) {
+				// TODO: fix this!
+				GamerLogger.logError("SearchManagerCreation", "Error when instantiating BeforeSimulationStrategy " + propertyValue + ".");
+				GamerLogger.logStackTrace("SearchManagerCreation", e);
+				throw new RuntimeException(e);
+			}
+		}
+
+		if(gamerConfiguration.specifiesProperty("SearchManager.afterSimulationStrategyType")){
+
+			propertyValue = gamerConfiguration.getPropertyValue("SearchManager.afterSimulationStrategyType");
+			try {
+				this.afterSimulationStrategy = (AfterSimulationStrategy) SearchManagerComponent.getConstructorForSearchManagerComponent(ProjectSearcher.AFTER_SIMULATION_STRATEGIES.getConcreteClasses(),
+						propertyValue).newInstance(gameDependentParameters, random, gamerConfiguration, sharedReferencesCollector);
+			} catch (InstantiationException | IllegalAccessException
+					| IllegalArgumentException | InvocationTargetException e) {
+				// TODO: fix this!
+				GamerLogger.logError("SearchManagerCreation", "Error when instantiating AfterSimulationStrategy " + propertyValue + ".");
+				GamerLogger.logStackTrace("SearchManagerCreation", e);
+				throw new RuntimeException(e);
+			}
+		}
+
+		if(gamerConfiguration.specifiesProperty("SearchManager.afterMoveStrategyType")){
+
+			propertyValue = gamerConfiguration.getPropertyValue("SearchManager.afterMoveStrategyType");
+			try {
+				this.afterMoveStrategy = (AfterMoveStrategy) SearchManagerComponent.getConstructorForSearchManagerComponent(ProjectSearcher.AFTER_MOVE_STRATEGIES.getConcreteClasses(),
+						propertyValue).newInstance(gameDependentParameters, random, gamerConfiguration, sharedReferencesCollector);
+			} catch (InstantiationException | IllegalAccessException
+					| IllegalArgumentException | InvocationTargetException e) {
+				// TODO: fix this!
+				GamerLogger.logError("SearchManagerCreation", "Error when instantiating AfterMoveStrategy " + propertyValue + ".");
+				GamerLogger.logStackTrace("SearchManagerCreation", e);
+				throw new RuntimeException(e);
+			}
+		}
+
+		if(gamerConfiguration.specifiesProperty("SearchManager.treeNodeFactoryType")){
+
+			propertyValue = gamerConfiguration.getPropertyValue("SearchManager.treeNodeFactoryType");
+			try {
+				this.treeNodeFactory = (TreeNodeFactory) SearchManagerComponent.getConstructorForSearchManagerComponent(ProjectSearcher.TREE_NODE_FACTORIES.getConcreteClasses(),
+						propertyValue).newInstance(gameDependentParameters, random, gamerConfiguration, sharedReferencesCollector);
+			} catch (InstantiationException | IllegalAccessException
+					| IllegalArgumentException | InvocationTargetException e) {
+				// TODO: fix this!
+				GamerLogger.logError("SearchManagerCreation", "Error when instantiating TreeNodeFactory " + propertyValue + ".");
+				GamerLogger.logStackTrace("SearchManagerCreation", e);
+				throw new RuntimeException(e);
+			}
+		}
+
+		boolean logTranspositionTable = Boolean.parseBoolean(gamerConfiguration.getPropertyValue("SearchManager.logTranspositionTable"));
+		if(!(this.treeNodeFactory instanceof AMAFDecoupledTreeNodeFactory)){
+			logTranspositionTable = false;
+		}
+		int gameStepOffset = Integer.parseInt(gamerConfiguration.getPropertyValue("SearchManager.gameStepOffset"));
+		this.transpositionTable = new MCTSTranspositionTable(gameStepOffset, logTranspositionTable);
+
+		// Let all strategies set references if needed.
+		this.selectionStrategy.setReferences(sharedReferencesCollector);
+		this.expansionStrategy.setReferences(sharedReferencesCollector);
+		this.playoutStrategy.setReferences(sharedReferencesCollector);
+		this.backpropagationStrategy.setReferences(sharedReferencesCollector);
+		this.moveChoiceStrategy.setReferences(sharedReferencesCollector);
+		if(this.beforeSimulationStrategy != null){
+			this.beforeSimulationStrategy.setReferences(sharedReferencesCollector);
+		}
+		if(this.afterSimulationStrategy != null){
+			this.afterSimulationStrategy.setReferences(sharedReferencesCollector);
+		}
+		if(this.afterMoveStrategy != null){
+			this.afterMoveStrategy.setReferences(sharedReferencesCollector);
+		}
+		this.treeNodeFactory.setReferences(sharedReferencesCollector);
 
 		//this.strategies.add(this.expansionStrategy);
 		//this.strategies.add(this.selectionStrategy);
@@ -160,7 +307,7 @@ public class HybridMCTSManager extends MCTSManager {
 
 		toLog += "\nMCTS manager initialized with the following parameters: [maxSearchDepth = " + this.maxSearchDepth + ", logTranspositionTable = " + logTranspositionTable + ", numExpectedIterations = " + numExpectedIterations + "]";
 
-		toLog += "\nMCTS manager initialized with the following tree node factory: " + this.theNodesFactory.getClass().getSimpleName() + ".";
+		toLog += "\nMCTS manager initialized with the following tree node factory: " + this.treeNodeFactory.getClass().getSimpleName() + ".";
 
 		toLog += "\nMCTS manager initialized with the following strategies: ";
 
@@ -195,6 +342,61 @@ public class HybridMCTSManager extends MCTSManager {
 		GamerLogger.log("MCTSManager", toLog);
 
 	}
+
+	public void clearManager(){
+
+		this.gameDependentParameters.clearGameDependentParameters();
+
+		this.selectionStrategy.clearComponent();
+		this.expansionStrategy.clearComponent();
+		this.playoutStrategy.clearComponent();
+		this.backpropagationStrategy.clearComponent();
+		this.moveChoiceStrategy.clearComponent();
+		if(this.beforeSimulationStrategy != null){
+			this.beforeSimulationStrategy.clearComponent();
+		}
+		if(this.afterSimulationStrategy != null){
+			this.afterSimulationStrategy.clearComponent();
+		}
+		if(this.afterMoveStrategy != null){
+			this.afterMoveStrategy.clearComponent();
+		}
+		this.treeNodeFactory.clearComponent();
+
+		this.transpositionTable.clearTranspositionTable();
+
+	}
+
+	public void setUpManager(AbstractStateMachine theMachine, int numRoles, int myRoleIndex){
+
+		this.iterations = 0;
+		this.visitedNodes = 0;
+		this.currentIterationVisitedNodes = 0;
+		this.searchStart = 0;
+		this.searchEnd = 0;
+
+		this.gameDependentParameters.resetGameDependentParameters(theMachine, numRoles, myRoleIndex);
+
+		this.selectionStrategy.setUpComponent();
+		this.expansionStrategy.setUpComponent();
+		this.playoutStrategy.setUpComponent();
+		this.backpropagationStrategy.setUpComponent();
+		this.moveChoiceStrategy.setUpComponent();
+		if(this.beforeSimulationStrategy != null){
+			this.beforeSimulationStrategy.setUpComponent();
+		}
+		if(this.afterSimulationStrategy != null){
+			this.afterSimulationStrategy.setUpComponent();
+		}
+		if(this.afterMoveStrategy != null){
+			this.afterMoveStrategy.setUpComponent();
+		}
+		this.treeNodeFactory.setUpComponent();
+
+		this.transpositionTable.setupTranspositionTable();
+
+	}
+
 
 	/**
 	 * This method computes the best move in a state, given the corresponding MCT node.
@@ -315,7 +517,7 @@ public class HybridMCTSManager extends MCTSManager {
 
 			//System.out.println("Creating initial node...");
 
-			initialNode = this.theNodesFactory.createNewNode(initialState);
+			initialNode = this.treeNodeFactory.createNewNode(initialState);
 			this.transpositionTable.putNode(initialState, initialNode);
 		}
 
@@ -539,7 +741,7 @@ public class HybridMCTSManager extends MCTSManager {
 
 			//System.out.println("Adding new node to table: " + nextState);
 
-			nextNode = this.theNodesFactory.createNewNode(nextState);
+			nextNode = this.treeNodeFactory.createNewNode(nextState);
 			this.transpositionTable.putNode(nextState, nextNode);
 
 			// No need to perform playout if the node is terminal, we just return the goals in the node.
@@ -619,336 +821,16 @@ public class HybridMCTSManager extends MCTSManager {
 
 	}
 
-	/**
-	 * This method creates a Monte Carlo tree node corresponding to the given state
-	 * for the DUCT (Decoupled UCT version of the MCTS algorithm).
-	 *
-	 * 1. If the state is terminal the corresponding node will memorize the goals
-	 * for each player in the state and the fact that the state is terminal.
-	 * The legal moves will be null since there are supposed to be none in a
-	 * terminal state. If an error occurs in computing the goal for a player, its
-	 * goal value will be set to the default value (0 at the moment).
-	 *
-	 * 2. If the state is not terminal and the legal moves can be computed for each
-	 * role with no errors the corresponding node will memorize such moves, their
-	 * statistics, null goals and the fact that the node is not terminal.
-	 *
-	 * 3. If the state is not terminal but at least for one role the legal moves cannot
-	 * be computed correctly the corresponding node will be treated as a pseudo-terminal
-	 * node. This means that during the rest of the search, whenever this node will be
-	 * encountered, it will be treated as terminal even if the corresponding state isn't.
-	 * This choice has been made because without complete joint moves it is not possible
-	 * to explore any further state from here. Thus the node will memorize the fact that
-	 * the node is terminal (EVEN IF THE STATE ISN'T) and the goals for the players in
-	 * the state (assigning default values if they cannot be computed), while the moves
-	 * will be set to null.
-	 *
-	 * @param state the state for which to crate the tree node.
-	 * @return the tree node corresponding to the state.
-	 */
-/*	private MCTSNode createNewNode(MachineState state){
-
-		//System.out.println("Creating new node.");
-
-		int goals[] = null;
-		boolean terminal = false;
-		List<List<Move>> allLegalMoves = null;
-
-		switch(this.mctsType){
-		// DUCT version of MCTS.
-		case DUCT:
-
-			DUCTMCTSMoveStats[][] ductMovesStats = null;
-
-			// Terminal state:
-			if(this.theMachine.isTerminal(state)){
-
-				goals = this.theMachine.getSafeGoals(state);
-				terminal = true;
-
-			}else{// Non-terminal state:
-
-				ductMovesStats = this.createDUCTMCTSMoves(state);
-
-				// Error when computing moves.
-				// If for at least one player the legal moves cannot be computed (an thus the moves
-				// are returned as a null value), we consider this node "pseudo-terminal" (i.e. the
-				// corresponding state is not terminal but we cannot explore any of the next states,
-				// so we treat it as terminal during the MCT search). This means that we will need
-				// the goal values in this node and they will not change for all the rest of the
-				// search, so we compute them and memorize them.
-				if(ductMovesStats == null){
-					// Compute the goals for each player. We are in a non terminal state so the goal might not be defined.
-					// We use the state machine method that will return default goal values for the player for which goal
-					// values cannot be computed in this state.
-					goals = this.theMachine.getSafeGoals(state);
-					terminal = true;
-				}
-				// If the legal moves can be computed for every player, there is no need to compute the goals.
-			}
-
-			return new DUCTMCTSNode(ductMovesStats, goals, terminal);
-		case SUCT: // SUCT version of MCTS.
-
-			SUCTMCTSMoveStats[] suctMovesStats = null;
-			int unvisitedLeavesCount = 0;
-
-			// Terminal state:
-			if(this.theMachine.isTerminal(state)){
-
-				goals = this.theMachine.getSafeGoals(state);
-				terminal = true;
-
-			}else{// Non-terminal state:
-
-				try {
-					allLegalMoves = this.theMachine.getAllLegalMoves(state);
-
-
-					//int r = 0;
-					//for(List<Move> legalPerRole : allLegalMoves){
-					//	System.out.println("Legal moves for role " + r);
-					//	System.out.print("[ ");
-					//	for(Move m : legalPerRole){
-					//		System.out.print("(" + m.getIndex() + ", " + this.theMachine.internalMoveToMove(m) + ") ");
-					//	}
-					//	System.out.println("]");
-					//	r++;
-					//}
-
-					suctMovesStats = this.createSUCTMCTSMoves(allLegalMoves);
-					unvisitedLeavesCount = suctMovesStats[0].getUnvisitedSubleaves() * suctMovesStats.length;
-					//this.printSUCTMovesTree(suctMovesStats, "");
-				} catch (MoveDefinitionException e) {
-					// Error when computing moves.
-					GamerLogger.logError("MCTSManager", "Failed to retrieve the legal moves while adding non-terminal SUCT state to the tree.");
-					GamerLogger.logStackTrace("MCTSManager", e);
-					// If for at least one player the legal moves cannot be computed we consider this node
-					// "pseudo-terminal" (i.e. the corresponding state is not terminal but we cannot explore
-					// any of the next states, so we treat it as terminal during the MCT search). This means
-					// that we will need the goal values in this node and they will not change for all the rest
-					// of the search, so we compute them and memorize them.
-
-					// Compute the goals for each player. We are in a non terminal state so the goal might not be defined.
-					// We use the state machine method that will return default goal values for the player for which goal
-					// values cannot be computed in this state.
-
-					//System.out.println("Null moves in non terminal state!");
-
-					allLegalMoves = null;
-					goals = this.theMachine.getSafeGoals(state);
-					terminal = true;
-					unvisitedLeavesCount = 0;
-				}
-				// If the legal moves can be computed for every player, there is no need to compute the goals.
-			}
-
-			return new SUCTMCTSNode(allLegalMoves, suctMovesStats, goals, terminal, unvisitedLeavesCount);
-
-		case SLOW_SUCT: // Slow SUCT version of MCTS.
-
-			SlowSUCTMCTSMoveStats[] ssuctMovesStats = null;
-			List<SlowSUCTMCTSMoveStats> unvisitedLeaves = null;
-
-			// Terminal state:
-			if(this.theMachine.isTerminal(state)){
-
-				goals = this.theMachine.getSafeGoals(state);
-				terminal = true;
-
-			}else{// Non-terminal state:
-
-				try {
-					allLegalMoves = this.theMachine.getAllLegalMoves(state);
-					// The method that creates the SlowSUCTMCTSMoves assumes that the unvisitedLeaves parameter
-					// passed as input will be initialized to an empty list. The method will then fill it
-					// with all the SUCTMoves that are leaves of the tree representing the move statistics.
-					// Such leaf moves represent the end of a path that form a joint move and are included
-					// in the unvisitedLeaves list if the corresponding joint move hasn't been visited yet
-					// during the search.
-					unvisitedLeaves = new ArrayList<SlowSUCTMCTSMoveStats>();
-					ssuctMovesStats = this.createSlowSUCTMCTSMoves(allLegalMoves, unvisitedLeaves);
-					//this.printMovesTree(ssuctMovesStats, "");
-				} catch (MoveDefinitionException e) {
-					// Error when computing moves.
-					GamerLogger.logError("MCTSManager", "Failed to retrieve the legal moves while adding non-terminal SlowSUCT state to the tree.");
-					GamerLogger.logStackTrace("MCTSManager", e);
-					// If for at least one player the legal moves cannot be computed we consider this node
-					// "pseudo-terminal" (i.e. the corresponding state is not terminal but we cannot explore
-					// any of the next states, so we treat it as terminal during the MCT search). This means
-					// that we will need the goal values in this node and they will not change for all the rest
-					// of the search, so we compute them and memorize them.
-
-					// Compute the goals for each player. We are in a non terminal state so the goal might not be defined.
-					// We use the state machine method that will return default goal values for the player for which goal
-					// values cannot be computed in this state.
-
-					//System.out.println("Null moves in non terminal state!");
-					allLegalMoves = null;
-					goals = this.theMachine.getSafeGoals(state);
-					terminal = true;
-					unvisitedLeaves = null;
-				}
-
-				// If the legal moves can be computed for every player, there is no need to compute the goals.
-			}
-
-			return new SlowSUCTMCTSNode(ssuctMovesStats, unvisitedLeaves, goals, terminal);
-		default:
-			throw new RuntimeException("Someone added a new MCTS Node type and forgot to del with it here, when creating a new tree node.");
-		}
-
-	}
-*/
-
-	/**
-	 * This method creates the moves statistics to be put in the MC Tree node of the given state
-	 * for the DUCT version of the MCTS player.
-	 *
-	 * @param state the state for which to create the moves statistics.
-	 * @return the moves statistics, if the moves can be computed, null otherwise.
-	 */
-/*	private DUCTMCTSMoveStats[][] createDUCTMCTSMoves(MachineState state){
-
-		Role[] roles = this.theMachine.getInternalRoles();
-		DUCTMCTSMoveStats[][] moves = new DUCTMCTSMoveStats[roles.length][];
-
-		try{
-			List<Move> legalMoves;
-
-			for(int i = 0; i < roles.length; i++){
-
-				legalMoves = this.theMachine.getInternalLegalMoves(state, roles[i]);
-
-				moves[i] = new DUCTMCTSMoveStats[legalMoves.size()];
-				for(int j = 0; j < legalMoves.size(); j++){
-					moves[i][j] = new DUCTMCTSMoveStats(legalMoves.get(j));
-				}
-			}
-		}catch(MoveDefinitionException e){
-			// If for at least one player the legal moves cannot be computed, we return null.
-			GamerLogger.logError("MCTSManager", "Failed to retrieve the legal moves while adding non-terminal DUCT state to the tree.");
-			GamerLogger.logStackTrace("MCTSManager", e);
-
-			moves = null;
-		}
-
-		return moves;
-	}
-*/
-
-/*	private SlowSUCTMCTSMoveStats[] createSlowSUCTMCTSMoves(List<List<Move>> allLegalMoves, List<SlowSUCTMCTSMoveStats> unvisitedLeaves){
-
-		Role[] roles = this.theMachine.getInternalRoles();
-
-		// For all the moves of my role (i.e. the role actually performing the search)
-		// create the SUCT move containing the move statistics.
-		int myIndex = this.myRole.getIndex();
-
-		List<Move> myLegalMoves = allLegalMoves.get(myIndex);
-		SlowSUCTMCTSMoveStats[] moves = new SlowSUCTMCTSMoveStats[myLegalMoves.size()];
-		for(int i = 0; i < myLegalMoves.size(); i++){
-			moves[i] = new SlowSUCTMCTSMoveStats(myLegalMoves.get(i), i, createSlowSUCTMCTSMoves((myIndex+1)%(roles.length), roles.length, allLegalMoves, unvisitedLeaves));
-			if(moves[i].getNextRoleMovesStats() == null){
-				unvisitedLeaves.add(moves[i]);
-			}
-		}
-
-		return moves;
+	public int getIterations(){
+		return this.iterations;
 	}
 
-	private SlowSUCTMCTSMoveStats[] createSlowSUCTMCTSMoves(int roleIndex, int numRoles, List<List<Move>> legalMoves, List<SlowSUCTMCTSMoveStats> unvisitedLeaves){
-
-		if(roleIndex == this.myRole.getIndex()){
-			return null;
-		}
-
-		List<Move> roleLegalMoves = legalMoves.get(roleIndex);
-		SlowSUCTMCTSMoveStats[] moves = new SlowSUCTMCTSMoveStats[roleLegalMoves.size()];
-		for(int i = 0; i <roleLegalMoves.size(); i++){
-			moves[i] = new SlowSUCTMCTSMoveStats(roleLegalMoves.get(i), i, createSlowSUCTMCTSMoves((roleIndex+1)%(numRoles), numRoles, legalMoves, unvisitedLeaves));
-			if(moves[i].getNextRoleMovesStats() == null){
-				unvisitedLeaves.add(moves[i]);
-			}
-		}
-
-		return moves;
+	public int getVisitedNodes(){
+		return this.visitedNodes;
 	}
 
-
-
-	private SUCTMCTSMoveStats[] createSUCTMCTSMoves(List<List<Move>> allLegalMoves){
-
-		Role[] roles = this.theMachine.getInternalRoles();
-
-		// Get legal moves for all players.
-		//try {
-		//	for(int i = 0; i < roles.length; i++){
-		//		legalMoves.add(this.theMachine.getInternalLegalMoves(state, roles[i]));
-		//	}
-		//}catch (MoveDefinitionException e) {
-			// If for at least one player the legal moves cannot be computed, we return null.
-		//	GamerLogger.logError("MCTSManager", "Failed to retrieve the legal moves while adding non-terminal SUCT state to the tree.");
-		//	GamerLogger.logStackTrace("MCTSManager", e);
-
-		//	return null;
-		//}
-
-		// For all the moves of my role (i.e. the role actually performing the search)
-		// create the SUCT move containing the move statistics.
-		int myIndex = this.myRole.getIndex();
-
-		List<Move> myLegalMoves = allLegalMoves.get(myIndex);
-		SUCTMCTSMoveStats[] moves = new SUCTMCTSMoveStats[myLegalMoves.size()];
-		for(int i = 0; i < myLegalMoves.size(); i++){
-			moves[i] = new SUCTMCTSMoveStats(createSUCTMCTSMoves((myIndex+1)%(roles.length), roles.length, allLegalMoves));
-		}
-
-		return moves;
+	public long getSearchTime(){
+		return (this.searchEnd - this.searchStart);
 	}
-
-	private SUCTMCTSMoveStats[] createSUCTMCTSMoves(int roleIndex, int numRoles, List<List<Move>> allLegalMoves){
-
-		if(roleIndex == this.myRole.getIndex()){
-			return null;
-		}
-
-		List<Move> roleLegalMoves = allLegalMoves.get(roleIndex);
-		SUCTMCTSMoveStats[] moves = new SUCTMCTSMoveStats[roleLegalMoves.size()];
-		for(int i = 0; i < roleLegalMoves.size(); i++){
-			moves[i] = new SUCTMCTSMoveStats(createSUCTMCTSMoves((roleIndex+1)%(numRoles), numRoles, allLegalMoves));
-		}
-
-		return moves;
-	}
-*/
-
-/*
-	private void printMovesTree(SlowSequentialMCTSMoveStats[] moves, String tab){
-
-		if(moves == null){
-			return;
-		}
-
-		for(SlowSequentialMCTSMoveStats m : moves){
-			System.out.println(tab + this.theMachine.internalMoveToMove(m.getTheMove()));
-			this.printMovesTree(m.getNextRoleMovesStats(), tab + "   ");
-		}
-
-	}
-
-	private void printSUCTMovesTree(SequentialMCTSMoveStats[] moves, String tab){
-
-		if(moves == null){
-			return;
-		}
-
-		for(SequentialMCTSMoveStats m : moves){
-			System.out.println(tab + "[" + m + "]");
-			this.printSUCTMovesTree(m.getNextRoleMovesStats(), tab + "   ");
-		}
-
-	}
-*/
 
 }

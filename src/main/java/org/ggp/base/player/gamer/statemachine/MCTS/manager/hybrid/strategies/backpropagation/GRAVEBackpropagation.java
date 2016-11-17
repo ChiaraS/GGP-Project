@@ -29,7 +29,8 @@ public class GRAVEBackpropagation extends BackpropagationStrategy {
 
 	@Override
 	public void setReferences(SharedReferencesCollector sharedReferencesCollector) {
-		// No need for any reference
+		this.standardUpdater.setReferences(sharedReferencesCollector);
+		this.graveUpdater.setReferences(sharedReferencesCollector);
 	}
 
 	@Override

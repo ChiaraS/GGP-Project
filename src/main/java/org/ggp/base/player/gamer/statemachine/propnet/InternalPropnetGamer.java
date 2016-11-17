@@ -8,7 +8,7 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 
 import org.ggp.base.player.gamer.exception.GamePreviewException;
-import org.ggp.base.player.gamer.statemachine.StateMachineGamer;
+import org.ggp.base.player.gamer.statemachine.ConfigurableStateMachineGamer;
 import org.ggp.base.util.game.Game;
 import org.ggp.base.util.gdl.grammar.GdlPool;
 import org.ggp.base.util.logging.GamerLogger;
@@ -32,7 +32,7 @@ import org.ggp.base.util.symbol.grammar.SymbolPool;
  * @author C.Sironi
  *
  */
-public abstract class InternalPropnetGamer extends StateMachineGamer {
+public abstract class InternalPropnetGamer extends ConfigurableStateMachineGamer {
 
 	/**
 	 * Used to tell to the player if and how to build the propnet state machine.

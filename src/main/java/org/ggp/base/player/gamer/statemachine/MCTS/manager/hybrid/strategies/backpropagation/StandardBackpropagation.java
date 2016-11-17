@@ -24,7 +24,7 @@ public class StandardBackpropagation extends BackpropagationStrategy {
 
 	@Override
 	public void setReferences(SharedReferencesCollector sharedReferencesCollector) {
-		// No need for any reference
+		this.standardUpdater.setReferences(sharedReferencesCollector);
 	}
 
 	@Override

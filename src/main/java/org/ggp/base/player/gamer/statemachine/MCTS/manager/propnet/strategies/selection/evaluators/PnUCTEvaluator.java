@@ -88,4 +88,10 @@ public class PnUCTEvaluator implements PnMoveEvaluator, OnlineTunableComponent{
 
 	}
 
+	@Override
+	public double[] getPossibleValues() {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
 }

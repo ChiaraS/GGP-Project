@@ -23,16 +23,30 @@ public class GRAVESelection extends MoveValueSelection implements OnlineTunableC
 	private double[] valuesForMinAMAFVisits;
 
 	public GRAVESelection(GameDependentParameters gameDependentParameters, Random random,
-			GamerConfiguration gamerConfiguration, SharedReferencesCollector sharedReferencesCollector, double valueOffset,
-			int initialMinAMAFVisits, GRAVEEvaluator moveEvaluator) {
+			GamerConfiguration gamerConfiguration, SharedReferencesCollector sharedReferencesCollector) {
 
-		super(gameDependentParameters, random, gamerConfiguration, sharedReferencesCollector, valueOffset, moveEvaluator);
-
-		sharedReferencesCollector.setGraveSelection(this);
+		super(gameDependentParameters, random, gamerConfiguration, sharedReferencesCollector);
 
 		this.minAMAFVisits = null;
 
-		this.initialMinAMAFVisits = initialMinAMAFVisits;
+		this.initialMinAMAFVisits = Integer.parseInt(gamerConfiguration.getPropertyValue("SelectionStrategy.initialMinAMAFVisits"));
+
+		// If this component must be tuned online, then we should add its reference to the sharedReferencesCollector
+		String toTuneString = gamerConfiguration.getPropertyValue("SelectionStrategy.tune");
+		if(Boolean.parseBoolean(toTuneString)){
+			// If we have to tune the component then we look in the setting for all the values that we must use
+			// Note: the format for these values in the file must be the following:
+			// BetaComputer.valuesForK=v1;v2;...;vn
+			// The values are listed separated by ; with no spaces
+			String[] values = gamerConfiguration.getPropertyMultiValue("SelectionStrategy.valuesForMinAMAFVisits");
+			this.valuesForMinAMAFVisits = new double[values.length];
+			for(int i = 0; i < values.length; i++){
+				this.valuesForMinAMAFVisits[i] = Integer.parseInt(values[i]);
+			}
+			sharedReferencesCollector.setTheComponentToTune(this);
+		}
+
+		sharedReferencesCollector.setGraveSelection(this);
 
 	}
 

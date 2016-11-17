@@ -14,7 +14,7 @@ public class PhMASTAfterMove extends AfterMoveStrategy {
 	private ProgressiveHistoryAfterMove phAfterMove;
 
 	public PhMASTAfterMove(GameDependentParameters gameDependentParameters, Random random,
-			GamerConfiguration gamerConfiguration, SharedReferencesCollector sharedReferencesCollector, MASTAfterMove mastAfterMove, ProgressiveHistoryAfterMove phAfterMove) {
+			GamerConfiguration gamerConfiguration, SharedReferencesCollector sharedReferencesCollector) {
 
 		super(gameDependentParameters, random, gamerConfiguration, sharedReferencesCollector);
 
@@ -26,17 +26,20 @@ public class PhMASTAfterMove extends AfterMoveStrategy {
 
 	@Override
 	public void setReferences(SharedReferencesCollector sharedReferencesCollector) {
-		// No need for any reference
+		this.mastAfterMove.setReferences(sharedReferencesCollector);
+		this.phAfterMove.setReferences(sharedReferencesCollector);
 	}
 
 	@Override
 	public void clearComponent() {
-		// Do nothing
+		this.mastAfterMove.clearComponent();
+		this.phAfterMove.clearComponent();
 	}
 
 	@Override
 	public void setUpComponent() {
-		// Do nothing
+		this.mastAfterMove.setUpComponent();
+		this.phAfterMove.setUpComponent();
 	}
 
 	@Override

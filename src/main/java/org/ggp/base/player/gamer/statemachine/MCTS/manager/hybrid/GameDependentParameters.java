@@ -10,10 +10,10 @@ public class GameDependentParameters {
 
 	private int myRoleIndex;
 
-	public GameDependentParameters(AbstractStateMachine theMachine, int numRoles, int myRoleIndex){
-		this.theMachine = theMachine;
-		this.numRoles = numRoles;
-		this.myRoleIndex = myRoleIndex;
+	public GameDependentParameters(){
+		this.theMachine = null;
+		this.numRoles = -1;
+		this.myRoleIndex = -1;
 	}
 
 	public AbstractStateMachine getTheMachine(){
