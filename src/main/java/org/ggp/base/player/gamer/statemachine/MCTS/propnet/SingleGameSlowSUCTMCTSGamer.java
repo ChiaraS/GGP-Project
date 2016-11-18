@@ -3,19 +3,6 @@
  */
 package org.ggp.base.player.gamer.statemachine.MCTS.propnet;
 
-import java.util.Random;
-
-import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.HybridMCTSManager;
-import org.ggp.base.player.gamer.statemachine.MCTS.manager.propnet.InternalPropnetMCTSManager;
-import org.ggp.base.player.gamer.statemachine.MCTS.manager.propnet.strategies.backpropagation.PnStandardBackpropagation;
-import org.ggp.base.player.gamer.statemachine.MCTS.manager.propnet.strategies.expansion.PnRandomExpansion;
-import org.ggp.base.player.gamer.statemachine.MCTS.manager.propnet.strategies.movechoice.PnMaximumScoreChoice;
-import org.ggp.base.player.gamer.statemachine.MCTS.manager.propnet.strategies.playout.PnRandomPlayout;
-import org.ggp.base.player.gamer.statemachine.MCTS.manager.propnet.strategies.selection.PnUCTSelection;
-import org.ggp.base.player.gamer.statemachine.MCTS.manager.propnet.strategies.selection.evaluators.PnUCTEvaluator;
-import org.ggp.base.player.gamer.statemachine.MCTS.manager.prover.ProverMCTSManager;
-import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.propnet.slowsequential.PnSlowSequentialTreeNodeFactory;
-import org.ggp.base.util.statemachine.structure.compact.CompactRole;
 
 /**
  * @author C.Sironi
@@ -30,6 +17,8 @@ public class SingleGameSlowSUCTMCTSGamer extends UctMctsGamer{
 		super();
 		this.propnetBuild = PROPNET_BUILD.ONCE;
 	}
+
+	/*
 
 	@Override
 	public InternalPropnetMCTSManager createPropnetMCTSManager(){
@@ -62,5 +51,7 @@ public class SingleGameSlowSUCTMCTSGamer extends UctMctsGamer{
 
 		return null;
 	}
+
+	*/
 
 }

@@ -3,7 +3,7 @@ package org.ggp.base.player.gamer.statemachine.MCTS.manager.prover.strategies.se
 import java.util.Random;
 
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.prover.strategies.selection.evaluators.GRAVE.ProverProgressiveHistoryGRAVEEvaluator;
-import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.MCTSNode;
+import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.MctsNode;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.prover.ProverMCTSJointMove;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.prover.amafdecoulped.ProverAMAFNode;
 import org.ggp.base.util.statemachine.structure.explicit.ExplicitRole;
@@ -19,7 +19,7 @@ public class ProverProgressiveHistoryGRAVESelection extends
 	}
 
 	@Override
-	public ProverMCTSJointMove select(MCTSNode currentNode) {
+	public ProverMCTSJointMove select(MctsNode currentNode) {
 
 		if(currentNode instanceof ProverAMAFNode){
 

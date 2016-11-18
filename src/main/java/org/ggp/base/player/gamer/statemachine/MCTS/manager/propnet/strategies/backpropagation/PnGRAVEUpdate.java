@@ -4,7 +4,7 @@ import java.util.List;
 import java.util.Map;
 
 import org.ggp.base.player.gamer.statemachine.MCS.manager.MoveStats;
-import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.MCTSNode;
+import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.MctsNode;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.propnet.PnMCTSJointMove;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.propnet.PnSimulationResult;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.propnet.amafdecoupled.PnAMAFNode;
@@ -14,7 +14,7 @@ import org.ggp.base.util.statemachine.structure.compact.CompactMove;
 
 public class PnGRAVEUpdate {
 
-	public void update(MCTSNode currentNode, CompactMachineState currentState, PnMCTSJointMove jointMove, PnSimulationResult simulationResult) {
+	public void update(MctsNode currentNode, CompactMachineState currentState, PnMCTSJointMove jointMove, PnSimulationResult simulationResult) {
 
 		if(currentNode instanceof PnAMAFNode){
 
@@ -56,7 +56,7 @@ public class PnGRAVEUpdate {
 		}
 	}
 
-	public void processPlayoutResult(MCTSNode leafNode,	CompactMachineState leafState, PnSimulationResult simulationResult) {
+	public void processPlayoutResult(MctsNode leafNode,	CompactMachineState leafState, PnSimulationResult simulationResult) {
 
 		if(leafNode instanceof PnAMAFNode){
 

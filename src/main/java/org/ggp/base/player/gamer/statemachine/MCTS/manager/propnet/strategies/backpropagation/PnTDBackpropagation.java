@@ -1,6 +1,6 @@
 package org.ggp.base.player.gamer.statemachine.MCTS.manager.propnet.strategies.backpropagation;
 
-import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.MCTSNode;
+import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.MctsNode;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.propnet.PnMCTSJointMove;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.propnet.PnSequDecMCTSJointMove;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.propnet.PnSimulationResult;
@@ -54,7 +54,7 @@ public abstract class PnTDBackpropagation implements PnBackpropagationStrategy {
 	}
 
 	@Override
-	public void update(MCTSNode currentNode, CompactMachineState currentState,
+	public void update(MctsNode currentNode, CompactMachineState currentState,
 			PnMCTSJointMove jointMove, PnSimulationResult simulationResult) {
 
 		if(currentNode instanceof PnDecoupledMCTSNode && jointMove instanceof PnSequDecMCTSJointMove){
@@ -115,7 +115,7 @@ public abstract class PnTDBackpropagation implements PnBackpropagationStrategy {
 	}
 
 	@Override
-	public void processPlayoutResult(MCTSNode leafNode,	CompactMachineState leafState,
+	public void processPlayoutResult(MctsNode leafNode,	CompactMachineState leafState,
 			PnSimulationResult simulationResult) {
 
 		int playoutLength = simulationResult.getPlayoutLength();

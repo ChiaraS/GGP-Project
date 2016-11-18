@@ -18,7 +18,7 @@ public abstract class TDDuctMctsGamer extends UctMctsGamer {
 
 		this.c = 0.7;
 
-		this.valueOffset = 0.01;
+	//	this.valueOffset = 0.01;
 
 		this.qPlayout = 0.0;
 
@@ -31,7 +31,7 @@ public abstract class TDDuctMctsGamer extends UctMctsGamer {
 		this.defaultGlobalMaxValue = 100.0;
 
 
-		this.hybridManager = true;
+	//	this.hybridManager = true;
 
 	}
 

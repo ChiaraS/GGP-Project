@@ -1,31 +1,5 @@
 package org.ggp.base.player.gamer.statemachine.MCTS.propnet;
 
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Random;
-
-import org.ggp.base.player.gamer.statemachine.MCS.manager.MoveStats;
-import org.ggp.base.player.gamer.statemachine.MCTS.manager.evolution.Individual;
-import org.ggp.base.player.gamer.statemachine.MCTS.manager.evolution.SingleParameterEvolutionManager;
-import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.HybridMCTSManager;
-import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.strategies.aftermove.EvoAfterMove;
-import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.strategies.aftermove.EvoMASTAfterMove;
-import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.strategies.aftermove.MASTAfterMove;
-import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.strategies.aftersimulation.EvoAfterSimulation;
-import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.strategies.backpropagation.MASTBackpropagation;
-import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.strategies.beforesimualtion.EvoBeforeSimulation;
-import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.strategies.expansion.RandomExpansion;
-import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.strategies.movechoice.MaximumScoreChoice;
-import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.strategies.playout.MASTPlayout;
-import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.strategies.playout.jointmoveselector.EpsilonMASTJointMoveSelector;
-import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.strategies.selection.UCTSelection;
-import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.strategies.selection.evaluators.UCTEvaluator;
-import org.ggp.base.player.gamer.statemachine.MCTS.manager.propnet.InternalPropnetMCTSManager;
-import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.hybrid.decoupled.DecoupledTreeNodeFactory;
-import org.ggp.base.util.statemachine.abstractsm.AbstractStateMachine;
-import org.ggp.base.util.statemachine.abstractsm.CompactStateMachine;
-import org.ggp.base.util.statemachine.abstractsm.ExplicitStateMachine;
-import org.ggp.base.util.statemachine.structure.Move;
 
 public class EpsilonTunerMastDuctMctsGamer extends MastDuctMctsGamer {
 
@@ -72,6 +46,7 @@ public class EpsilonTunerMastDuctMctsGamer extends MastDuctMctsGamer {
 
 	}
 
+	/*
 	@Override
 	public InternalPropnetMCTSManager createPropnetMCTSManager(){
 
@@ -79,7 +54,7 @@ public class EpsilonTunerMastDuctMctsGamer extends MastDuctMctsGamer {
 	}
 
 
-/*
+
 	@Override
 	public ProverMCTSManager createProverMCTSManager(){
 
@@ -97,7 +72,6 @@ public class EpsilonTunerMastDuctMctsGamer extends MastDuctMctsGamer {
 	       		this.gameStepOffset, this.maxSearchDepth);
 
 	}
-*/
 
 	@Override
 	public HybridMCTSManager createHybridMCTSManager(){
@@ -158,5 +132,6 @@ public class EpsilonTunerMastDuctMctsGamer extends MastDuctMctsGamer {
 	       		theMachine, this.gameStepOffset, this.maxSearchDepth, this.logTranspositionTable);
 
 	}
+	*/
 
 }

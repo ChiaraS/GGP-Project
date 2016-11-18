@@ -1,22 +1,5 @@
 package org.ggp.base.player.gamer.statemachine.MCTS.propnet.TDIntegration;
 
-import java.util.Random;
-
-import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.HybridMCTSManager;
-import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.strategies.aftersimulation.TDAfterSimulation;
-import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.strategies.backpropagation.IntermediateTDBackpropagation;
-import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.strategies.backpropagation.TDBackpropagation;
-import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.strategies.expansion.NoExpansion;
-import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.strategies.movechoice.MaximumScoreChoice;
-import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.strategies.playout.GoalsMemorizingStandardPlayout;
-import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.strategies.playout.jointmoveselector.RandomJointMoveSelector;
-import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.strategies.selection.UCTSelection;
-import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.strategies.selection.evaluators.td.GlobalExtremeValues;
-import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.strategies.selection.evaluators.td.TDUCTEvaluator;
-import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.hybrid.tddecoupled.TDDecoupledTreeNodeFactory;
-import org.ggp.base.util.statemachine.abstractsm.AbstractStateMachine;
-import org.ggp.base.util.statemachine.abstractsm.CompactStateMachine;
-import org.ggp.base.util.statemachine.abstractsm.ExplicitStateMachine;
 
 public class LimSimIntermediateTDDuctMctsGamer extends IntermediateTDDuctMctsGamer {
 
@@ -30,6 +13,7 @@ public class LimSimIntermediateTDDuctMctsGamer extends IntermediateTDDuctMctsGam
 
 	}
 
+	/*
 	@Override
 	public HybridMCTSManager createHybridMCTSManager() {
 		Random r = new Random();
@@ -59,5 +43,5 @@ public class LimSimIntermediateTDDuctMctsGamer extends IntermediateTDDuctMctsGam
 	       		new TDDecoupledTreeNodeFactory(theMachine), theMachine,
 	       		this.gameStepOffset, this.maxSearchDepth, this.logTranspositionTable, this.numExpectedIterations);
 	}
-
+*/
 }

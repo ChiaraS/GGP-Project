@@ -5,14 +5,14 @@ package org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.propne
 
 import java.util.List;
 
-import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.MCTSNode;
+import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.MctsNode;
 import org.ggp.base.util.statemachine.structure.compact.CompactMove;
 
 /**
  * @author C.Sironi
  *
  */
-public class PnSequentialMCTSNode extends MCTSNode {
+public class PnSequentialMCTSNode extends MctsNode {
 
 	/**
 	 * List of the moves' statistics for the state corresponding to this node.

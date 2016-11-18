@@ -4,7 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
 
-import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.MCTSNode;
+import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.MctsNode;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.prover.ProverMCTSJointMove;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.prover.ProverSequDecMCTSJointMove;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.prover.decoupled.ProverDecoupledMCTSMoveStats;
@@ -39,7 +39,7 @@ public class ProverRandomExpansion implements ProverExpansionStrategy {
 	 * @see org.ggp.base.player.gamer.statemachine.MCTS.manager.strategies.expansion.ExpansionStrategy#expansionRequired(org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.InternalPropnetMCTSNode)
 	 */
 	@Override
-	public boolean expansionRequired(MCTSNode node){
+	public boolean expansionRequired(MctsNode node){
 		if(node instanceof ProverDecoupledMCTSNode){
 			return this.decExpansionRequired((ProverDecoupledMCTSNode)node);
 		}/*else if(node instanceof PnSequentialMCTSNode){
@@ -79,7 +79,7 @@ public class ProverRandomExpansion implements ProverExpansionStrategy {
 	 * @see org.ggp.base.player.gamer.statemachine.MCTS.manager.strategies.expansion.ExpansionStrategy#expand(org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.InternalPropnetMCTSNode)
 	 */
 	@Override
-	public ProverMCTSJointMove expand(MCTSNode node){
+	public ProverMCTSJointMove expand(MctsNode node){
 		if(node instanceof ProverDecoupledMCTSNode){
 			return this.decExpand((ProverDecoupledMCTSNode)node);
 		}/*else if(node instanceof PnSequentialMCTSNode){

@@ -4,7 +4,7 @@ import java.util.List;
 import java.util.Map;
 
 import org.ggp.base.player.gamer.statemachine.MCS.manager.MoveStats;
-import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.MCTSNode;
+import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.MctsNode;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.prover.ProverMCTSJointMove;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.prover.ProverSimulationResult;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.prover.amafdecoulped.ProverAMAFNode;
@@ -14,7 +14,7 @@ import org.ggp.base.util.statemachine.structure.explicit.ExplicitMove;
 
 public class ProverGRAVEUpdate {
 
-	public void update(MCTSNode currentNode, ExplicitMachineState currentState, ProverMCTSJointMove jointMove, ProverSimulationResult simulationResult) {
+	public void update(MctsNode currentNode, ExplicitMachineState currentState, ProverMCTSJointMove jointMove, ProverSimulationResult simulationResult) {
 
 		if(currentNode instanceof ProverAMAFNode){
 
@@ -56,7 +56,7 @@ public class ProverGRAVEUpdate {
 		}
 	}
 
-	public void processPlayoutResult(MCTSNode leafNode,	ExplicitMachineState leafState, ProverSimulationResult simulationResult) {
+	public void processPlayoutResult(MctsNode leafNode,	ExplicitMachineState leafState, ProverSimulationResult simulationResult) {
 
 		if(leafNode instanceof ProverAMAFNode){
 

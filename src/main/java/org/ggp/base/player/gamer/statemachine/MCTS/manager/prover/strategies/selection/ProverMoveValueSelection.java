@@ -5,7 +5,7 @@ import java.util.List;
 import java.util.Random;
 
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.prover.strategies.selection.evaluators.ProverMoveEvaluator;
-import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.MCTSNode;
+import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.MctsNode;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.prover.ProverMCTSJointMove;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.prover.ProverSequDecMCTSJointMove;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.prover.decoupled.ProverDecoupledMCTSMoveStats;
@@ -42,7 +42,7 @@ public abstract class ProverMoveValueSelection implements ProverSelectionStrateg
 	}
 
 	@Override
-	public ProverMCTSJointMove select(MCTSNode currentNode) {
+	public ProverMCTSJointMove select(MctsNode currentNode) {
 		if(currentNode instanceof ProverDecoupledMCTSNode){
 			return this.decSelect((ProverDecoupledMCTSNode)currentNode);
 		}/*else if(currentNode instanceof PnSequentialMCTSNode){

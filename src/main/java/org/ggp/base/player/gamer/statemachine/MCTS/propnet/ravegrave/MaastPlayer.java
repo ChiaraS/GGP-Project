@@ -6,7 +6,7 @@ public class MaastPlayer extends CadiaGraveDuctMctsGamer {
 
 		super();
 
-		this.logTranspositionTable = false;
+		//this.logTranspositionTable = false;
 
 	}
 

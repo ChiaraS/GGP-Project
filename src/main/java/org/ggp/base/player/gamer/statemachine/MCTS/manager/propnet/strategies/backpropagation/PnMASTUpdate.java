@@ -4,7 +4,7 @@ import java.util.List;
 import java.util.Map;
 
 import org.ggp.base.player.gamer.statemachine.MCS.manager.MoveStats;
-import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.MCTSNode;
+import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.MctsNode;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.propnet.PnMCTSJointMove;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.propnet.PnSimulationResult;
 import org.ggp.base.util.logging.GamerLogger;
@@ -19,7 +19,7 @@ public class PnMASTUpdate {
 		this.mastStatistics = mastStatistics;
 	}
 
-	public void update(MCTSNode currentNode, CompactMachineState currentState, PnMCTSJointMove jointMove, PnSimulationResult simulationResult) {
+	public void update(MctsNode currentNode, CompactMachineState currentState, PnMCTSJointMove jointMove, PnSimulationResult simulationResult) {
 
 		//System.out.println("MASTBP");
 
@@ -45,7 +45,7 @@ public class PnMASTUpdate {
 
 	}
 
-	public void processPlayoutResult(MCTSNode leafNode,	CompactMachineState leafState, PnSimulationResult simulationResult) {
+	public void processPlayoutResult(MctsNode leafNode,	CompactMachineState leafState, PnSimulationResult simulationResult) {
 
 		int[] goals = simulationResult.getTerminalGoals();
 

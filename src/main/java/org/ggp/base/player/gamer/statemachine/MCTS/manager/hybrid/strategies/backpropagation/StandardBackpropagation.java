@@ -2,12 +2,12 @@ package org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.strategies.ba
 
 import java.util.Random;
 
+import org.ggp.base.player.gamer.statemachine.GamerSettings;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.GameDependentParameters;
-import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.GamerConfiguration;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.SharedReferencesCollector;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.strategies.backpropagation.nodeupdaters.StandardUpdater;
-import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.MCTSNode;
-import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.hybrid.MCTSJointMove;
+import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.MctsNode;
+import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.hybrid.MctsJointMove;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.hybrid.SimulationResult;
 import org.ggp.base.util.statemachine.structure.MachineState;
 
@@ -16,10 +16,10 @@ public class StandardBackpropagation extends BackpropagationStrategy {
 	private StandardUpdater standardUpdater;
 
 	public StandardBackpropagation(GameDependentParameters gameDependentParameters, Random random,
-			GamerConfiguration gamerConfiguration, SharedReferencesCollector sharedReferencesCollector){
-		super(gameDependentParameters, random, gamerConfiguration, sharedReferencesCollector);
+			GamerSettings gamerSettings, SharedReferencesCollector sharedReferencesCollector){
+		super(gameDependentParameters, random, gamerSettings, sharedReferencesCollector);
 
-		this.standardUpdater = new StandardUpdater(gameDependentParameters, random, gamerConfiguration, sharedReferencesCollector);
+		this.standardUpdater = new StandardUpdater(gameDependentParameters, random, gamerSettings, sharedReferencesCollector);
 	}
 
 	@Override
@@ -42,12 +42,12 @@ public class StandardBackpropagation extends BackpropagationStrategy {
 	 * @see org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.strategies.backpropagation.BackpropagationStrategy#update(org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.MCTSNode, org.ggp.base.util.statemachine.structure.MachineState, org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.hybrid.MCTSJointMove, org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.hybrid.SimulationResult)
 	 */
 	@Override
-	public void update(MCTSNode currentNode, MachineState currentState, MCTSJointMove jointMove, SimulationResult simulationResult){
+	public void update(MctsNode currentNode, MachineState currentState, MctsJointMove jointMove, SimulationResult simulationResult){
 		this.standardUpdater.update(currentNode, currentState, jointMove, simulationResult);
 	}
 
 	@Override
-	public void processPlayoutResult(MCTSNode leafNode, MachineState leafState,	SimulationResult simulationResult) {
+	public void processPlayoutResult(MctsNode leafNode, MachineState leafState,	SimulationResult simulationResult) {
 		this.standardUpdater.processPlayoutResult(leafNode, leafState, simulationResult);
 	}
 

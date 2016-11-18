@@ -2,11 +2,11 @@ package org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.strategies.be
 
 import java.util.Random;
 
+import org.ggp.base.player.gamer.statemachine.GamerSettings;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.evolution.Individual;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.evolution.OnlineTunableComponent;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.evolution.SingleParameterEvolutionManager;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.GameDependentParameters;
-import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.GamerConfiguration;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.SharedReferencesCollector;
 
 public class EvoBeforeSimulation extends BeforeSimulationStrategy {
@@ -18,19 +18,19 @@ public class EvoBeforeSimulation extends BeforeSimulationStrategy {
 	private OnlineTunableComponent tunableComponent;
 
 	public EvoBeforeSimulation(GameDependentParameters gameDependentParameters, Random random,
-			GamerConfiguration gamerConfiguration, SharedReferencesCollector sharedReferencesCollector) {
+			GamerSettings gamerSettings, SharedReferencesCollector sharedReferencesCollector) {
 
-		super(gameDependentParameters, random, gamerConfiguration, sharedReferencesCollector);
+		super(gameDependentParameters, random, gamerSettings, sharedReferencesCollector);
 
-		double evoC = Double.parseDouble(gamerConfiguration.getPropertyValue("BeforeSimulationStrategy.evoC"));
-		double evoValueOffset = Double.parseDouble(gamerConfiguration.getPropertyValue("BeforeSimulationStrategy.evoValueOffset"));
-		boolean useNormalization = Boolean.parseBoolean(gamerConfiguration.getPropertyValue("BeforeSimulationStrategy.useNormalization"));
+		double evoC = Double.parseDouble(gamerSettings.getPropertyValue("BeforeSimulationStrategy.evoC"));
+		double evoValueOffset = Double.parseDouble(gamerSettings.getPropertyValue("BeforeSimulationStrategy.evoValueOffset"));
+		boolean useNormalization = Boolean.parseBoolean(gamerSettings.getPropertyValue("BeforeSimulationStrategy.useNormalization"));
 
 		this.evolutionManager = new SingleParameterEvolutionManager(random, evoC, evoValueOffset, useNormalization);
 
 		sharedReferencesCollector.setSingleParameterEvolutionManager(evolutionManager);
 
-		this.tuneAllRoles = Boolean.parseBoolean(gamerConfiguration.getPropertyValue("BeforeSimulationStrategy.tuneAllRoles"));
+		this.tuneAllRoles = Boolean.parseBoolean(gamerSettings.getPropertyValue("BeforeSimulationStrategy.tuneAllRoles"));
 
 		// Here the evolution manager has no populations!
 		// They will be initialized by this class everytime a new game is being played

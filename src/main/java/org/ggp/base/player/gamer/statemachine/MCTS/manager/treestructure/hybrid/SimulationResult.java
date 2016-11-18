@@ -156,7 +156,7 @@ public class SimulationResult{
 	public void addJointMove(List<Move> jointMove){
 
 		//if(this.allJointMoves == null){
-		//	GamerLogger.logError("MCTSManager", "Simulation result not initialized to memorize all the joint moves. Probably a wrong combination of strategies has been set!");
+		//	GamerLogger.logError("MctsManager", "Simulation result not initialized to memorize all the joint moves. Probably a wrong combination of strategies has been set!");
 		//	throw new RuntimeException("Simulation result not initialized to memorize all the joint moves.");
 		//}
 
@@ -167,7 +167,7 @@ public class SimulationResult{
 	public void addGoals(int[] goals){
 
 		//if(this.intermediateGoals == null){
-		//	GamerLogger.logError("MCTSManager", "Simulation result not initialized to memorize all the intermediate goals. Probably a wrong combination of strategies has been set!");
+		//	GamerLogger.logError("MctsManager", "Simulation result not initialized to memorize all the intermediate goals. Probably a wrong combination of strategies has been set!");
 		//	throw new RuntimeException("Simulation result not initialized to memorize all the intermediate goals.");
 		//}
 

@@ -3,10 +3,10 @@ package org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.hybrid
 import java.util.List;
 import java.util.Random;
 
+import org.ggp.base.player.gamer.statemachine.GamerSettings;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.GameDependentParameters;
-import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.GamerConfiguration;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.SharedReferencesCollector;
-import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.MCTSNode;
+import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.MctsNode;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.hybrid.TreeNodeFactory;
 import org.ggp.base.util.logging.GamerLogger;
 import org.ggp.base.util.statemachine.exceptions.MoveDefinitionException;
@@ -18,7 +18,7 @@ import org.ggp.base.util.statemachine.structure.Role;
 public class DecoupledTreeNodeFactory extends TreeNodeFactory {
 
 	public DecoupledTreeNodeFactory(GameDependentParameters gameDependentParameters, Random random,
-			GamerConfiguration gamerConfiguration, SharedReferencesCollector sharedReferencesCollector) {
+			GamerSettings gamerConfiguration, SharedReferencesCollector sharedReferencesCollector) {
 		super(gameDependentParameters, random, gamerConfiguration, sharedReferencesCollector);
 	}
 
@@ -67,20 +67,20 @@ public class DecoupledTreeNodeFactory extends TreeNodeFactory {
 	 * @return the tree node corresponding to the state.
 	 */
 	@Override
-	public MCTSNode createNewNode(MachineState state) {
+	public MctsNode createNewNode(MachineState state) {
 
 		//System.out.println("Creating new node.");
 
 		int goals[] = null;
 		boolean terminal = false;
 
-		DecoupledMCTSMoveStats[][] ductMovesStats = null;
+		DecoupledMctsMoveStats[][] ductMovesStats = null;
 
 		try {
 			terminal = this.gameDependentParameters.getTheMachine().isTerminal(state);
 		} catch (StateMachineException e) {
-			GamerLogger.logError("MCTSManager", "Failed to compute state terminality when creating new tree node. Considering node terminal.");
-			GamerLogger.logStackTrace("MCTSManager", e);
+			GamerLogger.logError("MctsManager", "Failed to compute state terminality when creating new tree node. Considering node terminal.");
+			GamerLogger.logStackTrace("MctsManager", e);
 			terminal = true;
 		}
 
@@ -91,7 +91,7 @@ public class DecoupledTreeNodeFactory extends TreeNodeFactory {
 
 		}else{// Non-terminal state:
 
-			ductMovesStats = this.createDUCTMCTSMoves(state);
+			ductMovesStats = this.createDuctMctsMoves(state);
 
 			// Error when computing moves.
 			// If for at least one player the legal moves cannot be computed (an thus the moves
@@ -113,8 +113,8 @@ public class DecoupledTreeNodeFactory extends TreeNodeFactory {
 		return createActualNewNode(ductMovesStats, goals, terminal);
 	}
 
-	protected MCTSNode createActualNewNode(DecoupledMCTSMoveStats[][] ductMovesStats, int[] goals, boolean terminal){
-		return new DecoupledMCTSNode(ductMovesStats, goals, terminal);
+	protected MctsNode createActualNewNode(DecoupledMctsMoveStats[][] ductMovesStats, int[] goals, boolean terminal){
+		return new DecoupledMctsNode(ductMovesStats, goals, terminal);
 	}
 
 	/**
@@ -124,13 +124,13 @@ public class DecoupledTreeNodeFactory extends TreeNodeFactory {
 	 * @param state the state for which to create the moves statistics.
 	 * @return the moves statistics, if the moves can be computed, null otherwise.
 	 */
-	protected DecoupledMCTSMoveStats[][] createDUCTMCTSMoves(MachineState state){
+	protected DecoupledMctsMoveStats[][] createDuctMctsMoves(MachineState state){
 
 		List<Role> roles = this.gameDependentParameters.getTheMachine().getRoles();
 
 		//System.out.println("NUMROLES = " + roles.size());
 
-		DecoupledMCTSMoveStats[][] moves = new DecoupledMCTSMoveStats[roles.size()][];
+		DecoupledMctsMoveStats[][] moves = new DecoupledMctsMoveStats[roles.size()][];
 
 		try{
 			List<Move> legalMoves;
@@ -139,15 +139,15 @@ public class DecoupledTreeNodeFactory extends TreeNodeFactory {
 
 				legalMoves = this.gameDependentParameters.getTheMachine().getLegalMoves(state, roles.get(i));
 
-				moves[i] = new DecoupledMCTSMoveStats[legalMoves.size()];
+				moves[i] = new DecoupledMctsMoveStats[legalMoves.size()];
 				for(int j = 0; j < legalMoves.size(); j++){
-					moves[i][j] = new DecoupledMCTSMoveStats(legalMoves.get(j));
+					moves[i][j] = new DecoupledMctsMoveStats(legalMoves.get(j));
 				}
 			}
 		}catch(MoveDefinitionException | StateMachineException e){
 			// If for at least one player the legal moves cannot be computed, we return null.
-			GamerLogger.logError("MCTSManager", "Failed to retrieve the legal moves while adding non-terminal DUCT state to the tree.");
-			GamerLogger.logStackTrace("MCTSManager", e);
+			GamerLogger.logError("MctsManager", "Failed to retrieve the legal moves while adding non-terminal DUCT state to the tree.");
+			GamerLogger.logStackTrace("MctsManager", e);
 
 			moves = null;
 		}

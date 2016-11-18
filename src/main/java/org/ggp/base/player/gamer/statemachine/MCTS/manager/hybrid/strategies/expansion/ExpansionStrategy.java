@@ -2,23 +2,23 @@ package org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.strategies.ex
 
 import java.util.Random;
 
+import org.ggp.base.player.gamer.statemachine.GamerSettings;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.GameDependentParameters;
-import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.GamerConfiguration;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.SharedReferencesCollector;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.strategies.Strategy;
-import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.MCTSNode;
-import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.hybrid.MCTSJointMove;
+import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.MctsNode;
+import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.hybrid.MctsJointMove;
 
 public abstract class ExpansionStrategy extends Strategy {
 
 	public ExpansionStrategy(GameDependentParameters gameDependentParameters, Random random,
-			GamerConfiguration gamerConfiguration, SharedReferencesCollector sharedReferencesCollector) {
-		super(gameDependentParameters, random, gamerConfiguration, sharedReferencesCollector);
+			GamerSettings gamerSettings, SharedReferencesCollector sharedReferencesCollector) {
+		super(gameDependentParameters, random, gamerSettings, sharedReferencesCollector);
 	}
 
-	public abstract boolean expansionRequired(MCTSNode node);
+	public abstract boolean expansionRequired(MctsNode node);
 
-	public abstract MCTSJointMove expand(MCTSNode node);
+	public abstract MctsJointMove expand(MctsNode node);
 
 	@Override
 	public String printComponent() {

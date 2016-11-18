@@ -1,25 +1,23 @@
 package org.ggp.base.player.gamer.statemachine.MCTS.propnet;
 
+import java.util.Random;
+
 import org.ggp.base.player.gamer.event.GamerSelectedMoveEvent;
-import org.ggp.base.player.gamer.statemachine.MCS.manager.MoveStats;
 import org.ggp.base.player.gamer.statemachine.MCS.manager.hybrid.CompleteMoveStats;
-import org.ggp.base.player.gamer.statemachine.MCS.manager.propnet.PnCompleteMoveStats;
-import org.ggp.base.player.gamer.statemachine.MCS.manager.prover.ProverCompleteMoveStats;
-import org.ggp.base.player.gamer.statemachine.MCTS.manager.MCTSManager;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.exceptions.MCTSException;
-import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.HybridMCTSManager;
-import org.ggp.base.player.gamer.statemachine.MCTS.manager.propnet.InternalPropnetMCTSManager;
-import org.ggp.base.player.gamer.statemachine.MCTS.manager.prover.ProverMCTSManager;
-import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.MCTSNode;
+import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.HybridMctsManager;
+import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.MctsNode;
 import org.ggp.base.player.gamer.statemachine.propnet.InternalPropnetGamer;
 import org.ggp.base.util.logging.GamerLogger;
+import org.ggp.base.util.statemachine.abstractsm.AbstractStateMachine;
+import org.ggp.base.util.statemachine.abstractsm.CompactStateMachine;
+import org.ggp.base.util.statemachine.abstractsm.ExplicitStateMachine;
 import org.ggp.base.util.statemachine.exceptions.GoalDefinitionException;
 import org.ggp.base.util.statemachine.exceptions.MoveDefinitionException;
 import org.ggp.base.util.statemachine.exceptions.StateMachineException;
 import org.ggp.base.util.statemachine.exceptions.TransitionDefinitionException;
 import org.ggp.base.util.statemachine.structure.MachineState;
 import org.ggp.base.util.statemachine.structure.Move;
-import org.ggp.base.util.statemachine.structure.compact.CompactMachineState;
 import org.ggp.base.util.statemachine.structure.compact.CompactMove;
 import org.ggp.base.util.statemachine.structure.explicit.ExplicitMachineState;
 import org.ggp.base.util.statemachine.structure.explicit.ExplicitMove;
@@ -38,17 +36,9 @@ public abstract class MctsGamer extends InternalPropnetGamer {
 	protected boolean metagameSearch;
 
 	/**
-	 * Parameters used by the MCTS manager.
-	 */
-	protected double valueOffset;
-	protected int gameStepOffset;
-	protected int maxSearchDepth;
-	protected boolean logTranspositionTable;
-
-	/**
 	 * The class that takes care of performing Monte Carlo tree search.
 	 */
-	protected MCTSManager mctsManager;
+	protected HybridMctsManager mctsManager;
 	//protected InternalPropnetMCTSManager mctsManager;
 
 	/**
@@ -56,15 +46,15 @@ public abstract class MctsGamer extends InternalPropnetGamer {
 	 * states, moves and roles. False if the gamer must create the appropriate MCTSManager depending on the type
 	 * of state machine that it is using.
 	 *
-	 * NOTE: this will disappear when the only official MCTSManager will be the hybrid one
+	 * NOTE: this will disappear when the only official MctsManager will be the hybrid one
 	 */
-	protected boolean hybridManager;
+	//protected boolean hybridManager;
 
 	public MctsGamer() {
-		// TODO: change code so that the parameters can be set from outside.
 
-		super();
+		this(defaultSettingsFilePath);
 
+		/*
 		this.gameStep = 0;
 		this.metagameSearch = true;
 
@@ -72,8 +62,21 @@ public abstract class MctsGamer extends InternalPropnetGamer {
 		this.gameStepOffset = 2;
 		this.maxSearchDepth = 500;
 		this.logTranspositionTable = false;
+		*/
 
-		this.hybridManager = true;
+		//this.hybridManager = true;
+	}
+
+	public MctsGamer(String settingsFilePath) {
+
+		super(settingsFilePath);
+
+		this.gameStep = 0;
+
+		this.metagameSearch = Boolean.parseBoolean(this.gamerSettings.getPropertyValue("Gamer.metagameSearch"));
+
+		this.mctsManager = new HybridMctsManager(new Random(), this.gamerSettings);
+
 	}
 
 	/* (non-Javadoc)
@@ -83,13 +86,6 @@ public abstract class MctsGamer extends InternalPropnetGamer {
 	public void stateMachineMetaGame(long timeout)
 			throws TransitionDefinitionException, MoveDefinitionException,
 			GoalDefinitionException, StateMachineException {
-
-		// For now the player can play only with the state machine based on the propnet.
-		// TODO: temporary solution! FIX!
-		// We throw an exception if the state machine based on the propnet couldn't be initialized.
-		//if(this.thePropnetMachine == null){
-		//	throw new StateMachineException("Impossible to play without the state machine based on the propnet.");
-		//}
 
 		long start = System.currentTimeMillis();
 		long realTimeout = timeout - this.selectMoveSafetyMargin;
@@ -105,19 +101,21 @@ public abstract class MctsGamer extends InternalPropnetGamer {
 		GamerLogger.log("Gamer", "Starting metagame with available thinking time " + (realTimeout-start) + "ms.");
 		GamerLogger.log(GamerLogger.FORMAT.CSV_FORMAT, "Stats", "Game step;Thinking time(ms);Search time(ms);Iterations;Visited nodes;Iterations/second;Nodes/second;Chosen move;Move score sum;Move visits;Avg move score");
 
-		//this.gameStep = 0;
+		AbstractStateMachine abstractStateMachine;
+		int myRoleIndex;
+		int numRoles;
 
-		// Create the MCTS manager and start simulations.
-		/* TODO: make code with Prover- and Propnet-MCTSManager disappear */
-		if(this.hybridManager){
-			this.mctsManager = this.createHybridMCTSManager();
+		if(this.thePropnetMachine != null){
+			abstractStateMachine = new CompactStateMachine(this.thePropnetMachine);
+			myRoleIndex = this.thePropnetMachine.convertToCompactRole(this.getRole()).getIndex();
+			numRoles = this.thePropnetMachine.getCompactRoles().size();
 		}else{
-			if(this.thePropnetMachine != null){
-				this.mctsManager = this.createPropnetMCTSManager();
-			}else{
-				this.mctsManager = this.createProverMCTSManager();
-			}
+			abstractStateMachine = new ExplicitStateMachine(this.getStateMachine());
+			numRoles = this.getStateMachine().getExplicitRoles().size();
+			myRoleIndex = this.getStateMachine().getRoleIndices().get(this.getRole());
 		}
+
+		this.mctsManager.setUpManager(abstractStateMachine, numRoles, myRoleIndex);
 
 		if(this.metagameSearch){
 
@@ -131,20 +129,7 @@ public abstract class MctsGamer extends InternalPropnetGamer {
 
 				try {
 
-					// TODO: fix so that you don't have to check if the propnet is null all the times
-
-					/* TODO: make code with Prover- and Propnet-MCTSManager disappear */
-					if(this.mctsManager instanceof ProverMCTSManager){
-						((ProverMCTSManager) this.mctsManager).search(this.getStateMachine().getExplicitInitialState(), realTimeout, this.gameStep+1);
-					}else if(this.mctsManager instanceof InternalPropnetMCTSManager){
-						((InternalPropnetMCTSManager) this.mctsManager).search(this.thePropnetMachine.getCompactInitialState(), realTimeout, this.gameStep+1);
-					}else{
-						if(this.thePropnetMachine != null){
-							((HybridMCTSManager) this.mctsManager).search(this.thePropnetMachine.getCompactInitialState(), realTimeout, this.gameStep+1);
-						}else{
-							((HybridMCTSManager) this.mctsManager).search(this.getStateMachine().getExplicitInitialState(), realTimeout, this.gameStep+1);
-						}
-					}
+					this.mctsManager.search(abstractStateMachine.getInitialState(), realTimeout, this.gameStep+1);
 
 					GamerLogger.log("Gamer", "Done searching during metagame.");
 					searchTime = this.mctsManager.getSearchTime();
@@ -215,36 +200,18 @@ public abstract class MctsGamer extends InternalPropnetGamer {
 
 			try {
 
-				MCTSNode currentNode;
-				MoveStats selectedMove;
+				MctsNode currentNode;
+				CompleteMoveStats selectedMove;
 
-				/* TODO: make code with Prover- and Propnet-MCTSManager disappear */
-				if(this.mctsManager instanceof ProverMCTSManager){
-
-					currentNode = ((ProverMCTSManager) this.mctsManager).search(this.getCurrentState(), realTimeout, gameStep);
-
-					selectedMove = ((ProverMCTSManager) this.mctsManager).getBestMove(currentNode);
-
-				}else if(this.mctsManager instanceof InternalPropnetMCTSManager){
-
-					CompactMachineState currentState = this.thePropnetMachine.convertToCompactMachineState(this.getCurrentState());
-
-					currentNode = ((InternalPropnetMCTSManager) this.mctsManager).search(currentState, realTimeout, gameStep);
-
-					selectedMove = ((InternalPropnetMCTSManager) this.mctsManager).getBestMove(currentNode);
-
-				}else{
-
-					MachineState theState = this.getCurrentState();
-					if(this.thePropnetMachine != null){
-						theState = this.thePropnetMachine.convertToCompactMachineState((ExplicitMachineState)theState);
-					}
-
-					currentNode = ((HybridMCTSManager) this.mctsManager).search(theState, realTimeout, gameStep);
-
-					selectedMove = ((HybridMCTSManager) this.mctsManager).getBestMove(currentNode);
-
+				// TODO: adapt the code of StateMachineGamer to use an AbstractStateMachine so we don't need to do all these checks and casts
+				MachineState theState = this.getCurrentState();
+				if(this.thePropnetMachine != null){
+					theState = this.thePropnetMachine.convertToCompactMachineState((ExplicitMachineState)theState);
 				}
+
+				currentNode = this.mctsManager.search(theState, realTimeout, gameStep);
+
+				selectedMove = this.mctsManager.getBestMove(currentNode);
 
 				searchTime = this.mctsManager.getSearchTime();
 				iterations = this.mctsManager.getIterations();
@@ -257,25 +224,12 @@ public abstract class MctsGamer extends InternalPropnetGamer {
 	        		nodesPerSecond = 0;
 	        	}
 
-		    	/* TODO: make code with Prover- and Propnet-MCTSManager disappear */
-		    	if(selectedMove instanceof ProverCompleteMoveStats){
+				Move theAbstractMove = selectedMove.getTheMove();
 
-					theMove = ((ProverCompleteMoveStats)selectedMove).getTheMove();
-
-				}else if(selectedMove instanceof PnCompleteMoveStats){
-
-					theMove = this.thePropnetMachine.convertToExplicitMove(((PnCompleteMoveStats)selectedMove).getTheMove());
-
+				if(theAbstractMove instanceof CompactMove){
+					theMove = this.thePropnetMachine.convertToExplicitMove((CompactMove)theAbstractMove);
 				}else{
-
-					Move theAbstractMove = ((CompleteMoveStats)selectedMove).getTheMove();
-
-					if(theAbstractMove instanceof CompactMove){
-						theMove = this.thePropnetMachine.convertToExplicitMove((CompactMove)theAbstractMove);
-					}else{
-						theMove = (ExplicitMove)theAbstractMove;
-					}
-
+					theMove = (ExplicitMove)theAbstractMove;
 				}
 
 		    	moveScoreSum = selectedMove.getScoreSum();
@@ -314,7 +268,7 @@ public abstract class MctsGamer extends InternalPropnetGamer {
 	public void stateMachineStop() {
 
 		this.gameStep = 0;
-		this.mctsManager = null;
+		this.mctsManager.clearManager();
 		super.stateMachineStop();
 
 	}
@@ -326,15 +280,9 @@ public abstract class MctsGamer extends InternalPropnetGamer {
 	public void stateMachineAbort() {
 
 		this.gameStep = 0;
-		this.mctsManager = null;
+		this.mctsManager.clearManager();
 		super.stateMachineAbort();
 
 	}
-
-	public abstract InternalPropnetMCTSManager createPropnetMCTSManager();
-
-	public abstract ProverMCTSManager createProverMCTSManager();
-
-	public abstract HybridMCTSManager createHybridMCTSManager();
 
 }

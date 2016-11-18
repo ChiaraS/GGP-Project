@@ -4,7 +4,7 @@ import org.ggp.base.player.gamer.event.GamerSelectedMoveEvent;
 import org.ggp.base.player.gamer.statemachine.MCS.manager.prover.ProverCompleteMoveStats;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.exceptions.MCTSException;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.prover.ProverMCTSManager;
-import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.MCTSNode;
+import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.MctsNode;
 import org.ggp.base.player.gamer.statemachine.prover.ProverGamer;
 import org.ggp.base.util.logging.GamerLogger;
 import org.ggp.base.util.statemachine.StateMachine;
@@ -174,7 +174,7 @@ public abstract class ProverMctsGamer extends ProverGamer {
 			ExplicitMachineState currentState = this.getCurrentState();
 
 			try {
-				MCTSNode currentNode = this.mctsManager.search(currentState, realTimeout, gameStep);
+				MctsNode currentNode = this.mctsManager.search(currentState, realTimeout, gameStep);
 				ProverCompleteMoveStats selectedMove = this.mctsManager.getBestMove(currentNode);
 
 				searchTime = this.mctsManager.getSearchTime();

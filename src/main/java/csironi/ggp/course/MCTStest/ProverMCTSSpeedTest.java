@@ -12,7 +12,7 @@ import org.ggp.base.player.gamer.statemachine.MCTS.manager.prover.strategies.mov
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.prover.strategies.playout.ProverRandomPlayout;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.prover.strategies.selection.ProverUCTSelection;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.prover.strategies.selection.evaluators.ProverUCTEvaluator;
-import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.MCTSNode;
+import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.MctsNode;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.prover.ProverTreeNodeFactory;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.prover.decoupled.ProverDecoupledTreeNodeFactory;
 import org.ggp.base.util.game.GameRepository;
@@ -224,7 +224,7 @@ public class ProverMCTSSpeedTest {
 			try{
 				GamerLogger.log(mctsType + "MCTSSpeedTest", "Starting search.");
 
-				MCTSNode initialNode = MCTSmanager.search(theProverMachine.getExplicitInitialState(), System.currentTimeMillis() + testTime, gameStep);
+				MctsNode initialNode = MCTSmanager.search(theProverMachine.getExplicitInitialState(), System.currentTimeMillis() + testTime, gameStep);
 				ProverCompleteMoveStats finalMove = MCTSmanager.getBestMove(initialNode);
 
 				GamerLogger.log(mctsType + "MCTSSpeedTest", "Search ended correctly.");

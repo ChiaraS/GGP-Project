@@ -5,7 +5,7 @@ import java.util.List;
 import java.util.Random;
 
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.propnet.strategies.selection.evaluators.PnMoveEvaluator;
-import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.MCTSNode;
+import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.MctsNode;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.propnet.PnMCTSJointMove;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.propnet.PnSequDecMCTSJointMove;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.propnet.decoupled.PnDecoupledMCTSMoveStats;
@@ -47,7 +47,7 @@ public abstract class PnMoveValueSelection implements PnSelectionStrategy {
 	}
 
 	@Override
-	public PnMCTSJointMove select(MCTSNode currentNode) {
+	public PnMCTSJointMove select(MctsNode currentNode) {
 		if(currentNode instanceof PnDecoupledMCTSNode){
 			return this.decSelect((PnDecoupledMCTSNode)currentNode);
 		}else if(currentNode instanceof PnSequentialMCTSNode){

@@ -1,10 +1,10 @@
 package org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.propnet.decoupled;
 
-import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.MCTSNode;
+import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.MctsNode;
 
 
 
-public class PnDecoupledMCTSNode extends MCTSNode{
+public class PnDecoupledMCTSNode extends MctsNode{
 
 	/**
 	 * List of the moves' statistics for each role in the state corresponding to this node.

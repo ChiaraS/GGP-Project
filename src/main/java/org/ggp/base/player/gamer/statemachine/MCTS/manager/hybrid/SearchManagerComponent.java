@@ -3,6 +3,7 @@ package org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid;
 import java.lang.reflect.Constructor;
 import java.util.Random;
 
+import org.ggp.base.player.gamer.statemachine.GamerSettings;
 import org.ggp.base.util.logging.GamerLogger;
 
 import com.google.common.collect.ImmutableSet;
@@ -10,7 +11,7 @@ import com.google.common.collect.ImmutableSet;
 /**
  * This class specifies parameters and methods that must be common to all components of the search manager
  * (the components of the search manager are strategies (e.g. selection, playout, before/after simulation,
- * backpropagation, ecc...), move evaluators (e.g. UCTEvaluator, GRAVEEvaluator, ecc...), single or joint
+ * backpropagation, ecc...), move evaluators (e.g. UCTEvaluator, GraveEvaluator, ecc...), single or joint
  * move selectors (e.g RandomJointMoveSelector, EpsilonMASTJointMoveSelector, ecc...)).
  *
  * ATTENTION: each component must respect a rule. The constructor must ONLY set the reference to (non primitive)
@@ -26,9 +27,9 @@ import com.google.common.collect.ImmutableSet;
  *
  * NOTE: each instance of SearchManagerComponent in the methods setReferences(), clearComponent() and setUpComponent()
  * must make sure to call the same methods for all of its parameters that extend SearchManagerComponent, but ONLY
- * if those parameters were created by such SearchManagerComponent (e.g. the component GRAVEAfterSimulation has a
- * reference to the GRAVESelection, but it sets it in the setReferences() method,  doesn't create the GRAVESelection
- * itself, thus it doesn't have to call setReferences(), clearComponent() and setUpComponent() for the GRAVESelection).
+ * if those parameters were created by such SearchManagerComponent (e.g. the component GraveAfterSimulation has a
+ * reference to the GraveSelection, but it sets it in the setReferences() method,  doesn't create the GraveSelection
+ * itself, thus it doesn't have to call setReferences(), clearComponent() and setUpComponent() for the GraveSelection).
  *
  * @author c.sironi
  *
@@ -39,7 +40,7 @@ public abstract class SearchManagerComponent {
 	 * Arguments of the constructor.
 	 */
 	public static Class<?>[] CONSTRUCTOR_ARGS = new Class[] {GameDependentParameters.class, Random.class,
-		GamerConfiguration.class, SharedReferencesCollector.class};
+		GamerSettings.class, SharedReferencesCollector.class};
 
 	/**
 	 * This method looks in the given list of classes for the class with the given name.
@@ -89,13 +90,13 @@ public abstract class SearchManagerComponent {
 	 * @param gameDependentParameters parameters that depend on the game being played (e.g. number of roles, index of my
 	 * role, the state machine of the game, ...).
 	 * @param random
-	 * @param gamerConfiguration map built from the properties file that specifies the settings of the gamer (i.e. which strategies
+	 * @param gamerSettings map built from the properties file that specifies the settings of the gamer (i.e. which strategies
 	 * it must use, which types of components, which values for the parameters, ecc ...)
 	 * @param sharedReferencesCollector collects the references to parameters created by the constructor that other search
 	 * manager components also need to have.
 	 */
 	public SearchManagerComponent(GameDependentParameters gameDependentParameters, Random random,
-			GamerConfiguration gamerConfiguration, SharedReferencesCollector sharedReferencesCollector) {
+			GamerSettings gamerSettings, SharedReferencesCollector sharedReferencesCollector) {
 		this.gameDependentParameters = gameDependentParameters;
 		this.random = random;
 	}

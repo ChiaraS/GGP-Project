@@ -5,8 +5,8 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Random;
 
+import org.ggp.base.player.gamer.statemachine.GamerSettings;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.GameDependentParameters;
-import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.GamerConfiguration;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.SharedReferencesCollector;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.hybrid.SimulationResult;
 import org.ggp.base.util.logging.GamerLogger;
@@ -19,9 +19,9 @@ import org.ggp.base.util.statemachine.structure.Move;
 public class AllMemorizingStandardPlayout extends StandardPlayout {
 
 	public AllMemorizingStandardPlayout(GameDependentParameters gameDependentParameters, Random random,
-			GamerConfiguration gamerConfiguration, SharedReferencesCollector sharedReferencesCollector) {
+			GamerSettings gamerSettings, SharedReferencesCollector sharedReferencesCollector) {
 
-		super(gameDependentParameters, random, gamerConfiguration, sharedReferencesCollector);
+		super(gameDependentParameters, random, gamerSettings, sharedReferencesCollector);
 
 	}
 
@@ -37,8 +37,8 @@ public class AllMemorizingStandardPlayout extends StandardPlayout {
 	    try {
 	    	terminal = this.gameDependentParameters.getTheMachine().isTerminal(state);
 	    } catch (StateMachineException e) {
-	    	GamerLogger.logError("MCTSManager", "Exception computing state terminality while performing a playout.");
-			GamerLogger.logStackTrace("MCTSManager", e);
+	    	GamerLogger.logError("MctsManager", "Exception computing state terminality while performing a playout.");
+			GamerLogger.logStackTrace("MctsManager", e);
 			terminal = true;
 		}
 
@@ -47,7 +47,7 @@ public class AllMemorizingStandardPlayout extends StandardPlayout {
 			//if(playoutVisitedNodes != null)
 	        //	playoutVisitedNodes[0] = 0;
 
-			GamerLogger.logError("MCTSManager", "Playout strategy shouldn't be called on a terminal node. The MCTSManager must take care of computing the simulation result in this case.");
+			GamerLogger.logError("MctsManager", "Playout strategy shouldn't be called on a terminal node. The MctsManager must take care of computing the simulation result in this case.");
 			//throw new RuntimeException("Playout strategy called on a terminal node.");
 
 			return new SimulationResult(0, this.gameDependentParameters.getTheMachine().getSafeGoalsAvgForAllRoles(state));
@@ -70,15 +70,15 @@ public class AllMemorizingStandardPlayout extends StandardPlayout {
 			try {
 				jointMove = this.jointMoveSelector.getJointMove(state);
 			} catch (MoveDefinitionException | StateMachineException e) {
-				GamerLogger.logError("MCTSManager", "Exception getting a joint move while performing a playout.");
-				GamerLogger.logStackTrace("MCTSManager", e);
+				GamerLogger.logError("MctsManager", "Exception getting a joint move while performing a playout.");
+				GamerLogger.logStackTrace("MctsManager", e);
 				break;
 			}
 			try {
 				state = this.gameDependentParameters.getTheMachine().getNextState(state, jointMove);
 			} catch (TransitionDefinitionException | StateMachineException e) {
-				GamerLogger.logError("MCTSManager", "Exception getting the next state while performing a playout.");
-				GamerLogger.logStackTrace("MCTSManager", e);
+				GamerLogger.logError("MctsManager", "Exception getting the next state while performing a playout.");
+				GamerLogger.logStackTrace("MctsManager", e);
 				break;
 			}
 
@@ -91,8 +91,8 @@ public class AllMemorizingStandardPlayout extends StandardPlayout {
             try {
 				terminal = this.gameDependentParameters.getTheMachine().isTerminal(state);
 			} catch (StateMachineException e) {
-				GamerLogger.logError("MCTSManager", "Exception computing state terminality while performing a playout.");
-				GamerLogger.logStackTrace("MCTSManager", e);
+				GamerLogger.logError("MctsManager", "Exception computing state terminality while performing a playout.");
+				GamerLogger.logStackTrace("MctsManager", e);
 				terminal = true;
 				break;
 			}

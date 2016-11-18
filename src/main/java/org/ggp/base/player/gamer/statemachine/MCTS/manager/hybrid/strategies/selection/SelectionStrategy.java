@@ -2,18 +2,18 @@ package org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.strategies.se
 
 import java.util.Random;
 
+import org.ggp.base.player.gamer.statemachine.GamerSettings;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.GameDependentParameters;
-import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.GamerConfiguration;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.SharedReferencesCollector;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.strategies.Strategy;
-import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.MCTSNode;
-import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.hybrid.MCTSJointMove;
+import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.MctsNode;
+import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.hybrid.MctsJointMove;
 
 public abstract class SelectionStrategy extends Strategy {
 
 	public SelectionStrategy(GameDependentParameters gameDependentParameters, Random random,
-			GamerConfiguration gamerConfiguration, SharedReferencesCollector sharedReferencesCollector) {
-		super(gameDependentParameters, random, gamerConfiguration, sharedReferencesCollector);
+			GamerSettings gamerSettings, SharedReferencesCollector sharedReferencesCollector) {
+		super(gameDependentParameters, random, gamerSettings, sharedReferencesCollector);
 	}
 
 	/**
@@ -24,7 +24,7 @@ public abstract class SelectionStrategy extends Strategy {
 	 * @param currentNode the node for which to select an action to visit.
 	 * @return the selected move.
 	 */
-	public abstract MCTSJointMove select(MCTSNode currentNode);
+	public abstract MctsJointMove select(MctsNode currentNode);
 
 	@Override
 	public String printComponent(){

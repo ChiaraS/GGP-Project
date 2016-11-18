@@ -5,7 +5,7 @@ import java.util.Iterator;
 import java.util.Map;
 import java.util.Map.Entry;
 
-import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.MCTSNode;
+import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.MctsNode;
 import org.ggp.base.util.statemachine.structure.explicit.ExplicitMachineState;
 
 public class ProverMCTSTranspositionTable {
@@ -18,19 +18,19 @@ public class ProverMCTSTranspositionTable {
 	 * The transposition table (implemented with HashMap that uses the internal propnet state as key
 	 * and solves collisions with linked lists).
 	 */
-	private Map<ExplicitMachineState,MCTSNode> transpositionTable;
+	private Map<ExplicitMachineState,MctsNode> transpositionTable;
 
 	/**
 	 *
 	 */
 	public ProverMCTSTranspositionTable(int gameStepOffset){
 		this.currentGameStepStamp = 0;
-		this.transpositionTable = new HashMap<ExplicitMachineState,MCTSNode>();
+		this.transpositionTable = new HashMap<ExplicitMachineState,MctsNode>();
 		this.gameStepOffset = gameStepOffset;
 	}
 
-	public MCTSNode getNode(ExplicitMachineState state){
-		MCTSNode node = this.transpositionTable.get(state);
+	public MctsNode getNode(ExplicitMachineState state){
+		MctsNode node = this.transpositionTable.get(state);
 		if(node != null){
 			//System.out.println("Found");
 			node.setGameStepStamp(this.currentGameStepStamp);
@@ -40,7 +40,7 @@ public class ProverMCTSTranspositionTable {
 		return node;
 	}
 
-	public void putNode(ExplicitMachineState state, MCTSNode node){
+	public void putNode(ExplicitMachineState state, MctsNode node){
 		if(node != null){
 			this.transpositionTable.put(state, node);
 			node.setGameStepStamp(this.currentGameStepStamp);
@@ -57,9 +57,9 @@ public class ProverMCTSTranspositionTable {
 		//if(newGameStepStamp != this.currentGameStepStamp){
 			this.currentGameStepStamp = newGameStepStamp;
 			// Remove all nodes last accessed earlier than the game step (newGameStepStamp-gameStepOffset)
-			Iterator<Entry<ExplicitMachineState,MCTSNode>> iterator = this.transpositionTable.entrySet().iterator();
+			Iterator<Entry<ExplicitMachineState,MctsNode>> iterator = this.transpositionTable.entrySet().iterator();
 			while(iterator.hasNext()){
-				Entry<ExplicitMachineState,MCTSNode> entry = iterator.next();
+				Entry<ExplicitMachineState,MctsNode> entry = iterator.next();
 				if(entry.getValue().getGameStepStamp() < (this.currentGameStepStamp-this.gameStepOffset)){
 					iterator.remove();
 				}

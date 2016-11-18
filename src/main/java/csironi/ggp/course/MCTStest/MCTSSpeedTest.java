@@ -15,7 +15,7 @@ import org.ggp.base.player.gamer.statemachine.MCTS.manager.propnet.strategies.mo
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.propnet.strategies.playout.PnRandomPlayout;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.propnet.strategies.selection.PnUCTSelection;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.propnet.strategies.selection.evaluators.PnUCTEvaluator;
-import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.MCTSNode;
+import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.MctsNode;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.propnet.PnTreeNodeFactory;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.propnet.decoupled.PnDecoupledTreeNodeFactory;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.propnet.sequential.PnSequentialTreeNodeFactory;
@@ -294,7 +294,7 @@ public class MCTSSpeedTest {
 		        try{
 		        	GamerLogger.log(mctsType + "MCTSSpeedTest", "Starting search.");
 
-		        	MCTSNode initialNode = MCTSmanager.search(thePropnetMachine.getCompactInitialState(), System.currentTimeMillis() + testTime, gameStep);
+		        	MctsNode initialNode = MCTSmanager.search(thePropnetMachine.getCompactInitialState(), System.currentTimeMillis() + testTime, gameStep);
 		        	PnCompleteMoveStats finalMove = MCTSmanager.getBestMove(initialNode);
 
 		        	GamerLogger.log(mctsType + "MCTSSpeedTest", "Search ended correctly.");

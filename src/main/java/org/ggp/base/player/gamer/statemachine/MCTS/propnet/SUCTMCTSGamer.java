@@ -1,18 +1,5 @@
 package org.ggp.base.player.gamer.statemachine.MCTS.propnet;
 
-import java.util.Random;
-
-import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.HybridMCTSManager;
-import org.ggp.base.player.gamer.statemachine.MCTS.manager.propnet.InternalPropnetMCTSManager;
-import org.ggp.base.player.gamer.statemachine.MCTS.manager.propnet.strategies.backpropagation.PnStandardBackpropagation;
-import org.ggp.base.player.gamer.statemachine.MCTS.manager.propnet.strategies.expansion.PnRandomExpansion;
-import org.ggp.base.player.gamer.statemachine.MCTS.manager.propnet.strategies.movechoice.PnMaximumScoreChoice;
-import org.ggp.base.player.gamer.statemachine.MCTS.manager.propnet.strategies.playout.PnRandomPlayout;
-import org.ggp.base.player.gamer.statemachine.MCTS.manager.propnet.strategies.selection.PnUCTSelection;
-import org.ggp.base.player.gamer.statemachine.MCTS.manager.propnet.strategies.selection.evaluators.PnUCTEvaluator;
-import org.ggp.base.player.gamer.statemachine.MCTS.manager.prover.ProverMCTSManager;
-import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.propnet.sequential.PnSequentialTreeNodeFactory;
-import org.ggp.base.util.statemachine.structure.compact.CompactRole;
 
 public class SUCTMCTSGamer extends UctMctsGamer{
 
@@ -22,7 +9,7 @@ public class SUCTMCTSGamer extends UctMctsGamer{
 	public SUCTMCTSGamer() {
 		super();
 	}
-
+/*
 	@Override
 	public InternalPropnetMCTSManager createPropnetMCTSManager(){
 
@@ -54,5 +41,5 @@ public class SUCTMCTSGamer extends UctMctsGamer{
 		// TODO Auto-generated method stub
 		return null;
 	}
-
+*/
 }

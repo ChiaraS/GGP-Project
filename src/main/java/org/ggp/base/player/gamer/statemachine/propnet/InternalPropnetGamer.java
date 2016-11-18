@@ -69,6 +69,15 @@ public abstract class InternalPropnetGamer extends ConfigurableStateMachineGamer
 	 */
 	protected InternalPropnetStateMachine thePropnetMachine;
 
+	/**
+	 * True if this gamer never tried to build a propnet before.
+	 * It is used when the gamer is assumed to play always the same game and returns the
+	 * initial state machine. If this gamer has no state machine it might be because it is
+	 * the first time the player is being used or because it already tried to build a state
+	 * machine based on the propnet and failed, so we should avoid trying again.
+	 */
+	private boolean firstTry;
+
 	/*----------------------- SETTINGS FOR THE STATE MACHINE ------------------------*/
 
 	/**
@@ -95,15 +104,6 @@ public abstract class InternalPropnetGamer extends ConfigurableStateMachineGamer
 	protected long buildPnSafetyMargin;
 
 	/**
-	 * True if this gamer never tried to build a propnet before.
-	 * It is used when the gamer is assumed to play always the same game and returns the
-	 * initial state machine. If this gamer has no state machine it might be because it is
-	 * the first time the player is being used or because it already tried to build a state
-	 * machine based on the propnet and failed, so we should avoid trying again.
-	 */
-	private boolean firstTry;
-
-	/**
 	 * True if we want to use the cache for the state machine based on the Prover, false otherwise.
 	 */
 	protected boolean proverCache;
@@ -126,7 +126,9 @@ public abstract class InternalPropnetGamer extends ConfigurableStateMachineGamer
 	 *
 	 */
 	public InternalPropnetGamer() {
-		// TODO: change code so that the parameters can be set from outside.
+
+		this(defaultSettingsFilePath);
+		/*
 		this.thePropnetMachine = null;
 		this.useProver = false;
 		this.propnetBuild = PROPNET_BUILD.ALWAYS;
@@ -135,6 +137,37 @@ public abstract class InternalPropnetGamer extends ConfigurableStateMachineGamer
 		this.proverCache = true;
 		this.pnCache = false;
 		this.selectMoveSafetyMargin = 10000L;
+		*/
+	}
+
+	public InternalPropnetGamer(String settingsFilePath) {
+		super(settingsFilePath);
+
+		this.thePropnetMachine = null;
+		this.firstTry = true;
+		this.useProver = Boolean.parseBoolean(this.gamerSettings.getPropertyValue("Gamer.useProver"));
+		if(!this.useProver){// If we are not using the prover a priori, check how we should build the propnet
+			String propnetBuildString = this.gamerSettings.getPropertyValue("Gamer.propnetBuild");
+			switch(propnetBuildString){
+			case "ALWAYS": case "always":
+				this.propnetBuild = PROPNET_BUILD.ALWAYS;
+				break;
+			case "ONCE": case "once":
+				this.propnetBuild = PROPNET_BUILD.ONCE;
+				break;
+			case "NEVER": case "never":
+				this.propnetBuild = PROPNET_BUILD.NEVER;
+				break;
+			default:
+				GamerLogger.logError("Gamer", "Impossible to create gamer, wrong specification of property Gamer.propnetBuild:" + propnetBuildString + ".");
+				throw new RuntimeException("Impossible to create gamer, wrong specification of property Gamer.propnetBuild:" + propnetBuildString + ".");
+			}
+		}
+		this.buildPnSafetyMargin = Long.parseLong(this.gamerSettings.getPropertyValue("Gamer.buildPnSafetyMargin"));
+		this.proverCache = Boolean.parseBoolean(this.gamerSettings.getPropertyValue("Gamer.proverCache"));
+		this.pnCache = Boolean.parseBoolean(this.gamerSettings.getPropertyValue("Gamer.pnCache"));
+		this.selectMoveSafetyMargin = Long.parseLong(this.gamerSettings.getPropertyValue("Gamer.selectMoveSafetyMargin"));
+
 	}
 
 	/**

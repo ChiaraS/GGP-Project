@@ -4,7 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
 
-import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.MCTSNode;
+import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.MctsNode;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.propnet.PnMCTSJointMove;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.propnet.PnSequDecMCTSJointMove;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.propnet.decoupled.PnDecoupledMCTSMoveStats;
@@ -44,7 +44,7 @@ public class PnRandomExpansion implements PnExpansionStrategy {
 	 * @see org.ggp.base.player.gamer.statemachine.MCTS.manager.strategies.expansion.ExpansionStrategy#expansionRequired(org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.InternalPropnetMCTSNode)
 	 */
 	@Override
-	public boolean expansionRequired(MCTSNode node){
+	public boolean expansionRequired(MctsNode node){
 		if(node instanceof PnDecoupledMCTSNode){
 			return this.decExpansionRequired((PnDecoupledMCTSNode)node);
 		}else if(node instanceof PnSequentialMCTSNode){
@@ -81,7 +81,7 @@ public class PnRandomExpansion implements PnExpansionStrategy {
 	 * @see org.ggp.base.player.gamer.statemachine.MCTS.manager.strategies.expansion.ExpansionStrategy#expand(org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.InternalPropnetMCTSNode)
 	 */
 	@Override
-	public PnMCTSJointMove expand(MCTSNode node){
+	public PnMCTSJointMove expand(MctsNode node){
 		if(node instanceof PnDecoupledMCTSNode){
 			return this.decExpand((PnDecoupledMCTSNode)node);
 		}else if(node instanceof PnSequentialMCTSNode){

@@ -2,9 +2,9 @@ package org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.strategies.af
 
 import java.util.Random;
 
+import org.ggp.base.player.gamer.statemachine.GamerSettings;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.evolution.SingleParameterEvolutionManager;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.GameDependentParameters;
-import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.GamerConfiguration;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.SharedReferencesCollector;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.hybrid.SimulationResult;
 
@@ -13,9 +13,9 @@ public class EvoAfterSimulation extends AfterSimulationStrategy {
 	private SingleParameterEvolutionManager evolutionManager;
 
 	public EvoAfterSimulation(GameDependentParameters gameDependentParameters, Random random,
-			GamerConfiguration gamerConfiguration, SharedReferencesCollector sharedReferencesCollector){
+			GamerSettings gamerSettings, SharedReferencesCollector sharedReferencesCollector){
 
-		super(gameDependentParameters, random, gamerConfiguration, sharedReferencesCollector);
+		super(gameDependentParameters, random, gamerSettings, sharedReferencesCollector);
 
 	}
 

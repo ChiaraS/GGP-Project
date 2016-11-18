@@ -3,10 +3,10 @@ package org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.hybrid
 import java.util.List;
 import java.util.Random;
 
+import org.ggp.base.player.gamer.statemachine.GamerSettings;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.GameDependentParameters;
-import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.GamerConfiguration;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.SharedReferencesCollector;
-import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.MCTSNode;
+import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.MctsNode;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.hybrid.TreeNodeFactory;
 import org.ggp.base.util.logging.GamerLogger;
 import org.ggp.base.util.statemachine.exceptions.MoveDefinitionException;
@@ -18,7 +18,7 @@ import org.ggp.base.util.statemachine.structure.Role;
 public class SequentialTreeNodeFactory extends TreeNodeFactory {
 
 	public SequentialTreeNodeFactory(GameDependentParameters gameDependentParameters, Random random,
-			GamerConfiguration gamerConfiguration, SharedReferencesCollector sharedReferencesCollector) {
+			GamerSettings gamerConfiguration, SharedReferencesCollector sharedReferencesCollector) {
 		super(gameDependentParameters, random, gamerConfiguration, sharedReferencesCollector);
 	}
 
@@ -40,21 +40,21 @@ public class SequentialTreeNodeFactory extends TreeNodeFactory {
 	}
 
 	@Override
-	public MCTSNode createNewNode(MachineState state) {
+	public MctsNode createNewNode(MachineState state) {
 		//System.out.println("Creating new node.");
 
 		int goals[] = null;
 		boolean terminal = false;
 		List<List<Move>> allLegalMoves = null;
 
-		SequentialMCTSMoveStats[] suctMovesStats = null;
+		SequentialMctsMoveStats[] suctMovesStats = null;
 		int unvisitedLeavesCount = 0;
 
 		try {
 			terminal = this.gameDependentParameters.getTheMachine().isTerminal(state);
 		} catch (StateMachineException e) {
-			GamerLogger.logError("MCTSManager", "Failed to compute state terminality when creating new tree node. Considering node terminal.");
-			GamerLogger.logStackTrace("MCTSManager", e);
+			GamerLogger.logError("MctsManager", "Failed to compute state terminality when creating new tree node. Considering node terminal.");
+			GamerLogger.logStackTrace("MctsManager", e);
 			terminal = true;
 		}
 
@@ -73,8 +73,8 @@ public class SequentialTreeNodeFactory extends TreeNodeFactory {
 				//this.printSUCTMovesTree(suctMovesStats, "");
 			} catch (MoveDefinitionException | StateMachineException e) {
 				// Error when computing moves.
-				GamerLogger.logError("MCTSManager", "Failed to retrieve the legal moves while adding non-terminal SUCT state to the tree.");
-				GamerLogger.logStackTrace("MCTSManager", e);
+				GamerLogger.logError("MctsManager", "Failed to retrieve the legal moves while adding non-terminal SUCT state to the tree.");
+				GamerLogger.logStackTrace("MctsManager", e);
 				// If for at least one player the legal moves cannot be computed we consider this node
 				// "pseudo-terminal" (i.e. the corresponding state is not terminal but we cannot explore
 				// any of the next states, so we treat it as terminal during the MCT search). This means
@@ -95,11 +95,11 @@ public class SequentialTreeNodeFactory extends TreeNodeFactory {
 			// If the legal moves can be computed for every player, there is no need to compute the goals.
 		}
 
-		return new SequentialMCTSNode(allLegalMoves, suctMovesStats, goals, terminal, unvisitedLeavesCount);
+		return new SequentialMctsNode(allLegalMoves, suctMovesStats, goals, terminal, unvisitedLeavesCount);
 
 	}
 
-	private SequentialMCTSMoveStats[] createSUCTMCTSMoves(List<List<Move>> allLegalMoves){
+	private SequentialMctsMoveStats[] createSUCTMCTSMoves(List<List<Move>> allLegalMoves){
 
 		List<Role> roles = this.gameDependentParameters.getTheMachine().getRoles();
 
@@ -110,8 +110,8 @@ public class SequentialTreeNodeFactory extends TreeNodeFactory {
 			}
 		}catch (MoveDefinitionException e) {
 			// If for at least one player the legal moves cannot be computed, we return null.
-			GamerLogger.logError("MCTSManager", "Failed to retrieve the legal moves while adding non-terminal SUCT state to the tree.");
-			GamerLogger.logStackTrace("MCTSManager", e);
+			GamerLogger.logError("MctsManager", "Failed to retrieve the legal moves while adding non-terminal SUCT state to the tree.");
+			GamerLogger.logStackTrace("MctsManager", e);
 
 			return null;
 		} */
@@ -120,24 +120,24 @@ public class SequentialTreeNodeFactory extends TreeNodeFactory {
 		// create the SUCT move containing the move statistics.
 
 		List<Move> myLegalMoves = allLegalMoves.get(this.gameDependentParameters.getMyRoleIndex());
-		SequentialMCTSMoveStats[] moves = new SequentialMCTSMoveStats[myLegalMoves.size()];
+		SequentialMctsMoveStats[] moves = new SequentialMctsMoveStats[myLegalMoves.size()];
 		for(int i = 0; i < myLegalMoves.size(); i++){
-			moves[i] = new SequentialMCTSMoveStats(createSUCTMCTSMoves((this.gameDependentParameters.getMyRoleIndex()+1)%(roles.size()), roles.size(), allLegalMoves));
+			moves[i] = new SequentialMctsMoveStats(createSuctMctsMoves((this.gameDependentParameters.getMyRoleIndex()+1)%(roles.size()), roles.size(), allLegalMoves));
 		}
 
 		return moves;
 	}
 
-	private SequentialMCTSMoveStats[] createSUCTMCTSMoves(int roleIndex, int numRoles, List<List<Move>> allLegalMoves){
+	private SequentialMctsMoveStats[] createSuctMctsMoves(int roleIndex, int numRoles, List<List<Move>> allLegalMoves){
 
 		if(roleIndex == this.gameDependentParameters.getMyRoleIndex()){
 			return null;
 		}
 
 		List<Move> roleLegalMoves = allLegalMoves.get(roleIndex);
-		SequentialMCTSMoveStats[] moves = new SequentialMCTSMoveStats[roleLegalMoves.size()];
+		SequentialMctsMoveStats[] moves = new SequentialMctsMoveStats[roleLegalMoves.size()];
 		for(int i = 0; i < roleLegalMoves.size(); i++){
-			moves[i] = new SequentialMCTSMoveStats(createSUCTMCTSMoves((roleIndex+1)%(numRoles), numRoles, allLegalMoves));
+			moves[i] = new SequentialMctsMoveStats(createSuctMctsMoves((roleIndex+1)%(numRoles), numRoles, allLegalMoves));
 		}
 
 		return moves;

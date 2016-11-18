@@ -3,8 +3,8 @@ package org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.strategies.pl
 import java.util.List;
 import java.util.Random;
 
+import org.ggp.base.player.gamer.statemachine.GamerSettings;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.GameDependentParameters;
-import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.GamerConfiguration;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.SharedReferencesCollector;
 import org.ggp.base.util.statemachine.exceptions.MoveDefinitionException;
 import org.ggp.base.util.statemachine.exceptions.StateMachineException;
@@ -14,8 +14,8 @@ import org.ggp.base.util.statemachine.structure.Move;
 public class RandomJointMoveSelector extends JointMoveSelector{
 
 	public RandomJointMoveSelector(GameDependentParameters gameDependentParameters, Random random,
-			GamerConfiguration gamerConfiguration, SharedReferencesCollector sharedReferencesCollector){
-		super(gameDependentParameters, random, gamerConfiguration, sharedReferencesCollector);
+			GamerSettings gamerSettings, SharedReferencesCollector sharedReferencesCollector){
+		super(gameDependentParameters, random, gamerSettings, sharedReferencesCollector);
 	}
 
 	@Override

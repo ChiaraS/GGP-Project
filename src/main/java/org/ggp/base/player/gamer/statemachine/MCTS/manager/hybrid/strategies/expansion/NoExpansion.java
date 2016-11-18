@@ -2,11 +2,11 @@ package org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.strategies.ex
 
 import java.util.Random;
 
+import org.ggp.base.player.gamer.statemachine.GamerSettings;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.GameDependentParameters;
-import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.GamerConfiguration;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.SharedReferencesCollector;
-import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.MCTSNode;
-import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.hybrid.MCTSJointMove;
+import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.MctsNode;
+import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.hybrid.MctsJointMove;
 
 /**
  * Attention!: for the decoupled version of MCTS the choice of expanding a node and of the action to use
@@ -24,8 +24,8 @@ import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.hybrid.
 public class NoExpansion extends ExpansionStrategy {
 
 	public NoExpansion(GameDependentParameters gameDependentParameters, Random random,
-			GamerConfiguration gamerConfiguration, SharedReferencesCollector sharedReferencesCollector) {
-		super(gameDependentParameters, random, gamerConfiguration, sharedReferencesCollector);
+			GamerSettings gamerSettings, SharedReferencesCollector sharedReferencesCollector) {
+		super(gameDependentParameters, random, gamerSettings, sharedReferencesCollector);
 	}
 
 	@Override
@@ -49,12 +49,12 @@ public class NoExpansion extends ExpansionStrategy {
 	}
 
 	@Override
-	public boolean expansionRequired(MCTSNode node) {
+	public boolean expansionRequired(MctsNode node) {
 		return false;
 	}
 
 	@Override
-	public MCTSJointMove expand(MCTSNode node) {
+	public MctsJointMove expand(MctsNode node) {
 		return null;
 	}
 }

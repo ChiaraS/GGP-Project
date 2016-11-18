@@ -1,6 +1,6 @@
 package org.ggp.base.player.gamer.statemachine.MCTS.manager.prover.strategies.backpropagation;
 
-import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.MCTSNode;
+import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.MctsNode;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.prover.ProverMCTSJointMove;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.prover.ProverSimulationResult;
 import org.ggp.base.util.statemachine.structure.explicit.ExplicitMachineState;
@@ -18,7 +18,7 @@ public class ProverGRAVEBackpropagation implements ProverBackpropagationStrategy
 	}
 
 	@Override
-	public void update(MCTSNode currentNode, ExplicitMachineState currentState, ProverMCTSJointMove jointMove, ProverSimulationResult simulationResult) {
+	public void update(MctsNode currentNode, ExplicitMachineState currentState, ProverMCTSJointMove jointMove, ProverSimulationResult simulationResult) {
 
 		this.stdBackpropagation.update(currentNode, currentState, jointMove, simulationResult);
 		this.graveUpdate.update(currentNode, currentState, jointMove, simulationResult);
@@ -26,7 +26,7 @@ public class ProverGRAVEBackpropagation implements ProverBackpropagationStrategy
 	}
 
 	@Override
-	public void processPlayoutResult(MCTSNode leafNode,	ExplicitMachineState leafState, ProverSimulationResult simulationResult) {
+	public void processPlayoutResult(MctsNode leafNode,	ExplicitMachineState leafState, ProverSimulationResult simulationResult) {
 
 		this.graveUpdate.processPlayoutResult(leafNode, leafState, simulationResult);
 

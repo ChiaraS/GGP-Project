@@ -1,6 +1,6 @@
 package org.ggp.base.player.gamer.statemachine.MCTS.manager.prover.strategies.backpropagation;
 
-import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.MCTSNode;
+import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.MctsNode;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.prover.ProverMCTSJointMove;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.prover.ProverSequDecMCTSJointMove;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.prover.ProverSimulationResult;
@@ -33,7 +33,7 @@ public class ProverStandardBackpropagation implements ProverBackpropagationStrat
 	 * @see org.ggp.base.player.gamer.statemachine.MCTS.manager.strategies.backpropagation.BackpropagationStrategy#update(org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.InternalPropnetMCTSNode, org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.MCTSJointMove, int[])
 	 */
 	@Override
-	public void update(MCTSNode currentNode, ExplicitMachineState currentState, ProverMCTSJointMove jointMove, ProverSimulationResult simulationResult){
+	public void update(MctsNode currentNode, ExplicitMachineState currentState, ProverMCTSJointMove jointMove, ProverSimulationResult simulationResult){
 		if(currentNode instanceof ProverDecoupledMCTSNode && jointMove instanceof ProverSequDecMCTSJointMove){
 			this.decUpdate((ProverDecoupledMCTSNode)currentNode, currentState, (ProverSequDecMCTSJointMove)jointMove, simulationResult);
 		}/*else if(node instanceof PnSequentialMCTSNode && jointMove instanceof SequDecMCTSJointMove){
@@ -180,7 +180,7 @@ public class ProverStandardBackpropagation implements ProverBackpropagationStrat
 	}*/
 
 	@Override
-	public void processPlayoutResult(MCTSNode leafNode,	ExplicitMachineState leafState, ProverSimulationResult simulationResult) {
+	public void processPlayoutResult(MctsNode leafNode,	ExplicitMachineState leafState, ProverSimulationResult simulationResult) {
 		// TODO Auto-generated method stub
 	}
 

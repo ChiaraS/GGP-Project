@@ -1,6 +1,6 @@
 package org.ggp.base.player.gamer.statemachine.MCTS.manager.propnet.strategies.backpropagation;
 
-import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.MCTSNode;
+import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.MctsNode;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.propnet.PnMCTSJointMove;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.propnet.PnSequDecMCTSJointMove;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.propnet.PnSimulationResult;
@@ -38,7 +38,7 @@ public class PnStandardBackpropagation implements PnBackpropagationStrategy {
 	 * @see org.ggp.base.player.gamer.statemachine.MCTS.manager.strategies.backpropagation.BackpropagationStrategy#update(org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.InternalPropnetMCTSNode, org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.MCTSJointMove, int[])
 	 */
 	@Override
-	public void update(MCTSNode currentNode, CompactMachineState currentState, PnMCTSJointMove jointMove, PnSimulationResult simulationResult){
+	public void update(MctsNode currentNode, CompactMachineState currentState, PnMCTSJointMove jointMove, PnSimulationResult simulationResult){
 		if(currentNode instanceof PnDecoupledMCTSNode && jointMove instanceof PnSequDecMCTSJointMove){
 			this.decUpdate((PnDecoupledMCTSNode)currentNode, currentState, (PnSequDecMCTSJointMove)jointMove, simulationResult);
 		}else if(currentNode instanceof PnSequentialMCTSNode && jointMove instanceof PnSequDecMCTSJointMove){
@@ -185,7 +185,7 @@ public class PnStandardBackpropagation implements PnBackpropagationStrategy {
 	}
 
 	@Override
-	public void processPlayoutResult(MCTSNode leafNode, CompactMachineState leafState,	PnSimulationResult simulationResult) {
+	public void processPlayoutResult(MctsNode leafNode, CompactMachineState leafState,	PnSimulationResult simulationResult) {
 		// TODO Auto-generated method stub
 	}
 

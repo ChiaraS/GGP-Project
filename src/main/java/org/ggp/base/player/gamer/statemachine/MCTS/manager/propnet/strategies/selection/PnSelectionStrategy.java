@@ -1,7 +1,7 @@
 package org.ggp.base.player.gamer.statemachine.MCTS.manager.propnet.strategies.selection;
 
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.propnet.strategies.PnStrategy;
-import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.MCTSNode;
+import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.MctsNode;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.propnet.PnMCTSJointMove;
 
 public interface PnSelectionStrategy extends PnStrategy{
@@ -14,6 +14,6 @@ public interface PnSelectionStrategy extends PnStrategy{
 	 * @param currentNode the node for which to select an action to visit.
 	 * @return the selected move.
 	 */
-	public PnMCTSJointMove select(MCTSNode currentNode);
+	public PnMCTSJointMove select(MctsNode currentNode);
 
 }

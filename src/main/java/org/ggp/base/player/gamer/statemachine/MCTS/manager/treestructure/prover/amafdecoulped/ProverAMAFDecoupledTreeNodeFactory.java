@@ -1,6 +1,6 @@
 package org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.prover.amafdecoulped;
 
-import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.MCTSNode;
+import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.MctsNode;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.prover.decoupled.ProverDecoupledMCTSMoveStats;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.prover.decoupled.ProverDecoupledTreeNodeFactory;
 import org.ggp.base.util.logging.GamerLogger;
@@ -15,7 +15,7 @@ public class ProverAMAFDecoupledTreeNodeFactory extends ProverDecoupledTreeNodeF
 	}
 
 	@Override
-	public MCTSNode createNewNode(ExplicitMachineState state) {
+	public MctsNode createNewNode(ExplicitMachineState state) {
 
 		//System.out.println("Creating new node.");
 

@@ -1,10 +1,10 @@
 package org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.prover;
 
-import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.MCTSNode;
+import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.MctsNode;
 import org.ggp.base.util.statemachine.structure.explicit.ExplicitMachineState;
 
 public interface ProverTreeNodeFactory {
 
-	public MCTSNode createNewNode(ExplicitMachineState state);
+	public MctsNode createNewNode(ExplicitMachineState state);
 
 }

@@ -2,24 +2,24 @@ package org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.strategies.ba
 
 import java.util.Random;
 
+import org.ggp.base.player.gamer.statemachine.GamerSettings;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.GameDependentParameters;
-import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.GamerConfiguration;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.SharedReferencesCollector;
-import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.MCTSNode;
-import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.hybrid.MCTSJointMove;
-import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.hybrid.SequDecMCTSJointMove;
+import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.MctsNode;
+import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.hybrid.MctsJointMove;
+import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.hybrid.SequDecMctsJointMove;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.hybrid.SimulationResult;
-import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.hybrid.decoupled.DecoupledMCTSMoveStats;
-import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.hybrid.decoupled.DecoupledMCTSNode;
-import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.hybrid.sequential.SequentialMCTSMoveStats;
-import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.hybrid.sequential.SequentialMCTSNode;
+import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.hybrid.decoupled.DecoupledMctsMoveStats;
+import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.hybrid.decoupled.DecoupledMctsNode;
+import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.hybrid.sequential.SequentialMctsMoveStats;
+import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.hybrid.sequential.SequentialMctsNode;
 import org.ggp.base.util.statemachine.structure.MachineState;
 
 public class StandardUpdater extends NodeUpdater {
 
 	public StandardUpdater(GameDependentParameters gameDependentParameters, Random random,
-			GamerConfiguration gamerConfiguration, SharedReferencesCollector sharedReferencesCollector) {
-		super(gameDependentParameters, random, gamerConfiguration, sharedReferencesCollector);
+			GamerSettings gamerSettings, SharedReferencesCollector sharedReferencesCollector) {
+		super(gameDependentParameters, random, gamerSettings, sharedReferencesCollector);
 	}
 
 	@Override
@@ -42,14 +42,12 @@ public class StandardUpdater extends NodeUpdater {
 	 * @see org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.strategies.backpropagation.BackpropagationStrategy#update(org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.MCTSNode, org.ggp.base.util.statemachine.structure.MachineState, org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.hybrid.MCTSJointMove, org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.hybrid.SimulationResult)
 	 */
 	@Override
-	public void update(MCTSNode currentNode, MachineState currentState, MCTSJointMove jointMove, SimulationResult simulationResult){
-		if(currentNode instanceof DecoupledMCTSNode && jointMove instanceof SequDecMCTSJointMove){
-			this.decUpdate((DecoupledMCTSNode)currentNode, currentState, (SequDecMCTSJointMove)jointMove, simulationResult);
-		}else if(currentNode instanceof SequentialMCTSNode && jointMove instanceof SequDecMCTSJointMove){
-			this.seqUpdate((SequentialMCTSNode)currentNode, currentState, (SequDecMCTSJointMove)jointMove, simulationResult);
-		}/*else if(currentNode instanceof SlowSeqentialMCTSNode && jointMove instanceof SlowSequentialMCTSJointMove){
-			this.sseqUpdate((SlowSeqentialMCTSNode)currentNode, currentState, (SlowSequentialMCTSJointMove)jointMove, simulationResult);
-		}*/else{
+	public void update(MctsNode currentNode, MachineState currentState, MctsJointMove jointMove, SimulationResult simulationResult){
+		if(currentNode instanceof DecoupledMctsNode && jointMove instanceof SequDecMctsJointMove){
+			this.decUpdate((DecoupledMctsNode)currentNode, currentState, (SequDecMctsJointMove)jointMove, simulationResult);
+		}else if(currentNode instanceof SequentialMctsNode && jointMove instanceof SequDecMctsJointMove){
+			this.seqUpdate((SequentialMctsNode)currentNode, currentState, (SequDecMctsJointMove)jointMove, simulationResult);
+		}else{
 			throw new RuntimeException("StandardBackpropagation-update(): detected wrong combination of types for node (" + currentNode.getClass().getSimpleName() + ") and joint move (" + jointMove.getClass().getSimpleName() + ").");
 		}
 	}
@@ -64,17 +62,17 @@ public class StandardUpdater extends NodeUpdater {
 	 * @param jointMove the explored joint move.
 	 * @param goals the goals obtained by the simulation, to be used to update the statistics.
 	 */
-	private void decUpdate(DecoupledMCTSNode currentNode, MachineState currentState, SequDecMCTSJointMove jointMove, SimulationResult simulationResult) {
+	private void decUpdate(DecoupledMctsNode currentNode, MachineState currentState, SequDecMctsJointMove jointMove, SimulationResult simulationResult) {
 
 		currentNode.incrementTotVisits();
 
-		DecoupledMCTSMoveStats[][] moves = currentNode.getMoves();
+		DecoupledMctsMoveStats[][] moves = currentNode.getMoves();
 
 		int[] moveIndices = jointMove.getMovesIndices();
 
 		for(int i = 0; i < moves.length; i++){
 			// Get the decoupled MCTS Move
-			DecoupledMCTSMoveStats theMoveToUpdate = moves[i][moveIndices[i]];
+			DecoupledMctsMoveStats theMoveToUpdate = moves[i][moveIndices[i]];
 			theMoveToUpdate.incrementScoreSum(simulationResult.getTerminalGoals()[i]);
 			if(theMoveToUpdate.getVisits() == 0){
 				//System.out.println("!!!!!");
@@ -101,13 +99,13 @@ public class StandardUpdater extends NodeUpdater {
 	 * @param jointMove the explored joint move.
 	 * @param goals the goals obtained by the simulation, to be used to update the statistics.
 	 */
-	private void seqUpdate(SequentialMCTSNode currentNode, MachineState currentState, SequDecMCTSJointMove jointMove, SimulationResult simulationResult) {
+	private void seqUpdate(SequentialMctsNode currentNode, MachineState currentState, SequDecMctsJointMove jointMove, SimulationResult simulationResult) {
 
 		currentNode.incrementTotVisits();
 
 		int currentRoleIndex = this.gameDependentParameters.getMyRoleIndex();
 
-		SequentialMCTSMoveStats currentStatsToUpdate = currentNode.getMovesStats()[jointMove.getMovesIndices()[currentRoleIndex]];
+		SequentialMctsMoveStats currentStatsToUpdate = currentNode.getMovesStats()[jointMove.getMovesIndices()[currentRoleIndex]];
 
 		while(currentRoleIndex != ((this.gameDependentParameters.getMyRoleIndex()-1+this.gameDependentParameters.getNumRoles())%this.gameDependentParameters.getNumRoles())){
 			currentStatsToUpdate.incrementVisits();
@@ -191,7 +189,7 @@ public class StandardUpdater extends NodeUpdater {
 	*/
 
 	@Override
-	public void processPlayoutResult(MCTSNode leafNode, MachineState leafState,	SimulationResult simulationResult) {
+	public void processPlayoutResult(MctsNode leafNode, MachineState leafState,	SimulationResult simulationResult) {
 		// TODO Auto-generated method stub
 	}
 

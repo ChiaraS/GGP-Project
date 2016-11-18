@@ -3,7 +3,7 @@ package org.ggp.base.player.gamer.statemachine.MCTS.manager.propnet.strategies.b
 import java.util.Map;
 
 import org.ggp.base.player.gamer.statemachine.MCS.manager.MoveStats;
-import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.MCTSNode;
+import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.MctsNode;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.propnet.PnMCTSJointMove;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.propnet.PnSimulationResult;
 import org.ggp.base.util.statemachine.structure.compact.CompactMachineState;
@@ -25,7 +25,7 @@ public class PnMASTGRAVEBackpropagation implements PnBackpropagationStrategy {
 	}
 
 	@Override
-	public void update(MCTSNode currentNode, CompactMachineState currentState, PnMCTSJointMove jointMove, PnSimulationResult simulationResult) {
+	public void update(MctsNode currentNode, CompactMachineState currentState, PnMCTSJointMove jointMove, PnSimulationResult simulationResult) {
 
 		this.stdBackpropagation.update(currentNode, currentState, jointMove, simulationResult);
 		this.mastUpdate.update(currentNode, currentState, jointMove, simulationResult);
@@ -34,7 +34,7 @@ public class PnMASTGRAVEBackpropagation implements PnBackpropagationStrategy {
 	}
 
 	@Override
-	public void processPlayoutResult(MCTSNode leafNode, CompactMachineState leafState, PnSimulationResult simulationResult) {
+	public void processPlayoutResult(MctsNode leafNode, CompactMachineState leafState, PnSimulationResult simulationResult) {
 
 		this.stdBackpropagation.processPlayoutResult(leafNode, leafState, simulationResult);
 		this.mastUpdate.processPlayoutResult(leafNode, leafState, simulationResult);

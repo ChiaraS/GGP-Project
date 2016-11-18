@@ -5,9 +5,9 @@ import java.util.Map;
 import org.ggp.base.player.gamer.statemachine.MCS.manager.MoveStats;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.evolution.OnlineTunableComponent;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.evolution.SingleParameterEvolutionManager;
-import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.strategies.backpropagation.TDBackpropagation;
-import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.strategies.selection.GRAVESelection;
-import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.strategies.selection.ProgressiveHistoryGRAVESelection;
+import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.strategies.backpropagation.TdBackpropagation;
+import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.strategies.selection.GraveSelection;
+import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.strategies.selection.ProgressiveHistoryGraveSelection;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.strategies.selection.evaluators.td.GlobalExtremeValues;
 import org.ggp.base.util.logging.GamerLogger;
 import org.ggp.base.util.statemachine.structure.Move;
@@ -34,11 +34,11 @@ public class SharedReferencesCollector {
 
 	private SingleParameterEvolutionManager singleParameterEvolutionManager;
 
-	private GRAVESelection graveSelection;
+	private GraveSelection graveSelection;
 
-	private TDBackpropagation tdBackpropagation;
+	private TdBackpropagation tdBackpropagation;
 
-	private ProgressiveHistoryGRAVESelection progressiveHistoryGraveSelection;
+	private ProgressiveHistoryGraveSelection progressiveHistoryGraveSelection;
 
 	public SharedReferencesCollector() {
 		// TODO Auto-generated constructor stub
@@ -124,7 +124,7 @@ public class SharedReferencesCollector {
 		}
 	}
 
-	public void setGraveSelection(GRAVESelection graveSelection){
+	public void setGraveSelection(GraveSelection graveSelection){
 		// Can only be set once
 		if(this.graveSelection == null){
 			this.graveSelection = graveSelection;
@@ -134,7 +134,7 @@ public class SharedReferencesCollector {
 		}
 	}
 
-	public GRAVESelection getGraveSelection(){
+	public GraveSelection getGraveSelection(){
 		// If a strategy looks for the reference then another strategy must have set it
 		if(this.graveSelection != null){
 			return this.graveSelection;
@@ -144,27 +144,27 @@ public class SharedReferencesCollector {
 		}
 	}
 
-	public void setTDBackpropagation(TDBackpropagation tdBackpropagation){
+	public void setTdBackpropagation(TdBackpropagation tdBackpropagation){
 		// Can only be set once
 		if(this.tdBackpropagation == null){
 			this.tdBackpropagation = tdBackpropagation;
 		}else{
-			GamerLogger.logError("SearchManagerCreation", "Trying to set TDBackpropagation multiple times! Probably a wrong combination of strategies has been set.");
-			throw new RuntimeException("Trying to set TDBackpropagation multiple times!");
+			GamerLogger.logError("SearchManagerCreation", "Trying to set TdBackpropagation multiple times! Probably a wrong combination of strategies has been set.");
+			throw new RuntimeException("Trying to set TdBackpropagation multiple times!");
 		}
 	}
 
-	public TDBackpropagation getTDBackpropagation(){
+	public TdBackpropagation getTdBackpropagation(){
 		// If a strategy looks for the reference then another strategy must have set it
 		if(this.tdBackpropagation != null){
 			return this.tdBackpropagation;
 		}else{
-			GamerLogger.logError("SearchManagerCreation", "Trying to get TDBackpropagation that has never been set! Probably a wrong combination of strategies has been set.");
-			throw new RuntimeException("Trying to get TDBackpropagation that has never been set!");
+			GamerLogger.logError("SearchManagerCreation", "Trying to get TdBackpropagation that has never been set! Probably a wrong combination of strategies has been set.");
+			throw new RuntimeException("Trying to get TdBackpropagation that has never been set!");
 		}
 	}
 
-	public void setProgressiveHistoryGraveSelection(ProgressiveHistoryGRAVESelection progressiveHistoryGraveSelection){
+	public void setProgressiveHistoryGraveSelection(ProgressiveHistoryGraveSelection progressiveHistoryGraveSelection){
 		// Can only be set once
 		if(this.progressiveHistoryGraveSelection == null){
 			this.progressiveHistoryGraveSelection = progressiveHistoryGraveSelection;
@@ -174,7 +174,7 @@ public class SharedReferencesCollector {
 		}
 	}
 
-	public ProgressiveHistoryGRAVESelection getProgressiveHistoryGraveSelection(){
+	public ProgressiveHistoryGraveSelection getProgressiveHistoryGraveSelection(){
 		// If a strategy looks for the reference then another strategy must have set it
 		if(this.progressiveHistoryGraveSelection != null){
 			return this.progressiveHistoryGraveSelection;

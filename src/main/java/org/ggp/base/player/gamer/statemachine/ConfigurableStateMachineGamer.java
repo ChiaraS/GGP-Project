@@ -6,15 +6,17 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.util.Properties;
 
-import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.GamerConfiguration;
 import org.ggp.base.util.logging.GamerLogger;
 
 public abstract class ConfigurableStateMachineGamer extends StateMachineGamer {
 
-	protected GamerConfiguration gamerSettings;
+	protected static final String defaultSettingsFilePath = "/home/csironi/GamersSettings/DuctMctsGamer.properties";
+
+
+	protected GamerSettings gamerSettings;
 
 	public ConfigurableStateMachineGamer() {
-		this("/home/csironi/GamersSettings/DuctMctsGamer.properties");
+		this(defaultSettingsFilePath);
 	}
 
 	public ConfigurableStateMachineGamer(String settingsFilePath) {
@@ -34,7 +36,7 @@ public abstract class ConfigurableStateMachineGamer extends StateMachineGamer {
 
 			reader.close();
 
-			this.gamerSettings = new GamerConfiguration(props);
+			this.gamerSettings = new GamerSettings(props);
 
 		} catch (FileNotFoundException e) {
 			this.gamerSettings = null;

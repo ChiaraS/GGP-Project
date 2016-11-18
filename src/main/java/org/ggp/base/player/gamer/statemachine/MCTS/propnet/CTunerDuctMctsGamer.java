@@ -1,35 +1,5 @@
 package org.ggp.base.player.gamer.statemachine.MCTS.propnet;
 
-import java.util.Random;
-
-import org.ggp.base.player.gamer.statemachine.MCTS.manager.evolution.Individual;
-import org.ggp.base.player.gamer.statemachine.MCTS.manager.evolution.SingleParameterEvolutionManager;
-import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.HybridMCTSManager;
-import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.strategies.aftermove.EvoAfterMove;
-import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.strategies.aftersimulation.EvoAfterSimulation;
-import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.strategies.backpropagation.StandardBackpropagation;
-import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.strategies.beforesimualtion.EvoBeforeSimulation;
-import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.strategies.expansion.RandomExpansion;
-import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.strategies.movechoice.MaximumScoreChoice;
-import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.strategies.playout.RandomPlayout;
-import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.strategies.selection.UCTSelection;
-import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.strategies.selection.evaluators.UCTEvaluator;
-import org.ggp.base.player.gamer.statemachine.MCTS.manager.propnet.InternalPropnetMCTSManager;
-import org.ggp.base.player.gamer.statemachine.MCTS.manager.propnet.strategies.aftermove.PnEvoAfterMove;
-import org.ggp.base.player.gamer.statemachine.MCTS.manager.propnet.strategies.aftersimulation.PnEvoAfterSimulation;
-import org.ggp.base.player.gamer.statemachine.MCTS.manager.propnet.strategies.backpropagation.PnStandardBackpropagation;
-import org.ggp.base.player.gamer.statemachine.MCTS.manager.propnet.strategies.beforesimulation.PnEvoBeforeSimulation;
-import org.ggp.base.player.gamer.statemachine.MCTS.manager.propnet.strategies.expansion.PnRandomExpansion;
-import org.ggp.base.player.gamer.statemachine.MCTS.manager.propnet.strategies.movechoice.PnMaximumScoreChoice;
-import org.ggp.base.player.gamer.statemachine.MCTS.manager.propnet.strategies.playout.PnRandomPlayout;
-import org.ggp.base.player.gamer.statemachine.MCTS.manager.propnet.strategies.selection.PnUCTSelection;
-import org.ggp.base.player.gamer.statemachine.MCTS.manager.propnet.strategies.selection.evaluators.PnUCTEvaluator;
-import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.hybrid.decoupled.DecoupledTreeNodeFactory;
-import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.propnet.decoupled.PnDecoupledTreeNodeFactory;
-import org.ggp.base.util.statemachine.abstractsm.AbstractStateMachine;
-import org.ggp.base.util.statemachine.abstractsm.CompactStateMachine;
-import org.ggp.base.util.statemachine.abstractsm.ExplicitStateMachine;
-import org.ggp.base.util.statemachine.structure.compact.CompactRole;
 
 
 public class CTunerDuctMctsGamer extends DuctMctsGamer {
@@ -75,6 +45,7 @@ public class CTunerDuctMctsGamer extends DuctMctsGamer {
 
 	}
 
+	/*
 	@Override
 	public InternalPropnetMCTSManager createPropnetMCTSManager(){
 
@@ -103,7 +74,7 @@ public class CTunerDuctMctsGamer extends DuctMctsGamer {
 	}
 
 
-/*
+
 	@Override
 	public ProverMCTSManager createProverMCTSManager(){
 
@@ -121,7 +92,6 @@ public class CTunerDuctMctsGamer extends DuctMctsGamer {
 	       		this.gameStepOffset, this.maxSearchDepth);
 
 	}
-*/
 
 	@Override
 	public HybridMCTSManager createHybridMCTSManager(){
@@ -176,5 +146,6 @@ public class CTunerDuctMctsGamer extends DuctMctsGamer {
 	       		theMachine,	this.gameStepOffset, this.maxSearchDepth, this.logTranspositionTable);
 
 	}
+	*/
 
 }

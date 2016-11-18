@@ -4,24 +4,24 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
 
+import org.ggp.base.player.gamer.statemachine.GamerSettings;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.GameDependentParameters;
-import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.GamerConfiguration;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.SharedReferencesCollector;
-import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.MCTSNode;
-import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.hybrid.MCTSJointMove;
-import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.hybrid.SequDecMCTSJointMove;
-import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.hybrid.decoupled.DecoupledMCTSMoveStats;
-import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.hybrid.decoupled.DecoupledMCTSNode;
-import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.hybrid.sequential.SequentialMCTSMoveStats;
-import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.hybrid.sequential.SequentialMCTSNode;
+import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.MctsNode;
+import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.hybrid.MctsJointMove;
+import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.hybrid.SequDecMctsJointMove;
+import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.hybrid.decoupled.DecoupledMctsMoveStats;
+import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.hybrid.decoupled.DecoupledMctsNode;
+import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.hybrid.sequential.SequentialMctsMoveStats;
+import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.hybrid.sequential.SequentialMctsNode;
 import org.ggp.base.util.statemachine.structure.Move;
 
 public class RandomExpansion extends ExpansionStrategy {
 
 	public RandomExpansion(GameDependentParameters gameDependentParameters, Random random,
-			GamerConfiguration gamerConfiguration, SharedReferencesCollector sharedReferencesCollector){
+			GamerSettings gamerSettings, SharedReferencesCollector sharedReferencesCollector){
 
-		super(gameDependentParameters, random, gamerConfiguration, sharedReferencesCollector);
+		super(gameDependentParameters, random, gamerSettings, sharedReferencesCollector);
 
 	}
 
@@ -45,11 +45,11 @@ public class RandomExpansion extends ExpansionStrategy {
 	 * @see org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.strategies.expansion.ExpansionStrategy#expansionRequired(org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.MCTSNode)
 	 */
 	@Override
-	public boolean expansionRequired(MCTSNode node){
-		if(node instanceof DecoupledMCTSNode){
-			return this.decExpansionRequired((DecoupledMCTSNode)node);
-		}else if(node instanceof SequentialMCTSNode){
-			return this.seqExpansionRequired((SequentialMCTSNode)node);
+	public boolean expansionRequired(MctsNode node){
+		if(node instanceof DecoupledMctsNode){
+			return this.decExpansionRequired((DecoupledMctsNode)node);
+		}else if(node instanceof SequentialMctsNode){
+			return this.seqExpansionRequired((SequentialMctsNode)node);
 		}/*else if(node instanceof SlowSeqentialMCTSNode){
 			return this.sseqExpansionRequired((SlowSeqentialMCTSNode)node);
 		}*/else{
@@ -57,7 +57,7 @@ public class RandomExpansion extends ExpansionStrategy {
 		}
 	}
 
-	private boolean decExpansionRequired(DecoupledMCTSNode node) {
+	private boolean decExpansionRequired(DecoupledMctsNode node) {
 
 		int[] unexploredMovesCount = node.getUnexploredMovesCount();
 
@@ -69,7 +69,7 @@ public class RandomExpansion extends ExpansionStrategy {
 		return false;
 	}
 
-	private boolean seqExpansionRequired(SequentialMCTSNode node){
+	private boolean seqExpansionRequired(SequentialMctsNode node){
 		return node.getUnvisitedLeaves() != 0;
 	}
 
@@ -84,15 +84,15 @@ public class RandomExpansion extends ExpansionStrategy {
 	 * @see org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.strategies.expansion.ExpansionStrategy#expand(org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.MCTSNode)
 	 */
 	@Override
-	public MCTSJointMove expand(MCTSNode node){
-		if(node instanceof DecoupledMCTSNode){
-			return this.decExpand((DecoupledMCTSNode)node);
-		}else if(node instanceof SequentialMCTSNode){
-			return this.seqExpand((SequentialMCTSNode)node);
+	public MctsJointMove expand(MctsNode node){
+		if(node instanceof DecoupledMctsNode){
+			return this.decExpand((DecoupledMctsNode)node);
+		}else if(node instanceof SequentialMctsNode){
+			return this.seqExpand((SequentialMctsNode)node);
 		}/*else if(node instanceof SlowSeqentialMCTSNode){
 			return this.sseqExpand((SlowSeqentialMCTSNode)node);
 		}*/else{
-			throw new RuntimeException("RandomExpansion-expand(): detected a node of a non-recognizable sub-type of class MCTSNode.");
+			throw new RuntimeException("RandomExpansion-expand(): detected a node of a non-recognizable sub-type of class MctsNode.");
 		}
 	}
 
@@ -106,9 +106,9 @@ public class RandomExpansion extends ExpansionStrategy {
 	 * @param node the node for which to choose a joint move.
 	 * @return the joint move.
 	 */
-	private MCTSJointMove decExpand(DecoupledMCTSNode node){
+	private MctsJointMove decExpand(DecoupledMctsNode node){
 
-		DecoupledMCTSMoveStats[][] moves = node.getMoves();
+		DecoupledMctsMoveStats[][] moves = node.getMoves();
 		int[] unexploredMovesCount = node.getUnexploredMovesCount();
 
 		List<Move> jointMove = new ArrayList<Move>();
@@ -143,7 +143,7 @@ public class RandomExpansion extends ExpansionStrategy {
 			}
 		}
 
-		return new SequDecMCTSJointMove(jointMove, movesIndices);
+		return new SequDecMctsJointMove(jointMove, movesIndices);
 	}
 
 
@@ -163,7 +163,7 @@ public class RandomExpansion extends ExpansionStrategy {
 	 * @param node the node for which to choose a joint move.
 	 * @return the joint move.
 	 */
-	private MCTSJointMove seqExpand(SequentialMCTSNode node){
+	private MctsJointMove seqExpand(SequentialMctsNode node){
 
 		List<Move> jointMove = new ArrayList<Move>(this.gameDependentParameters.getNumRoles());
 		int[] movesIndices = new int[this.gameDependentParameters.getNumRoles()];
@@ -180,7 +180,7 @@ public class RandomExpansion extends ExpansionStrategy {
 				movesIndices[i] = this.random.nextInt(legalMoves.size());
 				jointMove.add(legalMoves.get(movesIndices[i]));
 			}
-			return new SequDecMCTSJointMove(jointMove, movesIndices); // TODO rename!
+			return new SequDecMctsJointMove(jointMove, movesIndices); // TODO rename!
 		}
 
 		// Get a random leaf move (the path that connects the leaf move to one of my role's moves will
@@ -202,7 +202,7 @@ public class RandomExpansion extends ExpansionStrategy {
 		int roleIndex = this.gameDependentParameters.getMyRoleIndex();
 
 		// Get the moves stats for myRole.
-		SequentialMCTSMoveStats[] movesStats = node.getMovesStats();
+		SequentialMctsMoveStats[] movesStats = node.getMovesStats();
 
 		// For every role...
 		while(movesStats != null){
@@ -222,7 +222,7 @@ public class RandomExpansion extends ExpansionStrategy {
 			roleIndex = (roleIndex + 1)%this.gameDependentParameters.getNumRoles();
 		}
 
-		return new SequDecMCTSJointMove(jointMove, movesIndices);
+		return new SequDecMctsJointMove(jointMove, movesIndices);
 	}
 
 	/**

@@ -1,6 +1,6 @@
 package org.ggp.base.player.gamer.statemachine.MCTS.manager.propnet.strategies.expansion;
 
-import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.MCTSNode;
+import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.MctsNode;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.propnet.PnMCTSJointMove;
 
 /**
@@ -40,13 +40,13 @@ public class PnNoExpansion implements PnExpansionStrategy {
 	}
 
 	@Override
-	public boolean expansionRequired(MCTSNode node) {
+	public boolean expansionRequired(MctsNode node) {
 		// TODO Auto-generated method stub
 		return false;
 	}
 
 	@Override
-	public PnMCTSJointMove expand(MCTSNode node) {
+	public PnMCTSJointMove expand(MctsNode node) {
 		// TODO Auto-generated method stub
 		return null;
 	}

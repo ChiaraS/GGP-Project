@@ -4,7 +4,7 @@ import java.util.Random;
 
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.evolution.OnlineTunableComponent;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.propnet.strategies.selection.evaluators.GRAVE.PnGRAVEEvaluator;
-import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.MCTSNode;
+import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.MctsNode;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.propnet.PnMCTSJointMove;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.propnet.amafdecoupled.PnAMAFNode;
 import org.ggp.base.util.statemachine.structure.compact.CompactRole;
@@ -26,7 +26,7 @@ public class PnGRAVESelection extends PnMoveValueSelection implements OnlineTuna
 	}
 
 	@Override
-	public PnMCTSJointMove select(MCTSNode currentNode) {
+	public PnMCTSJointMove select(MctsNode currentNode) {
 
 		//System.out.println("GRAVE selection");
 

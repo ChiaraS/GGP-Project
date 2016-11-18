@@ -5,18 +5,18 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
 
+import org.ggp.base.player.gamer.statemachine.GamerSettings;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.GameDependentParameters;
-import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.GamerConfiguration;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.SearchManagerComponent;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.SharedReferencesCollector;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.strategies.selection.evaluators.MoveEvaluator;
-import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.MCTSNode;
-import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.hybrid.MCTSJointMove;
-import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.hybrid.SequDecMCTSJointMove;
-import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.hybrid.decoupled.DecoupledMCTSMoveStats;
-import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.hybrid.decoupled.DecoupledMCTSNode;
-import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.hybrid.sequential.SequentialMCTSMoveStats;
-import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.hybrid.sequential.SequentialMCTSNode;
+import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.MctsNode;
+import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.hybrid.MctsJointMove;
+import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.hybrid.SequDecMctsJointMove;
+import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.hybrid.decoupled.DecoupledMctsMoveStats;
+import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.hybrid.decoupled.DecoupledMctsNode;
+import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.hybrid.sequential.SequentialMctsMoveStats;
+import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.hybrid.sequential.SequentialMctsNode;
 import org.ggp.base.util.logging.GamerLogger;
 import org.ggp.base.util.reflection.ProjectSearcher;
 import org.ggp.base.util.statemachine.structure.Move;
@@ -28,24 +28,24 @@ public abstract class MoveValueSelection extends SelectionStrategy {
 	/**
 	 * NOTE: to obtain the desired selection type set the MoveEvaluator as follows:
 	 * UCT SELECTION = UCTEvaluator
-	 * GRAVE SELECTION = GRAVEEvaluator (and use the subclass GRAVESelection)
+	 * GRAVE SELECTION = GraveEvaluator (and use the subclass GraveSelection)
 	 */
 	protected MoveEvaluator moveEvaluator;
 
 	public MoveValueSelection(GameDependentParameters gameDependentParameters, Random random,
-			GamerConfiguration gamerConfiguration, SharedReferencesCollector sharedReferencesCollector) {
+			GamerSettings gamerSettings, SharedReferencesCollector sharedReferencesCollector) {
 
-		super(gameDependentParameters, random, gamerConfiguration, sharedReferencesCollector);
+		super(gameDependentParameters, random, gamerSettings, sharedReferencesCollector);
 
-		this.valueOffset = Double.parseDouble(gamerConfiguration.getPropertyValue("SelectionStrategy.valueOffset"));
+		this.valueOffset = Double.parseDouble(gamerSettings.getPropertyValue("SelectionStrategy.valueOffset"));
 
 		try {
 			this.moveEvaluator = (MoveEvaluator) SearchManagerComponent.getConstructorForSearchManagerComponent(ProjectSearcher.MOVE_EVALUATORS.getConcreteClasses(),
-					gamerConfiguration.getPropertyValue("SelectionStrategy.moveEvaluatorType")).newInstance(gameDependentParameters, random, gamerConfiguration, sharedReferencesCollector);
+					gamerSettings.getPropertyValue("SelectionStrategy.moveEvaluatorType")).newInstance(gameDependentParameters, random, gamerSettings, sharedReferencesCollector);
 		} catch (InstantiationException | IllegalAccessException
 				| IllegalArgumentException | InvocationTargetException e) {
 			// TODO: fix this!
-			GamerLogger.logError("SearchManagerCreation", "Error when instantiating MoveEvaluator " + gamerConfiguration.getPropertyValue("SelectionStrategy.moveEvaluatorType") + ".");
+			GamerLogger.logError("SearchManagerCreation", "Error when instantiating MoveEvaluator " + gamerSettings.getPropertyValue("SelectionStrategy.moveEvaluatorType") + ".");
 			GamerLogger.logStackTrace("SearchManagerCreation", e);
 			throw new RuntimeException(e);
 		}
@@ -68,22 +68,22 @@ public abstract class MoveValueSelection extends SelectionStrategy {
 	}
 
 	@Override
-	public MCTSJointMove select(MCTSNode currentNode) {
-		if(currentNode instanceof DecoupledMCTSNode){
-			return this.decSelect((DecoupledMCTSNode)currentNode);
-		}else if(currentNode instanceof SequentialMCTSNode){
-			return this.seqSelect((SequentialMCTSNode)currentNode);
+	public MctsJointMove select(MctsNode currentNode) {
+		if(currentNode instanceof DecoupledMctsNode){
+			return this.decSelect((DecoupledMctsNode)currentNode);
+		}else if(currentNode instanceof SequentialMctsNode){
+			return this.seqSelect((SequentialMctsNode)currentNode);
 		}else{
-			throw new RuntimeException("MoveValueSelection-select(): detected a node of a non-recognizable sub-type of class MCTSNode.");
+			throw new RuntimeException("MoveValueSelection-select(): detected a node of a non-recognizable sub-type of class MctsNode.");
 		}
 	}
 
-	private MCTSJointMove decSelect(DecoupledMCTSNode currentNode) {
+	private MctsJointMove decSelect(DecoupledMctsNode currentNode) {
 
 		// No need to make sure that currentNode is terminal if the code is correct,
 		// because the node that is passed as input is always non-terminal.
 
-		DecoupledMCTSMoveStats[][] moves = currentNode.getMoves();
+		DecoupledMctsMoveStats[][] moves = currentNode.getMoves();
 
 		// Also here we can assume that the moves will be non-null since the code takes care
 		// of only passing to this method the nodes that have all the information needed for
@@ -133,11 +133,11 @@ public abstract class MoveValueSelection extends SelectionStrategy {
 			selectedJointMove.add(moves[i][movesIndices[i]].getTheMove());
 		}
 
-		return new SequDecMCTSJointMove(selectedJointMove, movesIndices);
+		return new SequDecMctsJointMove(selectedJointMove, movesIndices);
 	}
 
 
-	private MCTSJointMove seqSelect(SequentialMCTSNode currentNode){
+	private MctsJointMove seqSelect(SequentialMctsNode currentNode){
 
 		List<Move> jointMove = new ArrayList<Move>(this.gameDependentParameters.getNumRoles());
 		int[] movesIndices = new int[this.gameDependentParameters.getNumRoles()];
@@ -151,7 +151,7 @@ public abstract class MoveValueSelection extends SelectionStrategy {
 		int roleIndex = this.gameDependentParameters.getMyRoleIndex();
 
 		// Get the moves for myRole.
-		SequentialMCTSMoveStats[] movesStats = currentNode.getMovesStats();
+		SequentialMctsMoveStats[] movesStats = currentNode.getMovesStats();
 
 		double maxMoveValue;
 		double[] moveValues;
@@ -200,7 +200,7 @@ public abstract class MoveValueSelection extends SelectionStrategy {
 
 		}
 
-		return new SequDecMCTSJointMove(jointMove, movesIndices);
+		return new SequDecMctsJointMove(jointMove, movesIndices);
 
 	}
 

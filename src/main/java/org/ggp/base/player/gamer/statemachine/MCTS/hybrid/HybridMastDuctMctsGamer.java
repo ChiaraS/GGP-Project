@@ -6,7 +6,7 @@ public class HybridMastDuctMctsGamer extends MastDuctMctsGamer {
 
 	public HybridMastDuctMctsGamer() {
 
-		this.hybridManager = true;
+		//this.hybridManager = true;
 
 	}
 

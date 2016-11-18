@@ -1,6 +1,6 @@
 package org.ggp.base.player.gamer.statemachine.MCTS.manager.prover.strategies.expansion;
 
-import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.MCTSNode;
+import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.MctsNode;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.prover.ProverMCTSJointMove;
 
 public class ProverNoExpansion implements ProverExpansionStrategy {
@@ -27,13 +27,13 @@ public class ProverNoExpansion implements ProverExpansionStrategy {
 	}
 
 	@Override
-	public boolean expansionRequired(MCTSNode node) {
+	public boolean expansionRequired(MctsNode node) {
 		// TODO Auto-generated method stub
 		return false;
 	}
 
 	@Override
-	public ProverMCTSJointMove expand(MCTSNode node) {
+	public ProverMCTSJointMove expand(MctsNode node) {
 		// TODO Auto-generated method stub
 		return null;
 	}

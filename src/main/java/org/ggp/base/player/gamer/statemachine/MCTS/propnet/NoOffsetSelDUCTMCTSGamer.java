@@ -4,7 +4,7 @@ public class NoOffsetSelDUCTMCTSGamer extends DuctMctsGamer {
 
 	public NoOffsetSelDUCTMCTSGamer() {
 		super();
-		this.valueOffset = 0;
+		//this.valueOffset = 0;
 	}
 
 }

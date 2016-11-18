@@ -2,7 +2,7 @@ package org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.propne
 
 import java.util.List;
 
-import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.MCTSNode;
+import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.MctsNode;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.propnet.PnTreeNodeFactory;
 import org.ggp.base.util.logging.GamerLogger;
 import org.ggp.base.util.statemachine.InternalPropnetStateMachine;
@@ -27,7 +27,7 @@ public class PnSequentialTreeNodeFactory implements PnTreeNodeFactory {
 	}
 
 	@Override
-	public MCTSNode createNewNode(CompactMachineState state) {
+	public MctsNode createNewNode(CompactMachineState state) {
 		//System.out.println("Creating new node.");
 
 		int goals[] = null;

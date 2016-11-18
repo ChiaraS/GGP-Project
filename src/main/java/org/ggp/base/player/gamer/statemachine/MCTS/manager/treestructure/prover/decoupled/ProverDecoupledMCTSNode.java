@@ -1,8 +1,8 @@
 package org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.prover.decoupled;
 
-import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.MCTSNode;
+import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.MctsNode;
 
-public class ProverDecoupledMCTSNode extends MCTSNode {
+public class ProverDecoupledMCTSNode extends MctsNode {
 
 	/**
 	 * List of the moves' statistics for each role in the state corresponding to this node.

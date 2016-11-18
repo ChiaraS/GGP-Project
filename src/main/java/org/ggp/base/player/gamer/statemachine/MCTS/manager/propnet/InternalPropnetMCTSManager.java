@@ -4,7 +4,7 @@
 package org.ggp.base.player.gamer.statemachine.MCTS.manager.propnet;
 
 import org.ggp.base.player.gamer.statemachine.MCS.manager.propnet.PnCompleteMoveStats;
-import org.ggp.base.player.gamer.statemachine.MCTS.manager.MCTSManager;
+import org.ggp.base.player.gamer.statemachine.MCTS.manager.MctsManager;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.exceptions.MCTSException;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.strategies.aftermove.AfterMoveStrategy;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.strategies.beforesimualtion.BeforeSimulationStrategy;
@@ -14,7 +14,7 @@ import org.ggp.base.player.gamer.statemachine.MCTS.manager.propnet.strategies.ex
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.propnet.strategies.movechoice.PnMoveChoiceStrategy;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.propnet.strategies.playout.PnPlayoutStrategy;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.propnet.strategies.selection.PnSelectionStrategy;
-import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.MCTSNode;
+import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.MctsNode;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.propnet.PnMCTSJointMove;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.propnet.PnMCTSTranspositionTable;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.propnet.PnSimulationResult;
@@ -28,7 +28,7 @@ import org.ggp.base.util.statemachine.structure.compact.CompactMachineState;
  * @author C.Sironi
  *
  */
-public class InternalPropnetMCTSManager extends MCTSManager {
+public class InternalPropnetMCTSManager extends MctsManager {
 
 	/**
 	 * True if the manager must run the DUCT version of Monte Carlo Tree Search,
@@ -221,7 +221,7 @@ public class InternalPropnetMCTSManager extends MCTSManager {
 	 * it is either terminal or there is some problem with the computation of legal
 	 * moves (and thus corresponding statistics).
 	 */
-	public PnCompleteMoveStats getBestMove(MCTSNode theNode)throws MCTSException{
+	public PnCompleteMoveStats getBestMove(MctsNode theNode)throws MCTSException{
 
 		// If the node is null or terminal we cannot return any move.
 		// Note that the node being terminal might mean that the state is not terminal but legal moves
@@ -256,9 +256,9 @@ public class InternalPropnetMCTSManager extends MCTSManager {
 	 * state is either terminal or there is some problem with the computation of legal
 	 * moves (and thus corresponding statistics).
 	 */
-	public MCTSNode search(CompactMachineState initialState, long timeout, int gameStep) throws MCTSException{
+	public MctsNode search(CompactMachineState initialState, long timeout, int gameStep) throws MCTSException{
 
-		MCTSNode initialNode = this.prepareForSearch(initialState, gameStep);
+		MctsNode initialNode = this.prepareForSearch(initialState, gameStep);
 
 		// We can be sure that the node is not null, but if it is terminal we cannot perform any search.
 		// Note that the node being terminal might mean that the state is not terminal but legal moves
@@ -287,7 +287,7 @@ public class InternalPropnetMCTSManager extends MCTSManager {
 	 * 				   the steps as starting from 1. 0 or less are not valid!
 	 * @return the tree node corresponding to the given initial state.
 	 */
-	private MCTSNode prepareForSearch(CompactMachineState initialState, int gameStep){
+	private MctsNode prepareForSearch(CompactMachineState initialState, int gameStep){
 
 		this.iterations = 0;
 		this.visitedNodes = 0;
@@ -325,7 +325,7 @@ public class InternalPropnetMCTSManager extends MCTSManager {
 		// If it's the first time during the game that we call this method the transposition table is empty
 		// so we create the first node, otherwise we check if the node is already in the tree.
 
-		MCTSNode initialNode = this.transpositionTable.getNode(initialState);
+		MctsNode initialNode = this.transpositionTable.getNode(initialState);
 
 		if(initialNode == null){
 
@@ -346,7 +346,7 @@ public class InternalPropnetMCTSManager extends MCTSManager {
 	 * 					  the search (making it the root of the currently searched tree).
 	 * @param timeout the time (in milliseconds) by when the search must end.
 	 */
-	private void performSearch(CompactMachineState initialState, MCTSNode initialNode, long timeout){
+	private void performSearch(CompactMachineState initialState, MctsNode initialNode, long timeout){
 		this.searchStart = System.currentTimeMillis();
 		while(System.currentTimeMillis() < timeout){
 			this.currentIterationVisitedNodes = 0;
@@ -391,7 +391,7 @@ public class InternalPropnetMCTSManager extends MCTSManager {
 	 * @return the goals of all players, obtained by the current MCTS iteration and that
 	 *         must be backpropagated.
 	 */
-	private PnSimulationResult searchNext(CompactMachineState currentState, MCTSNode currentNode) {
+	private PnSimulationResult searchNext(CompactMachineState currentState, MctsNode currentNode) {
 
 		//System.out.println();
 		//System.out.println("Search step:");
@@ -472,7 +472,7 @@ public class InternalPropnetMCTSManager extends MCTSManager {
 
 		PnMCTSJointMove mctsJointMove;
 		CompactMachineState nextState;
-		MCTSNode nextNode;
+		MctsNode nextNode;
 
 		/*
 		System.out.println("Printing current node: ");

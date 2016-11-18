@@ -1,45 +1,6 @@
 package org.ggp.base.player.gamer.statemachine.MCTS.propnet.ravegrave;
 
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Random;
-
-import org.ggp.base.player.gamer.statemachine.MCS.manager.MoveStats;
-import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.HybridMCTSManager;
-import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.strategies.aftermove.MASTAfterMove;
-import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.strategies.aftersimulation.GRAVEAfterSimulation;
-import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.strategies.backpropagation.MASTGRAVEBackpropagation;
-import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.strategies.expansion.NoExpansion;
-import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.strategies.movechoice.MaximumScoreChoice;
-import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.strategies.playout.MASTPlayout;
-import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.strategies.playout.jointmoveselector.EpsilonMASTJointMoveSelector;
-import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.strategies.selection.GRAVESelection;
-import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.strategies.selection.evaluators.grave.BetaComputer;
-import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.strategies.selection.evaluators.grave.CADIABetaComputer;
-import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.strategies.selection.evaluators.grave.GRAVEBetaComputer;
-import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.strategies.selection.evaluators.grave.GRAVEEvaluator;
-import org.ggp.base.player.gamer.statemachine.MCTS.manager.propnet.InternalPropnetMCTSManager;
-import org.ggp.base.player.gamer.statemachine.MCTS.manager.propnet.strategies.aftermove.PnMASTAfterMove;
-import org.ggp.base.player.gamer.statemachine.MCTS.manager.propnet.strategies.aftersimulation.PnGRAVEAfterSimulation;
-import org.ggp.base.player.gamer.statemachine.MCTS.manager.propnet.strategies.backpropagation.PnMASTGRAVEBackpropagation;
-import org.ggp.base.player.gamer.statemachine.MCTS.manager.propnet.strategies.expansion.PnNoExpansion;
-import org.ggp.base.player.gamer.statemachine.MCTS.manager.propnet.strategies.movechoice.PnMaximumScoreChoice;
-import org.ggp.base.player.gamer.statemachine.MCTS.manager.propnet.strategies.playout.PnMASTPlayout;
-import org.ggp.base.player.gamer.statemachine.MCTS.manager.propnet.strategies.selection.PnGRAVESelection;
-import org.ggp.base.player.gamer.statemachine.MCTS.manager.propnet.strategies.selection.evaluators.GRAVE.PnGRAVEEvaluator;
-import org.ggp.base.player.gamer.statemachine.MCTS.manager.propnet.strategies.selection.evaluators.GRAVE.PnProverBetaComputer;
-import org.ggp.base.player.gamer.statemachine.MCTS.manager.propnet.strategies.selection.evaluators.GRAVE.PnProverCADIABetaComputer;
-import org.ggp.base.player.gamer.statemachine.MCTS.manager.propnet.strategies.selection.evaluators.GRAVE.PnProverGRAVEBetaComputer;
-import org.ggp.base.player.gamer.statemachine.MCTS.manager.prover.ProverMCTSManager;
-import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.hybrid.amafdecoupled.AMAFDecoupledTreeNodeFactory;
-import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.propnet.amafdecoupled.PnAMAFDecoupledTreeNodeFactory;
 import org.ggp.base.player.gamer.statemachine.MCTS.propnet.MastDuctMctsGamer;
-import org.ggp.base.util.statemachine.abstractsm.AbstractStateMachine;
-import org.ggp.base.util.statemachine.abstractsm.CompactStateMachine;
-import org.ggp.base.util.statemachine.abstractsm.ExplicitStateMachine;
-import org.ggp.base.util.statemachine.structure.Move;
-import org.ggp.base.util.statemachine.structure.compact.CompactMove;
-import org.ggp.base.util.statemachine.structure.compact.CompactRole;
 
 public abstract class GRMastDuctMctsGamer extends MastDuctMctsGamer {
 
@@ -69,7 +30,7 @@ public abstract class GRMastDuctMctsGamer extends MastDuctMctsGamer {
 		this.c = 0.2;
 		this.unexploredMoveDefaultSelectionValue = 1.0;
 
-		this.logTranspositionTable = true;
+		//this.logTranspositionTable = true;
 
 		this.minAMAFVisits = 0;
 
@@ -78,7 +39,7 @@ public abstract class GRMastDuctMctsGamer extends MastDuctMctsGamer {
 
 		this.defaultExploration = 1.0;
 	}
-
+/*
 	@Override
 	public InternalPropnetMCTSManager createPropnetMCTSManager() {
 
@@ -101,7 +62,7 @@ public abstract class GRMastDuctMctsGamer extends MastDuctMctsGamer {
 
 		// Note that the after simulation strategy GRAVEAfterSimulation already performs all the after simulation
 		// actions needed by the MAST strategy, so we don't need to change it when we use GRAVE and MAST together.
-		return new InternalPropnetMCTSManager(graveSelection, new PnNoExpansion() /*new RandomExpansion(numRoles, myRole, r)*/,
+		return new InternalPropnetMCTSManager(graveSelection, new PnNoExpansion() new RandomExpansion(numRoles, myRole, r),
 				new PnMASTPlayout(this.thePropnetMachine, r, mastStatistics, this.epsilon), new PnMASTGRAVEBackpropagation(numRoles, myRole, mastStatistics),
 				new PnMaximumScoreChoice(myRole, r), null, new PnGRAVEAfterSimulation(graveSelection),
 				new PnMASTAfterMove(mastStatistics, this.decayFactor), new PnAMAFDecoupledTreeNodeFactory(this.thePropnetMachine),
@@ -153,7 +114,7 @@ public abstract class GRMastDuctMctsGamer extends MastDuctMctsGamer {
 
 		// Note that the after simulation strategy GRAVEAfterSimulation already performs all the after simulation
 		// actions needed by the MAST strategy, so we don't need to change it when we use GRAVE and MAST together.
-		return new HybridMCTSManager(graveSelection, new NoExpansion() /*new RandomExpansion(numRoles, myRole, r)*/,
+		return new HybridMCTSManager(graveSelection, new NoExpansion() new RandomExpansion(numRoles, myRole, r),
 				new MASTPlayout(theMachine, new EpsilonMASTJointMoveSelector(theMachine, r, mastStatistics, this.epsilon, numRoles, myRoleIndex)),
 				new MASTGRAVEBackpropagation(numRoles, myRoleIndex, mastStatistics),
 				new MaximumScoreChoice(myRoleIndex, r), null,
@@ -162,5 +123,6 @@ public abstract class GRMastDuctMctsGamer extends MastDuctMctsGamer {
 				new AMAFDecoupledTreeNodeFactory(theMachine),
 				theMachine,	this.gameStepOffset, this.maxSearchDepth, this.logTranspositionTable);
 	}
+	*/
 
 }
