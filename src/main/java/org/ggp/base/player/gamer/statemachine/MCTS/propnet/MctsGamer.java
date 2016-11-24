@@ -8,6 +8,7 @@ import org.ggp.base.player.gamer.statemachine.MCTS.manager.exceptions.MCTSExcept
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.HybridMctsManager;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.MctsNode;
 import org.ggp.base.player.gamer.statemachine.propnet.InternalPropnetGamer;
+import org.ggp.base.util.configuration.GamerConfiguration;
 import org.ggp.base.util.logging.GamerLogger;
 import org.ggp.base.util.statemachine.abstractsm.AbstractStateMachine;
 import org.ggp.base.util.statemachine.abstractsm.CompactStateMachine;
@@ -22,7 +23,7 @@ import org.ggp.base.util.statemachine.structure.compact.CompactMove;
 import org.ggp.base.util.statemachine.structure.explicit.ExplicitMachineState;
 import org.ggp.base.util.statemachine.structure.explicit.ExplicitMove;
 
-public abstract class MctsGamer extends InternalPropnetGamer {
+public class MctsGamer extends InternalPropnetGamer {
 
 	/**
 	 * Game step. Keeps track of the current game step.
@@ -52,7 +53,7 @@ public abstract class MctsGamer extends InternalPropnetGamer {
 
 	public MctsGamer() {
 
-		this(defaultSettingsFilePath);
+		this(GamerConfiguration.gamersSettingsFolderPath + "/" + defaultSettingsFileName);
 
 		/*
 		this.gameStep = 0;

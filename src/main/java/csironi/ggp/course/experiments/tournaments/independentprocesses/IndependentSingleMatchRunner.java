@@ -13,6 +13,7 @@ import org.ggp.base.player.gamer.statemachine.StateMachineGamer;
 import org.ggp.base.player.gamer.statemachine.propnet.InternalPropnetGamer;
 import org.ggp.base.server.GameServer;
 import org.ggp.base.server.exception.GameServerException;
+import org.ggp.base.util.configuration.GamerConfiguration;
 import org.ggp.base.util.game.Game;
 import org.ggp.base.util.game.GameRepository;
 import org.ggp.base.util.game.ManualUpdateLocalGameRepository;
@@ -33,6 +34,21 @@ public class IndependentSingleMatchRunner {
 		System.setProperty("isThreadContextMapInheritable", "true");
 	}
 
+	/**
+	 * @param args this method expects the following parameters:
+	 * [logFolder] = the folder of the combination being currently tested, in which this match should create its own log folder
+	 * [ID] = an integer ID of the match (normally goes from 0 to n for each combination of players in a tourney where we want n matches
+	 * for each combination)
+	 * [gameKey] = the game key
+	 * [startClock(sec)] = start clock of the match (in seconds)
+	 * [playClock(sec)] = play clock of the match (in seconds)
+	 * [pnCreationTime(ms)] = available time to create the propnet (in milliseconds)
+	 * [theGamerTypes (one or more)] = list of gamer types that we want to include in the experiment. Each gamer must be specified with
+	 * the exact name of the class that implements such gamer. If the gamer is a subclass of the ConfigurableStateMachineGamer it must
+	 * be specified with the exact name of the class that implements it AND the path of the file in which its settings are specified,
+	 * separated by "-" (e.g. MctsGamer-C:\Users\c.sironi\BITBUCKET REPOS\GGP-Base\GamersSettings\DuctMctsGamer.properties,
+	 * MctsGamer-Duct.properties)
+	 */
 	public static void main(String[] args) {
 
 		/** 1. Check the correctness of the inputs **/
@@ -50,6 +66,7 @@ public class IndependentSingleMatchRunner {
 		int playClock;
 		long pnCreationTime;
 		List<Class<?>> theGamersClasses = new ArrayList<Class<?>>();
+		List<String> theGamersSettingsFilePaths = new ArrayList<String>();
 
 		logFolder = args[0];
 
@@ -65,7 +82,9 @@ public class IndependentSingleMatchRunner {
 		//GameRepository gameRepo = GameRepository.getDefaultRepository();
 
 		// LINUX
-    	GameRepository gameRepo = new ManualUpdateLocalGameRepository("/home/csironi/GAMEREPOS/GGPBase-GameRepo-03022016");
+    	//GameRepository gameRepo = new ManualUpdateLocalGameRepository("/home/csironi/GAMEREPOS/GGPBase-GameRepo-03022016");
+
+    	GameRepository gameRepo = new ManualUpdateLocalGameRepository(GamerConfiguration.defaultLocalGameRepositoryFolderPath);
 
     	Game game = gameRepo.getGame(gameKey);
 
@@ -103,6 +122,7 @@ public class IndependentSingleMatchRunner {
     		for (Class<?> gamerClass : ProjectSearcher.INTERNAL_PROPNET_GAMERS.getConcreteClasses()) {
         		if(gamerClass.getSimpleName().equals(gamerType)){
         			theCorrespondingClass = gamerClass;
+        			//!!!!!!! if(MctsGamer.class.isAssignableFrom(theCorrespondingClass){the cass is subclass of MctsGamer}
         			buildPropnet = true;
         		}
         	}

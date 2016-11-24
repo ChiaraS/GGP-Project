@@ -257,19 +257,16 @@ public class HybridMctsManager {
 			}
 		}
 
-		if(gamerSettings.specifiesProperty("SearchManager.treeNodeFactoryType")){
-
-			propertyValue = gamerSettings.getPropertyValue("SearchManager.treeNodeFactoryType");
-			try {
-				this.treeNodeFactory = (TreeNodeFactory) SearchManagerComponent.getConstructorForSearchManagerComponent(ProjectSearcher.TREE_NODE_FACTORIES.getConcreteClasses(),
-						propertyValue).newInstance(gameDependentParameters, random, gamerSettings, sharedReferencesCollector);
-			} catch (InstantiationException | IllegalAccessException
-					| IllegalArgumentException | InvocationTargetException e) {
-				// TODO: fix this!
-				GamerLogger.logError("SearchManagerCreation", "Error when instantiating TreeNodeFactory " + propertyValue + ".");
-				GamerLogger.logStackTrace("SearchManagerCreation", e);
-				throw new RuntimeException(e);
-			}
+		propertyValue = gamerSettings.getPropertyValue("SearchManager.treeNodeFactoryType");
+		try {
+			this.treeNodeFactory = (TreeNodeFactory) SearchManagerComponent.getConstructorForSearchManagerComponent(ProjectSearcher.TREE_NODE_FACTORIES.getConcreteClasses(),
+					propertyValue).newInstance(gameDependentParameters, random, gamerSettings, sharedReferencesCollector);
+		} catch (InstantiationException | IllegalAccessException
+				| IllegalArgumentException | InvocationTargetException e) {
+			// TODO: fix this!
+			GamerLogger.logError("SearchManagerCreation", "Error when instantiating TreeNodeFactory " + propertyValue + ".");
+			GamerLogger.logStackTrace("SearchManagerCreation", e);
+			throw new RuntimeException(e);
 		}
 
 		boolean logTranspositionTable = Boolean.parseBoolean(gamerSettings.getPropertyValue("SearchManager.logTranspositionTable"));
@@ -451,7 +448,7 @@ public class HybridMctsManager {
 		// Note that the node being terminal might mean that the state is not terminal but legal moves
 		// couldn't be correctly computed for all roles.
 		if(initialNode.isTerminal()){
-			throw new MCTSException("Impossible to perform search using the given state as root.");
+			throw new MCTSException("Impossible to perform search using the given state as root, state is terminal.");
 		}
 
 		this.performSearch(initialState, initialNode, timeout);

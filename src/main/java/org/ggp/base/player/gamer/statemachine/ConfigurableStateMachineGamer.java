@@ -6,17 +6,19 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.util.Properties;
 
+import org.ggp.base.util.configuration.GamerConfiguration;
 import org.ggp.base.util.logging.GamerLogger;
 
 public abstract class ConfigurableStateMachineGamer extends StateMachineGamer {
 
-	protected static final String defaultSettingsFilePath = "/home/csironi/GamersSettings/DuctMctsGamer.properties";
-
+	protected static final String defaultSettingsFileName = "Duct.properties";
 
 	protected GamerSettings gamerSettings;
 
+	private String gamerType;
+
 	public ConfigurableStateMachineGamer() {
-		this(defaultSettingsFilePath);
+		this(GamerConfiguration.gamersSettingsFolderPath + "/" + defaultSettingsFileName);
 	}
 
 	public ConfigurableStateMachineGamer(String settingsFilePath) {
@@ -26,6 +28,8 @@ public abstract class ConfigurableStateMachineGamer extends StateMachineGamer {
 			GamerLogger.logError("Gamer", "Impossible to create gamer, cannot find the .properties file with the settings.");
 			throw new RuntimeException("Impossible to create gamer, cannot find the .properties file with the settings.");
 		}
+
+		this.gamerType = settingsFile.getName().split("\\.")[0];
 
 		try {
 			FileReader reader = new FileReader(settingsFile);
@@ -47,6 +51,22 @@ public abstract class ConfigurableStateMachineGamer extends StateMachineGamer {
 			GamerLogger.logError("Gamer", "Impossible to create gamer, exception when reading the .properties file with the settings.");
 			throw new RuntimeException("Impossible to create gamer, exception when reading the .properties file with the settings.");
 		}
+	}
+
+	/* (non-Javadoc)
+	 * @see org.ggp.base.player.gamer.Gamer#getName()
+	 */
+	@Override
+	public String getName() {
+		/*String type = "";
+		if(this.singleGame){
+			type = "SingleGame";
+		}else{
+			type = "Starndard";
+		}
+		return getClass().getSimpleName() + "-" + type;*/
+
+		return this.gamerType + getClass().getSimpleName();
 	}
 
 }

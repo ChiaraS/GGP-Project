@@ -38,6 +38,8 @@ public class GraveBetaComputer extends BetaComputer {
 				this.valuesForBias[i] = Double.parseDouble(values[i]);
 			}
 			sharedReferencesCollector.setTheComponentToTune(this);
+		}else{
+			this.valuesForBias = null;
 		}
 
 	}
@@ -80,17 +82,23 @@ public class GraveBetaComputer extends BetaComputer {
 	@Override
 	public String getComponentParameters() {
 
-		String roleParams = "[ ";
+		String params = "INITIAL_BIAS = " + this.initialBias;
 
-		for(int i = 0; i <this.bias.length; i++){
+		if(this.valuesForBias != null){
+			String valuesForBiasString = "[ ";
 
-			roleParams += this.bias[i] + " ";
+			for(int i = 0; i < this.valuesForBias.length; i++){
 
+				valuesForBiasString += this.valuesForBias[i] + " ";
+
+			}
+
+			valuesForBiasString += "]";
+
+			params += ", VALUES_FOR_TUNING_BIAS = " + valuesForBiasString;
 		}
 
-		roleParams += "]";
-
-		return "BIASES = " + roleParams;
+		return params;
 
 	}
 

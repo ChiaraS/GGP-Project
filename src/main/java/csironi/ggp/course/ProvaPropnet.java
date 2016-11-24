@@ -15,6 +15,7 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 
 import org.apache.lucene.util.OpenBitSet;
+import org.ggp.base.player.gamer.statemachine.MCTS.propnet.MctsGamer;
 import org.ggp.base.util.game.Game;
 import org.ggp.base.util.game.GameRepository;
 import org.ggp.base.util.gdl.grammar.Gdl;
@@ -66,7 +67,9 @@ public class ProvaPropnet {
 
 	public static void main(String []args) throws MoveDefinitionException, TransitionDefinitionException, GoalDefinitionException, StateMachineInitializationException{
 
-		printOptPropnetFromDescription("( ( role player ) ( light p ) ( light q ) ( <= ( legal player ( turnOn ?x ) ) ( not ( true ( on ?x ) ) ) ( light ?x ) ) ( <= ( next ( on ?x ) ) ( does player ( turnOn ?x ) ) ) ( <= ( next ( on ?x ) ) ( true ( on ?x ) ) ) ( <= terminal ( true ( on p ) ) ( true ( on q ) ) ) ( <= ( goal player 100 ) ( true ( on p ) ) ( true ( on q) ) ) ) ", "none", 10000L);
+		createDuct();
+
+		//printOptPropnetFromDescription("( ( role player ) ( light p ) ( light q ) ( <= ( legal player ( turnOn ?x ) ) ( not ( true ( on ?x ) ) ) ( light ?x ) ) ( <= ( next ( on ?x ) ) ( does player ( turnOn ?x ) ) ) ( <= ( next ( on ?x ) ) ( true ( on ?x ) ) ) ( <= terminal ( true ( on p ) ) ( true ( on q ) ) ) ( <= ( goal player 100 ) ( true ( on p ) ) ( true ( on q) ) ) ) ", "none", 10000L);
 
 		//printOptPropnetFromGameCache("ticTacToe", "none", 10000L);
 
@@ -124,6 +127,15 @@ public class ProvaPropnet {
 		//provaGameExtendedPropnet("coins_atomic");
 
 		//printPropnetImprovements("gt_two_thirds_2p");
+
+	}
+
+	public static void createDuct(){
+
+		MctsGamer g = new MctsGamer();
+
+		System.out.println(g.getName());
+
 
 	}
 

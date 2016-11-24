@@ -53,6 +53,8 @@ public class EpsilonMastJointMoveSelector extends JointMoveSelector implements O
 				this.valuesForEpsilon[i] = Double.parseDouble(values[i]);
 			}
 			sharedReferencesCollector.setTheComponentToTune(this);
+		}else{
+			this.valuesForEpsilon = null;
 		}
 
 	}
@@ -111,17 +113,24 @@ public class EpsilonMastJointMoveSelector extends JointMoveSelector implements O
 	@Override
 	public String getComponentParameters() {
 
-		String roleParams = "[ ";
+		String params = "SUB_SELECTOR1 = " + this.mastSelector.printComponent() + ", SUB_SELECTOR2 = " + this.randomSelector.printComponent() + ", INITIAL_EPSILON = " + this.initialEpsilon;
 
-		for(int i = 0; i <this.epsilon.length; i++){
+		if(this.valuesForEpsilon != null){
+			String valuesForEpsilonString = "[ ";
 
-			roleParams += this.epsilon[i] + " ";
+			for(int i = 0; i < this.valuesForEpsilon.length; i++){
 
+				valuesForEpsilonString += this.valuesForEpsilon[i] + " ";
+
+			}
+
+			valuesForEpsilonString += "]";
+
+			params += ", VALUES_FOR_TUNING_EPSILON = " + valuesForEpsilonString;
 		}
 
-		roleParams += "]";
+		return params;
 
-		return "SUB_SELECTOR1 = " + this.mastSelector.printComponent() + ", SUB_SELECTOR2 = " + this.randomSelector.printComponent() + ", EPSILON = " + roleParams;
 	}
 
 	@Override

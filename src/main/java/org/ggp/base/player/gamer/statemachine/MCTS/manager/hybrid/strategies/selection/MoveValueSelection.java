@@ -21,7 +21,7 @@ import org.ggp.base.util.logging.GamerLogger;
 import org.ggp.base.util.reflection.ProjectSearcher;
 import org.ggp.base.util.statemachine.structure.Move;
 
-public abstract class MoveValueSelection extends SelectionStrategy {
+public class MoveValueSelection extends SelectionStrategy {
 
 	private double valueOffset;
 

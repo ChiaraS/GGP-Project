@@ -33,7 +33,8 @@ public class GraveSelection extends MoveValueSelection implements OnlineTunableC
 
 		// If this component must be tuned online, then we should add its reference to the sharedReferencesCollector
 		String toTuneString = gamerSettings.getPropertyValue("SelectionStrategy.tune");
-		if(Boolean.parseBoolean(toTuneString)){
+		boolean toTune = Boolean.parseBoolean(toTuneString);
+		if(toTune){
 			// If we have to tune the component then we look in the setting for all the values that we must use
 			// Note: the format for these values in the file must be the following:
 			// BetaComputer.valuesForK=v1;v2;...;vn
@@ -44,6 +45,8 @@ public class GraveSelection extends MoveValueSelection implements OnlineTunableC
 				this.valuesForMinAmafVisits[i] = Integer.parseInt(values[i]);
 			}
 			sharedReferencesCollector.setTheComponentToTune(this);
+		}else{
+			this.valuesForMinAmafVisits = null;
 		}
 
 		sharedReferencesCollector.setGraveSelection(this);
@@ -118,22 +121,30 @@ public class GraveSelection extends MoveValueSelection implements OnlineTunableC
 
 	@Override
 	public String getComponentParameters(){
-		String params = super.getComponentParameters();
 
-		String roleParams = "[ ";
+		String params = "INITIAL_MIN_AMAF_VSITS = " + this.initialMinAmafVisits;
 
-		for(int i = 0; i <this.minAmafVisits.length; i++){
+		if(this.valuesForMinAmafVisits != null){
 
-			roleParams += this.minAmafVisits[i] + " ";
+			String valuesForMinAmafVisitsString = "[ ";
 
+			for(int i = 0; i < this.valuesForMinAmafVisits.length; i++){
+
+				valuesForMinAmafVisitsString += this.valuesForMinAmafVisits[i] + " ";
+
+			}
+
+			valuesForMinAmafVisitsString += "]";
+
+			params += ", VALUES_FOR_TUNING_MIN_AMAF_VISITS = " + valuesForMinAmafVisitsString;
 		}
 
-		roleParams += "]";
+		String superParams = super.getComponentParameters();
 
-		if(params == null){
-			return "MIN_AMAF_VISITS = " + roleParams;
+		if(superParams == null){
+			return params;
 		}else{
-			return params + ", MIN_AMAF_VISITS = " + roleParams;
+			return superParams + ", " + params;
 		}
 	}
 

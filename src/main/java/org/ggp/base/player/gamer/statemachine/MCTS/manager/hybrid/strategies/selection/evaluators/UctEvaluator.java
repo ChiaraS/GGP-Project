@@ -51,6 +51,8 @@ public class UctEvaluator extends MoveEvaluator implements OnlineTunableComponen
 				this.valuesForC[i] = Integer.parseInt(values[i]);
 			}
 			sharedReferencesCollector.setTheComponentToTune(this);
+		}else{
+			this.valuesForC = null;
 		}
 
 	}
@@ -118,17 +120,24 @@ public class UctEvaluator extends MoveEvaluator implements OnlineTunableComponen
 	@Override
 	public String getComponentParameters() {
 
-		String roleParams = "[ ";
+		String params = "INITIAL_C_CONSTANT = " + this.initialC + ", UNEXPLORED_MOVE_DEFAULT_VALUE = " + this.unexploredMoveDefaultValue;
 
-		for(int i = 0; i <this.c.length; i++){
+		if(this.valuesForC != null){
 
-			roleParams += this.c[i] + " ";
+			String valuesForCString = "[ ";
 
+			for(int i = 0; i < this.valuesForC.length; i++){
+
+				valuesForCString += this.valuesForC[i] + " ";
+
+			}
+
+			valuesForCString += "]";
+
+			params += ", VALUES_FOR_TUNING_C = " + valuesForCString;
 		}
 
-		roleParams += "]";
-
-		return "C_CONSTANTS = " + roleParams + ", UNEXPLORED_MOVE_DEFAULT_VALUE = " + this.unexploredMoveDefaultValue;
+		return params;
 	}
 
 	@Override

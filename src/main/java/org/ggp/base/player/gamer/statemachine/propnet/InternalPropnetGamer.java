@@ -9,6 +9,7 @@ import java.util.concurrent.TimeUnit;
 
 import org.ggp.base.player.gamer.exception.GamePreviewException;
 import org.ggp.base.player.gamer.statemachine.ConfigurableStateMachineGamer;
+import org.ggp.base.util.configuration.GamerConfiguration;
 import org.ggp.base.util.game.Game;
 import org.ggp.base.util.gdl.grammar.GdlPool;
 import org.ggp.base.util.logging.GamerLogger;
@@ -127,7 +128,7 @@ public abstract class InternalPropnetGamer extends ConfigurableStateMachineGamer
 	 */
 	public InternalPropnetGamer() {
 
-		this(defaultSettingsFilePath);
+		this(GamerConfiguration.gamersSettingsFolderPath + "/" + defaultSettingsFileName);
 		/*
 		this.thePropnetMachine = null;
 		this.useProver = false;
@@ -410,18 +411,4 @@ public abstract class InternalPropnetGamer extends ConfigurableStateMachineGamer
 
 	}
 
-	/* (non-Javadoc)
-	 * @see org.ggp.base.player.gamer.Gamer#getName()
-	 */
-	@Override
-	public String getName() {
-		/*String type = "";
-		if(this.singleGame){
-			type = "SingleGame";
-		}else{
-			type = "Starndard";
-		}
-		return getClass().getSimpleName() + "-" + type;*/
-		return getClass().getSimpleName();
-	}
 }

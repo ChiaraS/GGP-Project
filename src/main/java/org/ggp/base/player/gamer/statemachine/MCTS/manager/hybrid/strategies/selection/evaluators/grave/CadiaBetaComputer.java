@@ -46,6 +46,8 @@ public class CadiaBetaComputer extends BetaComputer{
 				this.valuesForK[i] = Integer.parseInt(values[i]);
 			}
 			sharedReferencesCollector.setTheComponentToTune(this);
+		}else{
+			this.valuesForK = null;
 		}
 
 	}
@@ -81,17 +83,23 @@ public class CadiaBetaComputer extends BetaComputer{
 	@Override
 	public String getComponentParameters() {
 
-		String roleParams = "[ ";
+		String params = "INITIAL_K = " + this.initialK;
 
-		for(int i = 0; i <this.k.length; i++){
+		if(this.valuesForK != null){
+			String valuesForKString = "[ ";
 
-			roleParams += this.k[i] + " ";
+			for(int i = 0; i < this.valuesForK.length; i++){
 
+				valuesForKString += this.valuesForK[i] + " ";
+
+			}
+
+			valuesForKString += "]";
+
+			params += ", VALUES_FOR_TUNING_K = " + valuesForKString;
 		}
 
-		roleParams += "]";
-
-		return "EQUIVALENCE_PARAMETERS = " + roleParams;
+		return params;
 
 	}
 
