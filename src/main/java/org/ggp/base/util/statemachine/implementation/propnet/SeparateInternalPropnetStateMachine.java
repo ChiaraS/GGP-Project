@@ -678,4 +678,8 @@ public class SeparateInternalPropnetStateMachine extends InternalPropnetStateMac
 		// No need to do anything
 	}
 
+	public void resetPropNetState(ImmutableSeparatePropnetState propnetState){
+		this.propnetState = propnetState;
+	}
+
 }

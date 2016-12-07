@@ -1752,7 +1752,7 @@ public class DynamicPropNetFactory {
     		}
     		reachability.put(curComp, typeToAdd.with(oldType));
     		typeToAdd = typeToAdd.minus(oldType);
-    		if (typeToAdd == Type.NEITHER) {
+    		if (typeToAdd == Type.NEITHER) { // p :- p will trigger this exception!
     			throw new RuntimeException("Something's messed up here");
     		}
 

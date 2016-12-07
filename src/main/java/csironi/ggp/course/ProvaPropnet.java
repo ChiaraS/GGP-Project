@@ -157,6 +157,7 @@ public class ProvaPropnet {
 	}
 
 	public static void ennesimaProva(){
+
 		int a = 59078294;
 
 		System.out.println(a);

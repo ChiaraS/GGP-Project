@@ -1,10 +1,10 @@
 package org.ggp.base.util.game;
 
-import java.io.BufferedReader;
 import java.io.File;
-import java.io.FileReader;
 import java.util.HashSet;
 import java.util.Set;
+
+import org.ggp.base.util.files.FileUtils;
 
 public class LocalFolderGameRepository extends GameRepository {
 
@@ -57,6 +57,7 @@ public class LocalFolderGameRepository extends GameRepository {
 	}
 
     private synchronized Game loadGameFromCache(String theKey) {
+    	/*
         File theGameFile = new File(this.theLocalFolder, theKey + ".txt");
         String theLine = null;
         String gameDescription = "";
@@ -88,8 +89,9 @@ public class LocalFolderGameRepository extends GameRepository {
         System.out.println();
         System.out.println();
         System.out.println();
+        */
 
-        return Game.createEphemeralGame("(" + gameDescription + ")");
+        return Game.createEphemeralGame(Game.preprocessRulesheet(FileUtils.readFileAsString(new File(this.theLocalFolder, theKey + ".txt"))));
     }
 
 }

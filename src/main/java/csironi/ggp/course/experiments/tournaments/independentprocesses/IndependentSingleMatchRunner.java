@@ -46,7 +46,7 @@ public class IndependentSingleMatchRunner {
 	 * [theGamerTypes (one or more)] = list of gamer types that we want to include in the experiment. Each gamer must be specified with
 	 * the exact name of the class that implements such gamer. If the gamer is a subclass of the ConfigurableStateMachineGamer it must
 	 * be specified with the exact name of the class that implements it AND the path of the file in which its settings are specified,
-	 * separated by "-" (e.g. MctsGamer-C:\Users\c.sironi\BITBUCKET REPOS\GGP-Base\GamersSettings\DuctMctsGamer.properties,
+	 * separated by "-" (e.g. MctsGamer-C:\Users\c.sironi\BITBUCKET REPOS\GGP-Base\GamersSettings\DuctMctsGamer.properties, or
 	 * MctsGamer-Duct.properties)
 	 */
 	public static void main(String[] args) {

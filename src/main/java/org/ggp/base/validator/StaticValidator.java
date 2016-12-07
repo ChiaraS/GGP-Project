@@ -672,6 +672,9 @@ public class StaticValidator implements GameValidator {
 					"test_case_3f",
 					"test_invalid_function_arities_differ",
 					"test_invalid_sentence_arities_differ",
+					"test_case_5d",
+					"test_case_1a",
+					"test_case_3a",
 					"test_clean_not_distinct");
 	/**
 	 * Tries to test most of the rulesheets in the games directory. This should

@@ -34,20 +34,6 @@ public class GamerConfiguration {
 	public static final String defaultLocalGameRepositoryFolderPath;
 	public static final String gamersSettingsFolderPath;
 
-	static{
-		if(runningOnWindows()){
-			defaultLocalGameRepositoryFolderPath = "C:/Users/c.sironi/BITBUCKET REPOS/GGP-Base/GGPBase-GameRepo-03022016";
-			gamersSettingsFolderPath = "C:/Users/c.sironi/BITBUCKET REPOS/GGP-Base/GamersSettings";
-		}else if(runningOnLinux()){
-			defaultLocalGameRepositoryFolderPath = "/home/csironi/GAMEREPOS/GGPBase-GameRepo-03022016";
-			gamersSettingsFolderPath = "/home/csironi/GamersSettings";
-		}else{
-			defaultLocalGameRepositoryFolderPath = null;
-			gamersSettingsFolderPath = null;
-		}
-	}
-
-
     private static String strSystemOS;
     private static String strProfileName;
     private static int nMemoryForGamer;     // in MB
@@ -118,6 +104,17 @@ public class GamerConfiguration {
         } else {
             ;
         }
+
+        if(runningOnWindows()){
+			defaultLocalGameRepositoryFolderPath = "C:/Users/c.sironi/BITBUCKET REPOS/GGP-Base/GGPBase-GameRepo-03022016";
+			gamersSettingsFolderPath = "C:/Users/c.sironi/BITBUCKET REPOS/GGP-Base/GamersSettings";
+		}else if(runningOnLinux()){
+			defaultLocalGameRepositoryFolderPath = "/home/csironi/GAMEREPOS/GGPBase-GameRepo-03022016";
+			gamersSettingsFolderPath = "/home/csironi/GamersSettings";
+		}else{
+			defaultLocalGameRepositoryFolderPath = null;
+			gamersSettingsFolderPath = null;
+		}
     }
 
     // OS-neutral accessors
