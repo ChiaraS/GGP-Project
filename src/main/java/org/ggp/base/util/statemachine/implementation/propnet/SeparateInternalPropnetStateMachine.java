@@ -682,4 +682,8 @@ public class SeparateInternalPropnetStateMachine extends InternalPropnetStateMac
 		this.propnetState = propnetState;
 	}
 
+	public ImmutableSeparatePropnetState getPropNetState(){
+		return this.propnetState;
+	}
+
 }

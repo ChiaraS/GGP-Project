@@ -14,6 +14,7 @@ import org.ggp.base.util.gdl.grammar.Gdl;
 import org.ggp.base.util.match.Match;
 import org.ggp.base.util.propnet.creationManager.PropNetManagerRunner;
 import org.ggp.base.util.propnet.creationManager.SeparateInternalPropnetManager;
+import org.ggp.base.util.propnet.state.ImmutableSeparatePropnetState;
 import org.ggp.base.util.statemachine.exceptions.MoveDefinitionException;
 import org.ggp.base.util.statemachine.exceptions.StateMachineException;
 import org.ggp.base.util.statemachine.exceptions.StateMachineInitializationException;
@@ -111,6 +112,15 @@ public class TrickyGDLTester {
 				throw new RuntimeException("Terminal non-terminal state!");
 			}
 
+			/**
+			 * To avoid the problem with cycles, copy the whole propnet state when the propnet is in
+			 * the previous to last state of the game and each time, before simulating any move in the
+			 * previous to last game state, reset the whole propnet state to this copied version.
+			 * NOTE: this is just a trick used here for testing. Add to the propnet an internal way to
+			 * deal with incorrect propagation in cycles!!!!!!
+			 */
+			ImmutableSeparatePropnetState propnetState = theMachine.getPropNetState().clone();
+
 			// Compute next state according to last move in trace
 			List<ExplicitMove> lastMove = t.get(t.size()-1);
 			ExplicitMachineState nextState = theMachine.getExplicitNextState(state, lastMove);
@@ -119,6 +129,11 @@ public class TrickyGDLTester {
 				System.out.println("TERMINAL STATE DETECTED AS NON-TERMINAL!");
 				throw new RuntimeException("Non-terminal terminal state!");
 			}
+
+			/**
+			 * Reset the propnet state to the correct version before computing legal moves
+			 */
+			theMachine.resetPropNetState(propnetState.clone());
 
 			// Compute all possible next states and count how many are terminal
 			// (note: use a trace that leads to a state that only has 1 terminal successor state,
@@ -135,6 +150,11 @@ public class TrickyGDLTester {
 			int count = 0;
 			for(List<ExplicitMove> jm : allJointMoves){
 				if(!jm.equals(lastMove)){
+					/**
+					 * Reset the propnet state to the correct version before computing next state
+					 */
+					theMachine.resetPropNetState(propnetState.clone());
+
 					nextState = theMachine.getExplicitNextState(state, jm);
 					if(theMachine.isTerminal(state)){
 						count++;
@@ -180,7 +200,7 @@ public class TrickyGDLTester {
 
 			for(ExplicitRole r : roles){
 				try {
-					System.out.println("     " + r + " = [ " + theMachine.getExplicitLegalMoves(state, r) + " ]");
+					System.out.println("     " + r + " = " + theMachine.getExplicitLegalMoves(state, r));
 				} catch (MoveDefinitionException e) {
 					System.out.println("ERROR WHEN COMPUTING LEGAL MOVES!");
 					throw new RuntimeException("Error when computing legal moves!");
@@ -188,7 +208,7 @@ public class TrickyGDLTester {
 			}
 
 			System.out.println(" ]");
-			System.out.println("PEWRFORMING_MOVE[ " + theTrace.get(i) + " ]");
+			System.out.println("PEWRFORMING_MOVE = " + theTrace.get(i));
 
 			// Compute next state
 			state = theMachine.getExplicitNextState(state, theTrace.get(i));
