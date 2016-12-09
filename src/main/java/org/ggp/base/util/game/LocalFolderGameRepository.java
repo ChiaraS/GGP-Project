@@ -51,14 +51,14 @@ public class LocalFolderGameRepository extends GameRepository {
 	protected Set<String> getUncachedGameKeys() {
         Set<String> theKeys = new HashSet<String>();
         for(File game : this.theLocalFolder.listFiles()) {
-            theKeys.add(game.getName().replace(".txt", ""));
+            theKeys.add(game.getName().replace(".kif", ""));
         }
         return theKeys;
 	}
 
     private synchronized Game loadGameFromCache(String theKey) {
     	/*
-        File theGameFile = new File(this.theLocalFolder, theKey + ".txt");
+        File theGameFile = new File(this.theLocalFolder, theKey + ".kif");
         String theLine = null;
         String gameDescription = "";
         try {
@@ -91,7 +91,7 @@ public class LocalFolderGameRepository extends GameRepository {
         System.out.println();
         */
 
-        return Game.createEphemeralGame(Game.preprocessRulesheet(FileUtils.readFileAsString(new File(this.theLocalFolder, theKey + ".txt"))));
+        return Game.createEphemeralGame(Game.preprocessRulesheet(FileUtils.readFileAsString(new File(this.theLocalFolder, theKey + ".kif"))));
     }
 
 }

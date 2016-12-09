@@ -18,6 +18,7 @@ import org.apache.lucene.util.OpenBitSet;
 import org.ggp.base.player.gamer.statemachine.MCTS.propnet.MctsGamer;
 import org.ggp.base.util.game.Game;
 import org.ggp.base.util.game.GameRepository;
+import org.ggp.base.util.game.LocalFolderGameRepository;
 import org.ggp.base.util.gdl.grammar.Gdl;
 import org.ggp.base.util.logging.GamerLogger;
 import org.ggp.base.util.match.Match;
@@ -67,7 +68,7 @@ public class ProvaPropnet {
 
 	public static void main(String []args) throws MoveDefinitionException, TransitionDefinitionException, GoalDefinitionException, StateMachineInitializationException{
 
-		createDuct();
+		//createDuct();
 
 		//printOptPropnetFromDescription("( ( role player ) ( light p ) ( light q ) ( <= ( legal player ( turnOn ?x ) ) ( not ( true ( on ?x ) ) ) ( light ?x ) ) ( <= ( next ( on ?x ) ) ( does player ( turnOn ?x ) ) ) ( <= ( next ( on ?x ) ) ( true ( on ?x ) ) ) ( <= terminal ( true ( on p ) ) ( true ( on q ) ) ) ( <= ( goal player 100 ) ( true ( on p ) ) ( true ( on q) ) ) ) ", "none", 10000L);
 
@@ -106,7 +107,7 @@ public class ProvaPropnet {
             printPropnetImprovements(gameKey);
         }
 */
-		//printPropnet("ticTacToe");
+		printPropnet("hexworse");
 
 		//provaOpenbitset();
 
@@ -752,7 +753,8 @@ public class ProvaPropnet {
 	 */
 	public static void printPropnet(String gameKey){
 
-		GameRepository theRepository = GameRepository.getDefaultRepository();
+		//GameRepository theRepository = GameRepository.getDefaultRepository();
+        GameRepository theRepository = new LocalFolderGameRepository("C:/Users/c.sironi/BITBUCKET REPOS/GGP-Base/GDLFolder");
 
 		List<Gdl> description = theRepository.getGame(gameKey).getRules();
 

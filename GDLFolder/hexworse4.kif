@@ -1,0 +1,222 @@
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;; Hex
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;; components
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+  (role red)
+  (role black)
+
+  (<= (base (cell ?m ?n ?role))
+      (row ?m)
+      (col ?n)
+      (role ?role))
+
+  (<= (base (step ?k))
+      (succ ?k ?o))
+
+  (<= (base (control ?role))
+      (role ?role))
+
+  (base (phase placing))
+  
+  (base (phase moving))
+
+  (<= (input ?role (place ?m ?n))
+      (role ?role)
+      (row ?m)
+      (col ?n))
+
+  (<= (input ?role (move ?j ?k ?m ?n))
+      (role ?role)
+      (adjacent ?j ?k ?m ?n))
+
+  (<= (input ?role noop)
+      (role ?role))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;; init
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+  (init (control red))
+  (init (step 1))
+  (init (phase placing))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;; legal
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+  (<= (legal ?role (place ?m ?n))
+      (true (control ?role))
+      (true (phase placing))
+      (row ?m)
+      (col ?n)
+      (not (true (cell ?m ?n red)))
+      (not (true (cell ?m ?n black))))
+
+  (<= (legal ?role (move ?j ?k ?m ?n))
+      (true (control ?role))
+      (true (phase moving))
+      (adjacent ?j ?k ?m ?n)
+      (true (cell ?j ?k ?role))
+      (not (true (cell ?m ?n red)))
+      (not (true (cell ?m ?n black))))
+
+  (<= (legal red noop)
+      (true (control black)))
+
+  (<= (legal black noop)
+      (true (control red)))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;; next
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+  (<= (next (cell ?m ?n ?role))
+      (does ?role (place ?m ?n)))
+
+  (<= (next (cell ?m ?n ?role))
+      (does ?role (move ?j ?k ?m ?n))
+      (row ?j)
+      (col ?k))
+
+  (<= (next (cell ?m ?n ?role))
+      (true (cell ?m ?n ?role))
+      (not (does ?role (move ?m ?n ?j ?k)))
+      (row ?j)
+      (col ?k))
+
+  (<= (next (step ?n))
+      (true (step ?m))
+      (succ ?m ?n))
+
+  (<= (next (control red))
+      (true (control black)))
+
+  (<= (next (control black))
+      (true (control red)))
+
+  (<= (next (phase placing))
+      (true (phase placing))
+      (not (true (step 8))))
+	
+  (<= (next (phase moving))
+      (true (phase placing))
+      (true (step 8)))
+
+  (<= (next (phase moving))
+      (true (phase moving)))	
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;; goal
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+  (<= (goal red 100) redwin)
+  (<= (goal red 50) (not redwin) (not blackwin))
+  (<= (goal red 0) blackwin)
+
+  (<= (goal black 100) blackwin)
+  (<= (goal black 50) (not redwin) (not blackwin))
+  (<= (goal black 0) redwin)
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;; terminal
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+  (<= terminal redwin)
+  (<= terminal blackwin)
+  (<= terminal (true (step 27)))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;; Views
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+  (<= (adjacent ?j ?k ?j ?n)
+      (nextcol ?k ?n)
+      (row ?j))
+
+  (<= (adjacent ?j ?k ?j ?n)
+      (nextcol ?n ?k)
+      (row ?j))
+
+  (<= (adjacent ?j ?k ?m ?k)
+      (nextrow ?j ?m)
+      (col ?k))
+
+  (<= (adjacent ?j ?k ?m ?k)
+      (nextrow ?m ?j)
+      (col ?k))
+
+  (<= (adjacent ?j ?k ?m ?n)
+      (nextrow ?m ?j)
+      (nextcol ?k ?n))
+
+  (<= (adjacent ?j ?k ?m ?n)
+      (nextrow ?j ?m)
+      (nextcol ?n ?k))
+
+
+  (<= redwin (path red a ?i d ?j))
+  (<= blackwin (path black ?i 1 ?j 4))
+  
+  (<= (path ?role ?x ?y ?x ?y) (true (cell ?x ?y ?role)))
+  (<= (path ?role ?x1 ?y1 ?x3 ?y3)
+      (true (cell ?x1 ?y1 ?role))
+      (row ?x3) (col ?y3)
+      (adjacent ?x1 ?y1 ?x2 ?y2)
+      (path ?role ?x2 ?y2 ?x3 ?y3))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;; Data
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+  (row a)
+  (row b)
+  (row c)
+  (row d)
+
+  (col 1)
+  (col 2)
+  (col 3)
+  (col 4)
+
+  (nextrow a b)
+  (nextrow b c)
+  (nextrow c d)
+
+  (nextcol 1 2)
+  (nextcol 2 3)
+  (nextcol 3 4)
+
+  (succ 1 2)
+  (succ 2 3)
+  (succ 3 4)
+  (succ 4 5)
+  (succ 5 6)
+  (succ 6 7)
+  (succ 7 8)
+  (succ 8 9)
+  (succ 9 10)
+  (succ 10 11)
+  (succ 11 12)
+  (succ 12 13)
+  (succ 13 14)
+  (succ 14 15)
+  (succ 15 16)
+  (succ 16 17)
+  (succ 17 18)
+  (succ 18 19)
+  (succ 19 20)
+  (succ 20 21)
+  (succ 21 22)
+  (succ 22 23)
+  (succ 23 24)
+  (succ 24 25)
+  (succ 25 26)
+  (succ 26 27)
+  (succ 27 28)
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
