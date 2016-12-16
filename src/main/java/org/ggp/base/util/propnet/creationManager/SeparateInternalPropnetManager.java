@@ -1,5 +1,6 @@
 package org.ggp.base.util.propnet.creationManager;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -357,7 +358,16 @@ public class SeparateInternalPropnetManager extends Thread{
 
 			// 1. GET THE IMMUTABLE VERSION OF ALL THE COMPONENTS
 
-			ImmutableComponent[] immutableComponents = this.dynamicToImmutableComponents(this.dynamicPropNet.getComponents());
+			// Create an adjacency list representing the structure of the propnet where each node is represented
+			// by its index in the list of immutable components
+			List<List<Integer>> propnetAdjacencyLists = new ArrayList<List<Integer>>(this.dynamicPropNet.getComponents().size());
+
+			// This method will create the list of immutable components in the propnet and the corresponding adjacency list that
+			// will be used as abstract representation of the structure of the propnet graph by the methods that need to operate
+			// on the structure of such graph (i.e. detect cycles, compute topological order)
+			ImmutableComponent[] immutableComponents = this.dynamicToImmutableComponents(this.dynamicPropNet.getComponents(), propnetAdjacencyLists);
+
+			//!!!Set<ImmutableComponent> cycles = this.findNodesInCycles(immutableComponents);
 
 			// 2. PREPARE THE ROLES
 			ExplicitRole[] roles = new ExplicitRole[this.dynamicPropNet.getRoles().size()];
@@ -521,7 +531,7 @@ public class SeparateInternalPropnetManager extends Thread{
 
 	}
 
-	private ImmutableComponent[] dynamicToImmutableComponents(Set<DynamicComponent> dynamicComponents){
+	private ImmutableComponent[] dynamicToImmutableComponents(Set<DynamicComponent> dynamicComponents, List<List<Integer>> propnetAdjacencyLists){
 
 		ImmutableComponent[] immutableComponents = new ImmutableComponent[dynamicComponents.size()];
 
@@ -531,6 +541,7 @@ public class SeparateInternalPropnetManager extends Thread{
 			immutableComponents[structureIndex] = c.getImmutableClone();
 			c.setStructureIndex(structureIndex);
 			structureIndex++;
+			propnetAdjacencyLists.add(new ArrayList<Integer>());
 		}
 
 		// Add all links
@@ -553,9 +564,13 @@ public class SeparateInternalPropnetManager extends Thread{
 
 			//System.out.println("Connecting outputs of " + c.getComponentType());
 
+			List<Integer> componentAdjacencyList = propnetAdjacencyLists.get(c.getStructureIndex());
+
 			for(DynamicComponent i : c.getOutputs()){
 
 				//System.out.println("Output: " + i.getComponentType());
+
+				componentAdjacencyList.add(new Integer(i.getStructureIndex()));
 
 				immutableOutputs[index] = immutableComponents[i.getStructureIndex()];
 				index++;
@@ -566,6 +581,20 @@ public class SeparateInternalPropnetManager extends Thread{
 
 		return immutableComponents;
 	}
+
+	/*
+	private Set<ImmutableComponent> findNodesInCycles(ImmutableComponent[] immutableComponents){
+
+		boolean added
+
+		Set<ImmutableComponent> nodesInCycles = new HashSet<ImmutableComponent>();
+
+		for(int i = 0; i < immutableComponents.length; i++){
+			if()
+		}
+
+
+	}/*
 
 	/**
 	 * Getter method.
