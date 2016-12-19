@@ -1,6 +1,7 @@
 package org.ggp.base.util.propnet.creationManager;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -11,6 +12,7 @@ import org.ggp.base.util.logging.GamerLogger;
 import org.ggp.base.util.propnet.architecture.separateExtendedState.dynamic.DynamicComponent;
 import org.ggp.base.util.propnet.architecture.separateExtendedState.dynamic.DynamicPropNet;
 import org.ggp.base.util.propnet.architecture.separateExtendedState.dynamic.components.DynamicProposition;
+import org.ggp.base.util.propnet.architecture.separateExtendedState.dynamic.components.DynamicTransition;
 import org.ggp.base.util.propnet.architecture.separateExtendedState.immutable.ImmutableComponent;
 import org.ggp.base.util.propnet.architecture.separateExtendedState.immutable.ImmutablePropNet;
 import org.ggp.base.util.propnet.architecture.separateExtendedState.immutable.components.ImmutableAnd;
@@ -27,6 +29,8 @@ import org.ggp.base.util.propnet.factory.DynamicPropNetFactory;
 import org.ggp.base.util.propnet.state.ImmutableSeparatePropnetState;
 import org.ggp.base.util.propnet.utils.PROP_TYPE;
 import org.ggp.base.util.statemachine.structure.explicit.ExplicitRole;
+
+import cyclesjohnsonmeyer.de.normalisiert.utils.graphs.ElementaryCyclesSearch;
 
 /**
  * This class takes care of the followings:
@@ -316,6 +320,8 @@ public class SeparateInternalPropnetManager extends Thread{
 			GamerLogger.log("PropnetManager", "No optimizations to be performed.");
 		}
 
+		GamerLogger.log("PropnetManager", "Propnet has " + this.dynamicPropNet.getSize() + " components.");
+
 
 		//System.out.println(this.dynamicPropNet);
 
@@ -356,7 +362,7 @@ public class SeparateInternalPropnetManager extends Thread{
 
 		if(this.dynamicPropNet != null){
 
-			// 1. GET THE IMMUTABLE VERSION OF ALL THE COMPONENTS
+			// 1. GET THE IMMUTABLE VERSION OF ALL THE COMPONENTS (AND THE REPRESENTATION OF THE PROPNET AS ADJACENCY LIST)
 
 			// Create an adjacency list representing the structure of the propnet where each node is represented
 			// by its index in the list of immutable components
@@ -369,9 +375,53 @@ public class SeparateInternalPropnetManager extends Thread{
 
 			//!!!Set<ImmutableComponent> cycles = this.findNodesInCycles(immutableComponents);
 
+			// 2. DETECT CYCLES IN PROPNET
+
+			ElementaryCyclesSearch ecs = new ElementaryCyclesSearch(propnetAdjacencyLists);
+			List<List<Integer>> cycles = ecs.getElementaryCycles();
+
+			GamerLogger.log("PropnetManager", "Found " + cycles.size() + " cycles in PropNet.");
+
+			// Do here all the processing of the cycles (i.e. consider only cycles with ORs, remove from propnet the cycles without
+			// ORs because all nodes in them will have constant value, ecc...)
+			// For now we just look for all cycles with ORs in them and put the nodes in such cycles in the set of nodes that must
+			// be checked (and reset) when propagating.
+
+			// TODO: look for all ORs in cycles and mark all inputs of such ORs that do not belong to the same cycle as the OR.
+			// Optimize the propagation of values in cycles by resetting a given cycle only when those external inputs change
+			// their value from 1 to 0
+
+			Set<ImmutableComponent> componentsInCycles = new HashSet<ImmutableComponent>();
+
+			List<ImmutableComponent> immutableComponentsCycle;
+			ImmutableComponent currentComponent;
+			boolean withOr; // True if the cycle contains an OR, false otherwise
+
+			for(List<Integer> cycle : cycles){
+				immutableComponentsCycle = new ArrayList<ImmutableComponent>();
+				withOr = false;
+				for(Integer i : cycle){
+					currentComponent = immutableComponents[i.intValue()];
+					withOr = withOr || currentComponent instanceof ImmutableOr;
+					immutableComponentsCycle.add(currentComponent);
+				}
+				if(withOr){
+					componentsInCycles.addAll(immutableComponentsCycle);
+				}
+			}
+
+			ImmutableComponent[] immutableComponentsInCycles = new ImmutableComponent[componentsInCycles.size()];
+			int i = 0;
+			for(ImmutableComponent c : componentsInCycles){
+				immutableComponentsInCycles[i] = c;
+				i++;
+			}
+
+			GamerLogger.log("PropnetManager", "Found " + immutableComponentsInCycles.length + " components in cycles to reset.");
+
 			// 2. PREPARE THE ROLES
 			ExplicitRole[] roles = new ExplicitRole[this.dynamicPropNet.getRoles().size()];
-			int i = 0;
+			i = 0;
 			for(ExplicitRole r : this.dynamicPropNet.getRoles()){
 				roles[i] = new ExplicitRole(r.getName());
 				i++;
@@ -518,7 +568,7 @@ public class SeparateInternalPropnetManager extends Thread{
 			// Create the immutable propnet and the corresponding initial state
 
 			this.initialPropnetState = new ImmutableSeparatePropnetState(initialState, nextState, currentJointMove, firstGoalIndices, firstLegalIndices, andOrGatesValues, otherComponents);
-			this.immutablePropnet = new ImmutablePropNet(immutableComponents, roles, immutableBasePropositions, immutableInputPropositions, goalValues, this.dynamicPropNet.getAlwaysTrueBases());
+			this.immutablePropnet = new ImmutablePropNet(immutableComponents, immutableComponentsInCycles, roles, immutableBasePropositions, immutableInputPropositions, goalValues, this.dynamicPropNet.getAlwaysTrueBases());
 
 			for(ImmutableComponent c : immutableComponents){
 				c.imposeConsistency(this.initialPropnetState);
@@ -570,7 +620,10 @@ public class SeparateInternalPropnetManager extends Thread{
 
 				//System.out.println("Output: " + i.getComponentType());
 
-				componentAdjacencyList.add(new Integer(i.getStructureIndex()));
+				// If this is a transition, exclude its outputs from the adjacency list representing the graph
+				if(!(i instanceof DynamicTransition)){
+					componentAdjacencyList.add(new Integer(i.getStructureIndex()));
+				}
 
 				immutableOutputs[index] = immutableComponents[i.getStructureIndex()];
 				index++;

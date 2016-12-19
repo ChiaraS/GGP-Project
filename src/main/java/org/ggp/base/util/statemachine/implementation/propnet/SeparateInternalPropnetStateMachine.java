@@ -8,6 +8,7 @@ import org.apache.lucene.util.OpenBitSet;
 import org.ggp.base.util.gdl.grammar.Gdl;
 import org.ggp.base.util.gdl.grammar.GdlSentence;
 import org.ggp.base.util.logging.GamerLogger;
+import org.ggp.base.util.propnet.architecture.separateExtendedState.immutable.ImmutableComponent;
 import org.ggp.base.util.propnet.architecture.separateExtendedState.immutable.ImmutablePropNet;
 import org.ggp.base.util.propnet.architecture.separateExtendedState.immutable.components.ImmutableProposition;
 import org.ggp.base.util.propnet.state.ImmutableSeparatePropnetState;
@@ -101,7 +102,9 @@ public class SeparateInternalPropnetStateMachine extends InternalPropnetStateMac
 	 */
 	@Override
 	public boolean isTerminal(CompactMachineState state) {
-		this.markBases(state);
+		if(this.markBases(state)){
+			this.recomputeCycles();
+		}
 		return this.propnetState.isTerminal();
 	}
 
@@ -137,7 +140,9 @@ public class SeparateInternalPropnetStateMachine extends InternalPropnetStateMac
 	public List<Integer> getAllGoalsForOneRole(CompactMachineState state, CompactRole role) {
 
 		// Mark base propositions according to state.
-		this.markBases(state);
+		if(this.markBases(state)){
+			this.recomputeCycles();
+		}
 
 		// Get all the otehrProposition values (the goals are included there).
 		OpenBitSet otherComponents = this.propnetState.getOtherComponents();
@@ -252,7 +257,9 @@ public class SeparateInternalPropnetStateMachine extends InternalPropnetStateMac
 	@Override
 	public List<CompactMove> getCompactLegalMoves(CompactMachineState state, CompactRole role)throws MoveDefinitionException {
 		// Mark base propositions according to state.
-		this.markBases(state);
+		if(this.markBases(state)){
+			this.recomputeCycles();
+		}
 
 		List<CompactMove> legalMoves = new ArrayList<CompactMove>();
 
@@ -293,10 +300,14 @@ public class SeparateInternalPropnetStateMachine extends InternalPropnetStateMac
 	@Override
 	public CompactMachineState getCompactNextState(CompactMachineState state, List<CompactMove> moves){
 		// Mark base propositions according to state.
-		this.markBases(state);
+		boolean propnetStateModified = this.markBases(state);
 
 		// Mark input propositions according to the moves.
-		this.markInputs(moves);
+		propnetStateModified = propnetStateModified||this.markInputs(moves);
+
+		if(propnetStateModified){
+			this.recomputeCycles();
+		}
 
 		// Compute next state for each base proposition from the corresponding transition.
 		return new CompactMachineState(this.propnetState.getNextState().clone());
@@ -511,7 +522,7 @@ public class SeparateInternalPropnetStateMachine extends InternalPropnetStateMac
      *
      * @param state the machine state to be set in the propnet.
      */
-	private void markBases(CompactMachineState state){
+	private boolean markBases(CompactMachineState state){
 
 		// Clone the currently set state to avoid modifying it here.
 		OpenBitSet bitsToFlip = this.propnetState.getCurrentState().clone();
@@ -530,7 +541,11 @@ public class SeparateInternalPropnetStateMachine extends InternalPropnetStateMac
 				basePropositions[indexToFlip].updateValue(state.getTruthValues().get(indexToFlip), this.propnetState);
 				indexToFlip = bitsToFlip.nextSetBit(indexToFlip+1);
 			}
+
+			return true;
 		}
+
+		return false;
 	}
 
     /**
@@ -621,10 +636,12 @@ public class SeparateInternalPropnetStateMachine extends InternalPropnetStateMac
      *
      *
      * @param moves the moves to be set as performed in the propnet.
+     * @return true if the move was diffrent by the one previously set and thus the propnet state has changed,
+     * false otherwise.
      *
      * TODO: instead of using a Move object just use an array of int.
      */
-	private void markInputs(List<CompactMove> moves){
+	private boolean markInputs(List<CompactMove> moves){
 
 		// Get the currently set move
 		OpenBitSet currentJointMove = this.propnetState.getCurrentJointMove();
@@ -660,6 +677,25 @@ public class SeparateInternalPropnetStateMachine extends InternalPropnetStateMac
 				inputPropositions[indexToChange].updateValue(false, this.propnetState);
 				indexToChange = bitsToChange.nextSetBit(indexToChange+1);
 			}
+			return true;
+		}
+
+		return false;
+	}
+
+	private void recomputeCycles(){
+		// Notify all components in cycles that they don't have to remain consistent with their inputs
+		// (needed to avoid propagation of the value when the parent of the component is also in the cycle
+		// and its value is reset)
+		for(ImmutableComponent c : this.propNet.getComponentsInCycles()){
+			c.removeConsistency();
+		}
+		// Reset to 0 the value of each component in the cycle
+		for(ImmutableComponent c : this.propNet.getComponentsInCycles()){
+			c.resetValue(this.propnetState);
+		}
+		for(ImmutableComponent c : this.propNet.getComponentsInCycles()){
+			c.imposeConsistency(this.propnetState);
 		}
 	}
 

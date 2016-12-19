@@ -116,4 +116,10 @@ public final class ImmutableTransition extends ImmutableComponent{
 
 	}
 
+	@Override
+	public void resetValue(ImmutableSeparatePropnetState propnetState) {
+		throw new IllegalStateException("Since a transition only propagates its value in the next step, cannot be in a cycle that needs resetting to avoid propagation of the worng value!");
+
+	}
+
 }

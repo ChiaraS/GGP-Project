@@ -82,4 +82,9 @@ public final class ImmutableConstant extends ImmutableComponent{
 		throw new IllegalStateException("A costant proposition should have no inputs that can call the propagateConsistency() method!");
 	}
 
+	@Override
+	public void resetValue(ImmutableSeparatePropnetState propnetState) {
+		throw new IllegalStateException("A costant proposition should have no inputs and thus be in no cycles without necessity of resetting its value!");
+	}
+
 }

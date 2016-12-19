@@ -81,23 +81,6 @@
       (row ?j)
       (col ?k))
 
-
-
-
-
-
-
-
-
-
-
-;  (<= (next (cell ?m ?n ?role))
-;      (true (cell ?m ?n ?role))
-;      (not (does ?role (move ?m ?n ?j ?k)))
-;      (row ?j)
-;      (col ?k))
-
-
   (<= (next (cell ?m ?n ?role))
       (true (cell ?m ?n ?role))
       (not (movedaway ?role ?m ?n)))
@@ -106,15 +89,6 @@
       (does ?role (move ?m ?n ?j ?k))
       (row ?j)
       (col ?k))
-
-
-
-
-
-
-
-
-
 
   (<= (next (step ?n))
       (true (step ?m))

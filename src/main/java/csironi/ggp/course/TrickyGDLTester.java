@@ -14,7 +14,6 @@ import org.ggp.base.util.gdl.grammar.Gdl;
 import org.ggp.base.util.match.Match;
 import org.ggp.base.util.propnet.creationManager.PropNetManagerRunner;
 import org.ggp.base.util.propnet.creationManager.SeparateInternalPropnetManager;
-import org.ggp.base.util.propnet.state.ImmutableSeparatePropnetState;
 import org.ggp.base.util.statemachine.exceptions.MoveDefinitionException;
 import org.ggp.base.util.statemachine.exceptions.StateMachineException;
 import org.ggp.base.util.statemachine.exceptions.StateMachineInitializationException;
@@ -35,7 +34,12 @@ public class TrickyGDLTester {
 		String gameKey = args[0];
 		long pnCreationTime = Long.parseLong(args[1]);
 
+		// LINUX
+		//String tracesFolder = "/home/csironi/Traces";
+
+		// WINDOWS
 		String tracesFolder = "C:\\Users\\c.sironi\\BITBUCKET REPOS\\GGP-Base\\BenchmarkFiles";
+
 		String[] traceFiles = new String[args.length-2];
 
 		for(int i = 0; i < traceFiles.length; i++){
@@ -47,7 +51,12 @@ public class TrickyGDLTester {
         System.out.println(GamerConfiguration.defaultLocalGameRepositoryFolderPath);
 
         //GameRepository theRepository = new ManualUpdateLocalGameRepository(GamerConfiguration.defaultLocalGameRepositoryFolderPath);
+
+        // WINDOWS
         GameRepository theRepository = new LocalFolderGameRepository("C:/Users/c.sironi/BITBUCKET REPOS/GGP-Base/GDLFolder");
+
+        // LINUX
+        //GameRepository theRepository = new LocalFolderGameRepository("/home/csironi/GDLFolder");
 
         Game theGame = theRepository.getGame(gameKey);
 
@@ -119,7 +128,7 @@ public class TrickyGDLTester {
 			 * NOTE: this is just a trick used here for testing. Add to the propnet an internal way to
 			 * deal with incorrect propagation in cycles!!!!!!
 			 */
-			ImmutableSeparatePropnetState propnetState = theMachine.getPropNetState().clone();
+			//ImmutableSeparatePropnetState propnetState = theMachine.getPropNetState().clone();
 
 			// Compute next state according to last move in trace
 			List<ExplicitMove> lastMove = t.get(t.size()-1);
@@ -133,7 +142,7 @@ public class TrickyGDLTester {
 			/**
 			 * Reset the propnet state to the correct version before computing legal moves
 			 */
-			theMachine.resetPropNetState(propnetState.clone());
+			//theMachine.resetPropNetState(propnetState.clone());
 
 			// Compute all possible next states and count how many are terminal
 			// (note: use a trace that leads to a state that only has 1 terminal successor state,
@@ -153,7 +162,7 @@ public class TrickyGDLTester {
 					/**
 					 * Reset the propnet state to the correct version before computing next state
 					 */
-					theMachine.resetPropNetState(propnetState.clone());
+					//theMachine.resetPropNetState(propnetState.clone());
 
 					nextState = theMachine.getExplicitNextState(state, jm);
 					if(theMachine.isTerminal(state)){

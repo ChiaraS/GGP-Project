@@ -164,4 +164,25 @@ public final class ImmutableProposition extends ImmutableComponent{
 			}
 		}
 	}
+
+	@Override
+	public void resetValue(ImmutableSeparatePropnetState propnetState) {
+		switch(propType){
+		case BASE:
+		case INPUT:
+			throw new IllegalStateException("The resetValue() method should never be called on a base or input proposition because they cannot be part of a cycle that needs resetting!");
+			// INPUT propositions cannot be part of a cycle, BASE propositions can only be in a cycle with TRANSITIONS and thus it's not
+			// a cycle that can cause the propagation of the wrong value beacuse transitions don't propagate the value until the next step.
+		default:
+			this.isConsistent = false;
+			if(this.getValue(propnetState)){
+				propnetState.flipOtherValue(this.stateIndex);
+				for(ImmutableComponent o : this.getOutputs()){
+					o.propagateConsistency(false, propnetState);
+				}
+			}
+			break;
+		}
+
+	}
 }

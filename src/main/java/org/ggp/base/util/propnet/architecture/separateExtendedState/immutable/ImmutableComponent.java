@@ -179,4 +179,10 @@ public abstract class ImmutableComponent implements Serializable{
 
     public abstract void propagateConsistency(boolean newInputValue, ImmutableSeparatePropnetState propnetState);
 
+    public void removeConsistency(){
+    	this.isConsistent = false;
+    }
+
+    public abstract void resetValue(ImmutableSeparatePropnetState propnetState);
+
 }

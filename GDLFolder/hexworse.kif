@@ -83,7 +83,10 @@
 
   (<= (next (cell ?m ?n ?role))
       (true (cell ?m ?n ?role))
-      (not (does ?role (move ?m ?n ?j ?k)))
+      (not (movedaway ?role ?m ?n)))
+
+  (<= (movedaway ?role ?m ?n)
+      (does ?role (move ?m ?n ?j ?k))
       (row ?j)
       (col ?k))
 

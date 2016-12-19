@@ -24,7 +24,7 @@ import org.ggp.base.util.propnet.utils.PROP_TYPE;
 import org.ggp.base.util.statemachine.structure.explicit.ExplicitRole;
 
 /**
- * This class is the same as org.ggp.base.util.propnet.creationManager.SeparatePropnetCreationManager.
+ * This class is the same as org.ggp.base.util.propnet.creationManager.SeparateInternalPropnetManager.
  * In addition this class creates logs after each propnet optimization that record the time taken to
  * perform the optimization and the number of the different types of components left in the propnet
  * after the optimization.
@@ -45,6 +45,8 @@ import org.ggp.base.util.statemachine.structure.explicit.ExplicitRole;
  * interrupted, the propNet parameter will be set to the last completed optimization
  * of the propnet, so that it can be used and won't be in an inconsistent state.
  * The propnet state will also be initialized accordingly.
+ *
+ * NOTE: this class is old and the created propnet doesn't deal with cycles
  *
  * @author C.Sironi
  *
@@ -538,7 +540,7 @@ public class LoggingSeparatePropnetCreationManager extends Thread{
 			// Create the immutable propnet and the corresponding initial state
 
 			this.initialPropnetState = new ImmutableSeparatePropnetState(initialState, nextState, currentJointMove, firstGoalIndices, firstLegalIndices, andOrGatesValues, otherComponents);
-			this.immutablePropnet = new ImmutablePropNet(immutableComponents, roles, immutableBasePropositions, immutableInputPropositions, goalValues, this.dynamicPropNet.getAlwaysTrueBases());
+			this.immutablePropnet = new ImmutablePropNet(immutableComponents, new ImmutableComponent[0], roles, immutableBasePropositions, immutableInputPropositions, goalValues, this.dynamicPropNet.getAlwaysTrueBases());
 
 			for(ImmutableComponent c : immutableComponents){
 				c.imposeConsistency(this.initialPropnetState);

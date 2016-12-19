@@ -106,4 +106,16 @@ public final class ImmutableAnd extends ImmutableComponent{
 			}
 		}
 	}
+
+	@Override
+	public void resetValue(ImmutableSeparatePropnetState propnetState) {
+		this.isConsistent = false;
+		boolean oldValue = propnetState.getGateValue(this.stateIndex);
+		propnetState.resetTrueInputsAnd(this.stateIndex, this.getInputs().length);
+		if(oldValue){
+			for(ImmutableComponent o : this.getOutputs()){
+				o.propagateConsistency(false, propnetState);
+			}
+		}
+	}
 }

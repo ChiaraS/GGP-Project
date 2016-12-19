@@ -76,4 +76,16 @@ public final class ImmutableNot extends ImmutableComponent{
 			}
 		}
 	}
+
+	@Override
+	public void resetValue(ImmutableSeparatePropnetState propnetState) {
+		this.isConsistent = false;
+		if(propnetState.getOtherValue(this.stateIndex)){
+			propnetState.flipOtherValue(this.stateIndex);
+			for(ImmutableComponent o : this.getOutputs()){
+				o.propagateConsistency(false, propnetState);
+			}
+		}
+
+	}
 }

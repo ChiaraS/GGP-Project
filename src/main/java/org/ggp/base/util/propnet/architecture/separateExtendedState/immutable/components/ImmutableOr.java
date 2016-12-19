@@ -106,4 +106,16 @@ public final class ImmutableOr extends ImmutableComponent{
 			}
 		}
 	}
+
+	@Override
+	public void resetValue(ImmutableSeparatePropnetState propnetState) {
+		this.isConsistent = false;
+		boolean oldValue = propnetState.getGateValue(this.stateIndex);
+		propnetState.resetTrueInputsOr(this.stateIndex);
+		if(oldValue){
+			for(ImmutableComponent o : this.getOutputs()){
+				o.propagateConsistency(false, propnetState);
+			}
+		}
+	}
 }

@@ -150,6 +150,14 @@ public class ImmutableSeparatePropnetState implements Serializable{
 		this.andOrGatesValues[index]--;
 	}
 
+	public void resetTrueInputsAnd(int index, int numInputs){
+		this.andOrGatesValues[index] = Integer.MAX_VALUE - numInputs + 1;
+	}
+
+	public void resetTrueInputsOr(int index){
+		this.andOrGatesValues[index] = Integer.MAX_VALUE;
+	}
+
 	/******************** Methods to get single component values (used by components) ********************/
 
 	public boolean getBaseValue(int index){

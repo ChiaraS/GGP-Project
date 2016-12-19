@@ -121,6 +121,7 @@ public class ElementaryCyclesSearch {
 			} else {
 				break;
 			}
+			// ADD CHECK FOR INTERRUPTION
 		}
 
 		return this.cycles;

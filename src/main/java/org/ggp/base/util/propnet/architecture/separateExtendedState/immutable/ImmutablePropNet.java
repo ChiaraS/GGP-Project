@@ -20,6 +20,11 @@ public class ImmutablePropNet implements Serializable{
 	/** Ordered references to every component in the PropNet. */
 	private final ImmutableComponent[] components;
 
+	/**
+	 * Reference to every component that is in a cycle with an OR
+	 */
+	private final ImmutableComponent[] componentsInCycles;
+
 	/** A helper list of all of the roles. */
 	private final ExplicitRole[] roles;
 
@@ -53,8 +58,9 @@ public class ImmutablePropNet implements Serializable{
 
 	/********************************** Constructor *********************************/
 
-	public ImmutablePropNet(ImmutableComponent[] components, ExplicitRole[] roles, ImmutableProposition[] basePropositions, ImmutableProposition[] inputPropositions, int[][] goalValues, Set<GdlSentence> alwaysTrueBases){
+	public ImmutablePropNet(ImmutableComponent[] components, ImmutableComponent[] componentsInCycles, ExplicitRole[] roles, ImmutableProposition[] basePropositions, ImmutableProposition[] inputPropositions, int[][] goalValues, Set<GdlSentence> alwaysTrueBases){
 		this.components = components;
+		this.componentsInCycles = componentsInCycles;
 		this.roles = roles;
 		this.basePropositions = basePropositions;
 		this.inputPropositions = inputPropositions;
@@ -71,6 +77,15 @@ public class ImmutablePropNet implements Serializable{
 	 */
 	public ImmutableComponent[] getComponents(){
 	    return this.components;
+	}
+
+	/**
+	 * Getter method.
+	 *
+	 * @return ordered array of components.
+	 */
+	public ImmutableComponent[] getComponentsInCycles(){
+	    return this.componentsInCycles;
 	}
 
 	/**
