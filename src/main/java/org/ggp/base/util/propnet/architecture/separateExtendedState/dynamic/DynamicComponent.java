@@ -43,8 +43,12 @@ public abstract class DynamicComponent implements Serializable
      */
     public boolean addInput(DynamicComponent input)
     {
-    	// TODO: Add input only if it's not the component itself
-        return inputs.add(input);
+
+    	if(!input.equals(this)){ // Add input only if it's not the component itself
+    		return inputs.add(input);
+    	}
+
+    	return false;
     }
 
     public boolean removeInput(DynamicComponent input)
@@ -75,7 +79,11 @@ public abstract class DynamicComponent implements Serializable
      */
     public boolean addOutput(DynamicComponent output)
     {
-    	return outputs.add(output);
+    	if(!output.equals(this)){ // Add output only if it's not the component itself
+    		return outputs.add(output);
+    	}
+
+    	return false;
     }
 
     /**

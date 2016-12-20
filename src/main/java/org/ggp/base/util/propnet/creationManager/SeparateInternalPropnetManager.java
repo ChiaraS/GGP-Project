@@ -32,6 +32,7 @@ import org.ggp.base.util.statemachine.structure.explicit.ExplicitRole;
 
 import cyclesjohnsonmeyer.de.normalisiert.utils.graphs.ElementaryCyclesSearch;
 
+
 /**
  * This class takes care of the followings:
  *
@@ -366,18 +367,28 @@ public class SeparateInternalPropnetManager extends Thread{
 
 			// Create an adjacency list representing the structure of the propnet where each node is represented
 			// by its index in the list of immutable components
+
 			List<List<Integer>> propnetAdjacencyLists = new ArrayList<List<Integer>>(this.dynamicPropNet.getComponents().size());
+			//int[][] propnetAdjacencyLists = new int[this.dynamicPropNet.getComponents().size()][];
 
 			// This method will create the list of immutable components in the propnet and the corresponding adjacency list that
 			// will be used as abstract representation of the structure of the propnet graph by the methods that need to operate
 			// on the structure of such graph (i.e. detect cycles, compute topological order)
-			ImmutableComponent[] immutableComponents = this.dynamicToImmutableComponents(this.dynamicPropNet.getComponents(), propnetAdjacencyLists);
 
-			//!!!Set<ImmutableComponent> cycles = this.findNodesInCycles(immutableComponents);
+			ImmutableComponent[] immutableComponents = this.dynamicToImmutableComponents(this.dynamicPropNet.getComponents(), propnetAdjacencyLists);
+			//ImmutableComponent[] immutableComponents = this.dynamicToImmutableComponents(this.dynamicPropNet.getComponents(), propnetAdjacencyLists);
 
 			// 2. DETECT CYCLES IN PROPNET
 
 			ElementaryCyclesSearch ecs = new ElementaryCyclesSearch(propnetAdjacencyLists);
+
+			/*
+			Integer[] nodesNumbers = new Integer[immutableComponents.length];
+			for(int i = 0; i < nodesNumbers.length; i++){
+				nodesNumbers[i] = new Integer(i);
+			}
+			ElementaryCyclesSearch ecs = new ElementaryCyclesSearch(propnetAdjacencyLists, nodesNumbers);
+			*/
 			List<List<Integer>> cycles = ecs.getElementaryCycles();
 
 			GamerLogger.log("PropnetManager", "Found " + cycles.size() + " cycles in PropNet.");
@@ -397,6 +408,8 @@ public class SeparateInternalPropnetManager extends Thread{
 			ImmutableComponent currentComponent;
 			boolean withOr; // True if the cycle contains an OR, false otherwise
 
+			int cyclesWithOr = 0;
+
 			for(List<Integer> cycle : cycles){
 				immutableComponentsCycle = new ArrayList<ImmutableComponent>();
 				withOr = false;
@@ -406,9 +419,12 @@ public class SeparateInternalPropnetManager extends Thread{
 					immutableComponentsCycle.add(currentComponent);
 				}
 				if(withOr){
+					cyclesWithOr++;
 					componentsInCycles.addAll(immutableComponentsCycle);
 				}
 			}
+
+			GamerLogger.log("PropnetManager", "Found " + cyclesWithOr + " cycles containing OR gates in PropNet.");
 
 			ImmutableComponent[] immutableComponentsInCycles = new ImmutableComponent[componentsInCycles.size()];
 			int i = 0;
@@ -616,17 +632,26 @@ public class SeparateInternalPropnetManager extends Thread{
 
 			List<Integer> componentAdjacencyList = propnetAdjacencyLists.get(c.getStructureIndex());
 
-			for(DynamicComponent i : c.getOutputs()){
+			if(c instanceof DynamicTransition){
 
-				//System.out.println("Output: " + i.getComponentType());
+				for(DynamicComponent i : c.getOutputs()){
 
-				// If this is a transition, exclude its outputs from the adjacency list representing the graph
-				if(!(i instanceof DynamicTransition)){
-					componentAdjacencyList.add(new Integer(i.getStructureIndex()));
+					//System.out.println("Output: " + i.getComponentType());
+
+					immutableOutputs[index] = immutableComponents[i.getStructureIndex()];
+					index++;
 				}
+			}else{
 
-				immutableOutputs[index] = immutableComponents[i.getStructureIndex()];
-				index++;
+				for(DynamicComponent i : c.getOutputs()){
+
+					//System.out.println("Output: " + i.getComponentType());
+
+					componentAdjacencyList.add(new Integer(i.getStructureIndex()));
+
+					immutableOutputs[index] = immutableComponents[i.getStructureIndex()];
+					index++;
+				}
 			}
 
 			immutableComponents[c.getStructureIndex()].setOutputs(immutableOutputs);
@@ -634,6 +659,74 @@ public class SeparateInternalPropnetManager extends Thread{
 
 		return immutableComponents;
 	}
+
+/*
+	private ImmutableComponent[] dynamicToImmutableComponents(Set<DynamicComponent> dynamicComponents, int[][] propnetAdjacencyLists){
+
+		ImmutableComponent[] immutableComponents = new ImmutableComponent[dynamicComponents.size()];
+
+		// Create immutable components
+		int structureIndex = 0;
+		for(DynamicComponent c : dynamicComponents){
+			immutableComponents[structureIndex] = c.getImmutableClone();
+			c.setStructureIndex(structureIndex);
+			structureIndex++;
+			//!!!propnetAdjacencyLists.add(new ArrayList<Integer>());
+		}
+
+		// Add all links
+		for(DynamicComponent c : dynamicComponents){
+			// Set input links
+			int numInputs = c.getInputs().size();
+			ImmutableComponent[] immutableInputs = new ImmutableComponent[numInputs];
+			int index = 0;
+			for(DynamicComponent i : c.getInputs()){
+				immutableInputs[index] = immutableComponents[i.getStructureIndex()];
+				index++;
+			}
+
+			immutableComponents[c.getStructureIndex()].setInputs(immutableInputs);
+
+			// Set output links
+			int numOutputs = c.getOutputs().size();
+			ImmutableComponent[] immutableOutputs = new ImmutableComponent[numOutputs];
+			index = 0;
+
+			//System.out.println("Connecting outputs of " + c.getComponentType());
+
+			int[] componentAdjacencyList;
+
+			if(c instanceof DynamicTransition){
+				componentAdjacencyList = new int[0];
+
+				for(DynamicComponent i : c.getOutputs()){
+
+					//System.out.println("Output: " + i.getComponentType());
+
+					immutableOutputs[index] = immutableComponents[i.getStructureIndex()];
+					index++;
+				}
+			}else{
+				componentAdjacencyList = new int[c.getOutputs().size()];
+
+				for(DynamicComponent i : c.getOutputs()){
+
+					//System.out.println("Output: " + i.getComponentType());
+
+					componentAdjacencyList[index] = i.getStructureIndex();
+
+					immutableOutputs[index] = immutableComponents[i.getStructureIndex()];
+					index++;
+				}
+			}
+
+			immutableComponents[c.getStructureIndex()].setOutputs(immutableOutputs);
+			propnetAdjacencyLists[c.getStructureIndex()] = componentAdjacencyList;
+		}
+
+		return immutableComponents;
+	}
+*/
 
 	/*
 	private Set<ImmutableComponent> findNodesInCycles(ImmutableComponent[] immutableComponents){

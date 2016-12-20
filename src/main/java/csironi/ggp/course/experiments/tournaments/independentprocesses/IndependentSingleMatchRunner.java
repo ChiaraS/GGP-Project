@@ -4,11 +4,13 @@ import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.List;
 
 import org.apache.logging.log4j.ThreadContext;
 import org.ggp.base.player.GamePlayer;
+import org.ggp.base.player.gamer.statemachine.ConfigurableStateMachineGamer;
 import org.ggp.base.player.gamer.statemachine.StateMachineGamer;
 import org.ggp.base.player.gamer.statemachine.propnet.InternalPropnetGamer;
 import org.ggp.base.server.GameServer;
@@ -45,9 +47,9 @@ public class IndependentSingleMatchRunner {
 	 * [pnCreationTime(ms)] = available time to create the propnet (in milliseconds)
 	 * [theGamerTypes (one or more)] = list of gamer types that we want to include in the experiment. Each gamer must be specified with
 	 * the exact name of the class that implements such gamer. If the gamer is a subclass of the ConfigurableStateMachineGamer it must
-	 * be specified with the exact name of the class that implements it AND the path of the file in which its settings are specified,
-	 * separated by "-" (e.g. MctsGamer-C:\Users\c.sironi\BITBUCKET REPOS\GGP-Base\GamersSettings\DuctMctsGamer.properties, or
-	 * MctsGamer-Duct.properties)
+	 * be specified with the exact name of the class that implements it AND the name of the file in which its settings are specified,
+	 * separated by "-" (e.g. MctsGamer-GraveDuct.properties, or MctsGamer-Duct.properties). NOTE that the specified .properties file
+	 * must be in the folder with the path gamersSettingsFolderPath specified in the GamerConfiguration class.
 	 */
 	public static void main(String[] args) {
 
@@ -66,7 +68,6 @@ public class IndependentSingleMatchRunner {
 		int playClock;
 		long pnCreationTime;
 		List<Class<?>> theGamersClasses = new ArrayList<Class<?>>();
-		List<String> theGamersSettingsFilePaths = new ArrayList<String>();
 
 		logFolder = args[0];
 
@@ -115,24 +116,42 @@ public class IndependentSingleMatchRunner {
 		}
 
 		boolean buildPropnet = false;
-		String gamerType;
+		String[] gamerTypes = new String[args.length-6];
+		String[] gamerSettings = new String[args.length-6];
     	for (int i = 6; i < args.length; i++){
-    		gamerType = args[i];
+    		if(args[i].endsWith(".properties")){
+    			String[] s = args[i].split("-");
+    			gamerTypes[i-6] = s[0];
+    			gamerSettings[i-6] = s[1];
+    		}else{
+    			gamerTypes[i-6] = args[i];
+    			gamerSettings[i-6] = null;
+    		}
+    	}
+
+    	for(int i = 0; i < gamerTypes.length; i++){
+
     		Class<?> theCorrespondingClass = null;
     		for (Class<?> gamerClass : ProjectSearcher.INTERNAL_PROPNET_GAMERS.getConcreteClasses()) {
-        		if(gamerClass.getSimpleName().equals(gamerType)){
+        		if(gamerClass.getSimpleName().equals(gamerTypes[i])){
         			theCorrespondingClass = gamerClass;
-        			//!!!!!!! if(MctsGamer.class.isAssignableFrom(theCorrespondingClass){the cass is subclass of MctsGamer}
         			buildPropnet = true;
+        			if(ConfigurableStateMachineGamer.class.isAssignableFrom(theCorrespondingClass)){ // The class is subclass of ConfigurableStateMachineGamer
+        				// If the gamer is configurable than the settings file must be specified
+        				if(gamerSettings[i] == null){
+        					System.out.println("Impossible to start match runner, wrong input. No settings file specified for gamer type " + gamerTypes[i] + ".");
+        					return;
+        				}
+        			}
         		}
         	}
     		for (Class<?> gamerClass : ProjectSearcher.PROVER_GAMERS.getConcreteClasses()) {
-        		if(gamerClass.getSimpleName().equals(gamerType)){
+        		if(gamerClass.getSimpleName().equals(gamerTypes[i])){
         			theCorrespondingClass = gamerClass;
         		}
         	}
     		if(theCorrespondingClass == null){
-    			System.out.println("Impossible to start match runner, wrong input. Unexisting gamer type " + gamerType + ".");
+    			System.out.println("Impossible to start match runner, wrong input. Unexisting gamer type " + gamerTypes[i] + ".");
     			return;
     		}else{
     			theGamersClasses.add(theCorrespondingClass);
@@ -216,8 +235,12 @@ public class IndependentSingleMatchRunner {
 		int i = 0;
 		for(Class<?> gamerClass : theGamersClasses){
 			try {
-				theGamer  = (StateMachineGamer) gamerClass.newInstance();
-			} catch (InstantiationException | IllegalAccessException e) {
+				if(ConfigurableStateMachineGamer.class.isAssignableFrom(gamerClass)){
+					theGamer = (StateMachineGamer) gamerClass.getConstructor(String.class).newInstance(GamerConfiguration.gamersSettingsFolderPath + "/" + gamerSettings[i]);
+				}else{
+					theGamer = (StateMachineGamer) gamerClass.newInstance();
+				}
+			} catch (InstantiationException | IllegalAccessException | IllegalArgumentException | InvocationTargetException | NoSuchMethodException | SecurityException e) {
 				GamerLogger.logError("MatchRunner", "Impossible to play the match. Error when instantiating the gamer " + gamerClass.getSimpleName() + ".");
 				GamerLogger.logStackTrace("MatchRunner", e);
 				return;
