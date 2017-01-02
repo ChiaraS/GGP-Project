@@ -76,7 +76,7 @@ public class MctsGamer extends InternalPropnetGamer {
 
 		this.metagameSearch = Boolean.parseBoolean(this.gamerSettings.getPropertyValue("Gamer.metagameSearch"));
 
-		this.mctsManager = new HybridMctsManager(new Random(), this.gamerSettings);
+		this.mctsManager = new HybridMctsManager(new Random(), this.gamerSettings, this.gamerType);
 
 	}
 
@@ -284,6 +284,12 @@ public class MctsGamer extends InternalPropnetGamer {
 		this.mctsManager.clearManager();
 		super.stateMachineAbort();
 
+	}
+
+	public void logSearchManagerDetails(){
+		if(this.mctsManager != null){
+			this.mctsManager.logSearchManagerDetails();
+		}
 	}
 
 }

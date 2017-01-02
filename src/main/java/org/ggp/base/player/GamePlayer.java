@@ -11,6 +11,7 @@ import org.ggp.base.player.event.PlayerDroppedPacketEvent;
 import org.ggp.base.player.event.PlayerReceivedMessageEvent;
 import org.ggp.base.player.event.PlayerSentMessageEvent;
 import org.ggp.base.player.gamer.Gamer;
+import org.ggp.base.player.gamer.statemachine.MCTS.propnet.MctsGamer;
 import org.ggp.base.player.gamer.statemachine.random.RandomGamer;
 import org.ggp.base.player.request.factory.RequestFactory;
 import org.ggp.base.player.request.grammar.AbortRequest;
@@ -106,6 +107,10 @@ public final class GamePlayer extends Thread implements Subject
 			ThreadContext.put("LOG_FOLDER", this.playerID);
 		}else{
 			ThreadContext.put("LOG_FOLDER", oldFolder + "/" + this.playerID);
+		}
+
+		if(this.gamer instanceof MctsGamer){
+			((MctsGamer) this.gamer).logSearchManagerDetails();
 		}
 
 

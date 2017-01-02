@@ -132,7 +132,9 @@ public class HybridMctsManager {
 	 */
 	//private Set<Strategy> strategies = new HashSet<Strategy>();
 
-	public HybridMctsManager(Random random, GamerSettings gamerSettings) {
+	public HybridMctsManager(Random random, GamerSettings gamerSettings, String gamerType) {
+
+		GamerLogger.log("SearchManagerCreation", "Creating search manager for gamer " + gamerType + ".");
 
 		this.iterations = 0;
 		this.visitedNodes = 0;
@@ -293,17 +295,22 @@ public class HybridMctsManager {
 		}
 		this.treeNodeFactory.setReferences(sharedReferencesCollector);
 
+
+		GamerLogger.log("SearchManagerCreation", "Creation of search manager for gamer " + gamerType + " ended successfully.");
 		//this.strategies.add(this.expansionStrategy);
 		//this.strategies.add(this.selectionStrategy);
 		//this.strategies.add(this.backpropagationStrategy);
 		//this.strategies.add(this.playoutStrategy);
 		//this.strategies.add(this.moveChoiceStrategy);
+	}
+
+	public void logSearchManagerDetails(){
 
 		String toLog = "MCTS manager type: " + this.getClass().getSimpleName();
 
 		//toLog += "\nMCTS manager initialized with the following state machine: " + this.theMachine.getName();
 
-		toLog += "\nMCTS manager initialized with the following parameters: [maxSearchDepth = " + this.maxSearchDepth + ", logTranspositionTable = " + logTranspositionTable + ", numExpectedIterations = " + numExpectedIterations + "]";
+		toLog += "\nMCTS manager initialized with the following parameters: [maxSearchDepth = " + this.maxSearchDepth + ", logTranspositionTable = " + this.transpositionTable.isTableLogging() + ", numExpectedIterations = " + numExpectedIterations + "]";
 
 		toLog += "\nMCTS manager initialized with the following tree node factory: " + this.treeNodeFactory.getClass().getSimpleName() + ".";
 

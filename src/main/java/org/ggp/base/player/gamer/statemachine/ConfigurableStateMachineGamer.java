@@ -15,7 +15,7 @@ public abstract class ConfigurableStateMachineGamer extends StateMachineGamer {
 
 	protected GamerSettings gamerSettings;
 
-	private String gamerType;
+	protected String gamerType;
 
 	public ConfigurableStateMachineGamer() {
 		this(GamerConfiguration.gamersSettingsFolderPath + "/" + defaultSettingsFileName);
@@ -25,7 +25,7 @@ public abstract class ConfigurableStateMachineGamer extends StateMachineGamer {
 		File settingsFile = new File(settingsFilePath);
 
 		if(!settingsFile.isFile()){
-			GamerLogger.logError("Gamer", "Impossible to create gamer, cannot find the .properties file with the settings.");
+			GamerLogger.logError("Gamer", "Impossible to create gamer, cannot find the .properties file with the settings: " + settingsFilePath + ".");
 			throw new RuntimeException("Impossible to create gamer, cannot find the .properties file with the settings.");
 		}
 
@@ -44,11 +44,11 @@ public abstract class ConfigurableStateMachineGamer extends StateMachineGamer {
 
 		} catch (FileNotFoundException e) {
 			this.gamerSettings = null;
-			GamerLogger.logError("Gamer", "Impossible to create gamer, cannot find the .properties file with the settings.");
+			GamerLogger.logError("Gamer", "Impossible to create gamer, cannot find the .properties file with the settings: " + settingsFilePath + ".");
 			throw new RuntimeException("Impossible to create gamer, cannot find the .properties file with the settings.");
 		} catch (IOException e) {
 			this.gamerSettings = null;
-			GamerLogger.logError("Gamer", "Impossible to create gamer, exception when reading the .properties file with the settings.");
+			GamerLogger.logError("Gamer", "Impossible to create gamer, exception when reading the .properties file with the settings: " + settingsFilePath + ".");
 			throw new RuntimeException("Impossible to create gamer, exception when reading the .properties file with the settings.");
 		}
 	}

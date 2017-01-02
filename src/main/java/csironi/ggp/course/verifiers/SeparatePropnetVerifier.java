@@ -3,6 +3,7 @@ package csironi.ggp.course.verifiers;
 import java.util.List;
 
 import org.apache.logging.log4j.ThreadContext;
+import org.ggp.base.util.configuration.GamerConfiguration;
 import org.ggp.base.util.game.GameRepository;
 import org.ggp.base.util.game.LocalFolderGameRepository;
 import org.ggp.base.util.game.ManualUpdateLocalGameRepository;
@@ -179,7 +180,9 @@ public class SeparatePropnetVerifier {
 			//theRepository = new ManualUpdateLocalGameRepository("C:/Users/c.sironi/BITBUCKET REPOS/GGP-Base/GGPBase-GameRepo-03022016");
 
 			// LINUX
-		    theRepository = new ManualUpdateLocalGameRepository("/home/csironi/GAMEREPOS/GGPBase-GameRepo-03022016");
+		    //theRepository = new ManualUpdateLocalGameRepository("/home/csironi/GAMEREPOS/GGPBase-GameRepo-03022016");
+
+	    	theRepository = new ManualUpdateLocalGameRepository(GamerConfiguration.defaultLocalGameRepositoryFolderPath);
 
 	    }
 

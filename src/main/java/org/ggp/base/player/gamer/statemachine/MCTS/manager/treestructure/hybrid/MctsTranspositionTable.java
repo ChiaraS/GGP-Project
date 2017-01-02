@@ -173,4 +173,8 @@ public class MctsTranspositionTable {
 		return this.currentGameStepStamp;
 	}
 
+	public boolean isTableLogging(){
+		return this.log;
+	}
+
 }

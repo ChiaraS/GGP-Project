@@ -5,13 +5,16 @@ import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Properties;
+import java.util.Set;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 
 import org.apache.logging.log4j.ThreadContext;
+import org.ggp.base.player.gamer.statemachine.ConfigurableStateMachineGamer;
 import org.ggp.base.util.configuration.GamerConfiguration;
 import org.ggp.base.util.game.Game;
 import org.ggp.base.util.game.GameRepository;
@@ -46,8 +49,18 @@ public class IndependentTourneyRunner {
 
 		//System.out.println("!!" + ProjectSearcher.INTERNAL_PROPNET_GAMERS.getConcreteClasses().size());
 
+		if(args.length != 1){
+			System.out.println("Impossible to start experiment! Wrong number of inputs!");
+			System.out.println("Specify the name of the file with the settings of the experiment");
+			return;
+		}
+
+		System.out.println("Trying to start experiment.");
+
+		File propertiesFile = new File(args[0]);
+
 		String tourneyName;
-		String gameKey;
+		Set<String> gameKeys = new HashSet<String>();
 		int startClock;
 		int playClock;
 		long pnCreationTime;
@@ -56,327 +69,247 @@ public class IndependentTourneyRunner {
 		// to run matches with the given number of roles for the game.
 		int numParallelPlayers;
 		int matchesPerGamerType;
-		List<String> theGamersTypes;
-
+		String[] theGamersTypesString;
 		int runNumber;
 
-		String mainLogFolder;
+
+		// The current time is used to distinguish multiple separate runs of the same experiment.
+		// If I want to continue a previous experiment, all tourneys with the ID saved in the properties
+		// will be continued. Whenever I want to run the experiment from the beginning a new ID will be
+		// associated to the run so that whenever I want to continue such experiment the tourneys of the
+		// other experiment with the same name won't be continued.
+		Long timeID;
+
+		FileReader reader;
+
+		//GameRepository gameRepo = GameRepository.getDefaultRepository();
+    	//GameRepository gameRepo = new ManualUpdateLocalGameRepository("/home/csironi/GAMEREPOS/GGPBase-GameRepo-03022016");
+    	GameRepository gameRepo = new ManualUpdateLocalGameRepository(GamerConfiguration.defaultLocalGameRepositoryFolderPath);
 
 		Game game;
 
-		//GameRepository gameRepo = GameRepository.getDefaultRepository();
+		try {
+			reader = new FileReader(propertiesFile);
 
-    	//GameRepository gameRepo = new ManualUpdateLocalGameRepository("/home/csironi/GAMEREPOS/GGPBase-GameRepo-03022016");
+			Properties props = new Properties();
 
-    	GameRepository gameRepo = new ManualUpdateLocalGameRepository(GamerConfiguration.defaultLocalGameRepositoryFolderPath);
+			// load the properties file:
+			props.load(reader);
 
+			reader.close();
 
-		if(args.length == 1){
+			tourneyName = props.getProperty("tourneyName");
 
-			System.out.println("Trying to continue old tourney.");
+			String[] gameKeysStrings = props.getProperty("gameKeys").split(";");
+			// Remove duplicate game keys and check if all games are available in the repository.
+			// I check here if all games are in the repository because if even one is missing I
+			// don't want the experiment to start at all
 
-			mainLogFolder = args[0];
+	    	for(int i = 0; i < gameKeysStrings.length; i++){
+	    		// If it's not a duplicate key...
+	    		if(gameKeys.add(gameKeysStrings[i])){
+	    			// ...check if the game is in the repository.
+	    			game = gameRepo.getGame(gameKeysStrings[i]);
 
-			File mainLogFolderFile = new File(mainLogFolder);
-
-			if(!mainLogFolderFile.isDirectory()){
-				System.out.println("Impossible to continue old tourney, cannot find the specified tourney folder.");
-				return;
-			}
-
-			File propertiesFile = new File(mainLogFolder + "/tourney.properties");
-
-			if(!propertiesFile.isFile()){
-				System.out.println("Impossible to continue old tourney, cannot find the .properties file for the tourney.");
-				return;
-			}
-
-			//System.out.println("!FoundFile");
-
-			FileReader reader;
-			try {
-				reader = new FileReader(propertiesFile);
-
-				Properties props = new Properties();
-
-				// load the properties file:
-				props.load(reader);
-
-				reader.close();
-
-				tourneyName = props.getProperty("tourneyName");
-				gameKey = props.getProperty("gameKey");
-
-		    	game = gameRepo.getGame(gameKey);
-
-		    	if(game == null){
-		    		System.out.println("Impossible to start tourney: specified game not found in the repository.");
-					return;
-		    	}
-
-				startClock = Integer.parseInt(props.getProperty("startClock"));
-				playClock = Integer.parseInt(props.getProperty("playClock"));
-				pnCreationTime = Long.parseLong(props.getProperty("pnCreationTime"));
-				numParallelPlayers = Integer.parseInt(props.getProperty("numParallelPlayers"));
-				matchesPerGamerType = Integer.parseInt(props.getProperty("matchesPerGamerType"));
-
-				String[] theGamersTypesString = props.getProperty("theGamersTypes").split(";");
-
-				theGamersTypes = new ArrayList<String>();
-
-				for(int i = 0; i < theGamersTypesString.length; i++){
-
-					Class<?> theCorrespondingClass = null;
-
-		    		//System.out.println(ProjectSearcher.INTERNAL_PROPNET_GAMERS.getConcreteClasses().size());
-
-		    		for (Class<?> gamerClass : ProjectSearcher.INTERNAL_PROPNET_GAMERS.getConcreteClasses()) {
-
-		    			//System.out.println(gamerClass.getSimpleName());
-
-		        		if(gamerClass.getSimpleName().equals(theGamersTypesString[i])){
-		        			theCorrespondingClass = gamerClass;
-		        		}
-		        	}
-		    		if(theCorrespondingClass == null){
-		    			System.out.println("Impossible to start tourney, unexisting gamer type " + theGamersTypesString[i] + ".");
-		    			return;
-		    		}else{
-		    			theGamersTypes.add(theGamersTypesString[i]);
-		    		}
-				}
-
-				runNumber = (Integer.parseInt(props.getProperty("runNumber")) + 1);
-
-				props.setProperty("runNumber", ""+runNumber);
-
-	    	    FileWriter writer = new FileWriter(propertiesFile);
-
-	    	    props.store(writer, null);
-
-	    	    writer.close();
-
-			} catch (IOException | NumberFormatException e) {
-				System.out.println("Impossible to continue old tourney, cannot correctly read/write the .properties file for the tourney.");
-				return;
-			}
-
-		}else{
-
-			System.out.println("Trying to start new tourney.");
-
-			/** 1. Extract the desired configuration from the command line and check that all inputs are correct. **/
-
-			if(args.length < 8){
-				System.out.println("Impossible to start tourney, missing inputs. Please give the following parameters to the command line:");
-				System.out.println("[tourneyName] [gameKey] [startClock(sec)] [playClock(sec)] [propnetCreationTime(ms)] [numParallelMatches] [matchesPerGamerType] [listOfGamersTypes]");
-				return;
-			}
-
-			tourneyName = args[0];
-			gameKey = args[1];
-
-	    	game = gameRepo.getGame(gameKey);
-
-	    	if(game == null){
-	    		System.out.println("Impossible to start tourney: specified game not found in the repository.");
-				return;
+			    	if(game == null){
+			    		System.out.println("Impossible to start experiment: specified game " + gameKeysStrings[i] + " not found in the repository.");
+						return;
+			    	}
+	    		}
 	    	}
 
-			try{
-				startClock = Integer.valueOf(args[2]);
-			}catch(NumberFormatException e){
-				System.out.println("Impossible to start tourney runner, wrong input. The start clock must be an integer value, not " + args[2] + ".");
-				return;
-			}
+			startClock = Integer.parseInt(props.getProperty("startClock"));
+			playClock = Integer.parseInt(props.getProperty("playClock"));
+			pnCreationTime = Long.parseLong(props.getProperty("pnCreationTime"));
+			numParallelPlayers = Integer.parseInt(props.getProperty("numParallelPlayers"));
+			matchesPerGamerType = Integer.parseInt(props.getProperty("matchesPerGamerType"));
 
-			try{
-				playClock = Integer.valueOf(args[3]);
-			}catch(NumberFormatException e){
-				System.out.println("Impossible to start tourney runner, wrong input. The play clock must be an integer value, not " + args[3] + ".");
-				return;
-			}
+			theGamersTypesString = props.getProperty("theGamersTypes").split(";");
 
-			try{
-				pnCreationTime = Long.valueOf(args[4]);
-			}catch(NumberFormatException e){
-				System.out.println("Impossible to start tourney runner, wrong input. The PropNet creation time must be a long value, not " + args[4] + ".");
-				return;
-			}
+			// Check if all gamers exist and the settings of the configurable ones are specified
+			// Check here so that the tourney won't even start if the gamer types don't exist or are not correctly specified
+			String[] gamerTypes = new String[theGamersTypesString.length];
+			String[] gamerSettings = new String[theGamersTypesString.length];
+	    	for(int i = 0; i < theGamersTypesString.length; i++){
+	    		if(theGamersTypesString[i].endsWith(".properties")){
+	    			String[] s = theGamersTypesString[i].split("-");
+	    			gamerTypes[i] = s[0];
+	    			gamerSettings[i] = s[1];
+	    		}else{
+	    			gamerTypes[i] = theGamersTypesString[i];
+	    			gamerSettings[i] = null;
+	    		}
+	    	}
 
-			try{
-				numParallelPlayers = Integer.valueOf(args[5]);
-			}catch(NumberFormatException e){
-				System.out.println("Impossible to start tourney runner, wrong input. The number of parallel players must be an integer value, not " + args[5] + ".");
-				return;
-			}
-
-			try{
-				matchesPerGamerType = Integer.valueOf(args[6]);
-			}catch(NumberFormatException e){
-				System.out.println("Impossible to start tourney runner, wrong input. The number of matches per game must be an integer value, not " + args[6] + ".");
-				return;
-			}
-
-			theGamersTypes = new ArrayList<String>();
-
-			String gamerType;
-	    	for (int i = 7; i < args.length; i++){
-	    		gamerType = args[i];
+	    	for(int i = 0; i < gamerTypes.length; i++){
 	    		Class<?> theCorrespondingClass = null;
-
-	    		//System.out.println(ProjectSearcher.INTERNAL_PROPNET_GAMERS.getConcreteClasses().size());
-
 	    		for (Class<?> gamerClass : ProjectSearcher.INTERNAL_PROPNET_GAMERS.getConcreteClasses()) {
-
-	    			//System.out.println(gamerClass.getSimpleName());
-
-	        		if(gamerClass.getSimpleName().equals(gamerType)){
+	        		if(gamerClass.getSimpleName().equals(gamerTypes[i])){
 	        			theCorrespondingClass = gamerClass;
+	        			if(ConfigurableStateMachineGamer.class.isAssignableFrom(theCorrespondingClass)){ // The class is subclass of ConfigurableStateMachineGamer
+	        				// If the gamer is configurable than the settings file must be specified
+	        				if(gamerSettings[i] == null){
+	        					System.out.println("Impossible to start experiment. No settings file specified for gamer type " + gamerTypes[i] + ".");
+	        					return;
+	        				}
+	        			}
 	        		}
 	        	}
 	    		for (Class<?> gamerClass : ProjectSearcher.PROVER_GAMERS.getConcreteClasses()) {
-
-	    			//System.out.println(gamerClass.getSimpleName());
-
-	        		if(gamerClass.getSimpleName().equals(gamerType)){
+	        		if(gamerClass.getSimpleName().equals(gamerTypes[i])){
 	        			theCorrespondingClass = gamerClass;
 	        		}
 	        	}
 	    		if(theCorrespondingClass == null){
-	    			System.out.println("Impossible to start tourney, unexisting gamer type " + gamerType + ".");
+	    			System.out.println("Impossible to start experiment. Unexisting gamer type " + gamerTypes[i] + ".");
 	    			return;
-	    		}else{
-	    			theGamersTypes.add(gamerType);
 	    		}
 			}
 
-	    	runNumber = 0;
+			runNumber = Integer.parseInt(props.getProperty("runNumber"));
 
-	    	mainLogFolder = System.currentTimeMillis() + "." + tourneyName;
+			if(runNumber == 0){
+				System.out.println("Trying to start new experiment.");
+				timeID = System.currentTimeMillis();
+			}else{
+				System.out.println("Trying to continue old experiment.");
+				String timeIDString = props.getProperty("timeID");
+				if(timeIDString == null){
+					System.out.println("Impossible to continue experiment. Missing timeID of experiment.");
+	    			return;
+				}
+				timeID = Long.parseLong(timeIDString);
+			}
 
-	    	/////////////////////////////////////////////////////////////////////////////////////////////
-	    	// Save in a properties file the settings of the tournament so that they can be used in case
-	    	// we want to extend the same tourney in the future by adding more matches.
-	    	File tourneyProperties = new File(mainLogFolder + "/tourney.properties");
-
-	    	try {
-
-	    		if(!tourneyProperties.exists()){
-	    			File mainLogFolderFile = new File(mainLogFolder);
-
-	    			if(!mainLogFolderFile.exists()){
-	    				mainLogFolderFile.mkdirs();
-	    			}
-		    		tourneyProperties.createNewFile();
-		    	}
-
-	    	    Properties props = new Properties();
-	    	    props.setProperty("tourneyName", tourneyName);
-	    	    props.setProperty("gameKey", gameKey);
-	    	    props.setProperty("startClock", ""+startClock);
-	    	    props.setProperty("playClock", ""+playClock);
-	    	    props.setProperty("pnCreationTime", ""+pnCreationTime);
-	    	    props.setProperty("numParallelPlayers", ""+numParallelPlayers);
-	    	    props.setProperty("matchesPerGamerType", ""+matchesPerGamerType);
-
-	    	    String gamersTypesString = "";
-	    	    for(String s: theGamersTypes){
-	    	    	gamersTypesString+= (s + ";");
-	    	    }
-
-	    	    props.setProperty("theGamersTypes", gamersTypesString);
-	    	    props.setProperty("runNumber", ""+runNumber);
-
-	    	    FileWriter writer = new FileWriter(tourneyProperties);
-
-	    	    props.store(writer, null);
-
-	    	    writer.close();
-	    	} catch (IOException ex) {
-	    		System.out.println("Cannot write .properties file for the tourney.");
-	    		tourneyProperties.delete();
-	    		ex.printStackTrace();
-	    	}
-
-	    	///////////////////////////////////////////////////////////////////////////////////////////////
+		} catch (IOException | NumberFormatException e) {
+			System.out.println("Impossible to perform experiment, cannot correctly read/write the .properties file for the tourney.");
+			return;
 		}
 
-		//System.out.println("!OfficiallyStarting");
+		String mainLogFolder;
 
-    	/** 2. Officially start the tourney and start logging. **/
+		for(String gameKey : gameKeys){
+			mainLogFolder = timeID + "." + tourneyName + "." + gameKey + "." + "Tourney";
 
-    	ThreadContext.put("LOG_FOLDER", mainLogFolder);
-    	GamerLogger.startFileLogging();
+			File mainLogFolderFile = new File(mainLogFolder);
 
-    	String gamerTypesList = "[ ";
-    	for (String s : theGamersTypes) {
-    		gamerTypesList += (s + " ");
-    	}
-    	gamerTypesList += "]";
+			if(!mainLogFolderFile.exists()){
+				if(runNumber == 0){
+					mainLogFolderFile.mkdirs();
+				}else{ // If it's not the first run, the folder must already exist
+					System.out.println("Impossible to continue tourney for game " + gameKey + "! The corresponding folder Doesn't exist! Skipping game.");
+					continue;
+				}
+			}else{
+				if(runNumber == 0){
+					System.out.println("Impossible to start new tourney for game " + gameKey + "! Cannot create folder " + mainLogFolder + " for the tourney. A folder with the same name already exists! Skipping game.");
+					continue;
+				}
+			}
 
-    	GamerLogger.log("TourneyRunner"+runNumber, "Starting tourney " + tourneyName + " for game " + gameKey + " with following settings: START_CLOCK=" +
-    			startClock + "s, PLAY_CLOCK=" + playClock + "s, PROPNET_CREATION_TIME=" + pnCreationTime + "ms, DESIRED_NUM_PARALLEL_PLAYERS=" +
-    			numParallelPlayers + ", MIN_NUM_MATCHES_PER_GAMER_TYPE=" + matchesPerGamerType + ", GAMER_TYPES=" + gamerTypesList + ".");
+	    	/** 2. Officially start the tourney and start logging. **/
 
-    	/** 3. Compute all combinations of gamer types. **/
+	    	ThreadContext.put("LOG_FOLDER", mainLogFolder);
+	    	GamerLogger.startFileLogging();
 
-    	int expectedRoles = ExplicitRole.computeRoles(game.getRules()).size();
-    	List<List<Integer>> combinations = Combinator.getCombinations(theGamersTypes.size(), expectedRoles);
+	    	String gamerTypesList = "[ ";
+	    	for (String s : theGamersTypesString) {
+	    		gamerTypesList += (s + " ");
+	    	}
+	    	gamerTypesList += "]";
 
-    	int matchesPerCombination = (matchesPerGamerType / (Combinator.getLastCombinationsPerElement() * Combinator.getLastPermutationsPerCombination()));
+	    	GamerLogger.log("TourneyRunner" + runNumber, "Starting tourney " + tourneyName + " for game " + gameKey + " with following settings: START_CLOCK=" +
+	    			startClock + "s, PLAY_CLOCK=" + playClock + "s, PROPNET_CREATION_TIME=" + pnCreationTime + "ms, DESIRED_NUM_PARALLEL_PLAYERS=" +
+	    			numParallelPlayers + ", MIN_NUM_MATCHES_PER_GAMER_TYPE=" + matchesPerGamerType + ", GAMER_TYPES=" + gamerTypesList + ".");
 
-    	if(matchesPerGamerType%(Combinator.getLastCombinationsPerElement() * Combinator.getLastPermutationsPerCombination()) != 0){
-    		matchesPerCombination++;
-    	}
+	    	/** 3. Compute all combinations of gamer types. **/
 
-    	int numParallelMatches = Math.round(((float) numParallelPlayers) / ((float) expectedRoles));
+	    	game = gameRepo.getGame(gameKey);
 
-    	GamerLogger.log("TourneyRunner"+runNumber, "Computed following parameters for tourney: NUM_ROLES=" + expectedRoles +
-    			", NUM_COMBINATIONS=" + combinations.size() + ", NUM_PARALLEL_MATCHES=" + numParallelMatches + ", ACTUAL_NUM_PARALLEL_PLAYERS=" +
-    			numParallelMatches*expectedRoles + ", ACTUAL_NUM_MATCHES_PER_COMBINATION=" + matchesPerCombination + ", ACTUAL_NUM_MATCHES_PER_GAMER_TYPE=" +
-    			(Combinator.getLastCombinationsPerElement() * Combinator.getLastPermutationsPerCombination() * matchesPerCombination));
+	    	int expectedRoles = ExplicitRole.computeRoles(game.getRules()).size();
+	    	List<List<Integer>> combinations = Combinator.getCombinations(theGamersTypesString.length, expectedRoles);
 
-    	// 5. For each combination run the given amount of matches.
+	    	int matchesPerCombination = (matchesPerGamerType / (Combinator.getLastCombinationsPerElement() * Combinator.getLastPermutationsPerCombination()));
 
-    	for(List<Integer> combination : combinations){
+	    	if(matchesPerGamerType%(Combinator.getLastCombinationsPerElement() * Combinator.getLastPermutationsPerCombination()) != 0){
+	    		matchesPerCombination++;
+	    	}
 
-    		// Prompt the JVM to do garbage collection (not sure if really helpful).
-    	    long endGCTime = System.currentTimeMillis() + 3000;
-    	    for (int ii = 0; ii < 1000 && System.currentTimeMillis() < endGCTime; ii++){
+	    	int numParallelMatches = Math.round(((float) numParallelPlayers) / ((float) expectedRoles));
 
-    	    	//System.out.println("Calling GC: " + System.currentTimeMillis());
+	    	GamerLogger.log("TourneyRunner" + runNumber, "Computed following parameters for tourney: NUM_ROLES=" + expectedRoles +
+	    			", NUM_COMBINATIONS=" + combinations.size() + ", NUM_PARALLEL_MATCHES=" + numParallelMatches + ", ACTUAL_NUM_PARALLEL_PLAYERS=" +
+	    			numParallelMatches*expectedRoles + ", ACTUAL_NUM_MATCHES_PER_COMBINATION=" + matchesPerCombination + ", ACTUAL_NUM_MATCHES_PER_GAMER_TYPE=" +
+	    			(Combinator.getLastCombinationsPerElement() * Combinator.getLastPermutationsPerCombination() * matchesPerCombination));
 
-    	    	System.gc();
-    	       try {Thread.sleep(1);} catch (InterruptedException lEx) {/* Whatever */}
-    	    }
+	    	// 5. For each combination run the given amount of matches.
 
-    		/*System.out.println("Calling GC.");
-    		for(int i = 0; i < 10; i++){
-    			System.gc();
-    		}*/
+	    	for(List<Integer> combination : combinations){
 
-    		String comboIndices = "";
-    		List<String> theComboGamersTypes = new ArrayList<String>();
-    		for(Integer i : combination){
-    			theComboGamersTypes.add(theGamersTypes.get(i.intValue()));
-    			comboIndices += i.toString();
-    		}
+	    		// Prompt the JVM to do garbage collection (not sure if really helpful).
+	    	    long endGCTime = System.currentTimeMillis() + 3000;
+	    	    for (int ii = 0; ii < 1000 && System.currentTimeMillis() < endGCTime; ii++){
 
-    		GamerLogger.log("TourneyRunner"+runNumber, "Starting sub-tourney for combination " + comboIndices + ".");
+	    	    	//System.out.println("Calling GC: " + System.currentTimeMillis());
 
-    		ThreadContext.put("LOG_FOLDER", mainLogFolder + "/Combination" + comboIndices);
-    		boolean completed = runMatchesForCombination(runNumber, gameKey, startClock, playClock, pnCreationTime, theComboGamersTypes, numParallelMatches, matchesPerCombination);
-    		ThreadContext.put("LOG_FOLDER", mainLogFolder);
+	    	    	System.gc();
+	    	        try {Thread.sleep(1);} catch (InterruptedException lEx) {/* Whatever */}
+	    	    }
 
-    		if(completed){
-    			GamerLogger.log("TourneyRunner"+runNumber, "Ended sub-tourney for combination " + comboIndices + ".");
-    		}else{
-    			GamerLogger.logError("TourneyRunner"+runNumber, "Interrupted sub-tourney for combination " + comboIndices + ".");
-    		}
-    	}
+	    		/*System.out.println("Calling GC.");
+	    		for(int i = 0; i < 10; i++){
+	    			System.gc();
+	    		}*/
 
-    	GamerLogger.log("TourneyRunner"+runNumber, "Tourney completed.");
+	    		String comboIndices = "";
+	    		List<String> theComboGamersTypes = new ArrayList<String>();
+	    		for(Integer i : combination){
+	    			theComboGamersTypes.add(theGamersTypesString[i.intValue()]);
+	    			comboIndices += i.toString();
+	    		}
+
+	    		GamerLogger.log("TourneyRunner" + runNumber, "Starting sub-tourney for combination " + comboIndices + ".");
+
+	    		ThreadContext.put("LOG_FOLDER", mainLogFolder + "/Combination" + comboIndices);
+	    		boolean completed = runMatchesForCombination(runNumber, gameKey, startClock, playClock, pnCreationTime, theComboGamersTypes, numParallelMatches, matchesPerCombination);
+	    		ThreadContext.put("LOG_FOLDER", mainLogFolder);
+
+	    		if(completed){
+	    			GamerLogger.log("TourneyRunner" + runNumber, "Ended sub-tourney for combination " + comboIndices + ".");
+	    		}else{
+	    			GamerLogger.logError("TourneyRunner" + runNumber, "Interrupted sub-tourney for combination " + comboIndices + ".");
+	    		}
+	    	}
+
+	    	GamerLogger.log("TourneyRunner"+runNumber, "Tourney completed.");
+		}
+
+    	// At the end of the experiment, increase the run number
+		try {
+			reader = new FileReader(propertiesFile);
+
+			Properties props = new Properties();
+
+			// load the properties file:
+			props.load(reader);
+
+			reader.close();
+
+			if(runNumber == 0){
+				props.setProperty("timeID", ""+timeID);
+			}
+			props.setProperty("runNumber", ""+(runNumber+1));
+
+		    FileWriter writer = new FileWriter(propertiesFile);
+
+		    props.store(writer, null);
+
+		    writer.close();
+
+		} catch (IOException | NumberFormatException e) {
+			System.out.println("Impossible to perform experiment, cannot correctly read/write the .properties file for the tourney.");
+			return;
+		}
 
 	}
 
@@ -397,7 +330,7 @@ public class IndependentTourneyRunner {
 		theSettings.add("java");
 		//theSettings.add("-Xmx:25g");
 		theSettings.add("-jar");
-		theSettings.add("1000SN0711001IndependentSingleMatchRunner.jar");
+		theSettings.add("IndependentSingleMatchRunner.jar");
 		theSettings.add(ThreadContext.get("LOG_FOLDER"));
 		theSettings.add("" + 0);
 		theSettings.add(gameKey);
