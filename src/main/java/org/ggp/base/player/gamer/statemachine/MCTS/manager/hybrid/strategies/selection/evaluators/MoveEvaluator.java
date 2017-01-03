@@ -31,13 +31,13 @@ public abstract class MoveEvaluator extends SearchManagerComponent{
 	public abstract double computeMoveValue(MctsNode theNode, Move theMove, int roleIndex, MoveStats theMoveStats);
 
 	@Override
-	public String printComponent() {
-		String params = this.getComponentParameters();
+	public String printComponent(String indentation) {
+		String params = this.getComponentParameters(indentation);
 
 		if(params != null){
-			return "(EVALUATOR_TYPE = " + this.getClass().getSimpleName() + ", " + params + ")";
+			return this.getClass().getSimpleName() + params;
 		}else{
-			return "(EVALUATOR_TYPE = " + this.getClass().getSimpleName() + ")";
+			return this.getClass().getSimpleName();
 		}
 	}
 

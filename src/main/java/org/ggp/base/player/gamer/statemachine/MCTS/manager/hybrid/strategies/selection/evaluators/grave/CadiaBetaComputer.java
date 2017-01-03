@@ -81,9 +81,9 @@ public class CadiaBetaComputer extends BetaComputer{
 	}
 
 	@Override
-	public String getComponentParameters() {
+	public String getComponentParameters(String indentation) {
 
-		String params = "INITIAL_K = " + this.initialK;
+		String params = indentation + "INITIAL_K = " + this.initialK;
 
 		if(this.valuesForK != null){
 			String valuesForKString = "[ ";
@@ -96,7 +96,25 @@ public class CadiaBetaComputer extends BetaComputer{
 
 			valuesForKString += "]";
 
-			params += ", VALUES_FOR_TUNING_K = " + valuesForKString;
+			params += indentation = "VALUES_FOR_TUNING_K = " + valuesForKString;
+		}else{
+			params += indentation = "VALUES_FOR_TUNING_K = null";
+		}
+
+		if(this.k != null){
+			String kString = "[ ";
+
+			for(int i = 0; i < this.k.length; i++){
+
+				kString += this.k[i] + " ";
+
+			}
+
+			kString += "]";
+
+			params += indentation = "k = " + kString;
+		}else{
+			params += indentation = "k = null";
 		}
 
 		return params;

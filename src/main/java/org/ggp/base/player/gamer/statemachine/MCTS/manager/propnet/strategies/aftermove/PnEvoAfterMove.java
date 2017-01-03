@@ -13,7 +13,7 @@ public class PnEvoAfterMove implements PnAfterMoveStrategy {
 
 	@Override
 	public String getStrategyParameters() {
-		return this.evolutionManager.printEvolutionManager();
+		return this.evolutionManager.printEvolutionManager("");
 	}
 
 	@Override

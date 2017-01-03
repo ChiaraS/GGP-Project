@@ -39,7 +39,7 @@ public class RandomJointMoveSelector extends JointMoveSelector{
 	}
 
 	@Override
-	public String getComponentParameters() {
+	public String getComponentParameters(String indentation) {
 		return null;
 	}
 

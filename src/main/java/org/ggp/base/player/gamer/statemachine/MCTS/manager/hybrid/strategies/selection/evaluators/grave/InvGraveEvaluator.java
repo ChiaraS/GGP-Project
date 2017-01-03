@@ -126,13 +126,13 @@ public class InvGraveEvaluator extends UctEvaluator{
 	}
 
 	@Override
-	public String getComponentParameters() {
-		String params = super.getComponentParameters();
+	public String getComponentParameters(String indentation) {
+		String params = super.getComponentParameters(indentation);
 
 		if(params != null){
-			return params + ", " + this.betaComputer.printComponent();
+			return params + indentation + "BETA_COMPUTER = " + this.betaComputer.printComponent(indentation + "  ");
 		}else{
-			return this.betaComputer.printComponent();
+			return indentation + "BETA_COMPUTER = " + this.betaComputer.printComponent(indentation + "  ");
 		}
 	}
 

@@ -40,7 +40,7 @@ public class GraveAfterSimulation extends AfterSimulationStrategy {
 	}
 
 	@Override
-	public String getComponentParameters() {
+	public String getComponentParameters(String indentation) {
 		return null;
 	}
 

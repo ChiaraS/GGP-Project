@@ -95,8 +95,8 @@ public class MastJointMoveSelector extends JointMoveSelector {
 	}
 
 	@Override
-	public String getComponentParameters() {
-		return null;
+	public String getComponentParameters(String indentation) {
+		return indentation + "mast_statistics = " + (this.mastStatistics == null ? "null" : this.mastStatistics.size()+"entries");
 	}
 
 }

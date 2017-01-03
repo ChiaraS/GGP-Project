@@ -61,8 +61,8 @@ public class MastBackpropagation extends BackpropagationStrategy {
 	}
 
 	@Override
-	public String getComponentParameters() {
-		return "(UPDATER_1 = " + this.standardUpdater.printComponent() + ", UPDATER_2 = " + this.mastUpdater.printComponent() + ")";
+	public String getComponentParameters(String indentation) {
+		return indentation + "NODE_UPDATER_1 = " + this.standardUpdater.printComponent(indentation + "  ") + indentation + "NODE_UPDATER_2 = " + this.mastUpdater.printComponent(indentation + "  ");
 	}
 
 }

@@ -44,12 +44,12 @@ public abstract class BackpropagationStrategy extends Strategy {
 
 
 	@Override
-	public String printComponent() {
-		String params = this.getComponentParameters();
+	public String printComponent(String indentation) {
+		String params = this.getComponentParameters(indentation);
 		if(params != null){
-			return "[BACKPROPAGATION_STRATEGY = " + this.getClass().getSimpleName() + ", " + params + "]";
+			return this.getClass().getSimpleName() + params;
 		}else{
-			return "[BACKPROPAGATION_STRATEGY = " + this.getClass().getSimpleName() + "]";
+			return this.getClass().getSimpleName();
 		}
 	}
 

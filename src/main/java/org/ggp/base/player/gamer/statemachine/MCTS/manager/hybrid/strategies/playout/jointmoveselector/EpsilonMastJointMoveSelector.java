@@ -111,9 +111,11 @@ public class EpsilonMastJointMoveSelector extends JointMoveSelector implements O
 	}
 
 	@Override
-	public String getComponentParameters() {
+	public String getComponentParameters(String indentation) {
 
-		String params = "SUB_SELECTOR1 = " + this.mastSelector.printComponent() + ", SUB_SELECTOR2 = " + this.randomSelector.printComponent() + ", INITIAL_EPSILON = " + this.initialEpsilon;
+		String params = indentation + "SINGLE_MOVE_SELECTOR_1 = " + this.mastSelector.printComponent(indentation + "  ") +
+				indentation + "SINGLE_MOVE_SELECTOR_2 = " + this.randomSelector.printComponent(indentation + "  ") +
+				indentation + "INITIAL_EPSILON = " + this.initialEpsilon;
 
 		if(this.valuesForEpsilon != null){
 			String valuesForEpsilonString = "[ ";
@@ -126,7 +128,25 @@ public class EpsilonMastJointMoveSelector extends JointMoveSelector implements O
 
 			valuesForEpsilonString += "]";
 
-			params += ", VALUES_FOR_TUNING_EPSILON = " + valuesForEpsilonString;
+			params += indentation + "VALUES_FOR_TUNING_EPSILON = " + valuesForEpsilonString;
+		}else{
+			params += indentation + "VALUES_FOR_TUNING_EPSILON = null";
+		}
+
+		if(this.epsilon != null){
+			String epsilonString = "[ ";
+
+			for(int i = 0; i < this.epsilon.length; i++){
+
+				epsilonString += this.epsilon[i] + " ";
+
+			}
+
+			epsilonString += "]";
+
+			params += indentation + "epsilon = " + epsilonString;
+		}else{
+			params += indentation + "epsilon = null";
 		}
 
 		return params;
@@ -146,8 +166,8 @@ public class EpsilonMastJointMoveSelector extends JointMoveSelector implements O
 	}
 
 	@Override
-	public String printOnlineTunableComponent() {
-		return "(ONLINE_TUNABLE_COMPONENT = " + this.printComponent() + ")";
+	public String printOnlineTunableComponent(String indentation) {
+		return this.printComponent(indentation);
 	}
 
 	@Override

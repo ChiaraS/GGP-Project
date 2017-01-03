@@ -35,7 +35,7 @@ public class TdAfterSimulation extends AfterSimulationStrategy {
 	}
 
 	@Override
-	public String getComponentParameters() {
+	public String getComponentParameters(String indentation) {
 		return null;
 	}
 

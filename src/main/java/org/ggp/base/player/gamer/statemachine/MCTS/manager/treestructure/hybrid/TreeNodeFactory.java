@@ -19,13 +19,13 @@ public abstract class TreeNodeFactory extends SearchManagerComponent{
 	public abstract MctsNode createNewNode(MachineState state);
 
 	@Override
-	public String printComponent() {
-		String params = this.getComponentParameters();
+	public String printComponent(String indentation) {
+		String params = this.getComponentParameters(indentation);
 
 		if(params != null){
-			return "[TREE_NODE_FACTORY = " + this.getClass().getSimpleName() + ", " + params + "]";
+			return this.getClass().getSimpleName() + params;
 		}else{
-			return "[TREE_NODE_FACTORY = " + this.getClass().getSimpleName() + "]";
+			return this.getClass().getSimpleName();
 		}
 	}
 

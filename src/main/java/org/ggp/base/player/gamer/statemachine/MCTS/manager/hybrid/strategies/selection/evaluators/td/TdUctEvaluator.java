@@ -73,8 +73,8 @@ public class TdUctEvaluator extends UctEvaluator {
 	}
 
 	@Override
-	public String getComponentParameters() {
-		return super.getComponentParameters() + ", DEFAUL_GLOBAL_MIN_VALUE = " + this.globalExtremeValues.getDefaultGlobalMinValue() + ", DEFAUL_GLOBAL_MAX_VALUE = " + this.globalExtremeValues.getDefaultGlobalMaxValue();
+	public String getComponentParameters(String indentation) {
+		return super.getComponentParameters(indentation) + indentation + "DEFAULT_GLOBAL_MIN_VALUE = " + this.globalExtremeValues.getDefaultGlobalMinValue() + indentation + "DEFAUL_GLOBAL_MAX_VALUE = " + this.globalExtremeValues.getDefaultGlobalMaxValue();
 	}
 
 }

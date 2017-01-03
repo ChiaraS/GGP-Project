@@ -93,13 +93,13 @@ public class ProgressiveHistoryGraveEvaluator extends GraveEvaluator {
 	}
 
 	@Override
-	public String getComponentParameters() {
-		String params = super.getComponentParameters();
+	public String getComponentParameters(String indentation) {
+		String params = super.getComponentParameters(indentation);
 
 		if(params != null){
-			return params + ", W = " + this.w;
+			return params + indentation + "W = " + this.w + indentation + "current_root_amaf_stats = " + (this.currentRootAmafStats == null ? "null" : this.currentRootAmafStats.size() + " entries");
 		}else{
-			return "W = " + this.w;
+			return indentation + "W = " + this.w + indentation + "current_root_amaf_stats = " + (this.currentRootAmafStats == null ? "null" : this.currentRootAmafStats.size() + " entries");
 		}
 	}
 

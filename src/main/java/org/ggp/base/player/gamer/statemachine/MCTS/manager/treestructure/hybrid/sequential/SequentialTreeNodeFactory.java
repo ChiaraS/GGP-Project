@@ -144,7 +144,7 @@ public class SequentialTreeNodeFactory extends TreeNodeFactory {
 	}
 
 	@Override
-	public String getComponentParameters() {
+	public String getComponentParameters(String indentation) {
 		return null;
 	}
 

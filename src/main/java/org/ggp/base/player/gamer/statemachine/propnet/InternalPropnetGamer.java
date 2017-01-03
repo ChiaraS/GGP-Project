@@ -9,6 +9,7 @@ import java.util.concurrent.TimeUnit;
 
 import org.ggp.base.player.gamer.exception.GamePreviewException;
 import org.ggp.base.player.gamer.statemachine.ConfigurableStateMachineGamer;
+import org.ggp.base.player.gamer.statemachine.GamerSettings;
 import org.ggp.base.util.configuration.GamerConfiguration;
 import org.ggp.base.util.game.Game;
 import org.ggp.base.util.gdl.grammar.GdlPool;
@@ -143,12 +144,15 @@ public abstract class InternalPropnetGamer extends ConfigurableStateMachineGamer
 
 	public InternalPropnetGamer(String settingsFilePath) {
 		super(settingsFilePath);
+	}
 
+	@Override
+	protected void configureGamer(GamerSettings gamerSettings){
 		this.thePropnetMachine = null;
 		this.firstTry = true;
-		this.useProver = Boolean.parseBoolean(this.gamerSettings.getPropertyValue("Gamer.useProver"));
+		this.useProver = Boolean.parseBoolean(gamerSettings.getPropertyValue("Gamer.useProver"));
 		if(!this.useProver){// If we are not using the prover a priori, check how we should build the propnet
-			String propnetBuildString = this.gamerSettings.getPropertyValue("Gamer.propnetBuild");
+			String propnetBuildString = gamerSettings.getPropertyValue("Gamer.propnetBuild");
 			switch(propnetBuildString){
 			case "ALWAYS": case "always":
 				this.propnetBuild = PROPNET_BUILD.ALWAYS;
@@ -164,10 +168,10 @@ public abstract class InternalPropnetGamer extends ConfigurableStateMachineGamer
 				throw new RuntimeException("Impossible to create gamer, wrong specification of property Gamer.propnetBuild:" + propnetBuildString + ".");
 			}
 		}
-		this.buildPnSafetyMargin = Long.parseLong(this.gamerSettings.getPropertyValue("Gamer.buildPnSafetyMargin"));
-		this.proverCache = Boolean.parseBoolean(this.gamerSettings.getPropertyValue("Gamer.proverCache"));
-		this.pnCache = Boolean.parseBoolean(this.gamerSettings.getPropertyValue("Gamer.pnCache"));
-		this.selectMoveSafetyMargin = Long.parseLong(this.gamerSettings.getPropertyValue("Gamer.selectMoveSafetyMargin"));
+		this.buildPnSafetyMargin = Long.parseLong(gamerSettings.getPropertyValue("Gamer.buildPnSafetyMargin"));
+		this.proverCache = Boolean.parseBoolean(gamerSettings.getPropertyValue("Gamer.proverCache"));
+		this.pnCache = Boolean.parseBoolean(gamerSettings.getPropertyValue("Gamer.pnCache"));
+		this.selectMoveSafetyMargin = Long.parseLong(gamerSettings.getPropertyValue("Gamer.selectMoveSafetyMargin"));
 
 	}
 
@@ -409,6 +413,19 @@ public abstract class InternalPropnetGamer extends ConfigurableStateMachineGamer
 	public void preview(Game g, long timeout) throws GamePreviewException {
 		// TODO Auto-generated method stub
 
+	}
+
+	@Override
+	protected String printGamer(){
+		return super.printGamer() +
+				"\nSTATE_MACHINE_TYPE = " + (this.getStateMachine() == null ? "null" : this.getStateMachine().getName()) +
+				"\nPROPNET_MACHINE_TYPE = " + (this.thePropnetMachine == null ? "null" : this.thePropnetMachine.getClass().getSimpleName()) +
+				"\nUSE_PROVER = " + this.useProver +
+				"\nPROPNET_BUILD = " + this.propnetBuild +
+				"\nBUILD_PN_SAFETY_MARGIN = " + this.buildPnSafetyMargin +
+				"\nPROVER_CACHE = " + this.proverCache +
+				"\nPROPNET_CACHE = " + this.pnCache +
+				"\nSELECT_MOVE_SAFETY_MARGIN = " + this.selectMoveSafetyMargin;
 	}
 
 }

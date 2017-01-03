@@ -75,7 +75,7 @@ public class PnGRAVESelection extends PnMoveValueSelection implements OnlineTuna
 	}
 
 	@Override
-	public String printOnlineTunableComponent() {
+	public String printOnlineTunableComponent(String indentation) {
 
 		return "(ONLINE_TUNABLE_COMPONENT = " + this.printStrategy() + ")";
 

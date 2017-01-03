@@ -23,17 +23,17 @@ public abstract class NodeUpdater extends SearchManagerComponent {
 	public abstract void processPlayoutResult(MctsNode leafNode, MachineState leafState, SimulationResult simulationResult);
 
 	@Override
-	public String getComponentParameters() {
+	public String getComponentParameters(String indentation) {
 		return null;
 	}
 
 	@Override
-	public String printComponent() {
-		String params = this.getComponentParameters();
+	public String printComponent(String indentation) {
+		String params = this.getComponentParameters(indentation);
 		if(params != null){
-			return "[NODE_UPDATER = " + this.getClass().getSimpleName() + ", " + params + "]";
+			return this.getClass().getSimpleName() + params;
 		}else{
-			return "[NODE_UPDATER = " + this.getClass().getSimpleName() + "]";
+			return this.getClass().getSimpleName();
 		}
 	}
 

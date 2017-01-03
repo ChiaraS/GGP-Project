@@ -44,7 +44,7 @@ public class NoExpansion extends ExpansionStrategy {
 	}
 
 	@Override
-	public String getComponentParameters() {
+	public String getComponentParameters(String indentation) {
 		return null;
 	}
 

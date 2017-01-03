@@ -17,13 +17,13 @@ public abstract class AfterMoveStrategy extends Strategy {
 	public abstract void afterMoveActions();
 
 	@Override
-	public String printComponent() {
-		String params = this.getComponentParameters();
+	public String printComponent(String indentation) {
+		String params = this.getComponentParameters(indentation);
 
 		if(params != null){
-			return "[AFTER_MOVE_STRATEGY = " + this.getClass().getSimpleName() + ", " + params + "]";
+			return this.getClass().getSimpleName() + params;
 		}else{
-			return "[AFTER_MOVE_STRATEGY = " + this.getClass().getSimpleName() + "]";
+			return this.getClass().getSimpleName();
 		}
 	}
 

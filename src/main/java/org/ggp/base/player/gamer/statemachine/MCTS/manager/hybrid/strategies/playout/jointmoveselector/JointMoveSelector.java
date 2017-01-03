@@ -22,13 +22,13 @@ public abstract class JointMoveSelector extends SearchManagerComponent{
 	public abstract List<Move> getJointMove(MachineState state) throws MoveDefinitionException, StateMachineException;
 
 	@Override
-	public String printComponent() {
-		String params = this.getComponentParameters();
+	public String printComponent(String indentation) {
+		String params = this.getComponentParameters(indentation);
 
 		if(params != null){
-			return "(JOINT_MOVE_SEL = " + this.getClass().getSimpleName() + ", " + params + ")";
+			return this.getClass().getSimpleName() + params;
 		}else{
-			return "(JOINT_MOVE_SEL = " + this.getClass().getSimpleName() + ")";
+			return this.getClass().getSimpleName();
 		}
 	}
 

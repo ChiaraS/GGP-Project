@@ -157,13 +157,28 @@ public class GraveEvaluator extends UctEvaluator{
 	}
 
 	@Override
-	public String getComponentParameters() {
-		String params = super.getComponentParameters();
+	public String getComponentParameters(String indentation) {
+		String params = super.getComponentParameters(indentation);
+
+		String closestAmafStatsString;
+
+		if(this.closestAmafStats != null){
+			closestAmafStatsString = "[ ";
+
+			for(Map<Move,MoveStats> stats : this.closestAmafStats){
+				closestAmafStatsString += (stats == null ? "null " : stats.size() + "entries ");
+			}
+
+			closestAmafStatsString += "]";
+
+		}else{
+			closestAmafStatsString = "null";
+		}
 
 		if(params != null){
-			return params + ", " + this.betaComputer.printComponent() + ", DEFAULT_EXPLORATION = " + this.defaultExploration;
+			return params + indentation + "BETA_COMPUTER = " + this.betaComputer.printComponent(indentation + "  ") + indentation + "DEFAULT_EXPLORATION = " + this.defaultExploration + indentation + "closest_amaf_stats = " + closestAmafStatsString;
 		}else{
-			return this.betaComputer.printComponent() + ", DEFAULT_EXPLORATION = " + this.defaultExploration;
+			return indentation + "BETA_COMPUTER = " + this.betaComputer.printComponent(indentation + "  ") + indentation + "DEFAULT_EXPLORATION = " + this.defaultExploration + indentation + "closest_amaf_stats = " + closestAmafStatsString;
 		}
 	}
 

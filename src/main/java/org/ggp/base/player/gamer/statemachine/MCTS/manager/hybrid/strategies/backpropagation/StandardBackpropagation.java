@@ -52,8 +52,8 @@ public class StandardBackpropagation extends BackpropagationStrategy {
 	}
 
 	@Override
-	public String getComponentParameters() {
-		return "(UPDATER = " + this.standardUpdater.printComponent() + ")";
+	public String getComponentParameters(String indentation) {
+		return indentation + "NODE_UPDATER = " + this.standardUpdater.printComponent(indentation + "  ");
 	}
 
 }

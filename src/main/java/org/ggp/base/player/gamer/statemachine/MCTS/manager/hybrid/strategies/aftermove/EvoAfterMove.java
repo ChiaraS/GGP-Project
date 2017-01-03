@@ -33,8 +33,8 @@ public class EvoAfterMove extends AfterMoveStrategy {
 	}
 
 	@Override
-	public String getComponentParameters() {
-		return this.evolutionManager.printEvolutionManager();
+	public String getComponentParameters(String indentation) {
+		return indentation + "EVOLUTION_MANAGER = " + this.evolutionManager.printEvolutionManager(indentation + "  ");
 	}
 
 	@Override

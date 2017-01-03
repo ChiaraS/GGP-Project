@@ -321,7 +321,7 @@ public class RandomExpansion extends ExpansionStrategy {
 	*/
 
 	@Override
-	public String getComponentParameters() {
+	public String getComponentParameters(String indentation) {
 		return null;
 	}
 

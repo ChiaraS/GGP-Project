@@ -27,13 +27,13 @@ public abstract class SelectionStrategy extends Strategy {
 	public abstract MctsJointMove select(MctsNode currentNode);
 
 	@Override
-	public String printComponent(){
-		String params = this.getComponentParameters();
+	public String printComponent(String indentation){
+		String params = this.getComponentParameters(indentation);
 
 		if(params != null){
-			return "[SELECTION_STRATEGY = " + this.getClass().getSimpleName() + ", " + params + "]";
+			return this.getClass().getSimpleName() + params;
 		}else{
-			return "[SELECTION_STRATEGY = " + this.getClass().getSimpleName() + "]";
+			return this.getClass().getSimpleName();
 		}
 	}
 

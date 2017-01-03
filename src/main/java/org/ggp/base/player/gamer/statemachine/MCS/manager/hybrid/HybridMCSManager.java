@@ -92,6 +92,10 @@ public class HybridMCSManager {
 		this.searchStart = 0;
 		this.searchEnd = 0;
 
+	}
+
+	public String printSearchManager(){
+
 		String toLog = "MCS manager initialized with the following state mahcine " + this.theMachine.getName();
 
 		toLog += "\nMCS manager initialized with the following parameters: [maxSearchDepth = " + this.maxSearchDepth + "]";
@@ -102,9 +106,9 @@ public class HybridMCSManager {
 		//	toLog += "\n" + s.printStrategy();
 		//}
 
-		toLog += "\n" + this.playoutStrategy.printComponent();
+		toLog += "\nPLAYOUT_STRATEGY =" + this.playoutStrategy.printComponent("\n  ");
 
-		GamerLogger.log("MCSManager", toLog);
+		return toLog;
 
 	}
 

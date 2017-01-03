@@ -29,7 +29,7 @@ public class PnEvoBeforeSimulation implements PnBeforeSimulationStrategy {
 	@Override
 	public String getStrategyParameters() {
 
-		return this.tunableComponent.printOnlineTunableComponent() + ", " + this.evolutionManager.printEvolutionManager();
+		return this.tunableComponent.printOnlineTunableComponent("") + ", " + this.evolutionManager.printEvolutionManager("");
 	}
 
 	@Override

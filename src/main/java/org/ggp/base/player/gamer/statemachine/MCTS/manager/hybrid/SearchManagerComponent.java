@@ -119,10 +119,12 @@ public abstract class SearchManagerComponent {
 	/**
 	 * Creates a string representing the component parameters and their values
 	 * to be used for logging purposes.
+	 * Parameters that are set permanently are reported with UPPER CASE names, while the ones that
+	 * change during the game or between differenet games are reported with lower case names.
 	 *
 	 * @return a string representing the component parameters and their values.
 	 */
-	public abstract String getComponentParameters();
+	public abstract String getComponentParameters(String indentation);
 
 	/**
 	 * Creates a string representing the exact name of the component and the parameters
@@ -131,6 +133,6 @@ public abstract class SearchManagerComponent {
 	 * @return a string representing the exact name of the component and the parameters
 	 * it is using.
 	 */
-	public abstract String printComponent();
+	public abstract String printComponent(String indentation);
 
 }

@@ -43,8 +43,8 @@ public class PhMastAfterMove extends AfterMoveStrategy {
 	}
 
 	@Override
-	public String getComponentParameters() {
-		return "AFTER_MOVE_1 = " + this.mastAfterMove.printComponent() + ", AFTER_MOVE_2 = " + this.phAfterMove.printComponent();
+	public String getComponentParameters(String indentation) {
+		return indentation + "AFTER_MOVE_STRATEGY_1 = " + this.mastAfterMove.printComponent(indentation + "  ") + indentation + "AFTER_MOVE_STRATEGY_2 = " + this.phAfterMove.printComponent(indentation + "  ");
 	}
 
 	@Override

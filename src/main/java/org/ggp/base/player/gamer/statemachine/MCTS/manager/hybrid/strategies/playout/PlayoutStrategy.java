@@ -19,13 +19,13 @@ public abstract class PlayoutStrategy extends Strategy {
 	public abstract SimulationResult playout(MachineState state, int maxDepth);
 
 	@Override
-	public String printComponent() {
-		String params = this.getComponentParameters();
+	public String printComponent(String indentation) {
+		String params = this.getComponentParameters(indentation);
 
 		if(params != null){
-			return "[PLAYOUT_STRATEGY = " + this.getClass().getSimpleName() + ", " + params + "]";
+			return this.getClass().getSimpleName() + params;
 		}else{
-			return "[PLAYOUT_STRATEGY = " + this.getClass().getSimpleName() + "]";
+			return this.getClass().getSimpleName();
 		}
 	}
 

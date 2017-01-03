@@ -205,9 +205,9 @@ public class MoveValueSelection extends SelectionStrategy {
 	}
 
 	@Override
-	public String getComponentParameters(){
+	public String getComponentParameters(String indentation){
 
-		return "VALUE_OFFSET = " + this.valueOffset + ", " + this.moveEvaluator.printComponent();
+		return indentation + "VALUE_OFFSET = " + this.valueOffset + indentation + "MOVE_EVALUATOR = " + this.moveEvaluator.printComponent(indentation + "  ");
 	}
 
 }

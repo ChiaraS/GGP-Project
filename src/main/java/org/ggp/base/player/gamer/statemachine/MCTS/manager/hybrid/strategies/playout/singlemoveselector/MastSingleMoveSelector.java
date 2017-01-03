@@ -90,7 +90,7 @@ public class MastSingleMoveSelector extends SingleMoveSelector {
 	}
 
 	@Override
-	public String getComponentParameters() {
+	public String getComponentParameters(String indentation) {
 		return null;
 	}
 

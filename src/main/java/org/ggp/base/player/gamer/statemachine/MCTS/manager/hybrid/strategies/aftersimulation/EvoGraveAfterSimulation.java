@@ -52,8 +52,8 @@ public class EvoGraveAfterSimulation extends AfterSimulationStrategy {
 	}
 
 	@Override
-	public String getComponentParameters() {
-		return "(SUB_AFTER_SIM_STRATEGY = " + this.graveAfterSimulation.printComponent() + ", SUB_AFTER_SIM_STRATEGY = " + this.evoAfterSimulation.printComponent() + ")";
+	public String getComponentParameters(String indentation) {
+		return indentation + "AFTER_SIM_STRATEGY_1 = " + this.graveAfterSimulation.printComponent(indentation + "  ") + indentation + "AFTER_SIM_STRATEGY_2 = " + this.evoAfterSimulation.printComponent(indentation + "  ");
 	}
 
 }

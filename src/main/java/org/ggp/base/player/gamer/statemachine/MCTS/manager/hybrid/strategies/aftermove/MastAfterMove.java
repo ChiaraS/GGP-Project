@@ -42,8 +42,8 @@ public class MastAfterMove extends AfterMoveStrategy {
 	}
 
 	@Override
-	public String getComponentParameters() {
-		return "DECAY_FACTOR = " + this.decayFactor;
+	public String getComponentParameters(String indentation) {
+		return indentation + "DECAY_FACTOR = " + this.decayFactor + indentation + "mast_statistics = " + (this.mastStatistics == null ? "null" : (this.mastStatistics.size()+" entries"));
 	}
 
 	@Override

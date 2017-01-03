@@ -88,9 +88,9 @@ public class EvoBeforeSimulation extends BeforeSimulationStrategy {
 	}
 
 	@Override
-	public String getComponentParameters() {
+	public String getComponentParameters(String indentation) {
 
-		return this.tunableComponent.printOnlineTunableComponent() + ", " + this.evolutionManager.printEvolutionManager();
+		return indentation + "TUNE_ALL_ROLES = " + this.tuneAllRoles + indentation + "EVOLUTION_MANAGER = " + this.evolutionManager.printEvolutionManager(indentation + "  ") + indentation + "ONLINE_TUNABLE_COMPONENT = " + this.tunableComponent.printOnlineTunableComponent(indentation + "  ");
 	}
 
 }

@@ -27,20 +27,20 @@ public abstract class BetaComputer extends SearchManagerComponent implements Onl
 	public abstract double computeBeta(MoveStats theMoveStats, MoveStats theAmafMoveStats, int nodeVisits, int roleIndex);
 
 	@Override
-	public String printComponent() {
-		String params = this.getComponentParameters();
+	public String printComponent(String indentation) {
+		String params = this.getComponentParameters(indentation);
 
 		if(params != null){
-			return "(BETA_COMPUTER_TYPE = " + this.getClass().getSimpleName() + ", " + params + ")";
+			return this.getClass().getSimpleName() + params;
 		}else{
-			return "(BETA_COMPUTER_TYPE = " + this.getClass().getSimpleName() + ")";
+			return this.getClass().getSimpleName();
 		}
 	}
 
 	@Override
-	public String printOnlineTunableComponent() {
+	public String printOnlineTunableComponent(String indentation) {
 
-		return "(ONLINE_TUNABLE_COMPONENT = " + this.printComponent() + ")";
+		return this.printComponent(indentation);
 	}
 
 }

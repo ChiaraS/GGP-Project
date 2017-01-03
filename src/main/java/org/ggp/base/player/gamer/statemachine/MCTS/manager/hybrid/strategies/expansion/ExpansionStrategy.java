@@ -21,13 +21,13 @@ public abstract class ExpansionStrategy extends Strategy {
 	public abstract MctsJointMove expand(MctsNode node);
 
 	@Override
-	public String printComponent() {
-		String params = this.getComponentParameters();
+	public String printComponent(String indentation) {
+		String params = this.getComponentParameters(indentation);
 
 		if(params != null){
-			return "[EXPANSION_STRATEGY = " + this.getClass().getSimpleName() + ", " + params + "]";
+			return this.getClass().getSimpleName() + params;
 		}else{
-			return "[EXPANSION_STRATEGY = " + this.getClass().getSimpleName() + "]";
+			return this.getClass().getSimpleName();
 		}
 	}
 

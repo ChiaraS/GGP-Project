@@ -13,7 +13,9 @@ public abstract class ConfigurableStateMachineGamer extends StateMachineGamer {
 
 	protected static final String defaultSettingsFileName = "Duct.properties";
 
-	protected GamerSettings gamerSettings;
+	protected String settingsFilePath;
+
+	//protected GamerSettings gamerSettings;
 
 	protected String gamerType;
 
@@ -22,7 +24,9 @@ public abstract class ConfigurableStateMachineGamer extends StateMachineGamer {
 	}
 
 	public ConfigurableStateMachineGamer(String settingsFilePath) {
-		File settingsFile = new File(settingsFilePath);
+		this.settingsFilePath = settingsFilePath;
+
+		File settingsFile = new File(this.settingsFilePath);
 
 		if(!settingsFile.isFile()){
 			GamerLogger.logError("Gamer", "Impossible to create gamer, cannot find the .properties file with the settings: " + settingsFilePath + ".");
@@ -40,18 +44,22 @@ public abstract class ConfigurableStateMachineGamer extends StateMachineGamer {
 
 			reader.close();
 
-			this.gamerSettings = new GamerSettings(props);
+			GamerSettings gamerSettings = new GamerSettings(props);
+
+			this.configureGamer(gamerSettings);
 
 		} catch (FileNotFoundException e) {
-			this.gamerSettings = null;
+			//this.gamerSettings = null;
 			GamerLogger.logError("Gamer", "Impossible to create gamer, cannot find the .properties file with the settings: " + settingsFilePath + ".");
 			throw new RuntimeException("Impossible to create gamer, cannot find the .properties file with the settings.");
 		} catch (IOException e) {
-			this.gamerSettings = null;
+			//this.gamerSettings = null;
 			GamerLogger.logError("Gamer", "Impossible to create gamer, exception when reading the .properties file with the settings: " + settingsFilePath + ".");
 			throw new RuntimeException("Impossible to create gamer, exception when reading the .properties file with the settings.");
 		}
 	}
+
+	protected abstract void configureGamer(GamerSettings gamerSettings);
 
 	/* (non-Javadoc)
 	 * @see org.ggp.base.player.gamer.Gamer#getName()
@@ -67,6 +75,18 @@ public abstract class ConfigurableStateMachineGamer extends StateMachineGamer {
 		return getClass().getSimpleName() + "-" + type;*/
 
 		return this.gamerType + getClass().getSimpleName();
+	}
+
+	public void logGamerSettings(){
+
+		String toLog = "\nLogging settings for gamer " + this.getName() + ".\n" + this.printGamer() + "\n";
+
+		GamerLogger.log("GamerSettings", toLog);
+
+	}
+
+	protected String printGamer(){
+		return "SETTINGS_FILE = " + this.settingsFilePath;
 	}
 
 }

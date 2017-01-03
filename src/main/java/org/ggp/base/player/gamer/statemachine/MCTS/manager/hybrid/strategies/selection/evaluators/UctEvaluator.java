@@ -118,9 +118,9 @@ public class UctEvaluator extends MoveEvaluator implements OnlineTunableComponen
 	}
 
 	@Override
-	public String getComponentParameters() {
+	public String getComponentParameters(String indentation) {
 
-		String params = "INITIAL_C_CONSTANT = " + this.initialC + ", UNEXPLORED_MOVE_DEFAULT_VALUE = " + this.unexploredMoveDefaultValue;
+		String params = indentation + "INITIAL_C_CONSTANT = " + this.initialC + indentation + "UNEXPLORED_MOVE_DEFAULT_VALUE = " + this.unexploredMoveDefaultValue;
 
 		if(this.valuesForC != null){
 
@@ -134,7 +134,26 @@ public class UctEvaluator extends MoveEvaluator implements OnlineTunableComponen
 
 			valuesForCString += "]";
 
-			params += ", VALUES_FOR_TUNING_C = " + valuesForCString;
+			params += indentation + "VALUES_FOR_TUNING_C = " + valuesForCString;
+		}else{
+			params += indentation + "VALUES_FOR_TUNING_C = " + "null";
+		}
+
+		if(this.c != null){
+
+			String cString = "[ ";
+
+			for(int i = 0; i < this.c.length; i++){
+
+				cString += this.c[i] + " ";
+
+			}
+
+			cString += "]";
+
+			params += indentation + "c = " + cString;
+		}else{
+			params += indentation + "c = " + "null";
 		}
 
 		return params;
@@ -158,9 +177,9 @@ public class UctEvaluator extends MoveEvaluator implements OnlineTunableComponen
 	}
 
 	@Override
-	public String printOnlineTunableComponent() {
+	public String printOnlineTunableComponent(String indentation) {
 
-		return "(ONLINE_TUNABLE_COMPONENT = " + this.printComponent() + ")";
+		return this.printComponent(indentation);
 
 	}
 

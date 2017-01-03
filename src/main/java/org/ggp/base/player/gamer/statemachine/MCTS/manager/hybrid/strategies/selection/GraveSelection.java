@@ -120,9 +120,9 @@ public class GraveSelection extends MoveValueSelection implements OnlineTunableC
 	}
 
 	@Override
-	public String getComponentParameters(){
+	public String getComponentParameters(String indentation){
 
-		String params = "INITIAL_MIN_AMAF_VSITS = " + this.initialMinAmafVisits;
+		String params = indentation + "INITIAL_MIN_AMAF_VSITS = " + this.initialMinAmafVisits;
 
 		if(this.valuesForMinAmafVisits != null){
 
@@ -136,15 +136,34 @@ public class GraveSelection extends MoveValueSelection implements OnlineTunableC
 
 			valuesForMinAmafVisitsString += "]";
 
-			params += ", VALUES_FOR_TUNING_MIN_AMAF_VISITS = " + valuesForMinAmafVisitsString;
+			params += indentation + "VALUES_FOR_TUNING_MIN_AMAF_VISITS = " + valuesForMinAmafVisitsString;
+		}else{
+			params += indentation + "VALUES_FOR_TUNING_MIN_AMAF_VISITS = null";
 		}
 
-		String superParams = super.getComponentParameters();
+		if(this.minAmafVisits != null){
+
+			String minAmafVisitsString = "[ ";
+
+			for(int i = 0; i < this.minAmafVisits.length; i++){
+
+				minAmafVisitsString += this.minAmafVisits[i] + " ";
+
+			}
+
+			minAmafVisitsString += "]";
+
+			params += indentation + "min_amaf_visits = " + minAmafVisitsString;
+		}else{
+			params += indentation + "min_amaf_visits = null";
+		}
+
+		String superParams = super.getComponentParameters(indentation);
 
 		if(superParams == null){
 			return params;
 		}else{
-			return superParams + ", " + params;
+			return superParams + params;
 		}
 	}
 
@@ -166,9 +185,9 @@ public class GraveSelection extends MoveValueSelection implements OnlineTunableC
 	}
 
 	@Override
-	public String printOnlineTunableComponent() {
+	public String printOnlineTunableComponent(String indentation) {
 
-		return "(ONLINE_TUNABLE_COMPONENT = " + this.printComponent() + ")";
+		return this.printComponent(indentation);
 
 	}
 

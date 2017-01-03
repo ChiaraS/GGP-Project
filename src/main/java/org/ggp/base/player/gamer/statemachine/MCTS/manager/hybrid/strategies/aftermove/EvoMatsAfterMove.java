@@ -52,8 +52,8 @@ public class EvoMatsAfterMove extends AfterMoveStrategy {
 	}
 
 	@Override
-	public String getComponentParameters() {
-		return "(SUB_AFTER_MOVE_STRATEGY = " + this.mastAfterMove.printComponent() + ", SUB_AFTER_SIM_STRATEGY = " + this.evoAfterMove.printComponent() + ")";
+	public String getComponentParameters(String indentation) {
+		return indentation + "AFTER_MOVE_STRATEGY_1 = " + this.mastAfterMove.printComponent(indentation + "  ") + indentation + "AFTER_MOVE_STRATEGY_2 = " + this.evoAfterMove.printComponent(indentation + "  ");
 	}
 
 }

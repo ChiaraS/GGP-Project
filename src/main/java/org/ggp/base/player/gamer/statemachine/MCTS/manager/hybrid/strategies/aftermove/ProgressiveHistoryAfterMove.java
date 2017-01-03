@@ -35,7 +35,7 @@ public class ProgressiveHistoryAfterMove extends AfterMoveStrategy {
 	}
 
 	@Override
-	public String getComponentParameters() {
+	public String getComponentParameters(String indentation) {
 		return null;
 	}
 

@@ -226,8 +226,47 @@ public abstract class TdBackpropagation extends BackpropagationStrategy {
 	}
 
 	@Override
-	public String getComponentParameters() {
-		return "Q_PLAYOUT = " + this.qPlayout + ", LAMBDA = " + this.lambda + ", GAMMA = " + this.gamma + ", DEFAUL_GLOBAL_MIN_VALUE = " + this.globalExtremeValues.getDefaultGlobalMinValue() + ", DEFAUL_GLOBAL_MAX_VALUE = " + this.globalExtremeValues.getDefaultGlobalMaxValue();
+	public String getComponentParameters(String indentation) {
+		String params = indentation + "Q_PLAYOUT = " + this.qPlayout + indentation + "LAMBDA = " + this.lambda + indentation +
+				"GAMMA = " + this.gamma + indentation + "DEFAUL_GLOBAL_MIN_VALUE = " + this.globalExtremeValues.getDefaultGlobalMinValue() +
+				indentation + "DEFAUL_GLOBAL_MAX_VALUE = " + this.globalExtremeValues.getDefaultGlobalMaxValue();
+
+		if(this.deltaSum != null){
+
+			String deltaSumString = "[ ";
+
+			for(int i = 0; i < this.deltaSum.length; i++){
+
+				deltaSumString += this.deltaSum[i] + " ";
+
+			}
+
+			deltaSumString += "]";
+
+			params += indentation + "delta_sum = " + deltaSumString;
+		}else{
+			params += indentation + "delta_sum = null";
+		}
+
+		if(this.qNext != null){
+
+			String qNextString = "[ ";
+
+			for(int i = 0; i < this.qNext.length; i++){
+
+				qNextString += this.qNext[i] + " ";
+
+			}
+
+			qNextString += "]";
+
+			params += indentation + "q_next = " + qNextString;
+		}else{
+			params += indentation + "q_next = null";
+		}
+
+		return params;
+
 	}
 
 	public void resetSimulationParameters(){

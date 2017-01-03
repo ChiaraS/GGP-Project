@@ -126,8 +126,8 @@ public class StandardPlayout extends PlayoutStrategy {
 	}
 
 	@Override
-	public String getComponentParameters() {
-		return this.jointMoveSelector.printComponent();
+	public String getComponentParameters(String indentation) {
+		return indentation + "JOINT_MOVE_SELECTOR = " + this.jointMoveSelector.printComponent(indentation + "  ");
 	}
 
 }

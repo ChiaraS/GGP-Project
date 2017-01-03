@@ -3,6 +3,7 @@ package org.ggp.base.player.gamer.statemachine.MCTS.propnet;
 import java.util.Random;
 
 import org.ggp.base.player.gamer.event.GamerSelectedMoveEvent;
+import org.ggp.base.player.gamer.statemachine.GamerSettings;
 import org.ggp.base.player.gamer.statemachine.MCS.manager.hybrid.CompleteMoveStats;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.exceptions.MCTSException;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.HybridMctsManager;
@@ -72,12 +73,18 @@ public class MctsGamer extends InternalPropnetGamer {
 
 		super(settingsFilePath);
 
+	}
+
+	@Override
+	protected void configureGamer(GamerSettings gamerSettings){
+
+		super.configureGamer(gamerSettings);
+
 		this.gameStep = 0;
 
-		this.metagameSearch = Boolean.parseBoolean(this.gamerSettings.getPropertyValue("Gamer.metagameSearch"));
+		this.metagameSearch = Boolean.parseBoolean(gamerSettings.getPropertyValue("Gamer.metagameSearch"));
 
-		this.mctsManager = new HybridMctsManager(new Random(), this.gamerSettings, this.gamerType);
-
+		this.mctsManager = new HybridMctsManager(new Random(), gamerSettings, this.gamerType);
 	}
 
 	/* (non-Javadoc)
@@ -117,6 +124,8 @@ public class MctsGamer extends InternalPropnetGamer {
 		}
 
 		this.mctsManager.setUpManager(abstractStateMachine, numRoles, myRoleIndex);
+
+		this.logGamerSettings();
 
 		if(this.metagameSearch){
 
@@ -286,10 +295,11 @@ public class MctsGamer extends InternalPropnetGamer {
 
 	}
 
-	public void logSearchManagerDetails(){
-		if(this.mctsManager != null){
-			this.mctsManager.logSearchManagerDetails();
-		}
+	@Override
+	protected String printGamer(){
+		return super.printGamer() +
+				"\nMETAGAME_SEARCH = " + this.metagameSearch +
+				"\n\n" + (this.mctsManager == null ? "null" : this.mctsManager.printSearchManager());
 	}
 
 }

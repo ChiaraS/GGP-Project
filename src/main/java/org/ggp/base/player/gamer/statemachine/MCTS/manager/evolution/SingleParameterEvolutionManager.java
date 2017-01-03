@@ -271,17 +271,87 @@ public class SingleParameterEvolutionManager{
 
 	}
 
-	public String getEvolutionManagerParameters() {
-		return "EXPLORATION_CONSTANT = " + this.evoC + ", VALUE_OFFSET = " + this.evoValueOffset + ", NUM_POPULATIONS = " + this.populations.length + ", USE_NORMALIZATION = " + this.useNormalization;
+	public String getEvolutionManagerParameters(String indentation) {
+
+		String params = indentation + "EXPLORATION_CONSTANT = " + this.evoC + indentation + "VALUE_OFFSET = " + this.evoValueOffset + indentation + "NUM_POPULATIONS = " + this.populations.length + indentation + "USE_NORMALIZATION = " + this.useNormalization;
+
+		if(this.numUpdates != null){
+
+			String numUpdatesString = "[ ";
+
+			for(int i = 0; i < this.numUpdates.length; i++){
+
+				numUpdatesString += this.numUpdates[i] + " ";
+
+			}
+
+			numUpdatesString += "]";
+
+			params += indentation + "num_updates = " + numUpdatesString;
+		}else{
+			params += indentation + "num_updates = null";
+		}
+
+		if(this.populations != null){
+
+			String populationsString = "[ ";
+
+			for(int i = 0; i < this.populations.length; i++){
+
+				if(this.populations[i] != null){
+
+					populationsString += "[ ";
+
+					for(int j = 0; j < this.populations[i].length; j++){
+
+						populationsString += this.populations[i][j].getParameter() + " ";
+
+					}
+
+					populationsString += "] ";
+
+				}else{
+					populationsString += "null ";
+				}
+
+			}
+
+			populationsString += "]";
+
+			params += indentation + "populations = " + populationsString;
+
+
+		}else{
+			params += indentation + "populations = null";
+		}
+
+		if(this.currentSelectedIndividuals != null){
+
+			String currentSelectedIndividualsString = "[ ";
+
+			for(int i = 0; i < this.currentSelectedIndividuals.length; i++){
+
+				currentSelectedIndividualsString += this.currentSelectedIndividuals[i] + " ";
+
+			}
+
+			currentSelectedIndividualsString += "]";
+
+			params += indentation + "current_selected_individuals_indices = " + currentSelectedIndividualsString;
+		}else{
+			params += indentation + "current_selected_individuals_indices = null";
+		}
+
+		return params;
 	}
 
-	public String printEvolutionManager() {
-		String params = this.getEvolutionManagerParameters();
+	public String printEvolutionManager(String indentation) {
+		String params = this.getEvolutionManagerParameters(indentation);
 
 		if(params != null){
-			return "(EVOLUTION_MANAGER = " + this.getClass().getSimpleName() + ", " + params + ")";
+			return this.getClass().getSimpleName() + params;
 		}else{
-			return "(EVOLUTION_MANAGER = " + this.getClass().getSimpleName() + ")";
+			return this.getClass().getSimpleName();
 		}
 	}
 

@@ -80,9 +80,9 @@ public class GraveBetaComputer extends BetaComputer {
 	}
 
 	@Override
-	public String getComponentParameters() {
+	public String getComponentParameters(String indentation) {
 
-		String params = "INITIAL_BIAS = " + this.initialBias;
+		String params = indentation + "INITIAL_BIAS = " + this.initialBias;
 
 		if(this.valuesForBias != null){
 			String valuesForBiasString = "[ ";
@@ -95,7 +95,25 @@ public class GraveBetaComputer extends BetaComputer {
 
 			valuesForBiasString += "]";
 
-			params += ", VALUES_FOR_TUNING_BIAS = " + valuesForBiasString;
+			params += indentation + "VALUES_FOR_TUNING_BIAS = " + valuesForBiasString;
+		}else{
+			params += indentation + "VALUES_FOR_TUNING_BIAS = null";
+		}
+
+		if(this.bias != null){
+			String biasString = "[ ";
+
+			for(int i = 0; i < this.bias.length; i++){
+
+				biasString += this.bias[i] + " ";
+
+			}
+
+			biasString += "]";
+
+			params += indentation + "bias = " + biasString;
+		}else{
+			params += indentation + "bias = null";
 		}
 
 		return params;

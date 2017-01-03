@@ -145,7 +145,7 @@ public class MaximumScoreChoice extends MoveChoiceStrategy {
 	}
 
 	@Override
-	public String getComponentParameters() {
+	public String getComponentParameters(String indentation) {
 		return null;
 	}
 

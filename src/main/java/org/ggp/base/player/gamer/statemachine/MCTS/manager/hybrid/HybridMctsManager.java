@@ -304,47 +304,55 @@ public class HybridMctsManager {
 		//this.strategies.add(this.moveChoiceStrategy);
 	}
 
-	public void logSearchManagerDetails(){
+	public String printSearchManager(){
 
-		String toLog = "MCTS manager type: " + this.getClass().getSimpleName();
+		String toLog = "MCTS_MANAGER_TYPE = " + this.getClass().getSimpleName();
 
 		//toLog += "\nMCTS manager initialized with the following state machine: " + this.theMachine.getName();
 
-		toLog += "\nMCTS manager initialized with the following parameters: [maxSearchDepth = " + this.maxSearchDepth + ", logTranspositionTable = " + this.transpositionTable.isTableLogging() + ", numExpectedIterations = " + numExpectedIterations + "]";
+		toLog += "\n\nMAX_SEARCH_DEPTH = " + this.maxSearchDepth + "\nLOG_TRANSPOSITION_TABLE = " + this.transpositionTable.isTableLogging() +
+				"\nNUM_EXPECTED_ITERATIONS = " + numExpectedIterations;
 
-		toLog += "\nMCTS manager initialized with the following tree node factory: " + this.treeNodeFactory.getClass().getSimpleName() + ".";
-
-		toLog += "\nMCTS manager initialized with the following strategies: ";
+		toLog += "\nTREE_NODE_FACTORY = " + this.treeNodeFactory.printComponent("\n  ");
 
 		//for(Strategy s : this.strategies){
 		//	toLog += "\n" + s.printStrategy();
 		//}
 
-		toLog += "\n" + this.selectionStrategy.printComponent();
-		toLog += "\n" + this.expansionStrategy.printComponent();
-		toLog += "\n" + this.playoutStrategy.printComponent();
-		toLog += "\n" + this.backpropagationStrategy.printComponent();
-		toLog += "\n" + this.moveChoiceStrategy.printComponent();
+		toLog += "\nSELECTION_STRATEGY = " + this.selectionStrategy.printComponent("\n  ");
+		toLog += "\nEXPANSION_STRATEGY = " + this.expansionStrategy.printComponent("\n  ");
+		toLog += "\nPLAYOUT_STRATEGY = " + this.playoutStrategy.printComponent("\n  ");
+		toLog += "\nBACKPROPAGATION_STRATEGY = " + this.backpropagationStrategy.printComponent("\n  ");
+		toLog += "\nMOVE_CHOICE_STRATEGY = " + this.moveChoiceStrategy.printComponent("\n  ");
 
 		if(this.beforeSimulationStrategy != null){
-			toLog += "\n" + this.beforeSimulationStrategy.printComponent();
+			toLog += "\nBEFORE_SIM_STRATEGY = " + this.beforeSimulationStrategy.printComponent("\n  ");
 		}else{
-			toLog += "\n[BEFORE_SIM_STRATEGY = null]";
+			toLog += "\nBEFORE_SIM_STRATEGY = null";
 		}
 
 		if(this.afterSimulationStrategy != null){
-			toLog += "\n" + this.afterSimulationStrategy.printComponent();
+			toLog += "\nAFTER_SIM_STRATEGY = " + this.afterSimulationStrategy.printComponent("\n  ");
 		}else{
-			toLog += "\n[AFTER_SIM_STRATEGY = null]";
+			toLog += "\nAFTER_SIM_STRATEGY = null";
 		}
 
 		if(this.afterMoveStrategy != null){
-			toLog += "\n" + this.afterMoveStrategy.printComponent();
+			toLog += "\nAFTER_MOVE_STRATEGY = " + this.afterMoveStrategy.printComponent("\n  ");
 		}else{
-			toLog += "\n[AFTER_MOVE_STRATEGY = null]";
+			toLog += "\nAFTER_MOVE_STRATEGY = null";
 		}
 
-		GamerLogger.log("MctsManager", toLog);
+		toLog += "\niterations = " + this.iterations;
+		toLog += "\nvisited_nodes = " + this.visitedNodes;
+		toLog += "\ncurrent_iteration_visited_nodes = " + this.currentIterationVisitedNodes;
+		toLog += "\nsearch_start = " + this.searchStart;
+		toLog += "\nsearch_end = " + this.searchEnd;
+		toLog += "\nabstract_state_machine = " + (this.gameDependentParameters.getTheMachine() == null ? "null" : this.gameDependentParameters.getTheMachine().getName());
+		toLog += "\nnum_roles = " + this.gameDependentParameters.getNumRoles();
+		toLog += "\nmy_role_index = " + this.gameDependentParameters.getMyRoleIndex();
+
+		return toLog;
 
 	}
 
@@ -549,12 +557,14 @@ public class HybridMctsManager {
 				this.beforeSimulationStrategy.beforeSimulationActions();
 			}
 
+			System.out.println();
+			System.out.println("Inizio iterazione");
+
 			SimulationResult simulationResult = this.searchNext(initialState, initialNode);
 			this.iterations++;
 			this.visitedNodes += this.currentIterationVisitedNodes;
 
 			//((AMAFDecoupledMCTSNode)initialNode).printAMAF();
-
 
 			if(this.afterSimulationStrategy != null){
 				this.afterSimulationStrategy.afterSimulationActions(simulationResult);

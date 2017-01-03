@@ -156,7 +156,7 @@ public class DecoupledTreeNodeFactory extends TreeNodeFactory {
 	}
 
 	@Override
-	public String getComponentParameters() {
+	public String getComponentParameters(String indentation) {
 		return null;
 	}
 

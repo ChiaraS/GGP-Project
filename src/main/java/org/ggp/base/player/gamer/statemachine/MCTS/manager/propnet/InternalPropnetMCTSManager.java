@@ -191,7 +191,7 @@ public class InternalPropnetMCTSManager extends MctsManager {
 		toLog += "\n" + this.moveChoiceStrategy.printStrategy();
 
 		if(this.beforeSimulationStrategy != null){
-			toLog += "\n" + this.beforeSimulationStrategy.printComponent();
+			toLog += "\n" + this.beforeSimulationStrategy.printComponent("");
 		}else{
 			toLog += "\n[BEFORE_SIM_STRATEGY = null]";
 		}
@@ -203,7 +203,7 @@ public class InternalPropnetMCTSManager extends MctsManager {
 		}
 
 		if(this.afterMoveStrategy != null){
-			toLog += "\n" + this.afterMoveStrategy.printComponent();
+			toLog += "\n" + this.afterMoveStrategy.printComponent("");
 		}else{
 			toLog += "\n[AFTER_MOVE_STRATEGY = null]";
 		}

@@ -57,9 +57,9 @@ public class EvoAfterSimulation extends AfterSimulationStrategy {
 	}
 
 	@Override
-	public String getComponentParameters() {
+	public String getComponentParameters(String indentation) {
 
-			return this.evolutionManager.printEvolutionManager();
+			return indentation + "EVOLUTION_MANAGER = " + this.evolutionManager.printEvolutionManager(indentation + "  ");
 
 	}
 

@@ -28,7 +28,7 @@ public abstract class PnProverBetaComputer implements OnlineTunableComponent {
 	}
 
 	@Override
-	public String printOnlineTunableComponent() {
+	public String printOnlineTunableComponent(String indentation) {
 
 		return "(ONLINE_TUNABLE_COMPONENT = " + this.printBetaComputer() + ")";
 	}

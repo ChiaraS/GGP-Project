@@ -43,7 +43,7 @@ public class PnEvoAfterSimulation implements PnAfterSimulationStrategy {
 	@Override
 	public String getStrategyParameters() {
 
-			return this.evolutionManager.printEvolutionManager();
+			return this.evolutionManager.printEvolutionManager("");
 
 	}
 
