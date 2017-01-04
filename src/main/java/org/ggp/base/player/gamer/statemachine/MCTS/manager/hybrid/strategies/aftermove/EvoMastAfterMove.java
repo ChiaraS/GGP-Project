@@ -7,13 +7,13 @@ import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.GameDependentP
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.SharedReferencesCollector;
 
 
-public class EvoMatsAfterMove extends AfterMoveStrategy {
+public class EvoMastAfterMove extends AfterMoveStrategy {
 
 	private MastAfterMove mastAfterMove;
 
 	private EvoAfterMove evoAfterMove;
 
-	public EvoMatsAfterMove(GameDependentParameters gameDependentParameters, Random random,
+	public EvoMastAfterMove(GameDependentParameters gameDependentParameters, Random random,
 			GamerSettings gamerSettings, SharedReferencesCollector sharedReferencesCollector){
 
 		super(gameDependentParameters, random, gamerSettings, sharedReferencesCollector);

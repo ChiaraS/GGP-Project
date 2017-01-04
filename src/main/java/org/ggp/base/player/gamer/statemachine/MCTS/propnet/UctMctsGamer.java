@@ -50,4 +50,12 @@ public abstract class UctMctsGamer extends MctsGamer {
 
 	}
 
+	@Override
+	public String getName() {
+
+		return getClass().getSimpleName();
+	}
+
+
+
 }

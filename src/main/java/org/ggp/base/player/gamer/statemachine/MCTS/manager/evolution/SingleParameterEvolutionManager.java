@@ -273,7 +273,7 @@ public class SingleParameterEvolutionManager{
 
 	public String getEvolutionManagerParameters(String indentation) {
 
-		String params = indentation + "EXPLORATION_CONSTANT = " + this.evoC + indentation + "VALUE_OFFSET = " + this.evoValueOffset + indentation + "NUM_POPULATIONS = " + this.populations.length + indentation + "USE_NORMALIZATION = " + this.useNormalization;
+		String params = indentation + "EXPLORATION_CONSTANT = " + this.evoC + indentation + "VALUE_OFFSET = " + this.evoValueOffset + indentation + "USE_NORMALIZATION = " + this.useNormalization;
 
 		if(this.numUpdates != null){
 

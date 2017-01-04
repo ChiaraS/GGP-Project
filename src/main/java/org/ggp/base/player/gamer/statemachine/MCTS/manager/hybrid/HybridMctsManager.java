@@ -551,14 +551,15 @@ public class HybridMctsManager {
 			this.currentIterationVisitedNodes = 0;
 
 			//System.out.println();
+			//System.out.println();
 			//System.out.println("MyIteration " + this.iterations);
 
 			if(this.beforeSimulationStrategy != null){
 				this.beforeSimulationStrategy.beforeSimulationActions();
 			}
 
-			System.out.println();
-			System.out.println("Inizio iterazione");
+			//System.out.println();
+			//System.out.println("Inizio iterazione");
 
 			SimulationResult simulationResult = this.searchNext(initialState, initialNode);
 			this.iterations++;
@@ -599,8 +600,15 @@ public class HybridMctsManager {
 
 		//System.out.println();
 
-		//System.out.println("Current state(Terminal:" + this.theMachine.isTerminal(currentState) + "):");
-		//System.out.println(currentState);
+		/*
+		try {
+			System.out.println("Current state(Terminal:" + this.gameDependentParameters.getTheMachine().isTerminal(currentState) + "):");
+		} catch (StateMachineException e1) {
+			System.out.println("Cannot compute if state is terminal.");
+		}
+		System.out.println(this.gameDependentParameters.getTheMachine().convertToExplicitMachineState(currentState));
+		*/
+
 		//System.out.println("Current node");
 		//System.out.println(currentNode);
 
@@ -609,6 +617,22 @@ public class HybridMctsManager {
 		//int[] goals;
 
 		SimulationResult simulationResult;
+
+
+		/*
+		try {
+			boolean terminalState = this.gameDependentParameters.getTheMachine().isTerminal(currentState);
+
+			if(terminalState != currentNode.isTerminal()){
+				System.out.println("NODE AND STATE DISAGREE ON TERMINALITY: NODE=" + currentNode.isTerminal() + ", STATE = " + terminalState);
+			}
+
+		} catch (StateMachineException e1) {
+			System.out.println("Cannot compute if state is terminal.");
+		}
+		*/
+
+
 
 		// Check if the node is terminal, and if so, return as result the final goals (saved in the node) for all players.
 		// NOTE: even if the node is terminal the state might not be, but an error occurred when computing legal
@@ -625,12 +649,12 @@ public class HybridMctsManager {
 			}
 
 			/*
-			System.out.println("Detected terminal.");
+			System.out.println("Reached terminal state.");
 			System.out.print("Returning goals:");
 			String s = "[";
 			s += " ";
-			for(int i = 0; i < goals.length; i++){
-				s += goals[i] + " ";
+			for(int i = 0; i < currentNode.getGoals().length; i++){
+				s += currentNode.getGoals()[i] + " ";
 			}
 			s += "]\n";
 			System.out.print(s);
@@ -638,6 +662,9 @@ public class HybridMctsManager {
 
 			return new SimulationResult(currentNode.getGoals());
 		}
+
+
+		//System.out.println("currentIterationVisitedNodes = " + this.currentIterationVisitedNodes);
 
 		// If the state is not terminal (and no error occurred when computing legal moves),
 		// it can be visited (i.e. one of its moves explored) only if the depth limit has not been reached.
@@ -652,8 +679,9 @@ public class HybridMctsManager {
 			// and if they cannot be computed return default tie-goals.
 
 			/*
-			goals = theMachine.getSafeGoals(currentState);
 			System.out.print("Returning goals:");
+
+			int[] goals = this.gameDependentParameters.getTheMachine().getSafeGoalsAvgForAllRoles(currentState);
 			String s = "[";
 			s += " ";
 			for(int i = 0; i < goals.length; i++){
@@ -663,8 +691,8 @@ public class HybridMctsManager {
 			System.out.print(s);
 			*/
 
-
 			return new SimulationResult(this.gameDependentParameters.getTheMachine().getSafeGoalsAvgForAllRoles(currentState));
+			//return new SimulationResult(goals);
 		}
 
 		this.currentIterationVisitedNodes++;
@@ -702,7 +730,14 @@ public class HybridMctsManager {
 
 			mctsJointMove = this.expansionStrategy.expand(currentNode);
 
-			//System.out.println("Expanding move " + mctsJointMove);
+			/*
+			String s = "[ ";
+			for(Move m : mctsJointMove.getJointMove()){
+				s += this.gameDependentParameters.getTheMachine().convertToExplicitMove(m);
+			}
+			s += "]";
+			System.out.println("Expanding move " + s);
+			*/
 
 		}else{
 
@@ -710,7 +745,15 @@ public class HybridMctsManager {
 
 			mctsJointMove = this.selectionStrategy.select(currentNode);
 
-			//System.out.println("Selecting move " + mctsJointMove);
+			/*
+			String s = "[ ";
+			for(Move m : mctsJointMove.getJointMove()){
+				s += this.gameDependentParameters.getTheMachine().convertToExplicitMove(m);
+			}
+			s += "]";
+			System.out.println("Selecting move " + s);
+			System.out.println("Selecting move " + mctsJointMove.getJointMove());
+			*/
 		}
 
 		//System.out.println("Chosen move: " + mctsJointMove);
@@ -726,6 +769,9 @@ public class HybridMctsManager {
 			this.currentIterationVisitedNodes--;
 			return new SimulationResult(this.gameDependentParameters.getTheMachine().getSafeGoalsAvgForAllRoles(currentState));
 		}
+
+		//System.out.println("Next state = [ " + this.gameDependentParameters.getTheMachine().convertToExplicitMachineState(nextState) + " ]");
+		//System.out.println("Next state = [ " + nextState + " ]");
 
 		// ...and get the corresponding MCT node from the transposition table.
 		nextNode = this.transpositionTable.getNode(nextState);
@@ -752,7 +798,7 @@ public class HybridMctsManager {
 		// expansion.
 		if(nextNode == null){
 
-			//System.out.println("Creating next node...");
+			//System.out.println("Next node not found. Creating next node...");
 
 			//System.out.println("Adding new node to table: " + nextState);
 
@@ -770,6 +816,17 @@ public class HybridMctsManager {
 					throw new RuntimeException("Detected null goals for a treminal node in the tree.");
 				}
 
+				/*
+				System.out.print("Returning goals:");
+				String s = "[";
+				s += " ";
+				for(int i = 0; i < nextNode.getGoals().length; i++){
+					s += nextNode.getGoals()[i] + " ";
+				}
+				s += "]\n";
+				System.out.print(s);
+				*/
+
 				simulationResult = new SimulationResult(nextNode.getGoals());
 			}else{
 
@@ -781,6 +838,24 @@ public class HybridMctsManager {
 
 				if(availableDepth == 0){
 
+					/*
+					System.out.println("No depth available to perform playout.");
+
+					System.out.print("Returning goals:");
+
+					int[] goals = this.gameDependentParameters.getTheMachine().getSafeGoalsAvgForAllRoles(nextState);
+					String s = "[";
+					s += " ";
+					for(int i = 0; i < goals.length; i++){
+						s += goals[i] + " ";
+					}
+					s += "]\n";
+					System.out.print(s);
+
+					simulationResult = new SimulationResult(goals);
+
+					*/
+
 					simulationResult = new SimulationResult(this.gameDependentParameters.getTheMachine().getSafeGoalsAvgForAllRoles(nextState));
 
 				}else{
@@ -791,6 +866,21 @@ public class HybridMctsManager {
 					simulationResult = this.playoutStrategy.playout(nextState, availableDepth);
 					this.currentIterationVisitedNodes += simulationResult.getPlayoutLength();
 
+					/*
+					System.out.println("Finished performing playout.");
+
+					System.out.print("Returning goals:");
+
+					int[] goals = simulationResult.getTerminalGoals();
+					String s = "[";
+					s += " ";
+					for(int i = 0; i < goals.length; i++){
+						s += goals[i] + " ";
+					}
+					s += "]\n";
+					System.out.print(s);
+					*/
+
 					this.backpropagationStrategy.processPlayoutResult(nextNode, nextState, simulationResult);
 				}
 
@@ -799,6 +889,7 @@ public class HybridMctsManager {
 			}
 		}else{
 			// Otherwise, if we continue selecting:
+			//System.out.println("Found next node, continuing search.");
 			simulationResult = this.searchNext(nextState, nextNode);
 		}
 

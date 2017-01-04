@@ -34,7 +34,11 @@ public class EvoAfterMove extends AfterMoveStrategy {
 
 	@Override
 	public String getComponentParameters(String indentation) {
-		return indentation + "EVOLUTION_MANAGER = " + this.evolutionManager.printEvolutionManager(indentation + "  ");
+		// Only the component that creates the manager prints its content
+		//return indentation + "EVOLUTION_MANAGER = " + this.evolutionManager.printEvolutionManager(indentation + "  ");
+
+		// Here we only print the name
+		return indentation + "EVOLUTION_MANAGER = " + this.evolutionManager.getClass().getSimpleName();
 	}
 
 	@Override

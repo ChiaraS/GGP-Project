@@ -42,7 +42,11 @@ public class GraveSelection extends MoveValueSelection implements OnlineTunableC
 			String[] values = gamerSettings.getPropertyMultiValue("SelectionStrategy.valuesForMinAmafVisits");
 			this.valuesForMinAmafVisits = new double[values.length];
 			for(int i = 0; i < values.length; i++){
-				this.valuesForMinAmafVisits[i] = Integer.parseInt(values[i]);
+				if(values[i].equalsIgnoreCase("max")){
+					this.valuesForMinAmafVisits[i] = Integer.MAX_VALUE;
+				}else{
+					this.valuesForMinAmafVisits[i] = Integer.parseInt(values[i]);
+				}
 			}
 			sharedReferencesCollector.setTheComponentToTune(this);
 		}else{

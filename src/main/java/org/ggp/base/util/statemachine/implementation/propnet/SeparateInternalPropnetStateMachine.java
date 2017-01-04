@@ -303,7 +303,8 @@ public class SeparateInternalPropnetStateMachine extends InternalPropnetStateMac
 		boolean propnetStateModified = this.markBases(state);
 
 		// Mark input propositions according to the moves.
-		propnetStateModified = propnetStateModified||this.markInputs(moves);
+		// NOTE: don't switch the two propositions or markInputs(moves) will not be executed whenever propnetStateModified==true
+		propnetStateModified = this.markInputs(moves)||propnetStateModified;
 
 		if(propnetStateModified){
 			this.recomputeCycles();

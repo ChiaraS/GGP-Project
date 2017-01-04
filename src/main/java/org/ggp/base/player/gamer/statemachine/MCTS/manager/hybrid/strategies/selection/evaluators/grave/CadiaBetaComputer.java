@@ -43,7 +43,7 @@ public class CadiaBetaComputer extends BetaComputer{
 			String[] values = gamerSettings.getPropertyMultiValue("BetaComputer.valuesForK");
 			this.valuesForK = new double[values.length];
 			for(int i = 0; i < values.length; i++){
-				this.valuesForK[i] = Integer.parseInt(values[i]);
+				this.valuesForK[i] = Double.parseDouble(values[i]);
 			}
 			sharedReferencesCollector.setTheComponentToTune(this);
 		}else{
@@ -96,9 +96,9 @@ public class CadiaBetaComputer extends BetaComputer{
 
 			valuesForKString += "]";
 
-			params += indentation = "VALUES_FOR_TUNING_K = " + valuesForKString;
+			params += indentation + "VALUES_FOR_TUNING_K = " + valuesForKString;
 		}else{
-			params += indentation = "VALUES_FOR_TUNING_K = null";
+			params += indentation + "VALUES_FOR_TUNING_K = null";
 		}
 
 		if(this.k != null){
@@ -112,9 +112,9 @@ public class CadiaBetaComputer extends BetaComputer{
 
 			kString += "]";
 
-			params += indentation = "k = " + kString;
+			params += indentation + "k = " + kString;
 		}else{
-			params += indentation = "k = null";
+			params += indentation + "k = null";
 		}
 
 		return params;

@@ -18,6 +18,7 @@ import org.ggp.base.util.statemachine.structure.explicit.ExplicitMachineState;
 import org.ggp.base.util.statemachine.structure.explicit.ExplicitMove;
 import org.ggp.base.util.statemachine.structure.explicit.ExplicitRole;
 
+
 public class CompactStateMachine extends AbstractStateMachine {
 
 	private CompactStateMachineInterface theMachine;

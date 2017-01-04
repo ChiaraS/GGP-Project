@@ -16,7 +16,7 @@ import org.ggp.base.util.statemachine.structure.explicit.ExplicitMove;
 import org.ggp.base.util.statemachine.structure.explicit.ExplicitRole;
 
 /**
- * TOTO: using instanceof is not elegant. Find a better way to deal with state machines using different types of moves, states and roles.
+ * TODO: using instanceof is not elegant. Find a better way to deal with state machines using different types of moves, states and roles.
  */
 public class ExplicitStateMachine extends AbstractStateMachine {
 

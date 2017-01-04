@@ -48,7 +48,7 @@ public class UctEvaluator extends MoveEvaluator implements OnlineTunableComponen
 			String[] values = gamerSettings.getPropertyMultiValue("MoveEvaluator.valuesForC");
 			this.valuesForC = new double[values.length];
 			for(int i = 0; i < values.length; i++){
-				this.valuesForC[i] = Integer.parseInt(values[i]);
+				this.valuesForC[i] = Double.parseDouble(values[i]);
 			}
 			sharedReferencesCollector.setTheComponentToTune(this);
 		}else{
