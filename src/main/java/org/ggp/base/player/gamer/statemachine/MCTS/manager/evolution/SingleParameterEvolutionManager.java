@@ -179,7 +179,7 @@ public class SingleParameterEvolutionManager{
 
 				// Extra check (should never be true).
 				if(selectedIndividualsIndices.isEmpty()){
-					throw new RuntimeException("Evolution manager, K selection: detected no individuals with fitness value higher than -1.");
+					throw new RuntimeException("Evolution manager - SelectNextIndividuals(): detected no individuals with fitness value higher than -1.");
 				}
 
 				this.currentSelectedIndividuals[i] = selectedIndividualsIndices.get(this.random.nextInt(selectedIndividualsIndices.size())).intValue();
