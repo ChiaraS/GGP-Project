@@ -52,7 +52,7 @@ public class EpsilonMastJointMoveSelector extends JointMoveSelector implements O
 			for(int i = 0; i < values.length; i++){
 				this.valuesForEpsilon[i] = Double.parseDouble(values[i]);
 			}
-			sharedReferencesCollector.setTheComponentToTune(this);
+			sharedReferencesCollector.addComponentToTune(this);
 		}else{
 			this.valuesForEpsilon = null;
 		}
@@ -173,6 +173,20 @@ public class EpsilonMastJointMoveSelector extends JointMoveSelector implements O
 	@Override
 	public double[] getPossibleValues() {
 		return this.valuesForEpsilon;
+	}
+
+	@Override
+	public void setNewValuesFromIndices(int[] newValuesIndices) {
+		// We are tuning only the parameter of myRole
+		if(newValuesIndices.length == 1){
+
+			this.epsilon[this.gameDependentParameters.getMyRoleIndex()] = this.valuesForEpsilon[newValuesIndices[0]];
+
+		}else{ // We are tuning all parameters
+			for(int i = 0; i <this.epsilon.length; i++){
+				this.epsilon[i] = this.valuesForEpsilon[newValuesIndices[i]];
+			}
+		}
 	}
 
 }

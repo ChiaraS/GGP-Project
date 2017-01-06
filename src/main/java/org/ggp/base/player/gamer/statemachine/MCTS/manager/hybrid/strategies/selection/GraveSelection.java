@@ -20,7 +20,7 @@ public class GraveSelection extends MoveValueSelection implements OnlineTunableC
 
 	private int initialMinAmafVisits;
 
-	private double[] valuesForMinAmafVisits;
+	private int[] valuesForMinAmafVisits;
 
 	public GraveSelection(GameDependentParameters gameDependentParameters, Random random,
 			GamerSettings gamerSettings, SharedReferencesCollector sharedReferencesCollector) {
@@ -40,7 +40,7 @@ public class GraveSelection extends MoveValueSelection implements OnlineTunableC
 			// BetaComputer.valuesForK=v1;v2;...;vn
 			// The values are listed separated by ; with no spaces
 			String[] values = gamerSettings.getPropertyMultiValue("SelectionStrategy.valuesForMinAmafVisits");
-			this.valuesForMinAmafVisits = new double[values.length];
+			this.valuesForMinAmafVisits = new int[values.length];
 			for(int i = 0; i < values.length; i++){
 				if(values[i].equalsIgnoreCase("max")){
 					this.valuesForMinAmafVisits[i] = Integer.MAX_VALUE;
@@ -48,7 +48,7 @@ public class GraveSelection extends MoveValueSelection implements OnlineTunableC
 					this.valuesForMinAmafVisits[i] = Integer.parseInt(values[i]);
 				}
 			}
-			sharedReferencesCollector.setTheComponentToTune(this);
+			sharedReferencesCollector.addComponentToTune(this);
 		}else{
 			this.valuesForMinAmafVisits = null;
 		}
@@ -197,6 +197,25 @@ public class GraveSelection extends MoveValueSelection implements OnlineTunableC
 
 	@Override
 	public double[] getPossibleValues() {
-		return this.valuesForMinAmafVisits;
+		double[] possibleValues = new double[this.valuesForMinAmafVisits.length];
+
+		for(int i = 0; i <this.valuesForMinAmafVisits.length; i++){
+			possibleValues[i] = this.valuesForMinAmafVisits[i];
+		}
+		return possibleValues;
+	}
+
+	@Override
+	public void setNewValuesFromIndices(int[] newValuesIndices) {
+		// We are tuning only the parameter of myRole
+		if(newValuesIndices.length == 1){
+
+			this.minAmafVisits[this.gameDependentParameters.getMyRoleIndex()] = this.valuesForMinAmafVisits[newValuesIndices[0]];
+
+		}else{ // We are tuning all parameters
+			for(int i = 0; i <this.minAmafVisits.length; i++){
+				this.minAmafVisits[i] = this.valuesForMinAmafVisits[newValuesIndices[i]];
+			}
+		}
 	}
 }

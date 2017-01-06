@@ -6,25 +6,49 @@ public abstract class CombinatorialTuner {
 
 	/**
 	 * Size of the classes of unit actions of the combinatorial problem.
-	 * In this case each unit action corresponds to the assignment of a given value to one
-	 * of the parameters we are tuning. Each class corresponds to one of the parameters being
-	 * tuned. As abstraction we represent unit actions with the index that the value they assign
-	 * has in the array of available values for the parameter. A combinatorial move is thus
-	 * represented as an array of indices, one for each parameter being tuned.
-	 * In order to compute the index of each action of each class we only need the size of the
-	 * classes since the combinatorial tuner doesn't need to know which unit action corresponds to
-	 * which index. This class can be used to make decisions in a combinatorial space independently
-	 * from the types of actions, as long as they are represented by an index and there is someone
-	 * outside that can map indices to unit actions.
+	 *
+	 * Each parameter being tuned corresponds to one class. The size of a class is the number of
+	 * different values that the parameter can assume. Each unit move for a class corresponds to
+	 * the assignment of one of the available values to the parameter. A combinatorial move is
+	 * thus an assignment of a value to each of the parameters being tuned.
+	 *
+	 * Note that in this class we represent each unit move as the index in the list of possible
+	 * values of the value that the move assigns to the parameter corresponding to the class.
+	 * A combinatorial move is thus a list of indices, each of them indicating the index of the
+	 * selected value for the corresponding parameter.
+	 *
+	 * Note that since we represent each unit move as an index we don't need to know he exact values
+	 * that each unit move assigns to the corresponding parameter. It's sufficient to know how many
+	 * parameters there are per class to know how many indices we have to deal with.
+	 *
+	 * Note that we either tune all the parameters only for our role or for all the roles. Tuning
+	 * different parameters for different roles is not permitted.
+	 *
 	 */
 	protected int[] classesLength;
 
-	public CombinatorialTuner(int[] classesLength) {
+	public void setClassesLength(int[] classesLength) {
 		if(classesLength == null || classesLength.length == 0){
 			GamerLogger.logError("SearchManagerCreation", "CombinatorialTuner - Initialization with null or empty list of classes length. No classes of actions to combine!");
-			throw new RuntimeException("CombinatorialTuner - Initialization with null or empty list of classes length. No classes of actions to combine!");
+			throw new RuntimeException("CombinatorialProblemRepresentation - Initialization with null or empty list of classes length. No classes of actions to combine!");
 		}
 		this.classesLength = classesLength;
 	}
 
+    /**
+     * After the end of each game clear the tuner.
+     */
+	public abstract void clear();
+
+	public abstract void setUp(int numRolesToTune);
+
+	public abstract int[][] selectNextCombinations();
+
+	public abstract String printCombinatorialTuner(String indentation);
+
+	public abstract int getNumIndependentCombinatorialProblems();
+
+	public abstract void updateStatistics(int[] rewards);
+
+	public abstract void logStats();
 }

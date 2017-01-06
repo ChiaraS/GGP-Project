@@ -3,57 +3,86 @@ package org.ggp.base.player.gamer.statemachine.MCTS.manager.combinatorialtuning;
 import java.util.LinkedList;
 import java.util.Random;
 
+import org.ggp.base.player.gamer.statemachine.MCTS.manager.combinatorialtuning.selectors.UcbSelector;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.combinatorialtuning.structure.CombinatorialMoveStats;
+import org.ggp.base.player.gamer.statemachine.MCTS.manager.combinatorialtuning.structure.UcbCombinatorialProblemRepresentation;
 import org.ggp.base.util.logging.GamerLogger;
 
 /**
- * This tuner selects the combinations of values for the parameter of a single role.
+ * This tuner selects the combinations of values for the parameter of a the tuned role(s).
  *
  * @author C.Sironi
  *
  */
 public class UcbCombinatorialTuner extends CombinatorialTuner {
 
-	private Random random;
+	private double tunerC;
 
-	private double evoC;
-
-	private double evoValueOffset;
+	private double tunerValueOffset;
 
 	/**
-	 * If true the tuner will re-scale the move values between 0 and 1 with respect
-	 * to the maximum and the minimum fitness of the currently considered individuals.
-	 * If false the values will be rescaled using [0, 100] as extremes, like normally.
+	 * First play urgency for the tuner (i.e. default value of a combination that has never been explored).
+	 */
+	private double tunerFpu;
+
+	/**
+	 * All possible combinations of unit moves (i.e. all possible combinatorial moves).
+	 * These won't change for the whole life span of the gamer, thus they don't have to be
+	 * recomputed after each game.
+	 */
+	private int[][] combinatorialMoves;
+
+	/**
+	 * Given the statistics of each move, selects one according to the UCB formula
+	 */
+	private UcbSelector ucbSelector;
+
+	/**
+	 * For each role being tuned, representation of the combinatorial problem of settings values to the
+	 * parameters as a multi-armed bandit problem.
 	 *
-	 * NOTE: normalization should help stretching the values more, thus making more evident the difference
-	 * between them and steering the manager towards using even more often the best values.
+	 * Note: this has either length=1 when tuning only my role or length=numRoles when tuning all roles.
 	 */
-	private boolean useNormalization;
-
-
-
-
-
+	private UcbCombinatorialProblemRepresentation[] rolesMabs;
 
 	/**
-	 * Statistics for all possible combinatorial moves.
-	 * (Combinatorial moves = all possible combinations of indices of the unit moves).
+	 * Memorizes for each MAB the index of the last selected combinatorial move.
 	 */
-	private CombinatorialMoveStats[] combinatorialMovesStats;
+	private int[] selectedCombinationsIndices;
 
-	/**
-	 *  Number of times any of the combinatorial actions has been evaluated.
-	 */
-	private int numUpdates;
+	public UcbCombinatorialTuner(Random random, double tunerC, double tunerValueOffset, double tunerFpu) {
 
-	/**
-	 * Index in the array of statistics of the currently selected combinatorial action
-	 * (i.e. configuration of parameters).
-	 */
-	private int currentSelectedCombination;
+		super();
 
-	public UcbCombinatorialTuner(int[] classesLength) {
-		super(classesLength);
+		this.tunerC = tunerC;
+		this.tunerValueOffset = tunerValueOffset;
+		this.tunerFpu = tunerFpu;
+
+		this.ucbSelector = new UcbSelector(random);
+
+		this.rolesMabs = null;
+
+		this.selectedCombinationsIndices = null;
+
+		/*
+		for(int i = 0; i < this.combinatorialMoves.length; i++){
+			System.out.print("[ ");
+			for(int j = 0; j < combinatorialMoves[i].length; j++){
+				System.out.print(combinatorialMoves[i][j] + " ");
+			}
+			System.out.println("]");
+		}
+		*/
+
+	}
+
+	@Override
+	public void setClassesLength(int[] classesLength){
+		super.setClassesLength(classesLength);
+
+		// Build the lists of all possible parameter combinations for my role and (if being tuned)
+		// for the other roles (note that if the other roles are also being tuned all the possible
+		// combinations of values are the same for each role.
 
 		int numCombinatorialMoves = 1;
 
@@ -68,21 +97,14 @@ public class UcbCombinatorialTuner extends CombinatorialTuner {
 		}
 
 		// Create all the possible combinatorial moves
-		this.combinatorialMovesStats = new CombinatorialMoveStats[numCombinatorialMoves];
+		this.combinatorialMoves = new int[numCombinatorialMoves][];
 
 		this.crossProduct(new int[1], new LinkedList<Integer>());
-
-		/*
-		for(int i = 0; i < this.combinatorialMovesStats.length; i++){
-			System.out.println(combinatorialMovesStats[i]);
-		}
-		*/
-
 	}
 
     private void crossProduct(int[] nextFreeIndex, LinkedList<Integer> partial){
         if (partial.size() == this.classesLength.length) {
-            this.combinatorialMovesStats[nextFreeIndex[0]] = new CombinatorialMoveStats(this.toIntArray(partial));
+            this.combinatorialMoves[nextFreeIndex[0]] = this.toIntArray(partial);
             nextFreeIndex[0]++;
         } else {
             for(int i = 0; i < this.classesLength[partial.size()]; i++) {
@@ -104,127 +126,209 @@ public class UcbCombinatorialTuner extends CombinatorialTuner {
     	return intArray;
     }
 
-    /*
-	public int[] selectNextCombination(){
+    /**
+     * After the end of each game clear the tuner.
+     */
+	@Override
+	public void clear(){
+		this.rolesMabs = null;
+		this.selectedCombinationsIndices = null;
+	}
 
-		// This should mean that no combination of values has been evaluated yet (1st simulation),
-		// thus we return a random combination.
-		if(this.numUpdates == 0){
-			this.currentSelectedCombination = this.random.nextInt(this.combinatorialMovesStats.length);
-		}else{
+    /**
+     * Before the start of each game creates a new MAB problem for each role being tuned.
+     *
+     * @param numRolesToTune either 1 (my role) or all the roles of the game we're going to play.
+     */
+	@Override
+	public void setUp(int numRolesToTune){
 
-			double minExtreme = 0.0;
-			double maxExtreme = 100.0;
-			double avgValue;
+		// Create a MAB representation of the combinatorial problem for each role
+		this.rolesMabs = new UcbCombinatorialProblemRepresentation[numRolesToTune];
 
-			// If we want to normalize the values of the combinations before selecting one...
-			if(this.useNormalization){
+		for(int i = 0; i < this.rolesMabs.length; i++){
+			rolesMabs[i] = new UcbCombinatorialProblemRepresentation(this.combinatorialMoves);
+		}
 
-				// We need to compute the extremes in which to normalize
-				minExtreme = Double.MAX_VALUE;
-				maxExtreme = -Double.MAX_VALUE;
+		this.selectedCombinationsIndices = new int[numRolesToTune];
 
-					for(int j = 0; j < this.populations[i].length; j++){
+	}
 
-						int individualEvaluations = this.populations[i][j].getNumEvaluations();
-						int totalFitness = this.populations[i][j].getTotalFitness();
+	/**
+	 * Selects for each MAB (i.e. each role being tuned) the next combinatorial move
+	 * (i.e. the next combination of parameters).
+	 *
+	 * @return for each tuned role, a list with the indices of the values to be set to each parameters.
+	 */
+	@Override
+	public int[][] selectNextCombinations(){
 
-						if(individualEvaluations != 0){
-							avgFitness = (((double)totalFitness)/((double)individualEvaluations));
+		int[][] nextCombinations = new int[this.rolesMabs.length][];
 
-							if(avgFitness < minExtreme){
-								minExtreme = avgFitness;
-							}
+		for(int i = 0; i < this.rolesMabs.length; i++){
+			this.selectedCombinationsIndices[i] = this.ucbSelector.selectMove(this.rolesMabs[i].getCombinatorialMoveStats(),
+					this.rolesMabs[i].getNumUpdates(), this.tunerC, this.tunerValueOffset, this.tunerFpu);
+			nextCombinations[i] = this.rolesMabs[i].getCombinatorialMoveStats()[this.selectedCombinationsIndices[i]].getTheCombinatorialMove();
+		}
 
-							if(avgFitness > maxExtreme){
-								maxExtreme = avgFitness;
-							}
-						}
-					}
+		return nextCombinations;
 
-					// If no max or min value has been found because no individual has been evaluated once yet,
-					// or max and min values are the same, then initilize them to the standard expected extremes,
-					// that is [0, 100]
-					if(minExtreme >= maxExtreme){
-						minExtreme = 0.0;
-						maxExtreme = 100.0;
-					}
+	}
 
+	/**
+	 * Updates the statistics of each MAB for the last selected move according to the given rewards.
+	 *
+	 * @param rewards
+	 */
+	@Override
+	public void updateStatistics(int[] rewards){
+
+		if(rewards.length != this.rolesMabs.length){
+			GamerLogger.logError("CombinatorialTuner", "UcbCombinatorialTuner - Impossible to update move statistics! Wrong number of rewards (" + rewards.length +
+					") to update the MAB problems (" + this.rolesMabs.length + ").");
+			throw new RuntimeException("UcbCombinatorialTuner - Initialization with class of moves of length 0. No values for the calss!");
+		}
+
+		for(int i = 0; i < rewards.length; i++){
+
+			CombinatorialMoveStats stat = this.rolesMabs[i].getCombinatorialMoveStats()[this.selectedCombinationsIndices[i]];
+
+			stat.incrementScoreSum(rewards[i]);
+			stat.incrementVisits();
+
+			this.rolesMabs[i].incrementNumUpdates();
+		}
+
+	}
+
+	@Override
+	public void logStats(){
+
+		GamerLogger.log(GamerLogger.FORMAT.CSV_FORMAT, "CombinatorialTunerStats", "");
+
+		for(int i = 0; i < this.rolesMabs.length; i++){
+
+			CombinatorialMoveStats[] allMoveStats = this.rolesMabs[i].getCombinatorialMoveStats();
+
+			for(int j = 0; j < allMoveStats.length; j++){
+
+				int[] cMove = allMoveStats[j].getTheCombinatorialMove();
+
+				String cMoveString = "[ ";
+				for(int k = 0; k < cMove.length; k++){
+					cMoveString += cMove[k] + " ";
 				}
+				cMoveString += "]";
 
-				double maxValue = -1;
-				double[] individualsValues = new double[this.populations[i].length];
+				GamerLogger.log(GamerLogger.FORMAT.CSV_FORMAT, "CombinatorialTunerStats", "MAB=;" + i + ";COMBINATORIAL_MOVE=;" + cMoveString + ";VISITS=;" + allMoveStats[j].getVisits() + ";SCORE_SUM=;" + allMoveStats[j].getScoreSum() + ";AVG_VALUE=;" + (allMoveStats[j].getVisits() <= 0 ? "0" : (allMoveStats[j].getScoreSum()/((double)allMoveStats[j].getVisits()))));
+			}
 
-				List<Integer> selectedIndividualsIndices = new ArrayList<Integer>();
+			GamerLogger.log(GamerLogger.FORMAT.CSV_FORMAT, "CombinatorialTunerStats", "");
 
-				for(int j = 0; j < this.populations[i].length; j++){
+		}
 
-					individualsValues[j] = this.computeIndividualsValue(populations[i][j], this.numUpdates[i], minExtreme, maxExtreme);
+	}
 
-					if(individualsValues[j] == Double.MAX_VALUE){
-						maxValue = individualsValues[j];
-						selectedIndividualsIndices.add(new Integer(j));
-					}else if(individualsValues[j] > maxValue){
-						maxValue = individualsValues[j];
-					}
-				}
+	public String getCombinatorialTunerParameters(String indentation) {
 
-				/*
-				System.out.print("Values for population " + i + ": [ ");
-				for(int j = 0; j < individualsValues.length; j++){
-					System.out.print(individualsValues[j] + " ");
-				}
-				System.out.println("]");
+		String params = indentation + "EXPLORATION_CONSTANT = " + this.tunerC + indentation + "VALUE_OFFSET = " + this.tunerValueOffset + indentation + "FIRST_PLAY_URGENCY = " + this.tunerFpu + indentation + "NUM_COMBINATORIAL_MOVES = " + this.combinatorialMoves.length;
 
+		/* TODO: print also other parameters???
+		if(this.numUpdates != null){
 
+			String numUpdatesString = "[ ";
 
-				// NOTE: as is, this code always selects an "unexplored" individual if there is one, even if
-				// there is an individual that has a value higher than (Double.MAX_VALUE-this.valueOffset).
-				if(maxValue < Double.MAX_VALUE){
-					for(int j = 0; j < individualsValues.length; j++){
-						if(individualsValues[j] >= (maxValue-this.evoValueOffset)){
-							selectedIndividualsIndices.add(new Integer(j));
-						}
-					}
-				}
+			for(int i = 0; i < this.numUpdates.length; i++){
 
-				// Extra check (should never be true).
-				if(selectedIndividualsIndices.isEmpty()){
-					throw new RuntimeException("Evolution manager - SelectNextIndividuals(): detected no individuals with fitness value higher than -1.");
-				}
-
-				this.currentSelectedIndividuals[i] = selectedIndividualsIndices.get(this.random.nextInt(selectedIndividualsIndices.size())).intValue();
-				nextIndividuals[i] = this.populations[i][this.currentSelectedIndividuals[i]].getParameter();
+				numUpdatesString += this.numUpdates[i] + " ";
 
 			}
 
+			numUpdatesString += "]";
+
+			params += indentation + "num_updates = " + numUpdatesString;
+		}else{
+			params += indentation + "num_updates = null";
 		}
 
-		/*
-		System.out.print("Returning best individuals: [ ");
-		for(int j = 0; j < nextIndividuals.length; j++){
-			System.out.print(nextIndividuals[j] + " ");
+		if(this.populations != null){
+
+			String populationsString = "[ ";
+
+			for(int i = 0; i < this.populations.length; i++){
+
+				if(this.populations[i] != null){
+
+					populationsString += "[ ";
+
+					for(int j = 0; j < this.populations[i].length; j++){
+
+						populationsString += this.populations[i][j].getParameter() + " ";
+
+					}
+
+					populationsString += "] ";
+
+				}else{
+					populationsString += "null ";
+				}
+
+			}
+
+			populationsString += "]";
+
+			params += indentation + "populations = " + populationsString;
+
+
+		}else{
+			params += indentation + "populations = null";
 		}
-		System.out.println("]");
 
-		System.out.println();
-		//System.out.println("C = " + nextIndividuals[0]);
+		if(this.currentSelectedIndividuals != null){
 
+			String currentSelectedIndividualsString = "[ ";
 
-		return nextIndividuals;
+			for(int i = 0; i < this.currentSelectedIndividuals.length; i++){
 
-	}*/
+				currentSelectedIndividualsString += this.currentSelectedIndividuals[i] + " ";
+
+			}
+
+			currentSelectedIndividualsString += "]";
+
+			params += indentation + "current_selected_individuals_indices = " + currentSelectedIndividualsString;
+		}else{
+			params += indentation + "current_selected_individuals_indices = null";
+		}
+		*/
+
+		return params;
+	}
+
+	@Override
+	public String printCombinatorialTuner(String indentation) {
+		String params = this.getCombinatorialTunerParameters(indentation);
+
+		if(params != null){
+			return this.getClass().getSimpleName() + params;
+		}else{
+			return this.getClass().getSimpleName();
+		}
+	}
+
+	@Override
+	public int getNumIndependentCombinatorialProblems() {
+		return this.rolesMabs.length;
+	}
 
 
     /*
     public static void main(String args[]){
-    	int[] lengths = new int[3];
-
-    	lengths[0] = 3;
-    	lengths[1] = 2;
-    	lengths[2] = 4;
-
-    	UcbCombinatorialTuner tuner = new UcbCombinatorialTuner(lengths);
+    	int[] l = new int[3];
+    	l[0] = 3;
+    	l[1] = 2;
+    	l[2] = 4;
+    	UcbCombinatorialTuner t = new UcbCombinatorialTuner(l);
     }
     */
 

@@ -1,8 +1,11 @@
 package org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 
 import org.ggp.base.player.gamer.statemachine.MCS.manager.MoveStats;
+import org.ggp.base.player.gamer.statemachine.MCTS.manager.combinatorialtuning.CombinatorialTuner;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.evolution.OnlineTunableComponent;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.evolution.SingleParameterEvolutionManager;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.strategies.backpropagation.TdBackpropagation;
@@ -28,11 +31,15 @@ public class SharedReferencesCollector {
 
 	private Map<Move, MoveStats> mastStatistics;
 
-	private OnlineTunableComponent theComponentToTune;
+	//private OnlineTunableComponent theComponentToTune;
+
+	private List<OnlineTunableComponent> theComponentsToTune;
 
 	private GlobalExtremeValues globalExtremeValues;
 
 	private SingleParameterEvolutionManager singleParameterEvolutionManager;
+
+	private CombinatorialTuner combinatorialTuner;
 
 	private GraveSelection graveSelection;
 
@@ -64,6 +71,7 @@ public class SharedReferencesCollector {
 		}
 	}
 
+	/*
 	public void setTheComponentToTune(OnlineTunableComponent theComponentToTune){
 		// Can only be set once
 		if(this.theComponentToTune == null){
@@ -81,6 +89,30 @@ public class SharedReferencesCollector {
 		}else{
 			GamerLogger.logError("SearchManagerCreation", "Trying to get TheComponentToTune that has never been set! Probably a wrong combination of strategies has been set.");
 			throw new RuntimeException("Trying to get TheComponentToTune that has never been set!");
+		}
+	}
+	*/
+
+	public void addComponentToTune(OnlineTunableComponent theComponentToTune){
+		// Can only be set once
+		if(this.theComponentsToTune == null){
+			this.theComponentsToTune = new ArrayList<OnlineTunableComponent>();
+			this.theComponentsToTune.add(theComponentToTune);
+		}else if(this.theComponentsToTune.contains(theComponentToTune)){
+			GamerLogger.logError("SearchManagerCreation", "Trying to add duplicate OnlineTunableComponent to TheComponentToTune multiple times!");
+			throw new RuntimeException("Trying to add duplicate OnlineTunableComponent to TheComponentToTune multiple times!");
+		}else{
+			this.theComponentsToTune.add(theComponentToTune);
+		}
+	}
+
+	public List<OnlineTunableComponent> getTheComponentsToTune(){
+		// If a strategy looks for the reference then another strategy must have set it
+		if(this.theComponentsToTune != null && !this.theComponentsToTune.isEmpty()){
+			return this.theComponentsToTune;
+		}else{
+			GamerLogger.logError("SearchManagerCreation", "Trying to get TheComponentsToTune that have never been set! Probably a wrong combination of strategies has been set.");
+			throw new RuntimeException("Trying to get TheComponentsToTune that have never been set!");
 		}
 	}
 
@@ -121,6 +153,26 @@ public class SharedReferencesCollector {
 		}else{
 			GamerLogger.logError("SearchManagerCreation", "Trying to get SingleParameterEvolutionManager that has never been set! Probably a wrong combination of strategies has been set.");
 			throw new RuntimeException("Trying to get SingleParameterEvolutionManager that has never been set!");
+		}
+	}
+
+	public void setCombinatorialTuner(CombinatorialTuner combinatorialTuner){
+		// Can only be set once
+		if(this.combinatorialTuner == null){
+			this.combinatorialTuner = combinatorialTuner;
+		}else{
+			GamerLogger.logError("SearchManagerCreation", "Trying to set CombinatorialTuner multiple times! Probably a wrong combination of strategies has been set.");
+			throw new RuntimeException("Trying to set CombinatorialTuner multiple times!");
+		}
+	}
+
+	public CombinatorialTuner getCombinatorialTuner(){
+		// If a strategy looks for the reference then another strategy must have set it
+		if(this.combinatorialTuner != null){
+			return this.combinatorialTuner;
+		}else{
+			GamerLogger.logError("SearchManagerCreation", "Trying to get CombinatorialTuner that has never been set! Probably a wrong combination of strategies has been set.");
+			throw new RuntimeException("Trying to get CombinatorialTuner that has never been set!");
 		}
 	}
 

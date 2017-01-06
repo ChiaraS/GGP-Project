@@ -37,7 +37,7 @@ public class GraveBetaComputer extends BetaComputer {
 			for(int i = 0; i < values.length; i++){
 				this.valuesForBias[i] = Double.parseDouble(values[i]);
 			}
-			sharedReferencesCollector.setTheComponentToTune(this);
+			sharedReferencesCollector.addComponentToTune(this);
 		}else{
 			this.valuesForBias = null;
 		}
@@ -144,6 +144,20 @@ public class GraveBetaComputer extends BetaComputer {
 	@Override
 	public double[] getPossibleValues() {
 		return this.valuesForBias;
+	}
+
+	@Override
+	public void setNewValuesFromIndices(int[] newValuesIndices) {
+		// We are tuning only the parameter of myRole
+		if(newValuesIndices.length == 1){
+
+			this.bias[this.gameDependentParameters.getMyRoleIndex()] = this.valuesForBias[newValuesIndices[0]];
+
+		}else{ // We are tuning all parameters
+			for(int i = 0; i <this.bias.length; i++){
+				this.bias[i] = this.valuesForBias[newValuesIndices[i]];
+			}
+		}
 	}
 
 }

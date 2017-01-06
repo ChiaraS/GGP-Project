@@ -46,4 +46,10 @@ public class PnProverCADIABetaComputer extends PnProverBetaComputer {
 		return null;
 	}
 
+	@Override
+	public void setNewValuesFromIndices(int[] newValuesIndices) {
+		// TODO Auto-generated method stub
+
+	}
+
 }

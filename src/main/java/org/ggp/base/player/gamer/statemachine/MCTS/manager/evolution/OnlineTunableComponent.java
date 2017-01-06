@@ -6,6 +6,8 @@ public abstract interface OnlineTunableComponent {
 
 	public void setNewValues(double[] newValues);
 
+	public void setNewValuesFromIndices(int[] newValuesIndices);
+
 	public double[] getPossibleValues();
 
 }

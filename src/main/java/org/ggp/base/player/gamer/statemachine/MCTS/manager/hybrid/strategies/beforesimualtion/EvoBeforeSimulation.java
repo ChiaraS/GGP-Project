@@ -1,5 +1,6 @@
 package org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.strategies.beforesimualtion;
 
+import java.util.List;
 import java.util.Random;
 
 import org.ggp.base.player.gamer.statemachine.GamerSettings;
@@ -8,6 +9,7 @@ import org.ggp.base.player.gamer.statemachine.MCTS.manager.evolution.OnlineTunab
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.evolution.SingleParameterEvolutionManager;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.GameDependentParameters;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.SharedReferencesCollector;
+import org.ggp.base.util.logging.GamerLogger;
 
 public class EvoBeforeSimulation extends BeforeSimulationStrategy {
 
@@ -40,7 +42,16 @@ public class EvoBeforeSimulation extends BeforeSimulationStrategy {
 
 	@Override
 	public void setReferences(SharedReferencesCollector sharedReferencesCollector) {
-		this.tunableComponent = sharedReferencesCollector.getTheComponentToTune();
+
+		List<OnlineTunableComponent> tunableComponents = sharedReferencesCollector.getTheComponentsToTune();
+
+		if(tunableComponents != null && tunableComponents.size() == 1){
+			this.tunableComponent = tunableComponents.get(0);
+		}else{
+			GamerLogger.logError("SearchManagerCreation", "There is no single ComponentToTune! Probably a wrong combination of strategies has been set.");
+			throw new RuntimeException("There is no single ComponentToTune!");
+		}
+
 	}
 
 	@Override

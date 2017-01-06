@@ -45,4 +45,10 @@ public class PnProverGRAVEBetaComputer extends PnProverBetaComputer {
 		// TODO Auto-generated method stub
 		return null;
 	}
+
+	@Override
+	public void setNewValuesFromIndices(int[] newValuesIndices) {
+		// TODO Auto-generated method stub
+
+	}
 }

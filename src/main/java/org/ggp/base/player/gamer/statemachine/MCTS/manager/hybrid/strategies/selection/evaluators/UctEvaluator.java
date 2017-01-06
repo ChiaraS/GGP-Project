@@ -50,7 +50,7 @@ public class UctEvaluator extends MoveEvaluator implements OnlineTunableComponen
 			for(int i = 0; i < values.length; i++){
 				this.valuesForC[i] = Double.parseDouble(values[i]);
 			}
-			sharedReferencesCollector.setTheComponentToTune(this);
+			sharedReferencesCollector.addComponentToTune(this);
 		}else{
 			this.valuesForC = null;
 		}
@@ -186,6 +186,20 @@ public class UctEvaluator extends MoveEvaluator implements OnlineTunableComponen
 	@Override
 	public double[] getPossibleValues() {
 		return this.valuesForC;
+	}
+
+	@Override
+	public void setNewValuesFromIndices(int[] newValuesIndices) {
+		// We are tuning only the parameter of myRole
+		if(newValuesIndices.length == 1){
+
+			this.c[this.gameDependentParameters.getMyRoleIndex()] = this.valuesForC[newValuesIndices[0]];
+
+		}else{ // We are tuning all parameters
+			for(int i = 0; i <this.c.length; i++){
+				this.c[i] = this.valuesForC[newValuesIndices[i]];
+			}
+		}
 	}
 
 }

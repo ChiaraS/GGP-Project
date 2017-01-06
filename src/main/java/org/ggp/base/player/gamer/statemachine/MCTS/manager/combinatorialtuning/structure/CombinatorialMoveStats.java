@@ -20,8 +20,8 @@ public class CombinatorialMoveStats extends MoveStats {
 		this.combinatorialMove = combinatorialMove;
 	}
 
-	public double[] getTheCombinatorialMove() {
-		return this.getTheCombinatorialMove();
+	public int[] getTheCombinatorialMove() {
+		return this.combinatorialMove;
 	}
 
 	@Override

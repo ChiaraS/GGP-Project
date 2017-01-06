@@ -22,7 +22,7 @@ public class CadiaBetaComputer extends BetaComputer{
 	 * Array with all the values for K that must be used to tune the parameter.
 	 * These values will be used for al roles.
 	 */
-	private double[] valuesForK;
+	private int[] valuesForK;
 
 	public CadiaBetaComputer(GameDependentParameters gameDependentParameters, Random random,
 			GamerSettings gamerSettings, SharedReferencesCollector sharedReferencesCollector) {
@@ -41,11 +41,16 @@ public class CadiaBetaComputer extends BetaComputer{
 			// BetaComputer.valuesForK=v1;v2;...;vn
 			// The values are listed separated by ; with no spaces
 			String[] values = gamerSettings.getPropertyMultiValue("BetaComputer.valuesForK");
-			this.valuesForK = new double[values.length];
+			this.valuesForK = new int[values.length];
 			for(int i = 0; i < values.length; i++){
-				this.valuesForK[i] = Double.parseDouble(values[i]);
+				if(values[i].equalsIgnoreCase("max")){
+					this.valuesForK[i] = Integer.MAX_VALUE;
+				}else{
+					this.valuesForK[i] = Integer.parseInt(values[i]);
+				}
 			}
-			sharedReferencesCollector.setTheComponentToTune(this);
+
+			sharedReferencesCollector.addComponentToTune(this);
 		}else{
 			this.valuesForK = null;
 		}
@@ -145,7 +150,28 @@ public class CadiaBetaComputer extends BetaComputer{
 
 	@Override
 	public double[] getPossibleValues() {
-		return this.valuesForK;
+
+		double[] possibleValues = new double[this.valuesForK.length];
+
+		for(int i = 0; i <this.valuesForK.length; i++){
+			possibleValues[i] = this.valuesForK[i];
+		}
+		return possibleValues;
+	}
+
+	@Override
+	public void setNewValuesFromIndices(int[] newValuesIndices) {
+		// We are tuning only the parameter of myRole
+		if(newValuesIndices.length == 1){
+
+			this.k[this.gameDependentParameters.getMyRoleIndex()] = this.valuesForK[newValuesIndices[0]];
+
+		}else{ // We are tuning all parameters
+			for(int i = 0; i <this.k.length; i++){
+				this.k[i] = this.valuesForK[newValuesIndices[i]];
+			}
+		}
+
 	}
 
 }

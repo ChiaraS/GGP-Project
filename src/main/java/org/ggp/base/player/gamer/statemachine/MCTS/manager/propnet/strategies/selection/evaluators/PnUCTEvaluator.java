@@ -94,4 +94,10 @@ public class PnUCTEvaluator implements PnMoveEvaluator, OnlineTunableComponent{
 		return null;
 	}
 
+	@Override
+	public void setNewValuesFromIndices(int[] newValuesIndices) {
+		// TODO Auto-generated method stub
+
+	}
+
 }

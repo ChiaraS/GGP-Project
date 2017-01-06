@@ -87,4 +87,10 @@ public class PnGRAVESelection extends PnMoveValueSelection implements OnlineTuna
 		return null;
 	}
 
+	@Override
+	public void setNewValuesFromIndices(int[] newValuesIndices) {
+		// TODO Auto-generated method stub
+
+	}
+
 }
