@@ -30,7 +30,7 @@ public class ProgressiveHistoryGraveEvaluator extends GraveEvaluator {
 
 		this.currentRootAmafStats = null; // Before ever starting any selection we have no reference to any statistic
 
-		this.w = Double.parseDouble(gamerSettings.getPropertyValue("MoveEvaluator.w"));
+		this.w = gamerSettings.getDoublePropertyValue("MoveEvaluator.w");
 
 	}
 

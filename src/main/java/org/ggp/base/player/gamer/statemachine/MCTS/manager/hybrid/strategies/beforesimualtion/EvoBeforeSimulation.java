@@ -24,15 +24,15 @@ public class EvoBeforeSimulation extends BeforeSimulationStrategy {
 
 		super(gameDependentParameters, random, gamerSettings, sharedReferencesCollector);
 
-		double evoC = Double.parseDouble(gamerSettings.getPropertyValue("BeforeSimulationStrategy.evoC"));
-		double evoValueOffset = Double.parseDouble(gamerSettings.getPropertyValue("BeforeSimulationStrategy.evoValueOffset"));
-		boolean useNormalization = Boolean.parseBoolean(gamerSettings.getPropertyValue("BeforeSimulationStrategy.useNormalization"));
+		double evoC = gamerSettings.getDoublePropertyValue("BeforeSimulationStrategy.evoC");
+		double evoValueOffset = gamerSettings.getDoublePropertyValue("BeforeSimulationStrategy.evoValueOffset");
+		boolean useNormalization = gamerSettings.getBooleanPropertyValue("BeforeSimulationStrategy.useNormalization");
 
 		this.evolutionManager = new SingleParameterEvolutionManager(random, evoC, evoValueOffset, useNormalization);
 
 		sharedReferencesCollector.setSingleParameterEvolutionManager(evolutionManager);
 
-		this.tuneAllRoles = Boolean.parseBoolean(gamerSettings.getPropertyValue("BeforeSimulationStrategy.tuneAllRoles"));
+		this.tuneAllRoles = gamerSettings.getBooleanPropertyValue("BeforeSimulationStrategy.tuneAllRoles");
 
 		// Here the evolution manager has no populations!
 		// They will be initialized by this class everytime a new game is being played

@@ -44,12 +44,12 @@ public abstract class TdBackpropagation extends BackpropagationStrategy {
 
 		super(gameDependentParameters, random, gamerSettings, sharedReferencesCollector);
 
-		this.qPlayout = Double.parseDouble(gamerSettings.getPropertyValue("BackpropagationStrategy.qPlayout"));
-		this.lambda = Double.parseDouble(gamerSettings.getPropertyValue("BackpropagationStrategy.lambda"));
-		this.gamma = Double.parseDouble(gamerSettings.getPropertyValue("BackpropagationStrategy.gamma"));
+		this.qPlayout = gamerSettings.getDoublePropertyValue("BackpropagationStrategy.qPlayout");
+		this.lambda = gamerSettings.getDoublePropertyValue("BackpropagationStrategy.lambda");
+		this.gamma = gamerSettings.getDoublePropertyValue("BackpropagationStrategy.gamma");
 
-		double defaultGlobalMinValue = Double.parseDouble(gamerSettings.getPropertyValue("MoveEvaluator.defaultGlobalMinValue"));
-		double defaultGlobalMaxValue = Double.parseDouble(gamerSettings.getPropertyValue("MoveEvaluator.defaultGlobalMaxValue"));
+		double defaultGlobalMinValue = gamerSettings.getDoublePropertyValue("MoveEvaluator.defaultGlobalMinValue");
+		double defaultGlobalMaxValue = gamerSettings.getDoublePropertyValue("MoveEvaluator.defaultGlobalMaxValue");
 		this.globalExtremeValues = new GlobalExtremeValues(defaultGlobalMinValue, defaultGlobalMaxValue);
 		this.globalExtremeValues.setGlobalMinValues(null);
 		this.globalExtremeValues.setGlobalMaxValues(null);

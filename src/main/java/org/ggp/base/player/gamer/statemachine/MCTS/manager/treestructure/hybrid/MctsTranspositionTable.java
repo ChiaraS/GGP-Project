@@ -41,11 +41,6 @@ public class MctsTranspositionTable {
 		this.currentGameStepStamp = 1;
 		this.transpositionTable = new HashMap<MachineState,MctsNode>();
 		this.gameStepOffset = gameStepOffset;
-
-		if(this.log){
-			GamerLogger.log(GamerLogger.FORMAT.CSV_FORMAT, "TreeSizeStatistics", "Step;Start/End;#Nodes;#ActionsStats;#RAVE_AMAFStats;#GRAVE_AMAFStats;ActionsStats/Node;RAVE_AMAFStats/Node;GRAVE_AMAFStats/Node;");
-			GamerLogger.log(GamerLogger.FORMAT.CSV_FORMAT, "TreeSizeStatistics", "1;Start;0;0;0;0;0;0;0;");
-		}
 	}
 
 	public void clearTranspositionTable(){

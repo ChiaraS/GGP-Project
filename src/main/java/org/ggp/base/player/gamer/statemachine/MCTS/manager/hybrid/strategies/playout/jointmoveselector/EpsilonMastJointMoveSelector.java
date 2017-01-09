@@ -37,21 +37,15 @@ public class EpsilonMastJointMoveSelector extends JointMoveSelector implements O
 
 		this.epsilon = null;
 
-		this.initialEpsilon = Double.parseDouble(gamerSettings.getPropertyValue("JointMoveSelector.initialEpsilon"));
+		this.initialEpsilon = gamerSettings.getDoublePropertyValue("JointMoveSelector.initialEpsilon");
 
 		// If this component must be tuned online, then we should add its reference to the sharedReferencesCollector
-		String toTuneString = gamerSettings.getPropertyValue("JointMoveSelector.tune");
-		boolean toTune = Boolean.parseBoolean(toTuneString);
-		if(toTune){
+		if(gamerSettings.getBooleanPropertyValue("JointMoveSelector.tune")){
 			// If we have to tune the component then we look in the setting for all the values that we must use
 			// Note: the format for these values in the file must be the following:
 			// BetaComputer.valuesForK=v1;v2;...;vn
 			// The values are listed separated by ; with no spaces
-			String[] values = gamerSettings.getPropertyMultiValue("JointMoveSelector.valuesForEpsilon");
-			this.valuesForEpsilon = new double[values.length];
-			for(int i = 0; i < values.length; i++){
-				this.valuesForEpsilon[i] = Double.parseDouble(values[i]);
-			}
+			this.valuesForEpsilon = gamerSettings.getDoublePropertyMultiValue("JointMoveSelector.valuesForEpsilon");
 			sharedReferencesCollector.addComponentToTune(this);
 		}else{
 			this.valuesForEpsilon = null;

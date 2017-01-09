@@ -32,6 +32,15 @@ public class GraveEvaluator extends UctEvaluator{
 
 	private BetaComputer betaComputer;
 
+	/**
+	 * Default value of the exploration part of the UCB formula.
+	 * Used when the move has no visits but we have the AMAF value for it.
+	 * This evaluator has the following behavior when computing the value of a move:
+	 * - if moveVisits == 0 && AMAF(move) == null: fpu
+	 * - if moveVisits == 0 && AMAF(move) != null: AMAF(move) + defaultExploration
+	 * - if moveVisits != 0 && AMAF(move) == null: UCT(move) + UCT_EXPLORATION(move)
+	 * - if moveVisits != 0 && AMAF(move) != null: (1-beta)*UCT_EXPLOITATION(move) + beta*AMAF(move) + UCT_EXPLORATION(move)
+	 */
 	private double defaultExploration;
 
 	public GraveEvaluator(GameDependentParameters gameDependentParameters, Random random,
@@ -51,7 +60,7 @@ public class GraveEvaluator extends UctEvaluator{
 			throw new RuntimeException(e);
 		}
 
-		this.defaultExploration = Double.parseDouble(gamerSettings.getPropertyValue("MoveEvaluator.defaultExplorationValue"));
+		this.defaultExploration = gamerSettings.getDoublePropertyValue("MoveEvaluator.defaultExplorationValue");
 	}
 
 	@Override

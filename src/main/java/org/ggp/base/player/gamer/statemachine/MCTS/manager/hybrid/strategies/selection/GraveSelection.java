@@ -29,25 +29,15 @@ public class GraveSelection extends MoveValueSelection implements OnlineTunableC
 
 		this.minAmafVisits = null;
 
-		this.initialMinAmafVisits = Integer.parseInt(gamerSettings.getPropertyValue("SelectionStrategy.initialMinAmafVisits"));
+		this.initialMinAmafVisits = gamerSettings.getIntPropertyValue("SelectionStrategy.initialMinAmafVisits");
 
 		// If this component must be tuned online, then we should add its reference to the sharedReferencesCollector
-		String toTuneString = gamerSettings.getPropertyValue("SelectionStrategy.tune");
-		boolean toTune = Boolean.parseBoolean(toTuneString);
-		if(toTune){
+		if(gamerSettings.getBooleanPropertyValue("SelectionStrategy.tune")){
 			// If we have to tune the component then we look in the setting for all the values that we must use
 			// Note: the format for these values in the file must be the following:
 			// BetaComputer.valuesForK=v1;v2;...;vn
 			// The values are listed separated by ; with no spaces
-			String[] values = gamerSettings.getPropertyMultiValue("SelectionStrategy.valuesForMinAmafVisits");
-			this.valuesForMinAmafVisits = new int[values.length];
-			for(int i = 0; i < values.length; i++){
-				if(values[i].equalsIgnoreCase("max")){
-					this.valuesForMinAmafVisits[i] = Integer.MAX_VALUE;
-				}else{
-					this.valuesForMinAmafVisits[i] = Integer.parseInt(values[i]);
-				}
-			}
+			this.valuesForMinAmafVisits = gamerSettings.getIntPropertyMultiValue("SelectionStrategy.valuesForMinAmafVisits");
 			sharedReferencesCollector.addComponentToTune(this);
 		}else{
 			this.valuesForMinAmafVisits = null;

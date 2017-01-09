@@ -37,6 +37,50 @@ public class GamerSettings {
 		return propertyValue;
 	}
 
+	public int getIntPropertyValue(String propertyName){
+
+		String propertyString = this.getPropertyValue(propertyName);
+
+		if(propertyString.equalsIgnoreCase("inf")){
+			return Integer.MAX_VALUE;
+		}else{
+			return Integer.parseInt(propertyString);
+		}
+
+	}
+
+	public double getDoublePropertyValue(String propertyName){
+
+		String propertyString = this.getPropertyValue(propertyName);
+
+		if(propertyString.equalsIgnoreCase("inf")){
+			return Double.MAX_VALUE;
+		}else{
+			return Double.parseDouble(propertyString);
+		}
+
+	}
+
+	public long getLongPropertyValue(String propertyName){
+
+		String propertyString = this.getPropertyValue(propertyName);
+
+		if(propertyString.equalsIgnoreCase("inf")){
+			return Long.MAX_VALUE;
+		}else{
+			return Long.parseLong(propertyString);
+		}
+
+	}
+
+	public boolean getBooleanPropertyValue(String propertyName){
+
+		String propertyString = this.getPropertyValue(propertyName);
+
+		return Boolean.parseBoolean(propertyString);
+
+	}
+
 	/**
 	 * Looks for a property that specifies multiple values and returns them as an array of strings.
 	 * This method assumes that the values for the property are separated by ";" and checks that
@@ -55,6 +99,57 @@ public class GamerSettings {
 		}
 
 		return propertyMultiValue;
+	}
+
+	/**
+	 * Looks for a property that specifies multiple values and returns them as an array of integers.
+	 * This method assumes that the values for the property are separated by ";" and checks that
+	 * at least one value is specified.
+	 *
+	 * @param propertyName
+	 * @return
+	 */
+	public int[] getIntPropertyMultiValue(String propertyName){
+
+		String[] propertyMultiValue = this.getPropertyMultiValue(propertyName);
+
+		int[] toReturn = new int[propertyMultiValue.length];
+
+		for(int i = 0; i < propertyMultiValue.length; i++){
+			if(propertyMultiValue[i].equalsIgnoreCase("inf")){
+				toReturn[i] = Integer.MAX_VALUE;
+			}else{
+				toReturn[i] = Integer.parseInt(propertyMultiValue[i]);
+			}
+		}
+
+		return toReturn;
+	}
+
+	/**
+	 * Looks for a property that specifies multiple values and returns them as an array of integers.
+	 * This method assumes that the values for the property are separated by ";" and checks that
+	 * at least one value is specified.
+	 *
+	 * @param propertyName
+	 * @return
+	 */
+	public double[] getDoublePropertyMultiValue(String propertyName){
+
+		String[] propertyMultiValue = this.getPropertyMultiValue(propertyName);
+
+		double[] toReturn = new double[propertyMultiValue.length];
+
+		for(int i = 0; i < propertyMultiValue.length; i++){
+			if(propertyMultiValue[i].equalsIgnoreCase("inf")){
+				toReturn[i] = Double.MAX_VALUE;
+			}else{
+				toReturn[i] = Double.parseDouble(propertyMultiValue[i]);
+			}
+		}
+
+		return toReturn;
+
 	}
 
 }

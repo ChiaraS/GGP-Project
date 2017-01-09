@@ -9,7 +9,11 @@ import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.GameDependentP
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.SharedReferencesCollector;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.MctsNode;
 import org.ggp.base.util.statemachine.structure.Move;
-
+/**
+ * !!! FOR NOW THIS CLASS CANNOT TUNE FPU!
+ * @author C.Sironi
+ *
+ */
 public class UctEvaluator extends MoveEvaluator implements OnlineTunableComponent{
 
 	/**
@@ -22,9 +26,15 @@ public class UctEvaluator extends MoveEvaluator implements OnlineTunableComponen
 
 	private double[] valuesForC;
 	/**
-	 * Default value to assign to an unexplored move.
+	 * Default value to assign to an unexplored move (first play urgency).
+	 * This is an array so that it can memorize a different value for C for each role in the game.
+	 * If a single value has to be used then all values in the array will be the same.
 	 */
-	protected double unexploredMoveDefaultValue;
+	protected double[] fpu;
+
+	protected double initialFpu;
+
+	private double[] valuesForFpu;
 
 	public UctEvaluator(GameDependentParameters gameDependentParameters, Random random,
 			GamerSettings gamerSettings, SharedReferencesCollector sharedReferencesCollector){
@@ -33,26 +43,37 @@ public class UctEvaluator extends MoveEvaluator implements OnlineTunableComponen
 
 		this.c = null;
 
-		this.initialC = Double.parseDouble(gamerSettings.getPropertyValue("MoveEvaluator.initialC"));
+		this.initialC = gamerSettings.getDoublePropertyValue("MoveEvaluator.initialC");
 
-		this.unexploredMoveDefaultValue = Double.parseDouble(gamerSettings.getPropertyValue("MoveEvaluator.unexploredMoveDefaultValue"));
+		this.fpu = null;
+
+		this.initialFpu = gamerSettings.getDoublePropertyValue("MoveEvaluator.initialFpu");
 
 		// If this component must be tuned online, then we should add its reference to the sharedReferencesCollector
-		String toTuneString = gamerSettings.getPropertyValue("MoveEvaluator.tune");
-		boolean toTune = Boolean.parseBoolean(toTuneString);
-		if(toTune){
+		boolean tuneC = gamerSettings.getBooleanPropertyValue("MoveEvaluator.tuneC");
+		if(tuneC){
 			// If we have to tune the component then we look in the setting for all the values that we must use
 			// Note: the format for these values in the file must be the following:
 			// BetaComputer.valuesForK=v1;v2;...;vn
 			// The values are listed separated by ; with no spaces
-			String[] values = gamerSettings.getPropertyMultiValue("MoveEvaluator.valuesForC");
-			this.valuesForC = new double[values.length];
-			for(int i = 0; i < values.length; i++){
-				this.valuesForC[i] = Double.parseDouble(values[i]);
-			}
-			sharedReferencesCollector.addComponentToTune(this);
+			this.valuesForC = gamerSettings.getDoublePropertyMultiValue("MoveEvaluator.valuesForC");
 		}else{
 			this.valuesForC = null;
+		}
+		// If this component must be tuned online, then we should add its reference to the sharedReferencesCollector
+		boolean tuneFpu = gamerSettings.getBooleanPropertyValue("MoveEvaluator.tuneFpu");
+		if(tuneFpu){
+			// If we have to tune the component then we look in the setting for all the values that we must use
+			// Note: the format for these values in the file must be the following:
+			// BetaComputer.valuesForK=v1;v2;...;vn
+			// The values are listed separated by ; with no spaces
+			this.valuesForFpu = gamerSettings.getDoublePropertyMultiValue("MoveEvaluator.valuesForFpu");
+		}else{
+			this.valuesForFpu = null;
+		}
+
+		if(tuneC || tuneFpu){
+			sharedReferencesCollector.addComponentToTune(this);
 		}
 
 	}
@@ -65,14 +86,17 @@ public class UctEvaluator extends MoveEvaluator implements OnlineTunableComponen
 	@Override
 	public void clearComponent(){
 		this.c = null;
+		this.fpu = null;
 	}
 
 	@Override
 	public void setUpComponent(){
 		this.c = new double[this.gameDependentParameters.getNumRoles()];
+		this.fpu = new double[this.gameDependentParameters.getNumRoles()];
 
 		for(int i = 0; i < this.gameDependentParameters.getNumRoles(); i++){
-			this.c[i] = initialC;
+			this.c[i] = this.initialC;
+			this.fpu[i] = this.initialFpu;
 		}
 	}
 
@@ -85,7 +109,7 @@ public class UctEvaluator extends MoveEvaluator implements OnlineTunableComponen
 		if(exploitation != -1 && exploration != -1){
 			return exploitation + exploration;
 		}else{
-			return this.unexploredMoveDefaultValue;
+			return this.fpu[roleIndex];
 		}
 	}
 
@@ -120,7 +144,7 @@ public class UctEvaluator extends MoveEvaluator implements OnlineTunableComponen
 	@Override
 	public String getComponentParameters(String indentation) {
 
-		String params = indentation + "INITIAL_C_CONSTANT = " + this.initialC + indentation + "UNEXPLORED_MOVE_DEFAULT_VALUE = " + this.unexploredMoveDefaultValue;
+		String params = indentation + "INITIAL_C_CONSTANT = " + this.initialC + indentation + "INITIAL_FPU = " + this.initialFpu;
 
 		if(this.valuesForC != null){
 
@@ -154,6 +178,40 @@ public class UctEvaluator extends MoveEvaluator implements OnlineTunableComponen
 			params += indentation + "c = " + cString;
 		}else{
 			params += indentation + "c = " + "null";
+		}
+
+		if(this.valuesForFpu != null){
+
+			String valuesForFpuString = "[ ";
+
+			for(int i = 0; i < this.valuesForFpu.length; i++){
+
+				valuesForFpuString += this.valuesForFpu[i] + " ";
+
+			}
+
+			valuesForFpuString += "]";
+
+			params += indentation + "VALUES_FOR_TUNING_FPU = " + valuesForFpuString;
+		}else{
+			params += indentation + "VALUES_FOR_TUNING_FPU = " + "null";
+		}
+
+		if(this.fpu != null){
+
+			String fpuString = "[ ";
+
+			for(int i = 0; i < this.c.length; i++){
+
+				fpuString += this.fpu[i] + " ";
+
+			}
+
+			fpuString += "]";
+
+			params += indentation + "fpu = " + fpuString;
+		}else{
+			params += indentation + "fpu = " + "null";
 		}
 
 		return params;

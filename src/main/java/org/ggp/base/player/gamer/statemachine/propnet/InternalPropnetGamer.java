@@ -150,7 +150,7 @@ public abstract class InternalPropnetGamer extends ConfigurableStateMachineGamer
 	protected void configureGamer(GamerSettings gamerSettings){
 		this.thePropnetMachine = null;
 		this.firstTry = true;
-		this.useProver = Boolean.parseBoolean(gamerSettings.getPropertyValue("Gamer.useProver"));
+		this.useProver = gamerSettings.getBooleanPropertyValue("Gamer.useProver");
 		if(!this.useProver){// If we are not using the prover a priori, check how we should build the propnet
 			String propnetBuildString = gamerSettings.getPropertyValue("Gamer.propnetBuild");
 			switch(propnetBuildString){
@@ -168,10 +168,10 @@ public abstract class InternalPropnetGamer extends ConfigurableStateMachineGamer
 				throw new RuntimeException("Impossible to create gamer, wrong specification of property Gamer.propnetBuild:" + propnetBuildString + ".");
 			}
 		}
-		this.buildPnSafetyMargin = Long.parseLong(gamerSettings.getPropertyValue("Gamer.buildPnSafetyMargin"));
-		this.proverCache = Boolean.parseBoolean(gamerSettings.getPropertyValue("Gamer.proverCache"));
-		this.pnCache = Boolean.parseBoolean(gamerSettings.getPropertyValue("Gamer.pnCache"));
-		this.selectMoveSafetyMargin = Long.parseLong(gamerSettings.getPropertyValue("Gamer.selectMoveSafetyMargin"));
+		this.buildPnSafetyMargin = gamerSettings.getLongPropertyValue("Gamer.buildPnSafetyMargin");
+		this.proverCache = gamerSettings.getBooleanPropertyValue("Gamer.proverCache");
+		this.pnCache = gamerSettings.getBooleanPropertyValue("Gamer.pnCache");
+		this.selectMoveSafetyMargin = gamerSettings.getLongPropertyValue("Gamer.selectMoveSafetyMargin");
 
 	}
 

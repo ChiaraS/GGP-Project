@@ -7,8 +7,8 @@ import java.util.Random;
 
 import org.ggp.base.player.gamer.event.GamerSelectedMoveEvent;
 import org.ggp.base.player.gamer.statemachine.MCS.manager.MCSException;
-import org.ggp.base.player.gamer.statemachine.MCS.manager.propnet.PnCompleteMoveStats;
 import org.ggp.base.player.gamer.statemachine.MCS.manager.propnet.InternalPropnetMCSManager;
+import org.ggp.base.player.gamer.statemachine.MCS.manager.propnet.PnCompleteMoveStats;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.propnet.strategies.playout.PnRandomPlayout;
 import org.ggp.base.player.gamer.statemachine.propnet.InternalPropnetGamer;
 import org.ggp.base.util.logging.GamerLogger;
@@ -223,6 +223,19 @@ public class McsGamer extends InternalPropnetGamer {
 		notifyObservers(new GamerSelectedMoveEvent(this.thePropnetMachine.getExplicitLegalMoves(this.getCurrentState(), this.getRole()), theMove, thinkingTime));
 
 		return theMove;
+	}
+
+	@Override
+	public String getName() {
+		/*String type = "";
+		if(this.singleGame){
+			type = "SingleGame";
+		}else{
+			type = "Starndard";
+		}
+		return getClass().getSimpleName() + "-" + type;*/
+
+		return getClass().getSimpleName();
 	}
 
 }

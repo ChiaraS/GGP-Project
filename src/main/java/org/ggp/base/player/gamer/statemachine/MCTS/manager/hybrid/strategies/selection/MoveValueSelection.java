@@ -37,7 +37,7 @@ public class MoveValueSelection extends SelectionStrategy {
 
 		super(gameDependentParameters, random, gamerSettings, sharedReferencesCollector);
 
-		this.valueOffset = Double.parseDouble(gamerSettings.getPropertyValue("SelectionStrategy.valueOffset"));
+		this.valueOffset = gamerSettings.getDoublePropertyValue("SelectionStrategy.valueOffset");
 
 		try {
 			this.moveEvaluator = (MoveEvaluator) SearchManagerComponent.getConstructorForSearchManagerComponent(ProjectSearcher.MOVE_EVALUATORS.getConcreteClasses(),
@@ -118,11 +118,18 @@ public class MoveValueSelection extends SelectionStrategy {
 			// in the interval [maxMoveValue-valueOffset, maxMoveValue].
 			List<Integer> selectedMovesIndices = new ArrayList<Integer>();
 
+			//System.out.print("MoveValues = [ ");
+
 			for(int j = 0; j < moveValues.length; j++){
+
+				//System.out.print(moveValues[j] + " ");
+
 				if(moveValues[j] >= (maxMoveValue-this.valueOffset)){
 					selectedMovesIndices.add(new Integer(j));
 				}
 			}
+
+			//System.out.println("]");
 
 			// Extra check (should never be true).
 			if(selectedMovesIndices.isEmpty()){

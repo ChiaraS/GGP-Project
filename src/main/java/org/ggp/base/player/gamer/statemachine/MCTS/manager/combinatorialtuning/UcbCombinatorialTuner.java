@@ -332,4 +332,32 @@ public class UcbCombinatorialTuner extends CombinatorialTuner {
     }
     */
 
+	public static void main(String args[]){
+
+		Random random = new Random();
+
+		UcbCombinatorialTuner ucbCombinatorialTuner = new UcbCombinatorialTuner(random, 0.7, 0.01, Double.MAX_VALUE);
+
+		int[] classesLength = new int[4];
+
+		classesLength[0] = 9;
+		classesLength[1] = 8;
+		classesLength[2] = 10;
+		classesLength[3] = 11;
+
+		ucbCombinatorialTuner.setClassesLength(classesLength);
+
+		ucbCombinatorialTuner.setUp(1);
+
+		int[] rewards = new int[1];
+
+		for(int i = 0; i < 1000000; i++){
+			rewards[0] = random.nextInt(101);
+			ucbCombinatorialTuner.selectNextCombinations();
+			ucbCombinatorialTuner.updateStatistics(rewards);
+		}
+
+
+	}
+
 }

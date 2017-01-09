@@ -31,24 +31,15 @@ public class CadiaBetaComputer extends BetaComputer{
 
 		this.k = null;
 
-		this.initialK = Integer.parseInt(gamerSettings.getPropertyValue("BetaComputer.initialK"));
+		this.initialK = gamerSettings.getIntPropertyValue("BetaComputer.initialK");
 
 		// If this component must be tuned online, then we should add its reference to the sharedReferencesCollector
-		String toTuneString = gamerSettings.getPropertyValue("BetaComputer.tune");
-		if(Boolean.parseBoolean(toTuneString)){
+		if(gamerSettings.getBooleanPropertyValue("BetaComputer.tune")){
 			// If we have to tune the component then we look in the setting for all the values that we must use
 			// Note: the format for these values in the file must be the following:
 			// BetaComputer.valuesForK=v1;v2;...;vn
 			// The values are listed separated by ; with no spaces
-			String[] values = gamerSettings.getPropertyMultiValue("BetaComputer.valuesForK");
-			this.valuesForK = new int[values.length];
-			for(int i = 0; i < values.length; i++){
-				if(values[i].equalsIgnoreCase("max")){
-					this.valuesForK[i] = Integer.MAX_VALUE;
-				}else{
-					this.valuesForK[i] = Integer.parseInt(values[i]);
-				}
-			}
+			this.valuesForK = gamerSettings.getIntPropertyMultiValue("BetaComputer.valuesForK");
 
 			sharedReferencesCollector.addComponentToTune(this);
 		}else{
@@ -79,6 +70,12 @@ public class CadiaBetaComputer extends BetaComputer{
 	@Override
 	public double computeBeta(MoveStats theMoveStats, MoveStats theAmafMoveStats,
 			int nodeVisits, int roleIndex) {
+
+		if(this.k[roleIndex] == 0){
+			return 0.0;
+		}else if(this.k[roleIndex] == Integer.MAX_VALUE){
+			return 1.0;
+		}
 
 		double numerator = k[roleIndex];
 		double denominator = ((3*nodeVisits) + this.k[roleIndex]);
@@ -167,7 +164,7 @@ public class CadiaBetaComputer extends BetaComputer{
 			this.k[this.gameDependentParameters.getMyRoleIndex()] = this.valuesForK[newValuesIndices[0]];
 
 		}else{ // We are tuning all parameters
-			for(int i = 0; i <this.k.length; i++){
+			for(int i = 0; i < this.k.length; i++){
 				this.k[i] = this.valuesForK[newValuesIndices[i]];
 			}
 		}

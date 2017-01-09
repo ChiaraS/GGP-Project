@@ -18,10 +18,20 @@ public class MastSingleMoveSelector extends SingleMoveSelector {
 
 	private Map<Move, MoveStats> mastStatistics;
 
+	/**
+	 * First play urgency for a move never explored before.
+	 * Note that this must be in the range [0,100] because MAST doesn't
+	 * bother normalizing the move values (it's not necessary).
+	 */
+	private double mastFpu;
+
 	public MastSingleMoveSelector(GameDependentParameters gameDependentParameters, Random random,
 			GamerSettings gamerSettings, SharedReferencesCollector sharedReferencesCollector) {
 
 		super(gameDependentParameters, random, gamerSettings, sharedReferencesCollector);
+
+
+		this.mastFpu = gamerSettings.getDoublePropertyValue("SingleMoveSelector.mastFpu");
 
 	}
 
@@ -57,6 +67,14 @@ public class MastSingleMoveSelector extends SingleMoveSelector {
 		return this.getMastMove(legalMovesForRole);
 	}
 
+	/**
+	 * WARNING! Be very careful! MAST, as opposed to UCT, doesn't normalize value in [0, 1] to select
+	 * the best move. It would be irrelevant to normalize since the choices of MAST are not influenced
+	 * by the range of move values.
+	 *
+	 * @param moves
+	 * @return
+	 */
 	private Move getMastMove(List<Move> moves) {
 
 		List<Move> chosenMoves = new ArrayList<Move>();
@@ -72,7 +90,7 @@ public class MastSingleMoveSelector extends SingleMoveSelector {
 			if(moveStats != null && moveStats.getVisits() != 0){
 				currentAvgScore = moveStats.getScoreSum() / ((double) moveStats.getVisits());
 			}else{
-				currentAvgScore = 100;
+				currentAvgScore = this.mastFpu;
 			}
 
 			// If it's higher than the current maximum one, replace the max value and delete all best moves found so far
@@ -91,7 +109,7 @@ public class MastSingleMoveSelector extends SingleMoveSelector {
 
 	@Override
 	public String getComponentParameters(String indentation) {
-		return null;
+		return indentation + "MAST_FPU = " + this.mastFpu;
 	}
 
 }

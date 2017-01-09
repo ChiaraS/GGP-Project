@@ -26,18 +26,11 @@ public class TunerBeforeSimulation extends BeforeSimulationStrategy {
 
 		super(gameDependentParameters, random, gamerSettings, sharedReferencesCollector);
 
-		this.tuneAllRoles = Boolean.parseBoolean(gamerSettings.getPropertyValue("BeforeSimulationStrategy.tuneAllRoles"));
+		this.tuneAllRoles = gamerSettings.getBooleanPropertyValue("BeforeSimulationStrategy.tuneAllRoles");
 
-		double tunerC = Double.parseDouble(gamerSettings.getPropertyValue("BeforeSimulationStrategy.tunerC"));
-		double tunerValueOffset = Double.parseDouble(gamerSettings.getPropertyValue("BeforeSimulationStrategy.tunerValueOffset"));
-		String tunerFpuString = gamerSettings.getPropertyValue("BeforeSimulationStrategy.tunerFpu");
-		double tunerFpu;
-		if(tunerFpuString.equalsIgnoreCase("max")){
-			tunerFpu = Double.MAX_VALUE;
-		}else{
-			tunerFpu = Double.parseDouble(tunerFpuString);
-
-		}
+		double tunerC = gamerSettings.getDoublePropertyValue("BeforeSimulationStrategy.tunerC");
+		double tunerValueOffset = gamerSettings.getDoublePropertyValue("BeforeSimulationStrategy.tunerValueOffset");
+		double tunerFpu = gamerSettings.getDoublePropertyValue("BeforeSimulationStrategy.tunerFpu");
 
 		this.combinatorialTuner = new UcbCombinatorialTuner(random, tunerC, tunerValueOffset, tunerFpu);
 
@@ -90,11 +83,17 @@ public class TunerBeforeSimulation extends BeforeSimulationStrategy {
 
 		int i = 0;
 		for(OnlineTunableComponent c : this.tunableComponents){
+
+			//System.out.print(c.getClass().getSimpleName() + ": [ ");
+
 			int[] newValuesIndices = new int[nextCombinations.length]; // nextCombinations.length equals the number of roles for which we are tuning
 
 			for(int j = 0; j < nextCombinations.length; j++){
 				newValuesIndices[j] = nextCombinations[j][i];
+				//System.out.print(newValuesIndices[j] + " ");
 			}
+
+			//System.out.println("]");
 
 			c.setNewValuesFromIndices(newValuesIndices);
 

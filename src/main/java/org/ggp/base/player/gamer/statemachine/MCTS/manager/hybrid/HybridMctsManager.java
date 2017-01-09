@@ -142,10 +142,10 @@ public class HybridMctsManager {
 		this.searchStart = 0;
 		this.searchEnd = 0;
 
-		this.maxSearchDepth = Integer.parseInt(gamerSettings.getPropertyValue("SearchManager.maxSearchDepth"));
+		this.maxSearchDepth = gamerSettings.getIntPropertyValue("SearchManager.maxSearchDepth");
 
 		if(gamerSettings.specifiesProperty("SearchManager.numExpectedIterations")){
-			this.numExpectedIterations = Integer.parseInt(gamerSettings.getPropertyValue("SearchManager.numExpectedIterations"));
+			this.numExpectedIterations = gamerSettings.getIntPropertyValue("SearchManager.numExpectedIterations");
 		}else{
 			this.numExpectedIterations = -1;
 		}
@@ -271,11 +271,11 @@ public class HybridMctsManager {
 			throw new RuntimeException(e);
 		}
 
-		boolean logTranspositionTable = Boolean.parseBoolean(gamerSettings.getPropertyValue("SearchManager.logTranspositionTable"));
+		boolean logTranspositionTable = gamerSettings.getBooleanPropertyValue("SearchManager.logTranspositionTable");
 		if(!(this.treeNodeFactory instanceof AmafDecoupledTreeNodeFactory)){
 			logTranspositionTable = false;
 		}
-		int gameStepOffset = Integer.parseInt(gamerSettings.getPropertyValue("SearchManager.gameStepOffset"));
+		int gameStepOffset = gamerSettings.getIntPropertyValue("SearchManager.gameStepOffset");
 		this.transpositionTable = new MctsTranspositionTable(gameStepOffset, logTranspositionTable);
 
 		// Let all strategies set references if needed.
