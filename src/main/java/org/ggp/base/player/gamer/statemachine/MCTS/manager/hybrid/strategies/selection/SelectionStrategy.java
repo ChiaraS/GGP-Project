@@ -8,6 +8,7 @@ import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.SharedReferenc
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.strategies.Strategy;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.MctsNode;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.hybrid.MctsJointMove;
+import org.ggp.base.util.statemachine.structure.MachineState;
 
 public abstract class SelectionStrategy extends Strategy {
 
@@ -24,7 +25,7 @@ public abstract class SelectionStrategy extends Strategy {
 	 * @param currentNode the node for which to select an action to visit.
 	 * @return the selected move.
 	 */
-	public abstract MctsJointMove select(MctsNode currentNode);
+	public abstract MctsJointMove select(MctsNode currentNode, MachineState state);
 
 	@Override
 	public String printComponent(String indentation){

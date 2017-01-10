@@ -130,4 +130,15 @@ public class StandardPlayout extends PlayoutStrategy {
 		return indentation + "JOINT_MOVE_SELECTOR = " + this.jointMoveSelector.printComponent(indentation + "  ");
 	}
 
+	@Override
+	public List<Move> getJointMove(MachineState state) {
+		try {
+			return this.jointMoveSelector.getJointMove(state);
+		} catch (MoveDefinitionException | StateMachineException e) {
+			GamerLogger.logError("MctsManager", "Exception getting a joint move using the playout strategy.");
+			GamerLogger.logStackTrace("MctsManager", e);
+			throw new RuntimeException("Exception getting a joint move using the playout strategy.", e);
+		}
+	}
+
 }

@@ -743,7 +743,7 @@ public class HybridMctsManager {
 
 			//System.out.println("Selecting.");
 
-			mctsJointMove = this.selectionStrategy.select(currentNode);
+			mctsJointMove = this.selectionStrategy.select(currentNode, currentState);
 
 			/*
 			String s = "[ ";

@@ -19,6 +19,7 @@ import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.hybrid.
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.hybrid.sequential.SequentialMctsNode;
 import org.ggp.base.util.logging.GamerLogger;
 import org.ggp.base.util.reflection.ProjectSearcher;
+import org.ggp.base.util.statemachine.structure.MachineState;
 import org.ggp.base.util.statemachine.structure.Move;
 
 public class MoveValueSelection extends SelectionStrategy {
@@ -68,7 +69,7 @@ public class MoveValueSelection extends SelectionStrategy {
 	}
 
 	@Override
-	public MctsJointMove select(MctsNode currentNode) {
+	public MctsJointMove select(MctsNode currentNode, MachineState state) {
 		if(currentNode instanceof DecoupledMctsNode){
 			return this.decSelect((DecoupledMctsNode)currentNode);
 		}else if(currentNode instanceof SequentialMctsNode){

@@ -10,6 +10,7 @@ import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.strategies.sel
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.MctsNode;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.hybrid.MctsJointMove;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.hybrid.amafdecoupled.AmafNode;
+import org.ggp.base.util.statemachine.structure.MachineState;
 
 public class GraveSelection extends MoveValueSelection implements OnlineTunableComponent{
 
@@ -69,7 +70,7 @@ public class GraveSelection extends MoveValueSelection implements OnlineTunableC
 	}
 
 	@Override
-	public MctsJointMove select(MctsNode currentNode) {
+	public MctsJointMove select(MctsNode currentNode, MachineState state) {
 
 		if(currentNode instanceof AmafNode){
 
@@ -98,7 +99,7 @@ public class GraveSelection extends MoveValueSelection implements OnlineTunableC
 				}
 			}
 
-			return super.select(currentNode);
+			return super.select(currentNode, state);
 
 		}else{
 			throw new RuntimeException("GraveSelection-select(): detected a node not implementing interface AmafNode.");

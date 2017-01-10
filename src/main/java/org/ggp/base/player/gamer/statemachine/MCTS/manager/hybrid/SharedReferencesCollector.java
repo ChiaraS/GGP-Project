@@ -9,6 +9,7 @@ import org.ggp.base.player.gamer.statemachine.MCTS.manager.combinatorialtuning.C
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.evolution.OnlineTunableComponent;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.evolution.SingleParameterEvolutionManager;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.strategies.backpropagation.TdBackpropagation;
+import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.strategies.playout.PlayoutStrategy;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.strategies.selection.GraveSelection;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.strategies.selection.ProgressiveHistoryGraveSelection;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.strategies.selection.evaluators.td.GlobalExtremeValues;
@@ -46,6 +47,8 @@ public class SharedReferencesCollector {
 	private TdBackpropagation tdBackpropagation;
 
 	private ProgressiveHistoryGraveSelection progressiveHistoryGraveSelection;
+
+	private PlayoutStrategy playoutStrategy;
 
 	public SharedReferencesCollector() {
 		// TODO Auto-generated constructor stub
@@ -233,6 +236,26 @@ public class SharedReferencesCollector {
 		}else{
 			GamerLogger.logError("SearchManagerCreation", "Trying to get ProgressiveHistoryGraveSelection that has never been set! Probably a wrong combination of strategies has been set.");
 			throw new RuntimeException("Trying to get ProgressiveHistoryGraveSelection that has never been set!");
+		}
+	}
+
+	public void setPlayoutStrategy(PlayoutStrategy playoutStrategy){
+		// Can only be set once
+		if(this.playoutStrategy == null){
+			this.playoutStrategy = playoutStrategy;
+		}else{
+			GamerLogger.logError("SearchManagerCreation", "Trying to set PlayoutStrategy multiple times! Probably a wrong combination of strategies has been set.");
+			throw new RuntimeException("Trying to set PlayoutStrategy multiple times!");
+		}
+	}
+
+	public PlayoutStrategy getPlayoutStrategy(){
+		// If a strategy looks for the reference then another strategy must have set it
+		if(this.playoutStrategy != null){
+			return this.playoutStrategy;
+		}else{
+			GamerLogger.logError("SearchManagerCreation", "Trying to get PlayoutStrategy that has never been set! Probably a wrong combination of strategies has been set.");
+			throw new RuntimeException("Trying to get PlayoutStrategy that has never been set!");
 		}
 	}
 
