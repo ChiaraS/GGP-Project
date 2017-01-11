@@ -14,6 +14,20 @@ public class TunerBeforeSimulation extends BeforeSimulationStrategy {
 
 	private boolean tuneAllRoles;
 
+	/**
+	 * Each selected configuration of parameters will be evaluated with a batch of simulations and not
+	 * only one simulation. This expresses the size of such batch (i.e. after evaluating batchSize times
+	 * a configuration of parameters, a new one is selected with the combinatorial tuner).
+	 */
+	private int batchSize;
+
+	/**
+	 * Counts the number of simulations performed in the current interval.
+	 * When this number reaches batchSize then the parameters are updated with a new
+	 * configuration that will be evaluated next.
+	 */
+	private int simCount;
+
 	private CombinatorialTuner combinatorialTuner;
 
 	/**
@@ -27,6 +41,10 @@ public class TunerBeforeSimulation extends BeforeSimulationStrategy {
 		super(gameDependentParameters, random, gamerSettings, sharedReferencesCollector);
 
 		this.tuneAllRoles = gamerSettings.getBooleanPropertyValue("BeforeSimulationStrategy.tuneAllRoles");
+
+		this.batchSize = gamerSettings.getIntPropertyValue("BeforeSimulationStrategy.batchSize");
+
+		this.simCount = 0;
 
 		double tunerC = gamerSettings.getDoublePropertyValue("BeforeSimulationStrategy.tunerC");
 		double tunerValueOffset = gamerSettings.getDoublePropertyValue("BeforeSimulationStrategy.tunerValueOffset");
@@ -59,6 +77,9 @@ public class TunerBeforeSimulation extends BeforeSimulationStrategy {
 
 	@Override
 	public void clearComponent(){
+
+		this.simCount = 0;
+
 		// It's not the job of this class to clear the tunable component because the component
 		// is for sure either another strategy or part of another strategy. A class must be
 		// responsible of clearing only the objects that it was responsible for creating.
@@ -74,31 +95,37 @@ public class TunerBeforeSimulation extends BeforeSimulationStrategy {
 			this.combinatorialTuner.setUp(1);
 		}
 
+		this.simCount = 0;
+
 	}
 
 	@Override
 	public void beforeSimulationActions() {
 
-		int[][] nextCombinations = this.combinatorialTuner.selectNextCombinations();
+		if(this.simCount % this.batchSize == 0){
+			int[][] nextCombinations = this.combinatorialTuner.selectNextCombinations();
 
-		int i = 0;
-		for(OnlineTunableComponent c : this.tunableComponents){
+			int i = 0;
+			for(OnlineTunableComponent c : this.tunableComponents){
 
-			//System.out.print(c.getClass().getSimpleName() + ": [ ");
+				//System.out.print(c.getClass().getSimpleName() + ": [ ");
 
-			int[] newValuesIndices = new int[nextCombinations.length]; // nextCombinations.length equals the number of roles for which we are tuning
+				int[] newValuesIndices = new int[nextCombinations.length]; // nextCombinations.length equals the number of roles for which we are tuning
 
-			for(int j = 0; j < nextCombinations.length; j++){
-				newValuesIndices[j] = nextCombinations[j][i];
-				//System.out.print(newValuesIndices[j] + " ");
+				for(int j = 0; j < nextCombinations.length; j++){
+					newValuesIndices[j] = nextCombinations[j][i];
+					//System.out.print(newValuesIndices[j] + " ");
+				}
+
+				//System.out.println("]");
+
+				c.setNewValuesFromIndices(newValuesIndices);
+
+				i++;
 			}
-
-			//System.out.println("]");
-
-			c.setNewValuesFromIndices(newValuesIndices);
-
-			i++;
 		}
+
+		this.simCount++;
 
 	}
 
