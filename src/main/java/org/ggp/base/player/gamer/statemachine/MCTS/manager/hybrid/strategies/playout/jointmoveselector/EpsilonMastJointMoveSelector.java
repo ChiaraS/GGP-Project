@@ -5,7 +5,7 @@ import java.util.List;
 import java.util.Random;
 
 import org.ggp.base.player.gamer.statemachine.GamerSettings;
-import org.ggp.base.player.gamer.statemachine.MCTS.manager.evolution.OnlineTunableComponent;
+import org.ggp.base.player.gamer.statemachine.MCTS.manager.evolution.DoubleTunableParameter;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.GameDependentParameters;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.SharedReferencesCollector;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.strategies.playout.singlemoveselector.MastSingleMoveSelector;
@@ -15,17 +15,13 @@ import org.ggp.base.util.statemachine.exceptions.StateMachineException;
 import org.ggp.base.util.statemachine.structure.MachineState;
 import org.ggp.base.util.statemachine.structure.Move;
 
-public class EpsilonMastJointMoveSelector extends JointMoveSelector implements OnlineTunableComponent {
+public class EpsilonMastJointMoveSelector extends JointMoveSelector{
 
 	private MastSingleMoveSelector mastSelector;
 
 	private RandomSingleMoveSelector randomSelector;
 
-	private double[] epsilon;
-
-	private double initialEpsilon;
-
-	private double[] valuesForEpsilon;
+	private DoubleTunableParameter epsilon;
 
 	public EpsilonMastJointMoveSelector(GameDependentParameters gameDependentParameters, Random random,
 			GamerSettings gamerSettings, SharedReferencesCollector sharedReferencesCollector){
@@ -35,20 +31,21 @@ public class EpsilonMastJointMoveSelector extends JointMoveSelector implements O
 		this.mastSelector = new MastSingleMoveSelector(gameDependentParameters, random, gamerSettings, sharedReferencesCollector);
 		this.randomSelector = new RandomSingleMoveSelector(gameDependentParameters, random, gamerSettings, sharedReferencesCollector);
 
-		this.epsilon = null;
+		// Get default value for Epsilon (this is the value used for the roles for which we are not tuning the parameter)
+		double fixedEpsilon = gamerSettings.getDoublePropertyValue("JointMoveSelector.fixedEpsilon");
 
-		this.initialEpsilon = gamerSettings.getDoublePropertyValue("JointMoveSelector.initialEpsilon");
-
-		// If this component must be tuned online, then we should add its reference to the sharedReferencesCollector
-		if(gamerSettings.getBooleanPropertyValue("JointMoveSelector.tune")){
-			// If we have to tune the component then we look in the setting for all the values that we must use
+		if(gamerSettings.getBooleanPropertyValue("JointMoveSelector.tuneEpsilon")){
+			// If we have to tune the parameter then we look in the setting for all the values that we must use
 			// Note: the format for these values in the file must be the following:
 			// BetaComputer.valuesForK=v1;v2;...;vn
 			// The values are listed separated by ; with no spaces
-			this.valuesForEpsilon = gamerSettings.getDoublePropertyMultiValue("JointMoveSelector.valuesForEpsilon");
-			sharedReferencesCollector.addComponentToTune(this);
+			this.epsilon = new DoubleTunableParameter(fixedEpsilon, gamerSettings.getDoublePropertyMultiValue("JointMoveSelector.valuesForEpsilon"));
+
+			// If the parameter must be tuned online, then we should add its reference to the sharedReferencesCollector
+			sharedReferencesCollector.addParameterToTune(this.epsilon);
+
 		}else{
-			this.valuesForEpsilon = null;
+			this.epsilon = new DoubleTunableParameter(fixedEpsilon);
 		}
 
 	}
@@ -65,7 +62,7 @@ public class EpsilonMastJointMoveSelector extends JointMoveSelector implements O
 		this.mastSelector.clearComponent();
 		this.randomSelector.clearComponent();
 
-		this.epsilon = null;
+		this.epsilon.clearParameter();
 
 	}
 
@@ -75,11 +72,7 @@ public class EpsilonMastJointMoveSelector extends JointMoveSelector implements O
 		this.mastSelector.setUpComponent();
 		this.randomSelector.setUpComponent();
 
-		this.epsilon = new double[this.gameDependentParameters.getNumRoles()];
-
-		for(int i = 0; i < this.gameDependentParameters.getNumRoles(); i++){
-			this.epsilon[i] = this.initialEpsilon;
-		}
+		this.epsilon.setUpParameter(this.gameDependentParameters.getNumRoles());
 
 	}
 
@@ -91,8 +84,8 @@ public class EpsilonMastJointMoveSelector extends JointMoveSelector implements O
 		// For each role we check if the move for the role must be picked randomly or according to the MAST statistics
 		// NOTE that a joint move might be composed of moves that have been picked randomly for some roles and moves that
 		// have been picked according to MAST statistics for other roles.
-		for(int i = 0; i < this.epsilon.length; i++){
-			if(this.random.nextDouble() < this.epsilon[i]){
+		for(int i = 0; i < this.gameDependentParameters.getNumRoles(); i++){
+			if(this.random.nextDouble() < this.epsilon.getValuePerRole(i)){
 	    		// Choose random action with probability epsilon
 				jointMove.add(this.randomSelector.getMoveForRole(state, i));
 	    	}else{
@@ -107,80 +100,10 @@ public class EpsilonMastJointMoveSelector extends JointMoveSelector implements O
 	@Override
 	public String getComponentParameters(String indentation) {
 
-		String params = indentation + "SINGLE_MOVE_SELECTOR_1 = " + this.mastSelector.printComponent(indentation + "  ") +
+		return indentation + "SINGLE_MOVE_SELECTOR_1 = " + this.mastSelector.printComponent(indentation + "  ") +
 				indentation + "SINGLE_MOVE_SELECTOR_2 = " + this.randomSelector.printComponent(indentation + "  ") +
-				indentation + "INITIAL_EPSILON = " + this.initialEpsilon;
+				indentation + "EPSILON = " + this.epsilon.getParameters(indentation + "  ");
 
-		if(this.valuesForEpsilon != null){
-			String valuesForEpsilonString = "[ ";
-
-			for(int i = 0; i < this.valuesForEpsilon.length; i++){
-
-				valuesForEpsilonString += this.valuesForEpsilon[i] + " ";
-
-			}
-
-			valuesForEpsilonString += "]";
-
-			params += indentation + "VALUES_FOR_TUNING_EPSILON = " + valuesForEpsilonString;
-		}else{
-			params += indentation + "VALUES_FOR_TUNING_EPSILON = null";
-		}
-
-		if(this.epsilon != null){
-			String epsilonString = "[ ";
-
-			for(int i = 0; i < this.epsilon.length; i++){
-
-				epsilonString += this.epsilon[i] + " ";
-
-			}
-
-			epsilonString += "]";
-
-			params += indentation + "epsilon = " + epsilonString;
-		}else{
-			params += indentation + "epsilon = null";
-		}
-
-		return params;
-
-	}
-
-	@Override
-	public void setNewValues(double[] newValues) {
-		// We are tuning only the constant of myRole
-		if(newValues.length == 1){
-			this.epsilon[this.gameDependentParameters.getMyRoleIndex()] = newValues[0];
-		}else{ // We are tuning all constants
-			for(int i = 0; i <this.epsilon.length; i++){
-				this.epsilon[i] = newValues[i];
-			}
-		}
-	}
-
-	@Override
-	public String printOnlineTunableComponent(String indentation) {
-		return this.printComponent(indentation);
-	}
-
-	@Override
-	public double[] getPossibleValues() {
-		return this.valuesForEpsilon;
-	}
-
-	@Override
-	public void setNewValuesFromIndices(int[] newValuesIndices) {
-		// We are tuning only the parameter of myRole
-		if(newValuesIndices.length == 1){
-
-			this.epsilon[this.gameDependentParameters.getMyRoleIndex()] = this.valuesForEpsilon[newValuesIndices[0]];
-
-		}else{ // We are tuning all parameters
-			for(int i = 0; i <this.epsilon.length; i++){
-				this.epsilon[i] = this.valuesForEpsilon[newValuesIndices[i]];
-			}
-		}
 	}
 
 }

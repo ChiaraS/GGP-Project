@@ -6,8 +6,8 @@ import java.util.Map;
 
 import org.ggp.base.player.gamer.statemachine.MCS.manager.MoveStats;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.combinatorialtuning.CombinatorialTuner;
-import org.ggp.base.player.gamer.statemachine.MCTS.manager.evolution.OnlineTunableComponent;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.evolution.SingleParameterEvolutionManager;
+import org.ggp.base.player.gamer.statemachine.MCTS.manager.evolution.TunableParameter;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.strategies.backpropagation.TdBackpropagation;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.strategies.playout.PlayoutStrategy;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.strategies.selection.GraveSelection;
@@ -32,9 +32,7 @@ public class SharedReferencesCollector {
 
 	private Map<Move, MoveStats> mastStatistics;
 
-	//private OnlineTunableComponent theComponentToTune;
-
-	private List<OnlineTunableComponent> theComponentsToTune;
+	private List<TunableParameter> theParametersToTune;
 
 	private GlobalExtremeValues globalExtremeValues;
 
@@ -74,48 +72,26 @@ public class SharedReferencesCollector {
 		}
 	}
 
-	/*
-	public void setTheComponentToTune(OnlineTunableComponent theComponentToTune){
+	public void addParameterToTune(TunableParameter theParameterToTune){
 		// Can only be set once
-		if(this.theComponentToTune == null){
-			this.theComponentToTune = theComponentToTune;
+		if(this.theParametersToTune == null){
+			this.theParametersToTune = new ArrayList<TunableParameter>();
+			this.theParametersToTune.add(theParameterToTune);
+		}else if(this.theParametersToTune.contains(theParameterToTune)){
+			GamerLogger.logError("SearchManagerCreation", "Trying to add duplicate TunableParameter to theParametersToTune multiple times!");
+			throw new RuntimeException("Trying to add duplicate TunableParameter to theParametersToTune multiple times!");
 		}else{
-			GamerLogger.logError("SearchManagerCreation", "Trying to set TheComponentToTune multiple times! Probably a wrong combination of strategies has been set.");
-			throw new RuntimeException("Trying to set TheComponentToTune multiple times!");
+			this.theParametersToTune.add(theParameterToTune);
 		}
 	}
 
-	public OnlineTunableComponent getTheComponentToTune(){
+	public List<TunableParameter> getTheParametersToTune(){
 		// If a strategy looks for the reference then another strategy must have set it
-		if(this.theComponentToTune != null){
-			return this.theComponentToTune;
+		if(this.theParametersToTune != null && !this.theParametersToTune.isEmpty()){
+			return this.theParametersToTune;
 		}else{
-			GamerLogger.logError("SearchManagerCreation", "Trying to get TheComponentToTune that has never been set! Probably a wrong combination of strategies has been set.");
-			throw new RuntimeException("Trying to get TheComponentToTune that has never been set!");
-		}
-	}
-	*/
-
-	public void addComponentToTune(OnlineTunableComponent theComponentToTune){
-		// Can only be set once
-		if(this.theComponentsToTune == null){
-			this.theComponentsToTune = new ArrayList<OnlineTunableComponent>();
-			this.theComponentsToTune.add(theComponentToTune);
-		}else if(this.theComponentsToTune.contains(theComponentToTune)){
-			GamerLogger.logError("SearchManagerCreation", "Trying to add duplicate OnlineTunableComponent to TheComponentToTune multiple times!");
-			throw new RuntimeException("Trying to add duplicate OnlineTunableComponent to TheComponentToTune multiple times!");
-		}else{
-			this.theComponentsToTune.add(theComponentToTune);
-		}
-	}
-
-	public List<OnlineTunableComponent> getTheComponentsToTune(){
-		// If a strategy looks for the reference then another strategy must have set it
-		if(this.theComponentsToTune != null && !this.theComponentsToTune.isEmpty()){
-			return this.theComponentsToTune;
-		}else{
-			GamerLogger.logError("SearchManagerCreation", "Trying to get TheComponentsToTune that have never been set! Probably a wrong combination of strategies has been set.");
-			throw new RuntimeException("Trying to get TheComponentsToTune that have never been set!");
+			GamerLogger.logError("SearchManagerCreation", "Trying to get TheParametersToTune that have never been set! Probably a wrong combination of strategies has been set.");
+			throw new RuntimeException("Trying to get TheParametersToTune that have never been set!");
 		}
 	}
 

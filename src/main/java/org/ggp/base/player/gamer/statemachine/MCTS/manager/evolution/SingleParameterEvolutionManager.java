@@ -88,9 +88,7 @@ public class SingleParameterEvolutionManager{
 	// TODO: this shouldn't return a double but the set of the parameters that the individual is evaluating
 	// Since for now we are using only single double values as parameters in each individual, we return an array
 	// with a double value for each population.
-	public double[] selectNextIndividuals(){
-
-		double[] nextIndividuals = new double[this.populations.length];
+	public int[] selectNextIndividualsIndices(){
 
 		// For each population, select the best individual
 		for(int i = 0; i < this.populations.length; i++){
@@ -99,7 +97,6 @@ public class SingleParameterEvolutionManager{
 			// thus we return a random one.
 			if(this.numUpdates[i] == 0){
 				this.currentSelectedIndividuals[i] = random.nextInt(this.populations[i].length);
-				nextIndividuals[i] = this.populations[i][this.currentSelectedIndividuals[i]].getParameter();
 			}else{
 
 				double minExtreme = 0.0;
@@ -183,7 +180,6 @@ public class SingleParameterEvolutionManager{
 				}
 
 				this.currentSelectedIndividuals[i] = selectedIndividualsIndices.get(this.random.nextInt(selectedIndividualsIndices.size())).intValue();
-				nextIndividuals[i] = this.populations[i][this.currentSelectedIndividuals[i]].getParameter();
 
 			}
 
@@ -200,7 +196,7 @@ public class SingleParameterEvolutionManager{
 		//System.out.println("C = " + nextIndividuals[0]);
 		*/
 
-		return nextIndividuals;
+		return this.currentSelectedIndividuals;
 
 	}
 
@@ -264,7 +260,7 @@ public class SingleParameterEvolutionManager{
 		for(int i = 0; i < this.populations.length; i++){
 
 			for(int j = 0; j < this.populations[i].length; j++){
-				GamerLogger.log(GamerLogger.FORMAT.CSV_FORMAT, "EvoManager", "POPULATION=;" + i + ";PARAM_VALUE =;" + populations[i][j].getParameter() + ";EVALS =;" + populations[i][j].getNumEvaluations() + ";TOT_FITNESS =;" + populations[i][j].getTotalFitness() + ";AVG_FITNESS =;" + populations[i][j].getAverageFitness());
+				GamerLogger.log(GamerLogger.FORMAT.CSV_FORMAT, "EvoManager", "POPULATION=;" + i + ";INDEX =;" + j + ";EVALS =;" + populations[i][j].getNumEvaluations() + ";TOT_FITNESS =;" + populations[i][j].getTotalFitness() + ";AVG_FITNESS =;" + populations[i][j].getAverageFitness());
 			}
 
 		}
@@ -290,39 +286,6 @@ public class SingleParameterEvolutionManager{
 			params += indentation + "num_updates = " + numUpdatesString;
 		}else{
 			params += indentation + "num_updates = null";
-		}
-
-		if(this.populations != null){
-
-			String populationsString = "[ ";
-
-			for(int i = 0; i < this.populations.length; i++){
-
-				if(this.populations[i] != null){
-
-					populationsString += "[ ";
-
-					for(int j = 0; j < this.populations[i].length; j++){
-
-						populationsString += this.populations[i][j].getParameter() + " ";
-
-					}
-
-					populationsString += "] ";
-
-				}else{
-					populationsString += "null ";
-				}
-
-			}
-
-			populationsString += "]";
-
-			params += indentation + "populations = " + populationsString;
-
-
-		}else{
-			params += indentation + "populations = null";
 		}
 
 		if(this.currentSelectedIndividuals != null){

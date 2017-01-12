@@ -4,12 +4,11 @@ import java.util.Random;
 
 import org.ggp.base.player.gamer.statemachine.GamerSettings;
 import org.ggp.base.player.gamer.statemachine.MCS.manager.MoveStats;
-import org.ggp.base.player.gamer.statemachine.MCTS.manager.evolution.OnlineTunableComponent;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.GameDependentParameters;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.SearchManagerComponent;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.SharedReferencesCollector;
 
-public abstract class BetaComputer extends SearchManagerComponent implements OnlineTunableComponent {
+public abstract class BetaComputer extends SearchManagerComponent{
 
 	public BetaComputer(GameDependentParameters gameDependentParameters, Random random,
 			GamerSettings gamerSettings, SharedReferencesCollector sharedReferencesCollector){
@@ -35,12 +34,6 @@ public abstract class BetaComputer extends SearchManagerComponent implements Onl
 		}else{
 			return this.getClass().getSimpleName();
 		}
-	}
-
-	@Override
-	public String printOnlineTunableComponent(String indentation) {
-
-		return this.printComponent(indentation);
 	}
 
 }

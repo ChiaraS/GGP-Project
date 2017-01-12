@@ -5,8 +5,8 @@ import java.util.Random;
 
 import org.ggp.base.player.gamer.statemachine.GamerSettings;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.evolution.Individual;
-import org.ggp.base.player.gamer.statemachine.MCTS.manager.evolution.OnlineTunableComponent;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.evolution.SingleParameterEvolutionManager;
+import org.ggp.base.player.gamer.statemachine.MCTS.manager.evolution.TunableParameter;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.GameDependentParameters;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.SharedReferencesCollector;
 import org.ggp.base.util.logging.GamerLogger;
@@ -17,7 +17,7 @@ public class EvoBeforeSimulation extends BeforeSimulationStrategy {
 
 	private boolean tuneAllRoles;
 
-	private OnlineTunableComponent tunableComponent;
+	private TunableParameter tunableParameter;
 
 	public EvoBeforeSimulation(GameDependentParameters gameDependentParameters, Random random,
 			GamerSettings gamerSettings, SharedReferencesCollector sharedReferencesCollector) {
@@ -43,10 +43,10 @@ public class EvoBeforeSimulation extends BeforeSimulationStrategy {
 	@Override
 	public void setReferences(SharedReferencesCollector sharedReferencesCollector) {
 
-		List<OnlineTunableComponent> tunableComponents = sharedReferencesCollector.getTheComponentsToTune();
+		List<TunableParameter> tunableParameters = sharedReferencesCollector.getTheParametersToTune();
 
-		if(tunableComponents != null && tunableComponents.size() == 1){
-			this.tunableComponent = tunableComponents.get(0);
+		if(tunableParameters != null && tunableParameters.size() == 1){
+			this.tunableParameter = tunableParameters.get(0);
 		}else{
 			GamerLogger.logError("SearchManagerCreation", "There is no single ComponentToTune! Probably a wrong combination of strategies has been set.");
 			throw new RuntimeException("There is no single ComponentToTune!");
@@ -65,7 +65,9 @@ public class EvoBeforeSimulation extends BeforeSimulationStrategy {
 	@Override
 	public void setUpComponent(){
 
-		double[] individualsValues = this.tunableComponent.getPossibleValues();
+		int numPossibleValues = this.tunableParameter.getPossibleValuesLength();
+
+		//int[] individualsValues = new int[numPossibleValues];
 
 		Individual[][] populations;
 
@@ -81,10 +83,10 @@ public class EvoBeforeSimulation extends BeforeSimulationStrategy {
 
 		for(int i = 0; i < populations.length; i++){
 
-			populations[i] = new Individual[individualsValues.length];
+			populations[i] = new Individual[numPossibleValues];
 
 			for(int j = 0; j < populations[i].length; j++){
-				populations[i][j] = new Individual(individualsValues[j]);
+				populations[i][j] = new Individual();
 			}
 		}
 
@@ -94,14 +96,19 @@ public class EvoBeforeSimulation extends BeforeSimulationStrategy {
 	@Override
 	public void beforeSimulationActions() {
 
-		this.tunableComponent.setNewValues(this.evolutionManager.selectNextIndividuals());
+		int[] indices = this.evolutionManager.selectNextIndividualsIndices();
+
+		if(indices.length == 1){
+			this.tunableParameter.setMyRoleNewValue(this.gameDependentParameters.getMyRoleIndex(), indices[0]);
+		}else{
+			this.tunableParameter.setAllRolesNewValues(indices);
+		}
 
 	}
 
 	@Override
 	public String getComponentParameters(String indentation) {
-
-		return indentation + "TUNE_ALL_ROLES = " + this.tuneAllRoles + indentation + "EVOLUTION_MANAGER = " + this.evolutionManager.printEvolutionManager(indentation + "  ") + indentation + "ONLINE_TUNABLE_COMPONENT = " + this.tunableComponent.printOnlineTunableComponent(indentation + "  ");
+		return indentation + "TUNE_ALL_ROLES = " + this.tuneAllRoles + indentation + "EVOLUTION_MANAGER = " + this.evolutionManager.printEvolutionManager(indentation + "  ") + indentation + "TUNABLE_PARAMETER = " + this.tunableParameter.getParameters(indentation + "  ");
 	}
 
 }

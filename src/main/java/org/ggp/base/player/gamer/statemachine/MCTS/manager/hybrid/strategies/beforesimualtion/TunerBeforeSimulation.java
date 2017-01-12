@@ -6,7 +6,7 @@ import java.util.Random;
 import org.ggp.base.player.gamer.statemachine.GamerSettings;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.combinatorialtuning.CombinatorialTuner;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.combinatorialtuning.UcbCombinatorialTuner;
-import org.ggp.base.player.gamer.statemachine.MCTS.manager.evolution.OnlineTunableComponent;
+import org.ggp.base.player.gamer.statemachine.MCTS.manager.evolution.TunableParameter;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.GameDependentParameters;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.SharedReferencesCollector;
 
@@ -31,9 +31,9 @@ public class TunerBeforeSimulation extends BeforeSimulationStrategy {
 	private CombinatorialTuner combinatorialTuner;
 
 	/**
-	 * List of the components that we are tuning.
+	 * List of the parameters that we are tuning.
 	 */
-	private List<OnlineTunableComponent> tunableComponents;
+	private List<TunableParameter> tunableParameters;
 
 	public TunerBeforeSimulation(GameDependentParameters gameDependentParameters, Random random,
 			GamerSettings gamerSettings, SharedReferencesCollector sharedReferencesCollector) {
@@ -61,13 +61,13 @@ public class TunerBeforeSimulation extends BeforeSimulationStrategy {
 
 	@Override
 	public void setReferences(SharedReferencesCollector sharedReferencesCollector) {
-		this.tunableComponents = sharedReferencesCollector.getTheComponentsToTune();
+		this.tunableParameters = sharedReferencesCollector.getTheParametersToTune();
 
-		int[] classesLength = new int[this.tunableComponents.size()];
+		int[] classesLength = new int[this.tunableParameters.size()];
 
 		int i = 0;
-		for(OnlineTunableComponent c : this.tunableComponents){
-			classesLength[i] = c.getPossibleValues().length;
+		for(TunableParameter p : this.tunableParameters){
+			classesLength[i] = p.getPossibleValuesLength();
 			i++;
 		}
 
@@ -106,22 +106,34 @@ public class TunerBeforeSimulation extends BeforeSimulationStrategy {
 			int[][] nextCombinations = this.combinatorialTuner.selectNextCombinations();
 
 			int i = 0;
-			for(OnlineTunableComponent c : this.tunableComponents){
 
-				//System.out.print(c.getClass().getSimpleName() + ": [ ");
-
-				int[] newValuesIndices = new int[nextCombinations.length]; // nextCombinations.length equals the number of roles for which we are tuning
-
-				for(int j = 0; j < nextCombinations.length; j++){
-					newValuesIndices[j] = nextCombinations[j][i];
-					//System.out.print(newValuesIndices[j] + " ");
+			// If we are tuning only for my role...
+			if(nextCombinations.length == 1){
+				for(TunableParameter p : this.tunableParameters){
+					p.setMyRoleNewValue(this.gameDependentParameters.getMyRoleIndex(), nextCombinations[0][i]);
+					i++;
 				}
+			}else{ //If we are tuning for all roles...
 
-				//System.out.println("]");
+				int[] newValuesIndices;
 
-				c.setNewValuesFromIndices(newValuesIndices);
+				for(TunableParameter p : this.tunableParameters){
 
-				i++;
+					//System.out.print(c.getClass().getSimpleName() + ": [ ");
+
+					newValuesIndices = new int[nextCombinations.length]; // nextCombinations.length equals the number of roles for which we are tuning
+
+					for(int j = 0; j < newValuesIndices.length; j++){
+						newValuesIndices[j] = nextCombinations[j][i];
+						//System.out.print(newValuesIndices[j] + " ");
+					}
+
+					//System.out.println("]");
+
+					p.setAllRolesNewValues(newValuesIndices);
+
+					i++;
+				}
 			}
 		}
 
@@ -134,21 +146,21 @@ public class TunerBeforeSimulation extends BeforeSimulationStrategy {
 
 		String params = indentation + "TUNE_ALL_ROLES = " + this.tuneAllRoles + indentation + "COMBINATORIAL_TUNER = " + this.combinatorialTuner.printCombinatorialTuner(indentation + "  ");
 
-		if(this.tunableComponents != null){
+		if(this.tunableParameters != null){
 
-			String tunableComponentsString = "[ ";
+			String tunableParametersString = "[ ";
 
-			for(OnlineTunableComponent c : this.tunableComponents){
+			for(TunableParameter p : this.tunableParameters){
 
-				tunableComponentsString += c.printOnlineTunableComponent(indentation + "  ");
+				tunableParametersString += indentation + "  TUNABLE_PARAMETER = " + p.getParameters(indentation + "    ");
 
 			}
 
-			tunableComponentsString += "\n]";
+			tunableParametersString += "\n]";
 
-			params += indentation + "ONLINE_TUNABLE_COMPONENTS = " + tunableComponentsString;
+			params += indentation + "TUNABLE_PARAMETERS = " + tunableParametersString;
 		}else{
-			params += indentation + "ONLINE_TUNABLE_COMPONENTS = null";
+			params += indentation + "TUNABLE_PARAMETERS = null";
 		}
 
 		return params;

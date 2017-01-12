@@ -41,14 +41,14 @@ public class PnProverGRAVEBetaComputer extends PnProverBetaComputer {
 	}
 
 	@Override
-	public double[] getPossibleValues() {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-	@Override
 	public void setNewValuesFromIndices(int[] newValuesIndices) {
 		// TODO Auto-generated method stub
 
+	}
+
+	@Override
+	public int[] getPossibleValuesLengths() {
+		// TODO Auto-generated method stub
+		return null;
 	}
 }

@@ -1,19 +1,23 @@
 package org.ggp.base.player.gamer.statemachine.MCTS.manager.propnet.strategies.beforesimulation;
 
-import org.ggp.base.player.gamer.statemachine.MCTS.manager.evolution.OnlineTunableComponent;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.evolution.SingleParameterEvolutionManager;
+import org.ggp.base.player.gamer.statemachine.MCTS.manager.evolution.TunableParameter;
 
 public class PnEvoBeforeSimulation implements PnBeforeSimulationStrategy {
 
 	private SingleParameterEvolutionManager evolutionManager;
 
-	private OnlineTunableComponent tunableComponent;
+	private TunableParameter tunableParameter;
 
-	public PnEvoBeforeSimulation(SingleParameterEvolutionManager evolutionManager, OnlineTunableComponent tunableComponent) {
+	private int myRoleIndex;
+
+	public PnEvoBeforeSimulation(SingleParameterEvolutionManager evolutionManager, TunableParameter tunableParameter, int myRoleIndex) {
 
 		this.evolutionManager = evolutionManager;
 
-		this.tunableComponent = tunableComponent;
+		this.tunableParameter = tunableParameter;
+
+		this.myRoleIndex = myRoleIndex;
 
 		//this.betaComputer.setK(this.evolutionManager.selectNextK());
 
@@ -22,14 +26,20 @@ public class PnEvoBeforeSimulation implements PnBeforeSimulationStrategy {
 	@Override
 	public void beforeSimulationActions() {
 
-		this.tunableComponent.setNewValues(this.evolutionManager.selectNextIndividuals());
+		int[] indices = this.evolutionManager.selectNextIndividualsIndices();
+
+		if(indices.length == 1){
+			this.tunableParameter.setMyRoleNewValue(this.myRoleIndex, indices[0]);
+		}else{
+			this.tunableParameter.setAllRolesNewValues(indices);
+		}
 
 	}
 
 	@Override
 	public String getStrategyParameters() {
 
-		return this.tunableComponent.printOnlineTunableComponent("") + ", " + this.evolutionManager.printEvolutionManager("");
+		return this.tunableParameter.getParameters("") + ", " + this.evolutionManager.printEvolutionManager("");
 	}
 
 	@Override

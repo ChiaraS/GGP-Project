@@ -4,6 +4,7 @@ import java.util.Random;
 
 import org.ggp.base.player.gamer.statemachine.GamerSettings;
 import org.ggp.base.player.gamer.statemachine.MCS.manager.MoveStats;
+import org.ggp.base.player.gamer.statemachine.MCTS.manager.evolution.IntTunableParameter;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.GameDependentParameters;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.SharedReferencesCollector;
 
@@ -11,39 +12,31 @@ public class CadiaBetaComputer extends BetaComputer{
 
 	/**
 	 * Equivalence parameter: number of node visits needed to consider as equal
-	 * the UCT value and the AMAF value of a move. It's an array because it's
-	 * possible to use a different value for each role.
+	 * the UCT value and the AMAF value of a move. It memorizes a value for each
+	 * role in case we want different values for each role.
 	 */
-	private int[] k;
-
-	private int initialK;
-
-	/**
-	 * Array with all the values for K that must be used to tune the parameter.
-	 * These values will be used for al roles.
-	 */
-	private int[] valuesForK;
+	private IntTunableParameter k;
 
 	public CadiaBetaComputer(GameDependentParameters gameDependentParameters, Random random,
 			GamerSettings gamerSettings, SharedReferencesCollector sharedReferencesCollector) {
 
 		super(gameDependentParameters, random, gamerSettings, sharedReferencesCollector);
 
-		this.k = null;
+		// Get default value for K (this is the value used for the roles for which we are not tuning the parameter)
+		int fixedK = gamerSettings.getIntPropertyValue("BetaComputer.fixedK");
 
-		this.initialK = gamerSettings.getIntPropertyValue("BetaComputer.initialK");
-
-		// If this component must be tuned online, then we should add its reference to the sharedReferencesCollector
-		if(gamerSettings.getBooleanPropertyValue("BetaComputer.tune")){
-			// If we have to tune the component then we look in the setting for all the values that we must use
+		if(gamerSettings.getBooleanPropertyValue("BetaComputer.tuneK")){
+			// If we have to tune the parameter then we look in the setting for all the values that we must use
 			// Note: the format for these values in the file must be the following:
 			// BetaComputer.valuesForK=v1;v2;...;vn
 			// The values are listed separated by ; with no spaces
-			this.valuesForK = gamerSettings.getIntPropertyMultiValue("BetaComputer.valuesForK");
+			this.k = new IntTunableParameter(fixedK, gamerSettings.getIntPropertyMultiValue("BetaComputer.valuesForK"));
 
-			sharedReferencesCollector.addComponentToTune(this);
+			// If the parameter must be tuned online, then we should add its reference to the sharedReferencesCollector
+			sharedReferencesCollector.addParameterToTune(this.k);
+
 		}else{
-			this.valuesForK = null;
+			this.k = new IntTunableParameter(fixedK);
 		}
 
 	}
@@ -55,74 +48,37 @@ public class CadiaBetaComputer extends BetaComputer{
 
 	@Override
 	public void clearComponent(){
-		this.k = null;
+		this.k.clearParameter();
 	}
 
 	@Override
 	public void setUpComponent(){
-		this.k = new int[this.gameDependentParameters.getNumRoles()];
-
-		for(int i = 0; i < this.gameDependentParameters.getNumRoles(); i++){
-			this.k[i] = this.initialK;
-		}
+		this.k.setUpParameter(this.gameDependentParameters.getNumRoles());
 	}
 
 	@Override
 	public double computeBeta(MoveStats theMoveStats, MoveStats theAmafMoveStats,
 			int nodeVisits, int roleIndex) {
 
-		if(this.k[roleIndex] == 0){
+		if(this.k.getValuePerRole(roleIndex) == 0){
 			return 0.0;
-		}else if(this.k[roleIndex] == Integer.MAX_VALUE){
+		}else if(this.k.getValuePerRole(roleIndex) == Integer.MAX_VALUE){
 			return 1.0;
 		}
 
-		double numerator = k[roleIndex];
-		double denominator = ((3*nodeVisits) + this.k[roleIndex]);
+		double numerator = this.k.getValuePerRole(roleIndex);
+		double denominator = ((3*nodeVisits) + this.k.getValuePerRole(roleIndex));
 		return Math.sqrt(numerator / denominator);
 	}
 
 	@Override
 	public String getComponentParameters(String indentation) {
 
-		String params = indentation + "INITIAL_K = " + this.initialK;
-
-		if(this.valuesForK != null){
-			String valuesForKString = "[ ";
-
-			for(int i = 0; i < this.valuesForK.length; i++){
-
-				valuesForKString += this.valuesForK[i] + " ";
-
-			}
-
-			valuesForKString += "]";
-
-			params += indentation + "VALUES_FOR_TUNING_K = " + valuesForKString;
-		}else{
-			params += indentation + "VALUES_FOR_TUNING_K = null";
-		}
-
-		if(this.k != null){
-			String kString = "[ ";
-
-			for(int i = 0; i < this.k.length; i++){
-
-				kString += this.k[i] + " ";
-
-			}
-
-			kString += "]";
-
-			params += indentation + "k = " + kString;
-		}else{
-			params += indentation + "k = null";
-		}
-
-		return params;
+		return indentation + "K = " + this.k.getParameters(indentation + "  ");
 
 	}
 
+	/*
 	@Override
 	public void setNewValues(double[] newValues){
 
@@ -170,5 +126,6 @@ public class CadiaBetaComputer extends BetaComputer{
 		}
 
 	}
+	*/
 
 }
