@@ -37,6 +37,43 @@ public class GamerSettings {
 		return propertyValue;
 	}
 
+	/**
+	 * Checks for a property that specifies the type of a class for which we want to create multiple instances.
+	 * In these cases the property specifies the exact name of the class and, if multiple instances of the same
+	 * class are planned to be created, an ID to distinguish the multiple instances when setting the parameters
+	 * from the settings file.
+	 *
+	 * The ID distinguishes the creation of multiple classes that descend from the same abstract class.
+	 * This is needed to specify different parameters values when more than one instance of the same abstract
+	 * class is created. For example if we are creating two TunerSelector instances they will both read the
+	 * same settings from the settings file. With the ID we can specify the settings twice with separate values.
+	 *
+	 * @param propertyName
+	 * @return an array where the first entry is the name of the class we want to instantiate, and the second entry
+	 * is the ID that such instance will have and use when getting values to set from the settings file.
+	 */
+	public String[] getIDPropertyValue(String propertyName){
+
+		String[] splitProperty = this.getPropertyValue(propertyName).split("\\.");
+
+		if(splitProperty.length < 0 || splitProperty.length > 2){
+			GamerLogger.logError("SearchManagerCreation", "The type property " + propertyName + " is not correctly specified. Specify an existing class name, followed by its ID if you want to create more than one instance of the class, separated by \".\".");
+			throw new RuntimeException("Cannot find property " + propertyName + ".");
+		}
+
+		String[] toReturn;
+		if(splitProperty.length == 1){
+			toReturn = new String[2];
+			toReturn[0] = splitProperty[0];
+			toReturn[1] = "";
+		}else{
+			toReturn = splitProperty;
+		}
+
+		return toReturn;
+
+	}
+
 	public int getIntPropertyValue(String propertyName){
 
 		String propertyString = this.getPropertyValue(propertyName);

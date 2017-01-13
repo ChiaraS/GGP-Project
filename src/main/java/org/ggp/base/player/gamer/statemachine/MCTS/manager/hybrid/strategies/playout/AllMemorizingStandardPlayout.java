@@ -19,7 +19,7 @@ import org.ggp.base.util.statemachine.structure.Move;
 public class AllMemorizingStandardPlayout extends StandardPlayout {
 
 	public AllMemorizingStandardPlayout(GameDependentParameters gameDependentParameters, Random random,
-			GamerSettings gamerSettings, SharedReferencesCollector sharedReferencesCollector) {
+			GamerSettings gamerSettings, SharedReferencesCollector sharedReferencesCollector, int id) {
 
 		super(gameDependentParameters, random, gamerSettings, sharedReferencesCollector);
 

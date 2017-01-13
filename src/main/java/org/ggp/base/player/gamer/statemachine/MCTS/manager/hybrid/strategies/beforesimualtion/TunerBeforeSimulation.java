@@ -1,18 +1,19 @@
 package org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.strategies.beforesimualtion;
 
+import java.lang.reflect.InvocationTargetException;
 import java.util.List;
 import java.util.Random;
 
 import org.ggp.base.player.gamer.statemachine.GamerSettings;
-import org.ggp.base.player.gamer.statemachine.MCTS.manager.combinatorialtuning.CombinatorialTuner;
-import org.ggp.base.player.gamer.statemachine.MCTS.manager.combinatorialtuning.UcbCombinatorialTuner;
-import org.ggp.base.player.gamer.statemachine.MCTS.manager.evolution.TunableParameter;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.GameDependentParameters;
+import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.SearchManagerComponent;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.SharedReferencesCollector;
+import org.ggp.base.player.gamer.statemachine.MCTS.manager.parameterstuning.ParametersTuner;
+import org.ggp.base.player.gamer.statemachine.MCTS.manager.parameterstuning.structure.TunableParameter;
+import org.ggp.base.util.logging.GamerLogger;
+import org.ggp.base.util.reflection.ProjectSearcher;
 
 public class TunerBeforeSimulation extends BeforeSimulationStrategy {
-
-	private boolean tuneAllRoles;
 
 	/**
 	 * Each selected configuration of parameters will be evaluated with a batch of simulations and not
@@ -28,7 +29,7 @@ public class TunerBeforeSimulation extends BeforeSimulationStrategy {
 	 */
 	private int simCount;
 
-	private CombinatorialTuner combinatorialTuner;
+	private ParametersTuner parametersTuner;
 
 	/**
 	 * List of the parameters that we are tuning.
@@ -40,21 +41,24 @@ public class TunerBeforeSimulation extends BeforeSimulationStrategy {
 
 		super(gameDependentParameters, random, gamerSettings, sharedReferencesCollector);
 
-		this.tuneAllRoles = gamerSettings.getBooleanPropertyValue("BeforeSimulationStrategy.tuneAllRoles");
-
 		this.batchSize = gamerSettings.getIntPropertyValue("BeforeSimulationStrategy.batchSize");
 
 		this.simCount = 0;
 
-		double tunerC = gamerSettings.getDoublePropertyValue("BeforeSimulationStrategy.tunerC");
-		double tunerValueOffset = gamerSettings.getDoublePropertyValue("BeforeSimulationStrategy.tunerValueOffset");
-		double tunerFpu = gamerSettings.getDoublePropertyValue("BeforeSimulationStrategy.tunerFpu");
+		try {
+			this.parametersTuner = (ParametersTuner) SearchManagerComponent.getConstructorForSearchManagerComponent(ProjectSearcher.PARAMETER_TUNERS.getConcreteClasses(),
+					gamerSettings.getPropertyValue("ParameterTuner.parameterTunerType")).newInstance(gameDependentParameters, random, gamerSettings, sharedReferencesCollector);
+		} catch (InstantiationException | IllegalAccessException
+				| IllegalArgumentException | InvocationTargetException e) {
+			// TODO: fix this!
+			GamerLogger.logError("SearchManagerCreation", "Error when instantiating ParameterTuner " + gamerSettings.getPropertyValue("ParameterTuner.parameterTunerType") + ".");
+			GamerLogger.logStackTrace("SearchManagerCreation", e);
+			throw new RuntimeException(e);
+		}
 
-		this.combinatorialTuner = new UcbCombinatorialTuner(random, tunerC, tunerValueOffset, tunerFpu);
+		sharedReferencesCollector.setParametersTuner(parametersTuner);
 
-		sharedReferencesCollector.setCombinatorialTuner(combinatorialTuner);
-
-		// Here the combinatorial tuner has no classes lengths.
+		// Here the parameter tuner has no classes lengths.
 		// They will be initialized when setting references to the tunable components.
 
 	}
@@ -71,7 +75,7 @@ public class TunerBeforeSimulation extends BeforeSimulationStrategy {
 			i++;
 		}
 
-		this.combinatorialTuner.setClassesLength(classesLength);
+		this.parametersTuner.setClassesLength(classesLength);
 
 	}
 
@@ -83,17 +87,13 @@ public class TunerBeforeSimulation extends BeforeSimulationStrategy {
 		// It's not the job of this class to clear the tunable component because the component
 		// is for sure either another strategy or part of another strategy. A class must be
 		// responsible of clearing only the objects that it was responsible for creating.
-		this.combinatorialTuner.clear();
+		this.parametersTuner.clearComponent();
 	}
 
 	@Override
 	public void setUpComponent(){
 
-		if(this.tuneAllRoles){
-			this.combinatorialTuner.setUp(this.gameDependentParameters.getNumRoles());
-		}else{
-			this.combinatorialTuner.setUp(1);
-		}
+		this.parametersTuner.setUpComponent();
 
 		this.simCount = 0;
 
@@ -103,7 +103,7 @@ public class TunerBeforeSimulation extends BeforeSimulationStrategy {
 	public void beforeSimulationActions() {
 
 		if(this.simCount % this.batchSize == 0){
-			int[][] nextCombinations = this.combinatorialTuner.selectNextCombinations();
+			int[][] nextCombinations = this.parametersTuner.selectNextCombinations();
 
 			int i = 0;
 
@@ -144,7 +144,8 @@ public class TunerBeforeSimulation extends BeforeSimulationStrategy {
 	@Override
 	public String getComponentParameters(String indentation) {
 
-		String params = indentation + "TUNE_ALL_ROLES = " + this.tuneAllRoles + indentation + "COMBINATORIAL_TUNER = " + this.combinatorialTuner.printCombinatorialTuner(indentation + "  ");
+		String params = indentation + "BATCH_SIZE = " + this.batchSize +
+				indentation + "PARAMETER_TUNER = " + this.parametersTuner.printComponent(indentation + "  ");
 
 		if(this.tunableParameters != null){
 
@@ -162,6 +163,8 @@ public class TunerBeforeSimulation extends BeforeSimulationStrategy {
 		}else{
 			params += indentation + "TUNABLE_PARAMETERS = null";
 		}
+
+		params += indentation + "SIM_COUNT = " + this.simCount;
 
 		return params;
 

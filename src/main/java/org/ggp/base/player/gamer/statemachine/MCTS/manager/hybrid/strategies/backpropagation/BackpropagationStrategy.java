@@ -42,15 +42,4 @@ public abstract class BackpropagationStrategy extends Strategy {
 	 */
 	public abstract void processPlayoutResult(MctsNode leafNode, MachineState leafState, SimulationResult simulationResult);
 
-
-	@Override
-	public String printComponent(String indentation) {
-		String params = this.getComponentParameters(indentation);
-		if(params != null){
-			return this.getClass().getSimpleName() + params;
-		}else{
-			return this.getClass().getSimpleName();
-		}
-	}
-
 }

@@ -1,4 +1,4 @@
-package org.ggp.base.player.gamer.statemachine.MCTS.manager.evolution;
+package org.ggp.base.player.gamer.statemachine.MCTS.manager.parameterstuning.structure;
 
 /**
  * TODO: should this become a generic class?

@@ -23,17 +23,6 @@ public abstract class PlayoutStrategy extends Strategy {
 
 	public abstract SimulationResult playout(MachineState state, int maxDepth);
 
-	@Override
-	public String printComponent(String indentation) {
-		String params = this.getComponentParameters(indentation);
-
-		if(params != null){
-			return this.getClass().getSimpleName() + params;
-		}else{
-			return this.getClass().getSimpleName();
-		}
-	}
-
 	public abstract List<Move> getJointMove(MachineState state);
 
 }

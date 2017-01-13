@@ -5,14 +5,14 @@ import java.util.List;
 import java.util.Map;
 
 import org.ggp.base.player.gamer.statemachine.MCS.manager.MoveStats;
-import org.ggp.base.player.gamer.statemachine.MCTS.manager.combinatorialtuning.CombinatorialTuner;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.evolution.SingleParameterEvolutionManager;
-import org.ggp.base.player.gamer.statemachine.MCTS.manager.evolution.TunableParameter;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.strategies.backpropagation.TdBackpropagation;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.strategies.playout.PlayoutStrategy;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.strategies.selection.GraveSelection;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.strategies.selection.ProgressiveHistoryGraveSelection;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.strategies.selection.evaluators.td.GlobalExtremeValues;
+import org.ggp.base.player.gamer.statemachine.MCTS.manager.parameterstuning.ParametersTuner;
+import org.ggp.base.player.gamer.statemachine.MCTS.manager.parameterstuning.structure.TunableParameter;
 import org.ggp.base.util.logging.GamerLogger;
 import org.ggp.base.util.statemachine.structure.Move;
 
@@ -38,7 +38,7 @@ public class SharedReferencesCollector {
 
 	private SingleParameterEvolutionManager singleParameterEvolutionManager;
 
-	private CombinatorialTuner combinatorialTuner;
+	private ParametersTuner parametersTuner;
 
 	private GraveSelection graveSelection;
 
@@ -135,23 +135,23 @@ public class SharedReferencesCollector {
 		}
 	}
 
-	public void setCombinatorialTuner(CombinatorialTuner combinatorialTuner){
+	public void setParametersTuner(ParametersTuner parametersTuner){
 		// Can only be set once
-		if(this.combinatorialTuner == null){
-			this.combinatorialTuner = combinatorialTuner;
+		if(this.parametersTuner == null){
+			this.parametersTuner = parametersTuner;
 		}else{
-			GamerLogger.logError("SearchManagerCreation", "Trying to set CombinatorialTuner multiple times! Probably a wrong combination of strategies has been set.");
-			throw new RuntimeException("Trying to set CombinatorialTuner multiple times!");
+			GamerLogger.logError("SearchManagerCreation", "Trying to set ParameterTuner multiple times! Probably a wrong combination of strategies has been set.");
+			throw new RuntimeException("Trying to set ParameterTuner multiple times!");
 		}
 	}
 
-	public CombinatorialTuner getCombinatorialTuner(){
+	public ParametersTuner getParametersTuner(){
 		// If a strategy looks for the reference then another strategy must have set it
-		if(this.combinatorialTuner != null){
-			return this.combinatorialTuner;
+		if(this.parametersTuner != null){
+			return this.parametersTuner;
 		}else{
-			GamerLogger.logError("SearchManagerCreation", "Trying to get CombinatorialTuner that has never been set! Probably a wrong combination of strategies has been set.");
-			throw new RuntimeException("Trying to get CombinatorialTuner that has never been set!");
+			GamerLogger.logError("SearchManagerCreation", "Trying to get ParametersTuner that has never been set! Probably a wrong combination of strategies has been set.");
+			throw new RuntimeException("Trying to get ParametersTuner that has never been set!");
 		}
 	}
 

@@ -18,15 +18,4 @@ public abstract class MoveChoiceStrategy extends Strategy {
 
 	public abstract CompleteMoveStats chooseBestMove(MctsNode initialNode);
 
-	@Override
-	public String printComponent(String indentation) {
-		String params = this.getComponentParameters(indentation);
-
-		if(params != null){
-			return this.getClass().getSimpleName() + params;
-		}else{
-			return this.getClass().getSimpleName();
-		}
-	}
-
 }

@@ -1,10 +1,13 @@
-package org.ggp.base.player.gamer.statemachine.MCTS.manager.combinatorialtuning.selectors;
+package org.ggp.base.player.gamer.statemachine.MCTS.manager.parameterstuning.selectors;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
 
+import org.ggp.base.player.gamer.statemachine.GamerSettings;
 import org.ggp.base.player.gamer.statemachine.MCS.manager.MoveStats;
+import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.GameDependentParameters;
+import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.SharedReferencesCollector;
 
 /**
  * This class gets as input a list of statistics for moves (i.e MoveStats) and selects
@@ -12,22 +15,26 @@ import org.ggp.base.player.gamer.statemachine.MCS.manager.MoveStats;
  * @author C.Sironi
  *
  */
-public class UcbSelector {
+public class UcbSelector extends TunerSelector{
 
-	private Random random;
+	private double c;
 
-	public UcbSelector(Random random) {
-		this.random = random;
-	}
+	private double valueOffset;
 
 	/**
-	 *
-	 * @param moveStats list with the statistics for each move.
-	 * @param numUpdates number of total visits of the moves so far (i.e. number of times any move
-	 * has been visited).
-	 *
-	 * @return the index of the selected move.
+	 * First play urgency for the tuner (i.e. default value of a combination that has never been explored).
 	 */
+	private double fpu;
+
+	public UcbSelector(GameDependentParameters gameDependentParameters, Random random,
+			GamerSettings gamerSettings, SharedReferencesCollector sharedReferencesCollector, String id){
+		super(gameDependentParameters, random, gamerSettings, sharedReferencesCollector, id);
+
+		this.c = gamerSettings.getDoublePropertyValue("TunerSelector" + id + ".c");
+		this.valueOffset = gamerSettings.getDoublePropertyValue("TunerSelector" + id + ".valueOffset");
+		this.fpu = gamerSettings.getDoublePropertyValue("TunerSelector" + id + ".fpu");
+
+	}
 
 	/**
 	 * TODO: adapt the MctsManager code to also use this class.
@@ -35,13 +42,10 @@ public class UcbSelector {
 	 * @param moveStats list with the statistics for each move.
 	 * @param numUpdates number of total visits of the moves so far (i.e. number of times any move
 	 * has been visited).
-	 * @param c c constant to be used for this selection.
-	 * @param valueOffset the selected move will be a random one among the ones with value in the
-	 * interval [maxValue-valueOffset, maxValue].
-	 * @param fpu first play urgency.
 	 * @return the index of the selected move.
 	 */
-	public int selectMove(MoveStats[] movesStats, int numUpdates, double c, double valueOffset, double fpu){
+	@Override
+	public int selectMove(MoveStats[] movesStats, int numUpdates){
 
 		int selectedMove;
 		// This should mean that no combination of values has been evaluated yet (1st simulation),
@@ -60,7 +64,7 @@ public class UcbSelector {
 
 			for(int i = 0; i < movesStats.length; i++){
 
-				movesValues[i] = this.computeCombinationValue(movesStats[i], numUpdates, minExtreme, maxExtreme, c, fpu);
+				movesValues[i] = this.computeCombinationValue(movesStats[i], numUpdates, minExtreme, maxExtreme);
 
 				/*
 				if(combinationsValues[i] == Double.MAX_VALUE){
@@ -92,7 +96,7 @@ public class UcbSelector {
 
 			// Extra check (should never be true).
 			if(selectedMovesIndices.isEmpty()){
-				throw new RuntimeException("CombinatorialTuner - SelectNextCombination(): detected no combinations with value higher than -1.");
+				throw new RuntimeException("UcbSelector - SelectNextCombination(): detected no combinations with value higher than -1.");
 			}
 
 			selectedMove = selectedMovesIndices.get(this.random.nextInt(selectedMovesIndices.size())).intValue();
@@ -104,7 +108,7 @@ public class UcbSelector {
 
 	}
 
-	private double computeCombinationValue(MoveStats moveStats, int totEvaluations, double minExtreme, double maxExtreme, double c, double fpu){
+	private double computeCombinationValue(MoveStats moveStats, int totEvaluations, double minExtreme, double maxExtreme){
 
 		int moveEvaluations = moveStats.getVisits();
 		double totalValue = moveStats.getScoreSum();
@@ -120,10 +124,10 @@ public class UcbSelector {
 		}
 
 		if(moveEvaluations == 0){
-			return fpu;
+			return this.fpu;
 		}
 
-		return this.computeExploitation(totalValue, moveEvaluations, minExtreme, maxExtreme) + this.computeExploration(totEvaluations, moveEvaluations, c);
+		return this.computeExploitation(totalValue, moveEvaluations, minExtreme, maxExtreme) + this.computeExploration(totEvaluations, moveEvaluations);
 
 	}
 
@@ -141,10 +145,40 @@ public class UcbSelector {
 
 	}
 
-	private double computeExploration(int totEvaluations, int combinationEvaluations, double c){
+	private double computeExploration(int totEvaluations, int combinationEvaluations){
 
-		return (c * (Math.sqrt(Math.log(totEvaluations)/((double)combinationEvaluations))));
+		if(this.c == 0){
+			return 0;
+		}else{
+			return (this.c * (Math.sqrt(Math.log(totEvaluations)/((double)combinationEvaluations))));
+		}
 
+	}
+
+	@Override
+	public void setReferences(
+			SharedReferencesCollector sharedReferencesCollector) {
+		// Do nothing
+
+	}
+
+	@Override
+	public void clearComponent() {
+		// Do nothing
+
+	}
+
+	@Override
+	public void setUpComponent() {
+		// Do nothing
+
+	}
+
+	@Override
+	public String getComponentParameters(String indentation) {
+		return indentation + "C = " + this.c +
+				indentation + "VALUE_OFFSET = " + this.valueOffset +
+				indentation + "FPU = " + this.fpu;
 	}
 
 }

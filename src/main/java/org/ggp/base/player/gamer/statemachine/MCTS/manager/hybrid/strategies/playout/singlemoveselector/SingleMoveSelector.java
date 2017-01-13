@@ -20,15 +20,4 @@ public abstract class SingleMoveSelector extends SearchManagerComponent{
 
 	public abstract Move getMoveForRole(MachineState state, int roleIndex) throws MoveDefinitionException, StateMachineException;
 
-	@Override
-	public String printComponent(String indentation) {
-		String params = this.getComponentParameters(indentation);
-
-		if(params != null){
-			return this.getClass().getSimpleName() + params;
-		}else{
-			return this.getClass().getSimpleName();
-		}
-	}
-
 }

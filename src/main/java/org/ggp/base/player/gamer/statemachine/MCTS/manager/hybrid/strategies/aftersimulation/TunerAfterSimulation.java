@@ -3,14 +3,14 @@ package org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.strategies.af
 import java.util.Random;
 
 import org.ggp.base.player.gamer.statemachine.GamerSettings;
-import org.ggp.base.player.gamer.statemachine.MCTS.manager.combinatorialtuning.CombinatorialTuner;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.GameDependentParameters;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.SharedReferencesCollector;
+import org.ggp.base.player.gamer.statemachine.MCTS.manager.parameterstuning.ParametersTuner;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.hybrid.SimulationResult;
 
 public class TunerAfterSimulation extends AfterSimulationStrategy {
 
-	private CombinatorialTuner combinatorialTuner;
+	private ParametersTuner combinatorialTuner;
 
 	public TunerAfterSimulation(GameDependentParameters gameDependentParameters, Random random,
 			GamerSettings gamerSettings, SharedReferencesCollector sharedReferencesCollector){
@@ -21,7 +21,7 @@ public class TunerAfterSimulation extends AfterSimulationStrategy {
 
 	@Override
 	public void setReferences(SharedReferencesCollector sharedReferencesCollector) {
-		this.combinatorialTuner = sharedReferencesCollector.getCombinatorialTuner();
+		this.combinatorialTuner = sharedReferencesCollector.getParametersTuner();
 	}
 
 	@Override

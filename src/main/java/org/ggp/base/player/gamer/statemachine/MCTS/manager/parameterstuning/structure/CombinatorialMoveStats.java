@@ -1,4 +1,4 @@
-package org.ggp.base.player.gamer.statemachine.MCTS.manager.combinatorialtuning.structure;
+package org.ggp.base.player.gamer.statemachine.MCTS.manager.parameterstuning.structure;
 
 import org.ggp.base.player.gamer.statemachine.MCS.manager.MoveStats;
 

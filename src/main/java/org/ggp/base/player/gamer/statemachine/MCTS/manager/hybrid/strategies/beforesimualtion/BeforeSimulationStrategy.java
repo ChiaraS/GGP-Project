@@ -16,15 +16,4 @@ public abstract class BeforeSimulationStrategy extends Strategy {
 
 	public abstract void beforeSimulationActions();
 
-	@Override
-	public String printComponent(String indentation) {
-		String params = this.getComponentParameters(indentation);
-
-		if(params != null){
-			return this.getClass().getSimpleName() + params;
-		}else{
-			return this.getClass().getSimpleName();
-		}
-	}
-
 }

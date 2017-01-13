@@ -25,15 +25,4 @@ public abstract class BetaComputer extends SearchManagerComponent{
 	 */
 	public abstract double computeBeta(MoveStats theMoveStats, MoveStats theAmafMoveStats, int nodeVisits, int roleIndex);
 
-	@Override
-	public String printComponent(String indentation) {
-		String params = this.getComponentParameters(indentation);
-
-		if(params != null){
-			return this.getClass().getSimpleName() + params;
-		}else{
-			return this.getClass().getSimpleName();
-		}
-	}
-
 }

@@ -133,6 +133,14 @@ public abstract class SearchManagerComponent {
 	 * @return a string representing the exact name of the component and the parameters
 	 * it is using.
 	 */
-	public abstract String printComponent(String indentation);
+	public String printComponent(String indentation) {
+		String params = this.getComponentParameters(indentation);
+
+		if(params != null){
+			return this.getClass().getSimpleName() + params;
+		}else{
+			return this.getClass().getSimpleName();
+		}
+	}
 
 }

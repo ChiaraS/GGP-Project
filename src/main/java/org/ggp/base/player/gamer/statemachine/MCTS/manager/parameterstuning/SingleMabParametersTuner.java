@@ -1,12 +1,17 @@
-package org.ggp.base.player.gamer.statemachine.MCTS.manager.combinatorialtuning;
+package org.ggp.base.player.gamer.statemachine.MCTS.manager.parameterstuning;
 
+import java.lang.reflect.InvocationTargetException;
 import java.util.LinkedList;
 import java.util.Random;
 
-import org.ggp.base.player.gamer.statemachine.MCTS.manager.combinatorialtuning.selectors.UcbSelector;
-import org.ggp.base.player.gamer.statemachine.MCTS.manager.combinatorialtuning.structure.CombinatorialMoveStats;
-import org.ggp.base.player.gamer.statemachine.MCTS.manager.combinatorialtuning.structure.UcbCombinatorialProblemRepresentation;
+import org.ggp.base.player.gamer.statemachine.GamerSettings;
+import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.GameDependentParameters;
+import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.SharedReferencesCollector;
+import org.ggp.base.player.gamer.statemachine.MCTS.manager.parameterstuning.selectors.TunerSelector;
+import org.ggp.base.player.gamer.statemachine.MCTS.manager.parameterstuning.structure.CombinatorialMoveStats;
+import org.ggp.base.player.gamer.statemachine.MCTS.manager.parameterstuning.structure.UcbCombinatorialProblemRepresentation;
 import org.ggp.base.util.logging.GamerLogger;
+import org.ggp.base.util.reflection.ProjectSearcher;
 
 /**
  * This tuner selects the combinations of values for the parameter of a the tuned role(s).
@@ -14,16 +19,7 @@ import org.ggp.base.util.logging.GamerLogger;
  * @author C.Sironi
  *
  */
-public class UcbCombinatorialTuner extends CombinatorialTuner {
-
-	private double tunerC;
-
-	private double tunerValueOffset;
-
-	/**
-	 * First play urgency for the tuner (i.e. default value of a combination that has never been explored).
-	 */
-	private double tunerFpu;
+public class SingleMabParametersTuner extends ParametersTuner {
 
 	/**
 	 * All possible combinations of unit moves (i.e. all possible combinatorial moves).
@@ -33,9 +29,9 @@ public class UcbCombinatorialTuner extends CombinatorialTuner {
 	private int[][] combinatorialMoves;
 
 	/**
-	 * Given the statistics of each move, selects one according to the UCB formula
+	 * Given the statistics of each move, selects one according to the given selector
 	 */
-	private UcbSelector ucbSelector;
+	private TunerSelector tunerSelector;
 
 	/**
 	 * For each role being tuned, representation of the combinatorial problem of settings values to the
@@ -50,29 +46,32 @@ public class UcbCombinatorialTuner extends CombinatorialTuner {
 	 */
 	private int[] selectedCombinationsIndices;
 
-	public UcbCombinatorialTuner(Random random, double tunerC, double tunerValueOffset, double tunerFpu) {
+	public SingleMabParametersTuner(GameDependentParameters gameDependentParameters,
+			Random random, GamerSettings gamerSettings,	SharedReferencesCollector sharedReferencesCollector) {
+		super(gameDependentParameters, random, gamerSettings, sharedReferencesCollector);
 
-		super();
+		String[] tunerSelectorDetails = gamerSettings.getIDPropertyValue("ParametersTuner.tunerSelectorType");
 
-		this.tunerC = tunerC;
-		this.tunerValueOffset = tunerValueOffset;
-		this.tunerFpu = tunerFpu;
-
-		this.ucbSelector = new UcbSelector(random);
+		try {
+			this.tunerSelector = (TunerSelector) TunerSelector.getConstructorForTunerSelector(ProjectSearcher.TUNER_SELECTORS.getConcreteClasses(), tunerSelectorDetails[0]).newInstance(gameDependentParameters, random, gamerSettings, sharedReferencesCollector, tunerSelectorDetails[1]);
+		} catch (InstantiationException | IllegalAccessException
+				| IllegalArgumentException | InvocationTargetException e) {
+			// TODO: fix this!
+			GamerLogger.logError("SearchManagerCreation", "Error when instantiating TunerSelector " + gamerSettings.getPropertyValue("ParametersTuner.tunerSelectorType") + ".");
+			GamerLogger.logStackTrace("SearchManagerCreation", e);
+			throw new RuntimeException(e);
+		}
 
 		this.rolesMabs = null;
 
 		this.selectedCombinationsIndices = null;
 
-		/*
-		for(int i = 0; i < this.combinatorialMoves.length; i++){
-			System.out.print("[ ");
-			for(int j = 0; j < combinatorialMoves[i].length; j++){
-				System.out.print(combinatorialMoves[i][j] + " ");
-			}
-			System.out.println("]");
-		}
-		*/
+	}
+
+	@Override
+	public void setReferences(
+			SharedReferencesCollector sharedReferencesCollector) {
+		// Do nothing
 
 	}
 
@@ -89,8 +88,8 @@ public class UcbCombinatorialTuner extends CombinatorialTuner {
 		// Count all the possible combinatorial moves
 		for(int i = 0; i < this.classesLength.length; i++){
 			if(classesLength[i] <= 0){
-				GamerLogger.logError("SearchManagerCreation", "UcbCombinatorialTuner - Initialization with class of moves of length less than 1. No values for the calss!");
-				throw new RuntimeException("UcbCombinatorialTuner - Initialization with class of moves of length 0. No values for the calss!");
+				GamerLogger.logError("SearchManagerCreation", "SingleMabParametersTuner - Initialization with class of moves of length less than 1. No values for the calss!");
+				throw new RuntimeException("SingleMabParametersTuner - Initialization with class of moves of length 0. No values for the calss!");
 			}
 
 			numCombinatorialMoves *= classesLength[i];
@@ -130,9 +129,10 @@ public class UcbCombinatorialTuner extends CombinatorialTuner {
      * After the end of each game clear the tuner.
      */
 	@Override
-	public void clear(){
+	public void clearComponent(){
 		this.rolesMabs = null;
 		this.selectedCombinationsIndices = null;
+		this.tunerSelector.clearComponent();
 	}
 
     /**
@@ -141,7 +141,15 @@ public class UcbCombinatorialTuner extends CombinatorialTuner {
      * @param numRolesToTune either 1 (my role) or all the roles of the game we're going to play.
      */
 	@Override
-	public void setUp(int numRolesToTune){
+	public void setUpComponent(){
+
+		int numRolesToTune;
+
+		if(this.tuneAllRoles){
+			numRolesToTune = this.gameDependentParameters.getNumRoles();
+		}else{
+			numRolesToTune = 1;
+		}
 
 		// Create a MAB representation of the combinatorial problem for each role
 		this.rolesMabs = new UcbCombinatorialProblemRepresentation[numRolesToTune];
@@ -151,6 +159,8 @@ public class UcbCombinatorialTuner extends CombinatorialTuner {
 		}
 
 		this.selectedCombinationsIndices = new int[numRolesToTune];
+
+		this.tunerSelector.setUpComponent();
 
 	}
 
@@ -166,8 +176,8 @@ public class UcbCombinatorialTuner extends CombinatorialTuner {
 		int[][] nextCombinations = new int[this.rolesMabs.length][];
 
 		for(int i = 0; i < this.rolesMabs.length; i++){
-			this.selectedCombinationsIndices[i] = this.ucbSelector.selectMove(this.rolesMabs[i].getCombinatorialMoveStats(),
-					this.rolesMabs[i].getNumUpdates(), this.tunerC, this.tunerValueOffset, this.tunerFpu);
+			this.selectedCombinationsIndices[i] = this.tunerSelector.selectMove(this.rolesMabs[i].getCombinatorialMoveStats(),
+					this.rolesMabs[i].getNumUpdates());
 			nextCombinations[i] = this.rolesMabs[i].getCombinatorialMoveStats()[this.selectedCombinationsIndices[i]].getTheCombinatorialMove();
 		}
 
@@ -229,91 +239,37 @@ public class UcbCombinatorialTuner extends CombinatorialTuner {
 
 	}
 
-	public String getCombinatorialTunerParameters(String indentation) {
-
-		String params = indentation + "EXPLORATION_CONSTANT = " + this.tunerC + indentation + "VALUE_OFFSET = " + this.tunerValueOffset + indentation + "FIRST_PLAY_URGENCY = " + this.tunerFpu + indentation + "NUM_COMBINATORIAL_MOVES = " + this.combinatorialMoves.length;
-
-		/* TODO: print also other parameters???
-		if(this.numUpdates != null){
-
-			String numUpdatesString = "[ ";
-
-			for(int i = 0; i < this.numUpdates.length; i++){
-
-				numUpdatesString += this.numUpdates[i] + " ";
-
-			}
-
-			numUpdatesString += "]";
-
-			params += indentation + "num_updates = " + numUpdatesString;
-		}else{
-			params += indentation + "num_updates = null";
-		}
-
-		if(this.populations != null){
-
-			String populationsString = "[ ";
-
-			for(int i = 0; i < this.populations.length; i++){
-
-				if(this.populations[i] != null){
-
-					populationsString += "[ ";
-
-					for(int j = 0; j < this.populations[i].length; j++){
-
-						populationsString += this.populations[i][j].getParameter() + " ";
-
-					}
-
-					populationsString += "] ";
-
-				}else{
-					populationsString += "null ";
-				}
-
-			}
-
-			populationsString += "]";
-
-			params += indentation + "populations = " + populationsString;
-
-
-		}else{
-			params += indentation + "populations = null";
-		}
-
-		if(this.currentSelectedIndividuals != null){
-
-			String currentSelectedIndividualsString = "[ ";
-
-			for(int i = 0; i < this.currentSelectedIndividuals.length; i++){
-
-				currentSelectedIndividualsString += this.currentSelectedIndividuals[i] + " ";
-
-			}
-
-			currentSelectedIndividualsString += "]";
-
-			params += indentation + "current_selected_individuals_indices = " + currentSelectedIndividualsString;
-		}else{
-			params += indentation + "current_selected_individuals_indices = null";
-		}
-		*/
-
-		return params;
-	}
-
 	@Override
-	public String printCombinatorialTuner(String indentation) {
-		String params = this.getCombinatorialTunerParameters(indentation);
+	public String getComponentParameters(String indentation) {
 
-		if(params != null){
-			return this.getClass().getSimpleName() + params;
+		String superParams = super.getComponentParameters(indentation);
+
+		String params = indentation + "NUM_COMBINATORIAL_MOVES = " + (this.combinatorialMoves != null ? this.combinatorialMoves.length : 0) +
+				indentation + "TUNER_SELECTOR = " + this.tunerSelector.printComponent(indentation + "  ") +
+				indentation + "num_roles_mabs = " + (this.rolesMabs != null ? this.rolesMabs.length : 0);
+
+		if(this.selectedCombinationsIndices != null){
+			String selectedCombinationsIndicesString = "[ ";
+
+			for(int i = 0; i < this.selectedCombinationsIndices.length; i++){
+
+				selectedCombinationsIndicesString += this.selectedCombinationsIndices[i] + " ";
+
+			}
+
+			selectedCombinationsIndicesString += "]";
+
+			params += indentation + "SELECTED_COMBINATIONS_INDICES = " + selectedCombinationsIndicesString;
 		}else{
-			return this.getClass().getSimpleName();
+			params += indentation + "SELECTED_COMBINATIONS_INDICES = null";
 		}
+
+		if(superParams != null){
+			return superParams + params;
+		}else{
+			return params;
+		}
+
 	}
 
 	@Override
@@ -332,6 +288,7 @@ public class UcbCombinatorialTuner extends CombinatorialTuner {
     }
     */
 
+	/*
 	public static void main(String args[]){
 
 		Random random = new Random();
@@ -357,7 +314,7 @@ public class UcbCombinatorialTuner extends CombinatorialTuner {
 			ucbCombinatorialTuner.updateStatistics(rewards);
 		}
 
-
 	}
+	*/
 
 }

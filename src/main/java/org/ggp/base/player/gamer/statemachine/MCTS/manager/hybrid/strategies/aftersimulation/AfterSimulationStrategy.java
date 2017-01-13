@@ -19,14 +19,4 @@ public abstract class AfterSimulationStrategy extends Strategy{
 
 	public abstract void afterSimulationActions(SimulationResult simulationResult);
 
-	@Override
-	public String printComponent(String indentation) {
-		String params = this.getComponentParameters(indentation);
-
-		if(params != null){
-			return this.getClass().getSimpleName() + params;
-		}else{
-			return this.getClass().getSimpleName();
-		}
-	}
 }
