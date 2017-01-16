@@ -35,7 +35,7 @@ public class UctEvaluator extends MoveEvaluator {
 		super(gameDependentParameters, random, gamerSettings, sharedReferencesCollector);
 
 		// Get default value for C (this is the value used for the roles for which we are not tuning the parameter)
-		int fixedC = gamerSettings.getIntPropertyValue("MoveEvaluator.fixedC");
+		double fixedC = gamerSettings.getDoublePropertyValue("MoveEvaluator.fixedC");
 
 		if(gamerSettings.getBooleanPropertyValue("MoveEvaluator.tuneC")){
 			// If we have to tune the parameter then we look in the setting for all the values that we must use
@@ -52,7 +52,7 @@ public class UctEvaluator extends MoveEvaluator {
 		}
 
 		// Get default value for Fpu (this is the value used for the roles for which we are not tuning the parameter)
-		int fixedFpu = gamerSettings.getIntPropertyValue("MoveEvaluator.fixedFpu");
+		double fixedFpu = gamerSettings.getDoublePropertyValue("MoveEvaluator.fixedFpu");
 
 		if(gamerSettings.getBooleanPropertyValue("MoveEvaluator.tuneFpu")){
 			// If we have to tune the parameter then we look in the setting for all the values that we must use

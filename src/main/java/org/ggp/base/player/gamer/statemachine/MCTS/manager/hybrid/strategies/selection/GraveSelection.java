@@ -41,6 +41,8 @@ public class GraveSelection extends MoveValueSelection {
 			this.minAmafVisits = new IntTunableParameter(fixedMinAmafVisits);
 		}
 
+		sharedReferencesCollector.setGraveSelection(this);
+
 	}
 
 	@Override

@@ -47,7 +47,7 @@ public class TunerBeforeSimulation extends BeforeSimulationStrategy {
 
 		try {
 			this.parametersTuner = (ParametersTuner) SearchManagerComponent.getConstructorForSearchManagerComponent(ProjectSearcher.PARAMETER_TUNERS.getConcreteClasses(),
-					gamerSettings.getPropertyValue("ParameterTuner.parameterTunerType")).newInstance(gameDependentParameters, random, gamerSettings, sharedReferencesCollector);
+					gamerSettings.getPropertyValue("BeforeSimulationStrategy.parameterTunerType")).newInstance(gameDependentParameters, random, gamerSettings, sharedReferencesCollector);
 		} catch (InstantiationException | IllegalAccessException
 				| IllegalArgumentException | InvocationTargetException e) {
 			// TODO: fix this!
@@ -102,7 +102,7 @@ public class TunerBeforeSimulation extends BeforeSimulationStrategy {
 	@Override
 	public void beforeSimulationActions() {
 
-		if(this.simCount % this.batchSize == 0){
+		if(this.simCount == 0){
 			int[][] nextCombinations = this.parametersTuner.selectNextCombinations();
 
 			int i = 0;
@@ -137,7 +137,7 @@ public class TunerBeforeSimulation extends BeforeSimulationStrategy {
 			}
 		}
 
-		this.simCount++;
+		this.simCount = (this.simCount + 1)%this.batchSize;
 
 	}
 
