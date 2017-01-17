@@ -1,6 +1,7 @@
 package org.ggp.base.player.gamer.statemachine.MCTS.manager.parameterstuning.selectors;
 
 import java.lang.reflect.Constructor;
+import java.util.Map;
 import java.util.Random;
 
 import org.ggp.base.player.gamer.statemachine.GamerSettings;
@@ -9,6 +10,7 @@ import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.GameDependentP
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.SearchManagerComponent;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.SharedReferencesCollector;
 import org.ggp.base.util.logging.GamerLogger;
+import org.ggp.base.util.statemachine.structure.Move;
 
 import com.google.common.collect.ImmutableSet;
 
@@ -63,6 +65,13 @@ public abstract class TunerSelector extends SearchManagerComponent{
 
 	}
 
+	/**
+	 * These two separate methods do the same thing but one works with an array of statistics and returns
+	 * the index of the selected statistic, while the other works with a map of statistics and returns the
+	 * move corresponding to the selected statistic.
+	 */
 	public abstract int selectMove(MoveStats[] movesStats, int numUpdates);
+
+	public abstract Move selectMove(Map<Move,MoveStats> movesStats, int numUpdates);
 
 }

@@ -1,36 +1,37 @@
-package org.ggp.base.player.gamer.statemachine.MCTS.manager.parameterstuning.structure;
+package org.ggp.base.player.gamer.statemachine.MCTS.manager.parameterstuning.structure.parameters;
+
 
 /**
  * TODO: should this become a generic class?
  * @author C.Sironi
  *
  */
-public class DoubleTunableParameter extends TunableParameter {
+public class IntTunableParameter extends TunableParameter {
 
 	/**
 	 * Value of the parameter for the roles not being tuned.
 	 * It's also the values used to initialize each value at the beginning of each new game.
 	 */
-	private double fixedValue;
+	private int fixedValue;
 
 	/**
 	 * If we are tuning this parameter for at least one role, these are all the possible values
 	 * that the parameter can assume.
 	 */
-	private double[] possibleValues;
+	private int[] possibleValues;
 
 	/**
 	 * For each role the current value being set.
 	 */
-	private double[] currentValues;
+	private int[] currentValues;
 
-	public DoubleTunableParameter(double fixedValue) {
+	public IntTunableParameter(int fixedValue) {
 
 		this(fixedValue, null);
 
 	}
 
-	public DoubleTunableParameter(double fixedValue, double[] possibleValues) {
+	public IntTunableParameter(int fixedValue, int[] possibleValues) {
 
 		this.fixedValue = fixedValue;
 
@@ -45,14 +46,14 @@ public class DoubleTunableParameter extends TunableParameter {
 	}
 
 	public void setUpParameter(int numRoles){
-		this.currentValues = new double[numRoles];
+		this.currentValues = new int[numRoles];
 
 		for(int i = 0; i < this.currentValues.length; i++){
 			this.currentValues[i] = this.fixedValue;
 		}
 	}
 
-	public double getValuePerRole(int roleIndex){
+	public int getValuePerRole(int roleIndex){
 		return this.currentValues[roleIndex];
 	}
 
@@ -80,7 +81,6 @@ public class DoubleTunableParameter extends TunableParameter {
 		}
 	}
 
-	@Override
 	public String getParameters(String indentation) {
 
 		String params = indentation + "FIXED_VALUE = " + this.fixedValue;

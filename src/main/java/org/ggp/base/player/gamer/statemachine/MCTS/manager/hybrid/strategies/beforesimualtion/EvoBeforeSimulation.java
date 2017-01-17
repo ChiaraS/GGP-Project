@@ -8,7 +8,7 @@ import org.ggp.base.player.gamer.statemachine.MCTS.manager.evolution.Individual;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.evolution.SingleParameterEvolutionManager;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.GameDependentParameters;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.SharedReferencesCollector;
-import org.ggp.base.player.gamer.statemachine.MCTS.manager.parameterstuning.structure.TunableParameter;
+import org.ggp.base.player.gamer.statemachine.MCTS.manager.parameterstuning.structure.parameters.TunableParameter;
 import org.ggp.base.util.logging.GamerLogger;
 
 public class EvoBeforeSimulation extends BeforeSimulationStrategy {

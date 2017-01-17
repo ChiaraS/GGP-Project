@@ -2,12 +2,15 @@ package org.ggp.base.player.gamer.statemachine.MCTS.manager.parameterstuning.sel
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Random;
 
 import org.ggp.base.player.gamer.statemachine.GamerSettings;
 import org.ggp.base.player.gamer.statemachine.MCS.manager.MoveStats;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.GameDependentParameters;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.SharedReferencesCollector;
+import org.ggp.base.util.statemachine.structure.Move;
 
 /**
  * This class gets as input a list of statistics for moves (i.e MoveStats) and selects
@@ -106,6 +109,83 @@ public class UcbSelector extends TunerSelector{
 
 		return selectedMove;
 
+	}
+
+	@Override
+	public Move selectMove(Map<Move, MoveStats> movesStats, int numUpdates) {
+
+		Move selectedMove = null;
+		// This should mean that no combination of values has been evaluated yet (1st simulation),
+		// thus we return a random combination.
+		if(numUpdates == 0){
+			int randomNum = this.random.nextInt(movesStats.size());
+
+			for(Entry<Move,MoveStats> entry : movesStats.entrySet()){
+				if(randomNum == 0){
+					selectedMove = entry.getKey();
+					break;
+				}
+				randomNum--;
+			}
+
+		}else{
+
+			double minExtreme = 0.0;
+			double maxExtreme = 100.0;
+
+			double maxValue = -1;
+			double[] movesValues = new double[movesStats.size()];
+			Move[] moves = new Move[movesStats.size()];
+
+			List<Integer> selectedMovesIndices = new ArrayList<Integer>();
+
+			int i = 0;
+			for(Entry<Move,MoveStats> entry : movesStats.entrySet()){
+
+				movesValues[i] = this.computeCombinationValue(entry.getValue(), numUpdates, minExtreme, maxExtreme);
+				moves[i] = entry.getKey();
+
+				/*
+				if(combinationsValues[i] == Double.MAX_VALUE){
+					maxValue = combinationsValues[i];
+					selectedCombinationsIndices.add(new Integer(i));
+				}else*/
+				if(movesValues[i] > maxValue){
+					maxValue = movesValues[i];
+				}
+
+				i++;
+			}
+
+			/*
+			// NOTE: as is, this code always selects a combination that has value Double.MAX_VALUE if there is one,
+			// even if there is an individual that has a value higher than (Double.MAX_VALUE-this.valueOffset).
+			if(maxValue < Double.MAX_VALUE){
+				for(int j = 0; j < individualsValues.length; j++){
+					if(individualsValues[j] >= (maxValue-this.evoValueOffset)){
+						selectedIndividualsIndices.add(new Integer(j));
+					}
+				}
+			}
+			*/
+
+			for(i = 0; i < movesValues.length; i++){
+				if(movesValues[i] >= (maxValue-this.valueOffset)){
+					selectedMovesIndices.add(new Integer(i));
+				}
+			}
+
+			// Extra check (should never be true).
+			if(selectedMovesIndices.isEmpty()){
+				throw new RuntimeException("UcbSelector - SelectNextCombination(Map): detected no combinations with value higher than -1.");
+			}
+
+			selectedMove = moves[selectedMovesIndices.get(this.random.nextInt(selectedMovesIndices.size())).intValue()];
+
+		}
+
+
+		return selectedMove;
 	}
 
 	private double computeCombinationValue(MoveStats moveStats, int totEvaluations, double minExtreme, double maxExtreme){

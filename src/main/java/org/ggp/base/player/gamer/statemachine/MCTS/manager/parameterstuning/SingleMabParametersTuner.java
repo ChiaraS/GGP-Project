@@ -5,11 +5,12 @@ import java.util.LinkedList;
 import java.util.Random;
 
 import org.ggp.base.player.gamer.statemachine.GamerSettings;
+import org.ggp.base.player.gamer.statemachine.MCS.manager.MoveStats;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.GameDependentParameters;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.SharedReferencesCollector;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.parameterstuning.selectors.TunerSelector;
-import org.ggp.base.player.gamer.statemachine.MCTS.manager.parameterstuning.structure.CombinatorialMoveStats;
-import org.ggp.base.player.gamer.statemachine.MCTS.manager.parameterstuning.structure.UcbCombinatorialProblemRepresentation;
+import org.ggp.base.player.gamer.statemachine.MCTS.manager.parameterstuning.structure.CombinatorialCompactMove;
+import org.ggp.base.player.gamer.statemachine.MCTS.manager.parameterstuning.structure.FixedMab;
 import org.ggp.base.util.logging.GamerLogger;
 import org.ggp.base.util.reflection.ProjectSearcher;
 
@@ -26,7 +27,7 @@ public class SingleMabParametersTuner extends ParametersTuner {
 	 * These won't change for the whole life span of the gamer, thus they don't have to be
 	 * recomputed after each game.
 	 */
-	private int[][] combinatorialMoves;
+	private CombinatorialCompactMove[] combinatorialMoves;
 
 	/**
 	 * Given the statistics of each move, selects one according to the given selector
@@ -39,7 +40,7 @@ public class SingleMabParametersTuner extends ParametersTuner {
 	 *
 	 * Note: this has either length=1 when tuning only my role or length=numRoles when tuning all roles.
 	 */
-	private UcbCombinatorialProblemRepresentation[] rolesMabs;
+	private FixedMab[] rolesMabs;
 
 	/**
 	 * Memorizes for each MAB the index of the last selected combinatorial move.
@@ -69,8 +70,7 @@ public class SingleMabParametersTuner extends ParametersTuner {
 	}
 
 	@Override
-	public void setReferences(
-			SharedReferencesCollector sharedReferencesCollector) {
+	public void setReferences(SharedReferencesCollector sharedReferencesCollector) {
 		// Do nothing
 
 	}
@@ -96,14 +96,14 @@ public class SingleMabParametersTuner extends ParametersTuner {
 		}
 
 		// Create all the possible combinatorial moves
-		this.combinatorialMoves = new int[numCombinatorialMoves][];
+		this.combinatorialMoves = new CombinatorialCompactMove[numCombinatorialMoves];
 
 		this.crossProduct(new int[1], new LinkedList<Integer>());
 	}
 
     private void crossProduct(int[] nextFreeIndex, LinkedList<Integer> partial){
         if (partial.size() == this.classesLength.length) {
-            this.combinatorialMoves[nextFreeIndex[0]] = this.toIntArray(partial);
+            this.combinatorialMoves[nextFreeIndex[0]] = new CombinatorialCompactMove(this.toIntArray(partial));
             nextFreeIndex[0]++;
         } else {
             for(int i = 0; i < this.classesLength[partial.size()]; i++) {
@@ -152,10 +152,10 @@ public class SingleMabParametersTuner extends ParametersTuner {
 		}
 
 		// Create a MAB representation of the combinatorial problem for each role
-		this.rolesMabs = new UcbCombinatorialProblemRepresentation[numRolesToTune];
+		this.rolesMabs = new FixedMab[numRolesToTune];
 
 		for(int i = 0; i < this.rolesMabs.length; i++){
-			rolesMabs[i] = new UcbCombinatorialProblemRepresentation(this.combinatorialMoves);
+			rolesMabs[i] = new FixedMab(this.combinatorialMoves.length);
 		}
 
 		this.selectedCombinationsIndices = new int[numRolesToTune];
@@ -176,9 +176,9 @@ public class SingleMabParametersTuner extends ParametersTuner {
 		int[][] nextCombinations = new int[this.rolesMabs.length][];
 
 		for(int i = 0; i < this.rolesMabs.length; i++){
-			this.selectedCombinationsIndices[i] = this.tunerSelector.selectMove(this.rolesMabs[i].getCombinatorialMoveStats(),
+			this.selectedCombinationsIndices[i] = this.tunerSelector.selectMove(this.rolesMabs[i].getMoveStats(),
 					this.rolesMabs[i].getNumUpdates());
-			nextCombinations[i] = this.rolesMabs[i].getCombinatorialMoveStats()[this.selectedCombinationsIndices[i]].getTheCombinatorialMove();
+			nextCombinations[i] = this.combinatorialMoves[this.selectedCombinationsIndices[i]].getIndices();
 		}
 
 		return nextCombinations;
@@ -201,7 +201,7 @@ public class SingleMabParametersTuner extends ParametersTuner {
 
 		for(int i = 0; i < rewards.length; i++){
 
-			CombinatorialMoveStats stat = this.rolesMabs[i].getCombinatorialMoveStats()[this.selectedCombinationsIndices[i]];
+			MoveStats stat = this.rolesMabs[i].getMoveStats()[this.selectedCombinationsIndices[i]];
 
 			stat.incrementScoreSum(rewards[i]);
 			stat.incrementVisits();
@@ -218,19 +218,10 @@ public class SingleMabParametersTuner extends ParametersTuner {
 
 		for(int i = 0; i < this.rolesMabs.length; i++){
 
-			CombinatorialMoveStats[] allMoveStats = this.rolesMabs[i].getCombinatorialMoveStats();
+			MoveStats[] allMoveStats = this.rolesMabs[i].getMoveStats();
 
 			for(int j = 0; j < allMoveStats.length; j++){
-
-				int[] cMove = allMoveStats[j].getTheCombinatorialMove();
-
-				String cMoveString = "[ ";
-				for(int k = 0; k < cMove.length; k++){
-					cMoveString += cMove[k] + " ";
-				}
-				cMoveString += "]";
-
-				GamerLogger.log(GamerLogger.FORMAT.CSV_FORMAT, "CombinatorialTunerStats", "MAB=;" + i + ";COMBINATORIAL_MOVE=;" + cMoveString + ";VISITS=;" + allMoveStats[j].getVisits() + ";SCORE_SUM=;" + allMoveStats[j].getScoreSum() + ";AVG_VALUE=;" + (allMoveStats[j].getVisits() <= 0 ? "0" : (allMoveStats[j].getScoreSum()/((double)allMoveStats[j].getVisits()))));
+				GamerLogger.log(GamerLogger.FORMAT.CSV_FORMAT, "CombinatorialTunerStats", "MAB=;" + i + ";COMBINATORIAL_MOVE=;" + this.combinatorialMoves[j] + ";VISITS=;" + allMoveStats[j].getVisits() + ";SCORE_SUM=;" + allMoveStats[j].getScoreSum() + ";AVG_VALUE=;" + (allMoveStats[j].getVisits() <= 0 ? "0" : (allMoveStats[j].getScoreSum()/((double)allMoveStats[j].getVisits()))));
 			}
 
 			GamerLogger.log(GamerLogger.FORMAT.CSV_FORMAT, "CombinatorialTunerStats", "");

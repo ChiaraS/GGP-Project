@@ -1,11 +1,14 @@
 package org.ggp.base.player.gamer.statemachine.MCTS.manager.parameterstuning.selectors;
 
+import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Random;
 
 import org.ggp.base.player.gamer.statemachine.GamerSettings;
 import org.ggp.base.player.gamer.statemachine.MCS.manager.MoveStats;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.GameDependentParameters;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.SharedReferencesCollector;
+import org.ggp.base.util.statemachine.structure.Move;
 
 public class RandomSelector extends TunerSelector{
 
@@ -36,6 +39,21 @@ public class RandomSelector extends TunerSelector{
 	@Override
 	public int selectMove(MoveStats[] movesStats, int numUpdates) {
 		return this.random.nextInt(movesStats.length);
+	}
+
+	@Override
+	public Move selectMove(Map<Move, MoveStats> movesStats, int numUpdates) {
+		int randomNum = this.random.nextInt(movesStats.size());
+
+		for(Entry<Move,MoveStats> entry : movesStats.entrySet()){
+			if(randomNum == 0){
+				return entry.getKey();
+			}
+			randomNum--;
+		}
+
+		return null;
+
 	}
 
 	@Override

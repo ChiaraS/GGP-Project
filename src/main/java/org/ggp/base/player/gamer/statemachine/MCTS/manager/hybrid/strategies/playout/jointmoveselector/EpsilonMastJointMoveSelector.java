@@ -9,7 +9,7 @@ import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.GameDependentP
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.SharedReferencesCollector;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.strategies.playout.singlemoveselector.MastSingleMoveSelector;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.strategies.playout.singlemoveselector.RandomSingleMoveSelector;
-import org.ggp.base.player.gamer.statemachine.MCTS.manager.parameterstuning.structure.DoubleTunableParameter;
+import org.ggp.base.player.gamer.statemachine.MCTS.manager.parameterstuning.structure.parameters.DoubleTunableParameter;
 import org.ggp.base.util.statemachine.exceptions.MoveDefinitionException;
 import org.ggp.base.util.statemachine.exceptions.StateMachineException;
 import org.ggp.base.util.statemachine.structure.MachineState;

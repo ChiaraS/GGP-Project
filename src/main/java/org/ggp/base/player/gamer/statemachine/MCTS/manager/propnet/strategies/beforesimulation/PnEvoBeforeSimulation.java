@@ -1,7 +1,7 @@
 package org.ggp.base.player.gamer.statemachine.MCTS.manager.propnet.strategies.beforesimulation;
 
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.evolution.SingleParameterEvolutionManager;
-import org.ggp.base.player.gamer.statemachine.MCTS.manager.parameterstuning.structure.TunableParameter;
+import org.ggp.base.player.gamer.statemachine.MCTS.manager.parameterstuning.structure.parameters.TunableParameter;
 
 public class PnEvoBeforeSimulation implements PnBeforeSimulationStrategy {
 

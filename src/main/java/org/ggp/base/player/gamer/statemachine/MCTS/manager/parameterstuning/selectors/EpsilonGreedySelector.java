@@ -1,6 +1,7 @@
 package org.ggp.base.player.gamer.statemachine.MCTS.manager.parameterstuning.selectors;
 
 import java.lang.reflect.InvocationTargetException;
+import java.util.Map;
 import java.util.Random;
 
 import org.ggp.base.player.gamer.statemachine.GamerSettings;
@@ -9,6 +10,7 @@ import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.GameDependentP
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.SharedReferencesCollector;
 import org.ggp.base.util.logging.GamerLogger;
 import org.ggp.base.util.reflection.ProjectSearcher;
+import org.ggp.base.util.statemachine.structure.Move;
 
 /**
  * Selects a move according to tunerSelector1 with probability epsilon,
@@ -58,9 +60,9 @@ public class EpsilonGreedySelector extends TunerSelector{
 	}
 
 	@Override
-	public void setReferences(
-			SharedReferencesCollector sharedReferencesCollector) {
-		// TODO Auto-generated method stub
+	public void setReferences(SharedReferencesCollector sharedReferencesCollector) {
+		this.tunerSelector1.setReferences(sharedReferencesCollector);
+		this.tunerSelector2.setReferences(sharedReferencesCollector);
 
 	}
 
@@ -97,6 +99,15 @@ public class EpsilonGreedySelector extends TunerSelector{
 			return this.tunerSelector2.selectMove(movesStats, numUpdates);
 		}
 
+	}
+
+	@Override
+	public Move selectMove(Map<Move, MoveStats> movesStats, int numUpdates) {
+		if(this.random.nextDouble() < this.epsilon){
+			return this.tunerSelector1.selectMove(movesStats, numUpdates);
+		}else{
+			return this.tunerSelector2.selectMove(movesStats, numUpdates);
+		}
 	}
 
 	@Override
