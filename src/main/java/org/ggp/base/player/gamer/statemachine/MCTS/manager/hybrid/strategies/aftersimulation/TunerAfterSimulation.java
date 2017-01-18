@@ -10,7 +10,7 @@ import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.hybrid.
 
 public class TunerAfterSimulation extends AfterSimulationStrategy {
 
-	private ParametersTuner combinatorialTuner;
+	private ParametersTuner parametersTuner;
 
 	public TunerAfterSimulation(GameDependentParameters gameDependentParameters, Random random,
 			GamerSettings gamerSettings, SharedReferencesCollector sharedReferencesCollector){
@@ -21,7 +21,7 @@ public class TunerAfterSimulation extends AfterSimulationStrategy {
 
 	@Override
 	public void setReferences(SharedReferencesCollector sharedReferencesCollector) {
-		this.combinatorialTuner = sharedReferencesCollector.getParametersTuner();
+		this.parametersTuner = sharedReferencesCollector.getParametersTuner();
 	}
 
 	@Override
@@ -39,14 +39,14 @@ public class TunerAfterSimulation extends AfterSimulationStrategy {
 
 		int[] goals;
 
-		// We have to check if the CombinatorialTuner is tuning parameters only for the playing role
+		// We have to check if the ParametersTuner is tuning parameters only for the playing role
 		// or for all roles and update the statistics with appropriate goals.
-		if(this.combinatorialTuner.getNumIndependentCombinatorialProblems() == 1){
+		if(this.parametersTuner.getNumIndependentCombinatorialProblems() == 1){
 
 			goals = new int[1];
 			goals[0] = simulationResult.getTerminalGoals()[this.gameDependentParameters.getMyRoleIndex()];
 
-		}else if(this.combinatorialTuner.getNumIndependentCombinatorialProblems() == this.gameDependentParameters.getNumRoles()){
+		}else if(this.parametersTuner.getNumIndependentCombinatorialProblems() == this.gameDependentParameters.getNumRoles()){
 
 			goals = simulationResult.getTerminalGoals();
 
@@ -54,7 +54,7 @@ public class TunerAfterSimulation extends AfterSimulationStrategy {
 			throw new RuntimeException("TunerAfterSimulation-afterSimulationActions(): combinatorial tuner is tuning for the wrong number of roles.");
 		}
 
-		this.combinatorialTuner.updateStatistics(goals);
+		this.parametersTuner.updateStatistics(goals);
 
 	}
 
@@ -62,10 +62,10 @@ public class TunerAfterSimulation extends AfterSimulationStrategy {
 	public String getComponentParameters(String indentation) {
 
 		// Only the component that creates the tuner prints its content
-		//return indentation + "COMBINATORIAL_TUNER = " + this.combinatorialTuner.printCombinatorialTuner(indentation + "  ");
+		//return indentation + "PARAMETERS_TUNER = " + this.parametersTuner.printParametersTuner(indentation + "  ");
 
 		// Here we only print the name
-		return indentation + "COMBINATORIAL_TUNER = " + this.combinatorialTuner.getClass().getSimpleName();
+		return indentation + "PARAMETERS_TUNER = " + this.parametersTuner.getClass().getSimpleName();
 
 	}
 

@@ -244,7 +244,11 @@ public class MctsGamer extends InternalPropnetGamer {
 
 		    	moveScoreSum = selectedMove.getScoreSum();
 		    	moveVisits = selectedMove.getVisits();
-		    	moveAvgScore = moveScoreSum / ((double) moveVisits);
+		    	if(moveVisits != 0){
+		    		moveAvgScore = moveScoreSum / ((double) moveVisits);
+		    	}else{
+		    		moveAvgScore = 0;
+		    	}
 
 				GamerLogger.log("Gamer", "Returning MCTS move " + theMove + ".");
 			}catch(MCTSException e){

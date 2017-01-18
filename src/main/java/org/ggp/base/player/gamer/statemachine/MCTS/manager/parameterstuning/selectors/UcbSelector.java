@@ -213,7 +213,7 @@ public class UcbSelector extends TunerSelector{
 
 	private double computeExploitation(double totalValue, int moveEvaluations, double minExtreme, double maxExtreme){
 
-		// Assume that the totalFitness has already been checked to be positive and the numEvaluations to be non-negative.
+		// Assume that the totalValue has already been checked to be positive and the numEvaluations to be non-negative.
 
 		return this.normalize(totalValue/((double)moveEvaluations), minExtreme, maxExtreme);
 

@@ -71,7 +71,7 @@ public class SingleMabParametersTuner extends ParametersTuner {
 
 	@Override
 	public void setReferences(SharedReferencesCollector sharedReferencesCollector) {
-		// Do nothing
+		this.tunerSelector.setReferences(sharedReferencesCollector);
 
 	}
 
@@ -194,9 +194,9 @@ public class SingleMabParametersTuner extends ParametersTuner {
 	public void updateStatistics(int[] rewards){
 
 		if(rewards.length != this.rolesMabs.length){
-			GamerLogger.logError("CombinatorialTuner", "UcbCombinatorialTuner - Impossible to update move statistics! Wrong number of rewards (" + rewards.length +
+			GamerLogger.logError("ParametersTuner", "SingleMabParametersTuner - Impossible to update move statistics! Wrong number of rewards (" + rewards.length +
 					") to update the MAB problems (" + this.rolesMabs.length + ").");
-			throw new RuntimeException("UcbCombinatorialTuner - Initialization with class of moves of length 0. No values for the calss!");
+			throw new RuntimeException("SingleMabParametersTuner - Impossible to update move statistics! Wrong number of rewards!");
 		}
 
 		for(int i = 0; i < rewards.length; i++){
@@ -214,17 +214,17 @@ public class SingleMabParametersTuner extends ParametersTuner {
 	@Override
 	public void logStats(){
 
-		GamerLogger.log(GamerLogger.FORMAT.CSV_FORMAT, "CombinatorialTunerStats", "");
+		GamerLogger.log(GamerLogger.FORMAT.CSV_FORMAT, "ParametersTunerStats", "");
 
 		for(int i = 0; i < this.rolesMabs.length; i++){
 
 			MoveStats[] allMoveStats = this.rolesMabs[i].getMoveStats();
 
 			for(int j = 0; j < allMoveStats.length; j++){
-				GamerLogger.log(GamerLogger.FORMAT.CSV_FORMAT, "CombinatorialTunerStats", "MAB=;" + i + ";COMBINATORIAL_MOVE=;" + this.combinatorialMoves[j] + ";VISITS=;" + allMoveStats[j].getVisits() + ";SCORE_SUM=;" + allMoveStats[j].getScoreSum() + ";AVG_VALUE=;" + (allMoveStats[j].getVisits() <= 0 ? "0" : (allMoveStats[j].getScoreSum()/((double)allMoveStats[j].getVisits()))));
+				GamerLogger.log(GamerLogger.FORMAT.CSV_FORMAT, "ParametersTunerStats", "MAB=;" + i + ";COMBINATORIAL_MOVE=;" + this.combinatorialMoves[j] + ";VISITS=;" + allMoveStats[j].getVisits() + ";SCORE_SUM=;" + allMoveStats[j].getScoreSum() + ";AVG_VALUE=;" + (allMoveStats[j].getVisits() <= 0 ? "0" : (allMoveStats[j].getScoreSum()/((double)allMoveStats[j].getVisits()))));
 			}
 
-			GamerLogger.log(GamerLogger.FORMAT.CSV_FORMAT, "CombinatorialTunerStats", "");
+			GamerLogger.log(GamerLogger.FORMAT.CSV_FORMAT, "ParametersTunerStats", "");
 
 		}
 
@@ -275,7 +275,7 @@ public class SingleMabParametersTuner extends ParametersTuner {
     	l[0] = 3;
     	l[1] = 2;
     	l[2] = 4;
-    	UcbCombinatorialTuner t = new UcbCombinatorialTuner(l);
+    	SingleMabParametersTuner t = new SingleMabParametersTuner(l);
     }
     */
 
@@ -284,7 +284,7 @@ public class SingleMabParametersTuner extends ParametersTuner {
 
 		Random random = new Random();
 
-		UcbCombinatorialTuner ucbCombinatorialTuner = new UcbCombinatorialTuner(random, 0.7, 0.01, Double.MAX_VALUE);
+		SingleMabParametersTuner singleMabParametersTuner = new SingleMabParametersTuner(random, 0.7, 0.01, Double.MAX_VALUE);
 
 		int[] classesLength = new int[4];
 
@@ -293,16 +293,16 @@ public class SingleMabParametersTuner extends ParametersTuner {
 		classesLength[2] = 10;
 		classesLength[3] = 11;
 
-		ucbCombinatorialTuner.setClassesLength(classesLength);
+		singleMabParametersTuner.setClassesLength(classesLength);
 
-		ucbCombinatorialTuner.setUp(1);
+		singleMabParametersTuner.setUp(1);
 
 		int[] rewards = new int[1];
 
 		for(int i = 0; i < 1000000; i++){
 			rewards[0] = random.nextInt(101);
-			ucbCombinatorialTuner.selectNextCombinations();
-			ucbCombinatorialTuner.updateStatistics(rewards);
+			singleMabParametersTuner.selectNextCombinations();
+			singleMabParametersTuner.updateStatistics(rewards);
 		}
 
 	}
