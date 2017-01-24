@@ -6,7 +6,7 @@ import java.util.Random;
 import org.ggp.base.player.gamer.statemachine.GamerSettings;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.GameDependentParameters;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.SharedReferencesCollector;
-import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.hybrid.SequDecMctsJointMove;
+import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.hybrid.SeqDecMctsJointMove;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.hybrid.SimulationResult;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.hybrid.tddecoupled.TdDecoupledMctsNode;
 import org.ggp.base.util.logging.GamerLogger;
@@ -34,7 +34,7 @@ public class IntermediateTdBackpropagation extends TdBackpropagation {
 	}
 
 	@Override
-	protected void decUpdate(TdDecoupledMctsNode currentNode, MachineState currentState, SequDecMctsJointMove jointMove, SimulationResult simulationResult){
+	protected void decUpdate(TdDecoupledMctsNode currentNode, MachineState currentState, SeqDecMctsJointMove jointMove, SimulationResult simulationResult){
 
 		simulationResult.addGoals(this.gameDependentParameters.getTheMachine().getSafeGoalsAvgForAllRoles(currentState));
 

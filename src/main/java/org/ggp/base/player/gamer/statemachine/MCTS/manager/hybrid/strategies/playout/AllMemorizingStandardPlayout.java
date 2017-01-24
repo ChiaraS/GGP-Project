@@ -68,7 +68,7 @@ public class AllMemorizingStandardPlayout extends StandardPlayout {
 
         	jointMove = null;
 			try {
-				jointMove = this.jointMoveSelector.getJointMove(state);
+				jointMove = this.moveSelector.getJointMove(state);
 			} catch (MoveDefinitionException | StateMachineException e) {
 				GamerLogger.logError("MctsManager", "Exception getting a joint move while performing a playout.");
 				GamerLogger.logStackTrace("MctsManager", e);

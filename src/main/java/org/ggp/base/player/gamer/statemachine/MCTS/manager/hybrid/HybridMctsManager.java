@@ -742,7 +742,7 @@ public class HybridMctsManager {
 		}else{
 
 			//System.out.println("Selecting.");
-
+			this.selectionStrategy.preSelectionActions(currentNode);
 			mctsJointMove = this.selectionStrategy.select(currentNode, currentState);
 
 			/*

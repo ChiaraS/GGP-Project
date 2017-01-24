@@ -12,8 +12,7 @@ import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.strategies.bef
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.strategies.expansion.ExpansionStrategy;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.strategies.movechoice.MoveChoiceStrategy;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.strategies.playout.PlayoutStrategy;
-import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.strategies.playout.jointmoveselector.JointMoveSelector;
-import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.strategies.playout.singlemoveselector.SingleMoveSelector;
+import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.strategies.playout.moveselector.MoveSelector;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.strategies.selection.SelectionStrategy;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.strategies.selection.evaluators.MoveEvaluator;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.strategies.selection.evaluators.grave.BetaComputer;
@@ -47,10 +46,9 @@ public class ProjectSearcher {
 
     // Classes needed to create the search manager
     public static final LoadedClasses<BetaComputer> BETA_COMPUTERS = new LoadedClasses<BetaComputer>(BetaComputer.class);
-    public static final LoadedClasses<JointMoveSelector> JOINT_MOVE_SELECTORS = new LoadedClasses<JointMoveSelector>(JointMoveSelector.class);
+    public static final LoadedClasses<MoveSelector> MOVE_SELECTORS = new LoadedClasses<MoveSelector>(MoveSelector.class);
     public static final LoadedClasses<MoveEvaluator> MOVE_EVALUATORS = new LoadedClasses<MoveEvaluator>(MoveEvaluator.class);
     public static final LoadedClasses<NodeUpdater> NODE_UPDATERS = new LoadedClasses<NodeUpdater>(NodeUpdater.class);
-    public static final LoadedClasses<SingleMoveSelector> SINGLE_MOVE_SELECTORS = new LoadedClasses<SingleMoveSelector>(SingleMoveSelector.class);
     public static final LoadedClasses<ParametersTuner> PARAMETER_TUNERS = new LoadedClasses<ParametersTuner>(ParametersTuner.class);
     public static final LoadedClasses<TunerSelector> TUNER_SELECTORS = new LoadedClasses<TunerSelector>(TunerSelector.class);
     // Strategies

@@ -1,4 +1,4 @@
-package org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.strategies.playout.jointmoveselector;
+package org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.strategies.playout.moveselector;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -14,14 +14,24 @@ import org.ggp.base.util.statemachine.exceptions.StateMachineException;
 import org.ggp.base.util.statemachine.structure.MachineState;
 import org.ggp.base.util.statemachine.structure.Move;
 
-public class MastJointMoveSelector extends JointMoveSelector {
+public class MastMoveSelector extends MoveSelector {
 
 	private Map<Move, MoveStats> mastStatistics;
 
-	public MastJointMoveSelector(GameDependentParameters gameDependentParameters, Random random,
-			GamerSettings gamerSettings, SharedReferencesCollector sharedReferencesCollector){
+	/**
+	 * First play urgency for a move never explored before.
+	 * Note that this must be in the range [0,100] because MAST doesn't
+	 * bother normalizing the move values (it's not necessary).
+	 */
+	private double mastFpu;
+
+	public MastMoveSelector(GameDependentParameters gameDependentParameters, Random random,
+			GamerSettings gamerSettings, SharedReferencesCollector sharedReferencesCollector) {
 
 		super(gameDependentParameters, random, gamerSettings, sharedReferencesCollector);
+
+
+		this.mastFpu = gamerSettings.getDoublePropertyValue("MoveSelector.mastFpu");
 
 	}
 
@@ -49,19 +59,39 @@ public class MastJointMoveSelector extends JointMoveSelector {
 	public List<Move> getJointMove(MachineState state) throws MoveDefinitionException, StateMachineException {
 
 		List<Move> jointMove = new ArrayList<Move>();
-        List<List<Move>> allLegalMoves;
 
-        // Get a list containing for each player a lists of legal moves.
-    	allLegalMoves = this.gameDependentParameters.getTheMachine().getAllLegalMovesForAllRoles(state);
-
-    	// For the list of legal moves of each player, pick the one with highest MAST value.
-    	for(List<Move> moves : allLegalMoves){
-    		jointMove.add(this.getMastMove(moves));
+		for(int i = 0; i < this.gameDependentParameters.getNumRoles(); i++){
+    		jointMove.add(this.getMoveForRole(state, i));
     	}
 
 		return jointMove;
 	}
 
+	/**
+	 * This method returns a move according to the MAST strategy.
+	 * For the given role it gets the list of all its legal moves in the state
+	 * and picks the one with highest MAST expected score.
+	 *
+	 * @throws MoveDefinitionException, StateMachineException
+	 */
+	@Override
+	public Move getMoveForRole(MachineState state, int roleIndex) throws MoveDefinitionException, StateMachineException {
+
+		// Get the list of all legal moves for the rle in the state
+        List<Move> legalMovesForRole = this.gameDependentParameters.getTheMachine().getLegalMoves(state, this.gameDependentParameters.getTheMachine().getRoles().get(roleIndex));
+
+    	// Pick the move with highest MAST value.
+		return this.getMastMove(legalMovesForRole);
+	}
+
+	/**
+	 * WARNING! Be very careful! MAST, as opposed to UCT, doesn't normalize value in [0, 1] to select
+	 * the best move. It would be irrelevant to normalize since the choices of MAST are not influenced
+	 * by the range of move values.
+	 *
+	 * @param moves
+	 * @return
+	 */
 	private Move getMastMove(List<Move> moves) {
 
 		List<Move> chosenMoves = new ArrayList<Move>();
@@ -77,7 +107,7 @@ public class MastJointMoveSelector extends JointMoveSelector {
 			if(moveStats != null && moveStats.getVisits() != 0){
 				currentAvgScore = moveStats.getScoreSum() / ((double) moveStats.getVisits());
 			}else{
-				currentAvgScore = 100;
+				currentAvgScore = this.mastFpu;
 			}
 
 			// If it's higher than the current maximum one, replace the max value and delete all best moves found so far
@@ -96,7 +126,8 @@ public class MastJointMoveSelector extends JointMoveSelector {
 
 	@Override
 	public String getComponentParameters(String indentation) {
-		return indentation + "mast_statistics = " + (this.mastStatistics == null ? "null" : this.mastStatistics.size()+"entries");
+		return indentation + "MAST_FPU = " + this.mastFpu +
+				indentation + "mast_statistics = " + (this.mastStatistics == null ? "null" : this.mastStatistics.size()+"entries");
 	}
 
 }

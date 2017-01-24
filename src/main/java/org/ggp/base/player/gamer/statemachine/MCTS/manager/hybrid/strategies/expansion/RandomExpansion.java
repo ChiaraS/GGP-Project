@@ -9,7 +9,7 @@ import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.GameDependentP
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.SharedReferencesCollector;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.MctsNode;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.hybrid.MctsJointMove;
-import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.hybrid.SequDecMctsJointMove;
+import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.hybrid.SeqDecMctsJointMove;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.hybrid.decoupled.DecoupledMctsMoveStats;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.hybrid.decoupled.DecoupledMctsNode;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.hybrid.sequential.SequentialMctsMoveStats;
@@ -143,7 +143,7 @@ public class RandomExpansion extends ExpansionStrategy {
 			}
 		}
 
-		return new SequDecMctsJointMove(jointMove, movesIndices);
+		return new SeqDecMctsJointMove(jointMove, movesIndices);
 	}
 
 
@@ -180,7 +180,7 @@ public class RandomExpansion extends ExpansionStrategy {
 				movesIndices[i] = this.random.nextInt(legalMoves.size());
 				jointMove.add(legalMoves.get(movesIndices[i]));
 			}
-			return new SequDecMctsJointMove(jointMove, movesIndices); // TODO rename!
+			return new SeqDecMctsJointMove(jointMove, movesIndices); // TODO rename!
 		}
 
 		// Get a random leaf move (the path that connects the leaf move to one of my role's moves will
@@ -222,7 +222,7 @@ public class RandomExpansion extends ExpansionStrategy {
 			roleIndex = (roleIndex + 1)%this.gameDependentParameters.getNumRoles();
 		}
 
-		return new SequDecMctsJointMove(jointMove, movesIndices);
+		return new SeqDecMctsJointMove(jointMove, movesIndices);
 	}
 
 	/**

@@ -25,4 +25,6 @@ public abstract class PlayoutStrategy extends Strategy {
 
 	public abstract List<Move> getJointMove(MachineState state);
 
+	public abstract Move getMoveForRole(MachineState state, int roleIndex);
+
 }

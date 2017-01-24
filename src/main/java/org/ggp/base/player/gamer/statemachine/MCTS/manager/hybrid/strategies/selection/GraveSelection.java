@@ -9,6 +9,7 @@ import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.strategies.sel
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.parameterstuning.structure.parameters.IntTunableParameter;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.MctsNode;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.hybrid.MctsJointMove;
+import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.hybrid.MctsMove;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.hybrid.amafdecoupled.AmafNode;
 import org.ggp.base.util.statemachine.structure.MachineState;
 
@@ -67,6 +68,31 @@ public class GraveSelection extends MoveValueSelection {
 
 		if(currentNode instanceof AmafNode){
 
+			return super.select(currentNode, state);
+
+		}else{
+			throw new RuntimeException("GraveSelection-select(): detected a node not implementing interface AmafNode.");
+		}
+	}
+
+	@Override
+	public MctsMove selectPerRole(MctsNode currentNode, MachineState state, int roleIndex) {
+
+		if(currentNode instanceof AmafNode){
+
+			return super.selectPerRole(currentNode, state, roleIndex);
+
+		}else{
+			throw new RuntimeException("GraveSelection-selectPerRole(): detected a node not implementing interface AmafNode.");
+		}
+	}
+
+	@Override
+	public void preSelectionActions(MctsNode currentNode) {
+		super.preSelectionActions(currentNode);
+
+		if(currentNode instanceof AmafNode){
+
 			//System.out.println("tot node visits: " + currentNode.getTotVisits());
 
 			// For each role we must check if we have to change the reference to the closest AMAF statistics
@@ -92,11 +118,10 @@ public class GraveSelection extends MoveValueSelection {
 				}
 			}
 
-			return super.select(currentNode, state);
-
 		}else{
-			throw new RuntimeException("GraveSelection-select(): detected a node not implementing interface AmafNode.");
+			throw new RuntimeException("GraveSelection-preSelectionActions(): detected a node not implementing interface AmafNode.");
 		}
+
 	}
 
 	public void resetClosestAmafStats(){

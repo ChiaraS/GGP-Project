@@ -7,7 +7,7 @@ import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.GameDependentP
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.SharedReferencesCollector;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.MctsNode;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.hybrid.MctsJointMove;
-import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.hybrid.SequDecMctsJointMove;
+import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.hybrid.SeqDecMctsJointMove;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.hybrid.SimulationResult;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.hybrid.decoupled.DecoupledMctsMoveStats;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.hybrid.decoupled.DecoupledMctsNode;
@@ -43,10 +43,10 @@ public class StandardUpdater extends NodeUpdater {
 	 */
 	@Override
 	public void update(MctsNode currentNode, MachineState currentState, MctsJointMove jointMove, SimulationResult simulationResult){
-		if(currentNode instanceof DecoupledMctsNode && jointMove instanceof SequDecMctsJointMove){
-			this.decUpdate((DecoupledMctsNode)currentNode, currentState, (SequDecMctsJointMove)jointMove, simulationResult);
-		}else if(currentNode instanceof SequentialMctsNode && jointMove instanceof SequDecMctsJointMove){
-			this.seqUpdate((SequentialMctsNode)currentNode, currentState, (SequDecMctsJointMove)jointMove, simulationResult);
+		if(currentNode instanceof DecoupledMctsNode && jointMove instanceof SeqDecMctsJointMove){
+			this.decUpdate((DecoupledMctsNode)currentNode, currentState, (SeqDecMctsJointMove)jointMove, simulationResult);
+		}else if(currentNode instanceof SequentialMctsNode && jointMove instanceof SeqDecMctsJointMove){
+			this.seqUpdate((SequentialMctsNode)currentNode, currentState, (SeqDecMctsJointMove)jointMove, simulationResult);
 		}else{
 			throw new RuntimeException("StandardBackpropagation-update(): detected wrong combination of types for node (" + currentNode.getClass().getSimpleName() + ") and joint move (" + jointMove.getClass().getSimpleName() + ").");
 		}
@@ -62,7 +62,7 @@ public class StandardUpdater extends NodeUpdater {
 	 * @param jointMove the explored joint move.
 	 * @param goals the goals obtained by the simulation, to be used to update the statistics.
 	 */
-	private void decUpdate(DecoupledMctsNode currentNode, MachineState currentState, SequDecMctsJointMove jointMove, SimulationResult simulationResult) {
+	private void decUpdate(DecoupledMctsNode currentNode, MachineState currentState, SeqDecMctsJointMove jointMove, SimulationResult simulationResult) {
 
 		currentNode.incrementTotVisits();
 
@@ -99,7 +99,7 @@ public class StandardUpdater extends NodeUpdater {
 	 * @param jointMove the explored joint move.
 	 * @param goals the goals obtained by the simulation, to be used to update the statistics.
 	 */
-	private void seqUpdate(SequentialMctsNode currentNode, MachineState currentState, SequDecMctsJointMove jointMove, SimulationResult simulationResult) {
+	private void seqUpdate(SequentialMctsNode currentNode, MachineState currentState, SeqDecMctsJointMove jointMove, SimulationResult simulationResult) {
 
 		currentNode.incrementTotVisits();
 

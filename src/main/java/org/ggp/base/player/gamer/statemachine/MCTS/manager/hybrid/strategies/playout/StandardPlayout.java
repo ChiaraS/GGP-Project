@@ -8,7 +8,7 @@ import org.ggp.base.player.gamer.statemachine.GamerSettings;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.GameDependentParameters;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.SearchManagerComponent;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.SharedReferencesCollector;
-import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.strategies.playout.jointmoveselector.JointMoveSelector;
+import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.strategies.playout.moveselector.MoveSelector;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.hybrid.SimulationResult;
 import org.ggp.base.util.logging.GamerLogger;
 import org.ggp.base.util.reflection.ProjectSearcher;
@@ -21,12 +21,12 @@ import org.ggp.base.util.statemachine.structure.Move;
 public class StandardPlayout extends PlayoutStrategy {
 
 	/**
-	 * NOTE: to obtain the desired playout type set the jointMoveSelector and the StandardPlayout subclass as follows:
-	 * RANDOM PLAYOUT = RandomJointMoveSelector - StandardPlayout
-	 * MAST PLAYOUT = EpsilonMastJointMoveSelector - MovesMemorizingStandardPlayout
-	 * GRAVE PLAYOUT = RandomJointMoveSelector - MovesMemorizingStandardPlayout
+	 * NOTE: to obtain the desired playout type set the moveSelector and the StandardPlayout subclass as follows:
+	 * RANDOM PLAYOUT = RandomMoveSelector - StandardPlayout
+	 * MAST PLAYOUT = EpsilonMastMoveSelector - MovesMemorizingStandardPlayout
+	 * GRAVE PLAYOUT = RandomMoveSelector - MovesMemorizingStandardPlayout
 	 */
-	protected JointMoveSelector jointMoveSelector;
+	protected MoveSelector moveSelector;
 
 	public StandardPlayout(GameDependentParameters gameDependentParameters, Random random,
 			GamerSettings gamerSettings, SharedReferencesCollector sharedReferencesCollector) {
@@ -34,12 +34,12 @@ public class StandardPlayout extends PlayoutStrategy {
 		super(gameDependentParameters, random, gamerSettings, sharedReferencesCollector);
 
 		try {
-			this.jointMoveSelector = (JointMoveSelector) SearchManagerComponent.getConstructorForSearchManagerComponent(ProjectSearcher.JOINT_MOVE_SELECTORS.getConcreteClasses(),
-					gamerSettings.getPropertyValue("PlayoutStrategy.jointMoveSelectorType")).newInstance(gameDependentParameters, random, gamerSettings, sharedReferencesCollector);
+			this.moveSelector = (MoveSelector) SearchManagerComponent.getConstructorForSearchManagerComponent(ProjectSearcher.MOVE_SELECTORS.getConcreteClasses(),
+					gamerSettings.getPropertyValue("PlayoutStrategy.moveSelectorType")).newInstance(gameDependentParameters, random, gamerSettings, sharedReferencesCollector);
 		} catch (InstantiationException | IllegalAccessException
 				| IllegalArgumentException | InvocationTargetException e) {
 			// TODO: fix this!
-			GamerLogger.logError("SearchManagerCreation", "Error when instantiating JointMoveSelector " + gamerSettings.getPropertyValue("PlayoutStrategy.jointMoveSelectorType") + ".");
+			GamerLogger.logError("SearchManagerCreation", "Error when instantiating MoveSelector " + gamerSettings.getPropertyValue("PlayoutStrategy.moveSelectorType") + ".");
 			GamerLogger.logStackTrace("SearchManagerCreation", e);
 			throw new RuntimeException(e);
 		}
@@ -48,17 +48,17 @@ public class StandardPlayout extends PlayoutStrategy {
 
 	@Override
 	public void setReferences(SharedReferencesCollector sharedReferencesCollector) {
-		this.jointMoveSelector.setReferences(sharedReferencesCollector);
+		this.moveSelector.setReferences(sharedReferencesCollector);
 	}
 
 	@Override
 	public void clearComponent() {
-		this.jointMoveSelector.clearComponent();
+		this.moveSelector.clearComponent();
 	}
 
 	@Override
 	public void setUpComponent() {
-		this.jointMoveSelector.setUpComponent();
+		this.moveSelector.setUpComponent();
 	}
 
 	@Override
@@ -94,7 +94,7 @@ public class StandardPlayout extends PlayoutStrategy {
 
         	jointMove = null;
 			try {
-				jointMove = this.jointMoveSelector.getJointMove(state);
+				jointMove = this.moveSelector.getJointMove(state);
 			} catch (MoveDefinitionException | StateMachineException e) {
 				GamerLogger.logError("MctsManager", "Exception getting a joint move while performing a playout.");
 				GamerLogger.logStackTrace("MctsManager", e);
@@ -127,17 +127,28 @@ public class StandardPlayout extends PlayoutStrategy {
 
 	@Override
 	public String getComponentParameters(String indentation) {
-		return indentation + "JOINT_MOVE_SELECTOR = " + this.jointMoveSelector.printComponent(indentation + "  ");
+		return indentation + "JOINT_MOVE_SELECTOR = " + this.moveSelector.printComponent(indentation + "  ");
 	}
 
 	@Override
 	public List<Move> getJointMove(MachineState state) {
 		try {
-			return this.jointMoveSelector.getJointMove(state);
+			return this.moveSelector.getJointMove(state);
 		} catch (MoveDefinitionException | StateMachineException e) {
 			GamerLogger.logError("MctsManager", "Exception getting a joint move using the playout strategy.");
 			GamerLogger.logStackTrace("MctsManager", e);
 			throw new RuntimeException("Exception getting a joint move using the playout strategy.", e);
+		}
+	}
+
+	@Override
+	public Move getMoveForRole(MachineState state, int roleIndex) {
+		try {
+			return this.moveSelector.getMoveForRole(state, roleIndex);
+		} catch (MoveDefinitionException | StateMachineException e) {
+			GamerLogger.logError("MctsManager", "Exception getting a move for role with index " + roleIndex + " using the playout strategy.");
+			GamerLogger.logStackTrace("MctsManager", e);
+			throw new RuntimeException("Exception getting a move for role with index " + roleIndex + " using the playout strategy.", e);
 		}
 	}
 

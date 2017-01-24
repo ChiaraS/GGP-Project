@@ -12,7 +12,8 @@ import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.SharedReferenc
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.strategies.selection.evaluators.MoveEvaluator;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.MctsNode;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.hybrid.MctsJointMove;
-import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.hybrid.SequDecMctsJointMove;
+import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.hybrid.MctsMove;
+import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.hybrid.SeqDecMctsJointMove;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.hybrid.decoupled.DecoupledMctsMoveStats;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.hybrid.decoupled.DecoupledMctsNode;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.hybrid.sequential.SequentialMctsMoveStats;
@@ -79,7 +80,41 @@ public class MoveValueSelection extends SelectionStrategy {
 		}
 	}
 
+	@Override
+	public MctsMove selectPerRole(MctsNode currentNode, MachineState state, int roleIndex) {
+		if(currentNode instanceof DecoupledMctsNode){
+			return this.decSelectPerRole((DecoupledMctsNode)currentNode, roleIndex);
+		}else /*if(currentNode instanceof SequentialMctsNode){
+			return this.seqSelect((SequentialMctsNode)currentNode);
+		}else*/{
+			throw new RuntimeException("MoveValueSelection-selectPerRole(): detected a node of a sub-type of class MctsNode that is not supported by this selection strategy.");
+		}
+	}
+
+	@Override
+	public void preSelectionActions(MctsNode currentNode) {
+		// No need to do anything
+	}
+
 	private MctsJointMove decSelect(DecoupledMctsNode currentNode) {
+
+		List<Move> selectedJointMove = new ArrayList<Move>(this.gameDependentParameters.getNumRoles());
+		int[] movesIndices = new int[this.gameDependentParameters.getNumRoles()];
+		MctsMove move;
+
+		// For each role check the statistics and pick a move.
+		for(int i = 0; i < this.gameDependentParameters.getNumRoles(); i++){
+
+			move = this.decSelectPerRole(currentNode, i);
+			selectedJointMove.add(move.getMove());
+			movesIndices[i] = move.getMovesIndex();
+
+		}
+
+		return new SeqDecMctsJointMove(selectedJointMove, movesIndices);
+	}
+
+	private MctsMove decSelectPerRole(DecoupledMctsNode currentNode, int roleIndex){
 
 		// No need to make sure that currentNode is terminal if the code is correct,
 		// because the node that is passed as input is always non-terminal.
@@ -90,58 +125,49 @@ public class MoveValueSelection extends SelectionStrategy {
 		// of only passing to this method the nodes that have all the information needed for
 		// selection.
 
-		List<Move> selectedJointMove = new ArrayList<Move>();
-		int[] movesIndices = new int[moves.length];
+		// Compute move value for all moves.
+		double maxMoveValue = -Double.MAX_VALUE;
+		double[] moveValues = new double[moves[roleIndex].length];
 
-		double maxMoveValue;
-		double[] moveValues;
+		// For each legal move check the moveValue.
+		for(int j = 0; j < moves[roleIndex].length; j++){
 
-		// For each role check the statistics and pick a move.
-		for(int i = 0; i < moves.length; i++){
+			// Compute the move value.
+			moveValues[j] = this.moveEvaluator.computeMoveValue(currentNode, moves[roleIndex][j].getTheMove(), roleIndex, moves[roleIndex][j]);
 
-			// Compute move value for all moves.
-			maxMoveValue = -Double.MAX_VALUE;
-			moveValues = new double[moves[i].length];
-
-			// For each legal move check the moveValue.
-			for(int j = 0; j < moves[i].length; j++){
-
-				// Compute the move value.
-				moveValues[j] = this.moveEvaluator.computeMoveValue(currentNode, moves[i][j].getTheMove(), i, moves[i][j]);
-
-				// If it's higher than the current maximum one, replace the max value.
-				if(moveValues[j] > maxMoveValue){
-					maxMoveValue = moveValues[j];
-				}
+			// If it's higher than the current maximum one, replace the max value.
+			if(moveValues[j] > maxMoveValue){
+				maxMoveValue = moveValues[j];
 			}
-
-			// Now that we have the maximum move value we can look for all moves that have their value
-			// in the interval [maxMoveValue-valueOffset, maxMoveValue].
-			List<Integer> selectedMovesIndices = new ArrayList<Integer>();
-
-			//System.out.print("MoveValues = [ ");
-
-			for(int j = 0; j < moveValues.length; j++){
-
-				//System.out.print(moveValues[j] + " ");
-
-				if(moveValues[j] >= (maxMoveValue-this.valueOffset)){
-					selectedMovesIndices.add(new Integer(j));
-				}
-			}
-
-			//System.out.println("]");
-
-			// Extra check (should never be true).
-			if(selectedMovesIndices.isEmpty()){
-				throw new RuntimeException("Decoupled selection: detected no moves with value higher than -1.");
-			}
-
-			movesIndices[i] = selectedMovesIndices.get(this.random.nextInt(selectedMovesIndices.size())).intValue();
-			selectedJointMove.add(moves[i][movesIndices[i]].getTheMove());
 		}
 
-		return new SequDecMctsJointMove(selectedJointMove, movesIndices);
+		// Now that we have the maximum move value we can look for all moves that have their value
+		// in the interval [maxMoveValue-valueOffset, maxMoveValue].
+		List<Integer> selectedMovesIndices = new ArrayList<Integer>();
+
+		//System.out.print("MoveValues = [ ");
+
+		for(int j = 0; j < moveValues.length; j++){
+
+			//System.out.print(moveValues[j] + " ");
+
+			if(moveValues[j] >= (maxMoveValue-this.valueOffset)){
+				selectedMovesIndices.add(new Integer(j));
+			}
+		}
+
+		//System.out.println("]");
+
+		// Extra check (should never be true).
+		if(selectedMovesIndices.isEmpty()){
+			throw new RuntimeException("Decoupled selection: detected no moves with value higher than -1.");
+		}
+
+		int moveIndex = selectedMovesIndices.get(this.random.nextInt(selectedMovesIndices.size())).intValue();
+		Move move = moves[roleIndex][moveIndex].getTheMove();
+
+		return new MctsMove(move, moveIndex);
+
 	}
 
 
@@ -208,7 +234,7 @@ public class MoveValueSelection extends SelectionStrategy {
 
 		}
 
-		return new SequDecMctsJointMove(jointMove, movesIndices);
+		return new SeqDecMctsJointMove(jointMove, movesIndices);
 
 	}
 

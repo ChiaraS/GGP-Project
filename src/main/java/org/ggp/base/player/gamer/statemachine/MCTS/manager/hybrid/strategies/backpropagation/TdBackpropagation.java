@@ -8,7 +8,7 @@ import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.SharedReferenc
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.strategies.selection.evaluators.td.GlobalExtremeValues;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.MctsNode;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.hybrid.MctsJointMove;
-import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.hybrid.SequDecMctsJointMove;
+import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.hybrid.SeqDecMctsJointMove;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.hybrid.SimulationResult;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.hybrid.decoupled.DecoupledMctsMoveStats;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.hybrid.tddecoupled.TdDecoupledMctsNode;
@@ -100,15 +100,15 @@ public abstract class TdBackpropagation extends BackpropagationStrategy {
 	public void update(MctsNode currentNode, MachineState currentState,
 			MctsJointMove jointMove, SimulationResult simulationResult) {
 
-		if(currentNode instanceof TdDecoupledMctsNode && jointMove instanceof SequDecMctsJointMove){
-			this.decUpdate((TdDecoupledMctsNode)currentNode, currentState, (SequDecMctsJointMove)jointMove, simulationResult);
+		if(currentNode instanceof TdDecoupledMctsNode && jointMove instanceof SeqDecMctsJointMove){
+			this.decUpdate((TdDecoupledMctsNode)currentNode, currentState, (SeqDecMctsJointMove)jointMove, simulationResult);
 		}else{
 			throw new RuntimeException("TdBackpropagation-update(): no method implemented to manage backpropagation for node type (" + currentNode.getClass().getSimpleName() + ") and joint move type (" + jointMove.getClass().getSimpleName() + ").");
 		}
 
 	}
 
-	protected void decUpdate(TdDecoupledMctsNode currentNode, MachineState currentState, SequDecMctsJointMove jointMove, SimulationResult simulationResult){
+	protected void decUpdate(TdDecoupledMctsNode currentNode, MachineState currentState, SeqDecMctsJointMove jointMove, SimulationResult simulationResult){
 
 		currentNode.incrementTotVisits();
 

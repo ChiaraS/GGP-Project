@@ -1,6 +1,7 @@
 package org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.strategies.selection;
 
 import java.lang.reflect.InvocationTargetException;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
 
@@ -9,9 +10,11 @@ import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.GameDependentP
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.SearchManagerComponent;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.SharedReferencesCollector;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.strategies.playout.PlayoutStrategy;
+import org.ggp.base.player.gamer.statemachine.MCTS.manager.parameterstuning.structure.parameters.IntTunableParameter;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.MctsNode;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.hybrid.MctsJointMove;
-import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.hybrid.SequDecMctsJointMove;
+import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.hybrid.MctsMove;
+import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.hybrid.SeqDecMctsJointMove;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.hybrid.decoupled.DecoupledMctsMoveStats;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.hybrid.decoupled.DecoupledMctsNode;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.hybrid.sequential.SequentialMctsNode;
@@ -38,7 +41,7 @@ public class PlayoutSupportedSelection extends SelectionStrategy {
 	 * Minimum number of visits that a node must have to use the selection strategy to pick a move.
 	 * If the number of visits is inferior to this threshold, the playout strategy will be used instead.
 	 */
-	private int t;
+	private IntTunableParameter t;
 
 	public PlayoutSupportedSelection(GameDependentParameters gameDependentParameters, Random random,
 			GamerSettings gamerSettings, SharedReferencesCollector sharedReferencesCollector) {
@@ -56,7 +59,23 @@ public class PlayoutSupportedSelection extends SelectionStrategy {
 			throw new RuntimeException(e);
 		}
 
-		this.t = gamerSettings.getIntPropertyValue("SelectionStrategy.t");
+		// Get default value for T (this is the value used for the roles for which we are not tuning the parameter)
+		int fixedT = gamerSettings.getIntPropertyValue("MoveEvaluator.fixedT");
+
+		if(gamerSettings.getBooleanPropertyValue("MoveEvaluator.tuneT")){
+			// If we have to tune the parameter then we look in the setting for all the values that we must use
+			// Note: the format for these values in the file must be the following:
+			// BetaComputer.valuesForK=v1;v2;...;vn
+			// The values are listed separated by ; with no spaces
+			this.t = new IntTunableParameter(fixedT, gamerSettings.getIntPropertyMultiValue("MoveEvaluator.valuesForT"));
+
+			// If the parameter must be tuned online, then we should add its reference to the sharedReferencesCollector
+			sharedReferencesCollector.addParameterToTune(this.t);
+
+		}else{
+			this.t = new IntTunableParameter(fixedT);
+		}
+
 	}
 
 	@Override
@@ -78,70 +97,89 @@ public class PlayoutSupportedSelection extends SelectionStrategy {
 
 	@Override
 	public MctsJointMove select(MctsNode currentNode, MachineState state) {
-		if(currentNode.getTotVisits() >= t){
-			return this.selectionStrategy.select(currentNode, state);
+
+		List<Move> selectedMove = new ArrayList<Move>(this.gameDependentParameters.getNumRoles());
+		int[] movesIndices = new int[this.gameDependentParameters.getNumRoles()];
+		MctsMove move;
+
+		for(int i = 0; i < this.gameDependentParameters.getNumRoles(); i++){
+
+			move = this.selectPerRole(currentNode, state, i);
+
+			selectedMove.add(move.getMove());
+
+			movesIndices[i] = move.getMovesIndex();
+
+		}
+
+		return new SeqDecMctsJointMove(selectedMove, movesIndices);
+	}
+
+	@Override
+	public MctsMove selectPerRole(MctsNode currentNode, MachineState state, int roleIndex) {
+		if(currentNode.getTotVisits() >= this.t.getValuePerRole(roleIndex)){
+			return this.selectionStrategy.selectPerRole(currentNode, state, roleIndex);
 		}else{
-			List<Move> jointMove = this.playoutStrategy.getJointMove(state);
+			Move move = this.playoutStrategy.getMoveForRole(state, roleIndex);
 
 			// The playout returns a plain move. We must find the indices of the move in the tree node.
 			if(currentNode instanceof DecoupledMctsNode){
-				return this.decCreateMove((DecoupledMctsNode) currentNode, jointMove);
+				return this.decCreateMove((DecoupledMctsNode) currentNode, move, roleIndex);
 			}else if(currentNode instanceof SequentialMctsNode){
-				return this.seqCreateMove((SequentialMctsNode) currentNode, jointMove);
+				return this.seqCreateMove((SequentialMctsNode) currentNode, move, roleIndex);
 			}else{
 				throw new RuntimeException("PlayoutSupportedSelection-select(): detected a node of a non-recognizable sub-type of class MctsNode.");
 			}
 		}
 	}
 
-	private MctsJointMove decCreateMove(DecoupledMctsNode currentNode, List<Move> jointMove){
+	@Override
+	public void preSelectionActions(MctsNode currentNode) {
+		this.selectionStrategy.preSelectionActions(currentNode);
+	}
 
-		DecoupledMctsMoveStats[][] moves = currentNode.getMoves();
+	private MctsMove decCreateMove(DecoupledMctsNode currentNode, Move move, int roleIndex){
+
+		DecoupledMctsMoveStats[] moves = currentNode.getMoves()[roleIndex];
 
 		// Also here we can assume that the moves will be non-null since the code takes care
 		// of only passing to this method the nodes that have all the information needed for
 		// selection.
 
-		int[] movesIndices = new int[moves.length];
+		int moveIndex = -1;
 
-		// For each role look for the index of the selected move.
+		// For each legal move check if it is the selected one.
 		for(int i = 0; i < moves.length; i++){
 
-			// For each legal move check if it is the selected one.
-			for(int j = 0; j < moves[i].length; j++){
-
-				if(jointMove.get(i).equals(moves[i][j].getTheMove())){
-					movesIndices[i] = j;
-				}
+			if(move.equals(moves[i].getTheMove())){
+					moveIndex = i;
+					break;
 			}
 
 		}
 
-		return new SequDecMctsJointMove(jointMove, movesIndices);
+		return new MctsMove(move, moveIndex);
 
 	}
 
-	private MctsJointMove seqCreateMove(SequentialMctsNode currentNode, List<Move> jointMove){
+	private MctsMove seqCreateMove(SequentialMctsNode currentNode, Move move, int roleIndex){
 
-		int[] movesIndices = new int[this.gameDependentParameters.getNumRoles()];
+		int moveIndex = -1;
 
 		// Get all the moves for the roles
-		List<List<Move>> allMoves = currentNode.getAllLegalMoves();
+		List<Move> moves = currentNode.getAllLegalMoves().get(roleIndex);
 
-		// For each role look for the index of the selected move.
-		for(int i = 0; i < allMoves.size(); i++){
+		// For each legal move check if it is the selected one.
+		for(int i = 0; i < moves.size(); i++){
 
-			// For each legal move check if it is the selected one.
-			for(int j = 0; j < allMoves.get(i).size(); j++){
-
-				if(jointMove.get(i).equals(allMoves.get(i).get(j))){
-					movesIndices[i] = j;
-				}
+			if(move.equals(moves.get(i))){
+				moveIndex = i;
+				break;
 			}
 
 		}
 
-		return new SequDecMctsJointMove(jointMove, movesIndices);
+		return new MctsMove(move, moveIndex);
 
 	}
 

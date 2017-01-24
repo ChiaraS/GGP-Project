@@ -12,7 +12,7 @@ import com.google.common.collect.ImmutableSet;
  * This class specifies parameters and methods that must be common to all components of the search manager
  * (the components of the search manager are strategies (e.g. selection, playout, before/after simulation,
  * backpropagation, ecc...), move evaluators (e.g. UCTEvaluator, GraveEvaluator, ecc...), single or joint
- * move selectors (e.g RandomJointMoveSelector, EpsilonMASTJointMoveSelector, ecc...)).
+ * move selectors (e.g RandomMoveSelector, EpsilonMastMoveSelector, ecc...)).
  *
  * ATTENTION: each component must respect a rule. The constructor must ONLY set the reference to (non primitive)
  * class parameters. The initialization of the content of these parameters needed to play a game must be performed

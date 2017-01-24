@@ -1,4 +1,4 @@
-package org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.strategies.playout.jointmoveselector;
+package org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.strategies.playout.moveselector;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -7,39 +7,37 @@ import java.util.Random;
 import org.ggp.base.player.gamer.statemachine.GamerSettings;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.GameDependentParameters;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.SharedReferencesCollector;
-import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.strategies.playout.singlemoveselector.MastSingleMoveSelector;
-import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.strategies.playout.singlemoveselector.RandomSingleMoveSelector;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.parameterstuning.structure.parameters.DoubleTunableParameter;
 import org.ggp.base.util.statemachine.exceptions.MoveDefinitionException;
 import org.ggp.base.util.statemachine.exceptions.StateMachineException;
 import org.ggp.base.util.statemachine.structure.MachineState;
 import org.ggp.base.util.statemachine.structure.Move;
 
-public class EpsilonMastJointMoveSelector extends JointMoveSelector{
+public class EpsilonMastMoveSelector extends MoveSelector{
 
-	private MastSingleMoveSelector mastSelector;
+	private MastMoveSelector mastSelector;
 
-	private RandomSingleMoveSelector randomSelector;
+	private RandomMoveSelector randomSelector;
 
 	private DoubleTunableParameter epsilon;
 
-	public EpsilonMastJointMoveSelector(GameDependentParameters gameDependentParameters, Random random,
+	public EpsilonMastMoveSelector(GameDependentParameters gameDependentParameters, Random random,
 			GamerSettings gamerSettings, SharedReferencesCollector sharedReferencesCollector){
 
 		super(gameDependentParameters, random, gamerSettings, sharedReferencesCollector);
 
-		this.mastSelector = new MastSingleMoveSelector(gameDependentParameters, random, gamerSettings, sharedReferencesCollector);
-		this.randomSelector = new RandomSingleMoveSelector(gameDependentParameters, random, gamerSettings, sharedReferencesCollector);
+		this.mastSelector = new MastMoveSelector(gameDependentParameters, random, gamerSettings, sharedReferencesCollector);
+		this.randomSelector = new RandomMoveSelector(gameDependentParameters, random, gamerSettings, sharedReferencesCollector);
 
 		// Get default value for Epsilon (this is the value used for the roles for which we are not tuning the parameter)
-		double fixedEpsilon = gamerSettings.getDoublePropertyValue("JointMoveSelector.fixedEpsilon");
+		double fixedEpsilon = gamerSettings.getDoublePropertyValue("MoveSelector.fixedEpsilon");
 
-		if(gamerSettings.getBooleanPropertyValue("JointMoveSelector.tuneEpsilon")){
+		if(gamerSettings.getBooleanPropertyValue("MoveSelector.tuneEpsilon")){
 			// If we have to tune the parameter then we look in the setting for all the values that we must use
 			// Note: the format for these values in the file must be the following:
 			// BetaComputer.valuesForK=v1;v2;...;vn
 			// The values are listed separated by ; with no spaces
-			this.epsilon = new DoubleTunableParameter(fixedEpsilon, gamerSettings.getDoublePropertyMultiValue("JointMoveSelector.valuesForEpsilon"));
+			this.epsilon = new DoubleTunableParameter(fixedEpsilon, gamerSettings.getDoublePropertyMultiValue("MoveSelector.valuesForEpsilon"));
 
 			// If the parameter must be tuned online, then we should add its reference to the sharedReferencesCollector
 			sharedReferencesCollector.addParameterToTune(this.epsilon);
@@ -85,16 +83,23 @@ public class EpsilonMastJointMoveSelector extends JointMoveSelector{
 		// NOTE that a joint move might be composed of moves that have been picked randomly for some roles and moves that
 		// have been picked according to MAST statistics for other roles.
 		for(int i = 0; i < this.gameDependentParameters.getNumRoles(); i++){
-			if(this.random.nextDouble() < this.epsilon.getValuePerRole(i)){
-	    		// Choose random action with probability epsilon
-				jointMove.add(this.randomSelector.getMoveForRole(state, i));
-	    	}else{
-	    		// Choose move with highest average score
-	    		jointMove.add(this.mastSelector.getMoveForRole(state, i));
-	    	}
+			jointMove.add(this.getMoveForRole(state, i));
 		}
 
 		return jointMove;
+	}
+
+	@Override
+	public Move getMoveForRole(MachineState state, int roleIndex) throws MoveDefinitionException, StateMachineException {
+
+		if(this.random.nextDouble() < this.epsilon.getValuePerRole(roleIndex)){
+    		// Choose random action with probability epsilon
+			return this.randomSelector.getMoveForRole(state, roleIndex);
+    	}else{
+    		// Choose move with highest average score
+    		return this.mastSelector.getMoveForRole(state, roleIndex);
+    	}
+
 	}
 
 	@Override

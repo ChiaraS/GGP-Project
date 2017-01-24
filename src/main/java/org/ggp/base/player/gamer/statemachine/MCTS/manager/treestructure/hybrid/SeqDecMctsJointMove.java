@@ -4,7 +4,7 @@ import java.util.List;
 
 import org.ggp.base.util.statemachine.structure.Move;
 
-public class SequDecMctsJointMove extends MctsJointMove {
+public class SeqDecMctsJointMove extends MctsJointMove {
 
 	/**
 	 * Index that each single move has in the list of legal moves for its role.
@@ -15,7 +15,7 @@ public class SequDecMctsJointMove extends MctsJointMove {
 	 * @param jointMove
 	 * @param movesIndices
 	 */
-	public SequDecMctsJointMove(List<Move> jointMove, int[] movesIndices) {
+	public SeqDecMctsJointMove(List<Move> jointMove, int[] movesIndices) {
 		super(jointMove);
 		this.movesIndices = movesIndices;
 	}

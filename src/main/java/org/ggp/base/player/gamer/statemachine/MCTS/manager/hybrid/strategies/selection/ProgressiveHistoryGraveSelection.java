@@ -7,9 +7,7 @@ import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.GameDependentP
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.SharedReferencesCollector;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.strategies.selection.evaluators.grave.ProgressiveHistoryGraveEvaluator;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.MctsNode;
-import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.hybrid.MctsJointMove;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.hybrid.amafdecoupled.AmafNode;
-import org.ggp.base.util.statemachine.structure.MachineState;
 
 public class ProgressiveHistoryGraveSelection extends GraveSelection {
 
@@ -22,11 +20,10 @@ public class ProgressiveHistoryGraveSelection extends GraveSelection {
 	}
 
 	@Override
-	public MctsJointMove select(MctsNode currentNode, MachineState state) {
+	public void preSelectionActions(MctsNode currentNode) {
+		super.preSelectionActions(currentNode);
 
 		if(currentNode instanceof AmafNode){
-
-			/** 1. Set the AMAF table of the root for the progressive history */
 
 			if(((ProgressiveHistoryGraveEvaluator)this.moveEvaluator).getCurrentRootAmafStats() == null){
 
@@ -35,12 +32,10 @@ public class ProgressiveHistoryGraveSelection extends GraveSelection {
 
 			}
 
-			/** 2. Call the GRAVE selection **/
-			return super.select(currentNode, state);
-
 		}else{
-			throw new RuntimeException("ProgressiveHistoryGraveSelection-select(): detected a node not implementing interface MctsNode.");
+			throw new RuntimeException("ProgressiveHistoryGraveSelection-preSelectionActions(): detected a node not implementing interface AmafNode.");
 		}
+
 	}
 
 	public void resetCurrentRootAmafStats(){
