@@ -60,14 +60,14 @@ public class PlayoutSupportedSelection extends SelectionStrategy {
 		}
 
 		// Get default value for T (this is the value used for the roles for which we are not tuning the parameter)
-		int fixedT = gamerSettings.getIntPropertyValue("MoveEvaluator.fixedT");
+		int fixedT = gamerSettings.getIntPropertyValue("SelectionStrategy.fixedT");
 
-		if(gamerSettings.getBooleanPropertyValue("MoveEvaluator.tuneT")){
+		if(gamerSettings.getBooleanPropertyValue("SelectionStrategy.tuneT")){
 			// If we have to tune the parameter then we look in the setting for all the values that we must use
 			// Note: the format for these values in the file must be the following:
 			// BetaComputer.valuesForK=v1;v2;...;vn
 			// The values are listed separated by ; with no spaces
-			this.t = new IntTunableParameter(fixedT, gamerSettings.getIntPropertyMultiValue("MoveEvaluator.valuesForT"));
+			this.t = new IntTunableParameter(fixedT, gamerSettings.getIntPropertyMultiValue("SelectionStrategy.valuesForT"));
 
 			// If the parameter must be tuned online, then we should add its reference to the sharedReferencesCollector
 			sharedReferencesCollector.addParameterToTune(this.t);
@@ -88,11 +88,13 @@ public class PlayoutSupportedSelection extends SelectionStrategy {
 	@Override
 	public void clearComponent() {
 		this.selectionStrategy.clearComponent();
+		this.t.clearParameter();
 	}
 
 	@Override
 	public void setUpComponent() {
 		this.selectionStrategy.setUpComponent();
+		this.t.setUpParameter(this.gameDependentParameters.getNumRoles());
 	}
 
 	@Override
@@ -187,9 +189,9 @@ public class PlayoutSupportedSelection extends SelectionStrategy {
 	@Override
 	public String getComponentParameters(String indentation) {
 
-		return indentation + "T = " + this.t +
+		return indentation + "T = " + this.t.getParameters(indentation + "  ") +
 				indentation + "SUB_SELECTION = " + this.selectionStrategy.printComponent(indentation + "  ") +
-				indentation + "SUB_PLAYOUT = " + this.playoutStrategy.getClass().getName();
+				indentation + "SUB_PLAYOUT = " + this.playoutStrategy.getClass().getSimpleName();
 
 	}
 
