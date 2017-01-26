@@ -50,8 +50,8 @@ public class GraveEvaluator extends UctEvaluator{
 		this.closestAmafStats = null;
 
 		try {
-			this.betaComputer = (BetaComputer) SearchManagerComponent.getConstructorForSearchManagerComponent(ProjectSearcher.BETA_COMPUTERS.getConcreteClasses(),
-					gamerSettings.getPropertyValue("MoveEvaluator.betaComputerType")).newInstance(gameDependentParameters, random, gamerSettings, sharedReferencesCollector);
+			this.betaComputer = (BetaComputer) SearchManagerComponent.getConstructorForSearchManagerComponent(SearchManagerComponent.getCorrespondingClass(ProjectSearcher.BETA_COMPUTERS.getConcreteClasses(),
+					gamerSettings.getPropertyValue("MoveEvaluator.betaComputerType"))).newInstance(gameDependentParameters, random, gamerSettings, sharedReferencesCollector);
 		} catch (InstantiationException | IllegalAccessException
 				| IllegalArgumentException | InvocationTargetException e) {
 			// TODO: fix this!

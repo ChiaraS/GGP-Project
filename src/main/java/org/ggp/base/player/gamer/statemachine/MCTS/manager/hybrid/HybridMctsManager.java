@@ -156,8 +156,8 @@ public class HybridMctsManager {
 
 		String propertyValue = gamerSettings.getPropertyValue("SearchManager.selectionStrategyType");
 		try {
-			this.selectionStrategy = (SelectionStrategy) SearchManagerComponent.getConstructorForSearchManagerComponent(ProjectSearcher.SELECTION_STRATEGIES.getConcreteClasses(),
-					propertyValue).newInstance(gameDependentParameters, random, gamerSettings, sharedReferencesCollector);
+			this.selectionStrategy = (SelectionStrategy) SearchManagerComponent.getConstructorForSearchManagerComponent(SearchManagerComponent.getCorrespondingClass(ProjectSearcher.SELECTION_STRATEGIES.getConcreteClasses(),
+					propertyValue)).newInstance(gameDependentParameters, random, gamerSettings, sharedReferencesCollector);
 		} catch (InstantiationException | IllegalAccessException
 				| IllegalArgumentException | InvocationTargetException e) {
 			// TODO: fix this!
@@ -168,8 +168,8 @@ public class HybridMctsManager {
 
 		propertyValue = gamerSettings.getPropertyValue("SearchManager.expansionStrategyType");
 		try {
-			this.expansionStrategy = (ExpansionStrategy) SearchManagerComponent.getConstructorForSearchManagerComponent(ProjectSearcher.EXPANSION_STRATEGIES.getConcreteClasses(),
-					propertyValue).newInstance(gameDependentParameters, random, gamerSettings, sharedReferencesCollector);
+			this.expansionStrategy = (ExpansionStrategy) SearchManagerComponent.getConstructorForSearchManagerComponent(SearchManagerComponent.getCorrespondingClass(ProjectSearcher.EXPANSION_STRATEGIES.getConcreteClasses(),
+					propertyValue)).newInstance(gameDependentParameters, random, gamerSettings, sharedReferencesCollector);
 		} catch (InstantiationException | IllegalAccessException
 				| IllegalArgumentException | InvocationTargetException e) {
 			// TODO: fix this!
@@ -180,8 +180,8 @@ public class HybridMctsManager {
 
 		propertyValue = gamerSettings.getPropertyValue("SearchManager.playoutStrategyType");
 		try {
-			this.playoutStrategy = (PlayoutStrategy) SearchManagerComponent.getConstructorForSearchManagerComponent(ProjectSearcher.PLAYOUT_STRATEGIES.getConcreteClasses(),
-					propertyValue).newInstance(gameDependentParameters, random, gamerSettings, sharedReferencesCollector);
+			this.playoutStrategy = (PlayoutStrategy) SearchManagerComponent.getConstructorForSearchManagerComponent(SearchManagerComponent.getCorrespondingClass(ProjectSearcher.PLAYOUT_STRATEGIES.getConcreteClasses(),
+					propertyValue)).newInstance(gameDependentParameters, random, gamerSettings, sharedReferencesCollector);
 		} catch (InstantiationException | IllegalAccessException
 				| IllegalArgumentException | InvocationTargetException e) {
 			// TODO: fix this!
@@ -192,8 +192,8 @@ public class HybridMctsManager {
 
 		propertyValue = gamerSettings.getPropertyValue("SearchManager.backpropagationStrategyType");
 		try {
-			this.backpropagationStrategy = (BackpropagationStrategy) SearchManagerComponent.getConstructorForSearchManagerComponent(ProjectSearcher.BACKPROPAGATION_STRATEGIES.getConcreteClasses(),
-					propertyValue).newInstance(gameDependentParameters, random, gamerSettings, sharedReferencesCollector);
+			this.backpropagationStrategy = (BackpropagationStrategy) SearchManagerComponent.getConstructorForSearchManagerComponent(SearchManagerComponent.getCorrespondingClass(ProjectSearcher.BACKPROPAGATION_STRATEGIES.getConcreteClasses(),
+					propertyValue)).newInstance(gameDependentParameters, random, gamerSettings, sharedReferencesCollector);
 		} catch (InstantiationException | IllegalAccessException
 				| IllegalArgumentException | InvocationTargetException e) {
 			// TODO: fix this!
@@ -204,8 +204,8 @@ public class HybridMctsManager {
 
 		propertyValue = gamerSettings.getPropertyValue("SearchManager.moveChoiceStrategyType");
 		try {
-			this.moveChoiceStrategy = (MoveChoiceStrategy) SearchManagerComponent.getConstructorForSearchManagerComponent(ProjectSearcher.MOVE_CHOICE_STRATEGIES.getConcreteClasses(),
-					propertyValue).newInstance(gameDependentParameters, random, gamerSettings, sharedReferencesCollector);
+			this.moveChoiceStrategy = (MoveChoiceStrategy) SearchManagerComponent.getConstructorForSearchManagerComponent(SearchManagerComponent.getCorrespondingClass(ProjectSearcher.MOVE_CHOICE_STRATEGIES.getConcreteClasses(),
+					propertyValue)).newInstance(gameDependentParameters, random, gamerSettings, sharedReferencesCollector);
 		} catch (InstantiationException | IllegalAccessException
 				| IllegalArgumentException | InvocationTargetException e) {
 			// TODO: fix this!
@@ -218,8 +218,8 @@ public class HybridMctsManager {
 
 			propertyValue = gamerSettings.getPropertyValue("SearchManager.beforeSimulationStrategyType");
 			try {
-				this.beforeSimulationStrategy = (BeforeSimulationStrategy) SearchManagerComponent.getConstructorForSearchManagerComponent(ProjectSearcher.BEFORE_SIMULATION_STRATEGIES.getConcreteClasses(),
-						propertyValue).newInstance(gameDependentParameters, random, gamerSettings, sharedReferencesCollector);
+				this.beforeSimulationStrategy = (BeforeSimulationStrategy) SearchManagerComponent.getConstructorForSearchManagerComponent(SearchManagerComponent.getCorrespondingClass(ProjectSearcher.BEFORE_SIMULATION_STRATEGIES.getConcreteClasses(),
+						propertyValue)).newInstance(gameDependentParameters, random, gamerSettings, sharedReferencesCollector);
 			} catch (InstantiationException | IllegalAccessException
 					| IllegalArgumentException | InvocationTargetException e) {
 				// TODO: fix this!
@@ -233,8 +233,8 @@ public class HybridMctsManager {
 
 			propertyValue = gamerSettings.getPropertyValue("SearchManager.afterSimulationStrategyType");
 			try {
-				this.afterSimulationStrategy = (AfterSimulationStrategy) SearchManagerComponent.getConstructorForSearchManagerComponent(ProjectSearcher.AFTER_SIMULATION_STRATEGIES.getConcreteClasses(),
-						propertyValue).newInstance(gameDependentParameters, random, gamerSettings, sharedReferencesCollector);
+				this.afterSimulationStrategy = (AfterSimulationStrategy) SearchManagerComponent.getConstructorForSearchManagerComponent(SearchManagerComponent.getCorrespondingClass(ProjectSearcher.AFTER_SIMULATION_STRATEGIES.getConcreteClasses(),
+						propertyValue)).newInstance(gameDependentParameters, random, gamerSettings, sharedReferencesCollector);
 			} catch (InstantiationException | IllegalAccessException
 					| IllegalArgumentException | InvocationTargetException e) {
 				// TODO: fix this!
@@ -248,8 +248,8 @@ public class HybridMctsManager {
 
 			propertyValue = gamerSettings.getPropertyValue("SearchManager.afterMoveStrategyType");
 			try {
-				this.afterMoveStrategy = (AfterMoveStrategy) SearchManagerComponent.getConstructorForSearchManagerComponent(ProjectSearcher.AFTER_MOVE_STRATEGIES.getConcreteClasses(),
-						propertyValue).newInstance(gameDependentParameters, random, gamerSettings, sharedReferencesCollector);
+				this.afterMoveStrategy = (AfterMoveStrategy) SearchManagerComponent.getConstructorForSearchManagerComponent(SearchManagerComponent.getCorrespondingClass(ProjectSearcher.AFTER_MOVE_STRATEGIES.getConcreteClasses(),
+						propertyValue)).newInstance(gameDependentParameters, random, gamerSettings, sharedReferencesCollector);
 			} catch (InstantiationException | IllegalAccessException
 					| IllegalArgumentException | InvocationTargetException e) {
 				// TODO: fix this!
@@ -261,8 +261,8 @@ public class HybridMctsManager {
 
 		propertyValue = gamerSettings.getPropertyValue("SearchManager.treeNodeFactoryType");
 		try {
-			this.treeNodeFactory = (TreeNodeFactory) SearchManagerComponent.getConstructorForSearchManagerComponent(ProjectSearcher.TREE_NODE_FACTORIES.getConcreteClasses(),
-					propertyValue).newInstance(gameDependentParameters, random, gamerSettings, sharedReferencesCollector);
+			this.treeNodeFactory = (TreeNodeFactory) SearchManagerComponent.getConstructorForSearchManagerComponent(SearchManagerComponent.getCorrespondingClass(ProjectSearcher.TREE_NODE_FACTORIES.getConcreteClasses(),
+					propertyValue)).newInstance(gameDependentParameters, random, gamerSettings, sharedReferencesCollector);
 		} catch (InstantiationException | IllegalAccessException
 				| IllegalArgumentException | InvocationTargetException e) {
 			// TODO: fix this!

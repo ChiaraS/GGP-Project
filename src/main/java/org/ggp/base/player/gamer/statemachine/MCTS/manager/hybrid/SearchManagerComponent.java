@@ -37,7 +37,7 @@ import com.google.common.collect.ImmutableSet;
 public abstract class SearchManagerComponent {
 
 	/**
-	 * Arguments of the constructor.
+	 * Arguments of the main constructor.
 	 */
 	public static Class<?>[] CONSTRUCTOR_ARGS = new Class[] {GameDependentParameters.class, Random.class,
 		GamerSettings.class, SharedReferencesCollector.class};
@@ -49,31 +49,60 @@ public abstract class SearchManagerComponent {
 	 * @param searchManagerComponentName
 	 * @return
 	 */
-	public static <T> Constructor<?> getConstructorForSearchManagerComponent(ImmutableSet<Class<? extends T>> allClasses, String searchManagerComponentName){
-
-		Class<?> theCorrespondingClass = null;
-		for (Class<?> componentClass : allClasses) {
-    		if(componentClass.getSimpleName().equals(searchManagerComponentName)){
-    			theCorrespondingClass = componentClass;
-    		}
-    	}
-
-		if(theCorrespondingClass == null){
-			GamerLogger.logError("SearchManagerCreation", "Cannot find class " + searchManagerComponentName + " to create SearchManagerComponent.");
-			throw new RuntimeException("Cannot find class " + searchManagerComponentName + " to create SearchManagerComponent.");
-		}
+	public static <T> Constructor<?> getConstructorForSearchManagerComponent(Class<?> theCorrespondingClass){
 
 		Constructor<?> constructor;
 		try {
 			constructor = theCorrespondingClass.getConstructor(CONSTRUCTOR_ARGS);
 		} catch (NoSuchMethodException | SecurityException e) {
 			// TODO: fix this!
-			GamerLogger.logError("SearchManagerCreation", "Error when retrieving cnstructor for class " + searchManagerComponentName + ".");
+			GamerLogger.logError("SearchManagerCreation", "Error when retrieving constructor for class " + theCorrespondingClass.getSimpleName() + ".");
 			GamerLogger.logStackTrace("SearchManagerCreation", e);
 			throw new RuntimeException(e);
 		}
 
 		return constructor;
+
+	}
+
+	/**
+	 * This method looks in the given list of classes for the class with the given name.
+	 *
+	 * @param allClasses
+	 * @param searchManagerComponentName
+	 * @return
+	 */
+	public static <T> Constructor<?> getCopyConstructorForSearchManagerComponent(Class<?> theCorrespondingClass){
+
+		Constructor<?> constructor;
+		try {
+			constructor = theCorrespondingClass.getConstructor(theCorrespondingClass);
+		} catch (NoSuchMethodException | SecurityException e) {
+			// TODO: fix this!
+			GamerLogger.logError("SearchManagerCreation", "Error when retrieving copy-constructor for class " + theCorrespondingClass.getSimpleName() + ".");
+			GamerLogger.logStackTrace("SearchManagerCreation", e);
+			throw new RuntimeException(e);
+		}
+
+		return constructor;
+
+	}
+
+	public static <T> Class<?> getCorrespondingClass(ImmutableSet<Class<? extends T>> allClasses, String className){
+
+		Class<?> theCorrespondingClass = null;
+		for (Class<?> componentClass : allClasses) {
+    		if(componentClass.getSimpleName().equals(className)){
+    			theCorrespondingClass = componentClass;
+    		}
+    	}
+
+		if(theCorrespondingClass == null){
+			GamerLogger.logError("SearchManagerCreation", "Cannot find class " + className + " to create SearchManagerComponent.");
+			throw new RuntimeException("Cannot find class " + className + " to create SearchManagerComponent.");
+		}
+
+		return theCorrespondingClass;
 
 	}
 
@@ -101,6 +130,17 @@ public abstract class SearchManagerComponent {
 		this.random = random;
 	}
 
+	public SearchManagerComponent(SearchManagerComponent toCopy) {
+		this.gameDependentParameters = toCopy.getGameDependentParameters();
+		this.random = toCopy.getRandom();
+	}
+
+	/**
+	 * Called after creating all components. Sets references of the component to objects created during creation.
+	 *
+	 * @param gamerSettings
+	 * @param sharedReferencesCollector
+	 */
 	public abstract void setReferences(SharedReferencesCollector sharedReferencesCollector);
 
 	/**
@@ -141,6 +181,14 @@ public abstract class SearchManagerComponent {
 		}else{
 			return this.getClass().getSimpleName();
 		}
+	}
+
+	public GameDependentParameters getGameDependentParameters(){
+		return this.gameDependentParameters;
+	}
+
+	public Random getRandom(){
+		return this.random;
 	}
 
 }

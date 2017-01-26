@@ -34,8 +34,8 @@ public class StandardPlayout extends PlayoutStrategy {
 		super(gameDependentParameters, random, gamerSettings, sharedReferencesCollector);
 
 		try {
-			this.moveSelector = (MoveSelector) SearchManagerComponent.getConstructorForSearchManagerComponent(ProjectSearcher.MOVE_SELECTORS.getConcreteClasses(),
-					gamerSettings.getPropertyValue("PlayoutStrategy.moveSelectorType")).newInstance(gameDependentParameters, random, gamerSettings, sharedReferencesCollector);
+			this.moveSelector = (MoveSelector) SearchManagerComponent.getConstructorForSearchManagerComponent(SearchManagerComponent.getCorrespondingClass(ProjectSearcher.MOVE_SELECTORS.getConcreteClasses(),
+					gamerSettings.getPropertyValue("PlayoutStrategy.moveSelectorType"))).newInstance(gameDependentParameters, random, gamerSettings, sharedReferencesCollector);
 		} catch (InstantiationException | IllegalAccessException
 				| IllegalArgumentException | InvocationTargetException e) {
 			// TODO: fix this!

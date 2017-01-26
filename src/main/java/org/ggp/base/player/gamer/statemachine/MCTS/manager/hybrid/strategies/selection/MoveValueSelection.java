@@ -42,8 +42,8 @@ public class MoveValueSelection extends SelectionStrategy {
 		this.valueOffset = gamerSettings.getDoublePropertyValue("SelectionStrategy.valueOffset");
 
 		try {
-			this.moveEvaluator = (MoveEvaluator) SearchManagerComponent.getConstructorForSearchManagerComponent(ProjectSearcher.MOVE_EVALUATORS.getConcreteClasses(),
-					gamerSettings.getPropertyValue("SelectionStrategy.moveEvaluatorType")).newInstance(gameDependentParameters, random, gamerSettings, sharedReferencesCollector);
+			this.moveEvaluator = (MoveEvaluator) SearchManagerComponent.getConstructorForSearchManagerComponent(SearchManagerComponent.getCorrespondingClass(ProjectSearcher.MOVE_EVALUATORS.getConcreteClasses(),
+					gamerSettings.getPropertyValue("SelectionStrategy.moveEvaluatorType"))).newInstance(gameDependentParameters, random, gamerSettings, sharedReferencesCollector);
 		} catch (InstantiationException | IllegalAccessException
 				| IllegalArgumentException | InvocationTargetException e) {
 			// TODO: fix this!

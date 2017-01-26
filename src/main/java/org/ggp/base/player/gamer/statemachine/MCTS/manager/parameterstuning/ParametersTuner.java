@@ -4,11 +4,11 @@ import java.util.Random;
 
 import org.ggp.base.player.gamer.statemachine.GamerSettings;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.GameDependentParameters;
-import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.SearchManagerComponent;
+import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.MultiInstanceSearchManagerComponent;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.SharedReferencesCollector;
 import org.ggp.base.util.logging.GamerLogger;
 
-public abstract class ParametersTuner extends SearchManagerComponent{
+public abstract class ParametersTuner extends MultiInstanceSearchManagerComponent{
 
 	protected boolean tuneAllRoles;
 
@@ -41,6 +41,15 @@ public abstract class ParametersTuner extends SearchManagerComponent{
 		super(gameDependentParameters, random, gamerSettings, sharedReferencesCollector);
 
 		this.tuneAllRoles = gamerSettings.getBooleanPropertyValue("ParametersTuner.tuneAllRoles");
+
+	}
+
+	public ParametersTuner(ParametersTuner toCopy) {
+		super(toCopy);
+
+		this.tuneAllRoles = toCopy.isTuningAllRoles();
+
+		this.classesLength = null;
 
 	}
 
@@ -84,4 +93,9 @@ public abstract class ParametersTuner extends SearchManagerComponent{
 	public abstract void updateStatistics(int[] rewards);
 
 	public abstract void logStats();
+
+	public boolean isTuningAllRoles(){
+		return this.tuneAllRoles;
+	}
+
 }

@@ -24,12 +24,24 @@ public class RandomSelector extends TunerSelector{
 
 	}
 
+	/*
+	 * TODO: ATTENTION! If you add code here that does something on the state of the tuner remember that this method might
+	 * be called multiple times after each game if the player is using the SequentialParametersTuner!!! If you want this method
+	 * to be called only once per instance of TunerSelector then change the code in the copy constructor of the ParametersTuner
+	 * subclasses in order to deep-copy also the TunerSelectors!
+	 */
 	@Override
 	public void clearComponent() {
 		// Do nothing
 
 	}
 
+	/*
+	 * TODO: ATTENTION! If you add code here that does something on the state of the tuner remember that this method might
+	 * be called multiple times before each game if the player is using the SequentialParametersTuner!!! If you want this method
+	 * to be called only once per instance of TunerSelector then change the code in the copy constructor of the ParametersTuner
+	 * subclasses in order to deep-copy also the TunerSelectors!
+	 */
 	@Override
 	public void setUpComponent() {
 		// Do nothing

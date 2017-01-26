@@ -46,8 +46,8 @@ public class TunerBeforeSimulation extends BeforeSimulationStrategy {
 		this.simCount = 0;
 
 		try {
-			this.parametersTuner = (ParametersTuner) SearchManagerComponent.getConstructorForSearchManagerComponent(ProjectSearcher.PARAMETER_TUNERS.getConcreteClasses(),
-					gamerSettings.getPropertyValue("BeforeSimulationStrategy.parameterTunerType")).newInstance(gameDependentParameters, random, gamerSettings, sharedReferencesCollector);
+			this.parametersTuner = (ParametersTuner) SearchManagerComponent.getConstructorForSearchManagerComponent(SearchManagerComponent.getCorrespondingClass(ProjectSearcher.PARAMETER_TUNERS.getConcreteClasses(),
+					gamerSettings.getPropertyValue("BeforeSimulationStrategy.parameterTunerType"))).newInstance(gameDependentParameters, random, gamerSettings, sharedReferencesCollector);
 		} catch (InstantiationException | IllegalAccessException
 				| IllegalArgumentException | InvocationTargetException e) {
 			// TODO: fix this!
@@ -65,6 +65,9 @@ public class TunerBeforeSimulation extends BeforeSimulationStrategy {
 
 	@Override
 	public void setReferences(SharedReferencesCollector sharedReferencesCollector) {
+
+		this.parametersTuner.setReferences(sharedReferencesCollector);
+
 		this.tunableParameters = sharedReferencesCollector.getTheParametersToTune();
 
 		int[] classesLength = new int[this.tunableParameters.size()];

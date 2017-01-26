@@ -49,8 +49,8 @@ public class PlayoutSupportedSelection extends SelectionStrategy {
 
 		String propertyValue = gamerSettings.getPropertyValue("SelectionStrategy.subSelectionStrategyType");
 		try {
-			this.selectionStrategy = (SelectionStrategy) SearchManagerComponent.getConstructorForSearchManagerComponent(ProjectSearcher.SELECTION_STRATEGIES.getConcreteClasses(),
-					propertyValue).newInstance(gameDependentParameters, random, gamerSettings, sharedReferencesCollector);
+			this.selectionStrategy = (SelectionStrategy) SearchManagerComponent.getConstructorForSearchManagerComponent(SearchManagerComponent.getCorrespondingClass(ProjectSearcher.SELECTION_STRATEGIES.getConcreteClasses(),
+					propertyValue)).newInstance(gameDependentParameters, random, gamerSettings, sharedReferencesCollector);
 		} catch (InstantiationException | IllegalAccessException
 				| IllegalArgumentException | InvocationTargetException e) {
 			// TODO: fix this!

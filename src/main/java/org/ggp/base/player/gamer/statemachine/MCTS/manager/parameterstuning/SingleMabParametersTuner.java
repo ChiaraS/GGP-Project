@@ -7,6 +7,8 @@ import java.util.Random;
 import org.ggp.base.player.gamer.statemachine.GamerSettings;
 import org.ggp.base.player.gamer.statemachine.MCS.manager.MoveStats;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.GameDependentParameters;
+import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.MultiInstanceSearchManagerComponent;
+import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.SearchManagerComponent;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.SharedReferencesCollector;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.parameterstuning.selectors.TunerSelector;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.parameterstuning.structure.CombinatorialCompactMove;
@@ -54,7 +56,7 @@ public class SingleMabParametersTuner extends ParametersTuner {
 		String[] tunerSelectorDetails = gamerSettings.getIDPropertyValue("ParametersTuner.tunerSelectorType");
 
 		try {
-			this.tunerSelector = (TunerSelector) TunerSelector.getConstructorForTunerSelector(ProjectSearcher.TUNER_SELECTORS.getConcreteClasses(), tunerSelectorDetails[0]).newInstance(gameDependentParameters, random, gamerSettings, sharedReferencesCollector, tunerSelectorDetails[1]);
+			this.tunerSelector = (TunerSelector) MultiInstanceSearchManagerComponent.getConstructorForMultiInstanceSearchManagerComponent(SearchManagerComponent.getCorrespondingClass(ProjectSearcher.TUNER_SELECTORS.getConcreteClasses(), tunerSelectorDetails[0])).newInstance(gameDependentParameters, random, gamerSettings, sharedReferencesCollector, tunerSelectorDetails[1]);
 		} catch (InstantiationException | IllegalAccessException
 				| IllegalArgumentException | InvocationTargetException e) {
 			// TODO: fix this!
@@ -62,6 +64,37 @@ public class SingleMabParametersTuner extends ParametersTuner {
 			GamerLogger.logStackTrace("SearchManagerCreation", e);
 			throw new RuntimeException(e);
 		}
+
+		this.rolesMabs = null;
+
+		this.selectedCombinationsIndices = null;
+
+	}
+
+	public SingleMabParametersTuner(SingleMabParametersTuner toCopy) {
+		super(toCopy);
+
+		this.combinatorialMoves = null;
+
+		/* TODO: ATTENTON! Here we just copy the reference because all tuners use the same selector!
+		However, doing so, whenever the methods clearComponent() and setUpComponent() are called  on
+		this and all the other copies of this tuner they will be called on the same TunerSelector
+		multiple times. Now it's not a problem, since for all TunerSelectors those methods do nothing,
+		but if they get changed then consider this issue!!! A solution is to deep-copy also the tuner,
+		but it'll require more memory. */
+		/* This is how to deep-copy it:
+		try {
+			this.tunerSelector = (TunerSelector) SearchManagerComponent.getCopyConstructorForSearchManagerComponent(toCopy.getTunerSelector().getClass()).newInstance(toCopy.getTunerSelector());
+		} catch (InstantiationException | IllegalAccessException
+				| IllegalArgumentException | InvocationTargetException e) {
+			// TODO: fix this!
+			GamerLogger.logError("SearchManagerCreation", "Error when instantiating TunerSelector " + toCopy.getTunerSelector().getClass().getSimpleName() + ".");
+			GamerLogger.logStackTrace("SearchManagerCreation", e);
+			throw new RuntimeException(e);
+		}
+		*/
+
+		this.tunerSelector = toCopy.getTunerSelector();
 
 		this.rolesMabs = null;
 
@@ -268,6 +301,9 @@ public class SingleMabParametersTuner extends ParametersTuner {
 		return this.rolesMabs.length;
 	}
 
+	public TunerSelector getTunerSelector(){
+		return this.tunerSelector;
+	}
 
     /*
     public static void main(String args[]){
