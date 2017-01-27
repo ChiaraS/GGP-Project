@@ -4,11 +4,11 @@ import java.util.Random;
 
 import org.ggp.base.player.gamer.statemachine.GamerSettings;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.GameDependentParameters;
-import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.MultiInstanceSearchManagerComponent;
+import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.SearchManagerComponent;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.SharedReferencesCollector;
 import org.ggp.base.util.logging.GamerLogger;
 
-public abstract class ParametersTuner extends MultiInstanceSearchManagerComponent{
+public abstract class ParametersTuner extends SearchManagerComponent{
 
 	protected boolean tuneAllRoles;
 
@@ -87,6 +87,8 @@ public abstract class ParametersTuner extends MultiInstanceSearchManagerComponen
 	}
 
 	public abstract int[][] selectNextCombinations();
+
+	public abstract int[][] getBestCombinations();
 
 	public abstract int getNumIndependentCombinatorialProblems();
 

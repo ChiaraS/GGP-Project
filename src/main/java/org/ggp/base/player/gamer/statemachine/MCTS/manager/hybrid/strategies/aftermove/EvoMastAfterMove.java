@@ -14,13 +14,13 @@ public class EvoMastAfterMove extends AfterMoveStrategy {
 	private EvoAfterMove evoAfterMove;
 
 	public EvoMastAfterMove(GameDependentParameters gameDependentParameters, Random random,
-			GamerSettings gamerSettings, SharedReferencesCollector sharedReferencesCollector){
+			GamerSettings gamerSettings, SharedReferencesCollector sharedReferencesCollector, String id){
 
-		super(gameDependentParameters, random, gamerSettings, sharedReferencesCollector);
+		super(gameDependentParameters, random, gamerSettings, sharedReferencesCollector, id);
 
-		this.mastAfterMove = new MastAfterMove(gameDependentParameters, random, gamerSettings, sharedReferencesCollector);
+		this.mastAfterMove = new MastAfterMove(gameDependentParameters, random, gamerSettings, sharedReferencesCollector, "");
 
-		this.evoAfterMove = new EvoAfterMove(gameDependentParameters, random, gamerSettings, sharedReferencesCollector);
+		this.evoAfterMove = new EvoAfterMove(gameDependentParameters, random, gamerSettings, sharedReferencesCollector, "");
 
 	}
 

@@ -5,21 +5,20 @@ import java.util.Random;
 import org.ggp.base.player.gamer.statemachine.GamerSettings;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.GameDependentParameters;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.SharedReferencesCollector;
-import org.ggp.base.player.gamer.statemachine.MCTS.manager.parameterstuning.ParametersTuner;
+import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.strategies.beforesimualtion.SequentialTunerBeforeSimulation;
 
-public class TunerAfterMove extends AfterMoveStrategy {
+public class SequentialTunerAfterMove extends AfterMoveStrategy {
 
-	private ParametersTuner parametersTuner;
+	private SequentialTunerBeforeSimulation sequentialTunerBeforeSimulation;
 
-	public TunerAfterMove(GameDependentParameters gameDependentParameters, Random random,
+	public SequentialTunerAfterMove(GameDependentParameters gameDependentParameters, Random random,
 			GamerSettings gamerSettings, SharedReferencesCollector sharedReferencesCollector, String id) {
-
 		super(gameDependentParameters, random, gamerSettings, sharedReferencesCollector, id);
 	}
 
 	@Override
 	public void setReferences(SharedReferencesCollector sharedReferencesCollector) {
-		this.parametersTuner = sharedReferencesCollector.getParametersTuner();
+		this.sequentialTunerBeforeSimulation = sharedReferencesCollector.getSequentialTunerBeforeSimulation();
 	}
 
 	@Override
@@ -30,22 +29,17 @@ public class TunerAfterMove extends AfterMoveStrategy {
 	@Override
 	public void setUpComponent() {
 		// Do nothing
-	}
 
-	@Override
-	public String getComponentParameters(String indentation) {
-		// Only the component that creates the tuner prints its content
-		//return indentation + "PARAMETERS_TUNER = " + this.parametersTuner.printParametersTuner(indentation + "  ");
-
-		// Here we only print the name
-		return indentation + "PARAMETERS_TUNER = " + this.parametersTuner.getClass().getSimpleName();
 	}
 
 	@Override
 	public void afterMoveActions() {
+		this.sequentialTunerBeforeSimulation.startTuningNextParameter();
+	}
 
-		this.parametersTuner.logStats();
-
+	@Override
+	public String getComponentParameters(String indentation) {
+		return indentation + "BEFORE_SIMULATION_STRATEGY = " + this.sequentialTunerBeforeSimulation.getClass().getSimpleName();
 	}
 
 }

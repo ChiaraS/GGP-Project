@@ -14,13 +14,13 @@ public class TunerGraveAfterSimulation extends AfterSimulationStrategy {
 	private TunerAfterSimulation tunerAfterSimulation;
 
 	public TunerGraveAfterSimulation(GameDependentParameters gameDependentParameters, Random random,
-			GamerSettings gamerSettings, SharedReferencesCollector sharedReferencesCollector) {
+			GamerSettings gamerSettings, SharedReferencesCollector sharedReferencesCollector, String id) {
 
-		super(gameDependentParameters, random, gamerSettings, sharedReferencesCollector);
+		super(gameDependentParameters, random, gamerSettings, sharedReferencesCollector, id);
 
-		this.graveAfterSimulation = new GraveAfterSimulation(gameDependentParameters, random, gamerSettings, sharedReferencesCollector);
+		this.graveAfterSimulation = new GraveAfterSimulation(gameDependentParameters, random, gamerSettings, sharedReferencesCollector, "");
 
-		this.tunerAfterSimulation = new TunerAfterSimulation(gameDependentParameters, random, gamerSettings, sharedReferencesCollector);
+		this.tunerAfterSimulation = new TunerAfterSimulation(gameDependentParameters, random, gamerSettings, sharedReferencesCollector, "");
 
 	}
 

@@ -231,14 +231,14 @@ public class HybridMctsManager {
 
 		if(gamerSettings.specifiesProperty("SearchManager.afterSimulationStrategyType")){
 
-			propertyValue = gamerSettings.getPropertyValue("SearchManager.afterSimulationStrategyType");
+			String[] idPropertyValue = gamerSettings.getIDPropertyValue("SearchManager.afterSimulationStrategyType");
 			try {
-				this.afterSimulationStrategy = (AfterSimulationStrategy) SearchManagerComponent.getConstructorForSearchManagerComponent(SearchManagerComponent.getCorrespondingClass(ProjectSearcher.AFTER_SIMULATION_STRATEGIES.getConcreteClasses(),
-						propertyValue)).newInstance(gameDependentParameters, random, gamerSettings, sharedReferencesCollector);
+				this.afterSimulationStrategy = (AfterSimulationStrategy) SearchManagerComponent.getConstructorForMultiInstanceSearchManagerComponent(SearchManagerComponent.getCorrespondingClass(ProjectSearcher.AFTER_SIMULATION_STRATEGIES.getConcreteClasses(),
+						idPropertyValue[0])).newInstance(gameDependentParameters, random, gamerSettings, sharedReferencesCollector, idPropertyValue[1]);
 			} catch (InstantiationException | IllegalAccessException
 					| IllegalArgumentException | InvocationTargetException e) {
 				// TODO: fix this!
-				GamerLogger.logError("SearchManagerCreation", "Error when instantiating AfterSimulationStrategy " + propertyValue + ".");
+				GamerLogger.logError("SearchManagerCreation", "Error when instantiating AfterSimulationStrategy " + gamerSettings.getPropertyValue("SearchManager.afterSimulationStrategyType") + ".");
 				GamerLogger.logStackTrace("SearchManagerCreation", e);
 				throw new RuntimeException(e);
 			}

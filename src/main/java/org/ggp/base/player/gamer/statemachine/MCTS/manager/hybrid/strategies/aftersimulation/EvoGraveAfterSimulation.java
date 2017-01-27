@@ -14,13 +14,13 @@ public class EvoGraveAfterSimulation extends AfterSimulationStrategy {
 	private EvoAfterSimulation evoAfterSimulation;
 
 	public EvoGraveAfterSimulation(GameDependentParameters gameDependentParameters, Random random,
-			GamerSettings gamerSettings, SharedReferencesCollector sharedReferencesCollector) {
+			GamerSettings gamerSettings, SharedReferencesCollector sharedReferencesCollector, String id) {
 
-		super(gameDependentParameters, random, gamerSettings, sharedReferencesCollector);
+		super(gameDependentParameters, random, gamerSettings, sharedReferencesCollector, id);
 
-		this.graveAfterSimulation = new GraveAfterSimulation(gameDependentParameters, random, gamerSettings, sharedReferencesCollector);
+		this.graveAfterSimulation = new GraveAfterSimulation(gameDependentParameters, random, gamerSettings, sharedReferencesCollector, "");
 
-		this.evoAfterSimulation = new EvoAfterSimulation(gameDependentParameters, random, gamerSettings, sharedReferencesCollector);
+		this.evoAfterSimulation = new EvoAfterSimulation(gameDependentParameters, random, gamerSettings, sharedReferencesCollector, "");
 
 	}
 

@@ -6,11 +6,11 @@ import java.util.Random;
 import org.ggp.base.player.gamer.statemachine.GamerSettings;
 import org.ggp.base.player.gamer.statemachine.MCS.manager.MoveStats;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.GameDependentParameters;
-import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.MultiInstanceSearchManagerComponent;
+import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.SearchManagerComponent;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.SharedReferencesCollector;
 import org.ggp.base.util.statemachine.structure.Move;
 
-public abstract class TunerSelector extends MultiInstanceSearchManagerComponent{
+public abstract class TunerSelector extends SearchManagerComponent{
 
 	public TunerSelector(GameDependentParameters gameDependentParameters,
 			Random random, GamerSettings gamerSettings,	SharedReferencesCollector sharedReferencesCollector, String id) {

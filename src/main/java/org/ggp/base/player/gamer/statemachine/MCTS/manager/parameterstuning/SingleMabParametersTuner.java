@@ -7,7 +7,6 @@ import java.util.Random;
 import org.ggp.base.player.gamer.statemachine.GamerSettings;
 import org.ggp.base.player.gamer.statemachine.MCS.manager.MoveStats;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.GameDependentParameters;
-import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.MultiInstanceSearchManagerComponent;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.SearchManagerComponent;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.SharedReferencesCollector;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.parameterstuning.selectors.TunerSelector;
@@ -32,9 +31,14 @@ public class SingleMabParametersTuner extends ParametersTuner {
 	private CombinatorialCompactMove[] combinatorialMoves;
 
 	/**
-	 * Given the statistics of each move, selects one according to the given selector
+	 * Given the statistics of each combination, selects the next to evaluate.
 	 */
-	private TunerSelector tunerSelector;
+	private TunerSelector nextCombinationSelector;
+
+	/**
+	 * Given the statistics of each combination, selects the best one among them.
+	 */
+	private TunerSelector bestCombinationSelector;
 
 	/**
 	 * For each role being tuned, representation of the combinatorial problem of settings values to the
@@ -53,14 +57,26 @@ public class SingleMabParametersTuner extends ParametersTuner {
 			Random random, GamerSettings gamerSettings,	SharedReferencesCollector sharedReferencesCollector) {
 		super(gameDependentParameters, random, gamerSettings, sharedReferencesCollector);
 
-		String[] tunerSelectorDetails = gamerSettings.getIDPropertyValue("ParametersTuner.tunerSelectorType");
+		String[] tunerSelectorDetails = gamerSettings.getIDPropertyValue("ParametersTuner.nextCombinationSelectorType");
 
 		try {
-			this.tunerSelector = (TunerSelector) MultiInstanceSearchManagerComponent.getConstructorForMultiInstanceSearchManagerComponent(SearchManagerComponent.getCorrespondingClass(ProjectSearcher.TUNER_SELECTORS.getConcreteClasses(), tunerSelectorDetails[0])).newInstance(gameDependentParameters, random, gamerSettings, sharedReferencesCollector, tunerSelectorDetails[1]);
+			this.nextCombinationSelector = (TunerSelector) SearchManagerComponent.getConstructorForMultiInstanceSearchManagerComponent(SearchManagerComponent.getCorrespondingClass(ProjectSearcher.TUNER_SELECTORS.getConcreteClasses(), tunerSelectorDetails[0])).newInstance(gameDependentParameters, random, gamerSettings, sharedReferencesCollector, tunerSelectorDetails[1]);
 		} catch (InstantiationException | IllegalAccessException
 				| IllegalArgumentException | InvocationTargetException e) {
 			// TODO: fix this!
-			GamerLogger.logError("SearchManagerCreation", "Error when instantiating TunerSelector " + gamerSettings.getPropertyValue("ParametersTuner.tunerSelectorType") + ".");
+			GamerLogger.logError("SearchManagerCreation", "Error when instantiating TunerSelector " + gamerSettings.getPropertyValue("ParametersTuner.nextCombinationSelectorType") + ".");
+			GamerLogger.logStackTrace("SearchManagerCreation", e);
+			throw new RuntimeException(e);
+		}
+
+		tunerSelectorDetails = gamerSettings.getIDPropertyValue("ParametersTuner.bestCombinationSelectorType");
+
+		try {
+			this.bestCombinationSelector = (TunerSelector) SearchManagerComponent.getConstructorForMultiInstanceSearchManagerComponent(SearchManagerComponent.getCorrespondingClass(ProjectSearcher.TUNER_SELECTORS.getConcreteClasses(), tunerSelectorDetails[0])).newInstance(gameDependentParameters, random, gamerSettings, sharedReferencesCollector, tunerSelectorDetails[1]);
+		} catch (InstantiationException | IllegalAccessException
+				| IllegalArgumentException | InvocationTargetException e) {
+			// TODO: fix this!
+			GamerLogger.logError("SearchManagerCreation", "Error when instantiating TunerSelector " + gamerSettings.getPropertyValue("ParametersTuner.bestCombinationSelectorType") + ".");
 			GamerLogger.logStackTrace("SearchManagerCreation", e);
 			throw new RuntimeException(e);
 		}
@@ -94,7 +110,9 @@ public class SingleMabParametersTuner extends ParametersTuner {
 		}
 		*/
 
-		this.tunerSelector = toCopy.getTunerSelector();
+		this.nextCombinationSelector = toCopy.getNextCombinationSelector();
+
+		this.bestCombinationSelector = toCopy.getBestCombinationSelector();
 
 		this.rolesMabs = null;
 
@@ -104,8 +122,8 @@ public class SingleMabParametersTuner extends ParametersTuner {
 
 	@Override
 	public void setReferences(SharedReferencesCollector sharedReferencesCollector) {
-		this.tunerSelector.setReferences(sharedReferencesCollector);
-
+		this.nextCombinationSelector.setReferences(sharedReferencesCollector);
+		this.bestCombinationSelector.setReferences(sharedReferencesCollector);
 	}
 
 	@Override
@@ -165,7 +183,8 @@ public class SingleMabParametersTuner extends ParametersTuner {
 	public void clearComponent(){
 		this.rolesMabs = null;
 		this.selectedCombinationsIndices = null;
-		this.tunerSelector.clearComponent();
+		this.nextCombinationSelector.clearComponent();
+		this.bestCombinationSelector.clearComponent();
 	}
 
     /**
@@ -193,13 +212,17 @@ public class SingleMabParametersTuner extends ParametersTuner {
 
 		this.selectedCombinationsIndices = new int[numRolesToTune];
 
-		this.tunerSelector.setUpComponent();
+		this.nextCombinationSelector.setUpComponent();
+		this.bestCombinationSelector.setUpComponent();
 
 	}
 
 	/**
+	 * SELECT NEXT COMBINATION TO EVALUATE
 	 * Selects for each MAB (i.e. each role being tuned) the next combinatorial move
-	 * (i.e. the next combination of parameters).
+	 * (i.e. the next combination of parameters) to be evaluated and memorizes it as
+	 * selected. This means that it will be the move for which the statistics will be
+	 * updated next time the updateStatistics() method will be called.
 	 *
 	 * @return for each tuned role, a list with the indices of the values to be set to each parameters.
 	 */
@@ -209,7 +232,37 @@ public class SingleMabParametersTuner extends ParametersTuner {
 		int[][] nextCombinations = new int[this.rolesMabs.length][];
 
 		for(int i = 0; i < this.rolesMabs.length; i++){
-			this.selectedCombinationsIndices[i] = this.tunerSelector.selectMove(this.rolesMabs[i].getMoveStats(),
+			this.selectedCombinationsIndices[i] = this.nextCombinationSelector.selectMove(this.rolesMabs[i].getMoveStats(),
+					this.rolesMabs[i].getNumUpdates());
+			nextCombinations[i] = this.combinatorialMoves[this.selectedCombinationsIndices[i]].getIndices();
+		}
+
+		return nextCombinations;
+
+	}
+
+	/**
+	 * SELECT BEST COMBINATION FOUND SO FAR
+	 * Selects for each MAB (i.e. each role being tuned) the best combinatorial move
+	 * (i.e. the best combination of parameters) so far and memorizes it as selected.
+	 * This means that it will be the move for which the statistics will be updated
+	 * next time the updateStatistics() method will be called.
+	 *
+	 * Note: this method exists to allow two different strategies to select a move.
+	 * When we are evaluating a move we don't want to always select the best, but
+	 * we prefer to have an exploration of less good moves, too (e.g using UCB).
+	 * However if we want to stick to a single combination of parameters for the rest
+	 * of the search we prefer it to be the best overall.
+	 *
+	 * @return for each tuned role, a list with the indices of the values to be set to each parameters.
+	 */
+	@Override
+	public int[][] getBestCombinations(){
+
+		int[][] nextCombinations = new int[this.rolesMabs.length][];
+
+		for(int i = 0; i < this.rolesMabs.length; i++){
+			this.selectedCombinationsIndices[i] = this.bestCombinationSelector.selectMove(this.rolesMabs[i].getMoveStats(),
 					this.rolesMabs[i].getNumUpdates());
 			nextCombinations[i] = this.combinatorialMoves[this.selectedCombinationsIndices[i]].getIndices();
 		}
@@ -269,7 +322,8 @@ public class SingleMabParametersTuner extends ParametersTuner {
 		String superParams = super.getComponentParameters(indentation);
 
 		String params = indentation + "NUM_COMBINATORIAL_MOVES = " + (this.combinatorialMoves != null ? this.combinatorialMoves.length : 0) +
-				indentation + "TUNER_SELECTOR = " + this.tunerSelector.printComponent(indentation + "  ") +
+				indentation + "NEXT_COMBINATION_SELECTOR = " + this.nextCombinationSelector.printComponent(indentation + "  ") +
+				indentation + "BEST_COMBINATION_SELECTOR = " + this.bestCombinationSelector.printComponent(indentation + "  ") +
 				indentation + "num_roles_mabs = " + (this.rolesMabs != null ? this.rolesMabs.length : 0);
 
 		if(this.selectedCombinationsIndices != null){
@@ -301,8 +355,12 @@ public class SingleMabParametersTuner extends ParametersTuner {
 		return this.rolesMabs.length;
 	}
 
-	public TunerSelector getTunerSelector(){
-		return this.tunerSelector;
+	public TunerSelector getNextCombinationSelector(){
+		return this.nextCombinationSelector;
+	}
+
+	public TunerSelector getBestCombinationSelector(){
+		return this.bestCombinationSelector;
 	}
 
     /*

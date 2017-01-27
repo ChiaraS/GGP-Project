@@ -11,7 +11,7 @@ import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.hybrid.
 public abstract class AfterSimulationStrategy extends Strategy{
 
 	public AfterSimulationStrategy(GameDependentParameters gameDependentParameters, Random random,
-			GamerSettings gamerSettings, SharedReferencesCollector sharedReferencesCollector) {
+			GamerSettings gamerSettings, SharedReferencesCollector sharedReferencesCollector, String id) {
 
 		super(gameDependentParameters, random, gamerSettings, sharedReferencesCollector);
 

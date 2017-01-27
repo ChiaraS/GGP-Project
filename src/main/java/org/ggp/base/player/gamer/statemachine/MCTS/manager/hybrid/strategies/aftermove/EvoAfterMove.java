@@ -12,9 +12,9 @@ public class EvoAfterMove extends AfterMoveStrategy {
 	private SingleParameterEvolutionManager evolutionManager;
 
 	public EvoAfterMove(GameDependentParameters gameDependentParameters, Random random,
-			GamerSettings gamerSettings, SharedReferencesCollector sharedReferencesCollector) {
+			GamerSettings gamerSettings, SharedReferencesCollector sharedReferencesCollector, String id) {
 
-		super(gameDependentParameters, random, gamerSettings, sharedReferencesCollector);
+		super(gameDependentParameters, random, gamerSettings, sharedReferencesCollector, id);
 	}
 
 	@Override

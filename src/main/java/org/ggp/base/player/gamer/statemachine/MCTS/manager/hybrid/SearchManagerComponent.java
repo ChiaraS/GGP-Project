@@ -43,6 +43,14 @@ public abstract class SearchManagerComponent {
 		GamerSettings.class, SharedReferencesCollector.class};
 
 	/**
+	 * Arguments of the constructor for the components that can be created in multiple instances.
+	 * The constructor needs an extra parameter, the ID, that is needed when we want to create more than one instance
+	 * of the same SearchManagerComponent abstract subclass.
+	 */
+	public static Class<?>[] MULTI_INSTANCE_CONSTRUCTOR_ARGS = new Class[] {GameDependentParameters.class, Random.class,
+		GamerSettings.class, SharedReferencesCollector.class, String.class};
+
+	/**
 	 * This method looks in the given list of classes for the class with the given name.
 	 *
 	 * @param allClasses
@@ -57,6 +65,29 @@ public abstract class SearchManagerComponent {
 		} catch (NoSuchMethodException | SecurityException e) {
 			// TODO: fix this!
 			GamerLogger.logError("SearchManagerCreation", "Error when retrieving constructor for class " + theCorrespondingClass.getSimpleName() + ".");
+			GamerLogger.logStackTrace("SearchManagerCreation", e);
+			throw new RuntimeException(e);
+		}
+
+		return constructor;
+
+	}
+
+	/**
+	 * This method looks in the given list of classes for the class with the given name.
+	 *
+	 * @param allClasses
+	 * @param searchManagerComponentName
+	 * @return
+	 */
+	public static <T> Constructor<?> getConstructorForMultiInstanceSearchManagerComponent(Class<?> theCorrespondingClass){
+
+		Constructor<?> constructor;
+		try {
+			constructor = theCorrespondingClass.getConstructor(MULTI_INSTANCE_CONSTRUCTOR_ARGS);
+		} catch (NoSuchMethodException | SecurityException e) {
+			// TODO: fix this!
+			GamerLogger.logError("SearchManagerCreation", "Error when retrieving cnstructor for multi instance class " + theCorrespondingClass.getSimpleName() + ".");
 			GamerLogger.logStackTrace("SearchManagerCreation", e);
 			throw new RuntimeException(e);
 		}

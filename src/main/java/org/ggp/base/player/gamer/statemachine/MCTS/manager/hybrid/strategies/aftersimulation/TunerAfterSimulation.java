@@ -13,9 +13,9 @@ public class TunerAfterSimulation extends AfterSimulationStrategy {
 	private ParametersTuner parametersTuner;
 
 	public TunerAfterSimulation(GameDependentParameters gameDependentParameters, Random random,
-			GamerSettings gamerSettings, SharedReferencesCollector sharedReferencesCollector){
+			GamerSettings gamerSettings, SharedReferencesCollector sharedReferencesCollector, String id){
 
-		super(gameDependentParameters, random, gamerSettings, sharedReferencesCollector);
+		super(gameDependentParameters, random, gamerSettings, sharedReferencesCollector, id);
 
 	}
 

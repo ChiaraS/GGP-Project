@@ -10,7 +10,7 @@ import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.strategies.Str
 public abstract class AfterMoveStrategy extends Strategy {
 
 	public AfterMoveStrategy(GameDependentParameters gameDependentParameters, Random random,
-			GamerSettings gamerSettings, SharedReferencesCollector sharedReferencesCollector) {
+			GamerSettings gamerSettings, SharedReferencesCollector sharedReferencesCollector, String id) {
 		super(gameDependentParameters, random, gamerSettings, sharedReferencesCollector);
 	}
 
