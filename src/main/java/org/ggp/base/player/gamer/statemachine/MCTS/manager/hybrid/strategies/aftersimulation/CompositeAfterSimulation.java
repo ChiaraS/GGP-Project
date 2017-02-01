@@ -38,9 +38,9 @@ public class CompositeAfterSimulation extends AfterSimulationStrategy {
 		AfterSimulationStrategy afterSimulationStrategy;
 		String[] afterSimulationStrategyDetails;
 
-		while(gamerSettings.specifiesProperty("AfterSimulationStrategy.subAfterSimulationStrategy"+i)){
+		while(gamerSettings.specifiesProperty("AfterSimulationStrategy" + id + ".subAfterSimulationStrategy"+i)){
 
-			afterSimulationStrategyDetails = gamerSettings.getIDPropertyValue("AfterSimulationStrategy.subAfterSimulationStrategy"+i);
+			afterSimulationStrategyDetails = gamerSettings.getIDPropertyValue("AfterSimulationStrategy" + id + ".subAfterSimulationStrategy"+i);
 
 			try {
 				afterSimulationStrategy = (AfterSimulationStrategy) SearchManagerComponent.getConstructorForMultiInstanceSearchManagerComponent(
@@ -50,7 +50,7 @@ public class CompositeAfterSimulation extends AfterSimulationStrategy {
 			} catch (InstantiationException | IllegalAccessException
 					| IllegalArgumentException | InvocationTargetException e) {
 				// TODO: fix this!
-				GamerLogger.logError("SearchManagerCreation", "Error when instantiating subAfterSimulationStrategy " + gamerSettings.getPropertyValue("AfterSimulationStrategy.subAfterSimulationStrategy"+i) + ".");
+				GamerLogger.logError("SearchManagerCreation", "Error when instantiating subAfterSimulationStrategy " + gamerSettings.getPropertyValue("AfterSimulationStrategy" + id + ".subAfterSimulationStrategy"+i) + ".");
 				GamerLogger.logStackTrace("SearchManagerCreation", e);
 				throw new RuntimeException(e);
 			}

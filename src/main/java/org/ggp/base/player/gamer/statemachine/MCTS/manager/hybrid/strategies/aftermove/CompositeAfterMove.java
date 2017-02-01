@@ -26,9 +26,9 @@ public class CompositeAfterMove extends AfterMoveStrategy {
 		AfterMoveStrategy afterMoveStrategy;
 		String[] afterMoveStrategyDetails;
 
-		while(gamerSettings.specifiesProperty("AfterMoveStrategy.subAfterMoveStrategy"+i)){
+		while(gamerSettings.specifiesProperty("AfterMoveStrategy" + id + ".subAfterMoveStrategy"+i)){
 
-			afterMoveStrategyDetails = gamerSettings.getIDPropertyValue("AfterMoveStrategy.subAfterMoveStrategy"+i);
+			afterMoveStrategyDetails = gamerSettings.getIDPropertyValue("AfterMoveStrategy" + id + ".subAfterMoveStrategy"+i);
 
 			try {
 				afterMoveStrategy = (AfterMoveStrategy) SearchManagerComponent.getConstructorForMultiInstanceSearchManagerComponent(
@@ -38,7 +38,7 @@ public class CompositeAfterMove extends AfterMoveStrategy {
 			} catch (InstantiationException | IllegalAccessException
 					| IllegalArgumentException | InvocationTargetException e) {
 				// TODO: fix this!
-				GamerLogger.logError("SearchManagerCreation", "Error when instantiating subAfterMoveStrategy " + gamerSettings.getPropertyValue("AfterMoveStrategy.subAfterMoveStrategy"+i) + ".");
+				GamerLogger.logError("SearchManagerCreation", "Error when instantiating subAfterMoveStrategy " + gamerSettings.getPropertyValue("AfterMoveStrategy" + id + ".subAfterMoveStrategy"+i) + ".");
 				GamerLogger.logStackTrace("SearchManagerCreation", e);
 				throw new RuntimeException(e);
 			}

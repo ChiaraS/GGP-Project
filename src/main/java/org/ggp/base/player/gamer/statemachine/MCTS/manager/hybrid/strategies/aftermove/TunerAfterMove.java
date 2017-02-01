@@ -33,19 +33,19 @@ public class TunerAfterMove extends AfterMoveStrategy {
 	}
 
 	@Override
+	public void afterMoveActions() {
+
+		this.parametersTuner.logStats();
+
+	}
+
+	@Override
 	public String getComponentParameters(String indentation) {
 		// Only the component that creates the tuner prints its content
 		//return indentation + "PARAMETERS_TUNER = " + this.parametersTuner.printParametersTuner(indentation + "  ");
 
 		// Here we only print the name
 		return indentation + "PARAMETERS_TUNER = " + this.parametersTuner.getClass().getSimpleName();
-	}
-
-	@Override
-	public void afterMoveActions() {
-
-		this.parametersTuner.logStats();
-
 	}
 
 }

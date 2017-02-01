@@ -80,6 +80,9 @@ public class SequentialTunerBeforeSimulation extends TunerBeforeSimulation {
 	}
 
 	public void startTuningNextParameter(){
+
+		//this.parametersTuner.logStats();
+
 		// Get the best value for the last parameter being tuned and set it.
 		int[][] bestValuePerRole = this.parametersTuner.getBestCombinations();
 

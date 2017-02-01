@@ -202,6 +202,10 @@ public class MctsGamer extends InternalPropnetGamer {
 
 		this.gameStep++;
 
+		//GamerLogger.log(GamerLogger.FORMAT.CSV_FORMAT, "ParametersTunerStats", "");
+		//GamerLogger.log(GamerLogger.FORMAT.CSV_FORMAT, "ParametersTunerStats", "New step = " + this.gameStep + ";");
+		//GamerLogger.log(GamerLogger.FORMAT.CSV_FORMAT, "ParametersTunerStats", "");
+
 		GamerLogger.log("Gamer", "Starting move selection for game step " + this.gameStep + " with available time " + (realTimeout-start) + "ms.");
 
 		if(System.currentTimeMillis() < realTimeout){

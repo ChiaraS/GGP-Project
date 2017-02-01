@@ -44,7 +44,7 @@ public class SequentialTunerAfterSimulation extends TunerAfterSimulation {
 			GamerSettings gamerSettings, SharedReferencesCollector sharedReferencesCollector, String id) {
 		super(gameDependentParameters, random, gamerSettings, sharedReferencesCollector, id);
 
-		this.simPerParameter = gamerSettings.getIntPropertyValue("BeforeSimulationStrategy.simPerParameter");
+		this.simPerParameter = gamerSettings.getIntPropertyValue("AfterSimulationStrategy" + id + ".simPerParameter");
 
 		this.simCountForParameter = 0;
 
@@ -85,6 +85,7 @@ public class SequentialTunerAfterSimulation extends TunerAfterSimulation {
 
 		if(this.simCountForParameter == this.simPerParameter){
 			this.sequentialTunerBeforeSimulation.startTuningNextParameter();
+			this.simCountForParameter = 0;
 		}
 
 	}

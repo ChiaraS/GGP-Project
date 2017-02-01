@@ -22,7 +22,7 @@ public class MastAfterMove extends AfterMoveStrategy {
 
 		super(gameDependentParameters, random, gamerSettings, sharedReferencesCollector, id);
 
-		this.decayFactor = gamerSettings.getDoublePropertyValue("AfterMoveStrategy.decayFactor");
+		this.decayFactor = gamerSettings.getDoublePropertyValue("AfterMoveStrategy" + id + ".decayFactor");
 	}
 
 	@Override
