@@ -1,5 +1,6 @@
 package org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.strategies.beforesimualtion;
 
+import java.util.Collections;
 import java.util.Random;
 
 import org.ggp.base.player.gamer.statemachine.GamerSettings;
@@ -18,6 +19,12 @@ public class SimultaneousTunerBeforeSimulation extends TunerBeforeSimulation {
 	public void setReferences(SharedReferencesCollector sharedReferencesCollector) {
 
 		super.setReferences(sharedReferencesCollector);
+
+		// Randomize the order of the parameters (needed by the HierarchicalSingleMabTuner)
+		// Other SimultaneousTuners are not affected by the different order
+		// TODO: temporary solution. Change the code to allow different ways of picking the order
+		// for all the tuners and also in between games.
+		Collections.shuffle(this.tunableParameters);
 
 		int[] classesLength = new int[this.tunableParameters.size()];
 

@@ -97,7 +97,9 @@ public class HierarchicalSingleMabParametersTuner extends SingleMabParametersTun
 			for(int j = 0; j < this.classesLength.length; j++){
 				this.selectedExpandedCombinationsIndices[i][j] = this.nextCombinationSelector.selectMove(currentRoleMab.getMoveStats(),
 						currentRoleMab.getNumUpdates());
-				currentRoleMab = currentRoleMab.getNextMabs()[this.selectedExpandedCombinationsIndices[i][j]];
+				if(currentRoleMab.getNextMabs() != null){
+					currentRoleMab = currentRoleMab.getNextMabs()[this.selectedExpandedCombinationsIndices[i][j]];
+				}
 			}
 
 		}
@@ -122,7 +124,10 @@ public class HierarchicalSingleMabParametersTuner extends SingleMabParametersTun
 			for(int j = 0; j < this.classesLength.length; j++){
 				this.selectedExpandedCombinationsIndices[i][j] = this.bestCombinationSelector.selectMove(currentRoleMab.getMoveStats(),
 						currentRoleMab.getNumUpdates());
-				currentRoleMab = currentRoleMab.getNextMabs()[this.selectedExpandedCombinationsIndices[i][j]];
+
+				if(currentRoleMab.getNextMabs() != null){
+					currentRoleMab = currentRoleMab.getNextMabs()[this.selectedExpandedCombinationsIndices[i][j]];
+				}
 			}
 
 		}
@@ -131,11 +136,6 @@ public class HierarchicalSingleMabParametersTuner extends SingleMabParametersTun
 		// However, modify to return a copy if this doesn't hold anymore!
 		return this.selectedExpandedCombinationsIndices;
 
-	}
-
-	@Override
-	public int getNumIndependentCombinatorialProblems() {
-		return this.rolesMabs.length;
 	}
 
 	@Override
@@ -165,7 +165,9 @@ public class HierarchicalSingleMabParametersTuner extends SingleMabParametersTun
 
 				currentRoleMab.incrementNumUpdates();
 
-				currentRoleMab = currentRoleMab.getNextMabs()[this.selectedExpandedCombinationsIndices[i][j]];
+				if(currentRoleMab.getNextMabs() != null){
+					currentRoleMab = currentRoleMab.getNextMabs()[this.selectedExpandedCombinationsIndices[i][j]];
+				}
 			}
 
 		}
@@ -174,8 +176,38 @@ public class HierarchicalSingleMabParametersTuner extends SingleMabParametersTun
 
 	@Override
 	public void logStats() {
-		// TODO Auto-generated method stub
+
+		GamerLogger.log(GamerLogger.FORMAT.CSV_FORMAT, "ParametersTunerStats", "");
+
+		for(int i = 0; i < this.rolesMabs.length; i++){
+			this.logStatsOfMab(this.rolesMabs[i], i, "");
+		}
 
 	}
+
+	private void logStatsOfMab(HierarchicalFixedMab currentMab, int role, String partialMove){
+		if(currentMab != null){
+			MoveStats[] stats = currentMab.getMoveStats();
+
+			for(int i = 0; i < stats.length; i++){
+				GamerLogger.log(GamerLogger.FORMAT.CSV_FORMAT, "ParametersTunerStats", "ROLE=;" + role + ";PARTIAL_MOVE=;[ " + partialMove + i + " ]" + ";VISITS=;" + stats[i].getVisits() + ";SCORE_SUM=;" + stats[i].getScoreSum() + ";AVG_VALUE=;" + (stats[i].getVisits() <= 0 ? "0" : (stats[i].getScoreSum()/((double)stats[i].getVisits()))));
+			}
+
+			HierarchicalFixedMab[] nextMabs = currentMab.getNextMabs();
+
+			if(nextMabs != null){
+				for(int i = 0; i < nextMabs.length; i++){
+					GamerLogger.log(GamerLogger.FORMAT.CSV_FORMAT, "ParametersTunerStats", "");
+					this.logStatsOfMab(nextMabs[i], role, partialMove + i + " ");
+				}
+			}
+		}
+	}
+
+	@Override
+	public int getNumIndependentCombinatorialProblems() {
+		return this.rolesMabs.length;
+	}
+
 
 }
