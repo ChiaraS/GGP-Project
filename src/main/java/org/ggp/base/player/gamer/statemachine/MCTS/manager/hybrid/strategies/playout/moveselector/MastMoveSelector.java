@@ -77,7 +77,7 @@ public class MastMoveSelector extends MoveSelector {
 	@Override
 	public Move getMoveForRole(MachineState state, int roleIndex) throws MoveDefinitionException, StateMachineException {
 
-		// Get the list of all legal moves for the rle in the state
+		// Get the list of all legal moves for the role in the state
         List<Move> legalMovesForRole = this.gameDependentParameters.getTheMachine().getLegalMoves(state, this.gameDependentParameters.getTheMachine().getRoles().get(roleIndex));
 
     	// Pick the move with highest MAST value.

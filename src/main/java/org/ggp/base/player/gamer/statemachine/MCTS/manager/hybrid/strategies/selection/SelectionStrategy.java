@@ -32,7 +32,7 @@ public abstract class SelectionStrategy extends Strategy {
 	 * This method selects the next move to visit in the given tree node
 	 * for the given role.
 	 * Note that the method assumes that the given state is a non-terminal
-	 * state and for teh player there is at least one legal move in the state.
+	 * state and for the player there is at least one legal move in the state.
 	 *
 	 * @param currentNode the node for which to select an action to visit.
 	 * @return the selected move.
