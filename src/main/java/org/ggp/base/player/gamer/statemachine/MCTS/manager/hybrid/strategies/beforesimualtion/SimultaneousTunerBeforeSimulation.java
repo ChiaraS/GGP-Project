@@ -1,18 +1,35 @@
 package org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.strategies.beforesimualtion;
 
-import java.util.Collections;
+import java.lang.reflect.InvocationTargetException;
 import java.util.Random;
 
 import org.ggp.base.player.gamer.statemachine.GamerSettings;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.GameDependentParameters;
+import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.SearchManagerComponent;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.SharedReferencesCollector;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.parameterstuning.structure.parameters.TunableParameter;
+import org.ggp.base.player.gamer.statemachine.MCTS.manager.parameterstuning.structure.parametersorders.ParametersOrder;
+import org.ggp.base.util.logging.GamerLogger;
+import org.ggp.base.util.reflection.ProjectSearcher;
 
 public class SimultaneousTunerBeforeSimulation extends TunerBeforeSimulation {
+
+	private ParametersOrder parametersOrganizer;
 
 	public SimultaneousTunerBeforeSimulation(GameDependentParameters gameDependentParameters, Random random,
 			GamerSettings gamerSettings, SharedReferencesCollector sharedReferencesCollector) {
 		super(gameDependentParameters, random, gamerSettings, sharedReferencesCollector);
+
+		try {
+			this.parametersOrganizer = (ParametersOrder) SearchManagerComponent.getConstructorForSearchManagerComponent(SearchManagerComponent.getCorrespondingClass(ProjectSearcher.PARAMETERS_ORGANIZERS.getConcreteClasses(),
+					gamerSettings.getPropertyValue("BeforeSimulationStrategy.parametersOrganizerType"))).newInstance(gameDependentParameters, random, gamerSettings, sharedReferencesCollector);
+		} catch (InstantiationException | IllegalAccessException
+				| IllegalArgumentException | InvocationTargetException e) {
+			// TODO: fix this!
+			GamerLogger.logError("SearchManagerCreation", "Error when instantiating ParametersOrganizer " + gamerSettings.getPropertyValue("ParameterTuner.parametersOrganizerType") + ".");
+			GamerLogger.logStackTrace("SearchManagerCreation", e);
+			throw new RuntimeException(e);
+		}
 	}
 
 	@Override
@@ -20,11 +37,7 @@ public class SimultaneousTunerBeforeSimulation extends TunerBeforeSimulation {
 
 		super.setReferences(sharedReferencesCollector);
 
-		// Randomize the order of the parameters (needed by the HierarchicalSingleMabTuner)
-		// Other SimultaneousTuners are not affected by the different order
-		// TODO: temporary solution. Change the code to allow different ways of picking the order
-		// for all the tuners and also in between games.
-		Collections.shuffle(this.tunableParameters);
+		this.parametersOrganizer.imposeInitialOrderForPlayer(this.tunableParameters);
 
 		int[] classesLength = new int[this.tunableParameters.size()];
 

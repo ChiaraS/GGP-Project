@@ -26,11 +26,13 @@ public class DoubleTunableParameter extends TunableParameter {
 
 	public DoubleTunableParameter(double fixedValue) {
 
-		this(fixedValue, null);
+		this(fixedValue, null, -1);
 
 	}
 
-	public DoubleTunableParameter(double fixedValue, double[] possibleValues) {
+	public DoubleTunableParameter(double fixedValue, double[] possibleValues, int tuningOrder) {
+
+		super(tuningOrder);
 
 		this.fixedValue = fixedValue;
 

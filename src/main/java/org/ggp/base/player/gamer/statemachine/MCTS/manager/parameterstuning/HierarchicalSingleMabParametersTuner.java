@@ -6,7 +6,7 @@ import org.ggp.base.player.gamer.statemachine.GamerSettings;
 import org.ggp.base.player.gamer.statemachine.MCS.manager.MoveStats;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.GameDependentParameters;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.SharedReferencesCollector;
-import org.ggp.base.player.gamer.statemachine.MCTS.manager.parameterstuning.structure.HierarchicalFixedMab;
+import org.ggp.base.player.gamer.statemachine.MCTS.manager.parameterstuning.structure.mabs.HierarchicalFixedMab;
 import org.ggp.base.util.logging.GamerLogger;
 
 public class HierarchicalSingleMabParametersTuner extends SingleMabParametersTuner {

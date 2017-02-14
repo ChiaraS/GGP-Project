@@ -18,6 +18,7 @@ import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.strategies.sel
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.strategies.selection.evaluators.grave.BetaComputer;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.parameterstuning.ParametersTuner;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.parameterstuning.selectors.TunerSelector;
+import org.ggp.base.player.gamer.statemachine.MCTS.manager.parameterstuning.structure.parametersorders.ParametersOrder;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.hybrid.TreeNodeFactory;
 import org.ggp.base.player.gamer.statemachine.propnet.InternalPropnetGamer;
 import org.ggp.base.player.gamer.statemachine.prover.ProverGamer;
@@ -49,8 +50,9 @@ public class ProjectSearcher {
     public static final LoadedClasses<MoveSelector> MOVE_SELECTORS = new LoadedClasses<MoveSelector>(MoveSelector.class);
     public static final LoadedClasses<MoveEvaluator> MOVE_EVALUATORS = new LoadedClasses<MoveEvaluator>(MoveEvaluator.class);
     public static final LoadedClasses<NodeUpdater> NODE_UPDATERS = new LoadedClasses<NodeUpdater>(NodeUpdater.class);
-    public static final LoadedClasses<ParametersTuner> PARAMETER_TUNERS = new LoadedClasses<ParametersTuner>(ParametersTuner.class);
+    public static final LoadedClasses<ParametersTuner> PARAMETERS_TUNERS = new LoadedClasses<ParametersTuner>(ParametersTuner.class);
     public static final LoadedClasses<TunerSelector> TUNER_SELECTORS = new LoadedClasses<TunerSelector>(TunerSelector.class);
+    public static final LoadedClasses<ParametersOrder> PARAMETERS_ORGANIZERS = new LoadedClasses<ParametersOrder>(ParametersOrder.class);
     // Strategies
     public static final LoadedClasses<AfterMoveStrategy> AFTER_MOVE_STRATEGIES = new LoadedClasses<AfterMoveStrategy>(AfterMoveStrategy.class);
     public static final LoadedClasses<AfterSimulationStrategy> AFTER_SIMULATION_STRATEGIES = new LoadedClasses<AfterSimulationStrategy>(AfterSimulationStrategy.class);

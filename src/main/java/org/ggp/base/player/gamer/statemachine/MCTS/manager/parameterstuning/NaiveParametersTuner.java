@@ -12,9 +12,9 @@ import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.SearchManagerC
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.SharedReferencesCollector;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.parameterstuning.selectors.TunerSelector;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.parameterstuning.structure.CombinatorialCompactMove;
-import org.ggp.base.player.gamer.statemachine.MCTS.manager.parameterstuning.structure.FixedMab;
-import org.ggp.base.player.gamer.statemachine.MCTS.manager.parameterstuning.structure.IncrementalMab;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.parameterstuning.structure.NaiveProblemRepresentation;
+import org.ggp.base.player.gamer.statemachine.MCTS.manager.parameterstuning.structure.mabs.FixedMab;
+import org.ggp.base.player.gamer.statemachine.MCTS.manager.parameterstuning.structure.mabs.IncrementalMab;
 import org.ggp.base.util.logging.GamerLogger;
 import org.ggp.base.util.reflection.ProjectSearcher;
 import org.ggp.base.util.statemachine.structure.Move;

@@ -27,11 +27,13 @@ public class IntTunableParameter extends TunableParameter {
 
 	public IntTunableParameter(int fixedValue) {
 
-		this(fixedValue, null);
+		this(fixedValue, null, -1);
 
 	}
 
-	public IntTunableParameter(int fixedValue, int[] possibleValues) {
+	public IntTunableParameter(int fixedValue, int[] possibleValues, int tuningOrder) {
+
+		super(tuningOrder);
 
 		this.fixedValue = fixedValue;
 
@@ -81,6 +83,7 @@ public class IntTunableParameter extends TunableParameter {
 		}
 	}
 
+	@Override
 	public String getParameters(String indentation) {
 
 		String params = indentation + "FIXED_VALUE = " + this.fixedValue;

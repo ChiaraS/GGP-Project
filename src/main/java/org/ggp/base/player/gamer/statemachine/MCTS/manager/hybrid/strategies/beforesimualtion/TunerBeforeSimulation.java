@@ -46,7 +46,7 @@ public abstract class TunerBeforeSimulation extends BeforeSimulationStrategy {
 		this.simCountForBatch = 0;
 
 		try {
-			this.parametersTuner = (ParametersTuner) SearchManagerComponent.getConstructorForSearchManagerComponent(SearchManagerComponent.getCorrespondingClass(ProjectSearcher.PARAMETER_TUNERS.getConcreteClasses(),
+			this.parametersTuner = (ParametersTuner) SearchManagerComponent.getConstructorForSearchManagerComponent(SearchManagerComponent.getCorrespondingClass(ProjectSearcher.PARAMETERS_TUNERS.getConcreteClasses(),
 					gamerSettings.getPropertyValue("BeforeSimulationStrategy.parameterTunerType"))).newInstance(gameDependentParameters, random, gamerSettings, sharedReferencesCollector);
 		} catch (InstantiationException | IllegalAccessException
 				| IllegalArgumentException | InvocationTargetException e) {
