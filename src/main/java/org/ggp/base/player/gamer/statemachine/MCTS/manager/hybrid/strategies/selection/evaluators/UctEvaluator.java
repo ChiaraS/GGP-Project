@@ -40,9 +40,13 @@ public class UctEvaluator extends MoveEvaluator {
 		if(gamerSettings.getBooleanPropertyValue("MoveEvaluator.tuneC")){
 			// If we have to tune the parameter then we look in the setting for all the values that we must use
 			// Note: the format for these values in the file must be the following:
-			// BetaComputer.valuesForK=v1;v2;...;vn
+			// MoveEvaluator.valuesForC=v1;v2;...;vn
 			// The values are listed separated by ; with no spaces
-			this.c = new DoubleTunableParameter(fixedC, gamerSettings.getDoublePropertyMultiValue("MoveEvaluator.valuesForC"));
+			if(gamerSettings.specifiesProperty("MoveEvaluator.tuningOrderIndexC")){
+				this.c = new DoubleTunableParameter(fixedC, gamerSettings.getDoublePropertyMultiValue("MoveEvaluator.valuesForC"), gamerSettings.getIntPropertyValue("MoveEvaluator.tuningOrderIndexC"));
+			}else{
+				this.c = new DoubleTunableParameter(fixedC, gamerSettings.getDoublePropertyMultiValue("MoveEvaluator.valuesForC"), -1);
+			}
 
 			// If the parameter must be tuned online, then we should add its reference to the sharedReferencesCollector
 			sharedReferencesCollector.addParameterToTune(this.c);
@@ -57,9 +61,13 @@ public class UctEvaluator extends MoveEvaluator {
 		if(gamerSettings.getBooleanPropertyValue("MoveEvaluator.tuneFpu")){
 			// If we have to tune the parameter then we look in the setting for all the values that we must use
 			// Note: the format for these values in the file must be the following:
-			// BetaComputer.valuesForK=v1;v2;...;vn
+			// MoveEvaluator.valuesForFpu=v1;v2;...;vn
 			// The values are listed separated by ; with no spaces
-			this.fpu = new DoubleTunableParameter(fixedFpu, gamerSettings.getDoublePropertyMultiValue("MoveEvaluator.valuesForFpu"));
+			if(gamerSettings.specifiesProperty("MoveEvaluator.tuningOrderIndexFpu")){
+				this.fpu = new DoubleTunableParameter(fixedFpu, gamerSettings.getDoublePropertyMultiValue("MoveEvaluator.valuesForFpu"), gamerSettings.getIntPropertyValue("MoveEvaluator.tuningOrderIndexFpu"));
+			}else{
+				this.fpu = new DoubleTunableParameter(fixedFpu, gamerSettings.getDoublePropertyMultiValue("MoveEvaluator.valuesForFpu"), -1);
+			}
 
 			// If the parameter must be tuned online, then we should add its reference to the sharedReferencesCollector
 			sharedReferencesCollector.addParameterToTune(this.fpu);

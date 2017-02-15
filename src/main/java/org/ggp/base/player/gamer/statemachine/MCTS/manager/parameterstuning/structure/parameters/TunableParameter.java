@@ -10,15 +10,15 @@ public abstract class TunableParameter {
 	 * unique for each parameter being tuned and the values must be specified in order starting from 0 up, without
 	 * skipping any intermediate value.
 	 */
-	private int tuningOrder;
+	private int tuningOrderIndex;
 
 	public TunableParameter(){
 		this(-1);
 	}
 
-	public TunableParameter(int tuningOrder){
+	public TunableParameter(int tuningOrderIndex){
 
-		this.tuningOrder = tuningOrder;
+		this.tuningOrderIndex = tuningOrderIndex;
 
 	}
 
@@ -28,10 +28,12 @@ public abstract class TunableParameter {
 
 	public abstract void setAllRolesNewValues(int[] newValuesIndices);
 
-	public abstract String getParameters(String indentation);
+	public String getParameters(String indentation) {
+		return indentation + "TUNING_ORDER_INDEX = " + this.tuningOrderIndex;
+	}
 
-	public int getTuningOrder(){
-		return this.tuningOrder;
+	public int getTuningOrderIndex(){
+		return this.tuningOrderIndex;
 	}
 
 }

@@ -30,9 +30,9 @@ public class DoubleTunableParameter extends TunableParameter {
 
 	}
 
-	public DoubleTunableParameter(double fixedValue, double[] possibleValues, int tuningOrder) {
+	public DoubleTunableParameter(double fixedValue, double[] possibleValues, int tuningOrderIndex) {
 
-		super(tuningOrder);
+		super(tuningOrderIndex);
 
 		this.fixedValue = fixedValue;
 
@@ -85,6 +85,8 @@ public class DoubleTunableParameter extends TunableParameter {
 	@Override
 	public String getParameters(String indentation) {
 
+		String superParams = super.getParameters(indentation);
+
 		String params = indentation + "FIXED_VALUE = " + this.fixedValue;
 
 		if(this.possibleValues != null){
@@ -119,7 +121,11 @@ public class DoubleTunableParameter extends TunableParameter {
 			params += indentation + "current_values = null";
 		}
 
-		return params;
+		if(superParams != null){
+			return superParams + params;
+		}else{
+			return params;
+		}
 
 	}
 

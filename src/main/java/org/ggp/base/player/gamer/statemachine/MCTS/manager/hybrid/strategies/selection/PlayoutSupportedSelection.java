@@ -65,9 +65,13 @@ public class PlayoutSupportedSelection extends SelectionStrategy {
 		if(gamerSettings.getBooleanPropertyValue("SelectionStrategy.tuneT")){
 			// If we have to tune the parameter then we look in the setting for all the values that we must use
 			// Note: the format for these values in the file must be the following:
-			// BetaComputer.valuesForK=v1;v2;...;vn
+			// SelectionStrategy.valuesForT=v1;v2;...;vn
 			// The values are listed separated by ; with no spaces
-			this.t = new IntTunableParameter(fixedT, gamerSettings.getIntPropertyMultiValue("SelectionStrategy.valuesForT"));
+			if(gamerSettings.specifiesProperty("SelectionStrategy.tuningOrderIndexT")){
+				this.t = new IntTunableParameter(fixedT, gamerSettings.getIntPropertyMultiValue("SelectionStrategy.valuesForT"), gamerSettings.getIntPropertyValue("SelectionStrategy.tuningOrderIndexT"));
+			}else{
+				this.t = new IntTunableParameter(fixedT, gamerSettings.getIntPropertyMultiValue("SelectionStrategy.valuesForT"), -1);
+			}
 
 			// If the parameter must be tuned online, then we should add its reference to the sharedReferencesCollector
 			sharedReferencesCollector.addParameterToTune(this.t);

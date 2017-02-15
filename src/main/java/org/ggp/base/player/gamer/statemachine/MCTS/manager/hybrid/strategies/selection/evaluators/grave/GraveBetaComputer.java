@@ -23,9 +23,13 @@ public class GraveBetaComputer extends BetaComputer {
 		if(gamerSettings.getBooleanPropertyValue("BetaComputer.tuneBias")){
 			// If we have to tune the parameter then we look in the setting for all the values that we must use
 			// Note: the format for these values in the file must be the following:
-			// BetaComputer.valuesForK=v1;v2;...;vn
+			// BetaComputer.valuesForBias=v1;v2;...;vn
 			// The values are listed separated by ; with no spaces
-			this.bias = new DoubleTunableParameter(fixedBias, gamerSettings.getDoublePropertyMultiValue("BetaComputer.valuesForBias"));
+			if(gamerSettings.specifiesProperty("BetaComputer.tuningOrderIndexBias")){
+				this.bias = new DoubleTunableParameter(fixedBias, gamerSettings.getDoublePropertyMultiValue("BetaComputer.valuesForBias"), gamerSettings.getIntPropertyValue("BetaComputer.tuningOrderIndexBias"));
+			}else{
+				this.bias = new DoubleTunableParameter(fixedBias, gamerSettings.getDoublePropertyMultiValue("BetaComputer.valuesForBias"), -1);
+			}
 
 			// If the parameter must be tuned online, then we should add its reference to the sharedReferencesCollector
 			sharedReferencesCollector.addParameterToTune(this.bias);

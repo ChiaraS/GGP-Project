@@ -22,7 +22,7 @@ public class SimultaneousTunerBeforeSimulation extends TunerBeforeSimulation {
 
 		try {
 			this.parametersOrganizer = (ParametersOrder) SearchManagerComponent.getConstructorForSearchManagerComponent(SearchManagerComponent.getCorrespondingClass(ProjectSearcher.PARAMETERS_ORGANIZERS.getConcreteClasses(),
-					gamerSettings.getPropertyValue("BeforeSimulationStrategy.parametersOrganizerType"))).newInstance(gameDependentParameters, random, gamerSettings, sharedReferencesCollector);
+					gamerSettings.getPropertyValue("BeforeSimulationStrategy.parametersOrderType"))).newInstance(gameDependentParameters, random, gamerSettings, sharedReferencesCollector);
 		} catch (InstantiationException | IllegalAccessException
 				| IllegalArgumentException | InvocationTargetException e) {
 			// TODO: fix this!

@@ -11,12 +11,24 @@ import org.ggp.base.util.logging.GamerLogger;
 
 public class PredefinedOrder extends ParametersOrder {
 
-	public PredefinedOrder(GameDependentParameters gameDependentParameters,
-			Random random, GamerSettings gamerSettings,
-			SharedReferencesCollector sharedReferencesCollector) {
-		super(gameDependentParameters, random, gamerSettings,
-				sharedReferencesCollector);
-		// TODO Auto-generated constructor stub
+	public PredefinedOrder(GameDependentParameters gameDependentParameters, Random random,
+			GamerSettings gamerSettings, SharedReferencesCollector sharedReferencesCollector) {
+		super(gameDependentParameters, random, gamerSettings, sharedReferencesCollector);
+	}
+
+	@Override
+	public void setReferences(SharedReferencesCollector sharedReferencesCollector) {
+		// Do nothing
+	}
+
+	@Override
+	public void clearComponent() {
+		// Do nothing
+	}
+
+	@Override
+	public void setUpComponent() {
+		// Do nothing
 	}
 
 	/**
@@ -29,24 +41,24 @@ public class PredefinedOrder extends ParametersOrder {
 	public void imposeInitialOrderForPlayer(List<TunableParameter> tunableParameters) {
 
 		TunableParameter tmp;
-		int tuningOrder;
+		int tuningOrderIndex;
 
 		for(int i = 0; i < tunableParameters.size(); i++){
 
 			// We must move the parameter only if it is in the wrong position
-			if(tunableParameters.get(i).getTuningOrder() != i){
+			if(tunableParameters.get(i).getTuningOrderIndex() != i){
 
 				// Check if the tuning order is outside of the interval [0, tunableParameters.size())
-				if(tunableParameters.get(i).getTuningOrder() >= 0 && tunableParameters.get(i).getTuningOrder() < tunableParameters.size()){
+				if(tunableParameters.get(i).getTuningOrderIndex() >= 0 && tunableParameters.get(i).getTuningOrderIndex() < tunableParameters.size()){
 
 					tmp = tunableParameters.set(i, null);
 
 					while(tmp != null){
 
-						tuningOrder = tmp.getTuningOrder();
-						tmp = tunableParameters.set(tuningOrder, tmp);
+						tuningOrderIndex = tmp.getTuningOrderIndex();
+						tmp = tunableParameters.set(tuningOrderIndex, tmp);
 
-						if(tmp != null && tmp.getTuningOrder() == tuningOrder){
+						if(tmp != null && tmp.getTuningOrderIndex() == tuningOrderIndex){
 							GamerLogger.logError("SearchManagerCreation", "Error when imposing initial order of tunable parameters for the player. Detected at least two parameters having the same index for the order.");
 							throw new RuntimeException("Error when imposing initial order of tunable parameters for the player.");
 						}
@@ -62,27 +74,7 @@ public class PredefinedOrder extends ParametersOrder {
 	}
 
 	@Override
-	public void setReferences(
-			SharedReferencesCollector sharedReferencesCollector) {
-		// TODO Auto-generated method stub
-
-	}
-
-	@Override
-	public void clearComponent() {
-		// TODO Auto-generated method stub
-
-	}
-
-	@Override
-	public void setUpComponent() {
-		// TODO Auto-generated method stub
-
-	}
-
-	@Override
 	public String getComponentParameters(String indentation) {
-		// TODO Auto-generated method stub
 		return null;
 	}
 

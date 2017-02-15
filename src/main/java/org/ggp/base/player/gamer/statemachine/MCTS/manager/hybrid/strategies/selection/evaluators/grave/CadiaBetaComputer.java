@@ -30,7 +30,12 @@ public class CadiaBetaComputer extends BetaComputer{
 			// Note: the format for these values in the file must be the following:
 			// BetaComputer.valuesForK=v1;v2;...;vn
 			// The values are listed separated by ; with no spaces
-			this.k = new IntTunableParameter(fixedK, gamerSettings.getIntPropertyMultiValue("BetaComputer.valuesForK"));
+			if(gamerSettings.specifiesProperty("BetaComputer.tuningOrderIndexK")){
+				this.k = new IntTunableParameter(fixedK, gamerSettings.getIntPropertyMultiValue("BetaComputer.valuesForK"), gamerSettings.getIntPropertyValue("BetaComputer.tuningOrderIndexK"));
+			}else{
+				this.k = new IntTunableParameter(fixedK, gamerSettings.getIntPropertyMultiValue("BetaComputer.valuesForK"), -1);
+			}
+
 
 			// If the parameter must be tuned online, then we should add its reference to the sharedReferencesCollector
 			sharedReferencesCollector.addParameterToTune(this.k);
