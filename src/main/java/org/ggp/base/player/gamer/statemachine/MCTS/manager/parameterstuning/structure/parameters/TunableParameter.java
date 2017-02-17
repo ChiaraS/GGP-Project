@@ -12,6 +12,23 @@ public abstract class TunableParameter {
 	 */
 	private int tuningOrderIndex;
 
+	/**
+	 * This array specifies a penalty for each of the possible values of the tunable parameter. The greater the
+	 * penalty the worse the value is expected to perform. When selecting the next parameter to be evaluated
+	 * this penalty will be used to compute a bias that will reward more parameters expected to perform well
+	 * and reward less parameters expected to perform bad.
+	 *
+	 * Example on how to compute the penalty value: perform preliminary experiments where you test the different
+	 * possible values of the parameter singularly on a certain set of games.
+	 * Suppose that V={v_1,...,v_n} is the set of possible values that you tested for this parameter and that
+	 * W={w_1,...,w_n} is a set where each w_i is the win percentage (i.e. a value in the interval [0, 100]) of
+	 * the player that was using the value v_i for the considered parameter.
+	 * You can assign a penalty of 0 to the value v_i that obtained the highest win percentage and a penalty of
+	 * w_i-w_j to each other value v_j. When evaluating which parameter to select next, a bias will be computed
+	 * that will have an higher value the lower the penalty is.
+	 */
+	private double[] possibleValuesPenalty;
+
 	public TunableParameter(){
 		this(-1);
 	}
