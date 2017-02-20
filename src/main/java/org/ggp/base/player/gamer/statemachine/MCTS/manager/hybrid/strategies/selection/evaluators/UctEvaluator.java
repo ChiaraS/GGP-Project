@@ -41,12 +41,22 @@ public class UctEvaluator extends MoveEvaluator {
 			// If we have to tune the parameter then we look in the setting for all the values that we must use
 			// Note: the format for these values in the file must be the following:
 			// MoveEvaluator.valuesForC=v1;v2;...;vn
-			// The values are listed separated by ; with no spaces
-			if(gamerSettings.specifiesProperty("MoveEvaluator.tuningOrderIndexC")){
-				this.c = new DoubleTunableParameter(fixedC, gamerSettings.getDoublePropertyMultiValue("MoveEvaluator.valuesForC"), gamerSettings.getIntPropertyValue("MoveEvaluator.tuningOrderIndexC"));
-			}else{
-				this.c = new DoubleTunableParameter(fixedC, gamerSettings.getDoublePropertyMultiValue("MoveEvaluator.valuesForC"), -1);
+			// The values are listed separated by ; with no spaces.
+			// We also need to look if a specific order is specified for tuning the parameters. If so, we must get from the
+			// settings the unique index that this parameter has in the ordering for the tunable parameters.
+			// Moreover, we need to look if a specific order is specified for tuning the parameters. If so, we must get from the
+			// settings the unique index that this parameter has in the ordering for the tunable parameters
+			double[] possibleValues = gamerSettings.getDoublePropertyMultiValue("MoveEvaluator.valuesForC");
+			double[] possibleValuesPenalty = null;
+			if(gamerSettings.specifiesProperty("MoveEvaluator.possibleValuesPenaltyForC")){
+				possibleValuesPenalty =  gamerSettings.getDoublePropertyMultiValue("MoveEvaluator.possibleValuesPenaltyForC");
 			}
+			int tuningOrderIndex = -1;
+			if(gamerSettings.specifiesProperty("MoveEvaluator.tuningOrderIndexC")){
+				tuningOrderIndex =  gamerSettings.getIntPropertyValue("MoveEvaluator.tuningOrderIndexC");
+			}
+
+			this.c = new DoubleTunableParameter(fixedC, possibleValues, possibleValuesPenalty, tuningOrderIndex);
 
 			// If the parameter must be tuned online, then we should add its reference to the sharedReferencesCollector
 			sharedReferencesCollector.addParameterToTune(this.c);
@@ -62,12 +72,22 @@ public class UctEvaluator extends MoveEvaluator {
 			// If we have to tune the parameter then we look in the setting for all the values that we must use
 			// Note: the format for these values in the file must be the following:
 			// MoveEvaluator.valuesForFpu=v1;v2;...;vn
-			// The values are listed separated by ; with no spaces
-			if(gamerSettings.specifiesProperty("MoveEvaluator.tuningOrderIndexFpu")){
-				this.fpu = new DoubleTunableParameter(fixedFpu, gamerSettings.getDoublePropertyMultiValue("MoveEvaluator.valuesForFpu"), gamerSettings.getIntPropertyValue("MoveEvaluator.tuningOrderIndexFpu"));
-			}else{
-				this.fpu = new DoubleTunableParameter(fixedFpu, gamerSettings.getDoublePropertyMultiValue("MoveEvaluator.valuesForFpu"), -1);
+			// The values are listed separated by ; with no spaces.
+			// We also need to look if a specific order is specified for tuning the parameters. If so, we must get from the
+			// settings the unique index that this parameter has in the ordering for the tunable parameters.
+			// Moreover, we need to look if a specific order is specified for tuning the parameters. If so, we must get from the
+			// settings the unique index that this parameter has in the ordering for the tunable parameters
+			double[] possibleValues = gamerSettings.getDoublePropertyMultiValue("MoveEvaluator.valuesForFpu");
+			double[] possibleValuesPenalty = null;
+			if(gamerSettings.specifiesProperty("MoveEvaluator.possibleValuesPenaltyForFpu")){
+				possibleValuesPenalty =  gamerSettings.getDoublePropertyMultiValue("MoveEvaluator.possibleValuesPenaltyForFpu");
 			}
+			int tuningOrderIndex = -1;
+			if(gamerSettings.specifiesProperty("MoveEvaluator.tuningOrderIndexFpu")){
+				tuningOrderIndex =  gamerSettings.getIntPropertyValue("MoveEvaluator.tuningOrderIndexFpu");
+			}
+
+			this.fpu = new DoubleTunableParameter(fixedFpu, possibleValues, possibleValuesPenalty, tuningOrderIndex);
 
 			// If the parameter must be tuned online, then we should add its reference to the sharedReferencesCollector
 			sharedReferencesCollector.addParameterToTune(this.fpu);

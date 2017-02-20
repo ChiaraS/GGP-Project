@@ -30,10 +30,12 @@ public abstract class TunableParameter {
 	private double[] possibleValuesPenalty;
 
 	public TunableParameter(){
-		this(-1);
+		this(null, -1);
 	}
 
-	public TunableParameter(int tuningOrderIndex){
+	public TunableParameter(double[] possibleValuesPenalty, int tuningOrderIndex){
+
+		this.possibleValuesPenalty =  possibleValuesPenalty;
 
 		this.tuningOrderIndex = tuningOrderIndex;
 
@@ -46,7 +48,24 @@ public abstract class TunableParameter {
 	public abstract void setAllRolesNewValues(int[] newValuesIndices);
 
 	public String getParameters(String indentation) {
-		return indentation + "TUNING_ORDER_INDEX = " + this.tuningOrderIndex;
+
+		String s;
+
+		if(this.possibleValuesPenalty != null){
+			s = "[ ";
+			for(int i = 0; i < this.possibleValuesPenalty.length; i++){
+				s += this.possibleValuesPenalty[i] + " ";
+			}
+			s += "]";
+		}else{
+			s = "null";
+		}
+		return indentation + "POSSIBLE_VALUES_PENALTY = " + s +
+				indentation + "TUNING_ORDER_INDEX = " + this.tuningOrderIndex;
+	}
+
+	public double[] getPossibleValuesPenalty(){
+		return this.possibleValuesPenalty;
 	}
 
 	public int getTuningOrderIndex(){

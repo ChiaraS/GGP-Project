@@ -29,13 +29,22 @@ public class CadiaBetaComputer extends BetaComputer{
 			// If we have to tune the parameter then we look in the setting for all the values that we must use
 			// Note: the format for these values in the file must be the following:
 			// BetaComputer.valuesForK=v1;v2;...;vn
-			// The values are listed separated by ; with no spaces
+			// The values are listed separated by ; with no spaces.
+			// We also need to look if a specific order is specified for tuning the parameters. If so, we must get from the
+			// settings the unique index that this parameter has in the ordering for the tunable parameters.
+			// Moreover, we need to look if a specific order is specified for tuning the parameters. If so, we must get from the
+			// settings the unique index that this parameter has in the ordering for the tunable parameters
+			int[] possibleValues = gamerSettings.getIntPropertyMultiValue("BetaComputer.valuesForK");
+			double[] possibleValuesPenalty = null;
+			if(gamerSettings.specifiesProperty("BetaComputer.possibleValuesPenaltyForK")){
+				possibleValuesPenalty =  gamerSettings.getDoublePropertyMultiValue("MoveSelector.possibleValuesPenaltyForK");
+			}
+			int tuningOrderIndex = -1;
 			if(gamerSettings.specifiesProperty("BetaComputer.tuningOrderIndexK")){
-				this.k = new IntTunableParameter(fixedK, gamerSettings.getIntPropertyMultiValue("BetaComputer.valuesForK"), gamerSettings.getIntPropertyValue("BetaComputer.tuningOrderIndexK"));
-			}else{
-				this.k = new IntTunableParameter(fixedK, gamerSettings.getIntPropertyMultiValue("BetaComputer.valuesForK"), -1);
+				tuningOrderIndex =  gamerSettings.getIntPropertyValue("BetaComputer.tuningOrderIndexK");
 			}
 
+			this.k = new IntTunableParameter(fixedK, possibleValues, possibleValuesPenalty, tuningOrderIndex);
 
 			// If the parameter must be tuned online, then we should add its reference to the sharedReferencesCollector
 			sharedReferencesCollector.addParameterToTune(this.k);

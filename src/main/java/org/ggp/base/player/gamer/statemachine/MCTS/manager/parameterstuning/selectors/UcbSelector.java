@@ -48,12 +48,12 @@ public class UcbSelector extends TunerSelector{
 	 * @return the index of the selected move.
 	 */
 	@Override
-	public int selectMove(MoveStats[] movesStats, int numUpdates){
+	public int selectMove(MoveStats[] movesStats, int[] movesPenalty, int numUpdates){
 
 		int selectedMove;
 		// This should mean that no combination of values has been evaluated yet (1st simulation),
 		// thus we return a random combination.
-		if(numUpdates == 0){
+		if(numUpdates == 0 && this.biasComputer == null){
 			selectedMove = this.random.nextInt(movesStats.length);
 		}else{
 
@@ -67,7 +67,7 @@ public class UcbSelector extends TunerSelector{
 
 			for(int i = 0; i < movesStats.length; i++){
 
-				movesValues[i] = this.computeCombinationValue(movesStats[i], numUpdates, minExtreme, maxExtreme);
+				movesValues[i] = this.computeCombinationValue(movesStats[i], ! check if null ! movesPenalty[i], numUpdates, minExtreme, maxExtreme);
 
 				/*
 				if(combinationsValues[i] == Double.MAX_VALUE){
@@ -115,9 +115,11 @@ public class UcbSelector extends TunerSelector{
 	public Move selectMove(Map<Move, MoveStats> movesStats, int numUpdates) {
 
 		Move selectedMove = null;
-		// This should mean that no combination of values has been evaluated yet (1st simulation),
-		// thus we return a random combination.
-		if(numUpdates == 0){
+
+		// When no combination of values has been evaluated yet (1st simulation) and there is no
+		// bias being added to the combinations we can simply return a random combination, because
+		// all combinations will have the same value (i.e. fpu).
+		if(numUpdates == 0 && this.biasComputer == null){
 			int randomNum = this.random.nextInt(movesStats.size());
 
 			for(Entry<Move,MoveStats> entry : movesStats.entrySet()){
@@ -127,9 +129,10 @@ public class UcbSelector extends TunerSelector{
 				}
 				randomNum--;
 			}
-
 		}else{
-
+			// If this evaluator is adding a bias to the combinations we execute the following code even when it's the 1st
+			// simulation. This is because there will be a bias that will distinguish among the combinations and be used to
+			// select the first combination to explore.
 			double minExtreme = 0.0;
 			double maxExtreme = 100.0;
 
@@ -188,14 +191,14 @@ public class UcbSelector extends TunerSelector{
 		return selectedMove;
 	}
 
-	private double computeCombinationValue(MoveStats moveStats, int totEvaluations, double minExtreme, double maxExtreme){
+	private double computeCombinationValue(MoveStats moveStats, double penalty, int totEvaluations, double minExtreme, double maxExtreme){
 
 		int moveEvaluations = moveStats.getVisits();
 		double totalValue = moveStats.getScoreSum();
 
 		/**
-		 * Extra check to make sure that neither the numEvaluations nor the
-		 * totalFitness exceed the maximum feasible value for an int type.
+		 * Extra check to make sure that neither the moveEvaluations nor the
+		 * totalValue  exceed the maximum feasible value for an int type.
 		 * TODO: remove this check once you are reasonably sure that this
 		 * can never happen.
 		 */
@@ -203,11 +206,25 @@ public class UcbSelector extends TunerSelector{
 			throw new RuntimeException("Negative value for combinationEvaluations and/or totalValue of an individual: combinationEvaluations=" + moveEvaluations + ", totalValue=" + totalValue + ".");
 		}
 
+		double exploitation;
+		double theValue;
+
 		if(moveEvaluations == 0){
-			return this.fpu;
+			// If using Progressive Bias, when moveEvaluations == 0 any value of exploitation will be
+			// ignored when computing the bias because it will be multiplied by 0. Thus, here we just
+			// assign an arbitrary value.
+			exploitation = -1;
+			theValue = this.fpu;
+		}else{
+			exploitation = this.computeExploitation(totalValue, moveEvaluations, minExtreme, maxExtreme);
+			theValue = exploitation + this.computeExploration(totEvaluations, moveEvaluations);
 		}
 
-		return this.computeExploitation(totalValue, moveEvaluations, minExtreme, maxExtreme) + this.computeExploration(totEvaluations, moveEvaluations);
+		if(this.biasComputer != null){
+			theValue += this.biasComputer.computeMoveBias(exploitation, moveEvaluations, penalty);
+		}
+
+		return theValue;
 
 	}
 

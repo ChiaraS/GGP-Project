@@ -32,12 +32,22 @@ public class GraveSelection extends MoveValueSelection {
 			// If we have to tune the parameter then we look in the setting for all the values that we must use
 			// Note: the format for these values in the file must be the following:
 			// SelectionStrategy.valuesForMinAmafVisits=v1;v2;...;vn
-			// The values are listed separated by ; with no spaces
-			if(gamerSettings.specifiesProperty("SelectionStrategy.tuningOrderIndexMinAmafVisits")){
-				this.minAmafVisits = new IntTunableParameter(fixedMinAmafVisits, gamerSettings.getIntPropertyMultiValue("SelectionStrategy.valuesForMinAmafVisits"), gamerSettings.getIntPropertyValue("SelectionStrategy.tuningOrderIndexMinAmafVisits"));
-			}else{
-				this.minAmafVisits = new IntTunableParameter(fixedMinAmafVisits, gamerSettings.getIntPropertyMultiValue("SelectionStrategy.valuesForMinAmafVisits"), -1);
+			// The values are listed separated by ; with no spaces.
+			// We also need to look if a specific order is specified for tuning the parameters. If so, we must get from the
+			// settings the unique index that this parameter has in the ordering for the tunable parameters.
+			// Moreover, we need to look if a specific order is specified for tuning the parameters. If so, we must get from the
+			// settings the unique index that this parameter has in the ordering for the tunable parameters
+			int[] possibleValues = gamerSettings.getIntPropertyMultiValue("SelectionStrategy.valuesForMinAmafVisits");
+			double[] possibleValuesPenalty = null;
+			if(gamerSettings.specifiesProperty("SelectionStrategy.possibleValuesPenaltyForMinAmafVisits")){
+				possibleValuesPenalty =  gamerSettings.getDoublePropertyMultiValue("SelectionStrategy.possibleValuesPenaltyForMinAmafVisits");
 			}
+			int tuningOrderIndex = -1;
+			if(gamerSettings.specifiesProperty("SelectionStrategy.tuningOrderIndexMinAmafVisits")){
+				tuningOrderIndex =  gamerSettings.getIntPropertyValue("SelectionStrategy.tuningOrderIndexMinAmafVisits");
+			}
+
+			this.minAmafVisits = new IntTunableParameter(fixedMinAmafVisits, possibleValues, possibleValuesPenalty, tuningOrderIndex);
 
 			// If the parameter must be tuned online, then we should add its reference to the sharedReferencesCollector
 			sharedReferencesCollector.addParameterToTune(this.minAmafVisits);

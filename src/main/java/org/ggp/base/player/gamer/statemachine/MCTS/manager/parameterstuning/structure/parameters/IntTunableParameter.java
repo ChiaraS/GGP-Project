@@ -27,13 +27,13 @@ public class IntTunableParameter extends TunableParameter {
 
 	public IntTunableParameter(int fixedValue) {
 
-		this(fixedValue, null, -1);
+		this(fixedValue, null, null, -1);
 
 	}
 
-	public IntTunableParameter(int fixedValue, int[] possibleValues, int tuningOrderIndex) {
+	public IntTunableParameter(int fixedValue, int[] possibleValues, double[] possibleValuesPenalty, int tuningOrderIndex) {
 
-		super(tuningOrderIndex);
+		super(possibleValuesPenalty, tuningOrderIndex);
 
 		this.fixedValue = fixedValue;
 

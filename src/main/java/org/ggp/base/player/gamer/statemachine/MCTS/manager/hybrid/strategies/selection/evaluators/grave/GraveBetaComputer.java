@@ -24,12 +24,22 @@ public class GraveBetaComputer extends BetaComputer {
 			// If we have to tune the parameter then we look in the setting for all the values that we must use
 			// Note: the format for these values in the file must be the following:
 			// BetaComputer.valuesForBias=v1;v2;...;vn
-			// The values are listed separated by ; with no spaces
-			if(gamerSettings.specifiesProperty("BetaComputer.tuningOrderIndexBias")){
-				this.bias = new DoubleTunableParameter(fixedBias, gamerSettings.getDoublePropertyMultiValue("BetaComputer.valuesForBias"), gamerSettings.getIntPropertyValue("BetaComputer.tuningOrderIndexBias"));
-			}else{
-				this.bias = new DoubleTunableParameter(fixedBias, gamerSettings.getDoublePropertyMultiValue("BetaComputer.valuesForBias"), -1);
+			// The values are listed separated by ; with no spaces.
+			// We also need to look if a specific order is specified for tuning the parameters. If so, we must get from the
+			// settings the unique index that this parameter has in the ordering for the tunable parameters.
+			// Moreover, we need to look if a specific order is specified for tuning the parameters. If so, we must get from the
+			// settings the unique index that this parameter has in the ordering for the tunable parameters
+			double[] possibleValues = gamerSettings.getDoublePropertyMultiValue("BetaComputer.valuesForBias");
+			double[] possibleValuesPenalty = null;
+			if(gamerSettings.specifiesProperty("BetaComputer.possibleValuesPenaltyForBias")){
+				possibleValuesPenalty =  gamerSettings.getDoublePropertyMultiValue("MoveSelector.possibleValuesPenaltyForBias");
 			}
+			int tuningOrderIndex = -1;
+			if(gamerSettings.specifiesProperty("BetaComputer.tuningOrderIndexBias")){
+				tuningOrderIndex =  gamerSettings.getIntPropertyValue("BetaComputer.tuningOrderIndexBias");
+			}
+
+			this.bias = new DoubleTunableParameter(fixedBias, possibleValues, possibleValuesPenalty, tuningOrderIndex);
 
 			// If the parameter must be tuned online, then we should add its reference to the sharedReferencesCollector
 			sharedReferencesCollector.addParameterToTune(this.bias);

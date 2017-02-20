@@ -66,12 +66,22 @@ public class PlayoutSupportedSelection extends SelectionStrategy {
 			// If we have to tune the parameter then we look in the setting for all the values that we must use
 			// Note: the format for these values in the file must be the following:
 			// SelectionStrategy.valuesForT=v1;v2;...;vn
-			// The values are listed separated by ; with no spaces
-			if(gamerSettings.specifiesProperty("SelectionStrategy.tuningOrderIndexT")){
-				this.t = new IntTunableParameter(fixedT, gamerSettings.getIntPropertyMultiValue("SelectionStrategy.valuesForT"), gamerSettings.getIntPropertyValue("SelectionStrategy.tuningOrderIndexT"));
-			}else{
-				this.t = new IntTunableParameter(fixedT, gamerSettings.getIntPropertyMultiValue("SelectionStrategy.valuesForT"), -1);
+			// The values are listed separated by ; with no spaces.
+			// We also need to look if a specific order is specified for tuning the parameters. If so, we must get from the
+			// settings the unique index that this parameter has in the ordering for the tunable parameters.
+			// Moreover, we need to look if a specific order is specified for tuning the parameters. If so, we must get from the
+			// settings the unique index that this parameter has in the ordering for the tunable parameters
+			int[] possibleValues = gamerSettings.getIntPropertyMultiValue("SelectionStrategy.valuesForT");
+			double[] possibleValuesPenalty = null;
+			if(gamerSettings.specifiesProperty("SelectionStrategy.possibleValuesPenaltyForT")){
+				possibleValuesPenalty =  gamerSettings.getDoublePropertyMultiValue("SelectionStrategy.possibleValuesPenaltyForT");
 			}
+			int tuningOrderIndex = -1;
+			if(gamerSettings.specifiesProperty("SelectionStrategy.tuningOrderIndexT")){
+				tuningOrderIndex =  gamerSettings.getIntPropertyValue("SelectionStrategy.tuningOrderIndexT");
+			}
+
+			this.t = new IntTunableParameter(fixedT, possibleValues, possibleValuesPenalty, tuningOrderIndex);
 
 			// If the parameter must be tuned online, then we should add its reference to the sharedReferencesCollector
 			sharedReferencesCollector.addParameterToTune(this.t);
