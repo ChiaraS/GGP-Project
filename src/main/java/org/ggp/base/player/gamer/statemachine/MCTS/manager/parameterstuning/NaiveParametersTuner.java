@@ -19,6 +19,8 @@ import org.ggp.base.util.logging.GamerLogger;
 import org.ggp.base.util.reflection.ProjectSearcher;
 import org.ggp.base.util.statemachine.structure.Move;
 
+import csironi.ggp.course.utils.Pair;
+
 public class NaiveParametersTuner extends ParametersTuner {
 
 	private double epsilon0;
@@ -184,7 +186,7 @@ public class NaiveParametersTuner extends ParametersTuner {
 	 * @return
 	 */
 	private int[] exploit(IncrementalMab globalMab){
-		Move m = this.globalMabSelector.selectMove(globalMab.getMoveStats(), globalMab.getNumUpdates());
+		Move m = this.globalMabSelector.selectMove(globalMab.getMovesInfo(), globalMab.getNumUpdates());
 		return ((CombinatorialCompactMove) m).getIndices();
 	}
 
@@ -193,8 +195,14 @@ public class NaiveParametersTuner extends ParametersTuner {
 		int[] indices = new int[localMabs.length];
 
 		// Select a value for each local mab independently
-		for(int i = 0; i < localMabs.length; i++){
-			indices[i] = this.localMabsSelector.selectMove(localMabs[i].getMoveStats(), localMabs[i].getNumUpdates());
+		if(this.unitMovesPenalty != null){
+			for(int i = 0; i < localMabs.length; i++){
+				indices[i] = this.localMabsSelector.selectMove(localMabs[i].getMoveStats(), this.unitMovesPenalty[i], localMabs[i].getNumUpdates());
+			}
+		}else{
+			for(int i = 0; i < localMabs.length; i++){
+				indices[i] = this.localMabsSelector.selectMove(localMabs[i].getMoveStats(), null, localMabs[i].getNumUpdates());
+			}
 		}
 
 		return indices;
@@ -207,7 +215,7 @@ public class NaiveParametersTuner extends ParametersTuner {
 		// For each role, we check the corresponding global MAB and select a combination of parameters
 		for(int i = 0; i < this.roleProblems.length; i++){
 			IncrementalMab globalMab = this.roleProblems[i].getGlobalMab();
-			Move m = this.bestCombinationSelector.selectMove(globalMab.getMoveStats(), globalMab.getNumUpdates());
+			Move m = this.bestCombinationSelector.selectMove(globalMab.getMovesInfo(), globalMab.getNumUpdates());
 			this.selectedCombinations[i] = ((CombinatorialCompactMove) m).getIndices();
 		}
 
@@ -227,19 +235,19 @@ public class NaiveParametersTuner extends ParametersTuner {
 
 			/********** Update global MAB **********/
 
-			// Get the stats of the combinatorial move in the global MAB
+			// Get the info of the combinatorial move in the global MAB
 			CombinatorialCompactMove theMove = new CombinatorialCompactMove(this.selectedCombinations[i]);
-			MoveStats globalStats = this.roleProblems[i].getGlobalMab().getMoveStats().get(theMove);
+			Pair<MoveStats,Double> globalInfo = this.roleProblems[i].getGlobalMab().getMovesInfo().get(theMove);
 
-			// If they don't exist, add the move to the MAB
-			if(globalStats == null){
-				globalStats = new MoveStats();
-				this.roleProblems[i].getGlobalMab().getMoveStats().put(theMove, globalStats);
+			// If the info doesn't exist, add the move to the MAB, computing the corresponding penalty
+			if(globalInfo == null){
+				globalInfo = new Pair<MoveStats,Double>(new MoveStats(), this.computeCombinatorialMovePenalty(theMove.getIndices()));
+				this.roleProblems[i].getGlobalMab().getMovesInfo().put(theMove, globalInfo);
 			}
 
 			// Update the stats
-			globalStats.incrementScoreSum(rewards[i]);
-			globalStats.incrementVisits();
+			globalInfo.getFirst().incrementScoreSum(rewards[i]);
+			globalInfo.getFirst().incrementVisits();
 
 			// Increase total num updates
 			this.roleProblems[i].getGlobalMab().incrementNumUpdates();
@@ -267,11 +275,11 @@ public class NaiveParametersTuner extends ParametersTuner {
 
 		for(int i = 0; i < this.roleProblems.length; i++){
 
-			Map<Move,MoveStats> globalStats = this.roleProblems[i].getGlobalMab().getMoveStats();
+			Map<Move,Pair<MoveStats,Double>> globalInfo = this.roleProblems[i].getGlobalMab().getMovesInfo();
 
-			for(Entry<Move,MoveStats> entry : globalStats.entrySet()){
+			for(Entry<Move,Pair<MoveStats,Double>> entry : globalInfo.entrySet()){
 				//GamerLogger.log(GamerLogger.FORMAT.CSV_FORMAT, "ParametersTunerStats", "ROLE=;" + i + ";MAB=;GLOBAL;COMBINATORIAL_MOVE=;" + entry.getKey() + ";VISITS=;" + entry.getValue().getVisits() + ";SCORE_SUM=;" + entry.getValue().getScoreSum() + ";AVG_VALUE=;" + (entry.getValue().getVisits() <= 0 ? "0" : (entry.getValue().getScoreSum()/((double)entry.getValue().getVisits()))));
-				toLog += "\nROLE=;" + i + ";MAB=;GLOBAL;COMB_MOVE=;" + entry.getKey() + ";VISITS=;" + entry.getValue().getVisits() + ";SCORE_SUM=;" + entry.getValue().getScoreSum() + ";AVG_VALUE=;" + (entry.getValue().getVisits() <= 0 ? "0" : (entry.getValue().getScoreSum()/((double)entry.getValue().getVisits())));
+				toLog += "\nROLE=;" + i + ";MAB=;GLOBAL;COMB_MOVE=;" + entry.getKey() + ";PENALTY=;" + entry.getValue().getSecond() + ";VISITS=;" + entry.getValue().getFirst().getVisits() + ";SCORE_SUM=;" + entry.getValue().getFirst().getScoreSum() + ";AVG_VALUE=;" + (entry.getValue().getFirst().getVisits() <= 0 ? "0" : (entry.getValue().getFirst().getScoreSum()/((double)entry.getValue().getFirst().getVisits())));
 			}
 
 			FixedMab[] localMabs = this.roleProblems[i].getLocalMabs();
@@ -279,7 +287,7 @@ public class NaiveParametersTuner extends ParametersTuner {
 			for(int j = 0; j < localMabs.length; j++){
 				for(int k = 0; k < localMabs[j].getMoveStats().length; k++){
 					//GamerLogger.log(GamerLogger.FORMAT.CSV_FORMAT, "ParametersTunerStats", "ROLE=;" + i + ";MAB=;LOCAL" + j + ";UNIT_MOVE=;" + k + ";VISITS=;" + localMabs[j].getMoveStats()[k].getVisits() + ";SCORE_SUM=;" + localMabs[j].getMoveStats()[k].getScoreSum() + ";AVG_VALUE=;" + (localMabs[j].getMoveStats()[k].getVisits() <= 0 ? "0" : (localMabs[j].getMoveStats()[k].getScoreSum()/((double)localMabs[j].getMoveStats()[k].getVisits()))));
-					toLog += "\nROLE=;" + i + ";MAB=;LOCAL" + j + ";UNIT_MOVE=;" + k + ";VISITS=;" + localMabs[j].getMoveStats()[k].getVisits() + ";SCORE_SUM=;" + localMabs[j].getMoveStats()[k].getScoreSum() + ";AVG_VALUE=;" + (localMabs[j].getMoveStats()[k].getVisits() <= 0 ? "0" : (localMabs[j].getMoveStats()[k].getScoreSum()/((double)localMabs[j].getMoveStats()[k].getVisits())));
+					toLog += "\nROLE=;" + i + ";MAB=;LOCAL" + j + ";UNIT_MOVE=;" + k + ";PENALTY=;" + this.unitMovesPenalty[j][k] + ";VISITS=;" + localMabs[j].getMoveStats()[k].getVisits() + ";SCORE_SUM=;" + localMabs[j].getMoveStats()[k].getScoreSum() + ";AVG_VALUE=;" + (localMabs[j].getMoveStats()[k].getVisits() <= 0 ? "0" : (localMabs[j].getMoveStats()[k].getScoreSum()/((double)localMabs[j].getMoveStats()[k].getVisits())));
 				}
 			}
 

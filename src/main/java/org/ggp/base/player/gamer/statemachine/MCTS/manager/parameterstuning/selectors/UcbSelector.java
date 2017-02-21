@@ -12,6 +12,8 @@ import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.GameDependentP
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.SharedReferencesCollector;
 import org.ggp.base.util.statemachine.structure.Move;
 
+import csironi.ggp.course.utils.Pair;
+
 /**
  * This class gets as input a list of statistics for moves (i.e MoveStats) and selects
  * one of them according to the ucb formula.
@@ -43,12 +45,17 @@ public class UcbSelector extends TunerSelector{
 	 * TODO: adapt the MctsManager code to also use this class.
 	 *
 	 * @param moveStats list with the statistics for each move.
+	 * @param movesPenalty penalty of each move that depends on empirical tests on the performance
+	 * of the move (i.e. parameters combination). NOTE: when the penalty is not specified we use the
+	 * value -1. In this way if we are computing the bias but the penalty is not specified the bias
+	 * computer can throw an exception. If we are not using a bias computer any value for the penalty
+	 * will be ignored.
 	 * @param numUpdates number of total visits of the moves so far (i.e. number of times any move
 	 * has been visited).
 	 * @return the index of the selected move.
 	 */
 	@Override
-	public int selectMove(MoveStats[] movesStats, int[] movesPenalty, int numUpdates){
+	public int selectMove(MoveStats[] movesStats, double[] movesPenalty, int numUpdates){
 
 		int selectedMove;
 		// This should mean that no combination of values has been evaluated yet (1st simulation),
@@ -65,17 +72,33 @@ public class UcbSelector extends TunerSelector{
 
 			List<Integer> selectedMovesIndices = new ArrayList<Integer>();
 
-			for(int i = 0; i < movesStats.length; i++){
+			if(movesPenalty != null){
+				for(int i = 0; i < movesStats.length; i++){
 
-				movesValues[i] = this.computeCombinationValue(movesStats[i], ! check if null ! movesPenalty[i], numUpdates, minExtreme, maxExtreme);
+					movesValues[i] = this.computeCombinationValue(movesStats[i], movesPenalty[i], numUpdates, minExtreme, maxExtreme);
 
-				/*
-				if(combinationsValues[i] == Double.MAX_VALUE){
-					maxValue = combinationsValues[i];
-					selectedCombinationsIndices.add(new Integer(i));
-				}else*/
-				if(movesValues[i] > maxValue){
-					maxValue = movesValues[i];
+					/*
+					if(combinationsValues[i] == Double.MAX_VALUE){
+						maxValue = combinationsValues[i];
+						selectedCombinationsIndices.add(new Integer(i));
+					}else*/
+					if(movesValues[i] > maxValue){
+						maxValue = movesValues[i];
+					}
+				}
+			}else{
+				for(int i = 0; i < movesStats.length; i++){
+
+					movesValues[i] = this.computeCombinationValue(movesStats[i], -1, numUpdates, minExtreme, maxExtreme);
+
+					/*
+					if(combinationsValues[i] == Double.MAX_VALUE){
+						maxValue = combinationsValues[i];
+						selectedCombinationsIndices.add(new Integer(i));
+					}else*/
+					if(movesValues[i] > maxValue){
+						maxValue = movesValues[i];
+					}
 				}
 			}
 
@@ -111,8 +134,18 @@ public class UcbSelector extends TunerSelector{
 
 	}
 
+	/**
+	 * @param movesInfo map with the statistics for each move considered so far. More precisely,
+	 * each move is mapped to the corresponding statistics and to the corresponding penalty value.
+	 * NOTE: we assume here that the penalty is always specified even when we are not using a bias
+	 * computer, thus if no penalty is specified in the gamers settings this value should be
+	 * initialized to -1.
+	 * @param numUpdates number of total visits of the moves so far (i.e. number of times any move
+	 * has been visited).
+	 * @return the index of the selected move.
+	 */
 	@Override
-	public Move selectMove(Map<Move, MoveStats> movesStats, int numUpdates) {
+	public Move selectMove(Map<Move,Pair<MoveStats,Double>> movesInfo, int numUpdates) {
 
 		Move selectedMove = null;
 
@@ -120,9 +153,9 @@ public class UcbSelector extends TunerSelector{
 		// bias being added to the combinations we can simply return a random combination, because
 		// all combinations will have the same value (i.e. fpu).
 		if(numUpdates == 0 && this.biasComputer == null){
-			int randomNum = this.random.nextInt(movesStats.size());
+			int randomNum = this.random.nextInt(movesInfo.size());
 
-			for(Entry<Move,MoveStats> entry : movesStats.entrySet()){
+			for(Entry<Move,Pair<MoveStats,Double>> entry : movesInfo.entrySet()){
 				if(randomNum == 0){
 					selectedMove = entry.getKey();
 					break;
@@ -137,15 +170,15 @@ public class UcbSelector extends TunerSelector{
 			double maxExtreme = 100.0;
 
 			double maxValue = -1;
-			double[] movesValues = new double[movesStats.size()];
-			Move[] moves = new Move[movesStats.size()];
+			double[] movesValues = new double[movesInfo.size()];
+			Move[] moves = new Move[movesInfo.size()];
 
 			List<Integer> selectedMovesIndices = new ArrayList<Integer>();
 
 			int i = 0;
-			for(Entry<Move,MoveStats> entry : movesStats.entrySet()){
+			for(Entry<Move,Pair<MoveStats,Double>> entry : movesInfo.entrySet()){
 
-				movesValues[i] = this.computeCombinationValue(entry.getValue(), numUpdates, minExtreme, maxExtreme);
+				movesValues[i] = this.computeCombinationValue(entry.getValue().getFirst(), entry.getValue().getSecond().doubleValue(), numUpdates, minExtreme, maxExtreme);
 				moves[i] = entry.getKey();
 
 				/*

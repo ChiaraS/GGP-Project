@@ -51,7 +51,7 @@ public abstract class TunerBeforeSimulation extends BeforeSimulationStrategy {
 		} catch (InstantiationException | IllegalAccessException
 				| IllegalArgumentException | InvocationTargetException e) {
 			// TODO: fix this!
-			GamerLogger.logError("SearchManagerCreation", "Error when instantiating ParameterTuner " + gamerSettings.getPropertyValue("ParameterTuner.parameterTunerType") + ".");
+			GamerLogger.logError("SearchManagerCreation", "Error when instantiating ParameterTuner " + gamerSettings.getPropertyValue("BeforeSimulationStrategy.parameterTunerType") + ".");
 			GamerLogger.logStackTrace("SearchManagerCreation", e);
 			throw new RuntimeException(e);
 		}
@@ -69,6 +69,11 @@ public abstract class TunerBeforeSimulation extends BeforeSimulationStrategy {
 		this.parametersTuner.setReferences(sharedReferencesCollector);
 
 		this.tunableParameters = sharedReferencesCollector.getTheParametersToTune();
+
+		if(this.tunableParameters == null || this.tunableParameters.size() == 0){
+			GamerLogger.logError("SearchManagerCreation", "TunerBeforeSimulation - Initialization with null or empty list of tunable parameters!");
+			throw new RuntimeException("ParametersTuner - Initialization with null or empty list of tunable parameters!");
+		}
 
 	}
 

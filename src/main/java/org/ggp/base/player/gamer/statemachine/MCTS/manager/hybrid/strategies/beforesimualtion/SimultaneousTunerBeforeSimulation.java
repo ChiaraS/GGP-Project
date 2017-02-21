@@ -41,13 +41,41 @@ public class SimultaneousTunerBeforeSimulation extends TunerBeforeSimulation {
 
 		int[] classesLength = new int[this.tunableParameters.size()];
 
+		// The penalty for the parameter values must be either specified for all values of all parameters or for none of them.
+		// This means that if it's specified for all values of the first parameter we expect it to be specified for all values
+		// of other parameters, too.
+		boolean usingPenalty = this.tunableParameters.get(0).getPossibleValuesPenalty() != null && this.tunableParameters.get(0).getPossibleValuesPenalty().length > 0;
+
+		double[][] unitMovesPenalty = null;
+		if(usingPenalty){
+			unitMovesPenalty = new double[this.tunableParameters.size()][];
+		}
+
 		int i = 0;
 		for(TunableParameter p : this.tunableParameters){
 			classesLength[i] = p.getPossibleValuesLength();
+			if(classesLength[i] == 0){
+				GamerLogger.logError("SearchManagerCreation", "SimultaneousTunerBeforeSimulation - Initialization with empty list of possible values for a parameter set to be tuned!");
+				throw new RuntimeException("SimultaneousTunerBeforeSimulation - Initialization with empty list of possible values for a parameter set to be tuned!");
+			}
+			// Get the penalty values (if expected)
+			// If expected but not specified or if not expected but specified, throw exception
+			if(usingPenalty^(this.tunableParameters.get(i).getPossibleValuesPenalty() != null && this.tunableParameters.get(i).getPossibleValuesPenalty().length > 0)){
+				GamerLogger.logError("SearchManagerCreation", "SimultaneousTunerBeforeSimulation - Parameters values penalty is specified only for some tunable parameters!");
+				throw new RuntimeException("SimultaneousTunerBeforeSimulation - Parameters values penalty is specified only for some tunable parameters!");
+			}else if(usingPenalty){ // Get penalty
+				unitMovesPenalty[i] = this.tunableParameters.get(i).getPossibleValuesPenalty();
+
+				// The penalty array must have same length of the possible values array
+				if(unitMovesPenalty[i].length != classesLength[i]){
+					GamerLogger.logError("SearchManagerCreation", "SimultaneousTunerBeforeSimulation - Parameters values penalty is specified only for some of the possible values of one of the tunable parameters!");
+					throw new RuntimeException("SimultaneousTunerBeforeSimulation - Parameters values penalty is specified only for some of the possible values of one of the tunable parameter!");
+				}
+			}
 			i++;
 		}
 
-		this.parametersTuner.setClassesLength(classesLength);
+		this.parametersTuner.setClassesLengthAndPenalty(classesLength, unitMovesPenalty);
 
 	}
 

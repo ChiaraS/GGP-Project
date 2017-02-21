@@ -1,8 +1,11 @@
-package org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid;
+package org.ggp.base.player.gamer.statemachine.MCTS.manager.parameterstuning.biascomputers;
 
 import java.util.Random;
 
 import org.ggp.base.player.gamer.statemachine.GamerSettings;
+import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.GameDependentParameters;
+import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.SharedReferencesCollector;
+import org.ggp.base.util.logging.GamerLogger;
 
 public class ProgressiveBias extends BiasComputer {
 
@@ -43,6 +46,14 @@ public class ProgressiveBias extends BiasComputer {
 
 	@Override
 	public double computeMoveBias(double moveNormalizedAvgValue, double moveVisits, double penalty){
+
+		// For now we assume that penalty has to be non-negative. A negative value means that there
+		// is something wrong in the code or in the settings for the gamer.
+		if(penalty < 0){
+			GamerLogger.logError("MctsManager", "Cannot compute Progressive Bias with negative penalty value.");
+			throw new RuntimeException("Cannot compute Progressive Bias with negative penalty value.");
+		}
+
 		return ((1/(1+Math.pow(penalty, this.decreaseFactor))) * (this.w/((1-moveNormalizedAvgValue)*moveVisits+1)));
 	}
 

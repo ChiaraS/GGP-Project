@@ -88,20 +88,36 @@ public class HierarchicalSingleMabParametersTuner extends SingleMabParametersTun
 
 		HierarchicalFixedMab currentRoleMab;
 
-		// For each role...
-		for(int i = 0; i < this.rolesMabs.length; i++){
+		if(this.unitMovesPenalty != null){
+			// For each role...
+			for(int i = 0; i < this.rolesMabs.length; i++){
 
-			currentRoleMab = this.rolesMabs[i];
+				currentRoleMab = this.rolesMabs[i];
 
-			// ...for each parameter (i.e. each level of the hierarchical representation)...
-			for(int j = 0; j < this.classesLength.length; j++){
-				this.selectedExpandedCombinationsIndices[i][j] = this.nextCombinationSelector.selectMove(currentRoleMab.getMoveStats(),
-						currentRoleMab.getNumUpdates());
-				if(currentRoleMab.getNextMabs() != null){
-					currentRoleMab = currentRoleMab.getNextMabs()[this.selectedExpandedCombinationsIndices[i][j]];
+				// ...for each parameter (i.e. each level of the hierarchical representation)...
+				for(int j = 0; j < this.classesLength.length; j++){
+					this.selectedExpandedCombinationsIndices[i][j] = this.nextCombinationSelector.selectMove(currentRoleMab.getMoveStats(),
+							this.unitMovesPenalty[j], currentRoleMab.getNumUpdates());
+					if(currentRoleMab.getNextMabs() != null){
+						currentRoleMab = currentRoleMab.getNextMabs()[this.selectedExpandedCombinationsIndices[i][j]];
+					}
 				}
 			}
+		}else{
+			// For each role...
+			for(int i = 0; i < this.rolesMabs.length; i++){
 
+				currentRoleMab = this.rolesMabs[i];
+
+				// ...for each parameter (i.e. each level of the hierarchical representation)...
+				for(int j = 0; j < this.classesLength.length; j++){
+					this.selectedExpandedCombinationsIndices[i][j] = this.nextCombinationSelector.selectMove(currentRoleMab.getMoveStats(),
+							null, currentRoleMab.getNumUpdates());
+					if(currentRoleMab.getNextMabs() != null){
+						currentRoleMab = currentRoleMab.getNextMabs()[this.selectedExpandedCombinationsIndices[i][j]];
+					}
+				}
+			}
 		}
 
 		// Attention! For now we are sure that the returned matrix won't be modified outside of this class,
@@ -115,21 +131,39 @@ public class HierarchicalSingleMabParametersTuner extends SingleMabParametersTun
 
 		HierarchicalFixedMab currentRoleMab;
 
-		// For each role...
-		for(int i = 0; i < this.rolesMabs.length; i++){
+		if(this.unitMovesPenalty != null){
+			// For each role...
+			for(int i = 0; i < this.rolesMabs.length; i++){
 
-			currentRoleMab = this.rolesMabs[i];
+				currentRoleMab = this.rolesMabs[i];
 
-			// ...for each parameter (i.e. each level of the hierarchical representation)...
-			for(int j = 0; j < this.classesLength.length; j++){
-				this.selectedExpandedCombinationsIndices[i][j] = this.bestCombinationSelector.selectMove(currentRoleMab.getMoveStats(),
-						currentRoleMab.getNumUpdates());
+				// ...for each parameter (i.e. each level of the hierarchical representation)...
+				for(int j = 0; j < this.classesLength.length; j++){
+					this.selectedExpandedCombinationsIndices[i][j] = this.bestCombinationSelector.selectMove(currentRoleMab.getMoveStats(),
+							this.unitMovesPenalty[j], currentRoleMab.getNumUpdates());
 
-				if(currentRoleMab.getNextMabs() != null){
-					currentRoleMab = currentRoleMab.getNextMabs()[this.selectedExpandedCombinationsIndices[i][j]];
+					if(currentRoleMab.getNextMabs() != null){
+						currentRoleMab = currentRoleMab.getNextMabs()[this.selectedExpandedCombinationsIndices[i][j]];
+					}
 				}
 			}
 
+		}else{
+			// For each role...
+			for(int i = 0; i < this.rolesMabs.length; i++){
+
+				currentRoleMab = this.rolesMabs[i];
+
+				// ...for each parameter (i.e. each level of the hierarchical representation)...
+				for(int j = 0; j < this.classesLength.length; j++){
+					this.selectedExpandedCombinationsIndices[i][j] = this.bestCombinationSelector.selectMove(currentRoleMab.getMoveStats(),
+							null, currentRoleMab.getNumUpdates());
+
+					if(currentRoleMab.getNextMabs() != null){
+						currentRoleMab = currentRoleMab.getNextMabs()[this.selectedExpandedCombinationsIndices[i][j]];
+					}
+				}
+			}
 		}
 
 		// Attention! For now we are sure that the returned matrix won't be modified outside of this class,

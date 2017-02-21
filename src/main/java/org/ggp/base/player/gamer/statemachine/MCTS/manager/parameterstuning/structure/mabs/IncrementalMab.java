@@ -6,33 +6,41 @@ import java.util.Map;
 import org.ggp.base.player.gamer.statemachine.MCS.manager.MoveStats;
 import org.ggp.base.util.statemachine.structure.Move;
 
+import csironi.ggp.course.utils.Pair;
+
 public class IncrementalMab extends Mab {
 
 	/**
 	 * Statistics for the moves.
 	 */
-	private Map<Move,MoveStats> movesStats;
+	private Map<Move,Pair<MoveStats,Double>> movesInfo;
 
 	public IncrementalMab() {
-		this(null);
+		this(null, null);
 	}
 
-	public IncrementalMab(Move[] moves) {
+	public IncrementalMab(Move[] moves, double[] movesPenalty) {
 
 		super();
 
-		this.movesStats = new HashMap<Move,MoveStats>();
+		this.movesInfo = new HashMap<Move,Pair<MoveStats,Double>>();
 
 		if(moves !=null){
-			for(int i = 0; i < moves.length; i++){
-				this.movesStats.put(moves[i], new MoveStats());
+			if(movesPenalty != null){
+				for(int i = 0; i < moves.length; i++){
+					this.movesInfo.put(moves[i], new Pair<MoveStats,Double>(new MoveStats(), new Double(movesPenalty[i])));
+				}
+			}else{
+				for(int i = 0; i < moves.length; i++){
+					this.movesInfo.put(moves[i], new Pair<MoveStats,Double>(new MoveStats(), new Double(-1)));
+				}
 			}
 		}
 
 	}
 
-    public Map<Move,MoveStats> getMoveStats(){
-    	return this.movesStats;
+    public Map<Move,Pair<MoveStats,Double>> getMovesInfo(){
+    	return this.movesInfo;
     }
 
 }

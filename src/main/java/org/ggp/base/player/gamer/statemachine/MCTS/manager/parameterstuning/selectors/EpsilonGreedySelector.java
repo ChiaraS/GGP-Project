@@ -13,6 +13,8 @@ import org.ggp.base.util.logging.GamerLogger;
 import org.ggp.base.util.reflection.ProjectSearcher;
 import org.ggp.base.util.statemachine.structure.Move;
 
+import csironi.ggp.course.utils.Pair;
+
 /**
  * Selects a move according to tunerSelector1 with probability epsilon,
  * otherwise selects a move according to tunerSelector2.
@@ -104,22 +106,22 @@ public class EpsilonGreedySelector extends TunerSelector{
 	 * @return the index of the selected move.
 	 */
 	@Override
-	public int selectMove(MoveStats[] movesStats, int numUpdates){
+	public int selectMove(MoveStats[] movesStats, double[] movesPenalty, int numUpdates){
 
 		if(this.random.nextDouble() < this.epsilon){
-			return this.tunerSelector1.selectMove(movesStats, numUpdates);
+			return this.tunerSelector1.selectMove(movesStats, movesPenalty, numUpdates);
 		}else{
-			return this.tunerSelector2.selectMove(movesStats, numUpdates);
+			return this.tunerSelector2.selectMove(movesStats, movesPenalty, numUpdates);
 		}
 
 	}
 
 	@Override
-	public Move selectMove(Map<Move, MoveStats> movesStats, int numUpdates) {
+	public Move selectMove(Map<Move,Pair<MoveStats,Double>> movesInfo, int numUpdates) {
 		if(this.random.nextDouble() < this.epsilon){
-			return this.tunerSelector1.selectMove(movesStats, numUpdates);
+			return this.tunerSelector1.selectMove(movesInfo, numUpdates);
 		}else{
-			return this.tunerSelector2.selectMove(movesStats, numUpdates);
+			return this.tunerSelector2.selectMove(movesInfo, numUpdates);
 		}
 	}
 

@@ -6,7 +6,6 @@ import org.ggp.base.player.gamer.statemachine.GamerSettings;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.GameDependentParameters;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.SearchManagerComponent;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.SharedReferencesCollector;
-import org.ggp.base.util.logging.GamerLogger;
 
 public abstract class ParametersTuner extends SearchManagerComponent{
 
@@ -35,6 +34,15 @@ public abstract class ParametersTuner extends SearchManagerComponent{
 	 */
 	protected int[] classesLength;
 
+	/**
+	 * For each class, for each unit move in the class, this array specifies the penalty.
+	 * NOTE: the penalty values must be specified for either all or none of the classes,
+	 * otherwise an exception must be thrown.
+	 * If there is no penalty specified in the gamers settings for any of the classes,
+	 * then this pointer will be null.
+	 */
+	protected double[][] unitMovesPenalty;
+
 	public ParametersTuner(GameDependentParameters gameDependentParameters,
 			Random random, GamerSettings gamerSettings,
 			SharedReferencesCollector sharedReferencesCollector) {
@@ -51,14 +59,36 @@ public abstract class ParametersTuner extends SearchManagerComponent{
 
 		this.classesLength = null;
 
+		this.unitMovesPenalty = null;
+
 	}
 
-	public void setClassesLength(int[] classesLength) {
-		if(classesLength == null || classesLength.length == 0){
-			GamerLogger.logError("SearchManagerCreation", "ParametersTuner - Initialization with null or empty list of classes length. No classes of actions to combine!");
-			throw new RuntimeException("ParametersTuner - Initialization with null or empty list of classes length. No classes of actions to combine!");
-		}
+	public void setClassesLengthAndPenalty(int[] classesLength, double[][] unitMovesPenalty) {
 		this.classesLength = classesLength;
+		this.unitMovesPenalty = unitMovesPenalty;
+	}
+
+	/**
+	 * Computes the move penalty of a combinatorial move as the average of the move penalty
+	 * of each of the unit moves that form the combinatorial move.
+	 *
+	 * @param combinatorialMove
+	 * @return
+	 */
+	public double computeCombinatorialMovePenalty(int[] combinatorialMove){
+
+		if(this.unitMovesPenalty == null){
+			return -1.0;
+		}
+		// If unitMovesPenalty is not null we assume that the penalty value will be specified for each unit move of each class.
+
+		double penaltySum = 0.0;
+
+		for(int i = 0; i < combinatorialMove.length; i++){
+			penaltySum += this.unitMovesPenalty[i][combinatorialMove[i]];
+		}
+
+		return penaltySum/combinatorialMove.length;
 	}
 
 	@Override
@@ -80,6 +110,22 @@ public abstract class ParametersTuner extends SearchManagerComponent{
 			params += indentation + "CLASSES_LENGTH = " + classesLengthString;
 		}else{
 			params += indentation + "CLASSES_LENGTH = null";
+		}
+
+		if(this.unitMovesPenalty != null){
+			String unitMovesPenaltyString = "[ ";
+
+			for(int i = 0; i < this.unitMovesPenalty.length; i++){
+
+				unitMovesPenaltyString += this.unitMovesPenalty[i] + " ";
+
+			}
+
+			unitMovesPenaltyString += "]";
+
+			params += indentation + "UNIT_MOVES_PENALTY = " + unitMovesPenaltyString;
+		}else{
+			params += indentation + "UNIT_MOVES_PENALTY = null";
 		}
 
 		return params;

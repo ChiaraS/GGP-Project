@@ -37,7 +37,7 @@ public class CadiaBetaComputer extends BetaComputer{
 			int[] possibleValues = gamerSettings.getIntPropertyMultiValue("BetaComputer.valuesForK");
 			double[] possibleValuesPenalty = null;
 			if(gamerSettings.specifiesProperty("BetaComputer.possibleValuesPenaltyForK")){
-				possibleValuesPenalty =  gamerSettings.getDoublePropertyMultiValue("MoveSelector.possibleValuesPenaltyForK");
+				possibleValuesPenalty =  gamerSettings.getDoublePropertyMultiValue("BetaComputer.possibleValuesPenaltyForK");
 			}
 			int tuningOrderIndex = -1;
 			if(gamerSettings.specifiesProperty("BetaComputer.tuningOrderIndexK")){

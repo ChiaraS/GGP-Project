@@ -52,10 +52,19 @@ public class SequentialTunerBeforeSimulation extends TunerBeforeSimulation {
 
 		this.currentParameterIndex = 0;
 
-		// Set the length of the class of values for the next parameter to tune
+		// Set the length and the values penalty (if any) of the class of values for the next parameter to tune
 		int[] classesLength = new int[1];
+		double[][] unitMovesPenalty = null;
 		classesLength[0] = this.tunableParameters.get(this.currentParameterIndex).getPossibleValuesLength();
-		this.parametersTuner.setClassesLength(classesLength);
+		if(this.tunableParameters.get(this.currentParameterIndex).getPossibleValuesPenalty() != null &&
+				this.tunableParameters.get(this.currentParameterIndex).getPossibleValuesPenalty().length > 0){
+			unitMovesPenalty = new double[1][];
+			unitMovesPenalty[0] = this.tunableParameters.get(this.currentParameterIndex).getPossibleValuesPenalty();
+			// NOTE that for the sequential tuner we are not checking if the penalty is specified for all or none of the
+			// parameters to be tuned. It is possible that some parameters will have a specified penalty and some others
+			// won't. If this happens it will cause problems, so TODO: add check to this class!
+		}
+		this.parametersTuner.setClassesLengthAndPenalty(classesLength, unitMovesPenalty);
 
 		// We call it here so the parameters tuner will be directly set up with the new value for the classes length.
 		// Otherwise it will be set up with the old value and we will have to re-set it here wasting time.
@@ -101,10 +110,19 @@ public class SequentialTunerBeforeSimulation extends TunerBeforeSimulation {
 			Collections.shuffle(this.tunableParameters);
 		}
 
-		// Set the length of the class of values for the next parameter to tune
+		// Set the length and the values penalty (if any) of the class of values for the next parameter to tune
 		int[] classesLength = new int[1];
+		double[][] unitMovesPenalty = null;
 		classesLength[0] = this.tunableParameters.get(this.currentParameterIndex).getPossibleValuesLength();
-		this.parametersTuner.setClassesLength(classesLength);
+		if(this.tunableParameters.get(this.currentParameterIndex).getPossibleValuesPenalty() != null &&
+				this.tunableParameters.get(this.currentParameterIndex).getPossibleValuesPenalty().length > 0){
+			unitMovesPenalty = new double[1][];
+			unitMovesPenalty[0] = this.tunableParameters.get(this.currentParameterIndex).getPossibleValuesPenalty();
+			// NOTE that for the sequential tuner we are not checking if the penalty is specified for all or none of the
+			// parameters to be tuned. It is possible that some parameters will have a specified penalty and some others
+			// won't. If this happens it will cause problems, so TODO: add check to this class!
+		}
+		this.parametersTuner.setClassesLengthAndPenalty(classesLength, unitMovesPenalty);
 
 		// Set up parameters tuner to tune next parameter
 		this.parametersTuner.setUpComponent();

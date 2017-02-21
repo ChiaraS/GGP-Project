@@ -10,6 +10,8 @@ import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.GameDependentP
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.SharedReferencesCollector;
 import org.ggp.base.util.statemachine.structure.Move;
 
+import csironi.ggp.course.utils.Pair;
+
 public class RandomSelector extends TunerSelector{
 
 	public RandomSelector(GameDependentParameters gameDependentParameters,
@@ -49,15 +51,15 @@ public class RandomSelector extends TunerSelector{
 	}
 
 	@Override
-	public int selectMove(MoveStats[] movesStats, int numUpdates) {
+	public int selectMove(MoveStats[] movesStats, double[] movesPenalty, int numUpdates) {
 		return this.random.nextInt(movesStats.length);
 	}
 
 	@Override
-	public Move selectMove(Map<Move, MoveStats> movesStats, int numUpdates) {
-		int randomNum = this.random.nextInt(movesStats.size());
+	public Move selectMove(Map<Move,Pair<MoveStats,Double>> movesInfo, int numUpdates) {
+		int randomNum = this.random.nextInt(movesInfo.size());
 
-		for(Entry<Move,MoveStats> entry : movesStats.entrySet()){
+		for(Entry<Move,Pair<MoveStats,Double>> entry : movesInfo.entrySet()){
 			if(randomNum == 0){
 				return entry.getKey();
 			}

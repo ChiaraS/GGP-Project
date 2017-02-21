@@ -1,8 +1,11 @@
-package org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid;
+package org.ggp.base.player.gamer.statemachine.MCTS.manager.parameterstuning.biascomputers;
 
 import java.util.Random;
 
 import org.ggp.base.player.gamer.statemachine.GamerSettings;
+import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.GameDependentParameters;
+import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.SearchManagerComponent;
+import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.SharedReferencesCollector;
 
 public abstract class BiasComputer extends SearchManagerComponent {
 
