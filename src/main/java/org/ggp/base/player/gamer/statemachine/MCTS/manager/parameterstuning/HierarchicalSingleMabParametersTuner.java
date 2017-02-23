@@ -243,5 +243,12 @@ public class HierarchicalSingleMabParametersTuner extends SingleMabParametersTun
 		return this.rolesMabs.length;
 	}
 
+	@Override
+	public void decreaseStatistics(double factor) {
+		for(int i = 0; i < this.rolesMabs.length; i++){
+			this.rolesMabs[i].decreaseStatistics(factor);
+		}
+	}
+
 
 }

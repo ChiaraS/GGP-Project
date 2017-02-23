@@ -36,4 +36,16 @@ public class NaiveProblemRepresentation {
 		return this.localMabs;
 	}
 
+    /**
+     * Ths method keeps factor*oldStatistic statistics. Factor should be in the interval [0,1].
+     *
+     * @param factor
+     */
+    public void decreaseStatistics(double factor){
+    	this.globalMab.decreaseStatistics(factor);
+    	for(int i = 0; i < this.localMabs.length; i++){
+    		this.localMabs[i].decreaseStatistics(factor);
+    	}
+    }
+
 }

@@ -2,6 +2,7 @@ package org.ggp.base.player.gamer.statemachine.MCTS.manager.parameterstuning.str
 
 
 
+
 public class HierarchicalFixedMab extends FixedMab {
 
 	private HierarchicalFixedMab[] nextMabs;
@@ -23,5 +24,18 @@ public class HierarchicalFixedMab extends FixedMab {
     public HierarchicalFixedMab[] getNextMabs(){
     	return this.nextMabs;
     }
+
+	@Override
+	public void decreaseStatistics(double factor) {
+
+		super.decreaseStatistics(factor);
+
+		if(this.nextMabs != null){
+			for(int i = 0; i < this.movesStats.length; i++){
+				this.nextMabs[i].decreaseStatistics(factor);
+			}
+		}
+
+	}
 
 }

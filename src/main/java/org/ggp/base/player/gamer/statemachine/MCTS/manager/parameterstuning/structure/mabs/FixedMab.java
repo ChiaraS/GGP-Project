@@ -19,7 +19,7 @@ public class FixedMab extends Mab{
 	/**
 	 * Statistics for all possible moves.
 	 */
-	private MoveStats[] movesStats;
+	protected MoveStats[] movesStats;
 
 	public FixedMab(int numMoves) {
 
@@ -36,5 +36,17 @@ public class FixedMab extends Mab{
     public MoveStats[] getMoveStats(){
     	return this.movesStats;
     }
+
+	@Override
+	public void decreaseStatistics(double factor) {
+
+		this.numUpdates = 0;
+
+		for(int i = 0; i < this.movesStats.length; i++){
+			this.movesStats[i].decreaseByFactor(factor);
+			this.numUpdates += this.movesStats[i].getVisits();
+		}
+
+	}
 
 }

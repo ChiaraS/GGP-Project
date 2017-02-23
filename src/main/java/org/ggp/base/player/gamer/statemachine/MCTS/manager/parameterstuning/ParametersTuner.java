@@ -142,6 +142,13 @@ public abstract class ParametersTuner extends SearchManagerComponent{
 
 	public abstract void logStats();
 
+    /**
+     * Ths method keeps factor*oldStatistic statistics. Factor should be in the interval [0,1].
+     *
+     * @param factor
+     */
+    public abstract void decreaseStatistics(double factor);
+
 	public boolean isTuningAllRoles(){
 		return this.tuneAllRoles;
 	}

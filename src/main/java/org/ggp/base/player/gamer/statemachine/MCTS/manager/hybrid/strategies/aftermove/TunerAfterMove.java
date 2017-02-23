@@ -11,10 +11,18 @@ public class TunerAfterMove extends AfterMoveStrategy {
 
 	private ParametersTuner parametersTuner;
 
+	private double paramStatsDecreaseFactor;
+
+	private boolean log;
+
 	public TunerAfterMove(GameDependentParameters gameDependentParameters, Random random,
 			GamerSettings gamerSettings, SharedReferencesCollector sharedReferencesCollector, String id) {
 
 		super(gameDependentParameters, random, gamerSettings, sharedReferencesCollector, id);
+
+		this.paramStatsDecreaseFactor = gamerSettings.getDoublePropertyValue("AfterMoveStrategy.paramStatsDecreaseFactor");
+
+		this.log = gamerSettings.getBooleanPropertyValue("AfterMoveStrategy.log");
 	}
 
 	@Override
@@ -35,7 +43,13 @@ public class TunerAfterMove extends AfterMoveStrategy {
 	@Override
 	public void afterMoveActions() {
 
-		this.parametersTuner.logStats();
+		if(log){
+			this.parametersTuner.logStats();
+		}
+		this.parametersTuner.decreaseStatistics(this.paramStatsDecreaseFactor);
+		if(log){
+			this.parametersTuner.logStats();
+		}
 
 	}
 
@@ -45,7 +59,8 @@ public class TunerAfterMove extends AfterMoveStrategy {
 		//return indentation + "PARAMETERS_TUNER = " + this.parametersTuner.printParametersTuner(indentation + "  ");
 
 		// Here we only print the name
-		return indentation + "PARAMETERS_TUNER = " + this.parametersTuner.getClass().getSimpleName();
+		return indentation + "PARAMS_STATS_DECREASE_FACTOR = " + this.paramStatsDecreaseFactor +
+				indentation + "PARAMETERS_TUNER = " + this.parametersTuner.getClass().getSimpleName();
 	}
 
 }

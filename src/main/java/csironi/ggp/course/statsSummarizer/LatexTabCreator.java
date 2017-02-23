@@ -52,6 +52,10 @@ public class LatexTabCreator {
 		gameKeyMap.put("ttcc4","TTCC4 3P");
 		gameKeyMap.put("ticTacToe","TicTacToe");
 		gameKeyMap.put("connect4","Connect 4");
+		gameKeyMap.put("pentago","Pentago");
+		gameKeyMap.put("reversi","Reversi");
+		gameKeyMap.put("chineseCheckers4","ChineseCheckers4");
+		gameKeyMap.put("chineseCheckers6","ChineseCheckers6");
 
 
 
@@ -110,6 +114,10 @@ public class LatexTabCreator {
 		gamesOrder.add("zhadu");
 		gamesOrder.add("ttcc4");
 		gamesOrder.add("connect4");
+		gamesOrder.add("chineseCheckers4");
+		gamesOrder.add("chineseCheckers6");
+		gamesOrder.add("pentago");
+		gamesOrder.add("reversi");
 		gamesOrder.add("ticTacToe");
 		/*********** GAMES ORDER FOR GRAVE PAPER -END *************/
 

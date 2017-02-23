@@ -361,4 +361,12 @@ public class NaiveParametersTuner extends ParametersTuner {
 		return this.bestCombinationSelector;
 	}
 
+	@Override
+	public void decreaseStatistics(double factor) {
+		for(int i = 0; i < this.roleProblems.length; i++){
+			this.roleProblems[i].decreaseStatistics(factor);
+		}
+
+	}
+
 }

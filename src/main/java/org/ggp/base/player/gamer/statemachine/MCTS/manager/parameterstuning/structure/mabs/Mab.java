@@ -6,7 +6,7 @@ public abstract class Mab {
 	/**
 	 *  Number of times any of the moves has been evaluated.
 	 */
-	private int numUpdates;
+	protected int numUpdates;
 
 	public Mab() {
 		this.numUpdates = 0;
@@ -19,4 +19,11 @@ public abstract class Mab {
     public void incrementNumUpdates(){
     	this.numUpdates++;
     }
+
+    /**
+     * Ths method keeps factor*oldStatistic statistics. Factor should be in the interval [0,1].
+     *
+     * @param factor
+     */
+    public abstract void decreaseStatistics(double factor);
 }
