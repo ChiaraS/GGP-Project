@@ -19,8 +19,8 @@ public class PlayerStatsAggregator {
 	 * will aggregate the results present in all the files with that name for all the games.
 	 *
 	 * Example:
-	 * [folder] [file to summarize for each game] [name of the statistic to summarize] [type of statistic to compute for the statistic name]
-	 * C:\Users\c.sironi\Desktop\AAA\BESTK1000\TRANSPTAB-CHRAVE CadiaRhRaveDuctMctsGamer-AllRoles-GraveAmafStatsPerNode-AggrStats median avg
+	 * [folder] [The type of statistic folder where to find the file to summarize (e.g. SpeedStatistics, TreeStatistics)] [file to summarize for each game] [name of the statistic to summarize] [type of statistic to compute for the statistic name]
+	 * C:\Users\c.sironi\Dropbox\RES\!UcbNaiveTune\NB\SR SpeedStatistics CadiaGraveMastDuctMctsGamer-AllRoles-IterationsPerSecond-AggrStats median avg
 	 * (this will compute the average of all the medians in the given file to summarize for each game in the folder)
 	 *
 	 * @param args
@@ -28,15 +28,16 @@ public class PlayerStatsAggregator {
 	public static void main(String[] args){
 
 
-		if(args.length != 4){
+		if(args.length != 5){
 			System.out.println("Give as input the name of the folder containing the statistics folder for each game, the name of the file from which to get the statistics and the name and type of statistic to extract (e.g. for the average of the medians: (median, avg))");
 			return;
 		}
 
 		String theStatsFolderPath = args[0];
-		String theStatsFileName = args[1];
-		String thaStatName = args[2];
-		String theStatType = args[3];
+		String theStatsFolderType = args[1];
+		String theStatsFileName = args[2];
+		String thaStatName = args[3];
+		String theStatType = args[4];
 
 		File theStatsFolder = new File(theStatsFolderPath);
 
@@ -48,6 +49,7 @@ public class PlayerStatsAggregator {
 		String[] splittedString;
 
 		File[] gamesFolders = theStatsFolder.listFiles();
+		File[] statsFolders;
 		File[] statsFiles;
 
 		String gameKey;
@@ -57,16 +59,24 @@ public class PlayerStatsAggregator {
 			if(gamesFolders[i].isDirectory()){
 				splittedString = gamesFolders[i].getName().split("\\.");
 
-				if(splittedString.length == 3){
-					gameKey = splittedString[1];
-					statsFiles = gamesFolders[i].listFiles();
+				if(splittedString.length == 4){
+					gameKey = splittedString[2];
+					statsFolders = gamesFolders[i].listFiles();
 
-					for(int j = 0; j < statsFiles.length; j++){
-						if(statsFiles[j].getName().startsWith(theStatsFileName)){
-							theValue = extractStatFomFile(statsFiles[j].getPath(), thaStatName, theStatType);
-							if(theValue != -1){
-								writeToFile(theStatsFolderPath + "/" + theStatsFileName + "-AllGames.csv", gameKey + ";" + theValue + ";");
-								writeToFile(theStatsFolderPath + "/" + theStatsFileName + "-AllGames-Latex.csv", gameKey + "; $" + round(theValue, 2) + "$;");
+					for(int j = 0; j < statsFolders.length; j++){
+
+						if(statsFolders[j].getName().endsWith(theStatsFolderType)){
+
+							statsFiles = statsFolders[j].listFiles();
+
+							for(int k = 0; k < statsFiles.length; k++){
+								if(statsFiles[k].getName().startsWith(theStatsFileName)){
+									theValue = extractStatFomFile(statsFiles[k].getPath(), thaStatName, theStatType);
+									if(theValue != -1){
+										writeToFile(theStatsFolderPath + "/" + theStatsFileName + "-AllGames.csv", gameKey + ";" + theValue + ";");
+										writeToFile(theStatsFolderPath + "/" + theStatsFileName + "-AllGames-Latex.csv", gameKey + "; $" + round(theValue, 2) + "$;");
+									}
+								}
 							}
 						}
 					}

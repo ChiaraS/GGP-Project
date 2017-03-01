@@ -20,9 +20,9 @@ public class TunerAfterMove extends AfterMoveStrategy {
 
 		super(gameDependentParameters, random, gamerSettings, sharedReferencesCollector, id);
 
-		this.paramStatsDecreaseFactor = gamerSettings.getDoublePropertyValue("AfterMoveStrategy.paramStatsDecreaseFactor");
+		this.paramStatsDecreaseFactor = gamerSettings.getDoublePropertyValue("AfterMoveStrategy" + id + ".paramStatsDecreaseFactor");
 
-		this.log = gamerSettings.getBooleanPropertyValue("AfterMoveStrategy.log");
+		this.log = gamerSettings.getBooleanPropertyValue("AfterMoveStrategy" + id + ".log");
 	}
 
 	@Override
@@ -46,9 +46,11 @@ public class TunerAfterMove extends AfterMoveStrategy {
 		if(log){
 			this.parametersTuner.logStats();
 		}
-		this.parametersTuner.decreaseStatistics(this.paramStatsDecreaseFactor);
-		if(log){
-			this.parametersTuner.logStats();
+		if(this.paramStatsDecreaseFactor != 1.0){
+			this.parametersTuner.decreaseStatistics(this.paramStatsDecreaseFactor);
+			if(log){
+				this.parametersTuner.logStats();
+			}
 		}
 
 	}

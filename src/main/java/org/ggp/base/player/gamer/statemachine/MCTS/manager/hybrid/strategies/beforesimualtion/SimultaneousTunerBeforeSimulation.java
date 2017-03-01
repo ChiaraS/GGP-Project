@@ -14,14 +14,14 @@ import org.ggp.base.util.reflection.ProjectSearcher;
 
 public class SimultaneousTunerBeforeSimulation extends TunerBeforeSimulation {
 
-	private ParametersOrder parametersOrganizer;
+	private ParametersOrder parametersOrder;
 
 	public SimultaneousTunerBeforeSimulation(GameDependentParameters gameDependentParameters, Random random,
 			GamerSettings gamerSettings, SharedReferencesCollector sharedReferencesCollector) {
 		super(gameDependentParameters, random, gamerSettings, sharedReferencesCollector);
 
 		try {
-			this.parametersOrganizer = (ParametersOrder) SearchManagerComponent.getConstructorForSearchManagerComponent(SearchManagerComponent.getCorrespondingClass(ProjectSearcher.PARAMETERS_ORGANIZERS.getConcreteClasses(),
+			this.parametersOrder = (ParametersOrder) SearchManagerComponent.getConstructorForSearchManagerComponent(SearchManagerComponent.getCorrespondingClass(ProjectSearcher.PARAMETERS_ORGANIZERS.getConcreteClasses(),
 					gamerSettings.getPropertyValue("BeforeSimulationStrategy.parametersOrderType"))).newInstance(gameDependentParameters, random, gamerSettings, sharedReferencesCollector);
 		} catch (InstantiationException | IllegalAccessException
 				| IllegalArgumentException | InvocationTargetException e) {
@@ -37,7 +37,7 @@ public class SimultaneousTunerBeforeSimulation extends TunerBeforeSimulation {
 
 		super.setReferences(sharedReferencesCollector);
 
-		this.parametersOrganizer.imposeInitialOrderForPlayer(this.tunableParameters);
+		this.parametersOrder.imposeInitialOrderForPlayer(this.tunableParameters);
 
 		int[] classesLength = new int[this.tunableParameters.size()];
 

@@ -287,7 +287,7 @@ public class NaiveParametersTuner extends ParametersTuner {
 			for(int j = 0; j < localMabs.length; j++){
 				for(int k = 0; k < localMabs[j].getMoveStats().length; k++){
 					//GamerLogger.log(GamerLogger.FORMAT.CSV_FORMAT, "ParametersTunerStats", "ROLE=;" + i + ";MAB=;LOCAL" + j + ";UNIT_MOVE=;" + k + ";VISITS=;" + localMabs[j].getMoveStats()[k].getVisits() + ";SCORE_SUM=;" + localMabs[j].getMoveStats()[k].getScoreSum() + ";AVG_VALUE=;" + (localMabs[j].getMoveStats()[k].getVisits() <= 0 ? "0" : (localMabs[j].getMoveStats()[k].getScoreSum()/((double)localMabs[j].getMoveStats()[k].getVisits()))));
-					toLog += "\nROLE=;" + i + ";MAB=;LOCAL" + j + ";UNIT_MOVE=;" + k + ";PENALTY=;" + this.unitMovesPenalty[j][k] + ";VISITS=;" + localMabs[j].getMoveStats()[k].getVisits() + ";SCORE_SUM=;" + localMabs[j].getMoveStats()[k].getScoreSum() + ";AVG_VALUE=;" + (localMabs[j].getMoveStats()[k].getVisits() <= 0 ? "0" : (localMabs[j].getMoveStats()[k].getScoreSum()/((double)localMabs[j].getMoveStats()[k].getVisits())));
+					toLog += "\nROLE=;" + i + ";MAB=;LOCAL" + j + ";UNIT_MOVE=;" + k + ";PENALTY=;" + (this.unitMovesPenalty != null ? this.unitMovesPenalty[j][k] : "null") + ";VISITS=;" + localMabs[j].getMoveStats()[k].getVisits() + ";SCORE_SUM=;" + localMabs[j].getMoveStats()[k].getScoreSum() + ";AVG_VALUE=;" + (localMabs[j].getMoveStats()[k].getVisits() <= 0 ? "0" : (localMabs[j].getMoveStats()[k].getScoreSum()/((double)localMabs[j].getMoveStats()[k].getVisits())));
 				}
 			}
 

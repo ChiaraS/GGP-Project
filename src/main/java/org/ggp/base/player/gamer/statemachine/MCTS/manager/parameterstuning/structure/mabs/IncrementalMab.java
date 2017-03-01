@@ -27,7 +27,7 @@ public class IncrementalMab extends Mab {
 
 		this.movesInfo = new HashMap<Move,Pair<MoveStats,Double>>();
 
-		if(moves !=null){
+		if(moves != null){
 			if(movesPenalty != null){
 				for(int i = 0; i < moves.length; i++){
 					this.movesInfo.put(moves[i], new Pair<MoveStats,Double>(new MoveStats(), new Double(movesPenalty[i])));
