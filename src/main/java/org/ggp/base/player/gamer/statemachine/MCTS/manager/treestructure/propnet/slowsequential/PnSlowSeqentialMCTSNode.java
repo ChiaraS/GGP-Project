@@ -66,8 +66,8 @@ public class PnSlowSeqentialMCTSNode extends MctsNode {
 	 * @param goals
 	 * @param terminal
 	 */
-	public PnSlowSeqentialMCTSNode(PnSlowSequentialMCTSMoveStats[] movesStats, List<PnSlowSequentialMCTSMoveStats> unvisitedLeaves, int[] goals, boolean terminal) {
-		super(goals, terminal);
+	public PnSlowSeqentialMCTSNode(PnSlowSequentialMCTSMoveStats[] movesStats, List<PnSlowSequentialMCTSMoveStats> unvisitedLeaves, int[] goals, boolean terminal, int numRoles) {
+		super(goals, terminal, numRoles);
 		this.movesStats = movesStats;
 		this.unvisitedLeaves = unvisitedLeaves;
 	}
@@ -128,6 +128,14 @@ public class PnSlowSeqentialMCTSNode extends MctsNode {
 		s += "]";
 
 		return s;
+
+	}
+
+	@Override
+	public void decayStatistics(double decayFactor) {
+		// TODO Auto-generated method stub
+
+		// Not implemented cause this class will soon disappear
 
 	}
 }

@@ -97,10 +97,12 @@ public class PnOldUCTSelection implements PnSelectionStrategy {
 		double maxUCTvalue;
 		double[] UCTvalues;
 
-		int nodeVisits = currentNode.getTotVisits();
+		int nodeVisits;
 
 		// For each role check the statistics and pick a move.
 		for(int i = 0; i < moves.length; i++){
+
+			nodeVisits = currentNode.getTotVisits()[i];
 
 			// Compute UCT value for all moves.
 			maxUCTvalue = -1;
@@ -177,9 +179,11 @@ public class PnOldUCTSelection implements PnSelectionStrategy {
 
 		double maxUCTvalue;
 		double[] UCTvalues;
-		int nodeVisits = currentNode.getTotVisits();
+		int nodeVisits;
 
 		while(movesStats != null){
+
+			nodeVisits = currentNode.getTotVisits()[roleIndex];
 
 			// Compute UCT value for all moves.
 			maxUCTvalue = -1;
@@ -247,9 +251,11 @@ public class PnOldUCTSelection implements PnSelectionStrategy {
 
 		double maxUCTvalue;
 		double UCTvalues[];
-		int nodeVisits = currentNode.getTotVisits();
+		int nodeVisits;
 
 		while(movesStats != null){
+
+			nodeVisits = currentNode.getTotVisits()[roleIndex];
 
 			// Compute UCT value for all moves.
 			maxUCTvalue = -1;

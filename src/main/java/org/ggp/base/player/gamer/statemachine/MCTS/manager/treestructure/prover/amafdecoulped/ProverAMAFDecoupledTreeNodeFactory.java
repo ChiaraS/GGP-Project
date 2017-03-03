@@ -58,7 +58,7 @@ public class ProverAMAFDecoupledTreeNodeFactory extends ProverDecoupledTreeNodeF
 			// If the legal moves can be computed for every player, there is no need to compute the goals.
 		}
 
-		return new ProverAMAFDecoupledMCTSNode(ductMovesStats, goals, terminal);
+		return new ProverAMAFDecoupledMCTSNode(ductMovesStats, goals, terminal, this.theMachine.getExplicitRoles().size());
 	}
 
 }

@@ -100,7 +100,7 @@ public abstract class PnMoveValueSelection implements PnSelectionStrategy {
 			for(int j = 0; j < moves[i].length; j++){
 
 				// Compute the move value.
-				moveValues[j] = this.moveEvaluator.computeMoveValue(currentNode.getTotVisits(), moves[i][j].getTheMove(), moves[i][j]);
+				moveValues[j] = this.moveEvaluator.computeMoveValue(currentNode.getTotVisits()[i], moves[i][j].getTheMove(), moves[i][j]);
 
 				// If it's higher than the current maximum one, replace the max value.
 				if(moveValues[j] > maxMoveValue){
@@ -175,7 +175,7 @@ public abstract class PnMoveValueSelection implements PnSelectionStrategy {
 
 			for(int i = 0; i < movesStats.length; i++){
 				// Compute the move value.
-				moveValues[i] = this.moveEvaluator.computeMoveValue(currentNode.getTotVisits(), currentNode.getAllLegalMoves().get(roleIndex).get(i), movesStats[i]);
+				moveValues[i] = this.moveEvaluator.computeMoveValue(currentNode.getTotVisits()[roleIndex], currentNode.getAllLegalMoves().get(roleIndex).get(i), movesStats[i]);
 
 				// If it's higher than the current maximum one, replace the max value
 				if(moveValues[i] > maxMoveValue){
@@ -243,7 +243,7 @@ public abstract class PnMoveValueSelection implements PnSelectionStrategy {
 
 			for(int i = 0; i < movesStats.length; i++){
 				// Compute the move value.
-				moveValues[i] = this.moveEvaluator.computeMoveValue(currentNode.getTotVisits(), movesStats[i].getTheMove(), movesStats[i]);
+				moveValues[i] = this.moveEvaluator.computeMoveValue(currentNode.getTotVisits()[roleIndex], movesStats[i].getTheMove(), movesStats[i]);
 
 				// If it's higher than the current maximum one, replace the max value
 				if(moveValues[i] > maxMoveValue){

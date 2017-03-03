@@ -94,7 +94,7 @@ public class GraveEvaluator extends UctEvaluator{
 	@Override
 	protected double computeExploitation(MctsNode theNode, Move theMove, int roleIndex, MoveStats theMoveStats){
 
-		int nodeVisits = theNode.getTotVisits();
+		int nodeVisits = theNode.getTotVisits()[roleIndex];
 
 		double uctExploitation = super.computeExploitation(theNode, theMove, roleIndex, theMoveStats);
 

@@ -19,9 +19,9 @@ public class PnDecoupledMCTSNode extends MctsNode{
 	 */
 	private int[] unexploredMovesCount;
 
-	public PnDecoupledMCTSNode(PnDecoupledMCTSMoveStats[][] movesStats, int[] goals, boolean terminal) {
+	public PnDecoupledMCTSNode(PnDecoupledMCTSMoveStats[][] movesStats, int[] goals, boolean terminal, int numRoles) {
 
-		super(goals, terminal);
+		super(goals, terminal, numRoles);
 		this.movesStats = movesStats;
 
 		// If this state has legal moves for the players (i.e. is not terminal
@@ -106,5 +106,13 @@ public class PnDecoupledMCTSNode extends MctsNode{
 		s += "]";
 
 		return s;
+	}
+
+	@Override
+	public void decayStatistics(double decayFactor) {
+		// TODO Auto-generated method stub
+
+		// Not implemented cause this class will soon disappear
+
 	}
 }

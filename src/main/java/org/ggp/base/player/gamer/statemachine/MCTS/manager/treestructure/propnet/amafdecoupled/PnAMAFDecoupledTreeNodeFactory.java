@@ -49,7 +49,7 @@ public class PnAMAFDecoupledTreeNodeFactory extends PnDecoupledTreeNodeFactory{
 			// If the legal moves can be computed for every player, there is no need to compute the goals.
 		}
 
-		return new PnAMAFDecoupledMCTSNode(ductMovesStats, goals, terminal);
+		return new PnAMAFDecoupledMCTSNode(ductMovesStats, goals, terminal, this.theMachine.getCompactRoles().size());
 	}
 
 }

@@ -95,7 +95,7 @@ public class SequentialTreeNodeFactory extends TreeNodeFactory {
 			// If the legal moves can be computed for every player, there is no need to compute the goals.
 		}
 
-		return new SequentialMctsNode(allLegalMoves, suctMovesStats, goals, terminal, unvisitedLeavesCount);
+		return new SequentialMctsNode(allLegalMoves, suctMovesStats, goals, terminal, unvisitedLeavesCount, this.gameDependentParameters.getNumRoles());
 
 	}
 

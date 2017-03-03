@@ -114,7 +114,7 @@ public class DecoupledTreeNodeFactory extends TreeNodeFactory {
 	}
 
 	protected MctsNode createActualNewNode(DecoupledMctsMoveStats[][] ductMovesStats, int[] goals, boolean terminal){
-		return new DecoupledMctsNode(ductMovesStats, goals, terminal);
+		return new DecoupledMctsNode(ductMovesStats, goals, terminal, this.gameDependentParameters.getNumRoles());
 	}
 
 	/**

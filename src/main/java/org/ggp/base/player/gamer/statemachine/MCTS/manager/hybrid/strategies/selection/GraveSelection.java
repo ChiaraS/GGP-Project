@@ -121,7 +121,7 @@ public class GraveSelection extends MoveValueSelection {
 				// to have its statistics substituted to the currently set ones.
 				// This will make sure that if no stats have visits higher than the threshold at least
 				// the root stats will be used rather than ignoring amaf values.
-				if((((GraveEvaluator)this.moveEvaluator).getClosestAmafStats().get(i)) == null || currentNode.getTotVisits() >= this.minAmafVisits.getValuePerRole(i)){
+				if((((GraveEvaluator)this.moveEvaluator).getClosestAmafStats().get(i)) == null || currentNode.getTotVisits()[i] >= this.minAmafVisits.getValuePerRole(i)){
 					// i.e.: if(ClosestAmafStatsForRole == null || VisitsOfCurrentNode >= ThresholdForRole)
 
 					//if((((GraveEvaluator)this.moveEvaluator).getClosestAmafStats()) == null){

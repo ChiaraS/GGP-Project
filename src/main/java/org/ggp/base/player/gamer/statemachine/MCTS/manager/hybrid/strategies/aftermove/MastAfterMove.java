@@ -49,22 +49,26 @@ public class MastAfterMove extends AfterMoveStrategy {
 	@Override
 	public void afterMoveActions() {
 
-		// VERSION 1: decrease, then check if the visits became 0 and, if so, remove the statistic
-		// for the move. -> This means that if the move will be explored again in the next step of
-		// the search, a new entry for the move will be created. However it's highly likely that the
-		// number of visits decreases to 0 because this move is never explored again because the real
-		// game ended up in a part of the tree where this move will not be legal anymore. In this case
-		// we won't keep around statistics that we will never use again, but we risk also to end up
-		// removing the statistic object for a move that will be explored again during the next steps
-		// and we will have to recreate the object (in this case we'll consider as garbage an object
-		// that instead we would have needed again).
-		Iterator<Entry<Move,MoveStats>> iterator = this.mastStatistics.entrySet().iterator();
-		Entry<Move,MoveStats> theEntry;
-		while(iterator.hasNext()){
-			theEntry = iterator.next();
-			theEntry.getValue().decreaseByFactor(this.decayFactor);
-			if(theEntry.getValue().getVisits() == 0){
-				iterator.remove();
+		if(this.decayFactor == 0.0){ // If we want to throw away everything, we just clear all the stats. No need to iterate.
+			this.mastStatistics.clear();
+		}else if(this.decayFactor != 1.0){ // If the decay factor is 1.0 we keep everything without modifying anything.
+			// VERSION 1: decrease, then check if the visits became 0 and, if so, remove the statistic
+			// for the move. -> This means that if the move will be explored again in the next step of
+			// the search, a new entry for the move will be created. However it's highly likely that the
+			// number of visits decreases to 0 because this move is never explored again because the real
+			// game ended up in a part of the tree where this move will not be legal anymore. In this case
+			// we won't keep around statistics that we will never use again, but we risk also to end up
+			// removing the statistic object for a move that will be explored again during the next steps
+			// and we will have to recreate the object (in this case we'll consider as garbage an object
+			// that instead we would have needed again).
+			Iterator<Entry<Move,MoveStats>> iterator = this.mastStatistics.entrySet().iterator();
+			Entry<Move,MoveStats> theEntry;
+			while(iterator.hasNext()){
+				theEntry = iterator.next();
+				theEntry.getValue().decreaseByFactor(this.decayFactor);
+				if(theEntry.getValue().getVisits() == 0){
+					iterator.remove();
+				}
 			}
 		}
 

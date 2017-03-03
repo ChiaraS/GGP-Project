@@ -95,7 +95,7 @@ public abstract class ProverMoveValueSelection implements ProverSelectionStrateg
 			for(int j = 0; j < moves[i].length; j++){
 
 				// Compute the move value.
-				moveValues[j] = this.moveEvaluator.computeMoveValue(currentNode.getTotVisits(), moves[i][j].getTheMove(), moves[i][j]);
+				moveValues[j] = this.moveEvaluator.computeMoveValue(currentNode.getTotVisits()[i], moves[i][j].getTheMove(), moves[i][j]);
 
 				// If it's higher than the current maximum one, replace the max value.
 				if(moveValues[j] > maxMoveValue){

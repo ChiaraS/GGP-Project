@@ -80,7 +80,7 @@ public class PnSlowSequentialTreeNodeFactory implements PnTreeNodeFactory {
 			// If the legal moves can be computed for every player, there is no need to compute the goals.
 		}
 
-		return new PnSlowSeqentialMCTSNode(ssuctMovesStats, unvisitedLeaves, goals, terminal);
+		return new PnSlowSeqentialMCTSNode(ssuctMovesStats, unvisitedLeaves, goals, terminal, this.theMachine.getCompactRoles().size());
 	}
 
 	private PnSlowSequentialMCTSMoveStats[] createSlowSUCTMCTSMoves(List<List<CompactMove>> allLegalMoves, List<PnSlowSequentialMCTSMoveStats> unvisitedLeaves){

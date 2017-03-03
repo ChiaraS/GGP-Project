@@ -276,7 +276,12 @@ public class HybridMctsManager {
 			logTranspositionTable = false;
 		}
 		int gameStepOffset = gamerSettings.getIntPropertyValue("SearchManager.gameStepOffset");
-		this.transpositionTable = new MctsTranspositionTable(gameStepOffset, logTranspositionTable);
+		double treeDecay = 1.0; // No decay
+		if(gamerSettings.specifiesProperty("SearchManager.treeDecay")){
+			treeDecay = gamerSettings.getDoublePropertyValue("SearchManager.treeDecay");
+		}
+
+		this.transpositionTable = new MctsTranspositionTable(gameStepOffset, logTranspositionTable, treeDecay);
 
 		// Let all strategies set references if needed.
 		this.selectionStrategy.setReferences(sharedReferencesCollector);

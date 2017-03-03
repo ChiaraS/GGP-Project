@@ -113,7 +113,7 @@ public class InvGraveEvaluator extends UctEvaluator{
 
 		double amafAvg = (amafScore / amafVisits) / 100.0;
 
-		double beta = this.betaComputer.computeBeta(theMoveStats, moveAmafStats, theNode.getTotVisits(), roleIndex);
+		double beta = this.betaComputer.computeBeta(theMoveStats, moveAmafStats, theNode.getTotVisits()[roleIndex], roleIndex);
 
 		//System.out.println("uct = " + uct);
 		//System.out.println("amafAvg = " + amafAvg);

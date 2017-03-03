@@ -19,6 +19,11 @@ public class MctsTranspositionTable {
 	private int gameStepOffset;
 
 	/**
+	 * Specifies the decay factor for the statistics of the tree after each game step.
+	 */
+	private double treeDecay;
+
+	/**
 	 * The transposition table (implemented with HashMap that uses the state as key
 	 * and solves collisions with linked lists).
 	 */
@@ -26,21 +31,22 @@ public class MctsTranspositionTable {
 
 	/**
 	 *
-	 */
+	 *
 	public MctsTranspositionTable(int gameStepOffset){
 
-		this(gameStepOffset, false);
+		this(gameStepOffset, false, 1.0);
 
-	}
+	}*/
 
 	/**
 	 *
 	 */
-	public MctsTranspositionTable(int gameStepOffset, boolean log){
+	public MctsTranspositionTable(int gameStepOffset, boolean log, double treeDecay){
 		this.log = log;
 		this.currentGameStepStamp = 1;
 		this.transpositionTable = new HashMap<MachineState,MctsNode>();
 		this.gameStepOffset = gameStepOffset;
+		this.treeDecay = treeDecay;
 	}
 
 	public void clearTranspositionTable(){
@@ -75,6 +81,10 @@ public class MctsTranspositionTable {
 
 	public void clean(int newGameStepStamp){
 
+		// Clean the table only if the game-step stamp changed (this is already checked by the caller).
+		//if(newGameStepStamp != this.currentGameStepStamp){
+		this.currentGameStepStamp = newGameStepStamp;
+
 		if(this.log){
 
 			int stepBeforeCleaning = this.currentGameStepStamp;
@@ -93,9 +103,6 @@ public class MctsTranspositionTable {
 			//System.out.println("Cleaning TT with game step: " + newGameStepStamp);
 			//System.out.println("Current TT size: " + this.transpositionTable.size());
 
-			// Clean the table only if the game-step stamp changed (this is already checked by the caller).
-			//if(newGameStepStamp != this.currentGameStepStamp){
-			this.currentGameStepStamp = newGameStepStamp;
 			// Remove all nodes last accessed earlier than the game step (newGameStepStamp-gameStepOffset)
 			Iterator<Entry<MachineState,MctsNode>> iterator = this.transpositionTable.entrySet().iterator();
 			while(iterator.hasNext()){
@@ -116,10 +123,15 @@ public class MctsTranspositionTable {
 						actionsStatsAfterCleaning += actionsStats;
 						raveAmafAfterCleaning += raveAmaf;
 						graveAmafAfterCleaning += graveAmaf;
+
+						entry.getValue().decayStatistics(this.treeDecay);
+
 					}
 				}else{
 					if(entry.getValue().getGameStepStamp() < (this.currentGameStepStamp-this.gameStepOffset)){
 						iterator.remove();
+					}else{
+						entry.getValue().decayStatistics(this.treeDecay);
 					}
 				}
 			}
@@ -147,7 +159,6 @@ public class MctsTranspositionTable {
 
 		}else{
 
-			this.currentGameStepStamp = newGameStepStamp;
 			// Remove all nodes last accessed earlier than the game step (newGameStepStamp-gameStepOffset)
 			Iterator<Entry<MachineState,MctsNode>> iterator = this.transpositionTable.entrySet().iterator();
 			while(iterator.hasNext()){
@@ -155,6 +166,8 @@ public class MctsTranspositionTable {
 
 				if(entry.getValue().getGameStepStamp() < (this.currentGameStepStamp-this.gameStepOffset)){
 					iterator.remove();
+				}else{
+					entry.getValue().decayStatistics(this.treeDecay);
 				}
 			}
 

@@ -15,8 +15,8 @@ public class ProverAMAFDecoupledMCTSNode  extends ProverDecoupledMCTSNode implem
 	 */
 	private Map<ExplicitMove, MoveStats> amafStats;
 
-	public ProverAMAFDecoupledMCTSNode(ProverDecoupledMCTSMoveStats[][] movesStats, int[] goals, boolean terminal) {
-		super(movesStats, goals, terminal);
+	public ProverAMAFDecoupledMCTSNode(ProverDecoupledMCTSMoveStats[][] movesStats, int[] goals, boolean terminal, int numRoles) {
+		super(movesStats, goals, terminal, numRoles);
 
 		if(!terminal){
 			this.amafStats = new HashMap<ExplicitMove, MoveStats>();

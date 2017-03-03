@@ -88,7 +88,7 @@ public class PnSequentialTreeNodeFactory implements PnTreeNodeFactory {
 			// If the legal moves can be computed for every player, there is no need to compute the goals.
 		}
 
-		return new PnSequentialMCTSNode(allLegalMoves, suctMovesStats, goals, terminal, unvisitedLeavesCount);
+		return new PnSequentialMCTSNode(allLegalMoves, suctMovesStats, goals, terminal, unvisitedLeavesCount, this.theMachine.getCompactRoles().size());
 
 	}
 

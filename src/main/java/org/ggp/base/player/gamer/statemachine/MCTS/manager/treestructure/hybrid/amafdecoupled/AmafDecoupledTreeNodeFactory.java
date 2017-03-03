@@ -18,7 +18,7 @@ public class AmafDecoupledTreeNodeFactory extends DecoupledTreeNodeFactory {
 
 	@Override
 	protected MctsNode createActualNewNode(DecoupledMctsMoveStats[][] ductMovesStats, int[] goals, boolean terminal) {
-		return new AmafDecoupledMctsNode(ductMovesStats, goals, terminal);
+		return new AmafDecoupledMctsNode(ductMovesStats, goals, terminal, this.gameDependentParameters.getNumRoles());
 	}
 
 }

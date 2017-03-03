@@ -83,7 +83,7 @@ public class PnDecoupledTreeNodeFactory implements PnTreeNodeFactory {
 			// If the legal moves can be computed for every player, there is no need to compute the goals.
 		}
 
-		return new PnDecoupledMCTSNode(ductMovesStats, goals, terminal);
+		return new PnDecoupledMCTSNode(ductMovesStats, goals, terminal, this.theMachine.getCompactRoles().size());
 	}
 
 	/**

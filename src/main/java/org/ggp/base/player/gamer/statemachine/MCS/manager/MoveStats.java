@@ -70,9 +70,14 @@ public class MoveStats{
 
 	public void decreaseByFactor(double factor){
 
-		double avg = this.scoreSum/((double)this.visits);
-		this.visits = (int) Math.round(((double)this.visits)*factor);
-		this.scoreSum = ((double)this.visits)*avg;
+		if(factor == 0.0){
+			this.visits = 0;
+			this.scoreSum = 0;
+		}else if(factor != 1.0){
+			double avg = this.scoreSum/((double)this.visits);
+			this.visits = (int) Math.round(((double)this.visits)*factor);
+			this.scoreSum = ((double)this.visits)*avg;
+		}
 
 	}
 

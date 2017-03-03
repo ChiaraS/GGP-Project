@@ -15,8 +15,8 @@ public class PnAMAFDecoupledMCTSNode extends PnDecoupledMCTSNode implements PnAM
 	 */
 	private Map<CompactMove, MoveStats> amafStats;
 
-	public PnAMAFDecoupledMCTSNode(PnDecoupledMCTSMoveStats[][] movesStats, int[] goals, boolean terminal) {
-		super(movesStats, goals, terminal);
+	public PnAMAFDecoupledMCTSNode(PnDecoupledMCTSMoveStats[][] movesStats, int[] goals, boolean terminal, int numRoles) {
+		super(movesStats, goals, terminal, numRoles);
 
 		if(!terminal){
 			this.amafStats = new HashMap<CompactMove, MoveStats>();

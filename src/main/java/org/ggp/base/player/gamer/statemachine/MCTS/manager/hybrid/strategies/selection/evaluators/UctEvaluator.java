@@ -143,7 +143,7 @@ public class UctEvaluator extends MoveEvaluator {
 
 	protected double computeExploration(MctsNode theNode, int roleIndex, MoveStats theMoveStats){
 
-		int nodeVisits = theNode.getTotVisits();
+		int nodeVisits = theNode.getTotVisits()[roleIndex];
 
 		double moveVisits = theMoveStats.getVisits();
 

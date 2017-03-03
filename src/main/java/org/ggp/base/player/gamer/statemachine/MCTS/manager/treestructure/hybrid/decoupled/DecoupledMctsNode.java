@@ -9,6 +9,8 @@ public class DecoupledMctsNode extends MctsNode {
 	 *
 	 * movesStats[i][j] = j-th move statistics for i-th role.
 	 *
+	 * TODO: refactor to use MAB structure to represent statistics.
+	 *
 	 */
 	protected DecoupledMctsMoveStats[][] movesStats;
 
@@ -17,9 +19,9 @@ public class DecoupledMctsNode extends MctsNode {
 	 */
 	private int[] unexploredMovesCount;
 
-	public DecoupledMctsNode(DecoupledMctsMoveStats[][] movesStats, int[] goals, boolean terminal) {
+	public DecoupledMctsNode(DecoupledMctsMoveStats[][] movesStats, int[] goals, boolean terminal, int numRoles) {
 
-		super(goals, terminal);
+		super(goals, terminal, numRoles);
 		this.movesStats = movesStats;
 
 		// If this state has legal moves for the players (i.e. is not terminal
@@ -104,6 +106,34 @@ public class DecoupledMctsNode extends MctsNode {
 		s += "]";
 
 		return s;
+	}
+
+	@Override
+	public void decayStatistics(double decayFactor) {
+
+		// If there are moves stats, decay each of them.
+		if(this.movesStats != null){
+
+			if(decayFactor != 1.0){
+
+				for(int i = 0; i < this.movesStats.length; i++){
+
+					this.totVisits[i] = 0;
+
+					for(int j = 0; j < this.movesStats[i].length; j++){
+						int visitsBeforeDecay = this.movesStats[i][j].getVisits();
+						this.movesStats[i][j].decreaseByFactor(decayFactor);
+						this.totVisits[i] += this.movesStats[i][j].getVisits();
+						// If the move had been visited but after decaying the number of visits goes to 0
+						// we must increase by 1 the number of unvisited moves
+						if(this.movesStats[i][j].getVisits() == 0 && visitsBeforeDecay > 0){
+							this.unexploredMovesCount[i]++;
+						}
+					}
+				}
+			}
+		}
+
 	}
 
 }

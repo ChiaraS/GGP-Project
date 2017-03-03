@@ -91,7 +91,7 @@ public class ProverDecoupledTreeNodeFactory implements ProverTreeNodeFactory{
 				// If the legal moves can be computed for every player, there is no need to compute the goals.
 			}
 
-			return new ProverDecoupledMCTSNode(ductMovesStats, goals, terminal);
+			return new ProverDecoupledMCTSNode(ductMovesStats, goals, terminal, this.theMachine.getExplicitRoles().size());
 	}
 
 	/**
