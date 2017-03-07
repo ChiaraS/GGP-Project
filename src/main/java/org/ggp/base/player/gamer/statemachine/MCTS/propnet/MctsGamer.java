@@ -286,6 +286,7 @@ public class MctsGamer extends InternalPropnetGamer {
 	public void stateMachineStop() {
 
 		this.gameStep = 0;
+		this.mctsManager.afterGameActions();
 		this.mctsManager.clearManager();
 		super.stateMachineStop();
 
@@ -298,6 +299,7 @@ public class MctsGamer extends InternalPropnetGamer {
 	public void stateMachineAbort() {
 
 		this.gameStep = 0;
+		this.mctsManager.afterGameActions();
 		this.mctsManager.clearManager();
 		super.stateMachineAbort();
 

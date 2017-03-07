@@ -6,6 +6,7 @@ import java.util.Random;
 import org.ggp.base.player.gamer.statemachine.GamerSettings;
 import org.ggp.base.player.gamer.statemachine.MCS.manager.hybrid.CompleteMoveStats;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.exceptions.MCTSException;
+import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.strategies.AfterGameStrategy;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.strategies.aftermove.AfterMoveStrategy;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.strategies.aftersimulation.AfterSimulationStrategy;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.strategies.backpropagation.BackpropagationStrategy;
@@ -103,6 +104,12 @@ public class HybridMctsManager {
 	private AfterSimulationStrategy afterSimulationStrategy;
 
 	private AfterMoveStrategy afterMoveStrategy;
+
+	/**
+	 * If any action needs to be performed the end of every game, this strategy takes care of it.
+	 *
+	 */
+	private AfterGameStrategy afterGameStrategy;
 
 	/**
 	 * The factory that creates the tree nodes with the necessary structure that the strategies need.
@@ -253,7 +260,22 @@ public class HybridMctsManager {
 			} catch (InstantiationException | IllegalAccessException
 					| IllegalArgumentException | InvocationTargetException e) {
 				// TODO: fix this!
-				GamerLogger.logError("SearchManagerCreation", "Error when instantiating AfterMoveStrategy " + gamerSettings.getPropertyValue("SearchManager.afterSimulationStrategyType") + ".");
+				GamerLogger.logError("SearchManagerCreation", "Error when instantiating AfterMoveStrategy " + gamerSettings.getPropertyValue("SearchManager.afterMoveStrategyType") + ".");
+				GamerLogger.logStackTrace("SearchManagerCreation", e);
+				throw new RuntimeException(e);
+			}
+		}
+
+		if(gamerSettings.specifiesProperty("SearchManager.afterGameStrategyType")){
+
+			String[] idPropertyValue = gamerSettings.getIDPropertyValue("SearchManager.afterGameStrategyType");
+			try {
+				this.afterGameStrategy = (AfterGameStrategy) SearchManagerComponent.getConstructorForMultiInstanceSearchManagerComponent(SearchManagerComponent.getCorrespondingClass(ProjectSearcher.AFTER_GAME_STRATEGIES.getConcreteClasses(),
+						idPropertyValue[0])).newInstance(gameDependentParameters, random, gamerSettings, sharedReferencesCollector, idPropertyValue[1]);
+			} catch (InstantiationException | IllegalAccessException
+					| IllegalArgumentException | InvocationTargetException e) {
+				// TODO: fix this!
+				GamerLogger.logError("SearchManagerCreation", "Error when instantiating AfterGameStrategy " + gamerSettings.getPropertyValue("SearchManager.afterGameStrategyType") + ".");
 				GamerLogger.logStackTrace("SearchManagerCreation", e);
 				throw new RuntimeException(e);
 			}
@@ -280,8 +302,12 @@ public class HybridMctsManager {
 		if(gamerSettings.specifiesProperty("SearchManager.treeDecay")){
 			treeDecay = gamerSettings.getDoublePropertyValue("SearchManager.treeDecay");
 		}
+		double amafDecay = 1.0; // No decay
+		if(gamerSettings.specifiesProperty("SearchManager.amafDecay")){
+			amafDecay = gamerSettings.getDoublePropertyValue("SearchManager.amafDecay");
+		}
 
-		this.transpositionTable = new MctsTranspositionTable(gameStepOffset, logTranspositionTable, treeDecay);
+		this.transpositionTable = new MctsTranspositionTable(gameStepOffset, logTranspositionTable, treeDecay, amafDecay);
 
 		// Let all strategies set references if needed.
 		this.selectionStrategy.setReferences(sharedReferencesCollector);
@@ -297,6 +323,9 @@ public class HybridMctsManager {
 		}
 		if(this.afterMoveStrategy != null){
 			this.afterMoveStrategy.setReferences(sharedReferencesCollector);
+		}
+		if(this.afterGameStrategy != null){
+			this.afterGameStrategy.setReferences(sharedReferencesCollector);
 		}
 		this.treeNodeFactory.setReferences(sharedReferencesCollector);
 
@@ -315,8 +344,7 @@ public class HybridMctsManager {
 
 		//toLog += "\nMCTS manager initialized with the following state machine: " + this.theMachine.getName();
 
-		toLog += "\n\nMAX_SEARCH_DEPTH = " + this.maxSearchDepth + "\nLOG_TRANSPOSITION_TABLE = " + this.transpositionTable.isTableLogging() +
-				"\nNUM_EXPECTED_ITERATIONS = " + numExpectedIterations;
+		toLog += "\n\nMAX_SEARCH_DEPTH = " + this.maxSearchDepth + "\nNUM_EXPECTED_ITERATIONS = " + numExpectedIterations;
 
 		toLog += "\nTREE_NODE_FACTORY = " + this.treeNodeFactory.printComponent("\n  ");
 
@@ -347,6 +375,14 @@ public class HybridMctsManager {
 		}else{
 			toLog += "\nAFTER_MOVE_STRATEGY = null";
 		}
+
+		if(this.afterGameStrategy != null){
+			toLog += "\nAFTER_GAME_STRATEGY = " + this.afterGameStrategy.printComponent("\n  ");
+		}else{
+			toLog += "\nAFTER_GAME_STRATEGY = null";
+		}
+
+		toLog += "\nTRANSPOSITION_TABLE = " + this.transpositionTable.printTranspositionTable("\n  ");
 
 		toLog += "\niterations = " + this.iterations;
 		toLog += "\nvisited_nodes = " + this.visitedNodes;
@@ -379,6 +415,9 @@ public class HybridMctsManager {
 		if(this.afterMoveStrategy != null){
 			this.afterMoveStrategy.clearComponent();
 		}
+		if(this.afterGameStrategy != null){
+			this.afterGameStrategy.clearComponent();
+		}
 		this.treeNodeFactory.clearComponent();
 
 		this.transpositionTable.clearTranspositionTable();
@@ -408,6 +447,9 @@ public class HybridMctsManager {
 		}
 		if(this.afterMoveStrategy != null){
 			this.afterMoveStrategy.setUpComponent();
+		}
+		if(this.afterGameStrategy != null){
+			this.afterGameStrategy.setUpComponent();
 		}
 		this.treeNodeFactory.setUpComponent();
 
@@ -930,6 +972,10 @@ public class HybridMctsManager {
 
 		}
 
+	}
+
+	public void afterGameActions(){
+		this.afterGameStrategy.afterGameActions();
 	}
 
 	public int getIterations(){

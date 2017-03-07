@@ -4,6 +4,7 @@ import java.lang.reflect.Modifier;
 
 import org.ggp.base.apps.kiosk.GameCanvas;
 import org.ggp.base.player.gamer.Gamer;
+import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.strategies.AfterGameStrategy;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.strategies.aftermove.AfterMoveStrategy;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.strategies.aftersimulation.AfterSimulationStrategy;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.strategies.backpropagation.BackpropagationStrategy;
@@ -57,6 +58,7 @@ public class ProjectSearcher {
     public static final LoadedClasses<BiasComputer> BIAS_COMPUTERS = new LoadedClasses<BiasComputer>(BiasComputer.class);
     // Strategies
     public static final LoadedClasses<AfterMoveStrategy> AFTER_MOVE_STRATEGIES = new LoadedClasses<AfterMoveStrategy>(AfterMoveStrategy.class);
+    public static final LoadedClasses<AfterGameStrategy> AFTER_GAME_STRATEGIES = new LoadedClasses<AfterGameStrategy>(AfterGameStrategy.class);
     public static final LoadedClasses<AfterSimulationStrategy> AFTER_SIMULATION_STRATEGIES = new LoadedClasses<AfterSimulationStrategy>(AfterSimulationStrategy.class);
     public static final LoadedClasses<BackpropagationStrategy> BACKPROPAGATION_STRATEGIES = new LoadedClasses<BackpropagationStrategy>(BackpropagationStrategy.class);
     public static final LoadedClasses<BeforeSimulationStrategy> BEFORE_SIMULATION_STRATEGIES = new LoadedClasses<BeforeSimulationStrategy>(BeforeSimulationStrategy.class);

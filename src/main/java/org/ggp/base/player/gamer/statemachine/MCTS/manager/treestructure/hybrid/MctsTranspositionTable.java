@@ -14,20 +14,25 @@ public class MctsTranspositionTable {
 
 	private boolean log;
 
-	private int currentGameStepStamp;
-
-	private int gameStepOffset;
-
 	/**
 	 * Specifies the decay factor for the statistics of the tree after each game step.
 	 */
 	private double treeDecay;
 
 	/**
+	 * Specifies the decay factor for the AMAF statistics in the nodes after each game step.
+	 */
+	private double amafDecay;
+
+	/**
 	 * The transposition table (implemented with HashMap that uses the state as key
 	 * and solves collisions with linked lists).
 	 */
 	private Map<MachineState,MctsNode> transpositionTable;
+
+	private int currentGameStepStamp;
+
+	private int gameStepOffset;
 
 	/**
 	 *
@@ -41,12 +46,14 @@ public class MctsTranspositionTable {
 	/**
 	 *
 	 */
-	public MctsTranspositionTable(int gameStepOffset, boolean log, double treeDecay){
+	public MctsTranspositionTable(int gameStepOffset, boolean log, double treeDecay, double amafDecay){
 		this.log = log;
-		this.currentGameStepStamp = 1;
-		this.transpositionTable = new HashMap<MachineState,MctsNode>();
-		this.gameStepOffset = gameStepOffset;
 		this.treeDecay = treeDecay;
+		this.amafDecay = amafDecay;
+		this.transpositionTable = new HashMap<MachineState,MctsNode>();
+		this.currentGameStepStamp = 1;
+		this.gameStepOffset = gameStepOffset;
+
 	}
 
 	public void clearTranspositionTable(){
@@ -125,6 +132,7 @@ public class MctsTranspositionTable {
 						graveAmafAfterCleaning += graveAmaf;
 
 						entry.getValue().decayStatistics(this.treeDecay);
+						((AmafDecoupledMctsNode)entry.getValue()).decayAmafStatistics(this.amafDecay);
 
 					}
 				}else{
@@ -183,6 +191,23 @@ public class MctsTranspositionTable {
 
 	public boolean isTableLogging(){
 		return this.log;
+	}
+
+	public String printTranspositionTable(String indentation) {
+		String params = this.getTranspositionTableParameters(indentation);
+
+		if(params != null){
+			return this.getClass().getSimpleName() + params;
+		}else{
+			return this.getClass().getSimpleName();
+		}
+	}
+
+	private String getTranspositionTableParameters(String indentation) {
+		return indentation + "LOGGING = " + this.log + indentation + "TREE_DECAY = " + this.treeDecay +
+				indentation + "AMAF_DECAY = " + this.amafDecay +
+				indentation + "current_game_step_stamp = " + this.currentGameStepStamp +
+				indentation + "game_step_offset = " + this.gameStepOffset;
 	}
 
 }

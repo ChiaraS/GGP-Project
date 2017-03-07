@@ -1,7 +1,9 @@
 package org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.hybrid.amafdecoupled;
 
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.Map;
+import java.util.Map.Entry;
 
 import org.ggp.base.player.gamer.statemachine.MCS.manager.MoveStats;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.hybrid.decoupled.DecoupledMctsMoveStats;
@@ -88,6 +90,22 @@ public class AmafDecoupledMctsNode extends DecoupledMctsNode implements AmafNode
 				totalStats += this.movesStats[i].length;
 			}
 			return totalStats;
+		}
+	}
+
+	public void decayAmafStatistics(double decayFactor){
+		if(decayFactor == 0.0){ // If we want to throw away everything, we just clear all the stats. No need to iterate.
+			this.amafStats.clear();
+		}else if(decayFactor != 1.0){ // If the decay factor is 1.0 we keep everything without modifying anything.
+			Iterator<Entry<Move,MoveStats>> iterator = this.amafStats.entrySet().iterator();
+			Entry<Move,MoveStats> theEntry;
+			while(iterator.hasNext()){
+				theEntry = iterator.next();
+				theEntry.getValue().decreaseByFactor(decayFactor);
+				if(theEntry.getValue().getVisits() == 0){
+					iterator.remove();
+				}
+			}
 		}
 	}
 
