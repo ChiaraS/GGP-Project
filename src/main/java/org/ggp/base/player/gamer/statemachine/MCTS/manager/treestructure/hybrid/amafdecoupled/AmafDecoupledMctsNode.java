@@ -94,20 +94,44 @@ public class AmafDecoupledMctsNode extends DecoupledMctsNode implements AmafNode
 	}
 
 	public void decayAmafStatistics(double decayFactor){
-		if(decayFactor == 0.0){ // If we want to throw away everything, we just clear all the stats. No need to iterate.
-			this.amafStats.clear();
-		}else if(decayFactor != 1.0){ // If the decay factor is 1.0 we keep everything without modifying anything.
-			Iterator<Entry<Move,MoveStats>> iterator = this.amafStats.entrySet().iterator();
-			Entry<Move,MoveStats> theEntry;
-			while(iterator.hasNext()){
-				theEntry = iterator.next();
-				theEntry.getValue().decreaseByFactor(decayFactor);
-				if(theEntry.getValue().getVisits() == 0){
-					iterator.remove();
+		if(this.amafStats != null){
+			if(decayFactor == 0.0){ // If we want to throw away everything, we just clear all the stats. No need to iterate.
+				this.amafStats.clear();
+			}else if(decayFactor != 1.0){ // If the decay factor is 1.0 we keep everything without modifying anything.
+				Iterator<Entry<Move,MoveStats>> iterator = this.amafStats.entrySet().iterator();
+				Entry<Move,MoveStats> theEntry;
+				while(iterator.hasNext()){
+					theEntry = iterator.next();
+					theEntry.getValue().decreaseByFactor(decayFactor);
+					if(theEntry.getValue().getVisits() == 0){
+						iterator.remove();
+					}
 				}
 			}
 		}
 	}
+
+	@Override
+	public String toString(){
+		String superString = super.toString();
+
+		String toReturn = "AMAF" + superString.substring(0, superString.length()-2) + "\n  AmafStats[";
+
+		if(this.amafStats == null){
+			toReturn += "null]\n";
+		}else{
+			for(Entry<Move, MoveStats> amafStat : this.amafStats.entrySet()){
+				toReturn += "\n    MOVE(" + amafStat.getKey().toString() + "), " + amafStat.getValue().toString();
+			}
+			toReturn += "  ]\n";
+		}
+
+		toReturn += "]";
+
+		return toReturn;
+
+	}
+
 
 	/*
 	public void printAMAF(){

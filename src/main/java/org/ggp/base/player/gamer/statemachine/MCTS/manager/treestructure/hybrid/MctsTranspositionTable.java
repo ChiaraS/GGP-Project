@@ -88,9 +88,14 @@ public class MctsTranspositionTable {
 
 	public void clean(int newGameStepStamp){
 
+		// Print to check if everything is reset properly
+		/*Iterator<Entry<MachineState,MctsNode>> iterator2 = this.transpositionTable.entrySet().iterator();
+		while(iterator2.hasNext()){
+			System.out.println(iterator2.next().getValue().toString());
+		}*/
+
 		// Clean the table only if the game-step stamp changed (this is already checked by the caller).
 		//if(newGameStepStamp != this.currentGameStepStamp){
-		this.currentGameStepStamp = newGameStepStamp;
 
 		if(this.log){
 
@@ -124,7 +129,7 @@ public class MctsTranspositionTable {
 					raveAmafBeforeCleaning += raveAmaf;
 					graveAmafBeforeCleaning += graveAmaf;
 
-					if(entry.getValue().getGameStepStamp() < (this.currentGameStepStamp-this.gameStepOffset)){
+					if(entry.getValue().getGameStepStamp() < (newGameStepStamp-this.gameStepOffset)){
 						iterator.remove();
 					}else{
 						actionsStatsAfterCleaning += actionsStats;
@@ -136,7 +141,7 @@ public class MctsTranspositionTable {
 
 					}
 				}else{
-					if(entry.getValue().getGameStepStamp() < (this.currentGameStepStamp-this.gameStepOffset)){
+					if(entry.getValue().getGameStepStamp() < (newGameStepStamp-this.gameStepOffset)){
 						iterator.remove();
 					}else{
 						entry.getValue().decayStatistics(this.treeDecay);
@@ -153,7 +158,7 @@ public class MctsTranspositionTable {
 					raveAmafBeforeCleaning + ";" + graveAmafBeforeCleaning + ";" + actionsStatsPerNode + ";" +
 					raveAmafPerNode + ";" + graveAmafPerNode + ";");
 
-			int stepAfterCleaning = this.currentGameStepStamp;
+			int stepAfterCleaning = newGameStepStamp;
 			int sizeAfterCleaning = this.transpositionTable.size();
 
 			actionsStatsPerNode = ((double) actionsStatsAfterCleaning) / ((double) sizeAfterCleaning);
@@ -172,7 +177,7 @@ public class MctsTranspositionTable {
 			while(iterator.hasNext()){
 				Entry<MachineState,MctsNode> entry = iterator.next();
 
-				if(entry.getValue().getGameStepStamp() < (this.currentGameStepStamp-this.gameStepOffset)){
+				if(entry.getValue().getGameStepStamp() < (newGameStepStamp-this.gameStepOffset)){
 					iterator.remove();
 				}else{
 					entry.getValue().decayStatistics(this.treeDecay);
@@ -180,6 +185,14 @@ public class MctsTranspositionTable {
 			}
 
 		}
+
+		this.currentGameStepStamp = newGameStepStamp;
+
+		// Print to check if everything is reset properly
+		/*Iterator<Entry<MachineState,MctsNode>> iterator = this.transpositionTable.entrySet().iterator();
+		while(iterator.hasNext()){
+			System.out.println(iterator.next().getValue().toString());
+		}*/
 
 			//System.out.println("TT size after cleaning: " + this.transpositionTable.size());
 		//}

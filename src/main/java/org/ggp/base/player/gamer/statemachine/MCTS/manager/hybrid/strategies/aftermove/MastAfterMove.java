@@ -49,6 +49,22 @@ public class MastAfterMove extends AfterMoveStrategy {
 	@Override
 	public void afterMoveActions() {
 
+		/*
+		String toPrint2 = "MastStats[";
+		if(this.mastStatistics == null){
+			toPrint2 += "null]\n";
+		}else{
+			for(Entry<Move, MoveStats> mastStatistic : this.mastStatistics.entrySet()){
+				toPrint2 += "\n  MOVE(" + mastStatistic.getKey().toString() + "), " + mastStatistic.getValue().toString();
+			}
+			toPrint2 += "  ]\n";
+		}
+		toPrint2 += "]";
+		System.out.println(toPrint2);
+		*/
+
+
+
 		if(this.decayFactor == 0.0){ // If we want to throw away everything, we just clear all the stats. No need to iterate.
 			this.mastStatistics.clear();
 		}else if(this.decayFactor != 1.0){ // If the decay factor is 1.0 we keep everything without modifying anything.
@@ -71,6 +87,22 @@ public class MastAfterMove extends AfterMoveStrategy {
 				}
 			}
 		}
+
+		/*
+		String toPrint = "MastStats[";
+		if(this.mastStatistics == null){
+			toPrint += "null]\n";
+		}else{
+			for(Entry<Move, MoveStats> mastStatistic : this.mastStatistics.entrySet()){
+				toPrint += "\n  MOVE(" + mastStatistic.getKey().toString() + "), " + mastStatistic.getValue().toString();
+			}
+			toPrint += "  ]\n";
+		}
+
+		toPrint += "]";
+
+		System.out.println(toPrint);
+		*/
 
 		// VERSION 2: decrease and don't check anything.
 		/*

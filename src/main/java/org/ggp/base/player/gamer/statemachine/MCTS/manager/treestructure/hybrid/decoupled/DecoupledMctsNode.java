@@ -98,7 +98,16 @@ public class DecoupledMctsNode extends MctsNode {
 		s += "  Terminal=" + this.terminal + "\n";
 
 		// Tot visits
-		s += "  TotVisits=" + this.totVisits + "\n";
+		s += "  TotVisits=[";
+		if(this.totVisits == null){
+			s += "null";
+		}else{
+			s += " ";
+			for(int i = 0; i < this.totVisits.length; i++){
+				s += this.totVisits[i] + " ";
+			}
+		}
+		s += "]\n";
 
 		// Stamp
 		s += "  Stamp=" + this.gameStepStamp + "\n";
