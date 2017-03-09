@@ -132,12 +132,18 @@ public class MctsTranspositionTable {
 					if(entry.getValue().getGameStepStamp() < (newGameStepStamp-this.gameStepOffset)){
 						iterator.remove();
 					}else{
+						/*
 						actionsStatsAfterCleaning += actionsStats;
 						raveAmafAfterCleaning += raveAmaf;
 						graveAmafAfterCleaning += graveAmaf;
+						*/
 
 						entry.getValue().decayStatistics(this.treeDecay);
 						((AmafDecoupledMctsNode)entry.getValue()).decayAmafStatistics(this.amafDecay);
+
+						actionsStatsAfterCleaning += ((AmafDecoupledMctsNode) entry.getValue()).getActionsStatsNumber();
+						raveAmafAfterCleaning += ((AmafDecoupledMctsNode) entry.getValue()).getRaveAMAFStatsNumber();
+						graveAmafAfterCleaning += ((AmafDecoupledMctsNode) entry.getValue()).getGraveAMAFStatsNumber();
 
 					}
 				}else{

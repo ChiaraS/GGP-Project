@@ -302,9 +302,11 @@ public class NaiveParametersTuner extends ParametersTuner {
 	public void logStats() {
 
 		//GamerLogger.log(GamerLogger.FORMAT.CSV_FORMAT, "ParametersTunerStats", "");
-		String toLog = "";
+		String toLog;
 
 		for(int i = 0; i < this.roleProblems.length; i++){
+
+			toLog = "";
 
 			Map<Move,Pair<MoveStats,Double>> globalInfo = this.roleProblems[i].getGlobalMab().getMovesInfo();
 
@@ -312,6 +314,13 @@ public class NaiveParametersTuner extends ParametersTuner {
 				//GamerLogger.log(GamerLogger.FORMAT.CSV_FORMAT, "ParametersTunerStats", "ROLE=;" + i + ";MAB=;GLOBAL;COMBINATORIAL_MOVE=;" + entry.getKey() + ";VISITS=;" + entry.getValue().getVisits() + ";SCORE_SUM=;" + entry.getValue().getScoreSum() + ";AVG_VALUE=;" + (entry.getValue().getVisits() <= 0 ? "0" : (entry.getValue().getScoreSum()/((double)entry.getValue().getVisits()))));
 				toLog += "\nROLE=;" + i + ";MAB=;GLOBAL;COMB_MOVE=;" + entry.getKey() + ";PENALTY=;" + entry.getValue().getSecond() + ";VISITS=;" + entry.getValue().getFirst().getVisits() + ";SCORE_SUM=;" + entry.getValue().getFirst().getScoreSum() + ";AVG_VALUE=;" + (entry.getValue().getFirst().getVisits() <= 0 ? "0" : (entry.getValue().getFirst().getScoreSum()/((double)entry.getValue().getFirst().getVisits())));
 			}
+
+			toLog += "\n";
+
+			GamerLogger.log(GamerLogger.FORMAT.CSV_FORMAT, "GlobalParamTunerStats", toLog);
+
+
+			toLog = "";
 
 			FixedMab[] localMabs = this.roleProblems[i].getLocalMabs();
 
@@ -324,7 +333,7 @@ public class NaiveParametersTuner extends ParametersTuner {
 
 			toLog += "\n";
 
-			GamerLogger.log(GamerLogger.FORMAT.CSV_FORMAT, "ParametersTunerStats", toLog);
+			GamerLogger.log(GamerLogger.FORMAT.CSV_FORMAT, "LocalParamTunerStats", toLog);
 
 		}
 
