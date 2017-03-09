@@ -34,6 +34,15 @@ public class NaiveParametersTuner extends ParametersTuner {
 	 */
 	private TunerSelector bestCombinationSelector;
 
+	/**
+	 * If true, when selecting the best combination of parameters the global MAB will be used.
+	 * If false, when selecting the best combination, each parameter will be selected from the
+	 * corresponding local MAB independently of the other parameters.
+	 * NOTE that if the global MAB is never used (i.e. epsilon0 = 1), the value of this variable
+	 * will be ignored and the local MABs will be used even if this variable is true.
+	 */
+	private boolean useGlobalBest;
+
 	private NaiveProblemRepresentation[] roleProblems;
 
 	private int[][] selectedCombinations;
@@ -79,6 +88,8 @@ public class NaiveParametersTuner extends ParametersTuner {
 			GamerLogger.logStackTrace("SearchManagerCreation", e);
 			throw new RuntimeException(e);
 		}
+
+		this.useGlobalBest = gamerSettings.getBooleanPropertyValue("ParametersTuner.useGlobalBest");
 
 		this.roleProblems = null;
 
@@ -212,11 +223,31 @@ public class NaiveParametersTuner extends ParametersTuner {
 	@Override
 	public int[][] getBestCombinations() {
 
-		// For each role, we check the corresponding global MAB and select a combination of parameters
+		// For each role, we select a combination of parameters
 		for(int i = 0; i < this.roleProblems.length; i++){
-			IncrementalMab globalMab = this.roleProblems[i].getGlobalMab();
-			Move m = this.bestCombinationSelector.selectMove(globalMab.getMovesInfo(), globalMab.getNumUpdates());
-			this.selectedCombinations[i] = ((CombinatorialCompactMove) m).getIndices();
+			// If we want to use the global MAB we can only do that if it has been visited at least once
+			// and so contains at least one combination.
+			if(this.useGlobalBest && this.roleProblems[i].getGlobalMab().getNumUpdates() > 0){
+				IncrementalMab globalMab = this.roleProblems[i].getGlobalMab();
+				Move m = this.bestCombinationSelector.selectMove(globalMab.getMovesInfo(), globalMab.getNumUpdates());
+				this.selectedCombinations[i] = ((CombinatorialCompactMove) m).getIndices();
+			}else{
+
+				FixedMab[] localMabs = this.roleProblems[i].getLocalMabs();
+				int[] indices = new int[localMabs.length];
+
+				// Select a value for each local mab independently
+				if(this.unitMovesPenalty != null){
+					for(int j = 0; j < localMabs.length; j++){
+						indices[j] = this.bestCombinationSelector.selectMove(localMabs[j].getMoveStats(), this.unitMovesPenalty[j], localMabs[j].getNumUpdates());
+					}
+				}else{
+					for(int j = 0; j < localMabs.length; j++){
+						indices[j] = this.localMabsSelector.selectMove(localMabs[j].getMoveStats(), null, localMabs[j].getNumUpdates());
+					}
+				}
+				this.selectedCombinations[i] = indices;
+			}
 		}
 
 		return this.selectedCombinations;

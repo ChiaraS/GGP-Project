@@ -142,7 +142,7 @@ public class SequentialMctsNode extends MctsNode {
 		//TODO: Not implemented cause this class has a structural error
 		// The class must be refactored so that each level of the tree representing the moves
 		// of the roles sequentially is represented as a multi-armed bandit problem. In this way
-		// each MAB will keep tract of its own total number of visits. Now the total number of visits
+		// each MAB will keep track of its own total number of visits. Now the total number of visits
 		// for each role counts the sum of the visits of ALL the moves of the role in the level of the
 		// tree corresponding to the role. We should instead keep track of the sum of the visits of the
 		// moves for each branch of the role separately.
@@ -157,7 +157,7 @@ public class SequentialMctsNode extends MctsNode {
 		 * 		   |_ r1.moveC'
 		 *
 		 * we will have that totVisits[0] = r0.moveA.visits + r0.moveB.visits
-		 * and totVisits[i] = r1.moveA.visits + r1.moveB.visits + r1.moveC.visits +
+		 * and totVisits[1] = r1.moveA.visits + r1.moveB.visits + r1.moveC.visits +
 		 *                    r1.moveA'.visits + r1.moveB'.visits + r1.moveC'.visits
 		 *
 		 * but for selecting a move for role 1 after selecting r0.moveA we only want the sum of visits

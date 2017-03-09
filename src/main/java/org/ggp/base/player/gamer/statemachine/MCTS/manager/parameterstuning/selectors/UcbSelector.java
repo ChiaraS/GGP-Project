@@ -122,7 +122,7 @@ public class UcbSelector extends TunerSelector{
 
 			// Extra check (should never be true).
 			if(selectedMovesIndices.isEmpty()){
-				throw new RuntimeException("UcbSelector - SelectNextCombination(): detected no combinations with value higher than -1.");
+				throw new RuntimeException("UcbSelector - SelectMove(MoveStats[], double[], int): detected no combinations with value higher than -1.");
 			}
 
 			selectedMove = selectedMovesIndices.get(this.random.nextInt(selectedMovesIndices.size())).intValue();
@@ -147,11 +147,18 @@ public class UcbSelector extends TunerSelector{
 	@Override
 	public Move selectMove(Map<Move,Pair<MoveStats,Double>> movesInfo, int numUpdates) {
 
+		// Extra check to make sure that this method is never called with an empty map of moves
+		if(movesInfo.isEmpty()){
+			throw new RuntimeException("UcbSelector - selectMove(Map, int): cannot select next combination becase the map is empty.");
+		}
+
 		Move selectedMove = null;
 
 		// When no combination of values has been evaluated yet (1st simulation) and there is no
 		// bias being added to the combinations we can simply return a random combination, because
 		// all combinations will have the same value (i.e. fpu).
+		// NOTE: numUpdates == 0 should never be true, because it only happens when the movesInfo
+		// map is empty, and in that case we throw an exception!
 		if(numUpdates == 0 && this.biasComputer == null){
 			int randomNum = this.random.nextInt(movesInfo.size());
 
@@ -213,7 +220,7 @@ public class UcbSelector extends TunerSelector{
 
 			// Extra check (should never be true).
 			if(selectedMovesIndices.isEmpty()){
-				throw new RuntimeException("UcbSelector - SelectNextCombination(Map): detected no combinations with value higher than -1.");
+				throw new RuntimeException("UcbSelector - SelectMove(Map, int): detected no combinations with value higher than -1.");
 			}
 
 			selectedMove = moves[selectedMovesIndices.get(this.random.nextInt(selectedMovesIndices.size())).intValue()];

@@ -38,7 +38,7 @@ public class PredefinedOrder extends ParametersOrder {
 	 * [0, tunableParameters.size()).
 	 */
 	@Override
-	public void imposeInitialOrderForPlayer(List<TunableParameter> tunableParameters) {
+	public void imposeOrder(List<TunableParameter> tunableParameters) {
 
 		TunableParameter tmp;
 		int tuningOrderIndex;

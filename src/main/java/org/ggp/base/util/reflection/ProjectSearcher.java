@@ -54,7 +54,7 @@ public class ProjectSearcher {
     public static final LoadedClasses<NodeUpdater> NODE_UPDATERS = new LoadedClasses<NodeUpdater>(NodeUpdater.class);
     public static final LoadedClasses<ParametersTuner> PARAMETERS_TUNERS = new LoadedClasses<ParametersTuner>(ParametersTuner.class);
     public static final LoadedClasses<TunerSelector> TUNER_SELECTORS = new LoadedClasses<TunerSelector>(TunerSelector.class);
-    public static final LoadedClasses<ParametersOrder> PARAMETERS_ORGANIZERS = new LoadedClasses<ParametersOrder>(ParametersOrder.class);
+    public static final LoadedClasses<ParametersOrder> PARAMETERS_ORDER = new LoadedClasses<ParametersOrder>(ParametersOrder.class);
     public static final LoadedClasses<BiasComputer> BIAS_COMPUTERS = new LoadedClasses<BiasComputer>(BiasComputer.class);
     // Strategies
     public static final LoadedClasses<AfterMoveStrategy> AFTER_MOVE_STRATEGIES = new LoadedClasses<AfterMoveStrategy>(AfterMoveStrategy.class);

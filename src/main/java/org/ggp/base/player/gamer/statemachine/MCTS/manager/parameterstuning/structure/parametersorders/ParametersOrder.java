@@ -25,9 +25,13 @@ public abstract class ParametersOrder extends SearchManagerComponent{
 	}
 
 	/**
-	 * This method defines how to order the parameters right after the creation of a new player
-	 * and before such player starts playing any game.
+	 * This method defines how to order the parameters given as input. Different tuners might need to reorder
+	 * the parameters in different ways and/or at different moments in time (e.g. the hierarchical single
+	 * MAB tuner needs to impose a certain order on the parameters at the moment when the player is created
+	 * and can use this class to either order them randomly, or in a predefined order specified in the
+	 * settings. The sequential tuner, instead, might need to impose an order on the parameters to know in
+	 * which predefined order to tune them singularly.
 	 */
-	public abstract void imposeInitialOrderForPlayer(List<TunableParameter> tunableParameters);
+	public abstract void imposeOrder(List<TunableParameter> tunableParameters);
 
 }

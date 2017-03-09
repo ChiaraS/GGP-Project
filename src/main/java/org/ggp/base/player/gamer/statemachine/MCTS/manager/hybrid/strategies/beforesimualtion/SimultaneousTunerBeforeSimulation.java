@@ -14,19 +14,23 @@ import org.ggp.base.util.reflection.ProjectSearcher;
 
 public class SimultaneousTunerBeforeSimulation extends TunerBeforeSimulation {
 
-	private ParametersOrder parametersOrder;
+	/**
+	 * This ParametersOrder is used to order the parameters right after the creation of a new player
+	 * and before such player starts playing any game.
+	 */
+	private ParametersOrder initialParametersOrder;
 
 	public SimultaneousTunerBeforeSimulation(GameDependentParameters gameDependentParameters, Random random,
 			GamerSettings gamerSettings, SharedReferencesCollector sharedReferencesCollector) {
 		super(gameDependentParameters, random, gamerSettings, sharedReferencesCollector);
 
 		try {
-			this.parametersOrder = (ParametersOrder) SearchManagerComponent.getConstructorForSearchManagerComponent(SearchManagerComponent.getCorrespondingClass(ProjectSearcher.PARAMETERS_ORGANIZERS.getConcreteClasses(),
-					gamerSettings.getPropertyValue("BeforeSimulationStrategy.parametersOrderType"))).newInstance(gameDependentParameters, random, gamerSettings, sharedReferencesCollector);
+			this.initialParametersOrder = (ParametersOrder) SearchManagerComponent.getConstructorForSearchManagerComponent(SearchManagerComponent.getCorrespondingClass(ProjectSearcher.PARAMETERS_ORDER.getConcreteClasses(),
+					gamerSettings.getPropertyValue("BeforeSimulationStrategy.initialParametersOrderType"))).newInstance(gameDependentParameters, random, gamerSettings, sharedReferencesCollector);
 		} catch (InstantiationException | IllegalAccessException
 				| IllegalArgumentException | InvocationTargetException e) {
 			// TODO: fix this!
-			GamerLogger.logError("SearchManagerCreation", "Error when instantiating ParametersOrganizer " + gamerSettings.getPropertyValue("ParameterTuner.parametersOrganizerType") + ".");
+			GamerLogger.logError("SearchManagerCreation", "Error when instantiating ParametersOrder " + gamerSettings.getPropertyValue("ParameterTuner.initialParametersOrderType") + ".");
 			GamerLogger.logStackTrace("SearchManagerCreation", e);
 			throw new RuntimeException(e);
 		}
@@ -37,7 +41,7 @@ public class SimultaneousTunerBeforeSimulation extends TunerBeforeSimulation {
 
 		super.setReferences(sharedReferencesCollector);
 
-		this.parametersOrder.imposeInitialOrderForPlayer(this.tunableParameters);
+		this.initialParametersOrder.imposeOrder(this.tunableParameters);
 
 		int[] classesLength = new int[this.tunableParameters.size()];
 

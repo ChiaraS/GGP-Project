@@ -68,7 +68,7 @@ public class SequentialTreeNodeFactory extends TreeNodeFactory {
 			try {
 				allLegalMoves = this.gameDependentParameters.getTheMachine().getAllLegalMovesForAllRoles(state);
 
-				suctMovesStats = this.createSUCTMCTSMoves(allLegalMoves);
+				suctMovesStats = this.createSuctMctsMoves(allLegalMoves);
 				unvisitedLeavesCount = suctMovesStats[0].getUnvisitedSubleaves() * suctMovesStats.length;
 				//this.printSUCTMovesTree(suctMovesStats, "");
 			} catch (MoveDefinitionException | StateMachineException e) {
@@ -99,7 +99,7 @@ public class SequentialTreeNodeFactory extends TreeNodeFactory {
 
 	}
 
-	private SequentialMctsMoveStats[] createSUCTMCTSMoves(List<List<Move>> allLegalMoves){
+	private SequentialMctsMoveStats[] createSuctMctsMoves(List<List<Move>> allLegalMoves){
 
 		List<Role> roles = this.gameDependentParameters.getTheMachine().getRoles();
 

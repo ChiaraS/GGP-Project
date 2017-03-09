@@ -57,6 +57,12 @@ public class RandomSelector extends TunerSelector{
 
 	@Override
 	public Move selectMove(Map<Move,Pair<MoveStats,Double>> movesInfo, int numUpdates) {
+
+		// Extra check to make sure that this method is never called with an empty map of moves
+		if(movesInfo.isEmpty()){
+			throw new RuntimeException("UcbSelector - selectMove(Map, int): cannot select next combination becase the map is empty.");
+		}
+
 		int randomNum = this.random.nextInt(movesInfo.size());
 
 		for(Entry<Move,Pair<MoveStats,Double>> entry : movesInfo.entrySet()){
