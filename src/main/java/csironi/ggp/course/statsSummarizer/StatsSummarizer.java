@@ -19,6 +19,7 @@ import java.util.Random;
 import java.util.Set;
 
 import csironi.ggp.course.experiments.propnet.SingleValueDoubleStats;
+import csironi.ggp.course.experiments.propnet.SingleValueLongStats;
 import csironi.ggp.course.experiments.propnet.SingleValueStats;
 import external.JSON.JSONArray;
 import external.JSON.JSONException;
@@ -871,6 +872,336 @@ public class StatsSummarizer {
 		//System.out.println("NumRoles = " + numRoles);
 
 		//System.out.println("AcceptedMatchesSize = " + acceptedMatches.size());
+
+		/****************** Compute tree size statistics of the matches that were considered in the previous statistics *******************/
+
+		String paramLogsFolderPath = mainFolderPath + "/" + tourneyType + "." + gameKey + ".ParamsLogs";
+
+		//System.out.println("matchesLogsFolderPath= " + matchesLogsFolderPath);
+
+		File paramLogsFolder = new File(paramLogsFolderPath);
+
+		if(!paramLogsFolder.isDirectory()){
+			//System.out.println("Impossible to find the tree logs directory to summarize: " + treeLogsFolder.getPath());
+			return;
+		}
+
+		// Create (or empty if it already exists) the folder where to move all the speed log files
+		// that have been rejected and haven't been considered when computing the statistics.
+		String rejectedParamsFilesFolderPath = mainFolderPath + "/" + tourneyType + "." + gameKey + ".RejectedParamsFiles";
+
+		//System.out.println("rejectedFilesFolderPath= " + rejectedFilesFolderPath);
+
+
+		File rejectedParamsFilesFolder = new File(rejectedParamsFilesFolderPath);
+		if(rejectedParamsFilesFolder.isDirectory()){
+			if(!emptyFolder(rejectedParamsFilesFolder)){
+				System.out.println("Summarization interrupted. Cannot empty the RejectedParamsFiles folder: " + rejectedParamsFilesFolder.getPath());
+				return;
+			}
+		}else{
+			if(!rejectedParamsFilesFolder.mkdir()){
+				System.out.println("Summarization interrupted. Cannot create the RejectedParamsFiles folder: " + rejectedParamsFilesFolder.getPath());
+				return;
+			}
+		}
+
+		// Create (or empty if it already exists) the folder where to save all the speed statistics.
+		String paramsStatsFolderPath = mainFolderPath + "/" + tourneyType + "." + gameKey + ".ParamsStatistics";
+		File paramsStatsFolder = new File(paramsStatsFolderPath);
+		if(paramsStatsFolder.isDirectory()){
+			if(!emptyFolder(paramsStatsFolder)){
+				System.out.println("Summarization interrupted. Cannot empty the ParamsStatistics folder: " + paramsStatsFolder.getPath());
+				return;
+			}
+		}else{
+			if(!paramsStatsFolder.mkdir()){
+				System.out.println("Summarization interrupted. Cannot create the ParamsStatistics folder: " + paramsStatsFolder.getPath());
+				return;
+			}
+		}
+
+		File[] paramsStatsFiles;
+
+		String mabType;
+
+		Map<String,Map<String,Map<String,Map<String,Map<String,Map<String,Map<String,SingleValueStats>>>>>>> aggregatedParamsStats = new HashMap<String,Map<String,Map<String,Map<String,Map<String,Map<String,Map<String,SingleValueStats>>>>>>>();
+
+		Map<String,Map<String,Map<String,Map<String,Map<String,Map<String,SingleValueStats>>>>>> playerTypeMap;
+
+		Map<String,Map<String,Map<String,Map<String,Map<String,SingleValueStats>>>>> playerAllRolesMap;
+		Map<String,Map<String,Map<String,Map<String,Map<String,SingleValueStats>>>>> playerRoleMap;
+
+		Map<String,Map<String,Map<String,Map<String,SingleValueStats>>>> mabTypeMap;
+		Map<String,Map<String,Map<String,Map<String,SingleValueStats>>>> mabTypeMapAllRoles;
+
+		// Iterate over the directories containing the matches logs for each player's type.
+		playerTypesDirs = paramsStatsFolder.listFiles();
+
+		// For the folder of each player type...
+		for(int i = 0; i < playerTypesDirs.length; i++){
+
+			if(playerTypesDirs[i].isDirectory()){
+
+				playerType = playerTypesDirs[i].getName();
+
+				// Get the map corresponding to this player type
+				playerTypeMap = aggregatedParamsStats.get(playerType);
+				if(playerTypeMap == null){
+					playerTypeMap = new HashMap<String,Map<String,Map<String,Map<String,Map<String,Map<String,SingleValueStats>>>>>>();
+					aggregatedParamsStats.put(playerType, playerTypeMap);
+				}
+
+				playerRolesDirs = playerTypesDirs[i].listFiles();
+
+				playerAllRolesMap = playerTypeMap.get("AllRoles");
+				if(playerAllRolesMap == null){
+					playerAllRolesMap = new HashMap<String,Map<String,Map<String,Map<String,Map<String,SingleValueStats>>>>>();
+					playerTypeMap.put("AllRoles", playerAllRolesMap);
+				}
+
+				// Iterate over all the folder corresponding to the different roles the player played
+				for(int j = 0; j < playerRolesDirs.length; j++){
+
+					if(playerRolesDirs[j].isDirectory()){
+
+						playerRole = playerRolesDirs[j].getName();
+
+						playerRoleMap = playerTypeMap.get(playerRole);
+						if(playerRoleMap == null){
+							playerRoleMap = new HashMap<String,Map<String,Map<String,Map<String,Map<String,SingleValueStats>>>>>();
+							playerTypeMap.put(playerRole, playerRoleMap);
+						}
+
+						paramsStatsFiles = playerRolesDirs[j].listFiles();
+
+						// Iterate over all the params stats files
+						for(int k = 0; k < paramsStatsFiles.length; k++){
+
+							String[] splittedName = paramsStatsFiles[k].getName().split("\\.");
+
+							// If it's a .csv file, compute and log the statistics
+							if(!(splittedName[splittedName.length-1].equalsIgnoreCase("csv"))){
+								System.out.println("Found file with no .csv extension when summarizing params statistics.");
+								rejectFile(paramsStatsFiles[k], rejectedParamsFilesFolderPath + "/" + playerType + "/" + playerRole);
+							}else{
+
+								// If the stats are referring to a match that was rejected, reject them too
+
+								if(!(acceptedMatches.contains(paramsStatsFiles[k].getName().substring(0, paramsStatsFiles[k].getName().length()-26)))){
+									System.out.println("Found Params Statistics file for a match that was previously rejected from statistics.");
+									rejectFile(paramsStatsFiles[k], rejectedParamsFilesFolderPath + "/" + playerType + "/" + playerRole);
+								}else{
+
+									if(paramsStatsFiles[k].getName().endsWith("GlobalParamTunerStats.csv")){
+										mabType = "Global";
+									}else if(paramsStatsFiles[k].getName().endsWith("LocalParamTunerStats.csv")){
+										mabType = "Local";
+									}else{
+										System.out.println("Unrecognized type of parameters stats. Skipping file: " + paramsStatsFiles[k].getPath());
+										continue;
+									}
+
+									mabTypeMap = playerRoleMap.get(mabType);
+									if(mabTypeMap == null){
+										mabTypeMap = new HashMap<String,Map<String,Map<String,Map<String,SingleValueStats>>>>();
+										playerRoleMap.put(mabType, mabTypeMap);
+									}
+									mabTypeMapAllRoles = playerAllRolesMap.get(mabType);
+									if(mabTypeMapAllRoles == null){
+										mabTypeMapAllRoles = new HashMap<String,Map<String,Map<String,Map<String,SingleValueStats>>>>();
+										playerAllRolesMap.put(mabType, mabTypeMapAllRoles);
+									}
+
+									extractParamsStats(paramsStatsFiles[k], mabTypeMap, mabTypeMapAllRoles);
+								}
+							}
+						}
+					}
+				}
+			}
+		}
+
+		// Log all the aggregated statistics
+		for(Entry<String,Map<String,Map<String,Map<String,Map<String,Map<String,Map<String,SingleValueStats>>>>>>> playerTypeStats: aggregatedParamsStats.entrySet()){
+
+			for(Entry<String,Map<String,Map<String,Map<String,Map<String,Map<String,SingleValueStats>>>>>> playerRoleStats: playerTypeStats.getValue().entrySet()){
+
+				for(Entry<String,Map<String,Map<String,Map<String,Map<String,SingleValueStats>>>>> mabTypeStats: playerRoleStats.getValue().entrySet()){
+
+					for(Entry<String,Map<String,Map<String,Map<String,SingleValueStats>>>> roleStats: mabTypeStats.getValue().entrySet()){
+
+						for(Entry<String,Map<String,Map<String,SingleValueStats>>> parameterStats: roleStats.getValue().entrySet()){
+
+							for(Entry<String,Map<String,SingleValueStats>> parameterValueStats: parameterStats.getValue().entrySet()){
+
+
+
+								writeToFile(paramsStatsFolderPath + "/" + playerTypeStats.getKey() + "-" + playerRoleStats.getKey() +
+										"-" + mabTypeStats.getKey() + "ParamTuner-AggrStats.csv", statisticsNames[j] +
+										";" + theStatsToLog.getNumSamples() + ";" + theStatsToLog.getMinValue() + ";" + theStatsToLog.getMaxValue() + ";" +
+										theStatsToLog.getMedian() + ";" + theStatsToLog.getValuesStandardDeviation() + ";" + theStatsToLog.getValuesSEM() +
+										";" + theStatsToLog.getAvgValue() + ";" + theStatsToLog.get95ConfidenceInterval() + ";");
+
+							}
+
+
+
+				for(Entry<String, Map<String, SingleValueDoubleStats>> statHeaderStats: playerRoleStats.getValue().entrySet()){
+
+				writeToFile(treeStatsFolderPath + "/" + playerRoleStats.getKey() + "-" + statHeaderStats.getKey() + "-AggrStats.csv", "StatType;#Samples;Min;Max;Median;SD;SEM;Avg;CI");
+
+				for(int j = 0; j< statisticsNames.length; j++){
+					theStatsToLog = statHeaderStats.getValue().get(statisticsNames[j]);
+
+					if(theStatsToLog != null){
+
+					}
+				}
+			}
+		}
+
+		//System.out.println();
+
+		//System.out.println();
+
+		//System.out.println("SummarizedFiles = " + summarizedTreeFiles);
+
+		//System.out.println("NumRoles = " + numRoles);
+
+		//System.out.println("AcceptedMatchesSize = " + acceptedMatches.size());
+
+
+	}
+
+	private static void extractParamsStats(File theParamsStatsFile, Map<String,Map<String,Map<String,Map<String,SingleValueStats>>>> mabTypeMap,
+			Map<String,Map<String,Map<String,Map<String,SingleValueStats>>>> mabTypeMapAllRoles){
+
+		BufferedReader br = null;
+		String theLine;
+		String[] splitLine;
+
+		String role = null;
+		String parameter = null;
+		String parameterValue = null;
+
+		Map<String,Map<String,Map<String,SingleValueStats>>> roleMap = null;
+		Map<String,Map<String,Map<String,SingleValueStats>>> roleMapAllRoles = null;
+
+		Map<String,Map<String,SingleValueStats>> parameterMap = null;
+		Map<String,Map<String,SingleValueStats>> parameterMapAllRoles = null;
+
+		Map<String,SingleValueStats> parameterValueMap = null;
+		Map<String,SingleValueStats> parameterValueMapAllRoles = null;
+
+		SingleValueStats valueStats;
+		SingleValueStats valueStatsAllRoles;
+
+		try {
+			br = new BufferedReader(new FileReader(theParamsStatsFile));
+
+			// Read first line
+			theLine = br.readLine();
+
+			while(theLine != null){
+
+				if(theLine != ""){
+					// For each line, parse the parameters and add them to their statistic
+					splitLine = theLine.split(";");
+
+					// Changing role
+					if(!splitLine[1].equals(role)){
+						role = splitLine[1];
+						roleMap = mabTypeMap.get(role);
+						if(roleMap == null){
+							roleMap = new HashMap<String,Map<String,Map<String,SingleValueStats>>>();
+							mabTypeMap.put(role, roleMap);
+						}
+						roleMapAllRoles = mabTypeMapAllRoles.get(role);
+						if(roleMapAllRoles == null){
+							roleMapAllRoles = new HashMap<String,Map<String,Map<String,SingleValueStats>>>();
+							mabTypeMapAllRoles.put(role, roleMapAllRoles);
+						}
+					}
+
+					// Changing parameter
+					if(!splitLine[3].equals(parameter)){
+						parameter = splitLine[3];
+						parameterMap = roleMap.get(parameter);
+						if(parameterMap == null){
+							parameterMap = new HashMap<String,Map<String,SingleValueStats>>();
+							roleMap.put(parameter, parameterMap);
+						}
+						parameterMapAllRoles = roleMapAllRoles.get(parameter);
+						if(parameterMapAllRoles == null){
+							parameterMapAllRoles = new HashMap<String,Map<String,SingleValueStats>>();
+							roleMapAllRoles.put(parameter, parameterMapAllRoles);
+						}
+					}
+
+					// Get maps for parameter value
+					parameterValue = splitLine[5];
+					parameterValueMap = parameterMap.get(parameterValue);
+					if(parameterValueMap == null){
+						parameterValueMap = new HashMap<String,SingleValueStats>();
+						parameterMap.put(parameterValue, parameterValueMap);
+					}
+					parameterValueMapAllRoles = parameterMapAllRoles.get(parameterValue);
+					if(parameterValueMapAllRoles == null){
+						parameterValueMapAllRoles = new HashMap<String,SingleValueStats>();
+						parameterMapAllRoles.put(parameterValue, parameterValueMapAllRoles);
+					}
+
+					// For each statistic get the name, the corresponding SingleValueStats and add the value to it.
+					for(int i = 6; i < 13; i=i+2){
+						valueStats = parameterValueMap.get(splitLine[i]);
+						if(valueStats == null){
+							if(i==8){
+								valueStats = new SingleValueLongStats();
+							}else{
+								valueStats = new SingleValueDoubleStats();
+							}
+							parameterValueMap.put(splitLine[i], valueStats);
+						}
+						valueStatsAllRoles = parameterValueMapAllRoles.get(splitLine[i]);
+						if(valueStatsAllRoles == null){
+							if(i==8){
+								valueStatsAllRoles = new SingleValueLongStats();
+							}else{
+								valueStatsAllRoles = new SingleValueDoubleStats();
+							}
+							parameterValueMapAllRoles.put(splitLine[i], valueStatsAllRoles);
+						}
+						if(i==8){
+							((SingleValueLongStats)valueStats).addValue(Long.parseLong(splitLine[i+1]));
+							((SingleValueLongStats)valueStatsAllRoles).addValue(Long.parseLong(splitLine[i+1]));
+						}else{
+							((SingleValueDoubleStats)valueStats).addValue(Double.parseDouble(splitLine[i+1]));
+							((SingleValueDoubleStats)valueStatsAllRoles).addValue(Double.parseDouble(splitLine[i+1]));
+						}
+
+					}
+
+				}
+
+				theLine = br.readLine();
+			}
+
+			br.close();
+		} catch (IOException e) {
+			System.out.println("Exception when reading the .csv file " + theParamsStatsFile.getPath() + ".");
+			System.out.println("Stopping summarization of the file. Partial summarization: the number of samples of the statistics might not be equal anymore.");
+        	e.printStackTrace();
+        	if(br != null){
+	        	try {
+					br.close();
+				} catch (IOException ioe) {
+					System.out.println("Exception when closing the .csv file " + theParamsStatsFile.getPath() + ".");
+					ioe.printStackTrace();
+				}
+        	}
+        	return;
+		}
 
 	}
 
