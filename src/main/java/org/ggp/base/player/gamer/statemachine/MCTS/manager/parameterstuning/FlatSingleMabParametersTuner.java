@@ -105,9 +105,9 @@ public class FlatSingleMabParametersTuner extends SingleMabParametersTuner {
 	}
 
 	@Override
-	public void setClassesLengthAndPenalty(int[] classesLength, double[][] unitMovesPenalty){
+	public void setClassesAndPenalty(String[] classesNames, int[] classesLength, String[][] classesValues, double[][] unitMovesPenalty){
 
-		super.setClassesLengthAndPenalty(classesLength, unitMovesPenalty);
+		super.setClassesAndPenalty(classesNames, classesLength, classesValues, unitMovesPenalty);
 
 		// Build the lists of all possible parameter combinations for my role and (if being tuned)
 		// for the other roles (note that if the other roles are also being tuned all the possible
@@ -246,12 +246,29 @@ public class FlatSingleMabParametersTuner extends SingleMabParametersTuner {
 
 		GamerLogger.log(GamerLogger.FORMAT.CSV_FORMAT, "ParametersTunerStats", "");
 
+		String globalParamsOrder = "[ ";
+		for(int i = 0; i < this.classesNames.length; i++){
+			globalParamsOrder += (this.classesNames[i] + " ");
+		}
+		globalParamsOrder += "]";
+
 		for(int i = 0; i < this.rolesMabs.length; i++){
+
+			CombinatorialCompactMove theValuesIndices;
+			String theValues;
 
 			MoveStats[] allMoveStats = this.rolesMabs[i].getMoveStats();
 
 			for(int j = 0; j < allMoveStats.length; j++){
-				GamerLogger.log(GamerLogger.FORMAT.CSV_FORMAT, "ParametersTunerStats", "MAB=;" + i + ";COMBINATORIAL_MOVE=;" + this.combinatorialMoves[j] + ";VISITS=;" + allMoveStats[j].getVisits() + ";SCORE_SUM=;" + allMoveStats[j].getScoreSum() + ";AVG_VALUE=;" + (allMoveStats[j].getVisits() <= 0 ? "0" : (allMoveStats[j].getScoreSum()/((double)allMoveStats[j].getVisits()))));
+
+				theValuesIndices = this.combinatorialMoves[j];
+				theValues = "[ ";
+				for(int k = 0; k < theValuesIndices.getIndices().length; k++){
+					theValues += (this.classesValues[k][theValuesIndices.getIndices()[k]] + " ");
+				}
+				theValues += "]";
+
+				GamerLogger.log(GamerLogger.FORMAT.CSV_FORMAT, "ParametersTunerStats", "ROLE=;" + this.gameDependentParameters.getTheMachine().convertToExplicitRole(this.gameDependentParameters.getTheMachine().getRoles().get(i)) + ";PARAMS=;" + globalParamsOrder + ";COMBINATORIAL_MOVE=;" + theValues + ";PENALTY=;" + (this.combinatorialMovesPenalty != null ? this.combinatorialMovesPenalty[j] : -1) + ";VISITS=;" + allMoveStats[j].getVisits() + ";SCORE_SUM=;" + allMoveStats[j].getScoreSum() + ";AVG_VALUE=;" + (allMoveStats[j].getVisits() <= 0 ? "0" : (allMoveStats[j].getScoreSum()/((double)allMoveStats[j].getVisits()))));
 			}
 
 			GamerLogger.log(GamerLogger.FORMAT.CSV_FORMAT, "ParametersTunerStats", "");

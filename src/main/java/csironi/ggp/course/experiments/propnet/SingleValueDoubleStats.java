@@ -153,4 +153,8 @@ public class SingleValueDoubleStats implements SingleValueStats{
 		return this.values.isEmpty();
 	}
 
+	public double getTotalSum(){
+		return this.valuesSum;
+	}
+
 }

@@ -2,6 +2,8 @@ package org.ggp.base.player.gamer.statemachine.MCTS.manager.parameterstuning.str
 
 public abstract class TunableParameter {
 
+	private String name;
+
 	/**
 	 * Indicates in which order the parameters should be tuned, if an order is required by the tuning method.
 	 * If the tuning method doesn't require a specific order this value might be ignored by it. If the tuning
@@ -29,11 +31,9 @@ public abstract class TunableParameter {
 	 */
 	private double[] possibleValuesPenalty;
 
-	public TunableParameter(){
-		this(null, -1);
-	}
+	public TunableParameter(String name, double[] possibleValuesPenalty, int tuningOrderIndex){
 
-	public TunableParameter(double[] possibleValuesPenalty, int tuningOrderIndex){
+		this.name = name;
 
 		this.possibleValuesPenalty =  possibleValuesPenalty;
 
@@ -42,6 +42,8 @@ public abstract class TunableParameter {
 	}
 
 	public abstract int getPossibleValuesLength();
+
+	public abstract String[] getPossibleValues();
 
 	public abstract void setMyRoleNewValue(int myRoleIndex, int newValueIndex);
 
@@ -70,6 +72,10 @@ public abstract class TunableParameter {
 
 	public int getTuningOrderIndex(){
 		return this.tuningOrderIndex;
+	}
+
+	public String getName(){
+		return this.name;
 	}
 
 }

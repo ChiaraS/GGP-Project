@@ -51,13 +51,13 @@ public class EpsilonMastMoveSelector extends MoveSelector{
 				tuningOrderIndex =  gamerSettings.getIntPropertyValue("MoveSelector.tuningOrderIndexEpsilon");
 			}
 
-			this.epsilon = new DoubleTunableParameter(fixedEpsilon, possibleValues, possibleValuesPenalty, tuningOrderIndex);
+			this.epsilon = new DoubleTunableParameter("Epsilon", fixedEpsilon, possibleValues, possibleValuesPenalty, tuningOrderIndex);
 
 			// If the parameter must be tuned online, then we should add its reference to the sharedReferencesCollector
 			sharedReferencesCollector.addParameterToTune(this.epsilon);
 
 		}else{
-			this.epsilon = new DoubleTunableParameter(fixedEpsilon);
+			this.epsilon = new DoubleTunableParameter("Epsilon", fixedEpsilon);
 		}
 
 	}

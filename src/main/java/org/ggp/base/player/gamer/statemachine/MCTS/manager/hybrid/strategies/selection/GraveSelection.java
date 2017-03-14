@@ -47,13 +47,13 @@ public class GraveSelection extends MoveValueSelection {
 				tuningOrderIndex =  gamerSettings.getIntPropertyValue("SelectionStrategy.tuningOrderIndexMinAmafVisits");
 			}
 
-			this.minAmafVisits = new IntTunableParameter(fixedMinAmafVisits, possibleValues, possibleValuesPenalty, tuningOrderIndex);
+			this.minAmafVisits = new IntTunableParameter("Ref", fixedMinAmafVisits, possibleValues, possibleValuesPenalty, tuningOrderIndex);
 
 			// If the parameter must be tuned online, then we should add its reference to the sharedReferencesCollector
 			sharedReferencesCollector.addParameterToTune(this.minAmafVisits);
 
 		}else{
-			this.minAmafVisits = new IntTunableParameter(fixedMinAmafVisits);
+			this.minAmafVisits = new IntTunableParameter("Ref", fixedMinAmafVisits);
 		}
 
 		sharedReferencesCollector.setGraveSelection(this);

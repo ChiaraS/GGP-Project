@@ -24,15 +24,15 @@ public class DoubleTunableParameter extends TunableParameter {
 	 */
 	private double[] currentValues;
 
-	public DoubleTunableParameter(double fixedValue) {
+	public DoubleTunableParameter(String name, double fixedValue) {
 
-		this(fixedValue, null, null, -1);
+		this(name, fixedValue, null, null, -1);
 
 	}
 
-	public DoubleTunableParameter(double fixedValue, double[] possibleValues, double[] possibleValuesPenalty, int tuningOrderIndex) {
+	public DoubleTunableParameter(String name, double fixedValue, double[] possibleValues, double[] possibleValuesPenalty, int tuningOrderIndex) {
 
-		super(possibleValuesPenalty, tuningOrderIndex);
+		super(name, possibleValuesPenalty, tuningOrderIndex);
 
 		this.fixedValue = fixedValue;
 
@@ -127,6 +127,15 @@ public class DoubleTunableParameter extends TunableParameter {
 			return params;
 		}
 
+	}
+
+	@Override
+	public String[] getPossibleValues() {
+		String[] values = new String[this.possibleValues.length];
+		for(int i = 0; i < this.possibleValues.length; i++){
+			values[i] = ""+this.possibleValues[i];
+		}
+		return values;
 	}
 
 }

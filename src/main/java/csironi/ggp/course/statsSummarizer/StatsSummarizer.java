@@ -877,12 +877,12 @@ public class StatsSummarizer {
 
 		String paramLogsFolderPath = mainFolderPath + "/" + tourneyType + "." + gameKey + ".ParamsLogs";
 
-		//System.out.println("matchesLogsFolderPath= " + matchesLogsFolderPath);
+		//System.out.println("paramLogsFolderPath= " + paramLogsFolderPath);
 
 		File paramLogsFolder = new File(paramLogsFolderPath);
 
 		if(!paramLogsFolder.isDirectory()){
-			//System.out.println("Impossible to find the tree logs directory to summarize: " + treeLogsFolder.getPath());
+			System.out.println("Impossible to find the tree logs directory to summarize: " + treeLogsFolder.getPath());
 			return;
 		}
 
@@ -936,7 +936,7 @@ public class StatsSummarizer {
 		Map<String,Map<String,Map<String,Map<String,SingleValueStats>>>> mabTypeMapAllRoles;
 
 		// Iterate over the directories containing the matches logs for each player's type.
-		playerTypesDirs = paramsStatsFolder.listFiles();
+		playerTypesDirs = paramLogsFolder.listFiles();
 
 		// For the folder of each player type...
 		for(int i = 0; i < playerTypesDirs.length; i++){
@@ -944,6 +944,8 @@ public class StatsSummarizer {
 			if(playerTypesDirs[i].isDirectory()){
 
 				playerType = playerTypesDirs[i].getName();
+
+				//System.out.println("Visiting folder of player type: " + playerType);
 
 				// Get the map corresponding to this player type
 				playerTypeMap = aggregatedParamsStats.get(playerType);
@@ -967,6 +969,8 @@ public class StatsSummarizer {
 
 						playerRole = playerRolesDirs[j].getName();
 
+						//System.out.println("Visiting folder of role: " + playerRole);
+
 						playerRoleMap = playerTypeMap.get(playerRole);
 						if(playerRoleMap == null){
 							playerRoleMap = new HashMap<String,Map<String,Map<String,Map<String,Map<String,SingleValueStats>>>>>();
@@ -978,6 +982,8 @@ public class StatsSummarizer {
 						// Iterate over all the params stats files
 						for(int k = 0; k < paramsStatsFiles.length; k++){
 
+							//System.out.println("Visiting file: " + paramsStatsFiles[k]);
+
 							String[] splittedName = paramsStatsFiles[k].getName().split("\\.");
 
 							// If it's a .csv file, compute and log the statistics
@@ -988,7 +994,8 @@ public class StatsSummarizer {
 
 								// If the stats are referring to a match that was rejected, reject them too
 
-								if(!(acceptedMatches.contains(paramsStatsFiles[k].getName().substring(0, paramsStatsFiles[k].getName().length()-26)))){
+								if(!(acceptedMatches.contains(paramsStatsFiles[k].getName().substring(0, paramsStatsFiles[k].getName().length()-26))) &&
+										!(acceptedMatches.contains(paramsStatsFiles[k].getName().substring(0, paramsStatsFiles[k].getName().length()-25)))){
 									System.out.println("Found Params Statistics file for a match that was previously rejected from statistics.");
 									rejectFile(paramsStatsFiles[k], rejectedParamsFilesFolderPath + "/" + playerType + "/" + playerRole);
 								}else{
@@ -1013,6 +1020,7 @@ public class StatsSummarizer {
 										playerAllRolesMap.put(mabType, mabTypeMapAllRoles);
 									}
 
+									//System.out.println("Extracting stats");
 									extractParamsStats(paramsStatsFiles[k], mabTypeMap, mabTypeMapAllRoles);
 								}
 							}
@@ -1031,30 +1039,53 @@ public class StatsSummarizer {
 
 					for(Entry<String,Map<String,Map<String,Map<String,SingleValueStats>>>> roleStats: mabTypeStats.getValue().entrySet()){
 
+						writeToFile(paramsStatsFolderPath + "/" + playerTypeStats.getKey() + "-" + playerRoleStats.getKey() +
+								"-" + mabTypeStats.getKey() + "ParamTuner-AggrStats.csv", "ROLE = " + roleStats.getKey());
+						writeToFile(paramsStatsFolderPath + "/" + playerTypeStats.getKey() + "-" + playerRoleStats.getKey() +
+								"-" + mabTypeStats.getKey() + "ParamTuner-AggrStats.csv", "");
+
 						for(Entry<String,Map<String,Map<String,SingleValueStats>>> parameterStats: roleStats.getValue().entrySet()){
+
+							writeToFile(paramsStatsFolderPath + "/" + playerTypeStats.getKey() + "-" + playerRoleStats.getKey() +
+									"-" + mabTypeStats.getKey() + "ParamTuner-AggrStats.csv", "PARAM = " + parameterStats.getKey());
+							writeToFile(paramsStatsFolderPath + "/" + playerTypeStats.getKey() + "-" + playerRoleStats.getKey() +
+									"-" + mabTypeStats.getKey() + "ParamTuner-AggrStats.csv", "VALUE;TOTAL_VISITS;AVG_VISITS;AVG_SCORE_SUM;AVG_AVG_VALUE;AVG_PENALTY;NUM_SAMPLES;");
 
 							for(Entry<String,Map<String,SingleValueStats>> parameterValueStats: parameterStats.getValue().entrySet()){
 
+								int numSamples = -1;
+
+								// Check that all stats have the same number of samples. If not, something went wrong so we log -1 as number of samples.
+								for(Entry<String,SingleValueStats> stat: parameterValueStats.getValue().entrySet()){
+									if(numSamples == -1){
+										numSamples = stat.getValue().getNumSamples();
+									}else if(numSamples != stat.getValue().getNumSamples()){
+										numSamples = -1;
+										break;
+									}
+								}
+
+								String statisToLog = parameterValueStats.getKey() + ";" +
+										((SingleValueLongStats)parameterValueStats.getValue().get("VISITS=")).getTotalSum() + ";" +
+										parameterValueStats.getValue().get("VISITS=").getAvgValue() + ";" +
+										parameterValueStats.getValue().get("SCORE_SUM=").getAvgValue() + ";" +
+										parameterValueStats.getValue().get("AVG_VALUE=").getAvgValue() + ";" +
+										parameterValueStats.getValue().get("PENALTY=").getAvgValue() + ";" +
+										numSamples + ";";
 
 
 								writeToFile(paramsStatsFolderPath + "/" + playerTypeStats.getKey() + "-" + playerRoleStats.getKey() +
-										"-" + mabTypeStats.getKey() + "ParamTuner-AggrStats.csv", statisticsNames[j] +
-										";" + theStatsToLog.getNumSamples() + ";" + theStatsToLog.getMinValue() + ";" + theStatsToLog.getMaxValue() + ";" +
-										theStatsToLog.getMedian() + ";" + theStatsToLog.getValuesStandardDeviation() + ";" + theStatsToLog.getValuesSEM() +
-										";" + theStatsToLog.getAvgValue() + ";" + theStatsToLog.get95ConfidenceInterval() + ";");
+										"-" + mabTypeStats.getKey() + "ParamTuner-AggrStats.csv", statisToLog);
 
 							}
 
+							writeToFile(paramsStatsFolderPath + "/" + playerTypeStats.getKey() + "-" + playerRoleStats.getKey() +
+									"-" + mabTypeStats.getKey() + "ParamTuner-AggrStats.csv", "");
 
+						}
 
-				for(Entry<String, Map<String, SingleValueDoubleStats>> statHeaderStats: playerRoleStats.getValue().entrySet()){
-
-				writeToFile(treeStatsFolderPath + "/" + playerRoleStats.getKey() + "-" + statHeaderStats.getKey() + "-AggrStats.csv", "StatType;#Samples;Min;Max;Median;SD;SEM;Avg;CI");
-
-				for(int j = 0; j< statisticsNames.length; j++){
-					theStatsToLog = statHeaderStats.getValue().get(statisticsNames[j]);
-
-					if(theStatsToLog != null){
+						writeToFile(paramsStatsFolderPath + "/" + playerTypeStats.getKey() + "-" + playerRoleStats.getKey() +
+								"-" + mabTypeStats.getKey() + "ParamTuner-AggrStats.csv", "");
 
 					}
 				}
@@ -1076,6 +1107,8 @@ public class StatsSummarizer {
 
 	private static void extractParamsStats(File theParamsStatsFile, Map<String,Map<String,Map<String,Map<String,SingleValueStats>>>> mabTypeMap,
 			Map<String,Map<String,Map<String,Map<String,SingleValueStats>>>> mabTypeMapAllRoles){
+
+
 
 		BufferedReader br = null;
 		String theLine;
@@ -1105,9 +1138,10 @@ public class StatsSummarizer {
 
 			while(theLine != null){
 
-				if(theLine != ""){
+				splitLine = theLine.split(";");
+
+				if(splitLine.length == 14){
 					// For each line, parse the parameters and add them to their statistic
-					splitLine = theLine.split(";");
 
 					// Changing role
 					if(!splitLine[1].equals(role)){
@@ -1175,6 +1209,9 @@ public class StatsSummarizer {
 						if(i==8){
 							((SingleValueLongStats)valueStats).addValue(Long.parseLong(splitLine[i+1]));
 							((SingleValueLongStats)valueStatsAllRoles).addValue(Long.parseLong(splitLine[i+1]));
+						}else if(i==6){
+							((SingleValueDoubleStats)valueStats).addValue((splitLine[i+1].equals("null") ? -1 : Double.parseDouble(splitLine[i+1])));
+							((SingleValueDoubleStats)valueStatsAllRoles).addValue((splitLine[i+1].equals("null") ? -1 : Double.parseDouble(splitLine[i+1])));
 						}else{
 							((SingleValueDoubleStats)valueStats).addValue(Double.parseDouble(splitLine[i+1]));
 							((SingleValueDoubleStats)valueStatsAllRoles).addValue(Double.parseDouble(splitLine[i+1]));

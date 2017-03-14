@@ -43,7 +43,9 @@ public class SimultaneousTunerBeforeSimulation extends TunerBeforeSimulation {
 
 		this.initialParametersOrder.imposeOrder(this.tunableParameters);
 
+		String[] classesNames = new String[this.tunableParameters.size()];
 		int[] classesLength = new int[this.tunableParameters.size()];
+		String[][] classesValues = new String[this.tunableParameters.size()][];
 
 		// The penalty for the parameter values must be either specified for all values of all parameters or for none of them.
 		// This means that if it's specified for all values of the first parameter we expect it to be specified for all values
@@ -57,7 +59,9 @@ public class SimultaneousTunerBeforeSimulation extends TunerBeforeSimulation {
 
 		int i = 0;
 		for(TunableParameter p : this.tunableParameters){
+			classesNames[i] = p.getName();
 			classesLength[i] = p.getPossibleValuesLength();
+			classesValues[i] = p.getPossibleValues();
 			if(classesLength[i] == 0){
 				GamerLogger.logError("SearchManagerCreation", "SimultaneousTunerBeforeSimulation - Initialization with empty list of possible values for a parameter set to be tuned!");
 				throw new RuntimeException("SimultaneousTunerBeforeSimulation - Initialization with empty list of possible values for a parameter set to be tuned!");
@@ -79,7 +83,7 @@ public class SimultaneousTunerBeforeSimulation extends TunerBeforeSimulation {
 			i++;
 		}
 
-		this.parametersTuner.setClassesLengthAndPenalty(classesLength, unitMovesPenalty);
+		this.parametersTuner.setClassesAndPenalty(classesNames, classesLength, classesValues, unitMovesPenalty);
 
 	}
 

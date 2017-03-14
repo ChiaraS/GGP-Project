@@ -81,13 +81,13 @@ public class PlayoutSupportedSelection extends SelectionStrategy {
 				tuningOrderIndex =  gamerSettings.getIntPropertyValue("SelectionStrategy.tuningOrderIndexT");
 			}
 
-			this.t = new IntTunableParameter(fixedT, possibleValues, possibleValuesPenalty, tuningOrderIndex);
+			this.t = new IntTunableParameter("T", fixedT, possibleValues, possibleValuesPenalty, tuningOrderIndex);
 
 			// If the parameter must be tuned online, then we should add its reference to the sharedReferencesCollector
 			sharedReferencesCollector.addParameterToTune(this.t);
 
 		}else{
-			this.t = new IntTunableParameter(fixedT);
+			this.t = new IntTunableParameter("T", fixedT);
 		}
 
 	}

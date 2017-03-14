@@ -39,13 +39,13 @@ public class GraveBetaComputer extends BetaComputer {
 				tuningOrderIndex =  gamerSettings.getIntPropertyValue("BetaComputer.tuningOrderIndexBias");
 			}
 
-			this.bias = new DoubleTunableParameter(fixedBias, possibleValues, possibleValuesPenalty, tuningOrderIndex);
+			this.bias = new DoubleTunableParameter("Bias", fixedBias, possibleValues, possibleValuesPenalty, tuningOrderIndex);
 
 			// If the parameter must be tuned online, then we should add its reference to the sharedReferencesCollector
 			sharedReferencesCollector.addParameterToTune(this.bias);
 
 		}else{
-			this.bias = new DoubleTunableParameter(fixedBias);
+			this.bias = new DoubleTunableParameter("Bias", fixedBias);
 		}
 
 	}

@@ -44,13 +44,13 @@ public class CadiaBetaComputer extends BetaComputer{
 				tuningOrderIndex =  gamerSettings.getIntPropertyValue("BetaComputer.tuningOrderIndexK");
 			}
 
-			this.k = new IntTunableParameter(fixedK, possibleValues, possibleValuesPenalty, tuningOrderIndex);
+			this.k = new IntTunableParameter("K", fixedK, possibleValues, possibleValuesPenalty, tuningOrderIndex);
 
 			// If the parameter must be tuned online, then we should add its reference to the sharedReferencesCollector
 			sharedReferencesCollector.addParameterToTune(this.k);
 
 		}else{
-			this.k = new IntTunableParameter(fixedK);
+			this.k = new IntTunableParameter("K", fixedK);
 		}
 
 	}

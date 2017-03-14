@@ -214,17 +214,17 @@ public class HierarchicalSingleMabParametersTuner extends SingleMabParametersTun
 		GamerLogger.log(GamerLogger.FORMAT.CSV_FORMAT, "ParametersTunerStats", "");
 
 		for(int i = 0; i < this.rolesMabs.length; i++){
-			this.logStatsOfMab(this.rolesMabs[i], i, "");
+			this.logStatsOfMab(this.rolesMabs[i], i, "", "", 0);
 		}
 
 	}
 
-	private void logStatsOfMab(HierarchicalFixedMab currentMab, int role, String partialMove){
+	private void logStatsOfMab(HierarchicalFixedMab currentMab, int role, String partialParamValues, String partialParams, int paramIndex){
 		if(currentMab != null){
 			MoveStats[] stats = currentMab.getMoveStats();
 
 			for(int i = 0; i < stats.length; i++){
-				GamerLogger.log(GamerLogger.FORMAT.CSV_FORMAT, "ParametersTunerStats", "ROLE=;" + role + ";PARTIAL_MOVE=;[ " + partialMove + i + " ]" + ";VISITS=;" + stats[i].getVisits() + ";SCORE_SUM=;" + stats[i].getScoreSum() + ";AVG_VALUE=;" + (stats[i].getVisits() <= 0 ? "0" : (stats[i].getScoreSum()/((double)stats[i].getVisits()))));
+				GamerLogger.log(GamerLogger.FORMAT.CSV_FORMAT, "ParametersTunerStats", "ROLE=;" + this.gameDependentParameters.getTheMachine().convertToExplicitRole(this.gameDependentParameters.getTheMachine().getRoles().get(i)) + ";PARAMS=;[ " + partialParams + this.classesNames[paramIndex] + " ];PARTIAL_VALUES=;[ " + partialParamValues + this.classesValues[paramIndex][i] + " ];PENALTY=;" + (this.unitMovesPenalty != null ? this.unitMovesPenalty[paramIndex][i] : -1) + ";VISITS=;" + stats[i].getVisits() + ";SCORE_SUM=;" + stats[i].getScoreSum() + ";AVG_VALUE=;" + (stats[i].getVisits() <= 0 ? "0" : (stats[i].getScoreSum()/((double)stats[i].getVisits()))));
 			}
 
 			HierarchicalFixedMab[] nextMabs = currentMab.getNextMabs();
@@ -232,7 +232,7 @@ public class HierarchicalSingleMabParametersTuner extends SingleMabParametersTun
 			if(nextMabs != null){
 				for(int i = 0; i < nextMabs.length; i++){
 					GamerLogger.log(GamerLogger.FORMAT.CSV_FORMAT, "ParametersTunerStats", "");
-					this.logStatsOfMab(nextMabs[i], role, partialMove + i + " ");
+					this.logStatsOfMab(nextMabs[i], role, partialParamValues + this.classesValues[paramIndex][i] + " ", partialParams + this.classesNames[paramIndex] + " ", paramIndex+1);
 				}
 			}
 		}

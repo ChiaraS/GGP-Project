@@ -12,6 +12,11 @@ public abstract class ParametersTuner extends SearchManagerComponent{
 	protected boolean tuneAllRoles;
 
 	/**
+	 * Names of the classes being considered, i.e. names of the parameters being tuned.
+	 */
+	protected String[] classesNames;
+
+	/**
 	 * Size of the classes of unit actions of the combinatorial problem.
 	 *
 	 * Each parameter being tuned corresponds to one class. The size of a class is the number of
@@ -33,6 +38,12 @@ public abstract class ParametersTuner extends SearchManagerComponent{
 	 *
 	 */
 	protected int[] classesLength;
+
+	/**
+	 * Needed only for logging. Given this values we could avoid keeping as parameter the classesLenght,
+	 * because the length of each class can be deduced from here.
+	 */
+	protected String[][] classesValues;
 
 	/**
 	 * For each class, for each unit move in the class, this array specifies the penalty.
@@ -57,14 +68,20 @@ public abstract class ParametersTuner extends SearchManagerComponent{
 
 		this.tuneAllRoles = toCopy.isTuningAllRoles();
 
+		this.classesNames = null;
+
 		this.classesLength = null;
+
+		this.classesValues = null;
 
 		this.unitMovesPenalty = null;
 
 	}
 
-	public void setClassesLengthAndPenalty(int[] classesLength, double[][] unitMovesPenalty) {
+	public void setClassesAndPenalty(String[] classesNames, int[] classesLength, String[][] classesValues, double[][] unitMovesPenalty) {
+		this.classesNames = classesNames;
 		this.classesLength = classesLength;
+		this.classesValues = classesValues;
 		this.unitMovesPenalty = unitMovesPenalty;
 	}
 

@@ -25,15 +25,15 @@ public class IntTunableParameter extends TunableParameter {
 	 */
 	private int[] currentValues;
 
-	public IntTunableParameter(int fixedValue) {
+	public IntTunableParameter(String name, int fixedValue) {
 
-		this(fixedValue, null, null, -1);
+		this(name, fixedValue, null, null, -1);
 
 	}
 
-	public IntTunableParameter(int fixedValue, int[] possibleValues, double[] possibleValuesPenalty, int tuningOrderIndex) {
+	public IntTunableParameter(String name, int fixedValue, int[] possibleValues, double[] possibleValuesPenalty, int tuningOrderIndex) {
 
-		super(possibleValuesPenalty, tuningOrderIndex);
+		super(name, possibleValuesPenalty, tuningOrderIndex);
 
 		this.fixedValue = fixedValue;
 
@@ -128,6 +128,15 @@ public class IntTunableParameter extends TunableParameter {
 			return params;
 		}
 
+	}
+
+	@Override
+	public String[] getPossibleValues() {
+		String[] values = new String[this.possibleValues.length];
+		for(int i = 0; i < this.possibleValues.length; i++){
+			values[i] = ""+this.possibleValues[i];
+		}
+		return values;
 	}
 
 }

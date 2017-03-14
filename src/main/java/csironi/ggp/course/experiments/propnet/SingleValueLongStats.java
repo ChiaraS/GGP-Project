@@ -118,6 +118,7 @@ public class SingleValueLongStats implements SingleValueStats{
 		return (standardDev / Math.sqrt(this.toDoubleWithCheck(this.values.size())));
 	}
 
+	@Override
 	public double getMedian(){
 
 		ArrayList<Long> valuesCopy = new ArrayList<Long>(this.values);
@@ -158,6 +159,10 @@ public class SingleValueLongStats implements SingleValueStats{
 	@Override
 	public boolean isEmpty(){
 		return this.values.isEmpty();
+	}
+
+	public long getTotalSum(){
+		return this.valuesSum;
 	}
 
 }

@@ -56,13 +56,13 @@ public class UctEvaluator extends MoveEvaluator {
 				tuningOrderIndex =  gamerSettings.getIntPropertyValue("MoveEvaluator.tuningOrderIndexC");
 			}
 
-			this.c = new DoubleTunableParameter(fixedC, possibleValues, possibleValuesPenalty, tuningOrderIndex);
+			this.c = new DoubleTunableParameter("C", fixedC, possibleValues, possibleValuesPenalty, tuningOrderIndex);
 
 			// If the parameter must be tuned online, then we should add its reference to the sharedReferencesCollector
 			sharedReferencesCollector.addParameterToTune(this.c);
 
 		}else{
-			this.c = new DoubleTunableParameter(fixedC);
+			this.c = new DoubleTunableParameter("C", fixedC);
 		}
 
 		// Get default value for Fpu (this is the value used for the roles for which we are not tuning the parameter)
@@ -87,13 +87,13 @@ public class UctEvaluator extends MoveEvaluator {
 				tuningOrderIndex =  gamerSettings.getIntPropertyValue("MoveEvaluator.tuningOrderIndexFpu");
 			}
 
-			this.fpu = new DoubleTunableParameter(fixedFpu, possibleValues, possibleValuesPenalty, tuningOrderIndex);
+			this.fpu = new DoubleTunableParameter("Fpu", fixedFpu, possibleValues, possibleValuesPenalty, tuningOrderIndex);
 
 			// If the parameter must be tuned online, then we should add its reference to the sharedReferencesCollector
 			sharedReferencesCollector.addParameterToTune(this.fpu);
 
 		}else{
-			this.fpu = new DoubleTunableParameter(fixedFpu);
+			this.fpu = new DoubleTunableParameter("Fpu", fixedFpu);
 		}
 
 	}
