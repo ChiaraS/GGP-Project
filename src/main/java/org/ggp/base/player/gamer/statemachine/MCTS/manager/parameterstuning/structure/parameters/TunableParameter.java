@@ -62,7 +62,8 @@ public abstract class TunableParameter {
 		}else{
 			s = "null";
 		}
-		return indentation + "POSSIBLE_VALUES_PENALTY = " + s +
+		return indentation + "NAME = " + this.name +
+				indentation + "POSSIBLE_VALUES_PENALTY = " + s +
 				indentation + "TUNING_ORDER_INDEX = " + this.tuningOrderIndex;
 	}
 

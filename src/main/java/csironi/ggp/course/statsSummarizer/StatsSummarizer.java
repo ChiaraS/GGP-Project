@@ -12,6 +12,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -1021,7 +1022,7 @@ public class StatsSummarizer {
 									}
 
 									//System.out.println("Extracting stats");
-									extractParamsStats(paramsStatsFiles[k], mabTypeMap, mabTypeMapAllRoles);
+									extractParamsStats(paramsStatsFiles[k], mabType, mabTypeMap, mabTypeMapAllRoles);
 								}
 							}
 						}
@@ -1105,10 +1106,8 @@ public class StatsSummarizer {
 
 	}
 
-	private static void extractParamsStats(File theParamsStatsFile, Map<String,Map<String,Map<String,Map<String,SingleValueStats>>>> mabTypeMap,
+	private static void extractParamsStats(File theParamsStatsFile, String mabType, Map<String,Map<String,Map<String,Map<String,SingleValueStats>>>> mabTypeMap,
 			Map<String,Map<String,Map<String,Map<String,SingleValueStats>>>> mabTypeMapAllRoles){
-
-
 
 		BufferedReader br = null;
 		String theLine;
@@ -1143,38 +1142,56 @@ public class StatsSummarizer {
 				if(splitLine.length == 14){
 					// For each line, parse the parameters and add them to their statistic
 
-					// Changing role
-					if(!splitLine[1].equals(role)){
-						role = splitLine[1];
-						roleMap = mabTypeMap.get(role);
-						if(roleMap == null){
-							roleMap = new HashMap<String,Map<String,Map<String,SingleValueStats>>>();
-							mabTypeMap.put(role, roleMap);
-						}
-						roleMapAllRoles = mabTypeMapAllRoles.get(role);
-						if(roleMapAllRoles == null){
-							roleMapAllRoles = new HashMap<String,Map<String,Map<String,SingleValueStats>>>();
-							mabTypeMapAllRoles.put(role, roleMapAllRoles);
-						}
+					// Changing role map
+					role = splitLine[1];
+					roleMap = mabTypeMap.get(role);
+					if(roleMap == null){
+						roleMap = new HashMap<String,Map<String,Map<String,SingleValueStats>>>();
+						mabTypeMap.put(role, roleMap);
+					}
+					roleMapAllRoles = mabTypeMapAllRoles.get(role);
+					if(roleMapAllRoles == null){
+						roleMapAllRoles = new HashMap<String,Map<String,Map<String,SingleValueStats>>>();
+						mabTypeMapAllRoles.put(role, roleMapAllRoles);
 					}
 
-					// Changing parameter
-					if(!splitLine[3].equals(parameter)){
+					// Get next parameter(s) and value(s)
+					if(mabType.equals("Global")){
+						String[] reordered = reorderParameters(splitLine[3], splitLine[5]);
+						if(reordered == null){
+							System.out.println("Wrong formatting of the .csv file " + theParamsStatsFile.getPath() + ".");
+							System.out.println("Stopping summarization of the file. Partial summarization: the number of samples of the statistics might not be equal anymore.");
+				        	if(br != null){
+					        	try {
+									br.close();
+								} catch (IOException ioe) {
+									System.out.println("Exception when closing the .csv file " + theParamsStatsFile.getPath() + ".");
+									ioe.printStackTrace();
+								}
+				        	}
+				        	return;
+						}
+
+						parameter = reordered[0];
+						parameterValue = reordered[1];
+					}else{
 						parameter = splitLine[3];
-						parameterMap = roleMap.get(parameter);
-						if(parameterMap == null){
-							parameterMap = new HashMap<String,Map<String,SingleValueStats>>();
-							roleMap.put(parameter, parameterMap);
-						}
-						parameterMapAllRoles = roleMapAllRoles.get(parameter);
-						if(parameterMapAllRoles == null){
-							parameterMapAllRoles = new HashMap<String,Map<String,SingleValueStats>>();
-							roleMapAllRoles.put(parameter, parameterMapAllRoles);
-						}
+						parameterValue = splitLine[5];
+					}
+
+					// Changing parameters maps
+					parameterMap = roleMap.get(parameter);
+					if(parameterMap == null){
+						parameterMap = new LinkedHashMap<String,Map<String,SingleValueStats>>();
+						roleMap.put(parameter, parameterMap);
+					}
+					parameterMapAllRoles = roleMapAllRoles.get(parameter);
+					if(parameterMapAllRoles == null){
+						parameterMapAllRoles = new LinkedHashMap<String,Map<String,SingleValueStats>>();
+						roleMapAllRoles.put(parameter, parameterMapAllRoles);
 					}
 
 					// Get maps for parameter value
-					parameterValue = splitLine[5];
 					parameterValueMap = parameterMap.get(parameterValue);
 					if(parameterValueMap == null){
 						parameterValueMap = new HashMap<String,SingleValueStats>();
@@ -1240,6 +1257,58 @@ public class StatsSummarizer {
         	return;
 		}
 
+	}
+
+	/**
+	 * Given a string representing parameters names in an arbitrary order and another string representing the
+	 * values of such parameters, this method reorders both strings so that the parameters names are ordered
+	 * alphabetically and the corresponding values are moved to the correct place.
+	 *
+	 * e.g. given the String of parameters names [K C Epsilon Ref] with values String [100 0.2 0.4 50], this
+	 * method returns [C Epsilon K Ref] and [0.2 0.4 100 50]
+	 *
+	 * @param parameters
+	 * @param values
+	 * @return
+	 */
+	private static String[] reorderParameters(String parameters, String values){
+
+		String[] splitParameters = parameters.split(" ");
+		String[] splitValues = values.split(" ");
+
+		if(splitParameters.length == splitValues.length){
+			if(splitParameters[0].equals("[") && splitParameters[splitParameters.length-1].equals("]") &&
+					splitValues[0].equals("[") && splitValues[splitValues.length-1].equals("]")){
+
+				// Order alphabetically
+				for(int i = 2; i < splitParameters.length-1; i++){
+					int j = i;
+					while(j > 1 && splitParameters[j].compareTo(splitParameters[j-1]) < 0 ){
+						// Switch parameters names
+						String tmp = splitParameters[j];
+						splitParameters[j] = splitParameters[j-1];
+						splitParameters[j-1] = tmp;
+						// Switch values
+						tmp = splitValues[j];
+						splitValues[j] = splitValues[j-1];
+						splitValues[j-1] = tmp;
+						j--;
+					}
+				}
+
+				// Re-build the strings
+				String parametersToReturn = splitParameters[0];
+				String valuesToReturn = splitValues[0];
+				for(int i = 1; i < splitParameters.length; i++){
+					parametersToReturn += (" " + splitParameters[i]);
+					valuesToReturn += (" " + splitValues[i]);
+				}
+
+				return new String[]{parametersToReturn, valuesToReturn};
+			}
+		}
+
+		return null;
 	}
 
 	private static void addStatisticsValues(Map<String, Map<String, Map<String, SingleValueDoubleStats>>> aggregatedStatistics, String playerRoleType, String statisticHeader, String[] statisticsNames, double[] statisticsValues){

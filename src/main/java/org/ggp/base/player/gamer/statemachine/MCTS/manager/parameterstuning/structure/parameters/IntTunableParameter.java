@@ -94,8 +94,13 @@ public class IntTunableParameter extends TunableParameter {
 			String possibleValuesString = "[ ";
 
 			for(int i = 0; i < this.possibleValues.length; i++){
+				if(this.possibleValues[i] == Integer.MAX_VALUE){
+					possibleValuesString += "inf ";
+				}else{
+					possibleValuesString += this.possibleValues[i] + " ";
+				}
 
-				possibleValuesString += this.possibleValues[i] + " ";
+
 
 			}
 
@@ -134,7 +139,11 @@ public class IntTunableParameter extends TunableParameter {
 	public String[] getPossibleValues() {
 		String[] values = new String[this.possibleValues.length];
 		for(int i = 0; i < this.possibleValues.length; i++){
-			values[i] = ""+this.possibleValues[i];
+			if(this.possibleValues[i] == Integer.MAX_VALUE){
+				values[i] = "inf";
+			}else{
+				values[i] = ""+this.possibleValues[i];
+			}
 		}
 		return values;
 	}

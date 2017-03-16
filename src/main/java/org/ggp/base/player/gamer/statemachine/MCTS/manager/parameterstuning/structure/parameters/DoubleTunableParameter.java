@@ -93,8 +93,11 @@ public class DoubleTunableParameter extends TunableParameter {
 			String possibleValuesString = "[ ";
 
 			for(int i = 0; i < this.possibleValues.length; i++){
-
-				possibleValuesString += this.possibleValues[i] + " ";
+				if(this.possibleValues[i] == Double.MAX_VALUE){
+					possibleValuesString += "inf ";
+				}else{
+					possibleValuesString += this.possibleValues[i] + " ";
+				}
 
 			}
 
@@ -133,7 +136,11 @@ public class DoubleTunableParameter extends TunableParameter {
 	public String[] getPossibleValues() {
 		String[] values = new String[this.possibleValues.length];
 		for(int i = 0; i < this.possibleValues.length; i++){
-			values[i] = ""+this.possibleValues[i];
+			if(this.possibleValues[i] == Double.MAX_VALUE){
+				values[i] = "inf";
+			}else{
+				values[i] = ""+this.possibleValues[i];
+			}
 		}
 		return values;
 	}
