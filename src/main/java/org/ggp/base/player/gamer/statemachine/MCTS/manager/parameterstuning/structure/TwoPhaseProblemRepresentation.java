@@ -3,7 +3,7 @@ package org.ggp.base.player.gamer.statemachine.MCTS.manager.parameterstuning.str
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.parameterstuning.structure.mabs.FixedMab;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.parameterstuning.structure.mabs.IncrementalMab;
 
-public class NaiveProblemRepresentation {
+public class TwoPhaseProblemRepresentation {
 
 	/**
 	 * The global Multi-Armed Bandit problem.
@@ -17,7 +17,7 @@ public class NaiveProblemRepresentation {
 	 */
 	private FixedMab[] localMabs;
 
-	public NaiveProblemRepresentation(int[] classesLength) {
+	public TwoPhaseProblemRepresentation(int[] classesLength) {
 
 		this.globalMab = new IncrementalMab();
 
@@ -37,7 +37,7 @@ public class NaiveProblemRepresentation {
 	}
 
     /**
-     * Ths method keeps factor*oldStatistic statistics. Factor should be in the interval [0,1].
+     * This method keeps factor*oldStatistic statistics. Factor should be in the interval [0,1].
      *
      * @param factor
      */

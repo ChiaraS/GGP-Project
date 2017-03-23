@@ -161,10 +161,11 @@ public abstract class SearchManagerComponent {
 		this.random = random;
 	}
 
+	/*
 	public SearchManagerComponent(SearchManagerComponent toCopy) {
 		this.gameDependentParameters = toCopy.getGameDependentParameters();
 		this.random = toCopy.getRandom();
-	}
+	}*/
 
 	/**
 	 * Called after creating all components. Sets references of the component to objects created during creation.

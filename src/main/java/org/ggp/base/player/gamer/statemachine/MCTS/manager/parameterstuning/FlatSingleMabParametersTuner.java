@@ -52,6 +52,7 @@ public class FlatSingleMabParametersTuner extends SingleMabParametersTuner {
 
 	}
 
+	/*
 	public FlatSingleMabParametersTuner(FlatSingleMabParametersTuner toCopy) {
 		super(toCopy);
 
@@ -63,7 +64,7 @@ public class FlatSingleMabParametersTuner extends SingleMabParametersTuner {
 
 		this.selectedCombinationsIndices = null;
 
-	}
+	}*/
 
 	/**
      * After the end of each game clear the tuner.

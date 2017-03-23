@@ -6,28 +6,49 @@ import org.ggp.base.player.gamer.statemachine.GamerSettings;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.GameDependentParameters;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.SharedReferencesCollector;
 
-public class SequentialParametersTuner extends ParametersTuner {
+public class LSIParametersTuner extends TwoPhaseParametersTuner {
 
 	/**
-	 * If true, after all the parameters have been all tuned once sequentially,
-	 * this tuner will randomize their order before tuning them all again sequentially.
-	 * If false, they will be tuned sequentially repeatedly always in the same order.
+	 * Number of samples (i.e. simulations) that will be dedicated to the generation of
+	 * candidate combinatorial actions (i.e. combinations of parameters) that will be
+	 * evaluated in the subsequent phase.
 	 */
-	private boolean shuffleTuningOrder;
+	private int numGenSamples;
 
-	public SequentialParametersTuner(
-			GameDependentParameters gameDependentParameters, Random random,
-			GamerSettings gamerSettings,
+	/**
+	 * Number of samples (i.e. simulations) that will be dedicated to the evaluation of
+	 * the generated combinatorial actions (i.e. combinations of parameters) before
+	 * committing to a single combinatorial action (i.e. combination of parameters).
+	 */
+	private int numEvalSamples;
+
+	/**
+	 * Counts the total number of samples taken so far.
+	 */
+	private int totalSamplesCounter;
+
+	public LSIParametersTuner(GameDependentParameters gameDependentParameters, Random random, GamerSettings gamerSettings,
 			SharedReferencesCollector sharedReferencesCollector) {
-		super(gameDependentParameters, random, gamerSettings,
-				sharedReferencesCollector);
+		super(gameDependentParameters, random, gamerSettings, sharedReferencesCollector);
 		// TODO Auto-generated constructor stub
 	}
 
 	@Override
 	public int[][] selectNextCombinations() {
-		// TODO Auto-generated method stub
+
+		/*
+		if(generation){
+
+			//
+
+		}else if(evaluation){
+
+		}else{
+			return best;
+		}
+		*/
 		return null;
+
 	}
 
 	@Override

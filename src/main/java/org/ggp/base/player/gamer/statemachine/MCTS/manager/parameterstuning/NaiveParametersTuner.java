@@ -12,7 +12,7 @@ import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.SearchManagerC
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.SharedReferencesCollector;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.parameterstuning.selectors.TunerSelector;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.parameterstuning.structure.CombinatorialCompactMove;
-import org.ggp.base.player.gamer.statemachine.MCTS.manager.parameterstuning.structure.NaiveProblemRepresentation;
+import org.ggp.base.player.gamer.statemachine.MCTS.manager.parameterstuning.structure.TwoPhaseProblemRepresentation;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.parameterstuning.structure.mabs.FixedMab;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.parameterstuning.structure.mabs.IncrementalMab;
 import org.ggp.base.util.logging.GamerLogger;
@@ -21,7 +21,9 @@ import org.ggp.base.util.statemachine.structure.Move;
 
 import csironi.ggp.course.utils.Pair;
 
-public class NaiveParametersTuner extends ParametersTuner {
+public class NaiveParametersTuner extends TwoPhaseParametersTuner {
+
+	protected TwoPhaseProblemRepresentation[] roleProblems;
 
 	private double epsilon0;
 
@@ -42,8 +44,6 @@ public class NaiveParametersTuner extends ParametersTuner {
 	 * will be ignored and the local MABs will be used even if this variable is true.
 	 */
 	private boolean useGlobalBest;
-
-	private NaiveProblemRepresentation[] roleProblems;
 
 	private int[][] selectedCombinations;
 
@@ -96,10 +96,11 @@ public class NaiveParametersTuner extends ParametersTuner {
 		this.selectedCombinations = null;
 	}
 
+	/*
 	public NaiveParametersTuner(NaiveParametersTuner toCopy) {
 		super(toCopy);
 
-		this.epsilon0 = toCopy.getEpsilon0();
+		this.epsilon0 = toCopy.getEpsilon0();*/
 
 		/* TODO: ATTENTON! Here we just copy the reference because all tuners use the same selector!
 		However, doing so, whenever the methods clearComponent() and setUpComponent() are called  on
@@ -116,11 +117,11 @@ public class NaiveParametersTuner extends ParametersTuner {
 			GamerLogger.logError("SearchManagerCreation", "Error when instantiating TunerSelector " + toCopy.getGlobalMabSelector().getClass().getSimpleName() + ".");
 			GamerLogger.logStackTrace("SearchManagerCreation", e);
 			throw new RuntimeException(e);
-		}*/
+		}*//*
 		this.globalMabSelector = toCopy.getGlobalMabSelector();
 		this.localMabsSelector = toCopy.getLocalMabSelector();
 		this.bestCombinationSelector = toCopy.getBestCombinationSelector();
-	}
+	}*/
 
 	@Override
 	public void setReferences(SharedReferencesCollector sharedReferencesCollector) {
@@ -140,11 +141,11 @@ public class NaiveParametersTuner extends ParametersTuner {
 			numRolesToTune = 1;
 		}
 
-		// Create a MAB representation of the combinatorial problem for each role
-		this.roleProblems = new NaiveProblemRepresentation[numRolesToTune];
+		// Create a two phase representation of the combinatorial problem for each role
+		this.roleProblems = new TwoPhaseProblemRepresentation[numRolesToTune];
 
 		for(int i = 0; i < this.roleProblems.length; i++){
-			roleProblems[i] = new NaiveProblemRepresentation(this.classesLength);
+			roleProblems[i] = new TwoPhaseProblemRepresentation(this.classesLength);
 		}
 
 		this.selectedCombinations = new int[numRolesToTune][this.classesLength.length];
@@ -397,11 +398,6 @@ public class NaiveParametersTuner extends ParametersTuner {
 
 	}
 
-	@Override
-	public int getNumIndependentCombinatorialProblems() {
-		return this.roleProblems.length;
-	}
-
 	public double getEpsilon0(){
 		return this.epsilon0;
 	}
@@ -426,4 +422,8 @@ public class NaiveParametersTuner extends ParametersTuner {
 
 	}
 
+	@Override
+	public int getNumIndependentCombinatorialProblems() {
+		return this.roleProblems.length;
+	}
 }

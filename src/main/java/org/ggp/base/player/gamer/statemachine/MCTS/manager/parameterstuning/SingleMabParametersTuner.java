@@ -59,8 +59,9 @@ public abstract class SingleMabParametersTuner extends ParametersTuner {
 
 	}
 
+	/*
 	public SingleMabParametersTuner(SingleMabParametersTuner toCopy) {
-		super(toCopy);
+		super(toCopy); */
 
 		/* TODO: ATTENTON! Here we just copy the reference because all tuners use the same selector!
 		However, doing so, whenever the methods clearComponent() and setUpComponent() are called  on
@@ -80,11 +81,12 @@ public abstract class SingleMabParametersTuner extends ParametersTuner {
 		}
 		*/
 
+	/*
 		this.nextCombinationSelector = toCopy.getNextCombinationSelector();
 
 		this.bestCombinationSelector = toCopy.getBestCombinationSelector();
 
-	}
+	}*/
 
 	@Override
 	public void setReferences(SharedReferencesCollector sharedReferencesCollector) {

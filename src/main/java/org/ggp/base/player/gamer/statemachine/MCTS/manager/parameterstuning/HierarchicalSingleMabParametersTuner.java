@@ -35,6 +35,7 @@ public class HierarchicalSingleMabParametersTuner extends SingleMabParametersTun
 
 	}
 
+	/*
 	public HierarchicalSingleMabParametersTuner(SingleMabParametersTuner toCopy) {
 		super(toCopy);
 
@@ -42,7 +43,7 @@ public class HierarchicalSingleMabParametersTuner extends SingleMabParametersTun
 
 		this.selectedExpandedCombinationsIndices = null;
 
-	}
+	}*/
 
 	/**
      * After the end of each game clear the tuner.

@@ -160,7 +160,7 @@ public class UctEvaluator extends MoveEvaluator {
 	public String getComponentParameters(String indentation) {
 
 		return indentation + "C = " + this.c.getParameters(indentation + "  ") +
-				indentation + "IFPU = " + this.fpu.getParameters(indentation + "  ");
+				indentation + "FPU = " + this.fpu.getParameters(indentation + "  ");
 
 	}
 

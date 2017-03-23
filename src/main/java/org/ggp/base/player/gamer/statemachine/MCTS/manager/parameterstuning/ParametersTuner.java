@@ -63,6 +63,7 @@ public abstract class ParametersTuner extends SearchManagerComponent{
 
 	}
 
+	/*
 	public ParametersTuner(ParametersTuner toCopy) {
 		super(toCopy);
 
@@ -76,7 +77,7 @@ public abstract class ParametersTuner extends SearchManagerComponent{
 
 		this.unitMovesPenalty = null;
 
-	}
+	}*/
 
 	public void setClassesAndPenalty(String[] classesNames, int[] classesLength, String[][] classesValues, double[][] unitMovesPenalty) {
 		this.classesNames = classesNames;
