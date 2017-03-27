@@ -21,7 +21,7 @@ import org.ggp.base.util.statemachine.structure.Move;
 
 import csironi.ggp.course.utils.Pair;
 
-public class NaiveParametersTuner extends TwoPhaseParametersTuner {
+public class NaiveParametersTuner extends ParametersTuner {
 
 	protected TwoPhaseProblemRepresentation[] roleProblems;
 
@@ -46,6 +46,9 @@ public class NaiveParametersTuner extends TwoPhaseParametersTuner {
 	private boolean useGlobalBest;
 
 	private int[][] selectedCombinations;
+
+	private int indexOfK;
+	private int indexOfRef;
 
 	public NaiveParametersTuner(GameDependentParameters gameDependentParameters, Random random,
 			GamerSettings gamerSettings, SharedReferencesCollector sharedReferencesCollector) {
@@ -96,6 +99,27 @@ public class NaiveParametersTuner extends TwoPhaseParametersTuner {
 		this.selectedCombinations = null;
 	}
 
+	@Override
+	public void setClassesAndPenalty(String[] classesNames, int[] classesLength, String[][] classesValues, double[][] unitMovesPenalty) {
+		super.setClassesAndPenalty(classesNames, classesLength, classesValues, unitMovesPenalty);
+
+		this.indexOfK = -1;
+		this.indexOfRef = -1;
+
+		for(int i = 0; i < this.classesNames.length; i++){
+			if(this.classesNames[i].equals("K")){
+				this.indexOfK = i;
+			}else if(this.classesNames[i].equals("Ref")){
+				this.indexOfRef = i;
+			}
+		}
+
+		if(this.indexOfK == -1 || this.indexOfRef == -1 || this.indexOfK == this.indexOfRef){
+			GamerLogger.logError("SearchManagerCreation", "Error when setting the indices of K and Ref: K = " + this.indexOfK + ", ref = " + this.indexOfRef + ".");
+		}
+
+	}
+
 	/*
 	public NaiveParametersTuner(NaiveParametersTuner toCopy) {
 		super(toCopy);
@@ -133,6 +157,8 @@ public class NaiveParametersTuner extends TwoPhaseParametersTuner {
 	@Override
 	public void setUpComponent() {
 
+		super.setUpComponent();
+
 		int numRolesToTune;
 
 		if(this.tuneAllRoles){
@@ -160,6 +186,9 @@ public class NaiveParametersTuner extends TwoPhaseParametersTuner {
 
 	@Override
 	public void clearComponent() {
+
+		super.clearComponent();
+
 		this.globalMabSelector.clearComponent();
 		this.localMabsSelector.clearComponent();
 		this.bestCombinationSelector.clearComponent();
@@ -251,6 +280,27 @@ public class NaiveParametersTuner extends TwoPhaseParametersTuner {
 			}
 		}
 
+		String globalParamsOrder = "[ ";
+		for(int i = 0; i < this.classesNames.length; i++){
+			globalParamsOrder += (this.classesNames[i] + " ");
+		}
+		globalParamsOrder += "]";
+
+		String toLog = "";
+
+		for(int i = 0; i < this.selectedCombinations.length; i++){
+
+			toLog += ("ROLE=;" + this.gameDependentParameters.getTheMachine().convertToExplicitRole(this.gameDependentParameters.getTheMachine().getRoles().get(i)) + ";PARAMS=;" + globalParamsOrder + ";SELECTED_COMBINATION=;[ ");
+
+			for(int j = 0; j < this.selectedCombinations[i].length; j++){
+				toLog += this.classesValues[j][this.selectedCombinations[i][j]] + " ";
+			}
+
+			toLog += "];\n";
+		}
+
+		GamerLogger.log(GamerLogger.FORMAT.CSV_FORMAT, "BestParamsCombo", toLog);
+
 		return this.selectedCombinations;
 	}
 
@@ -267,8 +317,16 @@ public class NaiveParametersTuner extends TwoPhaseParametersTuner {
 
 			/********** Update global MAB **********/
 
+			// If K = 0 update statistics of a move where Ref has a default value, so that always the same move is updated.
+			if(this.classesValues[this.indexOfK][this.selectedCombinations[i][this.indexOfK]].equals("0")){
+				this.selectedCombinations[i][this.indexOfRef] = 0;
+			}
+
+
 			// Get the info of the combinatorial move in the global MAB
 			CombinatorialCompactMove theMove = new CombinatorialCompactMove(this.selectedCombinations[i]);
+
+
 			Pair<MoveStats,Double> globalInfo = this.roleProblems[i].getGlobalMab().getMovesInfo().get(theMove);
 
 			// If the info doesn't exist, add the move to the MAB, computing the corresponding penalty
@@ -289,6 +347,16 @@ public class NaiveParametersTuner extends TwoPhaseParametersTuner {
 			// Update the stats for each local MAB
 			FixedMab[] localMabs = this.roleProblems[i].getLocalMabs();
 			for(int j = 0; j < localMabs.length; j++){
+
+				// TODO: temporary solution! Fix with something general that works for any parameter and can be set from file.
+				if(j == this.indexOfRef){ // Check if we have to avoid updating stats for Ref
+
+					if(this.classesValues[this.indexOfK][this.selectedCombinations[i][this.indexOfK]].equals("0")){
+						continue; // Don't update the MAB of Ref if K=0;
+					}
+
+				}
+
 				MoveStats localStats = localMabs[j].getMoveStats()[this.selectedCombinations[i][j]];
 				// Update the stats
 				localStats.incrementScoreSum(rewards[i]);

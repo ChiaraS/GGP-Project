@@ -69,14 +69,12 @@ public class SequentialParametersTuner extends ParametersTuner {
 
 	@Override
 	public void clearComponent() {
-		// TODO Auto-generated method stub
-
+		super.clearComponent();
 	}
 
 	@Override
 	public void setUpComponent() {
-		// TODO Auto-generated method stub
-
+		super.setUpComponent();
 	}
 
 }

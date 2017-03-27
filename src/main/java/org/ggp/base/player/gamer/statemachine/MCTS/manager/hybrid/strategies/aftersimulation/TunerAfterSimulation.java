@@ -37,24 +37,26 @@ public class TunerAfterSimulation extends AfterSimulationStrategy {
 	@Override
 	public void afterSimulationActions(SimulationResult simulationResult) {
 
-		int[] goals;
+		if(this.parametersTuner.isTuning()){
+			int[] goals;
 
-		// We have to check if the ParametersTuner is tuning parameters only for the playing role
-		// or for all roles and update the statistics with appropriate goals.
-		if(this.parametersTuner.getNumIndependentCombinatorialProblems() == 1){
+			// We have to check if the ParametersTuner is tuning parameters only for the playing role
+			// or for all roles and update the statistics with appropriate goals.
+			if(this.parametersTuner.getNumIndependentCombinatorialProblems() == 1){
 
-			goals = new int[1];
-			goals[0] = simulationResult.getTerminalGoals()[this.gameDependentParameters.getMyRoleIndex()];
+				goals = new int[1];
+				goals[0] = simulationResult.getTerminalGoals()[this.gameDependentParameters.getMyRoleIndex()];
 
-		}else if(this.parametersTuner.getNumIndependentCombinatorialProblems() == this.gameDependentParameters.getNumRoles()){
+			}else if(this.parametersTuner.getNumIndependentCombinatorialProblems() == this.gameDependentParameters.getNumRoles()){
 
-			goals = simulationResult.getTerminalGoals();
+				goals = simulationResult.getTerminalGoals();
 
-		}else{
-			throw new RuntimeException("TunerAfterSimulation-afterSimulationActions(): combinatorial tuner is tuning for the wrong number of roles.");
+			}else{
+				throw new RuntimeException("TunerAfterSimulation-afterSimulationActions(): combinatorial tuner is tuning for the wrong number of roles.");
+			}
+
+			this.parametersTuner.updateStatistics(goals);
 		}
-
-		this.parametersTuner.updateStatistics(goals);
 
 	}
 

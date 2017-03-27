@@ -99,6 +99,7 @@ public abstract class SingleMabParametersTuner extends ParametersTuner {
      */
 	@Override
 	public void clearComponent(){
+		super.clearComponent();
 		this.nextCombinationSelector.clearComponent();
 		this.bestCombinationSelector.clearComponent();
 	}
@@ -110,6 +111,7 @@ public abstract class SingleMabParametersTuner extends ParametersTuner {
      */
 	@Override
 	public void setUpComponent(){
+		super.setUpComponent();
 		this.nextCombinationSelector.setUpComponent();
 		this.bestCombinationSelector.setUpComponent();
 	}

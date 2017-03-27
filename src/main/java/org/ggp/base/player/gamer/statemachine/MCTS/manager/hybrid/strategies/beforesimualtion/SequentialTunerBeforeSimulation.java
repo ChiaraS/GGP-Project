@@ -80,7 +80,7 @@ public class SequentialTunerBeforeSimulation extends TunerBeforeSimulation {
 	@Override
 	public void beforeSimulationActions() {
 
-		if(this.simCountForBatch == 0){
+		if(this.simCount%this.batchSize == 0){
 
 			// Get for each role the next value to test for the parameter being tuned and set it.
 			int[][] nextCombinations = this.parametersTuner.selectNextCombinations();
@@ -88,7 +88,7 @@ public class SequentialTunerBeforeSimulation extends TunerBeforeSimulation {
 			this.setNewValuesForParameter(nextCombinations);
 		}
 
-		this.simCountForBatch = (this.simCountForBatch + 1)%this.batchSize;
+		this.simCount++;
 
 	}
 
@@ -139,7 +139,7 @@ public class SequentialTunerBeforeSimulation extends TunerBeforeSimulation {
 		// Every time we start tuning a new parameter we also start recomputing the number
 		// of simulations of the current batch used to know when to change the value that
 		// the current batch of simulations is evaluating.
-		this.simCountForBatch = 0;
+		//this.simCountForBatch = 0;
 
 	}
 

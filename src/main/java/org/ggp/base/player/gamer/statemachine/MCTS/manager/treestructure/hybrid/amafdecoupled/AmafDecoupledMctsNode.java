@@ -47,7 +47,7 @@ public class AmafDecoupledMctsNode extends DecoupledMctsNode implements AmafNode
 
 	/**
 	 * Returns the number of moves for which the plain RAVE algorithm would memorize the AMAF statistics.
-	 * Since we implement RAVE as GRAVE with minAMAFVisits=0, both algorithms will memorize the same amount
+	 * Since we implement RAVE as GRAVE with ref=0, both algorithms will memorize the same amount
 	 * of statistics per node; i.e. each node memorizes the AMAF statistics for every move encountered in all
 	 * the simulations performed from that node on, because we don't know in which other node those statistics
 	 * will be used. However, RAVE could be implemented separately to optimize its memory usage, memorizing

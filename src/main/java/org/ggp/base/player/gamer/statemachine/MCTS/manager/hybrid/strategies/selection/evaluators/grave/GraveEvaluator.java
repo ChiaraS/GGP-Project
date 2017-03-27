@@ -26,7 +26,7 @@ public class GraveEvaluator extends UctEvaluator{
 	 *
 	 * Note: each role has its own reference to the closest ancestor with enough number of visits
 	 * because each role might have a different value for the threshold on the number of visits
-	 * (i.e. the parameter minAmafVisits, or as called in the paper, "ref").
+	 * (i.e. the parameter "ref").
 	 */
 	private List<Map<Move, MoveStats>> closestAmafStats;
 

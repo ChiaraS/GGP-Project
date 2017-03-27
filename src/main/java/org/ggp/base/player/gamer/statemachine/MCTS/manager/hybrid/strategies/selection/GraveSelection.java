@@ -18,42 +18,42 @@ public class GraveSelection extends MoveValueSelection {
 	/**
 	 * Minimum number of visits that the node must have to be allowed to use its own AMAF statistics.
 	 */
-	private IntTunableParameter minAmafVisits;
+	private IntTunableParameter ref;
 
 	public GraveSelection(GameDependentParameters gameDependentParameters, Random random,
 			GamerSettings gamerSettings, SharedReferencesCollector sharedReferencesCollector) {
 
 		super(gameDependentParameters, random, gamerSettings, sharedReferencesCollector);
 
-		// Get default value for minAmafVisits (this is the value used for the roles for which we are not tuning the parameter)
-		int fixedMinAmafVisits = gamerSettings.getIntPropertyValue("SelectionStrategy.fixedMinAmafVisits");
+		// Get default value for ref (this is the value used for the roles for which we are not tuning the parameter)
+		int fixedRef = gamerSettings.getIntPropertyValue("SelectionStrategy.fixedRef");
 
-		if(gamerSettings.getBooleanPropertyValue("SelectionStrategy.tuneMinAmafVisits")){
+		if(gamerSettings.getBooleanPropertyValue("SelectionStrategy.tuneRef")){
 			// If we have to tune the parameter then we look in the setting for all the values that we must use
 			// Note: the format for these values in the file must be the following:
-			// SelectionStrategy.valuesForMinAmafVisits=v1;v2;...;vn
+			// SelectionStrategy.valuesForRef=v1;v2;...;vn
 			// The values are listed separated by ; with no spaces.
 			// We also need to look if a specific order is specified for tuning the parameters. If so, we must get from the
 			// settings the unique index that this parameter has in the ordering for the tunable parameters.
 			// Moreover, we need to look if a specific order is specified for tuning the parameters. If so, we must get from the
 			// settings the unique index that this parameter has in the ordering for the tunable parameters
-			int[] possibleValues = gamerSettings.getIntPropertyMultiValue("SelectionStrategy.valuesForMinAmafVisits");
+			int[] possibleValues = gamerSettings.getIntPropertyMultiValue("SelectionStrategy.valuesForRef");
 			double[] possibleValuesPenalty = null;
-			if(gamerSettings.specifiesProperty("SelectionStrategy.possibleValuesPenaltyForMinAmafVisits")){
-				possibleValuesPenalty =  gamerSettings.getDoublePropertyMultiValue("SelectionStrategy.possibleValuesPenaltyForMinAmafVisits");
+			if(gamerSettings.specifiesProperty("SelectionStrategy.possibleValuesPenaltyForRef")){
+				possibleValuesPenalty =  gamerSettings.getDoublePropertyMultiValue("SelectionStrategy.possibleValuesPenaltyForRef");
 			}
 			int tuningOrderIndex = -1;
-			if(gamerSettings.specifiesProperty("SelectionStrategy.tuningOrderIndexMinAmafVisits")){
-				tuningOrderIndex =  gamerSettings.getIntPropertyValue("SelectionStrategy.tuningOrderIndexMinAmafVisits");
+			if(gamerSettings.specifiesProperty("SelectionStrategy.tuningOrderIndexRef")){
+				tuningOrderIndex =  gamerSettings.getIntPropertyValue("SelectionStrategy.tuningOrderIndexRef");
 			}
 
-			this.minAmafVisits = new IntTunableParameter("Ref", fixedMinAmafVisits, possibleValues, possibleValuesPenalty, tuningOrderIndex);
+			this.ref = new IntTunableParameter("Ref", fixedRef, possibleValues, possibleValuesPenalty, tuningOrderIndex);
 
 			// If the parameter must be tuned online, then we should add its reference to the sharedReferencesCollector
-			sharedReferencesCollector.addParameterToTune(this.minAmafVisits);
+			sharedReferencesCollector.addParameterToTune(this.ref);
 
 		}else{
-			this.minAmafVisits = new IntTunableParameter("Ref", fixedMinAmafVisits);
+			this.ref = new IntTunableParameter("Ref", fixedRef);
 		}
 
 		sharedReferencesCollector.setGraveSelection(this);
@@ -64,7 +64,7 @@ public class GraveSelection extends MoveValueSelection {
 	public void clearComponent(){
 
 		super.clearComponent();
-		this.minAmafVisits.clearParameter();
+		this.ref.clearParameter();
 
 	}
 
@@ -73,7 +73,7 @@ public class GraveSelection extends MoveValueSelection {
 
 		super.setUpComponent();
 
-		this.minAmafVisits.setUpParameter(this.gameDependentParameters.getNumRoles());
+		this.ref.setUpParameter(this.gameDependentParameters.getNumRoles());
 
 	}
 
@@ -110,18 +110,18 @@ public class GraveSelection extends MoveValueSelection {
 			//System.out.println("tot node visits: " + currentNode.getTotVisits());
 
 			// For each role we must check if we have to change the reference to the closest AMAF statistics
-			// that have a number of visits higher than the corresponding minAmafVisits threshold for the role.
+			// that have a number of visits higher than the corresponding Ref threshold for the role.
 
 			for(int i = 0; i < this.gameDependentParameters.getNumRoles(); i++){
 				// For each role first we check if there is no reference to any AMAF statistics, and if so we set
 				// the reference to the statistics of the current node (note that this will happen only the first
 				// time selection is performed during a simulation, so the current node will be the root).
 				// Otherwise, if there is a reference to the closest AMAF statistics for the role, we check if the
-				// current node has enough visits (according to the threshold for the role (i.e. minAmafVisits[roleIndex]))
+				// current node has enough visits (according to the threshold for the role (i.e. ref[roleIndex]))
 				// to have its statistics substituted to the currently set ones.
 				// This will make sure that if no stats have visits higher than the threshold at least
 				// the root stats will be used rather than ignoring amaf values.
-				if((((GraveEvaluator)this.moveEvaluator).getClosestAmafStats().get(i)) == null || currentNode.getTotVisits()[i] >= this.minAmafVisits.getValuePerRole(i)){
+				if((((GraveEvaluator)this.moveEvaluator).getClosestAmafStats().get(i)) == null || currentNode.getTotVisits()[i] >= this.ref.getValuePerRole(i)){
 					// i.e.: if(ClosestAmafStatsForRole == null || VisitsOfCurrentNode >= ThresholdForRole)
 
 					//if((((GraveEvaluator)this.moveEvaluator).getClosestAmafStats()) == null){
@@ -149,7 +149,7 @@ public class GraveSelection extends MoveValueSelection {
 	@Override
 	public String getComponentParameters(String indentation){
 
-		String params = indentation + "MIN_AMAF_VSITS = " + this.minAmafVisits.getParameters(indentation + "  ");
+		String params = indentation + "MIN_AMAF_VSITS = " + this.ref.getParameters(indentation + "  ");
 
 		String superParams = super.getComponentParameters(indentation);
 

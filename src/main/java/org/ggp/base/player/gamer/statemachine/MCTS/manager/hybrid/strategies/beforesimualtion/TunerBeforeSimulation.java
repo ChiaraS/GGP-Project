@@ -16,6 +16,13 @@ import org.ggp.base.util.reflection.ProjectSearcher;
 public abstract class TunerBeforeSimulation extends BeforeSimulationStrategy {
 
 	/**
+	 * Number of simulations that are available to tune parameters.
+	 * Once this number has been reached, the tuning will stop and we will
+	 * commit to a single combination of parameters.
+	 */
+	protected int simBudget;
+
+	/**
 	 * Each selected configuration of parameters will be evaluated with a batch of simulations and not
 	 * only one simulation. This expresses the size of such batch (i.e. after evaluating batchSize times
 	 * a configuration of parameters, a new one is selected with the combinatorial tuner).
@@ -23,11 +30,12 @@ public abstract class TunerBeforeSimulation extends BeforeSimulationStrategy {
 	protected int batchSize;
 
 	/**
-	 * Counts the number of simulations performed in the current interval.
-	 * When this number reaches batchSize then the parameters are updated with a new
-	 * configuration that will be evaluated next.
+	 * Counts the number of simulations performed so far
+	 * Used to know when batchSize samples have been taken for the current configuration of parameters
+	 * and thus a new one should be retrieved to test, and to know when it's time to stop tuning and
+	 * commit to a certain combination of parameters.
 	 */
-	protected int simCountForBatch;
+	protected int simCount;
 
 	protected ParametersTuner parametersTuner;
 
@@ -41,9 +49,11 @@ public abstract class TunerBeforeSimulation extends BeforeSimulationStrategy {
 
 		super(gameDependentParameters, random, gamerSettings, sharedReferencesCollector);
 
+		this.simBudget = gamerSettings.getIntPropertyValue("BeforeSimulationStrategy.simBudget");
+
 		this.batchSize = gamerSettings.getIntPropertyValue("BeforeSimulationStrategy.batchSize");
 
-		this.simCountForBatch = 0;
+		this.simCount = 0;
 
 		try {
 			this.parametersTuner = (ParametersTuner) SearchManagerComponent.getConstructorForSearchManagerComponent(SearchManagerComponent.getCorrespondingClass(ProjectSearcher.PARAMETERS_TUNERS.getConcreteClasses(),
@@ -80,7 +90,7 @@ public abstract class TunerBeforeSimulation extends BeforeSimulationStrategy {
 	@Override
 	public void clearComponent(){
 
-		this.simCountForBatch = 0;
+		this.simCount = 0;
 
 		// It's not the job of this class to clear the tunable component because the component
 		// is for sure either another strategy or part of another strategy. A class must be
@@ -93,14 +103,15 @@ public abstract class TunerBeforeSimulation extends BeforeSimulationStrategy {
 
 		this.parametersTuner.setUpComponent();
 
-		this.simCountForBatch = 0;
+		this.simCount = 0;
 
 	}
 
 	@Override
 	public String getComponentParameters(String indentation) {
 
-		String params = indentation + "BATCH_SIZE = " + this.batchSize +
+		String params = indentation + "SIM_BUDGET = " + this.simBudget +
+				indentation + "BATCH_SIZE = " + this.batchSize +
 				indentation + "PARAMETER_TUNER = " + this.parametersTuner.printComponent(indentation + "  ");
 
 		if(this.tunableParameters != null){
@@ -120,7 +131,7 @@ public abstract class TunerBeforeSimulation extends BeforeSimulationStrategy {
 			params += indentation + "TUNABLE_PARAMETERS = null";
 		}
 
-		params += indentation + "sim_count_for_batch = " + this.simCountForBatch;
+		params += indentation + "sim_count = " + this.simCount;
 
 		return params;
 

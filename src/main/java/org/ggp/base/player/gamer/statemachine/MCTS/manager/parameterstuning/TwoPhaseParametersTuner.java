@@ -17,22 +17,18 @@ public abstract class TwoPhaseParametersTuner extends ParametersTuner {
 	}
 
 	@Override
-	public void setReferences(
-			SharedReferencesCollector sharedReferencesCollector) {
+	public void setReferences(SharedReferencesCollector sharedReferencesCollector) {
 		// TODO Auto-generated method stub
-
 	}
 
 	@Override
 	public void clearComponent() {
-
+		super.clearComponent();
 	}
 
 	@Override
 	public void setUpComponent() {
-
-
-
+		super.setUpComponent();
 	}
 
 	@Override

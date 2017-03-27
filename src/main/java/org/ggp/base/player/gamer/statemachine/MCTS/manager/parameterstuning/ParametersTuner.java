@@ -9,6 +9,15 @@ import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.SharedReferenc
 
 public abstract class ParametersTuner extends SearchManagerComponent{
 
+	/**
+	 * True if the tuner is still being used to tune parameters, false otherwise.
+	 * This parameter is needed when we only have a limited simulations budget to
+	 * tune parameters. In this case we need to know when we are done tuning (i.e.
+	 * the tuning budget expired) so that the AfterSimulationStrategy will also
+	 * stop updating the statistics of the parameters.
+	 */
+	protected boolean tuning;
+
 	protected boolean tuneAllRoles;
 
 	/**
@@ -58,6 +67,8 @@ public abstract class ParametersTuner extends SearchManagerComponent{
 			Random random, GamerSettings gamerSettings,
 			SharedReferencesCollector sharedReferencesCollector) {
 		super(gameDependentParameters, random, gamerSettings, sharedReferencesCollector);
+
+		this.tuning = true;
 
 		this.tuneAllRoles = gamerSettings.getBooleanPropertyValue("ParametersTuner.tuneAllRoles");
 
@@ -110,9 +121,22 @@ public abstract class ParametersTuner extends SearchManagerComponent{
 	}
 
 	@Override
+	public void clearComponent() {
+		this.tuning = false;
+	}
+
+	@Override
+	public void setUpComponent() {
+		this.tuning = true;
+	}
+
+	@Override
 	public String getComponentParameters(String indentation) {
 
-		String params = indentation + "TUNE_ALL_ROLES = " + this.tuneAllRoles;
+		String params = indentation + "tuning = " + this.tuning +
+				indentation + "TOTAL_SAMPLES_BUDGET = " + this.tuneAllRoles +
+				indentation + "TUNE_ALL_ROLES = " + this.tuneAllRoles +
+				indentation + "TUNE_ALL_ROLES = " + this.tuneAllRoles;
 
 		if(this.classesLength != null){
 			String classesLengthString = "[ ";
@@ -169,6 +193,14 @@ public abstract class ParametersTuner extends SearchManagerComponent{
 
 	public boolean isTuningAllRoles(){
 		return this.tuneAllRoles;
+	}
+
+	public void stopTuning(){
+		this.tuning = false;
+	}
+
+	public boolean isTuning(){
+		return this.tuning;
 	}
 
 }
