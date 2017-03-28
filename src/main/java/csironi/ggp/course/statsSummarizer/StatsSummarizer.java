@@ -996,7 +996,8 @@ public class StatsSummarizer {
 								// If the stats are referring to a match that was rejected, reject them too
 
 								if(!(acceptedMatches.contains(paramsStatsFiles[k].getName().substring(0, paramsStatsFiles[k].getName().length()-26))) &&
-										!(acceptedMatches.contains(paramsStatsFiles[k].getName().substring(0, paramsStatsFiles[k].getName().length()-25)))){
+										!(acceptedMatches.contains(paramsStatsFiles[k].getName().substring(0, paramsStatsFiles[k].getName().length()-25))) &&
+										!(acceptedMatches.contains(paramsStatsFiles[k].getName().substring(0, paramsStatsFiles[k].getName().length()-20)))){
 									System.out.println("Found Params Statistics file for a match that was previously rejected from statistics.");
 									rejectFile(paramsStatsFiles[k], rejectedParamsFilesFolderPath + "/" + playerType + "/" + playerRole);
 								}else{
@@ -1005,6 +1006,8 @@ public class StatsSummarizer {
 										mabType = "Global";
 									}else if(paramsStatsFiles[k].getName().endsWith("LocalParamTunerStats.csv")){
 										mabType = "Local";
+									}else if(paramsStatsFiles[k].getName().endsWith("BestParamsCombo.csv")){
+										continue;
 									}else{
 										System.out.println("Unrecognized type of parameters stats. Skipping file: " + paramsStatsFiles[k].getPath());
 										continue;

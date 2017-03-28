@@ -1,6 +1,6 @@
 package org.ggp.base.player.gamer.statemachine.MCTS.manager.parameterstuning;
 
-import java.util.LinkedList;
+import java.util.List;
 import java.util.Random;
 
 import org.ggp.base.player.gamer.statemachine.GamerSettings;
@@ -18,7 +18,8 @@ public class FlatSingleMabParametersTuner extends SingleMabParametersTuner {
 	 * These won't change for the whole life span of the gamer, thus they don't have to be
 	 * recomputed after each game.
 	 */
-	private CombinatorialCompactMove[] combinatorialMoves;
+	//private CombinatorialCompactMove[] combinatorialMoves;
+	private List<CombinatorialCompactMove> newCombinatorialMoves;
 
 	/**
 	 * Penalty of all the possible combinations of unit moves (i.e. all possible combinatorial moves).
@@ -42,7 +43,7 @@ public class FlatSingleMabParametersTuner extends SingleMabParametersTuner {
 			GamerSettings gamerSettings, SharedReferencesCollector sharedReferencesCollector) {
 		super(gameDependentParameters, random, gamerSettings, sharedReferencesCollector);
 
-		this.combinatorialMoves = null;
+		this.newCombinatorialMoves = null;
 
 		this.combinatorialMovesPenalty = null;
 
@@ -98,13 +99,14 @@ public class FlatSingleMabParametersTuner extends SingleMabParametersTuner {
 		this.rolesMabs = new FixedMab[numRolesToTune];
 
 		for(int i = 0; i < this.rolesMabs.length; i++){
-			rolesMabs[i] = new FixedMab(this.combinatorialMoves.length);
+			rolesMabs[i] = new FixedMab(this.newCombinatorialMoves.size());
 		}
 
 		this.selectedCombinationsIndices = new int[numRolesToTune];
 
 	}
 
+	/*
 	@Override
 	public void setClassesAndPenalty(String[] classesNames, int[] classesLength, String[][] classesValues, double[][] unitMovesPenalty){
 
@@ -133,8 +135,30 @@ public class FlatSingleMabParametersTuner extends SingleMabParametersTuner {
         }
 
 		this.crossProduct(new int[1], new LinkedList<Integer>());
+	}*/
+
+	public void newSetClassesAndPenalty(String[] classesNames, int[] classesLength, String[][] classesValues, double[][] unitMovesPenalty){
+
+		super.setClassesAndPenalty(classesNames, classesLength, classesValues, unitMovesPenalty);
+
+		// Build the lists of all possible parameter combinations for my role and (if being tuned)
+		// for the other roles (note that if the other roles are also being tuned all the possible
+		// combinations of values are the same for each role.
+
+		// Create all the possible combinatorial moves and corresponding penalty
+		int[] partialCombo = new int[this.parametersManager.getNumTunableParameters()];
+		for(int i = 0; i < partialCombo.length; i++){
+			partialCombo[i] = -1;
+		}
+		this.newCrossProduct(0, partialCombo);
+
+        this.combinatorialMovesPenalty = new double[this.newCombinatorialMoves.size()];
+       	for(int i = 0; i < this.newCombinatorialMoves.size(); i++){
+       		this.combinatorialMovesPenalty[i] = this.computeCombinatorialMovePenalty(this.newCombinatorialMoves.get(i).getIndices());
+        }
 	}
 
+	/*
     private void crossProduct(int[] nextFreeIndex, LinkedList<Integer> partial){
         if (partial.size() == this.classesLength.length) {
             this.combinatorialMoves[nextFreeIndex[0]] = new CombinatorialCompactMove(this.toIntArray(partial));
@@ -150,7 +174,42 @@ public class FlatSingleMabParametersTuner extends SingleMabParametersTuner {
             }
         }
     }
+    */
 
+    private void newCrossProduct(int paramIndex, int[] partialCombo){
+        if (paramIndex == this.parametersManager.getNumTunableParameters()) {
+            this.newCombinatorialMoves.add(new CombinatorialCompactMove(this.copyArray(partialCombo)));
+        } else {
+        	boolean atLeastOneFeasibleCombo = false;
+            for(int i = 0; i < this.parametersManager.getNumPossibleValues(paramIndex); i++) {
+            	partialCombo[paramIndex] = i;
+            	if(this.parametersManager.isValid(partialCombo)){
+            		atLeastOneFeasibleCombo = true;
+            		this.newCrossProduct(paramIndex+1, partialCombo);
+            	}
+            }
+            if(!atLeastOneFeasibleCombo){
+            	String partialComboString = "[ ";
+            	for(int j = 0; j < paramIndex; j++){
+            		partialComboString += this.parametersManager.getName(j) + "=" + this.parametersManager.getPossibleValues(j)[partialCombo[j]];
+            	}
+            	partialComboString += "]";
+            	GamerLogger.logError("ParametersTuner", "FlatSingleMabParametersTuner - No valid value detected for parameter " +
+            			this.parametersManager.getName(paramIndex) + "for the following partial combination: " + partialComboString);
+				throw new RuntimeException("FlatSingleMabParametersTuner - No valid value detected for a parameter when computing all combinatorial moves!");
+            }
+        }
+    }
+
+    private int[] copyArray(int[] array){
+    	int[] newArray = new int[array.length];
+    	for(int i = 0; i < array.length; i++){
+    		newArray[i] = array[i];
+    	}
+    	return newArray;
+    }
+
+    /*
     protected int[] toIntArray(LinkedList<Integer> partial){
     	int[] intArray = new int[partial.size()];
 
@@ -161,6 +220,7 @@ public class FlatSingleMabParametersTuner extends SingleMabParametersTuner {
     	}
     	return intArray;
     }
+    */
 
 	/**
 	 * SELECT NEXT COMBINATION TO EVALUATE
@@ -179,7 +239,7 @@ public class FlatSingleMabParametersTuner extends SingleMabParametersTuner {
 		for(int i = 0; i < this.rolesMabs.length; i++){
 			this.selectedCombinationsIndices[i] = this.nextCombinationSelector.selectMove(this.rolesMabs[i].getMoveStats(),
 					this.combinatorialMovesPenalty, this.rolesMabs[i].getNumUpdates());
-			nextCombinations[i] = this.combinatorialMoves[this.selectedCombinationsIndices[i]].getIndices();
+			nextCombinations[i] = this.newCombinatorialMoves.get(this.selectedCombinationsIndices[i]).getIndices();
 		}
 
 		return nextCombinations;
@@ -209,7 +269,7 @@ public class FlatSingleMabParametersTuner extends SingleMabParametersTuner {
 		for(int i = 0; i < this.rolesMabs.length; i++){
 			this.selectedCombinationsIndices[i] = this.bestCombinationSelector.selectMove(this.rolesMabs[i].getMoveStats(),
 					this.combinatorialMovesPenalty, this.rolesMabs[i].getNumUpdates());
-			nextCombinations[i] = this.combinatorialMoves[this.selectedCombinationsIndices[i]].getIndices();
+			nextCombinations[i] = this.newCombinatorialMoves.get(this.selectedCombinationsIndices[i]).getIndices();
 		}
 
 		return nextCombinations;
@@ -248,8 +308,8 @@ public class FlatSingleMabParametersTuner extends SingleMabParametersTuner {
 		GamerLogger.log(GamerLogger.FORMAT.CSV_FORMAT, "ParametersTunerStats", "");
 
 		String globalParamsOrder = "[ ";
-		for(int i = 0; i < this.classesNames.length; i++){
-			globalParamsOrder += (this.classesNames[i] + " ");
+		for(int i = 0; i < this.parametersManager.getNumTunableParameters(); i++){
+			globalParamsOrder += (this.parametersManager.getName(i) + " ");
 		}
 		globalParamsOrder += "]";
 
@@ -262,10 +322,10 @@ public class FlatSingleMabParametersTuner extends SingleMabParametersTuner {
 
 			for(int j = 0; j < allMoveStats.length; j++){
 
-				theValuesIndices = this.combinatorialMoves[j];
+				theValuesIndices = this.newCombinatorialMoves.get(j);
 				theValues = "[ ";
 				for(int k = 0; k < theValuesIndices.getIndices().length; k++){
-					theValues += (this.classesValues[k][theValuesIndices.getIndices()[k]] + " ");
+					theValues += (this.parametersManager.getPossibleValues(k)[theValuesIndices.getIndices()[k]] + " ");
 				}
 				theValues += "]";
 
@@ -285,12 +345,12 @@ public class FlatSingleMabParametersTuner extends SingleMabParametersTuner {
 
 		String params = "";
 
-		if(this.combinatorialMoves != null){
+		if(this.newCombinatorialMoves != null){
 			String combinatorialMovesString = "[ ";
 
-			for(int i = 0; i < this.combinatorialMoves.length; i++){
+			for(CombinatorialCompactMove move : this.newCombinatorialMoves){
 
-				combinatorialMovesString += this.combinatorialMoves[i] + " ";
+				combinatorialMovesString += move + " ";
 
 			}
 
@@ -333,7 +393,7 @@ public class FlatSingleMabParametersTuner extends SingleMabParametersTuner {
 			params += indentation + "SELECTED_COMBINATIONS_INDICES = null";
 		}
 
-		params += indentation + "NUM_COMBINATORIAL_MOVES = " + (this.combinatorialMoves != null ? this.combinatorialMoves.length : 0) +
+		params += indentation + "NUM_COMBINATORIAL_MOVES = " + (this.newCombinatorialMoves != null ? this.newCombinatorialMoves.size() : 0) +
 		indentation + "num_roles_mabs = " + (this.rolesMabs != null ? this.rolesMabs.length : 0);
 
 		if(superParams != null){

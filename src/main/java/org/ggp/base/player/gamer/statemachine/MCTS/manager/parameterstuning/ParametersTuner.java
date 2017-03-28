@@ -6,8 +6,11 @@ import org.ggp.base.player.gamer.statemachine.GamerSettings;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.GameDependentParameters;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.SearchManagerComponent;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.SharedReferencesCollector;
+import org.ggp.base.player.gamer.statemachine.MCTS.manager.parameterstuning.structure.ParametersManager;
 
 public abstract class ParametersTuner extends SearchManagerComponent{
+
+	protected ParametersManager parametersManager;
 
 	/**
 	 * True if the tuner is still being used to tune parameters, false otherwise.
@@ -100,21 +103,21 @@ public abstract class ParametersTuner extends SearchManagerComponent{
 	/**
 	 * Computes the move penalty of a combinatorial move as the average of the move penalty
 	 * of each of the unit moves that form the combinatorial move.
+	 * If a unit move has no penalty specified, the value of 0 will be considered in the average.
+	 * Note that the actual use of the moves penalty depends on the bias computer. Even if specified,
+	 * the moves penalties might not be used if no BiasComputer is present in the TunerSelector.
 	 *
 	 * @param combinatorialMove
 	 * @return
 	 */
 	public double computeCombinatorialMovePenalty(int[] combinatorialMove){
 
-		if(this.unitMovesPenalty == null){
-			return -1.0;
-		}
-		// If unitMovesPenalty is not null we assume that the penalty value will be specified for each unit move of each class.
-
 		double penaltySum = 0.0;
 
 		for(int i = 0; i < combinatorialMove.length; i++){
-			penaltySum += this.unitMovesPenalty[i][combinatorialMove[i]];
+			if(this.parametersManager.getPossibleValuesPenalty(i) != null){
+				penaltySum += this.parametersManager.getPossibleValuesPenalty(i)[combinatorialMove[i]];
+			}
 		}
 
 		return penaltySum/combinatorialMove.length;
