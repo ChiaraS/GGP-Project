@@ -17,6 +17,9 @@ public class GraveBetaComputer extends BetaComputer {
 
 		super(gameDependentParameters, random, gamerSettings, sharedReferencesCollector);
 
+		this.bias = this.createDoubleTunableParameter("BetaComputer", "Bias", gamerSettings, sharedReferencesCollector);
+
+		/*
 		// Get default value for Bias (this is the value used for the roles for which we are not tuning the parameter)
 		int fixedBias = gamerSettings.getIntPropertyValue("BetaComputer.fixedBias");
 
@@ -47,6 +50,7 @@ public class GraveBetaComputer extends BetaComputer {
 		}else{
 			this.bias = new DoubleTunableParameter("Bias", fixedBias);
 		}
+		*/
 
 	}
 

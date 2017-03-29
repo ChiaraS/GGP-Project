@@ -34,6 +34,10 @@ public class UctEvaluator extends MoveEvaluator {
 
 		super(gameDependentParameters, random, gamerSettings, sharedReferencesCollector);
 
+
+		this.c = this.createDoubleTunableParameter("MoveEvaluator", "C", gamerSettings, sharedReferencesCollector);
+
+		/*
 		// Get default value for C (this is the value used for the roles for which we are not tuning the parameter)
 		double fixedC = gamerSettings.getDoublePropertyValue("MoveEvaluator.fixedC");
 
@@ -63,8 +67,11 @@ public class UctEvaluator extends MoveEvaluator {
 
 		}else{
 			this.c = new DoubleTunableParameter("C", fixedC);
-		}
+		}*/
 
+		this.fpu = this.createDoubleTunableParameter("MoveEvaluator", "Fpu", gamerSettings, sharedReferencesCollector);
+
+		/*
 		// Get default value for Fpu (this is the value used for the roles for which we are not tuning the parameter)
 		double fixedFpu = gamerSettings.getDoublePropertyValue("MoveEvaluator.fixedFpu");
 
@@ -95,6 +102,7 @@ public class UctEvaluator extends MoveEvaluator {
 		}else{
 			this.fpu = new DoubleTunableParameter("Fpu", fixedFpu);
 		}
+		*/
 
 	}
 

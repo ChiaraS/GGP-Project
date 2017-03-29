@@ -23,10 +23,12 @@ public abstract class ParametersTuner extends SearchManagerComponent{
 
 	protected boolean tuneAllRoles;
 
+
+
 	/**
 	 * Names of the classes being considered, i.e. names of the parameters being tuned.
 	 */
-	protected String[] classesNames;
+	//protected String[] classesNames;
 
 	/**
 	 * Size of the classes of unit actions of the combinatorial problem.
@@ -49,13 +51,13 @@ public abstract class ParametersTuner extends SearchManagerComponent{
 	 * different parameters for different roles is not permitted.
 	 *
 	 */
-	protected int[] classesLength;
+	//protected int[] classesLength;
 
 	/**
 	 * Needed only for logging. Given this values we could avoid keeping as parameter the classesLenght,
 	 * because the length of each class can be deduced from here.
 	 */
-	protected String[][] classesValues;
+	//protected String[][] classesValues;
 
 	/**
 	 * For each class, for each unit move in the class, this array specifies the penalty.
@@ -64,12 +66,13 @@ public abstract class ParametersTuner extends SearchManagerComponent{
 	 * If there is no penalty specified in the gamers settings for any of the classes,
 	 * then this pointer will be null.
 	 */
-	protected double[][] unitMovesPenalty;
+	//protected double[][] unitMovesPenalty;
 
-	public ParametersTuner(GameDependentParameters gameDependentParameters,
-			Random random, GamerSettings gamerSettings,
-			SharedReferencesCollector sharedReferencesCollector) {
+	public ParametersTuner(GameDependentParameters gameDependentParameters, Random random,
+			GamerSettings gamerSettings, SharedReferencesCollector sharedReferencesCollector) {
 		super(gameDependentParameters, random, gamerSettings, sharedReferencesCollector);
+
+		this.parametersManager = new ParametersManager(gameDependentParameters, random, gamerSettings, sharedReferencesCollector);
 
 		this.tuning = true;
 
@@ -93,12 +96,14 @@ public abstract class ParametersTuner extends SearchManagerComponent{
 
 	}*/
 
+	/*
 	public void setClassesAndPenalty(String[] classesNames, int[] classesLength, String[][] classesValues, double[][] unitMovesPenalty) {
 		this.classesNames = classesNames;
 		this.classesLength = classesLength;
 		this.classesValues = classesValues;
 		this.unitMovesPenalty = unitMovesPenalty;
 	}
+	*/
 
 	/**
 	 * Computes the move penalty of a combinatorial move as the average of the move penalty
@@ -125,11 +130,13 @@ public abstract class ParametersTuner extends SearchManagerComponent{
 
 	@Override
 	public void clearComponent() {
+		this.parametersManager.clearComponent();
 		this.tuning = false;
 	}
 
 	@Override
 	public void setUpComponent() {
+		this.parametersManager.setUpComponent();
 		this.tuning = true;
 	}
 
@@ -188,7 +195,7 @@ public abstract class ParametersTuner extends SearchManagerComponent{
 	public abstract void logStats();
 
     /**
-     * Ths method keeps factor*oldStatistic statistics. Factor should be in the interval [0,1].
+     * This method keeps factor*oldStatistic statistics. Factor should be in the interval [0,1].
      *
      * @param factor
      */

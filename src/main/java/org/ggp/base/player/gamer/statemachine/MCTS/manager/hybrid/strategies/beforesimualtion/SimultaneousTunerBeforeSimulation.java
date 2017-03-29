@@ -1,41 +1,24 @@
 package org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.strategies.beforesimualtion;
 
-import java.lang.reflect.InvocationTargetException;
 import java.util.Random;
 
 import org.ggp.base.player.gamer.statemachine.GamerSettings;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.GameDependentParameters;
-import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.SearchManagerComponent;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.SharedReferencesCollector;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.parameterstuning.structure.parameters.TunableParameter;
-import org.ggp.base.player.gamer.statemachine.MCTS.manager.parameterstuning.structure.parametersorders.ParametersOrder;
-import org.ggp.base.util.logging.GamerLogger;
-import org.ggp.base.util.reflection.ProjectSearcher;
 
 public class SimultaneousTunerBeforeSimulation extends TunerBeforeSimulation {
 
-	/**
-	 * This ParametersOrder is used to order the parameters right after the creation of a new player
-	 * and before such player starts playing any game.
-	 */
-	private ParametersOrder initialParametersOrder;
+
 
 	public SimultaneousTunerBeforeSimulation(GameDependentParameters gameDependentParameters, Random random,
 			GamerSettings gamerSettings, SharedReferencesCollector sharedReferencesCollector) {
 		super(gameDependentParameters, random, gamerSettings, sharedReferencesCollector);
 
-		try {
-			this.initialParametersOrder = (ParametersOrder) SearchManagerComponent.getConstructorForSearchManagerComponent(SearchManagerComponent.getCorrespondingClass(ProjectSearcher.PARAMETERS_ORDER.getConcreteClasses(),
-					gamerSettings.getPropertyValue("BeforeSimulationStrategy.initialParametersOrderType"))).newInstance(gameDependentParameters, random, gamerSettings, sharedReferencesCollector);
-		} catch (InstantiationException | IllegalAccessException
-				| IllegalArgumentException | InvocationTargetException e) {
-			// TODO: fix this!
-			GamerLogger.logError("SearchManagerCreation", "Error when instantiating ParametersOrder " + gamerSettings.getPropertyValue("ParameterTuner.initialParametersOrderType") + ".");
-			GamerLogger.logStackTrace("SearchManagerCreation", e);
-			throw new RuntimeException(e);
-		}
+
 	}
 
+	/*
 	@Override
 	public void setReferences(SharedReferencesCollector sharedReferencesCollector) {
 
@@ -85,7 +68,7 @@ public class SimultaneousTunerBeforeSimulation extends TunerBeforeSimulation {
 
 		this.parametersTuner.setClassesAndPenalty(classesNames, classesLength, classesValues, unitMovesPenalty);
 
-	}
+	}*/
 
 	@Override
 	public void beforeSimulationActions() {

@@ -22,6 +22,9 @@ public class CadiaBetaComputer extends BetaComputer{
 
 		super(gameDependentParameters, random, gamerSettings, sharedReferencesCollector);
 
+		this.k = this.createIntTunableParameter("BetaComputer", "K", gamerSettings, sharedReferencesCollector);
+
+		/*
 		// Get default value for K (this is the value used for the roles for which we are not tuning the parameter)
 		int fixedK = gamerSettings.getIntPropertyValue("BetaComputer.fixedK");
 
@@ -51,7 +54,7 @@ public class CadiaBetaComputer extends BetaComputer{
 
 		}else{
 			this.k = new IntTunableParameter("K", fixedK);
-		}
+		}*/
 
 	}
 

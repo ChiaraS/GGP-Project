@@ -59,6 +59,9 @@ public class PlayoutSupportedSelection extends SelectionStrategy {
 			throw new RuntimeException(e);
 		}
 
+		this.t = this.createIntTunableParameter("SelectionStrategy", "T", gamerSettings, sharedReferencesCollector);
+
+		/*
 		// Get default value for T (this is the value used for the roles for which we are not tuning the parameter)
 		int fixedT = gamerSettings.getIntPropertyValue("SelectionStrategy.fixedT");
 
@@ -89,6 +92,7 @@ public class PlayoutSupportedSelection extends SelectionStrategy {
 		}else{
 			this.t = new IntTunableParameter("T", fixedT);
 		}
+		*/
 
 	}
 

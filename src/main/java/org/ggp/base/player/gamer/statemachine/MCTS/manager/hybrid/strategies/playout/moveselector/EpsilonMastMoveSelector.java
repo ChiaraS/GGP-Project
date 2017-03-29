@@ -29,6 +29,9 @@ public class EpsilonMastMoveSelector extends MoveSelector{
 		this.mastSelector = new MastMoveSelector(gameDependentParameters, random, gamerSettings, sharedReferencesCollector);
 		this.randomSelector = new RandomMoveSelector(gameDependentParameters, random, gamerSettings, sharedReferencesCollector);
 
+		this.epsilon = this.createDoubleTunableParameter("MoveSelector", "Epsilon", gamerSettings, sharedReferencesCollector);
+
+		/*
 		// Get default value for Epsilon (this is the value used for the roles for which we are not tuning the parameter)
 		double fixedEpsilon = gamerSettings.getDoublePropertyValue("MoveSelector.fixedEpsilon");
 
@@ -59,6 +62,7 @@ public class EpsilonMastMoveSelector extends MoveSelector{
 		}else{
 			this.epsilon = new DoubleTunableParameter("Epsilon", fixedEpsilon);
 		}
+		*/
 
 	}
 

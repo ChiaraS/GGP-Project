@@ -1,5 +1,6 @@
 package org.ggp.base.player.gamer.statemachine.MCTS.manager.parameterstuning.structure;
 
+import java.lang.reflect.InvocationTargetException;
 import java.util.List;
 import java.util.Random;
 
@@ -8,7 +9,9 @@ import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.GameDependentP
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.SearchManagerComponent;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.SharedReferencesCollector;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.parameterstuning.structure.parameters.TunableParameter;
+import org.ggp.base.player.gamer.statemachine.MCTS.manager.parameterstuning.structure.parametersorders.ParametersOrder;
 import org.ggp.base.util.logging.GamerLogger;
+import org.ggp.base.util.reflection.ProjectSearcher;
 
 public class ParametersManager extends SearchManagerComponent {
 
@@ -16,29 +19,60 @@ public class ParametersManager extends SearchManagerComponent {
 	 * List of the parameters that we are tuning.
 	 * They also specify their name, possible values, (optional) penalty, etc...
 	 */
-	protected List<TunableParameter> tunableParameters;
+	private List<TunableParameter> tunableParameters;
+
+	/**
+	 * String representation of the boolean expression that specifies the constraints
+	 * that a combinations of parameters values must satisfy to be feasible.
+	 */
+	private String valuesConstraints;
+
+	/**
+	 * This ParametersOrder is used to order the parameters right after the creation of a new player
+	 * and before such player starts playing any game.
+	 */
+	private ParametersOrder initialParametersOrder;
 
 	public ParametersManager(GameDependentParameters gameDependentParameters, Random random,
 			GamerSettings gamerSettings, SharedReferencesCollector sharedReferencesCollector) {
 		super(gameDependentParameters, random, gamerSettings, sharedReferencesCollector);
-		// TODO Auto-generated constructor stub
+
+		this.tunableParameters = null;
+
+		this.valuesConstraints = gamerSettings.getPropertyValue("ParametersManager.valuesConstraints");
+
+		try {
+			this.initialParametersOrder = (ParametersOrder) SearchManagerComponent.getConstructorForSearchManagerComponent(SearchManagerComponent.getCorrespondingClass(ProjectSearcher.PARAMETERS_ORDER.getConcreteClasses(),
+					gamerSettings.getPropertyValue("ParametersManager.initialParametersOrderType"))).newInstance(gameDependentParameters, random, gamerSettings, sharedReferencesCollector);
+		} catch (InstantiationException | IllegalAccessException
+				| IllegalArgumentException | InvocationTargetException e) {
+			// TODO: fix this!
+			GamerLogger.logError("SearchManagerCreation", "Error when instantiating ParametersOrder " + gamerSettings.getPropertyValue("ParametersManager.initialParametersOrderType") + ".");
+			GamerLogger.logStackTrace("SearchManagerCreation", e);
+			throw new RuntimeException(e);
+		}
 	}
 
 	@Override
 	public void setReferences(SharedReferencesCollector sharedReferencesCollector) {
 		this.tunableParameters = sharedReferencesCollector.getTheParametersToTune();
+
+		if(this.tunableParameters == null || this.tunableParameters.size() == 0){
+			GamerLogger.logError("SearchManagerCreation", "TunerBeforeSimulation - Initialization with null or empty list of tunable parameters!");
+			throw new RuntimeException("ParametersTuner - Initialization with null or empty list of tunable parameters!");
+		}
+
+		this.initialParametersOrder.imposeOrder(this.tunableParameters);
 	}
 
 	@Override
 	public void clearComponent() {
-		// TODO Auto-generated method stub
-
+		this.initialParametersOrder.clearComponent();
 	}
 
 	@Override
 	public void setUpComponent() {
-		// TODO Auto-generated method stub
-
+		this.initialParametersOrder.setUpComponent();
 	}
 
 	@Override

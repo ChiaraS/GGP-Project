@@ -68,8 +68,8 @@ public abstract class TunerBeforeSimulation extends BeforeSimulationStrategy {
 
 		sharedReferencesCollector.setParametersTuner(parametersTuner);
 
-		// Here the parameter tuner has no classes lengths.
-		// They will be initialized when setting references to the tunable components.
+		// Here the parameter tuner has no parameters manager.
+		// It will be initialized when setting references to the tunable components.
 
 	}
 
@@ -93,7 +93,7 @@ public abstract class TunerBeforeSimulation extends BeforeSimulationStrategy {
 		this.simCount = 0;
 
 		// It's not the job of this class to clear the tunable component because the component
-		// is for sure either another strategy or part of another strategy. A class must be
+		// is for sure part of another strategy. A class must be
 		// responsible of clearing only the objects that it was responsible for creating.
 		this.parametersTuner.clearComponent();
 	}

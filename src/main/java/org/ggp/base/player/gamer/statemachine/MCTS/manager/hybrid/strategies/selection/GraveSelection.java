@@ -25,6 +25,9 @@ public class GraveSelection extends MoveValueSelection {
 
 		super(gameDependentParameters, random, gamerSettings, sharedReferencesCollector);
 
+		this.ref = this.createIntTunableParameter("SelectionStrategy", "Ref", gamerSettings, sharedReferencesCollector);
+
+		/*
 		// Get default value for ref (this is the value used for the roles for which we are not tuning the parameter)
 		int fixedRef = gamerSettings.getIntPropertyValue("SelectionStrategy.fixedRef");
 
@@ -54,7 +57,7 @@ public class GraveSelection extends MoveValueSelection {
 
 		}else{
 			this.ref = new IntTunableParameter("Ref", fixedRef);
-		}
+		}*/
 
 		sharedReferencesCollector.setGraveSelection(this);
 
