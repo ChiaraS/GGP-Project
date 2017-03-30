@@ -106,12 +106,12 @@ public class EpsilonGreedySelector extends TunerSelector{
 	 * @return the index of the selected move.
 	 */
 	@Override
-	public int selectMove(MoveStats[] movesStats, double[] movesPenalty, int numUpdates){
+	public int selectMove(MoveStats[] movesStats, boolean[] valuesFeasibility, double[] movesPenalty, int numUpdates){
 
 		if(this.random.nextDouble() < this.epsilon){
-			return this.tunerSelector1.selectMove(movesStats, movesPenalty, numUpdates);
+			return this.tunerSelector1.selectMove(movesStats, valuesFeasibility, movesPenalty, numUpdates);
 		}else{
-			return this.tunerSelector2.selectMove(movesStats, movesPenalty, numUpdates);
+			return this.tunerSelector2.selectMove(movesStats, valuesFeasibility, movesPenalty, numUpdates);
 		}
 
 	}

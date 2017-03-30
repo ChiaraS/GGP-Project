@@ -51,8 +51,37 @@ public class RandomSelector extends TunerSelector{
 	}
 
 	@Override
-	public int selectMove(MoveStats[] movesStats, double[] movesPenalty, int numUpdates) {
-		return this.random.nextInt(movesStats.length);
+	public int selectMove(MoveStats[] movesStats, boolean[] valuesFeasibility, double[] movesPenalty, int numUpdates) {
+		int selectedMove = -1;
+
+		if(valuesFeasibility != null){
+			// Count number of feasible moves and then pick random one
+			int feasibleMoves = 0;
+			for(int i = 0; i < valuesFeasibility.length; i++){
+				if(valuesFeasibility[i]){
+					feasibleMoves++;
+				}
+			}
+
+			int randomNum = this.random.nextInt(feasibleMoves);
+			for(int i = 0; i < valuesFeasibility.length; i++){
+				if(valuesFeasibility[i]){
+					if(randomNum == 0){
+						selectedMove = i;
+						break;
+					}
+					randomNum--;
+				}
+			}
+				// Extra check (should never be true).
+			if(selectedMove == -1){
+				throw new RuntimeException("RandomSelector - SelectMove(MoveStats[], boolean[], double[], int): detected no feasible move when selecting.");
+			}
+		}else{
+			selectedMove = this.random.nextInt(movesStats.length);
+		}
+
+		return selectedMove;
 	}
 
 	@Override
@@ -60,7 +89,7 @@ public class RandomSelector extends TunerSelector{
 
 		// Extra check to make sure that this method is never called with an empty map of moves
 		if(movesInfo.isEmpty()){
-			throw new RuntimeException("UcbSelector - selectMove(Map, int): cannot select next combination becase the map is empty.");
+			throw new RuntimeException("RandomSelector - selectMove(Map, int): cannot select next combination becase the map is empty.");
 		}
 
 		int randomNum = this.random.nextInt(movesInfo.size());

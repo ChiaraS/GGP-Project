@@ -45,6 +45,11 @@ public class UcbSelector extends TunerSelector{
 	 * TODO: adapt the MctsManager code to also use this class.
 	 *
 	 * @param moveStats list with the statistics for each move.
+	 * @param valuesFeasibility for each entry in the movesStats array specifies if it has to be considered (true)
+	 * or not (false) in the current selection. This array allows to exclude form the selection the statistics of the
+	 * moves that are not feasible (i.e. when selecting a value for a tunable parameter allows to exclude those values
+	 * that are not feasible for the current configuration of other parameter values). If this array is null, all moves
+	 * will be considered feasible and the corresponding movesStats will be taken into account.
 	 * @param movesPenalty penalty of each move that depends on empirical tests on the performance
 	 * of the move (i.e. parameters combination). NOTE: when the penalty is not specified we use the
 	 * value -1. In this way if we are computing the bias but the penalty is not specified the bias
@@ -55,13 +60,40 @@ public class UcbSelector extends TunerSelector{
 	 * @return the index of the selected move.
 	 */
 	@Override
-	public int selectMove(MoveStats[] movesStats, double[] movesPenalty, int numUpdates){
+	public int selectMove(MoveStats[] movesStats, boolean[] valuesFeasibility, double[] movesPenalty, int numUpdates){
 
-		int selectedMove;
+		int selectedMove = -1;
 		// This should mean that no combination of values has been evaluated yet (1st simulation),
 		// thus we return a random combination.
 		if(numUpdates == 0 && this.biasComputer == null){
-			selectedMove = this.random.nextInt(movesStats.length);
+
+			if(valuesFeasibility != null){
+				// Count number of feasible moves and then pick random one
+				int feasibleMoves = 0;
+				for(int i = 0; i < valuesFeasibility.length; i++){
+					if(valuesFeasibility[i]){
+						feasibleMoves++;
+					}
+				}
+
+				int randomNum = this.random.nextInt(feasibleMoves);
+				for(int i = 0; i < valuesFeasibility.length; i++){
+					if(valuesFeasibility[i]){
+						if(randomNum == 0){
+							selectedMove = i;
+							break;
+						}
+						randomNum--;
+					}
+				}
+
+				// Extra check (should never be true).
+				if(selectedMove == -1){
+					throw new RuntimeException("UcbSelector - SelectMove(MoveStats[], boolean[], double[], int): detected no feasible move when selecting.");
+				}
+			}else{
+				selectedMove = this.random.nextInt(movesStats.length);
+			}
 		}else{
 
 			double minExtreme = 0.0;
@@ -72,9 +104,10 @@ public class UcbSelector extends TunerSelector{
 
 			List<Integer> selectedMovesIndices = new ArrayList<Integer>();
 
-			if(movesPenalty != null){
-				for(int i = 0; i < movesStats.length; i++){
+			//if(movesPenalty != null){
+			for(int i = 0; i < movesStats.length; i++){
 
+				if(valuesFeasibility == null || valuesFeasibility[i]){
 					movesValues[i] = this.computeCombinationValue(movesStats[i], movesPenalty[i], numUpdates, minExtreme, maxExtreme);
 
 					/*
@@ -86,21 +119,22 @@ public class UcbSelector extends TunerSelector{
 						maxValue = movesValues[i];
 					}
 				}
-			}else{
+
+			}
+			/*}else{
 				for(int i = 0; i < movesStats.length; i++){
 
 					movesValues[i] = this.computeCombinationValue(movesStats[i], -1, numUpdates, minExtreme, maxExtreme);
 
-					/*
-					if(combinationsValues[i] == Double.MAX_VALUE){
-						maxValue = combinationsValues[i];
-						selectedCombinationsIndices.add(new Integer(i));
-					}else*/
+					//if(combinationsValues[i] == Double.MAX_VALUE){
+					//	maxValue = combinationsValues[i];
+					//	selectedCombinationsIndices.add(new Integer(i));
+					//}else
 					if(movesValues[i] > maxValue){
 						maxValue = movesValues[i];
 					}
 				}
-			}
+			} */
 
 			/*
 			// NOTE: as is, this code always selects a combination that has value Double.MAX_VALUE if there is one,
@@ -115,20 +149,19 @@ public class UcbSelector extends TunerSelector{
 			*/
 
 			for(int i = 0; i < movesValues.length; i++){
-				if(movesValues[i] >= (maxValue-valueOffset)){
+				if((valuesFeasibility == null || valuesFeasibility[i]) && movesValues[i] >= (maxValue-valueOffset)){
 					selectedMovesIndices.add(new Integer(i));
 				}
 			}
 
 			// Extra check (should never be true).
 			if(selectedMovesIndices.isEmpty()){
-				throw new RuntimeException("UcbSelector - SelectMove(MoveStats[], double[], int): detected no combinations with value higher than -1.");
+				throw new RuntimeException("UcbSelector - SelectMove(MoveStats[], boolean[], double[], int): detected no combinations with value higher than -1.");
 			}
 
 			selectedMove = selectedMovesIndices.get(this.random.nextInt(selectedMovesIndices.size())).intValue();
 
 		}
-
 
 		return selectedMove;
 
@@ -139,7 +172,15 @@ public class UcbSelector extends TunerSelector{
 	 * each move is mapped to the corresponding statistics and to the corresponding penalty value.
 	 * NOTE: we assume here that the penalty is always specified even when we are not using a bias
 	 * computer, thus if no penalty is specified in the gamers settings this value should be
-	 * initialized to -1.
+	 * initialized to 0.
+	 * ALSO NOTE: this method assumes that all moves are feasible. If you want to exclude some moves
+	 * from the selection when using this method then you have to remove them from the map before
+	 * passing it to this method. TODO: change the other selectMove method to keep track of the move
+	 * associated to each movesStats so that also for that method whenever there are values that
+	 * are not feasible we just have to exclude them from the movesStats array before passing it
+	 * to the method. If we do so now, we loose the information of the move associated to a certain
+	 * move statistic because the index of the move statistic in the array of movesStats might not
+	 * correspond to the correct move index.
 	 * @param numUpdates number of total visits of the moves so far (i.e. number of times any move
 	 * has been visited).
 	 * @return the index of the selected move.
@@ -227,7 +268,6 @@ public class UcbSelector extends TunerSelector{
 
 		}
 
-
 		return selectedMove;
 	}
 
@@ -293,8 +333,7 @@ public class UcbSelector extends TunerSelector{
 	}
 
 	@Override
-	public void setReferences(
-			SharedReferencesCollector sharedReferencesCollector) {
+	public void setReferences(SharedReferencesCollector sharedReferencesCollector) {
 		// Do nothing
 
 	}

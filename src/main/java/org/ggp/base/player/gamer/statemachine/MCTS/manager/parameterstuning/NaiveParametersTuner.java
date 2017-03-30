@@ -23,8 +23,6 @@ import csironi.ggp.course.utils.Pair;
 
 public class NaiveParametersTuner extends ParametersTuner {
 
-	protected TwoPhaseProblemRepresentation[] roleProblems;
-
 	private double epsilon0;
 
 	private TunerSelector globalMabSelector;
@@ -45,10 +43,9 @@ public class NaiveParametersTuner extends ParametersTuner {
 	 */
 	private boolean useGlobalBest;
 
-	private int[][] selectedCombinations;
+	private TwoPhaseProblemRepresentation[] roleProblems;
 
-	private int indexOfK;
-	private int indexOfRef;
+	private int[][] selectedCombinations;
 
 	public NaiveParametersTuner(GameDependentParameters gameDependentParameters, Random random,
 			GamerSettings gamerSettings, SharedReferencesCollector sharedReferencesCollector) {
@@ -99,6 +96,7 @@ public class NaiveParametersTuner extends ParametersTuner {
 		this.selectedCombinations = null;
 	}
 
+	/*
 	@Override
 	public void setClassesAndPenalty(String[] classesNames, int[] classesLength, String[][] classesValues, double[][] unitMovesPenalty) {
 		super.setClassesAndPenalty(classesNames, classesLength, classesValues, unitMovesPenalty);
@@ -118,7 +116,7 @@ public class NaiveParametersTuner extends ParametersTuner {
 			GamerLogger.logError("SearchManagerCreation", "Error when setting the indices of K and Ref: K = " + this.indexOfK + ", ref = " + this.indexOfRef + ".");
 		}
 
-	}
+	}*/
 
 	/*
 	public NaiveParametersTuner(NaiveParametersTuner toCopy) {
@@ -159,6 +157,13 @@ public class NaiveParametersTuner extends ParametersTuner {
 
 		super.setUpComponent();
 
+
+		this.globalMabSelector.setUpComponent();
+
+		this.localMabsSelector.setUpComponent();
+
+		this.bestCombinationSelector.setUpComponent();
+
 		int numRolesToTune;
 
 		if(this.tuneAllRoles){
@@ -169,18 +174,11 @@ public class NaiveParametersTuner extends ParametersTuner {
 
 		// Create a two phase representation of the combinatorial problem for each role
 		this.roleProblems = new TwoPhaseProblemRepresentation[numRolesToTune];
-
-		for(int i = 0; i < this.roleProblems.length; i++){
-			roleProblems[i] = new TwoPhaseProblemRepresentation(this.classesLength);
+		for(int roleProblemIndex = 0; roleProblemIndex < this.roleProblems.length; roleProblemIndex++){
+			roleProblems[roleProblemIndex] = new TwoPhaseProblemRepresentation(this.parametersManager.getNumPossibleValuesForAllParams());
 		}
 
-		this.selectedCombinations = new int[numRolesToTune][this.classesLength.length];
-
-		this.globalMabSelector.setUpComponent();
-
-		this.localMabsSelector.setUpComponent();
-
-		this.bestCombinationSelector.setUpComponent();
+		this.selectedCombinations = new int[numRolesToTune][this.parametersManager.getNumTunableParameters()];
 
 	}
 
@@ -198,25 +196,26 @@ public class NaiveParametersTuner extends ParametersTuner {
 	}
 
 	@Override
-	public int[][] selectNextCombinations() {
+	public void setNextCombinations() {
 
 		// For each role, we check the corresponding naive problem and select a combination of parameters
-		for(int i = 0; i < this.roleProblems.length; i++){
+		for(int roleProblemIndex = 0; roleProblemIndex < this.roleProblems.length; roleProblemIndex++){
 			// TODO: the strategy that selects if to use the global or the local mabs is hard-coded.
 			// Can be refactored to be customizable.
-			if(this.roleProblems[i].getGlobalMab().getNumUpdates() > 0 &&
+			if(this.roleProblems[roleProblemIndex].getGlobalMab().getNumUpdates() > 0 &&
 					this.random.nextDouble() >= this.epsilon0){// Exploit
 
-				this.selectedCombinations[i] = this.exploit(this.roleProblems[i].getGlobalMab());
+				this.selectedCombinations[roleProblemIndex] = this.exploit(this.roleProblems[roleProblemIndex].getGlobalMab());
 
 			}else{ //Explore
 
-				this.selectedCombinations[i] = this.explore(this.roleProblems[i].getLocalMabs());
+				this.selectedCombinations[roleProblemIndex] = this.explore(this.roleProblems[roleProblemIndex].getLocalMabs());
 
 			}
 		}
 
-		return this.selectedCombinations;
+		this.parametersManager.setParametersValues(this.selectedCombinations);
+
 	}
 
 	/**
@@ -234,7 +233,19 @@ public class NaiveParametersTuner extends ParametersTuner {
 	private int[] explore(FixedMab[] localMabs){
 
 		int[] indices = new int[localMabs.length];
+		for(int paramIndex = 0; paramIndex < localMabs.length; paramIndex++){
+			indices[paramIndex] = -1; // It means that the index has not been set yet
+		}
 
+		for(int paramIndex = 0; paramIndex < localMabs.length; paramIndex++){
+			indices[paramIndex] = this.localMabsSelector.selectMove(localMabs[paramIndex].getMoveStats(),
+					this.parametersManager.getValuesFeasibility(paramIndex, indices),
+					// If for a parameter no penalties are specified, a penalty of 0 is assumed for all of the values.
+					(this.parametersManager.getPossibleValuesPenalty(paramIndex) != null ? this.parametersManager.getPossibleValuesPenalty(paramIndex) : new double[this.parametersManager.getNumPossibleValues(paramIndex)]),
+					localMabs[paramIndex].getNumUpdates());
+		}
+
+		/*
 		// Select a value for each local mab independently
 		if(this.unitMovesPenalty != null){
 			for(int i = 0; i < localMabs.length; i++){
@@ -245,109 +256,126 @@ public class NaiveParametersTuner extends ParametersTuner {
 				indices[i] = this.localMabsSelector.selectMove(localMabs[i].getMoveStats(), null, localMabs[i].getNumUpdates());
 			}
 		}
+		*/
 
 		return indices;
 
 	}
 
 	@Override
-	public int[][] getBestCombinations() {
+	public void setBestCombinations() {
 
 		// For each role, we select a combination of parameters
-		for(int i = 0; i < this.roleProblems.length; i++){
+		for(int roleProblemIndex = 0; roleProblemIndex < this.roleProblems.length; roleProblemIndex++){
 			// If we want to use the global MAB we can only do that if it has been visited at least once
 			// and so contains at least one combination.
-			if(this.useGlobalBest && this.roleProblems[i].getGlobalMab().getNumUpdates() > 0){
-				IncrementalMab globalMab = this.roleProblems[i].getGlobalMab();
+			if(this.useGlobalBest && this.roleProblems[roleProblemIndex].getGlobalMab().getNumUpdates() > 0){
+				IncrementalMab globalMab = this.roleProblems[roleProblemIndex].getGlobalMab();
 				Move m = this.bestCombinationSelector.selectMove(globalMab.getMovesInfo(), globalMab.getNumUpdates());
-				this.selectedCombinations[i] = ((CombinatorialCompactMove) m).getIndices();
+				this.selectedCombinations[roleProblemIndex] = ((CombinatorialCompactMove) m).getIndices();
 			}else{
-
-				FixedMab[] localMabs = this.roleProblems[i].getLocalMabs();
+				FixedMab[] localMabs = this.roleProblems[roleProblemIndex].getLocalMabs();
 				int[] indices = new int[localMabs.length];
 
 				// Select a value for each local mab independently
-				if(this.unitMovesPenalty != null){
-					for(int j = 0; j < localMabs.length; j++){
-						indices[j] = this.bestCombinationSelector.selectMove(localMabs[j].getMoveStats(), this.unitMovesPenalty[j], localMabs[j].getNumUpdates());
-					}
-				}else{
-					for(int j = 0; j < localMabs.length; j++){
-						indices[j] = this.localMabsSelector.selectMove(localMabs[j].getMoveStats(), null, localMabs[j].getNumUpdates());
-					}
+				for(int paramIndex = 0; paramIndex < localMabs.length; paramIndex++){
+					indices[paramIndex] = this.bestCombinationSelector.selectMove(localMabs[paramIndex].getMoveStats(),
+							this.parametersManager.getValuesFeasibility(paramIndex, indices),
+							// If for a parameter no penalties are specified, a penalty of 0 is assumed for all of the values.
+							(this.parametersManager.getPossibleValuesPenalty(paramIndex) != null ? this.parametersManager.getPossibleValuesPenalty(paramIndex) : new double[this.parametersManager.getNumPossibleValues(paramIndex)]),
+							localMabs[paramIndex].getNumUpdates());
 				}
-				this.selectedCombinations[i] = indices;
+				this.selectedCombinations[roleProblemIndex] = indices;
 			}
 		}
 
+		// Log the combination that we are selecting as best
 		String globalParamsOrder = "[ ";
-		for(int i = 0; i < this.classesNames.length; i++){
-			globalParamsOrder += (this.classesNames[i] + " ");
+		for(int paramIndex = 0; paramIndex < this.parametersManager.getNumTunableParameters(); paramIndex++){
+			globalParamsOrder += (this.parametersManager.getName(paramIndex) + " ");
 		}
 		globalParamsOrder += "]";
-
 		String toLog = "";
 
-		for(int i = 0; i < this.selectedCombinations.length; i++){
-
-			toLog += ("ROLE=;" + this.gameDependentParameters.getTheMachine().convertToExplicitRole(this.gameDependentParameters.getTheMachine().getRoles().get(i)) + ";PARAMS=;" + globalParamsOrder + ";SELECTED_COMBINATION=;[ ");
-
-			for(int j = 0; j < this.selectedCombinations[i].length; j++){
-				toLog += this.classesValues[j][this.selectedCombinations[i][j]] + " ";
+		if(this.tuneAllRoles){
+			for(int roleProblemIndex = 0; roleProblemIndex < this.selectedCombinations.length; roleProblemIndex++){
+				toLog += ("ROLE=;" + this.gameDependentParameters.getTheMachine().convertToExplicitRole(this.gameDependentParameters.getTheMachine().getRoles().get(roleProblemIndex)) + ";PARAMS=;" + globalParamsOrder + ";SELECTED_COMBINATION=;[ ");
+				for(int paramIndex = 0; paramIndex < this.selectedCombinations[roleProblemIndex].length; paramIndex++){
+					toLog += this.parametersManager.getPossibleValues(paramIndex)[this.selectedCombinations[roleProblemIndex][paramIndex]] + " ";
+				}
+				toLog += "];\n";
 			}
-
+		}else{ // Tuning only my role
+			toLog += ("ROLE=;" + this.gameDependentParameters.getTheMachine().convertToExplicitRole(this.gameDependentParameters.getTheMachine().getRoles().get(this.gameDependentParameters.getMyRoleIndex())) + ";PARAMS=;" + globalParamsOrder + ";SELECTED_COMBINATION=;[ ");
+			for(int paramIndex = 0; paramIndex < this.selectedCombinations[0].length; paramIndex++){
+				toLog += this.parametersManager.getPossibleValues(paramIndex)[this.selectedCombinations[0][paramIndex]] + " ";
+			}
 			toLog += "];\n";
 		}
-
 		GamerLogger.log(GamerLogger.FORMAT.CSV_FORMAT, "BestParamsCombo", toLog);
 
-		return this.selectedCombinations;
+		this.parametersManager.setParametersValues(this.selectedCombinations);
+
 	}
 
 	@Override
 	public void updateStatistics(int[] rewards) {
 
-		if(rewards.length != this.roleProblems.length){
-			GamerLogger.logError("ParametersTuner", "NaiveParametersTuner - Impossible to update move statistics! Wrong number of rewards (" + rewards.length +
+		int[] neededRewards;
+
+		// We have to check if the ParametersTuner is tuning parameters only for the playing role
+		// or for all roles and update the statistics with appropriate rewards.
+		if(this.tuneAllRoles){
+			neededRewards = rewards;
+		}else{
+			neededRewards = new int[1];
+			neededRewards[0] = rewards[this.gameDependentParameters.getMyRoleIndex()];
+
+		}
+
+		if(neededRewards.length != this.roleProblems.length){
+			GamerLogger.logError("ParametersTuner", "NaiveParametersTuner - Impossible to update move statistics! Wrong number of rewards (" + neededRewards.length +
 					") to update the role problems (" + this.roleProblems.length + ").");
 			throw new RuntimeException("NaiveParametersTuner - Impossible to update move statistics! Wrong number of rewards!");
 		}
 
-		for(int i = 0; i < this.roleProblems.length; i++){
+		for(int roleProblemIndex = 0; roleProblemIndex < this.roleProblems.length; roleProblemIndex++){
 
 			/********** Update global MAB **********/
 
+			/*
 			// If K = 0 update statistics of a move where Ref has a default value, so that always the same move is updated.
 			if(this.classesValues[this.indexOfK][this.selectedCombinations[i][this.indexOfK]].equals("0")){
 				this.selectedCombinations[i][this.indexOfRef] = 0;
-			}
+			}*/
 
 
 			// Get the info of the combinatorial move in the global MAB
-			CombinatorialCompactMove theMove = new CombinatorialCompactMove(this.selectedCombinations[i]);
+			CombinatorialCompactMove theMove = new CombinatorialCompactMove(this.selectedCombinations[roleProblemIndex]);
 
 
-			Pair<MoveStats,Double> globalInfo = this.roleProblems[i].getGlobalMab().getMovesInfo().get(theMove);
+			Pair<MoveStats,Double> globalInfo = this.roleProblems[roleProblemIndex].getGlobalMab().getMovesInfo().get(theMove);
 
 			// If the info doesn't exist, add the move to the MAB, computing the corresponding penalty
 			if(globalInfo == null){
 				globalInfo = new Pair<MoveStats,Double>(new MoveStats(), this.computeCombinatorialMovePenalty(theMove.getIndices()));
-				this.roleProblems[i].getGlobalMab().getMovesInfo().put(theMove, globalInfo);
+				this.roleProblems[roleProblemIndex].getGlobalMab().getMovesInfo().put(theMove, globalInfo);
 			}
 
 			// Update the stats
-			globalInfo.getFirst().incrementScoreSum(rewards[i]);
+			globalInfo.getFirst().incrementScoreSum(neededRewards[roleProblemIndex]);
 			globalInfo.getFirst().incrementVisits();
 
 			// Increase total num updates
-			this.roleProblems[i].getGlobalMab().incrementNumUpdates();
+			this.roleProblems[roleProblemIndex].getGlobalMab().incrementNumUpdates();
 
 			/********** Update local MABS **********/
 
 			// Update the stats for each local MAB
-			FixedMab[] localMabs = this.roleProblems[i].getLocalMabs();
-			for(int j = 0; j < localMabs.length; j++){
+			FixedMab[] localMabs = this.roleProblems[roleProblemIndex].getLocalMabs();
+			for(int paramIndex = 0; paramIndex < localMabs.length; paramIndex++){
 
+				/*
 				// TODO: temporary solution! Fix with something general that works for any parameter and can be set from file.
 				if(j == this.indexOfRef){ // Check if we have to avoid updating stats for Ref
 
@@ -355,17 +383,20 @@ public class NaiveParametersTuner extends ParametersTuner {
 						continue; // Don't update the MAB of Ref if K=0;
 					}
 
-				}
+				}*/
 
-				MoveStats localStats = localMabs[j].getMoveStats()[this.selectedCombinations[i][j]];
+				MoveStats localStats = localMabs[paramIndex].getMoveStats()[this.selectedCombinations[roleProblemIndex][paramIndex]];
 				// Update the stats
-				localStats.incrementScoreSum(rewards[i]);
+				localStats.incrementScoreSum(neededRewards[roleProblemIndex]);
 				localStats.incrementVisits();
 
-				localMabs[j].incrementNumUpdates();
+				localMabs[paramIndex].incrementNumUpdates();
 			}
 		}
 	}
+
+
+
 
 	@Override
 	public void logStats() {

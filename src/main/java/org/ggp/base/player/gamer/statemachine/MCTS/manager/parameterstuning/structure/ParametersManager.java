@@ -75,12 +75,6 @@ public class ParametersManager extends SearchManagerComponent {
 		this.initialParametersOrder.setUpComponent();
 	}
 
-	@Override
-	public String getComponentParameters(String indentation) {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
 	/**
 	 * For the parameter at position paramIndex in the list of tunable parameters returns
 	 * an array where each entry is true if the corresponding value is feasible for the
@@ -168,6 +162,19 @@ public class ParametersManager extends SearchManagerComponent {
 	}
 
 	/**
+	 *  Get for each parameter the number of possible values. This in needed to create
+	 */
+	// a local MAB for each parameter.
+
+	public int[] getNumPossibleValuesForAllParams(){
+		int[] numPossibleValues = new int[this.getNumTunableParameters()];
+		for(int paramIndex = 0; paramIndex < numPossibleValues.length; paramIndex++){
+			numPossibleValues[paramIndex] = this.getNumPossibleValues(paramIndex);
+		}
+		return numPossibleValues;
+	}
+
+	/**
 	 * Returns the penalty associated with the possible values of the parameter at position
 	 * paramIndex in the list of tunableParameters.
 	 *
@@ -176,6 +183,46 @@ public class ParametersManager extends SearchManagerComponent {
 	 */
 	public double[] getPossibleValuesPenalty(int paramIndex){
 		return this.tunableParameters.get(paramIndex).getPossibleValuesPenalty();
+	}
+
+	public void setParametersValues(int[][] valuesIndicesPerRole){
+
+		int paramIndex = 0;
+
+		// If we are tuning only for my role...
+		if(valuesIndicesPerRole.length == 1){
+			for(TunableParameter p : this.tunableParameters){
+				p.setMyRoleNewValue(this.gameDependentParameters.getMyRoleIndex(), valuesIndicesPerRole[0][paramIndex]);
+				paramIndex++;
+			}
+		}else{ //If we are tuning for all roles...
+
+			int[] newValuesIndices;
+
+			for(TunableParameter p : this.tunableParameters){
+
+				//System.out.print(c.getClass().getSimpleName() + ": [ ");
+
+				newValuesIndices = new int[valuesIndicesPerRole.length]; // valuesIndicesPerRole.length equals the number of roles for which we are tuning
+
+				for(int roleIndex = 0; roleIndex < newValuesIndices.length; roleIndex++){
+					newValuesIndices[roleIndex] = valuesIndicesPerRole[roleIndex][paramIndex];
+					//System.out.print(newValuesIndices[roleIndex] + " ");
+				}
+
+				//System.out.println("]");
+
+				p.setAllRolesNewValues(newValuesIndices);
+
+				paramIndex++;
+			}
+		}
+	}
+
+	@Override
+	public String getComponentParameters(String indentation) {
+		// TODO Auto-generated method stub
+		return null;
 	}
 
 }

@@ -187,6 +187,7 @@ public class FlatSingleMabParametersTuner extends SingleMabParametersTuner {
             		atLeastOneFeasibleCombo = true;
             		this.newCrossProduct(paramIndex+1, partialCombo);
             	}
+            	partialCombo[paramIndex] = -1;
             }
             if(!atLeastOneFeasibleCombo){
             	String partialComboString = "[ ";

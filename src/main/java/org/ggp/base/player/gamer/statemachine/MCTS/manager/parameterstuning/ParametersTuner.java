@@ -119,9 +119,9 @@ public abstract class ParametersTuner extends SearchManagerComponent{
 
 		double penaltySum = 0.0;
 
-		for(int i = 0; i < combinatorialMove.length; i++){
-			if(this.parametersManager.getPossibleValuesPenalty(i) != null){
-				penaltySum += this.parametersManager.getPossibleValuesPenalty(i)[combinatorialMove[i]];
+		for(int paramIndex = 0; paramIndex < combinatorialMove.length; paramIndex++){
+			if(this.parametersManager.getPossibleValuesPenalty(paramIndex) != null){
+				penaltySum += this.parametersManager.getPossibleValuesPenalty(paramIndex)[combinatorialMove[paramIndex]];
 			}
 		}
 
@@ -143,11 +143,11 @@ public abstract class ParametersTuner extends SearchManagerComponent{
 	@Override
 	public String getComponentParameters(String indentation) {
 
-		String params = indentation + "tuning = " + this.tuning +
-				indentation + "TOTAL_SAMPLES_BUDGET = " + this.tuneAllRoles +
+		String params = indentation + "PARAMETERS_MANAGER = " + this.parametersManager.printComponent(indentation + "  ") +
 				indentation + "TUNE_ALL_ROLES = " + this.tuneAllRoles +
-				indentation + "TUNE_ALL_ROLES = " + this.tuneAllRoles;
+				indentation + "tuning = " + this.tuning;
 
+		/*
 		if(this.classesLength != null){
 			String classesLengthString = "[ ";
 
@@ -179,6 +179,7 @@ public abstract class ParametersTuner extends SearchManagerComponent{
 		}else{
 			params += indentation + "UNIT_MOVES_PENALTY = null";
 		}
+		*/
 
 		return params;
 
