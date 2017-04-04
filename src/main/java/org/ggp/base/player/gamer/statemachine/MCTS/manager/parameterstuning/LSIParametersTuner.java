@@ -34,7 +34,7 @@ public class LSIParametersTuner extends TwoPhaseParametersTuner {
 	}
 
 	@Override
-	public int[][] selectNextCombinations() {
+	public void setNextCombinations() {
 
 		/*
 		if(generation){
@@ -47,14 +47,12 @@ public class LSIParametersTuner extends TwoPhaseParametersTuner {
 			return best;
 		}
 		*/
-		return null;
 
 	}
 
 	@Override
-	public int[][] getBestCombinations() {
+	public void setBestCombinations() {
 		// TODO Auto-generated method stub
-		return null;
 	}
 
 	@Override

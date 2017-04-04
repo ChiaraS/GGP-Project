@@ -147,6 +147,7 @@ public class NaiveParametersTuner extends ParametersTuner {
 
 	@Override
 	public void setReferences(SharedReferencesCollector sharedReferencesCollector) {
+		super.setReferences(sharedReferencesCollector);
 		this.globalMabSelector.setReferences(sharedReferencesCollector);
 		this.localMabsSelector.setReferences(sharedReferencesCollector);
 		this.bestCombinationSelector.setReferences(sharedReferencesCollector);
@@ -289,6 +290,38 @@ public class NaiveParametersTuner extends ParametersTuner {
 			}
 		}
 
+
+
+	    ////////////////////// VERY BAD WAY OF CHANGING CODE! FIX ASAP!
+
+		int[] bestComboIndices = null;
+
+		double maxValue = -1;
+
+		for(int roleProblemIndex = 0; roleProblemIndex < this.roleProblems.length; roleProblemIndex++){
+			Pair<MoveStats, Double> theInfo = this.roleProblems[roleProblemIndex].getGlobalMab().getMovesInfo().get(new CombinatorialCompactMove(this.selectedCombinations[roleProblemIndex]));
+			MoveStats theStats = theInfo.getFirst();
+			double scoreSum = theStats.getScoreSum();
+			double visits = theStats.getVisits();
+
+			if((scoreSum/visits)>maxValue){
+				maxValue = scoreSum/visits;
+				bestComboIndices = this.selectedCombinations[roleProblemIndex];
+			}
+		}
+
+		for(int roleProblemIndex = 0; roleProblemIndex < this.roleProblems.length; roleProblemIndex++){
+			this.selectedCombinations[roleProblemIndex] = bestComboIndices;
+		}
+
+		////////////////////// VERY BAD WAY OF CHANGING CODE! FIX ASAP!
+
+
+
+
+
+
+
 		// Log the combination that we are selecting as best
 		String globalParamsOrder = "[ ";
 		for(int paramIndex = 0; paramIndex < this.parametersManager.getNumTunableParameters(); paramIndex++){
@@ -319,17 +352,17 @@ public class NaiveParametersTuner extends ParametersTuner {
 	}
 
 	@Override
-	public void updateStatistics(int[] rewards) {
+	public void updateStatistics(int[] goals) {
 
 		int[] neededRewards;
 
 		// We have to check if the ParametersTuner is tuning parameters only for the playing role
 		// or for all roles and update the statistics with appropriate rewards.
 		if(this.tuneAllRoles){
-			neededRewards = rewards;
+			neededRewards = goals;
 		}else{
 			neededRewards = new int[1];
-			neededRewards[0] = rewards[this.gameDependentParameters.getMyRoleIndex()];
+			neededRewards[0] = goals[this.gameDependentParameters.getMyRoleIndex()];
 
 		}
 
@@ -395,9 +428,6 @@ public class NaiveParametersTuner extends ParametersTuner {
 		}
 	}
 
-
-
-
 	@Override
 	public void logStats() {
 
@@ -405,54 +435,61 @@ public class NaiveParametersTuner extends ParametersTuner {
 		String toLog;
 
 		String globalParamsOrder = "[ ";
-		for(int i = 0; i < this.classesNames.length; i++){
-			globalParamsOrder += (this.classesNames[i] + " ");
+		for(int paramIndex = 0; paramIndex < this.parametersManager.getNumTunableParameters(); paramIndex++){
+			globalParamsOrder += (this.parametersManager.getName(paramIndex) + " ");
 		}
 		globalParamsOrder += "]";
 
-		for(int i = 0; i < this.roleProblems.length; i++){
+			for(int roleProblemIndex = 0; roleProblemIndex < this.roleProblems.length; roleProblemIndex++){
 
-			toLog = "";
-
-			FixedMab[] localMabs = this.roleProblems[i].getLocalMabs();
-
-			for(int j = 0; j < localMabs.length; j++){
-
-				for(int k = 0; k < localMabs[j].getMoveStats().length; k++){
-					//GamerLogger.log(GamerLogger.FORMAT.CSV_FORMAT, "ParametersTunerStats", "ROLE=;" + i + ";MAB=;LOCAL" + j + ";UNIT_MOVE=;" + k + ";VISITS=;" + localMabs[j].getMoveStats()[k].getVisits() + ";SCORE_SUM=;" + localMabs[j].getMoveStats()[k].getScoreSum() + ";AVG_VALUE=;" + (localMabs[j].getMoveStats()[k].getVisits() <= 0 ? "0" : (localMabs[j].getMoveStats()[k].getScoreSum()/((double)localMabs[j].getMoveStats()[k].getVisits()))));
-					toLog += "\nROLE=;" + this.gameDependentParameters.getTheMachine().convertToExplicitRole(this.gameDependentParameters.getTheMachine().getRoles().get(i)) + ";PARAM=;" + this.classesNames[j] + ";UNIT_MOVE=;" + this.classesValues[j][k] + ";PENALTY=;" + (this.unitMovesPenalty != null ? this.unitMovesPenalty[j][k] : -1) + ";VISITS=;" + localMabs[j].getMoveStats()[k].getVisits() + ";SCORE_SUM=;" + localMabs[j].getMoveStats()[k].getScoreSum() + ";AVG_VALUE=;" + (localMabs[j].getMoveStats()[k].getVisits() <= 0 ? "0" : (localMabs[j].getMoveStats()[k].getScoreSum()/((double)localMabs[j].getMoveStats()[k].getVisits()))) + ";";
+				int roleIndex;
+				if(this.tuneAllRoles){
+					roleIndex = roleProblemIndex;
+				}else{
+					roleIndex = this.gameDependentParameters.getMyRoleIndex();
 				}
-			}
 
-			toLog += "\n";
+				toLog = "";
 
-			GamerLogger.log(GamerLogger.FORMAT.CSV_FORMAT, "LocalParamTunerStats", toLog);
+				FixedMab[] localMabs = this.roleProblems[roleProblemIndex].getLocalMabs();
 
-			toLog = "";
+				for(int paramIndex = 0; paramIndex < localMabs.length; paramIndex++){
 
-			Map<Move,Pair<MoveStats,Double>> globalInfo = this.roleProblems[i].getGlobalMab().getMovesInfo();
-
-			CombinatorialCompactMove theValuesIndices;
-			String theValues;
-
-			for(Entry<Move,Pair<MoveStats,Double>> entry : globalInfo.entrySet()){
-
-				theValuesIndices = (CombinatorialCompactMove) entry.getKey();
-				theValues = "[ ";
-				for(int j = 0; j < theValuesIndices.getIndices().length; j++){
-					theValues += (this.classesValues[j][theValuesIndices.getIndices()[j]] + " ");
+					for(int paramValueIndex = 0; paramValueIndex < localMabs[paramIndex].getMoveStats().length; paramValueIndex++){
+						//GamerLogger.log(GamerLogger.FORMAT.CSV_FORMAT, "ParametersTunerStats", "ROLE=;" + i + ";MAB=;LOCAL" + j + ";UNIT_MOVE=;" + k + ";VISITS=;" + localMabs[j].getMoveStats()[k].getVisits() + ";SCORE_SUM=;" + localMabs[j].getMoveStats()[k].getScoreSum() + ";AVG_VALUE=;" + (localMabs[j].getMoveStats()[k].getVisits() <= 0 ? "0" : (localMabs[j].getMoveStats()[k].getScoreSum()/((double)localMabs[j].getMoveStats()[k].getVisits()))));
+						toLog += "\nROLE=;" + this.gameDependentParameters.getTheMachine().convertToExplicitRole(this.gameDependentParameters.getTheMachine().getRoles().get(roleIndex)) + ";PARAM=;" + this.parametersManager.getName(paramIndex) + ";UNIT_MOVE=;" + this.parametersManager.getPossibleValues(paramIndex)[paramValueIndex] + ";PENALTY=;" + (this.parametersManager.getPossibleValuesPenalty(paramIndex) != null ? this.parametersManager.getPossibleValuesPenalty(paramIndex)[paramValueIndex] : 0) + ";VISITS=;" + localMabs[paramIndex].getMoveStats()[paramValueIndex].getVisits() + ";SCORE_SUM=;" + localMabs[paramIndex].getMoveStats()[paramValueIndex].getScoreSum() + ";AVG_VALUE=;" + (localMabs[paramIndex].getMoveStats()[paramValueIndex].getVisits() <= 0 ? "0" : (localMabs[paramIndex].getMoveStats()[paramValueIndex].getScoreSum()/((double)localMabs[paramIndex].getMoveStats()[paramValueIndex].getVisits()))) + ";";
+					}
 				}
-				theValues += "]";
 
-				//GamerLogger.log(GamerLogger.FORMAT.CSV_FORMAT, "ParametersTunerStats", "ROLE=;" + i + ";MAB=;GLOBAL;COMBINATORIAL_MOVE=;" + entry.getKey() + ";VISITS=;" + entry.getValue().getVisits() + ";SCORE_SUM=;" + entry.getValue().getScoreSum() + ";AVG_VALUE=;" + (entry.getValue().getVisits() <= 0 ? "0" : (entry.getValue().getScoreSum()/((double)entry.getValue().getVisits()))));
-				toLog += "\nROLE=;" + this.gameDependentParameters.getTheMachine().convertToExplicitRole(this.gameDependentParameters.getTheMachine().getRoles().get(i)) + ";PARAMS=;" + globalParamsOrder + ";COMB_MOVE=;" + theValues + ";PENALTY=;" + entry.getValue().getSecond() + ";VISITS=;" + entry.getValue().getFirst().getVisits() + ";SCORE_SUM=;" + entry.getValue().getFirst().getScoreSum() + ";AVG_VALUE=;" + (entry.getValue().getFirst().getVisits() <= 0 ? "0" : (entry.getValue().getFirst().getScoreSum()/((double)entry.getValue().getFirst().getVisits()))) + ";";
+				toLog += "\n";
+
+				GamerLogger.log(GamerLogger.FORMAT.CSV_FORMAT, "LocalParamTunerStats", toLog);
+
+				toLog = "";
+
+				Map<Move,Pair<MoveStats,Double>> globalInfo = this.roleProblems[roleProblemIndex].getGlobalMab().getMovesInfo();
+
+				CombinatorialCompactMove theValuesIndices;
+				String theValues;
+
+				for(Entry<Move,Pair<MoveStats,Double>> entry : globalInfo.entrySet()){
+
+					theValuesIndices = (CombinatorialCompactMove) entry.getKey();
+					theValues = "[ ";
+					for(int paramIndex = 0; paramIndex < theValuesIndices.getIndices().length; paramIndex++){
+						theValues += (this.parametersManager.getPossibleValues(paramIndex)[theValuesIndices.getIndices()[paramIndex]] + " ");
+					}
+					theValues += "]";
+
+					//GamerLogger.log(GamerLogger.FORMAT.CSV_FORMAT, "ParametersTunerStats", "ROLE=;" + i + ";MAB=;GLOBAL;COMBINATORIAL_MOVE=;" + entry.getKey() + ";VISITS=;" + entry.getValue().getVisits() + ";SCORE_SUM=;" + entry.getValue().getScoreSum() + ";AVG_VALUE=;" + (entry.getValue().getVisits() <= 0 ? "0" : (entry.getValue().getScoreSum()/((double)entry.getValue().getVisits()))));
+					toLog += "\nROLE=;" + this.gameDependentParameters.getTheMachine().convertToExplicitRole(this.gameDependentParameters.getTheMachine().getRoles().get(roleIndex)) + ";PARAMS=;" + globalParamsOrder + ";COMB_MOVE=;" + theValues + ";PENALTY=;" + entry.getValue().getSecond() + ";VISITS=;" + entry.getValue().getFirst().getVisits() + ";SCORE_SUM=;" + entry.getValue().getFirst().getScoreSum() + ";AVG_VALUE=;" + (entry.getValue().getFirst().getVisits() <= 0 ? "0" : (entry.getValue().getFirst().getScoreSum()/((double)entry.getValue().getFirst().getVisits()))) + ";";
+				}
+
+				toLog += "\n";
+
+				GamerLogger.log(GamerLogger.FORMAT.CSV_FORMAT, "GlobalParamTunerStats", toLog);
+
 			}
-
-			toLog += "\n";
-
-			GamerLogger.log(GamerLogger.FORMAT.CSV_FORMAT, "GlobalParamTunerStats", toLog);
-
-		}
 
 	}
 
@@ -518,7 +555,6 @@ public class NaiveParametersTuner extends ParametersTuner {
 		for(int i = 0; i < this.roleProblems.length; i++){
 			this.roleProblems[i].decreaseStatistics(factor);
 		}
-
 	}
 
 	@Override

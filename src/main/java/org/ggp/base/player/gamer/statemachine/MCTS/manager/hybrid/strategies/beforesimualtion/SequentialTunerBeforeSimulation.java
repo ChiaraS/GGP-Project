@@ -1,13 +1,7 @@
 package org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.strategies.beforesimualtion;
 
-import java.util.Collections;
-import java.util.Random;
 
-import org.ggp.base.player.gamer.statemachine.GamerSettings;
-import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.GameDependentParameters;
-import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.SharedReferencesCollector;
-
-public class SequentialTunerBeforeSimulation extends TunerBeforeSimulation {
+public class SequentialTunerBeforeSimulation /*extends TunerBeforeSimulation*/ {
 
 	/**
 	 * Index of the current parameter being tuned in the list of parameters.
@@ -19,6 +13,8 @@ public class SequentialTunerBeforeSimulation extends TunerBeforeSimulation {
 	 * parameter or we just finished one repetition of tuning all parameters.
 	 */
 	private int currentParameterIndex;
+
+	/*
 
 	public SequentialTunerBeforeSimulation(GameDependentParameters gameDependentParameters, Random random,
 			GamerSettings gamerSettings, SharedReferencesCollector sharedReferencesCollector) {
@@ -173,5 +169,6 @@ public class SequentialTunerBeforeSimulation extends TunerBeforeSimulation {
 		return params;
 
 	}
+	*/
 
 }

@@ -34,7 +34,7 @@ public class SequentialTunerAfterMove extends AfterMoveStrategy {
 
 	@Override
 	public void afterMoveActions() {
-		this.sequentialTunerBeforeSimulation.startTuningNextParameter();
+		//this.sequentialTunerBeforeSimulation.startTuningNextParameter();
 	}
 
 	@Override

@@ -90,6 +90,7 @@ public abstract class SingleMabParametersTuner extends ParametersTuner {
 
 	@Override
 	public void setReferences(SharedReferencesCollector sharedReferencesCollector) {
+		super.setReferences(sharedReferencesCollector);
 		this.nextCombinationSelector.setReferences(sharedReferencesCollector);
 		this.bestCombinationSelector.setReferences(sharedReferencesCollector);
 	}

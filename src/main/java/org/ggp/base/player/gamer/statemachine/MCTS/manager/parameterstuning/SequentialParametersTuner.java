@@ -15,25 +15,35 @@ public class SequentialParametersTuner extends ParametersTuner {
 	 */
 	private boolean shuffleTuningOrder;
 
-	public SequentialParametersTuner(
-			GameDependentParameters gameDependentParameters, Random random,
-			GamerSettings gamerSettings,
-			SharedReferencesCollector sharedReferencesCollector) {
-		super(gameDependentParameters, random, gamerSettings,
-				sharedReferencesCollector);
+	public SequentialParametersTuner(GameDependentParameters gameDependentParameters, Random random,
+			GamerSettings gamerSettings, SharedReferencesCollector sharedReferencesCollector) {
+		super(gameDependentParameters, random, gamerSettings, sharedReferencesCollector);
 		// TODO Auto-generated constructor stub
 	}
-
 	@Override
-	public int[][] selectNextCombinations() {
-		// TODO Auto-generated method stub
-		return null;
+	public void setReferences(SharedReferencesCollector sharedReferencesCollector) {
+		super.setReferences(sharedReferencesCollector);
+
 	}
 
 	@Override
-	public int[][] getBestCombinations() {
+	public void clearComponent() {
+		super.clearComponent();
+	}
+
+	@Override
+	public void setUpComponent() {
+		super.setUpComponent();
+	}
+
+	@Override
+	public void setNextCombinations() {
 		// TODO Auto-generated method stub
-		return null;
+	}
+
+	@Override
+	public void setBestCombinations() {
+		// TODO Auto-generated method stub
 	}
 
 	@Override
@@ -43,7 +53,7 @@ public class SequentialParametersTuner extends ParametersTuner {
 	}
 
 	@Override
-	public void updateStatistics(int[] rewards) {
+	public void updateStatistics(int[] goals) {
 		// TODO Auto-generated method stub
 
 	}
@@ -58,23 +68,6 @@ public class SequentialParametersTuner extends ParametersTuner {
 	public void decreaseStatistics(double factor) {
 		// TODO Auto-generated method stub
 
-	}
-
-	@Override
-	public void setReferences(
-			SharedReferencesCollector sharedReferencesCollector) {
-		// TODO Auto-generated method stub
-
-	}
-
-	@Override
-	public void clearComponent() {
-		super.clearComponent();
-	}
-
-	@Override
-	public void setUpComponent() {
-		super.setUpComponent();
 	}
 
 }

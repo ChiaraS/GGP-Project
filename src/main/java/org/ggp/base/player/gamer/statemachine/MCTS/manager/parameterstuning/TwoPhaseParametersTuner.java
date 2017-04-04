@@ -32,15 +32,13 @@ public abstract class TwoPhaseParametersTuner extends ParametersTuner {
 	}
 
 	@Override
-	public int[][] selectNextCombinations() {
+	public void setNextCombinations() {
 		// TODO Auto-generated method stub
-		return null;
 	}
 
 	@Override
-	public int[][] getBestCombinations() {
+	public void setBestCombinations() {
 		// TODO Auto-generated method stub
-		return null;
 	}
 
 	@Override

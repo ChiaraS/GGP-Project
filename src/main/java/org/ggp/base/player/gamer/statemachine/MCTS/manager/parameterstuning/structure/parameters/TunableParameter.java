@@ -41,7 +41,7 @@ public abstract class TunableParameter {
 
 	}
 
-	public abstract int getPossibleValuesLength();
+	public abstract int getNumPossibleValues();
 
 	public abstract String[] getPossibleValues();
 

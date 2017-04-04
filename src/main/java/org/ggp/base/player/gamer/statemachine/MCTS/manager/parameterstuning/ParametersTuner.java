@@ -80,6 +80,11 @@ public abstract class ParametersTuner extends SearchManagerComponent{
 
 	}
 
+	@Override
+	public void setReferences(SharedReferencesCollector sharedReferencesCollector){
+		this.parametersManager.setReferences(sharedReferencesCollector);
+	}
+
 	/*
 	public ParametersTuner(ParametersTuner toCopy) {
 		super(toCopy);
@@ -185,9 +190,9 @@ public abstract class ParametersTuner extends SearchManagerComponent{
 
 	}
 
-	public abstract int[][] selectNextCombinations();
+	public abstract void setNextCombinations();
 
-	public abstract int[][] getBestCombinations();
+	public abstract void setBestCombinations();
 
 	public abstract int getNumIndependentCombinatorialProblems();
 

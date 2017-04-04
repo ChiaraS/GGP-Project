@@ -59,7 +59,7 @@ public class DoubleTunableParameter extends TunableParameter {
 	}
 
 	@Override
-	public int getPossibleValuesLength(){
+	public int getNumPossibleValues(){
 
 		if(this.possibleValues == null){
 			return 0;

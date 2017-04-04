@@ -1,7 +1,6 @@
 package org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.strategies.beforesimualtion;
 
 import java.lang.reflect.InvocationTargetException;
-import java.util.List;
 import java.util.Random;
 
 import org.ggp.base.player.gamer.statemachine.GamerSettings;
@@ -9,11 +8,10 @@ import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.GameDependentP
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.SearchManagerComponent;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.SharedReferencesCollector;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.parameterstuning.ParametersTuner;
-import org.ggp.base.player.gamer.statemachine.MCTS.manager.parameterstuning.structure.parameters.TunableParameter;
 import org.ggp.base.util.logging.GamerLogger;
 import org.ggp.base.util.reflection.ProjectSearcher;
 
-public abstract class TunerBeforeSimulation extends BeforeSimulationStrategy {
+public class TunerBeforeSimulation extends BeforeSimulationStrategy {
 
 	/**
 	 * Number of simulations that are available to tune parameters.
@@ -42,26 +40,34 @@ public abstract class TunerBeforeSimulation extends BeforeSimulationStrategy {
 	/**
 	 * List of the parameters that we are tuning.
 	 */
-	protected List<TunableParameter> tunableParameters;
+	//protected List<TunableParameter> tunableParameters;
 
 	public TunerBeforeSimulation(GameDependentParameters gameDependentParameters, Random random,
 			GamerSettings gamerSettings, SharedReferencesCollector sharedReferencesCollector) {
 
 		super(gameDependentParameters, random, gamerSettings, sharedReferencesCollector);
 
-		this.simBudget = gamerSettings.getIntPropertyValue("BeforeSimulationStrategy.simBudget");
+		if(gamerSettings.specifiesProperty("BeforeSimulationStrategy.simBudget")){
+			this.simBudget = gamerSettings.getIntPropertyValue("BeforeSimulationStrategy.simBudget");
+		}else{
+			this.simBudget = Integer.MAX_VALUE;
+		}
 
-		this.batchSize = gamerSettings.getIntPropertyValue("BeforeSimulationStrategy.batchSize");
+		if(gamerSettings.specifiesProperty("BeforeSimulationStrategy.batchSize")){
+			this.batchSize = gamerSettings.getIntPropertyValue("BeforeSimulationStrategy.batchSize");
+		}else{
+			this.batchSize = 1;
+		}
 
 		this.simCount = 0;
 
 		try {
 			this.parametersTuner = (ParametersTuner) SearchManagerComponent.getConstructorForSearchManagerComponent(SearchManagerComponent.getCorrespondingClass(ProjectSearcher.PARAMETERS_TUNERS.getConcreteClasses(),
-					gamerSettings.getPropertyValue("BeforeSimulationStrategy.parameterTunerType"))).newInstance(gameDependentParameters, random, gamerSettings, sharedReferencesCollector);
+					gamerSettings.getPropertyValue("BeforeSimulationStrategy.parametersTunerType"))).newInstance(gameDependentParameters, random, gamerSettings, sharedReferencesCollector);
 		} catch (InstantiationException | IllegalAccessException
 				| IllegalArgumentException | InvocationTargetException e) {
 			// TODO: fix this!
-			GamerLogger.logError("SearchManagerCreation", "Error when instantiating ParameterTuner " + gamerSettings.getPropertyValue("BeforeSimulationStrategy.parameterTunerType") + ".");
+			GamerLogger.logError("SearchManagerCreation", "Error when instantiating ParameterTuner " + gamerSettings.getPropertyValue("BeforeSimulationStrategy.parametersTunerType") + ".");
 			GamerLogger.logStackTrace("SearchManagerCreation", e);
 			throw new RuntimeException(e);
 		}
@@ -78,12 +84,13 @@ public abstract class TunerBeforeSimulation extends BeforeSimulationStrategy {
 
 		this.parametersTuner.setReferences(sharedReferencesCollector);
 
+		/*
 		this.tunableParameters = sharedReferencesCollector.getTheParametersToTune();
 
 		if(this.tunableParameters == null || this.tunableParameters.size() == 0){
 			GamerLogger.logError("SearchManagerCreation", "TunerBeforeSimulation - Initialization with null or empty list of tunable parameters!");
 			throw new RuntimeException("ParametersTuner - Initialization with null or empty list of tunable parameters!");
-		}
+		}*/
 
 	}
 
@@ -108,12 +115,67 @@ public abstract class TunerBeforeSimulation extends BeforeSimulationStrategy {
 	}
 
 	@Override
+	public void beforeSimulationActions() {
+
+		// We reached the num of simulations available for tuning so we commit to a single configuration of parameters.
+		if(this.simCount == this.simBudget){
+
+			this.parametersTuner.setBestCombinations();
+
+			/*
+			int i = 0;
+
+			// If we are tuning only for my role...
+			if(bestCombinations.length == 1){
+				for(TunableParameter p : this.tunableParameters){
+					p.setMyRoleNewValue(this.gameDependentParameters.getMyRoleIndex(), bestCombinations[0][i]);
+					i++;
+				}
+			}else{ //If we are tuning for all roles...
+
+				int[] newValuesIndices;
+
+				for(TunableParameter p : this.tunableParameters){
+
+					//System.out.print(c.getClass().getSimpleName() + ": [ ");
+
+					newValuesIndices = new int[bestCombinations.length]; // nextCombinations.length equals the number of roles for which we are tuning
+
+					for(int j = 0; j < newValuesIndices.length; j++){
+						newValuesIndices[j] = bestCombinations[j][i];
+						//System.out.print(newValuesIndices[j] + " ");
+					}
+
+					//System.out.println("]");
+
+					p.setAllRolesNewValues(newValuesIndices);
+
+					i++;
+				}
+			}*/
+
+			this.parametersTuner.stopTuning();
+
+		}else if(this.simCount < this.simBudget && this.simCount%this.batchSize == 0){
+			// We still have simulations left to tune parameters and we finished performing the batch of simulations
+			// for the current configuration of parameters.
+			this.parametersTuner.setNextCombinations();
+
+		}
+
+		this.simCount++;
+
+	}
+
+	@Override
 	public String getComponentParameters(String indentation) {
 
 		String params = indentation + "SIM_BUDGET = " + this.simBudget +
 				indentation + "BATCH_SIZE = " + this.batchSize +
-				indentation + "PARAMETER_TUNER = " + this.parametersTuner.printComponent(indentation + "  ");
+				indentation + "PARAMETERS_TUNER = " + this.parametersTuner.printComponent(indentation + "  ") +
+				indentation + "sim_count = " + this.simCount;;
 
+		/*
 		if(this.tunableParameters != null){
 
 			String tunableParametersString = "[ ";
@@ -129,9 +191,7 @@ public abstract class TunerBeforeSimulation extends BeforeSimulationStrategy {
 			params += indentation + "TUNABLE_PARAMETERS = " + tunableParametersString;
 		}else{
 			params += indentation + "TUNABLE_PARAMETERS = null";
-		}
-
-		params += indentation + "sim_count = " + this.simCount;
+		}*/
 
 		return params;
 

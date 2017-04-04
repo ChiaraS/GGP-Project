@@ -67,6 +67,65 @@ public class FlatSingleMabParametersTuner extends SingleMabParametersTuner {
 
 	}*/
 
+	@Override
+	public void setReferences(SharedReferencesCollector sharedReferencesCollector) {
+		super.setReferences(sharedReferencesCollector);
+		// Here the parameters manager has been initialized properly and can be used to compute
+		// the combinatorial moves and their penalty.
+
+		// Build the lists of all possible parameter combinations for my role and (if being tuned)
+		// for the other roles (note that if the other roles are also being tuned all the possible
+		// combinations of values are the same for each role.
+
+		// Create all the possible combinatorial moves and corresponding penalty
+		int[] partialCombo = new int[this.parametersManager.getNumTunableParameters()];
+		for(int i = 0; i < partialCombo.length; i++){
+			partialCombo[i] = -1;
+		}
+		this.crossProduct(0, partialCombo);
+
+        this.combinatorialMovesPenalty = new double[this.newCombinatorialMoves.size()];
+       	for(int i = 0; i < this.newCombinatorialMoves.size(); i++){
+       		this.combinatorialMovesPenalty[i] = this.computeCombinatorialMovePenalty(this.newCombinatorialMoves.get(i).getIndices());
+        }
+
+	}
+
+    private void crossProduct(int paramIndex, int[] partialCombo){
+        if (paramIndex == this.parametersManager.getNumTunableParameters()) {
+            this.newCombinatorialMoves.add(new CombinatorialCompactMove(this.copyArray(partialCombo)));
+        } else {
+        	boolean atLeastOneFeasibleCombo = false;
+            for(int i = 0; i < this.parametersManager.getNumPossibleValues(paramIndex); i++) {
+            	partialCombo[paramIndex] = i;
+            	if(this.parametersManager.isValid(partialCombo)){
+            		atLeastOneFeasibleCombo = true;
+            		this.crossProduct(paramIndex+1, partialCombo);
+            	}
+            	partialCombo[paramIndex] = -1;
+            }
+            if(!atLeastOneFeasibleCombo){
+            	String partialComboString = "[ ";
+            	for(int j = 0; j < paramIndex; j++){
+            		partialComboString += this.parametersManager.getName(j) + "=" + this.parametersManager.getPossibleValues(j)[partialCombo[j]];
+            	}
+            	partialComboString += "]";
+            	GamerLogger.logError("ParametersTuner", "FlatSingleMabParametersTuner - No valid value detected for parameter " +
+            			this.parametersManager.getName(paramIndex) + "for the following partial combination: " + partialComboString);
+				throw new RuntimeException("FlatSingleMabParametersTuner - No valid value detected for a parameter when computing all combinatorial moves!");
+            }
+        }
+    }
+
+    private int[] copyArray(int[] array){
+    	int[] newArray = new int[array.length];
+    	for(int i = 0; i < array.length; i++){
+    		newArray[i] = array[i];
+    	}
+    	return newArray;
+    }
+
+
 	/**
      * After the end of each game clear the tuner.
      */
@@ -137,6 +196,7 @@ public class FlatSingleMabParametersTuner extends SingleMabParametersTuner {
 		this.crossProduct(new int[1], new LinkedList<Integer>());
 	}*/
 
+	/*
 	public void newSetClassesAndPenalty(String[] classesNames, int[] classesLength, String[][] classesValues, double[][] unitMovesPenalty){
 
 		super.setClassesAndPenalty(classesNames, classesLength, classesValues, unitMovesPenalty);
@@ -156,7 +216,7 @@ public class FlatSingleMabParametersTuner extends SingleMabParametersTuner {
        	for(int i = 0; i < this.newCombinatorialMoves.size(); i++){
        		this.combinatorialMovesPenalty[i] = this.computeCombinatorialMovePenalty(this.newCombinatorialMoves.get(i).getIndices());
         }
-	}
+	}*/
 
 	/*
     private void crossProduct(int[] nextFreeIndex, LinkedList<Integer> partial){
@@ -175,40 +235,6 @@ public class FlatSingleMabParametersTuner extends SingleMabParametersTuner {
         }
     }
     */
-
-    private void newCrossProduct(int paramIndex, int[] partialCombo){
-        if (paramIndex == this.parametersManager.getNumTunableParameters()) {
-            this.newCombinatorialMoves.add(new CombinatorialCompactMove(this.copyArray(partialCombo)));
-        } else {
-        	boolean atLeastOneFeasibleCombo = false;
-            for(int i = 0; i < this.parametersManager.getNumPossibleValues(paramIndex); i++) {
-            	partialCombo[paramIndex] = i;
-            	if(this.parametersManager.isValid(partialCombo)){
-            		atLeastOneFeasibleCombo = true;
-            		this.newCrossProduct(paramIndex+1, partialCombo);
-            	}
-            	partialCombo[paramIndex] = -1;
-            }
-            if(!atLeastOneFeasibleCombo){
-            	String partialComboString = "[ ";
-            	for(int j = 0; j < paramIndex; j++){
-            		partialComboString += this.parametersManager.getName(j) + "=" + this.parametersManager.getPossibleValues(j)[partialCombo[j]];
-            	}
-            	partialComboString += "]";
-            	GamerLogger.logError("ParametersTuner", "FlatSingleMabParametersTuner - No valid value detected for parameter " +
-            			this.parametersManager.getName(paramIndex) + "for the following partial combination: " + partialComboString);
-				throw new RuntimeException("FlatSingleMabParametersTuner - No valid value detected for a parameter when computing all combinatorial moves!");
-            }
-        }
-    }
-
-    private int[] copyArray(int[] array){
-    	int[] newArray = new int[array.length];
-    	for(int i = 0; i < array.length; i++){
-    		newArray[i] = array[i];
-    	}
-    	return newArray;
-    }
 
     /*
     protected int[] toIntArray(LinkedList<Integer> partial){
@@ -233,17 +259,17 @@ public class FlatSingleMabParametersTuner extends SingleMabParametersTuner {
 	 * @return for each tuned role, a list with the indices of the values to be set to each parameters.
 	 */
 	@Override
-	public int[][] selectNextCombinations(){
+	public void setNextCombinations(){
 
 		int[][] nextCombinations = new int[this.rolesMabs.length][];
 
 		for(int i = 0; i < this.rolesMabs.length; i++){
 			this.selectedCombinationsIndices[i] = this.nextCombinationSelector.selectMove(this.rolesMabs[i].getMoveStats(),
-					this.combinatorialMovesPenalty, this.rolesMabs[i].getNumUpdates());
+					null, this.combinatorialMovesPenalty, this.rolesMabs[i].getNumUpdates());
 			nextCombinations[i] = this.newCombinatorialMoves.get(this.selectedCombinationsIndices[i]).getIndices();
 		}
 
-		return nextCombinations;
+		this.parametersManager.setParametersValues(nextCombinations);
 
 	}
 
@@ -263,17 +289,17 @@ public class FlatSingleMabParametersTuner extends SingleMabParametersTuner {
 	 * @return for each tuned role, a list with the indices of the values to be set to each parameters.
 	 */
 	@Override
-	public int[][] getBestCombinations(){
+	public void setBestCombinations(){
 
 		int[][] nextCombinations = new int[this.rolesMabs.length][];
 
 		for(int i = 0; i < this.rolesMabs.length; i++){
 			this.selectedCombinationsIndices[i] = this.bestCombinationSelector.selectMove(this.rolesMabs[i].getMoveStats(),
-					this.combinatorialMovesPenalty, this.rolesMabs[i].getNumUpdates());
+					null, this.combinatorialMovesPenalty, this.rolesMabs[i].getNumUpdates());
 			nextCombinations[i] = this.newCombinatorialMoves.get(this.selectedCombinationsIndices[i]).getIndices();
 		}
 
-		return nextCombinations;
+		this.parametersManager.setParametersValues(nextCombinations);
 
 	}
 
@@ -283,22 +309,34 @@ public class FlatSingleMabParametersTuner extends SingleMabParametersTuner {
 	 * @param rewards
 	 */
 	@Override
-	public void updateStatistics(int[] rewards){
+	public void updateStatistics(int[] goals){
 
-		if(rewards.length != this.rolesMabs.length){
-			GamerLogger.logError("ParametersTuner", "FlatSingleMabParametersTuner - Impossible to update move statistics! Wrong number of rewards (" + rewards.length +
+		int[] neededRewards;
+
+		// We have to check if the ParametersTuner is tuning parameters only for the playing role
+		// or for all roles and update the statistics with appropriate rewards.
+		if(this.tuneAllRoles){
+			neededRewards = goals;
+		}else{
+			neededRewards = new int[1];
+			neededRewards[0] = goals[this.gameDependentParameters.getMyRoleIndex()];
+
+		}
+
+		if(neededRewards.length != this.rolesMabs.length){
+			GamerLogger.logError("ParametersTuner", "FlatSingleMabParametersTuner - Impossible to update move statistics! Wrong number of rewards (" + neededRewards.length +
 					") to update the MAB problems (" + this.rolesMabs.length + ").");
 			throw new RuntimeException("FlatSingleMabParametersTuner - Impossible to update move statistics! Wrong number of rewards!");
 		}
 
-		for(int i = 0; i < rewards.length; i++){
+		for(int roleMabIndex = 0; roleMabIndex < neededRewards.length; roleMabIndex++){
 
-			MoveStats stat = this.rolesMabs[i].getMoveStats()[this.selectedCombinationsIndices[i]];
+			MoveStats stat = this.rolesMabs[roleMabIndex].getMoveStats()[this.selectedCombinationsIndices[roleMabIndex]];
 
-			stat.incrementScoreSum(rewards[i]);
+			stat.incrementScoreSum(neededRewards[roleMabIndex]);
 			stat.incrementVisits();
 
-			this.rolesMabs[i].incrementNumUpdates();
+			this.rolesMabs[roleMabIndex].incrementNumUpdates();
 		}
 
 	}
@@ -306,31 +344,38 @@ public class FlatSingleMabParametersTuner extends SingleMabParametersTuner {
 	@Override
 	public void logStats(){
 
-		GamerLogger.log(GamerLogger.FORMAT.CSV_FORMAT, "ParametersTunerStats", "");
+		GamerLogger.log(GamerLogger.FORMAT.CSV_FORMAT, "GlobalParametersTunerStats", "");
 
 		String globalParamsOrder = "[ ";
-		for(int i = 0; i < this.parametersManager.getNumTunableParameters(); i++){
-			globalParamsOrder += (this.parametersManager.getName(i) + " ");
+		for(int paramIndex = 0; paramIndex < this.parametersManager.getNumTunableParameters(); paramIndex++){
+			globalParamsOrder += (this.parametersManager.getName(paramIndex) + " ");
 		}
 		globalParamsOrder += "]";
 
-		for(int i = 0; i < this.rolesMabs.length; i++){
+		for(int roleMabIndex = 0; roleMabIndex < this.rolesMabs.length; roleMabIndex++){
+
+			int roleIndex;
+			if(this.tuneAllRoles){
+				roleIndex = roleMabIndex;
+			}else{
+				roleIndex = this.gameDependentParameters.getMyRoleIndex();
+			}
 
 			CombinatorialCompactMove theValuesIndices;
 			String theValues;
 
-			MoveStats[] allMoveStats = this.rolesMabs[i].getMoveStats();
+			MoveStats[] allMoveStats = this.rolesMabs[roleMabIndex].getMoveStats();
 
-			for(int j = 0; j < allMoveStats.length; j++){
+			for(int comboIndex = 0; comboIndex < allMoveStats.length; comboIndex++){
 
-				theValuesIndices = this.newCombinatorialMoves.get(j);
+				theValuesIndices = this.newCombinatorialMoves.get(comboIndex);
 				theValues = "[ ";
-				for(int k = 0; k < theValuesIndices.getIndices().length; k++){
-					theValues += (this.parametersManager.getPossibleValues(k)[theValuesIndices.getIndices()[k]] + " ");
+				for(int paramIndex = 0; paramIndex < theValuesIndices.getIndices().length; paramIndex++){
+					theValues += (this.parametersManager.getPossibleValues(paramIndex)[theValuesIndices.getIndices()[paramIndex]] + " ");
 				}
 				theValues += "]";
 
-				GamerLogger.log(GamerLogger.FORMAT.CSV_FORMAT, "ParametersTunerStats", "ROLE=;" + this.gameDependentParameters.getTheMachine().convertToExplicitRole(this.gameDependentParameters.getTheMachine().getRoles().get(i)) + ";PARAMS=;" + globalParamsOrder + ";COMBINATORIAL_MOVE=;" + theValues + ";PENALTY=;" + (this.combinatorialMovesPenalty != null ? this.combinatorialMovesPenalty[j] : -1) + ";VISITS=;" + allMoveStats[j].getVisits() + ";SCORE_SUM=;" + allMoveStats[j].getScoreSum() + ";AVG_VALUE=;" + (allMoveStats[j].getVisits() <= 0 ? "0" : (allMoveStats[j].getScoreSum()/((double)allMoveStats[j].getVisits()))));
+				GamerLogger.log(GamerLogger.FORMAT.CSV_FORMAT, "ParametersTunerStats", "ROLE=;" + this.gameDependentParameters.getTheMachine().convertToExplicitRole(this.gameDependentParameters.getTheMachine().getRoles().get(roleIndex)) + ";PARAMS=;" + globalParamsOrder + ";COMBINATORIAL_MOVE=;" + theValues + ";PENALTY=;" + (this.combinatorialMovesPenalty != null ? this.combinatorialMovesPenalty[comboIndex] : 0) + ";VISITS=;" + allMoveStats[comboIndex].getVisits() + ";SCORE_SUM=;" + allMoveStats[comboIndex].getScoreSum() + ";AVG_VALUE=;" + (allMoveStats[comboIndex].getVisits() <= 0 ? "0" : (allMoveStats[comboIndex].getScoreSum()/((double)allMoveStats[comboIndex].getVisits()))));
 			}
 
 			GamerLogger.log(GamerLogger.FORMAT.CSV_FORMAT, "ParametersTunerStats", "");

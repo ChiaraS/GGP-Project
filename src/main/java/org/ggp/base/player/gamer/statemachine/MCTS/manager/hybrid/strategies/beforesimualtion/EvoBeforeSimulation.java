@@ -65,7 +65,7 @@ public class EvoBeforeSimulation extends BeforeSimulationStrategy {
 	@Override
 	public void setUpComponent(){
 
-		int numPossibleValues = this.tunableParameter.getPossibleValuesLength();
+		int numPossibleValues = this.tunableParameter.getNumPossibleValues();
 
 		//int[] individualsValues = new int[numPossibleValues];
 

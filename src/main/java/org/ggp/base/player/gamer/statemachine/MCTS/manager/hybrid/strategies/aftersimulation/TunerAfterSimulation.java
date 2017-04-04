@@ -38,6 +38,7 @@ public class TunerAfterSimulation extends AfterSimulationStrategy {
 	public void afterSimulationActions(SimulationResult simulationResult) {
 
 		if(this.parametersTuner.isTuning()){
+			/*
 			int[] goals;
 
 			// We have to check if the ParametersTuner is tuning parameters only for the playing role
@@ -53,9 +54,9 @@ public class TunerAfterSimulation extends AfterSimulationStrategy {
 
 			}else{
 				throw new RuntimeException("TunerAfterSimulation-afterSimulationActions(): combinatorial tuner is tuning for the wrong number of roles.");
-			}
+			}*/
 
-			this.parametersTuner.updateStatistics(goals);
+			this.parametersTuner.updateStatistics(simulationResult.getTerminalGoals());
 		}
 
 	}

@@ -84,7 +84,7 @@ public class SequentialTunerAfterSimulation extends TunerAfterSimulation {
 		this.simCountForParameter++;
 
 		if(this.simCountForParameter == this.simPerParameter){
-			this.sequentialTunerBeforeSimulation.startTuningNextParameter();
+	//		this.sequentialTunerBeforeSimulation.startTuningNextParameter();
 			this.simCountForParameter = 0;
 		}
 

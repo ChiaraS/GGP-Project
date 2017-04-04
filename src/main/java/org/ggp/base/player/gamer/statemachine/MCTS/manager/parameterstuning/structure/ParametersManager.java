@@ -4,6 +4,8 @@ import java.lang.reflect.InvocationTargetException;
 import java.util.List;
 import java.util.Random;
 
+import javax.script.CompiledScript;
+
 import org.ggp.base.player.gamer.statemachine.GamerSettings;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.GameDependentParameters;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.SearchManagerComponent;
@@ -25,7 +27,7 @@ public class ParametersManager extends SearchManagerComponent {
 	 * String representation of the boolean expression that specifies the constraints
 	 * that a combinations of parameters values must satisfy to be feasible.
 	 */
-	private String valuesConstraints;
+	private CompiledScript valuesConstraintsScript;
 
 	/**
 	 * This ParametersOrder is used to order the parameters right after the creation of a new player
@@ -39,7 +41,9 @@ public class ParametersManager extends SearchManagerComponent {
 
 		this.tunableParameters = null;
 
-		this.valuesConstraints = gamerSettings.getPropertyValue("ParametersManager.valuesConstraints");
+		if(gamerSettings.specifiesProperty("ParametersManager.valuesConstraints")){
+			//this.valuesConstraintsScript = this.compileCostraints(gamerSettings.getPropertyValue("ParametersManager.valuesConstraints"));
+		}
 
 		try {
 			this.initialParametersOrder = (ParametersOrder) SearchManagerComponent.getConstructorForSearchManagerComponent(SearchManagerComponent.getCorrespondingClass(ProjectSearcher.PARAMETERS_ORDER.getConcreteClasses(),
@@ -53,13 +57,14 @@ public class ParametersManager extends SearchManagerComponent {
 		}
 	}
 
+
 	@Override
 	public void setReferences(SharedReferencesCollector sharedReferencesCollector) {
 		this.tunableParameters = sharedReferencesCollector.getTheParametersToTune();
 
 		if(this.tunableParameters == null || this.tunableParameters.size() == 0){
-			GamerLogger.logError("SearchManagerCreation", "TunerBeforeSimulation - Initialization with null or empty list of tunable parameters!");
-			throw new RuntimeException("ParametersTuner - Initialization with null or empty list of tunable parameters!");
+			GamerLogger.logError("SearchManagerCreation", "ParametersManager - Initialization with null or empty list of tunable parameters!");
+			throw new RuntimeException("ParametersManager - Initialization with null or empty list of tunable parameters!");
 		}
 
 		this.initialParametersOrder.imposeOrder(this.tunableParameters);
@@ -99,7 +104,7 @@ public class ParametersManager extends SearchManagerComponent {
 			throw new RuntimeException("ParametersManager - Asking feasible values for parameter that is already set!");
 		}
 
-		boolean[] feasibility = new boolean[this.tunableParameters.get(paramIndex).getPossibleValues().length];
+		boolean[] feasibility = new boolean[this.tunableParameters.get(paramIndex).getNumPossibleValues()];
 
 		for(int i = 0; i < feasibility.length; i++){
 			otherParamsValueIndices[paramIndex] = i;
@@ -144,7 +149,7 @@ public class ParametersManager extends SearchManagerComponent {
 	 * @return
 	 */
 	public int getNumPossibleValues(int paramIndex){
-		return this.tunableParameters.get(paramIndex).getPossibleValues().length;
+		return this.tunableParameters.get(paramIndex).getNumPossibleValues();
 	}
 
 
@@ -179,7 +184,8 @@ public class ParametersManager extends SearchManagerComponent {
 	 * paramIndex in the list of tunableParameters.
 	 *
 	 * @param paramIndex
-	 * @return
+	 * @return the penalty associated with the possible values of the parameter at position
+	 * paramIndex in the list of tunableParameters if specified, null otherwise.
 	 */
 	public double[] getPossibleValuesPenalty(int paramIndex){
 		return this.tunableParameters.get(paramIndex).getPossibleValuesPenalty();
@@ -221,8 +227,31 @@ public class ParametersManager extends SearchManagerComponent {
 
 	@Override
 	public String getComponentParameters(String indentation) {
-		// TODO Auto-generated method stub
-		return null;
+
+		String params = "";
+
+		if(this.tunableParameters != null){
+
+			String tunableParametersString = "[ ";
+
+			for(TunableParameter p : this.tunableParameters){
+
+				tunableParametersString += indentation + "  TUNABLE_PARAMETER = " + p.getParameters(indentation + "  ");
+
+			}
+
+			tunableParametersString += "\n]";
+
+			params += indentation + "TUNABLE_PARAMETERS = " + tunableParametersString;
+		}else{
+			params += indentation + "TUNABLE_PARAMETERS = null";
+		}
+
+		//params += indentation + "VALUES_CONSTRAINTS = " + this.valuesConstraints;
+
+		params += indentation + "INITIAL_PARAMETERS_ORDER = " + this.initialParametersOrder.printComponent(indentation + "   ");
+
+		return params;
 	}
 
 }
