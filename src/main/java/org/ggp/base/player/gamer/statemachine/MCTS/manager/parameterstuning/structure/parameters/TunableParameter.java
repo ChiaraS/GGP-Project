@@ -45,6 +45,13 @@ public abstract class TunableParameter {
 
 	public abstract String[] getPossibleValues();
 
+	/**
+	 * Returns the value at the given index as a double.
+	 * @param valueIndex
+	 * @return
+	 */
+	public abstract double getPossibleValue(int valueIndex);
+
 	public abstract void setMyRoleNewValue(int myRoleIndex, int newValueIndex);
 
 	public abstract void setAllRolesNewValues(int[] newValuesIndices);

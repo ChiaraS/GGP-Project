@@ -926,6 +926,8 @@ public class StatsSummarizer {
 
 		String mabType;
 
+		// Maps for parameters statistics
+
 		Map<String,Map<String,Map<String,Map<String,Map<String,Map<String,Map<String,SingleValueStats>>>>>>> aggregatedParamsStats = new HashMap<String,Map<String,Map<String,Map<String,Map<String,Map<String,Map<String,SingleValueStats>>>>>>>();
 
 		Map<String,Map<String,Map<String,Map<String,Map<String,Map<String,SingleValueStats>>>>>> playerTypeMap;
@@ -935,6 +937,12 @@ public class StatsSummarizer {
 
 		Map<String,Map<String,Map<String,Map<String,SingleValueStats>>>> mabTypeMap;
 		Map<String,Map<String,Map<String,Map<String,SingleValueStats>>>> mabTypeMapAllRoles;
+
+		// Maps for final best move choice statistics
+		Map<String,Map<String,Map<String,Map<String,Map<String,Integer>>>>> aggregatedBestComboStats = new HashMap<String,Map<String,Map<String,Map<String,Map<String,Integer>>>>>();
+		Map<String,Map<String,Map<String,Map<String,Integer>>>> playerTypeComboStatsMap; // <playerType,comboStatsPerPlayedRole>
+		Map<String,Map<String,Map<String,Integer>>> playerRoleComboStatsMap; //<MyPlayedRole,comboStatsPerRoleInGame>
+		Map<String,Map<String,Map<String,Integer>>> playerAllRolesComboStatsMap; // <AllRoles,comboStatsPerRoleInGame>
 
 		// Iterate over the directories containing the matches logs for each player's type.
 		playerTypesDirs = paramLogsFolder.listFiles();
@@ -954,16 +962,29 @@ public class StatsSummarizer {
 					playerTypeMap = new HashMap<String,Map<String,Map<String,Map<String,Map<String,Map<String,SingleValueStats>>>>>>();
 					aggregatedParamsStats.put(playerType, playerTypeMap);
 				}
+				// Get the comboStatsMap corresponding to this player type
+				playerTypeComboStatsMap = aggregatedBestComboStats.get(playerType);
+				if(playerTypeComboStatsMap == null){
+					playerTypeComboStatsMap = new HashMap<String,Map<String,Map<String,Map<String,Integer>>>>();
+					aggregatedBestComboStats.put(playerType, playerTypeComboStatsMap);
+				}
 
 				playerRolesDirs = playerTypesDirs[i].listFiles();
 
+				// Get the map for all the roles
 				playerAllRolesMap = playerTypeMap.get("AllRoles");
 				if(playerAllRolesMap == null){
 					playerAllRolesMap = new HashMap<String,Map<String,Map<String,Map<String,Map<String,SingleValueStats>>>>>();
 					playerTypeMap.put("AllRoles", playerAllRolesMap);
 				}
+				// Get the comboStats for all the roles
+				playerAllRolesComboStatsMap = playerTypeComboStatsMap.get("AllRoles");
+				if(playerAllRolesComboStatsMap == null){
+					playerAllRolesComboStatsMap = new HashMap<String,Map<String,Map<String,Integer>>>();
+					playerTypeComboStatsMap.put("AllRoles", playerAllRolesComboStatsMap);
+				}
 
-				// Iterate over all the folder corresponding to the different roles the player played
+				// Iterate over all the folders corresponding to the different roles the player played
 				for(int j = 0; j < playerRolesDirs.length; j++){
 
 					if(playerRolesDirs[j].isDirectory()){
@@ -972,10 +993,17 @@ public class StatsSummarizer {
 
 						//System.out.println("Visiting folder of role: " + playerRole);
 
+						// Get the map corresponding to the role played by the player
 						playerRoleMap = playerTypeMap.get(playerRole);
 						if(playerRoleMap == null){
 							playerRoleMap = new HashMap<String,Map<String,Map<String,Map<String,Map<String,SingleValueStats>>>>>();
 							playerTypeMap.put(playerRole, playerRoleMap);
+						}
+						// Get the ComboStats map corresponding to the role played by the player
+						playerRoleComboStatsMap = playerTypeComboStatsMap.get(playerRole);
+						if(playerRoleComboStatsMap == null){
+							playerRoleComboStatsMap = new HashMap<String,Map<String,Map<String,Integer>>>();
+							playerTypeComboStatsMap.put(playerRole, playerRoleComboStatsMap);
 						}
 
 						paramsStatsFiles = playerRolesDirs[j].listFiles();
@@ -1007,6 +1035,7 @@ public class StatsSummarizer {
 									}else if(paramsStatsFiles[k].getName().endsWith("LocalParamTunerStats.csv")){
 										mabType = "Local";
 									}else if(paramsStatsFiles[k].getName().endsWith("BestParamsCombo.csv")){
+										summarizeBestCombos(paramsStatsFiles[k], playerRoleComboStatsMap, playerAllRolesComboStatsMap);
 										continue;
 									}else{
 										System.out.println("Unrecognized type of parameters stats. Skipping file: " + paramsStatsFiles[k].getPath());
@@ -1096,6 +1125,30 @@ public class StatsSummarizer {
 			}
 		}
 
+		// Log all the best combos statistics
+		for(Entry<String,Map<String,Map<String,Map<String,Map<String,Integer>>>>> playerTypeComboStats : aggregatedBestComboStats.entrySet()){
+			for(Entry<String,Map<String,Map<String,Map<String,Integer>>>> playerRoleComboStats : playerTypeComboStats.getValue().entrySet()){
+				for(Entry<String,Map<String,Map<String,Integer>>> roleCombosStats : playerRoleComboStats.getValue().entrySet()){
+
+					writeToFile(paramsStatsFolderPath + "/" + playerTypeComboStats.getKey() + "-" + playerRoleComboStats.getKey() +
+							"-BestParamsCombo-AggrStats.csv", "");
+					writeToFile(paramsStatsFolderPath + "/" + playerTypeComboStats.getKey() + "-" + playerRoleComboStats.getKey() +
+							"-BestParamsCombo-AggrStats.csv", "ROLE = " + roleCombosStats.getKey());
+
+					for(Entry<String,Map<String,Integer>> paramCombosStats : roleCombosStats.getValue().entrySet()){
+
+						writeToFile(paramsStatsFolderPath + "/" + playerTypeComboStats.getKey() + "-" + playerRoleComboStats.getKey() +
+								"-BestParamsCombo-AggrStats.csv", "PARAMS = " + paramCombosStats.getKey() + ";NUM_COMMITS;");
+
+						for(Entry<String,Integer> comboStat : paramCombosStats.getValue().entrySet()){
+							writeToFile(paramsStatsFolderPath + "/" + playerTypeComboStats.getKey() + "-" + playerRoleComboStats.getKey() +
+									"-BestParamsCombo-AggrStats.csv", comboStat.getKey() + ";" + comboStat.getValue() + ";");
+						}
+					}
+				}
+			}
+		}
+
 		//System.out.println();
 
 		//System.out.println();
@@ -1106,6 +1159,118 @@ public class StatsSummarizer {
 
 		//System.out.println("AcceptedMatchesSize = " + acceptedMatches.size());
 
+
+	}
+
+	private static void summarizeBestCombos(File theBestComboStatsFile,
+			Map<String,Map<String,Map<String,Integer>>> playerRoleComboStatsMap,
+			Map<String,Map<String,Map<String,Integer>>> playerAllRolesComboStatsMap){
+
+		//System.out.println("Best combo of " + theBestComboStatsFile.getName());
+
+		BufferedReader br = null;
+		String theLine;
+		String[] splitLine;
+
+		String role = null;
+		String parameter = null;
+		String parameterValue = null;
+
+		Map<String,Map<String,Integer>> roleCombosStatsMap; // <parameterOrder, combinationsOfValuesForParameters>
+		Map<String,Map<String,Integer>> roleCombosStatsMapAllRoles; // <parameterOrder, combinationsOfValuesForParameters>
+		Map<String,Integer> paramCombosStatsMap; // <Combination, nuberOfTimeTheCombinationWasSelectedAsBest>
+		Map<String,Integer> paramCombosStatsMapAllRoles; // <Combination, nuberOfTimeTheCombinationWasSelectedAsBest>
+		Integer visits;
+
+		try {
+			br = new BufferedReader(new FileReader(theBestComboStatsFile));
+
+			// Read first line
+			theLine = br.readLine();
+
+			while(theLine != null){
+
+				splitLine = theLine.split(";");
+
+				// For each line, parse the parameters and add them to their statistic
+
+				// Changing role map
+				role = splitLine[1];
+				roleCombosStatsMap = playerRoleComboStatsMap.get(role);
+				if(roleCombosStatsMap == null){
+					roleCombosStatsMap = new HashMap<String,Map<String,Integer>>();
+					playerRoleComboStatsMap.put(role, roleCombosStatsMap);
+				}
+				roleCombosStatsMapAllRoles = playerAllRolesComboStatsMap.get(role);
+				if(roleCombosStatsMapAllRoles == null){
+					roleCombosStatsMapAllRoles = new HashMap<String,Map<String,Integer>>();
+					playerAllRolesComboStatsMap.put(role, roleCombosStatsMapAllRoles);
+				}
+
+				String[] reordered = reorderParameters(splitLine[3], splitLine[5]);
+				if(reordered == null){
+					System.out.println("Wrong formatting of the .csv file " + theBestComboStatsFile.getPath() + ".");
+					System.out.println("Stopping summarization of the file. Partial summarization.");
+				   	if(br != null){
+				   		try {
+				   			br.close();
+						} catch (IOException ioe) {
+							System.out.println("Exception when closing the .csv file " + theBestComboStatsFile.getPath() + ".");
+							ioe.printStackTrace();
+						}
+				   	}
+				    return;
+				}
+
+				parameter = reordered[0];
+				parameterValue = reordered[1];
+
+				// Get maps for parameter
+				paramCombosStatsMap = roleCombosStatsMap.get(parameter);
+				if(paramCombosStatsMap == null){
+					paramCombosStatsMap = new HashMap<String,Integer>();
+					roleCombosStatsMap.put(parameter, paramCombosStatsMap);
+				}
+
+				paramCombosStatsMapAllRoles = roleCombosStatsMapAllRoles.get(parameter);
+				if(paramCombosStatsMapAllRoles == null){
+					paramCombosStatsMapAllRoles = new HashMap<String,Integer>();
+					roleCombosStatsMapAllRoles.put(parameter, paramCombosStatsMapAllRoles);
+				}
+
+				// Increase visits of parameters combo
+				visits = paramCombosStatsMap.get(parameterValue);
+				if(visits == null){
+					paramCombosStatsMap.put(parameterValue, new Integer(1));
+				}else{
+					paramCombosStatsMap.put(parameterValue, new Integer(visits.intValue()+1));
+				}
+				// Increase visits of parameters combo
+				visits = paramCombosStatsMapAllRoles.get(parameterValue);
+				if(visits == null){
+					paramCombosStatsMapAllRoles.put(parameterValue, new Integer(1));
+				}else{
+					paramCombosStatsMapAllRoles.put(parameterValue, new Integer(visits.intValue()+1));
+				}
+
+				theLine = br.readLine();
+			}
+
+			br.close();
+		} catch (IOException e) {
+			System.out.println("Exception when reading the .csv file " + theBestComboStatsFile.getPath() + ".");
+			System.out.println("Stopping summarization of the file. Partial summarization.");
+        	e.printStackTrace();
+        	if(br != null){
+	        	try {
+					br.close();
+				} catch (IOException ioe) {
+					System.out.println("Exception when closing the .csv file " + theBestComboStatsFile.getPath() + ".");
+					ioe.printStackTrace();
+				}
+        	}
+        	return;
+		}
 
 	}
 

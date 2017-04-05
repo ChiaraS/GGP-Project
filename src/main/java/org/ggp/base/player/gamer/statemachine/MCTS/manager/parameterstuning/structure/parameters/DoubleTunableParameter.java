@@ -145,4 +145,8 @@ public class DoubleTunableParameter extends TunableParameter {
 		return values;
 	}
 
+	@Override
+	public double getPossibleValue(int valueIndex) {
+		return this.possibleValues[valueIndex];
+	}
 }

@@ -294,6 +294,7 @@ public class NaiveParametersTuner extends ParametersTuner {
 
 	    ////////////////////// VERY BAD WAY OF CHANGING CODE! FIX ASAP!
 
+		/*
 		int[] bestComboIndices = null;
 
 		double maxValue = -1;
@@ -312,7 +313,7 @@ public class NaiveParametersTuner extends ParametersTuner {
 
 		for(int roleProblemIndex = 0; roleProblemIndex < this.roleProblems.length; roleProblemIndex++){
 			this.selectedCombinations[roleProblemIndex] = bestComboIndices;
-		}
+		}*/
 
 		////////////////////// VERY BAD WAY OF CHANGING CODE! FIX ASAP!
 
