@@ -215,6 +215,7 @@ public class StatsSummarizer {
 
 		String toWrite;
         String[] playersNames;
+        String[] playersRoles;
         int[] playersGoals;
 
 		for(List<MatchInfo> infoList : matchInfo){
@@ -257,6 +258,7 @@ public class StatsSummarizer {
 			for(MatchInfo mi : infoList){
 
 				playersNames = mi.getPlayersNames();
+				playersRoles = mi.getPlayersRoles();
 				playersGoals = mi.getplayersGoals();
 
 				// For each role add to the corresponding player statistics the score that the player obtained playing that role
@@ -293,6 +295,19 @@ public class StatsSummarizer {
 
 	            	splitWin = 1.0/((double)maxScorePlayerTypes.size());
 
+	            	// Memorize the outcome for every player in the MatchInfo
+	            	for(int i = 0; i < playersGoals.length; i++){
+	            		if(playersGoals[i] == maxScore){
+		            		if(!mi.addFinalOutcome(playersNames[i], playersRoles[i], splitWin)){
+		            			System.out.println("Error when adding final outcome " + splitWin + " to MatchInfo for player " + playersNames[i] + " playing role " + playersRoles[i] + ". The BestComboStats, if any, will be incomplete.");
+		            		}
+	            		}else{
+	            			if(!mi.addFinalOutcome(playersNames[i], playersRoles[i], 0)){
+		            			System.out.println("Error when adding final outcome " + 0 + " to MatchInfo for player " + playersNames[i] + " playing role " + playersRoles[i] + ". The BestComboStats, if any, will be incomplete.");
+		            		}
+	            		}
+	            	}
+
 	            	// For each distinct player type that won, update the statistics adding the (split) win
 	            	// and for the losers add a loss (i.e. 0).
 		            for(String thePlayer: playerTypesSet){
@@ -322,8 +337,14 @@ public class StatsSummarizer {
 
 	            	if(playersGoals[0] != 100){
 	            		theStats.addWins(0, mi.getCombination(), mi.getMatchNumber());
+	            		if(!mi.addFinalOutcome(playersNames[0], playersRoles[0], 0)){
+	            			System.out.println("Error when adding final outcome " + 0 + " to MatchInfo for player " + playersNames[0] + ". The BestComboStats, if sny, will be incomplete.");
+	            		}
 	            	}else{
 	            		theStats.addWins(1, mi.getCombination(), mi.getMatchNumber());
+	            		if(!mi.addFinalOutcome(playersNames[0], playersRoles[0], 1)){
+	            			System.out.println("Error when adding final outcome " + 1 + " to MatchInfo for player " + playersNames[0] + ". The BestComboStats, if sny, will be incomplete.");
+	            		}
 	            	}
 	            }
 			}
@@ -431,11 +452,14 @@ public class StatsSummarizer {
 			}
 		}
 
-		List<String> acceptedMatches = new ArrayList<String>();
+		//List<String> acceptedMatches = new ArrayList<String>();
 
+        // While iterating over the MatchInfos, build a map with the unique match ID as key
+        // and the corresponding MatchInfo as value.
+        Map<String,MatchInfo> acceptedMatches = new HashMap<String,MatchInfo>();
 		for(List<MatchInfo> infoList : matchInfo){
 			for(MatchInfo mi : infoList){
-				acceptedMatches.add(mi.getCorrespondingFile().getName().substring(0, mi.getCorrespondingFile().getName().length()-5));
+				acceptedMatches.put(mi.getCorrespondingFile().getName().substring(0, mi.getCorrespondingFile().getName().length()-5), mi);
 			}
 		}
 
@@ -516,7 +540,7 @@ public class StatsSummarizer {
 
 							// If the stats are referring to a match that was rejected, reject them too
 
-							if(!(acceptedMatches.contains(speedLogs[k].getName().substring(0, speedLogs[k].getName().length()-10)))){
+							if(!(acceptedMatches.containsKey(speedLogs[k].getName().substring(0, speedLogs[k].getName().length()-10)))){
 
 								System.out.println("Found Speed Statistics file for a match that was previously rejected from statistics.");
 								rejectFile(speedLogs[k], rejectedSpeedFilesFolderPath + "/" + playerType + "/" + playerRole);
@@ -759,7 +783,7 @@ public class StatsSummarizer {
 
 							// If the stats are referring to a match that was rejected, reject them too
 
-							if(!(acceptedMatches.contains(treeLogs[k].getName().substring(0, treeLogs[k].getName().length()-23)))){
+							if(!(acceptedMatches.containsKey(treeLogs[k].getName().substring(0, treeLogs[k].getName().length()-23)))){
 								System.out.println("Found Tree Statistics file for a match that was previously rejected from statistics.");
 								rejectFile(treeLogs[k], rejectedTreeFilesFolderPath + "/" + playerType + "/" + playerRole);
 							}else{
@@ -874,7 +898,7 @@ public class StatsSummarizer {
 
 		//System.out.println("AcceptedMatchesSize = " + acceptedMatches.size());
 
-		/****************** Compute tree size statistics of the matches that were considered in the previous statistics *******************/
+		/****************** Compute parameters statistics of the matches that were considered in the previous statistics *******************/
 
 		String paramLogsFolderPath = mainFolderPath + "/" + tourneyType + "." + gameKey + ".ParamsLogs";
 
@@ -883,7 +907,7 @@ public class StatsSummarizer {
 		File paramLogsFolder = new File(paramLogsFolderPath);
 
 		if(!paramLogsFolder.isDirectory()){
-			System.out.println("Impossible to find the tree logs directory to summarize: " + treeLogsFolder.getPath());
+			System.out.println("Impossible to find the params logs directory to summarize: " + treeLogsFolder.getPath());
 			return;
 		}
 
@@ -939,10 +963,10 @@ public class StatsSummarizer {
 		Map<String,Map<String,Map<String,Map<String,SingleValueStats>>>> mabTypeMapAllRoles;
 
 		// Maps for final best move choice statistics
-		Map<String,Map<String,Map<String,Map<String,Map<String,Integer>>>>> aggregatedBestComboStats = new HashMap<String,Map<String,Map<String,Map<String,Map<String,Integer>>>>>();
-		Map<String,Map<String,Map<String,Map<String,Integer>>>> playerTypeComboStatsMap; // <playerType,comboStatsPerPlayedRole>
-		Map<String,Map<String,Map<String,Integer>>> playerRoleComboStatsMap; //<MyPlayedRole,comboStatsPerRoleInGame>
-		Map<String,Map<String,Map<String,Integer>>> playerAllRolesComboStatsMap; // <AllRoles,comboStatsPerRoleInGame>
+		Map<String,Map<String,Map<String,Map<String,Map<String,ParamsComboInfo>>>>> aggregatedBestComboStats = new HashMap<String,Map<String,Map<String,Map<String,Map<String,ParamsComboInfo>>>>>();
+		Map<String,Map<String,Map<String,Map<String,ParamsComboInfo>>>> playerTypeComboStatsMap; // <playerType,comboStatsPerPlayedRole>
+		Map<String,Map<String,Map<String,ParamsComboInfo>>> playerRoleComboStatsMap; //<MyPlayedRole,comboStatsPerRoleInGame>
+		Map<String,Map<String,Map<String,ParamsComboInfo>>> playerAllRolesComboStatsMap; // <AllRoles,comboStatsPerRoleInGame>
 
 		// Iterate over the directories containing the matches logs for each player's type.
 		playerTypesDirs = paramLogsFolder.listFiles();
@@ -965,7 +989,7 @@ public class StatsSummarizer {
 				// Get the comboStatsMap corresponding to this player type
 				playerTypeComboStatsMap = aggregatedBestComboStats.get(playerType);
 				if(playerTypeComboStatsMap == null){
-					playerTypeComboStatsMap = new HashMap<String,Map<String,Map<String,Map<String,Integer>>>>();
+					playerTypeComboStatsMap = new HashMap<String,Map<String,Map<String,Map<String,ParamsComboInfo>>>>();
 					aggregatedBestComboStats.put(playerType, playerTypeComboStatsMap);
 				}
 
@@ -980,7 +1004,7 @@ public class StatsSummarizer {
 				// Get the comboStats for all the roles
 				playerAllRolesComboStatsMap = playerTypeComboStatsMap.get("AllRoles");
 				if(playerAllRolesComboStatsMap == null){
-					playerAllRolesComboStatsMap = new HashMap<String,Map<String,Map<String,Integer>>>();
+					playerAllRolesComboStatsMap = new HashMap<String,Map<String,Map<String,ParamsComboInfo>>>();
 					playerTypeComboStatsMap.put("AllRoles", playerAllRolesComboStatsMap);
 				}
 
@@ -1002,7 +1026,7 @@ public class StatsSummarizer {
 						// Get the ComboStats map corresponding to the role played by the player
 						playerRoleComboStatsMap = playerTypeComboStatsMap.get(playerRole);
 						if(playerRoleComboStatsMap == null){
-							playerRoleComboStatsMap = new HashMap<String,Map<String,Map<String,Integer>>>();
+							playerRoleComboStatsMap = new HashMap<String,Map<String,Map<String,ParamsComboInfo>>>();
 							playerTypeComboStatsMap.put(playerRole, playerRoleComboStatsMap);
 						}
 
@@ -1023,9 +1047,9 @@ public class StatsSummarizer {
 
 								// If the stats are referring to a match that was rejected, reject them too
 
-								if(!(acceptedMatches.contains(paramsStatsFiles[k].getName().substring(0, paramsStatsFiles[k].getName().length()-26))) &&
-										!(acceptedMatches.contains(paramsStatsFiles[k].getName().substring(0, paramsStatsFiles[k].getName().length()-25))) &&
-										!(acceptedMatches.contains(paramsStatsFiles[k].getName().substring(0, paramsStatsFiles[k].getName().length()-20)))){
+								if(!(acceptedMatches.containsKey(paramsStatsFiles[k].getName().substring(0, paramsStatsFiles[k].getName().length()-26))) &&
+										!(acceptedMatches.containsKey(paramsStatsFiles[k].getName().substring(0, paramsStatsFiles[k].getName().length()-25))) &&
+										!(acceptedMatches.containsKey(paramsStatsFiles[k].getName().substring(0, paramsStatsFiles[k].getName().length()-20)))){
 									System.out.println("Found Params Statistics file for a match that was previously rejected from statistics.");
 									rejectFile(paramsStatsFiles[k], rejectedParamsFilesFolderPath + "/" + playerType + "/" + playerRole);
 								}else{
@@ -1035,7 +1059,10 @@ public class StatsSummarizer {
 									}else if(paramsStatsFiles[k].getName().endsWith("LocalParamTunerStats.csv")){
 										mabType = "Local";
 									}else if(paramsStatsFiles[k].getName().endsWith("BestParamsCombo.csv")){
-										summarizeBestCombos(paramsStatsFiles[k], playerRoleComboStatsMap, playerAllRolesComboStatsMap);
+										summarizeBestCombos(paramsStatsFiles[k],
+												acceptedMatches.get(paramsStatsFiles[k].getName().substring(0, paramsStatsFiles[k].getName().length()-20)),
+												playerType, playerRole,
+												playerRoleComboStatsMap, playerAllRolesComboStatsMap);
 										continue;
 									}else{
 										System.out.println("Unrecognized type of parameters stats. Skipping file: " + paramsStatsFiles[k].getPath());
@@ -1126,23 +1153,26 @@ public class StatsSummarizer {
 		}
 
 		// Log all the best combos statistics
-		for(Entry<String,Map<String,Map<String,Map<String,Map<String,Integer>>>>> playerTypeComboStats : aggregatedBestComboStats.entrySet()){
-			for(Entry<String,Map<String,Map<String,Map<String,Integer>>>> playerRoleComboStats : playerTypeComboStats.getValue().entrySet()){
-				for(Entry<String,Map<String,Map<String,Integer>>> roleCombosStats : playerRoleComboStats.getValue().entrySet()){
+		// TODO: add number of wins!!!!!
+		for(Entry<String,Map<String,Map<String,Map<String,Map<String,ParamsComboInfo>>>>> playerTypeComboStats : aggregatedBestComboStats.entrySet()){
+			for(Entry<String,Map<String,Map<String,Map<String,ParamsComboInfo>>>> playerRoleComboStats : playerTypeComboStats.getValue().entrySet()){
+				for(Entry<String,Map<String,Map<String,ParamsComboInfo>>> roleCombosStats : playerRoleComboStats.getValue().entrySet()){
 
 					writeToFile(paramsStatsFolderPath + "/" + playerTypeComboStats.getKey() + "-" + playerRoleComboStats.getKey() +
 							"-BestParamsCombo-AggrStats.csv", "");
 					writeToFile(paramsStatsFolderPath + "/" + playerTypeComboStats.getKey() + "-" + playerRoleComboStats.getKey() +
 							"-BestParamsCombo-AggrStats.csv", "ROLE = " + roleCombosStats.getKey());
 
-					for(Entry<String,Map<String,Integer>> paramCombosStats : roleCombosStats.getValue().entrySet()){
+					for(Entry<String,Map<String,ParamsComboInfo>> paramCombosStats : roleCombosStats.getValue().entrySet()){
 
 						writeToFile(paramsStatsFolderPath + "/" + playerTypeComboStats.getKey() + "-" + playerRoleComboStats.getKey() +
-								"-BestParamsCombo-AggrStats.csv", "PARAMS = " + paramCombosStats.getKey() + ";NUM_COMMITS;");
+								"-BestParamsCombo-AggrStats.csv", "PARAMS = " + paramCombosStats.getKey() + ";NUM_COMMITS;NUM_WINS;NUM_TIES;NUM_LOSSES;");
 
-						for(Entry<String,Integer> comboStat : paramCombosStats.getValue().entrySet()){
+						for(Entry<String,ParamsComboInfo> comboStat : paramCombosStats.getValue().entrySet()){
 							writeToFile(paramsStatsFolderPath + "/" + playerTypeComboStats.getKey() + "-" + playerRoleComboStats.getKey() +
-									"-BestParamsCombo-AggrStats.csv", comboStat.getKey() + ";" + comboStat.getValue() + ";");
+									"-BestParamsCombo-AggrStats.csv", comboStat.getKey() + ";" + comboStat.getValue().getNumCommits() + ";" +
+									comboStat.getValue().getNumWins() + ";" + comboStat.getValue().getNumTies() + ";" +
+									comboStat.getValue().getNumLosses() + ";");
 						}
 					}
 				}
@@ -1162,9 +1192,10 @@ public class StatsSummarizer {
 
 	}
 
-	private static void summarizeBestCombos(File theBestComboStatsFile,
-			Map<String,Map<String,Map<String,Integer>>> playerRoleComboStatsMap,
-			Map<String,Map<String,Map<String,Integer>>> playerAllRolesComboStatsMap){
+	private static void summarizeBestCombos(File theBestComboStatsFile, MatchInfo matchInfo,
+			String playerType, String playerRole,
+			Map<String,Map<String,Map<String,ParamsComboInfo>>> playerRoleComboStatsMap,
+			Map<String,Map<String,Map<String,ParamsComboInfo>>> playerAllRolesComboStatsMap){
 
 		//System.out.println("Best combo of " + theBestComboStatsFile.getName());
 
@@ -1176,11 +1207,11 @@ public class StatsSummarizer {
 		String parameter = null;
 		String parameterValue = null;
 
-		Map<String,Map<String,Integer>> roleCombosStatsMap; // <parameterOrder, combinationsOfValuesForParameters>
-		Map<String,Map<String,Integer>> roleCombosStatsMapAllRoles; // <parameterOrder, combinationsOfValuesForParameters>
-		Map<String,Integer> paramCombosStatsMap; // <Combination, nuberOfTimeTheCombinationWasSelectedAsBest>
-		Map<String,Integer> paramCombosStatsMapAllRoles; // <Combination, nuberOfTimeTheCombinationWasSelectedAsBest>
-		Integer visits;
+		Map<String,Map<String,ParamsComboInfo>> roleCombosStatsMap; // <parameterOrder, combinationsOfValuesForParameters>
+		Map<String,Map<String,ParamsComboInfo>> roleCombosStatsMapAllRoles; // <parameterOrder, combinationsOfValuesForParameters>
+		Map<String,ParamsComboInfo> paramCombosStatsMap; // <Combination, nuberOfTimeTheCombinationWasSelectedAsBest>
+		Map<String,ParamsComboInfo> paramCombosStatsMapAllRoles; // <Combination, nuberOfTimeTheCombinationWasSelectedAsBest>
+		ParamsComboInfo comboInfo;
 
 		try {
 			br = new BufferedReader(new FileReader(theBestComboStatsFile));
@@ -1198,12 +1229,12 @@ public class StatsSummarizer {
 				role = splitLine[1];
 				roleCombosStatsMap = playerRoleComboStatsMap.get(role);
 				if(roleCombosStatsMap == null){
-					roleCombosStatsMap = new HashMap<String,Map<String,Integer>>();
+					roleCombosStatsMap = new HashMap<String,Map<String,ParamsComboInfo>>();
 					playerRoleComboStatsMap.put(role, roleCombosStatsMap);
 				}
 				roleCombosStatsMapAllRoles = playerAllRolesComboStatsMap.get(role);
 				if(roleCombosStatsMapAllRoles == null){
-					roleCombosStatsMapAllRoles = new HashMap<String,Map<String,Integer>>();
+					roleCombosStatsMapAllRoles = new HashMap<String,Map<String,ParamsComboInfo>>();
 					playerAllRolesComboStatsMap.put(role, roleCombosStatsMapAllRoles);
 				}
 
@@ -1228,29 +1259,45 @@ public class StatsSummarizer {
 				// Get maps for parameter
 				paramCombosStatsMap = roleCombosStatsMap.get(parameter);
 				if(paramCombosStatsMap == null){
-					paramCombosStatsMap = new HashMap<String,Integer>();
+					paramCombosStatsMap = new HashMap<String,ParamsComboInfo>();
 					roleCombosStatsMap.put(parameter, paramCombosStatsMap);
 				}
 
 				paramCombosStatsMapAllRoles = roleCombosStatsMapAllRoles.get(parameter);
 				if(paramCombosStatsMapAllRoles == null){
-					paramCombosStatsMapAllRoles = new HashMap<String,Integer>();
+					paramCombosStatsMapAllRoles = new HashMap<String,ParamsComboInfo>();
 					roleCombosStatsMapAllRoles.put(parameter, paramCombosStatsMapAllRoles);
 				}
 
-				// Increase visits of parameters combo
-				visits = paramCombosStatsMap.get(parameterValue);
-				if(visits == null){
-					paramCombosStatsMap.put(parameterValue, new Integer(1));
-				}else{
-					paramCombosStatsMap.put(parameterValue, new Integer(visits.intValue()+1));
+				// Update stats of parameters combo
+				comboInfo = paramCombosStatsMap.get(parameterValue);
+				if(comboInfo == null){
+					comboInfo = new ParamsComboInfo();
+					paramCombosStatsMap.put(parameterValue, comboInfo);
 				}
-				// Increase visits of parameters combo
-				visits = paramCombosStatsMapAllRoles.get(parameterValue);
-				if(visits == null){
-					paramCombosStatsMapAllRoles.put(parameterValue, new Integer(1));
-				}else{
-					paramCombosStatsMapAllRoles.put(parameterValue, new Integer(visits.intValue()+1));
+				comboInfo.increaseNumCommits();
+				double outcome = matchInfo.getFinalOutcome(playerType, playerRole);
+				if(outcome == 1.0){ // Win
+					comboInfo.increaseNumWins();
+				}else if(outcome == 0){ // Loss
+					comboInfo.increaseNumLosses();
+				}else{ // Tie
+					comboInfo.increaseNumTies();
+				}
+
+				// Update stats of parameters combo for all roles
+				comboInfo = paramCombosStatsMapAllRoles.get(parameterValue);
+				if(comboInfo == null){
+					comboInfo = new ParamsComboInfo();
+					paramCombosStatsMapAllRoles.put(parameterValue, comboInfo);
+				}
+				comboInfo.increaseNumCommits();
+				if(outcome == 1.0){ // Win
+					comboInfo.increaseNumWins();
+				}else if(outcome == 0){ // Loss
+					comboInfo.increaseNumLosses();
+				}else{ // Tie
+					comboInfo.increaseNumTies();
 				}
 
 				theLine = br.readLine();
@@ -1583,7 +1630,7 @@ public class StatsSummarizer {
         // Check if the JSON file contains all the needed information.
         if(matchJSONObject == null || !matchJSONObject.has("isAborted") || !matchJSONObject.has("isCompleted")
         		 || !matchJSONObject.has("errors") || !matchJSONObject.has("goalValues")
-        		 || !matchJSONObject.has("playerNamesFromHost")){
+        		 || !matchJSONObject.has("playerNamesFromHost")|| !matchJSONObject.has("roles")){
 
         	System.out.println("Missing information in the JSON file.");
         	return null;
@@ -1644,6 +1691,7 @@ public class StatsSummarizer {
 
         // Get the player names
         String[] playersNames;
+        String[] playersRoles;
         int[] playersGoals;
 
         try{
@@ -1654,6 +1702,18 @@ public class StatsSummarizer {
         	}
         }catch(JSONException e){
         	System.out.println("Information (\"playerNamesFromHost\" array) improperly formatted in the JSON file.");
+        	e.printStackTrace();
+        	return null;
+        }
+
+        try{
+        	JSONArray roles = matchJSONObject.getJSONArray("roles");
+        	playersRoles = new String[roles.length()];
+        	for(int j = 0; j < roles.length(); j++){
+        		playersRoles[j] = roles.getString(j);
+        	}
+        }catch(JSONException e){
+        	System.out.println("Information (\"roles\" array) improperly formatted in the JSON file.");
         	e.printStackTrace();
         	return null;
         }
@@ -1675,17 +1735,17 @@ public class StatsSummarizer {
         	return null;
         }
 
-        if(playersNames.length <= 0 || playersGoals.length <= 0){
-        	System.out.println("Error: found no players names and/or no players goals.");
+        if(playersNames.length <= 0 || playersRoles.length <= 0 || playersGoals.length <= 0){
+        	System.out.println("Error: found no players names and/or no roles and/or no players goals.");
         	return null;
         }
 
-        if(playersNames.length != playersGoals.length){
-        	System.out.println("Error: found " + playersGoals.length + " goal values for " + playersNames.length + " players.");
+        if(!(playersNames.length == playersGoals.length && playersNames.length == playersRoles.length)){
+        	System.out.println("Error: found " + playersGoals.length + " goal values, " + playersNames.length + " players and " + playersRoles.length + " roles.");
         	return null;
         }
 
-        return new MatchInfo(playersNames, playersGoals, file);
+        return new MatchInfo(playersNames, playersRoles, playersGoals, file);
 
 	}
 

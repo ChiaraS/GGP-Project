@@ -68,6 +68,8 @@ public final class Match
 	private final List<Integer> goalValues;
 	private final int numRoles;
 
+	private final List<ExplicitRole> roles;
+
 	private EncodedKeyPair theCryptographicKeys;
 	private List<String> thePlayerNamesFromHost;
 	private List<Boolean> isPlayerHuman;
@@ -88,7 +90,8 @@ public final class Match
 		this.isCompleted = false;
 		this.isAborted = false;
 
-		this.numRoles = ExplicitRole.computeRoles(theGame.getRules()).size();
+		this.roles = ExplicitRole.computeRoles(theGame.getRules());
+		this.numRoles = roles.size();
 
 		this.moveHistory = new ArrayList<List<GdlTerm>>();
 		this.stateHistory = new ArrayList<Set<GdlSentence>>();
@@ -129,7 +132,8 @@ public final class Match
         	this.isAborted = false;
         }
 
-        this.numRoles = ExplicitRole.computeRoles(this.theGame.getRules()).size();
+        this.roles = ExplicitRole.computeRoles(this.theGame.getRules());
+        this.numRoles = roles.size();
 
         this.moveHistory = new ArrayList<List<GdlTerm>>();
         this.stateHistory = new ArrayList<Set<GdlSentence>>();
@@ -298,6 +302,8 @@ public final class Match
             	theJSON.put("isPlayerHuman", isPlayerHuman);
             }
             theJSON.put("scrambled", theGdlScrambler != null ? theGdlScrambler.scrambles() : false);
+
+            theJSON.put("roles", roles);
         } catch (JSONException e) {
             return null;
         }

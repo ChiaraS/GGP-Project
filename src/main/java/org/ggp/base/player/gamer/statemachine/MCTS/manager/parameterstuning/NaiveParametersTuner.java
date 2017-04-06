@@ -324,6 +324,13 @@ public class NaiveParametersTuner extends ParametersTuner {
 
 
 		// Log the combination that we are selecting as best
+		GamerLogger.log(GamerLogger.FORMAT.CSV_FORMAT, "BestParamsCombo", this.getLogOfSelectedCombinations());
+
+		this.parametersManager.setParametersValues(this.selectedCombinations);
+
+	}
+
+	private String getLogOfSelectedCombinations(){
 		String globalParamsOrder = "[ ";
 		for(int paramIndex = 0; paramIndex < this.parametersManager.getNumTunableParameters(); paramIndex++){
 			globalParamsOrder += (this.parametersManager.getName(paramIndex) + " ");
@@ -346,10 +353,8 @@ public class NaiveParametersTuner extends ParametersTuner {
 			}
 			toLog += "];\n";
 		}
-		GamerLogger.log(GamerLogger.FORMAT.CSV_FORMAT, "BestParamsCombo", toLog);
 
-		this.parametersManager.setParametersValues(this.selectedCombinations);
-
+		return toLog;
 	}
 
 	@Override
@@ -431,6 +436,8 @@ public class NaiveParametersTuner extends ParametersTuner {
 
 	@Override
 	public void logStats() {
+
+		// TODO: If the tuner was still tuning, log the most visited combo?
 
 		//GamerLogger.log(GamerLogger.FORMAT.CSV_FORMAT, "ParametersTunerStats", "");
 		String toLog;

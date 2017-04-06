@@ -32,4 +32,14 @@ public class Pair<T, V> {
 		return "<"+t+","+v+">";
 	}
 
+	@Override
+	public boolean equals(Object otherPair){
+		if (otherPair == null) return false;
+	    if (otherPair == this) return true;
+	    if (!(otherPair instanceof Pair)) return false;
+	    Pair<?,?> pair = (Pair<?,?>) otherPair;
+	    return this.t.equals(pair.getFirst()) && this.v.equals(pair.getSecond());
+
+	}
+
 }
