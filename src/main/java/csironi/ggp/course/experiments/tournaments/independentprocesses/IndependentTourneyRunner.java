@@ -69,6 +69,9 @@ public class IndependentTourneyRunner {
 		// to run matches with the given number of roles for the game.
 		int numParallelPlayers;
 		int matchesPerGamerType;
+		// Num matches that a match runner should run sequentially using the same player
+		// (so that the players can "remember" previous games if the are capable of it).
+		int numSequentialMatches;
 		String[] theGamersTypesString;
 		int runNumber;
 
@@ -123,6 +126,7 @@ public class IndependentTourneyRunner {
 			pnCreationTime = Long.parseLong(props.getProperty("pnCreationTime"));
 			numParallelPlayers = Integer.parseInt(props.getProperty("numParallelPlayers"));
 			matchesPerGamerType = Integer.parseInt(props.getProperty("matchesPerGamerType"));
+			numSequentialMatches = Integer.parseInt(props.getProperty("numSequentialMatches"));
 
 			theGamersTypesString = props.getProperty("theGamersTypes").split(";");
 
@@ -220,7 +224,8 @@ public class IndependentTourneyRunner {
 
 	    	GamerLogger.log("TourneyRunner" + runNumber, "Starting tourney " + tourneyName + " for game " + gameKey + " with following settings: START_CLOCK=" +
 	    			startClock + "s, PLAY_CLOCK=" + playClock + "s, PROPNET_CREATION_TIME=" + pnCreationTime + "ms, DESIRED_NUM_PARALLEL_PLAYERS=" +
-	    			numParallelPlayers + ", MIN_NUM_MATCHES_PER_GAMER_TYPE=" + matchesPerGamerType + ", GAMER_TYPES=" + gamerTypesList + ".");
+	    			numParallelPlayers + ", MIN_NUM_MATCHES_PER_GAMER_TYPE=" + matchesPerGamerType + ", NUM_SEENTIAL_MATCHES=" + numSequentialMatches + "."
+	    			+ ", GAMER_TYPES=" + gamerTypesList + ".");
 
 	    	/** 3. Compute all combinations of gamer types. **/
 
@@ -235,14 +240,19 @@ public class IndependentTourneyRunner {
 	    		matchesPerCombination++;
 	    	}
 
+	    	int numMatchRunners = (int) Math.ceil(((double)matchesPerCombination)/((double)numSequentialMatches));
+
+	    	matchesPerCombination = numMatchRunners * numSequentialMatches;
+
 	    	int numParallelMatches = Math.round(((float) numParallelPlayers) / ((float) expectedRoles));
 
 	    	GamerLogger.log("TourneyRunner" + runNumber, "Computed following parameters for tourney: NUM_ROLES=" + expectedRoles +
 	    			", NUM_COMBINATIONS=" + combinations.size() + ", NUM_PARALLEL_MATCHES=" + numParallelMatches + ", ACTUAL_NUM_PARALLEL_PLAYERS=" +
 	    			numParallelMatches*expectedRoles + ", ACTUAL_NUM_MATCHES_PER_COMBINATION=" + matchesPerCombination + ", ACTUAL_NUM_MATCHES_PER_GAMER_TYPE=" +
-	    			(Combinator.getLastCombinationsPerElement() * Combinator.getLastPermutationsPerCombination() * matchesPerCombination));
+	    			(Combinator.getLastCombinationsPerElement() * Combinator.getLastPermutationsPerCombination() * matchesPerCombination) +
+	    			", NUM_MATCH_RUNNERS");
 
-	    	// 5. For each combination run the given amount of matches.
+	    	// 5. For each combination run the given amount of match runners.
 
 	    	for(List<Integer> combination : combinations){
 
@@ -271,7 +281,7 @@ public class IndependentTourneyRunner {
 	    		GamerLogger.log("TourneyRunner" + runNumber, "Starting sub-tourney for combination " + comboIndices + ".");
 
 	    		ThreadContext.put("LOG_FOLDER", mainLogFolder + "/Combination" + comboIndices);
-	    		boolean completed = runMatchesForCombination(runNumber, gameKey, startClock, playClock, pnCreationTime, theComboGamersTypes, numParallelMatches, matchesPerCombination);
+	    		boolean completed = runMatchesForCombination(runNumber, gameKey, startClock, playClock, pnCreationTime, theComboGamersTypes, numParallelMatches, numMatchRunners, numSequentialMatches);
 	    		ThreadContext.put("LOG_FOLDER", mainLogFolder);
 
 	    		if(completed){
@@ -316,7 +326,7 @@ public class IndependentTourneyRunner {
 
 
 	private static boolean runMatchesForCombination(int runNumber, String gameKey, int startClock, int playClock,
-			long pnCreationTime, List<String> theGamersTypes, int numParallelMatches, int matchesPerCombination){
+			long pnCreationTime, List<String> theGamersTypes, int numParallelMatches, int numMatchRunners, int numSequentialMatches){
 
 		GamerLogger.log("TourneyRunner"+runNumber, "Starting sub-tourney.");
 
@@ -332,6 +342,7 @@ public class IndependentTourneyRunner {
 		theSettings.add("-jar");
 		theSettings.add("IndependentSingleMatchRunner.jar");
 		theSettings.add(ThreadContext.get("LOG_FOLDER"));
+		theSettings.add("" + numSequentialMatches);
 		theSettings.add("" + 0);
 		theSettings.add(gameKey);
 		theSettings.add("" + startClock);
@@ -343,8 +354,8 @@ public class IndependentTourneyRunner {
 		}
 
 
-		for(int i = (runNumber*matchesPerCombination); i < ((runNumber+1)*matchesPerCombination); i++){
-			theSettings.set(4, ""+i);
+		for(int i = (runNumber*numMatchRunners); i < ((runNumber+1)*numMatchRunners); i++){
+			theSettings.set(5, ""+i);
 			executor.execute(new MatchProcessRunner(i, new ArrayList<String>(theSettings), ThreadContext.get("LOG_FOLDER") + "/MatchRunner" + i));
 		}
 

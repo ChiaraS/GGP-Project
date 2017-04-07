@@ -175,7 +175,7 @@ public class IndependentSingleMatchRunner {
     		return;
     	}
 
-		/** 2. Here we checked all the inputs. Now we can try to start the match. **/
+		/** Here we checked all the inputs. Now we can try to start the match. **/
 
 		System.out.println("Starting " + startID);
 
@@ -187,51 +187,9 @@ public class IndependentSingleMatchRunner {
 
 		GamerLogger.startFileLogging();
 
-		String matchName = startID + "." + gameKey + "." + System.currentTimeMillis();
-
 		GamerLogger.log("MatchRunner", "Started MatchRunner " + startID + ".");
 
-		GamerLogger.log("MatchRunner", "Starting new match: " + matchName);
-
-
-		List<Gdl> description = game.getRules();
-
-		SeparateInternalPropnetManager manager = null;
-
-		/** 3. Try to create the PropNet if needed. **/
-
-		if(buildPropnet){
-
-			/****************** ONLY USE IF RUNNING PROPNET EXPERIMENTS - start **********************
-
-			OptimizationCaller[] optimizations;
-
-			optimizations = new OptimizationCaller[4];
-
-
-			optimizations[0] = new RemoveAnonPropositions();
-			optimizations[1] = new OptimizeAwayConstants();
-			optimizations[2] = new OptimizeAwayConstantValueComponents();
-			optimizations[3] = new RemoveOutputlessComponents();
-
-			****************** ONLY USE IF RUNNING PROPNET EXPERIMENTS - end **********************/
-
-			GamerLogger.log("MatchRunner", "Creating the propnet.");
-
-			manager =  new SeparateInternalPropnetManager(description, System.currentTimeMillis() + pnCreationTime);
-
-			//manager =  new SeparateInternalPropnetManager(description, System.currentTimeMillis() + pnCreationTime, optimizations);
-
-			PropNetManagerRunner.runPropNetManager(manager, pnCreationTime);
-
-			// If we are here it means that the manager stopped running. We must check if it has created a usable propnet or not.
-			if(manager.getImmutablePropnet() == null || manager.getInitialPropnetState() == null){
-				GamerLogger.logError("MatchRunner", "Impossible to play the match. Propnet and/or propnet state are null.");
-				return;
-			}
-		}
-
-		/** 4. Try to create and start the players. **/
+		/** 2. First of all we try to create the players. **/
 
 		// Create the players.
 		List<GamePlayer> thePlayers = new ArrayList<GamePlayer>();
@@ -251,19 +209,18 @@ public class IndependentSingleMatchRunner {
 					theGamer = (StateMachineGamer) gamerClass.newInstance();
 				}
 			} catch (InstantiationException | IllegalAccessException | IllegalArgumentException | InvocationTargetException | NoSuchMethodException | SecurityException e) {
+				//System.out.println("Impossible to play the match. Error when instantiating the gamer " + gamerClass.getSimpleName() + ".");
+				//e.printStackTrace();
 				GamerLogger.logError("MatchRunner", "Impossible to play the match. Error when instantiating the gamer " + gamerClass.getSimpleName() + ".");
 				GamerLogger.logStackTrace("MatchRunner", e);
 				return;
 			}
 
-			if(theGamer instanceof InternalPropnetGamer){
-				thePropnetGamer  = (InternalPropnetGamer) theGamer;
-				thePropnetGamer.setExternalStateMachine(new SeparateInternalPropnetStateMachine(manager.getImmutablePropnet(), manager.getInitialPropnetState()));
-			}
-
 			try {
 				thePlayers.add(new GamePlayer(9000 + i + (startID * theGamersClasses.size()), theGamer));
 			} catch (IOException e) {
+				//System.out.println("Impossible to play the match. Error when creating game player for gamer " + theGamer.getName() + ".");
+				//e.printStackTrace();
 				GamerLogger.logError("MatchRunner", "Impossible to play the match. Error when creating game player for gamer " + theGamer.getName() + ".");
 				GamerLogger.logStackTrace("MatchRunner", e);
 				return;
@@ -274,100 +231,157 @@ public class IndependentSingleMatchRunner {
 			i++;
 		}
 
-		// Start all players (after creating them all so that if the creation of one of them throws an exception
-		// we won't have to think about stopping all previously started players).
-		for(GamePlayer player : thePlayers){
-			player.start();
+		for(GamePlayer gamePlayer : thePlayers){
+			gamePlayer.start();
 		}
 
-		Match match = new Match(matchName, -1, startClock, playClock, game);
-		match.setPlayerNamesFromHost(playerNames);
+    	int matchID;
+    	for(int repetition = 0; repetition < numMatches; repetition++){
 
-		/** 5. Create and start the server. **/
+    		matchID = startID * numMatches + repetition;
 
-		// Actually run the match, using the desired configuration.
-		GameServer server;
-		try {
-			server = new GameServer(match, hostNames, portNumbers);
-		} catch (GameServerException e) {
-			GamerLogger.logError("MatchRunner", "Impossible to play the match. Error when creating game server.");
-			GamerLogger.logStackTrace("MatchRunner", e);
-			for(GamePlayer player : thePlayers){
-				player.shutdown();
+			String matchName = matchID + "." + gameKey + "." + System.currentTimeMillis();
+
+			GamerLogger.log("MatchRunner", "Starting new match: " + matchName);
+
+			List<Gdl> description = game.getRules();
+
+			SeparateInternalPropnetManager manager = null;
+
+			/** 3. Try to create the PropNet if needed. **/
+
+			if(buildPropnet){
+
+				/****************** ONLY USE IF RUNNING PROPNET EXPERIMENTS - start **********************
+
+				OptimizationCaller[] optimizations;
+
+				optimizations = new OptimizationCaller[4];
+
+
+				optimizations[0] = new RemoveAnonPropositions();
+				optimizations[1] = new OptimizeAwayConstants();
+				optimizations[2] = new OptimizeAwayConstantValueComponents();
+				optimizations[3] = new RemoveOutputlessComponents();
+
+				****************** ONLY USE IF RUNNING PROPNET EXPERIMENTS - end **********************/
+
+				GamerLogger.log("MatchRunner", "Creating the propnet.");
+
+				manager =  new SeparateInternalPropnetManager(description, System.currentTimeMillis() + pnCreationTime);
+
+				//manager =  new SeparateInternalPropnetManager(description, System.currentTimeMillis() + pnCreationTime, optimizations);
+
+				PropNetManagerRunner.runPropNetManager(manager, pnCreationTime);
+
+				// If we are here it means that the manager stopped running. We must check if it has created a usable propnet or not.
+				if(manager.getImmutablePropnet() == null || manager.getInitialPropnetState() == null){
+					GamerLogger.logError("MatchRunner", "Impossible to play the match. Propnet and/or propnet state are null.");
+					for(GamePlayer player : thePlayers){
+						player.shutdown();
+					}
+					return;
+				}
 			}
-			return;
-		}
 
-		server.start();
-
-		try {
-			server.join();
-		} catch (InterruptedException e) {
-			GamerLogger.logError("MatchRunner", "Program interrupted. Impossible to complete the match.");
-			GamerLogger.logStackTrace("MatchRunner", e);
-			server.abort();
-			for(GamePlayer player : thePlayers){
-				player.shutdown();
+			/** 4. Set the propnet for all players that can use it. **/
+			for(GamePlayer gamePlayer : thePlayers){
+				if(gamePlayer.getGamer() instanceof InternalPropnetGamer){
+					thePropnetGamer  = (InternalPropnetGamer) gamePlayer.getGamer();
+					thePropnetGamer.setExternalStateMachine(new SeparateInternalPropnetStateMachine(manager.getImmutablePropnet(), manager.getInitialPropnetState()));
+				}
 			}
-			Thread.currentThread().interrupt();
-			return;
-		}
 
-		GamerLogger.log("MatchRunner", "Execution of match " + matchName + " completed.");
+			Match match = new Match(matchName, -1, startClock, playClock, game);
+			match.setPlayerNamesFromHost(playerNames);
+
+			/** 5. Create and start the server. **/
+
+			// Actually run the match, using the desired configuration.
+			GameServer server;
+			try {
+				server = new GameServer(match, hostNames, portNumbers);
+			} catch (GameServerException e) {
+				GamerLogger.logError("MatchRunner", "Impossible to play the match. Error when creating game server.");
+				GamerLogger.logStackTrace("MatchRunner", e);
+				for(GamePlayer player : thePlayers){
+					player.shutdown();
+				}
+				return;
+			}
+
+			server.start();
+
+			try {
+				server.join();
+			} catch (InterruptedException e) {
+				GamerLogger.logError("MatchRunner", "Program interrupted. Impossible to complete the match.");
+				GamerLogger.logStackTrace("MatchRunner", e);
+				server.abort();
+				for(GamePlayer player : thePlayers){
+					player.shutdown();
+				}
+				Thread.currentThread().interrupt();
+				return;
+			}
+
+			GamerLogger.log("MatchRunner", "Execution of match " + matchName + " completed.");
+
+			/** 6. Save the match outcome. **/
+			BufferedWriter bw;
+
+			/**
+			 * Do not save the match history in an XML
+			 */
+			/*
+			// Open up the XML file for this match, and save the match there.
+			f = new File(tourneyName + "/" + matchName + ".xml");
+			if (f.exists()) f.delete();
+			bw = new BufferedWriter(new FileWriter(f));
+			bw.write(match.toXML());
+			bw.flush();
+			bw.close();
+			*/
+
+			// Open up the JSON file for this match, and save the match there.
+			File f = new File(ThreadContext.get("LOG_FOLDER") + "/" + matchName + ".json");
+			if (f.exists()) f.delete();
+			try {
+				bw = new BufferedWriter(new FileWriter(f));
+				bw.write(match.toJSON());
+				bw.flush();
+				bw.close();
+			} catch (IOException e) {
+				GamerLogger.logError("MatchRunner", "Match completed correctly, but impossible to save match information on JSON file.");
+				GamerLogger.logStackTrace("MatchRunner", e);
+			}
+
+			// Save the goals in the "/scores" file for the tournament.
+
+			List<Integer> goals;
+			try {
+				goals = server.getGoals();
+
+
+				String toLog = startID + ";" + matchName + ";";
+
+				for(int j = 0; j < goals.size(); j++){
+
+					toLog += playerNames.get(j) + ";" + goals.get(j) + ";";
+
+				}
+
+				GamerLogger.log(GamerLogger.FORMAT.CSV_FORMAT, "scores", toLog);
+			} catch (GoalDefinitionException | StateMachineException e) {
+				GamerLogger.logError("MatchRunner", "Match completed correctly, but impossible to save final scores.");
+				GamerLogger.logStackTrace("MatchRunner", e);
+			}
+
+    	}
 
 		for(GamePlayer player : thePlayers){
 			player.shutdown();
 		}
-
-		/** 6. Save the match outcome. **/
-		BufferedWriter bw;
-
-		/**
-		 * Do not save the match history in an XML
-		 */
-		/*
-		// Open up the XML file for this match, and save the match there.
-		f = new File(tourneyName + "/" + matchName + ".xml");
-		if (f.exists()) f.delete();
-		bw = new BufferedWriter(new FileWriter(f));
-		bw.write(match.toXML());
-		bw.flush();
-		bw.close();
-		*/
-
-		// Open up the JSON file for this match, and save the match there.
-		File f = new File(ThreadContext.get("LOG_FOLDER") + "/" + matchName + ".json");
-		if (f.exists()) f.delete();
-		try {
-			bw = new BufferedWriter(new FileWriter(f));
-			bw.write(match.toJSON());
-			bw.flush();
-			bw.close();
-		} catch (IOException e) {
-			GamerLogger.logError("MatchRunner", "Match completed correctly, but impossible to save match information on JSON file.");
-			GamerLogger.logStackTrace("MatchRunner", e);
-		}
-
-		// Save the goals in the "/scores" file for the tournament.
-
-		List<Integer> goals;
-		try {
-			goals = server.getGoals();
-		} catch (GoalDefinitionException | StateMachineException e) {
-			GamerLogger.logError("MatchRunner", "Match completed correctly, but impossible to save final scores.");
-			GamerLogger.logStackTrace("MatchRunner", e);
-			return;
-		}
-
-		String toLog = startID + ";" + matchName + ";";
-
-		for(int j = 0; j < goals.size(); j++){
-
-			toLog += playerNames.get(j) + ";" + goals.get(j) + ";";
-
-		}
-
-		GamerLogger.log(GamerLogger.FORMAT.CSV_FORMAT, "scores", toLog);
 
 		System.out.println("Ending " + startID);
 
