@@ -68,7 +68,7 @@ public final class Match
 	private final List<Integer> goalValues;
 	private final int numRoles;
 
-	private final List<ExplicitRole> roles;
+	private final List<String> rolesNames;
 
 	private EncodedKeyPair theCryptographicKeys;
 	private List<String> thePlayerNamesFromHost;
@@ -90,7 +90,11 @@ public final class Match
 		this.isCompleted = false;
 		this.isAborted = false;
 
-		this.roles = ExplicitRole.computeRoles(theGame.getRules());
+		List<ExplicitRole> roles = ExplicitRole.computeRoles(theGame.getRules());
+		this.rolesNames = new ArrayList<String>();
+		for(ExplicitRole role : roles){
+			rolesNames.add(role.toString());
+		}
 		this.numRoles = roles.size();
 
 		this.moveHistory = new ArrayList<List<GdlTerm>>();
@@ -132,7 +136,11 @@ public final class Match
         	this.isAborted = false;
         }
 
-        this.roles = ExplicitRole.computeRoles(this.theGame.getRules());
+		List<ExplicitRole> roles = ExplicitRole.computeRoles(theGame.getRules());
+		this.rolesNames = new ArrayList<String>();
+		for(ExplicitRole role : roles){
+			rolesNames.add(role.toString());
+		}
         this.numRoles = roles.size();
 
         this.moveHistory = new ArrayList<List<GdlTerm>>();
@@ -303,7 +311,7 @@ public final class Match
             }
             theJSON.put("scrambled", theGdlScrambler != null ? theGdlScrambler.scrambles() : false);
 
-            theJSON.put("roles", roles);
+            theJSON.put("roles", rolesNames);
         } catch (JSONException e) {
             return null;
         }

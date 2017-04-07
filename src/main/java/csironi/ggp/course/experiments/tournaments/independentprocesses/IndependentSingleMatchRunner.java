@@ -39,8 +39,10 @@ public class IndependentSingleMatchRunner {
 	/**
 	 * @param args this method expects the following parameters:
 	 * [logFolder] = the folder of the combination being currently tested, in which this match should create its own log folder
-	 * [ID] = an integer ID of the match (normally goes from 0 to n for each combination of players in a tourney where we want n matches
-	 * for each combination)
+	 * [numMatches] = number of repetition of the match that must be performed. Note that if using the PropNet, a new one will still be
+	 * created for all the player before any repetition.
+	 * [startID] = an integer ID of the first match (normally goes from 0 to n for each combination of players in a tourney where we want
+	 * n matches for each combination). For the i-th repetiton of the match we will use the ID startID+i.
 	 * [gameKey] = the game key
 	 * [startClock(sec)] = start clock of the match (in seconds)
 	 * [playClock(sec)] = play clock of the match (in seconds)
@@ -55,14 +57,15 @@ public class IndependentSingleMatchRunner {
 
 		/** 1. Check the correctness of the inputs **/
 
-		if(args.length < 7){
+		if(args.length < 8){
 			System.out.println("Impossible to start match runner, missing inputs. Please give the following parameters to the command line:");
-			System.out.println("[logFolder] [ID] [gameKey] [startClock(sec)] [playClock(sec)] [pnCreationTime(ms)] [theGamerTypes (one or more)]");
+			System.out.println("[logFolder] [numMatches] [startID] [gameKey] [startClock(sec)] [playClock(sec)] [pnCreationTime(ms)] [theGamerTypes (one or more)]");
 			return;
 		}
 
 		String logFolder; // Don't log directly in here or you might overwrite some old log
-		int ID;
+		int numMatches;
+		int startID;
 		String gameKey;
 		int startClock;
 		int playClock;
@@ -72,13 +75,20 @@ public class IndependentSingleMatchRunner {
 		logFolder = args[0];
 
 		try{
-			ID = Integer.parseInt(args[1]);
+			numMatches = Integer.parseInt(args[1]);
 		}catch(NumberFormatException e){
-			System.out.println("Impossible to start match runner, wrong input. The match ID must be an integer value, not " + args[1] + ".");
+			System.out.println("Impossible to start match runner, wrong input. The number of matches must be an integer value, not " + args[1] + ".");
 			return;
 		}
 
-		gameKey = args[2];
+		try{
+			startID = Integer.parseInt(args[2]);
+		}catch(NumberFormatException e){
+			System.out.println("Impossible to start match runner, wrong input. The match ID must be an integer value, not " + args[2] + ".");
+			return;
+		}
+
+		gameKey = args[3];
 
 		//GameRepository gameRepo = GameRepository.getDefaultRepository();
 
@@ -95,37 +105,37 @@ public class IndependentSingleMatchRunner {
     	}
 
 		try{
-			startClock = Integer.parseInt(args[3]);
+			startClock = Integer.parseInt(args[4]);
 		}catch(NumberFormatException e){
-			System.out.println("Impossible to start match runner, wrong input. The start clock must be an integer value, not " + args[3] + ".");
+			System.out.println("Impossible to start match runner, wrong input. The start clock must be an integer value, not " + args[4] + ".");
 			return;
 		}
 
 		try{
-			playClock = Integer.parseInt(args[4]);
+			playClock = Integer.parseInt(args[5]);
 		}catch(NumberFormatException e){
-			System.out.println("Impossible to start match runner, wrong input. The play clock must be an integer value, not " + args[4] + ".");
+			System.out.println("Impossible to start match runner, wrong input. The play clock must be an integer value, not " + args[5] + ".");
 			return;
 		}
 
 		try{
-			pnCreationTime = Long.parseLong(args[5]);
+			pnCreationTime = Long.parseLong(args[6]);
 		}catch(NumberFormatException e){
-			System.out.println("Impossible to start match runner, wrong input. The propnet creation time must be an long value, not " + args[5] + ".");
+			System.out.println("Impossible to start match runner, wrong input. The propnet creation time must be an long value, not " + args[6] + ".");
 			return;
 		}
 
 		boolean buildPropnet = false;
-		String[] gamerTypes = new String[args.length-6];
-		String[] gamerSettings = new String[args.length-6];
-    	for (int i = 6; i < args.length; i++){
+		String[] gamerTypes = new String[args.length-7];
+		String[] gamerSettings = new String[args.length-7];
+    	for (int i = 7; i < args.length; i++){
     		if(args[i].endsWith(".properties")){
     			String[] s = args[i].split("-");
-    			gamerTypes[i-6] = s[0];
-    			gamerSettings[i-6] = s[1];
+    			gamerTypes[i-7] = s[0];
+    			gamerSettings[i-7] = s[1];
     		}else{
-    			gamerTypes[i-6] = args[i];
-    			gamerSettings[i-6] = null;
+    			gamerTypes[i-7] = args[i];
+    			gamerSettings[i-7] = null;
     		}
     	}
 
@@ -167,19 +177,19 @@ public class IndependentSingleMatchRunner {
 
 		/** 2. Here we checked all the inputs. Now we can try to start the match. **/
 
-		System.out.println("Starting " + ID);
+		System.out.println("Starting " + startID);
 
 		if(logFolder == null || logFolder.equals("")){
-			ThreadContext.put("LOG_FOLDER", "MatchRunner" + ID);
+			ThreadContext.put("LOG_FOLDER", "MatchRunner" + startID);
 		}else{
-			ThreadContext.put("LOG_FOLDER", logFolder + "/" + "MatchRunner" + ID);
+			ThreadContext.put("LOG_FOLDER", logFolder + "/" + "MatchRunner" + startID);
 		}
 
 		GamerLogger.startFileLogging();
 
-		String matchName = ID + "." + gameKey + "." + System.currentTimeMillis();
+		String matchName = startID + "." + gameKey + "." + System.currentTimeMillis();
 
-		GamerLogger.log("MatchRunner", "Started MatchRunner " + ID + ".");
+		GamerLogger.log("MatchRunner", "Started MatchRunner " + startID + ".");
 
 		GamerLogger.log("MatchRunner", "Starting new match: " + matchName);
 
@@ -252,7 +262,7 @@ public class IndependentSingleMatchRunner {
 			}
 
 			try {
-				thePlayers.add(new GamePlayer(9000 + i + (ID * theGamersClasses.size()), theGamer));
+				thePlayers.add(new GamePlayer(9000 + i + (startID * theGamersClasses.size()), theGamer));
 			} catch (IOException e) {
 				GamerLogger.logError("MatchRunner", "Impossible to play the match. Error when creating game player for gamer " + theGamer.getName() + ".");
 				GamerLogger.logStackTrace("MatchRunner", e);
@@ -349,7 +359,7 @@ public class IndependentSingleMatchRunner {
 			return;
 		}
 
-		String toLog = ID + ";" + matchName + ";";
+		String toLog = startID + ";" + matchName + ";";
 
 		for(int j = 0; j < goals.size(); j++){
 
@@ -359,7 +369,7 @@ public class IndependentSingleMatchRunner {
 
 		GamerLogger.log(GamerLogger.FORMAT.CSV_FORMAT, "scores", toLog);
 
-		System.out.println("Ending " + ID);
+		System.out.println("Ending " + startID);
 
 	}
 

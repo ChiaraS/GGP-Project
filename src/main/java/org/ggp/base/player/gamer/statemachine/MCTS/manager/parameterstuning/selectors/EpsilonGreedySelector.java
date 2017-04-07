@@ -1,6 +1,7 @@
 package org.ggp.base.player.gamer.statemachine.MCTS.manager.parameterstuning.selectors;
 
 import java.lang.reflect.InvocationTargetException;
+import java.util.List;
 import java.util.Map;
 import java.util.Random;
 
@@ -96,7 +97,7 @@ public class EpsilonGreedySelector extends TunerSelector{
 	/**
 	 * TODO: adapt the MctsManager code to also use this class.
 	 *
-	 * @param moveStats list with the statistics for each move.
+	 * @param moveStats list(s) with the statistics for each move.
 	 * @param numUpdates number of total visits of the moves so far (i.e. number of times any move
 	 * has been visited).
 	 * @param c constant to be used for this selection.
@@ -118,6 +119,26 @@ public class EpsilonGreedySelector extends TunerSelector{
 
 	@Override
 	public Move selectMove(Map<Move,Pair<MoveStats,Double>> movesInfo, int numUpdates) {
+		if(this.random.nextDouble() < this.epsilon){
+			return this.tunerSelector1.selectMove(movesInfo, numUpdates);
+		}else{
+			return this.tunerSelector2.selectMove(movesInfo, numUpdates);
+		}
+	}
+
+	@Override
+	public Pair<Integer,Integer> selectMove(MoveStats[][] movesStats, boolean[] valuesFeasibility, double[] movesPenalty, int numUpdates){
+
+		if(this.random.nextDouble() < this.epsilon){
+			return this.tunerSelector1.selectMove(movesStats, valuesFeasibility, movesPenalty, numUpdates);
+		}else{
+			return this.tunerSelector2.selectMove(movesStats, valuesFeasibility, movesPenalty, numUpdates);
+		}
+
+	}
+
+	@Override
+	public Pair<Integer,Move> selectMove(List<Map<Move,Pair<MoveStats,Double>>> movesInfo, int numUpdates) {
 		if(this.random.nextDouble() < this.epsilon){
 			return this.tunerSelector1.selectMove(movesInfo, numUpdates);
 		}else{

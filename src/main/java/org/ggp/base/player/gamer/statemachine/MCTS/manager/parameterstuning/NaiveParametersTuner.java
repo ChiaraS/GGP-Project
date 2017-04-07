@@ -1,6 +1,8 @@
 package org.ggp.base.player.gamer.statemachine.MCTS.manager.parameterstuning;
 
 import java.lang.reflect.InvocationTargetException;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Random;
@@ -18,6 +20,7 @@ import org.ggp.base.player.gamer.statemachine.MCTS.manager.parameterstuning.stru
 import org.ggp.base.util.logging.GamerLogger;
 import org.ggp.base.util.reflection.ProjectSearcher;
 import org.ggp.base.util.statemachine.structure.Move;
+import org.ggp.base.util.statemachine.structure.explicit.ExplicitRole;
 
 import csironi.ggp.course.utils.Pair;
 
@@ -33,6 +36,12 @@ public class NaiveParametersTuner extends ParametersTuner {
 	 * Given the statistics of each combination, selects the best one among them.
 	 */
 	private TunerSelector bestCombinationSelector;
+
+	/**
+	 * If true, when selecting the best combination of parameters only the one that's
+	 * the best over all the roles will be selected.
+	 */
+	private boolean singleBest;
 
 	/**
 	 * If true, when selecting the best combination of parameters the global MAB will be used.
@@ -88,6 +97,8 @@ public class NaiveParametersTuner extends ParametersTuner {
 			GamerLogger.logStackTrace("SearchManagerCreation", e);
 			throw new RuntimeException(e);
 		}
+
+		this.singleBest = gamerSettings.getBooleanPropertyValue("ParametersTuner.singleBest");
 
 		this.useGlobalBest = gamerSettings.getBooleanPropertyValue("ParametersTuner.useGlobalBest");
 
@@ -263,9 +274,24 @@ public class NaiveParametersTuner extends ParametersTuner {
 
 	}
 
+	// TODO: put this method in the ParametersTuner and force every tuner to implement
+	// the methods setSingleBestCombination() and setMultipleBestCombinations().
 	@Override
 	public void setBestCombinations() {
 
+		if(this.singleBest){
+			this.setSingleBestCombination();
+		}else{
+			this.setMultipleBestCombinations();
+		}
+
+	}
+
+	/**
+	 * Sets a different best combination for each role depending on
+	 * the statistics of the role.
+	 */
+	private void setMultipleBestCombinations(){
 		// For each role, we select a combination of parameters
 		for(int roleProblemIndex = 0; roleProblemIndex < this.roleProblems.length; roleProblemIndex++){
 			// If we want to use the global MAB we can only do that if it has been visited at least once
@@ -290,52 +316,172 @@ public class NaiveParametersTuner extends ParametersTuner {
 			}
 		}
 
-
-
-	    ////////////////////// VERY BAD WAY OF CHANGING CODE! FIX ASAP!
-
-		/*
-		int[] bestComboIndices = null;
-
-		double maxValue = -1;
-
-		for(int roleProblemIndex = 0; roleProblemIndex < this.roleProblems.length; roleProblemIndex++){
-			Pair<MoveStats, Double> theInfo = this.roleProblems[roleProblemIndex].getGlobalMab().getMovesInfo().get(new CombinatorialCompactMove(this.selectedCombinations[roleProblemIndex]));
-			MoveStats theStats = theInfo.getFirst();
-			double scoreSum = theStats.getScoreSum();
-			double visits = theStats.getVisits();
-
-			if((scoreSum/visits)>maxValue){
-				maxValue = scoreSum/visits;
-				bestComboIndices = this.selectedCombinations[roleProblemIndex];
-			}
-		}
-
-		for(int roleProblemIndex = 0; roleProblemIndex < this.roleProblems.length; roleProblemIndex++){
-			this.selectedCombinations[roleProblemIndex] = bestComboIndices;
-		}*/
-
-		////////////////////// VERY BAD WAY OF CHANGING CODE! FIX ASAP!
-
-
-
-
-
-
-
 		// Log the combination that we are selecting as best
 		GamerLogger.log(GamerLogger.FORMAT.CSV_FORMAT, "BestParamsCombo", this.getLogOfSelectedCombinations());
 
+		this.parametersManager.setParametersValues(this.selectedCombinations);
+	}
+
+	/**
+	 * Sets the same best combination for all the roles looking at all
+	 * their statistics at the same time.
+	 */
+	private void setSingleBestCombination(){
+
+		// Check if we want to use the global stats to compute the best configuration
+		if(this.useGlobalBest){
+			this.setSingleGlobalBestCombination();
+		}else{
+			this.setSingleLocalBestCombination();
+		}
+
+	}
+
+	private void setSingleGlobalBestCombination(){
+		int totNumUpdates = 0; // All updates
+		List<Map<Move,Pair<MoveStats,Double>>> allGlobalStats = new ArrayList<Map<Move,Pair<MoveStats,Double>>>(); // Maps for each role
+
+		// Aggregate numUpdates and all available MoveStats of all roles
+		for(int roleProblemIndex = 0; roleProblemIndex < this.roleProblems.length; roleProblemIndex++){
+			totNumUpdates += this.roleProblems[roleProblemIndex].getGlobalMab().getNumUpdates();
+			allGlobalStats.add(this.roleProblems[roleProblemIndex].getGlobalMab().getMovesInfo());
+		}
+
+		// Make sure that at least for one role we have at least one statistic in the global stats
+		if(totNumUpdates == 0){
+			this.setSingleLocalBestCombination();
+			return;
+		}
+
+		Pair<Integer,Move> theBestCombo = this.bestCombinationSelector.selectMove(allGlobalStats, totNumUpdates);
+
+		// Set selectedCombinations and prepare the message to log with the combination that has been selected as best.
+		String toLog = "";
+		ExplicitRole role;
+		String globalParamsOrder = this.getGlobalParamsOrder();
+		String parametersValues = "";
+		String originalRole = "";
+		if(this.tuneAllRoles){
+			for(int roleProblemIndex = 0; roleProblemIndex < this.selectedCombinations.length; roleProblemIndex++){
+				this.selectedCombinations[roleProblemIndex] = ((CombinatorialCompactMove) theBestCombo.getSecond()).getIndices();
+				role = this.gameDependentParameters.getTheMachine().convertToExplicitRole(this.gameDependentParameters.getTheMachine().getRoles().get(roleProblemIndex));
+				parametersValues = "[ ";
+				originalRole = "[ ";
+				for(int paramIndex = 0; paramIndex < this.selectedCombinations[roleProblemIndex].length; paramIndex++){
+					parametersValues += (this.parametersManager.getPossibleValues(paramIndex)[this.selectedCombinations[roleProblemIndex][paramIndex]] + " ");
+					if(roleProblemIndex == theBestCombo.getFirst().intValue()){
+						originalRole += "T ";
+					}else{
+						originalRole += "F ";
+					}
+				}
+				parametersValues += "]";
+				originalRole += "]";
+				toLog += ("ROLE=;" + role + ";PARAMS=;" + globalParamsOrder + ";SELECTED_COMBINATION=;" + parametersValues + ";ORIGINAL_ROLE=;" + originalRole + ";\n");
+			}
+		}else{ // Tuning only my role
+			this.selectedCombinations[0] = ((CombinatorialCompactMove) theBestCombo.getSecond()).getIndices();
+			role = this.gameDependentParameters.getTheMachine().convertToExplicitRole(this.gameDependentParameters.getTheMachine().getRoles().get(this.gameDependentParameters.getMyRoleIndex()));
+			parametersValues = "[ ";
+			originalRole = "[ ";
+			for(int paramIndex = 0; paramIndex < this.selectedCombinations[0].length; paramIndex++){
+				parametersValues += (this.parametersManager.getPossibleValues(paramIndex)[this.selectedCombinations[0][paramIndex]] + " ");
+				if(0 == theBestCombo.getFirst().intValue()){
+					originalRole += "T ";
+				}else{
+					originalRole += "F ";
+				}
+			}
+			parametersValues += "]";
+			originalRole += "]";
+			toLog += ("ROLE=;" + role + ";PARAMS=;" + globalParamsOrder + ";SELECTED_COMBINATION=;" + parametersValues + ";ORIGINAL_ROLE=;" + originalRole + ";\n");
+		}
+
+		// Log the combination that we are selecting as best
+		GamerLogger.log(GamerLogger.FORMAT.CSV_FORMAT, "BestParamsCombo", toLog);
+
+		// Set
+		this.parametersManager.setParametersValues(this.selectedCombinations);
+	}
+
+	private void setSingleLocalBestCombination(){
+
+		MoveStats[][] allRolesMoveStats = new MoveStats[this.roleProblems.length][];
+		int totalNumUpdates;
+		int[] selectedValuesIndices = new int[this.parametersManager.getNumTunableParameters()];
+		for(int i = 0; i < selectedValuesIndices.length; i++){
+			selectedValuesIndices[i] = -1;
+		}
+		int[] selectedValuesRolesIndices = new int[this.parametersManager.getNumTunableParameters()];
+		Pair<Integer,Integer> result;
+
+		// For each parameter select the best value using stats of ALL roles
+		for(int paramIndex = 0; paramIndex < this.parametersManager.getNumTunableParameters(); paramIndex++){
+			totalNumUpdates = 0;
+			for(int roleProblemIndex = 0; roleProblemIndex < this.roleProblems.length; roleProblemIndex++){
+				allRolesMoveStats[roleProblemIndex] = this.roleProblems[roleProblemIndex].getLocalMabs()[paramIndex].getMoveStats();
+				totalNumUpdates += this.roleProblems[roleProblemIndex].getLocalMabs()[paramIndex].getNumUpdates();
+			}
+			result = this.bestCombinationSelector.selectMove(allRolesMoveStats,
+					this.parametersManager.getValuesFeasibility(paramIndex, selectedValuesIndices),
+					(this.parametersManager.getPossibleValuesPenalty(paramIndex) != null ? this.parametersManager.getPossibleValuesPenalty(paramIndex) : new double[this.parametersManager.getNumPossibleValues(paramIndex)]),
+					totalNumUpdates);
+			selectedValuesRolesIndices[paramIndex] = result.getFirst();
+			selectedValuesIndices[paramIndex] = result.getSecond();
+		}
+
+		// Set selectedCombinations and prepare the message to log with the combination that has been selected as best.
+		String toLog = "";
+		ExplicitRole role;
+		String globalParamsOrder = this.getGlobalParamsOrder();
+		String parametersValues = "";
+		String originalRole = "";
+		if(this.tuneAllRoles){
+			for(int roleProblemIndex = 0; roleProblemIndex < this.selectedCombinations.length; roleProblemIndex++){
+				this.selectedCombinations[roleProblemIndex] = selectedValuesIndices;
+				role = this.gameDependentParameters.getTheMachine().convertToExplicitRole(this.gameDependentParameters.getTheMachine().getRoles().get(roleProblemIndex));
+				parametersValues = "[ ";
+				originalRole = "[ ";
+				for(int paramIndex = 0; paramIndex < this.selectedCombinations[roleProblemIndex].length; paramIndex++){
+					parametersValues += (this.parametersManager.getPossibleValues(paramIndex)[this.selectedCombinations[roleProblemIndex][paramIndex]] + " ");
+					if(roleProblemIndex == selectedValuesRolesIndices[paramIndex]){
+						originalRole += "T ";
+					}else{
+						originalRole += "F ";
+					}
+				}
+				parametersValues += "]";
+				originalRole += "]";
+				toLog += ("ROLE=;" + role + ";PARAMS=;" + globalParamsOrder + ";SELECTED_COMBINATION=;" + parametersValues + ";ORIGINAL_ROLE=;" + originalRole + ";\n");
+			}
+		}else{ // Tuning only my role
+			this.selectedCombinations[0] = selectedValuesIndices;
+			role = this.gameDependentParameters.getTheMachine().convertToExplicitRole(this.gameDependentParameters.getTheMachine().getRoles().get(this.gameDependentParameters.getMyRoleIndex()));
+			parametersValues = "[ ";
+			originalRole = "[ ";
+			for(int paramIndex = 0; paramIndex < this.selectedCombinations[0].length; paramIndex++){
+				parametersValues += (this.parametersManager.getPossibleValues(paramIndex)[this.selectedCombinations[0][paramIndex]] + " ");
+				if(0 == selectedValuesRolesIndices[paramIndex]){
+					originalRole += "T ";
+				}else{
+					originalRole += "F ";
+				}
+			}
+			parametersValues += "]";
+			originalRole += "]";
+			toLog += ("ROLE=;" + role + ";PARAMS=;" + globalParamsOrder + ";SELECTED_COMBINATION=;" + parametersValues + ";ORIGINAL_ROLE=;" + originalRole + ";\n");
+		}
+
+		// Log the combination that we are selecting as best
+		GamerLogger.log(GamerLogger.FORMAT.CSV_FORMAT, "BestParamsCombo", toLog);
+
+		// Set
 		this.parametersManager.setParametersValues(this.selectedCombinations);
 
 	}
 
 	private String getLogOfSelectedCombinations(){
-		String globalParamsOrder = "[ ";
-		for(int paramIndex = 0; paramIndex < this.parametersManager.getNumTunableParameters(); paramIndex++){
-			globalParamsOrder += (this.parametersManager.getName(paramIndex) + " ");
-		}
-		globalParamsOrder += "]";
+		String globalParamsOrder = this.getGlobalParamsOrder();
 		String toLog = "";
 
 		if(this.tuneAllRoles){
@@ -442,11 +588,7 @@ public class NaiveParametersTuner extends ParametersTuner {
 		//GamerLogger.log(GamerLogger.FORMAT.CSV_FORMAT, "ParametersTunerStats", "");
 		String toLog;
 
-		String globalParamsOrder = "[ ";
-		for(int paramIndex = 0; paramIndex < this.parametersManager.getNumTunableParameters(); paramIndex++){
-			globalParamsOrder += (this.parametersManager.getName(paramIndex) + " ");
-		}
-		globalParamsOrder += "]";
+		String globalParamsOrder = this.getGlobalParamsOrder();
 
 			for(int roleProblemIndex = 0; roleProblemIndex < this.roleProblems.length; roleProblemIndex++){
 
@@ -498,7 +640,16 @@ public class NaiveParametersTuner extends ParametersTuner {
 				GamerLogger.log(GamerLogger.FORMAT.CSV_FORMAT, "GlobalParamTunerStats", toLog);
 
 			}
+	}
 
+	private String getGlobalParamsOrder(){
+		String globalParamsOrder = "[ ";
+		for(int paramIndex = 0; paramIndex < this.parametersManager.getNumTunableParameters(); paramIndex++){
+			globalParamsOrder += (this.parametersManager.getName(paramIndex) + " ");
+		}
+		globalParamsOrder += "]";
+
+		return globalParamsOrder;
 	}
 
 	@Override
@@ -510,6 +661,8 @@ public class NaiveParametersTuner extends ParametersTuner {
 				indentation + "GLOBAL_MAB_SELECTOR = " + this.globalMabSelector.printComponent(indentation + "  ") +
 				indentation + "LOCAL_MABS_SELECTOR = " + this.localMabsSelector.printComponent(indentation + "  ") +
 				indentation + "BEST_COMBINATION_SELECTOR = " + this.bestCombinationSelector.printComponent(indentation + "  ") +
+				indentation + "SINGLE_BEST = " + this.singleBest +
+				indentation + "USE_GLOBAL_BEST = " + this.useGlobalBest +
 				indentation + "num_roles_problems = " + (this.roleProblems != null ? this.roleProblems.length : 0);
 
 		if(this.selectedCombinations != null){
