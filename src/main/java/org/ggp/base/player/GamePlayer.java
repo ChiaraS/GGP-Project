@@ -3,6 +3,7 @@ package org.ggp.base.player;
 import java.io.IOException;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.net.SocketException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -16,6 +17,7 @@ import org.ggp.base.player.gamer.statemachine.random.RandomGamer;
 import org.ggp.base.player.request.factory.RequestFactory;
 import org.ggp.base.player.request.grammar.AbortRequest;
 import org.ggp.base.player.request.grammar.Request;
+import org.ggp.base.player.request.grammar.StartRequest;
 import org.ggp.base.player.request.grammar.StopRequest;
 import org.ggp.base.util.http.HttpReader;
 import org.ggp.base.util.http.HttpWriter;
@@ -33,6 +35,15 @@ public final class GamePlayer extends Thread implements Subject
     private final Gamer gamer;
     private ServerSocket listener;
     private final List<Observer> observers;
+
+    /**
+     * True if the stopping procedure of the gamer is terminated after the end of a game
+     * and this game player is ready for a new game. Needed in case we want to set the
+     * propnet for the new game from outside instead of making the gamer build it. In
+     * this case we need to know when the gamer has been properly stopped so that we can
+     * finally reset the propnet to a new one created outside of the gamer.
+     */
+    private boolean gamerStopped;
 
     public GamePlayer(int port, Gamer gamer) throws IOException
     {
@@ -53,6 +64,16 @@ public final class GamePlayer extends Thread implements Subject
         this.port = port;
         this.gamer = gamer;
         this.playerID = System.currentTimeMillis() + "." + this.gamer.getName() + "." + this.port;
+
+        this.gamerStopped = true;
+    }
+
+    private synchronized void setGamerStopped(boolean gamerStopped){
+    	this.gamerStopped = gamerStopped;
+    }
+
+    public synchronized boolean isGamerStopped(){
+    	return this.gamerStopped;
     }
 
 	@Override
@@ -133,10 +154,18 @@ public final class GamePlayer extends Thread implements Subject
 				GamerLogger.log("GamePlayer", "[Received at " + System.currentTimeMillis() + "] " + in, GamerLogger.LOG_LEVEL_DATA_DUMP);
 
 				Request request = new RequestFactory().create(gamer, in);
+
+				if(request instanceof StartRequest){
+					this.setGamerStopped(false);
+				}
+
 				String out = request.process(System.currentTimeMillis());
 
 				if(request instanceof StopRequest || request instanceof AbortRequest){
 					ThreadContext.put("LOG_FOLDER", oldFolder + "/" + this.playerID);
+					this.setGamerStopped(true);
+
+					//System.out.println("gamer stopped = " + this.isGamerStopped());
 				}
 
 				HttpWriter.writeAsServer(connection, out);
@@ -154,8 +183,12 @@ public final class GamePlayer extends Thread implements Subject
 
 				notifyObservers(new PlayerSentMessageEvent(out));
 				GamerLogger.log("GamePlayer", "[Sent at " + System.currentTimeMillis() + "] " + out, GamerLogger.LOG_LEVEL_DATA_DUMP);
-			} catch (Exception e) {
+			}catch (SocketException e) {
 				GamerLogger.log("GamePlayer", "[Dropped data at " + System.currentTimeMillis() + "] Due to " + e, GamerLogger.LOG_LEVEL_DATA_DUMP);
+				notifyObservers(new PlayerDroppedPacketEvent());
+			}catch (Exception e) {
+				GamerLogger.logError("GamePlayer", "[Dropped data at " + System.currentTimeMillis() + "] Due to " + e);
+				GamerLogger.logStackTrace("GamePlayer", e);
 				notifyObservers(new PlayerDroppedPacketEvent());
 			}
 		}

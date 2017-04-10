@@ -31,15 +31,6 @@ public abstract class TwoPhaseParametersTuner extends ParametersTuner {
 		super.setUpComponent();
 	}
 
-	@Override
-	public void setNextCombinations() {
-		// TODO Auto-generated method stub
-	}
-
-	@Override
-	public void setBestCombinations() {
-		// TODO Auto-generated method stub
-	}
 
 	@Override
 	public void updateStatistics(int[] rewards) {

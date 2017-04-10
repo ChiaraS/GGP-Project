@@ -117,53 +117,56 @@ public class TunerBeforeSimulation extends BeforeSimulationStrategy {
 	@Override
 	public void beforeSimulationActions() {
 
-		// We reached the num of simulations available for tuning so we commit to a single configuration of parameters.
-		if(this.simCount == this.simBudget){
+		if(this.parametersTuner.isTuning()){
 
-			this.parametersTuner.setBestCombinations();
+			if(this.parametersTuner.isMemorizingBestCombo() || this.simCount == this.simBudget){
+				// We are memorizing the best combo from the previous game or we reached the num of
+				// simulations available for tuning so we commit to a single configuration of parameters.
+				this.parametersTuner.setBestCombinations();
 
-			/*
-			int i = 0;
+				/*
+				int i = 0;
 
-			// If we are tuning only for my role...
-			if(bestCombinations.length == 1){
-				for(TunableParameter p : this.tunableParameters){
-					p.setMyRoleNewValue(this.gameDependentParameters.getMyRoleIndex(), bestCombinations[0][i]);
-					i++;
-				}
-			}else{ //If we are tuning for all roles...
-
-				int[] newValuesIndices;
-
-				for(TunableParameter p : this.tunableParameters){
-
-					//System.out.print(c.getClass().getSimpleName() + ": [ ");
-
-					newValuesIndices = new int[bestCombinations.length]; // nextCombinations.length equals the number of roles for which we are tuning
-
-					for(int j = 0; j < newValuesIndices.length; j++){
-						newValuesIndices[j] = bestCombinations[j][i];
-						//System.out.print(newValuesIndices[j] + " ");
+				// If we are tuning only for my role...
+				if(bestCombinations.length == 1){
+					for(TunableParameter p : this.tunableParameters){
+						p.setMyRoleNewValue(this.gameDependentParameters.getMyRoleIndex(), bestCombinations[0][i]);
+						i++;
 					}
+				}else{ //If we are tuning for all roles...
 
-					//System.out.println("]");
+					int[] newValuesIndices;
 
-					p.setAllRolesNewValues(newValuesIndices);
+					for(TunableParameter p : this.tunableParameters){
 
-					i++;
-				}
-			}*/
+						//System.out.print(c.getClass().getSimpleName() + ": [ ");
 
-			this.parametersTuner.stopTuning();
+						newValuesIndices = new int[bestCombinations.length]; // nextCombinations.length equals the number of roles for which we are tuning
 
-		}else if(this.simCount < this.simBudget && this.simCount%this.batchSize == 0){
-			// We still have simulations left to tune parameters and we finished performing the batch of simulations
-			// for the current configuration of parameters.
-			this.parametersTuner.setNextCombinations();
+						for(int j = 0; j < newValuesIndices.length; j++){
+							newValuesIndices[j] = bestCombinations[j][i];
+							//System.out.print(newValuesIndices[j] + " ");
+						}
 
+						//System.out.println("]");
+
+						p.setAllRolesNewValues(newValuesIndices);
+
+						i++;
+					}
+				}*/
+
+				//this.parametersTuner.stopTuning();
+
+			}else if(this.simCount < this.simBudget && this.simCount%this.batchSize == 0){
+				// We still have simulations left to tune parameters and we finished performing the batch of simulations
+				// for the current configuration of parameters.
+				this.parametersTuner.setNextCombinations();
+
+			}
+
+			this.simCount++;
 		}
-
-		this.simCount++;
 
 	}
 

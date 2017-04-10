@@ -33,6 +33,10 @@ public class TunerAfterGame extends AfterGameStrategy {
 
 	@Override
 	public void afterGameActions() {
+		// If the tuner was still tuning we let it set and memorize the best combination of parameters values
+		if(this.parametersTuner.isTuning()){
+			this.parametersTuner.setBestCombinations();
+		}
 		this.parametersTuner.logStats();
 	}
 

@@ -975,7 +975,9 @@ public class HybridMctsManager {
 	}
 
 	public void afterGameActions(){
-		this.afterGameStrategy.afterGameActions();
+		if(this.afterGameStrategy != null){
+			this.afterGameStrategy.afterGameActions();
+		}
 	}
 
 	public int getIterations(){

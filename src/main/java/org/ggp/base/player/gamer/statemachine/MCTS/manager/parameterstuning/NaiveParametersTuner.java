@@ -105,6 +105,7 @@ public class NaiveParametersTuner extends ParametersTuner {
 		this.roleProblems = null;
 
 		this.selectedCombinations = null;
+
 	}
 
 	/*
@@ -169,7 +170,6 @@ public class NaiveParametersTuner extends ParametersTuner {
 
 		super.setUpComponent();
 
-
 		this.globalMabSelector.setUpComponent();
 
 		this.localMabsSelector.setUpComponent();
@@ -184,13 +184,17 @@ public class NaiveParametersTuner extends ParametersTuner {
 			numRolesToTune = 1;
 		}
 
-		// Create a two phase representation of the combinatorial problem for each role
-		this.roleProblems = new TwoPhaseProblemRepresentation[numRolesToTune];
-		for(int roleProblemIndex = 0; roleProblemIndex < this.roleProblems.length; roleProblemIndex++){
-			roleProblems[roleProblemIndex] = new TwoPhaseProblemRepresentation(this.parametersManager.getNumPossibleValuesForAllParams());
-		}
+		// If we must re-use the previously computed best combos and we have the same number of roles being tuned,
+		// don't re-initialize the roleProblems because we won't need them.
+		if(!this.reuseBestCombos || this.selectedCombinations == null || this.selectedCombinations.length != numRolesToTune){
+			// Create a two phase representation of the combinatorial problem for each role
+			this.roleProblems = new TwoPhaseProblemRepresentation[numRolesToTune];
+			for(int roleProblemIndex = 0; roleProblemIndex < this.roleProblems.length; roleProblemIndex++){
+				roleProblems[roleProblemIndex] = new TwoPhaseProblemRepresentation(this.parametersManager.getNumPossibleValuesForAllParams());
+			}
 
-		this.selectedCombinations = new int[numRolesToTune][this.parametersManager.getNumTunableParameters()];
+			this.selectedCombinations = new int[numRolesToTune][this.parametersManager.getNumTunableParameters()];
+		}
 
 	}
 
@@ -204,7 +208,10 @@ public class NaiveParametersTuner extends ParametersTuner {
 		this.bestCombinationSelector.clearComponent();
 
 		this.roleProblems = null;
-		this.selectedCombinations = null;
+		// At the end of one game, this parameters memorizes the best combos found during tuning.
+		if(!this.reuseBestCombos){
+			this.selectedCombinations = null; // Reset only if we don't need them in the next game
+		}
 	}
 
 	@Override
@@ -279,12 +286,27 @@ public class NaiveParametersTuner extends ParametersTuner {
 	@Override
 	public void setBestCombinations() {
 
-		if(this.singleBest){
+		if(this.isMemorizingBestCombo()){
+			this.setSelectedBestCombination();
+		}else if(this.singleBest){
 			this.setSingleBestCombination();
 		}else{
 			this.setMultipleBestCombinations();
 		}
 
+		this.stopTuning();
+
+	}
+
+	/**
+	 * Sets a different best combination for each role depending on
+	 * the statistics of the role.
+	 */
+	private void setSelectedBestCombination(){
+		// Log the combination that we are selecting as best
+		GamerLogger.log(GamerLogger.FORMAT.CSV_FORMAT, "BestParamsCombo", this.getLogOfSelectedCombinations());
+
+		this.parametersManager.setParametersValues(this.selectedCombinations);
 	}
 
 	/**
@@ -583,12 +605,14 @@ public class NaiveParametersTuner extends ParametersTuner {
 	@Override
 	public void logStats() {
 
-		// TODO: If the tuner was still tuning, log the most visited combo?
+		if(this.roleProblems != null){
 
-		//GamerLogger.log(GamerLogger.FORMAT.CSV_FORMAT, "ParametersTunerStats", "");
-		String toLog;
+			// TODO: If the tuner was still tuning, log the most visited combo?
 
-		String globalParamsOrder = this.getGlobalParamsOrder();
+			//GamerLogger.log(GamerLogger.FORMAT.CSV_FORMAT, "ParametersTunerStats", "");
+			String toLog;
+
+			String globalParamsOrder = this.getGlobalParamsOrder();
 
 			for(int roleProblemIndex = 0; roleProblemIndex < this.roleProblems.length; roleProblemIndex++){
 
@@ -640,6 +664,7 @@ public class NaiveParametersTuner extends ParametersTuner {
 				GamerLogger.log(GamerLogger.FORMAT.CSV_FORMAT, "GlobalParamTunerStats", toLog);
 
 			}
+		}
 	}
 
 	private String getGlobalParamsOrder(){
@@ -721,5 +746,10 @@ public class NaiveParametersTuner extends ParametersTuner {
 	@Override
 	public int getNumIndependentCombinatorialProblems() {
 		return this.roleProblems.length;
+	}
+
+	@Override
+	public boolean isMemorizingBestCombo() {
+		return (this.reuseBestCombos && this.roleProblems == null);
 	}
 }

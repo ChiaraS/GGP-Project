@@ -152,6 +152,8 @@ public class HierarchicalSingleMabParametersTuner extends SingleMabParametersTun
 
 		this.parametersManager.setParametersValues(this.selectedExpandedCombinationsIndices);
 
+		this.stopTuning();
+
 	}
 
 	@Override
@@ -257,6 +259,12 @@ public class HierarchicalSingleMabParametersTuner extends SingleMabParametersTun
 		for(int i = 0; i < this.rolesMabs.length; i++){
 			this.rolesMabs[i].decreaseStatistics(factor);
 		}
+	}
+
+	@Override
+	public boolean isMemorizingBestCombo() {
+		// TODO Auto-generated method stub
+		return false;
 	}
 
 

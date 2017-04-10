@@ -53,6 +53,8 @@ public class LSIParametersTuner extends TwoPhaseParametersTuner {
 	@Override
 	public void setBestCombinations() {
 		// TODO Auto-generated method stub
+
+		this.stopTuning();
 	}
 
 	@Override
@@ -96,6 +98,12 @@ public class LSIParametersTuner extends TwoPhaseParametersTuner {
 	public void setUpComponent() {
 		// TODO Auto-generated method stub
 
+	}
+
+	@Override
+	public boolean isMemorizingBestCombo() {
+		// TODO Auto-generated method stub
+		return false;
 	}
 
 }

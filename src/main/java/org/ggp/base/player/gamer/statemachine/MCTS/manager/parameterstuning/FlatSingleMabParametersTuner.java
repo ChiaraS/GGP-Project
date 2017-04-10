@@ -301,6 +301,8 @@ public class FlatSingleMabParametersTuner extends SingleMabParametersTuner {
 
 		this.parametersManager.setParametersValues(nextCombinations);
 
+		this.stopTuning();
+
 	}
 
 	/**
@@ -460,6 +462,12 @@ public class FlatSingleMabParametersTuner extends SingleMabParametersTuner {
 		for(int i = 0; i < this.rolesMabs.length; i++){
 			this.rolesMabs[i].decreaseStatistics(factor);
 		}
+	}
+
+	@Override
+	public boolean isMemorizingBestCombo() {
+		// TODO Auto-generated method stub
+		return false;
 	}
 
 }

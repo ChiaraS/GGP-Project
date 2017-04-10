@@ -23,6 +23,12 @@ public abstract class ParametersTuner extends SearchManagerComponent{
 
 	protected boolean tuneAllRoles;
 
+	/**
+	 * True if the tuner must memorize the best combinations found after the end of the first played game
+	 * and then re-use them for all subsequent games. The best combos will be memorized in the
+	 * 'selectedCombinations' variable.
+	 */
+	protected boolean reuseBestCombos;
 
 
 	/**
@@ -77,6 +83,8 @@ public abstract class ParametersTuner extends SearchManagerComponent{
 		this.tuning = true;
 
 		this.tuneAllRoles = gamerSettings.getBooleanPropertyValue("ParametersTuner.tuneAllRoles");
+
+		this.reuseBestCombos = gamerSettings.getBooleanPropertyValue("ParametersTuner.reuseBestCombos");
 
 	}
 
@@ -150,6 +158,7 @@ public abstract class ParametersTuner extends SearchManagerComponent{
 
 		String params = indentation + "PARAMETERS_MANAGER = " + this.parametersManager.printComponent(indentation + "  ") +
 				indentation + "TUNE_ALL_ROLES = " + this.tuneAllRoles +
+				indentation + "REUSE_BEST_COMBOS = " + this.reuseBestCombos +
 				indentation + "tuning = " + this.tuning;
 
 		/*
@@ -211,12 +220,14 @@ public abstract class ParametersTuner extends SearchManagerComponent{
 		return this.tuneAllRoles;
 	}
 
-	public void stopTuning(){
+	protected void stopTuning(){
 		this.tuning = false;
 	}
 
 	public boolean isTuning(){
 		return this.tuning;
 	}
+
+	public abstract boolean isMemorizingBestCombo();
 
 }

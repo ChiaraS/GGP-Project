@@ -44,6 +44,7 @@ public class SequentialParametersTuner extends ParametersTuner {
 	@Override
 	public void setBestCombinations() {
 		// TODO Auto-generated method stub
+		this.stopTuning();
 	}
 
 	@Override
@@ -68,6 +69,11 @@ public class SequentialParametersTuner extends ParametersTuner {
 	public void decreaseStatistics(double factor) {
 		// TODO Auto-generated method stub
 
+	}
+	@Override
+	public boolean isMemorizingBestCombo() {
+		// TODO Auto-generated method stub
+		return false;
 	}
 
 }

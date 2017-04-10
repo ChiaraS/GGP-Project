@@ -187,6 +187,7 @@ public class IndependentTourneyRunner {
 
 		} catch (IOException | NumberFormatException e) {
 			System.out.println("Impossible to perform experiment, cannot correctly read/write the .properties file for the tourney.");
+			e.printStackTrace();
 			return;
 		}
 
