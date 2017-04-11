@@ -42,13 +42,17 @@ public class MatchInfo {
 
 		this.playerTypes = new HashSet<String>();
 
+		//System.out.println("Adding players names:");
 		for(int i = 0; i < this.playersNames.length; i++){
+			//System.out.println(this.playersNames[i]);
 			this.playerTypes.add(this.playersNames[i]);
 		}
 
 		this.roles = new HashSet<String>();
 
+		//System.out.println("Adding players roles:");
 		for(int i = 0; i < this.playersRoles.length; i++){
+			//System.out.println(this.playersRoles[i]);
 			this.roles.add(this.playersRoles[i]);
 		}
 	}
@@ -106,6 +110,9 @@ public class MatchInfo {
 	}
 
 	public double getFinalOutcome(String playerType, String playerRole){
+		// If the outcome doesn't exists then there is an error in the code
+		// No need to check if the value returned by the map is null, if it is just let
+		// the exception be thrown.
 		return this.finalOutcome.get(new Pair<String,String>(playerType, playerRole));
 	}
 

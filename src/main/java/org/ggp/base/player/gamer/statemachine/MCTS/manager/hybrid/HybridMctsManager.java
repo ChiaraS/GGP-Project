@@ -1,6 +1,7 @@
 package org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid;
 
 import java.lang.reflect.InvocationTargetException;
+import java.util.List;
 import java.util.Random;
 
 import org.ggp.base.player.gamer.statemachine.GamerSettings;
@@ -974,9 +975,9 @@ public class HybridMctsManager {
 
 	}
 
-	public void afterGameActions(){
+	public void afterGameActions(List<Integer> goals){
 		if(this.afterGameStrategy != null){
-			this.afterGameStrategy.afterGameActions();
+			this.afterGameStrategy.afterGameActions(goals);
 		}
 	}
 

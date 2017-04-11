@@ -752,4 +752,8 @@ public class NaiveParametersTuner extends ParametersTuner {
 	public boolean isMemorizingBestCombo() {
 		return (this.reuseBestCombos && this.roleProblems == null);
 	}
+
+	public void cancelMemorizedBestCombo(){
+		this.selectedCombinations = null;
+	}
 }

@@ -267,5 +267,11 @@ public class HierarchicalSingleMabParametersTuner extends SingleMabParametersTun
 		return false;
 	}
 
+	@Override
+	public void cancelMemorizedBestCombo() {
+		// TODO Auto-generated method stub
+
+	}
+
 
 }

@@ -230,4 +230,6 @@ public abstract class ParametersTuner extends SearchManagerComponent{
 
 	public abstract boolean isMemorizingBestCombo();
 
+	public abstract void cancelMemorizedBestCombo();
+
 }

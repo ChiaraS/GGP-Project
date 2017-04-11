@@ -75,5 +75,10 @@ public class SequentialParametersTuner extends ParametersTuner {
 		// TODO Auto-generated method stub
 		return false;
 	}
+	@Override
+	public void cancelMemorizedBestCombo() {
+		// TODO Auto-generated method stub
+
+	}
 
 }

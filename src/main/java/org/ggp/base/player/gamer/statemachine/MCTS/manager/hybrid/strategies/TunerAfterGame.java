@@ -1,5 +1,6 @@
 package org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.strategies;
 
+import java.util.List;
 import java.util.Random;
 
 import org.ggp.base.player.gamer.statemachine.GamerSettings;
@@ -32,10 +33,13 @@ public class TunerAfterGame extends AfterGameStrategy {
 	}
 
 	@Override
-	public void afterGameActions() {
+	public void afterGameActions(List<Integer> terminalGoals) {
 		// If the tuner was still tuning we let it set and memorize the best combination of parameters values
 		if(this.parametersTuner.isTuning()){
 			this.parametersTuner.setBestCombinations();
+		}
+		if(terminalGoals.get(this.gameDependentParameters.getMyRoleIndex()).intValue() != 100.0){
+			this.parametersTuner.cancelMemorizedBestCombo();
 		}
 		this.parametersTuner.logStats();
 	}

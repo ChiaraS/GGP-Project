@@ -106,4 +106,10 @@ public class LSIParametersTuner extends TwoPhaseParametersTuner {
 		return false;
 	}
 
+	@Override
+	public void cancelMemorizedBestCombo() {
+		// TODO Auto-generated method stub
+
+	}
+
 }

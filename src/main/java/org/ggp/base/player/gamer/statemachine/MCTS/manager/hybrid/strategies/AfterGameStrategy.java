@@ -1,5 +1,6 @@
 package org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.strategies;
 
+import java.util.List;
 import java.util.Random;
 
 import org.ggp.base.player.gamer.statemachine.GamerSettings;
@@ -13,6 +14,6 @@ public abstract class AfterGameStrategy extends Strategy {
 		super(gameDependentParameters, random, gamerSettings, sharedReferencesCollector);
 	}
 
-	public abstract void afterGameActions();
+	public abstract void afterGameActions(List<Integer> terminalGoals);
 
 }

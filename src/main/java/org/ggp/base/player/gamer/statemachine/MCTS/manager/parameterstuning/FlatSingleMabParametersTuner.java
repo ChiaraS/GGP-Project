@@ -470,4 +470,10 @@ public class FlatSingleMabParametersTuner extends SingleMabParametersTuner {
 		return false;
 	}
 
+	@Override
+	public void cancelMemorizedBestCombo() {
+		// TODO Auto-generated method stub
+
+	}
+
 }
