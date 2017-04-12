@@ -24,12 +24,12 @@ public abstract class ParametersTuner extends SearchManagerComponent{
 	protected boolean tuneAllRoles;
 
 	/**
-	 * True if the tuner must memorize the best combinations found after the end of the first played game
-	 * and then re-use them for all subsequent games. The best combos will be memorized in the
-	 * 'selectedCombinations' variable.
+	 * True if the tuner must memorize the best combinations found after the end of the first game
+	 * that is won and then re-use them for all subsequent games.
 	 */
 	protected boolean reuseBestCombos;
 
+	protected boolean reuseStats;
 
 	/**
 	 * Names of the classes being considered, i.e. names of the parameters being tuned.
@@ -230,6 +230,6 @@ public abstract class ParametersTuner extends SearchManagerComponent{
 
 	public abstract boolean isMemorizingBestCombo();
 
-	public abstract void cancelMemorizedBestCombo();
+	public abstract void memorizeBestCombinations();
 
 }

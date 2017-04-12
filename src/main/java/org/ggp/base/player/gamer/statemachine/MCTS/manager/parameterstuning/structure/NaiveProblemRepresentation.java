@@ -3,7 +3,7 @@ package org.ggp.base.player.gamer.statemachine.MCTS.manager.parameterstuning.str
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.parameterstuning.structure.mabs.FixedMab;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.parameterstuning.structure.mabs.IncrementalMab;
 
-public class TwoPhaseProblemRepresentation {
+public class NaiveProblemRepresentation {
 
 	/**
 	 * The global Multi-Armed Bandit problem.
@@ -17,7 +17,7 @@ public class TwoPhaseProblemRepresentation {
 	 */
 	private FixedMab[] localMabs;
 
-	public TwoPhaseProblemRepresentation(int[] classesLength) {
+	public NaiveProblemRepresentation(int[] classesLength) {
 
 		this.globalMab = new IncrementalMab();
 

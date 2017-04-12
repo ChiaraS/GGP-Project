@@ -471,7 +471,7 @@ public class FlatSingleMabParametersTuner extends SingleMabParametersTuner {
 	}
 
 	@Override
-	public void cancelMemorizedBestCombo() {
+	public void memorizeBestCombinations() {
 		// TODO Auto-generated method stub
 
 	}

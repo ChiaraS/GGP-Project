@@ -393,11 +393,11 @@ public class IndependentSingleMatchRunner {
 
 			//System.out.println("Ready = " + ready);
 
-			int count = 50; // Try 50 times (i.e. 5 seconds) to check if players are done, otherwise stop match runner.
+			int count = 60; // Try 60 times (i.e. 1 minute) to check if players are done, otherwise stop match runner.
 
 			while(!ready && count > 0){
 
-				try {Thread.sleep(100);} catch (InterruptedException lEx) {/* Whatever */}
+				try {Thread.sleep(1000);} catch (InterruptedException lEx) {/* Whatever */}
 
 				ready = true;
 

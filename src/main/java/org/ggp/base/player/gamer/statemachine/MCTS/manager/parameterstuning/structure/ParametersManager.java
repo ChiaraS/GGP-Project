@@ -298,6 +298,14 @@ public class ParametersManager extends SearchManagerComponent {
 		return numPossibleValues;
 	}
 
+	public int getTotalNumPossibleValues(){
+		int totNumPossibleValues = 0;
+		for(int paramIndex = 0; paramIndex < this.getNumTunableParameters(); paramIndex++){
+			totNumPossibleValues += this.getNumPossibleValues(paramIndex);
+		}
+		return totNumPossibleValues;
+	}
+
 	/**
 	 * Returns the penalty associated with the possible values of the parameter at position
 	 * paramIndex in the list of tunableParameters.

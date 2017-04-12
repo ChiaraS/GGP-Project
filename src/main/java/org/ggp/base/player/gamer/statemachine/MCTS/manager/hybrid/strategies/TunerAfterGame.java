@@ -38,8 +38,9 @@ public class TunerAfterGame extends AfterGameStrategy {
 		if(this.parametersTuner.isTuning()){
 			this.parametersTuner.setBestCombinations();
 		}
-		if(terminalGoals.get(this.gameDependentParameters.getMyRoleIndex()).intValue() != 100.0){
-			this.parametersTuner.cancelMemorizedBestCombo();
+		if(terminalGoals.get(this.gameDependentParameters.getMyRoleIndex()).intValue() == 100.0){
+			// Note that the best combination will be memorized, but re-used only if the tuner is set to do so
+			this.parametersTuner.memorizeBestCombinations();
 		}
 		this.parametersTuner.logStats();
 	}
