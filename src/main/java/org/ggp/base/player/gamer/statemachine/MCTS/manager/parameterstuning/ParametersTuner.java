@@ -205,7 +205,7 @@ public abstract class ParametersTuner extends SearchManagerComponent{
 
 	public abstract int getNumIndependentCombinatorialProblems();
 
-	public abstract void updateStatistics(int[] rewards);
+	public abstract void updateStatistics(int[] goals);
 
 	public abstract void logStats();
 

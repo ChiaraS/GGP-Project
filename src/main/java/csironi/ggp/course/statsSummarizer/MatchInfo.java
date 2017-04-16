@@ -6,7 +6,7 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
-import csironi.ggp.course.utils.Pair;
+import csironi.ggp.course.utils.MyPair;
 
 public class MatchInfo {
 
@@ -25,7 +25,7 @@ public class MatchInfo {
 	 * 1 if the player playing the role was the only one that got the highest score.
 	 * 1/n if the player playing the role was among the n players that got the highest score.
 	 */
-	private Map<Pair<String,String>,Double> finalOutcome;
+	private Map<MyPair<String,String>,Double> finalOutcome;
 
 	private Set<String> playerTypes;
 	private Set<String> roles;
@@ -38,7 +38,7 @@ public class MatchInfo {
 
 		this.correspondingFile = correspondingFile;
 
-		this.finalOutcome = new HashMap<Pair<String,String>,Double>();
+		this.finalOutcome = new HashMap<MyPair<String,String>,Double>();
 
 		this.playerTypes = new HashSet<String>();
 
@@ -98,7 +98,7 @@ public class MatchInfo {
 
 		if(this.playerTypes.contains(playerType) && this.roles.contains(playerRole)){
 
-			Pair<String,String> theKey = new Pair<String,String>(playerType, playerRole);
+			MyPair<String,String> theKey = new MyPair<String,String>(playerType, playerRole);
 			if(this.finalOutcome.get(theKey) == null){
 				this.finalOutcome.put(theKey, new Double(outcome));
 				return true;
@@ -113,7 +113,7 @@ public class MatchInfo {
 		// If the outcome doesn't exists then there is an error in the code
 		// No need to check if the value returned by the map is null, if it is just let
 		// the exception be thrown.
-		return this.finalOutcome.get(new Pair<String,String>(playerType, playerRole));
+		return this.finalOutcome.get(new MyPair<String,String>(playerType, playerRole));
 	}
 
 }

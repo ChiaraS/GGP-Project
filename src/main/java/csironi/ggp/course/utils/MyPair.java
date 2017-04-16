@@ -1,13 +1,13 @@
 package csironi.ggp.course.utils;
 
 
-public class Pair<T, V> {
+public class MyPair<T, V> {
 
 	private T t;
 
 	private V v;
 
-	public Pair(T t, V v) {
+	public MyPair(T t, V v) {
 		this.t = t;
 		this.v = v;
 	}
@@ -41,7 +41,7 @@ public class Pair<T, V> {
 			return false;
 		if (getClass() != otherPair.getClass())
 			return false;
-		Pair<?, ?> other = (Pair<?, ?>) otherPair;
+		MyPair<?, ?> other = (MyPair<?, ?>) otherPair;
 		if (this.t == null) {
 			if (other.t != null)
 				return false;

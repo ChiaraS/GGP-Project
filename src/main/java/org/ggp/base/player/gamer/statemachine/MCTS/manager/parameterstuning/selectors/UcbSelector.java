@@ -12,7 +12,7 @@ import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.GameDependentP
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.SharedReferencesCollector;
 import org.ggp.base.util.statemachine.structure.Move;
 
-import csironi.ggp.course.utils.Pair;
+import csironi.ggp.course.utils.MyPair;
 
 /**
  * This class gets as input a list of statistics for moves (i.e MoveStats) and selects
@@ -216,7 +216,7 @@ public class UcbSelector extends TunerSelector{
 	 * @return the index of the selected move.
 	 */
 	@Override
-	public Move selectMove(Map<Move,Pair<MoveStats,Double>> movesInfo, int numUpdates) {
+	public Move selectMove(Map<Move,MyPair<MoveStats,Double>> movesInfo, int numUpdates) {
 
 		// Extra check to make sure that this method is never called with an empty map of moves
 		if(movesInfo.isEmpty()){
@@ -233,7 +233,7 @@ public class UcbSelector extends TunerSelector{
 		if(numUpdates == 0 && this.biasComputer == null){
 			int randomNum = this.random.nextInt(movesInfo.size());
 
-			for(Entry<Move,Pair<MoveStats,Double>> entry : movesInfo.entrySet()){
+			for(Entry<Move,MyPair<MoveStats,Double>> entry : movesInfo.entrySet()){
 				if(randomNum == 0){
 					selectedMove = entry.getKey();
 					break;
@@ -254,7 +254,7 @@ public class UcbSelector extends TunerSelector{
 			List<Integer> selectedMovesIndices = new ArrayList<Integer>();
 
 			int i = 0;
-			for(Entry<Move,Pair<MoveStats,Double>> entry : movesInfo.entrySet()){
+			for(Entry<Move,MyPair<MoveStats,Double>> entry : movesInfo.entrySet()){
 
 				movesValues[i] = this.computeCombinationValue(entry.getValue().getFirst(), entry.getValue().getSecond().doubleValue(), numUpdates, minExtreme, maxExtreme);
 				moves[i] = entry.getKey();
@@ -302,9 +302,9 @@ public class UcbSelector extends TunerSelector{
 	}
 
 	@Override
-	public Pair<Integer,Integer> selectMove(MoveStats[][] movesStats, boolean[] valuesFeasibility, double[] movesPenalty, int numUpdates){
+	public MyPair<Integer,Integer> selectMove(MoveStats[][] movesStats, boolean[] valuesFeasibility, double[] movesPenalty, int numUpdates){
 
-		Pair<Integer,Integer> selectedMove;
+		MyPair<Integer,Integer> selectedMove;
 
 		// This should mean that no combination of values has been evaluated yet (1st simulation),
 		// thus we return a random combination.
@@ -341,12 +341,12 @@ public class UcbSelector extends TunerSelector{
 					throw new RuntimeException("UcbSelector - SelectMove(MoveStats[][], boolean[], double[], int): detected no feasible move when selecting.");
 				}
 
-				selectedMove = new Pair<Integer,Integer>(roleStatsIndex,statsIndex);
+				selectedMove = new MyPair<Integer,Integer>(roleStatsIndex,statsIndex);
 			}else{
 				// Compute total number of MoveStats. Note that all arrays of MoveStats have the same length.
 				// Then get random MoveStats among them.
 				int randomNum = this.random.nextInt(movesStats.length * movesStats[0].length);
-				selectedMove = new Pair<Integer,Integer>(randomNum/movesStats[0].length, randomNum%movesStats[0].length);
+				selectedMove = new MyPair<Integer,Integer>(randomNum/movesStats[0].length, randomNum%movesStats[0].length);
 			}
 		}else{
 
@@ -356,7 +356,7 @@ public class UcbSelector extends TunerSelector{
 			double maxValue = -1;
 			double[][] movesValues = new double[movesStats.length][movesStats[0].length];
 
-			List<Pair<Integer,Integer>> selectedMovesIndices = new ArrayList<Pair<Integer,Integer>>();
+			List<MyPair<Integer,Integer>> selectedMovesIndices = new ArrayList<MyPair<Integer,Integer>>();
 
 			//if(movesPenalty != null){
 			for(int roleStatsIndex = 0; roleStatsIndex < movesStats.length; roleStatsIndex++){
@@ -409,7 +409,7 @@ public class UcbSelector extends TunerSelector{
 				for(int statsIndex = 0; statsIndex < movesStats[roleStatsIndex].length; statsIndex++){
 					if((valuesFeasibility == null || valuesFeasibility[statsIndex]) &&
 							movesValues[roleStatsIndex][statsIndex] >= (maxValue-valueOffset)){
-						selectedMovesIndices.add(new Pair<Integer,Integer>(roleStatsIndex, statsIndex));
+						selectedMovesIndices.add(new MyPair<Integer,Integer>(roleStatsIndex, statsIndex));
 					}
 				}
 			}
@@ -445,10 +445,10 @@ public class UcbSelector extends TunerSelector{
 	 * @return the index of the selected move.
 	 */
 	@Override
-	public Pair<Integer,Move> selectMove(List<Map<Move,Pair<MoveStats,Double>>> movesInfo, int numUpdates) {
+	public MyPair<Integer,Move> selectMove(List<Map<Move,MyPair<MoveStats,Double>>> movesInfo, int numUpdates) {
 
 		int totalNumStats = 0;
-		for(Map<Move,Pair<MoveStats,Double>> map : movesInfo){
+		for(Map<Move,MyPair<MoveStats,Double>> map : movesInfo){
 			totalNumStats += map.size();
 		}
 
@@ -468,7 +468,7 @@ public class UcbSelector extends TunerSelector{
 
 			int randomNum = this.random.nextInt(totalNumStats);
 
-			for(Map<Move,Pair<MoveStats,Double>> map : movesInfo){
+			for(Map<Move,MyPair<MoveStats,Double>> map : movesInfo){
 				if(randomNum-map.size() < 0){
 					break;
 				}else{
@@ -477,7 +477,7 @@ public class UcbSelector extends TunerSelector{
 				}
 			}
 
-			for(Entry<Move,Pair<MoveStats,Double>> entry : movesInfo.get(listIndex).entrySet()){
+			for(Entry<Move,MyPair<MoveStats,Double>> entry : movesInfo.get(listIndex).entrySet()){
 				if(randomNum == 0){
 					selectedMove = entry.getKey();
 				}
@@ -488,7 +488,7 @@ public class UcbSelector extends TunerSelector{
 				throw new RuntimeException("UcbSelector - selectMove(List<Map>, int): found no move when selecting.");
 			}
 
-			return new Pair<Integer,Move>(new Integer(listIndex), selectedMove);
+			return new MyPair<Integer,Move>(new Integer(listIndex), selectedMove);
 
 		}else{
 			// If this evaluator is adding a bias to the combinations we execute the following code even when it's the 1st
@@ -502,13 +502,13 @@ public class UcbSelector extends TunerSelector{
 			Move[] moves = new Move[totalNumStats];
 			int[] roleStatsIndices = new int[totalNumStats];
 
-			List<Pair<Integer,Move>> selectedMovesIndices = new ArrayList<Pair<Integer,Move>>();
+			List<MyPair<Integer,Move>> selectedMovesIndices = new ArrayList<MyPair<Integer,Move>>();
 
 			int roleStatsIndex = 0;
 			int index = 0;
-			for(Map<Move,Pair<MoveStats,Double>> map : movesInfo){
+			for(Map<Move,MyPair<MoveStats,Double>> map : movesInfo){
 
-				for(Entry<Move,Pair<MoveStats,Double>> entry : map.entrySet()){
+				for(Entry<Move,MyPair<MoveStats,Double>> entry : map.entrySet()){
 
 					movesValues[index] = this.computeCombinationValue(entry.getValue().getFirst(), entry.getValue().getSecond().doubleValue(), numUpdates, minExtreme, maxExtreme);
 					moves[index] = entry.getKey();
@@ -542,7 +542,7 @@ public class UcbSelector extends TunerSelector{
 
 			for(index = 0; index < movesValues.length; index++){
 				if(movesValues[index] >= (maxValue-this.valueOffset)){
-					selectedMovesIndices.add(new Pair<Integer,Move>(roleStatsIndices[index], moves[index]));
+					selectedMovesIndices.add(new MyPair<Integer,Move>(roleStatsIndices[index], moves[index]));
 				}
 			}
 

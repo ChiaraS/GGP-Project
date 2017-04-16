@@ -22,7 +22,7 @@ import org.ggp.base.util.reflection.ProjectSearcher;
 import org.ggp.base.util.statemachine.structure.Move;
 import org.ggp.base.util.statemachine.structure.explicit.ExplicitRole;
 
-import csironi.ggp.course.utils.Pair;
+import csironi.ggp.course.utils.MyPair;
 
 public class NaiveParametersTuner extends ParametersTuner {
 
@@ -385,7 +385,7 @@ public class NaiveParametersTuner extends ParametersTuner {
 
 	private void setSingleGlobalBestCombination(){
 		int totNumUpdates = 0; // All updates
-		List<Map<Move,Pair<MoveStats,Double>>> allGlobalStats = new ArrayList<Map<Move,Pair<MoveStats,Double>>>(); // Maps for each role
+		List<Map<Move,MyPair<MoveStats,Double>>> allGlobalStats = new ArrayList<Map<Move,MyPair<MoveStats,Double>>>(); // Maps for each role
 
 		// Aggregate numUpdates and all available MoveStats of all roles
 		for(int roleProblemIndex = 0; roleProblemIndex < this.roleProblems.length; roleProblemIndex++){
@@ -399,7 +399,7 @@ public class NaiveParametersTuner extends ParametersTuner {
 			return;
 		}
 
-		Pair<Integer,Move> theBestCombo = this.bestCombinationSelector.selectMove(allGlobalStats, totNumUpdates);
+		MyPair<Integer,Move> theBestCombo = this.bestCombinationSelector.selectMove(allGlobalStats, totNumUpdates);
 
 		// Set selectedCombinations and prepare the message to log with the combination that has been selected as best.
 		String toLog = "";
@@ -459,7 +459,7 @@ public class NaiveParametersTuner extends ParametersTuner {
 			selectedValuesIndices[i] = -1;
 		}
 		int[] selectedValuesRolesIndices = new int[this.parametersManager.getNumTunableParameters()];
-		Pair<Integer,Integer> result;
+		MyPair<Integer,Integer> result;
 
 		// For each parameter select the best value using stats of ALL roles
 		for(int paramIndex = 0; paramIndex < this.parametersManager.getNumTunableParameters(); paramIndex++){
@@ -585,11 +585,11 @@ public class NaiveParametersTuner extends ParametersTuner {
 			CombinatorialCompactMove theMove = new CombinatorialCompactMove(this.selectedCombinations[roleProblemIndex]);
 
 
-			Pair<MoveStats,Double> globalInfo = this.roleProblems[roleProblemIndex].getGlobalMab().getMovesInfo().get(theMove);
+			MyPair<MoveStats,Double> globalInfo = this.roleProblems[roleProblemIndex].getGlobalMab().getMovesInfo().get(theMove);
 
 			// If the info doesn't exist, add the move to the MAB, computing the corresponding penalty
 			if(globalInfo == null){
-				globalInfo = new Pair<MoveStats,Double>(new MoveStats(), this.computeCombinatorialMovePenalty(theMove.getIndices()));
+				globalInfo = new MyPair<MoveStats,Double>(new MoveStats(), this.computeCombinatorialMovePenalty(theMove.getIndices()));
 				this.roleProblems[roleProblemIndex].getGlobalMab().getMovesInfo().put(theMove, globalInfo);
 			}
 
@@ -665,12 +665,12 @@ public class NaiveParametersTuner extends ParametersTuner {
 
 				toLog = "";
 
-				Map<Move,Pair<MoveStats,Double>> globalInfo = this.roleProblems[roleProblemIndex].getGlobalMab().getMovesInfo();
+				Map<Move,MyPair<MoveStats,Double>> globalInfo = this.roleProblems[roleProblemIndex].getGlobalMab().getMovesInfo();
 
 				CombinatorialCompactMove theValuesIndices;
 				String theValues;
 
-				for(Entry<Move,Pair<MoveStats,Double>> entry : globalInfo.entrySet()){
+				for(Entry<Move,MyPair<MoveStats,Double>> entry : globalInfo.entrySet()){
 
 					theValuesIndices = (CombinatorialCompactMove) entry.getKey();
 					theValues = "[ ";

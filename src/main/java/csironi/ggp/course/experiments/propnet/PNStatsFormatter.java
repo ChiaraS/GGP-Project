@@ -12,7 +12,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 
-import csironi.ggp.course.utils.Pair;
+import csironi.ggp.course.utils.MyPair;
 
 public class PNStatsFormatter {
 
@@ -127,7 +127,7 @@ public class PNStatsFormatter {
 
 		File[] statFiles = theFolder.listFiles();
 
-		Map<String, Map<String, Map<String, Pair<Double, Double>>>> statsMap = new HashMap<String, Map<String, Map<String, Pair<Double, Double>>>>();
+		Map<String, Map<String, Map<String, MyPair<Double, Double>>>> statsMap = new HashMap<String, Map<String, Map<String, MyPair<Double, Double>>>>();
 
 		for(File f : statFiles){
 			if(f.isFile() && f.getName().endsWith(".csv")){
@@ -165,21 +165,21 @@ public class PNStatsFormatter {
 							String[] splitCiLine = ciLine.split(";");
 
 							for(int i = 2; i < statTypes.length; i++){
-								Map<String, Map<String, Pair<Double, Double>>> optMap = statsMap.get(statTypes[i]);
+								Map<String, Map<String, MyPair<Double, Double>>> optMap = statsMap.get(statTypes[i]);
 
 								if(optMap == null){
-									optMap = new HashMap<String, Map<String, Pair<Double, Double>>>();
+									optMap = new HashMap<String, Map<String, MyPair<Double, Double>>>();
 									statsMap.put(statTypes[i], optMap);
 								}
 
-								Map<String, Pair<Double, Double>> gamesMap = optMap.get(optType);
+								Map<String, MyPair<Double, Double>> gamesMap = optMap.get(optType);
 
 								if(gamesMap == null){
-									gamesMap = new  HashMap<String, Pair<Double, Double>>();
+									gamesMap = new  HashMap<String, MyPair<Double, Double>>();
 									optMap.put(optType, gamesMap);
 								}
 
-								Pair<Double, Double> statValues = gamesMap.get(gameKey);
+								MyPair<Double, Double> statValues = gamesMap.get(gameKey);
 
 								if(statValues != null){
 									System.out.println("Found statistic with more than one value! Interrupting!");
@@ -189,7 +189,7 @@ public class PNStatsFormatter {
 								double avg = Double.parseDouble(splitAvgLine[i]);
 								double ci = Double.parseDouble(splitCiLine[i]);
 
-								statValues = new Pair<Double, Double>(avg, ci);
+								statValues = new MyPair<Double, Double>(avg, ci);
 
 								gamesMap.put(gameKey, statValues);
 							}
@@ -204,7 +204,7 @@ public class PNStatsFormatter {
 					System.out.println("Excluding " + optType + " from summarization.");
 		        	e.printStackTrace();
 
-		        	for(Entry<String,  Map<String, Map<String, Pair<Double, Double>>>> entry : statsMap.entrySet()){
+		        	for(Entry<String,  Map<String, Map<String, MyPair<Double, Double>>>> entry : statsMap.entrySet()){
 		        		entry.getValue().remove(optType);
 		        	}
 		        	continue;
@@ -222,7 +222,7 @@ public class PNStatsFormatter {
 			return;
 		}
 
-		for(Entry<String, Map<String, Map<String, Pair<Double, Double>>>> entry : statsMap.entrySet()){
+		for(Entry<String, Map<String, Map<String, MyPair<Double, Double>>>> entry : statsMap.entrySet()){
 
 			String theStatsFilePath = theStatsFolderPath + "/" + entry.getKey() + "-Stats.csv";
 			String theLatexFilePath = theStatsFolderPath + "/" + entry.getKey() + "-Latex.txt";
@@ -275,11 +275,11 @@ public class PNStatsFormatter {
 
 				for(String opt : optOrder){
 
-					Map<String, Pair<Double, Double>> gamesMap = entry.getValue().get(opt);
+					Map<String, MyPair<Double, Double>> gamesMap = entry.getValue().get(opt);
 
 					if(gamesMap != null){
 
-						Pair<Double, Double> statsValues = gamesMap.get(game);
+						MyPair<Double, Double> statsValues = gamesMap.get(game);
 
 						if(statsValues != null){
 

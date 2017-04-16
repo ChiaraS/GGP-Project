@@ -15,7 +15,7 @@ import org.ggp.base.util.logging.GamerLogger;
 import org.ggp.base.util.reflection.ProjectSearcher;
 import org.ggp.base.util.statemachine.structure.Move;
 
-import csironi.ggp.course.utils.Pair;
+import csironi.ggp.course.utils.MyPair;
 
 public abstract class TunerSelector extends SearchManagerComponent{
 
@@ -89,7 +89,7 @@ public abstract class TunerSelector extends SearchManagerComponent{
 	 * @param numUpdates
 	 * @return
 	 */
-	public abstract Move selectMove(Map<Move,Pair<MoveStats,Double>> movesInfo, int numUpdates);
+	public abstract Move selectMove(Map<Move,MyPair<MoveStats,Double>> movesInfo, int numUpdates);
 
 	/**
 	 * This method selects one of the statistics and returns its index. It also excludes from the selection the
@@ -110,7 +110,7 @@ public abstract class TunerSelector extends SearchManagerComponent{
 	 * @param numUpdates must be the sum of numUpdates of ALL the given statistics, thus over ALL the lists of MoveStats!
 	 * @return
 	 */
-	public abstract Pair<Integer,Integer> selectMove(MoveStats[][] movesStats, boolean[] valuesFeasibility, double[] movesPenalty, int numUpdates);
+	public abstract MyPair<Integer,Integer> selectMove(MoveStats[][] movesStats, boolean[] valuesFeasibility, double[] movesPenalty, int numUpdates);
 
 	/**
 	 * This method selects one of the statistics and returns the corresponding move.
@@ -124,7 +124,7 @@ public abstract class TunerSelector extends SearchManagerComponent{
 	 * @param numUpdates must be the sum of numUpdates of ALL the given statistics, thus over ALL the Mpas of MoveStats!
 	 * @return
 	 */
-	public abstract Pair<Integer,Move> selectMove(List<Map<Move,Pair<MoveStats,Double>>> movesInfo, int numUpdates);
+	public abstract MyPair<Integer,Move> selectMove(List<Map<Move,MyPair<MoveStats,Double>>> movesInfo, int numUpdates);
 
 
 

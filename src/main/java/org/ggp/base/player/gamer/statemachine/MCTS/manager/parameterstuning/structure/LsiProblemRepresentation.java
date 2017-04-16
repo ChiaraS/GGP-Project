@@ -3,9 +3,9 @@ package org.ggp.base.player.gamer.statemachine.MCTS.manager.parameterstuning.str
 import java.util.List;
 
 import org.ggp.base.player.gamer.statemachine.MCS.manager.MoveStats;
-import org.ggp.base.util.logging.GamerLogger;
+import org.ggp.base.player.gamer.statemachine.MCS.manager.hybrid.CompleteMoveStats;
 
-import csironi.ggp.course.utils.Pair;
+import csironi.ggp.course.utils.MyPair;
 
 public class LsiProblemRepresentation {
 
@@ -17,9 +17,7 @@ public class LsiProblemRepresentation {
 	 * index and always update all values with the outcome of the simulation, even if they were
 	 * selected randomly to complete the combination.
 	 */
-	private List<Pair<CombinatorialCompactMove,Integer>> actionsToTest;
-
-	private int nextActionToTest;
+	private List<MyPair<CombinatorialCompactMove,Integer>> combinationsToTest;
 
 	/**
 	 * For each parameter, a list of statistics, each of which corresponds to a possible
@@ -28,14 +26,13 @@ public class LsiProblemRepresentation {
 	private MoveStats[][] paramsStats;
 
 	/**
-	 * Combinatorial actions (i.e. combinations of parameters) generated during the generation
+	 * Stats of the combinatorial actions (i.e. combinations of parameters) generated during the generation
 	 * phase that must be evaluated with sequential halving during the evaluation phase.
 	 */
-	private List<CombinatorialCompactMove> generatedActions;
+	private List<CompleteMoveStats> generatedCombinations;
 
-	public LsiProblemRepresentation(List<Pair<CombinatorialCompactMove,Integer>> actionsToTest, int[] numValuesPerParam) {
-		this.actionsToTest = actionsToTest;
-		this.nextActionToTest = 0;
+	public LsiProblemRepresentation(List<MyPair<CombinatorialCompactMove,Integer>> combinationsToTest, int[] numValuesPerParam) {
+		this.combinationsToTest = combinationsToTest;
 
 		this.paramsStats = new MoveStats[numValuesPerParam.length][];
 
@@ -47,13 +44,19 @@ public class LsiProblemRepresentation {
 		}
 	}
 
-	public int[] getNextActionToTest(){
-		if(this.nextActionToTest == this.actionsToTest.size()){
-			GamerLogger.logError("ParametersTuner", "LsiParametersTuner - Error! All the combinatorial action to test during the generation phase have been tested. The evaluation phase should have started!");
-			throw new RuntimeException("LsiParametersTuner - All the combinatorial action to test during the generation phase have been tested. The evaluation phase should have started!");
-		}
-		this.nextActionToTest++;
+	public List<MyPair<CombinatorialCompactMove,Integer>> getCombinationsToTest(){
+		return this.combinationsToTest;
+	}
 
-		return this.actionsToTest.get(this.nextActionToTest-1).getFirst().getIndices();
+	public MoveStats[][] getParamsStats(){
+		return this.paramsStats;
+	}
+
+	public void setGeneratedCombinations(List<CompleteMoveStats> generatedCombinations){
+		this.generatedCombinations = generatedCombinations;
+	}
+
+	public List<CompleteMoveStats> getGeneratedCombinations(){
+		return this.generatedCombinations;
 	}
 }

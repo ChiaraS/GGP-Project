@@ -11,7 +11,7 @@ import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.GameDependentP
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.SharedReferencesCollector;
 import org.ggp.base.util.statemachine.structure.Move;
 
-import csironi.ggp.course.utils.Pair;
+import csironi.ggp.course.utils.MyPair;
 
 public class RandomSelector extends TunerSelector{
 
@@ -86,7 +86,7 @@ public class RandomSelector extends TunerSelector{
 	}
 
 	@Override
-	public Move selectMove(Map<Move,Pair<MoveStats,Double>> movesInfo, int numUpdates) {
+	public Move selectMove(Map<Move,MyPair<MoveStats,Double>> movesInfo, int numUpdates) {
 
 		// Extra check to make sure that this method is never called with an empty map of moves
 		if(movesInfo.isEmpty()){
@@ -96,7 +96,7 @@ public class RandomSelector extends TunerSelector{
 		int randomNum = this.random.nextInt(movesInfo.size());
 
 		Move theMove = null;
-		for(Entry<Move,Pair<MoveStats,Double>> entry : movesInfo.entrySet()){
+		for(Entry<Move,MyPair<MoveStats,Double>> entry : movesInfo.entrySet()){
 			if(randomNum == 0){
 				theMove = entry.getKey();
 			}
@@ -112,8 +112,8 @@ public class RandomSelector extends TunerSelector{
 	}
 
 	@Override
-	public Pair<Integer,Integer> selectMove(MoveStats[][] movesStats, boolean[] valuesFeasibility, double[] movesPenalty, int numUpdates) {
-		Pair<Integer,Integer> selectedMove;
+	public MyPair<Integer,Integer> selectMove(MoveStats[][] movesStats, boolean[] valuesFeasibility, double[] movesPenalty, int numUpdates) {
+		MyPair<Integer,Integer> selectedMove;
 
 		if(valuesFeasibility != null){
 			// Pick a random move among the total number of feasible moves.
@@ -145,22 +145,22 @@ public class RandomSelector extends TunerSelector{
 			if(roleStatsIndex == -1 || statsIndex == -1){
 				throw new RuntimeException("RandomSelector - SelectMove(MoveStats[][], boolean[], double[], int): detected no feasible move when selecting.");
 			}
-			selectedMove = new Pair<Integer,Integer>(roleStatsIndex, statsIndex);
+			selectedMove = new MyPair<Integer,Integer>(roleStatsIndex, statsIndex);
 		}else{
 			// Compute total number of MoveStats. Note that all arrays of MoveStats have the same length.
 			// Then get random MoveStats among them.
 			int randomNum = this.random.nextInt(movesStats.length * movesStats[0].length);
-			selectedMove = new Pair<Integer,Integer>(randomNum/movesStats[0].length, randomNum%movesStats[0].length);
+			selectedMove = new MyPair<Integer,Integer>(randomNum/movesStats[0].length, randomNum%movesStats[0].length);
 		}
 
 		return selectedMove;
 	}
 
 	@Override
-	public Pair<Integer,Move> selectMove(List<Map<Move,Pair<MoveStats,Double>>> movesInfo, int numUpdates) {
+	public MyPair<Integer,Move> selectMove(List<Map<Move,MyPair<MoveStats,Double>>> movesInfo, int numUpdates) {
 
 		int totalNumStats = 0;
-		for(Map<Move,Pair<MoveStats,Double>> map : movesInfo){
+		for(Map<Move,MyPair<MoveStats,Double>> map : movesInfo){
 			totalNumStats += map.size();
 		}
 
@@ -171,7 +171,7 @@ public class RandomSelector extends TunerSelector{
 		int randomNum = this.random.nextInt(totalNumStats);
 
 		int listIndex = 0;
-		for(Map<Move,Pair<MoveStats,Double>> map : movesInfo){
+		for(Map<Move,MyPair<MoveStats,Double>> map : movesInfo){
 			if(randomNum-map.size() < 0){
 				break;
 			}else{
@@ -181,7 +181,7 @@ public class RandomSelector extends TunerSelector{
 		}
 
 		Move theMove = null;
-		for(Entry<Move,Pair<MoveStats,Double>> entry : movesInfo.get(listIndex).entrySet()){
+		for(Entry<Move,MyPair<MoveStats,Double>> entry : movesInfo.get(listIndex).entrySet()){
 			if(randomNum == 0){
 				theMove = entry.getKey();
 			}
@@ -192,7 +192,7 @@ public class RandomSelector extends TunerSelector{
 			throw new RuntimeException("RandomSelector - selectMove(List<Map>, int): found no move when selecting.");
 		}
 
-		return new Pair<Integer,Move>(new Integer(listIndex), theMove);
+		return new MyPair<Integer,Move>(new Integer(listIndex), theMove);
 
 	}
 

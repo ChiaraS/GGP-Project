@@ -14,7 +14,7 @@ import org.ggp.base.util.logging.GamerLogger;
 import org.ggp.base.util.reflection.ProjectSearcher;
 import org.ggp.base.util.statemachine.structure.Move;
 
-import csironi.ggp.course.utils.Pair;
+import csironi.ggp.course.utils.MyPair;
 
 /**
  * Selects a move according to tunerSelector1 with probability epsilon,
@@ -118,7 +118,7 @@ public class EpsilonGreedySelector extends TunerSelector{
 	}
 
 	@Override
-	public Move selectMove(Map<Move,Pair<MoveStats,Double>> movesInfo, int numUpdates) {
+	public Move selectMove(Map<Move,MyPair<MoveStats,Double>> movesInfo, int numUpdates) {
 		if(this.random.nextDouble() < this.epsilon){
 			return this.tunerSelector1.selectMove(movesInfo, numUpdates);
 		}else{
@@ -127,7 +127,7 @@ public class EpsilonGreedySelector extends TunerSelector{
 	}
 
 	@Override
-	public Pair<Integer,Integer> selectMove(MoveStats[][] movesStats, boolean[] valuesFeasibility, double[] movesPenalty, int numUpdates){
+	public MyPair<Integer,Integer> selectMove(MoveStats[][] movesStats, boolean[] valuesFeasibility, double[] movesPenalty, int numUpdates){
 
 		if(this.random.nextDouble() < this.epsilon){
 			return this.tunerSelector1.selectMove(movesStats, valuesFeasibility, movesPenalty, numUpdates);
@@ -138,7 +138,7 @@ public class EpsilonGreedySelector extends TunerSelector{
 	}
 
 	@Override
-	public Pair<Integer,Move> selectMove(List<Map<Move,Pair<MoveStats,Double>>> movesInfo, int numUpdates) {
+	public MyPair<Integer,Move> selectMove(List<Map<Move,MyPair<MoveStats,Double>>> movesInfo, int numUpdates) {
 		if(this.random.nextDouble() < this.epsilon){
 			return this.tunerSelector1.selectMove(movesInfo, numUpdates);
 		}else{

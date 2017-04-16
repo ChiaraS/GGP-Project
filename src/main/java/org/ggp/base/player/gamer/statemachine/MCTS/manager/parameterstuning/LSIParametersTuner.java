@@ -5,15 +5,21 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Random;
 
+import org.apache.commons.math3.distribution.EnumeratedDistribution;
+import org.apache.commons.math3.random.RandomGenerator;
+import org.apache.commons.math3.random.Well19937c;
+import org.apache.commons.math3.util.Pair;
 import org.ggp.base.player.gamer.statemachine.GamerSettings;
 import org.ggp.base.player.gamer.statemachine.MCS.manager.MoveStats;
+import org.ggp.base.player.gamer.statemachine.MCS.manager.hybrid.CompleteMoveStats;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.GameDependentParameters;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.SharedReferencesCollector;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.parameterstuning.selectors.RandomSelector;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.parameterstuning.structure.CombinatorialCompactMove;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.parameterstuning.structure.LsiProblemRepresentation;
+import org.ggp.base.util.logging.GamerLogger;
 
-import csironi.ggp.course.utils.Pair;
+import csironi.ggp.course.utils.MyPair;
 
 public class LSIParametersTuner extends TwoPhaseParametersTuner {
 
@@ -32,9 +38,21 @@ public class LSIParametersTuner extends TwoPhaseParametersTuner {
 	private int numEvalSamples;
 
 	/**
+	 * Number of combinations to be created for the evaluation phase.
+	 */
+	private int numCandidatesToEval;
+
+	/**
 	 * Counts the total number of samples taken so far.
 	 */
 	private int totalSamplesCounter;
+
+	/**
+	 * True if when receiving the reward for a certain combinatorial action we want to use it to update the stats
+	 * of all unit actions that form the combinatorial action. False if we want to use it only to update the stats
+	 * for the only unit action that wasn't generated randomly when creating the combinatorial action.
+	 */
+	private boolean updateAll;
 
 	/**
 	 * Lsi problem representations for each of the roles for which the parameters are being tuned.
@@ -92,19 +110,28 @@ public class LSIParametersTuner extends TwoPhaseParametersTuner {
 
 		int numSamplesPerValue = this.numGenSamples/this.parametersManager.getTotalNumPossibleValues(); // Same result as if we used floor(this.numGenSamples/this.parametersManager.getTotalNumPossibleValues();)
 
-		List<Pair<CombinatorialCompactMove,Integer>> actionsToTest;
+		// Make sure that we''ll have at least one sample per parameter value
+		if(numSamplesPerValue == 0){
+			numSamplesPerValue = 1;
+		}
+
+		//Compute the exact number of generation samples that we need to use. Since all parameters values must be
+		// tested for the same amount of times, this number might be lower than the one read from the settings.
+		this.numGenSamples = numSamplesPerValue * this.parametersManager.getTotalNumPossibleValues();
+
+		List<MyPair<CombinatorialCompactMove,Integer>> actionsToTest;
 
 		// For each role for which we are tuning create the corresponding role problem
 		for(int roleProblemIndex = 0; roleProblemIndex < this.roleProblems.length; roleProblemIndex++){
 
 			// For each value x of each parameter we generate numSamplesPerValue sample combinations containing x,
 			// completing the parameter combination with random values for the other parameters.
-			actionsToTest = new ArrayList<Pair<CombinatorialCompactMove,Integer>>();
+			actionsToTest = new ArrayList<MyPair<CombinatorialCompactMove,Integer>>();
 
 			for(int paramIndex = 0; paramIndex < this.parametersManager.getNumTunableParameters(); paramIndex++){
 				for(int valueIndex = 0; valueIndex < this.parametersManager.getNumPossibleValues(paramIndex); valueIndex++){
 					for(int i = 0; i < numSamplesPerValue; i++){
-						actionsToTest.add(new Pair<CombinatorialCompactMove,Integer>(new CombinatorialCompactMove(this.randomlyCompleteCombinatorialMove(paramIndex,valueIndex)),new Integer(paramIndex)));
+						actionsToTest.add(new MyPair<CombinatorialCompactMove,Integer>(new CombinatorialCompactMove(this.randomlyCompleteCombinatorialMove(paramIndex,valueIndex)),new Integer(paramIndex)));
 					}
 				}
 			}
@@ -143,17 +170,139 @@ public class LSIParametersTuner extends TwoPhaseParametersTuner {
 	@Override
 	public void setNextCombinations() {
 
-		/*
-		if(generation){
+		int[][] nextCombinations = new int[this.roleProblems.length][];
 
-			//
+		if(this.totalSamplesCounter < this.numGenSamples){ // Generation phase
 
-		}else if(evaluation){
+			for(int roleProblemIndex = 0; roleProblemIndex < this.roleProblems.length; roleProblemIndex++){
+
+				if(this.roleProblems[roleProblemIndex].getCombinationsToTest().size() <= this.totalSamplesCounter){
+					GamerLogger.logError("ParametersTuner", "LsiParametersTuner - Error! All the combinatorial action to test during the generation phase have been tested. The evaluation phase should have started!");
+					throw new RuntimeException("LsiParametersTuner - All the combinatorial action to test during the generation phase have been tested. The evaluation phase should have started!");
+				}
+
+				nextCombinations[roleProblemIndex] = this.roleProblems[roleProblemIndex].getCombinationsToTest().get(this.totalSamplesCounter).getFirst().getIndices();
+
+			}
+
+		}else if(this.totalSamplesCounter < this.numGenSamples + this.numEvalSamples){ // Evaluation phase
+
+			if(this.totalSamplesCounter == this.numGenSamples){ // Generate the candidates to evaluate
+
+				double avgRewards[][];
+
+				RandomGenerator rg = new Well19937c(); // Use this also for the rest of the player's code?
+
+				List<CompleteMoveStats> generatedCombinations;
+
+				for(int roleProblemIndex = 0; roleProblemIndex < this.roleProblems.length; roleProblemIndex++){
+
+					avgRewards = this.computeAverageRewardsForParamValues(this.roleProblems[roleProblemIndex].getParamsStats());
+
+					generatedCombinations = new ArrayList<CompleteMoveStats>();
+
+					for(int candidateIndex = 0; candidateIndex < this.numCandidatesToEval; candidateIndex++){
+
+						generatedCombinations.add(new CompleteMoveStats(this.generateCandidate(avgRewards, rg)));
+
+					}
+
+					this.roleProblems[roleProblemIndex].setGeneratedCombinations(generatedCombinations);
+				}
+
+			}
+
+			// Get next candidate
 
 		}else{
-			return best;
+			//return best;
 		}
-		*/
+
+		this.parametersManager.setParametersValues(nextCombinations);
+
+	}
+
+	private double[][] computeAverageRewardsForParamValues(MoveStats[][] paramValuesStats){
+
+		// For each param value compute the average reward normalized between 0 and 1.
+		double[][] avgRewards = new double[paramValuesStats.length][];
+
+		double scoreSum;
+		int visits;
+
+		for(int paramIndex = 0; paramIndex < paramValuesStats.length; paramIndex++){
+
+			avgRewards[paramIndex] = new double[paramValuesStats[paramIndex].length];
+
+			for(int valueIndex = 0; valueIndex < paramValuesStats[paramIndex].length; valueIndex++){
+
+				visits = paramValuesStats[paramIndex][valueIndex].getVisits();
+
+				if(visits == 0){
+					avgRewards[paramIndex][valueIndex] = 0.0;
+				}else{
+					scoreSum = paramValuesStats[paramIndex][valueIndex].getScoreSum();
+					avgRewards[paramIndex][valueIndex] = (scoreSum/((double)visits))/100.0;
+				}
+
+			}
+
+		}
+
+		return avgRewards;
+	}
+
+	private CombinatorialCompactMove generateCandidate(double[][] avgRewards, RandomGenerator rg){
+
+		EnumeratedDistribution<MyPair<Integer,Integer>> distribution;
+		List<Pair<MyPair<Integer,Integer>,Double>> probabilities;
+
+		MyPair<Integer,Integer> selectedSample;
+
+		boolean[][] feasibility;
+
+		int[] indices = new int[avgRewards.length];
+		for(int paramIndex = 0; paramIndex < indices.length; paramIndex++){
+			indices[paramIndex] = -1;
+		}
+
+		// Compute one of the indices of the combination until all the indices of the combination are set.
+		for(int paramIndex = 0; paramIndex < avgRewards.length; paramIndex++){
+
+			feasibility = new boolean[avgRewards.length][];
+
+			// Compute feasibility of all parameter values wrt the current setting of indices
+			for(int paramIndex2 = 0; paramIndex2 < avgRewards.length; paramIndex2++){
+				if(indices[paramIndex2] == -1){
+					feasibility[paramIndex2] = this.parametersManager.getValuesFeasibility(paramIndex2, indices);
+				}else{
+					feasibility[paramIndex2] = null; // null means that no values are feasible because we already set an index for this param value
+				}
+			}
+
+			// For each value that is feasible, add the corresponding probability to the list that will be used
+			// to generate the samples with the EnumeratedDistribution
+			probabilities = new ArrayList<Pair<MyPair<Integer,Integer>,Double>>();
+
+			// Compute feasibility of all parameter values wrt the current setting of indices
+			for(int paramIndex2 = 0; paramIndex2 < feasibility.length; paramIndex2++){
+				if(feasibility[paramIndex2] != null){
+					for(int valueIndex = 0; valueIndex < feasibility[paramIndex].length; valueIndex++){
+						if(feasibility[paramIndex][valueIndex]){
+							probabilities.add(new Pair<MyPair<Integer,Integer>,Double>(new MyPair<Integer,Integer>(paramIndex, valueIndex), avgRewards[paramIndex][valueIndex]));
+						}
+					}
+				}
+			}
+
+			distribution = new EnumeratedDistribution<MyPair<Integer,Integer>>(rg, probabilities);
+
+			selectedSample = distribution.sample();
+
+			indices[selectedSample.getFirst().intValue()] = selectedSample.getSecond().intValue();
+		}
+
+		return new CombinatorialCompactMove(indices);
 
 	}
 
@@ -171,8 +320,51 @@ public class LSIParametersTuner extends TwoPhaseParametersTuner {
 	}
 
 	@Override
-	public void updateStatistics(int[] rewards) {
-		// TODO Auto-generated method stub
+	public void updateStatistics(int[] goals) {
+
+		int[] neededRewards;
+
+		// We have to check if the ParametersTuner is tuning parameters only for the playing role
+		// or for all roles and update the statistics with appropriate rewards.
+		if(this.tuneAllRoles){
+			neededRewards = goals;
+		}else{
+			neededRewards = new int[1];
+			neededRewards[0] = goals[this.gameDependentParameters.getMyRoleIndex()];
+
+		}
+
+		if(neededRewards.length != this.roleProblems.length){
+			GamerLogger.logError("ParametersTuner", "LsiParametersTuner - Impossible to update move statistics! Wrong number of rewards (" + neededRewards.length +
+					") to update the role problems (" + this.roleProblems.length + ").");
+			throw new RuntimeException("LsiParametersTuner - Impossible to update move statistics! Wrong number of rewards!");
+		}
+
+		MoveStats toUpdate;
+
+		for(int roleProblemIndex = 0; roleProblemIndex < this.roleProblems.length; roleProblemIndex++){
+
+			MyPair<CombinatorialCompactMove,Integer> theTestedCombo = this.roleProblems[roleProblemIndex].getCombinationsToTest().get(this.totalSamplesCounter);
+
+			int[] theIndices = theTestedCombo.getFirst().getIndices();
+
+			if(this.updateAll){
+				for(int pramIndex = 0; pramIndex < theIndices.length; pramIndex++){
+					toUpdate = this.roleProblems[roleProblemIndex].getParamsStats()[pramIndex][theIndices[pramIndex]];
+
+					toUpdate.incrementScoreSum(neededRewards[roleProblemIndex]);
+					toUpdate.incrementVisits();
+				}
+			}else{
+				int paramIndex = theTestedCombo.getSecond().intValue();
+				toUpdate = this.roleProblems[roleProblemIndex].getParamsStats()[paramIndex][theIndices[paramIndex]];
+
+				toUpdate.incrementScoreSum(neededRewards[roleProblemIndex]);
+				toUpdate.incrementVisits();
+			}
+		}
+
+		this.totalSamplesCounter++;
 
 	}
 
