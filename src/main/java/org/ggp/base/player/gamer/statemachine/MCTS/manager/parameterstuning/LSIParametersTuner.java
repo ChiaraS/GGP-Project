@@ -2,6 +2,7 @@ package org.ggp.base.player.gamer.statemachine.MCTS.manager.parameterstuning;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Random;
 
@@ -18,6 +19,7 @@ import org.ggp.base.player.gamer.statemachine.MCTS.manager.parameterstuning.sele
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.parameterstuning.structure.CombinatorialCompactMove;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.parameterstuning.structure.LsiProblemRepresentation;
 import org.ggp.base.util.logging.GamerLogger;
+import org.ggp.base.util.statemachine.structure.compact.CompactMove;
 
 import csironi.ggp.course.utils.MyPair;
 
@@ -283,13 +285,65 @@ public class LSIParametersTuner extends TwoPhaseParametersTuner {
 	}
 
 	private void prepareSequentialHalvingIteration(){
-		//If it's not the first iteration, we need to order the stats from highest to lowest
-		if(this.sequentialHalvingIteration > 0){
-			// Order
+
+		int numCombosToTest = (int) Math.ceil(this.roleProblems[0].getGeneratedCombinationsStats().size() / (Math.pow(2, this.sequentialHalvingIteration)));
+
+		int samplesPerCombo = Math.floorDiv(this.samplesPerIteration, numCombosToTest);
+
+		List<Integer> evalOrder;
+
+		for(int roleProblemIndex = 0; roleProblemIndex < this.roleProblems.length; roleProblemIndex++){
+
+			//If it's not the first iteration, we need to order the stats from highest to lowest
+			if(this.sequentialHalvingIteration > 0){
+				Collections.sort(this.roleProblems[roleProblemIndex].getGeneratedCombinationsStats().subList(0,
+						(int) Math.ceil(this.roleProblems[0].getGeneratedCombinationsStats().size() / (Math.pow(2, this.sequentialHalvingIteration-1)))),
+						new Comparator<CompleteMoveStats>(){
+
+							@Override
+							public int compare(CompleteMoveStats o1,
+									CompleteMoveStats o2) {
+
+								double value1;
+								if(o1.getVisits() == 0){
+									value1 = 0;
+								}else{
+									value1 = o1.getScoreSum()/o1.getVisits();
+								}
+								double value2;
+								if(o2.getVisits() == 0){
+									value2 = 0;
+								}else{
+									value2 = o2.getScoreSum()/o2.getVisits();
+								}
+
+								if(value1 > value2){
+									return 1;
+								}else if(value1 < value2){
+									return -1;
+								}else{
+									return 0;
+								}
+							}
+
+				});
+			}
+
+			// Prepare random order of testing for the best elements
+			evalOrder = new ArrayList<Integer>();
+
+			for(int comboIndex = 0; comboIndex < numCombosToTest; comboIndex++){
+				for(int repetition = 0; repetition < samplesPerCombo; repetition++){
+					evalOrder.add(new Integer(comboIndex));
+				}
+			}
+
+			Collections.shuffle(evalOrder);
+
+			this.roleProblems[roleProblemIndex].setEvalOrder(evalOrder);
+
 		}
 
-		// Prepare order of testing for the best elements
-		int numElementsToTest = 0;
 	}
 
 	private void evaluationPhase(){
@@ -445,7 +499,7 @@ public class LSIParametersTuner extends TwoPhaseParametersTuner {
 
 
 
-			this.samplesCounter = (this.samplesCounter+1)%this.samplesPerIteration;
+			this.samplesCounter = (this.samplesCounter+1)%this.samplesPerIteration; // TODO: fix this to exact nm of samples per iteration that depends on num of combos
 			if(this.samplesCounter == 0){
 				this.sequentialHalvingIteration++;
 			}
@@ -477,4 +531,53 @@ public class LSIParametersTuner extends TwoPhaseParametersTuner {
 
 	}
 
+	public static void main(String args[]){
+
+		List<CompleteMoveStats> a = new ArrayList<CompleteMoveStats>();
+
+		for(int i = 0; i < 8; i++){
+			a.add(new CompleteMoveStats(10, new Random().nextInt(101), new CompactMove(i)));
+		}
+
+		System.out.println();
+		for(int i = 0; i < 8; i++){
+			System.out.println("[" + a.get(i) + "]");
+		}
+
+		Collections.sort(a.subList(0, 4),
+				new Comparator<CompleteMoveStats>(){
+
+					@Override
+					public int compare(CompleteMoveStats o1,
+							CompleteMoveStats o2) {
+
+						double value1;
+						if(o1.getVisits() == 0){
+							value1 = 0;
+						}else{
+							value1 = o1.getScoreSum()/o1.getVisits();
+						}
+						double value2;
+						if(o2.getVisits() == 0){
+							value2 = 0;
+						}else{
+							value2 = o2.getScoreSum()/o2.getVisits();
+						}
+
+						if(value1 > value2){
+							return 1;
+						}else if(value1 < value2){
+							return -1;
+						}else{
+							return 0;
+						}
+					}
+
+		});
+
+		System.out.println();
+		for(int i = 0; i < 8; i++){
+			System.out.println("[" + a.get(i) + "]");
+		}
+	}
 }

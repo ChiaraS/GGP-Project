@@ -29,7 +29,7 @@ public class LsiProblemRepresentation {
 	 * Stats of the combinatorial actions (i.e. combinations of parameters) generated during the generation
 	 * phase that must be evaluated with sequential halving during the evaluation phase.
 	 */
-	private List<CompleteMoveStats> generatedCombinations;
+	private List<CompleteMoveStats> generatedCombinationsStats;
 
 	/**
 	 * List of indices of the combinations for the evaluation phase in a random order, specifying the order in which the
@@ -50,7 +50,7 @@ public class LsiProblemRepresentation {
 			}
 		}
 
-		this.generatedCombinations = null;
+		this.generatedCombinationsStats = null;
 
 		this.evalOrder = null;
 	}
@@ -63,12 +63,12 @@ public class LsiProblemRepresentation {
 		return this.paramsStats;
 	}
 
-	public void setGeneratedCombinationsStats(List<CompleteMoveStats> generatedCombinations){
-		this.generatedCombinations = generatedCombinations;
+	public void setGeneratedCombinationsStats(List<CompleteMoveStats> generatedCombinationsStats){
+		this.generatedCombinationsStats = generatedCombinationsStats;
 	}
 
-	public List<CompleteMoveStats> getGeneratedCombinations(){
-		return this.generatedCombinations;
+	public List<CompleteMoveStats> getGeneratedCombinationsStats(){
+		return this.generatedCombinationsStats;
 	}
 
 	public void setEvalOrder(List<Integer> evalOrder){
