@@ -23,6 +23,15 @@ import csironi.ggp.course.utils.MyPair;
 
 public class LSIParametersTuner extends TwoPhaseParametersTuner {
 
+    public enum Phase{
+    	GENERATION, EVALUATION, STOP
+    }
+
+    /**
+     * Phase of LSI.
+     */
+    private Phase phase;
+
 	/**
 	 * Number of samples (i.e. simulations) that will be dedicated to the generation of
 	 * candidate combinatorial actions (i.e. combinations of parameters) that will be
@@ -43,9 +52,23 @@ public class LSIParametersTuner extends TwoPhaseParametersTuner {
 	private int numCandidatesToEval;
 
 	/**
-	 * Counts the total number of samples taken so far.
+	 * Used to count the number of taken samples during different phases of the tuning
+	 * (i.e. during the generation phase and each iteration of sequential halving in the
+	 * evaluation phase).
 	 */
-	private int totalSamplesCounter;
+	private int samplesCounter;
+
+	/**
+	 * Used to count the number of iterations of sequential halving.
+	 * The maximum number will be floor(log_2(numGeneratedCandidates)).
+	 */
+	private int sequentialHalvingIteration;
+
+	/**
+	 * Number of samples per sequential halving step (for each iteration of sequential halving must be
+	 * divided among the combinations to be evaluated).
+	 */
+	private int samplesPerIteration;
 
 	/**
 	 * True if when receiving the reward for a certain combinatorial action we want to use it to update the stats
@@ -96,7 +119,7 @@ public class LSIParametersTuner extends TwoPhaseParametersTuner {
 
 		this.randomSelector.setUpComponent();
 
-		this.totalSamplesCounter = 0;
+		this.samplesCounter = 0;
 
 		int numRolesToTune;
 
@@ -170,55 +193,106 @@ public class LSIParametersTuner extends TwoPhaseParametersTuner {
 	@Override
 	public void setNextCombinations() {
 
+		if(this.phase == Phase.GENERATION){
+			if(this.samplesCounter < this.numGenSamples){ // Continue generation phase
+				this.generationPhase();
+			}else{ // Generate candidates and start evaluation phase
+				this.generateCandidates();
+				this.samplesCounter = 0;
+				this.sequentialHalvingIteration = 0;
+				this.samplesPerIteration = Math.floorDiv(this.numEvalSamples, (int) Math.ceil(Math.log(this.numCandidatesToEval)/Math.log(2.0)));
+				this.phase = Phase.EVALUATION;
+			}
+		}
+
+		if(this.phase == Phase.EVALUATION){
+			if(this.samplesCounter == 0){ //Start of sequentialHalving iteration
+				if(this.sequentialHalvingIteration == Math.ceil(Math.log(this.numCandidatesToEval)/Math.log(2.0))){
+					this.setBestCombinations();
+					this.phase = Phase.STOP;
+				}else{
+					this.prepareSequentialHalvingIteration();
+				}
+			}
+			this.evaluationPhase();
+		}
+
+	}
+
+	private void generationPhase(){
+
 		int[][] nextCombinations = new int[this.roleProblems.length][];
 
-		if(this.totalSamplesCounter < this.numGenSamples){ // Generation phase
+		for(int roleProblemIndex = 0; roleProblemIndex < this.roleProblems.length; roleProblemIndex++){
 
-			for(int roleProblemIndex = 0; roleProblemIndex < this.roleProblems.length; roleProblemIndex++){
-
-				if(this.roleProblems[roleProblemIndex].getCombinationsToTest().size() <= this.totalSamplesCounter){
-					GamerLogger.logError("ParametersTuner", "LsiParametersTuner - Error! All the combinatorial action to test during the generation phase have been tested. The evaluation phase should have started!");
-					throw new RuntimeException("LsiParametersTuner - All the combinatorial action to test during the generation phase have been tested. The evaluation phase should have started!");
-				}
-
-				nextCombinations[roleProblemIndex] = this.roleProblems[roleProblemIndex].getCombinationsToTest().get(this.totalSamplesCounter).getFirst().getIndices();
-
+			if(this.roleProblems[roleProblemIndex].getCombinationsToTest().size() <= this.samplesCounter){
+				GamerLogger.logError("ParametersTuner", "LsiParametersTuner - Error! All the combinatorial action to test during the generation phase have been tested. The evaluation phase should have started!");
+				throw new RuntimeException("LsiParametersTuner - All the combinatorial action to test during the generation phase have been tested. The evaluation phase should have started!");
 			}
 
-		}else if(this.totalSamplesCounter < this.numGenSamples + this.numEvalSamples){ // Evaluation phase
+			nextCombinations[roleProblemIndex] = this.roleProblems[roleProblemIndex].getCombinationsToTest().get(this.samplesCounter).getFirst().getIndices();
 
-			if(this.totalSamplesCounter == this.numGenSamples){ // Generate the candidates to evaluate
-
-				double avgRewards[][];
-
-				RandomGenerator rg = new Well19937c(); // Use this also for the rest of the player's code?
-
-				List<CompleteMoveStats> generatedCombinations;
-
-				for(int roleProblemIndex = 0; roleProblemIndex < this.roleProblems.length; roleProblemIndex++){
-
-					avgRewards = this.computeAverageRewardsForParamValues(this.roleProblems[roleProblemIndex].getParamsStats());
-
-					generatedCombinations = new ArrayList<CompleteMoveStats>();
-
-					for(int candidateIndex = 0; candidateIndex < this.numCandidatesToEval; candidateIndex++){
-
-						generatedCombinations.add(new CompleteMoveStats(this.generateCandidate(avgRewards, rg)));
-
-					}
-
-					this.roleProblems[roleProblemIndex].setGeneratedCombinations(generatedCombinations);
-				}
-
-			}
-
-			// Get next candidate
-
-		}else{
-			//return best;
 		}
 
 		this.parametersManager.setParametersValues(nextCombinations);
+
+	}
+
+	private void generateCandidates(){
+
+		double avgRewards[][];
+
+		RandomGenerator rg = new Well19937c(); // Use this also for the rest of the player's code?
+
+		//CombinatorialCompactMove combinatorialCompactMove;
+
+		//Set<CombinatorialCompactMove> generatedCombinations;
+
+		List<CompleteMoveStats> generatedCombinationsStats;
+
+		for(int roleProblemIndex = 0; roleProblemIndex < this.roleProblems.length; roleProblemIndex++){
+
+			avgRewards = this.computeAverageRewardsForParamValues(this.roleProblems[roleProblemIndex].getParamsStats());
+
+			//generatedCombinations = new HashSet<CombinatorialCompactMove>();
+
+			generatedCombinationsStats = new ArrayList<CompleteMoveStats>();
+
+			// TODO: the pseudocode in the paper generates up to k combinations but if there are duplicates the total
+			// considered combinations are less than k. Here instead we generate exactly k combinations keeping duplicates.
+			// This is done to ensure that each role has the same amount of combinations to test, otherwise the different
+			// roles won't finish tuning at the same time. Another way of ensuring that they will finish at the same time
+			// and proceed at the same pace is to keep generating new combinations until we get k distinct ones, but this
+			// can potentially end in an infinite loop if no new combinations are created that are distinct from previous ones.
+			for(int candidateIndex = 0; candidateIndex < this.numCandidatesToEval; candidateIndex++){
+
+				//combinatorialCompactMove = this.generateCandidate(avgRewards, rg);
+
+				//if(generatedCombinations.add(combinatorialCompactMove)){ // Make sure there are no duplicate combinations
+					//generatedCombinationsStats.add(new CompleteMoveStats(combinatorialCompactMove));
+				//}
+
+				generatedCombinationsStats.add(new CompleteMoveStats(this.generateCandidate(avgRewards, rg)));
+
+			}
+
+			this.roleProblems[roleProblemIndex].setGeneratedCombinationsStats(generatedCombinationsStats);
+
+		}
+
+	}
+
+	private void prepareSequentialHalvingIteration(){
+		//If it's not the first iteration, we need to order the stats from highest to lowest
+		if(this.sequentialHalvingIteration > 0){
+			// Order
+		}
+
+		// Prepare order of testing for the best elements
+		int numElementsToTest = 0;
+	}
+
+	private void evaluationPhase(){
 
 	}
 
@@ -342,29 +416,40 @@ public class LSIParametersTuner extends TwoPhaseParametersTuner {
 
 		MoveStats toUpdate;
 
-		for(int roleProblemIndex = 0; roleProblemIndex < this.roleProblems.length; roleProblemIndex++){
+		if(this.phase == Phase.GENERATION){
 
-			MyPair<CombinatorialCompactMove,Integer> theTestedCombo = this.roleProblems[roleProblemIndex].getCombinationsToTest().get(this.totalSamplesCounter);
+			for(int roleProblemIndex = 0; roleProblemIndex < this.roleProblems.length; roleProblemIndex++){
 
-			int[] theIndices = theTestedCombo.getFirst().getIndices();
+				MyPair<CombinatorialCompactMove,Integer> theTestedCombo = this.roleProblems[roleProblemIndex].getCombinationsToTest().get(this.samplesCounter);
 
-			if(this.updateAll){
-				for(int pramIndex = 0; pramIndex < theIndices.length; pramIndex++){
-					toUpdate = this.roleProblems[roleProblemIndex].getParamsStats()[pramIndex][theIndices[pramIndex]];
+				int[] theIndices = theTestedCombo.getFirst().getIndices();
+
+				if(this.updateAll){
+					for(int pramIndex = 0; pramIndex < theIndices.length; pramIndex++){
+						toUpdate = this.roleProblems[roleProblemIndex].getParamsStats()[pramIndex][theIndices[pramIndex]];
+
+						toUpdate.incrementScoreSum(neededRewards[roleProblemIndex]);
+						toUpdate.incrementVisits();
+					}
+				}else{
+					int paramIndex = theTestedCombo.getSecond().intValue();
+					toUpdate = this.roleProblems[roleProblemIndex].getParamsStats()[paramIndex][theIndices[paramIndex]];
 
 					toUpdate.incrementScoreSum(neededRewards[roleProblemIndex]);
 					toUpdate.incrementVisits();
 				}
-			}else{
-				int paramIndex = theTestedCombo.getSecond().intValue();
-				toUpdate = this.roleProblems[roleProblemIndex].getParamsStats()[paramIndex][theIndices[paramIndex]];
+			}
 
-				toUpdate.incrementScoreSum(neededRewards[roleProblemIndex]);
-				toUpdate.incrementVisits();
+			this.samplesCounter++;
+		}else if(this.phase == Phase.EVALUATION){
+
+
+
+			this.samplesCounter = (this.samplesCounter+1)%this.samplesPerIteration;
+			if(this.samplesCounter == 0){
+				this.sequentialHalvingIteration++;
 			}
 		}
-
-		this.totalSamplesCounter++;
 
 	}
 

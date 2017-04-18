@@ -31,6 +31,13 @@ public class LsiProblemRepresentation {
 	 */
 	private List<CompleteMoveStats> generatedCombinations;
 
+	/**
+	 * List of indices of the combinations for the evaluation phase in a random order, specifying the order in which the
+	 * generated combinations will be evaluated (indices might appear more than once because each sample might need to be
+	 * evaluated multiple times).
+	 */
+	private List<Integer> evalOrder;
+
 	public LsiProblemRepresentation(List<MyPair<CombinatorialCompactMove,Integer>> combinationsToTest, int[] numValuesPerParam) {
 		this.combinationsToTest = combinationsToTest;
 
@@ -42,6 +49,10 @@ public class LsiProblemRepresentation {
 				this.paramsStats[paramIndex][valueIndex] = new MoveStats();
 			}
 		}
+
+		this.generatedCombinations = null;
+
+		this.evalOrder = null;
 	}
 
 	public List<MyPair<CombinatorialCompactMove,Integer>> getCombinationsToTest(){
@@ -52,11 +63,19 @@ public class LsiProblemRepresentation {
 		return this.paramsStats;
 	}
 
-	public void setGeneratedCombinations(List<CompleteMoveStats> generatedCombinations){
+	public void setGeneratedCombinationsStats(List<CompleteMoveStats> generatedCombinations){
 		this.generatedCombinations = generatedCombinations;
 	}
 
 	public List<CompleteMoveStats> getGeneratedCombinations(){
 		return this.generatedCombinations;
+	}
+
+	public void setEvalOrder(List<Integer> evalOrder){
+		this.evalOrder = evalOrder;
+	}
+
+	public List<Integer> getEvalOrder(){
+		return this.evalOrder;
 	}
 }
