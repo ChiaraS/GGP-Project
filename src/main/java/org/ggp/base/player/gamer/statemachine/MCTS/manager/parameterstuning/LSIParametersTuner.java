@@ -19,7 +19,6 @@ import org.ggp.base.player.gamer.statemachine.MCTS.manager.parameterstuning.sele
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.parameterstuning.structure.CombinatorialCompactMove;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.parameterstuning.structure.LsiProblemRepresentation;
 import org.ggp.base.util.logging.GamerLogger;
-import org.ggp.base.util.statemachine.structure.compact.CompactMove;
 
 import csironi.ggp.course.utils.MyPair;
 
@@ -67,10 +66,10 @@ public class LSIParametersTuner extends TwoPhaseParametersTuner {
 	private int sequentialHalvingIteration;
 
 	/**
-	 * Number of samples per sequential halving step (for each iteration of sequential halving must be
-	 * divided among the combinations to be evaluated).
+	 * Max number of samples per sequential halving step (for each iteration of sequential halving must be
+	 * divided equally among the combinations to be evaluated).
 	 */
-	private int samplesPerIteration;
+	private int maxSamplesPerIteration;
 
 	/**
 	 * True if when receiving the reward for a certain combinatorial action we want to use it to update the stats
@@ -92,7 +91,26 @@ public class LSIParametersTuner extends TwoPhaseParametersTuner {
 	public LSIParametersTuner(GameDependentParameters gameDependentParameters, Random random, GamerSettings gamerSettings,
 			SharedReferencesCollector sharedReferencesCollector) {
 		super(gameDependentParameters, random, gamerSettings, sharedReferencesCollector);
-		// TODO Auto-generated constructor stub
+
+		this.phase = Phase.GENERATION;
+
+		this.numGenSamples = gamerSettings.getIntPropertyValue("ParametersTuner.numGenSamples");
+
+		this.numEvalSamples = gamerSettings.getIntPropertyValue("ParametersTuner.numEvalSamples");
+
+		this.numCandidatesToEval = gamerSettings.getIntPropertyValue("ParametersTuner.numCandidatesToEval");
+
+		this.samplesCounter = 0;
+
+		this.sequentialHalvingIteration = 0;
+
+		this.maxSamplesPerIteration = 0;
+
+		this.updateAll = gamerSettings.getBooleanPropertyValue("ParametersTuner.updateAll");
+
+		this.roleProblems = null;
+
+		this.randomSelector = new RandomSelector(gameDependentParameters, random, gamerSettings, sharedReferencesCollector, "");
 	}
 
 	@Override
@@ -110,7 +128,16 @@ public class LSIParametersTuner extends TwoPhaseParametersTuner {
 		super.clearComponent();
 
 		this.randomSelector.clearComponent();
-		// TODO Auto-generated method stub
+
+		this.phase = Phase.GENERATION;
+
+		this.samplesCounter = 0;
+
+		this.sequentialHalvingIteration = 0;
+
+		this.maxSamplesPerIteration = 0;
+
+		this.roleProblems = null;
 
 	}
 
@@ -121,7 +148,13 @@ public class LSIParametersTuner extends TwoPhaseParametersTuner {
 
 		this.randomSelector.setUpComponent();
 
+		this.phase = Phase.GENERATION;
+
 		this.samplesCounter = 0;
+
+		this.sequentialHalvingIteration = 0;
+
+		this.maxSamplesPerIteration = 0;
 
 		int numRolesToTune;
 
@@ -135,7 +168,7 @@ public class LSIParametersTuner extends TwoPhaseParametersTuner {
 
 		int numSamplesPerValue = this.numGenSamples/this.parametersManager.getTotalNumPossibleValues(); // Same result as if we used floor(this.numGenSamples/this.parametersManager.getTotalNumPossibleValues();)
 
-		// Make sure that we''ll have at least one sample per parameter value
+		// Make sure that we'll have at least one sample per parameter value
 		if(numSamplesPerValue == 0){
 			numSamplesPerValue = 1;
 		}
@@ -202,18 +235,21 @@ public class LSIParametersTuner extends TwoPhaseParametersTuner {
 				this.generateCandidates();
 				this.samplesCounter = 0;
 				this.sequentialHalvingIteration = 0;
-				this.samplesPerIteration = Math.floorDiv(this.numEvalSamples, (int) Math.ceil(Math.log(this.numCandidatesToEval)/Math.log(2.0)));
+				this.maxSamplesPerIteration = Math.floorDiv(this.numEvalSamples, (int) Math.ceil(Math.log(this.numCandidatesToEval)/Math.log(2.0)));
 				this.phase = Phase.EVALUATION;
 			}
 		}
 
 		if(this.phase == Phase.EVALUATION){
 			if(this.samplesCounter == 0){ //Start of sequentialHalving iteration
+
+				this.prepareSequentialHalvingIteration();
+
 				if(this.sequentialHalvingIteration == Math.ceil(Math.log(this.numCandidatesToEval)/Math.log(2.0))){
-					this.setBestCombinations();
+
 					this.phase = Phase.STOP;
-				}else{
-					this.prepareSequentialHalvingIteration();
+					this.setBestCombinations();
+					return;
 				}
 			}
 			this.evaluationPhase();
@@ -288,7 +324,7 @@ public class LSIParametersTuner extends TwoPhaseParametersTuner {
 
 		int numCombosToTest = (int) Math.ceil(this.roleProblems[0].getGeneratedCombinationsStats().size() / (Math.pow(2, this.sequentialHalvingIteration)));
 
-		int samplesPerCombo = Math.floorDiv(this.samplesPerIteration, numCombosToTest);
+		int samplesPerCombo = Math.floorDiv(this.maxSamplesPerIteration, numCombosToTest);
 
 		List<Integer> evalOrder;
 
@@ -329,16 +365,21 @@ public class LSIParametersTuner extends TwoPhaseParametersTuner {
 				});
 			}
 
-			// Prepare random order of testing for the best elements
-			evalOrder = new ArrayList<Integer>();
+			if(numCombosToTest > 1){
 
-			for(int comboIndex = 0; comboIndex < numCombosToTest; comboIndex++){
-				for(int repetition = 0; repetition < samplesPerCombo; repetition++){
-					evalOrder.add(new Integer(comboIndex));
+				// Prepare random order of testing for the best elements
+				evalOrder = new ArrayList<Integer>();
+
+				for(int comboIndex = 0; comboIndex < numCombosToTest; comboIndex++){
+					for(int repetition = 0; repetition < samplesPerCombo; repetition++){
+						evalOrder.add(new Integer(comboIndex));
+					}
 				}
-			}
 
-			Collections.shuffle(evalOrder);
+				Collections.shuffle(evalOrder);
+			}else{
+				evalOrder = null;
+			}
 
 			this.roleProblems[roleProblemIndex].setEvalOrder(evalOrder);
 
@@ -347,6 +388,21 @@ public class LSIParametersTuner extends TwoPhaseParametersTuner {
 	}
 
 	private void evaluationPhase(){
+
+		int[][] nextCombinations = new int[this.roleProblems.length][];
+
+		for(int roleProblemIndex = 0; roleProblemIndex < this.roleProblems.length; roleProblemIndex++){
+
+			if(this.roleProblems[roleProblemIndex].getGeneratedCombinationsStats().size() <= this.samplesCounter){
+				GamerLogger.logError("ParametersTuner", "LsiParametersTuner - Error! All the combinatorial action to test during this iteration of the evaluation phase have been tested. The next iteration should have started or the best combination should have been set!");
+				throw new RuntimeException("LsiParametersTuner - All the combinatorial action to test during this iteration of the evaluation phase have been tested. The next iteration should have started or the best combination should have been set!");
+			}
+
+			nextCombinations[roleProblemIndex] = ((CombinatorialCompactMove)this.roleProblems[roleProblemIndex].getGeneratedCombinationsStats().get(this.samplesCounter).getTheMove()).getIndices();
+
+		}
+
+		this.parametersManager.setParametersValues(nextCombinations);
 
 	}
 
@@ -436,15 +492,33 @@ public class LSIParametersTuner extends TwoPhaseParametersTuner {
 
 	@Override
 	public void setBestCombinations() {
-		// TODO Auto-generated method stub
+
+		if(!this.isTuning()){
+			GamerLogger.logError("ParametersTuner", "LsiParametersTuner - Error! Trying to set best combination when tuner is not tuning. Best combination has already been set!");
+			throw new RuntimeException("LsiParametersTuner -  Error! Trying to set best combination when tuner is not tuning. Best combination has already been set!");
+		}
+
+		if(this.phase != Phase.STOP){
+			GamerLogger.logError("ParametersTuner", "LsiParametersTuner - Error! Trying to set best combination in the wrong phase of LSI. The best combination has not been found yet!");
+			throw new RuntimeException("LsiParametersTuner -  Error! Trying to set best combination in the wrong phase of LSI. The best combination has not been found yet!");
+		}
+
+		int[][] nextCombinations = new int[this.roleProblems.length][];
+
+		for(int roleProblemIndex = 0; roleProblemIndex < this.roleProblems.length; roleProblemIndex++){
+
+			nextCombinations[roleProblemIndex] = ((CombinatorialCompactMove)this.roleProblems[roleProblemIndex].getGeneratedCombinationsStats().get(0).getTheMove()).getIndices();
+
+		}
+
+		this.parametersManager.setParametersValues(nextCombinations);
 
 		this.stopTuning();
 	}
 
 	@Override
 	public int getNumIndependentCombinatorialProblems() {
-		// TODO Auto-generated method stub
-		return 0;
+		return this.roleProblems.length;
 	}
 
 	@Override
@@ -497,9 +571,16 @@ public class LSIParametersTuner extends TwoPhaseParametersTuner {
 			this.samplesCounter++;
 		}else if(this.phase == Phase.EVALUATION){
 
+			for(int roleProblemIndex = 0; roleProblemIndex < this.roleProblems.length; roleProblemIndex++){
 
+				toUpdate = this.roleProblems[roleProblemIndex].getGeneratedCombinationsStats().get(this.samplesCounter);
 
-			this.samplesCounter = (this.samplesCounter+1)%this.samplesPerIteration; // TODO: fix this to exact nm of samples per iteration that depends on num of combos
+				toUpdate.incrementScoreSum(neededRewards[roleProblemIndex]);
+				toUpdate.incrementVisits();
+
+			}
+
+			this.samplesCounter = (this.samplesCounter+1)%this.roleProblems[0].getEvalOrder().size();
 			if(this.samplesCounter == 0){
 				this.sequentialHalvingIteration++;
 			}
@@ -530,6 +611,8 @@ public class LSIParametersTuner extends TwoPhaseParametersTuner {
 		// TODO Auto-generated method stub
 
 	}
+
+	/*
 
 	public static void main(String args[]){
 
@@ -580,4 +663,6 @@ public class LSIParametersTuner extends TwoPhaseParametersTuner {
 			System.out.println("[" + a.get(i) + "]");
 		}
 	}
+
+	*/
 }
