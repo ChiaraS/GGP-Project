@@ -232,4 +232,14 @@ public abstract class ParametersTuner extends SearchManagerComponent{
 
 	public abstract void memorizeBestCombinations();
 
+	protected String getGlobalParamsOrder(){
+		String globalParamsOrder = "[ ";
+		for(int paramIndex = 0; paramIndex < this.parametersManager.getNumTunableParameters(); paramIndex++){
+			globalParamsOrder += (this.parametersManager.getName(paramIndex) + " ");
+		}
+		globalParamsOrder += "]";
+
+		return globalParamsOrder;
+	}
+
 }

@@ -691,16 +691,6 @@ public class NaiveParametersTuner extends ParametersTuner {
 		}
 	}
 
-	private String getGlobalParamsOrder(){
-		String globalParamsOrder = "[ ";
-		for(int paramIndex = 0; paramIndex < this.parametersManager.getNumTunableParameters(); paramIndex++){
-			globalParamsOrder += (this.parametersManager.getName(paramIndex) + " ");
-		}
-		globalParamsOrder += "]";
-
-		return globalParamsOrder;
-	}
-
 	@Override
 	public String getComponentParameters(String indentation) {
 
