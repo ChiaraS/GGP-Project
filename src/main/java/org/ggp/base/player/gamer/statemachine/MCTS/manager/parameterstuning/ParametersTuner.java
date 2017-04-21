@@ -159,6 +159,7 @@ public abstract class ParametersTuner extends SearchManagerComponent{
 		String params = indentation + "PARAMETERS_MANAGER = " + this.parametersManager.printComponent(indentation + "  ") +
 				indentation + "TUNE_ALL_ROLES = " + this.tuneAllRoles +
 				indentation + "REUSE_BEST_COMBOS = " + this.reuseBestCombos +
+				indentation + "REUSE_STATS = " + this.reuseStats +
 				indentation + "tuning = " + this.tuning;
 
 		/*

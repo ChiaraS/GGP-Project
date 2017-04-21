@@ -14,7 +14,7 @@ import csironi.ggp.course.utils.MyPair;
 public class LsiProblemRepresentation {
 
     public enum Phase{
-    	GENERATION, EVALUATION, STOP
+    	GENERATION, EVALUATION, BEST, STOP
     }
 
     /**
@@ -78,6 +78,7 @@ public class LsiProblemRepresentation {
 	 * evaluated multiple times).
 	 */
 	private List<Integer> evalOrder;
+
 
 	public LsiProblemRepresentation(List<MyPair<CombinatorialCompactMove,Integer>> combinationsToTest, int[] numValuesPerParam, boolean updateAll) {
 
@@ -144,10 +145,13 @@ public class LsiProblemRepresentation {
 			return this.combinationsToTest.get(this.currentIndex).getFirst().getIndices();
 		case EVALUATION:
 			return ((CombinatorialCompactMove) this.generatedCandidatesStats.get(this.evalOrder.get(this.currentIndex)).getTheMove()).getIndices();
-		case STOP:
-			// If we stopped it's because the best move has been found and is the first one in the list of candidates
+		case BEST:
+			// Since we are returning the best move, set the algorithm as stopped
+			this.phase = Phase.STOP;
+			// The best move has been found and is the first one in the list of candidates
 			return ((CombinatorialCompactMove) this.generatedCandidatesStats.get(0).getTheMove()).getIndices();
 		default:
+			// If the phase is STOP, throw exception because this method is supposed to be called only during other phases.
 			GamerLogger.logError("ParametersTuner", "LsiParametersTuner - Unrecognized phase of LSI when trying to get next combination to test: " + this.phase + "!");
 			throw new RuntimeException("LsiParametersTuner - Unrecognized phase of LSI when trying to get next combination to test: " + this.phase + "!");
 		}
@@ -208,10 +212,11 @@ public class LsiProblemRepresentation {
 								}else{
 									value2 = o2.getScoreSum()/o2.getVisits();
 								}
+								// Sort from largest to smallest
 								if(value1 > value2){
-									return 1;
-								}else if(value1 < value2){
 									return -1;
+								}else if(value1 < value2){
+									return 1;
 								}else{
 									return 0;
 								}
@@ -226,11 +231,12 @@ public class LsiProblemRepresentation {
 					this.computeEvalOrder();
 				}else{ // Otherwise we only have one candidate, that is automatically the best
 					this.evalOrder = null;
-					this.phase = Phase.STOP;
+					this.phase = Phase.BEST;
 				}
 
 			}
-		case STOP:
+		default:
+			// Nothing must be done
 			break;
 		}
 	}
@@ -254,6 +260,10 @@ public class LsiProblemRepresentation {
 
 		Collections.shuffle(evalOrder);
 
+	}
+
+	public int getNumCandidatesOfCurrentIteration(){
+		return this.numCandidatesOfCurrentIteration;
 	}
 
 }

@@ -1,7 +1,9 @@
 package org.ggp.base.player.gamer.statemachine.MCTS.manager.parameterstuning;
 
+import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Random;
@@ -15,21 +17,29 @@ import org.ggp.base.player.gamer.statemachine.GamerSettings;
 import org.ggp.base.player.gamer.statemachine.MCS.manager.MoveStats;
 import org.ggp.base.player.gamer.statemachine.MCS.manager.hybrid.CompleteMoveStats;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.GameDependentParameters;
+import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.SearchManagerComponent;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.SharedReferencesCollector;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.parameterstuning.selectors.RandomSelector;
+import org.ggp.base.player.gamer.statemachine.MCTS.manager.parameterstuning.selectors.TunerSelector;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.parameterstuning.structure.CombinatorialCompactMove;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.parameterstuning.structure.LsiProblemRepresentation;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.parameterstuning.structure.LsiProblemRepresentation.Phase;
 import org.ggp.base.util.logging.GamerLogger;
+import org.ggp.base.util.reflection.ProjectSearcher;
 
 import csironi.ggp.course.utils.MyPair;
 
-public class LSIParametersTuner extends ParametersTuner {
+public class LsiParametersTuner extends ParametersTuner {
 
 	/**
 	 * Random selector used to select random values for the parameters when completing combinatorial moves.
 	 */
 	private RandomSelector randomSelector;
+
+	/**
+	 * Given the statistics collected so far for each combination, selects the best one among them.
+	 */
+	private TunerSelector bestCombinationSoFarSelector;
 
 	/**
 	 * Number of samples (i.e. simulations) that will be dedicated to the generation of
@@ -63,16 +73,40 @@ public class LSIParametersTuner extends ParametersTuner {
 	private LsiProblemRepresentation[] roleProblems;
 
 	/**
-	 * Memorizes the last selected combination for each role. When all roles are done tuning using LSI,
-	 * this variable will contain the best combination for each of them.
+	 * Memorizes the last selected combination for each role.
 	 */
 	private int[][] selectedCombinations;
 
-	public LSIParametersTuner(GameDependentParameters gameDependentParameters, Random random, GamerSettings gamerSettings,
+	/** When all roles are done tuning using LSI,
+	 * this variable will contain the best combination for each of them.
+	 */
+	private int[][] bestCombinations;
+
+	/**
+	 * True if the corresponding best combination has been computed before the LSI algorithm could complete.
+	 * False if it has been computed by the proper termination of the LSI algorithm. The LSI algorithm doesn't
+	 * complete properly if the total number of simulations that it requires is higher than the number of
+	 * simulations performed during the whole game.
+	 */
+	private boolean[] isIntermediate;
+
+	public LsiParametersTuner(GameDependentParameters gameDependentParameters, Random random, GamerSettings gamerSettings,
 			SharedReferencesCollector sharedReferencesCollector) {
 		super(gameDependentParameters, random, gamerSettings, sharedReferencesCollector);
 
 		this.randomSelector = new RandomSelector(gameDependentParameters, random, gamerSettings, sharedReferencesCollector, "");
+
+		String[] tunerSelectorDetails = gamerSettings.getIDPropertyValue("ParametersTuner.bestCombinationSoFarSelectorType");
+
+		try {
+			this.bestCombinationSoFarSelector = (TunerSelector) SearchManagerComponent.getConstructorForMultiInstanceSearchManagerComponent(SearchManagerComponent.getCorrespondingClass(ProjectSearcher.TUNER_SELECTORS.getConcreteClasses(), tunerSelectorDetails[0])).newInstance(gameDependentParameters, random, gamerSettings, sharedReferencesCollector, tunerSelectorDetails[1]);
+		} catch (InstantiationException | IllegalAccessException
+				| IllegalArgumentException | InvocationTargetException e) {
+			// TODO: fix this!
+			GamerLogger.logError("SearchManagerCreation", "Error when instantiating TunerSelector " + gamerSettings.getPropertyValue("ParametersTuner.bestCombinationSoFarSelectorType") + ".");
+			GamerLogger.logStackTrace("SearchManagerCreation", e);
+			throw new RuntimeException(e);
+		}
 
 		this.numGenSamples = gamerSettings.getIntPropertyValue("ParametersTuner.numGenSamples");
 
@@ -82,11 +116,13 @@ public class LSIParametersTuner extends ParametersTuner {
 
 		this.numCandidatesToGenerate = gamerSettings.getIntPropertyValue("ParametersTuner.numCandidatesToGenerate");
 
-		this.updateAll = gamerSettings.getBooleanPropertyValue("ParametersTuner.updateAll");
-
 		this.roleProblems = null;
 
 		this.selectedCombinations = null;
+
+		this.bestCombinations = null;
+
+		this.isIntermediate = null;
 
 	}
 
@@ -96,19 +132,6 @@ public class LSIParametersTuner extends ParametersTuner {
 		super.setReferences(sharedReferencesCollector);
 
 		this.randomSelector.setReferences(sharedReferencesCollector);
-
-	}
-
-	@Override
-	public void clearComponent() {
-
-		super.clearComponent();
-
-		this.randomSelector.clearComponent();
-
-		this.roleProblems = null;
-
-		this.selectedCombinations = null;
 
 	}
 
@@ -127,44 +150,54 @@ public class LSIParametersTuner extends ParametersTuner {
 			numRolesToTune = 1;
 		}
 
-		this.roleProblems = new LsiProblemRepresentation[numRolesToTune];
+		if(!this.reuseBestCombos || this.bestCombinations == null || this.bestCombinations.length != numRolesToTune){
 
-		int numSamplesPerValue = this.numGenSamples/this.parametersManager.getTotalNumPossibleValues(); // Same result as if we used floor(this.numGenSamples/this.parametersManager.getTotalNumPossibleValues();)
+			this.roleProblems = new LsiProblemRepresentation[numRolesToTune];
 
-		// Make sure that we'll have at least one sample per parameter value
-		if(numSamplesPerValue == 0){
-			numSamplesPerValue = 1;
-		}
+			int numSamplesPerValue = this.numGenSamples/this.parametersManager.getTotalNumPossibleValues(); // Same result as if we used floor(this.numGenSamples/this.parametersManager.getTotalNumPossibleValues();)
 
-		//Compute the exact number of generation samples that we need to use. Since all parameters values must be
-		// tested for the same amount of times, this number might be lower than the one read from the settings.
-		//this.numGenSamples = numSamplesPerValue * this.parametersManager.getTotalNumPossibleValues();
-
-		List<MyPair<CombinatorialCompactMove,Integer>> actionsToTest;
-
-		// For each role for which we are tuning create the corresponding role problem
-		for(int roleProblemIndex = 0; roleProblemIndex < this.roleProblems.length; roleProblemIndex++){
-
-			// For each value x of each parameter we generate numSamplesPerValue sample combinations containing x,
-			// completing the parameter combination with random values for the other parameters.
-			actionsToTest = new ArrayList<MyPair<CombinatorialCompactMove,Integer>>();
-
-			for(int paramIndex = 0; paramIndex < this.parametersManager.getNumTunableParameters(); paramIndex++){
-				for(int valueIndex = 0; valueIndex < this.parametersManager.getNumPossibleValues(paramIndex); valueIndex++){
-					for(int i = 0; i < numSamplesPerValue; i++){
-						actionsToTest.add(new MyPair<CombinatorialCompactMove,Integer>(new CombinatorialCompactMove(this.randomlyCompleteCombinatorialMove(paramIndex,valueIndex)),new Integer(paramIndex)));
-					}
-				}
+			// Make sure that we'll have at least one sample per parameter value
+			if(numSamplesPerValue == 0){
+				numSamplesPerValue = 1;
 			}
 
-			// Randomize order in which the combinations will be tested for each role so that the combinations
-			// won't be tested always against the same combination for all the roles.
-			Collections.shuffle(actionsToTest);
+			//Compute the exact number of generation samples that we need to use. Since all parameters values must be
+			// tested for the same amount of times, this number might be lower than the one read from the settings.
+			//this.numGenSamples = numSamplesPerValue * this.parametersManager.getTotalNumPossibleValues();
 
-			this.roleProblems[roleProblemIndex] = new LsiProblemRepresentation(actionsToTest, this.parametersManager.getNumPossibleValuesForAllParams(), this.updateAll);
+			List<MyPair<CombinatorialCompactMove,Integer>> actionsToTest;
+
+			// For each role for which we are tuning create the corresponding role problem
+			for(int roleProblemIndex = 0; roleProblemIndex < this.roleProblems.length; roleProblemIndex++){
+
+				// For each value x of each parameter we generate numSamplesPerValue sample combinations containing x,
+				// completing the parameter combination with random values for the other parameters.
+				actionsToTest = new ArrayList<MyPair<CombinatorialCompactMove,Integer>>();
+
+				for(int paramIndex = 0; paramIndex < this.parametersManager.getNumTunableParameters(); paramIndex++){
+					for(int valueIndex = 0; valueIndex < this.parametersManager.getNumPossibleValues(paramIndex); valueIndex++){
+						for(int i = 0; i < numSamplesPerValue; i++){
+							actionsToTest.add(new MyPair<CombinatorialCompactMove,Integer>(new CombinatorialCompactMove(this.randomlyCompleteCombinatorialMove(paramIndex,valueIndex)),new Integer(paramIndex)));
+						}
+					}
+				}
+
+				// Randomize order in which the combinations will be tested for each role so that the combinations
+				// won't be tested always against the same combination for all the roles.
+				Collections.shuffle(actionsToTest);
+
+				this.roleProblems[roleProblemIndex] = new LsiProblemRepresentation(actionsToTest, this.parametersManager.getNumPossibleValuesForAllParams(), this.updateAll);
+			}
+
+			this.selectedCombinations = new int[numRolesToTune][this.parametersManager.getNumTunableParameters()];
+
+			this.bestCombinations = null;
+
+			this.isIntermediate = new boolean[numRolesToTune];
+		}else{
+			this.roleProblems = null;
+			this.selectedCombinations = null;
 		}
-
-		this.selectedCombinations = new int[numRolesToTune][];
 
 	}
 
@@ -191,22 +224,182 @@ public class LSIParametersTuner extends ParametersTuner {
 	}
 
 	@Override
+	public void clearComponent() {
+
+		super.clearComponent();
+
+		this.randomSelector.clearComponent();
+
+		this.bestCombinationSoFarSelector.clearComponent();
+
+		this.roleProblems = null;
+
+		this.selectedCombinations = null;
+
+	}
+
+	@Override
 	public void setNextCombinations() {
 
+		boolean foundAllBest = true;
 		for(int roleProblemIndex = 0; roleProblemIndex < this.roleProblems.length; roleProblemIndex++){
-			this.selectedCombinations[roleProblemIndex] = this.roleProblems[roleProblemIndex].getNextCombination();
+			if(this.roleProblems[roleProblemIndex].getPhase() != Phase.STOP){
+				if(this.roleProblems[roleProblemIndex].getPhase() != Phase.BEST){
+					foundAllBest = false;
+				}
+				this.selectedCombinations[roleProblemIndex] = this.roleProblems[roleProblemIndex].getNextCombination();
+
+			}
 		}
 
 		this.parametersManager.setParametersValues(selectedCombinations);
+
+		if(foundAllBest){
+			this.stopTuning();
+		}
 
 	}
 
 	@Override
 	public void setBestCombinations() {
 
-		this.parametersManager.setParametersValues(this.selectedCombinations);
+		if(this.isMemorizingBestCombo()){
+			// Log the combination that we are selecting as best
+			GamerLogger.log(GamerLogger.FORMAT.CSV_FORMAT, "BestParamsCombo", this.getLogOfCombinations(this.bestCombinations, this.isIntermediate));
+
+			this.parametersManager.setParametersValues(this.bestCombinations);
+		}else{
+			// Set best combo found so far
+			this.setBestCombinationSoFar();
+			GamerLogger.logError("ParametersTuner", "LsiParametersTuner - Impossible to set best combinations! The best combinations haven't been found for all roles yet!");
+			throw new RuntimeException("LsiParametersTuner - Impossible to set best combinations! The best combinations haven't been found for all roles yet!");
+		}
 
 		this.stopTuning();
+
+	}
+
+	/**
+	 *
+	 * @param combinations the combinations to log
+	 * @param isFinal true if the best combination has been computed by the complete execution of LSI,
+	 * false if it has been set when the algorithm was still running, and thus is the best combination
+	 * wrt the statistics collected so far.
+	 * @return
+	 */
+	private String getLogOfCombinations(int[][] combinations, boolean[] isIntermediate){
+
+		String globalParamsOrder = this.getGlobalParamsOrder();
+		String toLog = "";
+
+		if(this.tuneAllRoles){
+			for(int roleProblemIndex = 0; roleProblemIndex < this.gameDependentParameters.getNumRoles(); roleProblemIndex++){
+				toLog += ("ROLE=;" + this.gameDependentParameters.getTheMachine().convertToExplicitRole(this.gameDependentParameters.getTheMachine().getRoles().get(roleProblemIndex)) + ";PARAMS=;" + globalParamsOrder + ";SELECTED_COMBINATION=;[ ");
+				if(combinations != null && combinations[roleProblemIndex] != null){
+					for(int paramIndex = 0; paramIndex < this.parametersManager.getNumTunableParameters(); paramIndex++){
+						toLog += this.parametersManager.getPossibleValues(paramIndex)[combinations[roleProblemIndex][paramIndex]] + " ";
+					}
+				}else{
+					for(int paramIndex = 0; paramIndex < this.parametersManager.getNumTunableParameters(); paramIndex++){
+						toLog += null + " ";
+					}
+				}
+				toLog += "];FINAL=;" + !isIntermediate[roleProblemIndex] + "\n";
+			}
+		}else{ // Tuning only my role
+			toLog += ("ROLE=;" + this.gameDependentParameters.getTheMachine().convertToExplicitRole(this.gameDependentParameters.getTheMachine().getRoles().get(this.gameDependentParameters.getMyRoleIndex())) + ";PARAMS=;" + globalParamsOrder + ";SELECTED_COMBINATION=;[ ");
+			if(combinations != null && combinations[0] != null){
+				for(int paramIndex = 0; paramIndex < this.parametersManager.getNumTunableParameters(); paramIndex++){
+					toLog += this.parametersManager.getPossibleValues(paramIndex)[combinations[0][paramIndex]] + " ";
+				}
+			}else{
+				for(int paramIndex = 0; paramIndex < this.parametersManager.getNumTunableParameters(); paramIndex++){
+					toLog += null + " ";
+				}
+			}
+			toLog += "];FINAL=;" + !isIntermediate[0] + "\n";
+		}
+
+		return toLog;
+	}
+
+	/**
+	 * Depending on the phase of LSI, this method returns the best combination found so far even if the algorithm is not done yet
+	 * @return
+	 */
+	public void setBestCombinationSoFar(){
+		// For each role, we select a combination of parameters
+		for(int roleProblemIndex = 0; roleProblemIndex < this.roleProblems.length; roleProblemIndex++){
+
+			switch(this.roleProblems[roleProblemIndex].getPhase()){
+			case GENERATION:
+				MoveStats[][] paramsStats = this.roleProblems[roleProblemIndex].getParamsStats();
+				int[] indices = new int[paramsStats.length];
+				for(int i = 0; i < indices.length; i++){
+					indices[i] = -1;
+				}
+
+				// Select a value for each parameter independently
+				for(int paramIndex = 0; paramIndex < paramsStats.length; paramIndex++){
+					int numUpdates = 0;
+					for(int valueIndex = 0; valueIndex < paramsStats[paramIndex].length; valueIndex++){
+						numUpdates += paramsStats[paramIndex][valueIndex].getVisits();
+					}
+					indices[paramIndex] = this.bestCombinationSoFarSelector.selectMove(paramsStats[paramIndex],
+							this.parametersManager.getValuesFeasibility(paramIndex, indices),
+							// If for a parameter no penalties are specified, a penalty of 0 is assumed for all of the values.
+							(this.parametersManager.getPossibleValuesPenalty(paramIndex) != null ? this.parametersManager.getPossibleValuesPenalty(paramIndex) : new double[this.parametersManager.getNumPossibleValues(paramIndex)]),
+							numUpdates);
+				}
+				this.selectedCombinations[roleProblemIndex] = indices;
+				this.isIntermediate[roleProblemIndex] = true;
+
+			case EVALUATION:
+				List<CompleteMoveStats> currentCandidatesStats = new ArrayList<CompleteMoveStats>(this.roleProblems[roleProblemIndex].getGeneratedCandidatesStats().subList(0, this.roleProblems[roleProblemIndex].getNumCandidatesOfCurrentIteration()));
+
+				Collections.sort(currentCandidatesStats,
+						new Comparator<CompleteMoveStats>(){
+
+							@Override
+							public int compare(CompleteMoveStats o1, CompleteMoveStats o2) {
+
+								double value1;
+								if(o1.getVisits() == 0){
+									value1 = 0;
+								}else{
+									value1 = o1.getScoreSum()/o1.getVisits();
+								}
+								double value2;
+								if(o2.getVisits() == 0){
+									value2 = 0;
+								}else{
+									value2 = o2.getScoreSum()/o2.getVisits();
+								}
+								// Sort from largest to smallest
+								if(value1 > value2){
+									return -1;
+								}else if(value1 < value2){
+									return 1;
+								}else{
+									return 0;
+								}
+							}
+
+						});
+
+				this.selectedCombinations[roleProblemIndex] = ((CombinatorialCompactMove) currentCandidatesStats.get(0).getTheMove()).getIndices();
+				this.isIntermediate[roleProblemIndex] = true;
+			case BEST: case STOP:
+				// The best move has been found and is the first one in the list of candidates
+				this.selectedCombinations[roleProblemIndex] = ((CombinatorialCompactMove) this.roleProblems[roleProblemIndex].getGeneratedCandidatesStats().get(0).getTheMove()).getIndices();
+			}
+		}
+
+		this.parametersManager.setParametersValues(selectedCombinations);
+
+		// Log the combination that we are selecting as best
+		GamerLogger.log(GamerLogger.FORMAT.CSV_FORMAT, "BestParamsCombo", this.getLogOfCombinations(this.bestCombinations, this.isIntermediate));
+
 	}
 
 	@Override
@@ -392,7 +585,7 @@ public class LSIParametersTuner extends ParametersTuner {
 				List<MyPair<CombinatorialCompactMove,Integer>> combinationsToTest = this.roleProblems[roleProblemIndex].getCombinationsToTest();
 
 				for(MyPair<CombinatorialCompactMove,Integer> combo : combinationsToTest){
-					toLog = combo.getFirst() + ";" + combo.getSecond().intValue() + ";";
+					toLog += "\n" + combo.getFirst() + ";" + combo.getSecond().intValue() + ";";
 				}
 
 				GamerLogger.log(GamerLogger.FORMAT.CSV_FORMAT, "TestedCombos", toLog);
@@ -456,13 +649,90 @@ public class LSIParametersTuner extends ParametersTuner {
 
 	@Override
 	public boolean isMemorizingBestCombo() {
-		// TODO Auto-generated method stub
-		return false;
+		return (this.reuseBestCombos && this.roleProblems == null);
 	}
 
 	@Override
-	public void memorizeBestCombinations() {
-		// TODO Auto-generated method stub
+	public void memorizeBestCombinations(){
+		this.bestCombinations = this.selectedCombinations;
+	}
+
+	@Override
+	public String getComponentParameters(String indentation) {
+
+		String superParams = super.getComponentParameters(indentation);
+
+		String params = indentation + "RANDOM_SELECTOR = " + this.randomSelector.printComponent(indentation + "  ") +
+				indentation + "BEST_COMBINATION_SO_FAR_SELECTOR = " + this.bestCombinationSoFarSelector.printComponent(indentation + "  ") +
+				indentation + "NUM_GEN_SAMPLES = " + this.numGenSamples +
+				indentation + "UPDATE_ALL = " + this.updateAll +
+				indentation + "NUM_EVAL_SAMPLES = " + this.numEvalSamples +
+				indentation + "NUM_CANDIDATES_TO_GENERATE = " + this.numCandidatesToGenerate +
+				indentation + "num_roles_problems = " + (this.roleProblems != null ? this.roleProblems.length : 0);
+
+		if(this.selectedCombinations != null){
+			String selectedCombinationsString = "[ ";
+
+			for(int i = 0; i < this.selectedCombinations.length; i++){
+
+				String singleCombinationString = "[ ";
+				for(int j = 0; j < this.selectedCombinations[i].length; j++){
+					singleCombinationString += this.selectedCombinations[i][j] + " ";
+				}
+				singleCombinationString += "]";
+
+				selectedCombinationsString += singleCombinationString + " ";
+
+			}
+
+			selectedCombinationsString += "]";
+
+			params += indentation + "SELECTED_COMBINATIONS_INDICES = " + selectedCombinationsString;
+		}else{
+			params += indentation + "SELECTED_COMBINATIONS = null";
+		}
+
+		if(this.bestCombinations != null){
+			String bestCombinationsString = "[ ";
+
+			for(int i = 0; i < this.bestCombinations.length; i++){
+
+				String bestCombinationString = "[ ";
+				for(int j = 0; j < this.bestCombinations[i].length; j++){
+					bestCombinationString += this.bestCombinations[i][j] + " ";
+				}
+				bestCombinationString += "]";
+
+				bestCombinationsString += bestCombinationString + " ";
+
+			}
+
+			bestCombinationsString += "]";
+
+			params += indentation + "BEST_COMBINATIONS_INDICES = " + bestCombinationsString;
+		}else{
+			params += indentation + "BEST_COMBINATIONS = null";
+		}
+
+		if(this.isIntermediate != null){
+			String intermediateString = "[ ";
+
+			for(int i = 0; i < this.isIntermediate.length; i++){
+				intermediateString += this.isIntermediate[i] + " ";
+			}
+
+			intermediateString += "]";
+
+			params += indentation + "IS_INTERMEDIATE = " + intermediateString;
+		}else{
+			params += indentation + "IS_INTERMEDIATE = null";
+		}
+
+		if(superParams != null){
+			return superParams + params;
+		}else{
+			return params;
+		}
 
 	}
 

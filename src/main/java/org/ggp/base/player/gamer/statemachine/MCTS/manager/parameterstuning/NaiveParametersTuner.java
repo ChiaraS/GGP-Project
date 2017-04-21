@@ -215,6 +215,8 @@ public class NaiveParametersTuner extends ParametersTuner {
 
 				this.selectedCombinations = new int[numRolesToTune][this.parametersManager.getNumTunableParameters()];
 			}
+
+			this.bestCombinations = null;
 		}else{
 			this.roleProblems = null;
 			this.selectedCombinations = null;
@@ -349,6 +351,9 @@ public class NaiveParametersTuner extends ParametersTuner {
 			}else{
 				FixedMab[] localMabs = this.roleProblems[roleProblemIndex].getLocalMabs();
 				int[] indices = new int[localMabs.length];
+				for(int i = 0; i < indices.length; i++){
+					indices[i] = -1;
+				}
 
 				// Select a value for each local mab independently
 				for(int paramIndex = 0; paramIndex < localMabs.length; paramIndex++){
@@ -527,21 +532,34 @@ public class NaiveParametersTuner extends ParametersTuner {
 	}
 
 	private String getLogOfCombinations(int[][] combinations){
+
 		String globalParamsOrder = this.getGlobalParamsOrder();
 		String toLog = "";
 
 		if(this.tuneAllRoles){
-			for(int roleProblemIndex = 0; roleProblemIndex < combinations.length; roleProblemIndex++){
+			for(int roleProblemIndex = 0; roleProblemIndex < this.gameDependentParameters.getNumRoles(); roleProblemIndex++){
 				toLog += ("ROLE=;" + this.gameDependentParameters.getTheMachine().convertToExplicitRole(this.gameDependentParameters.getTheMachine().getRoles().get(roleProblemIndex)) + ";PARAMS=;" + globalParamsOrder + ";SELECTED_COMBINATION=;[ ");
-				for(int paramIndex = 0; paramIndex < combinations[roleProblemIndex].length; paramIndex++){
-					toLog += this.parametersManager.getPossibleValues(paramIndex)[combinations[roleProblemIndex][paramIndex]] + " ";
+				if(combinations != null && combinations[roleProblemIndex] != null){
+					for(int paramIndex = 0; paramIndex < this.parametersManager.getNumTunableParameters(); paramIndex++){
+						toLog += this.parametersManager.getPossibleValues(paramIndex)[combinations[roleProblemIndex][paramIndex]] + " ";
+					}
+				}else{
+					for(int paramIndex = 0; paramIndex < this.parametersManager.getNumTunableParameters(); paramIndex++){
+						toLog += null + " ";
+					}
 				}
 				toLog += "];\n";
 			}
 		}else{ // Tuning only my role
 			toLog += ("ROLE=;" + this.gameDependentParameters.getTheMachine().convertToExplicitRole(this.gameDependentParameters.getTheMachine().getRoles().get(this.gameDependentParameters.getMyRoleIndex())) + ";PARAMS=;" + globalParamsOrder + ";SELECTED_COMBINATION=;[ ");
-			for(int paramIndex = 0; paramIndex < combinations[0].length; paramIndex++){
-				toLog += this.parametersManager.getPossibleValues(paramIndex)[combinations[0][paramIndex]] + " ";
+			if(combinations != null && combinations[0] != null){
+				for(int paramIndex = 0; paramIndex < this.parametersManager.getNumTunableParameters(); paramIndex++){
+					toLog += this.parametersManager.getPossibleValues(paramIndex)[combinations[0][paramIndex]] + " ";
+				}
+			}else{
+				for(int paramIndex = 0; paramIndex < this.parametersManager.getNumTunableParameters(); paramIndex++){
+					toLog += null + " ";
+				}
 			}
 			toLog += "];\n";
 		}
@@ -726,6 +744,28 @@ public class NaiveParametersTuner extends ParametersTuner {
 			params += indentation + "SELECTED_COMBINATIONS = null";
 		}
 
+		if(this.bestCombinations != null){
+			String bestCombinationsString = "[ ";
+
+			for(int i = 0; i < this.bestCombinations.length; i++){
+
+				String bestCombinationString = "[ ";
+				for(int j = 0; j < this.bestCombinations[i].length; j++){
+					bestCombinationString += this.bestCombinations[i][j] + " ";
+				}
+				bestCombinationString += "]";
+
+				bestCombinationsString += bestCombinationString + " ";
+
+			}
+
+			bestCombinationsString += "]";
+
+			params += indentation + "BEST_COMBINATIONS_INDICES = " + bestCombinationsString;
+		}else{
+			params += indentation + "BEST_COMBINATIONS = null";
+		}
+
 		if(superParams != null){
 			return superParams + params;
 		}else{
@@ -771,4 +811,5 @@ public class NaiveParametersTuner extends ParametersTuner {
 	public void memorizeBestCombinations(){
 		this.bestCombinations = this.selectedCombinations;
 	}
+
 }
