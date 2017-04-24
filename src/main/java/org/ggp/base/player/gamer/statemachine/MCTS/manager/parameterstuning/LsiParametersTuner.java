@@ -255,6 +255,8 @@ public class LsiParametersTuner extends ParametersTuner {
 		this.parametersManager.setParametersValues(selectedCombinations);
 
 		if(foundAllBest){
+			// Log the combination that we are selecting as best
+			GamerLogger.log(GamerLogger.FORMAT.CSV_FORMAT, "BestParamsCombo", this.getLogOfCombinations(this.selectedCombinations, this.isIntermediate));
 			this.stopTuning();
 		}
 
@@ -271,8 +273,8 @@ public class LsiParametersTuner extends ParametersTuner {
 		}else{
 			// Set best combo found so far
 			this.setBestCombinationSoFar();
-			GamerLogger.logError("ParametersTuner", "LsiParametersTuner - Impossible to set best combinations! The best combinations haven't been found for all roles yet!");
-			throw new RuntimeException("LsiParametersTuner - Impossible to set best combinations! The best combinations haven't been found for all roles yet!");
+			//GamerLogger.logError("ParametersTuner", "LsiParametersTuner - Impossible to set best combinations! The best combinations haven't been found for all roles yet!");
+			//throw new RuntimeException("LsiParametersTuner - Impossible to set best combinations! The best combinations haven't been found for all roles yet!");
 		}
 
 		this.stopTuning();
@@ -398,7 +400,7 @@ public class LsiParametersTuner extends ParametersTuner {
 		this.parametersManager.setParametersValues(selectedCombinations);
 
 		// Log the combination that we are selecting as best
-		GamerLogger.log(GamerLogger.FORMAT.CSV_FORMAT, "BestParamsCombo", this.getLogOfCombinations(this.bestCombinations, this.isIntermediate));
+		GamerLogger.log(GamerLogger.FORMAT.CSV_FORMAT, "BestParamsCombo", this.getLogOfCombinations(this.selectedCombinations, this.isIntermediate));
 
 	}
 
@@ -578,6 +580,10 @@ public class LsiParametersTuner extends ParametersTuner {
 					roleIndex = this.gameDependentParameters.getMyRoleIndex();
 				}
 
+				/*
+
+				toLog = "";
+
 				toLog = "\nROLE=;" + this.gameDependentParameters.getTheMachine().convertToExplicitRole(this.gameDependentParameters.getTheMachine().getRoles().get(roleIndex));
 
 				toLog = globalParamsOrder + ";TESTED_PARAM;";
@@ -589,6 +595,7 @@ public class LsiParametersTuner extends ParametersTuner {
 				}
 
 				GamerLogger.log(GamerLogger.FORMAT.CSV_FORMAT, "TestedCombos", toLog);
+				*/
 
 				toLog = "";
 
@@ -617,7 +624,17 @@ public class LsiParametersTuner extends ParametersTuner {
 				CombinatorialCompactMove theValuesIndices;
 				String theValues;
 
+				// Log at most 2000 global stats per role.
+				// This will prevent files to become too big and the player to take too much time to log.
+				//int numStats = 0;
+
 				for(CompleteMoveStats stats : globalInfo){
+
+					// Log at most 2000 global stats per role.
+					// This will prevent files to become too big and the player to take too much time to log.
+					//if(numStats == 2000){
+					//	break;
+					//}
 
 					theValuesIndices = (CombinatorialCompactMove) stats.getTheMove();
 					theValues = "[ ";
@@ -630,6 +647,8 @@ public class LsiParametersTuner extends ParametersTuner {
 					toLog += "\nROLE=;" + this.gameDependentParameters.getTheMachine().convertToExplicitRole(this.gameDependentParameters.getTheMachine().getRoles().get(roleIndex)) +
 							";PARAMS=;" + globalParamsOrder + ";COMB_MOVE=;" + theValues + ";PENALTY=;0;VISITS=;" + stats.getVisits() +
 							";SCORE_SUM=;" + stats.getScoreSum() + ";AVG_VALUE=;" + (stats.getVisits() <= 0 ? "0" : (stats.getScoreSum()/((double)stats.getVisits()))) + ";";
+
+					//numStats++;
 				}
 
 				toLog += "\n";

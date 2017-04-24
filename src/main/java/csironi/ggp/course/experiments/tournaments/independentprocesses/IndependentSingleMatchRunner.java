@@ -377,46 +377,50 @@ public class IndependentSingleMatchRunner {
 				GamerLogger.logStackTrace("MatchRunner", e);
 			}
 
-			// This is just an extra check to make sure that the gamers have stopped completely the previous game
-			// and are ready to start a new one before we set the new propnet.
-			boolean ready = true;
+			// If it's the last repetition we don't need to wait for the player to finish because it has no other games to play.
+			if(repetition < numMatches-1){
 
-			//System.out.println("Ready = " + ready);
+				// This is just an extra check to make sure that the gamers have stopped completely the previous game
+				// and are ready to start a new one before we set the new propnet.
+				boolean ready = true;
 
-			for(GamePlayer player : thePlayers){
-				//boolean isStopped = player.isGamerStopped();
-
-				//System.out.println("Player = " + player.getGamer().getName() + ", isStopped = " + isStopped);
-				ready = (ready && player.isGamerStopped());
-
-			}
-
-			//System.out.println("Ready = " + ready);
-
-			int count = 60; // Try 60 times (i.e. 1 minute) to check if players are done, otherwise stop match runner.
-
-			while(!ready && count > 0){
-
-				try {Thread.sleep(1000);} catch (InterruptedException lEx) {/* Whatever */}
-
-				ready = true;
+				//System.out.println("Ready = " + ready);
 
 				for(GamePlayer player : thePlayers){
 					//boolean isStopped = player.isGamerStopped();
 
 					//System.out.println("Player = " + player.getGamer().getName() + ", isStopped = " + isStopped);
 					ready = (ready && player.isGamerStopped());
-				}
-				//System.out.println("Ready = " + ready);
-				count--;
-			}
 
-			if(!ready){
-				GamerLogger.logError("MatchRunner", "Problem with players after end of game. At least one player is not ready to continue with the next game. Impossible to complete this run of sequential matches.");
-				for(GamePlayer player : thePlayers){
-					player.shutdown();
 				}
-				return;
+
+				//System.out.println("Ready = " + ready);
+
+				int count = 60; // Try 60 times (i.e. 1 minute) to check if players are done, otherwise stop match runner.
+
+				while(!ready && count > 0){
+
+					try {Thread.sleep(1000);} catch (InterruptedException lEx) {/* Whatever */}
+
+					ready = true;
+
+					for(GamePlayer player : thePlayers){
+						//boolean isStopped = player.isGamerStopped();
+
+						//System.out.println("Player = " + player.getGamer().getName() + ", isStopped = " + isStopped);
+						ready = (ready && player.isGamerStopped());
+					}
+					//System.out.println("Ready = " + ready);
+					count--;
+				}
+
+				if(!ready){
+					GamerLogger.logError("MatchRunner", "Problem with players after end of game. At least one player is not ready to continue with the next game. Impossible to complete this run of sequential matches.");
+					for(GamePlayer player : thePlayers){
+						player.shutdown();
+					}
+					return;
+				}
 			}
 
     	}
