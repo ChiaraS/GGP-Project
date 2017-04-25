@@ -74,7 +74,7 @@ public class HybridMctsManager {
 	private int numExpectedIterations;
 
 	/**
-	 * All the game-dependent parameters needed by the MctsManager and its strategies.
+	 * All the game-dependent and global parameters needed by the MctsManager and its strategies.
 	 * Must be reset between games.
 	 */
 	private GameDependentParameters gameDependentParameters;
