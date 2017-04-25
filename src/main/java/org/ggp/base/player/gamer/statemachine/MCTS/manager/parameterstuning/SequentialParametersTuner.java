@@ -9,7 +9,7 @@ import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.SharedReferenc
 public class SequentialParametersTuner extends ParametersTuner {
 
 	/**
-	 * If true, after all the parameters have been all tuned once sequentially,
+	 * If true, after all the parameters have been tuned once sequentially,
 	 * this tuner will randomize their order before tuning them all again sequentially.
 	 * If false, they will be tuned sequentially repeatedly always in the same order.
 	 */

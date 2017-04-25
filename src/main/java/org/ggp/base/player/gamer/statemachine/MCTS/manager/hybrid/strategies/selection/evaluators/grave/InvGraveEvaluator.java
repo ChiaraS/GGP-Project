@@ -84,7 +84,7 @@ public class InvGraveEvaluator extends UctEvaluator{
 	}
 
 	@Override
-	public double computeMoveValue(MctsNode theNode, Move theMove, int roleIndex, MoveStats theMoveStats) {
+	public double computeMoveValue(MctsNode theNode, Move theMove, int roleIndex, MoveStats theMoveStats, int parentVisits) {
 
 		if(this.amafStats == null){
 
@@ -92,7 +92,7 @@ public class InvGraveEvaluator extends UctEvaluator{
 
 			//System.out.println("returning " + super.computeMoveValue(theNode, theMove, theMoveStats));
 
-			return super.computeMoveValue(theNode, theMove, roleIndex, theMoveStats);
+			return super.computeMoveValue(theNode, theMove, roleIndex, theMoveStats, parentVisits);
 		}
 
 		MoveStats moveAmafStats = this.amafStats.get(theMove);
@@ -103,13 +103,13 @@ public class InvGraveEvaluator extends UctEvaluator{
 
 			//System.out.println("returning " + super.computeMoveValue(theNode, theMove, theMoveStats));
 
-			return super.computeMoveValue(theNode, theMove, roleIndex, theMoveStats);
+			return super.computeMoveValue(theNode, theMove, roleIndex, theMoveStats, parentVisits);
 		}
 
 		double amafScore = moveAmafStats.getScoreSum();
 		double amafVisits = moveAmafStats.getVisits();
 
-		double uct = super.computeMoveValue(theNode, theMove, roleIndex, theMoveStats);
+		double uct = super.computeMoveValue(theNode, theMove, roleIndex, theMoveStats, parentVisits);
 
 		double amafAvg = (amafScore / amafVisits) / 100.0;
 

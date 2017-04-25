@@ -133,7 +133,7 @@ public class MoveValueSelection extends SelectionStrategy {
 		for(int j = 0; j < moves[roleIndex].length; j++){
 
 			// Compute the move value.
-			moveValues[j] = this.moveEvaluator.computeMoveValue(currentNode, moves[roleIndex][j].getTheMove(), roleIndex, moves[roleIndex][j]);
+			moveValues[j] = this.moveEvaluator.computeMoveValue(currentNode, moves[roleIndex][j].getTheMove(), roleIndex, moves[roleIndex][j], currentNode.getTotVisits()[roleIndex]);
 
 			// If it's higher than the current maximum one, replace the max value.
 			if(moveValues[j] > maxMoveValue){
@@ -189,7 +189,7 @@ public class MoveValueSelection extends SelectionStrategy {
 
 		double maxMoveValue;
 		double[] moveValues;
-		//int nodeVisits = currentNode.getTotVisits();
+		int parentVisits = currentNode.getTotVisits()[roleIndex];
 
 		while(movesStats != null){
 
@@ -199,7 +199,7 @@ public class MoveValueSelection extends SelectionStrategy {
 
 			for(int i = 0; i < movesStats.length; i++){
 				// Compute the move value.
-				moveValues[i] = this.moveEvaluator.computeMoveValue(currentNode, currentNode.getAllLegalMoves().get(roleIndex).get(i), roleIndex, movesStats[i]);
+				moveValues[i] = this.moveEvaluator.computeMoveValue(currentNode, currentNode.getAllLegalMoves().get(roleIndex).get(i), roleIndex, movesStats[i], parentVisits);
 
 				// If it's higher than the current maximum one, replace the max value
 				if(moveValues[i] > maxMoveValue){
@@ -225,6 +225,9 @@ public class MoveValueSelection extends SelectionStrategy {
 			// Add one of the selected moves to the joint move.
 			movesIndices[roleIndex] = selectedMovesIndices.get(this.random.nextInt(selectedMovesIndices.size())).intValue();
 			jointMove.set(roleIndex, currentNode.getAllLegalMoves().get(roleIndex).get(movesIndices[roleIndex]));
+
+			// Get the number of visits of the selected move
+			parentVisits = movesStats[movesIndices[roleIndex]].getVisits();
 
 			// Get the move statistics of the next role, given the selected move.
 			movesStats = movesStats[movesIndices[roleIndex]].getNextRoleMovesStats();

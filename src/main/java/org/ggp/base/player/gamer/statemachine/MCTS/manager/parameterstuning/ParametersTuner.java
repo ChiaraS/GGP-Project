@@ -25,7 +25,7 @@ public abstract class ParametersTuner extends SearchManagerComponent{
 
 	/**
 	 * True if the tuner must memorize the best combinations found after the end of the first game
-	 * that is won and then re-use them for all subsequent games.
+	 * that has been won and then re-use them for all subsequent games.
 	 */
 	protected boolean reuseBestCombos;
 

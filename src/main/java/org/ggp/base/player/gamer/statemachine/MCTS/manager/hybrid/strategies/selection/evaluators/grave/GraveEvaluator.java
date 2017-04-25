@@ -143,9 +143,9 @@ public class GraveEvaluator extends UctEvaluator{
 	}
 
 	@Override
-	protected double computeExploration(MctsNode theNode, int roleIndex, MoveStats theMoveStats){
+	protected double computeExploration(MctsNode theNode, int roleIndex, MoveStats theMoveStats, int parentVisits){
 
-		double exploration = super.computeExploration(theNode, roleIndex, theMoveStats);
+		double exploration = super.computeExploration(theNode, roleIndex, theMoveStats, parentVisits);
 
 		if(exploration != -1){
 			//System.out.println("returning exploration = " + exploration);

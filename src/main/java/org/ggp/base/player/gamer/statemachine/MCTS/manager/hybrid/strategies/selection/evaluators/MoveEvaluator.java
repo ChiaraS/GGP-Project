@@ -28,6 +28,6 @@ public abstract class MoveEvaluator extends SearchManagerComponent{
 	 * @param theMoveStats the statistics collected during search for the move we want to evaluate.
 	 * @return the value of the move.
 	 */
-	public abstract double computeMoveValue(MctsNode theNode, Move theMove, int roleIndex, MoveStats theMoveStats);
+	public abstract double computeMoveValue(MctsNode theNode, Move theMove, int roleIndex, MoveStats theMoveStats, int parentVisits);
 
 }

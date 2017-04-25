@@ -20,7 +20,7 @@ public class SequentialMctsNode extends MctsNode {
 	 * shifted according to the rule that the role that's performing the search will
 	 * be the first role in the tree represented by "movesStats" (e.g. if we have the
 	 * roles [r1 r2 r3] and r2 is the role performing the search, we will have in
-	 * "movesStats" an entry for each move of r2, each of which referencing a list of
+	 * "movesStats" an entry for each move of r2, each of which is referencing a list of
 	 * the statistics of all the moves of r3, and each entry in each list for r3 will
 	 * reference a list of moves for r1).
 	 *
@@ -139,13 +139,11 @@ public class SequentialMctsNode extends MctsNode {
 	@Override
 	public void decayStatistics(double decayFactor) {
 
-		//TODO: Not implemented cause this class has a structural error
-		// The class must be refactored so that each level of the tree representing the moves
-		// of the roles sequentially is represented as a multi-armed bandit problem. In this way
-		// each MAB will keep track of its own total number of visits. Now the total number of visits
-		// for each role counts the sum of the visits of ALL the moves of the role in the level of the
-		// tree corresponding to the role. We should instead keep track of the sum of the visits of the
-		// moves for each branch of the role separately.
+		//TODO: Not implemented yet. This class had a structural error. Now it's fixed in a non-elegant way.
+		// Before implementing this method, this class must be refactored so that each level of the tree
+		// representing the moves of the roles sequentially is represented as a multi-armed bandit problem.
+		// In this way each MAB will keep track of its own total number of visits. Now the total number of
+		// visits is retrieved from the stats of the move that has been selected for the previous role.
 
 		/* E.G. given the statistics represented with the following tree
 		 *
@@ -157,15 +155,10 @@ public class SequentialMctsNode extends MctsNode {
 		 * 		   |_ r1.moveC'
 		 *
 		 * we will have that totVisits[0] = r0.moveA.visits + r0.moveB.visits
-		 * and totVisits[1] = r1.moveA.visits + r1.moveB.visits + r1.moveC.visits +
-		 *                    r1.moveA'.visits + r1.moveB'.visits + r1.moveC'.visits
-		 *
-		 * but for selecting a move for role 1 after selecting r0.moveA we only want the sum of visits
-		 * for r1.moveA, r1.moveB and r1.moveC
+		 * and totVisits[1] after selecting r0.moveA is r0.moveA.visits and
+		 * totVisits[1] after selecting r0.moveB is r0.moveB.visits
 		 *
 		 * */
-
-
 
 	}
 

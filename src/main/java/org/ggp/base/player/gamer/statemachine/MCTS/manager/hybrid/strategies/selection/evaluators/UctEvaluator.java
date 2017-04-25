@@ -124,10 +124,10 @@ public class UctEvaluator extends MoveEvaluator {
 	}
 
 	@Override
-	public double computeMoveValue(MctsNode theNode, Move theMove, int roleIndex, MoveStats theMoveStats) {
+	public double computeMoveValue(MctsNode theNode, Move theMove, int roleIndex, MoveStats theMoveStats, int parentVisits) {
 
 		double exploitation = this.computeExploitation(theNode, theMove, roleIndex, theMoveStats);
-		double exploration = this.computeExploration(theNode, roleIndex, theMoveStats);
+		double exploration = this.computeExploration(theNode, roleIndex, theMoveStats, parentVisits);
 
 		if(exploitation != -1 && exploration != -1){
 			return exploitation + exploration;
@@ -149,15 +149,15 @@ public class UctEvaluator extends MoveEvaluator {
 
 	}
 
-	protected double computeExploration(MctsNode theNode, int roleIndex, MoveStats theMoveStats){
+	protected double computeExploration(MctsNode theNode, int roleIndex, MoveStats theMoveStats, int parentVisits){
 
-		int nodeVisits = theNode.getTotVisits()[roleIndex];
+		//int parentVisits = theNode.getTotVisits()[roleIndex];
 
 		double moveVisits = theMoveStats.getVisits();
 
-		if(nodeVisits != 0 && moveVisits != 0){
+		if(parentVisits != 0 && moveVisits != 0){
 
-			return (this.c.getValuePerRole(roleIndex) * (Math.sqrt(Math.log(nodeVisits)/moveVisits)));
+			return (this.c.getValuePerRole(roleIndex) * (Math.sqrt(Math.log(parentVisits)/moveVisits)));
 		}else{
 			return -1.0;
 		}

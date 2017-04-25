@@ -22,14 +22,14 @@ import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.SharedReferenc
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.parameterstuning.selectors.RandomSelector;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.parameterstuning.selectors.TunerSelector;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.parameterstuning.structure.CombinatorialCompactMove;
-import org.ggp.base.player.gamer.statemachine.MCTS.manager.parameterstuning.structure.LsiProblemRepresentation;
-import org.ggp.base.player.gamer.statemachine.MCTS.manager.parameterstuning.structure.LsiProblemRepresentation.Phase;
+import org.ggp.base.player.gamer.statemachine.MCTS.manager.parameterstuning.structure.SimLimitedLsiProblemRepresentation;
+import org.ggp.base.player.gamer.statemachine.MCTS.manager.parameterstuning.structure.SimLimitedLsiProblemRepresentation.Phase;
 import org.ggp.base.util.logging.GamerLogger;
 import org.ggp.base.util.reflection.ProjectSearcher;
 
 import csironi.ggp.course.utils.MyPair;
 
-public class LsiParametersTuner extends ParametersTuner {
+public class AbsLsiParametersTuner extends ParametersTuner {
 
 	/**
 	 * Random selector used to select random values for the parameters when completing combinatorial moves.
@@ -70,7 +70,7 @@ public class LsiParametersTuner extends ParametersTuner {
 	/**
 	 * Lsi problem representations for each of the roles for which the parameters are being tuned.
 	 */
-	private LsiProblemRepresentation[] roleProblems;
+	private SimLimitedLsiProblemRepresentation[] roleProblems;
 
 	/**
 	 * Memorizes the last selected combination for each role.
@@ -90,7 +90,7 @@ public class LsiParametersTuner extends ParametersTuner {
 	 */
 	private boolean[] isIntermediate;
 
-	public LsiParametersTuner(GameDependentParameters gameDependentParameters, Random random, GamerSettings gamerSettings,
+	public AbsLsiParametersTuner(GameDependentParameters gameDependentParameters, Random random, GamerSettings gamerSettings,
 			SharedReferencesCollector sharedReferencesCollector) {
 		super(gameDependentParameters, random, gamerSettings, sharedReferencesCollector);
 
@@ -152,7 +152,7 @@ public class LsiParametersTuner extends ParametersTuner {
 
 		if(!this.reuseBestCombos || this.bestCombinations == null || this.bestCombinations.length != numRolesToTune){
 
-			this.roleProblems = new LsiProblemRepresentation[numRolesToTune];
+			this.roleProblems = new SimLimitedLsiProblemRepresentation[numRolesToTune];
 
 			int numSamplesPerValue = this.numGenSamples/this.parametersManager.getTotalNumPossibleValues(); // Same result as if we used floor(this.numGenSamples/this.parametersManager.getTotalNumPossibleValues();)
 
@@ -186,7 +186,7 @@ public class LsiParametersTuner extends ParametersTuner {
 				// won't be tested always against the same combination for all the roles.
 				Collections.shuffle(actionsToTest);
 
-				this.roleProblems[roleProblemIndex] = new LsiProblemRepresentation(actionsToTest, this.parametersManager.getNumPossibleValuesForAllParams(), this.updateAll);
+				this.roleProblems[roleProblemIndex] = new SimLimitedLsiProblemRepresentation(actionsToTest, this.parametersManager.getNumPossibleValuesForAllParams(), this.updateAll);
 			}
 
 			this.selectedCombinations = new int[numRolesToTune][this.parametersManager.getNumTunableParameters()];
@@ -356,6 +356,7 @@ public class LsiParametersTuner extends ParametersTuner {
 				this.selectedCombinations[roleProblemIndex] = indices;
 				this.isIntermediate[roleProblemIndex] = true;
 
+				break;
 			case EVALUATION:
 				List<CompleteMoveStats> currentCandidatesStats = new ArrayList<CompleteMoveStats>(this.roleProblems[roleProblemIndex].getGeneratedCandidatesStats().subList(0, this.roleProblems[roleProblemIndex].getNumCandidatesOfCurrentIteration()));
 
@@ -391,9 +392,11 @@ public class LsiParametersTuner extends ParametersTuner {
 
 				this.selectedCombinations[roleProblemIndex] = ((CombinatorialCompactMove) currentCandidatesStats.get(0).getTheMove()).getIndices();
 				this.isIntermediate[roleProblemIndex] = true;
+				break;
 			case BEST: case STOP:
 				// The best move has been found and is the first one in the list of candidates
 				this.selectedCombinations[roleProblemIndex] = ((CombinatorialCompactMove) this.roleProblems[roleProblemIndex].getGeneratedCandidatesStats().get(0).getTheMove()).getIndices();
+				break;
 			}
 		}
 

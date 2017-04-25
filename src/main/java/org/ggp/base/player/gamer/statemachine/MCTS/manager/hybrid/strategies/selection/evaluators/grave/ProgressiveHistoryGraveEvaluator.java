@@ -47,7 +47,7 @@ public class ProgressiveHistoryGraveEvaluator extends GraveEvaluator {
 	}
 
 	@Override
-	public double computeMoveValue(MctsNode theNode, Move theMove, int roleIndex, MoveStats theMoveStats) {
+	public double computeMoveValue(MctsNode theNode, Move theMove, int roleIndex, MoveStats theMoveStats, int parentVisits) {
 
 		// This should never happen because we should set a new reference before performing the search at every game step.
 		if(this.currentRootAmafStats == null){
@@ -80,7 +80,7 @@ public class ProgressiveHistoryGraveEvaluator extends GraveEvaluator {
 			progressiveHistory = rootAmafAvg * (this.w / ( (1.0 - moveScoreAvg) * moveVisits + 1.0));
 		}
 
-		return (super.computeMoveValue(theNode, theMove, roleIndex, theMoveStats) + progressiveHistory);
+		return (super.computeMoveValue(theNode, theMove, roleIndex, theMoveStats, parentVisits) + progressiveHistory);
 
 	}
 
