@@ -100,7 +100,11 @@ public class NaiveParametersTuner extends ParametersTuner {
 			throw new RuntimeException(e);
 		}
 
-		this.singleBest = gamerSettings.getBooleanPropertyValue("ParametersTuner.singleBest");
+		if(this.reuseBestCombos){
+			this.singleBest = gamerSettings.getBooleanPropertyValue("ParametersTuner.singleBest");
+		}else{
+			this.singleBest = false;
+		}
 
 		this.useGlobalBest = gamerSettings.getBooleanPropertyValue("ParametersTuner.useGlobalBest");
 

@@ -11,7 +11,7 @@ import org.ggp.base.util.logging.GamerLogger;
 
 import csironi.ggp.course.utils.MyPair;
 
-public class SimLimitedLsiProblemRepresentation extends LsiProblemRepresentation{
+public class SimLimitedLsiProblemRepresentation /*extends LsiProblemRepresentation*/{
 
     public enum Phase{
     	GENERATION, EVALUATION, BEST, STOP
@@ -106,36 +106,7 @@ public class SimLimitedLsiProblemRepresentation extends LsiProblemRepresentation
 		this.numCandidatesOfCurrentIteration = 0;
 
 		this.evalOrder = null;
-	}
 
-	public Phase getPhase(){
-		return this.phase;
-	}
-
-	public List<MyPair<CombinatorialCompactMove,Integer>> getCombinationsToTest(){
-		return this.combinationsToTest;
-	}
-
-	public MoveStats[][] getParamsStats(){
-		return this.paramsStats;
-	}
-
-	public void setGeneratedCandidatesStats(List<CompleteMoveStats> generatedCandidatesStats, int maxSamplesPerIteration){
-		this.generatedCandidatesStats = generatedCandidatesStats;
-		this.maxSamplesPerIteration = maxSamplesPerIteration;
-
-		this.numCandidatesOfCurrentIteration = this.generatedCandidatesStats.size();
-		this.currentIndex = 0;
-		if(this.numCandidatesOfCurrentIteration > 1){
-			this.computeEvalOrder();
-		}else{ // Otherwise we only have one candidate, that is automatically the best
-			this.evalOrder = null;
-			this.phase = Phase.STOP;
-		}
-	}
-
-	public List<CompleteMoveStats> getGeneratedCandidatesStats(){
-		return this.generatedCandidatesStats;
 	}
 
 	public int[] getNextCombination(){
@@ -262,8 +233,42 @@ public class SimLimitedLsiProblemRepresentation extends LsiProblemRepresentation
 
 	}
 
+	public void setGeneratedCandidatesStats(List<CompleteMoveStats> generatedCandidatesStats, int maxSamplesPerIteration){
+		this.generatedCandidatesStats = generatedCandidatesStats;
+		this.maxSamplesPerIteration = maxSamplesPerIteration;
+
+		this.numCandidatesOfCurrentIteration = this.generatedCandidatesStats.size();
+		this.currentIndex = 0;
+		if(this.numCandidatesOfCurrentIteration > 1){
+			this.computeEvalOrder();
+		}else{ // Otherwise we only have one candidate, that is automatically the best
+			this.evalOrder = null;
+			this.phase = Phase.STOP;
+		}
+	}
+
 	public int getNumCandidatesOfCurrentIteration(){
 		return this.numCandidatesOfCurrentIteration;
+	}
+
+	public List<MyPair<CombinatorialCompactMove,Integer>> getCombinationsToTest(){
+		return this.combinationsToTest;
+	}
+
+	public MoveStats[][] getParamsStats(){
+		return this.paramsStats;
+	}
+
+	public Phase getPhase(){
+		return this.phase;
+	}
+
+
+
+
+
+	public List<CompleteMoveStats> getGeneratedCandidatesStats(){
+		return this.generatedCandidatesStats;
 	}
 
 }

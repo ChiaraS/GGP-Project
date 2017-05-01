@@ -29,7 +29,7 @@ import org.ggp.base.util.reflection.ProjectSearcher;
 
 import csironi.ggp.course.utils.MyPair;
 
-public class AbsLsiParametersTuner extends ParametersTuner {
+public class SimLimitedLsiParametersTuner extends ParametersTuner {
 
 	/**
 	 * Random selector used to select random values for the parameters when completing combinatorial moves.
@@ -90,7 +90,7 @@ public class AbsLsiParametersTuner extends ParametersTuner {
 	 */
 	private boolean[] isIntermediate;
 
-	public AbsLsiParametersTuner(GameDependentParameters gameDependentParameters, Random random, GamerSettings gamerSettings,
+	public SimLimitedLsiParametersTuner(GameDependentParameters gameDependentParameters, Random random, GamerSettings gamerSettings,
 			SharedReferencesCollector sharedReferencesCollector) {
 		super(gameDependentParameters, random, gamerSettings, sharedReferencesCollector);
 
@@ -108,6 +108,9 @@ public class AbsLsiParametersTuner extends ParametersTuner {
 			throw new RuntimeException(e);
 		}
 
+		// TODO: specify only the percentage of the total budget that must be used for generation. As total budget use
+		// the BeforeSimulationStrategy.simBudget, if any, otherwise throw exception because the SimLimitedLsiTuner can
+		// be used only if the number of simulations is limited.
 		this.numGenSamples = gamerSettings.getIntPropertyValue("ParametersTuner.numGenSamples");
 
 		this.updateAll = gamerSettings.getBooleanPropertyValue("ParametersTuner.updateAll");
@@ -133,6 +136,8 @@ public class AbsLsiParametersTuner extends ParametersTuner {
 
 		this.randomSelector.setReferences(sharedReferencesCollector);
 
+		this.bestCombinationSoFarSelector.setReferences(sharedReferencesCollector);
+
 	}
 
 	@Override
@@ -141,6 +146,8 @@ public class AbsLsiParametersTuner extends ParametersTuner {
 		super.setUpComponent();
 
 		this.randomSelector.setUpComponent();
+
+		this.bestCombinationSoFarSelector.setUpComponent();
 
 		int numRolesToTune;
 

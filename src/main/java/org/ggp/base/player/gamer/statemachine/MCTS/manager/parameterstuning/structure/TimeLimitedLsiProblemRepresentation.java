@@ -11,12 +11,7 @@ import org.ggp.base.player.gamer.statemachine.MCTS.manager.parameterstuning.stru
 
 import csironi.ggp.course.utils.MyPair;
 
-public class TimeLimitedLsiProblemRepresentation extends LsiProblemRepresentation {
-
-
-    public enum TimePhase{
-    	GENERATION, EVALUATION, BEST, STOP
-    }
+public class TimeLimitedLsiProblemRepresentation /*extends LsiProblemRepresentation*/ {
 
     /**
      * Phase of this LSI problem.
@@ -62,6 +57,23 @@ public class TimeLimitedLsiProblemRepresentation extends LsiProblemRepresentatio
 	private List<CompleteMoveStats> generatedCandidatesStats;
 
 	/**
+	 * Timeout for the evaluation phase.
+	 */
+	private long evalPhaseTimeout;
+
+	/**
+	 * Timeout for the current iteration of sequential halving.
+	 */
+	private long currentTimeout;
+
+	/**
+	 * Number of candidates being considered during the current iteration of the evaluation phase.
+	 * Each time we finish evaluating all of them, they will be halved and only the best half of
+	 * them will be considered.
+	 */
+	private int numCandidatesOfCurrentIteration;
+
+	/**
 	 * List of indices of the combinations for the evaluation phase in a random order, specifying the order in which the
 	 * generated combinations will be evaluated. When all combination shave been evaluated once, shuffle this order and
 	 * start evaluating them again.
@@ -73,14 +85,7 @@ public class TimeLimitedLsiProblemRepresentation extends LsiProblemRepresentatio
      */
     private int evalOrderIndex;
 
-	/**
-	 * Number of candidates being considered during the current iteration of the evaluation phase.
-	 * Each time we finish evaluating all of them, they will be halved and only the best half of
-	 * them will be considered.
-	 */
-	private int numCandidatesOfCurrentIteration;
-
-	public TimeLimitedLsiProblemRepresentation(List<MyPair<CombinatorialCompactMove,Integer>> combinationsToTest, int[] numValuesPerParam, boolean updateAll) {
+	public TimeLimitedLsiProblemRepresentation(int[] numValuesPerParam, boolean updateAll) {
 
 		this.phase = Phase.GENERATION;
 
@@ -103,29 +108,21 @@ public class TimeLimitedLsiProblemRepresentation extends LsiProblemRepresentatio
 
 		this.generatedCandidatesStats = null;
 
+		this.evalPhaseTimeout = -1;
+
+		this.currentTimeout = -1;
+
+		this.numCandidatesOfCurrentIteration = -1;
+
 		this.evalOrder = null;
 
-		this.evalOrderIndex = 0;
+		this.evalOrderIndex = -1;
 
-		this.numCandidatesOfCurrentIteration = 0;
-
-	}
-
-	public void restartGenerationPhase(){
-		this.phase = Phase.GENERATION;
 	}
 
 	public MyPair<Integer,Integer> getNextParamValueToTest(){
+		this.phase = Phase.GENERATION;
 		return this.testOrder.get(this.testOrderIndex);
-	}
-
-	public int[] getNextCandidateToEvaluate(){
-		return ((CombinatorialCompactMove) this.generatedCandidatesStats.get(this.evalOrder.get(this.evalOrderIndex)).getTheMove()).getIndices();
-	}
-
-	public int[] getBestCandidate(){
-		this.phase = Phase.STOP;
-		return ((CombinatorialCompactMove) this.generatedCandidatesStats.get(0).getTheMove()).getIndices();
 	}
 
 	/**
@@ -157,29 +154,31 @@ public class TimeLimitedLsiProblemRepresentation extends LsiProblemRepresentatio
 		}
 	}
 
-	public void updateStatsOfCandidate(int reward){
-
-		this.generatedCandidatesStats.get(this.evalOrder.get(this.evalOrderIndex)).incrementScoreSum(reward);
-		this.generatedCandidatesStats.get(this.evalOrder.get(this.evalOrderIndex)).incrementVisits();
-
-		this.evalOrderIndex++;
-
-		if(this.evalOrderIndex == this.evalOrder.size()){ // All candidates have been tested once
-			// Shuffle the order and restart from the beginning of evalOrder.
-			Collections.shuffle(this.evalOrder);
-			this.evalOrderIndex = 0;
-		}
-
-	}
-
-	public void setGeneratedCandidatesStats(List<CompleteMoveStats> generatedCandidatesStats){
-		this.generatedCandidatesStats = generatedCandidatesStats;
-
-		this.numCandidatesOfCurrentIteration = this.generatedCandidatesStats.size();
-		this.evalOrderIndex = 0;
-		this.computeEvalOrder();
+	public void setGeneratedCandidatesStats(List<CompleteMoveStats> generatedCandidatesStats, long evalPhaseTimeout){
 
 		this.phase = Phase.EVALUATION;
+
+		this.generatedCandidatesStats = generatedCandidatesStats;
+		this.evalPhaseTimeout = evalPhaseTimeout;
+
+		this.numCandidatesOfCurrentIteration = this.generatedCandidatesStats.size();
+
+		this.evalOrderIndex = 0;
+
+		if(this.numCandidatesOfCurrentIteration > 1){
+			int numIterations = (int) Math.ceil(Math.log(this.numCandidatesOfCurrentIteration)/Math.log(2.0));
+			this.computeEvalOrder();
+			long currentTime = System.currentTimeMillis();
+			if(currentTime < this.evalPhaseTimeout){
+				this.currentTimeout = currentTime + (this.evalPhaseTimeout-currentTime)/numIterations;
+			}else{
+				this.currentTimeout = this.evalPhaseTimeout;
+			}
+		}else{ // Otherwise we only have one candidate, that is automatically the best
+			this.evalOrder = null;
+			this.phase = Phase.STOP;
+		}
+
 	}
 
 	public void computeEvalOrder(){
@@ -195,7 +194,32 @@ public class TimeLimitedLsiProblemRepresentation extends LsiProblemRepresentatio
 
 	}
 
-	public void halveCandidates(){
+	public int[] getNextCandidateToEvaluate(){
+
+		while(System.currentTimeMillis() >= this.currentTimeout){
+			this.halveCandidates();
+
+			this.computeEvalOrder();
+			this.evalOrderIndex = 0;
+
+			if(this.numCandidatesOfCurrentIteration > 1){
+				int numIterations = (int) Math.ceil(Math.log(this.numCandidatesOfCurrentIteration)/Math.log(2.0));
+
+				long currentTime = System.currentTimeMillis();
+				if(currentTime < this.evalPhaseTimeout){
+					this.currentTimeout = currentTime + (this.evalPhaseTimeout-currentTime)/numIterations;
+				}else{
+					this.currentTimeout = this.evalPhaseTimeout;
+				}
+			}else{ // Otherwise we only have one candidate, that is automatically the best
+				this.phase = Phase.STOP;
+				break;
+			}
+		}
+		return ((CombinatorialCompactMove) this.generatedCandidatesStats.get(this.evalOrder.get(this.evalOrderIndex)).getTheMove()).getIndices();
+	}
+
+	private void halveCandidates(){
 		// We must half the candidates and recompute the order.
 		Collections.sort(this.generatedCandidatesStats.subList(0,this.numCandidatesOfCurrentIteration),
 				new Comparator<CompleteMoveStats>(){
@@ -228,22 +252,36 @@ public class TimeLimitedLsiProblemRepresentation extends LsiProblemRepresentatio
 				});
 
 		this.numCandidatesOfCurrentIteration = (int) Math.ceil((double)this.numCandidatesOfCurrentIteration/2.0);
-		this.evalOrderIndex = 0;
+		//this.evalOrderIndex = 0;
 
+		/*
 		if(this.numCandidatesOfCurrentIteration > 1){
 			this.computeEvalOrder();
 		}else{ // Otherwise we only have one candidate, that is automatically the best
 			this.evalOrder = null;
-			this.phase = Phase.BEST;
-		}
+			this.phase = Phase.STOP;
+		}*/
 	}
+
+	public void updateStatsOfCandidate(int reward){
+
+		this.generatedCandidatesStats.get(this.evalOrder.get(this.evalOrderIndex)).incrementScoreSum(reward);
+		this.generatedCandidatesStats.get(this.evalOrder.get(this.evalOrderIndex)).incrementVisits();
+
+		this.evalOrderIndex++;
+
+		if(this.evalOrderIndex == this.evalOrder.size()){ // All candidates have been tested once
+			// Shuffle the order and restart from the beginning of evalOrder.
+			Collections.shuffle(this.evalOrder);
+			this.evalOrderIndex = 0;
+		}
+
+	}
+
+
 
 	public int getNumCandidatesOfCurrentIteration(){
 		return this.numCandidatesOfCurrentIteration;
-	}
-
-	public Phase getPhase(){
-		return this.phase;
 	}
 
 	public MoveStats[][] getParamsStats(){
@@ -252,5 +290,13 @@ public class TimeLimitedLsiProblemRepresentation extends LsiProblemRepresentatio
 
 	public List<CompleteMoveStats> getGeneratedCandidatesStats(){
 		return this.generatedCandidatesStats;
+	}
+
+	public Phase getPhase(){
+		return this.phase;
+	}
+
+	public void setPhase(Phase phase){
+		this.phase = phase;
 	}
 }
