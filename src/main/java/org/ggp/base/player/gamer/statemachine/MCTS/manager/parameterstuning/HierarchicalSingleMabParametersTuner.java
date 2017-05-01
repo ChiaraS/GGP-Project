@@ -28,6 +28,15 @@ public class HierarchicalSingleMabParametersTuner extends SingleMabParametersTun
 	 */
 	private int[][] selectedExpandedCombinationsIndices;
 
+	/**
+	 * Memorizes for each MAB the indices of the best move for each class (i.e. indices of the
+	 * best value for each parameter).
+	 *
+	 * bestExpandedCombinationsIndices[mabIndex][paramIndex] = index of the value selected for paramIndex
+	 * for the role associated with the MAB at mabIndex.
+	 */
+	private int[][] bestExpandedCombinationsIndices;
+
 	public HierarchicalSingleMabParametersTuner(GameDependentParameters gameDependentParameters, Random random,
 			GamerSettings gamerSettings, SharedReferencesCollector sharedReferencesCollector) {
 		super(gameDependentParameters, random, gamerSettings, sharedReferencesCollector);
@@ -206,7 +215,7 @@ public class HierarchicalSingleMabParametersTuner extends SingleMabParametersTun
 	@Override
 	public void logStats() {
 
-		GamerLogger.log(GamerLogger.FORMAT.CSV_FORMAT, "HierParametersTunerStats", "");
+		GamerLogger.log(GamerLogger.FORMAT.CSV_FORMAT, "HierParamTunerStats", "");
 
 		for(int roleMabIndex = 0; roleMabIndex < this.rolesMabs.length; roleMabIndex++){
 
@@ -227,7 +236,7 @@ public class HierarchicalSingleMabParametersTuner extends SingleMabParametersTun
 			MoveStats[] stats = currentMab.getMoveStats();
 
 			for(int paramValueIndex = 0; paramValueIndex < stats.length; paramValueIndex++){
-				GamerLogger.log(GamerLogger.FORMAT.CSV_FORMAT, "HierParametersTunerStats",
+				GamerLogger.log(GamerLogger.FORMAT.CSV_FORMAT, "HierParamTunerStats",
 						"ROLE=;" + this.gameDependentParameters.getTheMachine().convertToExplicitRole(this.gameDependentParameters.getTheMachine().getRoles().get(roleIndex)) +
 						";PARAMS=;[ " + partialParams + this.parametersManager.getName(paramIndex) +
 						" ];PARTIAL_VALUES=;[ " + partialParamValues + this.parametersManager.getPossibleValues(paramIndex)[paramValueIndex] +
@@ -240,7 +249,7 @@ public class HierarchicalSingleMabParametersTuner extends SingleMabParametersTun
 
 			if(nextMabs != null){
 				for(int paramValueIndex = 0; paramValueIndex < nextMabs.length; paramValueIndex++){
-					GamerLogger.log(GamerLogger.FORMAT.CSV_FORMAT, "HierParametersTunerStats", "");
+					GamerLogger.log(GamerLogger.FORMAT.CSV_FORMAT, "HierParamTunerStats", "");
 					this.logStatsOfMab(nextMabs[paramValueIndex], roleIndex, partialParamValues +
 							this.parametersManager.getPossibleValues(paramIndex)[paramValueIndex] + " ",
 							partialParams + this.parametersManager.getName(paramIndex) + " ", paramIndex+1);
@@ -269,8 +278,7 @@ public class HierarchicalSingleMabParametersTuner extends SingleMabParametersTun
 
 	@Override
 	public void memorizeBestCombinations() {
-		// TODO Auto-generated method stub
-
+		this.bestExpandedCombinationsIndices = this.selectedExpandedCombinationsIndices;
 	}
 
 

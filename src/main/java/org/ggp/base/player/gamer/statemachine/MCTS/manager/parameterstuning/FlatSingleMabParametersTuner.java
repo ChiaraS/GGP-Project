@@ -1,5 +1,6 @@
 package org.ggp.base.player.gamer.statemachine.MCTS.manager.parameterstuning;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
 
@@ -39,6 +40,11 @@ public class FlatSingleMabParametersTuner extends SingleMabParametersTuner {
 	 */
 	private int[] selectedCombinationsIndices;
 
+	/**
+	 * Memorizes for each MAB the index of the best combinatorial move.
+	 */
+	private int[] bestCombinationsIndices;
+
 	public FlatSingleMabParametersTuner(GameDependentParameters gameDependentParameters, Random random,
 			GamerSettings gamerSettings, SharedReferencesCollector sharedReferencesCollector) {
 		super(gameDependentParameters, random, gamerSettings, sharedReferencesCollector);
@@ -50,6 +56,8 @@ public class FlatSingleMabParametersTuner extends SingleMabParametersTuner {
 		this.rolesMabs = null;
 
 		this.selectedCombinationsIndices = null;
+
+		this.bestCombinationsIndices = null;
 
 	}
 
@@ -78,6 +86,7 @@ public class FlatSingleMabParametersTuner extends SingleMabParametersTuner {
 		// combinations of values are the same for each role.
 
 		// Create all the possible combinatorial moves and corresponding penalty
+		this.newCombinatorialMoves = new ArrayList<CombinatorialCompactMove>();
 		int[] partialCombo = new int[this.parametersManager.getNumTunableParameters()];
 		for(int i = 0; i < partialCombo.length; i++){
 			partialCombo[i] = -1;
@@ -92,17 +101,30 @@ public class FlatSingleMabParametersTuner extends SingleMabParametersTuner {
 	}
 
     private void crossProduct(int paramIndex, int[] partialCombo){
+
+		//System.out.println("ParamIndex = " + paramIndex + ", Combo = " + Arrays.toString(partialCombo));
+
         if (paramIndex == this.parametersManager.getNumTunableParameters()) {
+        	//System.out.println("Adding");
             this.newCombinatorialMoves.add(new CombinatorialCompactMove(this.copyArray(partialCombo)));
+            //System.out.println("Returning");
         } else {
         	boolean atLeastOneFeasibleCombo = false;
             for(int i = 0; i < this.parametersManager.getNumPossibleValues(paramIndex); i++) {
+
+            	//System.out.println(i);
+
+            	//System.out.println("Possibe values = " + this.parametersManager.getNumPossibleValues(paramIndex));
             	partialCombo[paramIndex] = i;
             	if(this.parametersManager.isValid(partialCombo)){
             		atLeastOneFeasibleCombo = true;
+            		//System.out.println("PRE - ParamIndex = " + paramIndex + ", Combo = " + Arrays.toString(partialCombo));
             		this.crossProduct(paramIndex+1, partialCombo);
+            		//System.out.println("POST - ParamIndex = " + paramIndex + ", Combo = " + Arrays.toString(partialCombo));
             	}
+            	//System.out.println("PREPRE - ParamIndex = " + paramIndex + ", Combo = " + Arrays.toString(partialCombo));
             	partialCombo[paramIndex] = -1;
+            	//System.out.println("POSTPOST - ParamIndex = " + paramIndex + ", Combo = " + Arrays.toString(partialCombo));
             }
             if(!atLeastOneFeasibleCombo){
             	String partialComboString = "[ ";
@@ -346,7 +368,7 @@ public class FlatSingleMabParametersTuner extends SingleMabParametersTuner {
 	@Override
 	public void logStats(){
 
-		GamerLogger.log(GamerLogger.FORMAT.CSV_FORMAT, "GlobalParametersTunerStats", "");
+		GamerLogger.log(GamerLogger.FORMAT.CSV_FORMAT, "GlobalParamTunerStats", "");
 
 		String globalParamsOrder = "[ ";
 		for(int paramIndex = 0; paramIndex < this.parametersManager.getNumTunableParameters(); paramIndex++){
@@ -377,10 +399,10 @@ public class FlatSingleMabParametersTuner extends SingleMabParametersTuner {
 				}
 				theValues += "]";
 
-				GamerLogger.log(GamerLogger.FORMAT.CSV_FORMAT, "ParametersTunerStats", "ROLE=;" + this.gameDependentParameters.getTheMachine().convertToExplicitRole(this.gameDependentParameters.getTheMachine().getRoles().get(roleIndex)) + ";PARAMS=;" + globalParamsOrder + ";COMBINATORIAL_MOVE=;" + theValues + ";PENALTY=;" + (this.combinatorialMovesPenalty != null ? this.combinatorialMovesPenalty[comboIndex] : 0) + ";VISITS=;" + allMoveStats[comboIndex].getVisits() + ";SCORE_SUM=;" + allMoveStats[comboIndex].getScoreSum() + ";AVG_VALUE=;" + (allMoveStats[comboIndex].getVisits() <= 0 ? "0" : (allMoveStats[comboIndex].getScoreSum()/((double)allMoveStats[comboIndex].getVisits()))));
+				GamerLogger.log(GamerLogger.FORMAT.CSV_FORMAT, "GlobalParamTunerStats", "ROLE=;" + this.gameDependentParameters.getTheMachine().convertToExplicitRole(this.gameDependentParameters.getTheMachine().getRoles().get(roleIndex)) + ";PARAMS=;" + globalParamsOrder + ";COMBINATORIAL_MOVE=;" + theValues + ";PENALTY=;" + (this.combinatorialMovesPenalty != null ? this.combinatorialMovesPenalty[comboIndex] : 0) + ";VISITS=;" + allMoveStats[comboIndex].getVisits() + ";SCORE_SUM=;" + allMoveStats[comboIndex].getScoreSum() + ";AVG_VALUE=;" + (allMoveStats[comboIndex].getVisits() <= 0 ? "0" : (allMoveStats[comboIndex].getScoreSum()/((double)allMoveStats[comboIndex].getVisits()))));
 			}
 
-			GamerLogger.log(GamerLogger.FORMAT.CSV_FORMAT, "ParametersTunerStats", "");
+			GamerLogger.log(GamerLogger.FORMAT.CSV_FORMAT, "GlobalParamTunerStats", "");
 
 		}
 
@@ -393,6 +415,7 @@ public class FlatSingleMabParametersTuner extends SingleMabParametersTuner {
 
 		String params = "";
 
+		/*
 		if(this.newCombinatorialMoves != null){
 			String combinatorialMovesString = "[ ";
 
@@ -424,6 +447,7 @@ public class FlatSingleMabParametersTuner extends SingleMabParametersTuner {
 		}else{
 			params += indentation + "COMBINATORIAL_MOVES_PENALTY = null";
 		}
+		*/
 
 		if(this.selectedCombinationsIndices != null){
 			String selectedCombinationsIndicesString = "[ ";
@@ -437,6 +461,22 @@ public class FlatSingleMabParametersTuner extends SingleMabParametersTuner {
 			selectedCombinationsIndicesString += "]";
 
 			params += indentation + "SELECTED_COMBINATIONS_INDICES = " + selectedCombinationsIndicesString;
+		}else{
+			params += indentation + "SELECTED_COMBINATIONS_INDICES = null";
+		}
+
+		if(this.bestCombinationsIndices != null){
+			String bestCombinationsIndicesString = "[ ";
+
+			for(int i = 0; i < this.bestCombinationsIndices.length; i++){
+
+				bestCombinationsIndicesString += this.bestCombinationsIndices[i] + " ";
+
+			}
+
+			bestCombinationsIndicesString += "]";
+
+			params += indentation + "SELECTED_COMBINATIONS_INDICES = " + bestCombinationsIndicesString;
 		}else{
 			params += indentation + "SELECTED_COMBINATIONS_INDICES = null";
 		}

@@ -330,7 +330,6 @@ public class HybridMctsManager {
 		}
 		this.treeNodeFactory.setReferences(sharedReferencesCollector);
 
-
 		GamerLogger.log("SearchManagerCreation", "Creation of search manager for gamer " + gamerType + " ended successfully.");
 		//this.strategies.add(this.expansionStrategy);
 		//this.strategies.add(this.selectionStrategy);
