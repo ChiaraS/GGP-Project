@@ -12,9 +12,13 @@ public class TunerAfterGame extends AfterGameStrategy {
 
 	private ParametersTuner parametersTuner;
 
+	private boolean logAfterGame;
+
 	public TunerAfterGame(GameDependentParameters gameDependentParameters, Random random,
 			GamerSettings gamerSettings, SharedReferencesCollector sharedReferencesCollector, String id) {
 		super(gameDependentParameters, random, gamerSettings, sharedReferencesCollector, id);
+
+		this.logAfterGame = gamerSettings.getBooleanPropertyValue("AfterGameStrategy.logAfterGame");
 	}
 
 	@Override
@@ -42,7 +46,9 @@ public class TunerAfterGame extends AfterGameStrategy {
 			// Note that the best combination will be memorized, but re-used only if the tuner is set to do so
 			this.parametersTuner.memorizeBestCombinations();
 		}
-		this.parametersTuner.logStats();
+		if(this.logAfterGame){
+			this.parametersTuner.logStats();
+		}
 	}
 
 	@Override
