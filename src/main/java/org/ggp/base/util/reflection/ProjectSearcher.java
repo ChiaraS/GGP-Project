@@ -9,6 +9,7 @@ import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.strategies.aft
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.strategies.aftersimulation.AfterSimulationStrategy;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.strategies.backpropagation.BackpropagationStrategy;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.strategies.backpropagation.nodeupdaters.NodeUpdater;
+import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.strategies.beforemove.BeforeMoveStrategy;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.strategies.beforesimualtion.BeforeSimulationStrategy;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.strategies.expansion.ExpansionStrategy;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.strategies.movechoice.MoveChoiceStrategy;
@@ -57,6 +58,7 @@ public class ProjectSearcher {
     public static final LoadedClasses<ParametersOrder> PARAMETERS_ORDER = new LoadedClasses<ParametersOrder>(ParametersOrder.class);
     public static final LoadedClasses<BiasComputer> BIAS_COMPUTERS = new LoadedClasses<BiasComputer>(BiasComputer.class);
     // Strategies
+    public static final LoadedClasses<BeforeMoveStrategy> BEFORE_MOVE_STRATEGIES = new LoadedClasses<BeforeMoveStrategy>(BeforeMoveStrategy.class);
     public static final LoadedClasses<AfterMoveStrategy> AFTER_MOVE_STRATEGIES = new LoadedClasses<AfterMoveStrategy>(AfterMoveStrategy.class);
     public static final LoadedClasses<AfterGameStrategy> AFTER_GAME_STRATEGIES = new LoadedClasses<AfterGameStrategy>(AfterGameStrategy.class);
     public static final LoadedClasses<AfterSimulationStrategy> AFTER_SIMULATION_STRATEGIES = new LoadedClasses<AfterSimulationStrategy>(AfterSimulationStrategy.class);

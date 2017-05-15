@@ -11,6 +11,7 @@ import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.strategies.Aft
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.strategies.aftermove.AfterMoveStrategy;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.strategies.aftersimulation.AfterSimulationStrategy;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.strategies.backpropagation.BackpropagationStrategy;
+import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.strategies.beforemove.BeforeMoveStrategy;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.strategies.beforesimualtion.BeforeSimulationStrategy;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.strategies.expansion.ExpansionStrategy;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.strategies.movechoice.MoveChoiceStrategy;
@@ -100,6 +101,8 @@ public class HybridMctsManager {
 	 * or decay some statistics). The following strategies allow to specify the actions to be taken in
 	 * such situations. If nothing has to be done, just set these strategies to null.
 	 */
+	private BeforeMoveStrategy beforeMoveStrategy;
+
 	private BeforeSimulationStrategy beforeSimulationStrategy;
 
 	private AfterSimulationStrategy afterSimulationStrategy;
@@ -222,6 +225,21 @@ public class HybridMctsManager {
 			throw new RuntimeException(e);
 		}
 
+		if(gamerSettings.specifiesProperty("SearchManager.beforeMoveStrategyType")){
+
+			propertyValue = gamerSettings.getPropertyValue("SearchManager.beforeMoveStrategyType");
+			try {
+				this.beforeMoveStrategy = (BeforeMoveStrategy) SearchManagerComponent.getConstructorForSearchManagerComponent(SearchManagerComponent.getCorrespondingClass(ProjectSearcher.BEFORE_MOVE_STRATEGIES.getConcreteClasses(),
+						propertyValue)).newInstance(gameDependentParameters, random, gamerSettings, sharedReferencesCollector);
+			} catch (InstantiationException | IllegalAccessException
+					| IllegalArgumentException | InvocationTargetException e) {
+				// TODO: fix this!
+				GamerLogger.logError("SearchManagerCreation", "Error when instantiating BeforeMoveStrategy " + propertyValue + ".");
+				GamerLogger.logStackTrace("SearchManagerCreation", e);
+				throw new RuntimeException(e);
+			}
+		}
+
 		if(gamerSettings.specifiesProperty("SearchManager.beforeSimulationStrategyType")){
 
 			propertyValue = gamerSettings.getPropertyValue("SearchManager.beforeSimulationStrategyType");
@@ -316,6 +334,9 @@ public class HybridMctsManager {
 		this.playoutStrategy.setReferences(sharedReferencesCollector);
 		this.backpropagationStrategy.setReferences(sharedReferencesCollector);
 		this.moveChoiceStrategy.setReferences(sharedReferencesCollector);
+		if(this.beforeMoveStrategy != null){
+			this.beforeMoveStrategy.setReferences(sharedReferencesCollector);
+		}
 		if(this.beforeSimulationStrategy != null){
 			this.beforeSimulationStrategy.setReferences(sharedReferencesCollector);
 		}
@@ -357,6 +378,12 @@ public class HybridMctsManager {
 		toLog += "\nPLAYOUT_STRATEGY = " + this.playoutStrategy.printComponent("\n  ");
 		toLog += "\nBACKPROPAGATION_STRATEGY = " + this.backpropagationStrategy.printComponent("\n  ");
 		toLog += "\nMOVE_CHOICE_STRATEGY = " + this.moveChoiceStrategy.printComponent("\n  ");
+
+		if(this.beforeMoveStrategy != null){
+			toLog += "\nBEFORE_MOVE_STRATEGY = " + this.beforeMoveStrategy.printComponent("\n  ");
+		}else{
+			toLog += "\nBEFORE_MOVE_STRATEGY = null";
+		}
 
 		if(this.beforeSimulationStrategy != null){
 			toLog += "\nBEFORE_SIM_STRATEGY = " + this.beforeSimulationStrategy.printComponent("\n  ");
@@ -406,6 +433,9 @@ public class HybridMctsManager {
 		this.playoutStrategy.clearComponent();
 		this.backpropagationStrategy.clearComponent();
 		this.moveChoiceStrategy.clearComponent();
+		if(this.beforeMoveStrategy != null){
+			this.beforeMoveStrategy.clearComponent();
+		}
 		if(this.beforeSimulationStrategy != null){
 			this.beforeSimulationStrategy.clearComponent();
 		}
@@ -439,6 +469,9 @@ public class HybridMctsManager {
 		this.playoutStrategy.setUpComponent();
 		this.backpropagationStrategy.setUpComponent();
 		this.moveChoiceStrategy.setUpComponent();
+		if(this.beforeMoveStrategy != null){
+			this.beforeMoveStrategy.setUpComponent();
+		}
 		if(this.beforeSimulationStrategy != null){
 			this.beforeSimulationStrategy.setUpComponent();
 		}
@@ -511,6 +544,17 @@ public class HybridMctsManager {
 		// couldn't be correctly computed for all roles.
 		if(initialNode.isTerminal()){
 			throw new MCTSException("Impossible to perform search using the given state as root, state is terminal.");
+		}
+
+		/*
+		 * NOTE! This is executed before every new search even if it's still for the same step.
+		 * TODO: revise responsibilities of BeforeMoveStrategy and AfterMoveStrategy. These two
+		 * strategies are called more or less at the same point but BeforeMoveStrategy is called
+		 * before any new search while AfterMoveStrategy is called before a new search only fi the
+		 * search is for a new step of the game.
+		 */
+		if(this.beforeMoveStrategy != null){
+			this.beforeMoveStrategy.beforeMoveActions(timeout);
 		}
 
 		this.performSearch(initialState, initialNode, timeout);

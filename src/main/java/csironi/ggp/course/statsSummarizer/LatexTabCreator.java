@@ -75,7 +75,7 @@ public class LatexTabCreator {
 		gameKeyMap.put("ticTacToe","ticTacToe");
 		*********** GAMES KEY MAP FOR PN PAPER - END *************/
 
-		gameKeyMap.put("OverallAvg","Avg Win\\%");
+		gameKeyMap.put("OverallStats","Avg Win\\%");
 
 		gamesOrder = new ArrayList<String>();
 
@@ -121,7 +121,7 @@ public class LatexTabCreator {
 		gamesOrder.add("ticTacToe");
 		/*********** GAMES ORDER FOR GRAVE PAPER -END *************/
 
-		gamesOrder.add("OverallAvg");
+		gamesOrder.add("OverallStats");
 
 	}
 

@@ -24,11 +24,17 @@ import org.ggp.base.player.gamer.statemachine.MCTS.manager.parameterstuning.sele
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.parameterstuning.structure.CombinatorialCompactMove;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.parameterstuning.structure.TimeLimitedLsiProblemRepresentation;
 import org.ggp.base.util.logging.GamerLogger;
+import org.ggp.base.util.logging.GamerLogger.FORMAT;
 import org.ggp.base.util.reflection.ProjectSearcher;
 
 import csironi.ggp.course.utils.MyPair;
 
 public class TimeLimitedLsiParametersTuner extends ParametersTuner {
+
+	/**
+	 * True if LSI could terminate execution before the end of the timeout for the last performed game step.
+	 */
+	private boolean doneForStep;
 
 	/**
 	 * Random selector used to select random values for the parameters when completing combinatorial moves.
@@ -56,6 +62,7 @@ public class TimeLimitedLsiParametersTuner extends ParametersTuner {
 	 * Percentage of the total budget (i.e. total time) that will be dedicated to the generation of
 	 * candidate combinatorial actions (i.e. combinations of parameters) that will be evaluated in
 	 * the subsequent phase. The remaining budget will be used for the evaluation phase.
+	 * Must be specified as a number in the interval [0, 1].
 	 */
 	private double generationPercentage;
 
@@ -133,6 +140,8 @@ public class TimeLimitedLsiParametersTuner extends ParametersTuner {
 
 		this.isIntermediate = null;
 
+		this.doneForStep = false;
+
 	}
 
 	@Override
@@ -150,6 +159,8 @@ public class TimeLimitedLsiParametersTuner extends ParametersTuner {
 	public void setUpComponent() {
 
 		super.setUpComponent();
+
+		this.doneForStep = false;
 
 		this.randomSelector.setUpComponent();
 
@@ -205,9 +216,16 @@ public class TimeLimitedLsiParametersTuner extends ParametersTuner {
 
 		this.selectedCombinations = null;
 
+		this.doneForStep = false;
+
 	}
 
 	public void startTuningForNewStep(long timeout){
+
+		// The first time will log always false. The first line of the file "LSITermination" should thus be ignored.
+		GamerLogger.log(FORMAT.CSV_FORMAT, "LSITermination", "Termination;" + this.doneForStep);
+
+		this.doneForStep = false;
 
 		long currentTime = System.currentTimeMillis();
 
@@ -297,6 +315,8 @@ public class TimeLimitedLsiParametersTuner extends ParametersTuner {
 
 		if(changed){
 			this.parametersManager.setParametersValues(selectedCombinations);
+		}else if(!this.doneForStep){
+			this.doneForStep = true;
 		}
 
 	}

@@ -14,7 +14,7 @@ public class TimeLimitedLsiTunerBeforeMove extends BeforeMoveStrategy {
 	private TimeLimitedLsiParametersTuner timeLimitedLsiParametersTuner;
 
 	/**
-	 * Safety margin to be subtracted to the timeout for each game step to increase the probability that
+	 * Safety margin (ms) to be subtracted to the timeout for each game step to increase the probability that
 	 * the tuner will finish tuning in time, finding the best combination for the game step.
 	 */
 	private long tuningSafetyMargin;

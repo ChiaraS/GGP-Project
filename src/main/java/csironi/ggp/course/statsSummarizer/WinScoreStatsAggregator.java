@@ -10,6 +10,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 
 /**
  * This class expects as input a folder containing a sub-folder for each game,
@@ -75,87 +76,204 @@ public class WinScoreStatsAggregator {
 		BufferedReader br;
 		String theLine;
 
+		Map<String,ExperimentsStats> totalStatistics = new HashMap<String,ExperimentsStats>();
+		ExperimentsStats expStats;
+		String playerName;
+
 		// For the folder of each game...
 		for(int i = 0; i < gamesDirs.length; i++){
 
-			// ...scan the content until you find the ".Statistics" folder of the game.
-			statsDirs = gamesDirs[i].listFiles();
+			if(gamesDirs[i].isDirectory()){
 
-			for(int j = 0; j < statsDirs.length; j++){
+				// ...scan the content until you find the ".Statistics" folder of the game.
+				statsDirs = gamesDirs[i].listFiles();
+
+				for(int j = 0; j < statsDirs.length; j++){
 
 
-				if(statsDirs[j].isDirectory() && statsDirs[j].getName() != null && (statsDirs[j].getName().endsWith("-Stats") || statsDirs[j].getName().endsWith("-stats") || statsDirs[j].getName().endsWith(".Statistics") || statsDirs[j].getName().endsWith(".statistics"))){
+					if(statsDirs[j].isDirectory() && statsDirs[j].getName() != null && (statsDirs[j].getName().endsWith("-Stats") || statsDirs[j].getName().endsWith("-stats") || statsDirs[j].getName().endsWith(".Statistics") || statsDirs[j].getName().endsWith(".statistics"))){
 
-					writeToFile(scoresFile, ";");
-					writeToFile(winsFile, ";");
+						writeToFile(scoresFile, ";");
+						writeToFile(winsFile, ";");
 
-					if(statsDirs[j].getName().endsWith("-Stats") || statsDirs[j].getName().endsWith("-stats")){
-						gameKey = statsDirs[j].getName().substring(0, statsDirs[j].getName().length()-6);
-					}else{
-						String[] splitStatsDir = statsDirs[j].getName().split("\\.");
-						gameKey = splitStatsDir[1];
-					}
-
-					System.out.println(gameKey);
-
-					statsFiles = statsDirs[j].listFiles();
-
-					for(int k = 0; k < statsFiles.length; k++){
-
-						if(statsFiles[k].getName().equals("ScoreStats.csv")){
-
-							try {
-								br = new BufferedReader(new FileReader(statsFiles[k]));
-								theLine = br.readLine(); // First line is headers
-								theLine = br.readLine();
-
-								// Forgot to do this when computing statistics, adding this temporary fix
-								theLine = addCIExtremes(theLine);
-
-								//System.out.println("4: " + theLine);
-
-								writeToFile(scoresFile, gameKey + ";" + theLine);
-								theLine = br.readLine();
-
-								// Forgot to do this when computing statistics, adding this temporary fix
-								theLine = addCIExtremes(theLine);
-
-								writeToFile(scoresFile, gameKey + ";" + theLine);
-								br.close();
-							} catch (IOException e) {
-								System.out.println("Exception when reading a file while aggregating the statistics.");
-					        	e.printStackTrace();
-							}
-
+						if(statsDirs[j].getName().endsWith("-Stats") || statsDirs[j].getName().endsWith("-stats")){
+							gameKey = statsDirs[j].getName().substring(0, statsDirs[j].getName().length()-6);
+						}else{
+							String[] splitStatsDir = statsDirs[j].getName().split("\\.");
+							gameKey = splitStatsDir[1];
 						}
 
-						if(statsFiles[k].getName().equals("WinsStats.csv")){
+						System.out.println(gameKey);
 
-							try {
-								br = new BufferedReader(new FileReader(statsFiles[k]));
-								theLine = br.readLine(); // First line is headers
-								theLine = br.readLine();
+						statsFiles = statsDirs[j].listFiles();
 
-								// Forgot to do this when computing statistics, adding this temporary fix
-								theLine = addCIExtremes(theLine);
+						for(int k = 0; k < statsFiles.length; k++){
 
-								writeToFile(winsFile, gameKey + ";" + theLine);
-								theLine = br.readLine();
+							if(statsFiles[k].getName().equals("ScoreStats.csv")){
 
-								// Forgot to do this when computing statistics, adding this temporary fix
-								theLine = addCIExtremes(theLine);
+								try {
+									br = new BufferedReader(new FileReader(statsFiles[k]));
+									theLine = br.readLine(); // First line is headers
+									theLine = br.readLine();
 
-								writeToFile(winsFile, gameKey + ";" + theLine);
-								br.close();
-							} catch (IOException e) {
-								System.out.println("Exception when reading a file while aggregating the statistics.");
-					        	e.printStackTrace();
+									// Forgot to do this when computing statistics, adding this temporary fix
+									theLine = addCIExtremes(theLine);
+
+									//System.out.println("4: " + theLine);
+
+									writeToFile(scoresFile, gameKey + ";" + theLine);
+									theLine = br.readLine();
+
+									// Forgot to do this when computing statistics, adding this temporary fix
+									theLine = addCIExtremes(theLine);
+
+									writeToFile(scoresFile, gameKey + ";" + theLine);
+									br.close();
+								} catch (IOException e) {
+									System.out.println("Exception when reading a file while aggregating the statistics.");
+						        	e.printStackTrace();
+								}
+
 							}
 
+							if(statsFiles[k].getName().equals("WinsStats.csv")){
+
+								try {
+									br = new BufferedReader(new FileReader(statsFiles[k]));
+									theLine = br.readLine(); // First line is headers
+									theLine = br.readLine();
+
+									// Forgot to do this when computing statistics, adding this temporary fix
+									theLine = addCIExtremes(theLine);
+
+									writeToFile(winsFile, gameKey + ";" + theLine);
+									theLine = br.readLine();
+
+									// Forgot to do this when computing statistics, adding this temporary fix
+									theLine = addCIExtremes(theLine);
+
+									writeToFile(winsFile, gameKey + ";" + theLine);
+									br.close();
+								} catch (IOException e) {
+									System.out.println("Exception when reading a file while aggregating the statistics.");
+						        	e.printStackTrace();
+								}
+
+							}
+
+							if(statsFiles[k].getName().endsWith("ScoreSamples.csv")){
+
+								playerName = statsFiles[k].getName().substring(0, statsFiles[k].getName().length()-17);
+
+								expStats = totalStatistics.get(playerName);
+
+								if(expStats == null){
+									expStats = new ExperimentsStats();
+									totalStatistics.put(playerName, expStats);
+								}
+
+								try {
+									br = new BufferedReader(new FileReader(statsFiles[k]));
+									theLine = br.readLine(); // First line is headers
+									theLine = br.readLine();
+
+									while(theLine != null){
+										String[] splitLine = theLine.split(";");
+
+										if(splitLine.length == 3){
+
+											int sample;
+											try{
+												sample = Integer.parseInt(splitLine[2]);
+												expStats.addScore(sample);
+											}catch(NumberFormatException e){
+												System.out.println("Impossible read score sample. Skipping.");
+												e.printStackTrace();
+											}
+										}
+
+										theLine = br.readLine();
+
+									}
+
+									br.close();
+								} catch (IOException e) {
+									System.out.println("Exception when reading a file while aggregating the statistics of complete experiment.");
+						        	e.printStackTrace();
+								}
+
+							}
+
+							if(statsFiles[k].getName().endsWith("WinsSamples.csv")){
+
+								playerName = statsFiles[k].getName().substring(0, statsFiles[k].getName().length()-16);
+
+								expStats = totalStatistics.get(playerName);
+
+								if(expStats == null){
+									expStats = new ExperimentsStats();
+									totalStatistics.put(playerName, expStats);
+								}
+
+								try {
+									br = new BufferedReader(new FileReader(statsFiles[k]));
+									theLine = br.readLine(); // First line is headers
+									theLine = br.readLine();
+
+									while(theLine != null){
+										String[] splitLine = theLine.split(";");
+
+										if(splitLine.length == 3){
+
+											double sample;
+											try{
+												sample = Double.parseDouble(splitLine[2]);
+												expStats.addWins(sample);
+											}catch(NumberFormatException e){
+												System.out.println("Impossible read win sample. Skipping.");
+												e.printStackTrace();
+											}
+										}
+
+										theLine = br.readLine();
+
+									}
+
+									br.close();
+								} catch (IOException e) {
+									System.out.println("Exception when reading a file while aggregating the statistics of complete experiment.");
+						        	e.printStackTrace();
+								}
+
+							}
 						}
 					}
 				}
 			}
+		}
+
+		writeToFile(scoresFile, ";");
+		writeToFile(winsFile, ";");
+
+		// Add line to aggregated file with statistics over all the game
+		for(Entry<String,ExperimentsStats> entry : totalStatistics.entrySet()){
+
+			double avgWinPerc = entry.getValue().getAvgWins()*100;
+			double winCi = entry.getValue().getWinsSEM() * 1.96 * 100;
+
+			writeToFile(winsFile, "OverallStats;" + entry.getKey() + ";" + entry.getValue().getWins().size() + ";" +
+					entry.getValue().getMinWinPercentage() + ";" + entry.getValue().getMaxWinPercentage() + ";" +
+					entry.getValue().getWinsStandardDeviation() + ";" + entry.getValue().getWinsSEM() + ";" +
+					avgWinPerc + ";" + winCi + ";" + (avgWinPerc - winCi) + ";" + (avgWinPerc + winCi) + ";");
+
+			double avgScore =  entry.getValue().getAvgScore();
+			double scoreCi = entry.getValue().getScoresSEM() * 1.96;
+
+			writeToFile(scoresFile, "OverallStats;" + entry.getKey() + ";" + entry.getValue().getScores().size() + ";" +
+					entry.getValue().getMinScore() + ";" + entry.getValue().getMaxScore() + ";" +
+					entry.getValue().getScoresStandardDeviation() + ";" + entry.getValue().getScoresSEM() + ";" +
+					avgScore + ";" + scoreCi + ";" + (avgWinPerc - winCi) + ";" + (avgWinPerc + winCi) + ";");
+
 		}
 
 		// Once the wins and scores have been aggregated, create the LATEX code to put the results in a table
@@ -163,12 +281,12 @@ public class WinScoreStatsAggregator {
 		// For the wins:
 
 		List<String> orderedPlayerTypes = new ArrayList<String>();
-		Map<String, Double> averagesSum = new HashMap<String, Double>();
-		Map<String, Integer> numGames = new HashMap<String, Integer>();
+		//Map<String, Double> averagesSum = new HashMap<String, Double>();
+		//Map<String, Integer> numGames = new HashMap<String, Integer>();
 		//Map<String, Integer> rubustness = new HashMap<String, Integer>();
 
 		Map<String, String> latexData = new HashMap<String, String>();
-		Map<String, Double> latexAvg = new HashMap<String, Double>();
+		//Map<String, Double> latexAvg = new HashMap<String, Double>();
 
 		try {
 			br = new BufferedReader(new FileReader(winsFile));
@@ -182,22 +300,22 @@ public class WinScoreStatsAggregator {
 					String playerType = split[1];
 					if(!(orderedPlayerTypes.contains(playerType))){
 						 orderedPlayerTypes.add(playerType);
-						 averagesSum.put(playerType, new Double(0));
-						 numGames.put(playerType, new Integer(0));
+						 //averagesSum.put(playerType, new Double(0));
+						 //numGames.put(playerType, new Integer(0));
 						 latexData.put(playerType, "");
-						 latexAvg.put(playerType, new Double(0));
+						 //latexAvg.put(playerType, new Double(0));
 						 //rubustness.put(playerType, new Integer(0));
 					}
 
 					String stringAvg = split[7];
 					double avg = Double.parseDouble(stringAvg);
-					averagesSum.put(playerType, new Double(averagesSum.get(playerType).doubleValue() + avg));
-					numGames.put(playerType, new Integer(numGames.get(playerType).intValue() + 1));
+					//averagesSum.put(playerType, new Double(averagesSum.get(playerType).doubleValue() + avg));
+					//numGames.put(playerType, new Integer(numGames.get(playerType).intValue() + 1));
 
 					String game = split[0];
 					double ci = Double.parseDouble(split[8]);
-					latexData.put(playerType, (latexData.get(playerType)+ game +";$"+ round(avg,1) + "(\\pm" + round(ci,2) + ")$;\n"));
-					latexAvg.put(playerType, new Double(latexAvg.get(playerType).doubleValue() + round(avg,1)));
+					latexData.put(playerType, (latexData.get(playerType) + game + ";$" + round(avg,1) + "(\\pm" + round(ci,2) + ")$;\n"));
+					//latexAvg.put(playerType, new Double(latexAvg.get(playerType).doubleValue() + round(avg,1)));
 
 					theLine = br.readLine();
 				}
@@ -208,14 +326,15 @@ public class WinScoreStatsAggregator {
 
 			br.close();
 
-			writeToFile(winsFile, ";");
+			//writeToFile(winsFile, ";");
+
 
 			for(String s : orderedPlayerTypes){
-				double overallAvg = (averagesSum.get(s).doubleValue() / numGames.get(s).intValue());
-				writeToFile(winsFile, "OverallAvg;" + s + ";" + ";;;;;" + overallAvg);
+				//double overallAvg = (averagesSum.get(s).doubleValue() / numGames.get(s).intValue());
+				//writeToFile(winsFile, "OverallAvg;" + s + ";" + ";;;;;" + overallAvg);
 				String latexFile = resultFile + s + "-Latex.csv";
-				double overallLatexAvg = (latexAvg.get(s).doubleValue() / numGames.get(s).intValue());
-				writeToFile(latexFile, (latexData.get(s) + "\nOverallAvg;$" + round(overallLatexAvg,1) + "$;" ));
+				//double overallLatexAvg = (latexAvg.get(s).doubleValue() / numGames.get(s).intValue());
+				writeToFile(latexFile, latexData.get(s));
 			}
 
 		} catch (IOException e) {
