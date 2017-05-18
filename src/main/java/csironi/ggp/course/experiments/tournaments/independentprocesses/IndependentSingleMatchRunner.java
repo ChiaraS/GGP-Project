@@ -47,11 +47,17 @@ public class IndependentSingleMatchRunner {
 	 * [startClock(sec)] = start clock of the match (in seconds)
 	 * [playClock(sec)] = play clock of the match (in seconds)
 	 * [pnCreationTime(ms)] = available time to create the propnet (in milliseconds)
-	 * [theGamerTypes (one or more)] = list of gamer types that we want to include in the experiment. Each gamer must be specified with
-	 * the exact name of the class that implements such gamer. If the gamer is a subclass of the ConfigurableStateMachineGamer it must
-	 * be specified with the exact name of the class that implements it AND the name of the file in which its settings are specified,
-	 * separated by "-" (e.g. MctsGamer-GraveDuct.properties, or MctsGamer-Duct.properties). NOTE that the specified .properties file
-	 * must be in the folder with the path gamersSettingsFolderPath specified in the GamerConfiguration class.
+	 * [theGamerTypes (one or more)] = list (with repetitions) of gamer types that we want to include in the experiment, in the order in
+	 * which we want to assign them to the roles in the game. Each gamer must be specified with the exact name of the class that implements
+	 * such gamer. If the gamer is a subclass of the ConfigurableStateMachineGamer it must be specified with the exact name of the class
+	 * that implements it AND the name of the file in which its settings are specified, separated by "-" (e.g. MctsGamer-GraveDuct.properties,
+	 * or MctsGamer-Duct.properties). NOTE that the specified .properties file must be in the folder with the path gamersSettingsFolderPath
+	 * specified in the GamerConfiguration class. If one of the gamers is external (i.e. a gamer running on its own, like CadiaPlayer, Sancho,
+	 * etc...), specify its name and the pair (host,ports) on which it is running. If multiple instances of the external gamer should be used
+	 * in this match, then each of them must be specified with the same name, but different (host,port) combinations.
+	 * EXAMPLE with 3 gamers:
+	 * 		internal with no properties, internal with properties, external
+	 * 		DuctMctsGamer MctsGamer-Duct.properties Cadiaplayer-127.0.0.1-9147
 	 */
 	public static void main(String[] args) {
 
@@ -127,44 +133,76 @@ public class IndependentSingleMatchRunner {
 
 		boolean buildPropnet = false;
 		String[] gamerTypes = new String[args.length-7];
+		// If the gamer has no associated setting, then the corresponding entry is null
 		String[] gamerSettings = new String[args.length-7];
+		String[] gamerNames = new String[args.length-7];
+		String[] gamerHosts = new String[args.length-7];
+		int[] gamerPorts = new int[args.length-7];
+
     	for (int i = 7; i < args.length; i++){
-    		if(args[i].endsWith(".properties")){
-    			String[] s = args[i].split("-");
+
+    		String[] s = args[i].split("-");
+
+    		if(s.length == 1){ // Internal gamer without settings
+    			gamerTypes[i-7] = s[0];
+    			gamerSettings[i-7] = null;
+    			gamerNames[i-7] = null;
+    			gamerHosts[i-7] = null;
+    			gamerPorts[i-7] = -1;
+    		}else if(s.length == 2){ // Internal gamer with settings
     			gamerTypes[i-7] = s[0];
     			gamerSettings[i-7] = s[1];
-    		}else{
-    			gamerTypes[i-7] = args[i];
+    			gamerNames[i-7] = null;
+    			gamerHosts[i-7] = null;
+    			gamerPorts[i-7] = -1;
+    		}else if(s.length == 3){// External gamer with host and port
+    			gamerTypes[i-7] = null;
     			gamerSettings[i-7] = null;
+    			gamerNames[i-7] = s[0];
+    			gamerHosts[i-7] = s[1];
+    			try{
+    				gamerPorts[i-7] = Integer.parseInt(s[2]);
+    			}catch(NumberFormatException e){
+    				System.out.println("Impossible to start match runner, wrong input. The port for player " + s[0] + " must be an integer value, not " + s[2] + ".");
+    				return;
+    			}
+    		}else{
+    			System.out.println("Impossible to start match runner, wrong input. Wrong definition of gamer type " + args[i] + ".");
+				return;
     		}
+
     	}
 
     	for(int i = 0; i < gamerTypes.length; i++){
 
-    		Class<?> theCorrespondingClass = null;
-    		for (Class<?> gamerClass : ProjectSearcher.INTERNAL_PROPNET_GAMERS.getConcreteClasses()) {
-        		if(gamerClass.getSimpleName().equals(gamerTypes[i])){
-        			theCorrespondingClass = gamerClass;
-        			buildPropnet = true;
-        			if(ConfigurableStateMachineGamer.class.isAssignableFrom(theCorrespondingClass)){ // The class is subclass of ConfigurableStateMachineGamer
-        				// If the gamer is configurable than the settings file must be specified
-        				if(gamerSettings[i] == null){
-        					System.out.println("Impossible to start match runner, wrong input. No settings file specified for gamer type " + gamerTypes[i] + ".");
-        					return;
-        				}
-        			}
-        		}
-        	}
-    		for (Class<?> gamerClass : ProjectSearcher.PROVER_GAMERS.getConcreteClasses()) {
-        		if(gamerClass.getSimpleName().equals(gamerTypes[i])){
-        			theCorrespondingClass = gamerClass;
-        		}
-        	}
-    		if(theCorrespondingClass == null){
-    			System.out.println("Impossible to start match runner, wrong input. Unexisting gamer type " + gamerTypes[i] + ".");
-    			return;
+    		if(gamerTypes[i] != null){
+	    		Class<?> theCorrespondingClass = null;
+	    		for (Class<?> gamerClass : ProjectSearcher.INTERNAL_PROPNET_GAMERS.getConcreteClasses()) {
+	        		if(gamerClass.getSimpleName().equals(gamerTypes[i])){
+	        			theCorrespondingClass = gamerClass;
+	        			buildPropnet = true;
+	        			if(ConfigurableStateMachineGamer.class.isAssignableFrom(theCorrespondingClass)){ // The class is subclass of ConfigurableStateMachineGamer
+	        				// If the gamer is configurable than the settings file must be specified
+	        				if(gamerSettings[i] == null){
+	        					System.out.println("Impossible to start match runner, wrong input. No settings file specified for gamer type " + gamerTypes[i] + ".");
+	        					return;
+	        				}
+	        			}
+	        		}
+	        	}
+	    		for (Class<?> gamerClass : ProjectSearcher.PROVER_GAMERS.getConcreteClasses()) {
+	        		if(gamerClass.getSimpleName().equals(gamerTypes[i])){
+	        			theCorrespondingClass = gamerClass;
+	        		}
+	        	}
+	    		if(theCorrespondingClass == null){
+	    			System.out.println("Impossible to start match runner, wrong input. Unexisting gamer type " + gamerTypes[i] + ".");
+	    			return;
+	    		}else{
+	    			theGamersClasses.add(theCorrespondingClass);
+	    		}
     		}else{
-    			theGamersClasses.add(theCorrespondingClass);
+    			theGamersClasses.add(null);
     		}
 		}
 
@@ -189,11 +227,13 @@ public class IndependentSingleMatchRunner {
 
 		GamerLogger.log("MatchRunner", "Started MatchRunner " + startID + ".");
 
-		/** 2. First of all we try to create the players. **/
+		/** 2. First of all we try to create the internal players. **/
 
-		// Create the players.
+		// Create the internal players.
+		// list with only internal players.
 		List<GamePlayer> thePlayers = new ArrayList<GamePlayer>();
 
+		// Lists with details of all the players, in the order in which they'll be assigned to roles.
 		List<String> hostNames = new ArrayList<String>();
 		List<String> playerNames = new ArrayList<String>();
 		List<Integer> portNumbers = new ArrayList<Integer>();
@@ -202,32 +242,38 @@ public class IndependentSingleMatchRunner {
 		InternalPropnetGamer thePropnetGamer;
 		int i = 0;
 		for(Class<?> gamerClass : theGamersClasses){
-			try {
-				if(ConfigurableStateMachineGamer.class.isAssignableFrom(gamerClass)){
-					theGamer = (StateMachineGamer) gamerClass.getConstructor(String.class).newInstance(GamerConfiguration.gamersSettingsFolderPath + "/" + gamerSettings[i]);
-				}else{
-					theGamer = (StateMachineGamer) gamerClass.newInstance();
+			if(gamerClass != null){
+				try {
+					if(ConfigurableStateMachineGamer.class.isAssignableFrom(gamerClass)){
+						theGamer = (StateMachineGamer) gamerClass.getConstructor(String.class).newInstance(GamerConfiguration.gamersSettingsFolderPath + "/" + gamerSettings[i]);
+					}else{
+						theGamer = (StateMachineGamer) gamerClass.newInstance();
+					}
+				} catch (InstantiationException | IllegalAccessException | IllegalArgumentException | InvocationTargetException | NoSuchMethodException | SecurityException e) {
+					//System.out.println("Impossible to play the match. Error when instantiating the gamer " + gamerClass.getSimpleName() + ".");
+					//e.printStackTrace();
+					GamerLogger.logError("MatchRunner", "Impossible to play the match. Error when instantiating the gamer " + gamerClass.getSimpleName() + ".");
+					GamerLogger.logStackTrace("MatchRunner", e);
+					return;
 				}
-			} catch (InstantiationException | IllegalAccessException | IllegalArgumentException | InvocationTargetException | NoSuchMethodException | SecurityException e) {
-				//System.out.println("Impossible to play the match. Error when instantiating the gamer " + gamerClass.getSimpleName() + ".");
-				//e.printStackTrace();
-				GamerLogger.logError("MatchRunner", "Impossible to play the match. Error when instantiating the gamer " + gamerClass.getSimpleName() + ".");
-				GamerLogger.logStackTrace("MatchRunner", e);
-				return;
-			}
 
-			try {
-				thePlayers.add(new GamePlayer(9000 + i + (startID * theGamersClasses.size()), theGamer));
-			} catch (IOException e) {
-				//System.out.println("Impossible to play the match. Error when creating game player for gamer " + theGamer.getName() + ".");
-				//e.printStackTrace();
-				GamerLogger.logError("MatchRunner", "Impossible to play the match. Error when creating game player for gamer " + theGamer.getName() + ".");
-				GamerLogger.logStackTrace("MatchRunner", e);
-				return;
+				try {
+					thePlayers.add(new GamePlayer(9000 + i + (startID * theGamersClasses.size()), theGamer));
+				} catch (IOException e) {
+					//System.out.println("Impossible to play the match. Error when creating game player for gamer " + theGamer.getName() + ".");
+					//e.printStackTrace();
+					GamerLogger.logError("MatchRunner", "Impossible to play the match. Error when creating game player for gamer " + theGamer.getName() + ".");
+					GamerLogger.logStackTrace("MatchRunner", e);
+					return;
+				}
+				hostNames.add("127.0.0.1");
+				playerNames.add(theGamer.getName());
+				portNumbers.add(thePlayers.get(thePlayers.size()-1).getGamerPort());
+			}else{
+				hostNames.add(gamerHosts[i]);
+				playerNames.add(gamerNames[i]);
+				portNumbers.add(gamerPorts[i]);
 			}
-			hostNames.add("127.0.0.1");
-			playerNames.add(theGamer.getName());
-			portNumbers.add(thePlayers.get(i).getGamerPort());
 			i++;
 		}
 
@@ -415,7 +461,7 @@ public class IndependentSingleMatchRunner {
 				}
 
 				if(!ready){
-					GamerLogger.logError("MatchRunner", "Problem with players after end of game. At least one player is not ready to continue with the next game. Impossible to complete this run of sequential matches.");
+					GamerLogger.logError("MatchRunner", "Problem with internal players after end of game. At least one player is not ready to continue with the next game. Impossible to complete this run of sequential matches.");
 					for(GamePlayer player : thePlayers){
 						player.shutdown();
 					}

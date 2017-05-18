@@ -72,6 +72,9 @@ public class IndependentTourneyRunner {
 		// Num matches that a match runner should run sequentially using the same player
 		// (so that the players can "remember" previous games if the are capable of it).
 		int numSequentialMatches;
+		//Note that for each game, if there are x roles in the game and y matches are
+		 // running in parallel at least (x-1)*y instances of the external player must be running at the same time. This means that at least
+		 // (x-1)*y pairs (host,ports) must be specified.
 		String[] theGamersTypesString;
 		int runNumber;
 
