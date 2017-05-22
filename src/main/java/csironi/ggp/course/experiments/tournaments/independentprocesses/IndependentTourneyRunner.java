@@ -51,7 +51,7 @@ public class IndependentTourneyRunner {
 
 		if(args.length != 1){
 			System.out.println("Impossible to start experiment! Wrong number of inputs!");
-			System.out.println("Specify the name of the file with the settings of the experiment");
+			System.out.println("Specify the name of the file with the settings of the experiment!");
 			return;
 		}
 
@@ -60,6 +60,7 @@ public class IndependentTourneyRunner {
 		File propertiesFile = new File(args[0]);
 
 		String tourneyName;
+		// List of keys of all the games for the tourney.
 		Set<String> gameKeys = new HashSet<String>();
 		int startClock;
 		int playClock;
@@ -68,13 +69,23 @@ public class IndependentTourneyRunner {
 		// The actual number of player threads that will be running will be the closest feasible number of threads that allows
 		// to run matches with the given number of roles for the game.
 		int numParallelPlayers;
+		// Minimum number of total games that a player should play (i.e. min num of samples for each player used to compute
+		// the win percentage).
 		int matchesPerGamerType;
 		// Num matches that a match runner should run sequentially using the same player
 		// (so that the players can "remember" previous games if the are capable of it).
 		int numSequentialMatches;
-		//Note that for each game, if there are x roles in the game and y matches are
-		 // running in parallel at least (x-1)*y instances of the external player must be running at the same time. This means that at least
-		 // (x-1)*y pairs (host,ports) must be specified.
+		// List (without repetitions) of gamer types that we want to include in the experiment. Each gamer, if part of the code base
+		// (i.e. internal gamer), must be specified with the exact name of the class that implements such gamer. If the gamer is a
+		// subclass of the ConfigurableStateMachineGamer it must be specified with the exact name of the class that implements it
+		// AND the name of the file in which its settings are specified, separated by "-" (e.g. MctsGamer-GraveDuct.properties, or
+		// MctsGamer-Duct.properties). NOTE that the specified .properties file must be in the folder with the path
+		// gamersSettingsFolderPath specified in the GamerConfiguration class. If one of the gamers is external (i.e. a gamer running
+		// on its own, like CadiaPlayer, Sancho, etc...), specify its name and a list of all pairs (host-ports) on which the external
+		// player is running (e.g. Cadia-127.0.0.1-9147-127.0.0.1-9148-127.0.0.1-9149-127.0.0.1-9150). Note that for a game, if there
+		// are x roles in the game and y matches are running in parallel at least (x-1)*y instances of the external player must be
+		// running at the same time. This means that at least (x-1)*y pairs (host,ports) must be specified, where x is the max number
+		// of roles that a game in the tourney has.
 		String[] theGamersTypesString;
 		int runNumber;
 
@@ -133,7 +144,7 @@ public class IndependentTourneyRunner {
 
 			theGamersTypesString = props.getProperty("theGamersTypes").split(";");
 
-			// Check if all gamers exist and the settings of the configurable ones are specified
+			// Check if all internal gamers exist and the settings of the configurable ones are specified
 			// Check here so that the tourney won't even start if the gamer types don't exist or are not correctly specified
 			String[] gamerTypes = new String[theGamersTypesString.length];
 			String[] gamerSettings = new String[theGamersTypesString.length];

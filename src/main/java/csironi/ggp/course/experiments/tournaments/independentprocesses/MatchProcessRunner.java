@@ -5,8 +5,11 @@ import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.util.List;
+import java.util.Map;
 
 import org.ggp.base.util.logging.GamerLogger;
+
+import csironi.ggp.course.experiments.tournaments.ExternalGamerAvailabilityManager;
 
 public class MatchProcessRunner extends Thread {
 
@@ -16,16 +19,22 @@ public class MatchProcessRunner extends Thread {
 
 	private String stdOutputErrorFolderPath;
 
-	public MatchProcessRunner(int matchID, List<String> theSettings, String stdOutputErrorFolderPath){
+	private Map<String,ExternalGamerAvailabilityManager> externalGamersManagers;
+
+	public MatchProcessRunner(int matchID, List<String> theSettings, String stdOutputErrorFolderPath, Map<String,ExternalGamerAvailabilityManager> externalGamersManagers){
 		this.matchID = matchID;
 		this.theSettings = theSettings;
 		this.stdOutputErrorFolderPath = stdOutputErrorFolderPath;
+		this.externalGamersManagers = externalGamersManagers;
 	}
 
 	@Override
 	public void run(){
 
 		//GamerLogger.log("MatchRunner" + this.matchID, "Creating process to run match " + this.matchID + ".");
+
+		// !!GamerLogger.logError("MatchRunner", "No free address left! Make sure that there are enough active external players for the number of parallel matches and game roles!");
+
 
 		ProcessBuilder pb = new ProcessBuilder(this.theSettings);
 
