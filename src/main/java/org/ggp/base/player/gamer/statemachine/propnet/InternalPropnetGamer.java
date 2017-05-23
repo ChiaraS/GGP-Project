@@ -118,9 +118,16 @@ public abstract class InternalPropnetGamer extends ConfigurableStateMachineGamer
 	/*---------------------- SETTINGS FOR THE GAMER -------------------------*/
 
 	/**
-	 * The player must complete the executions of methods with a timeout by the time
-	 * [timeout - safetyMargin(ms)] to increase the certainty of answering to the Game
-	 * Manager in time.
+	 * The player must complete the executions of metagame by the time
+	 * [timeout - metagameSafetyMargin(ms)] to increase the certainty
+	 * of answering to the Game Manager in time.
+	 */
+	protected long metagameSafetyMargin;
+
+	/**
+	 * The player must complete the executions of the move selection method
+	 * by the time [timeout - selectMoveSafetyMargin(ms)] to increase the
+	 * certainty of answering to the Game Manager in time.
 	 */
 	protected long selectMoveSafetyMargin;
 
@@ -171,6 +178,7 @@ public abstract class InternalPropnetGamer extends ConfigurableStateMachineGamer
 		this.buildPnSafetyMargin = gamerSettings.getLongPropertyValue("Gamer.buildPnSafetyMargin");
 		this.proverCache = gamerSettings.getBooleanPropertyValue("Gamer.proverCache");
 		this.pnCache = gamerSettings.getBooleanPropertyValue("Gamer.pnCache");
+		this.metagameSafetyMargin = gamerSettings.getLongPropertyValue("Gamer.metagameSafetyMargin");
 		this.selectMoveSafetyMargin = gamerSettings.getLongPropertyValue("Gamer.selectMoveSafetyMargin");
 
 	}
@@ -425,6 +433,7 @@ public abstract class InternalPropnetGamer extends ConfigurableStateMachineGamer
 				"\nBUILD_PN_SAFETY_MARGIN = " + this.buildPnSafetyMargin +
 				"\nPROVER_CACHE = " + this.proverCache +
 				"\nPROPNET_CACHE = " + this.pnCache +
+				"\nMETAGAME_SAFETY_MARGIN = " + this.metagameSafetyMargin +
 				"\nSELECT_MOVE_SAFETY_MARGIN = " + this.selectMoveSafetyMargin;
 	}
 

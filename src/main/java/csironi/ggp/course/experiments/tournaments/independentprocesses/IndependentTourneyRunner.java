@@ -5,8 +5,10 @@ import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
 import java.util.concurrent.ExecutorService;
@@ -24,6 +26,7 @@ import org.ggp.base.util.reflection.ProjectSearcher;
 import org.ggp.base.util.statemachine.structure.explicit.ExplicitRole;
 
 import csironi.ggp.course.experiments.tournaments.Combinator;
+import csironi.ggp.course.experiments.tournaments.ExternalGamerAvailabilityManager;
 
 /**
  * This class takes care of performing a tourney for the given game.
@@ -89,6 +92,9 @@ public class IndependentTourneyRunner {
 		String[] theGamersTypesString;
 		int runNumber;
 
+		// Map that for each external gamer contains the manager of available addresses (IP+port) on which the external gamer
+		// is listening for connections.
+		Map<String,ExternalGamerAvailabilityManager> externalGamersManagers = new HashMap<String,ExternalGamerAvailabilityManager>();
 
 		// The current time is used to distinguish multiple separate runs of the same experiment.
 		// If I want to continue a previous experiment, all tourneys with the ID saved in the properties
@@ -104,6 +110,9 @@ public class IndependentTourneyRunner {
     	GameRepository gameRepo = new ManualUpdateLocalGameRepository(GamerConfiguration.defaultLocalGameRepositoryFolderPath);
 
 		Game game;
+
+		String[] gamerTypes;
+		String[] gamerSettings;
 
 		try {
 			reader = new FileReader(propertiesFile);
@@ -146,42 +155,68 @@ public class IndependentTourneyRunner {
 
 			// Check if all internal gamers exist and the settings of the configurable ones are specified
 			// Check here so that the tourney won't even start if the gamer types don't exist or are not correctly specified
-			String[] gamerTypes = new String[theGamersTypesString.length];
-			String[] gamerSettings = new String[theGamersTypesString.length];
+			gamerTypes = new String[theGamersTypesString.length];
+			gamerSettings = new String[theGamersTypesString.length];
+			List<String> externalGamerAddresses;
 	    	for(int i = 0; i < theGamersTypesString.length; i++){
-	    		if(theGamersTypesString[i].endsWith(".properties")){
-	    			String[] s = theGamersTypesString[i].split("-");
+
+	    		String[] s = theGamersTypesString[i].split("-");
+
+	    		if(s.length == 1){ // Internal gamer without settings
+	    			gamerTypes[i] = s[0];
+	    			gamerSettings[i] = null;
+	    		}else if(s.length == 2){ // Internal gamer with settings
 	    			gamerTypes[i] = s[0];
 	    			gamerSettings[i] = s[1];
-	    		}else{
-	    			gamerTypes[i] = theGamersTypesString[i];
+	    		}else{// External gamer with list of host-port pairs
+	    			gamerTypes[i] = s[0];
 	    			gamerSettings[i] = null;
+	    			if(externalGamersManagers.containsKey(gamerTypes[i])){ // Duplicate external gamer. Gamers must be specified uniquely.
+	    				System.out.println("Impossible to start experiment. Duplicate external gamer type " + gamerTypes[i] + ".");
+    					return;
+	    			}
+	    			// Collect all addresses on which the external gamer is available and create the corresponding address manager
+	    			externalGamerAddresses = new ArrayList<String>();
+	    			for(int j = 1; j < s.length; j=j+2){
+	    				externalGamerAddresses.add(s[j] + "-" + s[j+1]);
+	    			}
+	    			if(externalGamerAddresses.isEmpty()){
+	    				System.out.println("Impossible to start experiment. No addresses specified for external gamer type " + gamerTypes[i] + ".");
+    					return;
+	    			}
+	    			externalGamersManagers.put(gamerTypes[i], new ExternalGamerAvailabilityManager(externalGamerAddresses));
 	    		}
+
 	    	}
 
 	    	for(int i = 0; i < gamerTypes.length; i++){
-	    		Class<?> theCorrespondingClass = null;
-	    		for (Class<?> gamerClass : ProjectSearcher.INTERNAL_PROPNET_GAMERS.getConcreteClasses()) {
-	        		if(gamerClass.getSimpleName().equals(gamerTypes[i])){
-	        			theCorrespondingClass = gamerClass;
-	        			if(ConfigurableStateMachineGamer.class.isAssignableFrom(theCorrespondingClass)){ // The class is subclass of ConfigurableStateMachineGamer
-	        				// If the gamer is configurable than the settings file must be specified
-	        				if(gamerSettings[i] == null){
-	        					System.out.println("Impossible to start experiment. No settings file specified for gamer type " + gamerTypes[i] + ".");
-	        					return;
-	        				}
-	        			}
-	        		}
-	        	}
-	    		for (Class<?> gamerClass : ProjectSearcher.PROVER_GAMERS.getConcreteClasses()) {
-	        		if(gamerClass.getSimpleName().equals(gamerTypes[i])){
-	        			theCorrespondingClass = gamerClass;
-	        		}
-	        	}
-	    		if(theCorrespondingClass == null){
-	    			System.out.println("Impossible to start experiment. Unexisting gamer type " + gamerTypes[i] + ".");
-	    			return;
+
+	    		// If not an external gamer...
+	    		if(!externalGamersManagers.containsKey(gamerTypes[i])){
+		    		Class<?> theCorrespondingClass = null;
+		    		for (Class<?> gamerClass : ProjectSearcher.INTERNAL_PROPNET_GAMERS.getConcreteClasses()) {
+		        		if(gamerClass.getSimpleName().equals(gamerTypes[i])){
+		        			theCorrespondingClass = gamerClass;
+		        			if(ConfigurableStateMachineGamer.class.isAssignableFrom(theCorrespondingClass)){ // The class is subclass of ConfigurableStateMachineGamer
+		        				// If the gamer is configurable than the settings file must be specified
+		        				if(gamerSettings[i] == null){
+		        					System.out.println("Impossible to start experiment. No settings file specified for gamer type " + gamerTypes[i] + ".");
+		        					return;
+		        				}
+		        			}
+		        		}
+		        	}
+		    		for (Class<?> gamerClass : ProjectSearcher.PROVER_GAMERS.getConcreteClasses()) {
+		        		if(gamerClass.getSimpleName().equals(gamerTypes[i])){
+		        			theCorrespondingClass = gamerClass;
+		        		}
+		        	}
+		    		if(theCorrespondingClass == null){
+		    			System.out.println("Impossible to start experiment. Unexisting gamer type " + gamerTypes[i] + ".");
+		    			return;
+		    		}
 	    		}
+
 			}
 
 			runNumber = Integer.parseInt(props.getProperty("runNumber"));
@@ -247,7 +282,7 @@ public class IndependentTourneyRunner {
 	    	game = gameRepo.getGame(gameKey);
 
 	    	int expectedRoles = ExplicitRole.computeRoles(game.getRules()).size();
-	    	List<List<Integer>> combinations = Combinator.getCombinations(theGamersTypesString.length, expectedRoles);
+	    	List<List<Integer>> combinations = Combinator.getCombinations(gamerTypes.length, expectedRoles);
 
 	    	int matchesPerCombination = (matchesPerGamerType / (Combinator.getLastCombinationsPerElement() * Combinator.getLastPermutationsPerCombination()));
 
@@ -289,14 +324,18 @@ public class IndependentTourneyRunner {
 	    		String comboIndices = "";
 	    		List<String> theComboGamersTypes = new ArrayList<String>();
 	    		for(Integer i : combination){
-	    			theComboGamersTypes.add(theGamersTypesString[i.intValue()]);
+	    			String gamerType = gamerTypes[i.intValue()];
+	    			if(gamerSettings[i.intValue()] != null){
+	    				gamerType += ("-" + gamerSettings[i.intValue()]);
+	    			}
+	    			theComboGamersTypes.add(gamerType);
 	    			comboIndices += i.toString();
 	    		}
 
 	    		GamerLogger.log("TourneyRunner" + runNumber, "Starting sub-tourney for combination " + comboIndices + ".");
 
 	    		ThreadContext.put("LOG_FOLDER", mainLogFolder + "/Combination" + comboIndices);
-	    		boolean completed = runMatchesForCombination(runNumber, gameKey, startClock, playClock, pnCreationTime, theComboGamersTypes, numParallelMatches, numMatchRunners, numSequentialMatches);
+	    		boolean completed = runMatchesForCombination(runNumber, gameKey, startClock, playClock, pnCreationTime, theComboGamersTypes, numParallelMatches, numMatchRunners, numSequentialMatches, externalGamersManagers);
 	    		ThreadContext.put("LOG_FOLDER", mainLogFolder);
 
 	    		if(completed){
@@ -341,7 +380,8 @@ public class IndependentTourneyRunner {
 
 
 	private static boolean runMatchesForCombination(int runNumber, String gameKey, int startClock, int playClock,
-			long pnCreationTime, List<String> theGamersTypes, int numParallelMatches, int numMatchRunners, int numSequentialMatches){
+			long pnCreationTime, List<String> theGamersTypes, int numParallelMatches, int numMatchRunners,
+			int numSequentialMatches, Map<String,ExternalGamerAvailabilityManager> externalGamersManagers){
 
 		GamerLogger.log("TourneyRunner"+runNumber, "Starting sub-tourney.");
 
@@ -364,14 +404,9 @@ public class IndependentTourneyRunner {
 		theSettings.add("" + playClock);
 		theSettings.add("" + pnCreationTime);
 
-		for(String s : theGamersTypes){
-			theSettings.add(s);
-		}
-
-
 		for(int i = (runNumber*numMatchRunners); i < ((runNumber+1)*numMatchRunners); i++){
 			theSettings.set(5, ""+i);
-			executor.execute(new MatchProcessRunner(i, new ArrayList<String>(theSettings), ThreadContext.get("LOG_FOLDER") + "/MatchRunner" + i));
+			executor.execute(new MatchProcessRunner(i, new ArrayList<String>(theSettings), ThreadContext.get("LOG_FOLDER") + "/MatchRunner" + i, externalGamersManagers, theGamersTypes));
 		}
 
 		// Shutdown executor to tell it not to accept any more task to execute.

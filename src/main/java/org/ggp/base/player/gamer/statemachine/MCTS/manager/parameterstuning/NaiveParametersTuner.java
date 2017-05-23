@@ -203,7 +203,7 @@ public class NaiveParametersTuner extends ParametersTuner {
 
 			// If we need to use the role problems, here we have to check if we need new ones or if we should
 			// reuse previous ones that have been saved.
-			// We need ne ones if:
+			// We need new ones if:
 			// 1. We don't want to reuse the previous ones
 			// 2. We want to reuse the previous ones, but we have none yet
 			// 3. We want to reuse the previous ones, we have them but their size doesn't correspond to the number

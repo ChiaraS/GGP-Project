@@ -96,7 +96,7 @@ public class MctsGamer extends InternalPropnetGamer {
 			GoalDefinitionException, StateMachineException {
 
 		long start = System.currentTimeMillis();
-		long realTimeout = timeout - this.selectMoveSafetyMargin;
+		long realTimeout = timeout - this.metagameSafetyMargin;
 		// Information to log at the end of metagame.
 		// As default value they are initialized with "-1". A value of "-1" for a parameter means that
 		// its value couldn't be computed (because there was no time or because of an error).

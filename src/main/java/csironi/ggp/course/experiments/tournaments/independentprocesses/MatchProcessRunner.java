@@ -4,6 +4,7 @@ import java.io.File;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.StringWriter;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
@@ -21,11 +22,17 @@ public class MatchProcessRunner extends Thread {
 
 	private Map<String,ExternalGamerAvailabilityManager> externalGamersManagers;
 
-	public MatchProcessRunner(int matchID, List<String> theSettings, String stdOutputErrorFolderPath, Map<String,ExternalGamerAvailabilityManager> externalGamersManagers){
+	private List<String> theGamersTypes;
+
+	private List<String> externalGamersInUse;
+
+	public MatchProcessRunner(int matchID, List<String> theSettings, String stdOutputErrorFolderPath, Map<String,ExternalGamerAvailabilityManager> externalGamersManagers, List<String> theGamersTypes){
 		this.matchID = matchID;
 		this.theSettings = theSettings;
 		this.stdOutputErrorFolderPath = stdOutputErrorFolderPath;
 		this.externalGamersManagers = externalGamersManagers;
+		this.theGamersTypes = theGamersTypes;
+		this.externalGamersInUse = new ArrayList<String>();
 	}
 
 	@Override
@@ -33,8 +40,20 @@ public class MatchProcessRunner extends Thread {
 
 		//GamerLogger.log("MatchRunner" + this.matchID, "Creating process to run match " + this.matchID + ".");
 
-		// !!GamerLogger.logError("MatchRunner", "No free address left! Make sure that there are enough active external players for the number of parallel matches and game roles!");
-
+		for(String s : this.theGamersTypes){
+			if(this.externalGamersManagers.containsKey(s)){
+				ExternalGamerAvailabilityManager manager = this.externalGamersManagers.get(s);
+				String theAddress = manager.getFreeAddress();
+				if(theAddress == null){
+					GamerLogger.log("MatchRunner" + this.matchID, "No free addresses left! Make sure that there are enough active external players for the number of parallel matches and game roles!");
+					return;
+				}
+				this.externalGamersInUse.add(s + "-" + theAddress);
+				this.theSettings.add(s + "-" + theAddress);
+			}else{
+				this.theSettings.add(s);
+			}
+		}
 
 		ProcessBuilder pb = new ProcessBuilder(this.theSettings);
 
@@ -88,6 +107,16 @@ public class MatchProcessRunner extends Thread {
 			Thread.currentThread().interrupt();
 		}
 
+		for(String s : this.externalGamersInUse){
+			String[] splitString = s.split("-");
+			ExternalGamerAvailabilityManager manager = this.externalGamersManagers.get(splitString[0]);
+			if(manager != null){
+				manager.freeAddressInUse(splitString[1] + "-" + splitString[2]);
+			}else{
+				GamerLogger.log("MatchRunner" + this.matchID, "");
+			}
+		}
+		this.externalGamersInUse.clear();
 	}
 
 }
