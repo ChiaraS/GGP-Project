@@ -247,6 +247,16 @@ public abstract class SearchManagerComponent {
 			int[] possibleValues = gamerSettings.getIntPropertyMultiValue(callingClass + ".valuesFor" + parameterName);
 			// No need to check if at least one possible value is specified, because if no values are specified an exception
 			// will already be thrown when trying to retrieve such values.
+			// However, we must check that the specified fixed value is among the possible values.
+			int index = 0;
+			while(index < possibleValues.length && possibleValues[index] != fixedParam){
+				index++;
+			}
+			if(index == possibleValues.length){
+				GamerLogger.logError("SearchManagerCreation", "Error when creating tunable parameter " + parameterName + " for class " +
+						callingClass + ". The fixed value " + fixedParam + "for the parameter does not appear in the set of possible values!");
+				throw new RuntimeException("SearchManagerCreation - possibleValues and possibleValuesPenalty have different length!");
+			}
 			double[] possibleValuesPenalty = null;
 			if(gamerSettings.specifiesProperty(callingClass + ".possibleValuesPenaltyFor" + parameterName)){
 				possibleValuesPenalty = gamerSettings.getDoublePropertyMultiValue(callingClass + ".possibleValuesPenaltyFor" + parameterName);
@@ -256,8 +266,8 @@ public abstract class SearchManagerComponent {
 							" for class " + callingClass + ". There are " + possibleValues.length +
 							" possible values for the tunable parameter, but there are " + possibleValuesPenalty.length +
 							" possible values penalty specified.");
+					throw new RuntimeException("SearchManagerCreation - possibleValues and possibleValuesPenalty have different length!");
 				}
-				throw new RuntimeException("SearchManagerCreation - possibleValues and possibleValuesPenalty have different length!");
 			}
 			int tuningOrderIndex = -1;
 			if(gamerSettings.specifiesProperty(callingClass + ".tuningOrderIndex" + parameterName)){
@@ -295,6 +305,17 @@ public abstract class SearchManagerComponent {
 			double[] possibleValues = gamerSettings.getDoublePropertyMultiValue(callingClass + ".valuesFor" + parameterName);
 			// No need to check if at least one possible value is specified, because if no values are specified an exception
 			// will already be thrown when trying to retrieve such values.
+			// However, we must check that the specified fixed value is among the possible values.
+			int index = 0;
+			while(index < possibleValues.length && possibleValues[index] != fixedParam){
+				index++;
+			}
+			if(index == possibleValues.length){
+				GamerLogger.logError("SearchManagerCreation", "Error when creating tunable parameter " + parameterName + " for class " +
+						callingClass + ". The fixed value " + fixedParam + "for the parameter does not appear in the set of possible values!");
+				throw new RuntimeException("SearchManagerCreation - possibleValues and possibleValuesPenalty have different length!");
+			}
+
 			double[] possibleValuesPenalty = null;
 			if(gamerSettings.specifiesProperty(callingClass + ".possibleValuesPenaltyFor" + parameterName)){
 				possibleValuesPenalty = gamerSettings.getDoublePropertyMultiValue(callingClass + ".possibleValuesPenaltyFor" + parameterName);
@@ -304,8 +325,8 @@ public abstract class SearchManagerComponent {
 							" for class " + callingClass + ". There are " + possibleValues.length +
 							" possible values for the tunable parameter, but there are " + possibleValuesPenalty.length +
 							" possible values penalty specified.");
+					throw new RuntimeException("SearchManagerCreation - possibleValues and possibleValuesPenalty have different length!");
 				}
-				throw new RuntimeException("SearchManagerCreation - possibleValues and possibleValuesPenalty have different length!");
 			}
 			int tuningOrderIndex = -1;
 			if(gamerSettings.specifiesProperty(callingClass + ".tuningOrderIndex" + parameterName)){

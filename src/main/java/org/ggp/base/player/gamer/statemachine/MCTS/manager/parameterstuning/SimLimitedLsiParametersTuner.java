@@ -532,16 +532,16 @@ public class SimLimitedLsiParametersTuner extends ParametersTuner {
 		}
 
 		// Compute one of the indices of the combination until all the indices of the combination are set.
-		for(int paramIndex = 0; paramIndex < avgRewards.length; paramIndex++){
+		for(int count = 0; count < avgRewards.length; count++){
 
 			feasibility = new boolean[avgRewards.length][];
 
 			// Compute feasibility of all parameter values wrt the current setting of indices
-			for(int paramIndex2 = 0; paramIndex2 < avgRewards.length; paramIndex2++){
-				if(indices[paramIndex2] == -1){
-					feasibility[paramIndex2] = this.parametersManager.getValuesFeasibility(paramIndex2, indices);
+			for(int paramIndex = 0; paramIndex < avgRewards.length; paramIndex++){
+				if(indices[paramIndex] == -1){
+					feasibility[paramIndex] = this.parametersManager.getValuesFeasibility(paramIndex, indices);
 				}else{
-					feasibility[paramIndex2] = null; // null means that no values are feasible because we already set an index for this param value
+					feasibility[paramIndex] = null; // null means that no values are feasible because we already set an index for this param value
 				}
 			}
 
@@ -550,8 +550,8 @@ public class SimLimitedLsiParametersTuner extends ParametersTuner {
 			probabilities = new ArrayList<Pair<MyPair<Integer,Integer>,Double>>();
 
 			// Compute feasibility of all parameter values wrt the current setting of indices
-			for(int paramIndex2 = 0; paramIndex2 < feasibility.length; paramIndex2++){
-				if(feasibility[paramIndex2] != null){
+			for(int paramIndex = 0; paramIndex < feasibility.length; paramIndex++){
+				if(feasibility[paramIndex] != null){
 					for(int valueIndex = 0; valueIndex < feasibility[paramIndex].length; valueIndex++){
 						if(feasibility[paramIndex][valueIndex]){
 							probabilities.add(new Pair<MyPair<Integer,Integer>,Double>(new MyPair<Integer,Integer>(paramIndex, valueIndex), avgRewards[paramIndex][valueIndex]));

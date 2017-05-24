@@ -260,6 +260,10 @@ public class ParametersManager extends SearchManagerComponent {
 		return this.tunableParameters.size();
 	}
 
+	public int[] getCurrentValuesIndicesForParam(int paramIndex){
+		return this.tunableParameters.get(paramIndex).getCurrentValuesIndices();
+	}
+
 	/**
 	 * Returns the number of possible values of the parameter at position paramIndex in
 	 * the list of tunableParameters.
@@ -349,6 +353,17 @@ public class ParametersManager extends SearchManagerComponent {
 
 				paramIndex++;
 			}
+		}
+	}
+
+	public void setSingleParameterValues(int[] valuesIndicesPerRole, int paramIndex){
+		// If we are tuning only for my role...
+		if(valuesIndicesPerRole.length == 1){
+			this.tunableParameters.get(paramIndex).setMyRoleNewValue(this.gameDependentParameters.getMyRoleIndex(),
+					valuesIndicesPerRole[0]);
+		}else{ //If we are tuning for all roles...
+
+			this.tunableParameters.get(paramIndex).setAllRolesNewValues(valuesIndicesPerRole);
 		}
 	}
 

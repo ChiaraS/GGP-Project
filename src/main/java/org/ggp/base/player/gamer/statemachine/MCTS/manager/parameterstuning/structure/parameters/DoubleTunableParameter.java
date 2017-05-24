@@ -149,4 +149,17 @@ public class DoubleTunableParameter extends TunableParameter {
 	public double getPossibleValue(int valueIndex) {
 		return this.possibleValues[valueIndex];
 	}
+
+	@Override
+	public int[] getCurrentValuesIndices() {
+		int[] currentValuesIndices = new int[this.currentValues.length];
+		for(int roleIndex = 0; roleIndex < this.currentValues.length; roleIndex++){
+			currentValuesIndices[roleIndex] = 0;
+			while(currentValuesIndices[roleIndex] < this.possibleValues.length && this.possibleValues[currentValuesIndices[roleIndex]] != this.currentValues[roleIndex]){
+				currentValuesIndices[roleIndex]++;
+			}
+		}
+		return currentValuesIndices;
+	}
+
 }

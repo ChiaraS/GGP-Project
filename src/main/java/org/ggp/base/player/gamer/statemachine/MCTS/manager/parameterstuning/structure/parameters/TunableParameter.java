@@ -41,6 +41,14 @@ public abstract class TunableParameter {
 
 	}
 
+	/**
+	 * Get the index of the current value for each role.
+	 *
+	 * @return an array, where each entry corresponds to a role and is the index in the list of possible
+	 * values of the value that is currently set for the role.
+	 */
+	public abstract int[] getCurrentValuesIndices();
+
 	public abstract int getNumPossibleValues();
 
 	public abstract String[] getPossibleValues();
