@@ -1,5 +1,7 @@
 package org.ggp.base.player.gamer.statemachine.MCTS.manager.parameterstuning;
 
+import java.lang.reflect.InvocationTargetException;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Random;
@@ -7,11 +9,13 @@ import java.util.Random;
 import org.ggp.base.player.gamer.statemachine.GamerSettings;
 import org.ggp.base.player.gamer.statemachine.MCS.manager.MoveStats;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.GameDependentParameters;
+import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.SearchManagerComponent;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.SharedReferencesCollector;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.parameterstuning.selectors.TunerSelector;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.parameterstuning.structure.SequentialProblemRepresentation;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.parameterstuning.structure.mabs.FixedMab;
 import org.ggp.base.util.logging.GamerLogger;
+import org.ggp.base.util.reflection.ProjectSearcher;
 
 public class SequentialParametersTuner extends ParametersTuner {
 
@@ -23,6 +27,19 @@ public class SequentialParametersTuner extends ParametersTuner {
 	private boolean shuffleTuningOrder;
 
 	/**
+	 * If in the interval [0.0, 1.0], indicates that the statistics of each
+	 * parameter must be decayed after each tuning iteration of each parameter.
+	 * Its value indicates which percentage of the statistics will be kept.
+	 * (decayFactor*statValue) statistics will be kept for each parameter value.
+	 * ATTENTION! This class needs to be responsible of decaying the statistics
+	 * because it might be necessary to decay them during the search for a move
+	 * and not at the end of the search for every move. When using the sequential
+	 * tuner don't set the AfterMoveStrategy to decay the statistics. This tuner
+	 * already takes care of that at the right moment.
+	 */
+	private double decayFactor;
+
+	/**
 	 * Selects the next value to evaluate for the currently tuned parameter.
 	 */
 	private TunerSelector nextValueSelector;
@@ -31,6 +48,22 @@ public class SequentialParametersTuner extends ParametersTuner {
 	 * Selects the best value to set for the currently tuned parameter.
 	 */
 	private TunerSelector bestValueSelector;
+
+	/**
+	 * Number of samples that should be taken for the current parameter being tuned.
+	 * After maxSamplesPerParam samples the tuner will start tuning the next parameter.
+	 * When maxSamplesPerParam=Integer.MAX_VALUE it means that this tuner should never
+	 * change the tuned parameter on its own. The parameter should be change at the end
+	 * of the search for every game step, and it's the AfterMoveStrategy that takes care
+	 * of signaling when to change.
+	 */
+	private int maxSamplesPerParam;
+
+	/**
+	 * Number of samples taken so far for the parameter currently being tuned.
+	 * This value is always reset to 0 whenever we change the parameter being tuned.
+	 */
+	private int currentNumSamples;
 
 	/**
 	 * Indices of the parameters in the order in which they should be tuned.
@@ -52,22 +85,6 @@ public class SequentialParametersTuner extends ParametersTuner {
 	private int[][] bestCombinations;
 
 	/**
-	 * Number of samples that should be taken for the current parameter being tuned.
-	 * After maxSamplesPerParam samples the tuner will start tuning the next parameter.
-	 * When maxSamplesPerParam=Integer.MAX_VALUE it means that this tuner should never
-	 * change the tuned parameter on its own. The parameter should be change at the end
-	 * of the search for every game step, and it's the AfterMoveStrategy that takes care
-	 * of signaling when to change.
-	 */
-	private int maxSamplesPerParam;
-
-	/**
-	 * Number of samples taken so far for the parameter currently being tuned.
-	 * This value is always reset to 0 whenever we change the parameter being tuned.
-	 */
-	private int currentNumSamples;
-
-	/**
 	 * For each role, memorize an array with value feasibility for the currently tuned
 	 * parameter wrt the values set for the other parameters of the role.
 	 * For each role, the values feasibility for the parameter being tuned is always the
@@ -81,8 +98,50 @@ public class SequentialParametersTuner extends ParametersTuner {
 	public SequentialParametersTuner(GameDependentParameters gameDependentParameters, Random random,
 			GamerSettings gamerSettings, SharedReferencesCollector sharedReferencesCollector) {
 		super(gameDependentParameters, random, gamerSettings, sharedReferencesCollector);
-		// TODO Auto-generated constructor stub
 
+		this.shuffleTuningOrder = gamerSettings.getBooleanPropertyValue("ParametersTuner.shuffleTuningOrder");
+
+		this.decayFactor = gamerSettings.getDoublePropertyValue("ParametersTuner.decayFactor");
+
+		String[] tunerSelectorDetails = gamerSettings.getIDPropertyValue("ParametersTuner.nextValueSelectorType");
+
+		try {
+			this.nextValueSelector = (TunerSelector) SearchManagerComponent.getConstructorForMultiInstanceSearchManagerComponent(SearchManagerComponent.getCorrespondingClass(ProjectSearcher.TUNER_SELECTORS.getConcreteClasses(), tunerSelectorDetails[0])).newInstance(gameDependentParameters, random, gamerSettings, sharedReferencesCollector, tunerSelectorDetails[1]);
+		} catch (InstantiationException | IllegalAccessException
+				| IllegalArgumentException | InvocationTargetException e) {
+			// TODO: fix this!
+			GamerLogger.logError("SearchManagerCreation", "Error when instantiating TunerSelector " + gamerSettings.getPropertyValue("ParametersTuner.nextValueSelectorType") + ".");
+			GamerLogger.logStackTrace("SearchManagerCreation", e);
+			throw new RuntimeException(e);
+		}
+
+		tunerSelectorDetails = gamerSettings.getIDPropertyValue("ParametersTuner.bestValueSelectorType");
+
+		try {
+			this.bestValueSelector = (TunerSelector) SearchManagerComponent.getConstructorForMultiInstanceSearchManagerComponent(SearchManagerComponent.getCorrespondingClass(ProjectSearcher.TUNER_SELECTORS.getConcreteClasses(), tunerSelectorDetails[0])).newInstance(gameDependentParameters, random, gamerSettings, sharedReferencesCollector, tunerSelectorDetails[1]);
+		} catch (InstantiationException | IllegalAccessException
+				| IllegalArgumentException | InvocationTargetException e) {
+			// TODO: fix this!
+			GamerLogger.logError("SearchManagerCreation", "Error when instantiating TunerSelector " + gamerSettings.getPropertyValue("ParametersTuner.bestValueSelectorType") + ".");
+			GamerLogger.logStackTrace("SearchManagerCreation", e);
+			throw new RuntimeException(e);
+		}
+
+		this.tuningOrder = null;
+
+		this.orderIndex = -1;
+
+		this.roleProblems = null;
+
+		this.selectedCombinations = null;
+
+		this.bestCombinations = null;
+
+		this.maxSamplesPerParam = gamerSettings.getIntPropertyValue("ParametersTuner.maxSamplesPerParam");
+
+		this.currentNumSamples = 0;
+
+		this.valuesFeasibility = null;
 
 	}
 
@@ -90,7 +149,17 @@ public class SequentialParametersTuner extends ParametersTuner {
 	public void setReferences(SharedReferencesCollector sharedReferencesCollector) {
 		super.setReferences(sharedReferencesCollector);
 
-		// Costruisci tuning order
+		super.setReferences(sharedReferencesCollector);
+
+		this.nextValueSelector.setReferences(sharedReferencesCollector);
+
+		this.bestValueSelector.setReferences(sharedReferencesCollector);
+
+		this.tuningOrder = new ArrayList<Integer>();
+
+		for(int i = 0; i < this.parametersManager.getNumTunableParameters(); i++){
+			this.tuningOrder.add(new Integer(i));
+		}
 
 	}
 
@@ -267,6 +336,11 @@ public class SequentialParametersTuner extends ParametersTuner {
 				Collections.shuffle(this.tuningOrder);
 			}
 
+			// Check if we must decay statistics of parameter between different tuning iterations
+			if(this.decayFactor < 1.0 && this.decayFactor <= 0.0){
+				this.decreaseStatistics(this.decayFactor);
+			}
+
 		}else{
 			// If none of the above, we just increase the orderIndex to point to the next parameter in the tuning order
 			this.orderIndex++;
@@ -410,6 +484,8 @@ public class SequentialParametersTuner extends ParametersTuner {
 			currentParamMabPerRole.incrementNumUpdates();
 		}
 
+		this.currentNumSamples++;
+
 		// If maxSamplesPerParam==Integer.MAX_VALUE it means we are tuning one parameter per move, so we don't
 		// need to check how many samples have been taken so far to know if we need to start tuning the next
 		// parameter. After performing a move in the real game, this class will be told to start tuning the next
@@ -422,14 +498,155 @@ public class SequentialParametersTuner extends ParametersTuner {
 
 	@Override
 	public void logStats() {
-		// TODO Auto-generated method stub
+		if(this.roleProblems != null){
+
+			// TODO: If the tuner was still tuning, log the most visited combo?
+
+			//GamerLogger.log(GamerLogger.FORMAT.CSV_FORMAT, "ParametersTunerStats", "");
+			String toLog;
+
+			for(int roleProblemIndex = 0; roleProblemIndex < this.roleProblems.length; roleProblemIndex++){
+
+				int roleIndex;
+				if(this.tuneAllRoles){
+					roleIndex = roleProblemIndex;
+				}else{
+					roleIndex = this.gameDependentParameters.getMyRoleIndex();
+				}
+
+				toLog = "";
+
+				FixedMab[] localMabs = this.roleProblems[roleProblemIndex].getLocalMabs();
+
+				for(int paramIndex = 0; paramIndex < localMabs.length; paramIndex++){
+
+					for(int paramValueIndex = 0; paramValueIndex < localMabs[paramIndex].getMoveStats().length; paramValueIndex++){
+						//GamerLogger.log(GamerLogger.FORMAT.CSV_FORMAT, "ParametersTunerStats", "ROLE=;" + i + ";MAB=;LOCAL" + j + ";UNIT_MOVE=;" + k + ";VISITS=;" + localMabs[j].getMoveStats()[k].getVisits() + ";SCORE_SUM=;" + localMabs[j].getMoveStats()[k].getScoreSum() + ";AVG_VALUE=;" + (localMabs[j].getMoveStats()[k].getVisits() <= 0 ? "0" : (localMabs[j].getMoveStats()[k].getScoreSum()/((double)localMabs[j].getMoveStats()[k].getVisits()))));
+						toLog += "\nROLE=;" + this.gameDependentParameters.getTheMachine().convertToExplicitRole(this.gameDependentParameters.getTheMachine().getRoles().get(roleIndex)) + ";PARAM=;" + this.parametersManager.getName(paramIndex) + ";UNIT_MOVE=;" + this.parametersManager.getPossibleValues(paramIndex)[paramValueIndex] + ";PENALTY=;" + (this.parametersManager.getPossibleValuesPenalty(paramIndex) != null ? this.parametersManager.getPossibleValuesPenalty(paramIndex)[paramValueIndex] : 0) + ";VISITS=;" + localMabs[paramIndex].getMoveStats()[paramValueIndex].getVisits() + ";SCORE_SUM=;" + localMabs[paramIndex].getMoveStats()[paramValueIndex].getScoreSum() + ";AVG_VALUE=;" + (localMabs[paramIndex].getMoveStats()[paramValueIndex].getVisits() <= 0 ? "0" : (localMabs[paramIndex].getMoveStats()[paramValueIndex].getScoreSum()/((double)localMabs[paramIndex].getMoveStats()[paramValueIndex].getVisits()))) + ";";
+					}
+				}
+
+				toLog += "\n";
+
+				GamerLogger.log(GamerLogger.FORMAT.CSV_FORMAT, "LocalParamTunerStats", toLog);
+
+			}
+		}
+
+	}
+
+	@Override
+	public String getComponentParameters(String indentation) {
+
+		String superParams = super.getComponentParameters(indentation);
+
+		String params = indentation + "SHUFFLE_TUNING_ORDER = " + this.shuffleTuningOrder +
+				indentation + "DECAY_FACTOR = " + this.decayFactor +
+				indentation + "NEXT_VALUE_SELECTOR = " + this.nextValueSelector.printComponent(indentation + "  ") +
+				indentation + "BEST_VALUE_SELECTOR = " + this.bestValueSelector.printComponent(indentation + "  ") +
+				indentation + "MAX_SAMPLES_PER_PARAM = " + this.maxSamplesPerParam +
+				indentation + "current_num_samples = " + this.currentNumSamples;
+
+		if(this.tuningOrder != null){
+			String tuningOrderString = "[ ";
+
+			for(Integer i : this.tuningOrder){
+
+				tuningOrderString += (i.toString() + " ");
+
+			}
+
+			tuningOrderString += "]";
+
+			params += indentation + "tuning_order = " + tuningOrderString;
+		}else{
+			params += indentation + "tuning_order = null";
+		}
+
+		params += indentation + "order_index = " + this.orderIndex +
+				indentation + "num_roles_problems = " + (this.roleProblems != null ? this.roleProblems.length : 0);
+
+		if(this.selectedCombinations != null){
+			String selectedCombinationsString = "[ ";
+
+			for(int i = 0; i < this.selectedCombinations.length; i++){
+
+				String selectedCombinationString = "[ ";
+				for(int j = 0; j < this.selectedCombinations[i].length; j++){
+					selectedCombinationString += this.selectedCombinations[i][j] + " ";
+				}
+				selectedCombinationString += "]";
+
+				selectedCombinationsString += selectedCombinationString + " ";
+
+			}
+
+			selectedCombinationsString += "]";
+
+			params += indentation + "selected_combinations_indices = " + selectedCombinationsString;
+		}else{
+			params += indentation + "selected_combinations_indices = null";
+		}
+
+		if(this.bestCombinations != null){
+			String bestCombinationsString = "[ ";
+
+			for(int i = 0; i < this.bestCombinations.length; i++){
+
+				String bestCombinationString = "[ ";
+				for(int j = 0; j < this.bestCombinations[i].length; j++){
+					bestCombinationString += this.bestCombinations[i][j] + " ";
+				}
+				bestCombinationString += "]";
+
+				bestCombinationsString += bestCombinationString + " ";
+
+			}
+
+			bestCombinationsString += "]";
+
+			params += indentation + "best_combinations_indices = " + bestCombinationsString;
+		}else{
+			params += indentation + "best_combinations_indices = null";
+		}
+
+		if(this.valuesFeasibility != null){
+			String valuesFeasibilityString = "[ ";
+
+			for(int i = 0; i < this.valuesFeasibility.length; i++){
+
+				String valuesFeasibilityPerRoleString = "[ ";
+				for(int j = 0; j < this.valuesFeasibility[i].length; j++){
+					valuesFeasibilityPerRoleString += this.valuesFeasibility[i][j] + " ";
+				}
+				valuesFeasibilityPerRoleString += "]";
+
+				valuesFeasibilityString += valuesFeasibilityPerRoleString + " ";
+
+			}
+
+			valuesFeasibilityString += "]";
+
+			params += indentation + "values_feasibility = " + valuesFeasibilityString;
+		}else{
+			params += indentation + "values_feasibility = null";
+		}
+
+
+
+		if(superParams != null){
+			return superParams + params;
+		}else{
+			return params;
+		}
 
 	}
 
 	@Override
 	public void decreaseStatistics(double factor) {
-		// TODO Auto-generated method stub
-
+		for(int i = 0; i < this.roleProblems.length; i++){
+			this.roleProblems[i].decreaseStatistics(factor);
+		}
 	}
 	@Override
 	public boolean isMemorizingBestCombo() {

@@ -743,9 +743,9 @@ public class NaiveParametersTuner extends ParametersTuner {
 
 			selectedCombinationsString += "]";
 
-			params += indentation + "SELECTED_COMBINATIONS_INDICES = " + selectedCombinationsString;
+			params += indentation + "selected_combinations_indices = " + selectedCombinationsString;
 		}else{
-			params += indentation + "SELECTED_COMBINATIONS = null";
+			params += indentation + "selected_combinations_indices = null";
 		}
 
 		if(this.bestCombinations != null){
@@ -765,9 +765,9 @@ public class NaiveParametersTuner extends ParametersTuner {
 
 			bestCombinationsString += "]";
 
-			params += indentation + "BEST_COMBINATIONS_INDICES = " + bestCombinationsString;
+			params += indentation + "best_combinations_indices = " + bestCombinationsString;
 		}else{
-			params += indentation + "BEST_COMBINATIONS = null";
+			params += indentation + "best_combinations_indices = null";
 		}
 
 		if(superParams != null){

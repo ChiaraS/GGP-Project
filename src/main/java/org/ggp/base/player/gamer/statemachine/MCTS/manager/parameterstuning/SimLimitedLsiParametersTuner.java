@@ -627,43 +627,46 @@ public class SimLimitedLsiParametersTuner extends ParametersTuner {
 
 				GamerLogger.log(GamerLogger.FORMAT.CSV_FORMAT, "LocalParamTunerStats", toLog);
 
-				toLog = "";
-
 				List<CompleteMoveStats> globalInfo = this.roleProblems[roleProblemIndex].getGeneratedCandidatesStats();
 
-				CombinatorialCompactMove theValuesIndices;
-				String theValues;
+				if(globalInfo != null){
 
-				// Log at most 2000 global stats per role.
-				// This will prevent files to become too big and the player to take too much time to log.
-				//int numStats = 0;
+					toLog = "";
 
-				for(CompleteMoveStats stats : globalInfo){
+					CombinatorialCompactMove theValuesIndices;
+					String theValues;
 
 					// Log at most 2000 global stats per role.
 					// This will prevent files to become too big and the player to take too much time to log.
-					//if(numStats == 2000){
-					//	break;
-					//}
+					//int numStats = 0;
 
-					theValuesIndices = (CombinatorialCompactMove) stats.getTheMove();
-					theValues = "[ ";
-					for(int paramIndex = 0; paramIndex < theValuesIndices.getIndices().length; paramIndex++){
-						theValues += (this.parametersManager.getPossibleValues(paramIndex)[theValuesIndices.getIndices()[paramIndex]] + " ");
+					for(CompleteMoveStats stats : globalInfo){
+
+						// Log at most 2000 global stats per role.
+						// This will prevent files to become too big and the player to take too much time to log.
+						//if(numStats == 2000){
+						//	break;
+						//}
+
+						theValuesIndices = (CombinatorialCompactMove) stats.getTheMove();
+						theValues = "[ ";
+						for(int paramIndex = 0; paramIndex < theValuesIndices.getIndices().length; paramIndex++){
+							theValues += (this.parametersManager.getPossibleValues(paramIndex)[theValuesIndices.getIndices()[paramIndex]] + " ");
+						}
+						theValues += "]";
+
+						//GamerLogger.log(GamerLogger.FORMAT.CSV_FORMAT, "ParametersTunerStats", "ROLE=;" + i + ";MAB=;GLOBAL;COMBINATORIAL_MOVE=;" + entry.getKey() + ";VISITS=;" + entry.getValue().getVisits() + ";SCORE_SUM=;" + entry.getValue().getScoreSum() + ";AVG_VALUE=;" + (entry.getValue().getVisits() <= 0 ? "0" : (entry.getValue().getScoreSum()/((double)entry.getValue().getVisits()))));
+						toLog += "\nROLE=;" + this.gameDependentParameters.getTheMachine().convertToExplicitRole(this.gameDependentParameters.getTheMachine().getRoles().get(roleIndex)) +
+								";PARAMS=;" + globalParamsOrder + ";COMB_MOVE=;" + theValues + ";PENALTY=;0;VISITS=;" + stats.getVisits() +
+								";SCORE_SUM=;" + stats.getScoreSum() + ";AVG_VALUE=;" + (stats.getVisits() <= 0 ? "0" : (stats.getScoreSum()/((double)stats.getVisits()))) + ";";
+
+						//numStats++;
 					}
-					theValues += "]";
 
-					//GamerLogger.log(GamerLogger.FORMAT.CSV_FORMAT, "ParametersTunerStats", "ROLE=;" + i + ";MAB=;GLOBAL;COMBINATORIAL_MOVE=;" + entry.getKey() + ";VISITS=;" + entry.getValue().getVisits() + ";SCORE_SUM=;" + entry.getValue().getScoreSum() + ";AVG_VALUE=;" + (entry.getValue().getVisits() <= 0 ? "0" : (entry.getValue().getScoreSum()/((double)entry.getValue().getVisits()))));
-					toLog += "\nROLE=;" + this.gameDependentParameters.getTheMachine().convertToExplicitRole(this.gameDependentParameters.getTheMachine().getRoles().get(roleIndex)) +
-							";PARAMS=;" + globalParamsOrder + ";COMB_MOVE=;" + theValues + ";PENALTY=;0;VISITS=;" + stats.getVisits() +
-							";SCORE_SUM=;" + stats.getScoreSum() + ";AVG_VALUE=;" + (stats.getVisits() <= 0 ? "0" : (stats.getScoreSum()/((double)stats.getVisits()))) + ";";
+					toLog += "\n";
 
-					//numStats++;
+					GamerLogger.log(GamerLogger.FORMAT.CSV_FORMAT, "GlobalParamTunerStats", toLog);
 				}
-
-				toLog += "\n";
-
-				GamerLogger.log(GamerLogger.FORMAT.CSV_FORMAT, "GlobalParamTunerStats", toLog);
 
 			}
 		}

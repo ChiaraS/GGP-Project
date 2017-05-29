@@ -5,11 +5,17 @@ import java.util.Random;
 import org.ggp.base.player.gamer.statemachine.GamerSettings;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.GameDependentParameters;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.SharedReferencesCollector;
-import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.strategies.beforesimualtion.SequentialTunerBeforeSimulation;
+import org.ggp.base.player.gamer.statemachine.MCTS.manager.parameterstuning.SequentialParametersTuner;
 
+/**
+ * Only use this class when tuning sequentially AND changing parameter after the search for every move.
+ *
+ * @author C.Sironi
+ *
+ */
 public class SequentialTunerAfterMove extends AfterMoveStrategy {
 
-	private SequentialTunerBeforeSimulation sequentialTunerBeforeSimulation;
+	private SequentialParametersTuner parametersTuner;
 
 	public SequentialTunerAfterMove(GameDependentParameters gameDependentParameters, Random random,
 			GamerSettings gamerSettings, SharedReferencesCollector sharedReferencesCollector, String id) {
@@ -18,7 +24,7 @@ public class SequentialTunerAfterMove extends AfterMoveStrategy {
 
 	@Override
 	public void setReferences(SharedReferencesCollector sharedReferencesCollector) {
-		this.sequentialTunerBeforeSimulation = sharedReferencesCollector.getSequentialTunerBeforeSimulation();
+		this.parametersTuner = (SequentialParametersTuner) sharedReferencesCollector.getParametersTuner();
 	}
 
 	@Override
@@ -34,12 +40,12 @@ public class SequentialTunerAfterMove extends AfterMoveStrategy {
 
 	@Override
 	public void afterMoveActions() {
-		//this.sequentialTunerBeforeSimulation.startTuningNextParameter();
+		this.parametersTuner.changeTunedParameter();
 	}
 
 	@Override
 	public String getComponentParameters(String indentation) {
-		return indentation + "BEFORE_SIMULATION_STRATEGY = " + this.sequentialTunerBeforeSimulation.getClass().getSimpleName();
+		return indentation + "PARAMETERS_TUNER = " + this.parametersTuner.getClass().getSimpleName();
 	}
 
 }
