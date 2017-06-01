@@ -574,7 +574,7 @@ public class TimeLimitedLsiParametersTuner extends ParametersTuner {
 
 		double scoreSum;
 		int visits;
-		boolean allZero = true;
+		//boolean allZero = true;
 
 		for(int paramIndex = 0; paramIndex < paramValuesStats.length; paramIndex++){
 
@@ -589,15 +589,16 @@ public class TimeLimitedLsiParametersTuner extends ParametersTuner {
 				}else{
 					scoreSum = paramValuesStats[paramIndex][valueIndex].getScoreSum();
 					avgRewards[paramIndex][valueIndex] = (scoreSum/((double)visits))/100.0;
-					if(avgRewards[paramIndex][valueIndex] > 0){
-						allZero = false;
-					}
+					//if(avgRewards[paramIndex][valueIndex] > 0){
+					//	allZero = false;
+					//}
 				}
 
 			}
 
 		}
 
+		/*
 		if(allZero){
 			for(int paramIndex = 0; paramIndex < paramValuesStats.length; paramIndex++){
 
@@ -607,8 +608,25 @@ public class TimeLimitedLsiParametersTuner extends ParametersTuner {
 
 			}
 		}
+		*/
+
+		this.logAvgRewards(avgRewards);
 
 		return avgRewards;
+	}
+
+	private void logAvgRewards(double[][] avgRewards){
+		String s = "";
+		for(int i = 0; i < avgRewards.length; i++){
+			for(int j = 0; j < avgRewards[i].length; j++){
+				s += (avgRewards[i][j] + ";");
+			}
+			s += "\n";
+		}
+
+		s +="\n";
+
+		GamerLogger.log(FORMAT.CSV_FORMAT, "AvgRewards", s);
 	}
 
 	private CombinatorialCompactMove generateCandidate(double[][] avgRewards, RandomGenerator rg){
@@ -626,9 +644,11 @@ public class TimeLimitedLsiParametersTuner extends ParametersTuner {
 		}
 
 		// Compute one of the indices of the combination until all the indices of the combination are set.
-		for(int count = 0; count < avgRewards.length; count++){
+		for(int count = 0; count < indices.length; count++){
 
 			feasibility = new boolean[avgRewards.length][];
+
+			probabilities = new ArrayList<Pair<MyPair<Integer,Integer>,Double>>();
 
 			// Compute feasibility of all parameter values wrt the current setting of indices
 			for(int paramIndex = 0; paramIndex < avgRewards.length; paramIndex++){
@@ -639,11 +659,7 @@ public class TimeLimitedLsiParametersTuner extends ParametersTuner {
 				}
 			}
 
-			// For each value that is feasible, add the corresponding probability to the list that will be used
-			// to generate the samples with the EnumeratedDistribution
-			probabilities = new ArrayList<Pair<MyPair<Integer,Integer>,Double>>();
-
-			// Compute feasibility of all parameter values wrt the current setting of indices
+			// Compute probability of all parameter values
 			for(int paramIndex = 0; paramIndex < feasibility.length; paramIndex++){
 				if(feasibility[paramIndex] != null){
 					for(int valueIndex = 0; valueIndex < feasibility[paramIndex].length; valueIndex++){
