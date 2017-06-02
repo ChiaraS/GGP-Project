@@ -31,6 +31,8 @@ import csironi.ggp.course.utils.MyPair;
 
 public class TimeLimitedLsiParametersTuner extends ParametersTuner {
 
+	//private int numSim;
+
 	/**
 	 * True if LSI could terminate execution before the end of the timeout for the last performed game step.
 	 */
@@ -160,6 +162,8 @@ public class TimeLimitedLsiParametersTuner extends ParametersTuner {
 
 		super.setUpComponent();
 
+		//this.numSim = 0;
+
 		this.doneForStep = false;
 
 		this.randomSelector.setUpComponent();
@@ -223,7 +227,10 @@ public class TimeLimitedLsiParametersTuner extends ParametersTuner {
 	public void startTuningForNewStep(long timeout){
 
 		// The first time will log always false. The first line of the file "LSITermination" should thus be ignored.
-		GamerLogger.log(FORMAT.CSV_FORMAT, "LSITermination", "Termination;" + this.doneForStep);
+		GamerLogger.log(FORMAT.CSV_FORMAT, "LSITermination", "Termination;" + this.doneForStep + ";");
+		//GamerLogger.log(FORMAT.CSV_FORMAT, "LSITermination", "Termination;" + this.doneForStep + ";" + this.numSim + ";");
+
+		//this.numSim = 0;
 
 		this.doneForStep = false;
 
@@ -530,6 +537,8 @@ public class TimeLimitedLsiParametersTuner extends ParametersTuner {
 			}
 		}
 
+		//this.numSim++;
+
 	}
 
 	private List<CompleteMoveStats> generateCandidates(int roleProblemIndex, int numCamdidates){
@@ -574,7 +583,6 @@ public class TimeLimitedLsiParametersTuner extends ParametersTuner {
 
 		double scoreSum;
 		int visits;
-		//boolean allZero = true;
 
 		for(int paramIndex = 0; paramIndex < paramValuesStats.length; paramIndex++){
 
@@ -589,32 +597,18 @@ public class TimeLimitedLsiParametersTuner extends ParametersTuner {
 				}else{
 					scoreSum = paramValuesStats[paramIndex][valueIndex].getScoreSum();
 					avgRewards[paramIndex][valueIndex] = (scoreSum/((double)visits))/100.0;
-					//if(avgRewards[paramIndex][valueIndex] > 0){
-					//	allZero = false;
-					//}
 				}
 
 			}
 
 		}
 
-		/*
-		if(allZero){
-			for(int paramIndex = 0; paramIndex < paramValuesStats.length; paramIndex++){
-
-				for(int valueIndex = 0; valueIndex < paramValuesStats[paramIndex].length; valueIndex++){
-					avgRewards[paramIndex][valueIndex] = 1.0; // Give same probability to all values
-				}
-
-			}
-		}
-		*/
-
-		this.logAvgRewards(avgRewards);
+		//this.logAvgRewards(avgRewards);
 
 		return avgRewards;
 	}
 
+	/*
 	private void logAvgRewards(double[][] avgRewards){
 		String s = "";
 		for(int i = 0; i < avgRewards.length; i++){
@@ -627,7 +621,7 @@ public class TimeLimitedLsiParametersTuner extends ParametersTuner {
 		s +="\n";
 
 		GamerLogger.log(FORMAT.CSV_FORMAT, "AvgRewards", s);
-	}
+	}*/
 
 	private CombinatorialCompactMove generateCandidate(double[][] avgRewards, RandomGenerator rg){
 
@@ -643,12 +637,12 @@ public class TimeLimitedLsiParametersTuner extends ParametersTuner {
 			indices[paramIndex] = -1;
 		}
 
+		boolean nonZeroSum ; // Checks that at least one probability is greater than 0
+
 		// Compute one of the indices of the combination until all the indices of the combination are set.
 		for(int count = 0; count < indices.length; count++){
 
 			feasibility = new boolean[avgRewards.length][];
-
-			probabilities = new ArrayList<Pair<MyPair<Integer,Integer>,Double>>();
 
 			// Compute feasibility of all parameter values wrt the current setting of indices
 			for(int paramIndex = 0; paramIndex < avgRewards.length; paramIndex++){
@@ -659,20 +653,46 @@ public class TimeLimitedLsiParametersTuner extends ParametersTuner {
 				}
 			}
 
+			// For each value that is feasible, add the corresponding probability to the list that will be used
+			// to generate the samples with the EnumeratedDistribution
+			probabilities = new ArrayList<Pair<MyPair<Integer,Integer>,Double>>();
+
+			nonZeroSum = false;
+
 			// Compute probability of all parameter values
 			for(int paramIndex = 0; paramIndex < feasibility.length; paramIndex++){
 				if(feasibility[paramIndex] != null){
 					for(int valueIndex = 0; valueIndex < feasibility[paramIndex].length; valueIndex++){
 						if(feasibility[paramIndex][valueIndex]){
+							if(avgRewards[paramIndex][valueIndex] != 0.0){
+								nonZeroSum = true;
+							}
 							probabilities.add(new Pair<MyPair<Integer,Integer>,Double>(new MyPair<Integer,Integer>(paramIndex, valueIndex), avgRewards[paramIndex][valueIndex]));
 						}
 					}
 				}
 			}
 
-			distribution = new EnumeratedDistribution<MyPair<Integer,Integer>>(rg, probabilities);
+			if(nonZeroSum){ // Sum of all probabilities is > 0
 
-			selectedSample = distribution.sample();
+				try{
+					distribution = new EnumeratedDistribution<MyPair<Integer,Integer>>(rg, probabilities);
+				}catch(Exception e){
+					String distributionString = "[ ";
+					for(Pair<MyPair<Integer,Integer>,Double> p : probabilities){
+						distributionString += "(" + p.getFirst().getFirst() + ";" + p.getFirst().getSecond() + ";" + p.getSecond() + ")";
+					}
+					GamerLogger.logError("ParametersTuner", "LsiParametersTuner-Error when creating distribution: " + distributionString + ".");
+					GamerLogger.logStackTrace("ParametersTuner", e);
+					throw e;
+				}
+
+				selectedSample = distribution.sample();
+
+			}else{
+				Pair<MyPair<Integer,Integer>,Double> pair = probabilities.get(rg.nextInt(probabilities.size()));
+				selectedSample = pair.getFirst();
+			}
 
 			indices[selectedSample.getFirst().intValue()] = selectedSample.getSecond().intValue();
 		}
