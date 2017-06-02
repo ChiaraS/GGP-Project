@@ -531,6 +531,8 @@ public class SimLimitedLsiParametersTuner extends ParametersTuner {
 			indices[paramIndex] = -1;
 		}
 
+		boolean nonZeroSum ; // Checks that at least one probability is greater than 0
+
 		// Compute one of the indices of the combination until all the indices of the combination are set.
 		for(int count = 0; count < avgRewards.length; count++){
 
@@ -549,20 +551,41 @@ public class SimLimitedLsiParametersTuner extends ParametersTuner {
 			// to generate the samples with the EnumeratedDistribution
 			probabilities = new ArrayList<Pair<MyPair<Integer,Integer>,Double>>();
 
+			nonZeroSum = false;
+
 			// Compute feasibility of all parameter values wrt the current setting of indices
 			for(int paramIndex = 0; paramIndex < feasibility.length; paramIndex++){
 				if(feasibility[paramIndex] != null){
 					for(int valueIndex = 0; valueIndex < feasibility[paramIndex].length; valueIndex++){
 						if(feasibility[paramIndex][valueIndex]){
+							if(avgRewards[paramIndex][valueIndex] != 0.0){
+								nonZeroSum = true;
+							}
 							probabilities.add(new Pair<MyPair<Integer,Integer>,Double>(new MyPair<Integer,Integer>(paramIndex, valueIndex), avgRewards[paramIndex][valueIndex]));
 						}
 					}
 				}
 			}
 
-			distribution = new EnumeratedDistribution<MyPair<Integer,Integer>>(rg, probabilities);
+			if(nonZeroSum){ // Sum of all probabilities is > 0
 
-			selectedSample = distribution.sample();
+				try{
+					distribution = new EnumeratedDistribution<MyPair<Integer,Integer>>(rg, probabilities);
+				}catch(Exception e){
+					String distributionString = "[ ";
+					for(Pair<MyPair<Integer,Integer>,Double> p : probabilities){
+						distributionString += "(" + p.getFirst().getFirst() + ";" + p.getFirst().getSecond() + ";" + p.getSecond() + ")";
+					}
+					GamerLogger.logError("ParametersTuner", "LsiParametersTuner-Error when creating distribution: " + distributionString + ".");
+					GamerLogger.logStackTrace("ParametersTuner", e);
+					throw e;
+				}
+
+				selectedSample = distribution.sample();
+			}else{
+				Pair<MyPair<Integer,Integer>,Double> pair = probabilities.get(rg.nextInt(probabilities.size()));
+				selectedSample = pair.getFirst();
+			}
 
 			indices[selectedSample.getFirst().intValue()] = selectedSample.getSecond().intValue();
 		}
