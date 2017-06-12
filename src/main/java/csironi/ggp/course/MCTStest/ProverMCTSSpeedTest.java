@@ -4,15 +4,6 @@ import java.util.List;
 import java.util.Random;
 
 import org.apache.logging.log4j.ThreadContext;
-import org.ggp.base.player.gamer.statemachine.MCS.manager.prover.ProverCompleteMoveStats;
-import org.ggp.base.player.gamer.statemachine.MCTS.manager.prover.ProverMCTSManager;
-import org.ggp.base.player.gamer.statemachine.MCTS.manager.prover.strategies.backpropagation.ProverStandardBackpropagation;
-import org.ggp.base.player.gamer.statemachine.MCTS.manager.prover.strategies.expansion.ProverRandomExpansion;
-import org.ggp.base.player.gamer.statemachine.MCTS.manager.prover.strategies.movechoice.ProverMaximumScoreChoice;
-import org.ggp.base.player.gamer.statemachine.MCTS.manager.prover.strategies.playout.ProverRandomPlayout;
-import org.ggp.base.player.gamer.statemachine.MCTS.manager.prover.strategies.selection.ProverUCTSelection;
-import org.ggp.base.player.gamer.statemachine.MCTS.manager.prover.strategies.selection.evaluators.ProverUCTEvaluator;
-import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.MctsNode;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.prover.ProverTreeNodeFactory;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.prover.decoupled.ProverDecoupledTreeNodeFactory;
 import org.ggp.base.util.game.GameRepository;
@@ -214,29 +205,31 @@ public class ProverMCTSSpeedTest {
 			    	break;
 			}
 
+			/*
 			ProverMCTSManager MCTSmanager = new ProverMCTSManager(
 					new ProverUCTSelection(numRoles, playingRole, r, uctOffset, new ProverUCTEvaluator(c, unexploredMoveDefaultSelectionValue)),
 					new ProverRandomExpansion(numRoles, playingRole, r), new ProverRandomPlayout(theProverMachine),
 					new ProverStandardBackpropagation(numRoles, playingRole),
 					new ProverMaximumScoreChoice(0, r), null, null, null, theNodeFactory,
 					theProverMachine, gameStepOffset, maxSearchDepth);
+			*/
 
 			try{
 				GamerLogger.log(mctsType + "MCTSSpeedTest", "Starting search.");
 
-				MctsNode initialNode = MCTSmanager.search(theProverMachine.getExplicitInitialState(), System.currentTimeMillis() + testTime, gameStep);
-				ProverCompleteMoveStats finalMove = MCTSmanager.getBestMove(initialNode);
+				//MctsNode initialNode = MCTSmanager.search(theProverMachine.getExplicitInitialState(), System.currentTimeMillis() + testTime, gameStep);
+				//ProverCompleteMoveStats finalMove = MCTSmanager.getBestMove(initialNode);
 
 				GamerLogger.log(mctsType + "MCTSSpeedTest", "Search ended correctly.");
-				chosenMove = finalMove.getTheMove();
-			    scoresSum = finalMove.getScoreSum();
-			    visits = finalMove.getVisits();
+				//chosenMove = finalMove.getTheMove();
+			    //scoresSum = finalMove.getScoreSum();
+			    //visits = finalMove.getVisits();
 			    if(visits != 0){
 			    	averageScore = scoresSum / ((double) visits);
 			    }
-			    iterations = MCTSmanager.getIterations();
-				visitedNodes = MCTSmanager.getVisitedNodes();
-				searchTime = MCTSmanager.getSearchTime();
+			    //iterations = MCTSmanager.getIterations();
+				//visitedNodes = MCTSmanager.getVisitedNodes();
+				//searchTime = MCTSmanager.getSearchTime();
 				if(searchTime != 0){
 			    	iterationsPerSecond = ((double) iterations * 1000)/((double) searchTime);
 			    	nodesPerSecond = ((double) visitedNodes * 1000)/((double) searchTime);
