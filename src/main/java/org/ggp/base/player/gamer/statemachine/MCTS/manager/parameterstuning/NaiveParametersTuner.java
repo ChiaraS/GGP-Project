@@ -802,11 +802,6 @@ public class NaiveParametersTuner extends ParametersTuner {
 	}
 
 	@Override
-	public int getNumIndependentCombinatorialProblems() {
-		return this.roleProblems.length;
-	}
-
-	@Override
 	public boolean isMemorizingBestCombo() {
 		return (this.reuseBestCombos && this.roleProblems == null);
 	}

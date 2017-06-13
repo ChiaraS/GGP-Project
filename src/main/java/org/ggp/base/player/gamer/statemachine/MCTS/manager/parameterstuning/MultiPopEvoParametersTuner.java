@@ -10,6 +10,7 @@ import org.ggp.base.player.gamer.statemachine.MCS.manager.hybrid.CompleteMoveSta
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.GameDependentParameters;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.SharedReferencesCollector;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.parameterstuning.evolution.EvolutionManager;
+import org.ggp.base.player.gamer.statemachine.MCTS.manager.parameterstuning.selectors.TunerSelector;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.parameterstuning.structure.CombinatorialCompactMove;
 import org.ggp.base.util.logging.GamerLogger;
 import org.ggp.base.util.statemachine.structure.Move;
@@ -41,6 +42,11 @@ public class MultiPopEvoParametersTuner extends ParametersTuner {
 	 * Takes care of evolving a given population depending on the fitness of its individuals.
 	 */
 	private EvolutionManager evolutionManager;
+
+	/**
+	 * Given the statistics of each combination, selects the best one among them.
+	 */
+	private TunerSelector bestCombinationSelector;
 
 	/**
 	 * Size of the populations. It's the same for all roles.
@@ -75,6 +81,18 @@ public class MultiPopEvoParametersTuner extends ParametersTuner {
 	 */
 	private int currentComboIndex;
 
+	/**
+	 * Memorize the currently set combinations of parameters for each role.
+	 * Memorizing it here is redundant, but this parameter is also used to temporarily memorize
+	 * the best combinations until we know if the final game result was a win (and thus we memorize
+	 * the combinations permanently in bestCombinations), or a loss.
+	 */
+	private int[][] selectedCombinations;
+
+	/**
+	 * Memorizes the best so far combination of parameters values for each role.
+	 */
+	private int[][] bestCombinations;
 
 	public MultiPopEvoParametersTuner(GameDependentParameters gameDependentParameters, Random random,
 			GamerSettings gamerSettings, SharedReferencesCollector sharedReferencesCollector) {
@@ -90,22 +108,77 @@ public class MultiPopEvoParametersTuner extends ParametersTuner {
 	@Override
 	public void clearComponent() {
 		super.clearComponent();
+
+		this.evolutionManager.clearComponent();
 	}
 
 	@Override
 	public void setUpComponent() {
 		super.setUpComponent();
 
-		// combosOfCombosIndices is fixed for the whole game until we change number of roles, so
-		// we can initialize it here.
+		this.evolutionManager.setUpComponent();
 
-		this.combosOfIndividualsIndices = new ArrayList<List<Integer>>();
+		int numRolesToTune;
 
-		this.computeCombosOfCombosIndices(new ArrayList<Integer>());
+		if(this.tuneAllRoles){
+			numRolesToTune = this.gameDependentParameters.getNumRoles();
+		}else{
+			numRolesToTune = 1;
+		}
 
-		Collections.shuffle(this.combosOfIndividualsIndices);
+		// We need to initialize the populations if:
+		// 1. We are not going to reuse the best combo of previous games
+		// 2. We are going to reuse the best combo of previous games, but that has not been computed yet
+		// 3. We are going to reuse the best combo of previous games, it has been computed, but its size
+		// doesn't correspond to the number of roles that we have to tune.
+		// (TODO: here we should check that we reuse the best combo ONLY if we are playing the exact same game
+		// and not just a game with the same number of roles).
+		if(!this.reuseBestCombos || this.bestCombinations == null || this.bestCombinations.length != numRolesToTune){
 
-		this.currentComboIndex = 0;
+			// If we need to initialize the populations, here we have to check if we need new ones or if we should
+			// reuse previous ones that have been saved.
+			// We need new ones if:
+			// 1. We don't want to reuse the previous ones
+			// 2. We want to reuse the previous ones, but we have none yet
+			// 3. We want to reuse the previous ones, we have them but their size doesn't correspond to the number
+			// of roles that we have to tune.
+			// (TODO: here we should check that we reuse role problems ONLY if we are playing the exact same game
+			// and not just a game with the same number of roles).
+			if(!this.reuseStats || this.populations == null || this.populations.length != numRolesToTune){
+
+				// Create log file for populations.
+				String globalParamsOrder = this.getGlobalParamsOrder();
+				GamerLogger.log(GamerLogger.FORMAT.CSV_FORMAT, "Populations", "PARAMS=;" + globalParamsOrder + ";");
+
+				// Create a two phase representation of the combinatorial problem for each role
+				this.populations = new CompleteMoveStats[numRolesToTune][];
+				for(int populationIndex = 0; populationIndex < this.populations.length; populationIndex++){
+					populations[populationIndex] = this.evolutionManager.getInitialPopulation();
+				}
+
+				this.logStats();
+
+				// combosOfCombosIndices is fixed for the whole game until we change number of roles, so
+				// we can initialize it here.
+				this.combosOfIndividualsIndices = new ArrayList<List<Integer>>();
+
+				this.computeCombosOfCombosIndices(new ArrayList<Integer>());
+
+				Collections.shuffle(this.combosOfIndividualsIndices);
+
+				this.currentComboIndex = 0;
+
+				this.evalRepetitionsCount = 0;
+
+				this.selectedCombinations = new int[numRolesToTune][this.parametersManager.getNumTunableParameters()];
+			}
+
+			this.bestCombinations = null;
+		}else{
+			this.populations = null;
+			this.selectedCombinations = null;
+		}
+
 	}
 
 	private void computeCombosOfCombosIndices(List<Integer> partialCombo){
@@ -125,8 +198,6 @@ public class MultiPopEvoParametersTuner extends ParametersTuner {
 	@Override
 	public void setNextCombinations() {
 
-		 int[][] nextCombinations = new int[this.populations.length][];
-
 		 List<Integer> individualsIndices = this.combosOfIndividualsIndices.get(this.currentComboIndex);
 
 		 Move theParametersCombination;
@@ -134,57 +205,190 @@ public class MultiPopEvoParametersTuner extends ParametersTuner {
 		 for(int populationIndex = 0; populationIndex < this.populations.length; populationIndex++){
 			 theParametersCombination = this.populations[populationIndex][individualsIndices.get(populationIndex)].getTheMove();
 			 if(theParametersCombination instanceof CombinatorialCompactMove){
-				 nextCombinations[populationIndex] = ((CombinatorialCompactMove) theParametersCombination).getIndices();
+				 this.selectedCombinations[populationIndex] = ((CombinatorialCompactMove) theParametersCombination).getIndices();
 			 }else{
 				 GamerLogger.logError("ParametersTuner", "MultiPopEvoParametersTuner - Impossible to set next combinations. The Move is not of type CombinatorialCompactMove but of type " + theParametersCombination.getClass().getSimpleName() + ".");
 				 throw new RuntimeException("MultiPopEvoParametersTuner - Impossible to set next combinations. The Move is not of type CombinatorialCompactMove but of type " + theParametersCombination.getClass().getSimpleName() + ".");
 			 }
 		 }
 
-		 this.parametersManager.setParametersValues(nextCombinations);
+		 this.parametersManager.setParametersValues(this.selectedCombinations);
 
 	}
 
 	@Override
 	public void setBestCombinations() {
-		// TODO Auto-generated method stub
 
-	}
+		int numUpdates;
 
-	@Override
-	public int getNumIndependentCombinatorialProblems() {
-		// TODO Auto-generated method stub
-		return 0;
+		Move theParametersCombination;
+
+		 for(int populationIndex = 0; populationIndex < this.populations.length; populationIndex++){
+
+			 numUpdates = 0;
+
+			 for(int individualIndex = 0; individualIndex < this.populations[populationIndex].length; individualIndex++){
+				 numUpdates += this.populations[populationIndex][individualIndex].getVisits();
+			 }
+
+			 theParametersCombination = this.populations[populationIndex][this.bestCombinationSelector.selectMove(this.populations[populationIndex], null,
+					 new double[this.populations[populationIndex].length], numUpdates)].getTheMove();
+
+			 if(theParametersCombination instanceof CombinatorialCompactMove){
+				 this.selectedCombinations[populationIndex] = ((CombinatorialCompactMove) theParametersCombination).getIndices();
+			 }else{
+				 GamerLogger.logError("ParametersTuner", "MultiPopEvoParametersTuner - Impossible to set next combinations. The Move is not of type CombinatorialCompactMove but of type " + theParametersCombination.getClass().getSimpleName() + ".");
+				 throw new RuntimeException("MultiPopEvoParametersTuner - Impossible to set next combinations. The Move is not of type CombinatorialCompactMove but of type " + theParametersCombination.getClass().getSimpleName() + ".");
+			 }
+		 }
+
+		 this.parametersManager.setParametersValues(this.selectedCombinations);
+
 	}
 
 	@Override
 	public void updateStatistics(int[] goals) {
-		// TODO Auto-generated method stub
+
+		int[] neededRewards;
+
+		// We have to check if the ParametersTuner is tuning parameters only for the playing role
+		// or for all roles and update the statistics with appropriate rewards.
+		if(this.tuneAllRoles){
+			neededRewards = goals;
+		}else{
+			neededRewards = new int[1];
+			neededRewards[0] = goals[this.gameDependentParameters.getMyRoleIndex()];
+
+		}
+
+		if(neededRewards.length != this.populations.length){
+			GamerLogger.logError("ParametersTuner", "MultiPopEvoParametersTuner - Impossible to update move statistics! Wrong number of rewards (" + neededRewards.length +
+					") to update the fitness of the individuals (" + this.populations.length + ").");
+			throw new RuntimeException("MultiPopEvoParametersTuner - Impossible to update move statistics! Wrong number of rewards!");
+		}
+
+		// Update fitness of evaluated individuals
+		List<Integer> individualsIndices = this.combosOfIndividualsIndices.get(this.currentComboIndex);
+
+		CompleteMoveStats toUpdate;
+
+		 for(int populationIndex = 0; populationIndex < this.populations.length; populationIndex++){
+			 toUpdate = this.populations[populationIndex][individualsIndices.get(populationIndex)];
+			 toUpdate.incrementScoreSum(neededRewards[populationIndex]);
+			 toUpdate.incrementVisits();
+		 }
+
+		 // Check if we tested all combinations.
+		 if(this.currentComboIndex == this.combosOfIndividualsIndices.size()){
+
+			 // If we tested all combinations, increment the counter since we finished
+			 // another repetition of the evaluation of all combinations.
+			 this.evalRepetitionsCount++;
+
+			 // Check if we performed all repetitions of the evaluation.
+			 if(this.evalRepetitionsCount == this.evalRepetitions){
+				 // If yes, evolve the populations.
+				 for(int populationIndex = 0; populationIndex < this.populations.length; populationIndex++){
+					 this.populations[populationIndex] = this.evolutionManager.evolvePopulation(this.populations[populationIndex]);
+				 }
+
+				 this.logStats();
+
+				 this.evalRepetitionsCount = 0;
+			 }
+
+			 // Prepare to start another repetition, after shuffling the order of evaluation.
+			 Collections.shuffle(this.combosOfIndividualsIndices);
+			 this.currentComboIndex = 0;
+
+		 }else{
+			 // If we didn't test all combinations, point to the next combination.
+			 this.currentComboIndex++;
+		 }
+
 
 	}
 
+	/**
+	 * This method doesn't exactly log the stats, but logs the combinations (i.e. individuals)
+	 * that are part of the current population for each role.
+	 */
 	@Override
 	public void logStats() {
-		// TODO Auto-generated method stub
 
+		if(this.populations != null){
+
+			//GamerLogger.log(GamerLogger.FORMAT.CSV_FORMAT, "ParametersTunerStats", "");
+			String toLog = "";
+
+			Move theParametersCombination;
+
+			int[] comboIndices;
+
+			String theValues;
+
+			for(int populationIndex = 0; populationIndex < this.populations.length; populationIndex++){
+
+				int roleIndex;
+				if(this.tuneAllRoles){
+					roleIndex = populationIndex;
+				}else{
+					roleIndex = this.gameDependentParameters.getMyRoleIndex();
+				}
+
+				toLog += "ROLE=;" + this.gameDependentParameters.getTheMachine().convertToExplicitRole(this.gameDependentParameters.getTheMachine().getRoles().get(roleIndex)) +
+						";POPULATION=;";
+
+				for(int comboIndex = 0; comboIndex < this.populations[populationIndex].length; comboIndex++){
+
+					 theParametersCombination = this.populations[populationIndex][comboIndex].getTheMove();
+
+					 if(theParametersCombination instanceof CombinatorialCompactMove){
+						 comboIndices = ((CombinatorialCompactMove) theParametersCombination).getIndices();
+						 theValues = "[ ";
+						 for(int paramIndex = 0; paramIndex < comboIndices.length; paramIndex++){
+							 theValues += (this.parametersManager.getPossibleValues(paramIndex)[comboIndices[paramIndex]] + " ");
+						 }
+						 theValues += "]";
+
+						 toLog+= (theValues + ";");
+
+					 }else{
+						 GamerLogger.logError("ParametersTuner", "MultiPopEvoParametersTuner - Impossible to log populations. The Move is not of type CombinatorialCompactMove but of type " + theParametersCombination.getClass().getSimpleName() + ".");
+						 throw new RuntimeException("MultiPopEvoParametersTuner - Impossible to log populations. The Move is not of type CombinatorialCompactMove but of type " + theParametersCombination.getClass().getSimpleName() + ".");
+					 }
+
+				}
+
+				toLog += "\n";
+
+			}
+
+			toLog += "\n";
+
+			GamerLogger.log(GamerLogger.FORMAT.CSV_FORMAT, "Populations", toLog);
+
+		}
 	}
 
 	@Override
 	public void decreaseStatistics(double factor) {
-		// TODO Auto-generated method stub
-
+		// Not really needed, so probably this method will never be used.
+		for(int i = 0; i < this.populations.length; i++){
+			for(int j = 0; j < this.populations[i].length; j++){
+				this.populations[i][j].decreaseByFactor(factor);
+			}
+		}
 	}
 
 	@Override
 	public boolean isMemorizingBestCombo() {
-		// TODO Auto-generated method stub
-		return false;
+		return (this.reuseBestCombos && this.populations == null);
 	}
 
 	@Override
 	public void memorizeBestCombinations() {
-		// TODO Auto-generated method stub
-
+		this.bestCombinations = this.selectedCombinations;
 	}
 
 	@Override

@@ -820,11 +820,6 @@ public class TimeLimitedLsiParametersTuner extends ParametersTuner {
 	}
 
 	@Override
-	public int getNumIndependentCombinatorialProblems() {
-		return this.roleProblems.length;
-	}
-
-	@Override
 	public String getComponentParameters(String indentation) {
 
 		String superParams = super.getComponentParameters(indentation);

@@ -443,11 +443,6 @@ public class SequentialParametersTuner extends ParametersTuner {
 	}
 
 	@Override
-	public int getNumIndependentCombinatorialProblems() {
-		return this.roleProblems.length;
-	}
-
-	@Override
 	public void updateStatistics(int[] goals) {
 
 		int[] neededRewards;

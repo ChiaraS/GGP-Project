@@ -30,12 +30,6 @@ public class SinglePopEvoParametersTuner extends ParametersTuner {
 	}
 
 	@Override
-	public int getNumIndependentCombinatorialProblems() {
-		// TODO Auto-generated method stub
-		return 0;
-	}
-
-	@Override
 	public void updateStatistics(int[] goals) {
 		// TODO Auto-generated method stub
 
