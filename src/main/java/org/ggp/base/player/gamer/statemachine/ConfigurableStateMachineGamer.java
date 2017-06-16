@@ -11,7 +11,7 @@ import org.ggp.base.util.logging.GamerLogger;
 
 public abstract class ConfigurableStateMachineGamer extends StateMachineGamer {
 
-	protected static final String defaultSettingsFileName = "075G2CARTimeLimLsiTunerCGMD.properties";
+	protected static final String defaultSettingsFileName = "CondARFlatSingleMabTunerCGMD.properties";
 
 	protected String settingsFilePath;
 

@@ -1,5 +1,6 @@
 package org.ggp.base.player.gamer.statemachine.MCTS.manager.parameterstuning;
 
+import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -8,11 +9,13 @@ import java.util.Random;
 import org.ggp.base.player.gamer.statemachine.GamerSettings;
 import org.ggp.base.player.gamer.statemachine.MCS.manager.hybrid.CompleteMoveStats;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.GameDependentParameters;
+import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.SearchManagerComponent;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.SharedReferencesCollector;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.parameterstuning.evolution.EvolutionManager;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.parameterstuning.selectors.TunerSelector;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.parameterstuning.structure.CombinatorialCompactMove;
 import org.ggp.base.util.logging.GamerLogger;
+import org.ggp.base.util.reflection.ProjectSearcher;
 import org.ggp.base.util.statemachine.structure.Move;
 
 /**
@@ -47,11 +50,6 @@ public class MultiPopEvoParametersTuner extends ParametersTuner {
 	 * Given the statistics of each combination, selects the best one among them.
 	 */
 	private TunerSelector bestCombinationSelector;
-
-	/**
-	 * Size of the populations. It's the same for all roles.
-	 */
-	private int populationsSize;
 
 	/**
 	 * Number of time all possible combinations of combinations (i.e. individuals) must be evaluated
@@ -97,12 +95,56 @@ public class MultiPopEvoParametersTuner extends ParametersTuner {
 	public MultiPopEvoParametersTuner(GameDependentParameters gameDependentParameters, Random random,
 			GamerSettings gamerSettings, SharedReferencesCollector sharedReferencesCollector) {
 		super(gameDependentParameters, random, gamerSettings, sharedReferencesCollector);
-		// TODO Auto-generated constructor stub
+
+		String[] componentDetails = gamerSettings.getIDPropertyValue("ParametersTuner.evolutionManagerType");
+
+		try {
+			this.evolutionManager = (EvolutionManager) SearchManagerComponent.getConstructorForMultiInstanceSearchManagerComponent(SearchManagerComponent.getCorrespondingClass(ProjectSearcher.EVOLUTION_MANAGERS.getConcreteClasses(), componentDetails[0])).newInstance(gameDependentParameters, random, gamerSettings, sharedReferencesCollector, componentDetails[1]);
+		} catch (InstantiationException | IllegalAccessException
+				| IllegalArgumentException | InvocationTargetException e) {
+			// TODO: fix this!
+			GamerLogger.logError("SearchManagerCreation", "Error when instantiating EvolutionManager " + gamerSettings.getPropertyValue("ParametersTuner.EvolutionManagerType") + ".");
+			GamerLogger.logStackTrace("SearchManagerCreation", e);
+			throw new RuntimeException(e);
+		}
+
+		componentDetails = gamerSettings.getIDPropertyValue("ParametersTuner.bestCombinationSelectorType");
+
+		try {
+			this.bestCombinationSelector = (TunerSelector) SearchManagerComponent.getConstructorForMultiInstanceSearchManagerComponent(SearchManagerComponent.getCorrespondingClass(ProjectSearcher.TUNER_SELECTORS.getConcreteClasses(), componentDetails[0])).newInstance(gameDependentParameters, random, gamerSettings, sharedReferencesCollector, componentDetails[1]);
+		} catch (InstantiationException | IllegalAccessException
+				| IllegalArgumentException | InvocationTargetException e) {
+			// TODO: fix this!
+			GamerLogger.logError("SearchManagerCreation", "Error when instantiating TunerSelector " + gamerSettings.getPropertyValue("ParametersTuner.bestCombinationSelectorType") + ".");
+			GamerLogger.logStackTrace("SearchManagerCreation", e);
+			throw new RuntimeException(e);
+		}
+
+		this.evalRepetitions = gamerSettings.getIntPropertyValue("ParametersTuner.evalRepetitions");
+
+		this.evalRepetitionsCount = 0;
+
+		this.populations = null;
+
+		this.combosOfIndividualsIndices = null;
+
+		this.currentComboIndex = 0;
+
+		this.selectedCombinations = null;
+
+		this.bestCombinations = null;
+
 	}
 
 	@Override
 	public void setReferences(SharedReferencesCollector sharedReferencesCollector){
 		super.setReferences(sharedReferencesCollector);
+
+		this.evolutionManager.setReferences(sharedReferencesCollector);
+
+		this.evolutionManager.setParametersManager(this.parametersManager);
+
+		this.bestCombinationSelector.setReferences(sharedReferencesCollector);
 	}
 
 	@Override
@@ -110,6 +152,8 @@ public class MultiPopEvoParametersTuner extends ParametersTuner {
 		super.clearComponent();
 
 		this.evolutionManager.clearComponent();
+
+		this.bestCombinationSelector.clearComponent();
 	}
 
 	@Override
@@ -117,6 +161,8 @@ public class MultiPopEvoParametersTuner extends ParametersTuner {
 		super.setUpComponent();
 
 		this.evolutionManager.setUpComponent();
+
+		this.bestCombinationSelector.setUpComponent();
 
 		int numRolesToTune;
 
@@ -289,7 +335,7 @@ public class MultiPopEvoParametersTuner extends ParametersTuner {
 			 if(this.evalRepetitionsCount == this.evalRepetitions){
 				 // If yes, evolve the populations.
 				 for(int populationIndex = 0; populationIndex < this.populations.length; populationIndex++){
-					 this.populations[populationIndex] = this.evolutionManager.evolvePopulation(this.populations[populationIndex]);
+					 this.evolutionManager.evolvePopulation(this.populations[populationIndex]);
 				 }
 
 				 this.logStats();
@@ -394,7 +440,66 @@ public class MultiPopEvoParametersTuner extends ParametersTuner {
 	@Override
 	public String getComponentParameters(String indentation) {
 
-		return "";
+		String superParams = super.getComponentParameters(indentation);
+
+		String params = indentation + "EVOLUTION_MANAGER = " + this.evolutionManager.printComponent(indentation + "  ") +
+				indentation + "BEST_COMBINATION_SELECTOR = " + this.bestCombinationSelector.printComponent(indentation + "  ") +
+				indentation + "EVAL_REPETITIONS = " + this.evalRepetitions +
+				indentation + "eval_repetitions_count = " + this.evalRepetitionsCount +
+				indentation + "num_populations = " + (this.populations != null ? this.populations.length : 0) +
+				indentation + "num_combos_of_individuals = " + (this.combosOfIndividualsIndices != null ? this.combosOfIndividualsIndices.size() : 0) +
+				indentation + "current_combo_index = " + this.currentComboIndex;
+
+		if(this.selectedCombinations != null){
+			String selectedCombinationsString = "[ ";
+
+			for(int i = 0; i < this.selectedCombinations.length; i++){
+
+				String singleCombinationString = "[ ";
+				for(int j = 0; j < this.selectedCombinations[i].length; j++){
+					singleCombinationString += this.selectedCombinations[i][j] + " ";
+				}
+				singleCombinationString += "]";
+
+				selectedCombinationsString += singleCombinationString + " ";
+
+			}
+
+			selectedCombinationsString += "]";
+
+			params += indentation + "selected_combinations_indices = " + selectedCombinationsString;
+		}else{
+			params += indentation + "selected_combinations_indices = null";
+		}
+
+		if(this.bestCombinations != null){
+			String bestCombinationsString = "[ ";
+
+			for(int i = 0; i < this.bestCombinations.length; i++){
+
+				String bestCombinationString = "[ ";
+				for(int j = 0; j < this.bestCombinations[i].length; j++){
+					bestCombinationString += this.bestCombinations[i][j] + " ";
+				}
+				bestCombinationString += "]";
+
+				bestCombinationsString += bestCombinationString + " ";
+
+			}
+
+			bestCombinationsString += "]";
+
+			params += indentation + "best_combinations_indices = " + bestCombinationsString;
+		}else{
+			params += indentation + "best_combinations_indices = null";
+		}
+
+		if(superParams != null){
+			return superParams + params;
+		}else{
+			return params;
+		}
+
 	}
 
 }

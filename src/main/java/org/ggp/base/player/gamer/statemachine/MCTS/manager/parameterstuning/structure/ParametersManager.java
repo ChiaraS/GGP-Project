@@ -1,6 +1,7 @@
 package org.ggp.base.player.gamer.statemachine.MCTS.manager.parameterstuning.structure;
 
 import java.lang.reflect.InvocationTargetException;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
 
@@ -196,6 +197,45 @@ public class ParametersManager extends SearchManagerComponent {
 		otherParamsValueIndices[paramIndex] = -1;
 
 		return feasibility;
+
+	}
+
+	/**
+	 * For the parameter at position paramIndex in the list of tunable parameters returns
+	 * a list with the indices of all values that are feasible for the parameter given the
+	 * values set so far for the other parameters.
+	 *
+	 * @param paramIndex index of the parameter for which we want to know which values are
+	 * feasible.
+	 * @param otherParamsValueIndices indices of the values that have been set for the other
+	 * parameters (if no value has been set yet, the index will be -1). The order of these
+	 * indices must be the same as the order if the tunableParameters (i.e. at position x
+	 * in otherParamsValueIndices we must find the index of the value set for the parameter
+	 * in position x in tunableParameters).
+	 * @return a list with the indices of all values that are feasible for the parameter
+	 * given the values set so far for the other parameters.
+	 */
+	public List<Integer> getFeasibleValues(int paramIndex, int[] otherParamsValueIndices){
+
+		if(otherParamsValueIndices[paramIndex] != -1){
+			GamerLogger.logError("ParametersTuner", "ParametersManager - Asking feasible values for parameter " + this.tunableParameters.get(paramIndex).getName() +
+					" that is already set to the value " + this.tunableParameters.get(paramIndex).getPossibleValues()[otherParamsValueIndices[paramIndex]] + ".");
+			throw new RuntimeException("ParametersManager - Asking feasible values for parameter that is already set!");
+		}
+
+		List<Integer> feasibleValues = new ArrayList<Integer>();
+
+		for(int i = 0; i < this.tunableParameters.get(paramIndex).getNumPossibleValues(); i++){
+			otherParamsValueIndices[paramIndex] = i;
+			if(this.isValid(otherParamsValueIndices)){
+				feasibleValues.add(new Integer(i));
+			}
+		}
+
+		// Restore unset value for the parameter
+		otherParamsValueIndices[paramIndex] = -1;
+
+		return feasibleValues;
 
 	}
 
@@ -397,5 +437,63 @@ public class ParametersManager extends SearchManagerComponent {
 
 		return params;
 	}
+
+	public List<CombinatorialCompactMove> getAllLegalParametersCombinations(){
+		List<CombinatorialCompactMove> combinatorialMoves = new ArrayList<CombinatorialCompactMove>();
+		int[] partialCombo = new int[this.tunableParameters.size()];
+		for(int i = 0; i < partialCombo.length; i++){
+			partialCombo[i] = -1;
+		}
+		this.crossProduct(0, partialCombo, combinatorialMoves);
+
+		return combinatorialMoves;
+	}
+
+    private void crossProduct(int paramIndex, int[] partialCombo, List<CombinatorialCompactMove> combinatorialMoves){
+
+		//System.out.println("ParamIndex = " + paramIndex + ", Combo = " + Arrays.toString(partialCombo));
+
+        if (paramIndex == this.getNumTunableParameters()) {
+        	//System.out.println("Adding");
+        	combinatorialMoves.add(new CombinatorialCompactMove(this.copyArray(partialCombo)));
+            //System.out.println("Returning");
+        } else {
+        	boolean atLeastOneFeasibleCombo = false;
+            for(int i = 0; i < this.getNumPossibleValues(paramIndex); i++) {
+
+            	//System.out.println(i);
+
+            	//System.out.println("Possibe values = " + this.parametersManager.getNumPossibleValues(paramIndex));
+            	partialCombo[paramIndex] = i;
+            	if(this.isValid(partialCombo)){
+            		atLeastOneFeasibleCombo = true;
+            		//System.out.println("PRE - ParamIndex = " + paramIndex + ", Combo = " + Arrays.toString(partialCombo));
+            		this.crossProduct(paramIndex+1, partialCombo, combinatorialMoves);
+            		//System.out.println("POST - ParamIndex = " + paramIndex + ", Combo = " + Arrays.toString(partialCombo));
+            	}
+            	//System.out.println("PREPRE - ParamIndex = " + paramIndex + ", Combo = " + Arrays.toString(partialCombo));
+            	partialCombo[paramIndex] = -1;
+            	//System.out.println("POSTPOST - ParamIndex = " + paramIndex + ", Combo = " + Arrays.toString(partialCombo));
+            }
+            if(!atLeastOneFeasibleCombo){
+            	String partialComboString = "[ ";
+            	for(int j = 0; j < paramIndex; j++){
+            		partialComboString += this.getName(j) + "=" + this.getPossibleValues(j)[partialCombo[j]];
+            	}
+            	partialComboString += "]";
+            	GamerLogger.logError("ParametersTuner", "ParametersManager -  - No valid value detected for parameter " +
+            			this.getName(paramIndex) + "for the following partial combination: " + partialComboString);
+				throw new RuntimeException("ParametersManager -  - No valid value detected for a parameter when computing all combinatorial moves!");
+            }
+        }
+    }
+
+    private int[] copyArray(int[] array){
+    	int[] newArray = new int[array.length];
+    	for(int i = 0; i < array.length; i++){
+    		newArray[i] = array[i];
+    	}
+    	return newArray;
+    }
 
 }

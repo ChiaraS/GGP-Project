@@ -25,4 +25,9 @@ public class CompleteMoveStats extends MoveStats {
 	public String toString(){
 		return "MOVE(" + theMove.toString() + "), " + super.toString();
 	}
+
+	public void resetStats(Move theMove){
+		super.resetStats();
+		this.theMove = theMove;
+	}
 }

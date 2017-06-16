@@ -20,6 +20,7 @@ import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.strategies.sel
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.strategies.selection.evaluators.grave.BetaComputer;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.parameterstuning.ParametersTuner;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.parameterstuning.biascomputers.BiasComputer;
+import org.ggp.base.player.gamer.statemachine.MCTS.manager.parameterstuning.evolution.EvolutionManager;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.parameterstuning.selectors.TunerSelector;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.parameterstuning.structure.parametersorders.ParametersOrder;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.hybrid.TreeNodeFactory;
@@ -57,6 +58,7 @@ public class ProjectSearcher {
     public static final LoadedClasses<TunerSelector> TUNER_SELECTORS = new LoadedClasses<TunerSelector>(TunerSelector.class);
     public static final LoadedClasses<ParametersOrder> PARAMETERS_ORDER = new LoadedClasses<ParametersOrder>(ParametersOrder.class);
     public static final LoadedClasses<BiasComputer> BIAS_COMPUTERS = new LoadedClasses<BiasComputer>(BiasComputer.class);
+    public static final LoadedClasses<EvolutionManager> EVOLUTION_MANAGERS = new LoadedClasses<EvolutionManager>(EvolutionManager.class);
     // Strategies
     public static final LoadedClasses<BeforeMoveStrategy> BEFORE_MOVE_STRATEGIES = new LoadedClasses<BeforeMoveStrategy>(BeforeMoveStrategy.class);
     public static final LoadedClasses<AfterMoveStrategy> AFTER_MOVE_STRATEGIES = new LoadedClasses<AfterMoveStrategy>(AfterMoveStrategy.class);

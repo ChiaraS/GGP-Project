@@ -86,4 +86,9 @@ public class MoveStats{
 		return "VISITS(" + this.visits + "), SCORE_SUM(" + this.scoreSum + ")";
 	}
 
+	public void resetStats(){
+		this.visits = 0;
+		this.scoreSum = 0;
+	}
+
 }
