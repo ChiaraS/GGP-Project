@@ -41,6 +41,8 @@ import org.ggp.base.util.statemachine.structure.Move;
  */
 public class MultiPopEvoParametersTuner extends ParametersTuner {
 
+	private boolean logPopulations;
+
 	/**
 	 * Takes care of evolving a given population depending on the fitness of its individuals.
 	 */
@@ -96,10 +98,11 @@ public class MultiPopEvoParametersTuner extends ParametersTuner {
 			GamerSettings gamerSettings, SharedReferencesCollector sharedReferencesCollector) {
 		super(gameDependentParameters, random, gamerSettings, sharedReferencesCollector);
 
-		String[] componentDetails = gamerSettings.getIDPropertyValue("ParametersTuner.evolutionManagerType");
+		this.logPopulations = gamerSettings.getBooleanPropertyValue("ParametersTuner.logPopulations");
 
 		try {
-			this.evolutionManager = (EvolutionManager) SearchManagerComponent.getConstructorForMultiInstanceSearchManagerComponent(SearchManagerComponent.getCorrespondingClass(ProjectSearcher.EVOLUTION_MANAGERS.getConcreteClasses(), componentDetails[0])).newInstance(gameDependentParameters, random, gamerSettings, sharedReferencesCollector, componentDetails[1]);
+			this.evolutionManager = (EvolutionManager) SearchManagerComponent.getConstructorForSearchManagerComponent(SearchManagerComponent.getCorrespondingClass(ProjectSearcher.EVOLUTION_MANAGERS.getConcreteClasses(),
+					gamerSettings.getPropertyValue("ParametersTuner.evolutionManagerType"))).newInstance(gameDependentParameters, random, gamerSettings, sharedReferencesCollector);
 		} catch (InstantiationException | IllegalAccessException
 				| IllegalArgumentException | InvocationTargetException e) {
 			// TODO: fix this!
@@ -108,7 +111,7 @@ public class MultiPopEvoParametersTuner extends ParametersTuner {
 			throw new RuntimeException(e);
 		}
 
-		componentDetails = gamerSettings.getIDPropertyValue("ParametersTuner.bestCombinationSelectorType");
+		String[] componentDetails = gamerSettings.getIDPropertyValue("ParametersTuner.bestCombinationSelectorType");
 
 		try {
 			this.bestCombinationSelector = (TunerSelector) SearchManagerComponent.getConstructorForMultiInstanceSearchManagerComponent(SearchManagerComponent.getCorrespondingClass(ProjectSearcher.TUNER_SELECTORS.getConcreteClasses(), componentDetails[0])).newInstance(gameDependentParameters, random, gamerSettings, sharedReferencesCollector, componentDetails[1]);
@@ -193,8 +196,10 @@ public class MultiPopEvoParametersTuner extends ParametersTuner {
 			if(!this.reuseStats || this.populations == null || this.populations.length != numRolesToTune){
 
 				// Create log file for populations.
-				String globalParamsOrder = this.getGlobalParamsOrder();
-				GamerLogger.log(GamerLogger.FORMAT.CSV_FORMAT, "Populations", "PARAMS=;" + globalParamsOrder + ";");
+				if(this.logPopulations){
+					String globalParamsOrder = this.getGlobalParamsOrder();
+					GamerLogger.log(GamerLogger.FORMAT.CSV_FORMAT, "Populations", "PARAMS=;" + globalParamsOrder + ";");
+				}
 
 				// Create a two phase representation of the combinatorial problem for each role
 				this.populations = new CompleteMoveStats[numRolesToTune][];
@@ -202,7 +207,9 @@ public class MultiPopEvoParametersTuner extends ParametersTuner {
 					populations[populationIndex] = this.evolutionManager.getInitialPopulation();
 				}
 
-				this.logStats();
+				if(this.logPopulations){
+					this.logStats();
+				}
 
 				// combosOfCombosIndices is fixed for the whole game until we change number of roles, so
 				// we can initialize it here.
@@ -325,7 +332,7 @@ public class MultiPopEvoParametersTuner extends ParametersTuner {
 		 }
 
 		 // Check if we tested all combinations.
-		 if(this.currentComboIndex == this.combosOfIndividualsIndices.size()){
+		 if(this.currentComboIndex == this.combosOfIndividualsIndices.size()-1){
 
 			 // If we tested all combinations, increment the counter since we finished
 			 // another repetition of the evaluation of all combinations.
@@ -338,7 +345,9 @@ public class MultiPopEvoParametersTuner extends ParametersTuner {
 					 this.evolutionManager.evolvePopulation(this.populations[populationIndex]);
 				 }
 
-				 this.logStats();
+				 if(this.logPopulations){
+					 this.logStats();
+				 }
 
 				 this.evalRepetitionsCount = 0;
 			 }
