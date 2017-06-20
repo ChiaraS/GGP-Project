@@ -80,6 +80,8 @@ public abstract class ParametersTuner extends SearchManagerComponent{
 
 		this.parametersManager = new ParametersManager(gameDependentParameters, random, gamerSettings, sharedReferencesCollector);
 
+		sharedReferencesCollector.setParametersManager(this.parametersManager);
+
 		this.tuning = true;
 
 		this.tuneAllRoles = gamerSettings.getBooleanPropertyValue("ParametersTuner.tuneAllRoles");

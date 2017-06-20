@@ -145,8 +145,6 @@ public class MultiPopEvoParametersTuner extends ParametersTuner {
 
 		this.evolutionManager.setReferences(sharedReferencesCollector);
 
-		this.evolutionManager.setParametersManager(this.parametersManager);
-
 		this.bestCombinationSelector.setReferences(sharedReferencesCollector);
 	}
 

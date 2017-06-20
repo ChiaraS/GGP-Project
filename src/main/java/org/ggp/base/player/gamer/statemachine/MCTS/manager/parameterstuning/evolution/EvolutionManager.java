@@ -36,7 +36,7 @@ public abstract class EvolutionManager extends SearchManagerComponent {
 
 	@Override
 	public void setReferences(SharedReferencesCollector sharedReferencesCollector) {
-		// Do nothing
+		this.parametersManager = sharedReferencesCollector.getParametersManager();
 	}
 
 	@Override
@@ -47,10 +47,6 @@ public abstract class EvolutionManager extends SearchManagerComponent {
 	@Override
 	public void setUpComponent() {
 		// Do nothing
-	}
-
-	public void setParametersManager(ParametersManager parametersManager){
-		this.parametersManager = parametersManager;
 	}
 
 	public abstract CompleteMoveStats[] getInitialPopulation();
