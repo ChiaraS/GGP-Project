@@ -12,8 +12,8 @@ import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.GameDependentP
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.SearchManagerComponent;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.SharedReferencesCollector;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.parameterstuning.selectors.TunerSelector;
-import org.ggp.base.player.gamer.statemachine.MCTS.manager.parameterstuning.structure.SequentialProblemRepresentation;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.parameterstuning.structure.mabs.FixedMab;
+import org.ggp.base.player.gamer.statemachine.MCTS.manager.parameterstuning.structure.problemrep.SequentialProblemRepresentation;
 import org.ggp.base.util.logging.GamerLogger;
 import org.ggp.base.util.reflection.ProjectSearcher;
 

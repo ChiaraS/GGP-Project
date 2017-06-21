@@ -22,7 +22,7 @@ import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.SharedReferenc
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.parameterstuning.selectors.RandomSelector;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.parameterstuning.selectors.TunerSelector;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.parameterstuning.structure.CombinatorialCompactMove;
-import org.ggp.base.player.gamer.statemachine.MCTS.manager.parameterstuning.structure.TimeLimitedLsiProblemRepresentation;
+import org.ggp.base.player.gamer.statemachine.MCTS.manager.parameterstuning.structure.problemrep.TimeLimitedLsiProblemRepresentation;
 import org.ggp.base.util.logging.GamerLogger;
 import org.ggp.base.util.logging.GamerLogger.FORMAT;
 import org.ggp.base.util.reflection.ProjectSearcher;

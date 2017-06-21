@@ -14,6 +14,7 @@ import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.SharedReferenc
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.parameterstuning.evolution.EvolutionManager;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.parameterstuning.selectors.TunerSelector;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.parameterstuning.structure.CombinatorialCompactMove;
+import org.ggp.base.player.gamer.statemachine.MCTS.manager.parameterstuning.structure.CombosOfIndividualsIterator;
 import org.ggp.base.util.logging.GamerLogger;
 import org.ggp.base.util.reflection.ProjectSearcher;
 import org.ggp.base.util.statemachine.structure.Move;
@@ -68,6 +69,11 @@ public class MultiPopEvoParametersTuner extends ParametersTuner {
 	 * One population of combinations (individuals) for each role being tuned.
 	 */
 	private CompleteMoveStats[][] populations;
+
+	/**
+	 * Keeps track of which combinations of individuals must be evaluated and in which order.
+	 */
+	private CombosOfIndividualsIterator individualsIterator;
 
 	/**
 	 * List with the indices of all possible combinations that can be obtained by taking one

@@ -1,4 +1,4 @@
-package org.ggp.base.player.gamer.statemachine.MCTS.manager.parameterstuning.structure;
+package org.ggp.base.player.gamer.statemachine.MCTS.manager.parameterstuning.structure.problemrep;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -7,7 +7,8 @@ import java.util.List;
 
 import org.ggp.base.player.gamer.statemachine.MCS.manager.MoveStats;
 import org.ggp.base.player.gamer.statemachine.MCS.manager.hybrid.CompleteMoveStats;
-import org.ggp.base.player.gamer.statemachine.MCTS.manager.parameterstuning.structure.SimLimitedLsiProblemRepresentation.Phase;
+import org.ggp.base.player.gamer.statemachine.MCTS.manager.parameterstuning.structure.CombinatorialCompactMove;
+import org.ggp.base.player.gamer.statemachine.MCTS.manager.parameterstuning.structure.problemrep.SimLimitedLsiProblemRepresentation.Phase;
 
 import csironi.ggp.course.utils.MyPair;
 
