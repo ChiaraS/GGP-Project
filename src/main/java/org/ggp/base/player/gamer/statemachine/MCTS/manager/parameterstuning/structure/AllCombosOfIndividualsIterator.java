@@ -1,12 +1,15 @@
 package org.ggp.base.player.gamer.statemachine.MCTS.manager.parameterstuning.structure;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
+import org.ggp.base.player.gamer.statemachine.MCS.manager.hybrid.CompleteMoveStats;
+
 /**
  * This class keeps track (in a random order) of all possible combinations of individuals
- * from a given number of populations and returns one combination at a time represented by
- * the index of each individual in the corresponding population.
+ * (i.e. their indices) from a given number of populations and returns one combination at
+ * a time represented by the index of each individual in the corresponding population.
  *
  * E.g. given two populations with 3 individuals each, this class will have the following
  * parameter:
@@ -34,13 +37,29 @@ public class AllCombosOfIndividualsIterator extends CombosOfIndividualsIterator 
 	 */
 	private int currentComboIndex;
 
-	public AllCombosOfIndividualsIterator(List<List<Integer>> combosOfIndividualsIndices) {
+	public AllCombosOfIndividualsIterator(CompleteMoveStats[][] populations) {
 
-		this.combosOfIndividualsIndices = combosOfIndividualsIndices;
+		this.combosOfIndividualsIndices = new ArrayList<List<Integer>>();
+
+		this.computeCombosOfCombosIndices(populations, new ArrayList<Integer>());
 
 		Collections.shuffle(this.combosOfIndividualsIndices);
 
 		this.currentComboIndex = 0;
+	}
+
+	private void computeCombosOfCombosIndices(CompleteMoveStats[][] populations, List<Integer> partialCombo){
+
+		if(partialCombo.size() == populations.length){ // The combination of individuals is complete
+			this.combosOfIndividualsIndices.add(new ArrayList<Integer>(partialCombo));
+		}else{
+			for(int i = 0; i < populations[partialCombo.size()].length; i++){
+				partialCombo.add(new Integer(i));
+				this.computeCombosOfCombosIndices(populations, partialCombo);
+				partialCombo.remove(partialCombo.size()-1);
+			}
+		}
+
 	}
 
 	@Override
@@ -67,7 +86,5 @@ public class AllCombosOfIndividualsIterator extends CombosOfIndividualsIterator 
 		this.currentComboIndex = 0;
 
 	}
-
-
 
 }

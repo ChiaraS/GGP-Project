@@ -1,8 +1,6 @@
 package org.ggp.base.player.gamer.statemachine.MCTS.manager.parameterstuning;
 
 import java.lang.reflect.InvocationTargetException;
-import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 import java.util.Random;
 
@@ -13,8 +11,10 @@ import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.SearchManagerC
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.SharedReferencesCollector;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.parameterstuning.evolution.EvolutionManager;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.parameterstuning.selectors.TunerSelector;
+import org.ggp.base.player.gamer.statemachine.MCTS.manager.parameterstuning.structure.AllCombosOfIndividualsIterator;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.parameterstuning.structure.CombinatorialCompactMove;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.parameterstuning.structure.CombosOfIndividualsIterator;
+import org.ggp.base.player.gamer.statemachine.MCTS.manager.parameterstuning.structure.RandomCombosOfIndividualsIterator;
 import org.ggp.base.util.logging.GamerLogger;
 import org.ggp.base.util.reflection.ProjectSearcher;
 import org.ggp.base.util.statemachine.structure.Move;
@@ -55,8 +55,37 @@ public class MultiPopEvoParametersTuner extends ParametersTuner {
 	private TunerSelector bestCombinationSelector;
 
 	/**
-	 * Number of time all possible combinations of combinations (i.e. individuals) must be evaluated
+	 * If true, when evaluating a population, the fitness of each individual will result from
+	 * testing with a simulation ALL combinations of individuals, one from each population.
+	 * If false, random combinations of individuals (one for each population) will be evaluated,
+	 * so that each individual is evaluated the same number fo times as the other individuals.
+	 */
+	private boolean evaluateAllCombosOfIndividuals;
+
+	/**
+	 * Keeps track of which combinations of individuals must be evaluated and in which order.
+	 */
+	private CombosOfIndividualsIterator combosOfIndividualsIterator;
+
+	/**
+	 * If evaluating all combinations of individuals before evolving the populations (i.e. evaluateAllCombosOfIndividuals == true),
+	 * this parameter specifies the number of times all possible combinations of combinations (i.e. individuals) must be evaluated
 	 * before using the collected statistics to evolve the population.
+	 *
+	 * If evaluating random combinations of individuals before evolving the populations (i.e. evaluateAllCombosOfIndividuals == true),
+	 * this parameter specifies the number of times each individual must be evaluated against other random individuals. More precisely,
+	 * when evaluateAllCombosOfIndividuals == true, the evaluation is performed as follows:
+	 *
+	 * (Note that all populations will have the same number of individuals)
+	 * For evalRepetitions times do
+	 * 	For each population p in {p_0,...,p_n}:
+	 * 		shuffle the individuals in p
+	 * 	EndFor
+	 * 	For (i = 0; i < p_0.length; i++)
+	 * 		test combination of individuals (p_0[i],...,p_n[i])
+	 * 	EndFor
+	 * EndFor
+	 *
 	 */
 	private int evalRepetitions;
 
@@ -71,21 +100,16 @@ public class MultiPopEvoParametersTuner extends ParametersTuner {
 	private CompleteMoveStats[][] populations;
 
 	/**
-	 * Keeps track of which combinations of individuals must be evaluated and in which order.
-	 */
-	private CombosOfIndividualsIterator individualsIterator;
-
-	/**
 	 * List with the indices of all possible combinations that can be obtained by taking one
 	 * combination (i.e individual) for each role.
 	 */
-	private List<List<Integer>> combosOfIndividualsIndices;
+	//private List<List<Integer>> combosOfIndividualsIndices;
 
 	/**
 	 * Index of the currently tested combination of combinations (i.e. individuals) in the
 	 * combosOfCombosIndices list.
 	 */
-	private int currentComboIndex;
+	//private int currentComboIndex;
 
 	/**
 	 * Memorize the currently set combinations of parameters for each role.
@@ -129,15 +153,19 @@ public class MultiPopEvoParametersTuner extends ParametersTuner {
 			throw new RuntimeException(e);
 		}
 
+		this.evaluateAllCombosOfIndividuals = gamerSettings.getBooleanPropertyValue("ParametersTuner.evaluateAllCombosOfIndividuals");
+
+		this.combosOfIndividualsIterator = null;
+
 		this.evalRepetitions = gamerSettings.getIntPropertyValue("ParametersTuner.evalRepetitions");
 
 		this.evalRepetitionsCount = 0;
 
 		this.populations = null;
 
-		this.combosOfIndividualsIndices = null;
+		//this.combosOfIndividualsIndices = null;
 
-		this.currentComboIndex = 0;
+		//this.currentComboIndex = 0;
 
 		this.selectedCombinations = null;
 
@@ -215,15 +243,11 @@ public class MultiPopEvoParametersTuner extends ParametersTuner {
 					this.logStats();
 				}
 
-				// combosOfCombosIndices is fixed for the whole game until we change number of roles, so
-				// we can initialize it here.
-				this.combosOfIndividualsIndices = new ArrayList<List<Integer>>();
-
-				this.computeCombosOfCombosIndices(new ArrayList<Integer>());
-
-				Collections.shuffle(this.combosOfIndividualsIndices);
-
-				this.currentComboIndex = 0;
+				if(this.evaluateAllCombosOfIndividuals){
+					this.combosOfIndividualsIterator = new AllCombosOfIndividualsIterator(this.populations);
+				}else{
+					this.combosOfIndividualsIterator = new RandomCombosOfIndividualsIterator(this.populations);
+				}
 
 				this.evalRepetitionsCount = 0;
 
@@ -238,24 +262,10 @@ public class MultiPopEvoParametersTuner extends ParametersTuner {
 
 	}
 
-	private void computeCombosOfCombosIndices(List<Integer> partialCombo){
-
-		if(partialCombo.size() == this.populations.length){ // The combination of individuals is complete
-			this.combosOfIndividualsIndices.add(new ArrayList<Integer>(partialCombo));
-		}else{
-			for(int i = 0; i < this.populations[partialCombo.size()].length; i++){
-				partialCombo.add(new Integer(i));
-				this.computeCombosOfCombosIndices(partialCombo);
-				partialCombo.remove(partialCombo.size()-1);
-			}
-		}
-
-	}
-
 	@Override
 	public void setNextCombinations() {
 
-		 List<Integer> individualsIndices = this.combosOfIndividualsIndices.get(this.currentComboIndex);
+		 List<Integer> individualsIndices = this.combosOfIndividualsIterator.getCurrentComboOfIndividualsIndices();
 
 		 Move theParametersCombination;
 
@@ -325,7 +335,7 @@ public class MultiPopEvoParametersTuner extends ParametersTuner {
 		}
 
 		// Update fitness of evaluated individuals
-		List<Integer> individualsIndices = this.combosOfIndividualsIndices.get(this.currentComboIndex);
+		List<Integer> individualsIndices = this.combosOfIndividualsIterator.getCurrentComboOfIndividualsIndices();
 
 		CompleteMoveStats toUpdate;
 
@@ -336,7 +346,12 @@ public class MultiPopEvoParametersTuner extends ParametersTuner {
 		 }
 
 		 // Check if we tested all combinations.
-		 if(this.currentComboIndex == this.combosOfIndividualsIndices.size()-1){
+		 // Try to get the next combination, if all combinations have been tested this will return null
+		 // and we'll have to evolve the population or restart the evaluations. Moreover, we need to reset
+		 // the individualsCombinationsIterator to start iterating over the combinations again.
+		 // Otherwise, the next combination will be returned and the individualsCombinationsIterator will
+		 // keep track of it as the new current combination.
+		 if(this.combosOfIndividualsIterator.getNextComboOfIndividualsIndices() == null){
 
 			 // If we tested all combinations, increment the counter since we finished
 			 // another repetition of the evaluation of all combinations.
@@ -356,15 +371,10 @@ public class MultiPopEvoParametersTuner extends ParametersTuner {
 				 this.evalRepetitionsCount = 0;
 			 }
 
-			 // Prepare to start another repetition, after shuffling the order of evaluation.
-			 Collections.shuffle(this.combosOfIndividualsIndices);
-			 this.currentComboIndex = 0;
+			 // Prepare to start another repetition, after resetting the iterator.
+			 this.combosOfIndividualsIterator.startNewIteration();
 
-		 }else{
-			 // If we didn't test all combinations, point to the next combination.
-			 this.currentComboIndex++;
 		 }
-
 
 	}
 
@@ -457,11 +467,13 @@ public class MultiPopEvoParametersTuner extends ParametersTuner {
 
 		String params = indentation + "EVOLUTION_MANAGER = " + this.evolutionManager.printComponent(indentation + "  ") +
 				indentation + "BEST_COMBINATION_SELECTOR = " + this.bestCombinationSelector.printComponent(indentation + "  ") +
+				indentation + "EVALUATE_ALL_COMBOS_OF_INDIVIDUALS = " + this.evaluateAllCombosOfIndividuals +
+				indentation + "INDIVIDUALS_ITERATOR = " + (this.combosOfIndividualsIterator != null ? this.combosOfIndividualsIterator.getClass().getSimpleName() : "null") +
 				indentation + "EVAL_REPETITIONS = " + this.evalRepetitions +
 				indentation + "eval_repetitions_count = " + this.evalRepetitionsCount +
-				indentation + "num_populations = " + (this.populations != null ? this.populations.length : 0) +
-				indentation + "num_combos_of_individuals = " + (this.combosOfIndividualsIndices != null ? this.combosOfIndividualsIndices.size() : 0) +
-				indentation + "current_combo_index = " + this.currentComboIndex;
+				indentation + "num_populations = " + (this.populations != null ? this.populations.length : 0);
+				//indentation + "num_combos_of_individuals = " + (this.combosOfIndividualsIndices != null ? this.combosOfIndividualsIndices.size() : 0) +
+				//indentation + "current_combo_index = " + this.currentComboIndex;
 
 		if(this.selectedCombinations != null){
 			String selectedCombinationsString = "[ ";
