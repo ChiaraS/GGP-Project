@@ -19,14 +19,14 @@ import org.ggp.base.util.statemachine.structure.Move;
 public class MovesMemorizingStandardPlayout extends StandardPlayout{
 
 	public MovesMemorizingStandardPlayout(GameDependentParameters gameDependentParameters, Random random,
-			GamerSettings gamerSettings, SharedReferencesCollector sharedReferencesCollector) {
+			GamerSettings gamerSettings, SharedReferencesCollector sharedReferencesCollector, String id) {
 
-		super(gameDependentParameters, random, gamerSettings, sharedReferencesCollector);
+		super(gameDependentParameters, random, gamerSettings, sharedReferencesCollector, id);
 
 	}
 
 	@Override
-	public SimulationResult playout(MachineState state, int maxDepth) {
+	public SimulationResult singlePlayout(MachineState state, int maxDepth) {
 
 		// NOTE that this is just an extra check: if the state is terminal or the depth limit has been reached,
 		// we just return the final goals of the state. At the moment the MCTS manager already doesn't call the

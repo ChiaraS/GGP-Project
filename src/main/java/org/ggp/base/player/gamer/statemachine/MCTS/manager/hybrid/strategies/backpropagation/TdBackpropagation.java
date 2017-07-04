@@ -98,7 +98,7 @@ public abstract class TdBackpropagation extends BackpropagationStrategy {
 
 	@Override
 	public void update(MctsNode currentNode, MachineState currentState,
-			MctsJointMove jointMove, SimulationResult simulationResult) {
+			MctsJointMove jointMove, SimulationResult[] simulationResult) {
 
 		if(currentNode instanceof TdDecoupledMctsNode && jointMove instanceof SeqDecMctsJointMove){
 			this.decUpdate((TdDecoupledMctsNode)currentNode, currentState, (SeqDecMctsJointMove)jointMove, simulationResult);
@@ -108,7 +108,16 @@ public abstract class TdBackpropagation extends BackpropagationStrategy {
 
 	}
 
-	protected void decUpdate(TdDecoupledMctsNode currentNode, MachineState currentState, SeqDecMctsJointMove jointMove, SimulationResult simulationResult){
+	protected void decUpdate(TdDecoupledMctsNode currentNode, MachineState currentState, SeqDecMctsJointMove jointMove, SimulationResult[] simulationResult){
+
+		// NOTE: for now the TD backpropagation strategy only deals with single playouts.
+		// TODO: adapt this class to deal with iterations for which multiple playouts are performed and thus we have
+		// more than one simulationResult.
+
+		if(simulationResult.length != 1){
+			GamerLogger.logError("BackpropagationStrategy", "TdBackpropagation - Detected multiple playouts results. TD backpropagation not able to deal with multiple playout results. Probably a wrong combination of strategies has been set or there is something wrong in the code!");
+			throw new RuntimeException("Detected multiple playouts results.");
+		}
 
 		currentNode.incrementTotVisits();
 
@@ -117,7 +126,7 @@ public abstract class TdBackpropagation extends BackpropagationStrategy {
 
 		DecoupledMctsMoveStats currentMoveStat;
 
-		int[] returnValuesForRoles = this.getReturnValuesForRolesInPlayout(simulationResult); // Here the index is useless so we set it to 0
+		int[] returnValuesForRoles = this.getReturnValuesForRolesInPlayout(simulationResult[0]); // Here the index is useless so we set it to 0
 
 		/*
 		System.out.print("R = [ ");
@@ -194,13 +203,21 @@ public abstract class TdBackpropagation extends BackpropagationStrategy {
 	}
 
 	@Override
-	public void processPlayoutResult(MctsNode leafNode,	MachineState leafState,
-			SimulationResult simulationResult) {
+	public void processPlayoutResult(MctsNode leafNode,	MachineState leafState,	SimulationResult[] simulationResult) {
 
-		int playoutLength = simulationResult.getPlayoutLength();
+		// NOTE: for now the TD backpropagation strategy only deals with single playouts.
+		// TODO: adapt this class to deal with iterations for which multiple playouts are performed and thus we have
+		// more than one simulationResult.
+
+		if(simulationResult.length != 1){
+			GamerLogger.logError("BackpropagationStrategy", "TdBackpropagation - Detected multiple playouts results. TD backpropagation not able to deal with multiple playout results. Probably a wrong combination of strategies has been set or there is something wrong in the code!");
+			throw new RuntimeException("Detected multiple playouts results.");
+		}
+
+		int playoutLength = simulationResult[0].getPlayoutLength();
 
 		if(playoutLength <= 0){ // This method should be called only if the playout was actually performed, thus the length must be at least 1!
-			GamerLogger.logError("MctsManager", "Playout length equals 0 when processing the playout result for TD backpropagation. Probably a wrong combination of strategies has been set or there is something wrong in the code!");
+			GamerLogger.logError("BackpropagationStrategy", "TdBackpropagation - Playout length equals 0 when processing the playout result for TD backpropagation. Probably a wrong combination of strategies has been set or there is something wrong in the code!");
 			throw new RuntimeException("Playout length equals 0.");
 		}
 
@@ -211,7 +228,7 @@ public abstract class TdBackpropagation extends BackpropagationStrategy {
 		// Update deltaSum for each non-terminal episode in the playout.
 		for(int i = 0; i < playoutLength-1; i++){
 
-			returnValuesForRoles = this.getReturnValuesForRolesInPlayout(simulationResult);
+			returnValuesForRoles = this.getReturnValuesForRolesInPlayout(simulationResult[0]);
 
 			for(int j = 0; j < this.gameDependentParameters.getNumRoles(); j++){
 

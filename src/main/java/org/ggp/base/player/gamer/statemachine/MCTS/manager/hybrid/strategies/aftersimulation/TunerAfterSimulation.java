@@ -7,6 +7,7 @@ import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.GameDependentP
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.SharedReferencesCollector;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.parameterstuning.ParametersTuner;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.hybrid.SimulationResult;
+import org.ggp.base.util.logging.GamerLogger;
 
 public class TunerAfterSimulation extends AfterSimulationStrategy {
 
@@ -35,7 +36,16 @@ public class TunerAfterSimulation extends AfterSimulationStrategy {
 	}
 
 	@Override
-	public void afterSimulationActions(SimulationResult simulationResult) {
+	public void afterSimulationActions(SimulationResult[] simulationResult) {
+
+		// NOTE: for now the TunerAfterSimulation strategy only deals with single playouts.
+		// TODO: adapt this class to deal with iterations for which multiple playouts are performed and thus we have
+		// more than one simulationResult.
+
+		if(simulationResult.length != 1){
+			GamerLogger.logError("AfterSimulationStrategy", "TunerAfterSimulation - Detected multiple playouts results. TD backpropagation not able to deal with multiple playout results. Probably a wrong combination of strategies has been set or there is something wrong in the code!");
+			throw new RuntimeException("Detected multiple playouts results.");
+		}
 
 		if(this.parametersTuner.isTuning()){
 			/*
@@ -56,7 +66,7 @@ public class TunerAfterSimulation extends AfterSimulationStrategy {
 				throw new RuntimeException("TunerAfterSimulation-afterSimulationActions(): combinatorial tuner is tuning for the wrong number of roles.");
 			}*/
 
-			this.parametersTuner.updateStatistics(simulationResult.getTerminalGoals());
+			this.parametersTuner.updateStatistics(simulationResult[0].getTerminalGoals());
 		}
 
 	}

@@ -85,7 +85,7 @@ public class CompositeAfterSimulation extends AfterSimulationStrategy {
 	}
 
 	@Override
-	public void afterSimulationActions(SimulationResult simulationResult) {
+	public void afterSimulationActions(SimulationResult[] simulationResult) {
 		for(AfterSimulationStrategy afterSimulationStrategy : this.simulationStrategies){
 			afterSimulationStrategy.afterSimulationActions(simulationResult);
 		}

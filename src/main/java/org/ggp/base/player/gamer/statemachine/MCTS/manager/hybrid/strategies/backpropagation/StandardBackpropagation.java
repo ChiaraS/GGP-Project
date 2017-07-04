@@ -42,12 +42,12 @@ public class StandardBackpropagation extends BackpropagationStrategy {
 	 * @see org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.strategies.backpropagation.BackpropagationStrategy#update(org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.MCTSNode, org.ggp.base.util.statemachine.structure.MachineState, org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.hybrid.MCTSJointMove, org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.hybrid.SimulationResult)
 	 */
 	@Override
-	public void update(MctsNode currentNode, MachineState currentState, MctsJointMove jointMove, SimulationResult simulationResult){
+	public void update(MctsNode currentNode, MachineState currentState, MctsJointMove jointMove, SimulationResult[] simulationResult){
 		this.standardUpdater.update(currentNode, currentState, jointMove, simulationResult);
 	}
 
 	@Override
-	public void processPlayoutResult(MctsNode leafNode, MachineState leafState,	SimulationResult simulationResult) {
+	public void processPlayoutResult(MctsNode leafNode, MachineState leafState,	SimulationResult[] simulationResult) {
 		this.standardUpdater.processPlayoutResult(leafNode, leafState, simulationResult);
 	}
 

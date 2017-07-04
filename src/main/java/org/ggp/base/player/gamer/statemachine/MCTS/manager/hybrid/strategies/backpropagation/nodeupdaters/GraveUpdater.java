@@ -39,42 +39,47 @@ public class GraveUpdater extends NodeUpdater{
 	}
 
 	@Override
-	public void update(MctsNode currentNode, MachineState currentState, MctsJointMove jointMove, SimulationResult simulationResult) {
+	public void update(MctsNode currentNode, MachineState currentState, MctsJointMove jointMove, SimulationResult[] simulationResult) {
 
 		if(currentNode instanceof AmafNode){
 
-			List<List<Move>> allJointMoves = simulationResult.getAllJointMoves();
-
-			int[] goals = simulationResult.getTerminalGoals();
-
-			if(goals == null){
-				GamerLogger.logError("MctsManager", "Found null terminal goals in the simulation result when updating the AMAF statistics.");
-				throw new RuntimeException("Null terminal goals in the simulation result.");
-			}
-
-			if(allJointMoves == null /*|| allJointMoves.size() == 0*/){
-				GamerLogger.logError("MctsManager", "Found null joint moves in the simulation result when updating the AMAF statistics.");
-				throw new RuntimeException("Null joint moves in the simulation result.");
-			}
-
 			Map<Move, MoveStats> amafStats = ((AmafNode)currentNode).getAmafStats();
-
-			allJointMoves.add(jointMove.getJointMove());
-
+			List<List<Move>> allJointMoves;
+			int[] goals;
 			MoveStats moveStats;
 
-	        for(List<Move> jM : allJointMoves){
-	        	for(int i = 0; i<jM.size(); i++){
-	        		moveStats = amafStats.get(jM.get(i));
-	        		if(moveStats == null){
-	        			moveStats = new MoveStats();
-	        			amafStats.put(jM.get(i), moveStats);
-	        		}
+			for(int resultIndex = 0; resultIndex < simulationResult.length; resultIndex++){
 
-	        		moveStats.incrementVisits();
-	        		moveStats.incrementScoreSum(goals[i]);
-	        	}
-	        }
+				allJointMoves = simulationResult[resultIndex].getAllJointMoves();
+
+				goals = simulationResult[resultIndex].getTerminalGoals();
+
+				if(goals == null){
+					GamerLogger.logError("NodeUpdater", "GraveUpdate - Found null terminal goals in the simulation result when updating the AMAF statistics.");
+					throw new RuntimeException("Null terminal goals in the simulation result.");
+				}
+
+				if(allJointMoves == null /*|| allJointMoves.size() == 0*/){
+					GamerLogger.logError("NodeUpdater", "GraveUpdate - Found null joint moves in the simulation result when updating the AMAF statistics.");
+					throw new RuntimeException("Null joint moves in the simulation result.");
+				}
+
+				allJointMoves.add(jointMove.getJointMove());
+
+		        for(List<Move> jM : allJointMoves){
+		        	for(int i = 0; i<jM.size(); i++){
+		        		moveStats = amafStats.get(jM.get(i));
+		        		if(moveStats == null){
+		        			moveStats = new MoveStats();
+		        			amafStats.put(jM.get(i), moveStats);
+		        		}
+
+		        		moveStats.incrementVisits();
+		        		moveStats.incrementScoreSum(goals[i]);
+		        	}
+		        }
+
+			}
 
 		}else{
 			throw new RuntimeException("GraveUpdate-update(): detected a node not implementing interface AmafNode.");
@@ -82,40 +87,44 @@ public class GraveUpdater extends NodeUpdater{
 	}
 
 	@Override
-	public void processPlayoutResult(MctsNode leafNode,	MachineState leafState, SimulationResult simulationResult) {
+	public void processPlayoutResult(MctsNode leafNode,	MachineState leafState, SimulationResult[] simulationResult) {
 
 		if(leafNode instanceof AmafNode){
 
-			List<List<Move>> allJointMoves = simulationResult.getAllJointMoves();
-
-			int[] goals = simulationResult.getTerminalGoals();
-
-			if(goals == null){
-				GamerLogger.logError("MctsManager", "Found null terminal goals in the simulation result when updating the AMAF statistics of the last node added to the tree. Probably a wrong combination of strategies has been set!");
-				throw new RuntimeException("Null terminal goals in the simulation result.");
-			}
-
-			if(allJointMoves == null || allJointMoves.size() == 0){ // This method should be called only if the playout has actually been performed, so there must be at least one joint move
-				GamerLogger.logError("MctsManager", "Found no joint moves in the simulation result when updating the AMAF statistics of the last node added to the tree. Probably a wrong combination of strategies has been set!");
-				throw new RuntimeException("No joint moves in the simulation result.");
-			}
-
+			List<List<Move>> allJointMoves;
+			int[] goals;
 			Map<Move, MoveStats> amafStats = ((AmafNode)leafNode).getAmafStats();
-
 			MoveStats moveStats;
 
-	        for(List<Move> jM : allJointMoves){
-	        	for(int i = 0; i<jM.size(); i++){
-	        		moveStats = amafStats.get(jM.get(i));
-	        		if(moveStats == null){
-	        			moveStats = new MoveStats();
-	        			amafStats.put(jM.get(i), moveStats);
-	        		}
+			for(int resultIndex = 0; resultIndex < simulationResult.length; resultIndex++){
 
-	        		moveStats.incrementVisits();
-	        		moveStats.incrementScoreSum(goals[i]);
-	        	}
-	        }
+				allJointMoves = simulationResult[resultIndex].getAllJointMoves();
+
+				goals = simulationResult[resultIndex].getTerminalGoals();
+
+				if(goals == null){
+					GamerLogger.logError("NodeUpdater", "GraveUpdate - Found null terminal goals in the simulation result when updating the AMAF statistics of the last node added to the tree. Probably a wrong combination of strategies has been set!");
+					throw new RuntimeException("Null terminal goals in the simulation result.");
+				}
+
+				if(allJointMoves == null || allJointMoves.size() == 0){ // This method should be called only if the playout has actually been performed, so there must be at least one joint move
+					GamerLogger.logError("NodeUpdater", "GraveUpdate - Found no joint moves in the simulation result when updating the AMAF statistics of the last node added to the tree. Probably a wrong combination of strategies has been set!");
+					throw new RuntimeException("No joint moves in the simulation result.");
+				}
+
+		        for(List<Move> jM : allJointMoves){
+		        	for(int i = 0; i<jM.size(); i++){
+		        		moveStats = amafStats.get(jM.get(i));
+		        		if(moveStats == null){
+		        			moveStats = new MoveStats();
+		        			amafStats.put(jM.get(i), moveStats);
+		        		}
+
+		        		moveStats.incrementVisits();
+		        		moveStats.incrementScoreSum(goals[i]);
+		        	}
+		        }
+			}
 
 		}else{
 			throw new RuntimeException("GraveUpdate-processPlayoutResult(): detected a node not implementing interface AmafNode.");

@@ -18,9 +18,9 @@ public abstract class NodeUpdater extends SearchManagerComponent {
 		super(gameDependentParameters, random, gamerSettings, sharedReferencesCollector);
 	}
 
-	public abstract void update(MctsNode currentNode, MachineState currentState, MctsJointMove jointMove, SimulationResult simulationResult);
+	public abstract void update(MctsNode currentNode, MachineState currentState, MctsJointMove jointMove, SimulationResult[] simulationResult);
 
-	public abstract void processPlayoutResult(MctsNode leafNode, MachineState leafState, SimulationResult simulationResult);
+	public abstract void processPlayoutResult(MctsNode leafNode, MachineState leafState, SimulationResult[] simulationResult);
 
 	@Override
 	public String getComponentParameters(String indentation) {

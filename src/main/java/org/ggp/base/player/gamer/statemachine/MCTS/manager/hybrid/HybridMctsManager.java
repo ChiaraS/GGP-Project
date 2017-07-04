@@ -165,7 +165,10 @@ public class HybridMctsManager {
 		// Create strategies according to the types specified in the gamer configuration
 		SharedReferencesCollector sharedReferencesCollector = new SharedReferencesCollector();
 
-		String propertyValue = gamerSettings.getPropertyValue("SearchManager.selectionStrategyType");
+		String propertyValue;
+		String[] multiPropertyValue;
+
+		propertyValue = gamerSettings.getPropertyValue("SearchManager.selectionStrategyType");
 		try {
 			this.selectionStrategy = (SelectionStrategy) SearchManagerComponent.getConstructorForSearchManagerComponent(SearchManagerComponent.getCorrespondingClass(ProjectSearcher.SELECTION_STRATEGIES.getConcreteClasses(),
 					propertyValue)).newInstance(gameDependentParameters, random, gamerSettings, sharedReferencesCollector);
@@ -189,17 +192,20 @@ public class HybridMctsManager {
 			throw new RuntimeException(e);
 		}
 
-		propertyValue = gamerSettings.getPropertyValue("SearchManager.playoutStrategyType");
+		multiPropertyValue = gamerSettings.getIDPropertyValue("SearchManager.playoutStrategyType");
+
 		try {
-			this.playoutStrategy = (PlayoutStrategy) SearchManagerComponent.getConstructorForSearchManagerComponent(SearchManagerComponent.getCorrespondingClass(ProjectSearcher.PLAYOUT_STRATEGIES.getConcreteClasses(),
-					propertyValue)).newInstance(gameDependentParameters, random, gamerSettings, sharedReferencesCollector);
+			this.playoutStrategy = (PlayoutStrategy) SearchManagerComponent.getConstructorForMultiInstanceSearchManagerComponent(SearchManagerComponent.getCorrespondingClass(ProjectSearcher.PLAYOUT_STRATEGIES.getConcreteClasses(),
+					multiPropertyValue[0])).newInstance(gameDependentParameters, random, gamerSettings, sharedReferencesCollector, multiPropertyValue[1]);
 		} catch (InstantiationException | IllegalAccessException
 				| IllegalArgumentException | InvocationTargetException e) {
 			// TODO: fix this!
-			GamerLogger.logError("SearchManagerCreation", "Error when instantiating PlayoutStrategy " + propertyValue + ".");
+			GamerLogger.logError("SearchManagerCreation", "Error when instantiating PlayoutStrategy " + gamerSettings.getIDPropertyValue("SearchManager.playoutStrategyType") + ".");
 			GamerLogger.logStackTrace("SearchManagerCreation", e);
 			throw new RuntimeException(e);
 		}
+
+		sharedReferencesCollector.setPlayoutStrategy(this.playoutStrategy);
 
 		propertyValue = gamerSettings.getPropertyValue("SearchManager.backpropagationStrategyType");
 		try {
@@ -652,7 +658,7 @@ public class HybridMctsManager {
 			//System.out.println();
 			//System.out.println("Inizio iterazione");
 
-			SimulationResult simulationResult = this.searchNext(initialState, initialNode);
+			SimulationResult[] simulationResult = this.searchNext(initialState, initialNode);
 			this.iterations++;
 			this.visitedNodes += this.currentIterationVisitedNodes;
 
@@ -681,10 +687,11 @@ public class HybridMctsManager {
 	 *
 	 * @param currentState the state being visited.
 	 * @param currentNode the tree node corresponding to the visited state.
-	 * @return the goals of all players, obtained by the current MCTS iteration and that
-	 *         must be backpropagated.
+	 * @return a list with the result(s) obtained by the current MCTS iteration and that
+	 *         must be backpropagated (the list will have more than one result if multiple
+	 *         playouts were performed).
 	 */
-	private SimulationResult searchNext(MachineState currentState, MctsNode currentNode) {
+	private SimulationResult[] searchNext(MachineState currentState, MctsNode currentNode) {
 
 		//System.out.println();
 		//System.out.println("Search step:");
@@ -707,7 +714,7 @@ public class HybridMctsManager {
 
 		//int[] goals;
 
-		SimulationResult simulationResult;
+		SimulationResult[] simulationResult;
 
 
 		/*
@@ -751,7 +758,9 @@ public class HybridMctsManager {
 			System.out.print(s);
 			*/
 
-			return new SimulationResult(currentNode.getGoals());
+			simulationResult = new SimulationResult[1];
+			simulationResult[0] = new SimulationResult(currentNode.getGoals());
+			return simulationResult;
 		}
 
 
@@ -782,7 +791,9 @@ public class HybridMctsManager {
 			System.out.print(s);
 			*/
 
-			return new SimulationResult(this.gameDependentParameters.getTheMachine().getSafeGoalsAvgForAllRoles(currentState));
+			simulationResult = new SimulationResult[1];
+			simulationResult[0] = new SimulationResult(this.gameDependentParameters.getTheMachine().getSafeGoalsAvgForAllRoles(currentState));
+			return simulationResult;
 			//return new SimulationResult(goals);
 		}
 
@@ -858,7 +869,10 @@ public class HybridMctsManager {
 			GamerLogger.logError("MctsManager", "Cannot compute next state. Stopping iteration and returning safe goals.");
 
 			this.currentIterationVisitedNodes--;
-			return new SimulationResult(this.gameDependentParameters.getTheMachine().getSafeGoalsAvgForAllRoles(currentState));
+
+			simulationResult = new SimulationResult[1];
+			simulationResult[0] = new SimulationResult(this.gameDependentParameters.getTheMachine().getSafeGoalsAvgForAllRoles(currentState));
+			return simulationResult;
 		}
 
 		//System.out.println("Next state = [ " + this.gameDependentParameters.getTheMachine().convertToExplicitMachineState(nextState) + " ]");
@@ -918,7 +932,8 @@ public class HybridMctsManager {
 				System.out.print(s);
 				*/
 
-				simulationResult = new SimulationResult(nextNode.getGoals());
+				simulationResult = new SimulationResult[1];
+				simulationResult[0] = new SimulationResult(nextNode.getGoals());
 			}else{
 
 				//System.out.println("Performing playout.");
@@ -947,15 +962,24 @@ public class HybridMctsManager {
 
 					*/
 
-					simulationResult = new SimulationResult(this.gameDependentParameters.getTheMachine().getSafeGoalsAvgForAllRoles(nextState));
+					simulationResult = new SimulationResult[1];
+					simulationResult[0] = new SimulationResult(this.gameDependentParameters.getTheMachine().getSafeGoalsAvgForAllRoles(nextState));
 
 				}else{
 
 					//int[] playoutVisitedNodes = new int[1];
 					// Note that if no depth is left for the playout, the playout itself will take care of
 					// returning the added-state goal values (if any) or the default tie goal values.
-					simulationResult = this.playoutStrategy.playout(nextState, availableDepth);
-					this.currentIterationVisitedNodes += simulationResult.getPlayoutLength();
+					simulationResult = this.playoutStrategy.playout(mctsJointMove.getJointMove(), nextState, availableDepth);
+
+					// IMPORTANT NOTE! Here we increment the number of nodes visited for the current iteration
+					// using ALL the performed playouts lengths. If more than one playout was performed this
+					// number will be higher than normal. Keep this in mind when looking at speed statistics.
+					// When using multiple playouts the average number of nodes per iteration will increase,
+					// while the average number of iterations per second will decrease.
+					for(int resultIndex = 0; resultIndex < simulationResult.length; resultIndex++){
+						this.currentIterationVisitedNodes += simulationResult[resultIndex].getPlayoutLength();
+					}
 
 					/*
 					System.out.println("Finished performing playout.");

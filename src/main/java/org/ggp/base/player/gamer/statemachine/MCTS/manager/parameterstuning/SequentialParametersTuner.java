@@ -296,6 +296,14 @@ public class SequentialParametersTuner extends ParametersTuner {
 	@Override
 	public void setNextCombinations() {
 
+		// If maxSamplesPerParam==Integer.MAX_VALUE it means we are tuning one parameter per move, so we don't
+		// need to check how many samples have been taken so far to know if we need to start tuning the next
+		// parameter. After performing a move in the real game, this class will be told to start tuning the next
+		// parameter by the AfterMoveStrategy.
+		if(this.maxSamplesPerParam < Integer.MAX_VALUE && this.currentNumSamples == this.maxSamplesPerParam){
+			this.changeTunedParameter();
+		}
+
 		// Get index of parameter currently tuned
 		int paramIndex = this.tuningOrder.get(this.orderIndex);
 
@@ -480,14 +488,6 @@ public class SequentialParametersTuner extends ParametersTuner {
 		}
 
 		this.currentNumSamples++;
-
-		// If maxSamplesPerParam==Integer.MAX_VALUE it means we are tuning one parameter per move, so we don't
-		// need to check how many samples have been taken so far to know if we need to start tuning the next
-		// parameter. After performing a move in the real game, this class will be told to start tuning the next
-		// parameter by the AfterMoveStrategy.
-		if(this.maxSamplesPerParam < Integer.MAX_VALUE && this.currentNumSamples == this.maxSamplesPerParam){
-			this.changeTunedParameter();
-		}
 
 	}
 

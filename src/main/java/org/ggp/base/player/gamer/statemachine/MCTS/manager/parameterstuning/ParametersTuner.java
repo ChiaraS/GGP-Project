@@ -202,6 +202,14 @@ public abstract class ParametersTuner extends SearchManagerComponent{
 
 	}
 
+	/*
+	 *  TODO: for all ParametersTuners change the code so that if there is a structure keeping track
+	 *  of the next parameter combination to check, this structure advances to the next combination before
+	 *  executing setNextCombinations() and not after executing updateStatistics(). This is needed because
+	 *  it should be allowed to call updateStatistics() multiple times with multiple goals for the same
+	 *  combination without advancing to the next combination. updateStatistics() can be called multiple
+	 *  times when using multiple playouts or when using a batch of simulations to evaluate the same combinations.
+	 */
 	public abstract void setNextCombinations();
 
 	public abstract void setBestCombinations();

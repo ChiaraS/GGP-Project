@@ -7,6 +7,7 @@ import org.ggp.base.player.gamer.statemachine.MCTS.manager.evolution.SingleParam
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.GameDependentParameters;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.SharedReferencesCollector;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.hybrid.SimulationResult;
+import org.ggp.base.util.logging.GamerLogger;
 
 public class EvoAfterSimulation extends AfterSimulationStrategy {
 
@@ -35,7 +36,16 @@ public class EvoAfterSimulation extends AfterSimulationStrategy {
 	}
 
 	@Override
-	public void afterSimulationActions(SimulationResult simulationResult) {
+	public void afterSimulationActions(SimulationResult[] simulationResult) {
+
+		// NOTE: for now the EvoAfterSimulation strategy only deals with single playouts.
+		// TODO: adapt this class to deal with iterations for which multiple playouts are performed and thus we have
+		// more than one simulationResult.
+
+		if(simulationResult.length != 1){
+			GamerLogger.logError("AfterSimulationStrategy", "TunerAfterSimulation - Detected multiple playouts results. TD backpropagation not able to deal with multiple playout results. Probably a wrong combination of strategies has been set or there is something wrong in the code!");
+			throw new RuntimeException("Detected multiple playouts results.");
+		}
 
 		int[] goals;
 
@@ -44,11 +54,11 @@ public class EvoAfterSimulation extends AfterSimulationStrategy {
 		if(this.evolutionManager.getNumPopulations() == 1){
 
 			goals = new int[1];
-			goals[0] = simulationResult.getTerminalGoals()[this.gameDependentParameters.getMyRoleIndex()];
+			goals[0] = simulationResult[0].getTerminalGoals()[this.gameDependentParameters.getMyRoleIndex()];
 
 		}else{
 
-			goals = simulationResult.getTerminalGoals();
+			goals = simulationResult[0].getTerminalGoals();
 
 		}
 

@@ -231,7 +231,7 @@ public class HybridMCSManager {
 				// Get the state reachable with this joint move.
 				nextState =  this.theMachine.getNextState(this.currentState, jointMove);
 				// Get the goals obtained by performing playouts from this state.
-				simulationResult = this.playoutStrategy.playout(nextState, this.maxSearchDepth-1);
+				simulationResult = this.playoutStrategy.singlePlayout(nextState, this.maxSearchDepth-1);
 				this.visitedNodes += simulationResult.getPlayoutLength();
 				myGoal = simulationResult.getTerminalGoals()[this.theMachine.getRoleIndices().get(this.myRole)];
 

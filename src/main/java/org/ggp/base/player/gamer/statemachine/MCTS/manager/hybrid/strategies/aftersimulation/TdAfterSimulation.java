@@ -40,7 +40,7 @@ public class TdAfterSimulation extends AfterSimulationStrategy {
 	}
 
 	@Override
-	public void afterSimulationActions(SimulationResult simulationResult) {
+	public void afterSimulationActions(SimulationResult[] simulationResult) {
 
 		this.tdBackpropagation.resetSimulationParameters();
 

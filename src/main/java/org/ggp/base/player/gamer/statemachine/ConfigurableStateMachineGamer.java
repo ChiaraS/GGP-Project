@@ -11,7 +11,7 @@ import org.ggp.base.util.logging.GamerLogger;
 
 public abstract class ConfigurableStateMachineGamer extends StateMachineGamer {
 
-	protected static final String defaultSettingsFileName = "RO50I25E100R05CSRMMultiPopCondAREvoTunerCGMD.properties";
+	protected static final String defaultSettingsFileName = "CondARLocalUcbNaiveTunerCGMD.properties";
 
 	protected String settingsFilePath;
 

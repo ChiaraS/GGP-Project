@@ -46,7 +46,7 @@ public class MastBackpropagation extends BackpropagationStrategy {
 	}
 
 	@Override
-	public void update(MctsNode currentNode, MachineState currentState, MctsJointMove jointMove, SimulationResult simulationResult) {
+	public void update(MctsNode currentNode, MachineState currentState, MctsJointMove jointMove, SimulationResult[] simulationResult) {
 
 		this.standardUpdater.update(currentNode, currentState, jointMove, simulationResult);
 		this.mastUpdater.update(currentNode, currentState, jointMove, simulationResult);
@@ -54,7 +54,7 @@ public class MastBackpropagation extends BackpropagationStrategy {
 	}
 
 	@Override
-	public void processPlayoutResult(MctsNode leafNode, MachineState leafState,	SimulationResult simulationResult) {
+	public void processPlayoutResult(MctsNode leafNode, MachineState leafState,	SimulationResult[] simulationResult) {
 
 		this.mastUpdater.processPlayoutResult(leafNode, leafState, simulationResult);
 

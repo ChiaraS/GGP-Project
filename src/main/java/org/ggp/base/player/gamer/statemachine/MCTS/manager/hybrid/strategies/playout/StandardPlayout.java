@@ -29,9 +29,9 @@ public class StandardPlayout extends PlayoutStrategy {
 	protected MoveSelector moveSelector;
 
 	public StandardPlayout(GameDependentParameters gameDependentParameters, Random random,
-			GamerSettings gamerSettings, SharedReferencesCollector sharedReferencesCollector) {
+			GamerSettings gamerSettings, SharedReferencesCollector sharedReferencesCollector, String id) {
 
-		super(gameDependentParameters, random, gamerSettings, sharedReferencesCollector);
+		super(gameDependentParameters, random, gamerSettings, sharedReferencesCollector, id);
 
 		try {
 			this.moveSelector = (MoveSelector) SearchManagerComponent.getConstructorForSearchManagerComponent(SearchManagerComponent.getCorrespondingClass(ProjectSearcher.MOVE_SELECTORS.getConcreteClasses(),
@@ -62,7 +62,17 @@ public class StandardPlayout extends PlayoutStrategy {
 	}
 
 	@Override
-	public SimulationResult playout(MachineState state, int maxDepth) {
+	public SimulationResult[] playout(List<Move> jointMove, MachineState state, int maxDepth) {
+
+		SimulationResult[] result = new SimulationResult[1];
+
+		result[0] = this.singlePlayout(state, maxDepth);
+
+		return result;
+	}
+
+	@Override
+	public SimulationResult singlePlayout(MachineState state, int maxDepth) {
 
 		// NOTE that this is just an extra check: if the state is terminal or the depth limit has been reached,
 		// we just return the final goals of the state. At the moment the MCTS manager already doesn't call the

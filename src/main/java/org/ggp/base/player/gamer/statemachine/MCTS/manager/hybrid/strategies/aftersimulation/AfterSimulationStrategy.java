@@ -17,6 +17,6 @@ public abstract class AfterSimulationStrategy extends Strategy{
 
 	}
 
-	public abstract void afterSimulationActions(SimulationResult simulationResult);
+	public abstract void afterSimulationActions(SimulationResult[] simulationResult);
 
 }

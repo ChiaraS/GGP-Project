@@ -42,7 +42,7 @@ public class StandardUpdater extends NodeUpdater {
 	 * @see org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.strategies.backpropagation.BackpropagationStrategy#update(org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.MCTSNode, org.ggp.base.util.statemachine.structure.MachineState, org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.hybrid.MCTSJointMove, org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.hybrid.SimulationResult)
 	 */
 	@Override
-	public void update(MctsNode currentNode, MachineState currentState, MctsJointMove jointMove, SimulationResult simulationResult){
+	public void update(MctsNode currentNode, MachineState currentState, MctsJointMove jointMove, SimulationResult[] simulationResult){
 		if(currentNode instanceof DecoupledMctsNode && jointMove instanceof SeqDecMctsJointMove){
 			this.decUpdate((DecoupledMctsNode)currentNode, currentState, (SeqDecMctsJointMove)jointMove, simulationResult);
 		}else if(currentNode instanceof SequentialMctsNode && jointMove instanceof SeqDecMctsJointMove){
@@ -62,27 +62,29 @@ public class StandardUpdater extends NodeUpdater {
 	 * @param jointMove the explored joint move.
 	 * @param goals the goals obtained by the simulation, to be used to update the statistics.
 	 */
-	private void decUpdate(DecoupledMctsNode currentNode, MachineState currentState, SeqDecMctsJointMove jointMove, SimulationResult simulationResult) {
-
-		currentNode.incrementTotVisits();
+	private void decUpdate(DecoupledMctsNode currentNode, MachineState currentState, SeqDecMctsJointMove jointMove, SimulationResult[] simulationResult) {
 
 		DecoupledMctsMoveStats[][] moves = currentNode.getMoves();
-
 		int[] moveIndices = jointMove.getMovesIndices();
 
-		for(int i = 0; i < moves.length; i++){
-			// Get the decoupled MCTS Move
-			DecoupledMctsMoveStats theMoveToUpdate = moves[i][moveIndices[i]];
-			theMoveToUpdate.incrementScoreSum(simulationResult.getTerminalGoals()[i]);
-			if(theMoveToUpdate.getVisits() == 0){
-				//System.out.println("!!!!!");
-				//System.out.println(node.getUnexploredMovesCount()[i]);
-				currentNode.getUnexploredMovesCount()[i]--;
-				//System.out.println(node.getUnexploredMovesCount()[i]);
-				//System.out.println("!!!!!");
+		for(int resultIndex = 0; resultIndex < simulationResult.length; resultIndex++){
 
+			currentNode.incrementTotVisits();
+
+			for(int i = 0; i < moves.length; i++){
+				// Get the decoupled MCTS Move
+				DecoupledMctsMoveStats theMoveToUpdate = moves[i][moveIndices[i]];
+				theMoveToUpdate.incrementScoreSum(simulationResult[resultIndex].getTerminalGoals()[i]);
+				if(theMoveToUpdate.getVisits() == 0){
+					//System.out.println("!!!!!");
+					//System.out.println(node.getUnexploredMovesCount()[i]);
+					currentNode.getUnexploredMovesCount()[i]--;
+					//System.out.println(node.getUnexploredMovesCount()[i]);
+					//System.out.println("!!!!!");
+
+				}
+				theMoveToUpdate.incrementVisits();
 			}
-			theMoveToUpdate.incrementVisits();
 		}
 	}
 
@@ -99,44 +101,47 @@ public class StandardUpdater extends NodeUpdater {
 	 * @param jointMove the explored joint move.
 	 * @param goals the goals obtained by the simulation, to be used to update the statistics.
 	 */
-	private void seqUpdate(SequentialMctsNode currentNode, MachineState currentState, SeqDecMctsJointMove jointMove, SimulationResult simulationResult) {
+	private void seqUpdate(SequentialMctsNode currentNode, MachineState currentState, SeqDecMctsJointMove jointMove, SimulationResult[] simulationResult) {
 
-		currentNode.incrementTotVisits();
+		for(int resultIndex = 0; resultIndex < simulationResult.length; resultIndex++){
 
-		int currentRoleIndex = this.gameDependentParameters.getMyRoleIndex();
+			currentNode.incrementTotVisits();
 
-		SequentialMctsMoveStats currentStatsToUpdate = currentNode.getMovesStats()[jointMove.getMovesIndices()[currentRoleIndex]];
+			int currentRoleIndex = this.gameDependentParameters.getMyRoleIndex();
 
-		while(currentRoleIndex != ((this.gameDependentParameters.getMyRoleIndex()-1+this.gameDependentParameters.getNumRoles())%this.gameDependentParameters.getNumRoles())){
-			currentStatsToUpdate.incrementVisits();
-			currentStatsToUpdate.incrementScoreSum(simulationResult.getTerminalGoals()[currentRoleIndex]);
-			currentRoleIndex = (currentRoleIndex+1)%this.gameDependentParameters.getNumRoles();
-			currentStatsToUpdate = currentStatsToUpdate.getNextRoleMovesStats()[jointMove.getMovesIndices()[currentRoleIndex]];
-		}
-
-		// When the while-loop exits, the leaf move's stats (or the ones of my role if the game is
-		// a single player game) still have to be updated. We do so also checking if it was the
-		// first time the joint move was explored (i.e. the unvisitedSubleaves count of this move's
-		// stats equals 1 or equally its visits count equals 0).
-		currentStatsToUpdate.incrementVisits();
-		currentStatsToUpdate.incrementScoreSum(simulationResult.getTerminalGoals()[currentRoleIndex]);
-
-		// If it's the first visit for this leaf, it's also the first visit of the joint move and
-		// we must decrement by 1 the unvisitedSubleaves count of all the moves in this joint move.
-		if(currentStatsToUpdate.getUnvisitedSubleaves() == 1){
-			currentRoleIndex = this.gameDependentParameters.getMyRoleIndex();
-
-			currentStatsToUpdate = currentNode.getMovesStats()[jointMove.getMovesIndices()[currentRoleIndex]];
+			SequentialMctsMoveStats currentStatsToUpdate = currentNode.getMovesStats()[jointMove.getMovesIndices()[currentRoleIndex]];
 
 			while(currentRoleIndex != ((this.gameDependentParameters.getMyRoleIndex()-1+this.gameDependentParameters.getNumRoles())%this.gameDependentParameters.getNumRoles())){
-				currentStatsToUpdate.decreaseUnvisitedSubLeaves();
+				currentStatsToUpdate.incrementVisits();
+				currentStatsToUpdate.incrementScoreSum(simulationResult[resultIndex].getTerminalGoals()[currentRoleIndex]);
 				currentRoleIndex = (currentRoleIndex+1)%this.gameDependentParameters.getNumRoles();
 				currentStatsToUpdate = currentStatsToUpdate.getNextRoleMovesStats()[jointMove.getMovesIndices()[currentRoleIndex]];
 			}
 
-			currentStatsToUpdate.decreaseUnvisitedSubLeaves();
+			// When the while-loop exits, the leaf move's stats (or the ones of my role if the game is
+			// a single player game) still have to be updated. We do so also checking if it was the
+			// first time the joint move was explored (i.e. the unvisitedSubleaves count of this move's
+			// stats equals 1 or equally its visits count equals 0).
+			currentStatsToUpdate.incrementVisits();
+			currentStatsToUpdate.incrementScoreSum(simulationResult[resultIndex].getTerminalGoals()[currentRoleIndex]);
 
-			currentNode.decreaseUnvisitedLeaves();
+			// If it's the first visit for this leaf, it's also the first visit of the joint move and
+			// we must decrement by 1 the unvisitedSubleaves count of all the moves in this joint move.
+			if(currentStatsToUpdate.getUnvisitedSubleaves() == 1){
+				currentRoleIndex = this.gameDependentParameters.getMyRoleIndex();
+
+				currentStatsToUpdate = currentNode.getMovesStats()[jointMove.getMovesIndices()[currentRoleIndex]];
+
+				while(currentRoleIndex != ((this.gameDependentParameters.getMyRoleIndex()-1+this.gameDependentParameters.getNumRoles())%this.gameDependentParameters.getNumRoles())){
+					currentStatsToUpdate.decreaseUnvisitedSubLeaves();
+					currentRoleIndex = (currentRoleIndex+1)%this.gameDependentParameters.getNumRoles();
+					currentStatsToUpdate = currentStatsToUpdate.getNextRoleMovesStats()[jointMove.getMovesIndices()[currentRoleIndex]];
+				}
+
+				currentStatsToUpdate.decreaseUnvisitedSubLeaves();
+
+				currentNode.decreaseUnvisitedLeaves();
+			}
 		}
 	}
 
@@ -189,7 +194,7 @@ public class StandardUpdater extends NodeUpdater {
 	*/
 
 	@Override
-	public void processPlayoutResult(MctsNode leafNode, MachineState leafState,	SimulationResult simulationResult) {
+	public void processPlayoutResult(MctsNode leafNode, MachineState leafState,	SimulationResult[] simulationResult) {
 		// TODO Auto-generated method stub
 	}
 

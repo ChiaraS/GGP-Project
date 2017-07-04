@@ -50,7 +50,9 @@ public class GamerSettings {
 	 *
 	 * @param propertyName
 	 * @return an array where the first entry is the name of the class we want to instantiate, and the second entry
-	 * is the ID that such instance will have and use when getting values to set from the settings file.
+	 * is the ID that such instance will have and use when getting values to set from the settings file. If only one
+	 * instance has to be created, specifying the ID is optional as long as all properties of the instance are also
+	 * specified without ID.
 	 */
 	public String[] getIDPropertyValue(String propertyName){
 

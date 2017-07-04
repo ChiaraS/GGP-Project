@@ -47,60 +47,79 @@ public class MastUpdater extends NodeUpdater{
 	}
 
 	@Override
-	public void update(MctsNode currentNode, MachineState currentState, MctsJointMove jointMove, SimulationResult simulationResult) {
-
-		int[] goals = simulationResult.getTerminalGoals();
-
-		if(goals == null){
-			GamerLogger.logError("MctsManager", "Found null terminal goals in the simulation result when updating the AMAF statistics. Probably a wrong combination of strategies has been set!");
-			throw new RuntimeException("Null terminal goals in the simulation result.");
-		}
+	public void update(MctsNode currentNode, MachineState currentState, MctsJointMove jointMove, SimulationResult[] simulationResult) {
 
 		List<Move> internalJointMove = jointMove.getJointMove();
+
 		MoveStats moveStats;
 
+		int[] goals;
+
 		for(int i = 0; i < internalJointMove.size(); i++){
-        	moveStats = this.mastStatistics.get(internalJointMove.get(i));
-        	if(moveStats == null){
-        		moveStats = new MoveStats();
-        		this.mastStatistics.put(internalJointMove.get(i), moveStats);
-        	}
-       		moveStats.incrementVisits();
-       		moveStats.incrementScoreSum(goals[i]);
-       	}
+
+	       	moveStats = this.mastStatistics.get(internalJointMove.get(i));
+	       	if(moveStats == null){
+	       		moveStats = new MoveStats();
+	       		this.mastStatistics.put(internalJointMove.get(i), moveStats);
+	       	}
+
+	    	for(int resultIndex = 0; resultIndex < simulationResult.length; resultIndex++){
+
+	    		goals = simulationResult[resultIndex].getTerminalGoals();
+
+	    		if(goals == null){
+	    			GamerLogger.logError("NodeUpdater", "MastUpdater - Found null terminal goals in the simulation result when updating the AMAF statistics. Probably a wrong combination of strategies has been set!");
+	    			throw new RuntimeException("Null terminal goals in the simulation result.");
+	    		}
+
+		   		moveStats.incrementVisits();
+		   		moveStats.incrementScoreSum(goals[i]);
+	    	}
+		}
 
 	}
 
 	@Override
-	public void processPlayoutResult(MctsNode leafNode,	MachineState leafState, SimulationResult simulationResult) {
+	public void processPlayoutResult(MctsNode leafNode,	MachineState leafState, SimulationResult[] simulationResult) {
 
-		int[] goals = simulationResult.getTerminalGoals();
-
-		List<List<Move>> allJointMoves = simulationResult.getAllJointMoves();
-
-		if(goals == null){
-			GamerLogger.logError("MctsManager", "Found null terminal goals in the simulation result when updating the MAST statistics with the playout moves. Probably a wrong combination of strategies has been set!");
-			throw new RuntimeException("Null terminal goals in the simulation result.");
+		if(simulationResult == null || simulationResult.length < 1){
+			GamerLogger.logError("NodeUpdater", "MastUpdater - No simulation results available to pre-process!");
+			throw new RuntimeException("No simulation results available to pre-process!");
 		}
 
-		if(allJointMoves == null || allJointMoves.size() == 0){ // This method should be called only if the playout has actually been performed, so there must be at least one joint move
-			GamerLogger.logError("MctsManager", "Found no joint moves in the simulation result when updating the MAST statistics. Probably a wrong combination of strategies has been set!");
-			throw new RuntimeException("No joint moves in the simulation result.");
+		int[] goals;
+		List<List<Move>> allJointMoves;
+
+		for(int resultIndex = 0; resultIndex < simulationResult.length; resultIndex++){
+
+			goals = simulationResult[resultIndex].getTerminalGoals();
+
+			allJointMoves = simulationResult[resultIndex].getAllJointMoves();
+
+			if(goals == null){
+				GamerLogger.logError("NodeUpdater", "MastUpdater - Found null terminal goals in the simulation result when updating the MAST statistics with the playout moves. Probably a wrong combination of strategies has been set!");
+				throw new RuntimeException("Null terminal goals in the simulation result.");
+			}
+
+			if(allJointMoves == null || allJointMoves.size() == 0){ // This method should be called only if the playout has actually been performed, so there must be at least one joint move
+				GamerLogger.logError("NodeUpdater", "MastUpdater - Found no joint moves in the simulation result when updating the MAST statistics. Probably a wrong combination of strategies has been set!");
+				throw new RuntimeException("No joint moves in the simulation result.");
+			}
+
+		    MoveStats moveStats;
+		    for(List<Move> jM : allJointMoves){
+		    	for(int i = 0; i<jM.size(); i++){
+		    		moveStats = this.mastStatistics.get(jM.get(i));
+		        	if(moveStats == null){
+		        		moveStats = new MoveStats();
+		        		this.mastStatistics.put(jM.get(i), moveStats);
+		        	}
+
+		        	moveStats.incrementVisits();
+		        	moveStats.incrementScoreSum(goals[i]);
+		        }
+		    }
 		}
-
-	    MoveStats moveStats;
-	    for(List<Move> jM : allJointMoves){
-	    	for(int i = 0; i<jM.size(); i++){
-	    		moveStats = this.mastStatistics.get(jM.get(i));
-	        	if(moveStats == null){
-	        		moveStats = new MoveStats();
-	        		this.mastStatistics.put(jM.get(i), moveStats);
-	        	}
-
-	        	moveStats.incrementVisits();
-	        	moveStats.incrementScoreSum(goals[i]);
-	        }
-	    }
 	}
 
 }

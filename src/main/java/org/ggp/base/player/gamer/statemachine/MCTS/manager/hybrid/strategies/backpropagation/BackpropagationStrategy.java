@@ -26,7 +26,7 @@ public abstract class BackpropagationStrategy extends Strategy {
 	 * @param nextState the state reached by playing the given joint move.
 	 * @param simulationResult the result obtained by the simulation that passed by this node.
 	 */
-	public abstract void update(MctsNode currentNode, MachineState currentState, MctsJointMove jointMove, SimulationResult simulationResult);
+	public abstract void update(MctsNode currentNode, MachineState currentState, MctsJointMove jointMove, SimulationResult[] simulationResult);
 
 	/**
 	 * Method that processes the result of the playout if needed for the chosen selection and playout strategies.
@@ -40,6 +40,6 @@ public abstract class BackpropagationStrategy extends Strategy {
 	 * @param leafState state corresponding to the leaf node.
 	 * @param simulationResult the result of the playout starting from the terminal state up to the leaf node.
 	 */
-	public abstract void processPlayoutResult(MctsNode leafNode, MachineState leafState, SimulationResult simulationResult);
+	public abstract void processPlayoutResult(MctsNode leafNode, MachineState leafState, SimulationResult[] simulationResult);
 
 }

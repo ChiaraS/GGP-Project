@@ -34,9 +34,18 @@ public class IntermediateTdBackpropagation extends TdBackpropagation {
 	}
 
 	@Override
-	protected void decUpdate(TdDecoupledMctsNode currentNode, MachineState currentState, SeqDecMctsJointMove jointMove, SimulationResult simulationResult){
+	protected void decUpdate(TdDecoupledMctsNode currentNode, MachineState currentState, SeqDecMctsJointMove jointMove, SimulationResult[] simulationResult){
 
-		simulationResult.addGoals(this.gameDependentParameters.getTheMachine().getSafeGoalsAvgForAllRoles(currentState));
+		// NOTE: for now the TD backpropagation strategy only deals with single playouts.
+		// TODO: adapt this class to deal with iterations for which multiple playouts are performed and thus we have
+		// more than one simulationResult.
+
+		if(simulationResult.length != 1){
+			GamerLogger.logError("BackpropagationStrategy", "TdBackpropagation - Detected multiple playouts results. TD backpropagation not able to deal with multiple playout results. Probably a wrong combination of strategies has been set or there is something wrong in the code!");
+			throw new RuntimeException("Detected multiple playouts results.");
+		}
+
+		simulationResult[0].addGoals(this.gameDependentParameters.getTheMachine().getSafeGoalsAvgForAllRoles(currentState));
 
 		super.decUpdate(currentNode, currentState, jointMove, simulationResult);
 

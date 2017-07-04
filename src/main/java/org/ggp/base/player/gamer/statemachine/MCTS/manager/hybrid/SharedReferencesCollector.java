@@ -7,7 +7,6 @@ import java.util.Map;
 import org.ggp.base.player.gamer.statemachine.MCS.manager.MoveStats;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.evolution.SingleParameterEvolutionManager;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.strategies.backpropagation.TdBackpropagation;
-import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.strategies.beforesimualtion.SequentialTunerBeforeSimulation;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.strategies.playout.PlayoutStrategy;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.strategies.selection.GraveSelection;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.strategies.selection.ProgressiveHistoryGraveSelection;
@@ -49,8 +48,6 @@ public class SharedReferencesCollector {
 	private ProgressiveHistoryGraveSelection progressiveHistoryGraveSelection;
 
 	private PlayoutStrategy playoutStrategy;
-
-	private SequentialTunerBeforeSimulation sequentialTunerBeforeSimulation;
 
 	private ParametersManager parametersManager;
 
@@ -238,26 +235,6 @@ public class SharedReferencesCollector {
 		}else{
 			GamerLogger.logError("SearchManagerCreation", "Trying to get PlayoutStrategy that has never been set! Probably a wrong combination of strategies has been set.");
 			throw new RuntimeException("Trying to get PlayoutStrategy that has never been set!");
-		}
-	}
-
-	public void setSequentialTunerBeforeSimulation(SequentialTunerBeforeSimulation sequentialTunerBeforeSimulation){
-		// Can only be set once
-		if(this.sequentialTunerBeforeSimulation == null){
-			this.sequentialTunerBeforeSimulation = sequentialTunerBeforeSimulation;
-		}else{
-			GamerLogger.logError("SearchManagerCreation", "Trying to set SequentialTunerBeforeSimulation multiple times! Probably a wrong combination of strategies has been set.");
-			throw new RuntimeException("Trying to set SequentialTunerBeforeSimulation multiple times!");
-		}
-	}
-
-	public SequentialTunerBeforeSimulation getSequentialTunerBeforeSimulation(){
-		// If a strategy looks for the reference then another strategy must have set it
-		if(this.sequentialTunerBeforeSimulation != null){
-			return this.sequentialTunerBeforeSimulation;
-		}else{
-			GamerLogger.logError("SearchManagerCreation", "Trying to get SequentialTunerBeforeSimulation that has never been set! Probably a wrong combination of strategies has been set.");
-			throw new RuntimeException("Trying to get SequentialTunerBeforeSimulation that has never been set!");
 		}
 	}
 
