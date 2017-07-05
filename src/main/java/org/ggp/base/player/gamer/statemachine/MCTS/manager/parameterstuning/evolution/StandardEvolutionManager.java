@@ -11,6 +11,8 @@ import org.ggp.base.player.gamer.statemachine.MCS.manager.hybrid.CompleteMoveSta
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.GameDependentParameters;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.SearchManagerComponent;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.SharedReferencesCollector;
+import org.ggp.base.player.gamer.statemachine.MCTS.manager.parameterstuning.evolution.crossover.CrossoverManager;
+import org.ggp.base.player.gamer.statemachine.MCTS.manager.parameterstuning.evolution.mutation.MutationManager;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.parameterstuning.structure.CombinatorialCompactMove;
 import org.ggp.base.util.logging.GamerLogger;
 import org.ggp.base.util.reflection.ProjectSearcher;

@@ -1,8 +1,8 @@
 package org.ggp.base.player.gamer.statemachine.MCTS.propnet.ravegrave;
 
-import org.ggp.base.player.gamer.statemachine.MCTS.propnet.MastDuctMctsGamer;
+import org.ggp.base.player.gamer.statemachine.MCTS.propnet.OldMastDuctMctsGamer;
 
-public abstract class GRMastDuctMctsGamer extends MastDuctMctsGamer {
+public abstract class GRMastDuctMctsGamer extends OldMastDuctMctsGamer {
 
 	protected int minAMAFVisits;
 

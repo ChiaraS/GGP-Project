@@ -21,21 +21,6 @@ import org.ggp.base.util.statemachine.structure.Move;
 
 /**
  * This class tunes the parameters for each role independently. Each role has its own population.
- * When evaluating the current populations, all combinations of individuals, one from each population,
- * are tested in a MCTS simulation.
- *
- * E.g. if we have the following populations:
- * 	p_0 = {c_00; c_01; c_02}
- * 	p_1 = {c_10; c_11; c_12}
- *	p_2 = {c_20; c_21; c_22}
- * where c_ij is combination j of population of role i, when we want to compute the fitness of each
- * combination (i.e. individual) we perform k MCTS simulations for each possible combination of
- * combinations. Thus we will run MCTS simulation with the following combinations of combinations:
- * (c_00, c_10, c20) (c_00, c_10, c21) (c_00, c_10, c22) (c_00, c_11, c20) (c_00, c_11, c21) (c_00, c_11, c22)
- * (c_00, c_12, c20) (c_00, c_12, c21) (c_00, c_12, c22) (c_01, c_10, c20) (c_01, c_10, c21) (c_01, c_10, c22)
- * (c_01, c_11, c20) (c_01, c_11, c21) (c_01, c_11, c22) (c_01, c_12, c20) (c_01, c_12, c21) (c_01, c_12, c22)
- * (c_02, c_10, c20) (c_02, c_10, c21) (c_02, c_10, c22) (c_02, c_11, c20) (c_02, c_11, c21) (c_02, c_11, c22)
- * (c_02, c_12, c20) (c_02, c_12, c21) (c_02, c_12, c22).
  *
  * @author C.Sironi
  *
@@ -59,6 +44,22 @@ public class MultiPopEvoParametersTuner extends ParametersTuner {
 	 * testing with a simulation ALL combinations of individuals, one from each population.
 	 * If false, random combinations of individuals (one for each population) will be evaluated,
 	 * so that each individual is evaluated the same number fo times as the other individuals.
+	 *
+	 * When evaluating the current populations, all combinations of individuals, one from each population,
+	 * are tested in a MCTS simulation.
+	 *
+	 * E.g. if we have the following populations:
+	 * 	p_0 = {c_00; c_01; c_02}
+	 * 	p_1 = {c_10; c_11; c_12}
+	 *	p_2 = {c_20; c_21; c_22}
+	 * where c_ij is combination j of population of role i, when we want to compute the fitness of each
+	 * combination (i.e. individual) we perform k MCTS simulations for each possible combination of
+	 * combinations. Thus we will run MCTS simulation with the following combinations of combinations:
+	 * (c_00, c_10, c20) (c_00, c_10, c21) (c_00, c_10, c22) (c_00, c_11, c20) (c_00, c_11, c21) (c_00, c_11, c22)
+	 * (c_00, c_12, c20) (c_00, c_12, c21) (c_00, c_12, c22) (c_01, c_10, c20) (c_01, c_10, c21) (c_01, c_10, c22)
+	 * (c_01, c_11, c20) (c_01, c_11, c21) (c_01, c_11, c22) (c_01, c_12, c20) (c_01, c_12, c21) (c_01, c_12, c22)
+	 * (c_02, c_10, c20) (c_02, c_10, c21) (c_02, c_10, c22) (c_02, c_11, c20) (c_02, c_11, c21) (c_02, c_11, c22)
+	 * (c_02, c_12, c20) (c_02, c_12, c21) (c_02, c_12, c22).
 	 */
 	private boolean evaluateAllCombosOfIndividuals;
 
@@ -233,7 +234,7 @@ public class MultiPopEvoParametersTuner extends ParametersTuner {
 					GamerLogger.log(GamerLogger.FORMAT.CSV_FORMAT, "Populations", "PARAMS=;" + globalParamsOrder + ";");
 				}
 
-				// Create a two phase representation of the combinatorial problem for each role
+				// Create the initial population for each role
 				this.populations = new CompleteMoveStats[numRolesToTune][];
 				for(int populationIndex = 0; populationIndex < this.populations.length; populationIndex++){
 					populations[populationIndex] = this.evolutionManager.getInitialPopulation();
@@ -244,7 +245,7 @@ public class MultiPopEvoParametersTuner extends ParametersTuner {
 				}
 
 				if(this.evaluateAllCombosOfIndividuals){
-					this.combosOfIndividualsIterator = new AllCombosOfIndividualsIterator(this.populations);
+					this.combosOfIndividualsIterator = new AllCombosOfIndividualsIterator(this.populations.length, this.populations[0].length);
 				}else{
 					this.combosOfIndividualsIterator = new RandomCombosOfIndividualsIterator(this.populations);
 				}

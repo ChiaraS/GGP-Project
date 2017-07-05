@@ -15,7 +15,7 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 
 import org.apache.lucene.util.OpenBitSet;
-import org.ggp.base.player.gamer.statemachine.MCTS.propnet.MctsGamer;
+import org.ggp.base.player.gamer.statemachine.MCTS.MctsGamer;
 import org.ggp.base.util.game.Game;
 import org.ggp.base.util.game.GameRepository;
 import org.ggp.base.util.game.LocalFolderGameRepository;

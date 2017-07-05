@@ -1,4 +1,4 @@
-package org.ggp.base.player.gamer.statemachine.MCTS.manager.parameterstuning.evolution;
+package org.ggp.base.player.gamer.statemachine.MCTS.manager.parameterstuning.evolution.mutation;
 
 import java.util.Random;
 
@@ -9,11 +9,11 @@ import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.SharedReferenc
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.parameterstuning.structure.CombinatorialCompactMove;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.parameterstuning.structure.ParametersManager;
 
-public abstract class CrossoverManager extends SearchManagerComponent {
+public abstract class MutationManager extends SearchManagerComponent {
 
 	protected ParametersManager parametersManager;
 
-	public CrossoverManager(GameDependentParameters gameDependentParameters, Random random,
+	public MutationManager(GameDependentParameters gameDependentParameters,	Random random,
 			GamerSettings gamerSettings, SharedReferencesCollector sharedReferencesCollector) {
 		super(gameDependentParameters, random, gamerSettings, sharedReferencesCollector);
 	}
@@ -33,7 +33,7 @@ public abstract class CrossoverManager extends SearchManagerComponent {
 		// Do nothing
 	}
 
-	public abstract CombinatorialCompactMove crossover(CombinatorialCompactMove parent1, CombinatorialCompactMove parent2);
+	public abstract CombinatorialCompactMove mutation(CombinatorialCompactMove parent);
 
 	@Override
 	public String getComponentParameters(String indentation) {

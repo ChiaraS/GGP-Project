@@ -20,9 +20,9 @@ import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.strategies.sel
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.strategies.selection.evaluators.grave.BetaComputer;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.parameterstuning.ParametersTuner;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.parameterstuning.biascomputers.BiasComputer;
-import org.ggp.base.player.gamer.statemachine.MCTS.manager.parameterstuning.evolution.CrossoverManager;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.parameterstuning.evolution.EvolutionManager;
-import org.ggp.base.player.gamer.statemachine.MCTS.manager.parameterstuning.evolution.MutationManager;
+import org.ggp.base.player.gamer.statemachine.MCTS.manager.parameterstuning.evolution.crossover.CrossoverManager;
+import org.ggp.base.player.gamer.statemachine.MCTS.manager.parameterstuning.evolution.mutation.MutationManager;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.parameterstuning.selectors.TunerSelector;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.parameterstuning.structure.parametersorders.ParametersOrder;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.hybrid.TreeNodeFactory;

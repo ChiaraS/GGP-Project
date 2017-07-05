@@ -20,8 +20,6 @@ public class MultiplePlayout extends PlayoutStrategy {
 
 	private PlayoutStrategy subPlayoutStrategy;
 
-	private Map<Move,MoveStats> mastStatistics;
-
 	/**
 	 * If the MAST score of my move in the list of joint moves that led to the state that was just
 	 * added to the tree is higher than this threshold, multiple playouts will be performed for the
@@ -34,11 +32,13 @@ public class MultiplePlayout extends PlayoutStrategy {
 	 */
 	private int numPlayouts;
 
+	private Map<Move,MoveStats> mastStatistics;
+
 	public MultiplePlayout(GameDependentParameters gameDependentParameters,	Random random,
 			GamerSettings gamerSettings, SharedReferencesCollector sharedReferencesCollector, String id) {
 		super(gameDependentParameters, random, gamerSettings, sharedReferencesCollector, id);
 
-		String[] subPlayoutStrategyDetails = gamerSettings.getIDPropertyValue("PlayoutStrategy.subPlayoutStrategyType");
+		String[] subPlayoutStrategyDetails = gamerSettings.getIDPropertyValue("PlayoutStrategy" + id + ".subPlayoutStrategyType");
 
 		try {
 			this.subPlayoutStrategy = (PlayoutStrategy) SearchManagerComponent.getConstructorForMultiInstanceSearchManagerComponent(SearchManagerComponent.getCorrespondingClass(ProjectSearcher.PLAYOUT_STRATEGIES.getConcreteClasses(), subPlayoutStrategyDetails[0])).newInstance(gameDependentParameters, random, gamerSettings, sharedReferencesCollector, subPlayoutStrategyDetails[1]);
@@ -50,9 +50,9 @@ public class MultiplePlayout extends PlayoutStrategy {
 			throw new RuntimeException(e);
 		}
 
-		this.scoreThreshold = gamerSettings.getDoublePropertyValue("PlayoutStrategy.scoreThreshold");
+		this.scoreThreshold = gamerSettings.getDoublePropertyValue("PlayoutStrategy" + id + ".scoreThreshold");
 
-		this.numPlayouts = gamerSettings.getIntPropertyValue("PlayoutStrategy.numPlayouts");
+		this.numPlayouts = gamerSettings.getIntPropertyValue("PlayoutStrategy" + id + ".numPlayouts");
 
 	}
 
@@ -60,7 +60,7 @@ public class MultiplePlayout extends PlayoutStrategy {
 	public void setReferences(SharedReferencesCollector sharedReferencesCollector) {
 
 		this.subPlayoutStrategy.setReferences(sharedReferencesCollector);
-		sharedReferencesCollector.getMastStatistics();
+		this.mastStatistics = sharedReferencesCollector.getMastStatistics();
 
 	}
 
@@ -97,7 +97,7 @@ public class MultiplePlayout extends PlayoutStrategy {
 		// Compute the average MAST score
 		double myMoveAvgScore = myMoveStats.getScoreSum() / ((double) myMoveStats.getVisits());
 
-		// If the score isbelow the threshold, perform a single playout
+		// If the score is below the threshold, perform a single playout
 		if(myMoveAvgScore < this.scoreThreshold){
 			return this.subPlayoutStrategy.playout(jointMove, state, maxDepth);
 		}
@@ -107,6 +107,7 @@ public class MultiplePlayout extends PlayoutStrategy {
 		for(int repetition = 0; repetition < results.length; repetition++){
 			results[repetition] = this.subPlayoutStrategy.singlePlayout(state, maxDepth);
 		}
+
 		return results;
 	}
 
@@ -124,8 +125,10 @@ public class MultiplePlayout extends PlayoutStrategy {
 
 	@Override
 	public String getComponentParameters(String indentation) {
-		// TODO Auto-generated method stub
-		return null;
+		return indentation + "SUB_PLAYOUT_STRATEGY = " + this.subPlayoutStrategy.printComponent(indentation + "  ") +
+				indentation + "SCORE_THRESHOLD = " + this.scoreThreshold +
+				indentation + "NUM_PLAYOUTS = " + this.numPlayouts +
+				indentation + "mast_statistics = " + (this.mastStatistics == null ? "null" : this.mastStatistics.size()+"entries");
 	}
 
 }

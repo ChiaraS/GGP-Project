@@ -1,4 +1,4 @@
-package org.ggp.base.player.gamer.statemachine.MCTS.propnet;
+package org.ggp.base.player.gamer.statemachine.MCTS;
 
 import java.util.Random;
 

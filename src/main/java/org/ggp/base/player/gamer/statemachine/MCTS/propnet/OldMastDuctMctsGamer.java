@@ -1,13 +1,13 @@
 package org.ggp.base.player.gamer.statemachine.MCTS.propnet;
 
 
-public class MastDuctMctsGamer extends DuctMctsGamer {
+public class OldMastDuctMctsGamer extends DuctMctsGamer {
 
 	protected double epsilon;
 
 	protected double decayFactor;
 
-	public MastDuctMctsGamer() {
+	public OldMastDuctMctsGamer() {
 		super();
 		this.epsilon = 0.4;
 		this.decayFactor = 0.2;

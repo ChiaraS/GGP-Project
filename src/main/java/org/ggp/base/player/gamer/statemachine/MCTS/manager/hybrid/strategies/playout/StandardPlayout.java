@@ -35,11 +35,11 @@ public class StandardPlayout extends PlayoutStrategy {
 
 		try {
 			this.moveSelector = (MoveSelector) SearchManagerComponent.getConstructorForSearchManagerComponent(SearchManagerComponent.getCorrespondingClass(ProjectSearcher.MOVE_SELECTORS.getConcreteClasses(),
-					gamerSettings.getPropertyValue("PlayoutStrategy.moveSelectorType"))).newInstance(gameDependentParameters, random, gamerSettings, sharedReferencesCollector);
+					gamerSettings.getPropertyValue("PlayoutStrategy" + id + ".moveSelectorType"))).newInstance(gameDependentParameters, random, gamerSettings, sharedReferencesCollector);
 		} catch (InstantiationException | IllegalAccessException
 				| IllegalArgumentException | InvocationTargetException e) {
 			// TODO: fix this!
-			GamerLogger.logError("SearchManagerCreation", "Error when instantiating MoveSelector " + gamerSettings.getPropertyValue("PlayoutStrategy.moveSelectorType") + ".");
+			GamerLogger.logError("SearchManagerCreation", "Error when instantiating MoveSelector " + gamerSettings.getPropertyValue("PlayoutStrategy" + id + ".moveSelectorType") + ".");
 			GamerLogger.logStackTrace("SearchManagerCreation", e);
 			throw new RuntimeException(e);
 		}

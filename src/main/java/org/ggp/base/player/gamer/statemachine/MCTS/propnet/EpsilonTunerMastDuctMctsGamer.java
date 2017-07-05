@@ -1,7 +1,7 @@
 package org.ggp.base.player.gamer.statemachine.MCTS.propnet;
 
 
-public class EpsilonTunerMastDuctMctsGamer extends MastDuctMctsGamer {
+public class EpsilonTunerMastDuctMctsGamer extends OldMastDuctMctsGamer {
 
 	/**
 	 * True if the EvolutionManager must be set to tune the value for each role

@@ -1,4 +1,4 @@
-package org.ggp.base.player.gamer.statemachine.MCTS.manager.parameterstuning.evolution;
+package org.ggp.base.player.gamer.statemachine.MCTS.manager.parameterstuning.evolution.mutation;
 
 import java.util.List;
 import java.util.Random;

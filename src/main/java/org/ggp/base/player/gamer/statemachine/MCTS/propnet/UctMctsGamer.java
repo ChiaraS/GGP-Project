@@ -3,6 +3,8 @@
  */
 package org.ggp.base.player.gamer.statemachine.MCTS.propnet;
 
+import org.ggp.base.player.gamer.statemachine.MCTS.MctsGamer;
+
 
 
 /**
