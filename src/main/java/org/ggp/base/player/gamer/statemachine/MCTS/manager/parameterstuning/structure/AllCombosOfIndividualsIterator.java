@@ -18,9 +18,6 @@ import java.util.List;
  *
  * NOTE that this class assumes that the original populations are ordered and won't change the
  * ordering of their individuals while being iterated upon.
- * ALSO NOTE that this class assumes that all populations have the same size! For now it is
- * always guaranteed that populations have the same size. Adapt this class if it becomes
- * necessary for it to deal with populations of different sizes.
  *
  * This class can also be used to compute all possible combinations of n individuals from the
  * same population, by specifying n as number of populations and the size of the only considered
@@ -53,31 +50,37 @@ public class AllCombosOfIndividualsIterator extends CombosOfIndividualsIterator 
 	 */
 	private int currentComboIndex;
 
-	public AllCombosOfIndividualsIterator(int numPopulations, int populationsSize) {
-		this(numPopulations, populationsSize, false);
+	public AllCombosOfIndividualsIterator(int[] populationsSizes) {
+		this(populationsSizes, false);
 	}
 
-	public AllCombosOfIndividualsIterator(int numPopulations, int populationsSize, boolean removeSameIndexCombos) {
+	/**
+	 *
+	 * @param populationsSizes array specifying the size of each of the considered populations.
+	 * @param removeSameIndexCombos true if combinations with the same index for each population must be excluded.
+	 */
+	public AllCombosOfIndividualsIterator(int[] populationsSizes, boolean removeSameIndexCombos) {
 
 		this.combosOfIndividualsIndices = new ArrayList<List<Integer>>();
 
-		this.computeCombosOfCombosIndices(numPopulations, populationsSize, removeSameIndexCombos, new ArrayList<Integer>());
+		this.computeCombosOfCombosIndices(populationsSizes, removeSameIndexCombos, new ArrayList<Integer>());
 
-		Collections.shuffle(this.combosOfIndividualsIndices);
-
-		this.currentComboIndex = 0;
+		// Initialize to an index such that (this.currentComboIndex >= this.combosOfIndividualsIndices.size())
+		// In this way both methods getCurrentComboOfIndividualsIndices() and getNextComboOfIndividualsIndices()
+		// will return null and it will be clear that a new iteration has to be started.
+		this.currentComboIndex = this.combosOfIndividualsIndices.size();
 	}
 
-	private void computeCombosOfCombosIndices(int numPopulations, int populationsSize, boolean removeSameIndexCombos, List<Integer> partialCombo){
+	private void computeCombosOfCombosIndices(int[] populationsSizes, boolean removeSameIndexCombos, List<Integer> partialCombo){
 
-		if(partialCombo.size() == numPopulations){ // The combination of individuals is complete
+		if(partialCombo.size() == populationsSizes.length){ // The combination of individuals is complete
 			if(!removeSameIndexCombos || !this.isSameIndexCombo(partialCombo)){
 				this.combosOfIndividualsIndices.add(new ArrayList<Integer>(partialCombo));
 			}
 		}else{
-			for(int i = 0; i < populationsSize; i++){
+			for(int i = 0; i < populationsSizes[partialCombo.size()]; i++){
 				partialCombo.add(new Integer(i));
-				this.computeCombosOfCombosIndices(numPopulations, populationsSize, removeSameIndexCombos, partialCombo);
+				this.computeCombosOfCombosIndices(populationsSizes, removeSameIndexCombos, partialCombo);
 				partialCombo.remove(partialCombo.size()-1);
 			}
 		}
@@ -104,18 +107,19 @@ public class AllCombosOfIndividualsIterator extends CombosOfIndividualsIterator 
 
 	@Override
 	public List<Integer> getCurrentComboOfIndividualsIndices() {
-		return this.combosOfIndividualsIndices.get(this.currentComboIndex);
+
+		if(this.currentComboIndex < this.combosOfIndividualsIndices.size()){
+			return this.combosOfIndividualsIndices.get(this.currentComboIndex);
+		}else{
+			return null;
+		}
 	}
 
 	@Override
 	public List<Integer> getNextComboOfIndividualsIndices() {
 		this.currentComboIndex++;
 
-		if(this.currentComboIndex < this.combosOfIndividualsIndices.size()){
-			return this.getCurrentComboOfIndividualsIndices();
-		}else{
-			return null;
-		}
+		return this.getCurrentComboOfIndividualsIndices();
 	}
 
 	@Override
@@ -146,9 +150,14 @@ public class AllCombosOfIndividualsIterator extends CombosOfIndividualsIterator 
 
 	public static void main(String[] args){
 
-		AllCombosOfIndividualsIterator iterator1 = new AllCombosOfIndividualsIterator(3, 3);
+		int[] ps = new int[3];
+		for(int i = 0; i < ps.length; i++){
+			ps[i] = 3;
+		}
 
-		AllCombosOfIndividualsIterator iterator2 = new AllCombosOfIndividualsIterator(3, 3, true);
+		AllCombosOfIndividualsIterator iterator1 = new AllCombosOfIndividualsIterator(ps);
+
+		AllCombosOfIndividualsIterator iterator2 = new AllCombosOfIndividualsIterator(ps, true);
 
 		System.out.println("ITERATOR1:");
 		System.out.println(iterator1);

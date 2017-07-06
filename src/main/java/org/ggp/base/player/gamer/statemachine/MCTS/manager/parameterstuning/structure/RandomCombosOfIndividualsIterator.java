@@ -59,35 +59,37 @@ public class RandomCombosOfIndividualsIterator extends CombosOfIndividualsIterat
 				individualsIndicesOfCurrentPopulation.add(new Integer(individualIndex));
 			}
 
-			Collections.shuffle(individualsIndicesOfCurrentPopulation);
-
 			this.individualsIndicesPerPopulation.add(individualsIndicesOfCurrentPopulation);
 		}
 
-		this.currentIndex = 0;
+		// Initialize to an index such that (this.currentComboIndex >=  this.individualsIndicesPerPopulation.get(0).size())
+		// In this way both methods getCurrentComboOfIndividualsIndices() and getNextComboOfIndividualsIndices() will return
+		// null and it will be clear that a new iteration has to be started.
+		this.currentIndex = this.individualsIndicesPerPopulation.get(0).size();
 	}
 
 	@Override
 	public List<Integer> getCurrentComboOfIndividualsIndices() {
 
-		List<Integer> currentCombo = new ArrayList<Integer>();
+		if(this.currentIndex < this.individualsIndicesPerPopulation.get(0).size()){ // Then we have the next individual for all populations because we guarantee that all populations have the same size.
+			List<Integer> currentCombo = new ArrayList<Integer>();
 
-		for(int populationIndex = 0; populationIndex < this.individualsIndicesPerPopulation.size(); populationIndex++){
-			currentCombo.add(this.individualsIndicesPerPopulation.get(populationIndex).get(this.currentIndex));
+			for(int populationIndex = 0; populationIndex < this.individualsIndicesPerPopulation.size(); populationIndex++){
+				currentCombo.add(this.individualsIndicesPerPopulation.get(populationIndex).get(this.currentIndex));
+			}
+			return currentCombo;
+		}else{
+			return null;
 		}
 
-		return currentCombo;
 	}
 
 	@Override
 	public List<Integer> getNextComboOfIndividualsIndices() {
 		this.currentIndex++;
 
-		if(this.currentIndex < this.individualsIndicesPerPopulation.get(0).size()){ // Then we have the next individual for all populations because we guarantee that all populations have the same size.
-			return this.getCurrentComboOfIndividualsIndices();
-		}else{
-			return null;
-		}
+		return this.getCurrentComboOfIndividualsIndices();
+
 	}
 
 	@Override

@@ -21,6 +21,24 @@ import java.util.Map.Entry;
  * the latex representations of the win percentage (with confidence interval) of
  * the algorithm for each game.
  *
+ * As optional extra arguments, ALIAS names for players can be specified together
+ * with the players types for which the alias must be substituted. E.g. if we want
+ * PlayerA and PlayerB to be considered as the same player with name PlayerAB we
+ * would have to specify the following as argument:
+ *
+ * PlayerAB=PlayerA;PlayerB (with no spaces!)
+ *
+ * We can specify as many arguments as the previous one as we want. If we also
+ * want PlayerC, PlayerD and PlayerE to be aliased as PlayerCDE we can specify
+ * another argument as follows:
+ *
+ * PlayerCDE=PlayerC;PlayerD;PlayerE
+ *
+ * This is useful when we want to put together results for different games where we
+ * accidentally gave different names to the same player, or we repeat the same experiment
+ * (i.e. with the same games) for two different players and then we want to aggregate the
+ * wins for each game only of the best of the two players.
+ *
  * @author C.Sironi
  *
  */
@@ -34,7 +52,7 @@ public class WinScoreStatsAggregator {
 
 		/************************************ Prepare the folders *********************************/
 
-		if(args.length != 2){
+		if(args.length != 2 && args.length != 3){
 			System.out.println("Impossible to aggregate statistics. Specify both the absolute path of the folder containing statistics and the name of the aggragate statistics file.");
 			System.out.println("This code will create two aggragated statistics files: [NameYouProvide]ScoreStatistics.csv and [NameYouProvide]WinsStatistics.csv.");
 			return;
@@ -43,8 +61,38 @@ public class WinScoreStatsAggregator {
 		String sourceFolderPath = args[0];
 		String resultFile = sourceFolderPath + "/" + args[1];
 
+		// Create a map that maps each player to its alias
+		Map<String,String> aliases = new HashMap<String,String>();
+
+		// Fill the map
+		String[] aliasSpecification;
+		String alias;
+		String[] playersWithSameAlias;
+		for(int i = 2; i < args.length; i++){
+			aliasSpecification = args[i].split("=");
+
+			//System.out.println(aliasSpecification);
+
+			alias = aliasSpecification[0];
+
+			//System.out.println();
+
+			playersWithSameAlias = aliasSpecification[1].split(";");
+			for(int j = 0; j < playersWithSameAlias.length; j++){
+
+				//System.out.println(playersWithSameAlias[j]);
+
+				aliases.put(playersWithSameAlias[j], alias);
+			}
+		}
+
 		System.out.println(sourceFolderPath);
 		System.out.println(resultFile);
+
+		System.out.println("ALIASES:");
+		for(Entry<String,String> entry : aliases.entrySet()){
+			System.out.println(entry.getKey() + " = " + entry.getValue());
+		}
 
 		File sourceFolder = new File(sourceFolderPath);
 
@@ -119,6 +167,9 @@ public class WinScoreStatsAggregator {
 									// Forgot to do this when computing statistics, adding this temporary fix
 									theLine = addCIExtremes(theLine);
 
+									// Check if the player name must be substituted by its alias
+									theLine = setPlayerAlias(theLine, aliases);
+
 									//System.out.println("4: " + theLine);
 
 									writeToFile(scoresFile, gameKey + ";" + theLine);
@@ -126,6 +177,9 @@ public class WinScoreStatsAggregator {
 
 									// Forgot to do this when computing statistics, adding this temporary fix
 									theLine = addCIExtremes(theLine);
+
+									// Check if the player name must be substituted by its alias
+									theLine = setPlayerAlias(theLine, aliases);
 
 									writeToFile(scoresFile, gameKey + ";" + theLine);
 									br.close();
@@ -146,11 +200,17 @@ public class WinScoreStatsAggregator {
 									// Forgot to do this when computing statistics, adding this temporary fix
 									theLine = addCIExtremes(theLine);
 
+									// Check if the player name must be substituted by its alias
+									theLine = setPlayerAlias(theLine, aliases);
+
 									writeToFile(winsFile, gameKey + ";" + theLine);
 									theLine = br.readLine();
 
 									// Forgot to do this when computing statistics, adding this temporary fix
 									theLine = addCIExtremes(theLine);
+
+									// Check if the player name must be substituted by its alias
+									theLine = setPlayerAlias(theLine, aliases);
 
 									writeToFile(winsFile, gameKey + ";" + theLine);
 									br.close();
@@ -164,6 +224,13 @@ public class WinScoreStatsAggregator {
 							if(statsFiles[k].getName().endsWith("ScoreSamples.csv")){
 
 								playerName = statsFiles[k].getName().substring(0, statsFiles[k].getName().length()-17);
+
+								// Check if the player name must be substituted by its alias
+								alias = aliases.get(playerName);
+
+								if(alias != null){
+									playerName = alias;
+								}
 
 								expStats = totalStatistics.get(playerName);
 
@@ -207,6 +274,13 @@ public class WinScoreStatsAggregator {
 							if(statsFiles[k].getName().endsWith("WinsSamples.csv")){
 
 								playerName = statsFiles[k].getName().substring(0, statsFiles[k].getName().length()-16);
+
+								// Check if the player name must be substituted by its alias
+								alias = aliases.get(playerName);
+
+								if(alias != null){
+									playerName = alias;
+								}
 
 								expStats = totalStatistics.get(playerName);
 
@@ -386,6 +460,33 @@ public class WinScoreStatsAggregator {
 
 		return theLine;
 
+	}
+
+	/**
+	 * Given the line of a win/score summary for a player, checks if the player name must be changed with its alias.
+	 *
+	 * @param theLine
+	 * @return
+	 */
+	private static String setPlayerAlias(String theLine, Map<String,String> aliases){
+
+		String[] splitLine = theLine.split(";");
+
+		String alias = aliases.get(splitLine[0]);
+
+		if(alias != null){
+			splitLine[0] = alias;
+
+			String toReturn = "";
+
+			for(int i = 0; i < splitLine.length; i++){
+				toReturn += (splitLine[i] + ";");
+			}
+
+			return toReturn;
+		}else{
+			return theLine;
+		}
 	}
 
 	private static void writeToFile(String filename, String message){

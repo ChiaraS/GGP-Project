@@ -43,6 +43,7 @@ public abstract class CombosOfIndividualsIterator {
 	 * Starts a new iteration over the combinations of individuals.
 	 * NOTE that this method is meant to be called once an iteration is over, thus when the
 	 * getNextComboOfIndividualsIndices() method has returned null.
+	 * This method must also be called after creating the class to set up the first iteration.
 	 * @return
 	 */
 	public abstract void startNewIteration();

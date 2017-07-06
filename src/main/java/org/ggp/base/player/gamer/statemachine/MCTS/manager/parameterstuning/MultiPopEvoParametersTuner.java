@@ -245,12 +245,16 @@ public class MultiPopEvoParametersTuner extends ParametersTuner {
 				}
 
 				if(this.evaluateAllCombosOfIndividuals){
-					this.combosOfIndividualsIterator = new AllCombosOfIndividualsIterator(this.populations.length, this.populations[0].length);
+					int[] popSizes = new int[this.populations.length];
+					for(int i = 0; i < popSizes.length; i++){
+						popSizes[i] = this.populations[i].length;
+					}
+					this.combosOfIndividualsIterator = new AllCombosOfIndividualsIterator(popSizes);
 				}else{
 					this.combosOfIndividualsIterator = new RandomCombosOfIndividualsIterator(this.populations);
 				}
 
-				this.evalRepetitionsCount = 0;
+				this.evalRepetitionsCount = -1;
 
 				this.selectedCombinations = new int[numRolesToTune][this.parametersManager.getNumTunableParameters()];
 			}
@@ -265,6 +269,37 @@ public class MultiPopEvoParametersTuner extends ParametersTuner {
 
 	@Override
 	public void setNextCombinations() {
+
+		 // Check if we tested all combinations.
+		 // Try to get the next combination, if all combinations have been tested this will return null
+		 // and we'll have to evolve the population or restart the evaluations. Moreover, we need to reset
+		 // the individualsCombinationsIterator to start iterating over the combinations again.
+		 // Otherwise, the next combination will be returned and the individualsCombinationsIterator will
+		 // keep track of it as the new current combination.
+		 if(this.combosOfIndividualsIterator.getNextComboOfIndividualsIndices() == null){
+
+			 // If we tested all combinations, increment the counter since we finished
+			 // another repetition of the evaluation of all combinations.
+			 this.evalRepetitionsCount++;
+
+			 // Check if we performed all repetitions of the evaluation.
+			 if(this.evalRepetitionsCount == this.evalRepetitions){
+				 // If yes, evolve the populations.
+				 for(int populationIndex = 0; populationIndex < this.populations.length; populationIndex++){
+					 this.evolutionManager.evolvePopulation(this.populations[populationIndex]);
+				 }
+
+				 if(this.logPopulations){
+					 this.logStats();
+				 }
+
+				 this.evalRepetitionsCount = 0;
+			 }
+
+			 // Prepare to start another repetition, after resetting the iterator.
+			 this.combosOfIndividualsIterator.startNewIteration();
+
+		 }
 
 		 List<Integer> individualsIndices = this.combosOfIndividualsIterator.getCurrentComboOfIndividualsIndices();
 
@@ -344,37 +379,6 @@ public class MultiPopEvoParametersTuner extends ParametersTuner {
 			 toUpdate = this.populations[populationIndex][individualsIndices.get(populationIndex)];
 			 toUpdate.incrementScoreSum(neededRewards[populationIndex]);
 			 toUpdate.incrementVisits();
-		 }
-
-		 // Check if we tested all combinations.
-		 // Try to get the next combination, if all combinations have been tested this will return null
-		 // and we'll have to evolve the population or restart the evaluations. Moreover, we need to reset
-		 // the individualsCombinationsIterator to start iterating over the combinations again.
-		 // Otherwise, the next combination will be returned and the individualsCombinationsIterator will
-		 // keep track of it as the new current combination.
-		 if(this.combosOfIndividualsIterator.getNextComboOfIndividualsIndices() == null){
-
-			 // If we tested all combinations, increment the counter since we finished
-			 // another repetition of the evaluation of all combinations.
-			 this.evalRepetitionsCount++;
-
-			 // Check if we performed all repetitions of the evaluation.
-			 if(this.evalRepetitionsCount == this.evalRepetitions){
-				 // If yes, evolve the populations.
-				 for(int populationIndex = 0; populationIndex < this.populations.length; populationIndex++){
-					 this.evolutionManager.evolvePopulation(this.populations[populationIndex]);
-				 }
-
-				 if(this.logPopulations){
-					 this.logStats();
-				 }
-
-				 this.evalRepetitionsCount = 0;
-			 }
-
-			 // Prepare to start another repetition, after resetting the iterator.
-			 this.combosOfIndividualsIterator.startNewIteration();
-
 		 }
 
 	}
