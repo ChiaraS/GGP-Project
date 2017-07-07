@@ -1,7 +1,6 @@
 package org.ggp.base.player.gamer.statemachine.MCTS.manager.parameterstuning;
 
 import java.lang.reflect.InvocationTargetException;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Random;
 
@@ -11,6 +10,7 @@ import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.GameDependentP
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.SearchManagerComponent;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.SharedReferencesCollector;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.parameterstuning.evolution.EvolutionManager;
+import org.ggp.base.player.gamer.statemachine.MCTS.manager.parameterstuning.evolution.fitness.FitnessComputer;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.parameterstuning.selectors.TunerSelector;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.parameterstuning.structure.AllCombosOfIndividualsIterator;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.parameterstuning.structure.CombinatorialCompactMove;
@@ -19,7 +19,7 @@ import org.ggp.base.util.logging.GamerLogger;
 import org.ggp.base.util.reflection.ProjectSearcher;
 import org.ggp.base.util.statemachine.structure.Move;
 
-import csironi.ggp.course.statsSummarizer.PlayerStatistics;
+import csironi.ggp.course.utils.MyPair;
 
 public class SinglePopEvoParametersTuner extends ParametersTuner {
 
@@ -34,6 +34,11 @@ public class SinglePopEvoParametersTuner extends ParametersTuner {
 	 * Given the statistics of each combination, selects the best one among them.
 	 */
 	private TunerSelector bestCombinationSelector;
+
+	/**
+	 * Computes the fitness of each individual given the scores.
+	 */
+	private FitnessComputer fitnessComputer;
 
 	/**
 	 * Keeps track of which combinations of individuals must be evaluated and in which order.
@@ -86,7 +91,7 @@ public class SinglePopEvoParametersTuner extends ParametersTuner {
 		} catch (InstantiationException | IllegalAccessException
 				| IllegalArgumentException | InvocationTargetException e) {
 			// TODO: fix this!
-			GamerLogger.logError("SearchManagerCreation", "Error when instantiating EvolutionManager " + gamerSettings.getPropertyValue("ParametersTuner.EvolutionManagerType") + ".");
+			GamerLogger.logError("SearchManagerCreation", "Error when instantiating EvolutionManager " + gamerSettings.getPropertyValue("ParametersTuner.evolutionManagerType") + ".");
 			GamerLogger.logStackTrace("SearchManagerCreation", e);
 			throw new RuntimeException(e);
 		}
@@ -99,6 +104,17 @@ public class SinglePopEvoParametersTuner extends ParametersTuner {
 				| IllegalArgumentException | InvocationTargetException e) {
 			// TODO: fix this!
 			GamerLogger.logError("SearchManagerCreation", "Error when instantiating TunerSelector " + gamerSettings.getPropertyValue("ParametersTuner.bestCombinationSelectorType") + ".");
+			GamerLogger.logStackTrace("SearchManagerCreation", e);
+			throw new RuntimeException(e);
+		}
+
+		try {
+			this.fitnessComputer = (FitnessComputer) SearchManagerComponent.getConstructorForSearchManagerComponent(SearchManagerComponent.getCorrespondingClass(ProjectSearcher.FITNESS_COMPUTER.getConcreteClasses(),
+					gamerSettings.getPropertyValue("ParametersTuner.fitnessComputerType"))).newInstance(gameDependentParameters, random, gamerSettings, sharedReferencesCollector);
+		} catch (InstantiationException | IllegalAccessException
+				| IllegalArgumentException | InvocationTargetException e) {
+			// TODO: fix this!
+			GamerLogger.logError("SearchManagerCreation", "Error when instantiating FitnessComputer " + gamerSettings.getPropertyValue("ParametersTuner.fitnessComputerType") + ".");
 			GamerLogger.logStackTrace("SearchManagerCreation", e);
 			throw new RuntimeException(e);
 		}
@@ -310,14 +326,6 @@ public class SinglePopEvoParametersTuner extends ParametersTuner {
 
 	@Override
 	public void updateStatistics(int[] goals) {
-		// TODO Auto-generated method stub
-
-		//!!! update statistics using the rewards as in the experiments:
-		// if an individual appears more than once in the combination, update its
-		// stats only once with the best result it obtained (i.e. compute its
-		// reward as follows:
-		// r = 1/#unique individuals that achieved the maximum score   if the individual achieved the maximum score
-		// r = 0   if the individual didn't achieve the maximum score)
 
 		int[] neededRewards;
 
@@ -348,90 +356,21 @@ public class SinglePopEvoParametersTuner extends ParametersTuner {
 		// Update fitness of evaluated individuals
 		List<Integer> individualsIndices = this.combosOfIndividualsIterator.getCurrentComboOfIndividualsIndices();
 
+		// Update statistics using the rewards as in the experiments:
+		// if an individual appears more than once in the combination, update its
+		// stats only once with the best result it obtained (i.e. compute its
+		// reward as follows:
+		// r = 1/#unique individuals that achieved the maximum score   if the individual achieved the maximum score
+		// r = 0   if the individual didn't achieve the maximum score)
+		List<MyPair<Integer,Double>> fitnessValues = this.fitnessComputer.computeFitness(individualsIndices, neededRewards);
+
 		CompleteMoveStats toUpdate;
 
-		 for(int populationIndex = 0; populationIndex < this.populations.length; populationIndex++){
-			 toUpdate = this.populations[populationIndex][individualsIndices.get(populationIndex)];
-			 toUpdate.incrementScoreSum(neededRewards[populationIndex]);
-			 toUpdate.incrementVisits();
-		 }
-
-
-			// Add the wins
-         if(playersNames.length > 1){
-
-         	// For more roles we need to find the algorithm(s) that won and split 1 win between them
-
-         	maxScore = Integer.MIN_VALUE;
-         	playerTypesSet = new HashSet<String>();
-         	maxScorePlayerTypes = new HashSet<String>();
-
-         	for(int i = 0; i < playersGoals.length; i++){
-         		playerTypesSet.add(playersNames[i]);
-         		if(playersGoals[i] > maxScore){
-         			maxScore = playersGoals[i];
-         			maxScorePlayerTypes.clear();
-         			maxScorePlayerTypes.add(playersNames[i]);
-         		}else if(playersGoals[i] == maxScore){
-         			maxScorePlayerTypes.add(playersNames[i]);
-         		}
-				}
-
-         	splitWin = 1.0/((double)maxScorePlayerTypes.size());
-
-         	// Memorize the outcome for every player in the MatchInfo
-         	for(int i = 0; i < playersGoals.length; i++){
-         		if(playersGoals[i] == maxScore){
-	            		if(!mi.addFinalOutcome(playersNames[i], playersRoles[i], splitWin)){
-	            			System.out.println("Error when adding final outcome " + splitWin + " to MatchInfo for player " + playersNames[i] + " playing role " + playersRoles[i] + ". The BestComboStats, if any, will be incomplete.");
-	            		}
-         		}else{
-         			if(!mi.addFinalOutcome(playersNames[i], playersRoles[i], 0)){
-	            			System.out.println("Error when adding final outcome " + 0 + " to MatchInfo for player " + playersNames[i] + " playing role " + playersRoles[i] + ". The BestComboStats, if any, will be incomplete.");
-	            		}
-         		}
-         	}
-
-         	// For each distinct player type that won, update the statistics adding the (split) win
-         	// and for the losers add a loss (i.e. 0).
-	            for(String thePlayer: playerTypesSet){
-
-	            	// Get the stats of the player
-	            	theStats = playersStatistics.get(thePlayer);
-	            	if(theStats == null){
-	            		playersStatistics.put(thePlayer, new PlayerStatistics());
-	            		theStats = playersStatistics.get(thePlayer);
-	            	}
-
-	            	if(maxScorePlayerTypes.contains(thePlayer)){
-	            		theStats.addWins(splitWin, mi.getCombination(), mi.getMatchNumber());
-	            	}else{
-	            		theStats.addWins(0, mi.getCombination(), mi.getMatchNumber());
-	            	}
-
-	            }
-
-         }else{
-         	// Get the stats of the player
-         	theStats = playersStatistics.get(playersNames[0]);
-         	if(theStats == null){
-         		playersStatistics.put(playersNames[0], new PlayerStatistics());
-         		theStats = playersStatistics.get(playersNames[0]);
-         	}
-
-         	if(playersGoals[0] != 100){
-         		theStats.addWins(0, mi.getCombination(), mi.getMatchNumber());
-         		if(!mi.addFinalOutcome(playersNames[0], playersRoles[0], 0)){
-         			System.out.println("Error when adding final outcome " + 0 + " to MatchInfo for player " + playersNames[0] + ". The BestComboStats, if sny, will be incomplete.");
-         		}
-         	}else{
-         		theStats.addWins(1, mi.getCombination(), mi.getMatchNumber());
-         		if(!mi.addFinalOutcome(playersNames[0], playersRoles[0], 1)){
-         			System.out.println("Error when adding final outcome " + 1 + " to MatchInfo for player " + playersNames[0] + ". The BestComboStats, if sny, will be incomplete.");
-         		}
-         	}
-         }
-
+		for(MyPair<Integer,Double> individualFitness : fitnessValues){
+			toUpdate = this.population[individualFitness.getFirst()];
+			toUpdate.incrementScoreSum(individualFitness.getSecond());
+			toUpdate.incrementVisits();
+		}
 
 	}
 
@@ -490,70 +429,7 @@ public class SinglePopEvoParametersTuner extends ParametersTuner {
 
 
 
-	@Override
-	public void updateStatistics(int[] goals) {
 
-		int[] neededRewards;
-
-		// We have to check if the ParametersTuner is tuning parameters only for the playing role
-		// or for all roles and update the statistics with appropriate rewards.
-		if(this.tuneAllRoles){
-			neededRewards = goals;
-		}else{
-			neededRewards = new int[1];
-			neededRewards[0] = goals[this.gameDependentParameters.getMyRoleIndex()];
-
-		}
-
-		if(neededRewards.length != this.populations.length){
-			GamerLogger.logError("ParametersTuner", "MultiPopEvoParametersTuner - Impossible to update move statistics! Wrong number of rewards (" + neededRewards.length +
-					") to update the fitness of the individuals (" + this.populations.length + ").");
-			throw new RuntimeException("MultiPopEvoParametersTuner - Impossible to update move statistics! Wrong number of rewards!");
-		}
-
-		// Update fitness of evaluated individuals
-		List<Integer> individualsIndices = this.combosOfIndividualsIterator.getCurrentComboOfIndividualsIndices();
-
-		CompleteMoveStats toUpdate;
-
-		 for(int populationIndex = 0; populationIndex < this.populations.length; populationIndex++){
-			 toUpdate = this.populations[populationIndex][individualsIndices.get(populationIndex)];
-			 toUpdate.incrementScoreSum(neededRewards[populationIndex]);
-			 toUpdate.incrementVisits();
-		 }
-
-		 // Check if we tested all combinations.
-		 // Try to get the next combination, if all combinations have been tested this will return null
-		 // and we'll have to evolve the population or restart the evaluations. Moreover, we need to reset
-		 // the individualsCombinationsIterator to start iterating over the combinations again.
-		 // Otherwise, the next combination will be returned and the individualsCombinationsIterator will
-		 // keep track of it as the new current combination.
-		 if(this.combosOfIndividualsIterator.getNextComboOfIndividualsIndices() == null){
-
-			 // If we tested all combinations, increment the counter since we finished
-			 // another repetition of the evaluation of all combinations.
-			 this.evalRepetitionsCount++;
-
-			 // Check if we performed all repetitions of the evaluation.
-			 if(this.evalRepetitionsCount == this.evalRepetitions){
-				 // If yes, evolve the populations.
-				 for(int populationIndex = 0; populationIndex < this.populations.length; populationIndex++){
-					 this.evolutionManager.evolvePopulation(this.populations[populationIndex]);
-				 }
-
-				 if(this.logPopulations){
-					 this.logStats();
-				 }
-
-				 this.evalRepetitionsCount = 0;
-			 }
-
-			 // Prepare to start another repetition, after resetting the iterator.
-			 this.combosOfIndividualsIterator.startNewIteration();
-
-		 }
-
-	}
 
 	/**
 	 * This method doesn't exactly log the stats, but logs the combinations (i.e. individuals)

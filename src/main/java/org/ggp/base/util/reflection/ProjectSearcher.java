@@ -22,6 +22,7 @@ import org.ggp.base.player.gamer.statemachine.MCTS.manager.parameterstuning.Para
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.parameterstuning.biascomputers.BiasComputer;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.parameterstuning.evolution.EvolutionManager;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.parameterstuning.evolution.crossover.CrossoverManager;
+import org.ggp.base.player.gamer.statemachine.MCTS.manager.parameterstuning.evolution.fitness.FitnessComputer;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.parameterstuning.evolution.mutation.MutationManager;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.parameterstuning.selectors.TunerSelector;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.parameterstuning.structure.parametersorders.ParametersOrder;
@@ -63,6 +64,7 @@ public class ProjectSearcher {
     public static final LoadedClasses<EvolutionManager> EVOLUTION_MANAGERS = new LoadedClasses<EvolutionManager>(EvolutionManager.class);
     public static final LoadedClasses<CrossoverManager> CROSSOVER_MANAGERS = new LoadedClasses<CrossoverManager>(CrossoverManager.class);
     public static final LoadedClasses<MutationManager> MUTATION_MANAGERS = new LoadedClasses<MutationManager>(MutationManager.class);
+    public static final LoadedClasses<FitnessComputer> FITNESS_COMPUTER = new LoadedClasses<FitnessComputer>(FitnessComputer.class);
     // Strategies
     public static final LoadedClasses<BeforeMoveStrategy> BEFORE_MOVE_STRATEGIES = new LoadedClasses<BeforeMoveStrategy>(BeforeMoveStrategy.class);
     public static final LoadedClasses<AfterMoveStrategy> AFTER_MOVE_STRATEGIES = new LoadedClasses<AfterMoveStrategy>(AfterMoveStrategy.class);
