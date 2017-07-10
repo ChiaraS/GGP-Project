@@ -374,63 +374,6 @@ public class SinglePopEvoParametersTuner extends ParametersTuner {
 
 	}
 
-	@Override
-	public void logStats() {
-		// TODO Auto-generated method stub
-
-	}
-
-	@Override
-	public void decreaseStatistics(double factor) {
-		// TODO Auto-generated method stub
-
-	}
-
-	@Override
-	public boolean isMemorizingBestCombo() {
-		// TODO Auto-generated method stub
-		return false;
-	}
-
-	@Override
-	public void memorizeBestCombinations() {
-		// TODO Auto-generated method stub
-
-	}
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 	/**
 	 * This method doesn't exactly log the stats, but logs the combinations (i.e. individuals)
 	 * that are part of the current population for each role.
@@ -438,7 +381,7 @@ public class SinglePopEvoParametersTuner extends ParametersTuner {
 	@Override
 	public void logStats() {
 
-		if(this.populations != null){
+		if(this.population != null){
 
 			//GamerLogger.log(GamerLogger.FORMAT.CSV_FORMAT, "ParametersTunerStats", "");
 			String toLog = "";
@@ -449,44 +392,38 @@ public class SinglePopEvoParametersTuner extends ParametersTuner {
 
 			String theValues;
 
-			for(int populationIndex = 0; populationIndex < this.populations.length; populationIndex++){
+			String roles = "";
 
-				int roleIndex;
-				if(this.tuneAllRoles){
-					roleIndex = populationIndex;
-				}else{
-					roleIndex = this.gameDependentParameters.getMyRoleIndex();
+			if(this.tuneAllRoles){
+				for(int roleIndex = 0; roleIndex < this.gameDependentParameters.getNumRoles(); roleIndex++){
+					roles += this.gameDependentParameters.getTheMachine().convertToExplicitRole(this.gameDependentParameters.getTheMachine().getRoles().get(roleIndex)) + " ";
 				}
-
-				toLog += "ROLE=;" + this.gameDependentParameters.getTheMachine().convertToExplicitRole(this.gameDependentParameters.getTheMachine().getRoles().get(roleIndex)) +
-						";POPULATION=;";
-
-				for(int comboIndex = 0; comboIndex < this.populations[populationIndex].length; comboIndex++){
-
-					 theParametersCombination = this.populations[populationIndex][comboIndex].getTheMove();
-
-					 if(theParametersCombination instanceof CombinatorialCompactMove){
-						 comboIndices = ((CombinatorialCompactMove) theParametersCombination).getIndices();
-						 theValues = "[ ";
-						 for(int paramIndex = 0; paramIndex < comboIndices.length; paramIndex++){
-							 theValues += (this.parametersManager.getPossibleValues(paramIndex)[comboIndices[paramIndex]] + " ");
-						 }
-						 theValues += "]";
-
-						 toLog+= (theValues + ";");
-
-					 }else{
-						 GamerLogger.logError("ParametersTuner", "MultiPopEvoParametersTuner - Impossible to log populations. The Move is not of type CombinatorialCompactMove but of type " + theParametersCombination.getClass().getSimpleName() + ".");
-						 throw new RuntimeException("MultiPopEvoParametersTuner - Impossible to log populations. The Move is not of type CombinatorialCompactMove but of type " + theParametersCombination.getClass().getSimpleName() + ".");
-					 }
-
-				}
-
-				toLog += "\n";
-
+			}else{
+				roles += this.gameDependentParameters.getTheMachine().convertToExplicitRole(this.gameDependentParameters.getTheMachine().getRoles().get(this.gameDependentParameters.getMyRoleIndex()));
 			}
 
-			toLog += "\n";
+			toLog += "ROLE=;" + roles +	";POPULATION=;";
+
+			for(int comboIndex = 0; comboIndex < this.population.length; comboIndex++){
+
+				theParametersCombination = this.population[comboIndex].getTheMove();
+
+				if(theParametersCombination instanceof CombinatorialCompactMove){
+					comboIndices = ((CombinatorialCompactMove) theParametersCombination).getIndices();
+					theValues = "[ ";
+					for(int paramIndex = 0; paramIndex < comboIndices.length; paramIndex++){
+						theValues += (this.parametersManager.getPossibleValues(paramIndex)[comboIndices[paramIndex]] + " ");
+					}
+					theValues += "]";
+
+					toLog+= (theValues + ";");
+
+				}else{
+					GamerLogger.logError("ParametersTuner", "MultiPopEvoParametersTuner - Impossible to log populations. The Move is not of type CombinatorialCompactMove but of type " + theParametersCombination.getClass().getSimpleName() + ".");
+					throw new RuntimeException("MultiPopEvoParametersTuner - Impossible to log populations. The Move is not of type CombinatorialCompactMove but of type " + theParametersCombination.getClass().getSimpleName() + ".");
+				}
+
+			}
 
 			GamerLogger.log(GamerLogger.FORMAT.CSV_FORMAT, "Populations", toLog);
 
@@ -496,21 +433,20 @@ public class SinglePopEvoParametersTuner extends ParametersTuner {
 	@Override
 	public void decreaseStatistics(double factor) {
 		// Not really needed, so probably this method will never be used.
-		for(int i = 0; i < this.populations.length; i++){
-			for(int j = 0; j < this.populations[i].length; j++){
-				this.populations[i][j].decreaseByFactor(factor);
-			}
+		for(int i = 0; i < this.population.length; i++){
+			this.population[i].decreaseByFactor(factor);
 		}
+
 	}
 
 	@Override
 	public boolean isMemorizingBestCombo() {
-		return (this.reuseBestCombos && this.populations == null);
+		return (this.reuseBestCombos && this.population == null);
 	}
 
 	@Override
 	public void memorizeBestCombinations() {
-		this.bestCombinations = this.selectedCombinations;
+		this.bestCombination = this.selectedCombination;
 	}
 
 	@Override
@@ -518,58 +454,39 @@ public class SinglePopEvoParametersTuner extends ParametersTuner {
 
 		String superParams = super.getComponentParameters(indentation);
 
-		String params = indentation + "EVOLUTION_MANAGER = " + this.evolutionManager.printComponent(indentation + "  ") +
+		String params = indentation + "LOG_POPULATIONS = " + this.logPopulations +
+				indentation + "EVOLUTION_MANAGER = " + this.evolutionManager.printComponent(indentation + "  ") +
 				indentation + "BEST_COMBINATION_SELECTOR = " + this.bestCombinationSelector.printComponent(indentation + "  ") +
-				indentation + "EVALUATE_ALL_COMBOS_OF_INDIVIDUALS = " + this.evaluateAllCombosOfIndividuals +
+				indentation + "FITNESS_COMPUTER = " + (this.fitnessComputer != null ? this.fitnessComputer.printComponent(indentation + "  ") : "null") +
 				indentation + "INDIVIDUALS_ITERATOR = " + (this.combosOfIndividualsIterator != null ? this.combosOfIndividualsIterator.getClass().getSimpleName() : "null") +
 				indentation + "EVAL_REPETITIONS = " + this.evalRepetitions +
-				indentation + "eval_repetitions_count = " + this.evalRepetitionsCount +
-				indentation + "num_populations = " + (this.populations != null ? this.populations.length : 0);
+				indentation + "eval_repetitions_count = " + this.evalRepetitionsCount;
+				//indentation + "num_populations = " + (this.populations != null ? this.populations.length : 0);
 				//indentation + "num_combos_of_individuals = " + (this.combosOfIndividualsIndices != null ? this.combosOfIndividualsIndices.size() : 0) +
 				//indentation + "current_combo_index = " + this.currentComboIndex;
 
-		if(this.selectedCombinations != null){
-			String selectedCombinationsString = "[ ";
-
-			for(int i = 0; i < this.selectedCombinations.length; i++){
-
-				String singleCombinationString = "[ ";
-				for(int j = 0; j < this.selectedCombinations[i].length; j++){
-					singleCombinationString += this.selectedCombinations[i][j] + " ";
-				}
-				singleCombinationString += "]";
-
-				selectedCombinationsString += singleCombinationString + " ";
-
+		if(this.selectedCombination != null){
+			String selectedCombinationString = "[ ";
+			for(int i = 0; i < this.selectedCombination.length; i++){
+				selectedCombinationString += this.selectedCombination[i] + " ";
 			}
+			selectedCombinationString += "]";
 
-			selectedCombinationsString += "]";
-
-			params += indentation + "selected_combinations_indices = " + selectedCombinationsString;
+			params += indentation + "selected_combination_indices = " + selectedCombinationString;
 		}else{
-			params += indentation + "selected_combinations_indices = null";
+			params += indentation + "selected_combination_indices = null";
 		}
 
-		if(this.bestCombinations != null){
-			String bestCombinationsString = "[ ";
-
-			for(int i = 0; i < this.bestCombinations.length; i++){
-
-				String bestCombinationString = "[ ";
-				for(int j = 0; j < this.bestCombinations[i].length; j++){
-					bestCombinationString += this.bestCombinations[i][j] + " ";
-				}
-				bestCombinationString += "]";
-
-				bestCombinationsString += bestCombinationString + " ";
-
+		if(this.bestCombination != null){
+			String bestCombinationString = "[ ";
+			for(int i = 0; i < this.bestCombination.length; i++){
+				bestCombinationString += this.bestCombination[i] + " ";
 			}
+			bestCombinationString += "]";
 
-			bestCombinationsString += "]";
-
-			params += indentation + "best_combinations_indices = " + bestCombinationsString;
+			params += indentation + "best_combination_indices = " + bestCombinationString;
 		}else{
-			params += indentation + "best_combinations_indices = null";
+			params += indentation + "best_combination_indices = null";
 		}
 
 		if(superParams != null){
