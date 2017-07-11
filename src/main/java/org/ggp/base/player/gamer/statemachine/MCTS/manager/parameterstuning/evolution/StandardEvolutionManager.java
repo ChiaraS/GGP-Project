@@ -14,6 +14,7 @@ import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.SharedReferenc
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.parameterstuning.evolution.crossover.CrossoverManager;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.parameterstuning.evolution.mutation.MutationManager;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.parameterstuning.structure.CombinatorialCompactMove;
+import org.ggp.base.player.gamer.statemachine.MCTS.manager.parameterstuning.structure.problemrep.EvoProblemRepresentation;
 import org.ggp.base.util.logging.GamerLogger;
 import org.ggp.base.util.reflection.ProjectSearcher;
 
@@ -114,9 +115,9 @@ public class StandardEvolutionManager extends EvolutionManager {
 	}
 
 	@Override
-	public void evolvePopulation(CompleteMoveStats[] population) {
+	public void evolvePopulation(EvoProblemRepresentation roleProblem) {
 
-		Arrays.sort(population,
+		Arrays.sort(roleProblem.getPopulation(),
 				new Comparator<CompleteMoveStats>(){
 
 			@Override
@@ -148,21 +149,21 @@ public class StandardEvolutionManager extends EvolutionManager {
 
 		// For the individuals that we are keeping, reset all statistics.
 		for(int i = 0; i < this.eliteSize; i++){
-			population[i].resetStats();
+			roleProblem.getPopulation()[i].resetStats();
 		}
 
-		// For other individuals, generate new individual t substitute them and reset also statistics.
+		// For other individuals, generate new individuals to substitute them and reset also statistics.
 		// Keep the first eliteSize best individuals and create new individuals
 		// to substitute the ones that are being thrown away.
-		for(int i = this.eliteSize; i < population.length; i++){
+		for(int i = this.eliteSize; i < roleProblem.getPopulation().length; i++){
 
 			if(this.random.nextDouble() < this.crossoverProbability){
 				// Create new individual with crossover
-				population[i].resetStats(this.crossoverManager.crossover(((CombinatorialCompactMove)population[this.random.nextInt(this.eliteSize)].getTheMove()),
-						((CombinatorialCompactMove)population[this.random.nextInt(this.eliteSize)].getTheMove())));
+				roleProblem.getPopulation()[i].resetStats(this.crossoverManager.crossover(((CombinatorialCompactMove)roleProblem.getPopulation()[this.random.nextInt(this.eliteSize)].getTheMove()),
+						((CombinatorialCompactMove)roleProblem.getPopulation()[this.random.nextInt(this.eliteSize)].getTheMove())));
 			}else{
 				// Create new individual with mutation
-				population[i].resetStats(this.mutationManager.mutation(((CombinatorialCompactMove)population[this.random.nextInt(this.eliteSize)].getTheMove())));
+				roleProblem.getPopulation()[i].resetStats(this.mutationManager.mutation(((CombinatorialCompactMove)roleProblem.getPopulation()[this.random.nextInt(this.eliteSize)].getTheMove())));
 			}
 
 		}

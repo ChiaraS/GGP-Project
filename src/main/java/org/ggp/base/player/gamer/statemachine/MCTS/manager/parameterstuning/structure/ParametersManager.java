@@ -331,8 +331,8 @@ public class ParametersManager extends SearchManagerComponent {
 
 	/**
 	 *  Get for each parameter the number of possible values. This in needed to create
+	 *  a local MAB for each parameter.
 	 */
-	// a local MAB for each parameter.
 
 	public int[] getNumPossibleValuesForAllParams(){
 		int[] numPossibleValues = new int[this.getNumTunableParameters()];
@@ -495,5 +495,30 @@ public class ParametersManager extends SearchManagerComponent {
     	}
     	return newArray;
     }
+
+	/**
+	 * Computes the move penalty of a combinatorial move (combination of parameter values) as the
+	 * average of the move penalty of each of the unit moves (parameter values) that form the
+	 * combinatorial move.
+	 * If a unit move has no penalty specified, the value of 0 will be considered in the average.
+	 * Note that the actual use of the moves penalty depends on the bias computer. Even if specified,
+	 * the moves penalties might not be used if no BiasComputer is present in the TunerSelector.
+	 *
+	 * @param parameterValuesIndices
+	 * @return
+	 */
+	public double computeCombinatorialMovePenalty(int[] parameterValuesIndices){
+
+		double penaltySum = 0.0;
+
+		for(int paramIndex = 0; paramIndex < parameterValuesIndices.length; paramIndex++){
+			if(this.getPossibleValuesPenalty(paramIndex) != null){
+				penaltySum += this.getPossibleValuesPenalty(paramIndex)[parameterValuesIndices[paramIndex]];
+			}
+		}
+
+		return penaltySum/parameterValuesIndices.length;
+	}
+
 
 }

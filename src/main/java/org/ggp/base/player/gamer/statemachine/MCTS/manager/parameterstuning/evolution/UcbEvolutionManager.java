@@ -7,7 +7,7 @@ import org.ggp.base.player.gamer.statemachine.MCS.manager.hybrid.CompleteMoveSta
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.GameDependentParameters;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.SharedReferencesCollector;
 
-public class UcbEvolutionManager extends EvolutionManager {
+public class UcbEvolutionManager extends StandardEvolutionManager {
 
 	public UcbEvolutionManager(GameDependentParameters gameDependentParameters,	Random random,
 			GamerSettings gamerSettings, SharedReferencesCollector sharedReferencesCollector) {
@@ -31,14 +31,25 @@ public class UcbEvolutionManager extends EvolutionManager {
 	}
 
 	@Override
-	public CompleteMoveStats[] getInitialPopulation() {
+	public void evolvePopulation(CompleteMoveStats[] population) {
 		// TODO Auto-generated method stub
-		return null;
+
 	}
 
 	@Override
-	public void evolvePopulation(CompleteMoveStats[] population) {
-		// TODO Auto-generated method stub
+	public String getComponentParameters(String indentation) {
+
+		String superParams = super.getComponentParameters(indentation);
+
+		String params = indentation + "CROSSOVER_PROBABILITY = " + this.crossoverProbability +
+				indentation + "CROSSOVER_MANAGER = " + this.crossoverManager.printComponent(indentation + "  ") +
+				indentation + "MUTATION_MANAGER = " + this.mutationManager.printComponent(indentation + "  ");
+
+		if(superParams != null){
+			return superParams + params;
+		}else{
+			return params;
+		}
 
 	}
 

@@ -98,7 +98,7 @@ public class FlatSingleMabParametersTuner extends SingleMabParametersTuner {
 
         this.combinatorialMovesPenalty = new double[this.combinatorialMoves.size()];
        	for(int i = 0; i < this.combinatorialMoves.size(); i++){
-       		this.combinatorialMovesPenalty[i] = this.computeCombinatorialMovePenalty(this.combinatorialMoves.get(i).getIndices());
+       		this.combinatorialMovesPenalty[i] = this.parametersManager.computeCombinatorialMovePenalty(this.combinatorialMoves.get(i).getIndices());
         }
 
 	}

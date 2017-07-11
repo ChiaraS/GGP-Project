@@ -611,7 +611,7 @@ public class NaiveParametersTuner extends ParametersTuner {
 
 			// If the info doesn't exist, add the move to the MAB, computing the corresponding penalty
 			if(globalInfo == null){
-				globalInfo = new MyPair<MoveStats,Double>(new MoveStats(), this.computeCombinatorialMovePenalty(theMove.getIndices()));
+				globalInfo = new MyPair<MoveStats,Double>(new MoveStats(), this.parametersManager.computeCombinatorialMovePenalty(theMove.getIndices()));
 				this.roleProblems[roleProblemIndex].getGlobalMab().getMovesInfo().put(theMove, globalInfo);
 			}
 

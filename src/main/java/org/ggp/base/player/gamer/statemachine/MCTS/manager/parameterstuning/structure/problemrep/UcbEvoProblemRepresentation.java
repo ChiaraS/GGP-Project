@@ -1,13 +1,11 @@
 package org.ggp.base.player.gamer.statemachine.MCTS.manager.parameterstuning.structure.problemrep;
 
-import org.ggp.base.player.gamer.statemachine.MCTS.manager.parameterstuning.structure.CombinatorialCompactMove;
+import org.ggp.base.player.gamer.statemachine.MCS.manager.hybrid.CompleteMoveStats;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.parameterstuning.structure.mabs.FixedMab;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.parameterstuning.structure.mabs.IncrementalMab;
 
 
-public abstract class UcbEvoProblemRepresentation {
-
-	private CombinatorialCompactMove[] population;
+public class UcbEvoProblemRepresentation extends EvoProblemRepresentation{
 
 	/**
 	 * The global Multi-Armed Bandit problem that keeps track of statistics for the
@@ -23,7 +21,9 @@ public abstract class UcbEvoProblemRepresentation {
 	 */
 	private FixedMab[] localMabs;
 
-	public UcbEvoProblemRepresentation(int[] classesLength) {
+	public UcbEvoProblemRepresentation(CompleteMoveStats[] population, int[] classesLength) {
+
+		super(population);
 
 		this.globalMab = new IncrementalMab();
 
@@ -32,6 +32,7 @@ public abstract class UcbEvoProblemRepresentation {
 		for(int i = 0; i < this.localMabs.length; i++){
 			this.localMabs[i] = new FixedMab(classesLength[i]);
 		}
+
 	}
 
 	public IncrementalMab getGlobalMab(){
@@ -41,5 +42,19 @@ public abstract class UcbEvoProblemRepresentation {
 	public FixedMab[] getLocalMabs(){
 		return this.localMabs;
 	}
+
+    /**
+     * This method keeps factor*oldStatistic statistics. Factor should be in the interval [0,1].
+     *
+     * @param factor
+     */
+    @Override
+	public void decreaseStatistics(double factor){
+    	super.decreaseStatistics(factor);
+    	this.globalMab.decreaseStatistics(factor);
+    	for(int i = 0; i < this.localMabs.length; i++){
+    		this.localMabs[i].decreaseStatistics(factor);
+    	}
+    }
 
 }

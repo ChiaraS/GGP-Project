@@ -8,6 +8,7 @@ import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.GameDependentP
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.SearchManagerComponent;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.SharedReferencesCollector;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.parameterstuning.structure.ParametersManager;
+import org.ggp.base.player.gamer.statemachine.MCTS.manager.parameterstuning.structure.problemrep.EvoProblemRepresentation;
 
 public abstract class EvolutionManager extends SearchManagerComponent {
 
@@ -53,10 +54,13 @@ public abstract class EvolutionManager extends SearchManagerComponent {
 
 	/**
 	 * Note that this method evolves the population modifying it directly.
+	 * This method must modify the given population directly and assume that the size
+	 * of the evolved population must remain the same (i.e. for each individual removed
+	 * one must be added).
 	 *
 	 * @param population
 	 */
-	public abstract void evolvePopulation(CompleteMoveStats[] population);
+	public abstract void evolvePopulation(EvoProblemRepresentation roleProblem);
 
 	@Override
 	public String getComponentParameters(String indentation) {

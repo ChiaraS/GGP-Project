@@ -120,29 +120,6 @@ public abstract class ParametersTuner extends SearchManagerComponent{
 	}
 	*/
 
-	/**
-	 * Computes the move penalty of a combinatorial move as the average of the move penalty
-	 * of each of the unit moves that form the combinatorial move.
-	 * If a unit move has no penalty specified, the value of 0 will be considered in the average.
-	 * Note that the actual use of the moves penalty depends on the bias computer. Even if specified,
-	 * the moves penalties might not be used if no BiasComputer is present in the TunerSelector.
-	 *
-	 * @param combinatorialMove
-	 * @return
-	 */
-	public double computeCombinatorialMovePenalty(int[] combinatorialMove){
-
-		double penaltySum = 0.0;
-
-		for(int paramIndex = 0; paramIndex < combinatorialMove.length; paramIndex++){
-			if(this.parametersManager.getPossibleValuesPenalty(paramIndex) != null){
-				penaltySum += this.parametersManager.getPossibleValuesPenalty(paramIndex)[combinatorialMove[paramIndex]];
-			}
-		}
-
-		return penaltySum/combinatorialMove.length;
-	}
-
 	@Override
 	public void clearComponent() {
 		this.parametersManager.clearComponent();

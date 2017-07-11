@@ -4,7 +4,6 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-import org.ggp.base.player.gamer.statemachine.MCS.manager.hybrid.CompleteMoveStats;
 import org.ggp.base.util.logging.GamerLogger;
 
 /**
@@ -33,29 +32,29 @@ public class RandomCombosOfIndividualsIterator extends CombosOfIndividualsIterat
 
 	private int currentIndex;
 
-	public RandomCombosOfIndividualsIterator(CompleteMoveStats[][] populations) {
+	public RandomCombosOfIndividualsIterator(int[] populationsSizes /*CompleteMoveStats[][] populations*/) {
 
-		if(populations == null || populations.length < 1){
+		if(populationsSizes == null || populationsSizes.length < 1){
 			GamerLogger.logError("CombosOfIndividualsIterator", "RandomCombosOfIndividualsIterator - Impossible to create RandomCombosOfIndividualsIterator! No populations specified!");
 			throw new RuntimeException("RandomCombosOfIndividualsIterator - Impossible to create RandomCombosOfIndividualsIterator! No populations specified!");
 		}
 		// Used to check if all populations have the same size
-		int popSize = populations[0].length;
+		int popSize = populationsSizes[0];
 
 		this.individualsIndicesPerPopulation = new ArrayList<List<Integer>>();
 
 		ArrayList<Integer> individualsIndicesOfCurrentPopulation;
 
-		for(int populationIndex = 0; populationIndex < populations.length; populationIndex++){
+		for(int populationIndex = 0; populationIndex < populationsSizes.length; populationIndex++){
 
-			if(populations[populationIndex].length != popSize){
+			if(populationsSizes[populationIndex] != popSize){
 				GamerLogger.logError("CombosOfIndividualsIterator", "RandomCombosOfIndividualsIterator - Impossible to create RandomCombosOfIndividualsIterator! Specified populations have different size!");
 				throw new RuntimeException("RandomCombosOfIndividualsIterator - Impossible to create RandomCombosOfIndividualsIterator! Specified populations have different size!");
 			}
 
 			individualsIndicesOfCurrentPopulation = new ArrayList<Integer>();
 
-			for(int individualIndex = 0; individualIndex < populations[populationIndex].length; individualIndex++){
+			for(int individualIndex = 0; individualIndex < populationsSizes[populationIndex]; individualIndex++){
 				individualsIndicesOfCurrentPopulation.add(new Integer(individualIndex));
 			}
 
