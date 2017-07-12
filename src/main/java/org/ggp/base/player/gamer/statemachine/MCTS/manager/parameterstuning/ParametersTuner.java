@@ -8,6 +8,21 @@ import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.SearchManagerC
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.SharedReferencesCollector;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.parameterstuning.structure.ParametersManager;
 
+/**
+ * ATTENTION! NOT ALL IMPLEMENTATIONS OF THIS CLASS PROVIDE A WAY TO CONSIDER A BIAS
+ * FOR THE PARAMETERS EVEN IF ALL IMPLEMENTATIONS ALLOW TO SPECIFY SUCH BIAS IN THE
+ * SETTINGS. If you want to consider the bias, make sure that the class is implemented
+ * to do so.
+ *
+ * ATTENTION! NOT ALL IMPLEMENTATIONS OF THIS CLASS CAN CORRECTLY HANDLE THE MEMORIZATION
+ * AND RE-USE OF THE BEST COMBINATION OF PARAMETERS FOUND IN PREVIOUS GAMES, EVEN IF ALL
+ * IMPLEMENTATIONS ALLOW TO SPECIFY THAT WE WANT TO MEMORIZE AND RE-USE THE BEST COMBINA-
+ * TION. If you want to re-use the best combination make sure that the class is implemented
+ * to do so correctly.
+ *
+ * @author c.sironi
+ *
+ */
 public abstract class ParametersTuner extends SearchManagerComponent{
 
 	protected ParametersManager parametersManager;
@@ -226,6 +241,42 @@ public abstract class ParametersTuner extends SearchManagerComponent{
 		globalParamsOrder += "]";
 
 		return globalParamsOrder;
+	}
+
+	protected String getLogOfCombinations(int[][] combinations){
+
+		String globalParamsOrder = this.getGlobalParamsOrder();
+		String toLog = "";
+
+		if(this.tuneAllRoles){
+			for(int roleProblemIndex = 0; roleProblemIndex < this.gameDependentParameters.getNumRoles(); roleProblemIndex++){
+				toLog += ("ROLE=;" + this.gameDependentParameters.getTheMachine().convertToExplicitRole(this.gameDependentParameters.getTheMachine().getRoles().get(roleProblemIndex)) + ";PARAMS=;" + globalParamsOrder + ";SELECTED_COMBINATION=;[ ");
+				if(combinations != null && combinations[roleProblemIndex] != null){
+					for(int paramIndex = 0; paramIndex < this.parametersManager.getNumTunableParameters(); paramIndex++){
+						toLog += this.parametersManager.getPossibleValues(paramIndex)[combinations[roleProblemIndex][paramIndex]] + " ";
+					}
+				}else{
+					for(int paramIndex = 0; paramIndex < this.parametersManager.getNumTunableParameters(); paramIndex++){
+						toLog += null + " ";
+					}
+				}
+				toLog += "];\n";
+			}
+		}else{ // Tuning only my role
+			toLog += ("ROLE=;" + this.gameDependentParameters.getTheMachine().convertToExplicitRole(this.gameDependentParameters.getTheMachine().getRoles().get(this.gameDependentParameters.getMyRoleIndex())) + ";PARAMS=;" + globalParamsOrder + ";SELECTED_COMBINATION=;[ ");
+			if(combinations != null && combinations[0] != null){
+				for(int paramIndex = 0; paramIndex < this.parametersManager.getNumTunableParameters(); paramIndex++){
+					toLog += this.parametersManager.getPossibleValues(paramIndex)[combinations[0][paramIndex]] + " ";
+				}
+			}else{
+				for(int paramIndex = 0; paramIndex < this.parametersManager.getNumTunableParameters(); paramIndex++){
+					toLog += null + " ";
+				}
+			}
+			toLog += "];\n";
+		}
+
+		return toLog;
 	}
 
 }

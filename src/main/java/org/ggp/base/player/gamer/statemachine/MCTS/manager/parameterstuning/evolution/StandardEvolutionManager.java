@@ -34,17 +34,17 @@ public class StandardEvolutionManager extends EvolutionManager {
 	 * with crossoverProbability, while it's created as mutation of a single parent with probability
 	 * (1-crossoverProbability).
 	 */
-	private double crossoverProbability;
+	protected double crossoverProbability;
 
 	/**
 	 * Class that takes care of creating 1 individual by crossover of two parents.
 	 */
-	private CrossoverManager crossoverManager;
+	protected CrossoverManager crossoverManager;
 
 	/**
 	 * Class that takes care of creating 1 individual by mutation of a parent.
 	 */
-	private MutationManager mutationManager;
+	protected MutationManager mutationManager;
 
 	public StandardEvolutionManager(GameDependentParameters gameDependentParameters, Random random,
 			GamerSettings gamerSettings, SharedReferencesCollector sharedReferencesCollector) {
@@ -116,6 +116,12 @@ public class StandardEvolutionManager extends EvolutionManager {
 
 	@Override
 	public void evolvePopulation(EvoProblemRepresentation roleProblem) {
+
+		// The size of the elite must be at least 1
+		if(this.eliteSize <= 0){
+			GamerLogger.logError("EvolutionManager", "StandardEvolutionManager - Impossible to evolve the population. Elite size " + this.eliteSize + " <= 0.");
+			throw new RuntimeException("StandardEvolutionManager - Impossible to evolve the population. Elite size " + this.eliteSize + " <= 0.");
+		}
 
 		Arrays.sort(roleProblem.getPopulation(),
 				new Comparator<CompleteMoveStats>(){

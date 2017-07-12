@@ -15,6 +15,7 @@ import org.ggp.base.player.gamer.statemachine.MCTS.manager.parameterstuning.sele
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.parameterstuning.structure.AllCombosOfIndividualsIterator;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.parameterstuning.structure.CombinatorialCompactMove;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.parameterstuning.structure.CombosOfIndividualsIterator;
+import org.ggp.base.player.gamer.statemachine.MCTS.manager.parameterstuning.structure.problemrep.EvoProblemRepresentation;
 import org.ggp.base.util.logging.GamerLogger;
 import org.ggp.base.util.reflection.ProjectSearcher;
 import org.ggp.base.util.statemachine.structure.Move;
@@ -60,7 +61,13 @@ public class SinglePopEvoParametersTuner extends ParametersTuner {
 	/**
 	 * One single population of combinations (individuals) is used for all roles being tuned.
 	 */
-	private CompleteMoveStats[] population;
+	//private CompleteMoveStats[] population;
+
+	/**
+	 * One single problem representation with one single population of combinations (individuals)
+	 * is used for all roles being tuned.
+	 */
+	private EvoProblemRepresentation problemRepresentation;
 
 	/**
 	 * Parameter used to temporarily memorize the best combination of parameters until we know if
@@ -125,7 +132,7 @@ public class SinglePopEvoParametersTuner extends ParametersTuner {
 
 		this.evalRepetitionsCount = 0;
 
-		this.population = null;
+		this.problemRepresentation = null;
 
 		this.selectedCombination = null;
 
@@ -182,7 +189,7 @@ public class SinglePopEvoParametersTuner extends ParametersTuner {
 			// game (might make sense. We will start evolving for the current game a population that is not random
 			// but already pretty good for another game - still makes little sense if the two games are completely
 			// different and require very different parameter values).
-			if(!this.reuseStats || this.population == null){
+			if(!this.reuseStats || this.problemRepresentation == null){
 
 				// Create log file for population.
 				if(this.logPopulations){
@@ -191,7 +198,7 @@ public class SinglePopEvoParametersTuner extends ParametersTuner {
 				}
 
 				// Create the initial population
-				this.population = this.evolutionManager.getInitialPopulation();
+				this.problemRepresentation = new EvoProblemRepresentation(this.evolutionManager.getInitialPopulation());
 
 				if(this.logPopulations){
 					this.logStats();
@@ -202,7 +209,7 @@ public class SinglePopEvoParametersTuner extends ParametersTuner {
 				// the fitness of the individual if the individual is matched only against himself).
 				int[] popSizes = new int[numRolesToTune];
 				for(int i = 0; i < popSizes.length; i++){
-					popSizes[i] = this.population.length;
+					popSizes[i] = this.problemRepresentation.getPopulation().length;
 				}
 				this.combosOfIndividualsIterator = new AllCombosOfIndividualsIterator(popSizes, true);
 
@@ -213,7 +220,7 @@ public class SinglePopEvoParametersTuner extends ParametersTuner {
 
 			this.bestCombination = null;
 		}else{
-			this.population = null;
+			this.problemRepresentation = null;
 			this.selectedCombination = null;
 		}
 
@@ -238,7 +245,7 @@ public class SinglePopEvoParametersTuner extends ParametersTuner {
 			if(this.evalRepetitionsCount == this.evalRepetitions){
 
 				// If yes, evolve the population.
-				this.evolutionManager.evolvePopulation(this.population);
+				this.evolutionManager.evolvePopulation(this.problemRepresentation);
 
 				if(this.logPopulations){
 					this.logStats();
@@ -267,7 +274,7 @@ public class SinglePopEvoParametersTuner extends ParametersTuner {
 		int[][] combinationsToSet = new int[numRolesToTune][];
 
 		for(int roleIndex = 0; roleIndex < numRolesToTune; roleIndex++){
-			theParametersCombination = this.population[individualsIndices.get(roleIndex)].getTheMove();
+			theParametersCombination = this.problemRepresentation.getPopulation()[individualsIndices.get(roleIndex)].getTheMove();
 			if(theParametersCombination instanceof CombinatorialCompactMove){
 				combinationsToSet[roleIndex] = ((CombinatorialCompactMove) theParametersCombination).getIndices();
 			}else{
@@ -290,39 +297,43 @@ public class SinglePopEvoParametersTuner extends ParametersTuner {
 			numRolesToTune = 1;
 		}
 
-		int numUpdates = 0;
+		if(this.isMemorizingBestCombo()){
+			int[][] combinationsToSet = new int[numRolesToTune][];
 
-		for(int individualIndex = 0; individualIndex < this.population.length; individualIndex++){
-			numUpdates += this.population[individualIndex].getVisits();
-		}
-
-		// Get best combination
-		Move theParametersCombination = this.population[this.bestCombinationSelector.selectMove(this.population, null,
-				 new double[this.population.length], numUpdates)].getTheMove();
-
-		if(theParametersCombination instanceof CombinatorialCompactMove){
-			this.selectedCombination = ((CombinatorialCompactMove) theParametersCombination).getIndices();
+			for(int roleIndex = 0; roleIndex < numRolesToTune; roleIndex++){
+				combinationsToSet[roleIndex] = this.bestCombination;
+			}
 		}else{
-			 GamerLogger.logError("ParametersTuner", "SinglePopEvoParametersTuner - Impossible to set best combination. The Move is not of type CombinatorialCompactMove but of type " + theParametersCombination.getClass().getSimpleName() + ".");
-			 throw new RuntimeException("MultiPopEvoParametersTuner - Impossible to set best combination. The Move is not of type CombinatorialCompactMove but of type " + theParametersCombination.getClass().getSimpleName() + ".");
+
+			int numUpdates = 0;
+
+			for(int individualIndex = 0; individualIndex < this.problemRepresentation.getPopulation().length; individualIndex++){
+				numUpdates += this.problemRepresentation.getPopulation()[individualIndex].getVisits();
+			}
+
+			// Get best combination
+			Move theParametersCombination = this.problemRepresentation.getPopulation()[this.bestCombinationSelector.selectMove(this.problemRepresentation.getPopulation(), null,
+					 new double[this.problemRepresentation.getPopulation().length], numUpdates)].getTheMove();
+
+			if(theParametersCombination instanceof CombinatorialCompactMove){
+				this.selectedCombination = ((CombinatorialCompactMove) theParametersCombination).getIndices();
+			}else{
+				 GamerLogger.logError("ParametersTuner", "SinglePopEvoParametersTuner - Impossible to set best combination. The Move is not of type CombinatorialCompactMove but of type " + theParametersCombination.getClass().getSimpleName() + ".");
+				 throw new RuntimeException("MultiPopEvoParametersTuner - Impossible to set best combination. The Move is not of type CombinatorialCompactMove but of type " + theParametersCombination.getClass().getSimpleName() + ".");
+			}
+
+			int[][] combinationsToSet = new int[numRolesToTune][];
+
+			for(int roleIndex = 0; roleIndex < numRolesToTune; roleIndex++){
+				combinationsToSet[roleIndex] = this.selectedCombination;
+			}
+
+			this.parametersManager.setParametersValues(combinationsToSet);
 		}
 
-		int[][] combinationsToSet = new int[numRolesToTune][];
-
-		for(int roleIndex = 0; roleIndex < numRolesToTune; roleIndex++){
-			combinationsToSet[roleIndex] = this.selectedCombination;
-		}
-
-		this.parametersManager.setParametersValues(combinationsToSet);
+		this.stopTuning();
 
 	}
-
-
-
-
-
-
-
 
 	@Override
 	public void updateStatistics(int[] goals) {
@@ -367,7 +378,7 @@ public class SinglePopEvoParametersTuner extends ParametersTuner {
 		CompleteMoveStats toUpdate;
 
 		for(MyPair<Integer,Double> individualFitness : fitnessValues){
-			toUpdate = this.population[individualFitness.getFirst()];
+			toUpdate = this.problemRepresentation.getPopulation()[individualFitness.getFirst()];
 			toUpdate.incrementScoreSum(individualFitness.getSecond());
 			toUpdate.incrementVisits();
 		}
@@ -381,7 +392,7 @@ public class SinglePopEvoParametersTuner extends ParametersTuner {
 	@Override
 	public void logStats() {
 
-		if(this.population != null){
+		if(this.problemRepresentation.getPopulation() != null){
 
 			//GamerLogger.log(GamerLogger.FORMAT.CSV_FORMAT, "ParametersTunerStats", "");
 			String toLog = "";
@@ -404,9 +415,9 @@ public class SinglePopEvoParametersTuner extends ParametersTuner {
 
 			toLog += "ROLE=;" + roles +	";POPULATION=;";
 
-			for(int comboIndex = 0; comboIndex < this.population.length; comboIndex++){
+			for(int comboIndex = 0; comboIndex < this.problemRepresentation.getPopulation().length; comboIndex++){
 
-				theParametersCombination = this.population[comboIndex].getTheMove();
+				theParametersCombination = this.problemRepresentation.getPopulation()[comboIndex].getTheMove();
 
 				if(theParametersCombination instanceof CombinatorialCompactMove){
 					comboIndices = ((CombinatorialCompactMove) theParametersCombination).getIndices();
@@ -433,15 +444,15 @@ public class SinglePopEvoParametersTuner extends ParametersTuner {
 	@Override
 	public void decreaseStatistics(double factor) {
 		// Not really needed, so probably this method will never be used.
-		for(int i = 0; i < this.population.length; i++){
-			this.population[i].decreaseByFactor(factor);
+		for(int i = 0; i < this.problemRepresentation.getPopulation().length; i++){
+			this.problemRepresentation.getPopulation()[i].decreaseByFactor(factor);
 		}
 
 	}
 
 	@Override
 	public boolean isMemorizingBestCombo() {
-		return (this.reuseBestCombos && this.population == null);
+		return (this.reuseBestCombos && this.problemRepresentation.getPopulation() == null);
 	}
 
 	@Override

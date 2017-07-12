@@ -7,7 +7,10 @@ import org.ggp.base.player.gamer.statemachine.GamerSettings;
 import org.ggp.base.player.gamer.statemachine.MCS.manager.hybrid.CompleteMoveStats;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.GameDependentParameters;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.SharedReferencesCollector;
+import org.ggp.base.player.gamer.statemachine.MCTS.manager.parameterstuning.structure.CombinatorialCompactMove;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.parameterstuning.structure.problemrep.EvoProblemRepresentation;
+import org.ggp.base.util.logging.GamerLogger;
+import org.ggp.base.util.statemachine.structure.Move;
 
 public class StandardMultiPopEvoParametersTuner extends	MultiPopEvoParametersTuner {
 
@@ -40,6 +43,29 @@ public class StandardMultiPopEvoParametersTuner extends	MultiPopEvoParametersTun
 	public EvoProblemRepresentation[] getRoleProblems() {
 		return this.roleProblems;
 	}
+
+	@Override
+	public void computeAndSetBestCombinations() {
+
+		Move theParametersCombination;
+
+		for(int roleProblemIndex = 0; roleProblemIndex < this.roleProblems.length; roleProblemIndex++){
+
+			theParametersCombination = this.roleProblems[roleProblemIndex].getPopulation()[this.bestCombinationSelector.selectMove(this.roleProblems[roleProblemIndex].getPopulation(), null,
+					new double[this.roleProblems[roleProblemIndex].getPopulation().length], this.roleProblems[roleProblemIndex].getTotalUpdates())].getTheMove();
+
+			if(theParametersCombination instanceof CombinatorialCompactMove){
+				this.selectedCombinations[roleProblemIndex] = ((CombinatorialCompactMove) theParametersCombination).getIndices();
+			}else{
+				GamerLogger.logError("ParametersTuner", "MultiPopEvoParametersTuner - Impossible to set next combinations. The Move is not of type CombinatorialCompactMove but of type " + theParametersCombination.getClass().getSimpleName() + ".");
+				throw new RuntimeException("MultiPopEvoParametersTuner - Impossible to set next combinations. The Move is not of type CombinatorialCompactMove but of type " + theParametersCombination.getClass().getSimpleName() + ".");
+			}
+		}
+
+		this.parametersManager.setParametersValues(this.selectedCombinations);
+
+	}
+
 
 	@Override
 	public void updateRoleProblems(List<Integer> individualsIndices, int[] neededRewards) {

@@ -27,10 +27,21 @@ public class UcbMultiPopEvoParametersTuner extends MultiPopEvoParametersTuner {
 	 */
 	private UcbEvoProblemRepresentation[] roleProblems;
 
+	/**
+	 * If true, when selecting the best combination of parameters the global MAB will be used.
+	 * If false, when selecting the best combination, each parameter will be selected from the
+	 * corresponding local MAB independently of the other parameters.
+	 * NOTE that if the global MAB is never used (i.e. epsilon0 = 1), the value of this variable
+	 * will be ignored and the local MABs will be used even if this variable is true.
+	 */
+	private boolean useGlobalBest;
+
 	public UcbMultiPopEvoParametersTuner(GameDependentParameters gameDependentParameters, Random random,
 			GamerSettings gamerSettings, SharedReferencesCollector sharedReferencesCollector) {
 		super(gameDependentParameters, random, gamerSettings, sharedReferencesCollector);
 		this.roleProblems = null;
+
+		this.useGlobalBest = gamerSettings.getBooleanPropertyValue("ParametersTuner.useGlobalBest");
 	}
 
 	@Override
@@ -51,6 +62,43 @@ public class UcbMultiPopEvoParametersTuner extends MultiPopEvoParametersTuner {
 	@Override
 	public EvoProblemRepresentation[] getRoleProblems() {
 		return this.roleProblems;
+	}
+
+	@Override
+	public void computeAndSetBestCombinations() {
+
+		// For each role, we select a combination of parameters
+		for(int roleProblemIndex = 0; roleProblemIndex < this.roleProblems.length; roleProblemIndex++){
+			// If we want to use the global MAB we can only do that if it has been visited at least once
+			// and so contains at least one combination.
+			if(this.useGlobalBest && this.roleProblems[roleProblemIndex].getGlobalMab().getNumUpdates() > 0){
+				IncrementalMab globalMab = this.roleProblems[roleProblemIndex].getGlobalMab();
+				Move m = this.bestCombinationSelector.selectMove(globalMab.getMovesInfo(), globalMab.getNumUpdates());
+				this.selectedCombinations[roleProblemIndex] = ((CombinatorialCompactMove) m).getIndices();
+			}else{
+				FixedMab[] localMabs = this.roleProblems[roleProblemIndex].getLocalMabs();
+				int[] indices = new int[localMabs.length];
+				for(int i = 0; i < indices.length; i++){
+					indices[i] = -1;
+				}
+
+				// Select a value for each local mab independently
+				for(int paramIndex = 0; paramIndex < localMabs.length; paramIndex++){
+					indices[paramIndex] = this.bestCombinationSelector.selectMove(localMabs[paramIndex].getMoveStats(),
+							this.parametersManager.getValuesFeasibility(paramIndex, indices),
+							// If for a parameter no penalties are specified, a penalty of 0 is assumed for all of the values.
+							(this.parametersManager.getPossibleValuesPenalty(paramIndex) != null ? this.parametersManager.getPossibleValuesPenalty(paramIndex) : new double[this.parametersManager.getNumPossibleValues(paramIndex)]),
+							localMabs[paramIndex].getNumUpdates());
+				}
+				this.selectedCombinations[roleProblemIndex] = indices;
+			}
+		}
+
+		// Log the combination that we are selecting as best
+		GamerLogger.log(GamerLogger.FORMAT.CSV_FORMAT, "BestParamsCombo", this.getLogOfCombinations(this.selectedCombinations));
+
+		this.parametersManager.setParametersValues(this.selectedCombinations);
+
 	}
 
 	@Override

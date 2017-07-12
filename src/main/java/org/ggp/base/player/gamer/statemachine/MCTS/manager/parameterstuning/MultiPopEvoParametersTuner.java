@@ -41,7 +41,7 @@ public abstract class MultiPopEvoParametersTuner extends ParametersTuner {
 	/**
 	 * Given the statistics of each combination, selects the best one among them.
 	 */
-	private TunerSelector bestCombinationSelector;
+	protected TunerSelector bestCombinationSelector;
 
 	/**
 	 * If true, when evaluating a population, the fitness of each individual will result from
@@ -122,7 +122,7 @@ public abstract class MultiPopEvoParametersTuner extends ParametersTuner {
 	 * the best combinations until we know if the final game result was a win (and thus we memorize
 	 * the combinations permanently in bestCombinations), or a loss.
 	 */
-	private int[][] selectedCombinations;
+	protected int[][] selectedCombinations;
 
 	/**
 	 * Memorizes the best so far combination of parameters values for each role.
@@ -358,47 +358,17 @@ public abstract class MultiPopEvoParametersTuner extends ParametersTuner {
 	@Override
 	public void setBestCombinations() {
 
-		!! Separa per Ucb e non Ucb tuner. Ucb usa per ogni ruolo la combinazione con max avg nelle stats globali.
-		Move theParametersCombination;
+		if(this.isMemorizingBestCombo()){
+			 this.parametersManager.setParametersValues(this.bestCombinations);
+		}else{
+			this.computeAndSetBestCombinations();
+		}
 
-		 for(int roleProblemIndex = 0; roleProblemIndex < this.getRoleProblems().length; roleProblemIndex++){
-
-			 theParametersCombination = this.getRoleProblems()[roleProblemIndex].getPopulation()[this.bestCombinationSelector.selectMove(this.getRoleProblems()[roleProblemIndex].getPopulation(), null,
-					 new double[this.getRoleProblems()[roleProblemIndex].getPopulation().length], this.getRoleProblems()[roleProblemIndex].getTotalUpdates())].getTheMove();
-
-			 if(theParametersCombination instanceof CombinatorialCompactMove){
-				 this.selectedCombinations[roleProblemIndex] = ((CombinatorialCompactMove) theParametersCombination).getIndices();
-			 }else{
-				 GamerLogger.logError("ParametersTuner", "MultiPopEvoParametersTuner - Impossible to set next combinations. The Move is not of type CombinatorialCompactMove but of type " + theParametersCombination.getClass().getSimpleName() + ".");
-				 throw new RuntimeException("MultiPopEvoParametersTuner - Impossible to set next combinations. The Move is not of type CombinatorialCompactMove but of type " + theParametersCombination.getClass().getSimpleName() + ".");
-			 }
-		 }
-
-		 /*
-		 int numUpdates;
-
-		 for(int populationIndex = 0; populationIndex < this.populations.length; populationIndex++){
-
-			 numUpdates = 0;
-
-			 for(int individualIndex = 0; individualIndex < this.populations[populationIndex].length; individualIndex++){
-				 numUpdates += this.populations[populationIndex][individualIndex].getVisits();
-			 }
-
-			 theParametersCombination = this.populations[populationIndex][this.bestCombinationSelector.selectMove(this.populations[populationIndex], null,
-					 new double[this.populations[populationIndex].length], numUpdates)].getTheMove();
-
-			 if(theParametersCombination instanceof CombinatorialCompactMove){
-				 this.selectedCombinations[populationIndex] = ((CombinatorialCompactMove) theParametersCombination).getIndices();
-			 }else{
-				 GamerLogger.logError("ParametersTuner", "MultiPopEvoParametersTuner - Impossible to set next combinations. The Move is not of type CombinatorialCompactMove but of type " + theParametersCombination.getClass().getSimpleName() + ".");
-				 throw new RuntimeException("MultiPopEvoParametersTuner - Impossible to set next combinations. The Move is not of type CombinatorialCompactMove but of type " + theParametersCombination.getClass().getSimpleName() + ".");
-			 }
-		 }*/
-
-		 this.parametersManager.setParametersValues(this.selectedCombinations);
+		this.stopTuning();
 
 	}
+
+	protected abstract void computeAndSetBestCombinations();
 
 	@Override
 	public void updateStatistics(int[] goals) {
@@ -594,12 +564,12 @@ public abstract class MultiPopEvoParametersTuner extends ParametersTuner {
 
 	}
 
-	public abstract void createRoleProblems(int numRolesToTune);
+	protected abstract void createRoleProblems(int numRolesToTune);
 
-	public abstract void setRoleProblemsToNull();
+	protected abstract void setRoleProblemsToNull();
 
-	public abstract EvoProblemRepresentation[] getRoleProblems();
+	protected abstract EvoProblemRepresentation[] getRoleProblems();
 
-	public abstract void updateRoleProblems(List<Integer> individualsIndices, int[] neededRewards);
+	protected abstract void updateRoleProblems(List<Integer> individualsIndices, int[] neededRewards);
 
 }

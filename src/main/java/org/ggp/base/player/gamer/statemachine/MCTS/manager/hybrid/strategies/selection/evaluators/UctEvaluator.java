@@ -10,7 +10,6 @@ import org.ggp.base.player.gamer.statemachine.MCTS.manager.parameterstuning.stru
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.MctsNode;
 import org.ggp.base.util.statemachine.structure.Move;
 /**
- * !!! FOR NOW THIS CLASS CANNOT TUNE FPU!
  * @author C.Sironi
  *
  */
