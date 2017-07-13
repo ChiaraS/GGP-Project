@@ -414,42 +414,6 @@ public class SequentialParametersTuner extends ParametersTuner {
 
 	}
 
-	private String getLogOfCombinations(int[][] combinations){
-
-		String globalParamsOrder = this.getGlobalParamsOrder();
-		String toLog = "";
-
-		if(this.tuneAllRoles){
-			for(int roleProblemIndex = 0; roleProblemIndex < this.gameDependentParameters.getNumRoles(); roleProblemIndex++){
-				toLog += ("ROLE=;" + this.gameDependentParameters.getTheMachine().convertToExplicitRole(this.gameDependentParameters.getTheMachine().getRoles().get(roleProblemIndex)) + ";PARAMS=;" + globalParamsOrder + ";SELECTED_COMBINATION=;[ ");
-				if(combinations != null && combinations[roleProblemIndex] != null){
-					for(int paramIndex = 0; paramIndex < this.parametersManager.getNumTunableParameters(); paramIndex++){
-						toLog += this.parametersManager.getPossibleValues(paramIndex)[combinations[roleProblemIndex][paramIndex]] + " ";
-					}
-				}else{
-					for(int paramIndex = 0; paramIndex < this.parametersManager.getNumTunableParameters(); paramIndex++){
-						toLog += null + " ";
-					}
-				}
-				toLog += "];\n";
-			}
-		}else{ // Tuning only my role
-			toLog += ("ROLE=;" + this.gameDependentParameters.getTheMachine().convertToExplicitRole(this.gameDependentParameters.getTheMachine().getRoles().get(this.gameDependentParameters.getMyRoleIndex())) + ";PARAMS=;" + globalParamsOrder + ";SELECTED_COMBINATION=;[ ");
-			if(combinations != null && combinations[0] != null){
-				for(int paramIndex = 0; paramIndex < this.parametersManager.getNumTunableParameters(); paramIndex++){
-					toLog += this.parametersManager.getPossibleValues(paramIndex)[combinations[0][paramIndex]] + " ";
-				}
-			}else{
-				for(int paramIndex = 0; paramIndex < this.parametersManager.getNumTunableParameters(); paramIndex++){
-					toLog += null + " ";
-				}
-			}
-			toLog += "];\n";
-		}
-
-		return toLog;
-	}
-
 	@Override
 	public void updateStatistics(int[] goals) {
 

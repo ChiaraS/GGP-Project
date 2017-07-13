@@ -199,9 +199,9 @@ public class UcbMultiPopEvoParametersTuner extends MultiPopEvoParametersTuner {
 
 		FixedMab[] localMabs;
 
-		String toLog = "";
-
 		for(int roleProblemIndex = 0; roleProblemIndex < this.getRoleProblems().length; roleProblemIndex++){
+
+			String toLog = "";
 
 			if(this.tuneAllRoles){
 				roleIndex = roleProblemIndex;
@@ -246,6 +246,21 @@ public class UcbMultiPopEvoParametersTuner extends MultiPopEvoParametersTuner {
 
 			GamerLogger.log(GamerLogger.FORMAT.CSV_FORMAT, "GlobalParamTunerStats", toLog);
 		}
+	}
+
+	@Override
+	public String getComponentParameters(String indentation) {
+
+		String superParams = super.getComponentParameters(indentation);
+
+		String params = indentation + "USE_GLOBAL_BEST = " + this.useGlobalBest;
+
+		if(superParams != null){
+			return superParams + params;
+		}else{
+			return params;
+		}
+
 	}
 
 }

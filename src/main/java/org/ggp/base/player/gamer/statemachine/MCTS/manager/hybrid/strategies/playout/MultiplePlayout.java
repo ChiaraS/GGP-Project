@@ -18,7 +18,22 @@ import org.ggp.base.util.statemachine.structure.Move;
 
 public class MultiplePlayout extends PlayoutStrategy {
 
+	interface CondChecker {
+        boolean isMoveInteresting(List<Move> jointMove);
+    }
+
+	interface SingleRoleCondChecker {
+        boolean isRoleMoveInteresting(Move move);
+    }
+
+
 	private PlayoutStrategy subPlayoutStrategy;
+
+	/**
+	 * Minimum number of visits that a move must have in the MAST statistics to be considered
+	 * when checking if to perform multiple playouts.
+	 */
+	private int mastVisitsTreshold;
 
 	/**
 	 * If the MAST score of my move in the list of joint moves that led to the state that was just
@@ -33,6 +48,16 @@ public class MultiplePlayout extends PlayoutStrategy {
 	private int numPlayouts;
 
 	private Map<Move,MoveStats> mastStatistics;
+
+	/**
+	 * Checks if the condition for performing multiple playouts is satisfied.
+	 */
+	private CondChecker condChecker;
+
+	/**
+	 * Memorized only for logging purposes.
+	 */
+	private String condCheckerType;
 
 	public MultiplePlayout(GameDependentParameters gameDependentParameters,	Random random,
 			GamerSettings gamerSettings, SharedReferencesCollector sharedReferencesCollector, String id) {
@@ -53,6 +78,65 @@ public class MultiplePlayout extends PlayoutStrategy {
 		this.scoreThreshold = gamerSettings.getDoublePropertyValue("PlayoutStrategy" + id + ".scoreThreshold");
 
 		this.numPlayouts = gamerSettings.getIntPropertyValue("PlayoutStrategy" + id + ".numPlayouts");
+
+		SingleRoleCondChecker singleRoleCondChecker = (move) -> {
+
+			// Get the MAST score of my move that led to this state
+			MoveStats myMoveStats = this.mastStatistics.get(move);
+
+			// If there is no MAST score, return the result of a single playout
+			if(myMoveStats == null || myMoveStats.getVisits() < this.mastVisitsTreshold){
+				return false;
+			}
+
+			// Compute the average MAST score
+			double myMoveAvgScore = myMoveStats.getScoreSum() / ((double) myMoveStats.getVisits());
+
+			// If the score is below the threshold, perform a single playout
+			if(myMoveAvgScore < this.scoreThreshold){
+				return false;
+			}
+			return true;
+		};
+
+		this.condCheckerType = gamerSettings.getPropertyValue("PlayoutStrategy" + id + ".conditionOnMastType");
+		switch(condCheckerType){
+		case "MyRole":
+
+			System.out.println("MyRole");
+
+			this.condChecker = (jointMove) -> {
+				return singleRoleCondChecker.isRoleMoveInteresting(jointMove.get(this.gameDependentParameters.getMyRoleIndex()));
+			};
+			break;
+		case "AllRolesAnd":
+
+			System.out.println("AllRolesAnd");
+
+			this.condChecker = (jointMove) -> {
+				for(Move m : jointMove){
+					if(!singleRoleCondChecker.isRoleMoveInteresting(m)){
+						return false;
+					}
+				}
+				return true;
+			};
+			break;
+		case "AllRolesOr": default:
+
+			System.out.println("AllRolesOr");
+
+			this.condChecker = (jointMove) -> {
+				for(Move m : jointMove){
+					if(singleRoleCondChecker.isRoleMoveInteresting(m)){
+						return true;
+					}
+				}
+				return false;
+			};
+			break;
+		}
+
 
 	}
 
@@ -86,29 +170,17 @@ public class MultiplePlayout extends PlayoutStrategy {
 	@Override
 	public SimulationResult[] playout(List<Move> jointMove, MachineState state, int maxDepth) {
 
-		// Get the MAST score of my move that led to this state
-		MoveStats myMoveStats = this.mastStatistics.get(jointMove.get(this.gameDependentParameters.getMyRoleIndex()));
-
-		// If there is no MAST score, return the result of a single playout
-		if(myMoveStats == null){
+		// If the joint move is interesting, perform multiple playouts,...
+		if(this.condChecker.isMoveInteresting(jointMove)){
+			SimulationResult[] results = new SimulationResult[this.numPlayouts];
+			for(int repetition = 0; repetition < results.length; repetition++){
+				results[repetition] = this.subPlayoutStrategy.singlePlayout(state, maxDepth);
+			}
+			return results;
+		}else{
 			return this.subPlayoutStrategy.playout(jointMove, state, maxDepth);
 		}
 
-		// Compute the average MAST score
-		double myMoveAvgScore = myMoveStats.getScoreSum() / ((double) myMoveStats.getVisits());
-
-		// If the score is below the threshold, perform a single playout
-		if(myMoveAvgScore < this.scoreThreshold){
-			return this.subPlayoutStrategy.playout(jointMove, state, maxDepth);
-		}
-
-		// If the score is above the threshold, perform multiple playouts
-		SimulationResult[] results = new SimulationResult[this.numPlayouts];
-		for(int repetition = 0; repetition < results.length; repetition++){
-			results[repetition] = this.subPlayoutStrategy.singlePlayout(state, maxDepth);
-		}
-
-		return results;
 	}
 
 	@Override
@@ -126,9 +198,11 @@ public class MultiplePlayout extends PlayoutStrategy {
 	@Override
 	public String getComponentParameters(String indentation) {
 		return indentation + "SUB_PLAYOUT_STRATEGY = " + this.subPlayoutStrategy.printComponent(indentation + "  ") +
+				indentation + "MAST_VISITS_THRESHOLD = " + this.mastVisitsTreshold +
 				indentation + "SCORE_THRESHOLD = " + this.scoreThreshold +
 				indentation + "NUM_PLAYOUTS = " + this.numPlayouts +
-				indentation + "mast_statistics = " + (this.mastStatistics == null ? "null" : this.mastStatistics.size()+"entries");
+				indentation + "COND_CHECKER_TYPE = " + this.condCheckerType +
+				indentation + "mast_statistics = " + (this.mastStatistics == null ? "null" : this.mastStatistics.size()+" entries");
 	}
 
 }

@@ -44,7 +44,7 @@ public class UcbEvolutionManager extends StandardEvolutionManager {
 			GamerSettings gamerSettings, SharedReferencesCollector sharedReferencesCollector) {
 		super(gameDependentParameters, random, gamerSettings, sharedReferencesCollector);
 
-		this.numCandidates = gamerSettings.getIntPropertyValue("");
+		this.numCandidates = gamerSettings.getIntPropertyValue("EvolutionManager.numCandidates");
 
 		// numCandidates must always be greater than or equal to (populationSize-eliteSize)
 		if(this.numCandidates < this.populationsSize-this.eliteSize){
@@ -56,9 +56,9 @@ public class UcbEvolutionManager extends StandardEvolutionManager {
 					 ") must be at least equal to (populationSize-eliteSize = " + (this.populationsSize - this.eliteSize) + ").");
 		}
 
-		this.c = gamerSettings.getDoublePropertyValue("");
+		this.c = gamerSettings.getDoublePropertyValue("EvolutionManager.c");
 
-		this.fpu = gamerSettings.getDoublePropertyValue("");
+		this.fpu = gamerSettings.getDoublePropertyValue("EvolutionManager.fpu");
 	}
 
 	@Override
@@ -186,8 +186,8 @@ public class UcbEvolutionManager extends StandardEvolutionManager {
 
 		CombinatorialCompactMove newCandidate;
 
-		// Generate numCandidates new individuals using the first endIndex individuals in the population
-		// (i.e. individuals at positions [0, end Index) in the population).
+		// Generate numCandidates new individuals using the first numParents individuals in the population
+		// (i.e. individuals at positions [0, end numParents) in the population).
 		for(int i = 0; i < this.numCandidates; i++){
 
 			if(this.random.nextDouble() < this.crossoverProbability){
@@ -291,9 +291,9 @@ public class UcbEvolutionManager extends StandardEvolutionManager {
 
 		String superParams = super.getComponentParameters(indentation);
 
-		String params = indentation + "CROSSOVER_PROBABILITY = " + this.crossoverProbability +
-				indentation + "CROSSOVER_MANAGER = " + this.crossoverManager.printComponent(indentation + "  ") +
-				indentation + "MUTATION_MANAGER = " + this.mutationManager.printComponent(indentation + "  ");
+		String params = indentation + "NUM_CANDIDATES = " + this.numCandidates +
+				indentation + "C = " + this.c +
+				indentation + "FPU = " + this.fpu;
 
 		if(superParams != null){
 			return superParams + params;
