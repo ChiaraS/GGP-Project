@@ -1,5 +1,6 @@
 package org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.strategies.backpropagation.nodeupdaters;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -18,14 +19,14 @@ import org.ggp.base.util.statemachine.structure.Move;
 
 public class MastUpdater extends NodeUpdater{
 
-	private Map<Move, MoveStats> mastStatistics;
+	private List<Map<Move, MoveStats>> mastStatistics;
 
 	public MastUpdater(GameDependentParameters gameDependentParameters, Random random,
 			GamerSettings gamerSettings, SharedReferencesCollector sharedReferencesCollector) {
 
 		super(gameDependentParameters, random, gamerSettings, sharedReferencesCollector);
 
-		this.mastStatistics = new HashMap<Move, MoveStats>();
+		this.mastStatistics = new ArrayList<Map<Move, MoveStats>>();
 
 		sharedReferencesCollector.setMastStatistics(mastStatistics);
 
@@ -43,7 +44,9 @@ public class MastUpdater extends NodeUpdater{
 
 	@Override
 	public void setUpComponent() {
-		// Do nothing
+		for(int roleIndex = 0; roleIndex < this.gameDependentParameters.getNumRoles(); roleIndex++){
+			this.mastStatistics.add(new HashMap<Move, MoveStats>());
+		}
 	}
 
 	@Override
@@ -55,12 +58,12 @@ public class MastUpdater extends NodeUpdater{
 
 		int[] goals;
 
-		for(int i = 0; i < internalJointMove.size(); i++){
+		for(int roleIndex = 0; roleIndex < internalJointMove.size(); roleIndex++){
 
-	       	moveStats = this.mastStatistics.get(internalJointMove.get(i));
+	       	moveStats = this.mastStatistics.get(roleIndex).get(internalJointMove.get(roleIndex));
 	       	if(moveStats == null){
 	       		moveStats = new MoveStats();
-	       		this.mastStatistics.put(internalJointMove.get(i), moveStats);
+	       		this.mastStatistics.get(roleIndex).put(internalJointMove.get(roleIndex), moveStats);
 	       	}
 
 	    	for(int resultIndex = 0; resultIndex < simulationResult.length; resultIndex++){
@@ -73,7 +76,7 @@ public class MastUpdater extends NodeUpdater{
 	    		}
 
 		   		moveStats.incrementVisits();
-		   		moveStats.incrementScoreSum(goals[i]);
+		   		moveStats.incrementScoreSum(goals[roleIndex]);
 	    	}
 		}
 
@@ -109,10 +112,10 @@ public class MastUpdater extends NodeUpdater{
 		    MoveStats moveStats;
 		    for(List<Move> jM : allJointMoves){
 		    	for(int i = 0; i<jM.size(); i++){
-		    		moveStats = this.mastStatistics.get(jM.get(i));
+		    		moveStats = this.mastStatistics.get(i).get(jM.get(i));
 		        	if(moveStats == null){
 		        		moveStats = new MoveStats();
-		        		this.mastStatistics.put(jM.get(i), moveStats);
+		        		this.mastStatistics.get(i).put(jM.get(i), moveStats);
 		        	}
 
 		        	moveStats.incrementVisits();

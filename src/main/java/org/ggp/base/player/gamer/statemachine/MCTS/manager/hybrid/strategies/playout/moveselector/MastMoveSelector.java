@@ -16,7 +16,7 @@ import org.ggp.base.util.statemachine.structure.Move;
 
 public class MastMoveSelector extends MoveSelector {
 
-	private Map<Move, MoveStats> mastStatistics;
+	private List<Map<Move, MoveStats>> mastStatistics;
 
 	/**
 	 * First play urgency for a move never explored before.
@@ -81,7 +81,7 @@ public class MastMoveSelector extends MoveSelector {
         List<Move> legalMovesForRole = this.gameDependentParameters.getTheMachine().getLegalMoves(state, this.gameDependentParameters.getTheMachine().getRoles().get(roleIndex));
 
     	// Pick the move with highest MAST value.
-		return this.getMastMove(legalMovesForRole);
+		return this.getMastMove(roleIndex, legalMovesForRole);
 	}
 
 	/**
@@ -92,17 +92,19 @@ public class MastMoveSelector extends MoveSelector {
 	 * @param moves
 	 * @return
 	 */
-	private Move getMastMove(List<Move> moves) {
+	private Move getMastMove(int roleIndex, List<Move> moves) {
 
 		List<Move> chosenMoves = new ArrayList<Move>();
 		MoveStats moveStats;
 		double maxAvgScore = -1;
 		double currentAvgScore;
 
+		Move move;
 		// For each legal move check the average score
-		for(Move move : moves){
+		for(int moveIndex = 0; moveIndex < moves.size(); moveIndex++){
 
-			moveStats = this.mastStatistics.get(move);
+			move = moves.get(moveIndex);
+			moveStats = this.mastStatistics.get(roleIndex).get(move);
 
 			if(moveStats != null && moveStats.getVisits() != 0){
 				currentAvgScore = moveStats.getScoreSum() / ((double) moveStats.getVisits());
@@ -126,8 +128,24 @@ public class MastMoveSelector extends MoveSelector {
 
 	@Override
 	public String getComponentParameters(String indentation) {
-		return indentation + "MAST_FPU = " + this.mastFpu +
-				indentation + "mast_statistics = " + (this.mastStatistics == null ? "null" : this.mastStatistics.size()+"entries");
+		String params = indentation + "MAST_FPU = " + this.mastFpu;
+
+		if(this.mastStatistics != null){
+			String mastStatisticsString = "[ ";
+
+			for(Map<Move, MoveStats> roleMastStats : this.mastStatistics){
+				mastStatisticsString += roleMastStats.size() + " entries, ";
+			}
+
+			mastStatisticsString += "]";
+
+			params += indentation + "mast_statistics = " + mastStatisticsString;
+		}else{
+			params += indentation + "mast_statistics = null";
+		}
+
+		return params;
+
 	}
 
 }

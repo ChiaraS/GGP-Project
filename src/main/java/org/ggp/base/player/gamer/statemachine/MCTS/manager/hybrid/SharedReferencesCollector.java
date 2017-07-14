@@ -31,7 +31,7 @@ import org.ggp.base.util.statemachine.structure.Move;
  */
 public class SharedReferencesCollector {
 
-	private Map<Move, MoveStats> mastStatistics;
+	private List<Map<Move, MoveStats>> mastStatistics;
 
 	private List<TunableParameter> theParametersToTune;
 
@@ -55,7 +55,7 @@ public class SharedReferencesCollector {
 		// TODO Auto-generated constructor stub
 	}
 
-	public void setMastStatistics(Map<Move, MoveStats> mastStatistics){
+	public void setMastStatistics(List<Map<Move, MoveStats>> mastStatistics){
 		// Can only be set once
 		if(this.mastStatistics == null){
 			this.mastStatistics = mastStatistics;
@@ -65,7 +65,7 @@ public class SharedReferencesCollector {
 		}
 	}
 
-	public Map<Move, MoveStats> getMastStatistics(){
+	public List<Map<Move, MoveStats>> getMastStatistics(){
 		// If a strategy looks for the reference then another strategy must have set it
 		if(this.mastStatistics != null){
 			return this.mastStatistics;

@@ -23,7 +23,7 @@ public class MultiplePlayout extends PlayoutStrategy {
     }
 
 	interface SingleRoleCondChecker {
-        boolean isRoleMoveInteresting(Move move);
+        boolean isRoleMoveInteresting(Move move, int roleIndex);
     }
 
 
@@ -47,7 +47,7 @@ public class MultiplePlayout extends PlayoutStrategy {
 	 */
 	private int numPlayouts;
 
-	private Map<Move,MoveStats> mastStatistics;
+	private List<Map<Move,MoveStats>> mastStatistics;
 
 	/**
 	 * Checks if the condition for performing multiple playouts is satisfied.
@@ -75,14 +75,19 @@ public class MultiplePlayout extends PlayoutStrategy {
 			throw new RuntimeException(e);
 		}
 
+		this.mastVisitsTreshold = gamerSettings.getIntPropertyValue("PlayoutStrategy" + id + ".mastVisitsTreshold");
+
 		this.scoreThreshold = gamerSettings.getDoublePropertyValue("PlayoutStrategy" + id + ".scoreThreshold");
 
 		this.numPlayouts = gamerSettings.getIntPropertyValue("PlayoutStrategy" + id + ".numPlayouts");
 
-		SingleRoleCondChecker singleRoleCondChecker = (move) -> {
+		SingleRoleCondChecker singleRoleCondChecker = (move, roleIndex) -> {
 
 			// Get the MAST score of my move that led to this state
-			MoveStats myMoveStats = this.mastStatistics.get(move);
+			MoveStats myMoveStats = this.mastStatistics.get(roleIndex).get(move);
+
+			/*System.out.println(myMoveStats == null ? "Null" : ("MOVE[ " + myMoveStats.getVisits() + " visits, " +
+					myMoveStats.getScoreSum() + " scoreSum, " + (myMoveStats.getScoreSum() / ((double) myMoveStats.getVisits())) + " avg ]"));*/
 
 			// If there is no MAST score, return the result of a single playout
 			if(myMoveStats == null || myMoveStats.getVisits() < this.mastVisitsTreshold){
@@ -103,19 +108,24 @@ public class MultiplePlayout extends PlayoutStrategy {
 		switch(condCheckerType){
 		case "MyRole":
 
-			System.out.println("MyRole");
+			//System.out.println("MyRole");
 
 			this.condChecker = (jointMove) -> {
-				return singleRoleCondChecker.isRoleMoveInteresting(jointMove.get(this.gameDependentParameters.getMyRoleIndex()));
+				//System.out.println("MyRole");
+				return singleRoleCondChecker.isRoleMoveInteresting(jointMove.get(this.gameDependentParameters.getMyRoleIndex()),
+						this.gameDependentParameters.getMyRoleIndex());
+
+				//System.out.println(toReturn);
+				//return toReturn;
 			};
 			break;
 		case "AllRolesAnd":
 
-			System.out.println("AllRolesAnd");
+			//System.out.println("AllRolesAnd");
 
 			this.condChecker = (jointMove) -> {
-				for(Move m : jointMove){
-					if(!singleRoleCondChecker.isRoleMoveInteresting(m)){
+				for(int roleIndex = 0; roleIndex < jointMove.size(); roleIndex++){
+					if(!singleRoleCondChecker.isRoleMoveInteresting(jointMove.get(roleIndex), roleIndex)){
 						return false;
 					}
 				}
@@ -124,11 +134,11 @@ public class MultiplePlayout extends PlayoutStrategy {
 			break;
 		case "AllRolesOr": default:
 
-			System.out.println("AllRolesOr");
+			//System.out.println("AllRolesOr");
 
 			this.condChecker = (jointMove) -> {
-				for(Move m : jointMove){
-					if(singleRoleCondChecker.isRoleMoveInteresting(m)){
+				for(int roleIndex = 0; roleIndex < jointMove.size(); roleIndex++){
+					if(singleRoleCondChecker.isRoleMoveInteresting(jointMove.get(roleIndex), roleIndex)){
 						return true;
 					}
 				}
@@ -197,12 +207,28 @@ public class MultiplePlayout extends PlayoutStrategy {
 
 	@Override
 	public String getComponentParameters(String indentation) {
-		return indentation + "SUB_PLAYOUT_STRATEGY = " + this.subPlayoutStrategy.printComponent(indentation + "  ") +
+		String params = indentation + "SUB_PLAYOUT_STRATEGY = " + this.subPlayoutStrategy.printComponent(indentation + "  ") +
 				indentation + "MAST_VISITS_THRESHOLD = " + this.mastVisitsTreshold +
 				indentation + "SCORE_THRESHOLD = " + this.scoreThreshold +
 				indentation + "NUM_PLAYOUTS = " + this.numPlayouts +
-				indentation + "COND_CHECKER_TYPE = " + this.condCheckerType +
-				indentation + "mast_statistics = " + (this.mastStatistics == null ? "null" : this.mastStatistics.size()+" entries");
+				indentation + "COND_CHECKER_TYPE = " + this.condCheckerType;
+
+		if(this.mastStatistics != null){
+			String mastStatisticsString = "[ ";
+
+			for(Map<Move, MoveStats> roleMastStats : this.mastStatistics){
+				mastStatisticsString += roleMastStats.size() + " entries, ";
+			}
+
+			mastStatisticsString += "]";
+
+			params += indentation + "mast_statistics = " + mastStatisticsString;
+		}else{
+			params += indentation + "mast_statistics = null";
+		}
+
+		return params;
+
 	}
 
 }

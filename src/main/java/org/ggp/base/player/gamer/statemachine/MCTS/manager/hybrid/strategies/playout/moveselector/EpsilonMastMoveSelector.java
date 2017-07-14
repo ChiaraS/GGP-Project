@@ -104,6 +104,8 @@ public class EpsilonMastMoveSelector extends MoveSelector{
 			jointMove.add(this.getMoveForRole(state, i));
 		}
 
+		//System.out.println(Arrays.toString(jointMove.toArray()));
+
 		return jointMove;
 	}
 
