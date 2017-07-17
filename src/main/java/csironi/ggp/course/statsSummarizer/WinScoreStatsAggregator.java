@@ -90,8 +90,12 @@ public class WinScoreStatsAggregator {
 		System.out.println(resultFile);
 
 		System.out.println("ALIASES:");
-		for(Entry<String,String> entry : aliases.entrySet()){
-			System.out.println(entry.getKey() + " = " + entry.getValue());
+		if(aliases.isEmpty()){
+			System.out.println("none");
+		}else{
+			for(Entry<String,String> entry : aliases.entrySet()){
+				System.out.println(entry.getKey() + " = " + entry.getValue());
+			}
 		}
 
 		File sourceFolder = new File(sourceFolderPath);

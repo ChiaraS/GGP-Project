@@ -11,7 +11,7 @@ import org.ggp.base.util.logging.GamerLogger;
 
 public abstract class ConfigurableStateMachineGamer extends StateMachineGamer {
 
-	protected static final String defaultSettingsFileName = "MultiPlayoutGraveMastDuct.properties";
+	protected static final String defaultSettingsFileName = "RO1I0E5NC1R0CSRMUcbMPCondAREvoTunerCGMD.properties";
 
 	protected String settingsFilePath;
 
