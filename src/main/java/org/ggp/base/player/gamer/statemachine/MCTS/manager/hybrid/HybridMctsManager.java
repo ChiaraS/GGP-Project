@@ -318,21 +318,11 @@ public class HybridMctsManager {
 			throw new RuntimeException(e);
 		}
 
-		boolean logTranspositionTable = gamerSettings.getBooleanPropertyValue("SearchManager.logTranspositionTable");
-		if(!(this.treeNodeFactory instanceof AmafDecoupledTreeNodeFactory)){
-			logTranspositionTable = false;
-		}
-		int gameStepOffset = gamerSettings.getIntPropertyValue("SearchManager.gameStepOffset");
-		double treeDecay = 1.0; // No decay
-		if(gamerSettings.specifiesProperty("SearchManager.treeDecay")){
-			treeDecay = gamerSettings.getDoublePropertyValue("SearchManager.treeDecay");
-		}
-		double amafDecay = 1.0; // No decay
-		if(gamerSettings.specifiesProperty("SearchManager.amafDecay")){
-			amafDecay = gamerSettings.getDoublePropertyValue("SearchManager.amafDecay");
-		}
+		this.transpositionTable = new MctsTranspositionTable(gameDependentParameters, random, gamerSettings, sharedReferencesCollector);
 
-		this.transpositionTable = new MctsTranspositionTable(gameStepOffset, logTranspositionTable, treeDecay, amafDecay);
+		if(!(this.treeNodeFactory instanceof AmafDecoupledTreeNodeFactory)){
+			this.transpositionTable.turnOffLogging();
+		}
 
 		// Let all strategies set references if needed.
 		this.selectionStrategy.setReferences(sharedReferencesCollector);
@@ -541,9 +531,9 @@ public class HybridMctsManager {
 	 * state is either terminal or there is some problem with the computation of legal
 	 * moves (and thus corresponding statistics).
 	 */
-	public MctsNode search(MachineState initialState, long timeout, int gameStep) throws MCTSException{
+	public MctsNode search(MachineState initialState, long timeout, int currentGameStep) throws MCTSException{
 
-		MctsNode initialNode = this.prepareForSearch(initialState, gameStep);
+		MctsNode initialNode = this.prepareForSearch(initialState, currentGameStep);
 
 		// We can be sure that the node is not null, but if it is terminal we cannot perform any search.
 		// Note that the node being terminal might mean that the state is not terminal but legal moves
@@ -583,7 +573,7 @@ public class HybridMctsManager {
 	 * 				   the steps as starting from 1. 0 or less are not valid!
 	 * @return the tree node corresponding to the given initial state.
 	 */
-	private MctsNode prepareForSearch(MachineState initialState, int gameStep){
+	private MctsNode prepareForSearch(MachineState initialState, int currentGameStep){
 
 		this.iterations = 0;
 		this.visitedNodes = 0;
@@ -593,13 +583,15 @@ public class HybridMctsManager {
 		this.searchStart = 0L;
 		this.searchEnd = 0L;
 
+		this.gameDependentParameters.setGameStep(currentGameStep);
+
 		// Every time a move is played in the actual game...
-		if(this.transpositionTable.getLastGameStep() != gameStep){
+		if(this.transpositionTable.getLastGameStep() != currentGameStep){
 			// ...nodes not visited recently are removed from the transposition table...
 
 			//long ttStart = System.currentTimeMillis();
 
-			this.transpositionTable.clean(gameStep);
+			this.transpositionTable.clean(currentGameStep);
 
 			//System.out.println(this.selectionStrategy.getClass().getSimpleName() + " cleaning TT : " + (System.currentTimeMillis()-ttStart));
 

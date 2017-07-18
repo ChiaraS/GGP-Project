@@ -4,13 +4,18 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Random;
 
+import org.ggp.base.player.gamer.statemachine.GamerSettings;
+import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.GameDependentParameters;
+import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.SearchManagerComponent;
+import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.SharedReferencesCollector;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.MctsNode;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.hybrid.amafdecoupled.AmafDecoupledMctsNode;
 import org.ggp.base.util.logging.GamerLogger;
 import org.ggp.base.util.statemachine.structure.MachineState;
 
-public class MctsTranspositionTable {
+public class MctsTranspositionTable extends SearchManagerComponent{
 
 	private boolean log;
 
@@ -25,14 +30,17 @@ public class MctsTranspositionTable {
 	private double amafDecay;
 
 	/**
+	 *
+	 */
+	private int gameStepOffset;
+
+	/**
 	 * The transposition table (implemented with HashMap that uses the state as key
 	 * and solves collisions with linked lists).
 	 */
 	private Map<MachineState,MctsNode> transpositionTable;
 
-	private int currentGameStepStamp;
-
-	private int gameStepOffset;
+	//private int currentGameStepStamp;
 
 	/**
 	 *
@@ -46,22 +54,46 @@ public class MctsTranspositionTable {
 	/**
 	 *
 	 */
-	public MctsTranspositionTable(int gameStepOffset, boolean log, double treeDecay, double amafDecay){
-		this.log = log;
-		this.treeDecay = treeDecay;
-		this.amafDecay = amafDecay;
+	public MctsTranspositionTable(GameDependentParameters gameDependentParameters, Random random,
+			GamerSettings gamerSettings, SharedReferencesCollector sharedReferencesCollector) {
+		super(gameDependentParameters, random, gamerSettings, sharedReferencesCollector);
+		this.log = gamerSettings.getBooleanPropertyValue("MctsTranspositionTable.log");
+
+		if(gamerSettings.specifiesProperty("MctsTranspositionTable.treeDecay")){
+			this.treeDecay = gamerSettings.getDoublePropertyValue("MctsTranspositionTable.treeDecay");
+		}else{
+			this.treeDecay = 1.0; // No decay
+		}
+
+		if(gamerSettings.specifiesProperty("MctsTranspositionTable.amafDecay")){
+			this.amafDecay = gamerSettings.getDoublePropertyValue("MctsTranspositionTable.amafDecay");
+		}else{
+			this.amafDecay = 1.0; // No decay
+		}
+
+		this.gameStepOffset = gamerSettings.getIntPropertyValue("MctsTranspositionTable.gameStepOffset");
+
 		this.transpositionTable = new HashMap<MachineState,MctsNode>();
-		this.currentGameStepStamp = 1;
-		this.gameStepOffset = gameStepOffset;
+
+		//this.treeDecay = treeDecay;
+		//this.amafDecay = amafDecay;
+		//this.currentGameStepStamp = 1;
+		//this.gameStepOffset = gameStepOffset;
 
 	}
 
-	public void clearTranspositionTable(){
+	@Override
+	public void setReferences(SharedReferencesCollector sharedReferencesCollector) {
+		// Do nothing
+	}
+
+	@Override
+	public void clearComponent(){
 		this.transpositionTable.clear();
 	}
 
-	public void setupTranspositionTable(){
-		this.currentGameStepStamp = 1;
+	public void setupComponent(){
+		//this.currentGameStepStamp = 1;
 		if(this.log){
 			GamerLogger.log(GamerLogger.FORMAT.CSV_FORMAT, "TreeSizeStatistics", "Step;Start/End;#Nodes;#ActionsStats;#RAVE_AMAFStats;#GRAVE_AMAFStats;ActionsStats/Node;RAVE_AMAFStats/Node;GRAVE_AMAFStats/Node;");
 			GamerLogger.log(GamerLogger.FORMAT.CSV_FORMAT, "TreeSizeStatistics", "1;Start;0;0;0;0;0;0;0;");
@@ -72,7 +104,7 @@ public class MctsTranspositionTable {
 		MctsNode node = this.transpositionTable.get(state);
 		if(node != null){
 			//System.out.println("Found");
-			node.setGameStepStamp(this.currentGameStepStamp);
+			node.setGameStepStamp(this.gameDependentParameters.getGameStep());
 		}/*else{
 			System.out.println("Not found");
 		}*/
@@ -82,11 +114,14 @@ public class MctsTranspositionTable {
 	public void putNode(MachineState state, MctsNode node){
 		if(node != null){
 			this.transpositionTable.put(state, node);
-			node.setGameStepStamp(this.currentGameStepStamp);
+			node.setGameStepStamp(this.gameDependentParameters.getGameStep());
 		}
 	}
 
-	public void clean(int newGameStepStamp){
+	/**
+	 * This method logs the GRAVE/RAVE statistics (if this.log == true), then leans the table
+	 */
+	public void clean(){
 
 		// Print to check if everything is reset properly
 		/*Iterator<Entry<MachineState,MctsNode>> iterator2 = this.transpositionTable.entrySet().iterator();
@@ -99,7 +134,10 @@ public class MctsTranspositionTable {
 
 		if(this.log){
 
-			int stepBeforeCleaning = this.currentGameStepStamp;
+			int stepBeforeCleaning = this.gameDependentParameters.getGameStep()-1;
+
+			// TODO: make transposition table log only after move or also after metagame?
+
 			int sizeBeforeCleaning = this.transpositionTable.size();
 
 			int actionsStatsBeforeCleaning = 0;
@@ -204,29 +242,21 @@ public class MctsTranspositionTable {
 		//}
 	}
 
+	/*
 	public int getLastGameStep(){
 		return this.currentGameStepStamp;
-	}
+	}*/
 
-	public boolean isTableLogging(){
-		return this.log;
-	}
-
-	public String printTranspositionTable(String indentation) {
-		String params = this.getTranspositionTableParameters(indentation);
-
-		if(params != null){
-			return this.getClass().getSimpleName() + params;
-		}else{
-			return this.getClass().getSimpleName();
-		}
-	}
-
-	private String getTranspositionTableParameters(String indentation) {
-		return indentation + "LOGGING = " + this.log + indentation + "TREE_DECAY = " + this.treeDecay +
+	@Override
+	public String getComponentParameters(String indentation) {
+		return indentation + "LOGGING = " + this.log +
+				indentation + "TREE_DECAY = " + this.treeDecay +
 				indentation + "AMAF_DECAY = " + this.amafDecay +
-				indentation + "current_game_step_stamp = " + this.currentGameStepStamp +
 				indentation + "game_step_offset = " + this.gameStepOffset;
+	}
+
+	public void turnOffLogging(){
+		this.log = false;
 	}
 
 }
