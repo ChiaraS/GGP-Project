@@ -92,7 +92,8 @@ public class MctsTranspositionTable extends SearchManagerComponent{
 		this.transpositionTable.clear();
 	}
 
-	public void setupComponent(){
+	@Override
+	public void setUpComponent(){
 		//this.currentGameStepStamp = 1;
 		if(this.log){
 			GamerLogger.log(GamerLogger.FORMAT.CSV_FORMAT, "TreeSizeStatistics", "Step;Start/End;#Nodes;#ActionsStats;#RAVE_AMAFStats;#GRAVE_AMAFStats;ActionsStats/Node;RAVE_AMAFStats/Node;GRAVE_AMAFStats/Node;");
@@ -134,7 +135,7 @@ public class MctsTranspositionTable extends SearchManagerComponent{
 
 		if(this.log){
 
-			int stepBeforeCleaning = this.gameDependentParameters.getGameStep()-1;
+			int stepBeforeCleaning = this.gameDependentParameters.getPreviousGameStep();
 
 			// TODO: make transposition table log only after move or also after metagame?
 
@@ -167,7 +168,7 @@ public class MctsTranspositionTable extends SearchManagerComponent{
 					raveAmafBeforeCleaning += raveAmaf;
 					graveAmafBeforeCleaning += graveAmaf;
 
-					if(entry.getValue().getGameStepStamp() < (newGameStepStamp-this.gameStepOffset)){
+					if(entry.getValue().getGameStepStamp() < (this.gameDependentParameters.getGameStep()-this.gameStepOffset)){
 						iterator.remove();
 					}else{
 						/*
@@ -185,7 +186,7 @@ public class MctsTranspositionTable extends SearchManagerComponent{
 
 					}
 				}else{
-					if(entry.getValue().getGameStepStamp() < (newGameStepStamp-this.gameStepOffset)){
+					if(entry.getValue().getGameStepStamp() < (this.gameDependentParameters.getGameStep()-this.gameStepOffset)){
 						iterator.remove();
 					}else{
 						entry.getValue().decayStatistics(this.treeDecay);
@@ -202,7 +203,7 @@ public class MctsTranspositionTable extends SearchManagerComponent{
 					raveAmafBeforeCleaning + ";" + graveAmafBeforeCleaning + ";" + actionsStatsPerNode + ";" +
 					raveAmafPerNode + ";" + graveAmafPerNode + ";");
 
-			int stepAfterCleaning = newGameStepStamp;
+			int stepAfterCleaning = this.gameDependentParameters.getGameStep();
 			int sizeAfterCleaning = this.transpositionTable.size();
 
 			actionsStatsPerNode = ((double) actionsStatsAfterCleaning) / ((double) sizeAfterCleaning);
@@ -221,7 +222,7 @@ public class MctsTranspositionTable extends SearchManagerComponent{
 			while(iterator.hasNext()){
 				Entry<MachineState,MctsNode> entry = iterator.next();
 
-				if(entry.getValue().getGameStepStamp() < (newGameStepStamp-this.gameStepOffset)){
+				if(entry.getValue().getGameStepStamp() < (this.gameDependentParameters.getGameStep()-this.gameStepOffset)){
 					iterator.remove();
 				}else{
 					entry.getValue().decayStatistics(this.treeDecay);
@@ -230,7 +231,7 @@ public class MctsTranspositionTable extends SearchManagerComponent{
 
 		}
 
-		this.currentGameStepStamp = newGameStepStamp;
+		//this.currentGameStepStamp = newGameStepStamp;
 
 		// Print to check if everything is reset properly
 		/*Iterator<Entry<MachineState,MctsNode>> iterator = this.transpositionTable.entrySet().iterator();

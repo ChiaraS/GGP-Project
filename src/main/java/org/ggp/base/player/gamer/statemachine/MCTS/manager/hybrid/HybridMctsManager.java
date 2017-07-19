@@ -33,23 +33,31 @@ import org.ggp.base.util.statemachine.structure.MachineState;
 /**
  * @author C.Sironi
  *
+ * TODO: Change structure to have before/after-simulation, before/after-move and after-game
+ * actions performed directly in all components instead of having strategies for those actions
+ * too.
+ *
+ * TODO: change the gamer to always call the MctsManager to perform before and after move
+ * actions even when there is not enough time to perform the search (this way the MctsManager
+ * can keep the game step up to date and perform actions that should be performed per move,
+ * e.g. clean the transposition table, decrease statistics, etc...).
  */
 public class HybridMctsManager {
 
 	//--- Parameters used to collect details about search (duration, number of iterations, ecc...) ---//
 
 	/**
-	 * Number of performed iterations.
+	 * Number of performed iterations during the search for the current game step.
 	 */
-	private int iterations;
+	//private int iterations;
 	/**
 	 * Number of all visited states since the start of the search.
 	 */
-	private int visitedNodes;
+	//private int visitedNodes;
 	/**
 	 * Number of visited nodes in the current iteration so far.
 	 */
-	private int currentIterationVisitedNodes;
+	//private int currentIterationVisitedNodes;
 	/**
 	 * Start time of last performed search.
 	 */
@@ -147,9 +155,6 @@ public class HybridMctsManager {
 
 		GamerLogger.log("SearchManagerCreation", "Creating search manager for gamer " + gamerType + ".");
 
-		this.iterations = 0;
-		this.visitedNodes = 0;
-		this.currentIterationVisitedNodes = 0;
 		this.searchStart = 0;
 		this.searchEnd = 0;
 
@@ -405,16 +410,18 @@ public class HybridMctsManager {
 			toLog += "\nAFTER_GAME_STRATEGY = null";
 		}
 
-		toLog += "\nTRANSPOSITION_TABLE = " + this.transpositionTable.printTranspositionTable("\n  ");
+		toLog += "\nTRANSPOSITION_TABLE = " + this.transpositionTable.printComponent("\n  ");
 
-		toLog += "\niterations = " + this.iterations;
-		toLog += "\nvisited_nodes = " + this.visitedNodes;
-		toLog += "\ncurrent_iteration_visited_nodes = " + this.currentIterationVisitedNodes;
-		toLog += "\nsearch_start = " + this.searchStart;
-		toLog += "\nsearch_end = " + this.searchEnd;
 		toLog += "\nabstract_state_machine = " + (this.gameDependentParameters.getTheMachine() == null ? "null" : this.gameDependentParameters.getTheMachine().getName());
 		toLog += "\nnum_roles = " + this.gameDependentParameters.getNumRoles();
 		toLog += "\nmy_role_index = " + this.gameDependentParameters.getMyRoleIndex();
+		toLog += "\ncurrent_game_step = " + this.gameDependentParameters.getGameStep();
+		toLog += "\nprevious_game_step = " + this.gameDependentParameters.getPreviousGameStep();
+		toLog += "\nstep_iterations = " + this.gameDependentParameters.getStepIterations();
+		toLog += "\nstep_visited_nodes = " + this.gameDependentParameters.getStepVisitedNodes();
+		toLog += "\ncurrent_iteration_visited_nodes = " + this.gameDependentParameters.getCurrentIterationVisitedNodes();
+		toLog += "\nsearch_start = " + this.searchStart;
+		toLog += "\nsearch_end = " + this.searchEnd;
 
 		return toLog;
 
@@ -446,15 +453,12 @@ public class HybridMctsManager {
 		}
 		this.treeNodeFactory.clearComponent();
 
-		this.transpositionTable.clearTranspositionTable();
+		this.transpositionTable.clearComponent();
 
 	}
 
 	public void setUpManager(AbstractStateMachine theMachine, int numRoles, int myRoleIndex){
 
-		this.iterations = 0;
-		this.visitedNodes = 0;
-		this.currentIterationVisitedNodes = 0;
 		this.searchStart = 0;
 		this.searchEnd = 0;
 
@@ -482,7 +486,7 @@ public class HybridMctsManager {
 		}
 		this.treeNodeFactory.setUpComponent();
 
-		this.transpositionTable.setupTranspositionTable();
+		this.transpositionTable.setUpComponent();
 
 	}
 
@@ -575,8 +579,6 @@ public class HybridMctsManager {
 	 */
 	private MctsNode prepareForSearch(MachineState initialState, int currentGameStep){
 
-		this.iterations = 0;
-		this.visitedNodes = 0;
 		// This is required in case the method that wants to prepare the manager for the search fails before actually
 		// performing the search. In this way we can make sure that if someone tries to retrieve the search time after
 		// the search failed it won't get the positive time of the search performed before this one.
@@ -585,13 +587,19 @@ public class HybridMctsManager {
 
 		this.gameDependentParameters.setGameStep(currentGameStep);
 
+		// TODO: here we reset the statistics even if the game step didn't change because the logs
+		// are logging stats for metageme and 1st move separately even if they search for the same
+		// game step. Keep this in mind when using the statistics for the step in other parts of the
+		// code.
+		this.gameDependentParameters.resetStepStatistics();
+
 		// Every time a move is played in the actual game...
-		if(this.transpositionTable.getLastGameStep() != currentGameStep){
+		if(this.gameDependentParameters.getPreviousGameStep() != currentGameStep){
 			// ...nodes not visited recently are removed from the transposition table...
 
 			//long ttStart = System.currentTimeMillis();
 
-			this.transpositionTable.clean(currentGameStep);
+			this.transpositionTable.clean();
 
 			//System.out.println(this.selectionStrategy.getClass().getSimpleName() + " cleaning TT : " + (System.currentTimeMillis()-ttStart));
 
@@ -637,7 +645,8 @@ public class HybridMctsManager {
 	private void performSearch(MachineState initialState, MctsNode initialNode, long timeout){
 		this.searchStart = System.currentTimeMillis();
 		while(! this.timeToStopSearch(timeout)){
-			this.currentIterationVisitedNodes = 0;
+
+			this.gameDependentParameters.resetIterationStatistics();
 
 			//System.out.println();
 			//System.out.println();
@@ -651,8 +660,11 @@ public class HybridMctsManager {
 			//System.out.println("Inizio iterazione");
 
 			SimulationResult[] simulationResult = this.searchNext(initialState, initialNode);
-			this.iterations++;
-			this.visitedNodes += this.currentIterationVisitedNodes;
+			for(int resultIndex = 0; resultIndex < simulationResult.length; resultIndex++){
+				this.gameDependentParameters.increaseStepIterations();
+				this.gameDependentParameters.increaseScoreSumForStep(simulationResult[resultIndex].getTerminalGoals());
+			}
+			this.gameDependentParameters.increaseStepVisitedNodes(this.gameDependentParameters.getCurrentIterationVisitedNodes());
 
 			//((AMAFDecoupledMCTSNode)initialNode).printAMAF();
 
@@ -760,7 +772,7 @@ public class HybridMctsManager {
 
 		// If the state is not terminal (and no error occurred when computing legal moves),
 		// it can be visited (i.e. one of its moves explored) only if the depth limit has not been reached.
-		if(this.currentIterationVisitedNodes >= this.maxSearchDepth){
+		if(this.gameDependentParameters.getCurrentIterationVisitedNodes() >= this.maxSearchDepth){
 
 			GamerLogger.log("MctsManager", "Reached search depth limit. Search interrupted (in the Monte Carlo tree) before reaching a treminal state.");
 
@@ -789,7 +801,7 @@ public class HybridMctsManager {
 			//return new SimulationResult(goals);
 		}
 
-		this.currentIterationVisitedNodes++;
+		this.gameDependentParameters.increaseCurrentIterationVisitedNodes();
 
 		//System.out.println("Node: " + this.currentIterationVisitedNodes);
 
@@ -860,7 +872,7 @@ public class HybridMctsManager {
 		} catch (TransitionDefinitionException | StateMachineException e) {
 			GamerLogger.logError("MctsManager", "Cannot compute next state. Stopping iteration and returning safe goals.");
 
-			this.currentIterationVisitedNodes--;
+			this.gameDependentParameters.decreaseCurrentIterationVisitedNodes();
 
 			simulationResult = new SimulationResult[1];
 			simulationResult[0] = new SimulationResult(this.gameDependentParameters.getTheMachine().getSafeGoalsAvgForAllRoles(currentState));
@@ -932,7 +944,7 @@ public class HybridMctsManager {
 
 				// Check how many nodes can be visited after the current one. At this point
 				// "currentIterationVisitedNodes" can be at most equal to the "maxSearchDepth".
-				int availableDepth = this.maxSearchDepth - this.currentIterationVisitedNodes;
+				int availableDepth = this.maxSearchDepth - this.gameDependentParameters.getCurrentIterationVisitedNodes();
 
 				if(availableDepth == 0){
 
@@ -970,7 +982,8 @@ public class HybridMctsManager {
 					// When using multiple playouts the average number of nodes per iteration will increase,
 					// while the average number of iterations per second will decrease.
 					for(int resultIndex = 0; resultIndex < simulationResult.length; resultIndex++){
-						this.currentIterationVisitedNodes += simulationResult[resultIndex].getPlayoutLength();
+						// TODO: increase currentIterationVisitedNodes directly from the playout strategy every time a new node is visited.
+						this.gameDependentParameters.increaseCurrentIterationVisitedNodes(simulationResult[resultIndex].getPlayoutLength());
 					}
 
 					/*
@@ -1024,7 +1037,7 @@ public class HybridMctsManager {
 
 		if(this.numExpectedIterations > 0){
 
-			return this.iterations == this.numExpectedIterations;
+			return this.gameDependentParameters.getStepIterations() == this.numExpectedIterations;
 
 		}else{
 
@@ -1041,11 +1054,11 @@ public class HybridMctsManager {
 	}
 
 	public int getIterations(){
-		return this.iterations;
+		return this.gameDependentParameters.getStepIterations();
 	}
 
 	public int getVisitedNodes(){
-		return this.visitedNodes;
+		return this.gameDependentParameters.getStepVisitedNodes();
 	}
 
 	public long getSearchTime(){

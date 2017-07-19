@@ -10,6 +10,7 @@ import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.GameDependentP
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.SearchManagerComponent;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.SharedReferencesCollector;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.strategies.selection.evaluators.MoveEvaluator;
+import org.ggp.base.player.gamer.statemachine.MCTS.manager.parameterstuning.structure.parameters.DoubleTunableParameter;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.MctsNode;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.hybrid.MctsJointMove;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.hybrid.MctsMove;
@@ -25,7 +26,7 @@ import org.ggp.base.util.statemachine.structure.Move;
 
 public class MoveValueSelection extends SelectionStrategy {
 
-	private double valueOffset;
+	private DoubleTunableParameter valueOffset;
 
 	/**
 	 * NOTE: to obtain the desired selection type set the MoveEvaluator as follows:
@@ -39,7 +40,7 @@ public class MoveValueSelection extends SelectionStrategy {
 
 		super(gameDependentParameters, random, gamerSettings, sharedReferencesCollector);
 
-		this.valueOffset = gamerSettings.getDoublePropertyValue("SelectionStrategy.valueOffset");
+		this.valueOffset = this.createDoubleTunableParameter("SelectionStrategy", "VO", gamerSettings, sharedReferencesCollector);
 
 		try {
 			this.moveEvaluator = (MoveEvaluator) SearchManagerComponent.getConstructorForSearchManagerComponent(SearchManagerComponent.getCorrespondingClass(ProjectSearcher.MOVE_EVALUATORS.getConcreteClasses(),
@@ -62,11 +63,13 @@ public class MoveValueSelection extends SelectionStrategy {
 	@Override
 	public void clearComponent(){
 		this.moveEvaluator.clearComponent();
+		this.valueOffset.clearParameter();
 	}
 
 	@Override
 	public void setUpComponent(){
 		this.moveEvaluator.setUpComponent();
+		this.valueOffset.setUpParameter(this.gameDependentParameters.getNumRoles());
 	}
 
 	@Override
@@ -151,7 +154,7 @@ public class MoveValueSelection extends SelectionStrategy {
 
 			//System.out.print(moveValues[j] + " ");
 
-			if(moveValues[j] >= (maxMoveValue-this.valueOffset)){
+			if(moveValues[j] >= (maxMoveValue-this.valueOffset.getValuePerRole(roleIndex))){
 				selectedMovesIndices.add(new Integer(j));
 			}
 		}
@@ -212,7 +215,7 @@ public class MoveValueSelection extends SelectionStrategy {
 			List<Integer> selectedMovesIndices = new ArrayList<Integer>();
 
 			for(int i = 0; i < moveValues.length; i++){
-				if(moveValues[i] >= (maxMoveValue-this.valueOffset)){
+				if(moveValues[i] >= (maxMoveValue-this.valueOffset.getValuePerRole(roleIndex))){
 					selectedMovesIndices.add(new Integer(i));
 				}
 			}
@@ -244,7 +247,8 @@ public class MoveValueSelection extends SelectionStrategy {
 	@Override
 	public String getComponentParameters(String indentation){
 
-		return indentation + "VALUE_OFFSET = " + this.valueOffset + indentation + "MOVE_EVALUATOR = " + this.moveEvaluator.printComponent(indentation + "  ");
+		return indentation + "VALUE_OFFSET = " + this.valueOffset.getParameters(indentation + "  ") +
+				indentation + "MOVE_EVALUATOR = " + this.moveEvaluator.printComponent(indentation + "  ");
 	}
 
 }

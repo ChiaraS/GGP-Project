@@ -18,6 +18,13 @@ import org.ggp.base.util.statemachine.structure.Move;
 
 public class MultiplePlayout extends PlayoutStrategy {
 
+
+	// Logging purpose
+	private int totalCalls;
+	private int multiPlayoutCalls;
+
+
+
 	interface CondChecker {
         boolean isMoveInteresting(List<Move> jointMove);
     }
@@ -74,8 +81,10 @@ public class MultiplePlayout extends PlayoutStrategy {
 	 * TODO: unify these values for the whole MCTSManager instead of keeping them memorized
 	 * in different parts of the code.
 	 */
+	/*
 	private double[] currentStepScoreSum; // One value per role
 	private int currentStepIterations; // Same value for all roles
+	*/
 
 	public MultiplePlayout(GameDependentParameters gameDependentParameters,	Random random,
 			GamerSettings gamerSettings, SharedReferencesCollector sharedReferencesCollector, String id) {
@@ -127,10 +136,10 @@ public class MultiplePlayout extends PlayoutStrategy {
 
 				// Compute the average return value for the current step
 				double currentStepAvgScore;
-				if(this.currentStepIterations == 0){
+				if(this.gameDependentParameters.getStepIterations() == 0){
 					currentStepAvgScore = 50.0;
 				}else{
-					currentStepAvgScore = this.currentStepScoreSum[roleIndex] / ((double)this.currentStepIterations);
+					currentStepAvgScore = this.gameDependentParameters.getScoreSumForStep()[roleIndex] / ((double)this.gameDependentParameters.getStepIterations());
 				}
 
 
@@ -180,7 +189,7 @@ public class MultiplePlayout extends PlayoutStrategy {
 
 				// If we haven't performed enough iterations for this step yet, don't perform multiple playouts,
 				// because the average return value for this step is probably still inaccurate.
-				if(this.currentStepIterations < this.minIterationsThreshold){
+				if(this.gameDependentParameters.getStepIterations() < this.minIterationsThreshold){
 					return false;
 				}
 
@@ -200,7 +209,7 @@ public class MultiplePlayout extends PlayoutStrategy {
 
 				// If we haven't performed enough iterations for this step yet, don't perform multiple playouts,
 				// because the average return value for this step is probably still inaccurate.
-				if(this.currentStepIterations < this.minIterationsThreshold){
+				if(this.gameDependentParameters.getStepIterations() < this.minIterationsThreshold){
 					return false;
 				}
 
@@ -220,7 +229,7 @@ public class MultiplePlayout extends PlayoutStrategy {
 
 				// If we haven't performed enough iterations for this step yet, don't perform multiple playouts,
 				// because the average return value for this step is probably still inaccurate.
-				if(this.currentStepIterations < this.minIterationsThreshold){
+				if(this.gameDependentParameters.getStepIterations() < this.minIterationsThreshold){
 					return false;
 				}
 
@@ -234,8 +243,11 @@ public class MultiplePlayout extends PlayoutStrategy {
 			break;
 		}
 
-		this.currentStepScoreSum = null;
-		this.currentStepIterations = 0;
+		//this.currentStepScoreSum = null;
+		//this.currentStepIterations = 0;
+
+		this.totalCalls = 0;
+		this.multiPlayoutCalls = 0;
 
 	}
 
@@ -252,8 +264,8 @@ public class MultiplePlayout extends PlayoutStrategy {
 
 		this.subPlayoutStrategy.clearComponent();
 
-		this.currentStepScoreSum = null;
-		this.currentStepIterations = 0;
+		//this.currentStepScoreSum = null;
+		//this.currentStepIterations = 0;
 
 
 	}
@@ -263,9 +275,12 @@ public class MultiplePlayout extends PlayoutStrategy {
 
 		this.subPlayoutStrategy.setUpComponent();
 
-		this.currentStepScoreSum = new double[this.gameDependentParameters.getNumRoles()];
+		//this.currentStepScoreSum = new double[this.gameDependentParameters.getNumRoles()];
 
-		this.resetStepStatistics();
+		//this.resetStepStatistics();
+
+		this.totalCalls = 0;
+		this.multiPlayoutCalls = 0;
 
 
 	}
@@ -285,19 +300,13 @@ public class MultiplePlayout extends PlayoutStrategy {
 			results = new SimulationResult[this.numPlayouts];
 			for(int repetition = 0; repetition < results.length; repetition++){
 				results[repetition] = this.subPlayoutStrategy.singlePlayout(state, maxDepth);
-				for(int roleIndex = 0; roleIndex < results[repetition].getTerminalGoals().length; roleIndex++){
-					this.currentStepScoreSum[roleIndex] += ((double)results[repetition].getTerminalGoals()[roleIndex]);
-				}
-				this.currentStepIterations++;
 			}
-			return results;
+			this.multiPlayoutCalls++;
 		}else{
 			results = this.subPlayoutStrategy.playout(jointMove, state, maxDepth);
-			for(int roleIndex = 0; roleIndex < results[0].getTerminalGoals().length; roleIndex++){
-				this.currentStepScoreSum[roleIndex] += ((double)results[0].getTerminalGoals()[roleIndex]);
-			}
-			this.currentStepIterations++;
 		}
+
+		this.totalCalls++;
 
 		return results;
 
@@ -312,8 +321,6 @@ public class MultiplePlayout extends PlayoutStrategy {
 	public Move getMoveForRole(MachineState state, int roleIndex) {
 		return this.subPlayoutStrategy.getMoveForRole(state, roleIndex);
 	}
-
-
 
 	@Override
 	public String getComponentParameters(String indentation) {
@@ -338,26 +345,21 @@ public class MultiplePlayout extends PlayoutStrategy {
 			params += indentation + "mast_statistics = null";
 		}
 
-		params += indentation + "current_step_score_sum = " + this.currentStepScoreSum +
-				indentation + "current_step_iterations = " + this.currentStepIterations;
+		//params += indentation + "current_step_score_sum = " + this.currentStepScoreSum +
+		//		indentation + "current_step_iterations = " + this.currentStepIterations;
 
 		return params;
 
 	}
 
-	public void resetStepStatistics(){
+	public void logAndResetCallStatistics(){
 
-		for(int roleIndex = 0; roleIndex < this.currentStepScoreSum.length; roleIndex++){
+		GamerLogger.log(GamerLogger.FORMAT.CSV_FORMAT, "MultiPlayoutStats", "STEP=;" + this.gameDependentParameters.getPreviousGameStep() +
+				";TOTAL_PLAYOUT_CALLS=;" + this.totalCalls + ";MULTI_PLAYOUT_CALLS=;" + this.multiPlayoutCalls + ";");
 
-			System.out.println("ROLE=" +
-					this.gameDependentParameters.getTheMachine().convertToExplicitRole(this.gameDependentParameters.getTheMachine().getRoles().get(roleIndex)) +
-					", SCORE_SUM=" + this.currentStepScoreSum[roleIndex] + ", ITERATIONS=" + this.currentStepIterations + ", AVG=" +
-					(this.currentStepIterations != 0 ? (this.currentStepScoreSum[roleIndex]/((double)this.currentStepIterations)) : "50"));
+		this.totalCalls = 0;
+		this.multiPlayoutCalls = 0;
 
-
-			this.currentStepScoreSum[roleIndex] = 0;
-		}
-		this.currentStepIterations = 0;
 	}
 
 }

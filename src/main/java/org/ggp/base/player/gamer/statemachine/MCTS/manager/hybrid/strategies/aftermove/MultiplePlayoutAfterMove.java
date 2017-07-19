@@ -12,6 +12,7 @@ public class MultiplePlayoutAfterMove extends AfterMoveStrategy {
 
 	private MultiplePlayout multiplePlayout;
 
+
 	public MultiplePlayoutAfterMove(GameDependentParameters gameDependentParameters, Random random,
 			GamerSettings gamerSettings, SharedReferencesCollector sharedReferencesCollector, String id) {
 		super(gameDependentParameters, random, gamerSettings, sharedReferencesCollector, id);
@@ -39,11 +40,13 @@ public class MultiplePlayoutAfterMove extends AfterMoveStrategy {
 	@Override
 	public void setUpComponent() {
 		// Do nothing
+
 	}
 
 	@Override
 	public void afterMoveActions() {
-		this.multiplePlayout.resetStepStatistics();
+		this.multiplePlayout.logAndResetCallStatistics();
+		//this.multiplePlayout.resetStepStatistics();
 	}
 
 	@Override
