@@ -165,7 +165,7 @@ public class HybridMctsManager {
 		}else{
 			this.numExpectedIterations = -1;
 		}
-		this.gameDependentParameters = new GameDependentParameters();
+		this.gameDependentParameters = new GameDependentParameters(gamerSettings.getDoublePropertyValue("GameDependentParameters.totalDecayFactor"));
 
 		// Create strategies according to the types specified in the gamer configuration
 		SharedReferencesCollector sharedReferencesCollector = new SharedReferencesCollector();
@@ -613,6 +613,8 @@ public class HybridMctsManager {
 			// gets here so that we can check the new game step and be sure that the actual game proceeded.
 			// Otherwise we'll also perform the "AfterMoveActions" even after the initial search during metagame, but
 			// the actual game won't have been advanced the next time the search will be performed.
+			// TODO: change code so that the after move action is performed at the end of each move instead of the
+			// beginning of the subsequent move
 			if(this.afterMoveStrategy != null){
 				this.afterMoveStrategy.afterMoveActions();
 			}
@@ -661,8 +663,8 @@ public class HybridMctsManager {
 
 			SimulationResult[] simulationResult = this.searchNext(initialState, initialNode);
 			for(int resultIndex = 0; resultIndex < simulationResult.length; resultIndex++){
-				this.gameDependentParameters.increaseStepIterations();
-				this.gameDependentParameters.increaseScoreSumForStep(simulationResult[resultIndex].getTerminalGoals());
+				this.gameDependentParameters.increaseIterations();
+				this.gameDependentParameters.increaseScoreSumForRoles(simulationResult[resultIndex].getTerminalGoals());
 			}
 			this.gameDependentParameters.increaseStepVisitedNodes(this.gameDependentParameters.getCurrentIterationVisitedNodes());
 
@@ -1048,9 +1050,22 @@ public class HybridMctsManager {
 	}
 
 	public void afterGameActions(List<Integer> goals){
+		// Call again the AfterMoveAction because for the search of the last move it hasn't been
+		// performed yet, because it is always performed at the beginning of a new search.
+		if(this.afterMoveStrategy != null){
+			this.afterMoveStrategy.afterMoveActions();
+		}
 		if(this.afterGameStrategy != null){
 			this.afterGameStrategy.afterGameActions(goals);
 		}
+	}
+
+	public double[] getScoreSumForRoles(){
+		return this.gameDependentParameters.getScoreSumForRoles();
+	}
+
+	public int getTotalIterations(){
+		return this.gameDependentParameters.getTotalIterations();
 	}
 
 	public int getIterations(){

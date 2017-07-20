@@ -21,7 +21,7 @@ public class MastAfterMove extends AfterMoveStrategy {
 
 	private boolean logMastStats;
 
-	private int gameStep;
+	//private int gameStep;
 
 	public MastAfterMove(GameDependentParameters gameDependentParameters, Random random,
 			GamerSettings gamerSettings, SharedReferencesCollector sharedReferencesCollector, String id) {
@@ -32,7 +32,7 @@ public class MastAfterMove extends AfterMoveStrategy {
 
 		this.logMastStats = gamerSettings.getBooleanPropertyValue("AfterMoveStrategy" + id + ".logMastStats");
 
-		this.gameStep = 0;
+		//this.gameStep = 0;
 	}
 
 	@Override
@@ -48,7 +48,7 @@ public class MastAfterMove extends AfterMoveStrategy {
 
 	@Override
 	public void setUpComponent() {
-		this.gameStep = 0;
+		//this.gameStep = 0;
 	}
 
 	@Override
@@ -126,7 +126,7 @@ public class MastAfterMove extends AfterMoveStrategy {
 			this.logMastStats();
 		}
 
-		this.gameStep++;
+		//this.gameStep++;
 
 		/*
 		String toPrint = "MastStats[";
@@ -154,7 +154,9 @@ public class MastAfterMove extends AfterMoveStrategy {
 
 	private void logMastStats(){
 
-		String toLog = "STEP=;" + this.gameStep + ";\n";
+		// NOTE that the AfterMoveStrategy is actually called before starting the search of the new step.
+		// Thus MAST statistics refer to the previous step.
+		String toLog = "STEP=;" + this.gameDependentParameters.getPreviousGameStep() + ";\n";
 
 		if(this.mastStatistics == null){
 			for(int roleIndex = 0; roleIndex < this.mastStatistics.size(); roleIndex++){

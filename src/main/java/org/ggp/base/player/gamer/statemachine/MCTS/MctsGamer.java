@@ -106,8 +106,9 @@ public class MctsGamer extends InternalPropnetGamer {
     	int visitedNodes = -1;
     	double iterationsPerSecond = -1;
     	double nodesPerSecond = -1;
+    	String avgSearchScorePerRole = "[ ]";
+
 		GamerLogger.log("Gamer", "Starting metagame with available thinking time " + (realTimeout-start) + "ms.");
-		GamerLogger.log(GamerLogger.FORMAT.CSV_FORMAT, "Stats", "Game step;Thinking time(ms);Search time(ms);Iterations;Visited nodes;Iterations/second;Nodes/second;Chosen move;Move score sum;Move visits;Avg move score");
 
 		AbstractStateMachine abstractStateMachine;
 		int myRoleIndex;
@@ -122,6 +123,14 @@ public class MctsGamer extends InternalPropnetGamer {
 			numRoles = this.getStateMachine().getExplicitRoles().size();
 			myRoleIndex = this.getStateMachine().getRoleIndices().get(this.getRole());
 		}
+
+    	String rolesList = "[ ";
+    	for(int roleIndex = 0; roleIndex < abstractStateMachine.getRoles().size(); roleIndex++){
+    		rolesList += (abstractStateMachine.convertToExplicitRole((abstractStateMachine.getRoles().get(roleIndex))) + " ");
+    	}
+    	rolesList += "]";
+		GamerLogger.log(GamerLogger.FORMAT.CSV_FORMAT, "Stats", "Game step;Thinking time(ms);Search time(ms);Iterations;Visited nodes;Iterations/second;Nodes/second;Chosen move;Move score sum;Move visits;Avg move score;Avg search score " + rolesList + ";");
+
 
 		this.mctsManager.setUpManager(abstractStateMachine, numRoles, myRoleIndex);
 
@@ -145,6 +154,19 @@ public class MctsGamer extends InternalPropnetGamer {
 					searchTime = this.mctsManager.getSearchTime();
 		        	iterations = this.mctsManager.getIterations();
 		        	visitedNodes = this.mctsManager.getVisitedNodes();
+
+		        	int totalIterations = this.mctsManager.getTotalIterations();
+		        	if(totalIterations > 0){
+			        	double[] scoreSumPerRole = this.mctsManager.getScoreSumForRoles();
+			        	avgSearchScorePerRole = "[ ";
+			           	for(int roleIndex = 0; roleIndex < scoreSumPerRole.length; roleIndex++){
+			           		avgSearchScorePerRole += ((scoreSumPerRole[roleIndex]/((double)totalIterations)) + " ");
+			        	}
+			           	avgSearchScorePerRole += "]";
+		        	}else{
+		        		avgSearchScorePerRole = "[ ]";
+		        	}
+
 		        	if(searchTime != 0){
 			        	iterationsPerSecond = ((double) iterations * 1000)/((double) searchTime);
 			        	nodesPerSecond = ((double) visitedNodes * 1000)/((double) searchTime);
@@ -171,7 +193,7 @@ public class MctsGamer extends InternalPropnetGamer {
 			thinkingTime = System.currentTimeMillis() - start;
 		}
 
-		GamerLogger.log(GamerLogger.FORMAT.CSV_FORMAT, "Stats", this.gameStep + ";" + thinkingTime + ";" + searchTime + ";" + iterations + ";" + visitedNodes + ";" + iterationsPerSecond + ";" + nodesPerSecond + ";null;-1;-1;-1;");
+		GamerLogger.log(GamerLogger.FORMAT.CSV_FORMAT, "Stats", this.gameStep + ";" + thinkingTime + ";" + searchTime + ";" + iterations + ";" + visitedNodes + ";" + iterationsPerSecond + ";" + nodesPerSecond + ";null;-1;-1;-1;" + avgSearchScorePerRole + ";");
 	}
 
 	/* (non-Javadoc)
@@ -199,6 +221,7 @@ public class MctsGamer extends InternalPropnetGamer {
     	double moveScoreSum = -1.0;
     	int moveVisits = -1;
     	double moveAvgScore = -1;
+    	String avgSearchScorePerRole = "[ ]";
 
 		this.gameStep++;
 
@@ -254,6 +277,18 @@ public class MctsGamer extends InternalPropnetGamer {
 		    		moveAvgScore = 0;
 		    	}
 
+		    	int totalIterations = this.mctsManager.getTotalIterations();
+	        	if(totalIterations > 0){
+		        	double[] scoreSumPerRole = this.mctsManager.getScoreSumForRoles();
+		        	avgSearchScorePerRole = "[ ";
+		           	for(int roleIndex = 0; roleIndex < scoreSumPerRole.length; roleIndex++){
+		           		avgSearchScorePerRole += ((scoreSumPerRole[roleIndex]/((double)totalIterations)) + " ");
+		        	}
+		           	avgSearchScorePerRole += "]";
+	        	}else{
+	        		avgSearchScorePerRole = "[ ]";
+	        	}
+
 				GamerLogger.log("Gamer", "Returning MCTS move " + theMove + ".");
 			}catch(MCTSException e){
 				GamerLogger.logError("Gamer", "MCTS failed to return a move.");
@@ -271,7 +306,7 @@ public class MctsGamer extends InternalPropnetGamer {
 
 		thinkingTime = System.currentTimeMillis() - start;
 
-		GamerLogger.log(GamerLogger.FORMAT.CSV_FORMAT, "Stats", this.gameStep + ";" + thinkingTime + ";" + searchTime + ";" + iterations + ";" + visitedNodes + ";" + iterationsPerSecond + ";" + nodesPerSecond + ";" + theMove + ";" + moveScoreSum + ";" + moveVisits + ";" + moveAvgScore + ";");
+		GamerLogger.log(GamerLogger.FORMAT.CSV_FORMAT, "Stats", this.gameStep + ";" + thinkingTime + ";" + searchTime + ";" + iterations + ";" + visitedNodes + ";" + iterationsPerSecond + ";" + nodesPerSecond + ";" + theMove + ";" + moveScoreSum + ";" + moveVisits + ";" + moveAvgScore + ";" + avgSearchScorePerRole + ";");
 
 		// TODO: IS THIS NEEDED? WHEN?
 		notifyObservers(new GamerSelectedMoveEvent(this.getStateMachine().getExplicitLegalMoves(this.getCurrentState(), this.getRole()), theMove, thinkingTime));

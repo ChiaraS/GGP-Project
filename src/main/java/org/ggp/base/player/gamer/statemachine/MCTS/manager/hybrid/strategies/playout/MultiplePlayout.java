@@ -134,12 +134,12 @@ public class MultiplePlayout extends PlayoutStrategy {
 				// Compute the average MAST score
 				double theMoveAvgScore = theMoveStats.getScoreSum() / ((double) theMoveStats.getVisits());
 
-				// Compute the average return value for the current step
+				// Compute the average return value of the game
 				double currentStepAvgScore;
-				if(this.gameDependentParameters.getStepIterations() == 0){
+				if(this.gameDependentParameters.getTotalIterations() == 0){
 					currentStepAvgScore = 50.0;
 				}else{
-					currentStepAvgScore = this.gameDependentParameters.getScoreSumForStep()[roleIndex] / ((double)this.gameDependentParameters.getStepIterations());
+					currentStepAvgScore = this.gameDependentParameters.getScoreSumForRoles()[roleIndex] / ((double)this.gameDependentParameters.getTotalIterations());
 				}
 
 
@@ -187,9 +187,9 @@ public class MultiplePlayout extends PlayoutStrategy {
 
 			this.condChecker = (jointMove) -> {
 
-				// If we haven't performed enough iterations for this step yet, don't perform multiple playouts,
-				// because the average return value for this step is probably still inaccurate.
-				if(this.gameDependentParameters.getStepIterations() < this.minIterationsThreshold){
+				// If we haven't performed enough iterations for this game yet, don't perform multiple playouts,
+				// because the average return value is probably still inaccurate.
+				if(this.gameDependentParameters.getTotalIterations() < this.minIterationsThreshold){
 					return false;
 				}
 
@@ -207,9 +207,9 @@ public class MultiplePlayout extends PlayoutStrategy {
 
 			this.condChecker = (jointMove) -> {
 
-				// If we haven't performed enough iterations for this step yet, don't perform multiple playouts,
-				// because the average return value for this step is probably still inaccurate.
-				if(this.gameDependentParameters.getStepIterations() < this.minIterationsThreshold){
+				// If we haven't performed enough iterations for this game yet, don't perform multiple playouts,
+				// because the average return value is probably still inaccurate.
+				if(this.gameDependentParameters.getTotalIterations() < this.minIterationsThreshold){
 					return false;
 				}
 
@@ -227,9 +227,9 @@ public class MultiplePlayout extends PlayoutStrategy {
 
 			this.condChecker = (jointMove) -> {
 
-				// If we haven't performed enough iterations for this step yet, don't perform multiple playouts,
-				// because the average return value for this step is probably still inaccurate.
-				if(this.gameDependentParameters.getStepIterations() < this.minIterationsThreshold){
+				// If we haven't performed enough iterations for this game yet, don't perform multiple playouts,
+				// because the average return value is probably still inaccurate.
+				if(this.gameDependentParameters.getTotalIterations() < this.minIterationsThreshold){
 					return false;
 				}
 

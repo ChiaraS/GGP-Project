@@ -4,6 +4,10 @@ import org.ggp.base.util.statemachine.abstractsm.AbstractStateMachine;
 
 public class GameDependentParameters {
 
+	// TODO: FIX!!!!!!!!!!!!! The decay shuldn't be done here but by the strategy that need the stats to be decayed!
+	private double totalDecayFactor;
+
+
 	// Parameters that change for every game:
 
 	private AbstractStateMachine theMachine;
@@ -11,6 +15,18 @@ public class GameDependentParameters {
 	private int numRoles;
 
 	private int myRoleIndex;
+
+	/**
+	 * Sum of the scores obtained for each role over all the iterations performed
+	 * so far for the current game.
+	 */
+	private double[] scoreSumForRole;
+
+	/** Iterations performed so far for the current game.
+	 * NOTE: when using multiple playouts in the same iteration the number of iterations
+	 * will be increased by the number of performed playouts and not only by 1.
+	 */
+	private int totalIterations;
 
 	// Parameters that change for every game step:
 
@@ -45,12 +61,6 @@ public class GameDependentParameters {
 	 */
 	private int stepVisitedNodes;
 
-	/**
-	 * Sum of the scores obtained for each role over all the iterations performed
-	 * so far for the current game step.
-	 */
-	private double[] scoreSumForStep;
-
 	// Parameters that change for every iteration:
 
 	/**
@@ -58,17 +68,21 @@ public class GameDependentParameters {
 	 */
 	private int currentIterationVisitedNodes;
 
-	public GameDependentParameters(){
+	public GameDependentParameters(double totalDecayFactor){
+
+		this.totalDecayFactor = totalDecayFactor;
+
 		this.theMachine = null;
 		this.numRoles = -1;
 		this.myRoleIndex = -1;
+		this.scoreSumForRole = null;
+		this.totalIterations = 0;
 
-		this.gameStep = 0;
-		this.previousGameStep = 0;
+		this.gameStep = 1;
+		this.previousGameStep = 1;
 
 		this.stepIterations = 0;
 		this.stepVisitedNodes = 0;
-		this.scoreSumForStep = null;
 
 		this.currentIterationVisitedNodes = 0;
 	}
@@ -83,6 +97,20 @@ public class GameDependentParameters {
 
 	public int getMyRoleIndex(){
 		return this.myRoleIndex;
+	}
+
+	public void increaseScoreSumForRoles(int[] roleScores){
+		for(int roleIndex = 0; roleIndex < this.scoreSumForRole.length; roleIndex++){
+			this.scoreSumForRole[roleIndex] += roleScores[roleIndex];
+		}
+	}
+
+	public double[] getScoreSumForRoles(){
+		return this.scoreSumForRole;
+	}
+
+	public int getTotalIterations(){
+		return this.totalIterations;
 	}
 
 	public int getGameStep(){
@@ -112,8 +140,9 @@ public class GameDependentParameters {
 		return this.previousGameStep;
 	}
 
-	public void increaseStepIterations(){
+	public void increaseIterations(){
 		this.stepIterations++;
+		this.totalIterations++;
 	}
 
 	public int getStepIterations(){
@@ -126,16 +155,6 @@ public class GameDependentParameters {
 
 	public int getStepVisitedNodes(){
 		return this.stepVisitedNodes;
-	}
-
-	public void increaseScoreSumForStep(int[] roleScores){
-		for(int roleIndex = 0; roleIndex < this.scoreSumForStep.length; roleIndex++){
-			this.scoreSumForStep[roleIndex] += roleScores[roleIndex];
-		}
-	}
-
-	public double[] getScoreSumForStep(){
-		return this.scoreSumForStep;
 	}
 
 	public void increaseCurrentIterationVisitedNodes(int increase){
@@ -158,13 +177,14 @@ public class GameDependentParameters {
 		this.theMachine = null;
 		this.numRoles = -1;
 		this.myRoleIndex = -1;
+		this.scoreSumForRole = null;
+		this.totalIterations = 0;
 
-		this.gameStep = 0;
-		this.previousGameStep = 0;
+		this.gameStep = 1;
+		this.previousGameStep = 1;
 
 		this.stepIterations = 0;
 		this.stepVisitedNodes = 0;
-		this.scoreSumForStep = null;
 
 		this.currentIterationVisitedNodes = 0;
 	}
@@ -173,9 +193,11 @@ public class GameDependentParameters {
 		this.theMachine = theMachine;
 		this.numRoles = numRoles;
 		this.myRoleIndex = myRoleIndex;
+		this.scoreSumForRole = new double[this.numRoles]; // Initialized to all 0s by default
+		this.totalIterations = 0;
 
-		this.gameStep = 0;
-		this.previousGameStep = 0;
+		this.gameStep = 1;
+		this.previousGameStep = 1;
 
 		this.resetStepStatistics();
 	}
@@ -184,7 +206,26 @@ public class GameDependentParameters {
 
 		this.stepIterations = 0;
 		this.stepVisitedNodes = 0;
-		this.scoreSumForStep = new double[this.numRoles]; // Initialized to all 0s by default
+
+
+
+
+		///////////////////////////
+		// Decay total statistics
+		// TODO: don't do this here but only for the strategies that need the stats to decay
+		if(this.totalDecayFactor == 0.0){
+			this.totalIterations = 0;
+			this.scoreSumForRole = new double[this.numRoles];
+		}else if(this.totalDecayFactor != 1.0){
+			for(int roleIndex = 0; roleIndex < this.scoreSumForRole.length; roleIndex++){
+				double avg = this.scoreSumForRole[roleIndex]/((double)this.totalIterations);
+				this.totalIterations = (int) Math.round(((double)this.totalIterations)*this.totalDecayFactor);
+				this.scoreSumForRole[roleIndex] = ((double)this.totalIterations)*avg;
+			}
+		}
+		//////////////////////////
+
+
 
 		this.resetIterationStatistics();
 	}
