@@ -154,9 +154,7 @@ public class MastAfterMove extends AfterMoveStrategy {
 
 	private void logMastStats(){
 
-		// NOTE that the AfterMoveStrategy is actually called before starting the search of the new step.
-		// Thus MAST statistics refer to the previous step.
-		String toLog = "STEP=;" + this.gameDependentParameters.getPreviousGameStep() + ";\n";
+		String toLog = "STEP=;" + this.gameDependentParameters.getGameStep() + ";\n";
 
 		if(this.mastStatistics == null){
 			for(int roleIndex = 0; roleIndex < this.mastStatistics.size(); roleIndex++){

@@ -9,7 +9,7 @@ import org.ggp.base.player.gamer.statemachine.MCTS.manager.parameterstuning.Para
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.parameterstuning.TimeLimitedLsiParametersTuner;
 import org.ggp.base.util.logging.GamerLogger;
 
-public class TimeLimitedLsiTunerBeforeMove extends BeforeMoveStrategy {
+public class TimeLimitedLsiTunerBeforeMove extends BeforeSearchStrategy {
 
 	private TimeLimitedLsiParametersTuner timeLimitedLsiParametersTuner;
 

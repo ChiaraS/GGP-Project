@@ -45,7 +45,7 @@ public class MultiplePlayoutAfterMove extends AfterMoveStrategy {
 
 	@Override
 	public void afterMoveActions() {
-		this.multiplePlayout.logAndResetCallStatistics();
+		this.multiplePlayout.resetOrDecayStats();
 		//this.multiplePlayout.resetStepStatistics();
 	}
 

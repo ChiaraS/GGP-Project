@@ -120,140 +120,75 @@ public class MctsTranspositionTable extends SearchManagerComponent{
 	}
 
 	/**
-	 * This method logs the GRAVE/RAVE statistics (if this.log == true), then leans the table
+	 * This method cleans the table by removing very old statistics and decaying less old statistics.
 	 */
 	public void clean(){
+		Iterator<Entry<MachineState,MctsNode>> iterator = this.transpositionTable.entrySet().iterator();
+		Entry<MachineState,MctsNode> entry;
+		while(iterator.hasNext()){
+			entry = iterator.next();
+			if(entry.getValue().getGameStepStamp() < (this.gameDependentParameters.getGameStep()-this.gameStepOffset)){
+				iterator.remove();
+			}else{
+				entry.getValue().decayStatistics(this.treeDecay);
+			}
+		}
+	}
 
-		// Print to check if everything is reset properly
-		/*Iterator<Entry<MachineState,MctsNode>> iterator2 = this.transpositionTable.entrySet().iterator();
-		while(iterator2.hasNext()){
-			System.out.println(iterator2.next().getValue().toString());
-		}*/
-
-		// Clean the table only if the game-step stamp changed (this is already checked by the caller).
-		//if(newGameStepStamp != this.currentGameStepStamp){
-
+	/**
+	 * Logs the average number of action statistics and AMAF statistics memorized in the transposition table.
+	 *
+	 * @param logMoment "Start" if the statistics are being logged before the start of the search for the next
+	 * move (and thus after being decayed after the previous move), "End" if they are being logged after the move
+	 * and before being decayed.
+	 */
+	public void logTable(String logMoment){
 		if(this.log){
 
-			int stepBeforeCleaning = this.gameDependentParameters.getPreviousGameStep();
+			//int stepBeforeCleaning = this.gameDependentParameters.getPreviousGameStep();
 
 			// TODO: make transposition table log only after move or also after metagame?
 
-			int sizeBeforeCleaning = this.transpositionTable.size();
+			int size = this.transpositionTable.size();
 
-			int actionsStatsBeforeCleaning = 0;
-			int raveAmafBeforeCleaning = 0;
-			int graveAmafBeforeCleaning = 0;
-
-			int actionsStatsAfterCleaning = 0;
-			int raveAmafAfterCleaning = 0;
-			int graveAmafAfterCleaning = 0;
-
+			int totalActionsStats = 0;
+			int totalRaveAmaf = 0;
+			int totalGraveAmaf = 0;
 
 			//System.out.println("Current TT game step: " + newGameStepStamp);
 			//System.out.println("Cleaning TT with game step: " + newGameStepStamp);
 			//System.out.println("Current TT size: " + this.transpositionTable.size());
 
 			// Remove all nodes last accessed earlier than the game step (newGameStepStamp-gameStepOffset)
-			Iterator<Entry<MachineState,MctsNode>> iterator = this.transpositionTable.entrySet().iterator();
-			while(iterator.hasNext()){
-				Entry<MachineState,MctsNode> entry = iterator.next();
-
+			for(Entry<MachineState,MctsNode> entry : this.transpositionTable.entrySet()){
 				if(entry.getValue() instanceof AmafDecoupledMctsNode){
 					int actionsStats = ((AmafDecoupledMctsNode) entry.getValue()).getActionsStatsNumber();
 					int raveAmaf = ((AmafDecoupledMctsNode) entry.getValue()).getRaveAMAFStatsNumber();
 					int graveAmaf = ((AmafDecoupledMctsNode) entry.getValue()).getGraveAMAFStatsNumber();
 
-					actionsStatsBeforeCleaning += actionsStats;
-					raveAmafBeforeCleaning += raveAmaf;
-					graveAmafBeforeCleaning += graveAmaf;
-
-					if(entry.getValue().getGameStepStamp() < (this.gameDependentParameters.getGameStep()-this.gameStepOffset)){
-						iterator.remove();
-					}else{
-						/*
-						actionsStatsAfterCleaning += actionsStats;
-						raveAmafAfterCleaning += raveAmaf;
-						graveAmafAfterCleaning += graveAmaf;
-						*/
-
-						entry.getValue().decayStatistics(this.treeDecay);
-						((AmafDecoupledMctsNode)entry.getValue()).decayAmafStatistics(this.amafDecay);
-
-						actionsStatsAfterCleaning += ((AmafDecoupledMctsNode) entry.getValue()).getActionsStatsNumber();
-						raveAmafAfterCleaning += ((AmafDecoupledMctsNode) entry.getValue()).getRaveAMAFStatsNumber();
-						graveAmafAfterCleaning += ((AmafDecoupledMctsNode) entry.getValue()).getGraveAMAFStatsNumber();
-
-					}
-				}else{
-					if(entry.getValue().getGameStepStamp() < (this.gameDependentParameters.getGameStep()-this.gameStepOffset)){
-						iterator.remove();
-					}else{
-						entry.getValue().decayStatistics(this.treeDecay);
-					}
+					totalActionsStats += actionsStats;
+					totalRaveAmaf += raveAmaf;
+					totalGraveAmaf += graveAmaf;
 				}
 			}
 
-			double actionsStatsPerNode = ((double) actionsStatsBeforeCleaning) / ((double) sizeBeforeCleaning);
-			double raveAmafPerNode = ((double) raveAmafBeforeCleaning) / ((double) sizeBeforeCleaning);
-			double graveAmafPerNode = ((double) graveAmafBeforeCleaning) / ((double) sizeBeforeCleaning);
+			double actionsStatsPerNode = ((double) totalActionsStats) / ((double) size);
+			double raveAmafPerNode = ((double) totalRaveAmaf) / ((double) size);
+			double graveAmafPerNode = ((double) totalGraveAmaf) / ((double) size);
 
-			GamerLogger.log(GamerLogger.FORMAT.CSV_FORMAT, "TreeSizeStatistics", stepBeforeCleaning +
-					";End;" + sizeBeforeCleaning + ";" + actionsStatsBeforeCleaning + ";" +
-					raveAmafBeforeCleaning + ";" + graveAmafBeforeCleaning + ";" + actionsStatsPerNode + ";" +
+			GamerLogger.log(GamerLogger.FORMAT.CSV_FORMAT, "TreeSizeStatistics", this.gameDependentParameters.getGameStep() +
+					";" + logMoment + ";" + size + ";" + actionsStatsPerNode + ";" +
+					raveAmafPerNode + ";" + graveAmafPerNode + ";" + actionsStatsPerNode + ";" +
 					raveAmafPerNode + ";" + graveAmafPerNode + ";");
-
-			int stepAfterCleaning = this.gameDependentParameters.getGameStep();
-			int sizeAfterCleaning = this.transpositionTable.size();
-
-			actionsStatsPerNode = ((double) actionsStatsAfterCleaning) / ((double) sizeAfterCleaning);
-			raveAmafPerNode = ((double) raveAmafAfterCleaning) / ((double) sizeAfterCleaning);
-			graveAmafPerNode = ((double) graveAmafAfterCleaning) / ((double) sizeAfterCleaning);
-
-			GamerLogger.log(GamerLogger.FORMAT.CSV_FORMAT, "TreeSizeStatistics", stepAfterCleaning +
-					";Start;" + sizeAfterCleaning + ";" + actionsStatsAfterCleaning + ";" +
-					raveAmafAfterCleaning + ";" + graveAmafAfterCleaning + ";" + actionsStatsPerNode + ";" +
-					raveAmafPerNode + ";" + graveAmafPerNode + ";");
-
-		}else{
-
-			// Remove all nodes last accessed earlier than the game step (newGameStepStamp-gameStepOffset)
-			Iterator<Entry<MachineState,MctsNode>> iterator = this.transpositionTable.entrySet().iterator();
-			while(iterator.hasNext()){
-				Entry<MachineState,MctsNode> entry = iterator.next();
-
-				if(entry.getValue().getGameStepStamp() < (this.gameDependentParameters.getGameStep()-this.gameStepOffset)){
-					iterator.remove();
-				}else{
-					entry.getValue().decayStatistics(this.treeDecay);
-				}
-			}
-
 		}
-
-		//this.currentGameStepStamp = newGameStepStamp;
-
-		// Print to check if everything is reset properly
-		/*Iterator<Entry<MachineState,MctsNode>> iterator = this.transpositionTable.entrySet().iterator();
-		while(iterator.hasNext()){
-			System.out.println(iterator.next().getValue().toString());
-		}*/
-
-			//System.out.println("TT size after cleaning: " + this.transpositionTable.size());
-		//}
 	}
-
-	/*
-	public int getLastGameStep(){
-		return this.currentGameStepStamp;
-	}*/
 
 	@Override
 	public String getComponentParameters(String indentation) {
 		return indentation + "LOGGING = " + this.log +
 				indentation + "TREE_DECAY = " + this.treeDecay +
 				indentation + "AMAF_DECAY = " + this.amafDecay +
-				indentation + "game_step_offset = " + this.gameStepOffset;
+				indentation + "GAME_STEP_OFFSET = " + this.gameStepOffset;
 	}
 
 	public void turnOffLogging(){

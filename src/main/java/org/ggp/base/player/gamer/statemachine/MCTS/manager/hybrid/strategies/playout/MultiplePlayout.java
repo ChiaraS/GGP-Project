@@ -20,8 +20,8 @@ public class MultiplePlayout extends PlayoutStrategy {
 
 
 	// Logging purpose
-	private int totalCalls;
-	private int multiPlayoutCalls;
+	private int totalStepCalls;
+	private int multiPlayoutStepCalls;
 
 
 
@@ -61,6 +61,12 @@ public class MultiplePlayout extends PlayoutStrategy {
 	 */
 	private int numPlayouts;
 
+	/**
+	 * Search statistics decay. The statistics on the search performed so far are decayed after every game
+	 * step by keeping searchStatsDecay of them (e.g. if searchStatsDecay=0.2 we will keep (0.2*searchStats)).
+	 */
+	private double searchStatsDecay;
+
 	private List<Map<Move,MoveStats>> mastStatistics;
 
 	/**
@@ -72,6 +78,18 @@ public class MultiplePlayout extends PlayoutStrategy {
 	 * Memorized only for logging purposes.
 	 */
 	private String condCheckerType;
+
+	/**
+	 * (Decayed) sum of all the iterations performed till the end of the search for the
+	 * previous game step.
+	 */
+	private int iterationsTillPreviousStep;
+
+	/**
+	 * (Decayed) sum of all the scores obtained by each role till the end of the search
+	 * for the previous game step.
+	 */
+	private double[] scoreSumForRolesTillPreviousStep;
 
 	/**
 	 * For each role keep track of the average score obtained over all the iterations performed
@@ -110,6 +128,8 @@ public class MultiplePlayout extends PlayoutStrategy {
 
 		this.numPlayouts = gamerSettings.getIntPropertyValue("PlayoutStrategy" + id + ".numPlayouts");
 
+		this.searchStatsDecay = gamerSettings.getDoublePropertyValue("PlayoutStrategy" + id + ".searchStatsDecay");
+
 		SingleRoleCondChecker singleRoleCondChecker;
 
 		boolean dynamicAvg = gamerSettings.getBooleanPropertyValue("PlayoutStrategy" + id + ".dynamicAvg");
@@ -136,10 +156,12 @@ public class MultiplePlayout extends PlayoutStrategy {
 
 				// Compute the average return value of the game
 				double currentStepAvgScore;
-				if(this.gameDependentParameters.getTotalIterations() == 0){
+				int iterations = this.iterationsTillPreviousStep + this.gameDependentParameters.getStepIterations();
+				if(iterations == 0){
 					currentStepAvgScore = 50.0;
 				}else{
-					currentStepAvgScore = this.gameDependentParameters.getScoreSumForRoles()[roleIndex] / ((double)this.gameDependentParameters.getTotalIterations());
+					double scoreSumForRole = this.scoreSumForRolesTillPreviousStep[roleIndex] + this.gameDependentParameters.getStepScoreSumForRoles()[roleIndex];
+					currentStepAvgScore = scoreSumForRole / ((double)iterations);
 				}
 
 
@@ -189,7 +211,7 @@ public class MultiplePlayout extends PlayoutStrategy {
 
 				// If we haven't performed enough iterations for this game yet, don't perform multiple playouts,
 				// because the average return value is probably still inaccurate.
-				if(this.gameDependentParameters.getTotalIterations() < this.minIterationsThreshold){
+				if((this.iterationsTillPreviousStep + this.gameDependentParameters.getStepIterations()) < this.minIterationsThreshold){
 					return false;
 				}
 
@@ -209,7 +231,7 @@ public class MultiplePlayout extends PlayoutStrategy {
 
 				// If we haven't performed enough iterations for this game yet, don't perform multiple playouts,
 				// because the average return value is probably still inaccurate.
-				if(this.gameDependentParameters.getTotalIterations() < this.minIterationsThreshold){
+				if((this.iterationsTillPreviousStep + this.gameDependentParameters.getStepIterations()) < this.minIterationsThreshold){
 					return false;
 				}
 
@@ -229,7 +251,7 @@ public class MultiplePlayout extends PlayoutStrategy {
 
 				// If we haven't performed enough iterations for this game yet, don't perform multiple playouts,
 				// because the average return value is probably still inaccurate.
-				if(this.gameDependentParameters.getTotalIterations() < this.minIterationsThreshold){
+				if((this.iterationsTillPreviousStep + this.gameDependentParameters.getStepIterations()) < this.minIterationsThreshold){
 					return false;
 				}
 
@@ -246,8 +268,11 @@ public class MultiplePlayout extends PlayoutStrategy {
 		//this.currentStepScoreSum = null;
 		//this.currentStepIterations = 0;
 
-		this.totalCalls = 0;
-		this.multiPlayoutCalls = 0;
+		this.totalStepCalls = 0;
+		this.multiPlayoutStepCalls = 0;
+
+		this.iterationsTillPreviousStep = 0;
+		this.scoreSumForRolesTillPreviousStep = null;
 
 	}
 
@@ -264,9 +289,11 @@ public class MultiplePlayout extends PlayoutStrategy {
 
 		this.subPlayoutStrategy.clearComponent();
 
-		//this.currentStepScoreSum = null;
-		//this.currentStepIterations = 0;
+		this.totalStepCalls = 0;
+		this.multiPlayoutStepCalls = 0;
 
+		this.iterationsTillPreviousStep = 0;
+		this.scoreSumForRolesTillPreviousStep = null;
 
 	}
 
@@ -279,14 +306,17 @@ public class MultiplePlayout extends PlayoutStrategy {
 
 		//this.resetStepStatistics();
 
-		this.totalCalls = 0;
-		this.multiPlayoutCalls = 0;
+		this.totalStepCalls = 0;
+		this.multiPlayoutStepCalls = 0;
 
+		this.iterationsTillPreviousStep = 0;
+		this.scoreSumForRolesTillPreviousStep = new double[this.gameDependentParameters.getNumRoles()];
 
 	}
 
 	@Override
 	public SimulationResult singlePlayout(MachineState state, int maxDepth) {
+		this.totalStepCalls++;
 		return this.subPlayoutStrategy.singlePlayout(state, maxDepth);
 	}
 
@@ -301,12 +331,12 @@ public class MultiplePlayout extends PlayoutStrategy {
 			for(int repetition = 0; repetition < results.length; repetition++){
 				results[repetition] = this.subPlayoutStrategy.singlePlayout(state, maxDepth);
 			}
-			this.multiPlayoutCalls++;
+			this.multiPlayoutStepCalls++;
 		}else{
 			results = this.subPlayoutStrategy.playout(jointMove, state, maxDepth);
 		}
 
-		this.totalCalls++;
+		this.totalStepCalls++;
 
 		return results;
 
@@ -329,6 +359,7 @@ public class MultiplePlayout extends PlayoutStrategy {
 				indentation + "MAST_VISITS_THRESHOLD = " + this.mastVisitsThreshold +
 				indentation + "SCORE_OFFSET = " + this.scoreOffset +
 				indentation + "NUM_PLAYOUTS = " + this.numPlayouts +
+				indentation + "SEARCH_STATS_DECAY = " + this.searchStatsDecay +
 				indentation + "COND_CHECKER_TYPE = " + this.condCheckerType;
 
 		if(this.mastStatistics != null){
@@ -345,20 +376,53 @@ public class MultiplePlayout extends PlayoutStrategy {
 			params += indentation + "mast_statistics = null";
 		}
 
-		//params += indentation + "current_step_score_sum = " + this.currentStepScoreSum +
-		//		indentation + "current_step_iterations = " + this.currentStepIterations;
+		String scoreSumForRolesTillPreviousStepStirng;
+		if(this.scoreSumForRolesTillPreviousStep != null){
+			scoreSumForRolesTillPreviousStepStirng = "[ ";
+			for(int roleIndex = 0; roleIndex < this.scoreSumForRolesTillPreviousStep.length; roleIndex++){
+				scoreSumForRolesTillPreviousStepStirng += (this.scoreSumForRolesTillPreviousStep[roleIndex] + " ");
+			}
+			scoreSumForRolesTillPreviousStepStirng += "]";
+		}else{
+			scoreSumForRolesTillPreviousStepStirng =	"null";
+		}
+
+		params += indentation + "total_step_calls = " + this.totalStepCalls +
+				indentation + "multi_playout_step_calls = " + this.multiPlayoutStepCalls +
+				indentation + "iterations_till_previous_step = " + this.iterationsTillPreviousStep +
+				indentation + "score_sum_for_roles_till_previous_step = " + scoreSumForRolesTillPreviousStepStirng;
 
 		return params;
 
 	}
 
-	public void logAndResetCallStatistics(){
+	public void resetOrDecayStats(){
 
-		GamerLogger.log(GamerLogger.FORMAT.CSV_FORMAT, "MultiPlayoutStats", "STEP=;" + this.gameDependentParameters.getPreviousGameStep() +
-				";TOTAL_PLAYOUT_CALLS=;" + this.totalCalls + ";MULTI_PLAYOUT_CALLS=;" + this.multiPlayoutCalls + ";");
+		GamerLogger.log(GamerLogger.FORMAT.CSV_FORMAT, "MultiPlayoutStats", "STEP=;" + this.gameDependentParameters.getGameStep() +
+				";TOTAL_PLAYOUT_CALLS=;" + this.totalStepCalls + ";MULTI_PLAYOUT_CALLS=;" + this.multiPlayoutStepCalls + ";");
 
-		this.totalCalls = 0;
-		this.multiPlayoutCalls = 0;
+		this.totalStepCalls = 0;
+		this.multiPlayoutStepCalls = 0;
+
+		// Update search stats with stats of last step
+		this.iterationsTillPreviousStep += this.gameDependentParameters.getStepIterations();
+		for(int roleIndex = 0; roleIndex < this.scoreSumForRolesTillPreviousStep.length; roleIndex++){
+			this.scoreSumForRolesTillPreviousStep[roleIndex] += this.gameDependentParameters.getStepScoreSumForRoles()[roleIndex];
+		}
+
+		// Decay search stats
+		if(this.searchStatsDecay == 0.0){
+			this.iterationsTillPreviousStep = 0;
+			this.scoreSumForRolesTillPreviousStep = new double[this.gameDependentParameters.getNumRoles()];
+		}else if(this.searchStatsDecay != 1.0){
+			int oldIterations = this.iterationsTillPreviousStep;
+			this.iterationsTillPreviousStep = (int) Math.round(((double)this.iterationsTillPreviousStep)*this.searchStatsDecay);
+			double avg;
+			for(int roleIndex = 0; roleIndex < this.scoreSumForRolesTillPreviousStep.length; roleIndex++){
+				avg = this.scoreSumForRolesTillPreviousStep[roleIndex]/((double)oldIterations);
+				this.scoreSumForRolesTillPreviousStep[roleIndex] = ((double)this.iterationsTillPreviousStep)*avg;
+			}
+		}
 
 	}
 

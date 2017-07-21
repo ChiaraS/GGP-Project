@@ -9,7 +9,7 @@ import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.strategies.aft
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.strategies.aftersimulation.AfterSimulationStrategy;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.strategies.backpropagation.BackpropagationStrategy;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.strategies.backpropagation.nodeupdaters.NodeUpdater;
-import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.strategies.beforemove.BeforeMoveStrategy;
+import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.strategies.beforemove.BeforeSearchStrategy;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.strategies.beforesimualtion.BeforeSimulationStrategy;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.strategies.expansion.ExpansionStrategy;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.strategies.movechoice.MoveChoiceStrategy;
@@ -66,7 +66,7 @@ public class ProjectSearcher {
     public static final LoadedClasses<MutationManager> MUTATION_MANAGERS = new LoadedClasses<MutationManager>(MutationManager.class);
     public static final LoadedClasses<FitnessComputer> FITNESS_COMPUTER = new LoadedClasses<FitnessComputer>(FitnessComputer.class);
     // Strategies
-    public static final LoadedClasses<BeforeMoveStrategy> BEFORE_MOVE_STRATEGIES = new LoadedClasses<BeforeMoveStrategy>(BeforeMoveStrategy.class);
+    public static final LoadedClasses<BeforeSearchStrategy> BEFORE_MOVE_STRATEGIES = new LoadedClasses<BeforeSearchStrategy>(BeforeSearchStrategy.class);
     public static final LoadedClasses<AfterMoveStrategy> AFTER_MOVE_STRATEGIES = new LoadedClasses<AfterMoveStrategy>(AfterMoveStrategy.class);
     public static final LoadedClasses<AfterGameStrategy> AFTER_GAME_STRATEGIES = new LoadedClasses<AfterGameStrategy>(AfterGameStrategy.class);
     public static final LoadedClasses<AfterSimulationStrategy> AFTER_SIMULATION_STRATEGIES = new LoadedClasses<AfterSimulationStrategy>(AfterSimulationStrategy.class);

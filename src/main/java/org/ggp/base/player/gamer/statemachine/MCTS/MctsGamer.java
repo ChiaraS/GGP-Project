@@ -30,6 +30,12 @@ public class MctsGamer extends InternalPropnetGamer {
 	 * Game step. Keeps track of the current game step.
 	 */
 	private int gameStep;
+	/**
+	 * Needed to memorize the thinking time of the metagame so that later it can be summed with
+	 * the thinking time of the first move to obtain the total thinking time for the first game
+	 * step.
+	 */
+	private long metagameThinkingTime;
 
 	/**
 	 * Tells to the gamer if start performing the search also during metagame or not.
@@ -80,6 +86,7 @@ public class MctsGamer extends InternalPropnetGamer {
 
 		super.configureGamer(gamerSettings);
 
+		// this.gameStep == 0 is to indicate that we haven't performed the stateMachineSelectMove() method yet.
 		this.gameStep = 0;
 
 		this.metagameSearch = gamerSettings.getBooleanPropertyValue("Gamer.metagameSearch");
@@ -131,7 +138,6 @@ public class MctsGamer extends InternalPropnetGamer {
     	rolesList += "]";
 		GamerLogger.log(GamerLogger.FORMAT.CSV_FORMAT, "Stats", "Game step;Thinking time(ms);Search time(ms);Iterations;Visited nodes;Iterations/second;Nodes/second;Chosen move;Move score sum;Move visits;Avg move score;Avg search score " + rolesList + ";");
 
-
 		this.mctsManager.setUpManager(abstractStateMachine, numRoles, myRoleIndex);
 
 		this.logGamerSettings();
@@ -146,21 +152,22 @@ public class MctsGamer extends InternalPropnetGamer {
 
 				GamerLogger.log("Gamer", "Starting search during metagame.");
 
+				this.mctsManager.beforeMoveActions(1);
+
 				try {
 
 					this.mctsManager.search(abstractStateMachine.getInitialState(), realTimeout, this.gameStep+1);
 
 					GamerLogger.log("Gamer", "Done searching during metagame.");
-					searchTime = this.mctsManager.getSearchTime();
-		        	iterations = this.mctsManager.getIterations();
-		        	visitedNodes = this.mctsManager.getVisitedNodes();
+					searchTime = this.mctsManager.getStepSearchDuration();
+		        	iterations = this.mctsManager.getStepIterations();
+		        	visitedNodes = this.mctsManager.getStepVisitedNodes();
 
-		        	int totalIterations = this.mctsManager.getTotalIterations();
-		        	if(totalIterations > 0){
-			        	double[] scoreSumPerRole = this.mctsManager.getScoreSumForRoles();
+		        	if(iterations > 0){
+			        	double[] scoreSumPerRole = this.mctsManager.getStepScoreSumForRoles();
 			        	avgSearchScorePerRole = "[ ";
 			           	for(int roleIndex = 0; roleIndex < scoreSumPerRole.length; roleIndex++){
-			           		avgSearchScorePerRole += ((scoreSumPerRole[roleIndex]/((double)totalIterations)) + " ");
+			           		avgSearchScorePerRole += ((scoreSumPerRole[roleIndex]/((double)iterations)) + " ");
 			        	}
 			           	avgSearchScorePerRole += "]";
 		        	}else{
@@ -193,7 +200,11 @@ public class MctsGamer extends InternalPropnetGamer {
 			thinkingTime = System.currentTimeMillis() - start;
 		}
 
-		GamerLogger.log(GamerLogger.FORMAT.CSV_FORMAT, "Stats", this.gameStep + ";" + thinkingTime + ";" + searchTime + ";" + iterations + ";" + visitedNodes + ";" + iterationsPerSecond + ";" + nodesPerSecond + ";null;-1;-1;-1;" + avgSearchScorePerRole + ";");
+		GamerLogger.log(GamerLogger.FORMAT.CSV_FORMAT, "Stats", this.gameStep + ";" + thinkingTime + ";" +
+				searchTime + ";" + iterations + ";" + visitedNodes + ";" + iterationsPerSecond + ";" +
+				nodesPerSecond + ";null;-1;-1;-1;" + avgSearchScorePerRole + ";");
+
+		this.metagameThinkingTime = thinkingTime;
 	}
 
 	/* (non-Javadoc)
@@ -231,6 +242,10 @@ public class MctsGamer extends InternalPropnetGamer {
 
 		GamerLogger.log("Gamer", "Starting move selection for game step " + this.gameStep + " with available time " + (realTimeout-start) + "ms.");
 
+		if(this.gameStep > 1){ // For game step 1 is the metagame method that calls the before-move-actions
+			this.mctsManager.beforeMoveActions(this.gameStep);
+		}
+
 		if(System.currentTimeMillis() < realTimeout){
 
 			GamerLogger.log("Gamer", "Selecting move using MCTS.");
@@ -250,9 +265,9 @@ public class MctsGamer extends InternalPropnetGamer {
 
 				selectedMove = this.mctsManager.getBestMove(currentNode);
 
-				searchTime = this.mctsManager.getSearchTime();
-				iterations = this.mctsManager.getIterations();
-		    	visitedNodes = this.mctsManager.getVisitedNodes();
+				searchTime = this.mctsManager.getStepSearchDuration();
+				iterations = this.mctsManager.getStepIterations();
+		    	visitedNodes = this.mctsManager.getStepVisitedNodes();
 		    	if(searchTime != 0){
 		        	iterationsPerSecond = ((double) iterations * 1000)/((double) searchTime);
 		        	nodesPerSecond = ((double) visitedNodes * 1000)/((double) searchTime);
@@ -277,12 +292,11 @@ public class MctsGamer extends InternalPropnetGamer {
 		    		moveAvgScore = 0;
 		    	}
 
-		    	int totalIterations = this.mctsManager.getTotalIterations();
-	        	if(totalIterations > 0){
-		        	double[] scoreSumPerRole = this.mctsManager.getScoreSumForRoles();
+	        	if(iterations > 0){
+		        	double[] scoreSumPerRole = this.mctsManager.getStepScoreSumForRoles();
 		        	avgSearchScorePerRole = "[ ";
 		           	for(int roleIndex = 0; roleIndex < scoreSumPerRole.length; roleIndex++){
-		           		avgSearchScorePerRole += ((scoreSumPerRole[roleIndex]/((double)totalIterations)) + " ");
+		           		avgSearchScorePerRole += ((scoreSumPerRole[roleIndex]/((double)iterations)) + " ");
 		        	}
 		           	avgSearchScorePerRole += "]";
 	        	}else{
@@ -306,10 +320,19 @@ public class MctsGamer extends InternalPropnetGamer {
 
 		thinkingTime = System.currentTimeMillis() - start;
 
-		GamerLogger.log(GamerLogger.FORMAT.CSV_FORMAT, "Stats", this.gameStep + ";" + thinkingTime + ";" + searchTime + ";" + iterations + ";" + visitedNodes + ";" + iterationsPerSecond + ";" + nodesPerSecond + ";" + theMove + ";" + moveScoreSum + ";" + moveVisits + ";" + moveAvgScore + ";" + avgSearchScorePerRole + ";");
+		// If it's the first step we need to add the thinking time of the metagame, too.
+		if(this.gameStep == 1){
+			thinkingTime += this.metagameThinkingTime;
+		}
+
+		GamerLogger.log(GamerLogger.FORMAT.CSV_FORMAT, "Stats", this.gameStep + ";" + thinkingTime + ";" + searchTime + ";" +
+				iterations + ";" + visitedNodes + ";" + iterationsPerSecond + ";" + nodesPerSecond + ";" + theMove + ";" +
+				moveScoreSum + ";" + moveVisits + ";" + moveAvgScore + ";" + avgSearchScorePerRole + ";");
 
 		// TODO: IS THIS NEEDED? WHEN?
 		notifyObservers(new GamerSelectedMoveEvent(this.getStateMachine().getExplicitLegalMoves(this.getCurrentState(), this.getRole()), theMove, thinkingTime));
+
+		this.mctsManager.afterMoveActions();
 
 		return theMove;
 	}

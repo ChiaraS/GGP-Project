@@ -11,7 +11,7 @@ import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.strategies.Aft
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.strategies.aftermove.AfterMoveStrategy;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.strategies.aftersimulation.AfterSimulationStrategy;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.strategies.backpropagation.BackpropagationStrategy;
-import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.strategies.beforemove.BeforeMoveStrategy;
+import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.strategies.beforemove.BeforeSearchStrategy;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.strategies.beforesimualtion.BeforeSimulationStrategy;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.strategies.expansion.ExpansionStrategy;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.strategies.movechoice.MoveChoiceStrategy;
@@ -61,11 +61,11 @@ public class HybridMctsManager {
 	/**
 	 * Start time of last performed search.
 	 */
-	private long searchStart;
+	//private long searchStart;
 	/**
 	 * End time of last performed search.
 	 */
-	private long searchEnd;
+	//private long searchEnd;
 
 	//-------------------------- Parameters needed to perform the search -----------------------------//
 
@@ -109,17 +109,27 @@ public class HybridMctsManager {
 	 * or decay some statistics). The following strategies allow to specify the actions to be taken in
 	 * such situations. If nothing has to be done, just set these strategies to null.
 	 */
-	private BeforeMoveStrategy beforeMoveStrategy;
-
+	/**
+	 * Performs actions before every search, even if the search is being performed again for the same
+	 * game step.
+	 */
+	private BeforeSearchStrategy beforeSearchStrategy;
+	/**
+	 * Performs actions before every simulation.
+	 */
 	private BeforeSimulationStrategy beforeSimulationStrategy;
-
+	/**
+	 * Performs actions after every simulation.
+	 */
 	private AfterSimulationStrategy afterSimulationStrategy;
-
+	/**
+	 * Performs actions after every move in the game.
+	 * Not performed at the end of each call to the search() method, but only if after the search we
+	 * change game step in the real game.
+	 */
 	private AfterMoveStrategy afterMoveStrategy;
-
 	/**
 	 * If any action needs to be performed the end of every game, this strategy takes care of it.
-	 *
 	 */
 	private AfterGameStrategy afterGameStrategy;
 
@@ -154,9 +164,6 @@ public class HybridMctsManager {
 	public HybridMctsManager(Random random, GamerSettings gamerSettings, String gamerType) {
 
 		GamerLogger.log("SearchManagerCreation", "Creating search manager for gamer " + gamerType + ".");
-
-		this.searchStart = 0;
-		this.searchEnd = 0;
 
 		this.maxSearchDepth = gamerSettings.getIntPropertyValue("SearchManager.maxSearchDepth");
 
@@ -240,7 +247,7 @@ public class HybridMctsManager {
 
 			propertyValue = gamerSettings.getPropertyValue("SearchManager.beforeMoveStrategyType");
 			try {
-				this.beforeMoveStrategy = (BeforeMoveStrategy) SearchManagerComponent.getConstructorForSearchManagerComponent(SearchManagerComponent.getCorrespondingClass(ProjectSearcher.BEFORE_MOVE_STRATEGIES.getConcreteClasses(),
+				this.beforeSearchStrategy = (BeforeSearchStrategy) SearchManagerComponent.getConstructorForSearchManagerComponent(SearchManagerComponent.getCorrespondingClass(ProjectSearcher.BEFORE_MOVE_STRATEGIES.getConcreteClasses(),
 						propertyValue)).newInstance(gameDependentParameters, random, gamerSettings, sharedReferencesCollector);
 			} catch (InstantiationException | IllegalAccessException
 					| IllegalArgumentException | InvocationTargetException e) {
@@ -335,8 +342,8 @@ public class HybridMctsManager {
 		this.playoutStrategy.setReferences(sharedReferencesCollector);
 		this.backpropagationStrategy.setReferences(sharedReferencesCollector);
 		this.moveChoiceStrategy.setReferences(sharedReferencesCollector);
-		if(this.beforeMoveStrategy != null){
-			this.beforeMoveStrategy.setReferences(sharedReferencesCollector);
+		if(this.beforeSearchStrategy != null){
+			this.beforeSearchStrategy.setReferences(sharedReferencesCollector);
 		}
 		if(this.beforeSimulationStrategy != null){
 			this.beforeSimulationStrategy.setReferences(sharedReferencesCollector);
@@ -380,8 +387,8 @@ public class HybridMctsManager {
 		toLog += "\nBACKPROPAGATION_STRATEGY = " + this.backpropagationStrategy.printComponent("\n  ");
 		toLog += "\nMOVE_CHOICE_STRATEGY = " + this.moveChoiceStrategy.printComponent("\n  ");
 
-		if(this.beforeMoveStrategy != null){
-			toLog += "\nBEFORE_MOVE_STRATEGY = " + this.beforeMoveStrategy.printComponent("\n  ");
+		if(this.beforeSearchStrategy != null){
+			toLog += "\nBEFORE_MOVE_STRATEGY = " + this.beforeSearchStrategy.printComponent("\n  ");
 		}else{
 			toLog += "\nBEFORE_MOVE_STRATEGY = null";
 		}
@@ -416,12 +423,21 @@ public class HybridMctsManager {
 		toLog += "\nnum_roles = " + this.gameDependentParameters.getNumRoles();
 		toLog += "\nmy_role_index = " + this.gameDependentParameters.getMyRoleIndex();
 		toLog += "\ncurrent_game_step = " + this.gameDependentParameters.getGameStep();
-		toLog += "\nprevious_game_step = " + this.gameDependentParameters.getPreviousGameStep();
+		String stepScoreSumForRoleStirng;
+		if(this.gameDependentParameters.getStepScoreSumForRoles() != null){
+			stepScoreSumForRoleStirng = "[ ";
+			for(int roleIndex = 0; roleIndex < this.gameDependentParameters.getStepScoreSumForRoles().length; roleIndex++){
+				stepScoreSumForRoleStirng += (this.gameDependentParameters.getStepScoreSumForRoles()[roleIndex] + " ");
+			}
+			stepScoreSumForRoleStirng += "]";
+		}else{
+			stepScoreSumForRoleStirng =	"null";
+		}
+		toLog += "\nstep_score_sum_for_role = " + stepScoreSumForRoleStirng;
 		toLog += "\nstep_iterations = " + this.gameDependentParameters.getStepIterations();
 		toLog += "\nstep_visited_nodes = " + this.gameDependentParameters.getStepVisitedNodes();
+		toLog += "\nstep_search_duration = " + this.gameDependentParameters.getStepSearchDuration();
 		toLog += "\ncurrent_iteration_visited_nodes = " + this.gameDependentParameters.getCurrentIterationVisitedNodes();
-		toLog += "\nsearch_start = " + this.searchStart;
-		toLog += "\nsearch_end = " + this.searchEnd;
 
 		return toLog;
 
@@ -429,15 +445,13 @@ public class HybridMctsManager {
 
 	public void clearManager(){
 
-		this.gameDependentParameters.clearGameDependentParameters();
-
 		this.selectionStrategy.clearComponent();
 		this.expansionStrategy.clearComponent();
 		this.playoutStrategy.clearComponent();
 		this.backpropagationStrategy.clearComponent();
 		this.moveChoiceStrategy.clearComponent();
-		if(this.beforeMoveStrategy != null){
-			this.beforeMoveStrategy.clearComponent();
+		if(this.beforeSearchStrategy != null){
+			this.beforeSearchStrategy.clearComponent();
 		}
 		if(this.beforeSimulationStrategy != null){
 			this.beforeSimulationStrategy.clearComponent();
@@ -455,12 +469,11 @@ public class HybridMctsManager {
 
 		this.transpositionTable.clearComponent();
 
+		this.gameDependentParameters.clearGameDependentParameters();
+
 	}
 
 	public void setUpManager(AbstractStateMachine theMachine, int numRoles, int myRoleIndex){
-
-		this.searchStart = 0;
-		this.searchEnd = 0;
 
 		this.gameDependentParameters.resetGameDependentParameters(theMachine, numRoles, myRoleIndex);
 
@@ -469,8 +482,8 @@ public class HybridMctsManager {
 		this.playoutStrategy.setUpComponent();
 		this.backpropagationStrategy.setUpComponent();
 		this.moveChoiceStrategy.setUpComponent();
-		if(this.beforeMoveStrategy != null){
-			this.beforeMoveStrategy.setUpComponent();
+		if(this.beforeSearchStrategy != null){
+			this.beforeSearchStrategy.setUpComponent();
 		}
 		if(this.beforeSimulationStrategy != null){
 			this.beforeSimulationStrategy.setUpComponent();
@@ -548,16 +561,14 @@ public class HybridMctsManager {
 
 		/*
 		 * NOTE! This is executed before every new search even if it's still for the same step.
-		 * TODO: revise responsibilities of BeforeMoveStrategy and AfterMoveStrategy. These two
-		 * strategies are called more or less at the same point but BeforeMoveStrategy is called
-		 * before any new search while AfterMoveStrategy is called before a new search only fi the
-		 * search is for a new step of the game.
 		 */
-		if(this.beforeMoveStrategy != null){
-			this.beforeMoveStrategy.beforeMoveActions(timeout);
+		if(this.beforeSearchStrategy != null){
+			this.beforeSearchStrategy.beforeMoveActions(timeout);
 		}
 
 		this.performSearch(initialState, initialNode, timeout);
+
+		// Put here AfterSearchStrategies
 
 		return initialNode;
 
@@ -578,47 +589,6 @@ public class HybridMctsManager {
 	 * @return the tree node corresponding to the given initial state.
 	 */
 	private MctsNode prepareForSearch(MachineState initialState, int currentGameStep){
-
-		// This is required in case the method that wants to prepare the manager for the search fails before actually
-		// performing the search. In this way we can make sure that if someone tries to retrieve the search time after
-		// the search failed it won't get the positive time of the search performed before this one.
-		this.searchStart = 0L;
-		this.searchEnd = 0L;
-
-		this.gameDependentParameters.setGameStep(currentGameStep);
-
-		// TODO: here we reset the statistics even if the game step didn't change because the logs
-		// are logging stats for metageme and 1st move separately even if they search for the same
-		// game step. Keep this in mind when using the statistics for the step in other parts of the
-		// code.
-		this.gameDependentParameters.resetStepStatistics();
-
-		// Every time a move is played in the actual game...
-		if(this.gameDependentParameters.getPreviousGameStep() != currentGameStep){
-			// ...nodes not visited recently are removed from the transposition table...
-
-			//long ttStart = System.currentTimeMillis();
-
-			this.transpositionTable.clean();
-
-			//System.out.println(this.selectionStrategy.getClass().getSimpleName() + " cleaning TT : " + (System.currentTimeMillis()-ttStart));
-
-			// ...and each strategy performs some clean-up of its internal structures (if necessary).
-			//for(Strategy s : this.strategies){
-			//	s.afterMoveAction();
-			//}
-
-			// ...and all the actions that need to be taken after a move is performed in the real game are performed.
-			// NOTE: we cannot perform such actions right after the end of the search, we must wait until the execution
-			// gets here so that we can check the new game step and be sure that the actual game proceeded.
-			// Otherwise we'll also perform the "AfterMoveActions" even after the initial search during metagame, but
-			// the actual game won't have been advanced the next time the search will be performed.
-			// TODO: change code so that the after move action is performed at the end of each move instead of the
-			// beginning of the subsequent move
-			if(this.afterMoveStrategy != null){
-				this.afterMoveStrategy.afterMoveActions();
-			}
-		}
 
 		// If it's the first time during the game that we call this method the transposition table is empty
 		// so we create the first node, otherwise we check if the node is already in the tree.
@@ -645,7 +615,8 @@ public class HybridMctsManager {
 	 * @param timeout the time (in milliseconds) by when the search must end.
 	 */
 	private void performSearch(MachineState initialState, MctsNode initialNode, long timeout){
-		this.searchStart = System.currentTimeMillis();
+		long searchStart = System.currentTimeMillis();
+
 		while(! this.timeToStopSearch(timeout)){
 
 			this.gameDependentParameters.resetIterationStatistics();
@@ -663,8 +634,8 @@ public class HybridMctsManager {
 
 			SimulationResult[] simulationResult = this.searchNext(initialState, initialNode);
 			for(int resultIndex = 0; resultIndex < simulationResult.length; resultIndex++){
-				this.gameDependentParameters.increaseIterations();
-				this.gameDependentParameters.increaseScoreSumForRoles(simulationResult[resultIndex].getTerminalGoals());
+				this.gameDependentParameters.increaseStepIterations();
+				this.gameDependentParameters.increaseStepScoreSumForRoles(simulationResult[resultIndex].getTerminalGoals());
 			}
 			this.gameDependentParameters.increaseStepVisitedNodes(this.gameDependentParameters.getCurrentIterationVisitedNodes());
 
@@ -676,7 +647,10 @@ public class HybridMctsManager {
 			//System.out.println("Iteration: " + this.iterations);
 			//System.out.println("Stats: " + ((MASTStrategy)this.playoutStrategy).getNumStats());
 		}
-		this.searchEnd = System.currentTimeMillis();
+
+		long searchEnd = System.currentTimeMillis();
+
+		this.gameDependentParameters.increaseStepSearchDuration(searchEnd-searchStart);
 	}
 
 	/**
@@ -1049,35 +1023,53 @@ public class HybridMctsManager {
 
 	}
 
-	public void afterGameActions(List<Integer> goals){
-		// Call again the AfterMoveAction because for the search of the last move it hasn't been
-		// performed yet, because it is always performed at the beginning of a new search.
+	public void beforeMoveActions(int currentGameStep){
+
+		this.gameDependentParameters.setGameStep(currentGameStep);
+
+		// Assume that the game step changed, because we are going to search for a new game step in the game.
+
+		this.transpositionTable.clean();
+
+		this.transpositionTable.logTable("Start");
+
+		// No BeforeMoveStartegies devised so far
+
+	}
+
+	public void afterMoveActions(){
 		if(this.afterMoveStrategy != null){
 			this.afterMoveStrategy.afterMoveActions();
 		}
+
+		this.transpositionTable.logTable("End");
+	}
+
+	public void afterGameActions(List<Integer> goals){
+		// Call again the AfterMoveAction because for the search of the last move it hasn't been
+		// performed yet, because it is always performed at the beginning of a new search.
+		//if(this.afterMoveStrategy != null){
+		//	this.afterMoveStrategy.afterMoveActions();
+		//}
 		if(this.afterGameStrategy != null){
 			this.afterGameStrategy.afterGameActions(goals);
 		}
 	}
 
-	public double[] getScoreSumForRoles(){
-		return this.gameDependentParameters.getScoreSumForRoles();
+	public double[] getStepScoreSumForRoles(){
+		return this.gameDependentParameters.getStepScoreSumForRoles();
 	}
 
-	public int getTotalIterations(){
-		return this.gameDependentParameters.getTotalIterations();
-	}
-
-	public int getIterations(){
+	public int getStepIterations(){
 		return this.gameDependentParameters.getStepIterations();
 	}
 
-	public int getVisitedNodes(){
+	public int getStepVisitedNodes(){
 		return this.gameDependentParameters.getStepVisitedNodes();
 	}
 
-	public long getSearchTime(){
-		return (this.searchEnd - this.searchStart);
+	public long getStepSearchDuration(){
+		return this.gameDependentParameters.getStepSearchDuration();
 	}
 
 }

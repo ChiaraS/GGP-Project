@@ -7,9 +7,9 @@ import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.GameDependentP
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.SharedReferencesCollector;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.strategies.Strategy;
 
-public abstract class BeforeMoveStrategy extends Strategy {
+public abstract class BeforeSearchStrategy extends Strategy {
 
-	public BeforeMoveStrategy(GameDependentParameters gameDependentParameters, Random random,
+	public BeforeSearchStrategy(GameDependentParameters gameDependentParameters, Random random,
 			GamerSettings gamerSettings, SharedReferencesCollector sharedReferencesCollector) {
 		super(gameDependentParameters, random, gamerSettings, sharedReferencesCollector);
 		// TODO Auto-generated constructor stub
