@@ -144,6 +144,8 @@ public class MctsGamer extends InternalPropnetGamer {
 
 		if(this.metagameSearch){
 
+			this.mctsManager.beforeMoveActions(1);
+
 			// If there is enough time left start the MCT search.
 			// Otherwise return from metagaming.
 			if(System.currentTimeMillis() < realTimeout){
@@ -151,8 +153,6 @@ public class MctsGamer extends InternalPropnetGamer {
 				// If I don't it'll throw exception later anyway! Better stop now?
 
 				GamerLogger.log("Gamer", "Starting search during metagame.");
-
-				this.mctsManager.beforeMoveActions(1);
 
 				try {
 
@@ -242,7 +242,7 @@ public class MctsGamer extends InternalPropnetGamer {
 
 		GamerLogger.log("Gamer", "Starting move selection for game step " + this.gameStep + " with available time " + (realTimeout-start) + "ms.");
 
-		if(this.gameStep > 1){ // For game step 1 is the metagame method that calls the before-move-actions
+		if((!this.metagameSearch) || this.gameStep > 1){ // For game step 1 is the metagame method that calls the before-move-actions
 			this.mctsManager.beforeMoveActions(this.gameStep);
 		}
 

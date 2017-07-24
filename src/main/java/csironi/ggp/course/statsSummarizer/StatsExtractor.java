@@ -122,6 +122,27 @@ public class StatsExtractor {
 			// Read first line with data
 			theLine = br.readLine();
 
+			// Check first line with data: if it refers to step 0 it means that data refers to the search performed
+			// only in the metagame. These data must be excluded from the stats because this data is already included
+			// in the data for the search of the first step.
+			if(this.theCSVFile.getName().endsWith("-Stats.csv")){ // Check if we are summarizing the SpeedStats
+				splitLine = theLine.split(";");
+				int step;
+				try{
+					step = Integer.parseInt(splitLine[0]);
+
+					if(step == 0){
+						theLine = br.readLine();
+					}
+				}catch(NumberFormatException e){ // The search time must be an long number, if it's not there is some error
+					System.out.println("Detected invalid value for the \"Game step\" for the .csv file " + this.theCSVFile.getName() + ".");
+					System.out.println("Skipping summarization of the file.");
+					this.allStats = null;
+					br.close();
+					return;
+				}
+			}
+
 			while(theLine != null){
 				// For each line, parse the parameters and add them to their statistic
 				splitLine = theLine.split(";");

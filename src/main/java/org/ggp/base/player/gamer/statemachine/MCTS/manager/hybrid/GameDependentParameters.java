@@ -58,7 +58,7 @@ public class GameDependentParameters {
 	private int currentIterationVisitedNodes;
 
 
-	public GameDependentParameters(double totalDecayFactor){
+	public GameDependentParameters(){
 
 		this.theMachine = null;
 		this.numRoles = -1;

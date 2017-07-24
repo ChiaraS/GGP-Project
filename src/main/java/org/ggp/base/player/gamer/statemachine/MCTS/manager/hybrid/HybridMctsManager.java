@@ -172,7 +172,7 @@ public class HybridMctsManager {
 		}else{
 			this.numExpectedIterations = -1;
 		}
-		this.gameDependentParameters = new GameDependentParameters(gamerSettings.getDoublePropertyValue("GameDependentParameters.totalDecayFactor"));
+		this.gameDependentParameters = new GameDependentParameters();
 
 		// Create strategies according to the types specified in the gamer configuration
 		SharedReferencesCollector sharedReferencesCollector = new SharedReferencesCollector();
