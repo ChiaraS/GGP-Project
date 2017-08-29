@@ -5,6 +5,7 @@ import java.lang.reflect.Modifier;
 import org.ggp.base.apps.kiosk.GameCanvas;
 import org.ggp.base.player.gamer.Gamer;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.strategies.AfterGameStrategy;
+import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.strategies.aftermetagame.AfterMetagameStrategy;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.strategies.aftermove.AfterMoveStrategy;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.strategies.aftersimulation.AfterSimulationStrategy;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.strategies.backpropagation.BackpropagationStrategy;
@@ -66,7 +67,8 @@ public class ProjectSearcher {
     public static final LoadedClasses<MutationManager> MUTATION_MANAGERS = new LoadedClasses<MutationManager>(MutationManager.class);
     public static final LoadedClasses<FitnessComputer> FITNESS_COMPUTER = new LoadedClasses<FitnessComputer>(FitnessComputer.class);
     // Strategies
-    public static final LoadedClasses<BeforeSearchStrategy> BEFORE_MOVE_STRATEGIES = new LoadedClasses<BeforeSearchStrategy>(BeforeSearchStrategy.class);
+    public static final LoadedClasses<BeforeSearchStrategy> BEFORE_SEARCH_STRATEGIES = new LoadedClasses<BeforeSearchStrategy>(BeforeSearchStrategy.class);
+    public static final LoadedClasses<AfterMetagameStrategy> AFTER_METAGAME_STRATEGIES = new LoadedClasses<AfterMetagameStrategy>(AfterMetagameStrategy.class);
     public static final LoadedClasses<AfterMoveStrategy> AFTER_MOVE_STRATEGIES = new LoadedClasses<AfterMoveStrategy>(AfterMoveStrategy.class);
     public static final LoadedClasses<AfterGameStrategy> AFTER_GAME_STRATEGIES = new LoadedClasses<AfterGameStrategy>(AfterGameStrategy.class);
     public static final LoadedClasses<AfterSimulationStrategy> AFTER_SIMULATION_STRATEGIES = new LoadedClasses<AfterSimulationStrategy>(AfterSimulationStrategy.class);

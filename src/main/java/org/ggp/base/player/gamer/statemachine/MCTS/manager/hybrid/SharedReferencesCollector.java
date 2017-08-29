@@ -14,6 +14,7 @@ import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.strategies.sel
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.parameterstuning.ParametersTuner;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.parameterstuning.structure.ParametersManager;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.parameterstuning.structure.parameters.TunableParameter;
+import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.hybrid.MctsTranspositionTable;
 import org.ggp.base.util.logging.GamerLogger;
 import org.ggp.base.util.statemachine.structure.Move;
 
@@ -50,6 +51,8 @@ public class SharedReferencesCollector {
 	private PlayoutStrategy playoutStrategy;
 
 	private ParametersManager parametersManager;
+
+	private MctsTranspositionTable transpositionTable;
 
 	public SharedReferencesCollector() {
 		// TODO Auto-generated constructor stub
@@ -244,6 +247,26 @@ public class SharedReferencesCollector {
 
 	public ParametersManager getParametersManager(){
 		return this.parametersManager;
+	}
+
+	public void setTranspositionTable(MctsTranspositionTable transpositionTable){
+		// Can only be set once
+		if(this.transpositionTable == null){
+			this.transpositionTable = transpositionTable;
+		}else{
+			GamerLogger.logError("SearchManagerCreation", "Trying to set TranspositionTable multiple times! Probably a wrong combination of strategies has been set.");
+			throw new RuntimeException("Trying to set TranspositionTable multiple times!");
+		}
+	}
+
+	public MctsTranspositionTable getTranspositionTable(){
+		// If a strategy looks for the reference then another strategy must have set it
+		if(this.transpositionTable != null){
+			return this.transpositionTable;
+		}else{
+			GamerLogger.logError("SearchManagerCreation", "Trying to get TranspositionTable that has never been set! Probably a wrong combination of strategies has been set.");
+			throw new RuntimeException("Trying to get TranspositionTable that has never been set!");
+		}
 	}
 
 }

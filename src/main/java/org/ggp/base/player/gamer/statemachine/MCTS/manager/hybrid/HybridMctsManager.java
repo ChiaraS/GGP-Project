@@ -8,6 +8,7 @@ import org.ggp.base.player.gamer.statemachine.GamerSettings;
 import org.ggp.base.player.gamer.statemachine.MCS.manager.hybrid.CompleteMoveStats;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.exceptions.MCTSException;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.strategies.AfterGameStrategy;
+import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.strategies.aftermetagame.AfterMetagameStrategy;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.strategies.aftermove.AfterMoveStrategy;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.strategies.aftersimulation.AfterSimulationStrategy;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.strategies.backpropagation.BackpropagationStrategy;
@@ -114,6 +115,10 @@ public class HybridMctsManager {
 	 * game step.
 	 */
 	private BeforeSearchStrategy beforeSearchStrategy;
+	/**
+	 * Performs actions after the end of the search for the metagame.
+	 */
+	private AfterMetagameStrategy afterMetagameStrategy;
 	/**
 	 * Performs actions before every simulation.
 	 */
@@ -243,16 +248,31 @@ public class HybridMctsManager {
 			throw new RuntimeException(e);
 		}
 
-		if(gamerSettings.specifiesProperty("SearchManager.beforeMoveStrategyType")){
+		if(gamerSettings.specifiesProperty("SearchManager.beforeSearchStrategyType")){
 
-			propertyValue = gamerSettings.getPropertyValue("SearchManager.beforeMoveStrategyType");
+			propertyValue = gamerSettings.getPropertyValue("SearchManager.beforeSearchStrategyType");
 			try {
-				this.beforeSearchStrategy = (BeforeSearchStrategy) SearchManagerComponent.getConstructorForSearchManagerComponent(SearchManagerComponent.getCorrespondingClass(ProjectSearcher.BEFORE_MOVE_STRATEGIES.getConcreteClasses(),
+				this.beforeSearchStrategy = (BeforeSearchStrategy) SearchManagerComponent.getConstructorForSearchManagerComponent(SearchManagerComponent.getCorrespondingClass(ProjectSearcher.BEFORE_SEARCH_STRATEGIES.getConcreteClasses(),
 						propertyValue)).newInstance(gameDependentParameters, random, gamerSettings, sharedReferencesCollector);
 			} catch (InstantiationException | IllegalAccessException
 					| IllegalArgumentException | InvocationTargetException e) {
 				// TODO: fix this!
-				GamerLogger.logError("SearchManagerCreation", "Error when instantiating BeforeMoveStrategy " + propertyValue + ".");
+				GamerLogger.logError("SearchManagerCreation", "Error when instantiating BeforeSearchStrategy " + propertyValue + ".");
+				GamerLogger.logStackTrace("SearchManagerCreation", e);
+				throw new RuntimeException(e);
+			}
+		}
+
+		if(gamerSettings.specifiesProperty("SearchManager.afterMetagameStrategyType")){
+
+			propertyValue = gamerSettings.getPropertyValue("SearchManager.afterMetagameStrategyType");
+			try {
+				this.afterMetagameStrategy = (AfterMetagameStrategy) SearchManagerComponent.getConstructorForSearchManagerComponent(SearchManagerComponent.getCorrespondingClass(ProjectSearcher.AFTER_METAGAME_STRATEGIES.getConcreteClasses(),
+						propertyValue)).newInstance(gameDependentParameters, random, gamerSettings, sharedReferencesCollector);
+			} catch (InstantiationException | IllegalAccessException
+					| IllegalArgumentException | InvocationTargetException e) {
+				// TODO: fix this!
+				GamerLogger.logError("SearchManagerCreation", "Error when instantiating AfterMetagameStrategy " + propertyValue + ".");
 				GamerLogger.logStackTrace("SearchManagerCreation", e);
 				throw new RuntimeException(e);
 			}
@@ -336,6 +356,8 @@ public class HybridMctsManager {
 			this.transpositionTable.turnOffLogging();
 		}
 
+		sharedReferencesCollector.setTranspositionTable(transpositionTable);
+
 		// Let all strategies set references if needed.
 		this.selectionStrategy.setReferences(sharedReferencesCollector);
 		this.expansionStrategy.setReferences(sharedReferencesCollector);
@@ -344,6 +366,9 @@ public class HybridMctsManager {
 		this.moveChoiceStrategy.setReferences(sharedReferencesCollector);
 		if(this.beforeSearchStrategy != null){
 			this.beforeSearchStrategy.setReferences(sharedReferencesCollector);
+		}
+		if(this.afterMetagameStrategy != null){
+			this.afterMetagameStrategy.setReferences(sharedReferencesCollector);
 		}
 		if(this.beforeSimulationStrategy != null){
 			this.beforeSimulationStrategy.setReferences(sharedReferencesCollector);
@@ -388,9 +413,15 @@ public class HybridMctsManager {
 		toLog += "\nMOVE_CHOICE_STRATEGY = " + this.moveChoiceStrategy.printComponent("\n  ");
 
 		if(this.beforeSearchStrategy != null){
-			toLog += "\nBEFORE_MOVE_STRATEGY = " + this.beforeSearchStrategy.printComponent("\n  ");
+			toLog += "\nBEFORE_SEARCH_STRATEGY = " + this.beforeSearchStrategy.printComponent("\n  ");
 		}else{
-			toLog += "\nBEFORE_MOVE_STRATEGY = null";
+			toLog += "\nBEFORE_SEARCH_STRATEGY = null";
+		}
+
+		if(this.afterMetagameStrategy != null){
+			toLog += "\nAFTER_METAGAME_STRATEGY = " + this.afterMetagameStrategy.printComponent("\n  ");
+		}else{
+			toLog += "\nAFTER_METAGAME_STRATEGY = null";
 		}
 
 		if(this.beforeSimulationStrategy != null){
@@ -453,6 +484,9 @@ public class HybridMctsManager {
 		if(this.beforeSearchStrategy != null){
 			this.beforeSearchStrategy.clearComponent();
 		}
+		if(this.afterMetagameStrategy != null){
+			this.afterMetagameStrategy.clearComponent();
+		}
 		if(this.beforeSimulationStrategy != null){
 			this.beforeSimulationStrategy.clearComponent();
 		}
@@ -484,6 +518,9 @@ public class HybridMctsManager {
 		this.moveChoiceStrategy.setUpComponent();
 		if(this.beforeSearchStrategy != null){
 			this.beforeSearchStrategy.setUpComponent();
+		}
+		if(this.afterMetagameStrategy != null){
+			this.afterMetagameStrategy.setUpComponent();
 		}
 		if(this.beforeSimulationStrategy != null){
 			this.beforeSimulationStrategy.setUpComponent();
@@ -1043,6 +1080,12 @@ public class HybridMctsManager {
 		}
 
 		this.transpositionTable.logTable("End");
+	}
+
+	public void afterMetagameActions(){
+		if(this.afterMetagameStrategy != null){
+			this.afterMetagameStrategy.afterMetagameActions();
+		}
 	}
 
 	public void afterGameActions(List<Integer> goals){

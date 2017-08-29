@@ -188,6 +188,8 @@ public class MctsGamer extends InternalPropnetGamer {
 
 					thinkingTime = System.currentTimeMillis() - start;
 				}
+
+				this.mctsManager.afterMetagameActions();
 			}else{
 				GamerLogger.log("Gamer", "No time to start the search during metagame.");
 

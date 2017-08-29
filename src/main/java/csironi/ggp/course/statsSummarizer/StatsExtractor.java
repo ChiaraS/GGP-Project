@@ -134,7 +134,7 @@ public class StatsExtractor {
 					if(step == 0){
 						theLine = br.readLine();
 					}
-				}catch(NumberFormatException e){ // The search time must be an long number, if it's not there is some error
+				}catch(NumberFormatException e){ // The search time must be a long number, if it's not there is some error
 					System.out.println("Detected invalid value for the \"Game step\" for the .csv file " + this.theCSVFile.getName() + ".");
 					System.out.println("Skipping summarization of the file.");
 					this.allStats = null;
