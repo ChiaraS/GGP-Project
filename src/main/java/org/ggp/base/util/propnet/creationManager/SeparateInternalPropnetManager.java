@@ -389,7 +389,10 @@ public class SeparateInternalPropnetManager extends Thread{
 			}
 			ElementaryCyclesSearch ecs = new ElementaryCyclesSearch(propnetAdjacencyLists, nodesNumbers);
 			*/
+
+			//long time = System.currentTimeMillis();
 			List<List<Integer>> cycles = ecs.getElementaryCycles();
+			//System.out.println( (System.currentTimeMillis() - time) + "ms to detect cycles");
 
 			GamerLogger.log("PropnetManager", "Found " + cycles.size() + " cycles in PropNet.");
 
