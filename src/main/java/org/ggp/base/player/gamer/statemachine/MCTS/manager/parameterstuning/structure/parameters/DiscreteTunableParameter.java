@@ -5,13 +5,7 @@ package org.ggp.base.player.gamer.statemachine.MCTS.manager.parameterstuning.str
  * @author C.Sironi
  *
  */
-public class DoubleTunableParameter extends TunableParameter {
-
-	/**
-	 * Value of the parameter for the roles not being tuned.
-	 * It's also the values used to initialize each value at the beginning of each new game.
-	 */
-	private double fixedValue;
+public class DiscreteTunableParameter extends TunableParameter {
 
 	/**
 	 * If we are tuning this parameter for at least one role, these are all the possible values
@@ -20,45 +14,32 @@ public class DoubleTunableParameter extends TunableParameter {
 	private double[] possibleValues;
 
 	/**
-	 * For each role the current value being set.
+	 * This array specifies a penalty for each of the possible values of the tunable parameter. The greater the
+	 * penalty the worse the value is expected to perform. When selecting the next parameter to be evaluated
+	 * this penalty will be used to compute a bias that will reward more parameters expected to perform well
+	 * and reward less parameters expected to perform bad.
+	 *
+	 * Example on how to compute the penalty value: perform preliminary experiments where you test the different
+	 * possible values of the parameter singularly on a certain set of games.
+	 * Suppose that V={v_1,...,v_n} is the set of possible values that you tested for this parameter and that
+	 * W={w_1,...,w_n} is a set where each w_i is the win percentage (i.e. a value in the interval [0, 100]) of
+	 * the player that was using the value v_i for the considered parameter.
+	 * You can assign a penalty of 0 to the value v_i that obtained the highest win percentage and a penalty of
+	 * w_i-w_j to each other value v_j. When evaluating which parameter to select next, a bias will be computed
+	 * that will have an higher value the lower the penalty is.
 	 */
-	private double[] currentValues;
+	private double[] possibleValuesPenalty;
 
-	public DoubleTunableParameter(String name, double fixedValue) {
+	public DiscreteTunableParameter(String name, double fixedValue, int tuningOrderIndex, double[] possibleValues, double[] possibleValuesPenalty) {
 
-		this(name, fixedValue, null, null, -1);
-
-	}
-
-	public DoubleTunableParameter(String name, double fixedValue, double[] possibleValues, double[] possibleValuesPenalty, int tuningOrderIndex) {
-
-		super(name, possibleValuesPenalty, tuningOrderIndex);
-
-		this.fixedValue = fixedValue;
+		super(name, fixedValue, tuningOrderIndex);
 
 		this.possibleValues = possibleValues;
 
-		this.currentValues = null;
+		this.possibleValuesPenalty =  possibleValuesPenalty;
 
 	}
 
-	public void clearParameter(){
-		this.currentValues = null;
-	}
-
-	public void setUpParameter(int numRoles){
-		this.currentValues = new double[numRoles];
-
-		for(int i = 0; i < this.currentValues.length; i++){
-			this.currentValues[i] = this.fixedValue;
-		}
-	}
-
-	public double getValuePerRole(int roleIndex){
-		return this.currentValues[roleIndex];
-	}
-
-	@Override
 	public int getNumPossibleValues(){
 
 		if(this.possibleValues == null){
@@ -68,13 +49,11 @@ public class DoubleTunableParameter extends TunableParameter {
 		}
 	}
 
-	@Override
 	public void setMyRoleNewValue(int myRoleIndex, int newValueIndex) {
 		// We are tuning only the parameter of myRole
 		this.currentValues[myRoleIndex] = this.possibleValues[newValueIndex];
 	}
 
-	@Override
 	public void setAllRolesNewValues(int[] newValuesIndices) {
 		// We are tuning for all roles
 		for(int i = 0; i < newValuesIndices.length; i++){
@@ -87,7 +66,7 @@ public class DoubleTunableParameter extends TunableParameter {
 
 		String superParams = super.getParameters(indentation);
 
-		String params = indentation + "FIXED_VALUE = " + this.fixedValue;
+		String params = "";
 
 		if(this.possibleValues != null){
 			String possibleValuesString = "[ ";
@@ -108,21 +87,19 @@ public class DoubleTunableParameter extends TunableParameter {
 			params += indentation + "POSSIBLE_VALUES = null";
 		}
 
-		if(this.currentValues != null){
-			String currentValuesString = "[ ";
+		String s;
 
-			for(int i = 0; i < this.currentValues.length; i++){
-
-				currentValuesString += this.currentValues[i] + " ";
-
+		if(this.possibleValuesPenalty != null){
+			s = "[ ";
+			for(int i = 0; i < this.possibleValuesPenalty.length; i++){
+				s += this.possibleValuesPenalty[i] + " ";
 			}
-
-			currentValuesString += "]";
-
-			params += indentation + "current_values = " + currentValuesString;
+			s += "]";
 		}else{
-			params += indentation + "current_values = null";
+			s = "null";
 		}
+
+		params += (indentation + "POSSIBLE_VALUES_PENALTY = " + s);
 
 		if(superParams != null){
 			return superParams + params;
@@ -132,7 +109,6 @@ public class DoubleTunableParameter extends TunableParameter {
 
 	}
 
-	@Override
 	public String[] getPossibleValues() {
 		String[] values = new String[this.possibleValues.length];
 		for(int i = 0; i < this.possibleValues.length; i++){
@@ -145,12 +121,21 @@ public class DoubleTunableParameter extends TunableParameter {
 		return values;
 	}
 
-	@Override
+	/**
+	 * Returns the value at the given index as a double.
+	 * @param valueIndex
+	 * @return
+	 */
 	public double getPossibleValue(int valueIndex) {
 		return this.possibleValues[valueIndex];
 	}
 
-	@Override
+	/**
+	 * Get the index of the current value for each role.
+	 *
+	 * @return an array, where each entry corresponds to a role and is the index in the list of possible
+	 * values of the value that is currently set for the role.
+	 */
 	public int[] getCurrentValuesIndices() {
 		int[] currentValuesIndices = new int[this.currentValues.length];
 		for(int roleIndex = 0; roleIndex < this.currentValues.length; roleIndex++){
@@ -160,6 +145,10 @@ public class DoubleTunableParameter extends TunableParameter {
 			}
 		}
 		return currentValuesIndices;
+	}
+
+	public double[] getPossibleValuesPenalty(){
+		return this.possibleValuesPenalty;
 	}
 
 }

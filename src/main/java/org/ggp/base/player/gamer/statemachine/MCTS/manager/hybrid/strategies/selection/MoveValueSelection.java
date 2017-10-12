@@ -10,7 +10,7 @@ import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.GameDependentP
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.SearchManagerComponent;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.SharedReferencesCollector;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.strategies.selection.evaluators.MoveEvaluator;
-import org.ggp.base.player.gamer.statemachine.MCTS.manager.parameterstuning.structure.parameters.DoubleTunableParameter;
+import org.ggp.base.player.gamer.statemachine.MCTS.manager.parameterstuning.structure.parameters.TunableParameter;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.MctsNode;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.hybrid.MctsJointMove;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.hybrid.MctsMove;
@@ -26,7 +26,7 @@ import org.ggp.base.util.statemachine.structure.Move;
 
 public class MoveValueSelection extends SelectionStrategy {
 
-	private DoubleTunableParameter valueOffset;
+	private TunableParameter valueOffset;
 
 	/**
 	 * NOTE: to obtain the desired selection type set the MoveEvaluator as follows:
@@ -40,7 +40,7 @@ public class MoveValueSelection extends SelectionStrategy {
 
 		super(gameDependentParameters, random, gamerSettings, sharedReferencesCollector);
 
-		this.valueOffset = this.createDoubleTunableParameter("SelectionStrategy", "VO", gamerSettings, sharedReferencesCollector);
+		this.valueOffset = this.createTunableParameter("SelectionStrategy", "VO", gamerSettings, sharedReferencesCollector);
 
 		try {
 			this.moveEvaluator = (MoveEvaluator) SearchManagerComponent.getConstructorForSearchManagerComponent(SearchManagerComponent.getCorrespondingClass(ProjectSearcher.MOVE_EVALUATORS.getConcreteClasses(),

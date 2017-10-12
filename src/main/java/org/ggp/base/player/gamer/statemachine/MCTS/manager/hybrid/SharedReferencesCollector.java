@@ -13,7 +13,8 @@ import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.strategies.sel
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.strategies.selection.evaluators.td.GlobalExtremeValues;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.parameterstuning.ParametersTuner;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.parameterstuning.structure.ParametersManager;
-import org.ggp.base.player.gamer.statemachine.MCTS.manager.parameterstuning.structure.parameters.TunableParameter;
+import org.ggp.base.player.gamer.statemachine.MCTS.manager.parameterstuning.structure.parameters.ContinuousTunableParameter;
+import org.ggp.base.player.gamer.statemachine.MCTS.manager.parameterstuning.structure.parameters.DiscreteTunableParameter;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.hybrid.MctsTranspositionTable;
 import org.ggp.base.util.logging.GamerLogger;
 import org.ggp.base.util.statemachine.structure.Move;
@@ -34,7 +35,9 @@ public class SharedReferencesCollector {
 
 	private List<Map<Move, MoveStats>> mastStatistics;
 
-	private List<TunableParameter> theParametersToTune;
+	private List<DiscreteTunableParameter> theDiscreteParametersToTune;
+
+	private List<ContinuousTunableParameter> theContinuousParametersToTune;
 
 	private GlobalExtremeValues globalExtremeValues;
 
@@ -78,26 +81,49 @@ public class SharedReferencesCollector {
 		}
 	}
 
-	public void addParameterToTune(TunableParameter theParameterToTune){
+	public void addDiscreteParameterToTune(DiscreteTunableParameter theDiscreteParameterToTune){
 		// Can only be set once
-		if(this.theParametersToTune == null){
-			this.theParametersToTune = new ArrayList<TunableParameter>();
-			this.theParametersToTune.add(theParameterToTune);
-		}else if(this.theParametersToTune.contains(theParameterToTune)){
-			GamerLogger.logError("SearchManagerCreation", "Trying to add duplicate TunableParameter to theParametersToTune multiple times!");
-			throw new RuntimeException("Trying to add duplicate TunableParameter to theParametersToTune multiple times!");
+		if(this.theDiscreteParametersToTune == null){
+			this.theDiscreteParametersToTune = new ArrayList<DiscreteTunableParameter>();
+			this.theDiscreteParametersToTune.add(theDiscreteParameterToTune);
+		}else if(this.theDiscreteParametersToTune.contains(theDiscreteParameterToTune)){
+			GamerLogger.logError("SearchManagerCreation", "Trying to add duplicate DiscreteTunableParameter to theDiscreteParametersToTune multiple times!");
+			throw new RuntimeException("Trying to add duplicate TunableParameter to theDiscreteParametersToTune multiple times!");
 		}else{
-			this.theParametersToTune.add(theParameterToTune);
+			this.theDiscreteParametersToTune.add(theDiscreteParameterToTune);
 		}
 	}
 
-	public List<TunableParameter> getTheParametersToTune(){
+	public List<DiscreteTunableParameter> getTheDiscreteParametersToTune(){
 		// If a strategy looks for the reference then another strategy must have set it
-		if(this.theParametersToTune != null && !this.theParametersToTune.isEmpty()){
-			return this.theParametersToTune;
+		if(this.theDiscreteParametersToTune != null && !this.theDiscreteParametersToTune.isEmpty()){
+			return this.theDiscreteParametersToTune;
 		}else{
-			GamerLogger.logError("SearchManagerCreation", "Trying to get TheParametersToTune that have never been set! Probably a wrong combination of strategies has been set.");
-			throw new RuntimeException("Trying to get TheParametersToTune that have never been set!");
+			GamerLogger.logError("SearchManagerCreation", "Trying to get TheDiscreteParametersToTune that have never been set! Probably a wrong combination of strategies has been set.");
+			throw new RuntimeException("Trying to get TheDiscreteParametersToTune that have never been set!");
+		}
+	}
+
+	public void addContinuousParameterToTune(ContinuousTunableParameter theContinuousParameterToTune){
+		// Can only be set once
+		if(this.theContinuousParametersToTune == null){
+			this.theContinuousParametersToTune = new ArrayList<ContinuousTunableParameter>();
+			this.theContinuousParametersToTune.add(theContinuousParameterToTune);
+		}else if(this.theContinuousParametersToTune.contains(theContinuousParameterToTune)){
+			GamerLogger.logError("SearchManagerCreation", "Trying to add duplicate ContinuousTunableParameter to theContinuousParametersToTune multiple times!");
+			throw new RuntimeException("Trying to add duplicate ContinuousTunableParameter to theContinuousParametersToTune multiple times!");
+		}else{
+			this.theContinuousParametersToTune.add(theContinuousParameterToTune);
+		}
+	}
+
+	public List<ContinuousTunableParameter> getTheContinuousParametersToTune(){
+		// If a strategy looks for the reference then another strategy must have set it
+		if(this.theContinuousParametersToTune != null && !this.theContinuousParametersToTune.isEmpty()){
+			return this.theContinuousParametersToTune;
+		}else{
+			GamerLogger.logError("SearchManagerCreation", "Trying to get TheContinuousParametersToTune that have never been set! Probably a wrong combination of strategies has been set.");
+			throw new RuntimeException("Trying to get TheContinuousParametersToTune that have never been set!");
 		}
 	}
 

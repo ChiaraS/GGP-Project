@@ -1,8 +1,14 @@
 package org.ggp.base.player.gamer.statemachine.MCTS.manager.parameterstuning.structure.parameters;
 
-public abstract class TunableParameter {
+public class TunableParameter {
 
 	private String name;
+
+	/**
+	 * Value of the parameter for the roles not being tuned.
+	 * It's also the values used to initialize each value at the beginning of each new game.
+	 */
+	protected double fixedValue;
 
 	/**
 	 * Indicates in which order the parameters should be tuned, if an order is required by the tuning method.
@@ -15,75 +21,62 @@ public abstract class TunableParameter {
 	private int tuningOrderIndex;
 
 	/**
-	 * This array specifies a penalty for each of the possible values of the tunable parameter. The greater the
-	 * penalty the worse the value is expected to perform. When selecting the next parameter to be evaluated
-	 * this penalty will be used to compute a bias that will reward more parameters expected to perform well
-	 * and reward less parameters expected to perform bad.
-	 *
-	 * Example on how to compute the penalty value: perform preliminary experiments where you test the different
-	 * possible values of the parameter singularly on a certain set of games.
-	 * Suppose that V={v_1,...,v_n} is the set of possible values that you tested for this parameter and that
-	 * W={w_1,...,w_n} is a set where each w_i is the win percentage (i.e. a value in the interval [0, 100]) of
-	 * the player that was using the value v_i for the considered parameter.
-	 * You can assign a penalty of 0 to the value v_i that obtained the highest win percentage and a penalty of
-	 * w_i-w_j to each other value v_j. When evaluating which parameter to select next, a bias will be computed
-	 * that will have an higher value the lower the penalty is.
+	 * For each role the current value being set.
 	 */
-	private double[] possibleValuesPenalty;
+	protected double[] currentValues;
 
-	public TunableParameter(String name, double[] possibleValuesPenalty, int tuningOrderIndex){
+	public TunableParameter(String name, double fixedValue, int tuningOrderIndex){
 
 		this.name = name;
 
-		this.possibleValuesPenalty =  possibleValuesPenalty;
+		this.fixedValue = fixedValue;
 
 		this.tuningOrderIndex = tuningOrderIndex;
 
+		this.currentValues = null;
+
 	}
 
-	/**
-	 * Get the index of the current value for each role.
-	 *
-	 * @return an array, where each entry corresponds to a role and is the index in the list of possible
-	 * values of the value that is currently set for the role.
-	 */
-	public abstract int[] getCurrentValuesIndices();
+	public void clearParameter(){
+		this.currentValues = null;
+	}
 
-	public abstract int getNumPossibleValues();
+	public void setUpParameter(int numRoles){
+		this.currentValues = new double[numRoles];
 
-	public abstract String[] getPossibleValues();
+		for(int i = 0; i < this.currentValues.length; i++){
+			this.currentValues[i] = this.fixedValue;
+		}
+	}
 
-	/**
-	 * Returns the value at the given index as a double.
-	 * @param valueIndex
-	 * @return
-	 */
-	public abstract double getPossibleValue(int valueIndex);
-
-	public abstract void setMyRoleNewValue(int myRoleIndex, int newValueIndex);
-
-	public abstract void setAllRolesNewValues(int[] newValuesIndices);
+	public double getValuePerRole(int roleIndex){
+		return this.currentValues[roleIndex];
+	}
 
 	public String getParameters(String indentation) {
 
-		String s;
-
-		if(this.possibleValuesPenalty != null){
-			s = "[ ";
-			for(int i = 0; i < this.possibleValuesPenalty.length; i++){
-				s += this.possibleValuesPenalty[i] + " ";
-			}
-			s += "]";
-		}else{
-			s = "null";
-		}
-		return indentation + "NAME = " + this.name +
-				indentation + "POSSIBLE_VALUES_PENALTY = " + s +
+		String params = indentation + "NAME = " + this.name +
+				indentation + "FIXED_VALUE = " + this.fixedValue +
 				indentation + "TUNING_ORDER_INDEX = " + this.tuningOrderIndex;
-	}
 
-	public double[] getPossibleValuesPenalty(){
-		return this.possibleValuesPenalty;
+		if(this.currentValues != null){
+			String currentValuesString = "[ ";
+
+			for(int i = 0; i < this.currentValues.length; i++){
+
+				currentValuesString += this.currentValues[i] + " ";
+
+			}
+
+			currentValuesString += "]";
+
+			params += indentation + "current_values = " + currentValuesString;
+		}else{
+			params += indentation + "current_values = null";
+		}
+
+		return params;
+
 	}
 
 	public int getTuningOrderIndex(){

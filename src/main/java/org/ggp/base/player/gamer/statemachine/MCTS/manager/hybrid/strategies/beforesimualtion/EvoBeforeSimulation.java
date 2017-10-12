@@ -8,7 +8,7 @@ import org.ggp.base.player.gamer.statemachine.MCTS.manager.evolution.Individual;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.evolution.SingleParameterEvolutionManager;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.GameDependentParameters;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.SharedReferencesCollector;
-import org.ggp.base.player.gamer.statemachine.MCTS.manager.parameterstuning.structure.parameters.TunableParameter;
+import org.ggp.base.player.gamer.statemachine.MCTS.manager.parameterstuning.structure.parameters.DiscreteTunableParameter;
 import org.ggp.base.util.logging.GamerLogger;
 
 public class EvoBeforeSimulation extends BeforeSimulationStrategy {
@@ -17,7 +17,7 @@ public class EvoBeforeSimulation extends BeforeSimulationStrategy {
 
 	private boolean tuneAllRoles;
 
-	private TunableParameter tunableParameter;
+	private DiscreteTunableParameter tunableParameter;
 
 	public EvoBeforeSimulation(GameDependentParameters gameDependentParameters, Random random,
 			GamerSettings gamerSettings, SharedReferencesCollector sharedReferencesCollector) {
@@ -43,7 +43,7 @@ public class EvoBeforeSimulation extends BeforeSimulationStrategy {
 	@Override
 	public void setReferences(SharedReferencesCollector sharedReferencesCollector) {
 
-		List<TunableParameter> tunableParameters = sharedReferencesCollector.getTheParametersToTune();
+		List<DiscreteTunableParameter> tunableParameters = sharedReferencesCollector.getTheDiscreteParametersToTune();
 
 		if(tunableParameters != null && tunableParameters.size() == 1){
 			this.tunableParameter = tunableParameters.get(0);

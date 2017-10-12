@@ -6,7 +6,7 @@ package org.ggp.base.player.gamer.statemachine.MCTS.manager.parameterstuning.str
  * @author C.Sironi
  *
  */
-public class IntTunableParameter extends TunableParameter {
+public class IntTunableParameter /*extends TunableParameter*/ {
 
 	/**
 	 * Value of the parameter for the roles not being tuned.
@@ -33,7 +33,7 @@ public class IntTunableParameter extends TunableParameter {
 
 	public IntTunableParameter(String name, int fixedValue, int[] possibleValues, double[] possibleValuesPenalty, int tuningOrderIndex) {
 
-		super(name, possibleValuesPenalty, tuningOrderIndex);
+		//super(name, possibleValuesPenalty, tuningOrderIndex);
 
 		this.fixedValue = fixedValue;
 
@@ -59,7 +59,7 @@ public class IntTunableParameter extends TunableParameter {
 		return this.currentValues[roleIndex];
 	}
 
-	@Override
+
 	public int getNumPossibleValues(){
 
 		if(this.possibleValues == null){
@@ -69,13 +69,13 @@ public class IntTunableParameter extends TunableParameter {
 		}
 	}
 
-	@Override
+
 	public void setMyRoleNewValue(int myRoleIndex, int newValueIndex) {
 		// We are tuning only the parameter of myRole
 		this.currentValues[myRoleIndex] = this.possibleValues[newValueIndex];
 	}
 
-	@Override
+
 	public void setAllRolesNewValues(int[] newValuesIndices) {
 		// We are tuning for all roles
 		for(int i = 0; i < newValuesIndices.length; i++){
@@ -83,10 +83,10 @@ public class IntTunableParameter extends TunableParameter {
 		}
 	}
 
-	@Override
+
 	public String getParameters(String indentation) {
 
-		String superParams = super.getParameters(indentation);
+		//String superParams = super.getParameters(indentation);
 
 		String params = indentation + "FIXED_VALUE = " + this.fixedValue;
 
@@ -127,15 +127,14 @@ public class IntTunableParameter extends TunableParameter {
 			params += indentation + "current_values = null";
 		}
 
-		if(superParams != null){
-			return superParams + params;
-		}else{
+		//if(superParams != null){
+			//return superParams + params;
+		//}else{
 			return params;
-		}
+		//}
 
 	}
 
-	@Override
 	public String[] getPossibleValues() {
 		String[] values = new String[this.possibleValues.length];
 		for(int i = 0; i < this.possibleValues.length; i++){
@@ -148,12 +147,10 @@ public class IntTunableParameter extends TunableParameter {
 		return values;
 	}
 
-	@Override
 	public double getPossibleValue(int valueIndex) {
 		return this.possibleValues[valueIndex];
 	}
 
-	@Override
 	public int[] getCurrentValuesIndices() {
 		int[] currentValuesIndices = new int[this.currentValues.length];
 		for(int roleIndex = 0; roleIndex < this.currentValues.length; roleIndex++){

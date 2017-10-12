@@ -6,7 +6,7 @@ import org.ggp.base.player.gamer.statemachine.GamerSettings;
 import org.ggp.base.player.gamer.statemachine.MCS.manager.MoveStats;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.GameDependentParameters;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.SharedReferencesCollector;
-import org.ggp.base.player.gamer.statemachine.MCTS.manager.parameterstuning.structure.parameters.DoubleTunableParameter;
+import org.ggp.base.player.gamer.statemachine.MCTS.manager.parameterstuning.structure.parameters.TunableParameter;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.MctsNode;
 import org.ggp.base.util.statemachine.structure.Move;
 /**
@@ -19,14 +19,14 @@ public class UctEvaluator extends MoveEvaluator {
 	 * This is an array so that it can memorize a different value for C for each role in the game.
 	 * If a single value has to be used then all values in the array will be the same.
 	 */
-	protected DoubleTunableParameter c;
+	protected TunableParameter c;
 
 	/**
 	 * Default value to assign to an unexplored move (first play urgency).
 	 * This is an array so that it can memorize a different value for C for each role in the game.
 	 * If a single value has to be used then all values in the array will be the same.
 	 */
-	protected DoubleTunableParameter fpu;
+	protected TunableParameter fpu;
 
 	public UctEvaluator(GameDependentParameters gameDependentParameters, Random random,
 			GamerSettings gamerSettings, SharedReferencesCollector sharedReferencesCollector){
@@ -34,7 +34,7 @@ public class UctEvaluator extends MoveEvaluator {
 		super(gameDependentParameters, random, gamerSettings, sharedReferencesCollector);
 
 
-		this.c = this.createDoubleTunableParameter("MoveEvaluator", "C", gamerSettings, sharedReferencesCollector);
+		this.c = this.createTunableParameter("MoveEvaluator", "C", gamerSettings, sharedReferencesCollector);
 
 		/*
 		// Get default value for C (this is the value used for the roles for which we are not tuning the parameter)
@@ -68,7 +68,7 @@ public class UctEvaluator extends MoveEvaluator {
 			this.c = new DoubleTunableParameter("C", fixedC);
 		}*/
 
-		this.fpu = this.createDoubleTunableParameter("MoveEvaluator", "Fpu", gamerSettings, sharedReferencesCollector);
+		this.fpu = this.createTunableParameter("MoveEvaluator", "Fpu", gamerSettings, sharedReferencesCollector);
 
 		/*
 		// Get default value for Fpu (this is the value used for the roles for which we are not tuning the parameter)

@@ -6,7 +6,7 @@ import org.ggp.base.player.gamer.statemachine.GamerSettings;
 import org.ggp.base.player.gamer.statemachine.MCS.manager.MoveStats;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.GameDependentParameters;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.SharedReferencesCollector;
-import org.ggp.base.player.gamer.statemachine.MCTS.manager.parameterstuning.structure.parameters.IntTunableParameter;
+import org.ggp.base.player.gamer.statemachine.MCTS.manager.parameterstuning.structure.parameters.TunableParameter;
 
 public class CadiaBetaComputer extends BetaComputer{
 
@@ -15,14 +15,14 @@ public class CadiaBetaComputer extends BetaComputer{
 	 * the UCT value and the AMAF value of a move. It memorizes a value for each
 	 * role in case we want different values for each role.
 	 */
-	private IntTunableParameter k;
+	private TunableParameter k;
 
 	public CadiaBetaComputer(GameDependentParameters gameDependentParameters, Random random,
 			GamerSettings gamerSettings, SharedReferencesCollector sharedReferencesCollector) {
 
 		super(gameDependentParameters, random, gamerSettings, sharedReferencesCollector);
 
-		this.k = this.createIntTunableParameter("BetaComputer", "K", gamerSettings, sharedReferencesCollector);
+		this.k = this.createTunableParameter("BetaComputer", "K", gamerSettings, sharedReferencesCollector);
 
 		/*
 		// Get default value for K (this is the value used for the roles for which we are not tuning the parameter)

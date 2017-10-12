@@ -2,6 +2,7 @@ package org.ggp.base.player.gamer.statemachine;
 
 import java.util.Properties;
 
+import org.ggp.base.util.Interval;
 import org.ggp.base.util.logging.GamerLogger;
 
 public class GamerSettings {
@@ -166,7 +167,7 @@ public class GamerSettings {
 	}
 
 	/**
-	 * Looks for a property that specifies multiple values and returns them as an array of integers.
+	 * Looks for a property that specifies multiple values and returns them as an array of double.
 	 * This method assumes that the values for the property are separated by ";" and checks that
 	 * at least one value is specified.
 	 *
@@ -189,6 +190,82 @@ public class GamerSettings {
 
 		return toReturn;
 
+	}
+
+	/**
+	 * Checks if the given property is specified as an interval. To do this it simply checks if the first and last
+	 * character of the string are "[" or "(" and "]" or ")".
+	 * @param propertyName
+	 * @return
+	 */
+	public boolean isIntervalProperty(String propertyName){
+
+		String propertyValue = this.getPropertyValue(propertyName);
+
+		// Check if the value is specified as interval
+		return ((propertyValue.startsWith("[") || propertyValue.startsWith("(")) && (propertyValue.endsWith("]") || propertyValue.endsWith(")")));
+
+	}
+
+	/**
+	 * Looks for a property that specifies an interval and returns it as an array of length 2 of double.
+	 * This method expects that the interval is specified as follows: [leftExtreme;rightExtreme], where
+	 * leftExtreme <= rightExtreme.
+	 *
+	 * @param propertyName
+	 * @return
+	 */
+	public Interval getDoublePropertyIntervalValue(String propertyName){
+
+		// Check if the interval is specified in the right format
+		if(!this.isIntervalProperty(propertyName)){
+			this.wrongIntervalFormat(propertyName, "The interval must be specified between brackets, \"[\" and \"]\" if the extreme is included or \"(\" and \")\" if the extreme is not included. E.g. [leftExtreme;rightExtreme).");
+		}
+
+		String propertyValue = this.getPropertyValue(propertyName);
+
+		String[] intervalString = propertyValue.substring(1, propertyValue.length()-1).split(";");
+
+		if(intervalString.length != 2){
+			this.wrongIntervalFormat(propertyName, "Only specify the two extremes of the interval separated by \";\".");
+		}
+
+		double leftExtreme;
+		double rightExtreme;
+
+		// NOTE: here we transform the "infinity" value to a finite value (i.e. the maximum representable value).
+		// Thus it makes sense in the settings file to specify a closed interval with infinity as extreme, because
+		// there might be cases when we want to consider Double.MAX_VALUE as a feasible value for a parameter.
+		// E.g. [0;inf] will become [0,Double.MAX_VALUE]
+		if(intervalString[0].equalsIgnoreCase("inf")){
+			leftExtreme = Double.MAX_VALUE;
+		}else if(intervalString[0].equalsIgnoreCase("-inf")){
+			leftExtreme = -Double.MAX_VALUE;
+		}else{
+			leftExtreme = Double.parseDouble(intervalString[0]);
+		}
+		if(intervalString[1].equalsIgnoreCase("inf")){
+			rightExtreme = Double.MAX_VALUE;
+		}else if(intervalString[1].equalsIgnoreCase("-inf")){
+			rightExtreme = -Double.MAX_VALUE;
+		}else{
+			rightExtreme = Double.parseDouble(intervalString[1]);
+		}
+
+		boolean leftClosed = propertyValue.startsWith("[");
+		boolean rightClosed = propertyValue.endsWith("]");
+
+		if(leftExtreme > rightExtreme || ((leftExtreme == rightExtreme) && (!leftClosed || !rightClosed))){
+			this.wrongIntervalFormat(propertyName, "The interval is empty.");
+		}
+
+		return new Interval(leftExtreme, rightExtreme, leftClosed, rightClosed);
+
+	}
+
+	private void wrongIntervalFormat(String propertyName, String errorMessage){
+		GamerLogger.logError("SearchManagerCreation", "Wrong interval format for property " + propertyName + ". " + errorMessage);
+		throw new RuntimeException("Cannot find property " + propertyName + ".");
 	}
 
 }

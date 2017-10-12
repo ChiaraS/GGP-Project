@@ -37,7 +37,7 @@ public class RandomOrder extends ParametersOrder {
 	}
 
 	@Override
-	public void imposeOrder(List<TunableParameter> tunableParameters) {
+	public <T extends TunableParameter> void imposeOrder(List<T> tunableParameters) {
 
 		// Randomize the order of the parameters (needed by the HierarchicalSingleMabTuner)
 		Collections.shuffle(tunableParameters);

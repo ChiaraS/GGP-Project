@@ -6,18 +6,18 @@ import org.ggp.base.player.gamer.statemachine.GamerSettings;
 import org.ggp.base.player.gamer.statemachine.MCS.manager.MoveStats;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.GameDependentParameters;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.SharedReferencesCollector;
-import org.ggp.base.player.gamer.statemachine.MCTS.manager.parameterstuning.structure.parameters.DoubleTunableParameter;
+import org.ggp.base.player.gamer.statemachine.MCTS.manager.parameterstuning.structure.parameters.TunableParameter;
 
 public class GraveBetaComputer extends BetaComputer {
 
-	private DoubleTunableParameter bias;
+	private TunableParameter bias;
 
 	public GraveBetaComputer(GameDependentParameters gameDependentParameters, Random random,
 			GamerSettings gamerSettings, SharedReferencesCollector sharedReferencesCollector) {
 
 		super(gameDependentParameters, random, gamerSettings, sharedReferencesCollector);
 
-		this.bias = this.createDoubleTunableParameter("BetaComputer", "Bias", gamerSettings, sharedReferencesCollector);
+		this.bias = this.createTunableParameter("BetaComputer", "Bias", gamerSettings, sharedReferencesCollector);
 
 		/*
 		// Get default value for Bias (this is the value used for the roles for which we are not tuning the parameter)

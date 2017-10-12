@@ -32,6 +32,6 @@ public abstract class ParametersOrder extends SearchManagerComponent{
 	 * settings. The sequential tuner, instead, might need to impose an order on the parameters to know in
 	 * which predefined order to tune them singularly.
 	 */
-	public abstract void imposeOrder(List<TunableParameter> tunableParameters);
+	public abstract <T extends TunableParameter> void imposeOrder(List<T> tunableParameters);
 
 }

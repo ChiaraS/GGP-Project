@@ -9,6 +9,7 @@ import org.ggp.base.player.gamer.statemachine.GamerSettings;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.GameDependentParameters;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.SearchManagerComponent;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.SharedReferencesCollector;
+import org.ggp.base.player.gamer.statemachine.MCTS.manager.parameterstuning.structure.parameters.DiscreteTunableParameter;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.parameterstuning.structure.parameters.TunableParameter;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.parameterstuning.structure.parametersorders.ParametersOrder;
 import org.ggp.base.util.logging.GamerLogger;
@@ -20,7 +21,7 @@ public class ParametersManager extends SearchManagerComponent {
 	 * List of the parameters that we are tuning.
 	 * They also specify their name, possible values, (optional) penalty, etc...
 	 */
-	private List<TunableParameter> tunableParameters;
+	private List<DiscreteTunableParameter> tunableParameters;
 
 	/********************************** ATTENTION! **********************************
 	 * The use of JavaScript to evaluate ANY possible boolean expression that models
@@ -132,7 +133,7 @@ public class ParametersManager extends SearchManagerComponent {
 
 	@Override
 	public void setReferences(SharedReferencesCollector sharedReferencesCollector) {
-		this.tunableParameters = sharedReferencesCollector.getTheParametersToTune();
+		this.tunableParameters = sharedReferencesCollector.getTheDiscreteParametersToTune();
 
 		if(this.tunableParameters == null || this.tunableParameters.size() == 0){
 			GamerLogger.logError("SearchManagerCreation", "ParametersManager - Initialization with null or empty list of tunable parameters!");
@@ -368,7 +369,7 @@ public class ParametersManager extends SearchManagerComponent {
 
 		// If we are tuning only for my role...
 		if(valuesIndicesPerRole.length == 1){
-			for(TunableParameter p : this.tunableParameters){
+			for(DiscreteTunableParameter p : this.tunableParameters){
 				p.setMyRoleNewValue(this.gameDependentParameters.getMyRoleIndex(), valuesIndicesPerRole[0][paramIndex]);
 				paramIndex++;
 			}
@@ -376,7 +377,7 @@ public class ParametersManager extends SearchManagerComponent {
 
 			int[] newValuesIndices;
 
-			for(TunableParameter p : this.tunableParameters){
+			for(DiscreteTunableParameter p : this.tunableParameters){
 
 				//System.out.print(c.getClass().getSimpleName() + ": [ ");
 

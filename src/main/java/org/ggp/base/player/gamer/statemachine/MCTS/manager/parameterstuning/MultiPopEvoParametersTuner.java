@@ -77,9 +77,9 @@ public abstract class MultiPopEvoParametersTuner extends ParametersTuner {
 	 * this parameter specifies the number of times all possible combinations of combinations (i.e. individuals) must be evaluated
 	 * before using the collected statistics to evolve the population.
 	 *
-	 * If evaluating random combinations of individuals before evolving the populations (i.e. evaluateAllCombosOfIndividuals == true),
+	 * If evaluating random combinations of individuals before evolving the populations (i.e. evaluateAllCombosOfIndividuals == false),
 	 * this parameter specifies the number of times each individual must be evaluated against other random individuals. More precisely,
-	 * when evaluateAllCombosOfIndividuals == true, the evaluation is performed as follows:
+	 * when evaluateAllCombosOfIndividuals == false, the evaluation is performed as follows:
 	 *
 	 * (Note that all populations will have the same number of individuals)
 	 * For evalRepetitions times do

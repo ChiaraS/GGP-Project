@@ -4,8 +4,10 @@ import java.lang.reflect.Constructor;
 import java.util.Random;
 
 import org.ggp.base.player.gamer.statemachine.GamerSettings;
-import org.ggp.base.player.gamer.statemachine.MCTS.manager.parameterstuning.structure.parameters.DoubleTunableParameter;
-import org.ggp.base.player.gamer.statemachine.MCTS.manager.parameterstuning.structure.parameters.IntTunableParameter;
+import org.ggp.base.player.gamer.statemachine.MCTS.manager.parameterstuning.structure.parameters.ContinuousTunableParameter;
+import org.ggp.base.player.gamer.statemachine.MCTS.manager.parameterstuning.structure.parameters.DiscreteTunableParameter;
+import org.ggp.base.player.gamer.statemachine.MCTS.manager.parameterstuning.structure.parameters.TunableParameter;
+import org.ggp.base.util.Interval;
 import org.ggp.base.util.logging.GamerLogger;
 
 import com.google.common.collect.ImmutableSet;
@@ -229,6 +231,7 @@ public abstract class SearchManagerComponent {
 	 * They retrieve the appropriate settings and check that all the values are correctly specified.
 	 */
 
+	/*
 	protected IntTunableParameter createIntTunableParameter(String callingClass, String parameterName, GamerSettings gamerSettings, SharedReferencesCollector sharedReferencesCollector){
 
 		IntTunableParameter theParameter;
@@ -285,62 +288,120 @@ public abstract class SearchManagerComponent {
 
 		return theParameter;
 
-	}
+	}*/
 
-	protected DoubleTunableParameter createDoubleTunableParameter(String callingClass, String parameterName, GamerSettings gamerSettings, SharedReferencesCollector sharedReferencesCollector){
-
-		DoubleTunableParameter theParameter;
+	protected TunableParameter createTunableParameter(String callingClass, String parameterName, GamerSettings gamerSettings, SharedReferencesCollector sharedReferencesCollector){
 
 		// Get default value for the parameter (this is the value used for the roles for which we are not tuning the parameter)
 		double fixedParam = gamerSettings.getDoublePropertyValue(callingClass + ".fixed" + parameterName);
 
-		if(gamerSettings.getBooleanPropertyValue(callingClass + ".tune" + parameterName)){
-			// If we have to tune the parameter then we look in the setting for all the values that we must use
-			// Note: the format for these values in the file must be the following:
-			// 'CallingClass'.valuesFor'ParameterName'=v1;v2;...;vn
-			// (e.g. BetaComputer.valuesForK=v1;v2;...;vn)
-			// The values are listed separated by ; with no spaces.
-			// Moreover, we need to look if a specific order is specified for tuning the parameters. If so, we must get from the
-			// settings the unique index that this parameter has in the ordering for the tunable parameters
-			double[] possibleValues = gamerSettings.getDoublePropertyMultiValue(callingClass + ".valuesFor" + parameterName);
-			// No need to check if at least one possible value is specified, because if no values are specified an exception
-			// will already be thrown when trying to retrieve such values.
-			// However, we must check that the specified fixed value is among the possible values.
-			int index = 0;
-			while(index < possibleValues.length && possibleValues[index] != fixedParam){
-				index++;
-			}
-			if(index == possibleValues.length){
-				GamerLogger.logError("SearchManagerCreation", "Error when creating tunable parameter " + parameterName + " for class " +
-						callingClass + ". The fixed value " + fixedParam + "for the parameter does not appear in the set of possible values!");
-				throw new RuntimeException("SearchManagerCreation - possibleValues and possibleValuesPenalty have different length!");
-			}
+		TunableParameter theParameter;
 
-			double[] possibleValuesPenalty = null;
-			if(gamerSettings.specifiesProperty(callingClass + ".possibleValuesPenaltyFor" + parameterName)){
-				possibleValuesPenalty = gamerSettings.getDoublePropertyMultiValue(callingClass + ".possibleValuesPenaltyFor" + parameterName);
-				// If specified, the possibleValuesPenalty must have the same length as the possibleValues
-				if(possibleValuesPenalty.length != possibleValues.length){
-					GamerLogger.logError("SearchManagerCreation", "Error when creating tunable parameter " + parameterName +
-							" for class " + callingClass + ". There are " + possibleValues.length +
-							" possible values for the tunable parameter, but there are " + possibleValuesPenalty.length +
-							" possible values penalty specified.");
-					throw new RuntimeException("SearchManagerCreation - possibleValues and possibleValuesPenalty have different length!");
-				}
-			}
+		if(gamerSettings.getBooleanPropertyValue(callingClass + ".tune" + parameterName)){
+
+			// First, we need to look if a specific order is specified for tuning the parameters. If so, we must get from the
+			// settings the unique index that this parameter has in the ordering for the tunable parameters
 			int tuningOrderIndex = -1;
 			if(gamerSettings.specifiesProperty(callingClass + ".tuningOrderIndex" + parameterName)){
 				tuningOrderIndex =  gamerSettings.getIntPropertyValue(callingClass + ".tuningOrderIndex" + parameterName);
 			}
 
-			theParameter = new DoubleTunableParameter(parameterName, fixedParam, possibleValues, possibleValuesPenalty, tuningOrderIndex);
+			// If we have to tune the parameter then we look in the settings for the values that we must use
+			// Note:
+			// 1. The format for these values in the file must be the following when we are using discrete values:
+			// 'CallingClass'.valuesFor'ParameterName'=v1;v2;...;vn
+			// (e.g. BetaComputer.valuesForK=v1;v2;...;vn)
+			// The values are listed separated by ; with no spaces.
+			// 2. The format for these values in the file must be the following when we are using continuous values:
+			// 'CallingClass'.valuesFor'ParameterName'=[v1;v2] (v1 and v2 must be the left and right exreme of the
+			// interval and (v1<=v2)).
+			// (e.g. BetaComputer.valuesForK=[0;inf])
+			// The values must be included in square brackets and separated by ; with no spaces.
+			//
 
-			// If the parameter must be tuned online, then we should add its reference to the sharedReferencesCollector
-			sharedReferencesCollector.addParameterToTune(theParameter);
+			// We check in the settings if possible values are specified as a discrete list or as a continuous interval
+			// and create the parameter type accordingly.
+			if(gamerSettings.isIntervalProperty(callingClass + ".valuesFor" + parameterName)){
+				theParameter = this.createContinuousTunableParameter(fixedParam, tuningOrderIndex, callingClass, parameterName, gamerSettings, sharedReferencesCollector);
+			}else{
+				theParameter = this.createDiscreteTunableParameter(fixedParam, tuningOrderIndex, callingClass, parameterName, gamerSettings, sharedReferencesCollector);
+			}
 
 		}else{
-			theParameter = new DoubleTunableParameter(parameterName, fixedParam);
+			theParameter = new TunableParameter(parameterName, fixedParam, -1); // No need for tuningOrderIndex when param is not being tuned
 		}
+
+		return theParameter;
+
+	}
+
+	protected DiscreteTunableParameter createDiscreteTunableParameter(double fixedParam, int tuningOrderIndex, String callingClass, String parameterName, GamerSettings gamerSettings, SharedReferencesCollector sharedReferencesCollector){
+
+		DiscreteTunableParameter theParameter;
+
+		// If we have to tune the parameter then we look in the setting for all the values that we must use
+		// Note: the format for these values in the file must be the following:
+		// 'CallingClass'.valuesFor'ParameterName'=v1;v2;...;vn
+		// (e.g. BetaComputer.valuesForK=v1;v2;...;vn)
+		// The values are listed separated by ; with no spaces.
+		double[] possibleValues = gamerSettings.getDoublePropertyMultiValue(callingClass + ".valuesFor" + parameterName);
+		// No need to check if at least one possible value is specified, because if no values are specified an exception
+		// will already be thrown when trying to retrieve such values.
+		// However, we must check that the specified fixed value is among the possible values.
+		int index = 0;
+		while(index < possibleValues.length && possibleValues[index] != fixedParam){
+			index++;
+		}
+		if(index == possibleValues.length){
+			GamerLogger.logError("SearchManagerCreation", "Error when creating tunable parameter " + parameterName + " for class " +
+					callingClass + ". The fixed value " + fixedParam + "for the parameter does not appear in the set of possible values!");
+			throw new RuntimeException("SearchManagerCreation - possibleValues and possibleValuesPenalty have different length!");
+		}
+
+		double[] possibleValuesPenalty = null;
+		if(gamerSettings.specifiesProperty(callingClass + ".possibleValuesPenaltyFor" + parameterName)){
+			possibleValuesPenalty = gamerSettings.getDoublePropertyMultiValue(callingClass + ".possibleValuesPenaltyFor" + parameterName);
+			// If specified, the possibleValuesPenalty must have the same length as the possibleValues
+			if(possibleValuesPenalty.length != possibleValues.length){
+				GamerLogger.logError("SearchManagerCreation", "Error when creating tunable parameter " + parameterName +
+						" for class " + callingClass + ". There are " + possibleValues.length +
+						" possible values for the tunable parameter, but there are " + possibleValuesPenalty.length +
+						" possible values penalty specified.");
+				throw new RuntimeException("SearchManagerCreation - possibleValues and possibleValuesPenalty have different length!");
+			}
+		}
+
+		theParameter = new DiscreteTunableParameter(parameterName, fixedParam, tuningOrderIndex, possibleValues, possibleValuesPenalty);
+
+		// If the parameter must be tuned online, then we should add its reference to the sharedReferencesCollector
+		sharedReferencesCollector.addDiscreteParameterToTune(theParameter);
+
+		return theParameter;
+
+	}
+
+	protected ContinuousTunableParameter createContinuousTunableParameter(double fixedParam, int tuningOrderIndex, String callingClass, String parameterName, GamerSettings gamerSettings, SharedReferencesCollector sharedReferencesCollector){
+
+		ContinuousTunableParameter theParameter;
+
+		// If we have to tune the parameter then we look in the setting for all the values that we must use
+		// Note: The format for these values in the file must be the following when we are using continuous values:
+		// 'CallingClass'.valuesFor'ParameterName'=[v1;v2) (v1 and v2 must be the left and right extreme of the
+		// interval and the interval must be non-empty).
+		// (e.g. BetaComputer.valuesForK=[0;inf))
+		// The values must be included in round or square brackets and separated by ; with no spaces.
+		Interval possibleValuesInterval = gamerSettings.getDoublePropertyIntervalValue(callingClass + ".valuesFor" + parameterName);
+		// We must check that the specified fixed value is in the interval of possible values.
+		if(possibleValuesInterval.contains(fixedParam)){
+			GamerLogger.logError("SearchManagerCreation", "Error when creating tunable parameter " + parameterName + " for class " +
+					callingClass + ". The fixed value " + fixedParam + "for the parameter is not included in the interval of possible values!");
+			throw new RuntimeException("SearchManagerCreation - fixed parameter value not included in specified interval!");
+		}
+
+		theParameter = new ContinuousTunableParameter(parameterName, fixedParam, tuningOrderIndex, possibleValuesInterval);
+
+		// If the parameter must be tuned online, then we should add its reference to the sharedReferencesCollector
+		sharedReferencesCollector.addContinuousParameterToTune(theParameter);
 
 		return theParameter;
 

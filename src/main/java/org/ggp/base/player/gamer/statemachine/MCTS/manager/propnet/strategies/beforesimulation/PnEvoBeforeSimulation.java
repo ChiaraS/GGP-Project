@@ -1,17 +1,17 @@
 package org.ggp.base.player.gamer.statemachine.MCTS.manager.propnet.strategies.beforesimulation;
 
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.evolution.SingleParameterEvolutionManager;
-import org.ggp.base.player.gamer.statemachine.MCTS.manager.parameterstuning.structure.parameters.TunableParameter;
+import org.ggp.base.player.gamer.statemachine.MCTS.manager.parameterstuning.structure.parameters.DiscreteTunableParameter;
 
 public class PnEvoBeforeSimulation implements PnBeforeSimulationStrategy {
 
 	private SingleParameterEvolutionManager evolutionManager;
 
-	private TunableParameter tunableParameter;
+	private DiscreteTunableParameter tunableParameter;
 
 	private int myRoleIndex;
 
-	public PnEvoBeforeSimulation(SingleParameterEvolutionManager evolutionManager, TunableParameter tunableParameter, int myRoleIndex) {
+	public PnEvoBeforeSimulation(SingleParameterEvolutionManager evolutionManager, DiscreteTunableParameter tunableParameter, int myRoleIndex) {
 
 		this.evolutionManager = evolutionManager;
 

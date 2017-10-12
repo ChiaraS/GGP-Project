@@ -7,7 +7,7 @@ import java.util.Random;
 import org.ggp.base.player.gamer.statemachine.GamerSettings;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.GameDependentParameters;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.SharedReferencesCollector;
-import org.ggp.base.player.gamer.statemachine.MCTS.manager.parameterstuning.structure.parameters.DoubleTunableParameter;
+import org.ggp.base.player.gamer.statemachine.MCTS.manager.parameterstuning.structure.parameters.TunableParameter;
 import org.ggp.base.util.statemachine.exceptions.MoveDefinitionException;
 import org.ggp.base.util.statemachine.exceptions.StateMachineException;
 import org.ggp.base.util.statemachine.structure.MachineState;
@@ -19,7 +19,7 @@ public class EpsilonMastMoveSelector extends MoveSelector{
 
 	private RandomMoveSelector randomSelector;
 
-	private DoubleTunableParameter epsilon;
+	private TunableParameter epsilon;
 
 	public EpsilonMastMoveSelector(GameDependentParameters gameDependentParameters, Random random,
 			GamerSettings gamerSettings, SharedReferencesCollector sharedReferencesCollector){
@@ -29,7 +29,7 @@ public class EpsilonMastMoveSelector extends MoveSelector{
 		this.mastSelector = new MastMoveSelector(gameDependentParameters, random, gamerSettings, sharedReferencesCollector);
 		this.randomSelector = new RandomMoveSelector(gameDependentParameters, random, gamerSettings, sharedReferencesCollector);
 
-		this.epsilon = this.createDoubleTunableParameter("MoveSelector", "Epsilon", gamerSettings, sharedReferencesCollector);
+		this.epsilon = this.createTunableParameter("MoveSelector", "Epsilon", gamerSettings, sharedReferencesCollector);
 
 		/*
 		// Get default value for Epsilon (this is the value used for the roles for which we are not tuning the parameter)

@@ -38,9 +38,9 @@ public class PredefinedOrder extends ParametersOrder {
 	 * [0, tunableParameters.size()).
 	 */
 	@Override
-	public void imposeOrder(List<TunableParameter> tunableParameters) {
+	public <T extends TunableParameter> void imposeOrder(List<T> tunableParameters) {
 
-		TunableParameter tmp;
+		T tmp;
 		int tuningOrderIndex;
 
 		for(int i = 0; i < tunableParameters.size(); i++){

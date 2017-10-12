@@ -6,7 +6,7 @@ import org.ggp.base.player.gamer.statemachine.GamerSettings;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.GameDependentParameters;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.SharedReferencesCollector;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.strategies.selection.evaluators.grave.GraveEvaluator;
-import org.ggp.base.player.gamer.statemachine.MCTS.manager.parameterstuning.structure.parameters.IntTunableParameter;
+import org.ggp.base.player.gamer.statemachine.MCTS.manager.parameterstuning.structure.parameters.TunableParameter;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.MctsNode;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.hybrid.MctsJointMove;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.hybrid.MctsMove;
@@ -18,14 +18,14 @@ public class GraveSelection extends MoveValueSelection {
 	/**
 	 * Minimum number of visits that the node must have to be allowed to use its own AMAF statistics.
 	 */
-	private IntTunableParameter ref;
+	private TunableParameter ref;
 
 	public GraveSelection(GameDependentParameters gameDependentParameters, Random random,
 			GamerSettings gamerSettings, SharedReferencesCollector sharedReferencesCollector) {
 
 		super(gameDependentParameters, random, gamerSettings, sharedReferencesCollector);
 
-		this.ref = this.createIntTunableParameter("SelectionStrategy", "Ref", gamerSettings, sharedReferencesCollector);
+		this.ref = this.createTunableParameter("SelectionStrategy", "Ref", gamerSettings, sharedReferencesCollector);
 
 		/*
 		// Get default value for ref (this is the value used for the roles for which we are not tuning the parameter)

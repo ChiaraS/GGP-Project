@@ -10,7 +10,7 @@ import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.GameDependentP
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.SearchManagerComponent;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.SharedReferencesCollector;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.strategies.playout.PlayoutStrategy;
-import org.ggp.base.player.gamer.statemachine.MCTS.manager.parameterstuning.structure.parameters.IntTunableParameter;
+import org.ggp.base.player.gamer.statemachine.MCTS.manager.parameterstuning.structure.parameters.TunableParameter;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.MctsNode;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.hybrid.MctsJointMove;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.hybrid.MctsMove;
@@ -41,7 +41,7 @@ public class PlayoutSupportedSelection extends SelectionStrategy {
 	 * Minimum number of visits that a node must have to use the selection strategy to pick a move.
 	 * If the number of visits is inferior to this threshold, the playout strategy will be used instead.
 	 */
-	private IntTunableParameter t;
+	private TunableParameter t;
 
 	public PlayoutSupportedSelection(GameDependentParameters gameDependentParameters, Random random,
 			GamerSettings gamerSettings, SharedReferencesCollector sharedReferencesCollector) {
@@ -59,7 +59,7 @@ public class PlayoutSupportedSelection extends SelectionStrategy {
 			throw new RuntimeException(e);
 		}
 
-		this.t = this.createIntTunableParameter("SelectionStrategy", "T", gamerSettings, sharedReferencesCollector);
+		this.t = this.createTunableParameter("SelectionStrategy", "T", gamerSettings, sharedReferencesCollector);
 
 		/*
 		// Get default value for T (this is the value used for the roles for which we are not tuning the parameter)
