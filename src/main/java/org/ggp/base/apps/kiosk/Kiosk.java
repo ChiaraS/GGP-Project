@@ -27,6 +27,7 @@ import javax.swing.JTextField;
 import javax.swing.ListSelectionModel;
 import javax.swing.border.TitledBorder;
 
+import org.apache.logging.log4j.ThreadContext;
 import org.ggp.base.player.GamePlayer;
 import org.ggp.base.player.gamer.Gamer;
 import org.ggp.base.server.GameServer;
@@ -59,6 +60,11 @@ import com.google.common.collect.Lists;
 @SuppressWarnings("serial")
 public final class Kiosk extends JPanel implements ActionListener, ItemListener, Observer
 {
+
+	static{
+		System.setProperty("isThreadContextMapInheritable", "true");
+	}
+
     public static final String remotePlayerString = "[REMOTE PLAYER]";
 
     private static void createAndShowGUI(Kiosk serverPanel)
@@ -72,11 +78,17 @@ public final class Kiosk extends JPanel implements ActionListener, ItemListener,
 
     public static void main(String[] args)
     {
+
+    	ThreadContext.put("LOG_FOLDER", System.currentTimeMillis() + ".KioskApp");
+
+    	GamerLogger.startFileLogging();
+
         NativeUI.setNativeUI();
         final Kiosk serverPanel = new Kiosk();
         javax.swing.SwingUtilities.invokeLater(new Runnable() {
             @Override
 			public void run() {
+
                 createAndShowGUI(serverPanel);
             }
         });
@@ -107,7 +119,7 @@ public final class Kiosk extends JPanel implements ActionListener, ItemListener,
         setPreferredSize(new Dimension(1050, 900));
 
         NativeUI.setNativeUI();
-        GamerLogger.setFileToDisplay("GamePlayer");
+        //GamerLogger.setFileToDisplay("GamePlayer");
 
         SortedSet<AvailableGame> theAvailableGames = new TreeSet<AvailableGame>();
         Set<Class<? extends GameCanvas>> theAvailableCanvasList = ProjectSearcher.GAME_CANVASES.getConcreteClasses();
@@ -318,7 +330,15 @@ public final class Kiosk extends JPanel implements ActionListener, ItemListener,
                 String computerPlayerName = (String) playerComboBox.getSelectedItem();
                 if(theComputerPlayer != null && !theComputerPlayer.getGamer().getName().equals(computerPlayerName)) {
                     theComputerPlayer.interrupt();
-                    Thread.sleep(100);
+
+                    // Wait for a minute for the player to stop, so that logs won't mess up
+                    // If after 1 minute it's still running, ignore it and continue knowing that logs of the old
+                    // player might overlap with logs of the new one.
+                    int i = 60;
+                    while(!theComputerPlayer.isGamerStopped() && i > 0){
+                    	Thread.sleep(1000);
+                    	i--;
+                    }
                     theComputerPlayer = null;
                 }
 
@@ -373,7 +393,7 @@ public final class Kiosk extends JPanel implements ActionListener, ItemListener,
 
                 match.setPlayerNamesFromHost(playerNames);
 
-                GamerLogger.startFileLogging(match, "kiosk");
+                //GamerLogger.startFileLogging(match, "kiosk");
                 kioskServer = new GameServer(match, hosts, ports);
                 kioskServer.givePlayerUnlimitedTime((flipRoles.isSelected()? 1 : 0));
                 kioskServer.addObserver(theHumanGamer);

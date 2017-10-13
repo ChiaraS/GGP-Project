@@ -31,8 +31,6 @@ public class UcbMultiPopEvoParametersTuner extends MultiPopEvoParametersTuner {
 	 * If true, when selecting the best combination of parameters the global MAB will be used.
 	 * If false, when selecting the best combination, each parameter will be selected from the
 	 * corresponding local MAB independently of the other parameters.
-	 * NOTE that if the global MAB is never used (i.e. epsilon0 = 1), the value of this variable
-	 * will be ignored and the local MABs will be used even if this variable is true.
 	 */
 	private boolean useGlobalBest;
 
