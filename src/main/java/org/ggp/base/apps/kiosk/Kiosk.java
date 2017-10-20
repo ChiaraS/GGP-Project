@@ -34,9 +34,10 @@ import org.ggp.base.server.GameServer;
 import org.ggp.base.server.event.ServerConnectionErrorEvent;
 import org.ggp.base.server.event.ServerIllegalMoveEvent;
 import org.ggp.base.server.event.ServerTimeoutEvent;
-import org.ggp.base.util.game.CloudGameRepository;
+import org.ggp.base.util.configuration.GamerConfiguration;
 import org.ggp.base.util.game.Game;
 import org.ggp.base.util.game.GameRepository;
+import org.ggp.base.util.game.ManualUpdateLocalGameRepository;
 import org.ggp.base.util.gdl.grammar.GdlPool;
 import org.ggp.base.util.logging.GamerLogger;
 import org.ggp.base.util.match.Match;
@@ -210,7 +211,10 @@ public final class Kiosk extends JPanel implements ActionListener, ItemListener,
         // This is where we get the rulesheets from. Each game has a corresponding
         // game (with rulesheet) stored on this repository server. Changing this is
         // likely to break things unless you know what you're doing.
-        theRepository = new CloudGameRepository("http://games.ggp.org/base/");
+        //theRepository = new CloudGameRepository("http://games.ggp.org/base/");
+
+        // Chiara: I hope I know what I'm doing, but if Kiosk breaks, comment the following instruction and uncomment the previous one
+        theRepository = new ManualUpdateLocalGameRepository(GamerConfiguration.defaultLocalGameRepositoryFolderPath);
     }
 
     class AvailableGame implements Comparable<AvailableGame> {

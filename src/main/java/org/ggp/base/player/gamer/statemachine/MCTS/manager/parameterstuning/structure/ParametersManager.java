@@ -483,7 +483,7 @@ public class ParametersManager extends SearchManagerComponent {
             	}
             	partialComboString += "]";
             	GamerLogger.logError("ParametersTuner", "ParametersManager -  - No valid value detected for parameter " +
-            			this.getName(paramIndex) + "for the following partial combination: " + partialComboString);
+            			this.getName(paramIndex) + "for the following partial combination: " + partialComboString + "!");
 				throw new RuntimeException("ParametersManager -  - No valid value detected for a parameter when computing all combinatorial moves!");
             }
         }

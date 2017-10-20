@@ -9,7 +9,7 @@ import org.ggp.base.player.gamer.statemachine.MCTS.manager.parameterstuning.Para
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.parameterstuning.TimeLimitedLsiParametersTuner;
 import org.ggp.base.util.logging.GamerLogger;
 
-public class TimeLimitedLsiTunerBeforeMove extends BeforeSearchStrategy {
+public class TimeLimitedLsiTunerBeforeSearch extends BeforeSearchStrategy {
 
 	private TimeLimitedLsiParametersTuner timeLimitedLsiParametersTuner;
 
@@ -19,7 +19,7 @@ public class TimeLimitedLsiTunerBeforeMove extends BeforeSearchStrategy {
 	 */
 	private long tuningSafetyMargin;
 
-	public TimeLimitedLsiTunerBeforeMove(GameDependentParameters gameDependentParameters, Random random,
+	public TimeLimitedLsiTunerBeforeSearch(GameDependentParameters gameDependentParameters, Random random,
 			GamerSettings gamerSettings, SharedReferencesCollector sharedReferencesCollector) {
 		super(gameDependentParameters, random, gamerSettings, sharedReferencesCollector);
 
