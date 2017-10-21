@@ -1,4 +1,4 @@
-package org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.strategies;
+package org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.strategies.aftergame;
 
 import java.util.List;
 import java.util.Random;

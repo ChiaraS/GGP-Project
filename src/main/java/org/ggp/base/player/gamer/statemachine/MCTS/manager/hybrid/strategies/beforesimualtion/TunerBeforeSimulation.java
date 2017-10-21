@@ -176,7 +176,7 @@ public class TunerBeforeSimulation extends BeforeSimulationStrategy {
 		String params = indentation + "SIM_BUDGET = " + this.simBudget +
 				indentation + "BATCH_SIZE = " + this.batchSize +
 				indentation + "PARAMETERS_TUNER = " + this.parametersTuner.printComponent(indentation + "  ") +
-				indentation + "sim_count = " + this.simCount;;
+				indentation + "sim_count = " + this.simCount;
 
 		/*
 		if(this.tunableParameters != null){

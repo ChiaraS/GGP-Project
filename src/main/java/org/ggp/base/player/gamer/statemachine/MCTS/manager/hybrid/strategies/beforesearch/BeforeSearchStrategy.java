@@ -1,4 +1,4 @@
-package org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.strategies.beforemove;
+package org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.strategies.beforesearch;
 
 import java.util.Random;
 
