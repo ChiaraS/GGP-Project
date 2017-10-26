@@ -126,6 +126,14 @@ public abstract class TunerSelector extends SearchManagerComponent{
 	 */
 	public abstract MyPair<Integer,Move> selectMove(List<Map<Move,MyPair<MoveStats,Double>>> movesInfo, int numUpdates);
 
+	@Override
+	public String getComponentParameters(String indentation) {
 
+		String params = indentation + "BIAS_COMPUTER = " + this.biasComputer == null ? "null" :
+			this.biasComputer.printComponent(indentation + "  ");
+
+		return params;
+
+	}
 
 }

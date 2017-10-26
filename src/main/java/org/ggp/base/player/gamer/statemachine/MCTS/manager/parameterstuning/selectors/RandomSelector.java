@@ -198,7 +198,15 @@ public class RandomSelector extends TunerSelector{
 
 	@Override
 	public String getComponentParameters(String indentation) {
-		return null;
+
+		String superParams = super.getComponentParameters(indentation);
+
+		if(superParams != null){
+			return superParams;
+		}else{
+			return null;
+		}
+
 	}
 
 }

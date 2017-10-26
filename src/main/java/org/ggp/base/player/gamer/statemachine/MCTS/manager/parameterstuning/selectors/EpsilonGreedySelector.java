@@ -148,9 +148,19 @@ public class EpsilonGreedySelector extends TunerSelector{
 
 	@Override
 	public String getComponentParameters(String indentation) {
-		return indentation + "EPSILON = " + this.epsilon +
+
+		String superParams = super.getComponentParameters(indentation);
+
+		String params = indentation + "EPSILON = " + this.epsilon +
 				indentation + "TUNER_SELECTOR_1 = " + this.tunerSelector1.printComponent(indentation + "  ") +
 				indentation + "TUNER_SELECTOR_2 = " + this.tunerSelector2.printComponent(indentation + "  ");
+
+		if(superParams != null){
+			return superParams + params;
+		}else{
+			return params;
+		}
+
 	}
 
 }

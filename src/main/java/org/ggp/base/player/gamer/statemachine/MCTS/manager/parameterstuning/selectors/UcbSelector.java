@@ -620,9 +620,19 @@ public class UcbSelector extends TunerSelector{
 
 	@Override
 	public String getComponentParameters(String indentation) {
-		return indentation + "C = " + this.c +
+
+		String superParams = super.getComponentParameters(indentation);
+
+		String params = indentation + "C = " + this.c +
 				indentation + "VALUE_OFFSET = " + this.valueOffset +
 				indentation + "FPU = " + this.fpu;
+
+		if(superParams != null){
+			return superParams + params;
+		}else{
+			return params;
+		}
+
 	}
 
 }
