@@ -129,8 +129,8 @@ public abstract class TunerSelector extends SearchManagerComponent{
 	@Override
 	public String getComponentParameters(String indentation) {
 
-		String params = indentation + "BIAS_COMPUTER = " + this.biasComputer == null ? "null" :
-			this.biasComputer.printComponent(indentation + "  ");
+		String params = indentation + "BIAS_COMPUTER = " + (this.biasComputer == null ? "null" :
+			this.biasComputer.printComponent(indentation + "  "));
 
 		return params;
 

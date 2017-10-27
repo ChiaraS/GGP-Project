@@ -92,6 +92,15 @@ public class IndependentTourneyRunner {
 		String[] theGamersTypesString;
 		int runNumber;
 
+		// Set to true when the tourney is meant to run once (not multiple times in parallel), but we might want to continue it in the
+		// future adding further samples. In this case this method will make sure to keep track of the number of times the tourney has
+		// been run (i.e. increasing the runNumber property in the .properties file), and will also check that the folder where stats
+		// and logs are saved doesn't exist before the first run of the tourney, but does already exist for subsequent runs.
+		// When set to false, it will mean that the tourney might be run multiple times in parallel, so we will still get a runNumber
+		// greater than 0 even if we don't have a previously created folder of stats for the tourney. The different runs will be performed
+		// in parallel and merged together later.
+		boolean continueOldExperiment = false;
+
 		// Map that for each external gamer contains the manager of available addresses (IP+port) on which the external gamer
 		// is listening for connections.
 		Map<String,ExternalGamerAvailabilityManager> externalGamersManagers = new HashMap<String,ExternalGamerAvailabilityManager>();
@@ -219,19 +228,30 @@ public class IndependentTourneyRunner {
 
 			}
 
+	    	// If the tourney is running in parallel on multiple nodes, set continueOldExperiment to false so that the runNumber
+	    	// parameter will be considered as referring to one of the parallel runs and won't get modified after the completion
+	    	// of this run. Also all checks related to the value of runNumber won't be performed.
+	    	if(props.getProperty("continueOldExperiment") != null){
+	    		continueOldExperiment = Boolean.parseBoolean(props.getProperty("continueOldExperiment"));
+	    	}
+
 			runNumber = Integer.parseInt(props.getProperty("runNumber"));
 
-			if(runNumber == 0){
-				System.out.println("Trying to start new experiment.");
-				timeID = System.currentTimeMillis();
-			}else{
-				System.out.println("Trying to continue old experiment.");
-				String timeIDString = props.getProperty("timeID");
-				if(timeIDString == null){
-					System.out.println("Impossible to continue experiment. Missing timeID of experiment.");
-	    			return;
+			if(continueOldExperiment){
+				if(runNumber == 0){
+					System.out.println("Trying to start new experiment.");
+					timeID = System.currentTimeMillis();
+				}else{
+					System.out.println("Trying to continue old experiment.");
+					String timeIDString = props.getProperty("timeID");
+					if(timeIDString == null){
+						System.out.println("Impossible to continue experiment. Missing timeID of experiment.");
+		    			return;
+					}
+					timeID = Long.parseLong(timeIDString);
 				}
-				timeID = Long.parseLong(timeIDString);
+			}else{
+				timeID = System.currentTimeMillis();
 			}
 
 		} catch (IOException | NumberFormatException e) {
@@ -248,14 +268,18 @@ public class IndependentTourneyRunner {
 			File mainLogFolderFile = new File(mainLogFolder);
 
 			if(!mainLogFolderFile.exists()){
-				if(runNumber == 0){
+				if(continueOldExperiment){
+					if(runNumber == 0){
+						mainLogFolderFile.mkdirs();
+					}else{ // If it's not the first run, the folder must already exist
+						System.out.println("Impossible to continue tourney for game " + gameKey + "! The corresponding folder Doesn't exist! Skipping game.");
+						continue;
+					}
+				}else{
 					mainLogFolderFile.mkdirs();
-				}else{ // If it's not the first run, the folder must already exist
-					System.out.println("Impossible to continue tourney for game " + gameKey + "! The corresponding folder Doesn't exist! Skipping game.");
-					continue;
 				}
 			}else{
-				if(runNumber == 0){
+				if(!continueOldExperiment || runNumber == 0 ){
 					System.out.println("Impossible to start new tourney for game " + gameKey + "! Cannot create folder " + mainLogFolder + " for the tourney. A folder with the same name already exists! Skipping game.");
 					continue;
 				}
@@ -274,7 +298,7 @@ public class IndependentTourneyRunner {
 
 	    	GamerLogger.log("TourneyRunner" + runNumber, "Starting tourney " + tourneyName + " for game " + gameKey + " with following settings: START_CLOCK=" +
 	    			startClock + "s, PLAY_CLOCK=" + playClock + "s, PROPNET_CREATION_TIME=" + pnCreationTime + "ms, DESIRED_NUM_PARALLEL_PLAYERS=" +
-	    			numParallelPlayers + ", MIN_NUM_MATCHES_PER_GAMER_TYPE=" + matchesPerGamerType + ", NUM_SEENTIAL_MATCHES=" + numSequentialMatches + "."
+	    			numParallelPlayers + ", MIN_NUM_MATCHES_PER_GAMER_TYPE=" + matchesPerGamerType + ", NUM_SEQUENTIAL_MATCHES=" + numSequentialMatches + "."
 	    			+ ", GAMER_TYPES=" + gamerTypesList + ".");
 
 	    	/** 3. Compute all combinations of gamer types. **/
@@ -359,10 +383,12 @@ public class IndependentTourneyRunner {
 
 			reader.close();
 
-			if(runNumber == 0){
+			if(!continueOldExperiment || runNumber == 0){
 				props.setProperty("timeID", ""+timeID);
 			}
-			props.setProperty("runNumber", ""+(runNumber+1));
+			if(continueOldExperiment){
+				props.setProperty("runNumber", ""+(runNumber+1));
+			}
 
 		    FileWriter writer = new FileWriter(propertiesFile);
 
