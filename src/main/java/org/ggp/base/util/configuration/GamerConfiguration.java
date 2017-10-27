@@ -113,10 +113,10 @@ public class GamerConfiguration {
 			//defaultLocalGameRepositoryFolderPath = "C:/Users/Chiara/Documents/PHD/GGP DEMO/GGPBase-GameRepo-03022016";
 			//gamersSettingsFolderPath = "C:/Users/Chiara/Documents/PHD/GGP DEMO/GamersSettings";
 		}else if(runningOnLinux()){
-			defaultLocalGameRepositoryFolderPath = "/home/csironi/GAMEREPOS/GGPBase-GameRepo-03022016";
-			gamersSettingsFolderPath = "/home/csironi/GamersSettings";
-			//defaultLocalGameRepositoryFolderPath = "/data/home/eex264/chiaraxps/GGPBase-GameRepo-03022016";
-			//gamersSettingsFolderPath = "/data/home/eex264/chiaraxps/GamersSettings";
+			//defaultLocalGameRepositoryFolderPath = "/home/csironi/GAMEREPOS/GGPBase-GameRepo-03022016";
+			//gamersSettingsFolderPath = "/home/csironi/GamersSettings";
+			defaultLocalGameRepositoryFolderPath = "/data/home/eex264/chiaraxps/GGPBase-GameRepo-03022016";
+			gamersSettingsFolderPath = "/data/home/eex264/chiaraxps/GamersSettings";
 
 		}else{
 			defaultLocalGameRepositoryFolderPath = null;
