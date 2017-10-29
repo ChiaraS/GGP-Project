@@ -324,7 +324,7 @@ public class IndependentTourneyRunner {
 	    			", NUM_COMBINATIONS=" + combinations.size() + ", NUM_PARALLEL_MATCHES=" + numParallelMatches + ", ACTUAL_NUM_PARALLEL_PLAYERS=" +
 	    			numParallelMatches*expectedRoles + ", ACTUAL_NUM_MATCHES_PER_COMBINATION=" + matchesPerCombination + ", ACTUAL_NUM_MATCHES_PER_GAMER_TYPE=" +
 	    			(Combinator.getLastCombinationsPerElement() * Combinator.getLastPermutationsPerCombination() * matchesPerCombination) +
-	    			", NUM_MATCH_RUNNERS");
+	    			", NUM_MATCH_RUNNERS=" + numMatchRunners);
 
 	    	// 5. For each combination run the given amount of match runners.
 
