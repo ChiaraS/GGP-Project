@@ -67,6 +67,13 @@ public class StatsSummarizer {
 
 		String mainFolderPath = args[0];
 
+		/**
+		 * NOTE: the last folder in the path given as input might look like one of the following:
+		 * - 6PEvoTune.checkers.Tourney-Stats
+		 * - 123456789012.6PEvoTune.checkers.Tourney-Stats
+		 * The code detects which one of the two is used and acts accordingly
+		 */
+
 		/** New instructions that work only if the main folder path contains in the last folder name
 		 *  the tourney type and the game key surrounded by "." in the 2nd and 3rd position respectively.
 		 *
@@ -75,11 +82,28 @@ public class StatsSummarizer {
 		File mainFolder = new File(mainFolderPath);
 		//String[] splitMainFolderPath = mainFolderPath.split("/"); // Works ony if the psth usesthe "/" separator and not
 		// Get the name of the tourney folder
-		String tourneyName = mainFolder.getName();
+		String statsFolderName = mainFolder.getName();
 		// Split the tourney folder name
-		String[] splitTourneyName = tourneyName.split("\\.");
-		String tourneyType = splitTourneyName[1];
-		String gameKey = splitTourneyName[2];
+		String tourneyType;
+		String gameKey;
+		String[] splitStatsFolderName = statsFolderName.split("\\.");
+		if(splitStatsFolderName.length == 3) {
+			tourneyType = splitStatsFolderName[0];
+			gameKey = splitStatsFolderName[1];
+		}else if(splitStatsFolderName.length == 4) {
+			tourneyType = splitStatsFolderName[1];
+			gameKey = splitStatsFolderName[2];
+		}else {
+			System.out.println("Wrong format for the name of the folder with the statistics to summarize: " + args[0] + ".");
+			System.out.println("Interrupting summarization!");
+			return;
+		}
+
+		// True if we are using for the logs folder the simple format (i.e. without tourneyType and gameKey in the name of the folder)
+		// E.g. MatchesLogs
+		// False otherwise
+		// E.g. 6PUcbNaiveTune.breakthrough.MatchesLogs
+		boolean simpleFolderFormat;
 
 		//System.out.println("mainFolderPath= " + mainFolderPath);
 
@@ -89,14 +113,29 @@ public class StatsSummarizer {
 
 		File matchesLogsFolder = new File(matchesLogsFolderPath);
 
-		if(!matchesLogsFolder.isDirectory()){
-			System.out.println("Impossible to find the log directory to summarize: " + matchesLogsFolder.getPath());
-			return;
+		if(matchesLogsFolder.isDirectory()){
+			simpleFolderFormat = false;
+		}else{
+			matchesLogsFolderPath = mainFolderPath + "/MatchesLogs";
+			matchesLogsFolder = new File(matchesLogsFolderPath);
+			if(matchesLogsFolder.isDirectory()){
+				simpleFolderFormat = true;
+			}else{
+				System.out.println("Impossible to find the log directory to summarize. Couldn't find neither " +
+						(mainFolderPath + "/" + tourneyType + "." + gameKey + ".MatchesLogs") + " nor " +
+						matchesLogsFolder.getPath());
+				return;
+			}
 		}
 
 		// Create (or empty if it already exists) the folder where to move all the match log files
 		// that have been rejected and haven't been considered when computing the statistics.
-		String rejectedFilesFolderPath = mainFolderPath + "/" + tourneyType + "." + gameKey + ".RejectedFiles";
+		String rejectedFilesFolderPath;
+		if(simpleFolderFormat) {
+			rejectedFilesFolderPath = mainFolderPath + "/RejectedMatchesLogs";
+		}else{
+			rejectedFilesFolderPath = mainFolderPath + "/" + tourneyType + "." + gameKey + ".RejectedMatchesLogs";
+		}
 
 		//System.out.println("rejectedFilesFolderPath= " + rejectedFilesFolderPath);
 
@@ -115,7 +154,12 @@ public class StatsSummarizer {
 		}
 
 		// Create (or empty if it already exists) the folder where to save all the statistics.
-		String statsFolderPath = mainFolderPath + "/" + tourneyType + "." + gameKey + ".Statistics";
+		String statsFolderPath;
+		if(simpleFolderFormat) {
+			statsFolderPath = mainFolderPath + "/Statistics";
+		}else{
+			statsFolderPath = mainFolderPath + "/" + tourneyType + "." + gameKey + ".Statistics";
+		}
 		File statsFolder = new File(statsFolderPath);
 		if(statsFolder.isDirectory()){
 			if(!emptyFolder(statsFolder)){
@@ -406,7 +450,13 @@ public class StatsSummarizer {
 
 		/****************** Compute speed statistics of the matches that were considered in the previous statistics *******************/
 
-		String speedLogsFolderPath = mainFolderPath + "/" + tourneyType + "." + gameKey + ".SpeedLogs";
+		String speedLogsFolderPath;
+
+		if(simpleFolderFormat) {
+			speedLogsFolderPath = mainFolderPath + "/SpeedLogs";
+		}else{
+			speedLogsFolderPath = mainFolderPath + "/" + tourneyType + "." + gameKey + ".SpeedLogs";
+		}
 
 		//System.out.println("matchesLogsFolderPath= " + matchesLogsFolderPath);
 
@@ -419,7 +469,12 @@ public class StatsSummarizer {
 
 		// Create (or empty if it already exists) the folder where to move all the speed log files
 		// that have been rejected and haven't been considered when computing the statistics.
-		String rejectedSpeedFilesFolderPath = mainFolderPath + "/" + tourneyType + "." + gameKey + ".RejectedSpeedFiles";
+		String rejectedSpeedFilesFolderPath;
+		if(simpleFolderFormat){
+			rejectedSpeedFilesFolderPath = mainFolderPath + "/RejectedSpeedFiles";
+		}else{
+			rejectedSpeedFilesFolderPath = mainFolderPath + "/" + tourneyType + "." + gameKey + ".RejectedSpeedFiles";
+		}
 
 		//System.out.println("rejectedFilesFolderPath= " + rejectedFilesFolderPath);
 
@@ -438,7 +493,12 @@ public class StatsSummarizer {
 		}
 
 		// Create (or empty if it already exists) the folder where to save all the speed statistics.
-		String speedStatsFolderPath = mainFolderPath + "/" + tourneyType + "." + gameKey + ".SpeedStatistics";
+		String speedStatsFolderPath;
+		if(simpleFolderFormat){
+			speedStatsFolderPath = mainFolderPath + "/SpeedStatistics";
+		}else{
+			speedStatsFolderPath = mainFolderPath + "/" + tourneyType + "." + gameKey + ".SpeedStatistics";
+		}
 		File speedStatsFolder = new File(speedStatsFolderPath);
 		if(speedStatsFolder.isDirectory()){
 			if(!emptyFolder(speedStatsFolder)){
@@ -679,7 +739,13 @@ public class StatsSummarizer {
 
 		preprocessTreeStats(mainFolderPath, tourneyType, gameKey);
 
-		String treeLogsFolderPath = mainFolderPath + "/" + tourneyType + "." + gameKey + ".TreeLogsEnd";
+
+		String treeLogsFolderPath;
+		if(simpleFolderFormat) {
+			treeLogsFolderPath = mainFolderPath + "/TreeLogsEnd";
+		}else{
+			treeLogsFolderPath = mainFolderPath + "/" + tourneyType + "." + gameKey + ".TreeLogsEnd";
+		}
 
 		//System.out.println("matchesLogsFolderPath= " + matchesLogsFolderPath);
 
@@ -692,7 +758,12 @@ public class StatsSummarizer {
 
 		// Create (or empty if it already exists) the folder where to move all the speed log files
 		// that have been rejected and haven't been considered when computing the statistics.
-		String rejectedTreeFilesFolderPath = mainFolderPath + "/" + tourneyType + "." + gameKey + ".RejectedTreeFiles";
+		String rejectedTreeFilesFolderPath;
+		if(simpleFolderFormat) {
+			rejectedTreeFilesFolderPath = mainFolderPath + "/RejectedTreeFiles";
+		}else{
+			rejectedTreeFilesFolderPath = mainFolderPath + "/" + tourneyType + "." + gameKey + ".RejectedTreeFiles";
+		}
 
 		//System.out.println("rejectedFilesFolderPath= " + rejectedFilesFolderPath);
 
@@ -711,7 +782,13 @@ public class StatsSummarizer {
 		}
 
 		// Create (or empty if it already exists) the folder where to save all the speed statistics.
-		String treeStatsFolderPath = mainFolderPath + "/" + tourneyType + "." + gameKey + ".TreeStatistics";
+		String treeStatsFolderPath;
+		if(simpleFolderFormat) {
+			treeStatsFolderPath = mainFolderPath + "/TreeStatistics";
+		}else{
+			treeStatsFolderPath = mainFolderPath + "/" + tourneyType + "." + gameKey + ".TreeStatistics";
+		}
+
 		File treeStatsFolder = new File(treeStatsFolderPath);
 		if(treeStatsFolder.isDirectory()){
 			if(!emptyFolder(treeStatsFolder)){
@@ -900,7 +977,12 @@ public class StatsSummarizer {
 
 		/****************** Compute parameters statistics of the matches that were considered in the previous statistics *******************/
 
-		String paramLogsFolderPath = mainFolderPath + "/" + tourneyType + "." + gameKey + ".ParamsLogs";
+		String paramLogsFolderPath;
+		if(simpleFolderFormat) {
+			paramLogsFolderPath = mainFolderPath + "/ParamsLogs";
+		}else{
+			paramLogsFolderPath = mainFolderPath + "/" + tourneyType + "." + gameKey + ".ParamsLogs";
+		}
 
 		//System.out.println("paramLogsFolderPath= " + paramLogsFolderPath);
 
@@ -913,7 +995,12 @@ public class StatsSummarizer {
 
 		// Create (or empty if it already exists) the folder where to move all the speed log files
 		// that have been rejected and haven't been considered when computing the statistics.
-		String rejectedParamsFilesFolderPath = mainFolderPath + "/" + tourneyType + "." + gameKey + ".RejectedParamsFiles";
+		String rejectedParamsFilesFolderPath;
+		if(simpleFolderFormat) {
+			rejectedParamsFilesFolderPath = mainFolderPath + "/RejectedParamsFiles";
+		}else{
+			rejectedParamsFilesFolderPath = mainFolderPath + "/" + tourneyType + "." + gameKey + ".RejectedParamsFiles";
+		}
 
 		//System.out.println("rejectedFilesFolderPath= " + rejectedFilesFolderPath);
 
@@ -932,7 +1019,13 @@ public class StatsSummarizer {
 		}
 
 		// Create (or empty if it already exists) the folder where to save all the speed statistics.
-		String paramsStatsFolderPath = mainFolderPath + "/" + tourneyType + "." + gameKey + ".ParamsStatistics";
+		String paramsStatsFolderPath;
+		if(simpleFolderFormat) {
+			paramsStatsFolderPath = mainFolderPath + "/ParamsStatistics";
+		}else{
+			paramsStatsFolderPath = mainFolderPath + "/" + tourneyType + "." + gameKey + ".ParamsStatistics";
+		}
+
 		File paramsStatsFolder = new File(paramsStatsFolderPath);
 		if(paramsStatsFolder.isDirectory()){
 			if(!emptyFolder(paramsStatsFolder)){

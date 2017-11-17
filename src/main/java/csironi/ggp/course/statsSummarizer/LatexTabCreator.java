@@ -121,6 +121,29 @@ public class LatexTabCreator {
 		gamesOrder.add("ticTacToe");
 		/*********** GAMES ORDER FOR GRAVE PAPER -END *************/
 
+		/*********** GAMES ORDER FOR GVGAI PAPER *************/
+		gamesOrder.add("aliens");
+		gamesOrder.add("bait");
+		gamesOrder.add("butterflies");
+		gamesOrder.add("camelRace");
+		gamesOrder.add("chase");
+		gamesOrder.add("chopper");
+		gamesOrder.add("crossfire");
+		gamesOrder.add("digdug");
+		gamesOrder.add("escape");
+		gamesOrder.add("hungrybirds");
+		gamesOrder.add("infection");
+		gamesOrder.add("intersection");
+		gamesOrder.add("lemmings");
+		gamesOrder.add("missilecommand");
+		gamesOrder.add("modality");
+		gamesOrder.add("plaqueattack");
+		gamesOrder.add("roguelike");
+		gamesOrder.add("seaquest");
+		gamesOrder.add("survivezombies");
+		gamesOrder.add("waitforbreakfast");
+		/*********** GAMES ORDER FOR GVGAI PAPER -END *************/
+
 		gamesOrder.add("OverallStats");
 
 	}
