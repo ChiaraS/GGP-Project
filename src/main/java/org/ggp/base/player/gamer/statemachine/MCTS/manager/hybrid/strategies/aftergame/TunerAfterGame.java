@@ -53,7 +53,8 @@ public class TunerAfterGame extends AfterGameStrategy {
 
 	@Override
 	public String getComponentParameters(String indentation) {
-		return indentation + "PARAMETERS_TUNER = " + this.parametersTuner.getClass().getSimpleName();
+		return indentation + "PARAMETERS_TUNER = " + this.parametersTuner.getClass().getSimpleName() +
+				indentation + "LOG_AFTER_GAME = " + this.logAfterGame;
 	}
 
 }
