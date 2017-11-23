@@ -14,7 +14,7 @@ import org.ggp.base.player.gamer.statemachine.MCTS.manager.parameterstuning.stru
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.parameterstuning.structure.mabs.FixedMab;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.parameterstuning.structure.mabs.IncrementalMab;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.parameterstuning.structure.problemrep.EvoProblemRepresentation;
-import org.ggp.base.player.gamer.statemachine.MCTS.manager.parameterstuning.structure.problemrep.UcbEvoProblemRepresentation;
+import org.ggp.base.player.gamer.statemachine.MCTS.manager.parameterstuning.structure.problemrep.NTupleEvoProblemRepresentation;
 import org.ggp.base.util.logging.GamerLogger;
 import org.ggp.base.util.statemachine.structure.Move;
 
@@ -25,7 +25,7 @@ public class UcbMultiPopEvoParametersTuner extends MultiPopEvoParametersTuner {
 	/**
 	 * Problem representation for each role being tuned.
 	 */
-	private UcbEvoProblemRepresentation[] roleProblems;
+	private NTupleEvoProblemRepresentation[] roleProblems;
 
 	/**
 	 * If true, when selecting the best combination of parameters the global MAB will be used.
@@ -45,9 +45,9 @@ public class UcbMultiPopEvoParametersTuner extends MultiPopEvoParametersTuner {
 	@Override
 	public void createRoleProblems(int numRolesToTune) {
 		// Create the initial population for each role
-		this.roleProblems = new UcbEvoProblemRepresentation[numRolesToTune];
+		this.roleProblems = new NTupleEvoProblemRepresentation[numRolesToTune];
 		for(int roleProblemIndex = 0; roleProblemIndex < this.roleProblems.length; roleProblemIndex++){
-			roleProblems[roleProblemIndex] = new UcbEvoProblemRepresentation(this.evolutionManager.getInitialPopulation(),
+			roleProblems[roleProblemIndex] = new NTupleEvoProblemRepresentation(this.evolutionManager.getInitialPopulation(),
 					this.parametersManager.getNumPossibleValuesForAllParams());
 		}
 	}

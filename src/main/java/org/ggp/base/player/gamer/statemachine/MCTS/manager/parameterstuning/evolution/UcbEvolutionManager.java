@@ -5,6 +5,8 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Random;
 
 import org.ggp.base.player.gamer.statemachine.GamerSettings;
@@ -13,8 +15,10 @@ import org.ggp.base.player.gamer.statemachine.MCS.manager.hybrid.CompleteMoveSta
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.GameDependentParameters;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.SharedReferencesCollector;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.parameterstuning.structure.CombinatorialCompactMove;
+import org.ggp.base.player.gamer.statemachine.MCTS.manager.parameterstuning.structure.NTuple;
+import org.ggp.base.player.gamer.statemachine.MCTS.manager.parameterstuning.structure.mabs.IncrementalMab;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.parameterstuning.structure.problemrep.EvoProblemRepresentation;
-import org.ggp.base.player.gamer.statemachine.MCTS.manager.parameterstuning.structure.problemrep.UcbEvoProblemRepresentation;
+import org.ggp.base.player.gamer.statemachine.MCTS.manager.parameterstuning.structure.problemrep.NTupleEvoProblemRepresentation;
 import org.ggp.base.util.logging.GamerLogger;
 
 import csironi.ggp.course.utils.MyPair;
@@ -34,8 +38,10 @@ public class UcbEvolutionManager extends StandardEvolutionManager {
 	 */
 	// C constant
 	private double c;
-	// First play urgency (i.e. value to be used when there is no statistics for a parameter value or a
-	// parameter value combination).
+	// First play urgency (i.e. value to be used when there is no statistics for an n-tuple of parameter values).
+	// This value must be >= 0 to be considered. When set to a negative value it means that, whenever no statistics
+	// are available for an n-tuple of parameter values, then no value at all will be considered in the averaged UCB
+	// value for that particular n-tuple.
 	private double fpu;
 
 
@@ -81,7 +87,7 @@ public class UcbEvolutionManager extends StandardEvolutionManager {
 
 		// The type of the role problem must be UcbEvoProblemRepresentation or we won't have the
 		// global and local statistics from which to get the UCB value of each combination.
-		if(roleProblem instanceof UcbEvoProblemRepresentation){
+		if(roleProblem instanceof NTupleEvoProblemRepresentation){
 
 			CompleteMoveStats[] population = roleProblem.getPopulation();
 
@@ -93,7 +99,7 @@ public class UcbEvolutionManager extends StandardEvolutionManager {
 			if(this.eliteSize <= 0){
 
 				// Get the candidate individuals.
-				candidateIndividuals = this.generateAndSortCandidateIndividuals((UcbEvoProblemRepresentation)roleProblem,
+				candidateIndividuals = this.generateAndSortCandidateIndividuals((NTupleEvoProblemRepresentation)roleProblem,
 						population.length);
 
 				// The candidates are already ordered by decreasing UCB value.
@@ -138,7 +144,7 @@ public class UcbEvolutionManager extends StandardEvolutionManager {
 				});
 
 				// Get the candidate individuals.
-				candidateIndividuals = this.generateAndSortCandidateIndividuals((UcbEvoProblemRepresentation)roleProblem,
+				candidateIndividuals = this.generateAndSortCandidateIndividuals((NTupleEvoProblemRepresentation)roleProblem,
 						this.eliteSize);
 
 				// For the individuals that we are keeping, reset all statistics.
@@ -177,7 +183,7 @@ public class UcbEvolutionManager extends StandardEvolutionManager {
 	 * @return a list with the generated individuals together with their average UCB value, computed
 	 * using the global and local MABs in the problem representation.
 	 */
-	private List<MyPair<CombinatorialCompactMove, Double>> generateAndSortCandidateIndividuals(UcbEvoProblemRepresentation roleProblem, int numParents){
+	private List<MyPair<CombinatorialCompactMove, Double>> generateAndSortCandidateIndividuals(NTupleEvoProblemRepresentation roleProblem, int numParents){
 
 		CompleteMoveStats[] population = roleProblem.getPopulation();
 
@@ -226,37 +232,63 @@ public class UcbEvolutionManager extends StandardEvolutionManager {
 
 	/**
 	 * Given an individual (i.e. combination of parameter value indices) returns the average UCB value computed
-	 * using all the available statistics (i.e. the statistics of the combination in the global MAB and the
-	 * statistics of each parameter value in the local MABs).
+	 * using all the available statistics (i.e. the statistics of the values for each of the n-tuples in the
+	 * landscape model).
 	 *
 	 * @param newCandidate
 	 * @return
 	 */
-	private double getAvgUcb(UcbEvoProblemRepresentation roleProblem, CombinatorialCompactMove newCandidate){
+	private double getAvgUcb(NTupleEvoProblemRepresentation roleProblem, CombinatorialCompactMove newCandidate){
 
 		double ucbSum = 0;
+		int numAveragedValues = 0;
 
-		MoveStats stats;
+		Map<NTuple,IncrementalMab> landscapeModel = roleProblem.getLandscapeModel();
 
-		// Sum UCB value of the whole combination from the global MAB
-		if(roleProblem.getGlobalMab().getMovesInfo().containsKey(newCandidate)){
-			stats = roleProblem.getGlobalMab().getMovesInfo().get(newCandidate).getFirst();
-			ucbSum += this.computeUcb(stats.getScoreSum(), stats.getVisits(), roleProblem.getGlobalMab().getNumUpdates());
-		}else{
-			ucbSum += this.fpu;
+		CombinatorialCompactMove nTupleValues;
+
+		MyPair<MoveStats,Double> stats;
+
+		for(Entry<NTuple,IncrementalMab> nTupleLookupTable : landscapeModel.entrySet()) {
+
+			nTupleValues = this.getNTupleValues(newCandidate, nTupleLookupTable.getKey());
+
+			stats = nTupleLookupTable.getValue().getMovesInfo().get(nTupleValues);
+
+			if(stats != null && stats.getFirst().getVisits() > 0 && nTupleLookupTable.getValue().getNumUpdates() > 0) {
+				ucbSum += this.computeUcb(stats.getFirst().getScoreSum(), stats.getFirst().getVisits(), nTupleLookupTable.getValue().getNumUpdates());
+				numAveragedValues++;
+			}else if(this.fpu >= 0) {
+				ucbSum += this.fpu;
+				numAveragedValues++;
+			}
+
 		}
 
-		// Sum UCB value of each single parameter value in the combination from the local MABs
-		int[] valueIndices = newCandidate.getIndices();
-		for(int paramIndex = 0; paramIndex < roleProblem.getLocalMabs().length; paramIndex++){
-			stats = roleProblem.getLocalMabs()[paramIndex].getMoveStats()[valueIndices[paramIndex]];
-			ucbSum += this.computeUcb(stats.getScoreSum(), stats.getVisits(), roleProblem.getLocalMabs()[paramIndex].getNumUpdates());
-		}
-
-		return ucbSum/(roleProblem.getLocalMabs().length + 1);
+		return ucbSum/((double)numAveragedValues);
 
 	}
 
+	/**
+	 * Given a parameter combination, this method extracts from it only (the indices of) the values
+	 * of the parameters considered by the given n-tuple.
+	 *
+	 * @param parameterCombination combination of (indices of) parameter values.
+	 * @param nTuple the n-tuple characterized by the indices of the parameters being considered by
+	 * the n-tuple.
+	 * @return
+	 */
+	private CombinatorialCompactMove getNTupleValues(CombinatorialCompactMove parameterCombination, NTuple nTuple) {
+		int[] paramValuesIndices = new int[nTuple.getParamIndices().length];
+
+		for(int i = 0; i < nTuple.getParamIndices().length; i++) {
+			paramValuesIndices[i] = parameterCombination.getIndices()[nTuple.getParamIndices()[i]];
+		}
+
+		return new CombinatorialCompactMove(paramValuesIndices);
+	}
+
+	// This method expects moveVisits and parentVisits to be greater than 0
 	private double computeUcb(double scoreSum, double moveVisits, double parentVisits) {
 
 		double exploitation = this.computeExploitation(scoreSum, moveVisits);
@@ -265,7 +297,10 @@ public class UcbEvolutionManager extends StandardEvolutionManager {
 		if(exploitation != -1 && exploration != -1){
 			return exploitation + exploration;
 		}else{
-			return this.fpu;
+			GamerLogger.logError("EvolutionManager", "UcbEvolutionManager - Expected visits greater than 0 for moveVisits=" +
+					moveVisits + " and for parentVisits=" + parentVisits + ".");
+			throw new RuntimeException("UcbEvolutionManager - Expected visits greater than 0 for moveVisits=" +
+					moveVisits + " and for parentVisits=" + parentVisits + ".");
 		}
 	}
 
