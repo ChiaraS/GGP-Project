@@ -1,9 +1,10 @@
 package org.ggp.base.player.gamer.statemachine.MCTS.manager.parameterstuning;
 
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Map.Entry;
 import java.util.Random;
+import java.util.Set;
 
 import org.ggp.base.player.gamer.statemachine.GamerSettings;
 import org.ggp.base.player.gamer.statemachine.MCS.manager.MoveStats;
@@ -11,6 +12,7 @@ import org.ggp.base.player.gamer.statemachine.MCS.manager.hybrid.CompleteMoveSta
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.GameDependentParameters;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.SharedReferencesCollector;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.parameterstuning.structure.CombinatorialCompactMove;
+import org.ggp.base.player.gamer.statemachine.MCTS.manager.parameterstuning.structure.NTuple;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.parameterstuning.structure.mabs.FixedMab;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.parameterstuning.structure.mabs.IncrementalMab;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.parameterstuning.structure.problemrep.EvoProblemRepresentation;
@@ -34,12 +36,29 @@ public class UcbMultiPopEvoParametersTuner extends MultiPopEvoParametersTuner {
 	 */
 	private boolean useGlobalBest;
 
+	/**
+	 * Set containing the lengths (as Integer) of the n-tuples that we want to consider
+	 * when computing the UCB value of a combination of parameters (e.g. we might not
+	 * want to consider n-tuples of all the possible lengths [1,numParams], but only some
+	 * of them).
+	 * If not specified in the settings (i.e. == null) then all lengths will be considered.
+	 */
+	private Set<Integer> nTuplesForUCBLengths;
+
 	public UcbMultiPopEvoParametersTuner(GameDependentParameters gameDependentParameters, Random random,
 			GamerSettings gamerSettings, SharedReferencesCollector sharedReferencesCollector) {
 		super(gameDependentParameters, random, gamerSettings, sharedReferencesCollector);
 		this.roleProblems = null;
 
 		this.useGlobalBest = gamerSettings.getBooleanPropertyValue("ParametersTuner.useGlobalBest");
+
+		if(gamerSettings.specifiesProperty("ParametersTuner.nTupleLengthsToConsider")) {
+			this.nTuplesForUCBLengths = new HashSet<Integer>();
+			int[] nTupleLengthsToConsider = gamerSettings.getIntPropertyMultiValue("ParametersTuner.nTupleLengthsToConsider");
+			for(int length : nTupleLengthsToConsider) {
+				this.nTuplesForUCBLengths.add(new Integer(length));
+			}
+		}
 	}
 
 	@Override
@@ -48,7 +67,7 @@ public class UcbMultiPopEvoParametersTuner extends MultiPopEvoParametersTuner {
 		this.roleProblems = new NTupleEvoProblemRepresentation[numRolesToTune];
 		for(int roleProblemIndex = 0; roleProblemIndex < this.roleProblems.length; roleProblemIndex++){
 			roleProblems[roleProblemIndex] = new NTupleEvoProblemRepresentation(this.evolutionManager.getInitialPopulation(),
-					this.parametersManager.getNumPossibleValuesForAllParams());
+					this.parametersManager.getNumPossibleValuesForAllParams(), this.nTuplesForUCBLengths);
 		}
 	}
 
@@ -67,26 +86,33 @@ public class UcbMultiPopEvoParametersTuner extends MultiPopEvoParametersTuner {
 
 		// For each role, we select a combination of parameters
 		for(int roleProblemIndex = 0; roleProblemIndex < this.roleProblems.length; roleProblemIndex++){
-			// If we want to use the global MAB we can only do that if it has been visited at least once
-			// and so contains at least one combination.
-			if(this.useGlobalBest && this.roleProblems[roleProblemIndex].getGlobalMab().getNumUpdates() > 0){
-				IncrementalMab globalMab = this.roleProblems[roleProblemIndex].getGlobalMab();
-				Move m = this.bestCombinationSelector.selectMove(globalMab.getMovesInfo(), globalMab.getNumUpdates());
+
+			IncrementalMab completeNTupleMab = this.roleProblems[roleProblemIndex].getLandscapeModelForStatsUpdate().get(this.getCompleteNTuple());
+
+			// If we want to use the MAB associated with whole combinations we can only do that if it has been
+			// visited at least once and so contains at least one combination.
+			if(this.useGlobalBest && completeNTupleMab != null && completeNTupleMab.getNumUpdates() > 0){
+				Move m = this.bestCombinationSelector.selectMove(completeNTupleMab.getMovesInfo(), null, completeNTupleMab.getNumUpdates());
 				this.selectedCombinations[roleProblemIndex] = ((CombinatorialCompactMove) m).getIndices();
 			}else{
-				FixedMab[] localMabs = this.roleProblems[roleProblemIndex].getLocalMabs();
-				int[] indices = new int[localMabs.length];
+				// If we are using the MABs associated with 1-tuples, select the value for each parameter
+				// from the MAB of the corresponding 1-tuple. If such MAB doesn't exist or has never been
+				// visited (NOTE that this should be impossible, unless no search iterations were performed
+				// at all!), a random value will be selected for the parameter among the available ones.
+
+				int[] indices = new int[this.parametersManager.getNumTunableParameters()];
 				for(int i = 0; i < indices.length; i++){
 					indices[i] = -1;
 				}
 
 				// Select a value for each local mab independently
-				for(int paramIndex = 0; paramIndex < localMabs.length; paramIndex++){
-					indices[paramIndex] = this.bestCombinationSelector.selectMove(localMabs[paramIndex].getMoveStats(),
-							this.parametersManager.getValuesFeasibility(paramIndex, indices),
-							// If for a parameter no penalties are specified, a penalty of 0 is assumed for all of the values.
-							(this.parametersManager.getPossibleValuesPenalty(paramIndex) != null ? this.parametersManager.getPossibleValuesPenalty(paramIndex) : new double[this.parametersManager.getNumPossibleValues(paramIndex)]),
-							localMabs[paramIndex].getNumUpdates());
+				IncrementalMab oneTupleMab;
+				for(int paramIndex = 0; paramIndex < this.parametersManager.getNumTunableParameters(); paramIndex++){
+					oneTupleMab = this.roleProblems[roleProblemIndex].getLandscapeModelForStatsUpdate().get(new NTuple(new int[] {paramIndex}));
+					Move m = this.bestCombinationSelector.selectMove(oneTupleMab.getMovesInfo(),
+							this.parametersManager.getValuesFeasibility(paramIndex, oneTupleMab.getMovesInfo().keySet(), indices),
+							oneTupleMab.getNumUpdates());
+					indices[paramIndex] = ((CombinatorialCompactMove) m).getIndices()[0];
 				}
 				this.selectedCombinations[roleProblemIndex] = indices;
 			}
@@ -97,6 +123,14 @@ public class UcbMultiPopEvoParametersTuner extends MultiPopEvoParametersTuner {
 
 		this.parametersManager.setParametersValues(this.selectedCombinations);
 
+	}
+
+	private NTuple getCompleteNTuple() {
+		int[] completeCombo = new int[this.parametersManager.getNumTunableParameters()];
+		for(int i = 0; i < this.parametersManager.getNumTunableParameters(); i++) {
+			completeCombo[i] = i;
+		}
+		return new NTuple(completeCombo);
 	}
 
 	@Override
@@ -150,7 +184,7 @@ public class UcbMultiPopEvoParametersTuner extends MultiPopEvoParametersTuner {
 			/********** Update local MABS **********/
 
 			// Update the stats for each local MAB
-			localMabs = this.roleProblems[roleProblemIndex].getLocalMabs();
+		localMabs = this.roleProblems[roleProblemIndex].getLocalMabs();
 
 			valueIndices = theMove.getIndices();
 

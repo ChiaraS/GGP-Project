@@ -304,7 +304,7 @@ public class NaiveParametersTuner extends ParametersTuner {
 			// and so contains at least one combination.
 			if(this.useGlobalBest && this.roleProblems[roleProblemIndex].getGlobalMab().getNumUpdates() > 0){
 				IncrementalMab globalMab = this.roleProblems[roleProblemIndex].getGlobalMab();
-				Move m = this.bestCombinationSelector.selectMove(globalMab.getMovesInfo(), globalMab.getNumUpdates());
+				Move m = this.bestCombinationSelector.selectMove(globalMab.getMovesInfo(), null, globalMab.getNumUpdates());
 				this.selectedCombinations[roleProblemIndex] = ((CombinatorialCompactMove) m).getIndices();
 			}else{
 				FixedMab[] localMabs = this.roleProblems[roleProblemIndex].getLocalMabs();

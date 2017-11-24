@@ -2,8 +2,10 @@ package org.ggp.base.player.gamer.statemachine.MCTS.manager.parameterstuning.str
 
 import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Random;
+import java.util.Set;
 
 import org.ggp.base.player.gamer.statemachine.GamerSettings;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.GameDependentParameters;
@@ -14,6 +16,7 @@ import org.ggp.base.player.gamer.statemachine.MCTS.manager.parameterstuning.stru
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.parameterstuning.structure.parametersorders.ParametersOrder;
 import org.ggp.base.util.logging.GamerLogger;
 import org.ggp.base.util.reflection.ProjectSearcher;
+import org.ggp.base.util.statemachine.structure.Move;
 
 public class ParametersManager extends SearchManagerComponent {
 
@@ -192,6 +195,60 @@ public class ParametersManager extends SearchManagerComponent {
 		for(int i = 0; i < feasibility.length; i++){
 			otherParamsValueIndices[paramIndex] = i;
 			feasibility[i] = this.isValid(otherParamsValueIndices);
+		}
+
+		// Restore unset value for the parameter
+		otherParamsValueIndices[paramIndex] = -1;
+
+		return feasibility;
+
+	}
+
+	/**
+	 * For the parameter at position paramIndex in the list of tunable parameters, given a set of
+	 * indices of possible values for the parameter, returns the subset of indices of possible
+	 * values that are feasible, given the values set so far for the other parameters
+	 * (otherParamsValueIndices).
+	 *
+	 * @param paramIndex index of the parameter for which we want to know which values are
+	 * feasible.
+	 * @param otherParamsValueIndices indices of the values that have been set for the other
+	 * parameters (if no value has been set yet, the index will be -1). The order of these
+	 * indices must be the same as the order if the tunableParameters (i.e. at position x
+	 * in otherParamsValueIndices we must find the index of the value set for the parameter
+	 * in position x in tunableParameters).
+	 * @return an array where an entry is true if the corresponding value for the parameter
+	 * is feasible given the values set for other parameters, false otherwise.
+	 */
+	public Set<Move> getValuesFeasibility(int paramIndex, Set<Move> valuesIndices, int[] otherParamsValueIndices){
+
+		if(otherParamsValueIndices[paramIndex] != -1){
+			GamerLogger.logError("ParametersTuner", "ParametersManager - Asking feasible values for parameter " + this.tunableParameters.get(paramIndex).getName() +
+					" that is already set to the value " + this.tunableParameters.get(paramIndex).getPossibleValues()[otherParamsValueIndices[paramIndex]] + ".");
+			throw new RuntimeException("ParametersManager - Asking feasible values for parameter that is already set!");
+		}
+
+		Set<Move> feasibility = new HashSet<Move>();
+
+		for(Move m : valuesIndices){
+			if(! (m instanceof CombinatorialCompactMove)) {
+				GamerLogger.logError("ParametersTuner", "ParametersManager - Asking feasible values for parameter " + this.tunableParameters.get(paramIndex).getName() +
+						", but cannot retrieve the index of the value because the Move is not of type CombinatorialCompactMove.");
+				throw new RuntimeException("ParametersManager - Asking feasible values for parameter " + this.tunableParameters.get(paramIndex).getName() +
+						", but cannot retrieve the index of the value because the Move is not of type CombinatorialCompactMove.");
+			}
+			int[] indices = ((CombinatorialCompactMove) m).getIndices();
+			// Note that we are expecting a single index for the parameter value
+			if(indices.length != 1) {
+				GamerLogger.logError("ParametersTuner", "ParametersManager - Asking feasible values for parameter " + this.tunableParameters.get(paramIndex).getName() +
+						", but there are " + indices.length + " indices for the value of the considered parameter instead of a single index.");
+				throw new RuntimeException("ParametersManager - Asking feasible values for parameter " + this.tunableParameters.get(paramIndex).getName() +
+						", but there are " + indices.length + " indices for the value of the considered parameter instead of a single index.");
+			}
+			otherParamsValueIndices[paramIndex] = indices[0];
+			if(this.isValid(otherParamsValueIndices)){
+				feasibility.add(m);
+			}
 		}
 
 		// Restore unset value for the parameter

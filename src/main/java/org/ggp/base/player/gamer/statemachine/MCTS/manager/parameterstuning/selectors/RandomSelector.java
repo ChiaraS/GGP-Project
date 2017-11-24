@@ -4,6 +4,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Random;
+import java.util.Set;
 
 import org.ggp.base.player.gamer.statemachine.GamerSettings;
 import org.ggp.base.player.gamer.statemachine.MCS.manager.MoveStats;
@@ -86,21 +87,39 @@ public class RandomSelector extends TunerSelector{
 	}
 
 	@Override
-	public Move selectMove(Map<Move,MyPair<MoveStats,Double>> movesInfo, int numUpdates) {
+	public Move selectMove(Map<Move,MyPair<MoveStats,Double>> movesInfo, Set<Move> feasibleMoves, int numUpdates) {
 
 		// Extra check to make sure that this method is never called with an empty map of moves
 		if(movesInfo.isEmpty()){
 			throw new RuntimeException("RandomSelector - selectMove(Map, int): cannot select next combination because the map is empty.");
 		}
-
-		int randomNum = this.random.nextInt(movesInfo.size());
+		if(feasibleMoves != null && feasibleMoves.isEmpty()) {
+			throw new RuntimeException("RandomSelector - selectMove(Map, int): cannot select next combination because there is no feasible one.");
+		}
 
 		Move theMove = null;
-		for(Entry<Move,MyPair<MoveStats,Double>> entry : movesInfo.entrySet()){
-			if(randomNum == 0){
-				theMove = entry.getKey();
+		if(feasibleMoves != null) {
+			// NOTE!!! This method assumes that feasibleMoves is a subset of the moves in movesInfo, so to get a random
+			// feasible move we can just pick a random one from feasibleMoves, ignoring movesInfo.
+			// Change this code if the computation of feasibleMoves changes to include also moves that might not be in
+			// movesInfo.
+			int randomNum = this.random.nextInt(feasibleMoves.size());
+
+			for(Move m : feasibleMoves){
+				if(randomNum == 0){
+					theMove = m;
+				}
+				randomNum--;
 			}
-			randomNum--;
+		}else {
+			int randomNum = this.random.nextInt(movesInfo.size());
+
+			for(Entry<Move,MyPair<MoveStats,Double>> entry : movesInfo.entrySet()){
+				if(randomNum == 0){
+					theMove = entry.getKey();
+				}
+				randomNum--;
+			}
 		}
 
 		if(theMove == null){

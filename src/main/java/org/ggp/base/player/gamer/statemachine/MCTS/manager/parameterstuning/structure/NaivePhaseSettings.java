@@ -107,12 +107,11 @@ public class NaivePhaseSettings extends SearchManagerComponent{
 	 * @return
 	 */
 	private int[] exploit(IncrementalMab globalMab){
-		Move m = this.globalMabSelector.selectMove(globalMab.getMovesInfo(), globalMab.getNumUpdates());
+		Move m = this.globalMabSelector.selectMove(globalMab.getMovesInfo(), null, globalMab.getNumUpdates());
 		return ((CombinatorialCompactMove) m).getIndices();
 	}
 
 	private int[] explore(FixedMab[] localMabs){
-
 		int[] indices = new int[localMabs.length];
 		for(int paramIndex = 0; paramIndex < localMabs.length; paramIndex++){
 			indices[paramIndex] = -1; // It means that the index has not been set yet

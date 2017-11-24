@@ -1,9 +1,12 @@
 package org.ggp.base.player.gamer.statemachine.MCTS.manager.parameterstuning.structure.problemrep;
 
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
 
 import org.ggp.base.player.gamer.statemachine.MCS.manager.hybrid.CompleteMoveStats;
+import org.ggp.base.player.gamer.statemachine.MCTS.manager.parameterstuning.structure.CombinatorialCompactMove;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.parameterstuning.structure.NTuple;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.parameterstuning.structure.mabs.IncrementalMab;
 
@@ -11,9 +14,30 @@ import org.ggp.base.player.gamer.statemachine.MCTS.manager.parameterstuning.stru
 public class NTupleEvoProblemRepresentation extends EvoProblemRepresentation{
 
 	/**
-	 *  N tuple landscape: each entry corresponds to one possible n-tuple
+	 *  N tuple landscape: map that has one entry for each n-tuple that must be
+	 *  considered when computing the UCB value of a candidate individual.
+	 *  The stats of these n-tuples are used when we want to compute the UCB value
+	 *  of a combination of parameters.
 	 */
-	private Map<NTuple,IncrementalMab> landscapeModel;
+	private Map<NTuple,IncrementalMab> landscapeModelForUCBComputation;
+
+	/**
+	 *  N tuple landscape: map that has one entry for each n-tuple that must be
+	 *  considered when computing the value of a candidate individual AND one
+	 *  entry for 1-tuples and numParams-tuples (even if we don't want to use
+	 *  the last two when computing the UCB value.)
+	 *  This model is used whenever we want to update statistics to make sure that,
+	 *  even if we are not using 1-tuples and numParam-tuples when computing the
+	 *  UCB value of a combination we can still collect statistics about them that
+	 *  can be logged to memorize the local and global statistics about the parameters
+	 *  usage.
+	 *
+	 *  NOTE that for each n-tuple there us only ONE IncrementalMab that is referenced
+	 *  by both landscape models when needed by both of them
+	 */
+	private Map<NTuple,IncrementalMab> landscapeModelForStatsUpdate;
+
+
 
 	/**
 	 * The global Multi-Armed Bandit problem that keeps track of statistics for the
@@ -29,14 +53,23 @@ public class NTupleEvoProblemRepresentation extends EvoProblemRepresentation{
 	 */
 	//private FixedMab[] localMabs;
 
-	public NTupleEvoProblemRepresentation(CompleteMoveStats[] population, int[] classesLength) {
+	/**
+	 *
+	 * @param population the population of combinations.
+	 * @param classesLength the number of possible values for each of the parameters (i.e. classes).
+	 * @param nTuplesForUCBLengths a set containing the lengths (as Integer) of the n-tuples that we
+	 * want to consider when computing the UCB value of a combination of parameters (e.g. we might not
+	 * want to consider n-tuples of all the possible lengths [1,numParams], but only some of them).
+	 */
+	public NTupleEvoProblemRepresentation(CompleteMoveStats[] population, int[] classesLength, Set<Integer> nTuplesForUCBLengths) {
 
 		super(population);
 
-		this.landscapeModel = new HashMap<NTuple,IncrementalMab>();
+		this.landscapeModelForUCBComputation = new HashMap<NTuple,IncrementalMab>();
+		this.landscapeModelForStatsUpdate = new HashMap<NTuple,IncrementalMab>();
 
 		// Compute all possible n-tuples and create an empty IncrementalMab for each of them.
-		this.computeNTuples(new int[0], 0, classesLength.length);
+		this.computeNTuples(new int[0], 0, classesLength.length, nTuplesForUCBLengths);
 
 		/*
 		this.globalMab = new IncrementalMab();
@@ -49,12 +82,21 @@ public class NTupleEvoProblemRepresentation extends EvoProblemRepresentation{
 
 	}
 
-	private void computeNTuples(int[] paramIndices, int beginning, int end) {
+	private void computeNTuples(int[] paramIndices, int beginning, int end, Set<Integer> nTuplesForUCBLengths) {
 		int[] newParamIndices;
+		NTuple newNTuple;
+		IncrementalMab newIncrementalMab;
 		for(int i = beginning; i < end; i++) {
 			newParamIndices = this.extendArray(paramIndices, i);
-			this.landscapeModel.put(new NTuple(newParamIndices), new IncrementalMab());
-			this.computeNTuples(newParamIndices, i+1, end);
+			newNTuple = new NTuple(newParamIndices);
+			newIncrementalMab = new IncrementalMab();
+			if(nTuplesForUCBLengths == null || nTuplesForUCBLengths.contains(new Integer(newParamIndices.length))) {
+				this.landscapeModelForUCBComputation.put(newNTuple, newIncrementalMab);
+				this.landscapeModelForStatsUpdate.put(newNTuple, newIncrementalMab);
+			}else if(newParamIndices.length == 1 || newParamIndices.length == end) { // I's a 1-tuple or a numParamsTuple
+				this.landscapeModelForStatsUpdate.put(newNTuple, newIncrementalMab);
+			}
+			this.computeNTuples(newParamIndices, i+1, end, nTuplesForUCBLengths);
 		}
 	}
 
@@ -83,8 +125,31 @@ public class NTupleEvoProblemRepresentation extends EvoProblemRepresentation{
 		return this.localMabs;
 	}*/
 
-    public Map<NTuple, IncrementalMab> getLandscapeModel() {
-		return this.landscapeModel;
+    public Map<NTuple, IncrementalMab> getLandscapeModelForUCBComputation() {
+		return this.landscapeModelForUCBComputation;
+	}
+
+    public Map<NTuple, IncrementalMab> getLandscapeModelForStatsUpdate() {
+		return this.landscapeModelForStatsUpdate;
+	}
+
+	/**
+	 * Given a parameter combination, this method extracts from it only (the indices of) the values
+	 * of the parameters considered by the given n-tuple.
+	 *
+	 * @param parameterCombination combination of (indices of) parameter values.
+	 * @param nTuple the n-tuple characterized by the indices of the parameters being considered by
+	 * the n-tuple.
+	 * @return
+	 */
+	public CombinatorialCompactMove getNTupleValues(CombinatorialCompactMove parameterCombination, NTuple nTuple) {
+		int[] paramValuesIndices = new int[nTuple.getParamIndices().length];
+
+		for(int i = 0; i < nTuple.getParamIndices().length; i++) {
+			paramValuesIndices[i] = parameterCombination.getIndices()[nTuple.getParamIndices()[i]];
+		}
+
+		return new CombinatorialCompactMove(paramValuesIndices);
 	}
 
 	/**
@@ -95,8 +160,23 @@ public class NTupleEvoProblemRepresentation extends EvoProblemRepresentation{
     @Override
 	public void decreaseStatistics(double factor){
     	super.decreaseStatistics(factor);
-    	for(IncrementalMab nTupleMab : this.landscapeModel.values()) {
-    		nTupleMab.decreaseStatistics(factor);
+
+    	// This set contains the IncrementalMabs that have been already decayed.
+    	// Used to keep track of decayed MABs so that they are decayed only once
+    	// even if encountered twice.
+    	Set<IncrementalMab> updatedMabs = new HashSet<IncrementalMab>();
+
+    	for(IncrementalMab nTupleMab : this.landscapeModelForUCBComputation.values()) {
+    		if(updatedMabs.add(nTupleMab)) {
+    			nTupleMab.decreaseStatistics(factor);
+    			//System.out.println("Decreasing " + nTupleMab);
+    		}
+    	}
+    	for(IncrementalMab nTupleMab : this.landscapeModelForStatsUpdate.values()) {
+    		if(updatedMabs.add(nTupleMab)) {
+    			nTupleMab.decreaseStatistics(factor);
+    			//System.out.println("Decreasing " + nTupleMab);
+    		}
     	}
     	/*
     	this.globalMab.decreaseStatistics(factor);
@@ -106,15 +186,30 @@ public class NTupleEvoProblemRepresentation extends EvoProblemRepresentation{
     }
 
     private void printNTuples() {
-    	for(NTuple tuple : this.landscapeModel.keySet()) {
-    		System.out.println(tuple);
+    	System.out.println("UCB n-tuples");
+    	for(NTuple tuple : this.landscapeModelForUCBComputation.keySet()) {
+    		System.out.println(tuple + " -> " + this.landscapeModelForUCBComputation.get(tuple));
+    	}
+    	System.out.println("To update n-tuples");
+    	for(NTuple tuple : this.landscapeModelForStatsUpdate.keySet()) {
+    		System.out.println(tuple + " -> " + this.landscapeModelForStatsUpdate.get(tuple));
     	}
     }
 
     public static void main(String args[]) {
     	int[] cl = new int[]{5, 6, 4, 8};
-    	NTupleEvoProblemRepresentation p = new NTupleEvoProblemRepresentation(null, cl);
+
+    	Set<Integer> nTupleLengths = new HashSet<Integer>();
+    	//nTupleLengths.add(new Integer(1));
+    	nTupleLengths.add(new Integer(2));
+    	//nTupleLengths.add(new Integer(3));
+    	nTupleLengths.add(new Integer(4));
+
+    	NTupleEvoProblemRepresentation p = new NTupleEvoProblemRepresentation(new CompleteMoveStats[0], cl, nTupleLengths);
     	p.printNTuples();
+
+    	p.decreaseStatistics(0.5);
+
     }
 
 }

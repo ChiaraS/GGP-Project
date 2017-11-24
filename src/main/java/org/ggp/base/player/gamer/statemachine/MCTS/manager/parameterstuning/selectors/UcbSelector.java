@@ -5,6 +5,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Random;
+import java.util.Set;
 
 import org.ggp.base.player.gamer.statemachine.GamerSettings;
 import org.ggp.base.player.gamer.statemachine.MCS.manager.MoveStats;
@@ -216,7 +217,7 @@ public class UcbSelector extends TunerSelector{
 	 * @return the index of the selected move.
 	 */
 	@Override
-	public Move selectMove(Map<Move,MyPair<MoveStats,Double>> movesInfo, int numUpdates) {
+	public Move selectMove(Map<Move,MyPair<MoveStats,Double>> movesInfo, Set<Move> feasibleMoves, int numUpdates) {
 
 		// Extra check to make sure that this method is never called with an empty map of moves
 		if(movesInfo.isEmpty()){
@@ -231,14 +232,28 @@ public class UcbSelector extends TunerSelector{
 		// NOTE: numUpdates == 0 should never be true, because it only happens when the movesInfo
 		// map is empty, and in that case we throw an exception!
 		if(numUpdates == 0 && this.biasComputer == null){
-			int randomNum = this.random.nextInt(movesInfo.size());
+			if(feasibleMoves != null) {
+				// NOTE!!! This method assumes that feasibleMoves is a subset of the moves in movesInfo, so to get a random
+				// feasible move we can just pick a random one from feasibleMoves, ignoring movesInfo.
+				// Change this code if the computation of feasibleMoves changes to include also moves that might not be in
+				// movesInfo.
+				int randomNum = this.random.nextInt(feasibleMoves.size());
 
-			for(Entry<Move,MyPair<MoveStats,Double>> entry : movesInfo.entrySet()){
-				if(randomNum == 0){
-					selectedMove = entry.getKey();
-					break;
+				for(Move m : feasibleMoves){
+					if(randomNum == 0){
+						selectedMove = m;
+					}
+					randomNum--;
 				}
-				randomNum--;
+			}else {
+				int randomNum = this.random.nextInt(movesInfo.size());
+
+				for(Entry<Move,MyPair<MoveStats,Double>> entry : movesInfo.entrySet()){
+					if(randomNum == 0){
+						selectedMove = entry.getKey();
+					}
+					randomNum--;
+				}
 			}
 		}else{
 			// If this evaluator is adding a bias to the combinations we execute the following code even when it's the 1st
@@ -256,19 +271,23 @@ public class UcbSelector extends TunerSelector{
 			int i = 0;
 			for(Entry<Move,MyPair<MoveStats,Double>> entry : movesInfo.entrySet()){
 
-				movesValues[i] = this.computeCombinationValue(entry.getValue().getFirst(), entry.getValue().getSecond().doubleValue(), numUpdates, minExtreme, maxExtreme);
-				moves[i] = entry.getKey();
+				if(feasibleMoves == null || feasibleMoves.contains(entry.getKey())) {
 
-				/*
-				if(combinationsValues[i] == Double.MAX_VALUE){
-					maxValue = combinationsValues[i];
-					selectedCombinationsIndices.add(new Integer(i));
-				}else*/
-				if(movesValues[i] > maxValue){
-					maxValue = movesValues[i];
+					movesValues[i] = this.computeCombinationValue(entry.getValue().getFirst(), entry.getValue().getSecond().doubleValue(), numUpdates, minExtreme, maxExtreme);
+					moves[i] = entry.getKey();
+
+					/*
+					if(combinationsValues[i] == Double.MAX_VALUE){
+						maxValue = combinationsValues[i];
+						selectedCombinationsIndices.add(new Integer(i));
+					}else*/
+					if(movesValues[i] > maxValue){
+						maxValue = movesValues[i];
+					}
+
+					i++;
 				}
 
-				i++;
 			}
 
 			/*

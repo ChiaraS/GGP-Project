@@ -188,6 +188,7 @@ public class UcbEvolutionManager extends StandardEvolutionManager {
 		CompleteMoveStats[] population = roleProblem.getPopulation();
 
 		// Candidate individuals for the next population with their UCB value
+		Add the population single individual as well
 		List<MyPair<CombinatorialCompactMove, Double>> candidatesWithUcb = new ArrayList<MyPair<CombinatorialCompactMove, Double>>();
 
 		CombinatorialCompactMove newCandidate;
@@ -243,15 +244,15 @@ public class UcbEvolutionManager extends StandardEvolutionManager {
 		double ucbSum = 0;
 		int numAveragedValues = 0;
 
-		Map<NTuple,IncrementalMab> landscapeModel = roleProblem.getLandscapeModel();
+		Map<NTuple,IncrementalMab> landscapeModelForUCBComputation = roleProblem.getLandscapeModelForUCBComputation();
 
 		CombinatorialCompactMove nTupleValues;
 
 		MyPair<MoveStats,Double> stats;
 
-		for(Entry<NTuple,IncrementalMab> nTupleLookupTable : landscapeModel.entrySet()) {
+		for(Entry<NTuple,IncrementalMab> nTupleLookupTable : landscapeModelForUCBComputation.entrySet()) {
 
-			nTupleValues = this.getNTupleValues(newCandidate, nTupleLookupTable.getKey());
+			nTupleValues = roleProblem.getNTupleValues(newCandidate, nTupleLookupTable.getKey());
 
 			stats = nTupleLookupTable.getValue().getMovesInfo().get(nTupleValues);
 
@@ -265,27 +266,17 @@ public class UcbEvolutionManager extends StandardEvolutionManager {
 
 		}
 
-		return ucbSum/((double)numAveragedValues);
-
-	}
-
-	/**
-	 * Given a parameter combination, this method extracts from it only (the indices of) the values
-	 * of the parameters considered by the given n-tuple.
-	 *
-	 * @param parameterCombination combination of (indices of) parameter values.
-	 * @param nTuple the n-tuple characterized by the indices of the parameters being considered by
-	 * the n-tuple.
-	 * @return
-	 */
-	private CombinatorialCompactMove getNTupleValues(CombinatorialCompactMove parameterCombination, NTuple nTuple) {
-		int[] paramValuesIndices = new int[nTuple.getParamIndices().length];
-
-		for(int i = 0; i < nTuple.getParamIndices().length; i++) {
-			paramValuesIndices[i] = parameterCombination.getIndices()[nTuple.getParamIndices()[i]];
+		// If we have no stats for any of the n-tuples involving the parameter values in the newCandidate
+		// and this.fpu is set to a negative value, then numAveragedValues=0 and we cannot compute the
+		// average UCB value.
+		// When this happens we return 0 as the UCB value of the newCandidate.
+		// TODO: add this as a parameter that can be specified in the settings?
+		if(numAveragedValues == 0) {
+			return 0;
 		}
 
-		return new CombinatorialCompactMove(paramValuesIndices);
+		return ucbSum/((double)numAveragedValues);
+
 	}
 
 	// This method expects moveVisits and parentVisits to be greater than 0

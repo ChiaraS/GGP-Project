@@ -4,6 +4,7 @@ import java.lang.reflect.InvocationTargetException;
 import java.util.List;
 import java.util.Map;
 import java.util.Random;
+import java.util.Set;
 
 import org.ggp.base.player.gamer.statemachine.GamerSettings;
 import org.ggp.base.player.gamer.statemachine.MCS.manager.MoveStats;
@@ -118,11 +119,11 @@ public class EpsilonGreedySelector extends TunerSelector{
 	}
 
 	@Override
-	public Move selectMove(Map<Move,MyPair<MoveStats,Double>> movesInfo, int numUpdates) {
+	public Move selectMove(Map<Move,MyPair<MoveStats,Double>> movesInfo, Set<Move> feasibleMoves, int numUpdates) {
 		if(this.random.nextDouble() < this.epsilon){
-			return this.tunerSelector1.selectMove(movesInfo, numUpdates);
+			return this.tunerSelector1.selectMove(movesInfo, feasibleMoves, numUpdates);
 		}else{
-			return this.tunerSelector2.selectMove(movesInfo, numUpdates);
+			return this.tunerSelector2.selectMove(movesInfo, feasibleMoves, numUpdates);
 		}
 	}
 
