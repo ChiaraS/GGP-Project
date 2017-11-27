@@ -107,6 +107,7 @@ public class UcbEvolutionManager extends StandardEvolutionManager {
 				for(int individualIndex = 0; individualIndex < population.length; individualIndex++){
 					population[individualIndex].resetStats(candidateIndividuals.get(individualIndex).getFirst());
 				}
+				FIX: What if there are multiple candidates with the same value but some of them must be excluded?
 			}else{
 				// Otherwise we use the best eliteSize individuals in the population to generate the individuals
 				// for the next population and then substitute all the non-elite individuals in the old population
@@ -188,7 +189,7 @@ public class UcbEvolutionManager extends StandardEvolutionManager {
 		CompleteMoveStats[] population = roleProblem.getPopulation();
 
 		// Candidate individuals for the next population with their UCB value
-		Add the population single individual as well
+		Add the population single individual as well?
 		List<MyPair<CombinatorialCompactMove, Double>> candidatesWithUcb = new ArrayList<MyPair<CombinatorialCompactMove, Double>>();
 
 		CombinatorialCompactMove newCandidate;
