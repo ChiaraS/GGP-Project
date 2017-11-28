@@ -27,7 +27,7 @@ public class NTuple {
 		if (this == o) {
 			return true;
 		}
-        if ((o != null) && (o instanceof CombinatorialCompactMove)) {
+        if ((o != null) && (o instanceof NTuple)) {
         	NTuple ntuple = (NTuple) o;
             return Arrays.equals(this.paramIndices, ntuple.getParamIndices());
         }

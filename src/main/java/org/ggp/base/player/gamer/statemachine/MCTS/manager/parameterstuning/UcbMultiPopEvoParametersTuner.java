@@ -205,8 +205,8 @@ public class UcbMultiPopEvoParametersTuner extends MultiPopEvoParametersTuner {
 			// NOTE that if we are not using a certain length, the corresponding string will stay
 			// empty and not be logged.
 			String[] toLog = new String[this.parametersManager.getNumTunableParameters()];
-			for(String nTupleLog : toLog) {
-				nTupleLog += "";
+			for(int i = 0; i < toLog.length; i++) {
+				toLog[i] = "";
 			}
 
 			if(this.tuneAllRoles){
@@ -232,11 +232,11 @@ public class UcbMultiPopEvoParametersTuner extends MultiPopEvoParametersTuner {
 			for(int i = 0; i < toLog.length; i++) {
 				if(!toLog[i].equals("")) {
 					if(i == 0) {
-						GamerLogger.log(GamerLogger.FORMAT.CSV_FORMAT, "LocalParamTunerStats", "\n" + toLog);
+						GamerLogger.log(GamerLogger.FORMAT.CSV_FORMAT, "LocalParamTunerStats", "\n" + toLog[i]);
 					}else if(i == this.parametersManager.getNumTunableParameters()-1) {
-						GamerLogger.log(GamerLogger.FORMAT.CSV_FORMAT, "GlobalParamTunerStats", "\n" + toLog);
+						GamerLogger.log(GamerLogger.FORMAT.CSV_FORMAT, "GlobalParamTunerStats", "\n" + toLog[i]);
 					}else {
-						GamerLogger.log(GamerLogger.FORMAT.CSV_FORMAT, "" + (i+1) + "TupleParamTunerStats", "\n" + toLog);
+						GamerLogger.log(GamerLogger.FORMAT.CSV_FORMAT, "" + (i+1) + "TupleParamTunerStats", "\n" + toLog[i]);
 					}
 				}
 			}
