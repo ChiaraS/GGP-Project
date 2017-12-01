@@ -274,6 +274,20 @@ public class UcbMultiPopEvoParametersTuner extends MultiPopEvoParametersTuner {
 
 		String params = indentation + "USE_GLOBAL_BEST = " + this.useGlobalBest;
 
+		if(this.nTuplesForUCBLengths != null){
+			String nTuplesForUCBLengthsString = "[ ";
+
+			for(Integer i : this.nTuplesForUCBLengths){
+				nTuplesForUCBLengthsString += i.intValue() + " ";
+			}
+
+			nTuplesForUCBLengthsString += "]";
+
+			params += indentation + "N_TUPLES_FOR_UCB_LENGTHS = " + nTuplesForUCBLengthsString;
+		}else{
+			params += indentation + "N_TUPLES_FOR_UCB_LENGTHS = null (i.e. using all lengths)";
+		}
+
 		if(superParams != null){
 			return superParams + params;
 		}else{
