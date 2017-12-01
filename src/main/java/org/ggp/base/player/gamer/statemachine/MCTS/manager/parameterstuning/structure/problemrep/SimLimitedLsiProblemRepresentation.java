@@ -37,6 +37,15 @@ public class SimLimitedLsiProblemRepresentation /*extends LsiProblemRepresentati
     	GENERATION, EVALUATION, BEST, STOP
     }
 
+    /***************** Parameters used for logging *************/
+
+    private int actualNumGenSamples;
+
+    private int actualNumEvalSamples;
+
+    /***********************************************************/
+
+
     /**
      * Phase of this LSI problem.
      */
@@ -106,6 +115,12 @@ public class SimLimitedLsiProblemRepresentation /*extends LsiProblemRepresentati
 
 	public SimLimitedLsiProblemRepresentation(ParametersManager parametersManager, Random random, ProblemRepParameters problemRepParameters) {
 
+		this.actualNumGenSamples = 0;
+
+		this.actualNumEvalSamples = 0;
+
+		this.currentIndex = 0;
+
 		this.parametersManager = parametersManager;
 
 		this.random = random;
@@ -121,7 +136,7 @@ public class SimLimitedLsiProblemRepresentation /*extends LsiProblemRepresentati
 			}
 		}
 
-		if(this.problemRepParameters.getNumGenSamples() < this.parametersManager.getTotalNumPossibleValues()) {
+		if(this.problemRepParameters.getDynamicNumGenSamples() < this.parametersManager.getTotalNumPossibleValues()) {
 
 			// If no samples can be used for the generation phase, we generate numCandidatesToGenerate
 			// random candidates that will be used to perform sequential halving
@@ -140,7 +155,7 @@ public class SimLimitedLsiProblemRepresentation /*extends LsiProblemRepresentati
 			this.numCandidatesOfCurrentIteration = this.generatedCandidatesStats.size();
 			// Number of iterations in sequential halving (i.e. number of times the candidates will be all evaluated and halved)
 			int seqHalvingIterations = ((int) Math.ceil(Math.log(this.numCandidatesOfCurrentIteration)/Math.log(2.0)));
-			this.maxSamplesPerIteration = Math.floorDiv(this.problemRepParameters.getNumEvalSamples(), seqHalvingIterations);
+			this.maxSamplesPerIteration = Math.floorDiv(this.problemRepParameters.getDynamicNumEvalSamples(), seqHalvingIterations);
 
 			if(this.maxSamplesPerIteration >= this.numCandidatesOfCurrentIteration) {
 				this.currentIndex = 0;
@@ -291,7 +306,10 @@ public class SimLimitedLsiProblemRepresentation /*extends LsiProblemRepresentati
 
 			// If we don't have enough generation samples left to test each value of each parameter once more,
 			// we start the evaluation phase.
-			if(this.currentIndex + this.parametersManager.getTotalNumPossibleValues() > this.problemRepParameters.getNumGenSamples()){
+			if(this.currentIndex + this.parametersManager.getTotalNumPossibleValues() > this.problemRepParameters.getDynamicNumGenSamples()){
+
+				this.actualNumGenSamples = this.currentIndex;
+
 				this.phase = Phase.EVALUATION;
 				this.generateCandidates();
 
@@ -303,7 +321,7 @@ public class SimLimitedLsiProblemRepresentation /*extends LsiProblemRepresentati
 				this.numCandidatesOfCurrentIteration = this.generatedCandidatesStats.size();
 				// Number of iterations in sequential halving (i.e. number of times the candidates will be all evaluated and halved)
 				int seqHalvingIterations = ((int) Math.ceil(Math.log(this.numCandidatesOfCurrentIteration)/Math.log(2.0)));
-				this.maxSamplesPerIteration = Math.floorDiv(this.problemRepParameters.getNumEvalSamples(), seqHalvingIterations);
+				this.maxSamplesPerIteration = Math.floorDiv(this.problemRepParameters.getDynamicNumEvalSamples(), seqHalvingIterations);
 
 				if(this.maxSamplesPerIteration >= this.numCandidatesOfCurrentIteration) {
 					this.currentIndex = 0;
@@ -328,6 +346,8 @@ public class SimLimitedLsiProblemRepresentation /*extends LsiProblemRepresentati
 			this.generatedCandidatesStats.get(this.evalOrder.get(this.currentIndex)).incrementVisits();
 
 			this.currentIndex++;
+
+			this.actualNumEvalSamples += this.currentIndex;
 
 			if(this.currentIndex == this.evalOrder.size()){ // All candidates have been tested for the given amount of times
 				// We must half the candidates and recompute the order.
@@ -569,12 +589,16 @@ public class SimLimitedLsiProblemRepresentation /*extends LsiProblemRepresentati
 		return this.phase;
 	}
 
-
-
-
-
 	public List<CompleteMoveStats> getGeneratedCandidatesStats(){
 		return this.generatedCandidatesStats;
+	}
+
+	public int getActualNumGenSamples() {
+		return this.actualNumGenSamples;
+	}
+
+	public int getActualNumEvalSamples() {
+		return this.actualNumEvalSamples;
 	}
 
 }

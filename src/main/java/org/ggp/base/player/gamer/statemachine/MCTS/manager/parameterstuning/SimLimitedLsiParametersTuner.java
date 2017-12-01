@@ -25,9 +25,16 @@ import org.ggp.base.util.reflection.ProjectSearcher;
 public class SimLimitedLsiParametersTuner extends ParametersTuner {
 
 	/**
-	 * Parameters that are shared by all role problems.
+	 * Number of samples to be used during the generation phase that is specified in the settings.
+	 * If not specified in the setting this parameter is null.
 	 */
-	private ProblemRepParameters problemRepParameters;
+	private int numGenSamples;
+
+	/**
+	 * Number of samples to be used during the evaluation phase that is specified in the settings.
+	 * If not specified in the setting this parameter is null.
+	 */
+	private int numEvalSamples;
 
 	/**
 	 * Percentage (i.e. in [0, 1])
@@ -38,6 +45,11 @@ public class SimLimitedLsiParametersTuner extends ParametersTuner {
 	 * Given the statistics collected so far for each combination, selects the best one among them.
 	 */
 	private TunerSelector bestCombinationSoFarSelector;
+
+	/**
+	 * Parameters that are shared by all role problems.
+	 */
+	private ProblemRepParameters problemRepParameters;
 
 	/**
 	 * Lsi problem representations for each of the roles for which the parameters are being tuned.
@@ -66,25 +78,32 @@ public class SimLimitedLsiParametersTuner extends ParametersTuner {
 			SharedReferencesCollector sharedReferencesCollector) {
 		super(gameDependentParameters, random, gamerSettings, sharedReferencesCollector);
 
-		int numGenSamples;
-		int numEvalSamples;
 		// If the settings specify both a fixed number of generation samples and a fixed number
-		// of evaluation samples use those values,...
+		// of evaluation samples read those values,...
 		if(gamerSettings.specifiesProperty("ParametersTuner.numGenSamples") && gamerSettings.specifiesProperty("ParametersTuner.numEvalSamples")) {
-			numGenSamples = gamerSettings.getIntPropertyValue("ParametersTuner.numGenSamples");
-			numEvalSamples = gamerSettings.getIntPropertyValue("ParametersTuner.numEvalSamples");
+			this.numGenSamples = gamerSettings.getIntPropertyValue("ParametersTuner.numGenSamples");
+			this.numEvalSamples = gamerSettings.getIntPropertyValue("ParametersTuner.numEvalSamples");
+			this.genSamplesPercentage = -1;
 		}else {
-			// ...otherwise set both values to the max possible value and compute an estimate of the total
-			// number of samples that we will be able to take during the game and divide them according to
-			// the percentage that MUST be specified in the settings.
-			numGenSamples = Integer.MAX_VALUE;
-			numEvalSamples = Integer.MAX_VALUE;
+			// ...otherwise read the percentage of samples that must be used for the generation phase.
+			this.numGenSamples = -1;
+			this.numEvalSamples = -1;
+			this.genSamplesPercentage = gamerSettings.getDoublePropertyValue("ParametersTuner.genSamplesPercentage");
+			// NOTE: for now the version of LSI that sets the samples for the two phases dynamically at runtime cannot handle
+			// the case when we have 0 available samples for the generation phase, because the first samples used for the generation
+			// phase are also used to compute the expected total number of samples.
+			// TODO: extend this class to deal with the fact that we might set genSamplesPercentage=0 because we want to skip the
+			// generation phase and perform only sequential halving on randomly generated combinations.
+			if(this.genSamplesPercentage <= 0 || this.genSamplesPercentage > 1) {
+				GamerLogger.logError("SearchManagerCreation", "Error when creating SimLimitedLsiParametersTuner. The value of genSamplesPercentage must be in (0,1].");
+				throw new RuntimeException("SearchManagerCreation - Error when creating SimLimitedLsiParametersTuner. The value of genSamplesPercentage must be in (0,1].");
+			}
+
 		}
 
 		this.problemRepParameters = new ProblemRepParameters(new RandomSelector(gameDependentParameters, random, gamerSettings, sharedReferencesCollector, ""),
 				gamerSettings.getIntPropertyValue("ParametersTuner.numCandidatesToGenerate"),
-				numGenSamples, numEvalSamples, gamerSettings.getBooleanPropertyValue("ParametersTuner.updateAll"));
-
+				gamerSettings.getBooleanPropertyValue("ParametersTuner.updateAll"));
 
 		// TODO: specify only the percentage of the total budget that must be used for generation. As total budget use
 		// the BeforeSimulationStrategy.simBudget, if any, otherwise throw exception because the SimLimitedLsiTuner can
@@ -140,6 +159,18 @@ public class SimLimitedLsiParametersTuner extends ParametersTuner {
 		}
 
 		if(!this.reuseBestCombos || this.bestCombinations == null || this.bestCombinations.length != numRolesToTune){
+
+			if(this.genSamplesPercentage == -1) {
+				this.problemRepParameters.setDynamicNumGenSamples(this.numGenSamples);
+				this.problemRepParameters.setDynamicNumEvalSamples(this.numEvalSamples);
+			}else{
+				this.problemRepParameters.setDynamicNumGenSamples(Integer.MAX_VALUE);
+				if(this.genSamplesPercentage == 1) {
+					this.problemRepParameters.setDynamicNumEvalSamples(0);
+				}else {
+					this.problemRepParameters.setDynamicNumEvalSamples(Integer.MAX_VALUE);
+				}
+			}
 
 			this.roleProblems = new SimLimitedLsiProblemRepresentation[numRolesToTune];
 
@@ -529,11 +560,14 @@ public class SimLimitedLsiParametersTuner extends ParametersTuner {
 
 		String superParams = super.getComponentParameters(indentation);
 
-		String params = indentation + "RANDOM_SELECTOR = " + this.problemRepParameters.getRandomSelector().printComponent(indentation + "  ") +
+		String params = indentation + "NUM_GEN_SAMPLES = " + this.numGenSamples +
+				indentation + "NUM_EVAL_SAMPLES = " + this.numEvalSamples +
+				indentation + "GEN_SAMPLES_PERCENTAGE = " + this.genSamplesPercentage +
 				indentation + "BEST_COMBINATION_SO_FAR_SELECTOR = " + this.bestCombinationSoFarSelector.printComponent(indentation + "  ") +
-				indentation + "NUM_GEN_SAMPLES = " + this.problemRepParameters.getNumGenSamples() +
+				indentation + "RANDOM_SELECTOR = " + this.problemRepParameters.getRandomSelector().printComponent(indentation + "  ") +
+				indentation + "DYNAMIC_NUM_GEN_SAMPLES = " + this.problemRepParameters.getDynamicNumGenSamples() +
 				indentation + "UPDATE_ALL = " + this.problemRepParameters.getUpdateAll() +
-				indentation + "NUM_EVAL_SAMPLES = " + this.problemRepParameters.getNumEvalSamples() +
+				indentation + "DYNAMIC_NUM_EVAL_SAMPLES = " + this.problemRepParameters.getDynamicNumEvalSamples() +
 				indentation + "NUM_CANDIDATES_TO_GENERATE = " + this.problemRepParameters.getNumCandidatesToGenerate() +
 				indentation + "num_roles_problems = " + (this.roleProblems != null ? this.roleProblems.length : 0);
 

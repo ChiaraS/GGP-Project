@@ -20,13 +20,15 @@ public class ProblemRepParameters {
 
 	/**
 	 * Maximum number of samples to be used for the generation phase.
+	 * Can be re-set dynamically if we are computing it at runtime trying to estimate the total number of available samples.
 	 */
-	private int numGenSamples;
+	private int dynamicNumGenSamples;
 
 	/**
-	 * Maximum number of samples to be used for the evaluation pahse.
+	 * Maximum number of samples to be used for the evaluation phase.
+	 * Can be re-set dynamically if we are computing it at runtime trying to estimate the total number of available samples.
 	 */
-	private int numEvalSamples;
+	private int dynamicNumEvalSamples;
 
 	/**
 	 * True if when receiving the reward for a certain combinatorial action we want to use it to update the stats
@@ -35,29 +37,28 @@ public class ProblemRepParameters {
 	 */
 	private boolean updateAll;
 
-	public ProblemRepParameters(RandomSelector randomSelector, int numCandidatesToGenerate,
-			int numGenSamples, int numEvalSamples, boolean updateAll) {
+	public ProblemRepParameters(RandomSelector randomSelector, int numCandidatesToGenerate, boolean updateAll) {
 		this.randomSelector = randomSelector;
 		this.numCandidatesToGenerate = numCandidatesToGenerate;
-		this.numGenSamples = numGenSamples;
-		this.numEvalSamples = numEvalSamples;
+		this.dynamicNumGenSamples = -1;
+		this.dynamicNumEvalSamples = -1;
 		this.updateAll = updateAll;
 	}
 
-	public int getNumGenSamples() {
-		return numGenSamples;
+	public int getDynamicNumGenSamples() {
+		return dynamicNumGenSamples;
 	}
 
-	public void setNumGenSamples(int numGenSamples) {
-		this.numGenSamples = numGenSamples;
+	public void setDynamicNumGenSamples(int dynamicNumGenSamples) {
+		this.dynamicNumGenSamples = dynamicNumGenSamples;
 	}
 
-	public int getNumEvalSamples() {
-		return this.numEvalSamples;
+	public int getDynamicNumEvalSamples() {
+		return this.dynamicNumEvalSamples;
 	}
 
-	public void setNumEvalSamples(int numEvalSamples) {
-		this.numEvalSamples = numEvalSamples;
+	public void setDynamicNumEvalSamples(int dynamicNumEvalSamples) {
+		this.dynamicNumEvalSamples = dynamicNumEvalSamples;
 	}
 
 	public RandomSelector getRandomSelector() {
