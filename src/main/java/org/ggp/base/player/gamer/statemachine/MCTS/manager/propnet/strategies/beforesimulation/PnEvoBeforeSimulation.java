@@ -19,7 +19,7 @@ public class PnEvoBeforeSimulation implements PnBeforeSimulationStrategy {
 
 		this.myRoleIndex = myRoleIndex;
 
-		//this.betaComputer.setK(this.evolutionManager.selectNextK());
+		//this.betaComputer.setK(this.saesManager.selectNextK());
 
 	}
 

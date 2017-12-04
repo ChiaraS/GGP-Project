@@ -58,7 +58,7 @@ public abstract class EvolutionManager extends SearchManagerComponent {
 	 * of the evolved population must remain the same (i.e. for each individual removed
 	 * one must be added).
 	 *
-	 * @param population
+	 * @param roleProblem
 	 */
 	public abstract void evolvePopulation(EvoProblemRepresentation roleProblem);
 

@@ -121,6 +121,10 @@ public class DiscreteTunableParameter extends TunableParameter {
 		return values;
 	}
 
+	public double[] getPossibleValuesDouble() {
+	    return this.possibleValues;
+    }
+
 	/**
 	 * Returns the value at the given index as a double.
 	 * @param valueIndex

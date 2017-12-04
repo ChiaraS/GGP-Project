@@ -244,13 +244,13 @@ public abstract class MultiPopEvoParametersTuner extends ParametersTuner {
 				/*
 				this.roleProblems = new EvoProblemRepresentation[numRolesToTune];
 				for(int roleProblemIndex = 0; roleProblemIndex < this.roleProblems.length; roleProblemIndex++){
-					roleProblems[roleProblemIndex] = new EvoProblemRepresentation(this.evolutionManager.getInitialPopulation());
+					roleProblems[roleProblemIndex] = new EvoProblemRepresentation(this.saesManager.getInitialPopulation());
 				}*/
 
 				/*
 				this.populations = new CompleteMoveStats[numRolesToTune][];
 				for(int populationIndex = 0; populationIndex < this.populations.length; populationIndex++){
-					populations[populationIndex] = this.evolutionManager.getInitialPopulation();
+					populations[populationIndex] = this.saesManager.getInitialPopulation();
 				}*/
 
 				if(this.logPopulations){
@@ -311,7 +311,7 @@ public abstract class MultiPopEvoParametersTuner extends ParametersTuner {
 
 				 /*
 				 for(int populationIndex = 0; populationIndex < this.populations.length; populationIndex++){
-					 this.evolutionManager.evolvePopulation(this.populations[populationIndex]);
+					 this.saesManager.evolvePopulation(this.populations[populationIndex]);
 				 }*/
 
 				 if(this.logPopulations){

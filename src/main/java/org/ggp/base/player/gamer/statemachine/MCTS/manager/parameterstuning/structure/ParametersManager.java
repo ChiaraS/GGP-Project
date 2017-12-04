@@ -9,6 +9,7 @@ import org.ggp.base.player.gamer.statemachine.GamerSettings;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.GameDependentParameters;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.SearchManagerComponent;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.SharedReferencesCollector;
+import org.ggp.base.player.gamer.statemachine.MCTS.manager.parameterstuning.structure.parameters.ContinuousTunableParameter;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.parameterstuning.structure.parameters.DiscreteTunableParameter;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.parameterstuning.structure.parameters.TunableParameter;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.parameterstuning.structure.parametersorders.ParametersOrder;
@@ -22,6 +23,7 @@ public class ParametersManager extends SearchManagerComponent {
 	 * They also specify their name, possible values, (optional) penalty, etc...
 	 */
 	private List<DiscreteTunableParameter> tunableParameters;
+	private List<ContinuousTunableParameter> continuousTunableParameter;
 
 	/********************************** ATTENTION! **********************************
 	 * The use of JavaScript to evaluate ANY possible boolean expression that models
@@ -101,6 +103,7 @@ public class ParametersManager extends SearchManagerComponent {
 		super(gameDependentParameters, random, gamerSettings, sharedReferencesCollector);
 
 		this.tunableParameters = null;
+		this.continuousTunableParameter = null;
 
 		/* JSEval
 		if(gamerSettings.specifiesProperty("ParametersManager.valuesConstraints")){
@@ -133,6 +136,7 @@ public class ParametersManager extends SearchManagerComponent {
 
 	@Override
 	public void setReferences(SharedReferencesCollector sharedReferencesCollector) {
+	    // discrete params
 		this.tunableParameters = sharedReferencesCollector.getTheDiscreteParametersToTune();
 
 		if(this.tunableParameters == null || this.tunableParameters.size() == 0){
@@ -140,17 +144,36 @@ public class ParametersManager extends SearchManagerComponent {
 			throw new RuntimeException("ParametersManager - Initialization with null or empty list of tunable parameters!");
 		}
 
-		this.initialParametersOrder.imposeOrder(this.tunableParameters);
+        this.initialParametersOrder.imposeOrder(this.tunableParameters);
 
-		int i = 0;
-		for(TunableParameter t : this.tunableParameters){
-			if(t.getName().equals("K")){
-				this.indexOfK = i;
-			}else if(t.getName().equals("Ref")){
-				this.indexOfRef = i;
-			}
-			i++;
-		}
+        int i = 0;
+        for(TunableParameter t : this.tunableParameters){
+            if(t.getName().equals("K")){
+                this.indexOfK = i;
+            }else if(t.getName().equals("Ref")){
+                this.indexOfRef = i;
+            }
+            i++;
+        }
+
+		// continuous params
+        this.continuousTunableParameter = sharedReferencesCollector.getTheContinuousParametersToTune();
+
+        if(this.continuousTunableParameter == null || this.continuousTunableParameter.size() == 0){
+            GamerLogger.log("SearchManagerCreation", "ParametersManager - Initialization with null or empty list of continuous tunable parameters!");
+        }
+
+        this.initialParametersOrder.imposeOrder(this.continuousTunableParameter);
+
+        i = 0;
+        for(TunableParameter t : this.continuousTunableParameter){
+            if(t.getName().equals("K")){
+                this.indexOfK = i;
+            }else if(t.getName().equals("Ref")){
+                this.indexOfRef = i;
+            }
+            i++;
+        }
 	}
 
 	@Override
@@ -329,6 +352,19 @@ public class ParametersManager extends SearchManagerComponent {
 	public String[] getPossibleValues(int paramIndex){
 		return this.tunableParameters.get(paramIndex).getPossibleValues();
 	}
+
+    /**
+     * Returns the possible values of the parameter at position paramIndex in the list of
+     * tunableParameters. Note that the return type is a string because we only need the
+     * values for logging purposes and otherwise we would need to know if such values
+     * are of type int or double.
+     *
+     * @param paramIndex
+     * @return
+     */
+    public double[] getPossibleValuesDouble(int paramIndex){
+        return this.tunableParameters.get(paramIndex).getPossibleValuesDouble();
+    }
 
 	/**
 	 *  Get for each parameter the number of possible values. This in needed to create
