@@ -12,6 +12,17 @@ public class GameDependentParameters {
 
 	private int myRoleIndex;
 
+	/**
+	 * Time available for each game step to perform the search (in milliseconds).
+	 * This time is not equal to the playClock given by the server, but is equal to
+	 * (playClock - searchSafetyMargin), so it corresponds to the actual time available for the search.
+	 */
+	private long actualPlayClock;
+
+	/**
+	 * This parameter is true if we are performing the metagame, false otherwise;
+	 */
+	private boolean metagame;
 
 	// Parameters that change for every game step:
 
@@ -46,9 +57,18 @@ public class GameDependentParameters {
 
 	/**
 	 * Exact time spent on search for the current game step.
+	 * NOTE that this value is consistent only at the end of the search.
+	 * This value is updated at the end of the search for the current step
 	 */
 	private long stepSearchDuration;
 
+	/**
+	 * Sum of the length of the game in each iteration of the search for the current time step.
+	 * NOTE: when using multiple playouts in the same iteration, the gameLengthSum will be increased
+	 * with the length of the game for each playout (i.e. x playouts => x complete game lengths added
+	 * to this sum).
+	 */
+	private int stepGameLengthSum;
 
 	// Parameters that change for every iteration:
 
@@ -63,12 +83,16 @@ public class GameDependentParameters {
 		this.theMachine = null;
 		this.numRoles = -1;
 		this.myRoleIndex = -1;
+		this.actualPlayClock = -1;
+
+		this.metagame = false;
 
 		this.gameStep = 0;
 		this.stepScoreSumForRole = null;
 		this.stepIterations = 0;
 		this.stepVisitedNodes = 0;
 		this.stepSearchDuration = 0L;
+		this.stepGameLengthSum = 0;
 
 		this.currentIterationVisitedNodes = 0;
 	}
@@ -83,6 +107,18 @@ public class GameDependentParameters {
 
 	public int getMyRoleIndex(){
 		return this.myRoleIndex;
+	}
+
+	public long getActualPlayClock(){
+		return this.actualPlayClock;
+	}
+
+	public void setMetagame(boolean metagame){
+		this.metagame = metagame;
+	}
+
+	public boolean isMetagame(){
+		return this.metagame;
 	}
 
 	public void setGameStep(int newGameStep){
@@ -142,6 +178,14 @@ public class GameDependentParameters {
 		return this.stepSearchDuration;
 	}
 
+	public void increaseStepGameLengthSum(int gameLength){
+		this.stepGameLengthSum += gameLength;
+	}
+
+	public int getStepGameLengthSum(){
+		return this.stepGameLengthSum;
+	}
+
 	public void increaseCurrentIterationVisitedNodes(int increase){
 		this.currentIterationVisitedNodes += increase;
 	}
@@ -162,26 +206,34 @@ public class GameDependentParameters {
 		this.theMachine = null;
 		this.numRoles = -1;
 		this.myRoleIndex = -1;
+		this.actualPlayClock = -1;
+
+		this.metagame = false;
 
 		this.gameStep = 0;
 		this.stepScoreSumForRole = null;
 		this.stepIterations = 0;
 		this.stepVisitedNodes = 0;
 		this.stepSearchDuration = 0L;
+		this.stepGameLengthSum = 0;
 
 		this.currentIterationVisitedNodes = 0;
 	}
 
-	public void resetGameDependentParameters(AbstractStateMachine theMachine, int numRoles, int myRoleIndex){
+	public void resetGameDependentParameters(AbstractStateMachine theMachine, int numRoles, int myRoleIndex, long actualPlayClock){
 		this.theMachine = theMachine;
 		this.numRoles = numRoles;
 		this.myRoleIndex = myRoleIndex;
+		this.actualPlayClock = actualPlayClock;
+
+		this.metagame = false;
 
 		this.gameStep = 0;
 		this.stepScoreSumForRole = new double[this.numRoles]; // Initialized to all 0s by default
 		this.stepIterations = 0;
 		this.stepVisitedNodes = 0;
 		this.stepSearchDuration = 0L;
+		this.stepGameLengthSum = 0;
 
 		this.currentIterationVisitedNodes = 0;
 	}
@@ -191,6 +243,7 @@ public class GameDependentParameters {
 		this.stepIterations = 0;
 		this.stepVisitedNodes = 0;
 		this.stepSearchDuration = 0L;
+		this.stepGameLengthSum = 0;
 
 		this.currentIterationVisitedNodes = 0;
 	}

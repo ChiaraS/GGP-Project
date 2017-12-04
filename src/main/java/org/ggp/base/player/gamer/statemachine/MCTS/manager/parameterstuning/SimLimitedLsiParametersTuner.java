@@ -28,13 +28,27 @@ public class SimLimitedLsiParametersTuner extends ParametersTuner {
 	 * Number of samples to be used during the generation phase that is specified in the settings.
 	 * If not specified in the setting this parameter is null.
 	 */
-	private int numGenSamples;
+	//private int numGenSamples;
 
 	/**
 	 * Number of samples to be used during the evaluation phase that is specified in the settings.
 	 * If not specified in the setting this parameter is null.
 	 */
-	private int numEvalSamples;
+	//private int numEvalSamples;
+
+	/**
+	 * True if we want to compute the total number of samples for LSI dynamically (i.e. try to estimate it).
+	 * False if we want to use the default value.
+	 */
+	private boolean dynamicSamples;
+
+	/**
+	 * Default value for the total number of samples to be used by LSI.
+	 * This default value is used when we don't want to estimate the value dynamically or
+	 * when we want to estimate the value dynamically but something goes wrong and we cannot
+	 * compute the estimate.
+	 */
+	private int defaultNumTotalSamples;
 
 	/**
 	 * Percentage (i.e. in [0, 1])
@@ -78,6 +92,24 @@ public class SimLimitedLsiParametersTuner extends ParametersTuner {
 			SharedReferencesCollector sharedReferencesCollector) {
 		super(gameDependentParameters, random, gamerSettings, sharedReferencesCollector);
 
+		this.dynamicSamples = gamerSettings.getBooleanPropertyValue("ParametersTuner.dynamicSamples");
+
+		this.defaultNumTotalSamples = gamerSettings.getIntPropertyValue("ParametersTuner.defaultNumTotalSamples");
+
+		this.genSamplesPercentage = gamerSettings.getDoublePropertyValue("ParametersTuner.genSamplesPercentage");
+		// NOTE: for now the version of LSI that sets the samples for the two phases dynamically at runtime cannot handle
+		// the case when we have 0 available samples for the generation phase, because the first samples used for the generation
+		// phase are also used to compute the expected total number of samples.
+		// TODO: extend this class to deal with the fact that we might set genSamplesPercentage=0 because we want to skip the
+		// generation phase and perform only sequential halving on randomly generated combinations.
+		// NOTE that when we are not using a dynamic computation of the expected total number of samples (i.e. dynamicSamples==false)
+		// this version of LSI can already deal with this.genSamplesPercentage==0
+		if(this.genSamplesPercentage <= 0 || this.genSamplesPercentage > 1) {
+			GamerLogger.logError("SearchManagerCreation", "Error when creating SimLimitedLsiParametersTuner. The value of genSamplesPercentage must be in (0,1].");
+			throw new RuntimeException("SearchManagerCreation - Error when creating SimLimitedLsiParametersTuner. The value of genSamplesPercentage must be in (0,1].");
+		}
+
+		/**
 		// If the settings specify both a fixed number of generation samples and a fixed number
 		// of evaluation samples read those values,...
 		if(gamerSettings.specifiesProperty("ParametersTuner.numGenSamples") && gamerSettings.specifiesProperty("ParametersTuner.numEvalSamples")) {
@@ -99,7 +131,7 @@ public class SimLimitedLsiParametersTuner extends ParametersTuner {
 				throw new RuntimeException("SearchManagerCreation - Error when creating SimLimitedLsiParametersTuner. The value of genSamplesPercentage must be in (0,1].");
 			}
 
-		}
+		}*/
 
 		this.problemRepParameters = new ProblemRepParameters(new RandomSelector(gameDependentParameters, random, gamerSettings, sharedReferencesCollector, ""),
 				gamerSettings.getIntPropertyValue("ParametersTuner.numCandidatesToGenerate"),
@@ -160,16 +192,17 @@ public class SimLimitedLsiParametersTuner extends ParametersTuner {
 
 		if(!this.reuseBestCombos || this.bestCombinations == null || this.bestCombinations.length != numRolesToTune){
 
-			if(this.genSamplesPercentage == -1) {
-				this.problemRepParameters.setDynamicNumGenSamples(this.numGenSamples);
-				this.problemRepParameters.setDynamicNumEvalSamples(this.numEvalSamples);
-			}else{
+			if(this.dynamicSamples) {
 				this.problemRepParameters.setDynamicNumGenSamples(Integer.MAX_VALUE);
 				if(this.genSamplesPercentage == 1) {
 					this.problemRepParameters.setDynamicNumEvalSamples(0);
 				}else {
 					this.problemRepParameters.setDynamicNumEvalSamples(Integer.MAX_VALUE);
 				}
+			}else{
+				int numGenSamples = (int) Math.round(this.defaultNumTotalSamples * this.genSamplesPercentage);
+				this.problemRepParameters.setDynamicNumGenSamples(numGenSamples);
+				this.problemRepParameters.setDynamicNumEvalSamples(this.defaultNumTotalSamples - numGenSamples);
 			}
 
 			this.roleProblems = new SimLimitedLsiProblemRepresentation[numRolesToTune];
@@ -560,8 +593,8 @@ public class SimLimitedLsiParametersTuner extends ParametersTuner {
 
 		String superParams = super.getComponentParameters(indentation);
 
-		String params = indentation + "NUM_GEN_SAMPLES = " + this.numGenSamples +
-				indentation + "NUM_EVAL_SAMPLES = " + this.numEvalSamples +
+		String params = indentation + "DYNAMIC_SAMPLES = " + this.dynamicSamples +
+				indentation + "DEFAULT_NUM_TOTAL_SAMPLES = " + this.defaultNumTotalSamples +
 				indentation + "GEN_SAMPLES_PERCENTAGE = " + this.genSamplesPercentage +
 				indentation + "BEST_COMBINATION_SO_FAR_SELECTOR = " + this.bestCombinationSoFarSelector.printComponent(indentation + "  ") +
 				indentation + "RANDOM_SELECTOR = " + this.problemRepParameters.getRandomSelector().printComponent(indentation + "  ") +
@@ -634,6 +667,15 @@ public class SimLimitedLsiParametersTuner extends ParametersTuner {
 		}else{
 			return params;
 		}
+
+	}
+
+	public void estimateTotalNumberOfSamples() {
+
+		if(this.dynamicSamples) {
+
+		}
+
 
 	}
 
