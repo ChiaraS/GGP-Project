@@ -1,6 +1,11 @@
 package org.ggp.base.player.gamer.statemachine.MCTS.manager.parameterstuning.structure;
 
+import java.util.Random;
+
+import org.ggp.base.player.gamer.statemachine.GamerSettings;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.GameDependentParameters;
+import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.SearchManagerComponent;
+import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.SharedReferencesCollector;
 import org.ggp.base.util.logging.GamerLogger;
 
 /**
@@ -20,9 +25,7 @@ import org.ggp.base.util.logging.GamerLogger;
  * @author c.sironi
  *
  */
-public class DynamicTuningDurationEstimator {
-
-	private GameDependentParameters gameDependentParameters;
+public class DynamicComboSamplesEstimator extends SearchManagerComponent {
 
 	/**
 	 * When the estimate of the combinations per second that can be visited is computed
@@ -33,33 +36,43 @@ public class DynamicTuningDurationEstimator {
 	 */
 	private double speedIncreaseFactor;
 
-	/**
-	 * Number of combinations evaluated so far.
-	 */
-	private int sampledCombos;
-
 	// Parameters that are computed when estimating the total samples //
 	//        Some of them are memorized just for log purposes        //
 	private double estimatedGameLength;
 	private double sampledCombosPerSecond;
 	private int estimatedTotalSamples;
 
-	public DynamicTuningDurationEstimator(GameDependentParameters gameDependentParameters, double speedIncreaseFactor) {
-		this.gameDependentParameters = gameDependentParameters;
-		this.speedIncreaseFactor = speedIncreaseFactor;
+	public DynamicComboSamplesEstimator(GameDependentParameters gameDependentParameters, Random random,
+			GamerSettings gamerSettings, SharedReferencesCollector sharedReferencesCollector) {
+		super(gameDependentParameters, random, gamerSettings, sharedReferencesCollector);
 
-		this.sampledCombos = 0;
+		this.speedIncreaseFactor = gamerSettings.getDoublePropertyValue("DynamicComboSamplesEstimator.speedIncreaseFactor");
 
 		this.estimatedGameLength = -1;
 		this.sampledCombosPerSecond = -1;
 		this.estimatedTotalSamples = -1;
 	}
 
-	public void increaseSampledCombos() {
-		this.sampledCombos++;
+	@Override
+	public void setReferences(SharedReferencesCollector sharedReferencesCollector) {
+		// Do nothing
 	}
 
-	public void estimateTotalSamples() {
+	@Override
+	public void clearComponent() {
+		this.estimatedGameLength = -1;
+		this.sampledCombosPerSecond = -1;
+		this.estimatedTotalSamples = -1;
+	}
+
+	@Override
+	public void setUpComponent() {
+		this.estimatedGameLength = -1;
+		this.sampledCombosPerSecond = -1;
+		this.estimatedTotalSamples = -1;
+	}
+
+	public void estimateTotalSamples(int sampledCombos) {
 
 		// First check if the estimate has already been computed.
 		// If not, check if the estimate can be computed, otherwise log error and set -1
@@ -87,15 +100,37 @@ public class DynamicTuningDurationEstimator {
 			this.estimatedTotalSamples = 0;
 		}else {
 			this.estimatedGameLength = ((double) this.gameDependentParameters.getStepGameLengthSum())/((double)this.gameDependentParameters.getStepIterations());
-			this.sampledCombosPerSecond = (((double)this.sampledCombos)/(((double)this.gameDependentParameters.getStepSearchDuration())/1000.0));
+			this.sampledCombosPerSecond = (((double)sampledCombos)/(((double)this.gameDependentParameters.getStepSearchDuration())/1000.0));
 			// Round the estimate to the nearest integer
 			this.estimatedTotalSamples = (int) Math.round(this.sampledCombosPerSecond * ((double)this.gameDependentParameters.getActualPlayClock()/1000.0) * this.speedIncreaseFactor * this.estimatedGameLength);
 		}
 
 	}
 
+	public double getSpeedIncreaseFactor() {
+		return this.speedIncreaseFactor;
+	}
+
+	public double getEstimatedGameLength() {
+		return this.estimatedGameLength;
+	}
+
+	public double getSampledCombosPerSecond() {
+		return this.sampledCombosPerSecond;
+	}
+
 	public int getEstimatedTotalSamples() {
 		return this.estimatedTotalSamples;
 	}
+
+	@Override
+	public String getComponentParameters(String indentation) {
+		return indentation + "SPEED_INCREASE_FACTOR = " + this.speedIncreaseFactor +
+				indentation + "estimated_game_length = " + this.estimatedGameLength +
+				indentation + "sampled_combos_per_second = " + this.sampledCombosPerSecond +
+				indentation + "estimated_total_samples = " + this.estimatedTotalSamples;
+	}
+
+
 
 }

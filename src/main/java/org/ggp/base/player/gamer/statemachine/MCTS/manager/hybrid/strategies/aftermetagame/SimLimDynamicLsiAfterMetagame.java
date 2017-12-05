@@ -5,42 +5,40 @@ import java.util.Random;
 import org.ggp.base.player.gamer.statemachine.GamerSettings;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.GameDependentParameters;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.SharedReferencesCollector;
+import org.ggp.base.player.gamer.statemachine.MCTS.manager.parameterstuning.SimLimitedLsiParametersTuner;
 
 public class SimLimDynamicLsiAfterMetagame extends AfterMetagameStrategy {
+
+	private SimLimitedLsiParametersTuner simLimitedLsiParametersTuner;
 
 	public SimLimDynamicLsiAfterMetagame(GameDependentParameters gameDependentParameters, Random random,
 			GamerSettings gamerSettings, SharedReferencesCollector sharedReferencesCollector) {
 		super(gameDependentParameters, random, gamerSettings, sharedReferencesCollector);
-		// TODO Auto-generated constructor stub
-	}
-
-	@Override
-	public void afterMetagameActions() {
-		// TODO Auto-generated method stub
-
+		// Do nothing
 	}
 
 	@Override
 	public void setReferences(SharedReferencesCollector sharedReferencesCollector) {
-		// TODO Auto-generated method stub
-
+		this.simLimitedLsiParametersTuner = sharedReferencesCollector.getSimLimitedLsiParametersTuner();
 	}
 
 	@Override
 	public void clearComponent() {
-		// TODO Auto-generated method stub
-
+		// Do nothing
 	}
 
 	@Override
 	public void setUpComponent() {
-		// TODO Auto-generated method stub
+		// Do nothing
+	}
 
+	@Override
+	public void afterMetagameActions() {
+		this.simLimitedLsiParametersTuner.estimateTotalNumberOfSamples();
 	}
 
 	@Override
 	public String getComponentParameters(String indentation) {
-		// TODO Auto-generated method stub
 		return null;
 	}
 

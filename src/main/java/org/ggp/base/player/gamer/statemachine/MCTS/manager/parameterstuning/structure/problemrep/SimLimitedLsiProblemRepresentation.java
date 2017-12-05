@@ -155,6 +155,15 @@ public class SimLimitedLsiProblemRepresentation /*extends LsiProblemRepresentati
 			this.numCandidatesOfCurrentIteration = this.generatedCandidatesStats.size();
 			// Number of iterations in sequential halving (i.e. number of times the candidates will be all evaluated and halved)
 			int seqHalvingIterations = ((int) Math.ceil(Math.log(this.numCandidatesOfCurrentIteration)/Math.log(2.0)));
+
+			// Extra check to make sure that everything is right. This should never happen because whenever the number of
+			// eval samples is not set (i.e. =-1) the number of generation samples is set to Integer.MAX_VALUE, so the
+			// evaluation phase should never start.
+			if(this.problemRepParameters.getDynamicNumEvalSamples() == -1) {
+				GamerLogger.logError("ParametersTuner", "LsiParametersTuner - Something is wrong with the code, trying to start evaluation phase before having estimated the number of available evaluation samples.");
+				throw new RuntimeException("SimLimitedLsiProblemRepresentation - Something is wrong with the code, trying to start evaluation phase before having estimated the number of available evaluation samples.");
+			}
+
 			this.maxSamplesPerIteration = Math.floorDiv(this.problemRepParameters.getDynamicNumEvalSamples(), seqHalvingIterations);
 
 			if(this.maxSamplesPerIteration >= this.numCandidatesOfCurrentIteration) {
@@ -261,12 +270,6 @@ public class SimLimitedLsiProblemRepresentation /*extends LsiProblemRepresentati
 
 		switch(this.phase){
 		case GENERATION:
-			// If we tested all combinations available, generate the next batch of combinations
-			// (one for each value of each parameter), and add them to the combinations to test.
-			// NOTE: we keep all tested combinations so we can log them all.
-			if(this.currentIndex >= this.combinationsToTest.size()) {
-				this.combinationsToTest.addAll(this.createCombinationsToTest());
-			}
 			return this.combinationsToTest.get(this.currentIndex).getFirst().getIndices();
 		case EVALUATION:
 			return ((CombinatorialCompactMove) this.generatedCandidatesStats.get(this.evalOrder.get(this.currentIndex)).getTheMove()).getIndices();
@@ -304,39 +307,56 @@ public class SimLimitedLsiProblemRepresentation /*extends LsiProblemRepresentati
 
 			this.currentIndex++;
 
-			// If we don't have enough generation samples left to test each value of each parameter once more,
-			// we start the evaluation phase.
-			if(this.currentIndex + this.parametersManager.getTotalNumPossibleValues() > this.problemRepParameters.getDynamicNumGenSamples()){
+			// If we tested all combinations available, generate the next batch of combinations
+			// (one for each value of each parameter), and add them to the combinations to test.
+			// NOTE: we keep all tested combinations so we can log them all.
+			if(this.currentIndex >= this.combinationsToTest.size()) {
 
-				this.actualNumGenSamples = this.currentIndex;
+				// If we don't have enough generation samples left to test each value of each parameter once more,
+				// we start the evaluation phase.
+				if(this.currentIndex + this.parametersManager.getTotalNumPossibleValues() > this.problemRepParameters.getDynamicNumGenSamples()){
 
-				this.phase = Phase.EVALUATION;
-				this.generateCandidates();
+					this.actualNumGenSamples = this.currentIndex;
 
-				if(this.generatedCandidatesStats.isEmpty()){ // No candidates
-						throw new RuntimeException("SimLimitedLsiProblemRepresentation generated 0 candidates for the evaluation phase!");
-				}
+					this.phase = Phase.EVALUATION;
+					this.generateCandidates();
 
-				// Set the parameters needed for the evaluation phase and check if we have enough samples
-				this.numCandidatesOfCurrentIteration = this.generatedCandidatesStats.size();
-				// Number of iterations in sequential halving (i.e. number of times the candidates will be all evaluated and halved)
-				int seqHalvingIterations = ((int) Math.ceil(Math.log(this.numCandidatesOfCurrentIteration)/Math.log(2.0)));
-				this.maxSamplesPerIteration = Math.floorDiv(this.problemRepParameters.getDynamicNumEvalSamples(), seqHalvingIterations);
-
-				if(this.maxSamplesPerIteration >= this.numCandidatesOfCurrentIteration) {
-					this.currentIndex = 0;
-					if(this.numCandidatesOfCurrentIteration > 1){
-						this.computeEvalOrder();
-					}else if(this.numCandidatesOfCurrentIteration == 1){ // Otherwise we only have one candidate, that is automatically the best
-						this.evalOrder = null;
-						this.phase = Phase.STOP;
+					if(this.generatedCandidatesStats.isEmpty()){ // No candidates
+							throw new RuntimeException("SimLimitedLsiProblemRepresentation generated 0 candidates for the evaluation phase!");
 					}
-				}else {
-					// We don't have enough samples to evaluate all candidates at least once, a random one
-					// among the generated ones will be picked and set as best.
-					Collections.shuffle(this.generatedCandidatesStats);
-					this.evalOrder = null;
-					this.phase = Phase.BEST;
+
+					// Set the parameters needed for the evaluation phase and check if we have enough samples
+					this.numCandidatesOfCurrentIteration = this.generatedCandidatesStats.size();
+					// Number of iterations in sequential halving (i.e. number of times the candidates will be all evaluated and halved)
+					int seqHalvingIterations = ((int) Math.ceil(Math.log(this.numCandidatesOfCurrentIteration)/Math.log(2.0)));
+
+					// Extra check to make sure that everything is right. This should never happen because whenever the number of
+					// eval samples is not set (i.e. =-1) the number of generation samples is set to Integer.MAX_VALUE, so the
+					// evaluation phase should never start.
+					if(this.problemRepParameters.getDynamicNumEvalSamples() == -1) {
+						GamerLogger.logError("ParametersTuner", "LsiParametersTuner - Something is wrong with the code, trying to start evaluation phase before having estimated the number of available evaluation samples.");
+						throw new RuntimeException("SimLimitedLsiProblemRepresentation - Something is wrong with the code, trying to start evaluation phase before having estimated the number of available evaluation samples.");
+					}
+
+					this.maxSamplesPerIteration = Math.floorDiv(this.problemRepParameters.getDynamicNumEvalSamples(), seqHalvingIterations);
+
+					if(this.maxSamplesPerIteration >= this.numCandidatesOfCurrentIteration) {
+						this.currentIndex = 0;
+						if(this.numCandidatesOfCurrentIteration > 1){
+							this.computeEvalOrder();
+						}else if(this.numCandidatesOfCurrentIteration == 1){ // Otherwise we only have one candidate, that is automatically the best
+							this.evalOrder = null;
+							this.phase = Phase.STOP;
+						}
+					}else {
+						// We don't have enough samples to evaluate all candidates at least once, a random one
+						// among the generated ones will be picked and set as best.
+						Collections.shuffle(this.generatedCandidatesStats);
+						this.evalOrder = null;
+						this.phase = Phase.BEST;
+					}
+				}else{
+					this.combinationsToTest.addAll(this.createCombinationsToTest());
 				}
 			}
 			break;
@@ -347,10 +367,13 @@ public class SimLimitedLsiProblemRepresentation /*extends LsiProblemRepresentati
 
 			this.currentIndex++;
 
-			this.actualNumEvalSamples += this.currentIndex;
-
 			if(this.currentIndex == this.evalOrder.size()){ // All candidates have been tested for the given amount of times
 				// We must half the candidates and recompute the order.
+
+				// First add the visited number of combinations for the last iteration of sequential halving to the total
+				// number of evaluation samples
+				this.actualNumEvalSamples += this.currentIndex;
+
 				Collections.sort(this.generatedCandidatesStats.subList(0,this.numCandidatesOfCurrentIteration),
 						new Comparator<CompleteMoveStats>(){
 

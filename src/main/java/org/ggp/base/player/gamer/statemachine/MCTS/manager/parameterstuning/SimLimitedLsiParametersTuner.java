@@ -16,31 +16,26 @@ import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.SharedReferenc
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.parameterstuning.selectors.RandomSelector;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.parameterstuning.selectors.TunerSelector;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.parameterstuning.structure.CombinatorialCompactMove;
+import org.ggp.base.player.gamer.statemachine.MCTS.manager.parameterstuning.structure.DynamicComboSamplesEstimator;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.parameterstuning.structure.problemrep.ProblemRepParameters;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.parameterstuning.structure.problemrep.SimLimitedLsiProblemRepresentation;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.parameterstuning.structure.problemrep.SimLimitedLsiProblemRepresentation.Phase;
 import org.ggp.base.util.logging.GamerLogger;
+import org.ggp.base.util.logging.GamerLogger.FORMAT;
 import org.ggp.base.util.reflection.ProjectSearcher;
 
 public class SimLimitedLsiParametersTuner extends ParametersTuner {
 
 	/**
-	 * Number of samples to be used during the generation phase that is specified in the settings.
-	 * If not specified in the setting this parameter is null.
+	 * Number of combinations evaluated so far.
 	 */
-	//private int numGenSamples;
+	private int sampledCombos;
 
 	/**
-	 * Number of samples to be used during the evaluation phase that is specified in the settings.
-	 * If not specified in the setting this parameter is null.
+	 * Estimator of the total number of combinations that LSI will be able to sample during the game.
+	 * If null we will use the default number of total samples.
 	 */
-	//private int numEvalSamples;
-
-	/**
-	 * True if we want to compute the total number of samples for LSI dynamically (i.e. try to estimate it).
-	 * False if we want to use the default value.
-	 */
-	private boolean dynamicSamples;
+	private DynamicComboSamplesEstimator estimator;
 
 	/**
 	 * Default value for the total number of samples to be used by LSI.
@@ -92,7 +87,11 @@ public class SimLimitedLsiParametersTuner extends ParametersTuner {
 			SharedReferencesCollector sharedReferencesCollector) {
 		super(gameDependentParameters, random, gamerSettings, sharedReferencesCollector);
 
-		this.dynamicSamples = gamerSettings.getBooleanPropertyValue("ParametersTuner.dynamicSamples");
+		this.sampledCombos = 0;
+
+		if(gamerSettings.getBooleanPropertyValue("ParametersTuner.dynamicSamples")) {
+			this.estimator = new DynamicComboSamplesEstimator(gameDependentParameters, random, gamerSettings, sharedReferencesCollector);
+		}
 
 		this.defaultNumTotalSamples = gamerSettings.getIntPropertyValue("ParametersTuner.defaultNumTotalSamples");
 
@@ -160,6 +159,8 @@ public class SimLimitedLsiParametersTuner extends ParametersTuner {
 
 		this.isIntermediate = null;
 
+		sharedReferencesCollector.setSimLimitedLsiParametersTuner(this);
+
 	}
 
 	@Override
@@ -167,9 +168,13 @@ public class SimLimitedLsiParametersTuner extends ParametersTuner {
 
 		super.setReferences(sharedReferencesCollector);
 
-		this.problemRepParameters.getRandomSelector().setReferences(sharedReferencesCollector);
+		if(this.estimator != null) {
+			this.estimator.setReferences(sharedReferencesCollector);
+		}
 
 		this.bestCombinationSoFarSelector.setReferences(sharedReferencesCollector);
+
+		this.problemRepParameters.getRandomSelector().setReferences(sharedReferencesCollector);
 
 	}
 
@@ -178,9 +183,15 @@ public class SimLimitedLsiParametersTuner extends ParametersTuner {
 
 		super.setUpComponent();
 
-		this.problemRepParameters.getRandomSelector().setUpComponent();
+		this.sampledCombos = 0;
+
+		if(this.estimator != null) {
+			this.estimator.setUpComponent();
+		}
 
 		this.bestCombinationSoFarSelector.setUpComponent();
+
+		this.problemRepParameters.getRandomSelector().setUpComponent();
 
 		int numRolesToTune;
 
@@ -192,13 +203,11 @@ public class SimLimitedLsiParametersTuner extends ParametersTuner {
 
 		if(!this.reuseBestCombos || this.bestCombinations == null || this.bestCombinations.length != numRolesToTune){
 
-			if(this.dynamicSamples) {
+			if(this.estimator != null) {
+				// Set the generation samples to infinity...
 				this.problemRepParameters.setDynamicNumGenSamples(Integer.MAX_VALUE);
-				if(this.genSamplesPercentage == 1) {
-					this.problemRepParameters.setDynamicNumEvalSamples(0);
-				}else {
-					this.problemRepParameters.setDynamicNumEvalSamples(Integer.MAX_VALUE);
-				}
+				// ...and the eval samples to -1 to indicate that they haven't been estimated yet
+				this.problemRepParameters.setDynamicNumEvalSamples(Integer.MAX_VALUE);
 			}else{
 				int numGenSamples = (int) Math.round(this.defaultNumTotalSamples * this.genSamplesPercentage);
 				this.problemRepParameters.setDynamicNumGenSamples(numGenSamples);
@@ -261,6 +270,12 @@ public class SimLimitedLsiParametersTuner extends ParametersTuner {
 
 		super.clearComponent();
 
+		this.sampledCombos = 0;
+
+		if(this.estimator != null) {
+			this.estimator.clearComponent();
+		}
+
 		this.problemRepParameters.getRandomSelector().clearComponent();
 
 		this.bestCombinationSoFarSelector.clearComponent();
@@ -273,6 +288,8 @@ public class SimLimitedLsiParametersTuner extends ParametersTuner {
 
 	@Override
 	public void setNextCombinations() {
+
+		this.sampledCombos++;
 
 		boolean foundAllBest = true;
 		for(int roleProblemIndex = 0; roleProblemIndex < this.roleProblems.length; roleProblemIndex++){
@@ -293,6 +310,18 @@ public class SimLimitedLsiParametersTuner extends ParametersTuner {
 			this.stopTuning();
 		}
 
+	}
+
+	/**
+	 * This method exists to be called by the TunerBeforeSimulation strategy when the tuning has already been stopped.
+	 * With this method we can continue counting all the samples that we actually had available during the game even
+	 * if the tuner has already been stopped due to underestimating (dynamically or by the predefined settings) the
+	 * total number of combinations that we would have been able to sample.
+	 * Note that this is a quick fix to ensure that we can count and log the actual number of samples that we should
+	 * have used for the game to exploit all available samples.
+	 */
+	public void increaseSampledCombos() {
+		this.sampledCombos++;
 	}
 
 	@Override
@@ -572,6 +601,66 @@ public class SimLimitedLsiParametersTuner extends ParametersTuner {
 
 	}
 
+	/**
+	 * Logs data about how many samples have been considered and how they have been
+	 * divided among the generation and evaluation phase.
+	 */
+	public void logSamplesDistribution() {
+
+
+
+		// TODO: fix! Check if all samples are counted properly if this method is called before LSI manages to terminate properly!!!!!
+
+
+
+
+
+		int estimatedTotalSamples;
+
+		if(this.estimator != null && this.estimator.getEstimatedTotalSamples() != -1) {
+			estimatedTotalSamples = this.estimator.getEstimatedTotalSamples();
+		}else{
+			estimatedTotalSamples = this.defaultNumTotalSamples;
+		}
+
+		String toLog = "Estimated game length;Actual game length;Combinations/second;Estimated available samples;Actual available samples;";
+
+		if(this.estimator != null) {
+			toLog += ("\n" + this.estimator.getEstimatedGameLength() + ";" + this.gameDependentParameters.getGameStep() + ";" +
+					this.estimator.getSampledCombosPerSecond() + ";" + estimatedTotalSamples + ";" +
+					this.sampledCombos + ";");
+		}else {
+			toLog += ("\n-1;" + this.gameDependentParameters.getGameStep() + ";-1;" + this.defaultNumTotalSamples + ";" + this.sampledCombos + ";");
+		}
+
+		GamerLogger.log(FORMAT.CSV_FORMAT, "SamplesEstimates.csv", toLog);
+
+		////////////////////////////////////////////////////
+
+		toLog = "Role;Estimated available samples;Used samples;Estimated generation samples;Used generation samples;Estimated evaluation samples;Used evaluation samples;Defined num candidates to generate;Actual num generated candidates;LSI terminated;";
+
+		if(this.tuneAllRoles){
+			for(int roleProblemIndex = 0; roleProblemIndex < this.gameDependentParameters.getNumRoles(); roleProblemIndex++){
+				toLog += ("\n" + this.gameDependentParameters.getTheMachine().convertToExplicitRole(this.gameDependentParameters.getTheMachine().getRoles().get(roleProblemIndex)) + ";" +
+						estimatedTotalSamples + ";" + (this.roleProblems[roleProblemIndex].getActualNumGenSamples() + this.roleProblems[roleProblemIndex].getActualNumEvalSamples()) + ";" +
+						this.problemRepParameters.getDynamicNumGenSamples() + ";" + this.roleProblems[roleProblemIndex].getActualNumGenSamples() + ";" +
+						this.problemRepParameters.getDynamicNumEvalSamples() + ";" + this.roleProblems[roleProblemIndex].getActualNumEvalSamples() + ";" +
+						this.problemRepParameters.getNumCandidatesToGenerate() + ";" +
+						(this.roleProblems[roleProblemIndex].getGeneratedCandidatesStats() != null ? this.roleProblems[roleProblemIndex].getGeneratedCandidatesStats().size() : "0") + ";" +
+						this.isIntermediate[roleProblemIndex] + ";");
+			}
+		}else{ // Tuning only my role
+			toLog += ("\n" + this.gameDependentParameters.getTheMachine().convertToExplicitRole(this.gameDependentParameters.getTheMachine().getRoles().get(this.gameDependentParameters.getMyRoleIndex())) +
+					estimatedTotalSamples + ";" + (this.roleProblems[0].getActualNumGenSamples() + this.roleProblems[0].getActualNumEvalSamples()) + ";" +
+					this.problemRepParameters.getDynamicNumGenSamples() + ";" + this.roleProblems[0].getActualNumGenSamples() + ";" +
+					this.problemRepParameters.getDynamicNumEvalSamples() + ";" + this.roleProblems[0].getActualNumEvalSamples() + ";" +
+					this.isIntermediate[0] + ";");
+		}
+
+		GamerLogger.log(FORMAT.CSV_FORMAT, "SamplesUsagePerRole.csv", toLog);
+
+	}
+
 	@Override
 	public void decreaseStatistics(double factor) {
 		// TODO Auto-generated method stub
@@ -593,7 +682,8 @@ public class SimLimitedLsiParametersTuner extends ParametersTuner {
 
 		String superParams = super.getComponentParameters(indentation);
 
-		String params = indentation + "DYNAMIC_SAMPLES = " + this.dynamicSamples +
+		String params =	indentation + "sampled_combos = " + this.sampledCombos +
+				indentation + "ESTIMATOR = " + (this.estimator != null ? this.estimator.printComponent(indentation + "  ") : "null") +
 				indentation + "DEFAULT_NUM_TOTAL_SAMPLES = " + this.defaultNumTotalSamples +
 				indentation + "GEN_SAMPLES_PERCENTAGE = " + this.genSamplesPercentage +
 				indentation + "BEST_COMBINATION_SO_FAR_SELECTOR = " + this.bestCombinationSoFarSelector.printComponent(indentation + "  ") +
@@ -671,12 +761,24 @@ public class SimLimitedLsiParametersTuner extends ParametersTuner {
 	}
 
 	public void estimateTotalNumberOfSamples() {
-
-		if(this.dynamicSamples) {
-
+		if(this.estimator != null) {
+			this.estimator.estimateTotalSamples(this.sampledCombos);
+			// Check if the estimated total number of samples has been computed correctly (!=-1)
+			if(this.estimator.getEstimatedTotalSamples() != -1) {
+				// NOTE that by computing the number of samples for generation and evaluation now, it might happen that
+				// the number of samples taken for the generation phase so far is already higher than the estimated total
+				// available number of generation samples. We can't do anything about this, after setting the new, just
+				// computed number of generation samples each role problem will figure out that it's time to stop the
+				// generation phase.
+				int numGenSamples = (int) Math.round(this.estimator.getEstimatedTotalSamples() * this.genSamplesPercentage);
+				this.problemRepParameters.setDynamicNumGenSamples(numGenSamples);
+				this.problemRepParameters.setDynamicNumEvalSamples(this.defaultNumTotalSamples - numGenSamples);
+			}else { // If not, split the default number of total samples among generation and evaluation phase
+				int numGenSamples = (int) Math.round(this.defaultNumTotalSamples * this.genSamplesPercentage);
+				this.problemRepParameters.setDynamicNumGenSamples(numGenSamples);
+				this.problemRepParameters.setDynamicNumEvalSamples(this.defaultNumTotalSamples - numGenSamples);
+			}
 		}
-
-
 	}
 
 	/*
