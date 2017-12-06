@@ -91,9 +91,9 @@ import com.google.common.collect.Multiset;
  */
 /**
  * This class creates the propnet and provides extra methods to polish it after creation.
- * This class is a refinement/modification of the DynamicPropNetFactory and creates
+ * This class is a refinement/modification of the OptimizingPropNetFactory and creates
  * a propnet with a faster structure. Some of the methods that it provides to polish the propnet
- * after creation are taken (and sometimes improved) from the DynamicPropNetFactory,
+ * after creation are taken (and sometimes improved) from the OptimizingPropNetFactory,
  * while some others have been implemented from scratch.
  *
  */
