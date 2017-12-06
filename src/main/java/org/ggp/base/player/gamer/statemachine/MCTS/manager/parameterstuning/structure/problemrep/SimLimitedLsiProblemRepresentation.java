@@ -136,10 +136,9 @@ public class SimLimitedLsiProblemRepresentation /*extends LsiProblemRepresentati
 			}
 		}
 
-		if(this.problemRepParameters.getDynamicNumGenSamples() < this.parametersManager.getTotalNumPossibleValues()) {
-
-			// If no samples can be used for the generation phase, we generate numCandidatesToGenerate
-			// random candidates that will be used to perform sequential halving
+		// If we intentionally don't want to run the generation phase and set the number of sample to 0,
+		// numCandidatesToGenerate random candidates will be generated and used to perform sequential halving
+		if(this.problemRepParameters.getDynamicNumGenSamples() == 0) {
 
 			this.combinationsToTest = null;
 
@@ -166,22 +165,25 @@ public class SimLimitedLsiProblemRepresentation /*extends LsiProblemRepresentati
 
 			this.maxSamplesPerIteration = Math.floorDiv(this.problemRepParameters.getDynamicNumEvalSamples(), seqHalvingIterations);
 
-			if(this.maxSamplesPerIteration >= this.numCandidatesOfCurrentIteration) {
-				this.currentIndex = 0;
-				if(this.numCandidatesOfCurrentIteration > 1){
-					this.computeEvalOrder();
-				}else if(this.numCandidatesOfCurrentIteration == 1){ // Otherwise we only have one candidate, that is automatically the best
-					this.evalOrder = null;
-					this.phase = Phase.STOP;
-				}
-			}else {
+			//if(this.maxSamplesPerIteration >= this.numCandidatesOfCurrentIteration) {
+			this.currentIndex = 0;
+			if(this.numCandidatesOfCurrentIteration > 1){
+				this.computeEvalOrder();
+			}else if(this.numCandidatesOfCurrentIteration == 1){ // Otherwise we only have one candidate, that is automatically the best
+				this.evalOrder = null;
+				this.phase = Phase.STOP;
+			}
+			/*}else {
 				// We don't have enough samples to evaluate all candidates at least once, a random one
 				// among the generated ones will be picked and set as best.
 				Collections.shuffle(this.generatedCandidatesStats);
 				this.evalOrder = null;
 				this.phase = Phase.BEST;
-			}
+			}*/
 		}else {
+
+			// If we want to perform the generation phase, we will sample each value of each parameter at least
+			// once even if we don't have enough samples available for the generation phase.
 
 			this.phase = Phase.GENERATION;
 
@@ -305,6 +307,8 @@ public class SimLimitedLsiProblemRepresentation /*extends LsiProblemRepresentati
 				this.paramsStats[paramIndex][theIndices[paramIndex]].incrementVisits();
 			}
 
+			this.actualNumGenSamples++;
+
 			this.currentIndex++;
 
 			// If we tested all combinations available, generate the next batch of combinations
@@ -315,8 +319,6 @@ public class SimLimitedLsiProblemRepresentation /*extends LsiProblemRepresentati
 				// If we don't have enough generation samples left to test each value of each parameter once more,
 				// we start the evaluation phase.
 				if(this.currentIndex + this.parametersManager.getTotalNumPossibleValues() > this.problemRepParameters.getDynamicNumGenSamples()){
-
-					this.actualNumGenSamples = this.currentIndex;
 
 					this.phase = Phase.EVALUATION;
 					this.generateCandidates();
@@ -340,21 +342,21 @@ public class SimLimitedLsiProblemRepresentation /*extends LsiProblemRepresentati
 
 					this.maxSamplesPerIteration = Math.floorDiv(this.problemRepParameters.getDynamicNumEvalSamples(), seqHalvingIterations);
 
-					if(this.maxSamplesPerIteration >= this.numCandidatesOfCurrentIteration) {
-						this.currentIndex = 0;
-						if(this.numCandidatesOfCurrentIteration > 1){
-							this.computeEvalOrder();
-						}else if(this.numCandidatesOfCurrentIteration == 1){ // Otherwise we only have one candidate, that is automatically the best
-							this.evalOrder = null;
-							this.phase = Phase.STOP;
-						}
-					}else {
+					//if(this.maxSamplesPerIteration >= this.numCandidatesOfCurrentIteration) {
+					this.currentIndex = 0;
+					if(this.numCandidatesOfCurrentIteration > 1){
+						this.computeEvalOrder();
+					}else if(this.numCandidatesOfCurrentIteration == 1){ // Otherwise we only have one candidate, that is automatically the best
+						this.evalOrder = null;
+						this.phase = Phase.STOP;
+					}
+					/*}else {
 						// We don't have enough samples to evaluate all candidates at least once, a random one
 						// among the generated ones will be picked and set as best.
 						Collections.shuffle(this.generatedCandidatesStats);
 						this.evalOrder = null;
 						this.phase = Phase.BEST;
-					}
+					}*/
 				}else{
 					this.combinationsToTest.addAll(this.createCombinationsToTest());
 				}
@@ -365,14 +367,12 @@ public class SimLimitedLsiProblemRepresentation /*extends LsiProblemRepresentati
 			this.generatedCandidatesStats.get(this.evalOrder.get(this.currentIndex)).incrementScoreSum(reward);
 			this.generatedCandidatesStats.get(this.evalOrder.get(this.currentIndex)).incrementVisits();
 
+			this.actualNumEvalSamples++;
+
 			this.currentIndex++;
 
 			if(this.currentIndex == this.evalOrder.size()){ // All candidates have been tested for the given amount of times
 				// We must half the candidates and recompute the order.
-
-				// First add the visited number of combinations for the last iteration of sequential halving to the total
-				// number of evaluation samples
-				this.actualNumEvalSamples += this.currentIndex;
 
 				Collections.sort(this.generatedCandidatesStats.subList(0,this.numCandidatesOfCurrentIteration),
 						new Comparator<CompleteMoveStats>(){
@@ -563,9 +563,9 @@ public class SimLimitedLsiProblemRepresentation /*extends LsiProblemRepresentati
 
 		int samplesPerCombo = Math.floorDiv(this.maxSamplesPerIteration, this.numCandidatesOfCurrentIteration);
 
-		if(samplesPerCombo < 1){ // NOTE that this should never happen because we make sure in advance that we have enough samples to test each combo at least once
-			//samplesPerCombo = 1; // Get at least one sample
-			throw new RuntimeException("SimLimitedLsiProblemRepresentation has not enough evaluations samples to evaluate each combo at least once!");
+		if(samplesPerCombo < 1){
+			samplesPerCombo = 1; // Get at least one sample
+			//throw new RuntimeException("SimLimitedLsiProblemRepresentation has not enough evaluations samples to evaluate each combo at least once!");
 		}
 
 		// Prepare random order of testing for the best elements

@@ -78,7 +78,7 @@ public class DynamicComboSamplesEstimator extends SearchManagerComponent {
 		// If not, check if the estimate can be computed, otherwise log error and set -1
 		if(this.estimatedTotalSamples != -1) {
 			GamerLogger.logError("ParametersTuner", "DynamicTuningDurationEstimator - Trying to estimate the total number of samples for the game multiple times. Ignoring request and leaving previously computed estimate.");
-		}else if(this.gameDependentParameters.isMetagame()) { // The estimate can be computed consistently only after the metagame.
+		}else if(!this.gameDependentParameters.isMetagame()) { // The estimate can be computed consistently only after the metagame.
 			GamerLogger.logError("ParametersTuner", "DynamicTuningDurationEstimator - Impossible to estimate the total number of samples for the game during step" +
 					this.gameDependentParameters.getGameStep() + " of the search. The estimate will be consistent only if computed after the metagame.");
 			this.estimatedGameLength = 0;

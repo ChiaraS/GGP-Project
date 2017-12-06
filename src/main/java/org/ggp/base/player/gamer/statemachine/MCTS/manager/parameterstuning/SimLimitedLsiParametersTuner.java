@@ -289,8 +289,6 @@ public class SimLimitedLsiParametersTuner extends ParametersTuner {
 	@Override
 	public void setNextCombinations() {
 
-		this.sampledCombos++;
-
 		boolean foundAllBest = true;
 		for(int roleProblemIndex = 0; roleProblemIndex < this.roleProblems.length; roleProblemIndex++){
 			if(this.roleProblems[roleProblemIndex].getPhase() != Phase.STOP){
@@ -491,12 +489,10 @@ public class SimLimitedLsiParametersTuner extends ParametersTuner {
 		}
 
 		for(int roleProblemIndex = 0; roleProblemIndex < this.roleProblems.length; roleProblemIndex++){
-
 			this.roleProblems[roleProblemIndex].updateStatsOfCombination(neededRewards[roleProblemIndex]);
-
-
-
 		}
+
+		this.sampledCombos++;
 	}
 
 	@Override
@@ -607,14 +603,6 @@ public class SimLimitedLsiParametersTuner extends ParametersTuner {
 	 */
 	public void logSamplesDistribution() {
 
-
-
-		// TODO: fix! Check if all samples are counted properly if this method is called before LSI manages to terminate properly!!!!!
-
-
-
-
-
 		int estimatedTotalSamples;
 
 		if(this.estimator != null && this.estimator.getEstimatedTotalSamples() != -1) {
@@ -623,17 +611,18 @@ public class SimLimitedLsiParametersTuner extends ParametersTuner {
 			estimatedTotalSamples = this.defaultNumTotalSamples;
 		}
 
-		String toLog = "Estimated game length;Actual game length;Combinations/second;Estimated available samples;Actual available samples;";
+		String toLog = "Estimated game length;Actual game length;Actual search time;Combinations/second;Estimated available samples;Actual available samples;";
 
 		if(this.estimator != null) {
 			toLog += ("\n" + this.estimator.getEstimatedGameLength() + ";" + this.gameDependentParameters.getGameStep() + ";" +
+					+ this.gameDependentParameters.getActualPlayClock() + ";" +
 					this.estimator.getSampledCombosPerSecond() + ";" + estimatedTotalSamples + ";" +
 					this.sampledCombos + ";");
 		}else {
-			toLog += ("\n-1;" + this.gameDependentParameters.getGameStep() + ";-1;" + this.defaultNumTotalSamples + ";" + this.sampledCombos + ";");
+			toLog += ("\n-1;" + this.gameDependentParameters.getGameStep() + ";" + this.gameDependentParameters.getActualPlayClock() + ";-1;" + this.defaultNumTotalSamples + ";" + this.sampledCombos + ";");
 		}
 
-		GamerLogger.log(FORMAT.CSV_FORMAT, "SamplesEstimates.csv", toLog);
+		GamerLogger.log(FORMAT.CSV_FORMAT, "SamplesEstimates", toLog);
 
 		////////////////////////////////////////////////////
 
@@ -647,17 +636,17 @@ public class SimLimitedLsiParametersTuner extends ParametersTuner {
 						this.problemRepParameters.getDynamicNumEvalSamples() + ";" + this.roleProblems[roleProblemIndex].getActualNumEvalSamples() + ";" +
 						this.problemRepParameters.getNumCandidatesToGenerate() + ";" +
 						(this.roleProblems[roleProblemIndex].getGeneratedCandidatesStats() != null ? this.roleProblems[roleProblemIndex].getGeneratedCandidatesStats().size() : "0") + ";" +
-						this.isIntermediate[roleProblemIndex] + ";");
+						!this.isIntermediate[roleProblemIndex] + ";");
 			}
 		}else{ // Tuning only my role
 			toLog += ("\n" + this.gameDependentParameters.getTheMachine().convertToExplicitRole(this.gameDependentParameters.getTheMachine().getRoles().get(this.gameDependentParameters.getMyRoleIndex())) +
 					estimatedTotalSamples + ";" + (this.roleProblems[0].getActualNumGenSamples() + this.roleProblems[0].getActualNumEvalSamples()) + ";" +
 					this.problemRepParameters.getDynamicNumGenSamples() + ";" + this.roleProblems[0].getActualNumGenSamples() + ";" +
 					this.problemRepParameters.getDynamicNumEvalSamples() + ";" + this.roleProblems[0].getActualNumEvalSamples() + ";" +
-					this.isIntermediate[0] + ";");
+					!this.isIntermediate[0] + ";");
 		}
 
-		GamerLogger.log(FORMAT.CSV_FORMAT, "SamplesUsagePerRole.csv", toLog);
+		GamerLogger.log(FORMAT.CSV_FORMAT, "SamplesUsagePerRole", toLog);
 
 	}
 
@@ -772,7 +761,7 @@ public class SimLimitedLsiParametersTuner extends ParametersTuner {
 				// generation phase.
 				int numGenSamples = (int) Math.round(this.estimator.getEstimatedTotalSamples() * this.genSamplesPercentage);
 				this.problemRepParameters.setDynamicNumGenSamples(numGenSamples);
-				this.problemRepParameters.setDynamicNumEvalSamples(this.defaultNumTotalSamples - numGenSamples);
+				this.problemRepParameters.setDynamicNumEvalSamples(this.estimator.getEstimatedTotalSamples() - numGenSamples);
 			}else { // If not, split the default number of total samples among generation and evaluation phase
 				int numGenSamples = (int) Math.round(this.defaultNumTotalSamples * this.genSamplesPercentage);
 				this.problemRepParameters.setDynamicNumGenSamples(numGenSamples);
