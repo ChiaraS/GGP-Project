@@ -448,6 +448,17 @@ public class StatsSummarizer {
 					+ avgWinPerc + ";" + winCi + ";" + (avgWinPerc - winCi) + ";" + (avgWinPerc + winCi) + ";");
 		}
 
+        // While iterating over the MatchInfos, build a map with the unique match ID as key
+        // and the corresponding MatchInfo as value.
+        Map<String,MatchInfo> acceptedMatches = new HashMap<String,MatchInfo>();
+		for(List<MatchInfo> infoList : matchInfo){
+			for(MatchInfo mi : infoList){
+				acceptedMatches.put(mi.getCorrespondingFile().getName().substring(0, mi.getCorrespondingFile().getName().length()-5), mi);
+			}
+		}
+
+
+
 		/****************** Compute speed statistics of the matches that were considered in the previous statistics *******************/
 
 		String speedLogsFolderPath;
@@ -458,223 +469,211 @@ public class StatsSummarizer {
 			speedLogsFolderPath = mainFolderPath + "/" + tourneyType + "." + gameKey + ".SpeedLogs";
 		}
 
-		//System.out.println("matchesLogsFolderPath= " + matchesLogsFolderPath);
+		//System.out.println("speedLogsFolderPath= " + speedLogsFolderPath);
 
 		File speedLogsFolder = new File(speedLogsFolderPath);
 
-		if(!speedLogsFolder.isDirectory()){
-			System.out.println("Impossible to find the speed logs directory to summarize: " + speedLogsFolder.getPath());
-			return;
-		}
-
-		// Create (or empty if it already exists) the folder where to move all the speed log files
-		// that have been rejected and haven't been considered when computing the statistics.
-		String rejectedSpeedFilesFolderPath;
-		if(simpleFolderFormat){
-			rejectedSpeedFilesFolderPath = mainFolderPath + "/RejectedSpeedFiles";
-		}else{
-			rejectedSpeedFilesFolderPath = mainFolderPath + "/" + tourneyType + "." + gameKey + ".RejectedSpeedFiles";
-		}
-
-		//System.out.println("rejectedFilesFolderPath= " + rejectedFilesFolderPath);
-
-
-		File rejectedSpeedFilesFolder = new File(rejectedSpeedFilesFolderPath);
-		if(rejectedSpeedFilesFolder.isDirectory()){
-			if(!emptyFolder(rejectedSpeedFilesFolder)){
-				System.out.println("Summarization interrupted. Cannot empty the RejectedSpeedFiles folder: " + rejectedSpeedFilesFolder.getPath());
-				return;
+		if(speedLogsFolder.isDirectory()){
+			// Create (or empty if it already exists) the folder where to move all the speed log files
+			// that have been rejected and haven't been considered when computing the statistics.
+			String rejectedSpeedFilesFolderPath;
+			if(simpleFolderFormat){
+				rejectedSpeedFilesFolderPath = mainFolderPath + "/RejectedSpeedFiles";
+			}else{
+				rejectedSpeedFilesFolderPath = mainFolderPath + "/" + tourneyType + "." + gameKey + ".RejectedSpeedFiles";
 			}
-		}else{
-			if(!rejectedSpeedFilesFolder.mkdir()){
-				System.out.println("Summarization interrupted. Cannot create the RejectedSpeedFiles folder: " + rejectedSpeedFilesFolder.getPath());
-				return;
+
+			//System.out.println("RejectedSpeedFilesFolderPath= " + rejectedSpeedFilesFolderPath);
+
+
+			File rejectedSpeedFilesFolder = new File(rejectedSpeedFilesFolderPath);
+			if(rejectedSpeedFilesFolder.isDirectory()){
+				if(!emptyFolder(rejectedSpeedFilesFolder)){
+					System.out.println("Summarization interrupted. Cannot empty the RejectedSpeedFiles folder: " + rejectedSpeedFilesFolder.getPath());
+					return;
+				}
+			}else{
+				if(!rejectedSpeedFilesFolder.mkdir()){
+					System.out.println("Summarization interrupted. Cannot create the RejectedSpeedFiles folder: " + rejectedSpeedFilesFolder.getPath());
+					return;
+				}
 			}
-		}
 
-		// Create (or empty if it already exists) the folder where to save all the speed statistics.
-		String speedStatsFolderPath;
-		if(simpleFolderFormat){
-			speedStatsFolderPath = mainFolderPath + "/SpeedStatistics";
-		}else{
-			speedStatsFolderPath = mainFolderPath + "/" + tourneyType + "." + gameKey + ".SpeedStatistics";
-		}
-		File speedStatsFolder = new File(speedStatsFolderPath);
-		if(speedStatsFolder.isDirectory()){
-			if(!emptyFolder(speedStatsFolder)){
-				System.out.println("Summarization interrupted. Cannot empty the SpeedStatistics folder: " + speedStatsFolder.getPath());
-				return;
+			// Create (or empty if it already exists) the folder where to save all the speed statistics.
+			String speedStatsFolderPath;
+			if(simpleFolderFormat){
+				speedStatsFolderPath = mainFolderPath + "/SpeedStatistics";
+			}else{
+				speedStatsFolderPath = mainFolderPath + "/" + tourneyType + "." + gameKey + ".SpeedStatistics";
 			}
-		}else{
-			if(!speedStatsFolder.mkdir()){
-				System.out.println("Summarization interrupted. Cannot create the SpeedStatistics folder: " + speedStatsFolder.getPath());
-				return;
+			File speedStatsFolder = new File(speedStatsFolderPath);
+			if(speedStatsFolder.isDirectory()){
+				if(!emptyFolder(speedStatsFolder)){
+					System.out.println("Summarization interrupted. Cannot empty the SpeedStatistics folder: " + speedStatsFolder.getPath());
+					return;
+				}
+			}else{
+				if(!speedStatsFolder.mkdir()){
+					System.out.println("Summarization interrupted. Cannot create the SpeedStatistics folder: " + speedStatsFolder.getPath());
+					return;
+				}
 			}
-		}
 
-		//List<String> acceptedMatches = new ArrayList<String>();
+			//List<String> acceptedMatches = new ArrayList<String>();
 
-        // While iterating over the MatchInfos, build a map with the unique match ID as key
-        // and the corresponding MatchInfo as value.
-        Map<String,MatchInfo> acceptedMatches = new HashMap<String,MatchInfo>();
-		for(List<MatchInfo> infoList : matchInfo){
-			for(MatchInfo mi : infoList){
-				acceptedMatches.put(mi.getCorrespondingFile().getName().substring(0, mi.getCorrespondingFile().getName().length()-5), mi);
-			}
-		}
+			int numRoles = matchInfo.get(0).get(0).getplayersGoals().length;
 
-		int numRoles = matchInfo.get(0).get(0).getplayersGoals().length;
+			int summarizedFiles = 0;
 
-		int summarizedFiles = 0;
+			File[] playerTypesDirs;
 
-		File[] playerTypesDirs;
+			File[] playerRolesDirs;
 
-		File[] playerRolesDirs;
+			String[] columnHeaders = new String[]{"Thinking time(ms)", "Search time(ms)", "Iterations/second", "Nodes/second"};
 
-		String[] columnHeaders = new String[]{"Thinking time(ms)", "Search time(ms)", "Iterations/second", "Nodes/second"};
+			ColumnType[] columnTypes = new ColumnType[]{ColumnType.LONG, ColumnType.LONG, ColumnType.DOUBLE, ColumnType.DOUBLE};
 
-		ColumnType[] columnTypes = new ColumnType[]{ColumnType.LONG, ColumnType.LONG, ColumnType.DOUBLE, ColumnType.DOUBLE};
+			int[] columnIndices = new int[]{1,2,5,6};
 
-		int[] columnIndices = new int[]{1,2,5,6};
+			String playerType;
 
-		String playerType;
+			String playerRole;
 
-		String playerRole;
+			File[] speedLogs;
 
-		File[] speedLogs;
-
-		StatsExtractor extractor;
+			StatsExtractor extractor;
 
 
-		// Prepare all the SingleValueStats that will compute the aggregated statistics for each player-role combination over all the matches
-		Map<String, Map<String, Map<String, SingleValueDoubleStats>>> aggregatedStatistics = new HashMap<String, Map<String, Map<String, SingleValueDoubleStats>>>();
+			// Prepare all the SingleValueStats that will compute the aggregated statistics for each player-role combination over all the matches
+			Map<String, Map<String, Map<String, SingleValueDoubleStats>>> aggregatedStatistics = new HashMap<String, Map<String, Map<String, SingleValueDoubleStats>>>();
 
-		// Statistics for which to compute the aggregated statistics
-		String[] statisticsNames = new String[]{"numSamples","minValue","maxValue","median","sd","sem","avg","ci"};
-		double[] statisticsValues = new double[8];
+			// Statistics for which to compute the aggregated statistics
+			String[] statisticsNames = new String[]{"numSamples","minValue","maxValue","median","sd","sem","avg","ci"};
+			double[] statisticsValues = new double[8];
 
-		// Iterate over the directories containing the matches logs for each player's type.
-		playerTypesDirs = speedLogsFolder.listFiles();
+			// Iterate over the directories containing the matches logs for each player's type.
+			playerTypesDirs = speedLogsFolder.listFiles();
 
-		// For the folder of each player type...
-		for(int i = 0; i < playerTypesDirs.length; i++){
+			// For the folder of each player type...
+			for(int i = 0; i < playerTypesDirs.length; i++){
 
-			if(playerTypesDirs[i].isDirectory()){
+				if(playerTypesDirs[i].isDirectory()){
 
-				playerType = playerTypesDirs[i].getName();
+					playerType = playerTypesDirs[i].getName();
 
-				playerRolesDirs = playerTypesDirs[i].listFiles();
+					playerRolesDirs = playerTypesDirs[i].listFiles();
 
-				// Iterate over all the folders corresponding to the different roles the player played
-				for(int j = 0; j < playerRolesDirs.length; j++){
+					// Iterate over all the folders corresponding to the different roles the player played
+					for(int j = 0; j < playerRolesDirs.length; j++){
 
-					playerRole = playerRolesDirs[j].getName();
+						playerRole = playerRolesDirs[j].getName();
 
-					// Create the cumulative speed stats files for the player
-					for(int k = 0; k < columnHeaders.length; k++){
+						// Create the cumulative speed stats files for the player
+						for(int k = 0; k < columnHeaders.length; k++){
 
-						//String acceptableHeader = columnHeaders[i].replaceAll(" ", "_");
+							//String acceptableHeader = columnHeaders[i].replaceAll(" ", "_");
 
-						String acceptableHeader = headerToFile.get(columnHeaders[k]);
+							String acceptableHeader = headerToFile.get(columnHeaders[k]);
 
-						if(acceptableHeader == null){
-							acceptableHeader = columnHeaders[k];
+							if(acceptableHeader == null){
+								acceptableHeader = columnHeaders[k];
+							}
+
+							writeToFile(speedStatsFolderPath + "/" + playerType + "/" + acceptableHeader + "-AllMatches-" + playerRole + ".csv", "MatchID;#Samples;Min;Max;Median;SD;SEM;Avg;CI");
+
 						}
 
-						writeToFile(speedStatsFolderPath + "/" + playerType + "/" + acceptableHeader + "-AllMatches-" + playerRole + ".csv", "MatchID;#Samples;Min;Max;Median;SD;SEM;Avg;CI");
+						speedLogs = playerRolesDirs[j].listFiles();
 
-					}
+						// For each stats file...
+						for(int k = 0; k < speedLogs.length; k++){
 
-					speedLogs = playerRolesDirs[j].listFiles();
+							String[] splittedName = speedLogs[k].getName().split("\\.");
 
-					// For each stats file...
-					for(int k = 0; k < speedLogs.length; k++){
-
-						String[] splittedName = speedLogs[k].getName().split("\\.");
-
-						// If it's a .csv file, compute and log the statistics
-						if(!(splittedName[splittedName.length-1].equalsIgnoreCase("csv"))){
-							System.out.println("Found file with no .csv extension when summarizing speed statistics.");
-							rejectFile(speedLogs[k], rejectedSpeedFilesFolderPath + "/" + playerType + "/" + playerRole);
-						}else{
-
-							// If the stats are referring to a match that was rejected, reject them too
-
-							if(!(acceptedMatches.containsKey(speedLogs[k].getName().substring(0, speedLogs[k].getName().length()-10)))){
-
-								System.out.println("Found Speed Statistics file for a match that was previously rejected from statistics.");
+							// If it's a .csv file, compute and log the statistics
+							if(!(splittedName[splittedName.length-1].equalsIgnoreCase("csv"))){
+								System.out.println("Found file with no .csv extension when summarizing speed statistics.");
 								rejectFile(speedLogs[k], rejectedSpeedFilesFolderPath + "/" + playerType + "/" + playerRole);
 							}else{
 
-								extractor = new StatsExtractor(speedLogs[k], columnHeaders, columnTypes, columnIndices);
+								// If the stats are referring to a match that was rejected, reject them too
 
-								Map<String, SingleValueStats> extractedStats = extractor.getExtractedStats();
+								if(!(acceptedMatches.containsKey(speedLogs[k].getName().substring(0, speedLogs[k].getName().length()-10)))){
 
-								if(extractedStats == null){
-
-									System.out.println("Error when computing speed statistics for the .csv file " + speedLogs[k].getName() + ".");
-									System.out.println("Excluding file from statistics. NOTE THAT THE SPEED STATISTICS WON'T REFER TO THE WHOLE TOURNAMENT ANYMORE!");
+									System.out.println("Found Speed Statistics file for a match that was previously rejected from statistics.");
 									rejectFile(speedLogs[k], rejectedSpeedFilesFolderPath + "/" + playerType + "/" + playerRole);
-
 								}else{
 
-									boolean reject = false;
+									extractor = new StatsExtractor(speedLogs[k], columnHeaders, columnTypes, columnIndices);
 
-									List<SingleValueStats> allTheStats = new ArrayList<SingleValueStats>();
+									Map<String, SingleValueStats> extractedStats = extractor.getExtractedStats();
 
-									// ...prepare an entry for each cumulative speed stats file
-									for(int l = 0; l < columnHeaders.length; l++){
+									if(extractedStats == null){
 
-										SingleValueStats statsToWrite = extractedStats.get(columnHeaders[l]);
-
-										if(statsToWrite == null){
-											System.out.println("Error when computing speed statistics for the value " + columnHeaders[l] + " for the .csv file " + speedLogs[k].getName() + ".");
-											reject = true;
-											break;
-										}else{
-
-											allTheStats.add(statsToWrite);
-
-										}
-									}
-
-									if(reject){
+										System.out.println("Error when computing speed statistics for the .csv file " + speedLogs[k].getName() + ".");
 										System.out.println("Excluding file from statistics. NOTE THAT THE SPEED STATISTICS WON'T REFER TO THE WHOLE TOURNAMENT ANYMORE!");
 										rejectFile(speedLogs[k], rejectedSpeedFilesFolderPath + "/" + playerType + "/" + playerRole);
+
 									}else{
 
-										summarizedFiles++;
+										boolean reject = false;
 
-										// ...write an entry in each cumulative speed stats file
+										List<SingleValueStats> allTheStats = new ArrayList<SingleValueStats>();
+
+										// ...prepare an entry for each cumulative speed stats file
 										for(int l = 0; l < columnHeaders.length; l++){
 
-											String acceptableHeader = headerToFile.get(columnHeaders[l]);
+											SingleValueStats statsToWrite = extractedStats.get(columnHeaders[l]);
 
-											if(acceptableHeader == null){
-												acceptableHeader = columnHeaders[l];
+											if(statsToWrite == null){
+												System.out.println("Error when computing speed statistics for the value " + columnHeaders[l] + " for the .csv file " + speedLogs[k].getName() + ".");
+												reject = true;
+												break;
+											}else{
+
+												allTheStats.add(statsToWrite);
+
 											}
+										}
 
-											SingleValueStats statsToWrite = allTheStats.get(l);
+										if(reject){
+											System.out.println("Excluding file from statistics. NOTE THAT THE SPEED STATISTICS WON'T REFER TO THE WHOLE TOURNAMENT ANYMORE!");
+											rejectFile(speedLogs[k], rejectedSpeedFilesFolderPath + "/" + playerType + "/" + playerRole);
+										}else{
 
-											statisticsValues[0] = statsToWrite.getNumSamples();
-											statisticsValues[1] = statsToWrite.getMinValue();
-											statisticsValues[2] = statsToWrite.getMaxValue();
-											statisticsValues[3] = statsToWrite.getMedian();
-											statisticsValues[4] = statsToWrite.getValuesStandardDeviation();
-											statisticsValues[5] = statsToWrite.getValuesSEM();
-											statisticsValues[6] = statsToWrite.getAvgValue();
-											statisticsValues[7] = statsToWrite.get95ConfidenceInterval();
+											summarizedFiles++;
 
-											writeToFile(speedStatsFolderPath + "/" + playerType + "/" + acceptableHeader + "-AllMatches-" + playerRole + ".csv",
-													speedLogs[k].getName().substring(0, speedLogs[k].getName().length()-10) + ";" + statisticsValues[0] +
-													";" + statisticsValues[1] + ";" + statisticsValues[2] + ";" + statisticsValues[3] + ";" + statisticsValues[4] +
-													";" + statisticsValues[5] +	";" + statisticsValues[6] + ";" + statisticsValues[7] + ";");
+											// ...write an entry in each cumulative speed stats file
+											for(int l = 0; l < columnHeaders.length; l++){
 
-											// Add all values to the correct cumulative SingleValueStats
-											addStatisticsValues(aggregatedStatistics, playerType + "-AllRoles", acceptableHeader, statisticsNames, statisticsValues);
+												String acceptableHeader = headerToFile.get(columnHeaders[l]);
 
-											addStatisticsValues(aggregatedStatistics, playerType + "-" + playerRole, acceptableHeader, statisticsNames, statisticsValues);
+												if(acceptableHeader == null){
+													acceptableHeader = columnHeaders[l];
+												}
 
+												SingleValueStats statsToWrite = allTheStats.get(l);
+
+												statisticsValues[0] = statsToWrite.getNumSamples();
+												statisticsValues[1] = statsToWrite.getMinValue();
+												statisticsValues[2] = statsToWrite.getMaxValue();
+												statisticsValues[3] = statsToWrite.getMedian();
+												statisticsValues[4] = statsToWrite.getValuesStandardDeviation();
+												statisticsValues[5] = statsToWrite.getValuesSEM();
+												statisticsValues[6] = statsToWrite.getAvgValue();
+												statisticsValues[7] = statsToWrite.get95ConfidenceInterval();
+
+												writeToFile(speedStatsFolderPath + "/" + playerType + "/" + acceptableHeader + "-AllMatches-" + playerRole + ".csv",
+														speedLogs[k].getName().substring(0, speedLogs[k].getName().length()-10) + ";" + statisticsValues[0] +
+														";" + statisticsValues[1] + ";" + statisticsValues[2] + ";" + statisticsValues[3] + ";" + statisticsValues[4] +
+														";" + statisticsValues[5] +	";" + statisticsValues[6] + ";" + statisticsValues[7] + ";");
+
+												// Add all values to the correct cumulative SingleValueStats
+												addStatisticsValues(aggregatedStatistics, playerType + "-AllRoles", acceptableHeader, statisticsNames, statisticsValues);
+
+												addStatisticsValues(aggregatedStatistics, playerType + "-" + playerRole, acceptableHeader, statisticsNames, statisticsValues);
+
+											}
 										}
 									}
 								}
@@ -683,59 +682,62 @@ public class StatsSummarizer {
 					}
 				}
 			}
-		}
 
-		// Log all the aggregated statistics
+			// Log all the aggregated statistics
 
-		SingleValueDoubleStats theStatsToLog = null;
+			SingleValueDoubleStats theStatsToLog = null;
 
-		for(Entry<String, Map<String, Map<String, SingleValueDoubleStats>>> playerRoleStats: aggregatedStatistics.entrySet()){
+			for(Entry<String, Map<String, Map<String, SingleValueDoubleStats>>> playerRoleStats: aggregatedStatistics.entrySet()){
 
-			for(Entry<String, Map<String, SingleValueDoubleStats>> statHeaderStats: playerRoleStats.getValue().entrySet()){
+				for(Entry<String, Map<String, SingleValueDoubleStats>> statHeaderStats: playerRoleStats.getValue().entrySet()){
 
-				writeToFile(speedStatsFolderPath + "/" + playerRoleStats.getKey() + "-" + statHeaderStats.getKey() + "-AggrStats.csv", "StatType;#Samples;Min;Max;Median;SD;SEM;Avg;CI");
+					writeToFile(speedStatsFolderPath + "/" + playerRoleStats.getKey() + "-" + statHeaderStats.getKey() + "-AggrStats.csv", "StatType;#Samples;Min;Max;Median;SD;SEM;Avg;CI");
 
-				for(int j = 0; j< statisticsNames.length; j++){
-					theStatsToLog = statHeaderStats.getValue().get(statisticsNames[j]);
+					for(int j = 0; j< statisticsNames.length; j++){
+						theStatsToLog = statHeaderStats.getValue().get(statisticsNames[j]);
 
-					if(theStatsToLog != null){
-						writeToFile(speedStatsFolderPath + "/" + playerRoleStats.getKey() + "-" + statHeaderStats.getKey() + "-AggrStats.csv", statisticsNames[j] +
-								";" + theStatsToLog.getNumSamples() + ";" + theStatsToLog.getMinValue() + ";" + theStatsToLog.getMaxValue() + ";" +
-								theStatsToLog.getMedian() + ";" + theStatsToLog.getValuesStandardDeviation() + ";" + theStatsToLog.getValuesSEM() +
-								";" + theStatsToLog.getAvgValue() + ";" + theStatsToLog.get95ConfidenceInterval() + ";");
+						if(theStatsToLog != null){
+							writeToFile(speedStatsFolderPath + "/" + playerRoleStats.getKey() + "-" + statHeaderStats.getKey() + "-AggrStats.csv", statisticsNames[j] +
+									";" + theStatsToLog.getNumSamples() + ";" + theStatsToLog.getMinValue() + ";" + theStatsToLog.getMaxValue() + ";" +
+									theStatsToLog.getMedian() + ";" + theStatsToLog.getValuesStandardDeviation() + ";" + theStatsToLog.getValuesSEM() +
+									";" + theStatsToLog.getAvgValue() + ";" + theStatsToLog.get95ConfidenceInterval() + ";");
+						}
 					}
 				}
 			}
-		}
 
-		//System.out.println();
+			//System.out.println();
 
-		//System.out.println();
+			//System.out.println();
 
-		//System.out.println("SummarizedFiles = " + summarizedFiles);
+			//System.out.println("SummarizedFiles = " + summarizedFiles);
 
-		//System.out.println("NumRoles = " + numRoles);
+			//System.out.println("NumRoles = " + numRoles);
 
-		//System.out.println("AcceptedMatchesSize = " + acceptedMatches.size());
+			//System.out.println("AcceptedMatchesSize = " + acceptedMatches.size());
 
-		if(summarizedFiles != (numRoles*acceptedMatches.size())){
+			if(summarizedFiles != (numRoles*acceptedMatches.size())){
 
-			System.out.println();
+				System.out.println();
 
-			System.out.println("SummarizedFiles = " + summarizedFiles);
+				System.out.println("SummarizedFiles = " + summarizedFiles);
 
-			System.out.println("NumRoles = " + numRoles);
+				System.out.println("NumRoles = " + numRoles);
 
-			System.out.println("AcceptedMatchesSize = " + acceptedMatches.size());
+				System.out.println("AcceptedMatchesSize = " + acceptedMatches.size());
 
-			System.out.println();
+				System.out.println();
 
-			System.out.println("!!! Not all the Speed Stats files have been included in the Speed statistics due to some error. Speed stats are not completely clean!");
+				System.out.println("!!! Not all the Speed Stats files have been included in the Speed statistics due to some error. Speed stats are not completely clean!");
 
+			}
+		}else {
+			//System.out.println("Impossible to find the speed logs directory to summarize: " + speedLogsFolder.getPath());
 		}
 
 		/****************** Compute tree size statistics of the matches that were considered in the previous statistics *******************/
 
+		//System.out.println("TREE SIZE START");
 
 		preprocessTreeStats(mainFolderPath, tourneyType, gameKey);
 
@@ -747,191 +749,194 @@ public class StatsSummarizer {
 			treeLogsFolderPath = mainFolderPath + "/" + tourneyType + "." + gameKey + ".TreeLogsEnd";
 		}
 
-		//System.out.println("matchesLogsFolderPath= " + matchesLogsFolderPath);
+		//System.out.println("treeLogsFolderPath= " + treeLogsFolderPath);
 
 		File treeLogsFolder = new File(treeLogsFolderPath);
 
-		if(!treeLogsFolder.isDirectory()){
-			//System.out.println("Impossible to find the tree logs directory to summarize: " + treeLogsFolder.getPath());
-			return;
-		}
-
-		// Create (or empty if it already exists) the folder where to move all the speed log files
-		// that have been rejected and haven't been considered when computing the statistics.
-		String rejectedTreeFilesFolderPath;
-		if(simpleFolderFormat) {
-			rejectedTreeFilesFolderPath = mainFolderPath + "/RejectedTreeFiles";
-		}else{
-			rejectedTreeFilesFolderPath = mainFolderPath + "/" + tourneyType + "." + gameKey + ".RejectedTreeFiles";
-		}
-
-		//System.out.println("rejectedFilesFolderPath= " + rejectedFilesFolderPath);
-
-
-		File rejectedTreeFilesFolder = new File(rejectedTreeFilesFolderPath);
-		if(rejectedTreeFilesFolder.isDirectory()){
-			if(!emptyFolder(rejectedTreeFilesFolder)){
-				System.out.println("Summarization interrupted. Cannot empty the RejectedTreeFiles folder: " + rejectedTreeFilesFolder.getPath());
-				return;
+		if(treeLogsFolder.isDirectory()){
+			// Create (or empty if it already exists) the folder where to move all the speed log files
+			// that have been rejected and haven't been considered when computing the statistics.
+			String rejectedTreeFilesFolderPath;
+			if(simpleFolderFormat) {
+				rejectedTreeFilesFolderPath = mainFolderPath + "/RejectedTreeFiles";
+			}else{
+				rejectedTreeFilesFolderPath = mainFolderPath + "/" + tourneyType + "." + gameKey + ".RejectedTreeFiles";
 			}
-		}else{
-			if(!rejectedTreeFilesFolder.mkdir()){
-				System.out.println("Summarization interrupted. Cannot create the RejectedTreeFiles folder: " + rejectedTreeFilesFolder.getPath());
-				return;
+
+			//System.out.println("rejectedTreeFilesFolderPath= " + rejectedTreeFilesFolderPath);
+
+
+			File rejectedTreeFilesFolder = new File(rejectedTreeFilesFolderPath);
+			if(rejectedTreeFilesFolder.isDirectory()){
+				if(!emptyFolder(rejectedTreeFilesFolder)){
+					System.out.println("Summarization interrupted. Cannot empty the RejectedTreeFiles folder: " + rejectedTreeFilesFolder.getPath());
+					return;
+				}
+			}else{
+				if(!rejectedTreeFilesFolder.mkdir()){
+					System.out.println("Summarization interrupted. Cannot create the RejectedTreeFiles folder: " + rejectedTreeFilesFolder.getPath());
+					return;
+				}
 			}
-		}
 
-		// Create (or empty if it already exists) the folder where to save all the speed statistics.
-		String treeStatsFolderPath;
-		if(simpleFolderFormat) {
-			treeStatsFolderPath = mainFolderPath + "/TreeStatistics";
-		}else{
-			treeStatsFolderPath = mainFolderPath + "/" + tourneyType + "." + gameKey + ".TreeStatistics";
-		}
-
-		File treeStatsFolder = new File(treeStatsFolderPath);
-		if(treeStatsFolder.isDirectory()){
-			if(!emptyFolder(treeStatsFolder)){
-				System.out.println("Summarization interrupted. Cannot empty the TreeStatistics folder: " + treeStatsFolder.getPath());
-				return;
+			// Create (or empty if it already exists) the folder where to save all the speed statistics.
+			String treeStatsFolderPath;
+			if(simpleFolderFormat) {
+				treeStatsFolderPath = mainFolderPath + "/TreeStatistics";
+			}else{
+				treeStatsFolderPath = mainFolderPath + "/" + tourneyType + "." + gameKey + ".TreeStatistics";
 			}
-		}else{
-			if(!treeStatsFolder.mkdir()){
-				System.out.println("Summarization interrupted. Cannot create the TreeStatistics folder: " + treeStatsFolder.getPath());
-				return;
+
+			File treeStatsFolder = new File(treeStatsFolderPath);
+			if(treeStatsFolder.isDirectory()){
+				if(!emptyFolder(treeStatsFolder)){
+					System.out.println("Summarization interrupted. Cannot empty the TreeStatistics folder: " + treeStatsFolder.getPath());
+					return;
+				}
+			}else{
+				if(!treeStatsFolder.mkdir()){
+					System.out.println("Summarization interrupted. Cannot create the TreeStatistics folder: " + treeStatsFolder.getPath());
+					return;
+				}
 			}
-		}
 
-		columnHeaders = new String[]{"#Nodes", "#ActionsStats", "#RAVE_AMAFStats", "#GRAVE_AMAFStats", "ActionsStats/Node", "RAVE_AMAFStats/Node", "GRAVE_AMAFStats/Node"};
+			String[] columnHeaders = new String[]{"#Nodes", "#ActionsStats", "#RAVE_AMAFStats", "#GRAVE_AMAFStats", "ActionsStats/Node", "RAVE_AMAFStats/Node", "GRAVE_AMAFStats/Node"};
 
-		columnTypes = new ColumnType[]{ColumnType.LONG, ColumnType.LONG, ColumnType.LONG, ColumnType.LONG, ColumnType.DOUBLE, ColumnType.DOUBLE, ColumnType.DOUBLE};
+			ColumnType[] columnTypes = new ColumnType[]{ColumnType.LONG, ColumnType.LONG, ColumnType.LONG, ColumnType.LONG, ColumnType.DOUBLE, ColumnType.DOUBLE, ColumnType.DOUBLE};
 
-		columnIndices = new int[]{2,3,4,5,6,7,8};
+			int[] columnIndices = new int[]{2,3,4,5,6,7,8};
 
-		File[] treeLogs;
+			File[] treeLogs;
 
-		// Prepare all the SingleValueStats that will compute the aggregated statistics for each player-role combination over all the matches
-		aggregatedStatistics = new HashMap<String, Map<String, Map<String, SingleValueDoubleStats>>>();
+			StatsExtractor extractor;
 
-		// Iterate over the directories containing the matches logs for each player's type.
-		playerTypesDirs = treeLogsFolder.listFiles();
+			// Statistics for which to compute the aggregated statistics
+			String[] statisticsNames = new String[]{"numSamples","minValue","maxValue","median","sd","sem","avg","ci"};
+			double[] statisticsValues = new double[8];
 
-		// For the folder of each player type...
-		for(int i = 0; i < playerTypesDirs.length; i++){
+			// Prepare all the SingleValueStats that will compute the aggregated statistics for each player-role combination over all the matches
+			Map<String, Map<String, Map<String, SingleValueDoubleStats>>> aggregatedStatistics = new HashMap<String, Map<String, Map<String, SingleValueDoubleStats>>>();
 
-			if(playerTypesDirs[i].isDirectory()){
+			// Iterate over the directories containing the matches logs for each player's type.
+			File[] playerTypesDirs = treeLogsFolder.listFiles();
 
-				playerType = playerTypesDirs[i].getName();
+			// For the folder of each player type...
+			for(int i = 0; i < playerTypesDirs.length; i++){
 
-				playerRolesDirs = playerTypesDirs[i].listFiles();
+				if(playerTypesDirs[i].isDirectory()){
 
-				// Iterate over all the folder corresponding to the different roles the player played
-				for(int j = 0; j < playerRolesDirs.length; j++){
+					String playerType = playerTypesDirs[i].getName();
 
-					playerRole = playerRolesDirs[j].getName();
+					File[] playerRolesDirs = playerTypesDirs[i].listFiles();
 
-					// Create the cumulative speed stats files for the player
-					for(int k = 0; k < columnHeaders.length; k++){
+					// Iterate over all the folder corresponding to the different roles the player played
+					for(int j = 0; j < playerRolesDirs.length; j++){
 
-						//String acceptableHeader = columnHeaders[i].replaceAll(" ", "_");
+						String playerRole = playerRolesDirs[j].getName();
 
-						String acceptableHeader = headerToFile.get(columnHeaders[k]);
+						// Create the cumulative speed stats files for the player
+						for(int k = 0; k < columnHeaders.length; k++){
 
-						if(acceptableHeader == null){
-							acceptableHeader = columnHeaders[k];
+							//String acceptableHeader = columnHeaders[i].replaceAll(" ", "_");
+
+							String acceptableHeader = headerToFile.get(columnHeaders[k]);
+
+							if(acceptableHeader == null){
+								acceptableHeader = columnHeaders[k];
+							}
+
+							writeToFile(treeStatsFolderPath + "/" + playerType + "/" + acceptableHeader + "-AllMatches-" + playerRole + ".csv", "MatchID;#Samples;Min;Max;Median;SD;SEM;Avg;CI");
+
 						}
 
-						writeToFile(treeStatsFolderPath + "/" + playerType + "/" + acceptableHeader + "-AllMatches-" + playerRole + ".csv", "MatchID;#Samples;Min;Max;Median;SD;SEM;Avg;CI");
+						treeLogs = playerRolesDirs[j].listFiles();
 
-					}
+						// For each tree stats file...
+						for(int k = 0; k < treeLogs.length; k++){
 
-					treeLogs = playerRolesDirs[j].listFiles();
+							String[] splittedName = treeLogs[k].getName().split("\\.");
 
-					// For each tree stats file...
-					for(int k = 0; k < treeLogs.length; k++){
-
-						String[] splittedName = treeLogs[k].getName().split("\\.");
-
-						// If it's a .csv file, compute and log the statistics
-						if(!(splittedName[splittedName.length-1].equalsIgnoreCase("csv"))){
-							System.out.println("Found file with no .csv extension when summarizing tree statistics.");
-							rejectFile(treeLogs[k], rejectedTreeFilesFolderPath + "/" + playerType + "/" + playerRole);
-						}else{
-
-							// If the stats are referring to a match that was rejected, reject them too
-
-							if(!(acceptedMatches.containsKey(treeLogs[k].getName().substring(0, treeLogs[k].getName().length()-23)))){
-								System.out.println("Found Tree Statistics file for a match that was previously rejected from statistics.");
+							// If it's a .csv file, compute and log the statistics
+							if(!(splittedName[splittedName.length-1].equalsIgnoreCase("csv"))){
+								System.out.println("Found file with no .csv extension when summarizing tree statistics.");
 								rejectFile(treeLogs[k], rejectedTreeFilesFolderPath + "/" + playerType + "/" + playerRole);
 							}else{
 
-								extractor = new StatsExtractor(treeLogs[k], columnHeaders, columnTypes, columnIndices);
+								// If the stats are referring to a match that was rejected, reject them too
 
-								Map<String, SingleValueStats> extractedStats = extractor.getExtractedStats();
-
-								if(extractedStats == null){
-
-									System.out.println("Error when computing tree statistics for the .csv file " + treeLogs[k].getName() + ".");
-									System.out.println("Excluding file from statistics. NOTE THAT THE TREE STATISTICS WON'T REFER TO THE WHOLE TOURNAMENT ANYMORE!");
+								if(!(acceptedMatches.containsKey(treeLogs[k].getName().substring(0, treeLogs[k].getName().length()-23)))){
+									System.out.println("Found Tree Statistics file for a match that was previously rejected from statistics.");
 									rejectFile(treeLogs[k], rejectedTreeFilesFolderPath + "/" + playerType + "/" + playerRole);
-
 								}else{
 
-									boolean reject = false;
+									extractor = new StatsExtractor(treeLogs[k], columnHeaders, columnTypes, columnIndices);
 
-									List<SingleValueStats> allTheStats = new ArrayList<SingleValueStats>();
+									Map<String, SingleValueStats> extractedStats = extractor.getExtractedStats();
 
-									// ...prepare an entry for each cumulative speed stats file
-									for(int l = 0; l < columnHeaders.length; l++){
+									if(extractedStats == null){
 
-										SingleValueStats statsToWrite = extractedStats.get(columnHeaders[l]);
-
-										if(statsToWrite == null){
-											System.out.println("Error when computing tree statistics for the value " + columnHeaders[l] + " for the .csv file " + treeLogs[k].getName() + ".");
-											reject = true;
-											break;
-										}else{
-
-											allTheStats.add(statsToWrite);
-
-										}
-									}
-
-									if(reject){
+										System.out.println("Error when computing tree statistics for the .csv file " + treeLogs[k].getName() + ".");
 										System.out.println("Excluding file from statistics. NOTE THAT THE TREE STATISTICS WON'T REFER TO THE WHOLE TOURNAMENT ANYMORE!");
 										rejectFile(treeLogs[k], rejectedTreeFilesFolderPath + "/" + playerType + "/" + playerRole);
+
 									}else{
 
-										// ...write an entry in each cumulative speed stats file
+										boolean reject = false;
+
+										List<SingleValueStats> allTheStats = new ArrayList<SingleValueStats>();
+
+										// ...prepare an entry for each cumulative speed stats file
 										for(int l = 0; l < columnHeaders.length; l++){
 
-											String acceptableHeader = headerToFile.get(columnHeaders[l]);
+											SingleValueStats statsToWrite = extractedStats.get(columnHeaders[l]);
 
-											if(acceptableHeader == null){
-												acceptableHeader = columnHeaders[l];
+											if(statsToWrite == null){
+												System.out.println("Error when computing tree statistics for the value " + columnHeaders[l] + " for the .csv file " + treeLogs[k].getName() + ".");
+												reject = true;
+												break;
+											}else{
+
+												allTheStats.add(statsToWrite);
+
 											}
+										}
 
-											SingleValueStats statsToWrite = allTheStats.get(l);
+										if(reject){
+											System.out.println("Excluding file from statistics. NOTE THAT THE TREE STATISTICS WON'T REFER TO THE WHOLE TOURNAMENT ANYMORE!");
+											rejectFile(treeLogs[k], rejectedTreeFilesFolderPath + "/" + playerType + "/" + playerRole);
+										}else{
 
-											statisticsValues[0] = statsToWrite.getNumSamples();
-											statisticsValues[1] = statsToWrite.getMinValue();
-											statisticsValues[2] = statsToWrite.getMaxValue();
-											statisticsValues[3] = statsToWrite.getMedian();
-											statisticsValues[4] = statsToWrite.getValuesStandardDeviation();
-											statisticsValues[5] = statsToWrite.getValuesSEM();
-											statisticsValues[6] = statsToWrite.getAvgValue();
-											statisticsValues[7] = statsToWrite.get95ConfidenceInterval();
+											// ...write an entry in each cumulative speed stats file
+											for(int l = 0; l < columnHeaders.length; l++){
 
-											writeToFile(treeStatsFolderPath + "/" + playerType + "/" + acceptableHeader + "-AllMatches-" + playerRole + ".csv",
-													treeLogs[k].getName().substring(0, treeLogs[k].getName().length()-10) + ";" + statisticsValues[0] +
-													";" + statisticsValues[1] + ";" + statisticsValues[2] + ";" + statisticsValues[3] + ";" + statisticsValues[4] +
-													";" + statisticsValues[5] +	";" + statisticsValues[6] + ";" + statisticsValues[7] + ";");
+												String acceptableHeader = headerToFile.get(columnHeaders[l]);
 
-											// Add all values to the correct cumulative SingleValueStats
-											addStatisticsValues(aggregatedStatistics, playerType + "-AllRoles", acceptableHeader, statisticsNames, statisticsValues);
+												if(acceptableHeader == null){
+													acceptableHeader = columnHeaders[l];
+												}
 
-											addStatisticsValues(aggregatedStatistics, playerType + "-" + playerRole, acceptableHeader, statisticsNames, statisticsValues);
+												SingleValueStats statsToWrite = allTheStats.get(l);
 
+												statisticsValues[0] = statsToWrite.getNumSamples();
+												statisticsValues[1] = statsToWrite.getMinValue();
+												statisticsValues[2] = statsToWrite.getMaxValue();
+												statisticsValues[3] = statsToWrite.getMedian();
+												statisticsValues[4] = statsToWrite.getValuesStandardDeviation();
+												statisticsValues[5] = statsToWrite.getValuesSEM();
+												statisticsValues[6] = statsToWrite.getAvgValue();
+												statisticsValues[7] = statsToWrite.get95ConfidenceInterval();
+
+												writeToFile(treeStatsFolderPath + "/" + playerType + "/" + acceptableHeader + "-AllMatches-" + playerRole + ".csv",
+														treeLogs[k].getName().substring(0, treeLogs[k].getName().length()-10) + ";" + statisticsValues[0] +
+														";" + statisticsValues[1] + ";" + statisticsValues[2] + ";" + statisticsValues[3] + ";" + statisticsValues[4] +
+														";" + statisticsValues[5] +	";" + statisticsValues[6] + ";" + statisticsValues[7] + ";");
+
+												// Add all values to the correct cumulative SingleValueStats
+												addStatisticsValues(aggregatedStatistics, playerType + "-AllRoles", acceptableHeader, statisticsNames, statisticsValues);
+
+												addStatisticsValues(aggregatedStatistics, playerType + "-" + playerRole, acceptableHeader, statisticsNames, statisticsValues);
+
+											}
 										}
 									}
 								}
@@ -940,30 +945,34 @@ public class StatsSummarizer {
 					}
 				}
 			}
-		}
 
-		// Log all the aggregated statistics
+			// Log all the aggregated statistics
 
-		theStatsToLog = null;
+			SingleValueDoubleStats theStatsToLog = null;
 
-		for(Entry<String, Map<String, Map<String, SingleValueDoubleStats>>> playerRoleStats: aggregatedStatistics.entrySet()){
+			for(Entry<String, Map<String, Map<String, SingleValueDoubleStats>>> playerRoleStats: aggregatedStatistics.entrySet()){
 
-			for(Entry<String, Map<String, SingleValueDoubleStats>> statHeaderStats: playerRoleStats.getValue().entrySet()){
+				for(Entry<String, Map<String, SingleValueDoubleStats>> statHeaderStats: playerRoleStats.getValue().entrySet()){
 
-				writeToFile(treeStatsFolderPath + "/" + playerRoleStats.getKey() + "-" + statHeaderStats.getKey() + "-AggrStats.csv", "StatType;#Samples;Min;Max;Median;SD;SEM;Avg;CI");
+					writeToFile(treeStatsFolderPath + "/" + playerRoleStats.getKey() + "-" + statHeaderStats.getKey() + "-AggrStats.csv", "StatType;#Samples;Min;Max;Median;SD;SEM;Avg;CI");
 
-				for(int j = 0; j< statisticsNames.length; j++){
-					theStatsToLog = statHeaderStats.getValue().get(statisticsNames[j]);
+					for(int j = 0; j< statisticsNames.length; j++){
+						theStatsToLog = statHeaderStats.getValue().get(statisticsNames[j]);
 
-					if(theStatsToLog != null){
-						writeToFile(treeStatsFolderPath + "/" + playerRoleStats.getKey() + "-" + statHeaderStats.getKey() + "-AggrStats.csv", statisticsNames[j] +
-								";" + theStatsToLog.getNumSamples() + ";" + theStatsToLog.getMinValue() + ";" + theStatsToLog.getMaxValue() + ";" +
-								theStatsToLog.getMedian() + ";" + theStatsToLog.getValuesStandardDeviation() + ";" + theStatsToLog.getValuesSEM() +
-								";" + theStatsToLog.getAvgValue() + ";" + theStatsToLog.get95ConfidenceInterval() + ";");
+						if(theStatsToLog != null){
+							writeToFile(treeStatsFolderPath + "/" + playerRoleStats.getKey() + "-" + statHeaderStats.getKey() + "-AggrStats.csv", statisticsNames[j] +
+									";" + theStatsToLog.getNumSamples() + ";" + theStatsToLog.getMinValue() + ";" + theStatsToLog.getMaxValue() + ";" +
+									theStatsToLog.getMedian() + ";" + theStatsToLog.getValuesStandardDeviation() + ";" + theStatsToLog.getValuesSEM() +
+									";" + theStatsToLog.getAvgValue() + ";" + theStatsToLog.get95ConfidenceInterval() + ";");
+						}
 					}
 				}
 			}
+		}else {
+			//System.out.println("Impossible to find the tree logs directory to summarize: " + treeLogsFolder.getPath());
 		}
+
+
 
 		//System.out.println();
 
@@ -988,247 +997,248 @@ public class StatsSummarizer {
 
 		File paramLogsFolder = new File(paramLogsFolderPath);
 
-		if(!paramLogsFolder.isDirectory()){
-			System.out.println("Impossible to find the params logs directory to summarize: " + treeLogsFolder.getPath());
-			return;
-		}
-
-		// Create (or empty if it already exists) the folder where to move all the speed log files
-		// that have been rejected and haven't been considered when computing the statistics.
-		String rejectedParamsFilesFolderPath;
-		if(simpleFolderFormat) {
-			rejectedParamsFilesFolderPath = mainFolderPath + "/RejectedParamsFiles";
-		}else{
-			rejectedParamsFilesFolderPath = mainFolderPath + "/" + tourneyType + "." + gameKey + ".RejectedParamsFiles";
-		}
-
-		//System.out.println("rejectedFilesFolderPath= " + rejectedFilesFolderPath);
-
-
-		File rejectedParamsFilesFolder = new File(rejectedParamsFilesFolderPath);
-		if(rejectedParamsFilesFolder.isDirectory()){
-			if(!emptyFolder(rejectedParamsFilesFolder)){
-				System.out.println("Summarization interrupted. Cannot empty the RejectedParamsFiles folder: " + rejectedParamsFilesFolder.getPath());
-				return;
+		if(paramLogsFolder.isDirectory()){
+			// Create (or empty if it already exists) the folder where to move all the speed log files
+			// that have been rejected and haven't been considered when computing the statistics.
+			String rejectedParamsFilesFolderPath;
+			if(simpleFolderFormat) {
+				rejectedParamsFilesFolderPath = mainFolderPath + "/RejectedParamsFiles";
+			}else{
+				rejectedParamsFilesFolderPath = mainFolderPath + "/" + tourneyType + "." + gameKey + ".RejectedParamsFiles";
 			}
-		}else{
-			if(!rejectedParamsFilesFolder.mkdir()){
-				System.out.println("Summarization interrupted. Cannot create the RejectedParamsFiles folder: " + rejectedParamsFilesFolder.getPath());
-				return;
+
+			//System.out.println("rejectedFilesFolderPath= " + rejectedFilesFolderPath);
+
+
+			File rejectedParamsFilesFolder = new File(rejectedParamsFilesFolderPath);
+			if(rejectedParamsFilesFolder.isDirectory()){
+				if(!emptyFolder(rejectedParamsFilesFolder)){
+					System.out.println("Summarization interrupted. Cannot empty the RejectedParamsFiles folder: " + rejectedParamsFilesFolder.getPath());
+					return;
+				}
+			}else{
+				if(!rejectedParamsFilesFolder.mkdir()){
+					System.out.println("Summarization interrupted. Cannot create the RejectedParamsFiles folder: " + rejectedParamsFilesFolder.getPath());
+					return;
+				}
 			}
-		}
 
-		// Create (or empty if it already exists) the folder where to save all the speed statistics.
-		String paramsStatsFolderPath;
-		if(simpleFolderFormat) {
-			paramsStatsFolderPath = mainFolderPath + "/ParamsStatistics";
-		}else{
-			paramsStatsFolderPath = mainFolderPath + "/" + tourneyType + "." + gameKey + ".ParamsStatistics";
-		}
-
-		File paramsStatsFolder = new File(paramsStatsFolderPath);
-		if(paramsStatsFolder.isDirectory()){
-			if(!emptyFolder(paramsStatsFolder)){
-				System.out.println("Summarization interrupted. Cannot empty the ParamsStatistics folder: " + paramsStatsFolder.getPath());
-				return;
+			// Create (or empty if it already exists) the folder where to save all the speed statistics.
+			String paramsStatsFolderPath;
+			if(simpleFolderFormat) {
+				paramsStatsFolderPath = mainFolderPath + "/ParamsStatistics";
+			}else{
+				paramsStatsFolderPath = mainFolderPath + "/" + tourneyType + "." + gameKey + ".ParamsStatistics";
 			}
-		}else{
-			if(!paramsStatsFolder.mkdir()){
-				System.out.println("Summarization interrupted. Cannot create the ParamsStatistics folder: " + paramsStatsFolder.getPath());
-				return;
+
+			File paramsStatsFolder = new File(paramsStatsFolderPath);
+			if(paramsStatsFolder.isDirectory()){
+				if(!emptyFolder(paramsStatsFolder)){
+					System.out.println("Summarization interrupted. Cannot empty the ParamsStatistics folder: " + paramsStatsFolder.getPath());
+					return;
+				}
+			}else{
+				if(!paramsStatsFolder.mkdir()){
+					System.out.println("Summarization interrupted. Cannot create the ParamsStatistics folder: " + paramsStatsFolder.getPath());
+					return;
+				}
 			}
-		}
 
-		File[] paramsStatsFiles;
+			File[] paramsStatsFiles;
 
-		String mabType;
+			String mabType;
 
-		// Maps for parameters statistics
+			// Maps for parameters statistics
 
-		Map<String,Map<String,Map<String,Map<String,Map<String,Map<String,Map<String,SingleValueStats>>>>>>> aggregatedParamsStats = new HashMap<String,Map<String,Map<String,Map<String,Map<String,Map<String,Map<String,SingleValueStats>>>>>>>();
+			Map<String,Map<String,Map<String,Map<String,Map<String,Map<String,Map<String,SingleValueStats>>>>>>> aggregatedParamsStats = new HashMap<String,Map<String,Map<String,Map<String,Map<String,Map<String,Map<String,SingleValueStats>>>>>>>();
 
-		Map<String,Map<String,Map<String,Map<String,Map<String,Map<String,SingleValueStats>>>>>> playerTypeMap;
+			Map<String,Map<String,Map<String,Map<String,Map<String,Map<String,SingleValueStats>>>>>> playerTypeMap;
 
-		Map<String,Map<String,Map<String,Map<String,Map<String,SingleValueStats>>>>> playerAllRolesMap;
-		Map<String,Map<String,Map<String,Map<String,Map<String,SingleValueStats>>>>> playerRoleMap;
+			Map<String,Map<String,Map<String,Map<String,Map<String,SingleValueStats>>>>> playerAllRolesMap;
+			Map<String,Map<String,Map<String,Map<String,Map<String,SingleValueStats>>>>> playerRoleMap;
 
-		Map<String,Map<String,Map<String,Map<String,SingleValueStats>>>> mabTypeMap;
-		Map<String,Map<String,Map<String,Map<String,SingleValueStats>>>> mabTypeMapAllRoles;
+			Map<String,Map<String,Map<String,Map<String,SingleValueStats>>>> mabTypeMap;
+			Map<String,Map<String,Map<String,Map<String,SingleValueStats>>>> mabTypeMapAllRoles;
 
-		// Maps for final best move choice statistics
-		Map<String,Map<String,Map<String,Map<String,Map<String,ParamsComboInfo>>>>> aggregatedBestComboStats = new HashMap<String,Map<String,Map<String,Map<String,Map<String,ParamsComboInfo>>>>>();
-		Map<String,Map<String,Map<String,Map<String,ParamsComboInfo>>>> playerTypeComboStatsMap; // <playerType,comboStatsPerPlayedRole>
-		Map<String,Map<String,Map<String,ParamsComboInfo>>> playerRoleComboStatsMap; //<MyPlayedRole,comboStatsPerRoleInGame>
-		Map<String,Map<String,Map<String,ParamsComboInfo>>> playerAllRolesComboStatsMap; // <AllRoles,comboStatsPerRoleInGame>
+			// Maps for final best move choice statistics
+			Map<String,Map<String,Map<String,Map<String,Map<String,ParamsComboInfo>>>>> aggregatedBestComboStats = new HashMap<String,Map<String,Map<String,Map<String,Map<String,ParamsComboInfo>>>>>();
+			Map<String,Map<String,Map<String,Map<String,ParamsComboInfo>>>> playerTypeComboStatsMap; // <playerType,comboStatsPerPlayedRole>
+			Map<String,Map<String,Map<String,ParamsComboInfo>>> playerRoleComboStatsMap; //<MyPlayedRole,comboStatsPerRoleInGame>
+			Map<String,Map<String,Map<String,ParamsComboInfo>>> playerAllRolesComboStatsMap; // <AllRoles,comboStatsPerRoleInGame>
 
-		// Iterate over the directories containing the matches logs for each player's type.
-		playerTypesDirs = paramLogsFolder.listFiles();
+			// Iterate over the directories containing the matches logs for each player's type.
+			File[] playerTypesDirs = paramLogsFolder.listFiles();
 
-		// For the folder of each player type...
-		for(int i = 0; i < playerTypesDirs.length; i++){
+			// For the folder of each player type...
+			for(int i = 0; i < playerTypesDirs.length; i++){
 
-			if(playerTypesDirs[i].isDirectory()){
+				if(playerTypesDirs[i].isDirectory()){
 
-				playerType = playerTypesDirs[i].getName();
+					String playerType = playerTypesDirs[i].getName();
 
-				//System.out.println("Visiting folder of player type: " + playerType);
+					//System.out.println("Visiting folder of player type: " + playerType);
 
-				// Get the map corresponding to this player type
-				playerTypeMap = aggregatedParamsStats.get(playerType);
-				if(playerTypeMap == null){
-					playerTypeMap = new HashMap<String,Map<String,Map<String,Map<String,Map<String,Map<String,SingleValueStats>>>>>>();
-					aggregatedParamsStats.put(playerType, playerTypeMap);
-				}
-				// Get the comboStatsMap corresponding to this player type
-				playerTypeComboStatsMap = aggregatedBestComboStats.get(playerType);
-				if(playerTypeComboStatsMap == null){
-					playerTypeComboStatsMap = new HashMap<String,Map<String,Map<String,Map<String,ParamsComboInfo>>>>();
-					aggregatedBestComboStats.put(playerType, playerTypeComboStatsMap);
-				}
+					// Get the map corresponding to this player type
+					playerTypeMap = aggregatedParamsStats.get(playerType);
+					if(playerTypeMap == null){
+						playerTypeMap = new HashMap<String,Map<String,Map<String,Map<String,Map<String,Map<String,SingleValueStats>>>>>>();
+						aggregatedParamsStats.put(playerType, playerTypeMap);
+					}
+					// Get the comboStatsMap corresponding to this player type
+					playerTypeComboStatsMap = aggregatedBestComboStats.get(playerType);
+					if(playerTypeComboStatsMap == null){
+						playerTypeComboStatsMap = new HashMap<String,Map<String,Map<String,Map<String,ParamsComboInfo>>>>();
+						aggregatedBestComboStats.put(playerType, playerTypeComboStatsMap);
+					}
 
-				playerRolesDirs = playerTypesDirs[i].listFiles();
+					File[] playerRolesDirs = playerTypesDirs[i].listFiles();
 
-				// Get the map for all the roles
-				playerAllRolesMap = playerTypeMap.get("AllRoles");
-				if(playerAllRolesMap == null){
-					playerAllRolesMap = new HashMap<String,Map<String,Map<String,Map<String,Map<String,SingleValueStats>>>>>();
-					playerTypeMap.put("AllRoles", playerAllRolesMap);
-				}
-				// Get the comboStats for all the roles
-				playerAllRolesComboStatsMap = playerTypeComboStatsMap.get("AllRoles");
-				if(playerAllRolesComboStatsMap == null){
-					playerAllRolesComboStatsMap = new HashMap<String,Map<String,Map<String,ParamsComboInfo>>>();
-					playerTypeComboStatsMap.put("AllRoles", playerAllRolesComboStatsMap);
-				}
+					// Get the map for all the roles
+					playerAllRolesMap = playerTypeMap.get("AllRoles");
+					if(playerAllRolesMap == null){
+						playerAllRolesMap = new HashMap<String,Map<String,Map<String,Map<String,Map<String,SingleValueStats>>>>>();
+						playerTypeMap.put("AllRoles", playerAllRolesMap);
+					}
+					// Get the comboStats for all the roles
+					playerAllRolesComboStatsMap = playerTypeComboStatsMap.get("AllRoles");
+					if(playerAllRolesComboStatsMap == null){
+						playerAllRolesComboStatsMap = new HashMap<String,Map<String,Map<String,ParamsComboInfo>>>();
+						playerTypeComboStatsMap.put("AllRoles", playerAllRolesComboStatsMap);
+					}
 
-				// Iterate over all the folders corresponding to the different roles the player played
-				for(int j = 0; j < playerRolesDirs.length; j++){
+					// Iterate over all the folders corresponding to the different roles the player played
+					for(int j = 0; j < playerRolesDirs.length; j++){
 
-					if(playerRolesDirs[j].isDirectory()){
+						if(playerRolesDirs[j].isDirectory()){
 
-						playerRole = playerRolesDirs[j].getName();
+							String playerRole = playerRolesDirs[j].getName();
 
-						//System.out.println("Visiting folder of role: " + playerRole);
+							//System.out.println("Visiting folder of role: " + playerRole);
 
-						// Get the map corresponding to the role played by the player
-						playerRoleMap = playerTypeMap.get(playerRole);
-						if(playerRoleMap == null){
-							playerRoleMap = new HashMap<String,Map<String,Map<String,Map<String,Map<String,SingleValueStats>>>>>();
-							playerTypeMap.put(playerRole, playerRoleMap);
-						}
-						// Get the ComboStats map corresponding to the role played by the player
-						playerRoleComboStatsMap = playerTypeComboStatsMap.get(playerRole);
-						if(playerRoleComboStatsMap == null){
-							playerRoleComboStatsMap = new HashMap<String,Map<String,Map<String,ParamsComboInfo>>>();
-							playerTypeComboStatsMap.put(playerRole, playerRoleComboStatsMap);
-						}
+							// Get the map corresponding to the role played by the player
+							playerRoleMap = playerTypeMap.get(playerRole);
+							if(playerRoleMap == null){
+								playerRoleMap = new HashMap<String,Map<String,Map<String,Map<String,Map<String,SingleValueStats>>>>>();
+								playerTypeMap.put(playerRole, playerRoleMap);
+							}
+							// Get the ComboStats map corresponding to the role played by the player
+							playerRoleComboStatsMap = playerTypeComboStatsMap.get(playerRole);
+							if(playerRoleComboStatsMap == null){
+								playerRoleComboStatsMap = new HashMap<String,Map<String,Map<String,ParamsComboInfo>>>();
+								playerTypeComboStatsMap.put(playerRole, playerRoleComboStatsMap);
+							}
 
-						paramsStatsFiles = playerRolesDirs[j].listFiles();
+							paramsStatsFiles = playerRolesDirs[j].listFiles();
 
-						// Iterate over all the params stats files
-						for(int k = 0; k < paramsStatsFiles.length; k++){
+							// Iterate over all the params stats files
+							for(int k = 0; k < paramsStatsFiles.length; k++){
 
-							//System.out.println("Visiting file: " + paramsStatsFiles[k]);
+								//System.out.println("Visiting file: " + paramsStatsFiles[k]);
 
-							String[] splittedName = paramsStatsFiles[k].getName().split("\\.");
+								String[] splittedName = paramsStatsFiles[k].getName().split("\\.");
 
-							// If it's a .csv file, compute and log the statistics
-							if(!(splittedName[splittedName.length-1].equalsIgnoreCase("csv"))){
-								System.out.println("Found file with no .csv extension when summarizing params statistics.");
-								rejectFile(paramsStatsFiles[k], rejectedParamsFilesFolderPath + "/" + playerType + "/" + playerRole);
-							}else{
-
-								// If the stats are referring to a match that was rejected, reject them too
-
-								if(!(acceptedMatches.containsKey(paramsStatsFiles[k].getName().substring(0, paramsStatsFiles[k].getName().length()-26))) &&
-										!(acceptedMatches.containsKey(paramsStatsFiles[k].getName().substring(0, paramsStatsFiles[k].getName().length()-25))) &&
-										!(acceptedMatches.containsKey(paramsStatsFiles[k].getName().substring(0, paramsStatsFiles[k].getName().length()-20)))){
-									System.out.println("Found Params Statistics file for a match that was previously rejected from statistics.");
+								// If it's a .csv file, compute and log the statistics
+								if(!(splittedName[splittedName.length-1].equalsIgnoreCase("csv"))){
+									System.out.println("Found file with no .csv extension when summarizing params statistics.");
 									rejectFile(paramsStatsFiles[k], rejectedParamsFilesFolderPath + "/" + playerType + "/" + playerRole);
 								}else{
 
-									if(paramsStatsFiles[k].getName().endsWith("GlobalParamTunerStats.csv")){
-										mabType = "Global";
-									}else if(paramsStatsFiles[k].getName().endsWith("LocalParamTunerStats.csv")){
-										mabType = "Local";
-									}else if(paramsStatsFiles[k].getName().endsWith("BestParamsCombo.csv")){
-										summarizeBestCombos(paramsStatsFiles[k],
-												acceptedMatches.get(paramsStatsFiles[k].getName().substring(0, paramsStatsFiles[k].getName().length()-20)),
-												playerType, playerRole,
-												playerRoleComboStatsMap, playerAllRolesComboStatsMap);
-										continue;
+									// If the stats are referring to a match that was rejected, reject them too
+
+									if(!(acceptedMatches.containsKey(paramsStatsFiles[k].getName().substring(0, paramsStatsFiles[k].getName().length()-26))) &&
+											!(acceptedMatches.containsKey(paramsStatsFiles[k].getName().substring(0, paramsStatsFiles[k].getName().length()-25))) &&
+											!(acceptedMatches.containsKey(paramsStatsFiles[k].getName().substring(0, paramsStatsFiles[k].getName().length()-20)))){
+										System.out.println("Found Params Statistics file for a match that was previously rejected from statistics.");
+										rejectFile(paramsStatsFiles[k], rejectedParamsFilesFolderPath + "/" + playerType + "/" + playerRole);
 									}else{
-										System.out.println("Unrecognized type of parameters stats. Skipping file: " + paramsStatsFiles[k].getPath());
-										continue;
-									}
 
-									mabTypeMap = playerRoleMap.get(mabType);
-									if(mabTypeMap == null){
-										mabTypeMap = new HashMap<String,Map<String,Map<String,Map<String,SingleValueStats>>>>();
-										playerRoleMap.put(mabType, mabTypeMap);
-									}
-									mabTypeMapAllRoles = playerAllRolesMap.get(mabType);
-									if(mabTypeMapAllRoles == null){
-										mabTypeMapAllRoles = new HashMap<String,Map<String,Map<String,Map<String,SingleValueStats>>>>();
-										playerAllRolesMap.put(mabType, mabTypeMapAllRoles);
-									}
+										if(paramsStatsFiles[k].getName().endsWith("GlobalParamTunerStats.csv")){
+											mabType = "Global";
+										}else if(paramsStatsFiles[k].getName().endsWith("LocalParamTunerStats.csv")){
+											mabType = "Local";
+										}else if(paramsStatsFiles[k].getName().endsWith("BestParamsCombo.csv")){
+											summarizeBestCombos(paramsStatsFiles[k],
+													acceptedMatches.get(paramsStatsFiles[k].getName().substring(0, paramsStatsFiles[k].getName().length()-20)),
+													playerType, playerRole,
+													playerRoleComboStatsMap, playerAllRolesComboStatsMap);
+											continue;
+										}else{
+											System.out.println("Unrecognized type of parameters stats. Skipping file: " + paramsStatsFiles[k].getPath());
+											continue;
+										}
 
-									//System.out.println("Extracting stats");
-									extractParamsStats(paramsStatsFiles[k], mabType, mabTypeMap, mabTypeMapAllRoles);
+										mabTypeMap = playerRoleMap.get(mabType);
+										if(mabTypeMap == null){
+											mabTypeMap = new HashMap<String,Map<String,Map<String,Map<String,SingleValueStats>>>>();
+											playerRoleMap.put(mabType, mabTypeMap);
+										}
+										mabTypeMapAllRoles = playerAllRolesMap.get(mabType);
+										if(mabTypeMapAllRoles == null){
+											mabTypeMapAllRoles = new HashMap<String,Map<String,Map<String,Map<String,SingleValueStats>>>>();
+											playerAllRolesMap.put(mabType, mabTypeMapAllRoles);
+										}
+
+										//System.out.println("Extracting stats");
+										extractParamsStats(paramsStatsFiles[k], mabType, mabTypeMap, mabTypeMapAllRoles);
+									}
 								}
 							}
 						}
 					}
 				}
 			}
-		}
 
-		// Log all the aggregated statistics
-		for(Entry<String,Map<String,Map<String,Map<String,Map<String,Map<String,Map<String,SingleValueStats>>>>>>> playerTypeStats: aggregatedParamsStats.entrySet()){
+			// Log all the aggregated statistics
+			for(Entry<String,Map<String,Map<String,Map<String,Map<String,Map<String,Map<String,SingleValueStats>>>>>>> playerTypeStats: aggregatedParamsStats.entrySet()){
 
-			for(Entry<String,Map<String,Map<String,Map<String,Map<String,Map<String,SingleValueStats>>>>>> playerRoleStats: playerTypeStats.getValue().entrySet()){
+				for(Entry<String,Map<String,Map<String,Map<String,Map<String,Map<String,SingleValueStats>>>>>> playerRoleStats: playerTypeStats.getValue().entrySet()){
 
-				for(Entry<String,Map<String,Map<String,Map<String,Map<String,SingleValueStats>>>>> mabTypeStats: playerRoleStats.getValue().entrySet()){
+					for(Entry<String,Map<String,Map<String,Map<String,Map<String,SingleValueStats>>>>> mabTypeStats: playerRoleStats.getValue().entrySet()){
 
-					for(Entry<String,Map<String,Map<String,Map<String,SingleValueStats>>>> roleStats: mabTypeStats.getValue().entrySet()){
-
-						writeToFile(paramsStatsFolderPath + "/" + playerTypeStats.getKey() + "-" + playerRoleStats.getKey() +
-								"-" + mabTypeStats.getKey() + "ParamTuner-AggrStats.csv", "ROLE = " + roleStats.getKey());
-						writeToFile(paramsStatsFolderPath + "/" + playerTypeStats.getKey() + "-" + playerRoleStats.getKey() +
-								"-" + mabTypeStats.getKey() + "ParamTuner-AggrStats.csv", "");
-
-						for(Entry<String,Map<String,Map<String,SingleValueStats>>> parameterStats: roleStats.getValue().entrySet()){
+						for(Entry<String,Map<String,Map<String,Map<String,SingleValueStats>>>> roleStats: mabTypeStats.getValue().entrySet()){
 
 							writeToFile(paramsStatsFolderPath + "/" + playerTypeStats.getKey() + "-" + playerRoleStats.getKey() +
-									"-" + mabTypeStats.getKey() + "ParamTuner-AggrStats.csv", "PARAM = " + parameterStats.getKey());
+									"-" + mabTypeStats.getKey() + "ParamTuner-AggrStats.csv", "ROLE = " + roleStats.getKey());
 							writeToFile(paramsStatsFolderPath + "/" + playerTypeStats.getKey() + "-" + playerRoleStats.getKey() +
-									"-" + mabTypeStats.getKey() + "ParamTuner-AggrStats.csv", "VALUE;TOTAL_VISITS;AVG_VISITS;AVG_SCORE_SUM;AVG_AVG_VALUE;AVG_PENALTY;NUM_SAMPLES;");
+									"-" + mabTypeStats.getKey() + "ParamTuner-AggrStats.csv", "");
 
-							for(Entry<String,Map<String,SingleValueStats>> parameterValueStats: parameterStats.getValue().entrySet()){
-
-								int numSamples = -1;
-
-								// Check that all stats have the same number of samples. If not, something went wrong so we log -1 as number of samples.
-								for(Entry<String,SingleValueStats> stat: parameterValueStats.getValue().entrySet()){
-									if(numSamples == -1){
-										numSamples = stat.getValue().getNumSamples();
-									}else if(numSamples != stat.getValue().getNumSamples()){
-										numSamples = -1;
-										break;
-									}
-								}
-
-								String statisToLog = parameterValueStats.getKey() + ";" +
-										((SingleValueLongStats)parameterValueStats.getValue().get("VISITS=")).getTotalSum() + ";" +
-										parameterValueStats.getValue().get("VISITS=").getAvgValue() + ";" +
-										parameterValueStats.getValue().get("SCORE_SUM=").getAvgValue() + ";" +
-										parameterValueStats.getValue().get("AVG_VALUE=").getAvgValue() + ";" +
-										parameterValueStats.getValue().get("PENALTY=").getAvgValue() + ";" +
-										numSamples + ";";
-
+							for(Entry<String,Map<String,Map<String,SingleValueStats>>> parameterStats: roleStats.getValue().entrySet()){
 
 								writeToFile(paramsStatsFolderPath + "/" + playerTypeStats.getKey() + "-" + playerRoleStats.getKey() +
-										"-" + mabTypeStats.getKey() + "ParamTuner-AggrStats.csv", statisToLog);
+										"-" + mabTypeStats.getKey() + "ParamTuner-AggrStats.csv", "PARAM = " + parameterStats.getKey());
+								writeToFile(paramsStatsFolderPath + "/" + playerTypeStats.getKey() + "-" + playerRoleStats.getKey() +
+										"-" + mabTypeStats.getKey() + "ParamTuner-AggrStats.csv", "VALUE;TOTAL_VISITS;AVG_VISITS;AVG_SCORE_SUM;AVG_AVG_VALUE;AVG_PENALTY;NUM_SAMPLES;");
+
+								for(Entry<String,Map<String,SingleValueStats>> parameterValueStats: parameterStats.getValue().entrySet()){
+
+									int numSamples = -1;
+
+									// Check that all stats have the same number of samples. If not, something went wrong so we log -1 as number of samples.
+									for(Entry<String,SingleValueStats> stat: parameterValueStats.getValue().entrySet()){
+										if(numSamples == -1){
+											numSamples = stat.getValue().getNumSamples();
+										}else if(numSamples != stat.getValue().getNumSamples()){
+											numSamples = -1;
+											break;
+										}
+									}
+
+									String statisToLog = parameterValueStats.getKey() + ";" +
+											((SingleValueLongStats)parameterValueStats.getValue().get("VISITS=")).getTotalSum() + ";" +
+											parameterValueStats.getValue().get("VISITS=").getAvgValue() + ";" +
+											parameterValueStats.getValue().get("SCORE_SUM=").getAvgValue() + ";" +
+											parameterValueStats.getValue().get("AVG_VALUE=").getAvgValue() + ";" +
+											parameterValueStats.getValue().get("PENALTY=").getAvgValue() + ";" +
+											numSamples + ";";
+
+
+									writeToFile(paramsStatsFolderPath + "/" + playerTypeStats.getKey() + "-" + playerRoleStats.getKey() +
+											"-" + mabTypeStats.getKey() + "ParamTuner-AggrStats.csv", statisToLog);
+
+								}
+
+								writeToFile(paramsStatsFolderPath + "/" + playerTypeStats.getKey() + "-" + playerRoleStats.getKey() +
+										"-" + mabTypeStats.getKey() + "ParamTuner-AggrStats.csv", "");
 
 							}
 
@@ -1236,54 +1246,232 @@ public class StatsSummarizer {
 									"-" + mabTypeStats.getKey() + "ParamTuner-AggrStats.csv", "");
 
 						}
-
-						writeToFile(paramsStatsFolderPath + "/" + playerTypeStats.getKey() + "-" + playerRoleStats.getKey() +
-								"-" + mabTypeStats.getKey() + "ParamTuner-AggrStats.csv", "");
-
 					}
 				}
 			}
-		}
 
-		// Log all the best combos statistics
-		// TODO: add number of wins!!!!!
-		for(Entry<String,Map<String,Map<String,Map<String,Map<String,ParamsComboInfo>>>>> playerTypeComboStats : aggregatedBestComboStats.entrySet()){
-			for(Entry<String,Map<String,Map<String,Map<String,ParamsComboInfo>>>> playerRoleComboStats : playerTypeComboStats.getValue().entrySet()){
-				for(Entry<String,Map<String,Map<String,ParamsComboInfo>>> roleCombosStats : playerRoleComboStats.getValue().entrySet()){
-
-					writeToFile(paramsStatsFolderPath + "/" + playerTypeComboStats.getKey() + "-" + playerRoleComboStats.getKey() +
-							"-BestParamsCombo-AggrStats.csv", "");
-					writeToFile(paramsStatsFolderPath + "/" + playerTypeComboStats.getKey() + "-" + playerRoleComboStats.getKey() +
-							"-BestParamsCombo-AggrStats.csv", "ROLE = " + roleCombosStats.getKey());
-
-					for(Entry<String,Map<String,ParamsComboInfo>> paramCombosStats : roleCombosStats.getValue().entrySet()){
+			// Log all the best combos statistics
+			// TODO: add number of wins!!!!!
+			for(Entry<String,Map<String,Map<String,Map<String,Map<String,ParamsComboInfo>>>>> playerTypeComboStats : aggregatedBestComboStats.entrySet()){
+				for(Entry<String,Map<String,Map<String,Map<String,ParamsComboInfo>>>> playerRoleComboStats : playerTypeComboStats.getValue().entrySet()){
+					for(Entry<String,Map<String,Map<String,ParamsComboInfo>>> roleCombosStats : playerRoleComboStats.getValue().entrySet()){
 
 						writeToFile(paramsStatsFolderPath + "/" + playerTypeComboStats.getKey() + "-" + playerRoleComboStats.getKey() +
-								"-BestParamsCombo-AggrStats.csv", "PARAMS = " + paramCombosStats.getKey() + ";NUM_COMMITS;NUM_WINS;NUM_TIES;NUM_LOSSES;");
+								"-BestParamsCombo-AggrStats.csv", "");
+						writeToFile(paramsStatsFolderPath + "/" + playerTypeComboStats.getKey() + "-" + playerRoleComboStats.getKey() +
+								"-BestParamsCombo-AggrStats.csv", "ROLE = " + roleCombosStats.getKey());
 
-						for(Entry<String,ParamsComboInfo> comboStat : paramCombosStats.getValue().entrySet()){
+						for(Entry<String,Map<String,ParamsComboInfo>> paramCombosStats : roleCombosStats.getValue().entrySet()){
+
 							writeToFile(paramsStatsFolderPath + "/" + playerTypeComboStats.getKey() + "-" + playerRoleComboStats.getKey() +
-									"-BestParamsCombo-AggrStats.csv", comboStat.getKey() + ";" + comboStat.getValue().getNumCommits() + ";" +
-									comboStat.getValue().getNumWins() + ";" + comboStat.getValue().getNumTies() + ";" +
-									comboStat.getValue().getNumLosses() + ";");
+									"-BestParamsCombo-AggrStats.csv", "PARAMS = " + paramCombosStats.getKey() + ";NUM_COMMITS;NUM_WINS;NUM_TIES;NUM_LOSSES;");
+
+							for(Entry<String,ParamsComboInfo> comboStat : paramCombosStats.getValue().entrySet()){
+								writeToFile(paramsStatsFolderPath + "/" + playerTypeComboStats.getKey() + "-" + playerRoleComboStats.getKey() +
+										"-BestParamsCombo-AggrStats.csv", comboStat.getKey() + ";" + comboStat.getValue().getNumCommits() + ";" +
+										comboStat.getValue().getNumWins() + ";" + comboStat.getValue().getNumTies() + ";" +
+										comboStat.getValue().getNumLosses() + ";");
+							}
 						}
 					}
 				}
 			}
+		}else {
+			//System.out.println("Impossible to find the params logs directory to summarize: " + paramLogsFolder.getPath());
 		}
 
+		/****************** Compute tuner samples statistics of the matches that were considered in the previous statistics *******************/
 
+		//System.out.println("TUNER SMAPLES START");
 
-		//System.out.println();
+		String tunerSamplesLogsFolderPath;
+		if(simpleFolderFormat) {
+			tunerSamplesLogsFolderPath = mainFolderPath + "/TunerSamplesLogs";
+		}else{
+			tunerSamplesLogsFolderPath = mainFolderPath + "/" + tourneyType + "." + gameKey + ".TunerSamplesLogs";
+		}
 
-		//System.out.println();
+		File tunerSamplesLogsFolder = new File(tunerSamplesLogsFolderPath);
 
-		//System.out.println("SummarizedFiles = " + summarizedTreeFiles);
+		if(tunerSamplesLogsFolder.isDirectory()){
+			// Create (or empty if it already exists) the folder where to move all the speed log files
+			// that have been rejected and haven't been considered when computing the statistics.
+			String rejectedTunerSamplesFilesFolderPath;
+			if(simpleFolderFormat) {
+				rejectedTunerSamplesFilesFolderPath = mainFolderPath + "/RejectedTunerSamplesFiles";
+			}else{
+				rejectedTunerSamplesFilesFolderPath = mainFolderPath + "/" + tourneyType + "." + gameKey + ".RejectedTunerSamplesFiles";
+			}
 
-		//System.out.println("NumRoles = " + numRoles);
+			File rejectedTunerSamplesFilesFolder = new File(rejectedTunerSamplesFilesFolderPath);
+			if(rejectedTunerSamplesFilesFolder.isDirectory()){
+				if(!emptyFolder(rejectedTunerSamplesFilesFolder)){
+					System.out.println("Summarization interrupted. Cannot empty the RejectedTunerSamplesFilesFolder folder: " + rejectedTunerSamplesFilesFolder.getPath());
+					return;
+				}
+			}else{
+				if(!rejectedTunerSamplesFilesFolder.mkdir()){
+					System.out.println("Summarization interrupted. Cannot create the RejectedTunerSamplesFilesFolder folder: " + rejectedTunerSamplesFilesFolder.getPath());
+					return;
+				}
+			}
 
-		//System.out.println("AcceptedMatchesSize = " + acceptedMatches.size());
+			// Create (or empty if it already exists) the folder where to save all the speed statistics.
+			String tunerSamplesStatsFolderPath;
+			if(simpleFolderFormat) {
+				tunerSamplesStatsFolderPath = mainFolderPath + "/TunerSamplesStatistics";
+			}else{
+				tunerSamplesStatsFolderPath = mainFolderPath + "/" + tourneyType + "." + gameKey + ".TunerSamplesStatistics";
+			}
 
+			File tunerSamplesStatsFolder = new File(tunerSamplesStatsFolderPath);
+			if(tunerSamplesStatsFolder.isDirectory()){
+				if(!emptyFolder(tunerSamplesStatsFolder)){
+					System.out.println("Summarization interrupted. Cannot empty the TunerSamplesStatistics folder: " + tunerSamplesStatsFolder.getPath());
+					return;
+				}
+			}else{
+				if(!tunerSamplesStatsFolder.mkdir()){
+					System.out.println("Summarization interrupted. Cannot create the TunerSamplesStatistics folder: " + tunerSamplesStatsFolder.getPath());
+					return;
+				}
+			}
+
+			Map<String,Map<String,StatsFileData>> samplesEstimates = new HashMap<String,Map<String,StatsFileData>>();
+			Map<String,Map<String,StatsFileData>> samplesUsagePerRole = new HashMap<String,Map<String,StatsFileData>>();
+
+			Map<String,StatsFileData> samplesEstimateForPlayerType;
+			Map<String,StatsFileData> samplesUsagePerRoleForPlayerType;
+
+			StatsFileData samplesEstimateForPlayerTypeForRole;
+			StatsFileData samplesUsagePerRoleForPlayerTypeForRole;
+
+			File[] tunerSamplesStatsFiles;
+
+			// Iterate over the directories containing the matches logs for each player's type.
+			File[] playerTypesDirs = tunerSamplesLogsFolder.listFiles();
+
+			// For the folder of each player type...
+			for(int i = 0; i < playerTypesDirs.length; i++){
+
+				if(playerTypesDirs[i].isDirectory()){
+
+					String playerType = playerTypesDirs[i].getName();
+
+					//System.out.println("Visiting folder of player type: " + playerType);
+
+					File[] playerRolesDirs = playerTypesDirs[i].listFiles();
+
+					// Iterate over all the folders corresponding to the different roles the player played
+					for(int j = 0; j < playerRolesDirs.length; j++){
+
+						if(playerRolesDirs[j].isDirectory()){
+
+							String playerRole = playerRolesDirs[j].getName();
+
+							//System.out.println("Visiting folder of role: " + playerRole);
+
+							tunerSamplesStatsFiles = playerRolesDirs[j].listFiles();
+
+							// Iterate over all the tuner samples stats files
+							for(int k = 0; k < tunerSamplesStatsFiles.length; k++){
+
+								String[] splittedName = tunerSamplesStatsFiles[k].getName().split("\\.");
+
+								// If it's a .csv file, compute and log the statistics
+								if(!(splittedName[splittedName.length-1].equalsIgnoreCase("csv"))){
+									System.out.println("Found file with no .csv extension when summarizing tuner samples statistics.");
+									rejectFile(tunerSamplesStatsFiles[k], rejectedTunerSamplesFilesFolderPath + "/" + playerType + "/" + playerRole);
+								}else{
+
+									// If the stats are referring to a match that was rejected, reject them too
+
+									StatsFileData theCurrentStatsFileData = new StatsFileData(tunerSamplesStatsFiles[k]);
+
+									if(!(acceptedMatches.containsKey(theCurrentStatsFileData.getMatchID()))){
+										System.out.println("Found Tuner Samples Statistics file for a match that was previously rejected from statistics.");
+										rejectFile(tunerSamplesStatsFiles[k], rejectedTunerSamplesFilesFolderPath + "/" + playerType + "/" + playerRole);
+									}else{
+										if(tunerSamplesStatsFiles[k].getName().endsWith("SamplesEstimates.csv")){
+											// Get the SamplesEstimates map corresponding to this player type
+											samplesEstimateForPlayerType = samplesEstimates.get(playerType);
+											if(samplesEstimateForPlayerType == null){
+												samplesEstimateForPlayerType = new HashMap<String,StatsFileData>();
+												samplesEstimates.put(playerType, samplesEstimateForPlayerType);
+											}
+											// Get the StatsFileData corresponding to the role played by the player
+											samplesEstimateForPlayerTypeForRole = samplesEstimateForPlayerType.get(playerRole);
+											if(samplesEstimateForPlayerTypeForRole == null){
+												samplesEstimateForPlayerTypeForRole = new StatsFileData(theCurrentStatsFileData.getFileHeader(), theCurrentStatsFileData.getFileLines());
+												samplesEstimateForPlayerType.put(playerRole, samplesEstimateForPlayerTypeForRole);
+											}else {
+												if(theCurrentStatsFileData.getFileHeader().equals(samplesEstimateForPlayerTypeForRole.getFileHeader())) {
+													samplesEstimateForPlayerTypeForRole.addLines(theCurrentStatsFileData.getFileLines());
+												}else {
+													System.out.println("Wrong header for tuner samples stats: " + theCurrentStatsFileData.getFileHeader() + ". Skipping file: " + tunerSamplesStatsFiles[k].getPath());
+													continue;
+												}
+											}
+										}else if(tunerSamplesStatsFiles[k].getName().endsWith("SamplesUsagePerRole.csv")){
+											// Get the SamplesUsagePerRole map corresponding to this player type
+											samplesUsagePerRoleForPlayerType = samplesUsagePerRole.get(playerType);
+											if(samplesUsagePerRoleForPlayerType == null){
+												samplesUsagePerRoleForPlayerType = new HashMap<String,StatsFileData>();
+												samplesUsagePerRole.put(playerType, samplesUsagePerRoleForPlayerType);
+											}
+											// Get the StatsFileData corresponding to the role played by the player
+											samplesUsagePerRoleForPlayerTypeForRole = samplesUsagePerRoleForPlayerType.get(playerRole);
+											if(samplesUsagePerRoleForPlayerTypeForRole == null){
+												samplesUsagePerRoleForPlayerTypeForRole = new StatsFileData(theCurrentStatsFileData.getFileHeader(), theCurrentStatsFileData.getFileLines());
+												samplesUsagePerRoleForPlayerType.put(playerRole, samplesUsagePerRoleForPlayerTypeForRole);
+											}else {
+												if(theCurrentStatsFileData.getFileHeader().equals(samplesUsagePerRoleForPlayerTypeForRole.getFileHeader())) {
+													samplesUsagePerRoleForPlayerTypeForRole.addLines(theCurrentStatsFileData.getFileLines());
+												}else {
+													System.out.println("Wrong header for tuner samples stats: " + theCurrentStatsFileData.getFileHeader() + ". Skipping file: " + tunerSamplesStatsFiles[k].getPath());
+													continue;
+												}
+											}
+										}else{
+											System.out.println("Unrecognized type of tuner samples stats. Skipping file: " + tunerSamplesStatsFiles[k].getPath());
+											continue;
+										}
+									}
+								}
+							}
+						}
+					}
+				}
+			}
+
+			for(Entry<String,Map<String,StatsFileData>> samplesEstimatesForPlayer: samplesEstimates.entrySet()) {
+				String playerType = samplesEstimatesForPlayer.getKey();
+				for(Entry<String,StatsFileData> samplesEstimatesForPlayerForRole: samplesEstimatesForPlayer.getValue().entrySet()) {
+					String playerRole = samplesEstimatesForPlayerForRole.getKey();
+					writeToFile(tunerSamplesStatsFolderPath + "/" + playerType + "-" + playerRole + "-SamplesEstimates.csv", samplesEstimatesForPlayerForRole.getValue().toLogs());
+				}
+			}
+
+			for(Entry<String,Map<String,StatsFileData>> samplesUsagePerRoleForPlayer: samplesUsagePerRole.entrySet()) {
+				String playerType = samplesUsagePerRoleForPlayer.getKey();
+				for(Entry<String,StatsFileData> samplesUsagePerRoleForPlayerForRole: samplesUsagePerRoleForPlayer.getValue().entrySet()) {
+					String playerRole = samplesUsagePerRoleForPlayerForRole.getKey();
+					writeToFile(tunerSamplesStatsFolderPath + "/" + playerType + "-" + playerRole + "-SamplesUsagePerRole.csv", samplesUsagePerRoleForPlayerForRole.getValue().toLogs());
+				}
+			}
+
+			//System.out.println();
+
+			//System.out.println();
+
+			//System.out.println("SummarizedFiles = " + summarizedTreeFiles);
+
+			//System.out.println("NumRoles = " + numRoles);
+
+			//System.out.println("AcceptedMatchesSize = " + acceptedMatches.size());
+		}else {
+			//System.out.println("Impossible to find the tuner samples logs directory to summarize: " + tunerSamplesLogsFolder.getPath());
+		}
 
 	}
 
@@ -1999,10 +2187,4 @@ public class StatsSummarizer {
 			}
 		}
 	}
-
-	private static String extractLogs(File tunerSmaplesFile) {
-		return null;
-	}
-
-
 }
