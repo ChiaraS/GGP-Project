@@ -154,7 +154,7 @@ public class WinScoreStatsAggregator {
 							String[] splitStatsDir = statsDirs[j].getName().split("\\.");
 							gameKey = splitStatsDir[1];
 						}else {
-							gameKey = statsDirs[j].getParentFile().getName().split("\\.")[1];
+							gameKey = statsDirs[j].getParentFile().getName().split("\\.")[2];
 						}
 
 						System.out.println(gameKey);

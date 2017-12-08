@@ -48,18 +48,22 @@ public class StatsFileData {
 
 	}
 
-	public StatsFileData(String fileHeader, List<String> fileLines) {
+	public StatsFileData(String fileHeader) {
 
 		this.matchID = null;
 
 		this.fileHeader = fileHeader;
 
-		this.fileLines = fileLines;
+		this.fileLines = new ArrayList<String>();
 
 	}
 
 	public void addLines(List<String> theLines) {
 		this.fileLines.addAll(theLines);
+	}
+
+	public void addLine(String theLine) {
+		this.fileLines.add(theLine);
 	}
 
 	public String getMatchID() {
@@ -76,7 +80,7 @@ public class StatsFileData {
 
 	public String toLogs() {
 
-		String toLog = this.fileHeader;
+		String toLog = "Match ID;" + this.fileHeader;
 
 		for(String s : this.fileLines) {
 			toLog += "\n" + s;

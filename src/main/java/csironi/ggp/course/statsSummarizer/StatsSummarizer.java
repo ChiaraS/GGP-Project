@@ -1402,11 +1402,16 @@ public class StatsSummarizer {
 											// Get the StatsFileData corresponding to the role played by the player
 											samplesEstimateForPlayerTypeForRole = samplesEstimateForPlayerType.get(playerRole);
 											if(samplesEstimateForPlayerTypeForRole == null){
-												samplesEstimateForPlayerTypeForRole = new StatsFileData(theCurrentStatsFileData.getFileHeader(), theCurrentStatsFileData.getFileLines());
+												samplesEstimateForPlayerTypeForRole = new StatsFileData(theCurrentStatsFileData.getFileHeader());
+												for(String line : theCurrentStatsFileData.getFileLines()) {
+													samplesEstimateForPlayerTypeForRole.addLine(theCurrentStatsFileData.getMatchID() + ";" + line);
+												}
 												samplesEstimateForPlayerType.put(playerRole, samplesEstimateForPlayerTypeForRole);
 											}else {
 												if(theCurrentStatsFileData.getFileHeader().equals(samplesEstimateForPlayerTypeForRole.getFileHeader())) {
-													samplesEstimateForPlayerTypeForRole.addLines(theCurrentStatsFileData.getFileLines());
+													for(String line : theCurrentStatsFileData.getFileLines()) {
+														samplesEstimateForPlayerTypeForRole.addLine(theCurrentStatsFileData.getMatchID() + ";" + line);
+													}
 												}else {
 													System.out.println("Wrong header for tuner samples stats: " + theCurrentStatsFileData.getFileHeader() + ". Skipping file: " + tunerSamplesStatsFiles[k].getPath());
 													continue;
@@ -1422,11 +1427,16 @@ public class StatsSummarizer {
 											// Get the StatsFileData corresponding to the role played by the player
 											samplesUsagePerRoleForPlayerTypeForRole = samplesUsagePerRoleForPlayerType.get(playerRole);
 											if(samplesUsagePerRoleForPlayerTypeForRole == null){
-												samplesUsagePerRoleForPlayerTypeForRole = new StatsFileData(theCurrentStatsFileData.getFileHeader(), theCurrentStatsFileData.getFileLines());
+												samplesUsagePerRoleForPlayerTypeForRole = new StatsFileData(theCurrentStatsFileData.getFileHeader());
+												for(String line : theCurrentStatsFileData.getFileLines()) {
+													samplesUsagePerRoleForPlayerTypeForRole.addLine(theCurrentStatsFileData.getMatchID() + ";" + line);
+												}
 												samplesUsagePerRoleForPlayerType.put(playerRole, samplesUsagePerRoleForPlayerTypeForRole);
 											}else {
 												if(theCurrentStatsFileData.getFileHeader().equals(samplesUsagePerRoleForPlayerTypeForRole.getFileHeader())) {
-													samplesUsagePerRoleForPlayerTypeForRole.addLines(theCurrentStatsFileData.getFileLines());
+													for(String line : theCurrentStatsFileData.getFileLines()) {
+														samplesUsagePerRoleForPlayerTypeForRole.addLine(theCurrentStatsFileData.getMatchID() + ";" + line);
+													}
 												}else {
 													System.out.println("Wrong header for tuner samples stats: " + theCurrentStatsFileData.getFileHeader() + ". Skipping file: " + tunerSamplesStatsFiles[k].getPath());
 													continue;
