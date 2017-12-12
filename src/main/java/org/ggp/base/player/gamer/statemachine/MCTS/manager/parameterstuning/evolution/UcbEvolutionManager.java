@@ -109,14 +109,16 @@ public class UcbEvolutionManager extends StandardEvolutionManager {
 				}
 				// TODO: What if there are multiple candidates with the same value but some of them must be excluded?
 				// Now it's just excluding the last ones in the order.
+				// Eg: list of individuals'UCB values [9 8 7 7 7 7 5 4 3 3], if we need to keep only 4 candidates
+				// we will have [9 8 7 7], two individuals with UCB value 7 will be excluded and two considered.
+				// The excluded ones will be the last two individuals with value 7.
 			}else{
 				// Otherwise we use the best eliteSize individuals in the population to generate the individuals
 				// for the next population and then substitute all the non-elite individuals in the old population
 				// with the top elements of the new population.
 
 				// Sort the individuals depending on their fitness.
-				Arrays.sort(population,
-						new Comparator<CompleteMoveStats>(){
+				Arrays.sort(population,	new Comparator<CompleteMoveStats>(){
 
 					@Override
 					public int compare(CompleteMoveStats o1, CompleteMoveStats o2) {
@@ -150,9 +152,11 @@ public class UcbEvolutionManager extends StandardEvolutionManager {
 						this.eliteSize);
 
 				// For the individuals that we are keeping, reset all statistics.
+				/*
 				for(int individualIndex = 0; individualIndex < this.eliteSize; individualIndex++){
 					population[individualIndex].resetStats();
 				}
+				*/
 
 				// The candidates are already ordered by decreasing UCB value.
 				// Substitute the remaining individuals in the population with the first (populationSize-eliteSize)

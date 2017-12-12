@@ -145,6 +145,9 @@ public class ParametersManager extends SearchManagerComponent {
 
 		this.initialParametersOrder.imposeOrder(this.tunableParameters);
 
+		this.indexOfK = -1;
+		this.indexOfRef = -1;
+
 		int i = 0;
 		for(TunableParameter t : this.tunableParameters){
 			if(t.getName().equals("K")){
@@ -577,6 +580,18 @@ public class ParametersManager extends SearchManagerComponent {
 
 		return penaltySum/parameterValuesIndices.length;
 	}
+
+
+	public int getIndexOfK() {
+		return this.indexOfK;
+	}
+
+
+	public int getIndexOfRef() {
+		return this.indexOfRef;
+	}
+
+
 
 
 }
