@@ -32,7 +32,7 @@ public class NTupleEvoProblemRepresentation extends EvoProblemRepresentation{
 	 *  can be logged to memorize the local and global statistics about the parameters
 	 *  usage.
 	 *
-	 *  NOTE that for each n-tuple there us only ONE IncrementalMab that is referenced
+	 *  NOTE that for each n-tuple there is only ONE IncrementalMab that is referenced
 	 *  by both landscape models when needed by both of them
 	 */
 	private Map<NTuple,IncrementalMab> landscapeModelForStatsUpdate;
