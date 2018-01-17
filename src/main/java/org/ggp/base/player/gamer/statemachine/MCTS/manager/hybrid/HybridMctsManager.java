@@ -507,9 +507,9 @@ public class HybridMctsManager {
 
 	}
 
-	public void setUpManager(AbstractStateMachine theMachine, int numRoles, int myRoleIndex){
+	public void setUpManager(AbstractStateMachine theMachine, int numRoles, int myRoleIndex, long actualPlayClock){
 
-		this.gameDependentParameters.resetGameDependentParameters(theMachine, numRoles, myRoleIndex);
+		this.gameDependentParameters.resetGameDependentParameters(theMachine, numRoles, myRoleIndex, actualPlayClock);
 
 		this.selectionStrategy.setUpComponent();
 		this.expansionStrategy.setUpComponent();
@@ -775,6 +775,10 @@ public class HybridMctsManager {
 			System.out.print(s);
 			*/
 
+			// If current node is terminal and we are in the tree, the game length corresponds to the
+			// number of visited nodes in the current iteration
+			this.gameDependentParameters.increaseStepGameLengthSum(this.gameDependentParameters.getCurrentIterationVisitedNodes());
+
 			simulationResult = new SimulationResult[1];
 			simulationResult[0] = new SimulationResult(currentNode.getGoals());
 			return simulationResult;
@@ -807,6 +811,13 @@ public class HybridMctsManager {
 			s += "]\n";
 			System.out.print(s);
 			*/
+
+			// If we reached the depth limit while we are in the tree, we assume that the game length corresponds to the
+			// number of visited nodes in the current iteration.
+			// TODO: if we use this sample we might underestimate the game length. Should this sample be ignored? Note that
+			// if we want to ignore this sample we must remember that when computing the average length we have to decrease
+			// by 1 the number of iterations by which we divide the total game length sum.
+			this.gameDependentParameters.increaseStepGameLengthSum(this.gameDependentParameters.getCurrentIterationVisitedNodes());
 
 			simulationResult = new SimulationResult[1];
 			simulationResult[0] = new SimulationResult(this.gameDependentParameters.getTheMachine().getSafeGoalsAvgForAllRoles(currentState));
@@ -887,6 +898,13 @@ public class HybridMctsManager {
 
 			this.gameDependentParameters.decreaseCurrentIterationVisitedNodes();
 
+			// If something goes wrong in advancing with the current move, assume that the game length corresponds to the
+			// number of visited nodes so far in the current iteration
+			// TODO: if we use this sample we might underestimate the game length. Should this sample be ignored? Note that
+			// if we want to ignore this sample we must remember that when computing the average length we have to decrease
+			// by 1 the number of iterations by which we divide the total game length sum.
+			this.gameDependentParameters.increaseStepGameLengthSum(this.gameDependentParameters.getCurrentIterationVisitedNodes());
+
 			simulationResult = new SimulationResult[1];
 			simulationResult[0] = new SimulationResult(this.gameDependentParameters.getTheMachine().getSafeGoalsAvgForAllRoles(currentState));
 			return simulationResult;
@@ -949,6 +967,10 @@ public class HybridMctsManager {
 				System.out.print(s);
 				*/
 
+				// If the next node is terminal, the game length corresponds to the number of visited nodes in the
+				// current iteration
+				this.gameDependentParameters.increaseStepGameLengthSum(this.gameDependentParameters.getCurrentIterationVisitedNodes());
+
 				simulationResult = new SimulationResult[1];
 				simulationResult[0] = new SimulationResult(nextNode.getGoals());
 			}else{
@@ -979,6 +1001,13 @@ public class HybridMctsManager {
 
 					*/
 
+					// If we reached the depth limit, assume that the game length corresponds to the
+					// number of visited nodes so far in the current iteration
+					// TODO: if we use this sample we might underestimate the game length. Should this sample be ignored?  Note that
+					// if we want to ignore this sample we must remember that when computing the average length we have to decrease
+					// by 1 the number of iterations by which we divide the total game length sum.
+					this.gameDependentParameters.increaseStepGameLengthSum(this.gameDependentParameters.getCurrentIterationVisitedNodes());
+
 					simulationResult = new SimulationResult[1];
 					simulationResult[0] = new SimulationResult(this.gameDependentParameters.getTheMachine().getSafeGoalsAvgForAllRoles(nextState));
 
@@ -994,9 +1023,15 @@ public class HybridMctsManager {
 					// number will be higher than normal. Keep this in mind when looking at speed statistics.
 					// When using multiple playouts the average number of nodes per iteration will increase,
 					// while the average number of iterations per second will decrease.
+					// OTHER IMPORTANT NOTE! Here we also save the number of nodes visited so far in the tree for this
+					// iteration. We use this number to compute the length of the game simulated in this iteration. If
+					// for this iteration multiple playouts have been performed, the length of each playout will be
+					// summed to the number of nodes visited in the tree to obtain the total length of the simulated game.
+					int gameLengthInTheTree = this.gameDependentParameters.getCurrentIterationVisitedNodes();
 					for(int resultIndex = 0; resultIndex < simulationResult.length; resultIndex++){
 						// TODO: increase currentIterationVisitedNodes directly from the playout strategy every time a new node is visited.
 						this.gameDependentParameters.increaseCurrentIterationVisitedNodes(simulationResult[resultIndex].getPlayoutLength());
+						this.gameDependentParameters.increaseStepGameLengthSum(gameLengthInTheTree + simulationResult[resultIndex].getPlayoutLength());
 					}
 
 					/*
@@ -1060,9 +1095,11 @@ public class HybridMctsManager {
 
 	}
 
-	public void beforeMoveActions(int currentGameStep){
+	public void beforeMoveActions(int currentGameStep, boolean metagame){
 
 		this.gameDependentParameters.setGameStep(currentGameStep);
+
+		this.gameDependentParameters.setMetagame(metagame);
 
 		// Assume that the game step changed, because we are going to search for a new game step in the game.
 
@@ -1086,6 +1123,7 @@ public class HybridMctsManager {
 		if(this.afterMetagameStrategy != null){
 			this.afterMetagameStrategy.afterMetagameActions();
 		}
+		this.gameDependentParameters.setMetagame(false);
 	}
 
 	public void afterGameActions(List<Integer> goals){

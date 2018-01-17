@@ -14,6 +14,7 @@ import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.SearchManagerC
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.SharedReferencesCollector;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.parameterstuning.selectors.TunerSelector;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.parameterstuning.structure.CombinatorialCompactMove;
+import org.ggp.base.player.gamer.statemachine.MCTS.manager.parameterstuning.structure.NaivePhaseSettings;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.parameterstuning.structure.mabs.FixedMab;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.parameterstuning.structure.mabs.IncrementalMab;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.parameterstuning.structure.problemrep.NaiveProblemRepresentation;
@@ -26,11 +27,22 @@ import csironi.ggp.course.utils.MyPair;
 
 public class NaiveParametersTuner extends ParametersTuner {
 
-	private double epsilon0;
+	private int totalSamples;
 
-	private TunerSelector globalMabSelector;
+	/**
+	 * When the total number of samples collected so far exceeds this threshold, this tuner will start
+	 * using the settings for phase 2 to select the next combinations of parameters to evaluate.
+	 */
+	// Optional parameter. If specified, the constructor expects the settings for phase 1 to also be specified
+	// If not specified, it will be set to -1 and the settings for phase 2 will always be used to select the
+	// next combination of parameter values.
+	private int samplesForPhase1;
 
-	private TunerSelector localMabsSelector;
+	// Settings for phase 1 (optional):
+	private NaivePhaseSettings phase1Settings;
+
+	// Settings for phase 2:
+	private NaivePhaseSettings phase2Settings;
 
 	/**
 	 * Given the statistics of each combination, selects the best one among them.
@@ -62,33 +74,25 @@ public class NaiveParametersTuner extends ParametersTuner {
 			GamerSettings gamerSettings, SharedReferencesCollector sharedReferencesCollector) {
 		super(gameDependentParameters, random, gamerSettings, sharedReferencesCollector);
 
-		this.epsilon0 = gamerSettings.getDoublePropertyValue("ParametersTuner.epsilon0");
+		this.totalSamples = 0;
 
-		String[] tunerSelectorDetails = gamerSettings.getIDPropertyValue("ParametersTuner.globalMabSelectorType");
-
-		try {
-			this.globalMabSelector = (TunerSelector) SearchManagerComponent.getConstructorForMultiInstanceSearchManagerComponent(SearchManagerComponent.getCorrespondingClass(ProjectSearcher.TUNER_SELECTORS.getConcreteClasses(), tunerSelectorDetails[0])).newInstance(gameDependentParameters, random, gamerSettings, sharedReferencesCollector, tunerSelectorDetails[1]);
-		} catch (InstantiationException | IllegalAccessException
-				| IllegalArgumentException | InvocationTargetException e) {
-			// TODO: fix this!
-			GamerLogger.logError("SearchManagerCreation", "Error when instantiating TunerSelector " + gamerSettings.getPropertyValue("ParametersTuner.globalMabSelectorType") + ".");
-			GamerLogger.logStackTrace("SearchManagerCreation", e);
-			throw new RuntimeException(e);
+		if(gamerSettings.specifiesProperty("ParametersTuner.samplesForPhase1")) {
+			this.samplesForPhase1 = gamerSettings.getIntPropertyValue("ParametersTuner.samplesForPhase1");
+		}else {
+			this.samplesForPhase1 = 0;
 		}
 
-		tunerSelectorDetails = gamerSettings.getIDPropertyValue("ParametersTuner.localMabsSelectorType");
-
-		try {
-			this.localMabsSelector = (TunerSelector) SearchManagerComponent.getConstructorForMultiInstanceSearchManagerComponent(SearchManagerComponent.getCorrespondingClass(ProjectSearcher.TUNER_SELECTORS.getConcreteClasses(), tunerSelectorDetails[0])).newInstance(gameDependentParameters, random, gamerSettings, sharedReferencesCollector, tunerSelectorDetails[1]);
-		} catch (InstantiationException | IllegalAccessException
-				| IllegalArgumentException | InvocationTargetException e) {
-			// TODO: fix this!
-			GamerLogger.logError("SearchManagerCreation", "Error when instantiating TunerSelector " + gamerSettings.getPropertyValue("ParametersTuner.localMabsSelectorType") + ".");
-			GamerLogger.logStackTrace("SearchManagerCreation", e);
-			throw new RuntimeException(e);
+		// If we allocate at least one sample to phase 1, then initialize the settings of
+		// phase 1, otherwise they are not needed.
+		if(this.samplesForPhase1 > 0) {
+			this.phase1Settings = new NaivePhaseSettings(gameDependentParameters, random, gamerSettings, sharedReferencesCollector, "1");
+		}else {
+			this.phase1Settings = null;
 		}
 
-		tunerSelectorDetails = gamerSettings.getIDPropertyValue("ParametersTuner.bestCombinationSelectorType");
+		this.phase2Settings = new NaivePhaseSettings(gameDependentParameters, random, gamerSettings, sharedReferencesCollector, "2");
+
+		String[] tunerSelectorDetails = gamerSettings.getIDPropertyValue("ParametersTuner.bestCombinationSelectorType");
 
 		try {
 			this.bestCombinationSelector = (TunerSelector) SearchManagerComponent.getConstructorForMultiInstanceSearchManagerComponent(SearchManagerComponent.getCorrespondingClass(ProjectSearcher.TUNER_SELECTORS.getConcreteClasses(), tunerSelectorDetails[0])).newInstance(gameDependentParameters, random, gamerSettings, sharedReferencesCollector, tunerSelectorDetails[1]);
@@ -168,8 +172,10 @@ public class NaiveParametersTuner extends ParametersTuner {
 	@Override
 	public void setReferences(SharedReferencesCollector sharedReferencesCollector) {
 		super.setReferences(sharedReferencesCollector);
-		this.globalMabSelector.setReferences(sharedReferencesCollector);
-		this.localMabsSelector.setReferences(sharedReferencesCollector);
+		if(this.phase1Settings != null) {
+			this.phase1Settings.setReferences(sharedReferencesCollector);
+		}
+		this.phase2Settings.setReferences(sharedReferencesCollector);
 		this.bestCombinationSelector.setReferences(sharedReferencesCollector);
 	}
 
@@ -178,10 +184,10 @@ public class NaiveParametersTuner extends ParametersTuner {
 
 		super.setUpComponent();
 
-		this.globalMabSelector.setUpComponent();
-
-		this.localMabsSelector.setUpComponent();
-
+		if(this.phase1Settings != null) {
+			this.phase1Settings.setUpComponent();
+		}
+		this.phase2Settings.setUpComponent();
 		this.bestCombinationSelector.setUpComponent();
 
 		int numRolesToTune;
@@ -233,8 +239,10 @@ public class NaiveParametersTuner extends ParametersTuner {
 
 		super.clearComponent();
 
-		this.globalMabSelector.clearComponent();
-		this.localMabsSelector.clearComponent();
+		if(this.phase1Settings != null){
+			this.phase1Settings.clearComponent();
+		}
+		this.phase2Settings.clearComponent();
 		this.bestCombinationSelector.clearComponent();
 
 		if(!this.reuseStats){
@@ -245,69 +253,15 @@ public class NaiveParametersTuner extends ParametersTuner {
 	}
 
 	@Override
-	public void setNextCombinations() {
+	public void setNextCombinations(){
 
-		// For each role, we check the corresponding naive problem and select a combination of parameters
-		for(int roleProblemIndex = 0; roleProblemIndex < this.roleProblems.length; roleProblemIndex++){
-			// TODO: the strategy that selects if to use the global or the local mabs is hard-coded.
-			// Can be refactored to be customizable.
-			if(this.roleProblems[roleProblemIndex].getGlobalMab().getNumUpdates() > 0 &&
-					this.random.nextDouble() >= this.epsilon0){// Exploit
-
-				this.selectedCombinations[roleProblemIndex] = this.exploit(this.roleProblems[roleProblemIndex].getGlobalMab());
-
-			}else{ //Explore
-
-				this.selectedCombinations[roleProblemIndex] = this.explore(this.roleProblems[roleProblemIndex].getLocalMabs());
-
-			}
+		if(this.totalSamples < this.samplesForPhase1){
+			this.selectedCombinations = this.phase1Settings.selectNextCombinations(this.roleProblems);
+		}else{
+			this.selectedCombinations = this.phase2Settings.selectNextCombinations(this.roleProblems);
 		}
 
 		this.parametersManager.setParametersValues(this.selectedCombinations);
-
-	}
-
-	/**
-	 * Given the global MAB, selects one of the combinatorial moves in the MAB according to
-	 * the strategy specified for the global MAB.
-	 *
-	 * @param globalMab
-	 * @return
-	 */
-	private int[] exploit(IncrementalMab globalMab){
-		Move m = this.globalMabSelector.selectMove(globalMab.getMovesInfo(), globalMab.getNumUpdates());
-		return ((CombinatorialCompactMove) m).getIndices();
-	}
-
-	private int[] explore(FixedMab[] localMabs){
-
-		int[] indices = new int[localMabs.length];
-		for(int paramIndex = 0; paramIndex < localMabs.length; paramIndex++){
-			indices[paramIndex] = -1; // It means that the index has not been set yet
-		}
-
-		for(int paramIndex = 0; paramIndex < localMabs.length; paramIndex++){
-			indices[paramIndex] = this.localMabsSelector.selectMove(localMabs[paramIndex].getMoveStats(),
-					this.parametersManager.getValuesFeasibility(paramIndex, indices),
-					// If for a parameter no penalties are specified, a penalty of 0 is assumed for all of the values.
-					(this.parametersManager.getPossibleValuesPenalty(paramIndex) != null ? this.parametersManager.getPossibleValuesPenalty(paramIndex) : new double[this.parametersManager.getNumPossibleValues(paramIndex)]),
-					localMabs[paramIndex].getNumUpdates());
-		}
-
-		/*
-		// Select a value for each local mab independently
-		if(this.unitMovesPenalty != null){
-			for(int i = 0; i < localMabs.length; i++){
-				indices[i] = this.localMabsSelector.selectMove(localMabs[i].getMoveStats(), this.unitMovesPenalty[i], localMabs[i].getNumUpdates());
-			}
-		}else{
-			for(int i = 0; i < localMabs.length; i++){
-				indices[i] = this.localMabsSelector.selectMove(localMabs[i].getMoveStats(), null, localMabs[i].getNumUpdates());
-			}
-		}
-		*/
-
-		return indices;
 
 	}
 
@@ -350,7 +304,7 @@ public class NaiveParametersTuner extends ParametersTuner {
 			// and so contains at least one combination.
 			if(this.useGlobalBest && this.roleProblems[roleProblemIndex].getGlobalMab().getNumUpdates() > 0){
 				IncrementalMab globalMab = this.roleProblems[roleProblemIndex].getGlobalMab();
-				Move m = this.bestCombinationSelector.selectMove(globalMab.getMovesInfo(), globalMab.getNumUpdates());
+				Move m = this.bestCombinationSelector.selectMove(globalMab.getMovesInfo(), null, globalMab.getNumUpdates());
 				this.selectedCombinations[roleProblemIndex] = ((CombinatorialCompactMove) m).getIndices();
 			}else{
 				FixedMab[] localMabs = this.roleProblems[roleProblemIndex].getLocalMabs();
@@ -610,6 +564,8 @@ public class NaiveParametersTuner extends ParametersTuner {
 				localMabs[paramIndex].incrementNumUpdates();
 			}
 		}
+
+		this.totalSamples++;
 	}
 
 	@Override
@@ -682,9 +638,10 @@ public class NaiveParametersTuner extends ParametersTuner {
 
 		String superParams = super.getComponentParameters(indentation);
 
-		String params = indentation + "EPSILON0 = " + this.epsilon0 +
-				indentation + "GLOBAL_MAB_SELECTOR = " + this.globalMabSelector.printComponent(indentation + "  ") +
-				indentation + "LOCAL_MABS_SELECTOR = " + this.localMabsSelector.printComponent(indentation + "  ") +
+		String params = indentation + "totalSamples = " + this.totalSamples +
+				indentation + "SAMPLES_FOR_PHASE_1 = " + this.samplesForPhase1 +
+				indentation + "PHASE_1_SETTINGS = " + (this.phase1Settings != null ? this.phase1Settings.printComponent(indentation + "  ") : "null") +
+				indentation + "PHASE_2_SETTINGS = " + this.phase2Settings.printComponent(indentation + "  ") +
 				indentation + "BEST_COMBINATION_SELECTOR = " + this.bestCombinationSelector.printComponent(indentation + "  ") +
 				indentation + "SINGLE_BEST = " + this.singleBest +
 				indentation + "USE_GLOBAL_BEST = " + this.useGlobalBest +
@@ -742,6 +699,7 @@ public class NaiveParametersTuner extends ParametersTuner {
 
 	}
 
+	/*
 	public double getEpsilon0(){
 		return this.epsilon0;
 	}
@@ -753,6 +711,7 @@ public class NaiveParametersTuner extends ParametersTuner {
 	public TunerSelector getLocalMabSelector(){
 		return this.localMabsSelector;
 	}
+	*/
 
 	public TunerSelector getBestCombinationSelector(){
 		return this.bestCombinationSelector;

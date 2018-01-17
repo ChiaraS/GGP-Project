@@ -138,13 +138,13 @@ public class MctsGamer extends InternalPropnetGamer {
     	rolesList += "]";
 		GamerLogger.log(GamerLogger.FORMAT.CSV_FORMAT, "Stats", "Game step;Thinking time(ms);Search time(ms);Iterations;Visited nodes;Iterations/second;Nodes/second;Chosen move;Move score sum;Move visits;Avg move score;Avg search score " + rolesList + ";");
 
-		this.mctsManager.setUpManager(abstractStateMachine, numRoles, myRoleIndex);
+		this.mctsManager.setUpManager(abstractStateMachine, numRoles, myRoleIndex, ((long)this.getMatch().getPlayClock() * 1000) - this.selectMoveSafetyMargin);
 
 		this.logGamerSettings();
 
 		if(this.metagameSearch){
 
-			this.mctsManager.beforeMoveActions(1);
+			this.mctsManager.beforeMoveActions(1, true);
 
 			// If there is enough time left start the MCT search.
 			// Otherwise return from metagaming.
@@ -245,7 +245,7 @@ public class MctsGamer extends InternalPropnetGamer {
 		GamerLogger.log("Gamer", "Starting move selection for game step " + this.gameStep + " with available time " + (realTimeout-start) + "ms.");
 
 		if((!this.metagameSearch) || this.gameStep > 1){ // For game step 1 is the metagame method that calls the before-move-actions
-			this.mctsManager.beforeMoveActions(this.gameStep);
+			this.mctsManager.beforeMoveActions(this.gameStep, false);
 		}
 
 		if(System.currentTimeMillis() < realTimeout){

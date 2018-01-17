@@ -1,5 +1,9 @@
 package org.ggp.base.player.gamer.statemachine.MCTS.manager.parameterstuning.evolution;
 
+import java.util.Arrays;
+import java.util.Comparator;
+import java.util.Random;
+
 import org.ggp.base.player.gamer.statemachine.GamerSettings;
 import org.ggp.base.player.gamer.statemachine.MCS.manager.hybrid.CompleteMoveStats;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.GameDependentParameters;
@@ -7,10 +11,6 @@ import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.SharedReferenc
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.parameterstuning.structure.ContinuousMove;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.parameterstuning.structure.problemrep.EvoProblemRepresentation;
 import org.ggp.base.util.logging.GamerLogger;
-
-import java.util.Arrays;
-import java.util.Comparator;
-import java.util.Random;
 
 public class SelfAdaptiveEvolutionStrategyManager extends EvolutionManager {
     protected double stepSize[];  // consider isotropic step size control
@@ -21,7 +21,7 @@ public class SelfAdaptiveEvolutionStrategyManager extends EvolutionManager {
     protected double[][] bounds;
     protected boolean[] isContinuous;   // set if a parameter is continuous, this is a fast but dirty solution
 
-    // TODO: 03/11/2017      
+    // TODO: 03/11/2017
     public SelfAdaptiveEvolutionStrategyManager(GameDependentParameters gameDependentParameters,
                                                 Random random,
                                                 GamerSettings gamerSettings,
@@ -81,6 +81,7 @@ public class SelfAdaptiveEvolutionStrategyManager extends EvolutionManager {
             bounds = new double[nbTunableParams][2];
             // set the bounds
             for (int i=0; i<nbTunableParams; i++) {
+            	// TODO: Temporary error. Merged master to update bug fixes. Changing code later to re-implement this missing method.
                 double[] _possbileValues = parametersManager.getPossibleValuesDouble(i);
                 bounds[i][0] = _possbileValues[0];  // lower bound
                 bounds[i][1] = _possbileValues[0];  // upper bound

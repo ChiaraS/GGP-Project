@@ -3,20 +3,48 @@ package org.ggp.base.player.gamer.statemachine.MCTS.manager.parameterstuning.str
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Random;
+import java.util.Set;
 
+import org.apache.commons.math3.distribution.EnumeratedDistribution;
+import org.apache.commons.math3.random.RandomGenerator;
+import org.apache.commons.math3.random.Well19937c;
+import org.apache.commons.math3.util.Pair;
 import org.ggp.base.player.gamer.statemachine.MCS.manager.MoveStats;
 import org.ggp.base.player.gamer.statemachine.MCS.manager.hybrid.CompleteMoveStats;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.parameterstuning.structure.CombinatorialCompactMove;
+import org.ggp.base.player.gamer.statemachine.MCTS.manager.parameterstuning.structure.ParametersManager;
 import org.ggp.base.util.logging.GamerLogger;
 
 import csironi.ggp.course.utils.MyPair;
 
+/**
+ * This class implements LSI for a single player. It is set up to work as follows:
+ * - When the samples reserved for the generation phase are enough to evaluate each value of each
+ * parameter, this class follows the LSI algorithm for the generation phase.
+ * - When the samples reserved for the generation phase are not enough to evaluate each value of each
+ * parameter, the predefined number of candidates for the evaluation phase are generated randomly and
+ * used in the evaluation phase.
+ * - When the evaluation phase starts,
+ * @author c.sironi
+ *
+ */
 public class SimLimitedLsiProblemRepresentation /*extends LsiProblemRepresentation*/{
 
     public enum Phase{
     	GENERATION, EVALUATION, BEST, STOP
     }
+
+    /***************** Parameters used for logging *************/
+
+    private int actualNumGenSamples;
+
+    private int actualNumEvalSamples;
+
+    /***********************************************************/
+
 
     /**
      * Phase of this LSI problem.
@@ -27,6 +55,18 @@ public class SimLimitedLsiProblemRepresentation /*extends LsiProblemRepresentati
      * Index that keeps track of the next combination to return.
      */
     private int currentIndex;
+
+    /**
+     * The parameters manager.
+     */
+    private ParametersManager parametersManager;
+
+    private Random random;
+
+    /**
+     * Parameters shared by all role problems.
+     */
+    private ProblemRepParameters problemRepParameters;
 
     //******************************* For the generation phase ********************************//
 
@@ -45,13 +85,6 @@ public class SimLimitedLsiProblemRepresentation /*extends LsiProblemRepresentati
 	 * value that can be assigned to that parameter.
 	 */
 	private MoveStats[][] paramsStats;
-
-	/**
-	 * True if when receiving the reward for a certain combinatorial action we want to use it to update the stats
-	 * of all unit actions that form the combinatorial action. False if we want to use it only to update the stats
-	 * for the only unit action that wasn't generated randomly when creating the combinatorial action.
-	 */
-	private boolean updateAll;
 
     //******************************* For the evaluation phase ********************************//
 
@@ -80,33 +113,158 @@ public class SimLimitedLsiProblemRepresentation /*extends LsiProblemRepresentati
 	 */
 	private List<Integer> evalOrder;
 
+	public SimLimitedLsiProblemRepresentation(ParametersManager parametersManager, Random random, ProblemRepParameters problemRepParameters) {
 
-	public SimLimitedLsiProblemRepresentation(List<MyPair<CombinatorialCompactMove,Integer>> combinationsToTest, int[] numValuesPerParam, boolean updateAll) {
+		this.actualNumGenSamples = 0;
 
-		this.phase = Phase.GENERATION;
+		this.actualNumEvalSamples = 0;
 
 		this.currentIndex = 0;
 
-		this.combinationsToTest = combinationsToTest;
+		this.parametersManager = parametersManager;
 
-		this.paramsStats = new MoveStats[numValuesPerParam.length][];
+		this.random = random;
+
+		this.problemRepParameters = problemRepParameters;
+
+		this.paramsStats = new MoveStats[this.parametersManager.getNumTunableParameters()][];
 
 		for(int paramIndex = 0; paramIndex < paramsStats.length; paramIndex++){
-			this.paramsStats[paramIndex] = new MoveStats[numValuesPerParam[paramIndex]];
+			this.paramsStats[paramIndex] = new MoveStats[this.parametersManager.getNumPossibleValues(paramIndex)];
 			for(int valueIndex = 0; valueIndex < paramsStats[paramIndex].length; valueIndex++){
 				this.paramsStats[paramIndex][valueIndex] = new MoveStats();
 			}
 		}
 
-		this.updateAll = updateAll;
+		// If we intentionally don't want to run the generation phase and set the number of sample to 0,
+		// numCandidatesToGenerate random candidates will be generated and used to perform sequential halving
+		if(this.problemRepParameters.getDynamicNumGenSamples() == 0) {
 
-		this.generatedCandidatesStats = null;
+			this.combinationsToTest = null;
 
-		this.maxSamplesPerIteration = 0;
+			this.phase = Phase.EVALUATION;
 
-		this.numCandidatesOfCurrentIteration = 0;
+			this.generateRandomCandidates();
 
-		this.evalOrder = null;
+			if(this.generatedCandidatesStats.isEmpty()){ // No candidates
+				throw new RuntimeException("Constructor - SimLimitedLsiProblemRepresentation generated 0 candidates for the evaluation phase!");
+			}
+
+			// Set the parameters needed for the evaluation phase and check if we have enough samples
+			this.numCandidatesOfCurrentIteration = this.generatedCandidatesStats.size();
+			// Number of iterations in sequential halving (i.e. number of times the candidates will be all evaluated and halved)
+			int seqHalvingIterations = ((int) Math.ceil(Math.log(this.numCandidatesOfCurrentIteration)/Math.log(2.0)));
+
+			// Extra check to make sure that everything is right. This should never happen because whenever the number of
+			// eval samples is not set (i.e. =-1) the number of generation samples is set to Integer.MAX_VALUE, so the
+			// evaluation phase should never start.
+			if(this.problemRepParameters.getDynamicNumEvalSamples() == -1) {
+				GamerLogger.logError("ParametersTuner", "LsiParametersTuner - Something is wrong with the code, trying to start evaluation phase before having estimated the number of available evaluation samples.");
+				throw new RuntimeException("SimLimitedLsiProblemRepresentation - Something is wrong with the code, trying to start evaluation phase before having estimated the number of available evaluation samples.");
+			}
+
+			this.maxSamplesPerIteration = Math.floorDiv(this.problemRepParameters.getDynamicNumEvalSamples(), seqHalvingIterations);
+
+			//if(this.maxSamplesPerIteration >= this.numCandidatesOfCurrentIteration) {
+			this.currentIndex = 0;
+			if(this.numCandidatesOfCurrentIteration > 1){
+				this.computeEvalOrder();
+			}else if(this.numCandidatesOfCurrentIteration == 1){ // Otherwise we only have one candidate, that is automatically the best
+				this.evalOrder = null;
+				this.phase = Phase.STOP;
+			}
+			/*}else {
+				// We don't have enough samples to evaluate all candidates at least once, a random one
+				// among the generated ones will be picked and set as best.
+				Collections.shuffle(this.generatedCandidatesStats);
+				this.evalOrder = null;
+				this.phase = Phase.BEST;
+			}*/
+		}else {
+
+			// If we want to perform the generation phase, we will sample each value of each parameter at least
+			// once even if we don't have enough samples available for the generation phase.
+
+			this.phase = Phase.GENERATION;
+
+			this.currentIndex = 0;
+
+			this.combinationsToTest = this.createCombinationsToTest();
+
+			this.generatedCandidatesStats = null;
+
+			this.maxSamplesPerIteration = 0;
+
+			this.numCandidatesOfCurrentIteration = 0;
+
+			this.evalOrder = null;
+		}
+
+	}
+
+	/**
+	 * Creates one combination for each parameter value of all the parameters assigning values of
+	 * the other parameters randomly.
+	 */
+	private List<MyPair<CombinatorialCompactMove,Integer>> createCombinationsToTest() {
+		// For each value x of each parameter we generate one sample containing x,
+		// completing the parameter combination with random values for the other parameters.
+		List<MyPair<CombinatorialCompactMove,Integer>> nextCombinationsToTest = new ArrayList<MyPair<CombinatorialCompactMove,Integer>>();
+
+		for(int paramIndex = 0; paramIndex < this.parametersManager.getNumTunableParameters(); paramIndex++){
+			for(int valueIndex = 0; valueIndex < this.parametersManager.getNumPossibleValues(paramIndex); valueIndex++){
+				nextCombinationsToTest.add(new MyPair<CombinatorialCompactMove,Integer>(new CombinatorialCompactMove(this.randomlyCompleteCombinatorialMove(paramIndex,valueIndex)),new Integer(paramIndex)));
+			}
+		}
+
+		// Randomize order in which the combinations will be tested for each role so that the combinations
+		// won't be tested always against the same combination for all the roles.
+		Collections.shuffle(nextCombinationsToTest);
+
+		return nextCombinationsToTest;
+	}
+
+	private int[] randomlyCompleteCombinatorialMove(int paramIndex, int valueIndex){
+
+		int[] combinatorialMove = new int[this.parametersManager.getNumTunableParameters()];
+		for(int i = 0; i < combinatorialMove.length; i++){
+			if(i == paramIndex){
+				combinatorialMove[i] = valueIndex;
+			}else{
+				combinatorialMove[i] = -1;
+			}
+		}
+
+		for(int i = 0; i < combinatorialMove.length; i++){
+			if(i != paramIndex){
+				combinatorialMove[i] = this.problemRepParameters.getRandomSelector().selectMove(new MoveStats[0],
+						this.parametersManager.getValuesFeasibility(i, combinatorialMove), null, -1);
+			}
+		}
+
+		return combinatorialMove;
+
+	}
+
+	private void generateRandomCandidates(){
+
+		CombinatorialCompactMove combinatorialCompactMove;
+
+		Set<CombinatorialCompactMove> generatedCombinations = new HashSet<CombinatorialCompactMove>();
+
+		this.generatedCandidatesStats = new ArrayList<CompleteMoveStats>();
+
+		List<CombinatorialCompactMove> legalCombos = this.parametersManager.getAllLegalParametersCombinations();
+
+		for(int candidateIndex = 0; candidateIndex < this.problemRepParameters.getNumCandidatesToGenerate(); candidateIndex++){
+
+			combinatorialCompactMove = legalCombos.get(this.random.nextInt(legalCombos.size()));
+
+			if(generatedCombinations.add(combinatorialCompactMove)){ // Make sure there are no duplicate combinations
+				this.generatedCandidatesStats.add(new CompleteMoveStats(combinatorialCompactMove));
+			}
+
+		}
 
 	}
 
@@ -138,7 +296,7 @@ public class SimLimitedLsiProblemRepresentation /*extends LsiProblemRepresentati
 
 			int[] theIndices = theTestedCombo.getFirst().getIndices();
 
-			if(updateAll){
+			if(this.problemRepParameters.getUpdateAll()){
 				for(int pramIndex = 0; pramIndex < theIndices.length; pramIndex++){
 					this.paramsStats[pramIndex][theIndices[pramIndex]].incrementScoreSum(reward);
 					this.paramsStats[pramIndex][theIndices[pramIndex]].incrementVisits();
@@ -149,12 +307,59 @@ public class SimLimitedLsiProblemRepresentation /*extends LsiProblemRepresentati
 				this.paramsStats[paramIndex][theIndices[paramIndex]].incrementVisits();
 			}
 
+			this.actualNumGenSamples++;
+
 			this.currentIndex++;
 
-			if(this.currentIndex == this.combinationsToTest.size()){// All random combinations have been tested
-				this.phase = Phase.EVALUATION;
-				this.currentIndex = 0;
-				this.numCandidatesOfCurrentIteration = 0;
+			// If we tested all combinations available, generate the next batch of combinations
+			// (one for each value of each parameter), and add them to the combinations to test.
+			// NOTE: we keep all tested combinations so we can log them all.
+			if(this.currentIndex >= this.combinationsToTest.size()) {
+
+				// If we don't have enough generation samples left to test each value of each parameter once more,
+				// we start the evaluation phase.
+				if(this.currentIndex + this.parametersManager.getTotalNumPossibleValues() > this.problemRepParameters.getDynamicNumGenSamples()){
+
+					this.phase = Phase.EVALUATION;
+					this.generateCandidates();
+
+					if(this.generatedCandidatesStats.isEmpty()){ // No candidates
+							throw new RuntimeException("SimLimitedLsiProblemRepresentation generated 0 candidates for the evaluation phase!");
+					}
+
+					// Set the parameters needed for the evaluation phase and check if we have enough samples
+					this.numCandidatesOfCurrentIteration = this.generatedCandidatesStats.size();
+					// Number of iterations in sequential halving (i.e. number of times the candidates will be all evaluated and halved)
+					int seqHalvingIterations = ((int) Math.ceil(Math.log(this.numCandidatesOfCurrentIteration)/Math.log(2.0)));
+
+					// Extra check to make sure that everything is right. This should never happen because whenever the number of
+					// eval samples is not set (i.e. =-1) the number of generation samples is set to Integer.MAX_VALUE, so the
+					// evaluation phase should never start.
+					if(this.problemRepParameters.getDynamicNumEvalSamples() == -1) {
+						GamerLogger.logError("ParametersTuner", "LsiParametersTuner - Something is wrong with the code, trying to start evaluation phase before having estimated the number of available evaluation samples.");
+						throw new RuntimeException("SimLimitedLsiProblemRepresentation - Something is wrong with the code, trying to start evaluation phase before having estimated the number of available evaluation samples.");
+					}
+
+					this.maxSamplesPerIteration = Math.floorDiv(this.problemRepParameters.getDynamicNumEvalSamples(), seqHalvingIterations);
+
+					//if(this.maxSamplesPerIteration >= this.numCandidatesOfCurrentIteration) {
+					this.currentIndex = 0;
+					if(this.numCandidatesOfCurrentIteration > 1){
+						this.computeEvalOrder();
+					}else if(this.numCandidatesOfCurrentIteration == 1){ // Otherwise we only have one candidate, that is automatically the best
+						this.evalOrder = null;
+						this.phase = Phase.STOP;
+					}
+					/*}else {
+						// We don't have enough samples to evaluate all candidates at least once, a random one
+						// among the generated ones will be picked and set as best.
+						Collections.shuffle(this.generatedCandidatesStats);
+						this.evalOrder = null;
+						this.phase = Phase.BEST;
+					}*/
+				}else{
+					this.combinationsToTest.addAll(this.createCombinationsToTest());
+				}
 			}
 			break;
 		case EVALUATION:
@@ -162,10 +367,13 @@ public class SimLimitedLsiProblemRepresentation /*extends LsiProblemRepresentati
 			this.generatedCandidatesStats.get(this.evalOrder.get(this.currentIndex)).incrementScoreSum(reward);
 			this.generatedCandidatesStats.get(this.evalOrder.get(this.currentIndex)).incrementVisits();
 
+			this.actualNumEvalSamples++;
+
 			this.currentIndex++;
 
 			if(this.currentIndex == this.evalOrder.size()){ // All candidates have been tested for the given amount of times
 				// We must half the candidates and recompute the order.
+
 				Collections.sort(this.generatedCandidatesStats.subList(0,this.numCandidatesOfCurrentIteration),
 						new Comparator<CompleteMoveStats>(){
 
@@ -213,12 +421,151 @@ public class SimLimitedLsiProblemRepresentation /*extends LsiProblemRepresentati
 		}
 	}
 
+	private void generateCandidates(){
+
+		double avgRewards[][];
+
+		RandomGenerator rg = new Well19937c(); // Use this also for the rest of the player's code?
+
+		CombinatorialCompactMove combinatorialCompactMove;
+
+		Set<CombinatorialCompactMove> generatedCombinations;
+
+		avgRewards = this.computeAverageRewardsForParamValues();
+
+		generatedCombinations = new HashSet<CombinatorialCompactMove>();
+
+		this.generatedCandidatesStats = new ArrayList<CompleteMoveStats>();
+
+		// NOTE: the pseudocode in the paper generates up to k combinations but if there are duplicates the total
+		// considered combinations are less than k. This means that it is possible for the different roles to complete
+		// the evaluation phase at different moments.
+		for(int candidateIndex = 0; candidateIndex < this.problemRepParameters.getNumCandidatesToGenerate(); candidateIndex++){
+
+			combinatorialCompactMove = this.generateCandidate(avgRewards, rg);
+
+			if(generatedCombinations.add(combinatorialCompactMove)){ // Make sure there are no duplicate combinations
+				this.generatedCandidatesStats.add(new CompleteMoveStats(combinatorialCompactMove));
+			}
+
+		}
+
+	}
+
+	private double[][] computeAverageRewardsForParamValues(){
+
+		// For each param value compute the average reward normalized between 0 and 1.
+		double[][] avgRewards = new double[this.paramsStats.length][];
+
+		double scoreSum;
+		int visits;
+
+		for(int paramIndex = 0; paramIndex < this.paramsStats.length; paramIndex++){
+
+			avgRewards[paramIndex] = new double[this.paramsStats[paramIndex].length];
+
+			for(int valueIndex = 0; valueIndex < this.paramsStats[paramIndex].length; valueIndex++){
+
+				visits = this.paramsStats[paramIndex][valueIndex].getVisits();
+
+				if(visits == 0){
+					avgRewards[paramIndex][valueIndex] = 0.0;
+				}else{
+					scoreSum = this.paramsStats[paramIndex][valueIndex].getScoreSum();
+					avgRewards[paramIndex][valueIndex] = (scoreSum/((double)visits))/100.0;
+				}
+
+			}
+
+		}
+
+		return avgRewards;
+	}
+
+	private CombinatorialCompactMove generateCandidate(double[][] avgRewards, RandomGenerator rg){
+
+		EnumeratedDistribution<MyPair<Integer,Integer>> distribution;
+		List<Pair<MyPair<Integer,Integer>,Double>> probabilities;
+
+		MyPair<Integer,Integer> selectedSample;
+
+		boolean[][] feasibility;
+
+		int[] indices = new int[avgRewards.length];
+		for(int paramIndex = 0; paramIndex < indices.length; paramIndex++){
+			indices[paramIndex] = -1;
+		}
+
+		boolean nonZeroSum ; // Checks that at least one probability is greater than 0
+
+		// Compute one of the indices of the combination until all the indices of the combination are set.
+		for(int count = 0; count < avgRewards.length; count++){
+
+			feasibility = new boolean[avgRewards.length][];
+
+			// Compute feasibility of all parameter values wrt the current setting of indices
+			for(int paramIndex = 0; paramIndex < avgRewards.length; paramIndex++){
+				if(indices[paramIndex] == -1){
+					feasibility[paramIndex] = this.parametersManager.getValuesFeasibility(paramIndex, indices);
+				}else{
+					feasibility[paramIndex] = null; // null means that no values are feasible because we already set an index for this param value
+				}
+			}
+
+			// For each value that is feasible, add the corresponding probability to the list that will be used
+			// to generate the samples with the EnumeratedDistribution
+			probabilities = new ArrayList<Pair<MyPair<Integer,Integer>,Double>>();
+
+			nonZeroSum = false;
+
+			// Compute feasibility of all parameter values wrt the current setting of indices
+			for(int paramIndex = 0; paramIndex < feasibility.length; paramIndex++){
+				if(feasibility[paramIndex] != null){
+					for(int valueIndex = 0; valueIndex < feasibility[paramIndex].length; valueIndex++){
+						if(feasibility[paramIndex][valueIndex]){
+							if(avgRewards[paramIndex][valueIndex] != 0.0){
+								nonZeroSum = true;
+							}
+							probabilities.add(new Pair<MyPair<Integer,Integer>,Double>(new MyPair<Integer,Integer>(paramIndex, valueIndex), avgRewards[paramIndex][valueIndex]));
+						}
+					}
+				}
+			}
+
+			if(nonZeroSum){ // Sum of all probabilities is > 0
+
+				try{
+					distribution = new EnumeratedDistribution<MyPair<Integer,Integer>>(rg, probabilities);
+				}catch(Exception e){
+					String distributionString = "[ ";
+					for(Pair<MyPair<Integer,Integer>,Double> p : probabilities){
+						distributionString += "(" + p.getFirst().getFirst() + ";" + p.getFirst().getSecond() + ";" + p.getSecond() + ")";
+					}
+					GamerLogger.logError("ParametersTuner", "LsiParametersTuner-Error when creating distribution: " + distributionString + ".");
+					GamerLogger.logStackTrace("ParametersTuner", e);
+					throw e;
+				}
+
+				selectedSample = distribution.sample();
+			}else{
+				Pair<MyPair<Integer,Integer>,Double> pair = probabilities.get(rg.nextInt(probabilities.size()));
+				selectedSample = pair.getFirst();
+			}
+
+			indices[selectedSample.getFirst().intValue()] = selectedSample.getSecond().intValue();
+		}
+
+		return new CombinatorialCompactMove(indices);
+
+	}
+
 	public void computeEvalOrder(){
 
 		int samplesPerCombo = Math.floorDiv(this.maxSamplesPerIteration, this.numCandidatesOfCurrentIteration);
 
 		if(samplesPerCombo < 1){
 			samplesPerCombo = 1; // Get at least one sample
+			//throw new RuntimeException("SimLimitedLsiProblemRepresentation has not enough evaluations samples to evaluate each combo at least once!");
 		}
 
 		// Prepare random order of testing for the best elements
@@ -234,6 +581,7 @@ public class SimLimitedLsiProblemRepresentation /*extends LsiProblemRepresentati
 
 	}
 
+	/*
 	public void setGeneratedCandidatesStats(List<CompleteMoveStats> generatedCandidatesStats, int maxSamplesPerIteration){
 		this.generatedCandidatesStats = generatedCandidatesStats;
 		this.maxSamplesPerIteration = maxSamplesPerIteration;
@@ -246,7 +594,7 @@ public class SimLimitedLsiProblemRepresentation /*extends LsiProblemRepresentati
 			this.evalOrder = null;
 			this.phase = Phase.STOP;
 		}
-	}
+	}*/
 
 	public int getNumCandidatesOfCurrentIteration(){
 		return this.numCandidatesOfCurrentIteration;
@@ -264,12 +612,16 @@ public class SimLimitedLsiProblemRepresentation /*extends LsiProblemRepresentati
 		return this.phase;
 	}
 
-
-
-
-
 	public List<CompleteMoveStats> getGeneratedCandidatesStats(){
 		return this.generatedCandidatesStats;
+	}
+
+	public int getActualNumGenSamples() {
+		return this.actualNumGenSamples;
+	}
+
+	public int getActualNumEvalSamples() {
+		return this.actualNumEvalSamples;
 	}
 
 }

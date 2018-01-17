@@ -4,6 +4,7 @@ import java.lang.reflect.InvocationTargetException;
 import java.util.List;
 import java.util.Map;
 import java.util.Random;
+import java.util.Set;
 
 import org.ggp.base.player.gamer.statemachine.GamerSettings;
 import org.ggp.base.player.gamer.statemachine.MCS.manager.MoveStats;
@@ -81,15 +82,17 @@ public abstract class TunerSelector extends SearchManagerComponent{
 
 	/**
 	 * This method selects one of the statistics and returns the corresponding move.
-	 * For now there is no check if some values are not feasible because this method is always called on statistics for
-	 * combinations of values that are always feasible (i.e. the fact that they have been added to the map already means
-	 * that they are always feasible.
+	 * If this method is called on statistics for combinations of values there is no need to specify the feasibility, because
+	 * all combinations are feasible (i.e. the fact that they have been added to the map already means that they are always
+	 * feasible). If this method is called on statistics for single parameter values then the feasibility must be specified as
+	 * a set of Moves that are feasible (this set is a subset of the moves in the movesInfo map).
+	 * If the feasibleMoves set is passes as null then all moves are considered feasible.
 	 *
 	 * @param movesStats map of statistics.
 	 * @param numUpdates
 	 * @return
 	 */
-	public abstract Move selectMove(Map<Move,MyPair<MoveStats,Double>> movesInfo, int numUpdates);
+	public abstract Move selectMove(Map<Move,MyPair<MoveStats,Double>> movesInfo, Set<Move> feasibleMoves, int numUpdates);
 
 	/**
 	 * This method selects one of the statistics and returns its index. It also excludes from the selection the

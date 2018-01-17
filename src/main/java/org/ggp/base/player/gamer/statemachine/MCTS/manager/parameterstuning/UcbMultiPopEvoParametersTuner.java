@@ -1,9 +1,11 @@
 package org.ggp.base.player.gamer.statemachine.MCTS.manager.parameterstuning;
 
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Random;
+import java.util.Set;
 
 import org.ggp.base.player.gamer.statemachine.GamerSettings;
 import org.ggp.base.player.gamer.statemachine.MCS.manager.MoveStats;
@@ -11,10 +13,10 @@ import org.ggp.base.player.gamer.statemachine.MCS.manager.hybrid.CompleteMoveSta
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.GameDependentParameters;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.SharedReferencesCollector;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.parameterstuning.structure.CombinatorialCompactMove;
-import org.ggp.base.player.gamer.statemachine.MCTS.manager.parameterstuning.structure.mabs.FixedMab;
+import org.ggp.base.player.gamer.statemachine.MCTS.manager.parameterstuning.structure.NTuple;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.parameterstuning.structure.mabs.IncrementalMab;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.parameterstuning.structure.problemrep.EvoProblemRepresentation;
-import org.ggp.base.player.gamer.statemachine.MCTS.manager.parameterstuning.structure.problemrep.UcbEvoProblemRepresentation;
+import org.ggp.base.player.gamer.statemachine.MCTS.manager.parameterstuning.structure.problemrep.NTupleEvoProblemRepresentation;
 import org.ggp.base.util.logging.GamerLogger;
 import org.ggp.base.util.statemachine.structure.Move;
 
@@ -25,7 +27,7 @@ public class UcbMultiPopEvoParametersTuner extends MultiPopEvoParametersTuner {
 	/**
 	 * Problem representation for each role being tuned.
 	 */
-	private UcbEvoProblemRepresentation[] roleProblems;
+	private NTupleEvoProblemRepresentation[] roleProblems;
 
 	/**
 	 * If true, when selecting the best combination of parameters the global MAB will be used.
@@ -34,21 +36,38 @@ public class UcbMultiPopEvoParametersTuner extends MultiPopEvoParametersTuner {
 	 */
 	private boolean useGlobalBest;
 
+	/**
+	 * Set containing the lengths (as Integer) of the n-tuples that we want to consider
+	 * when computing the UCB value of a combination of parameters (e.g. we might not
+	 * want to consider n-tuples of all the possible lengths [1,numParams], but only some
+	 * of them).
+	 * If not specified in the settings (i.e. == null) then all lengths will be considered.
+	 */
+	private Set<Integer> nTuplesForUCBLengths;
+
 	public UcbMultiPopEvoParametersTuner(GameDependentParameters gameDependentParameters, Random random,
 			GamerSettings gamerSettings, SharedReferencesCollector sharedReferencesCollector) {
 		super(gameDependentParameters, random, gamerSettings, sharedReferencesCollector);
 		this.roleProblems = null;
 
 		this.useGlobalBest = gamerSettings.getBooleanPropertyValue("ParametersTuner.useGlobalBest");
+
+		if(gamerSettings.specifiesProperty("ParametersTuner.nTupleLengthsToConsider")) {
+			this.nTuplesForUCBLengths = new HashSet<Integer>();
+			int[] nTupleLengthsToConsider = gamerSettings.getIntPropertyMultiValue("ParametersTuner.nTupleLengthsToConsider");
+			for(int length : nTupleLengthsToConsider) {
+				this.nTuplesForUCBLengths.add(new Integer(length));
+			}
+		}
 	}
 
 	@Override
 	public void createRoleProblems(int numRolesToTune) {
 		// Create the initial population for each role
-		this.roleProblems = new UcbEvoProblemRepresentation[numRolesToTune];
+		this.roleProblems = new NTupleEvoProblemRepresentation[numRolesToTune];
 		for(int roleProblemIndex = 0; roleProblemIndex < this.roleProblems.length; roleProblemIndex++){
-			roleProblems[roleProblemIndex] = new UcbEvoProblemRepresentation(this.evolutionManager.getInitialPopulation(),
-					this.parametersManager.getNumPossibleValuesForAllParams());
+			roleProblems[roleProblemIndex] = new NTupleEvoProblemRepresentation(this.evolutionManager.getInitialPopulation(),
+					this.parametersManager.getNumPossibleValuesForAllParams(), this.nTuplesForUCBLengths);
 		}
 	}
 
@@ -67,26 +86,33 @@ public class UcbMultiPopEvoParametersTuner extends MultiPopEvoParametersTuner {
 
 		// For each role, we select a combination of parameters
 		for(int roleProblemIndex = 0; roleProblemIndex < this.roleProblems.length; roleProblemIndex++){
-			// If we want to use the global MAB we can only do that if it has been visited at least once
-			// and so contains at least one combination.
-			if(this.useGlobalBest && this.roleProblems[roleProblemIndex].getGlobalMab().getNumUpdates() > 0){
-				IncrementalMab globalMab = this.roleProblems[roleProblemIndex].getGlobalMab();
-				Move m = this.bestCombinationSelector.selectMove(globalMab.getMovesInfo(), globalMab.getNumUpdates());
+
+			IncrementalMab completeNTupleMab = this.roleProblems[roleProblemIndex].getLandscapeModelForStatsUpdate().get(this.getCompleteNTuple());
+
+			// If we want to use the MAB associated with whole combinations we can only do that if it has been
+			// visited at least once and so contains at least one combination.
+			if(this.useGlobalBest && completeNTupleMab != null && completeNTupleMab.getNumUpdates() > 0){
+				Move m = this.bestCombinationSelector.selectMove(completeNTupleMab.getMovesInfo(), null, completeNTupleMab.getNumUpdates());
 				this.selectedCombinations[roleProblemIndex] = ((CombinatorialCompactMove) m).getIndices();
 			}else{
-				FixedMab[] localMabs = this.roleProblems[roleProblemIndex].getLocalMabs();
-				int[] indices = new int[localMabs.length];
+				// If we are using the MABs associated with 1-tuples, select the value for each parameter
+				// from the MAB of the corresponding 1-tuple. If such MAB doesn't exist or has never been
+				// visited (NOTE that this should be impossible, unless no search iterations were performed
+				// at all!), a random value will be selected for the parameter among the available ones.
+
+				int[] indices = new int[this.parametersManager.getNumTunableParameters()];
 				for(int i = 0; i < indices.length; i++){
 					indices[i] = -1;
 				}
 
 				// Select a value for each local mab independently
-				for(int paramIndex = 0; paramIndex < localMabs.length; paramIndex++){
-					indices[paramIndex] = this.bestCombinationSelector.selectMove(localMabs[paramIndex].getMoveStats(),
-							this.parametersManager.getValuesFeasibility(paramIndex, indices),
-							// If for a parameter no penalties are specified, a penalty of 0 is assumed for all of the values.
-							(this.parametersManager.getPossibleValuesPenalty(paramIndex) != null ? this.parametersManager.getPossibleValuesPenalty(paramIndex) : new double[this.parametersManager.getNumPossibleValues(paramIndex)]),
-							localMabs[paramIndex].getNumUpdates());
+				IncrementalMab oneTupleMab;
+				for(int paramIndex = 0; paramIndex < this.parametersManager.getNumTunableParameters(); paramIndex++){
+					oneTupleMab = this.roleProblems[roleProblemIndex].getLandscapeModelForStatsUpdate().get(new NTuple(new int[] {paramIndex}));
+					Move m = this.bestCombinationSelector.selectMove(oneTupleMab.getMovesInfo(),
+							this.parametersManager.getValuesFeasibility(paramIndex, oneTupleMab.getMovesInfo().keySet(), indices),
+							oneTupleMab.getNumUpdates());
+					indices[paramIndex] = ((CombinatorialCompactMove) m).getIndices()[0];
 				}
 				this.selectedCombinations[roleProblemIndex] = indices;
 			}
@@ -99,20 +125,30 @@ public class UcbMultiPopEvoParametersTuner extends MultiPopEvoParametersTuner {
 
 	}
 
+	private NTuple getCompleteNTuple() {
+		int[] completeCombo = new int[this.parametersManager.getNumTunableParameters()];
+		for(int i = 0; i < this.parametersManager.getNumTunableParameters(); i++) {
+			completeCombo[i] = i;
+		}
+		return new NTuple(completeCombo);
+	}
+
 	@Override
 	public void updateRoleProblems(List<Integer> individualsIndices, int[] neededRewards) {
 
-		CompleteMoveStats individualStats;
-
 		int individualIndex;
 
-		IncrementalMab globalMab;
+		CompleteMoveStats individualStats;
 
-		CombinatorialCompactMove theMove;
+		Map<NTuple,IncrementalMab> landscapeModel;
 
-		FixedMab[] localMabs;
+		CombinatorialCompactMove theIndividual;
 
-		int[] valueIndices;
+		CombinatorialCompactMove nTupleValueToUpdate;
+
+		IncrementalMab nTupleMab;
+
+		MyPair<MoveStats,Double> nTupleValueInfo;
 
 		for(int roleProblemIndex = 0; roleProblemIndex < this.roleProblems.length; roleProblemIndex++){
 
@@ -125,59 +161,23 @@ public class UcbMultiPopEvoParametersTuner extends MultiPopEvoParametersTuner {
 			individualStats.incrementVisits();
 			this.roleProblems[roleProblemIndex].incrementTotalUpdates();
 
-			/********** Update global MAB **********/
+			/********** Update landscape model **********/
 
-			globalMab = this.roleProblems[roleProblemIndex].getGlobalMab();
+			landscapeModel = this.roleProblems[roleProblemIndex].getLandscapeModelForStatsUpdate();
 
-			// Get the info of the combinatorial move in the global MAB
-			theMove = (CombinatorialCompactMove) individualStats.getTheMove();
+			theIndividual = (CombinatorialCompactMove) individualStats.getTheMove();
 
-			MyPair<MoveStats,Double> globalInfo = globalMab.getMovesInfo().get(theMove);
-
-			// If the info doesn't exist, add the move to the MAB, computing the corresponding penalty
-			if(globalInfo == null){
-				globalInfo = new MyPair<MoveStats,Double>(new MoveStats(), this.parametersManager.computeCombinatorialMovePenalty(theMove.getIndices()));
-				globalMab.getMovesInfo().put(theMove, globalInfo);
-			}
-
-			// Update the stats
-			globalInfo.getFirst().incrementScoreSum(neededRewards[roleProblemIndex]);
-			globalInfo.getFirst().incrementVisits();
-
-			// Increase total num updates
-			globalMab.incrementNumUpdates();
-
-			/********** Update local MABS **********/
-
-			// Update the stats for each local MAB
-			localMabs = this.roleProblems[roleProblemIndex].getLocalMabs();
-
-			valueIndices = theMove.getIndices();
-
-			if(valueIndices.length != localMabs.length){
-				GamerLogger.logError("ParametersTuner", "UcbMultiPopEvoParametersTuner - Impossible to update move statistics in the local MABs! Wrong number of parameter value indices (" +
-						valueIndices.length + ") to update the stats in the MABs (" + localMabs.length + ").");
-				throw new RuntimeException("MultiPopEvoParametersTuner - Impossible to update move statistics! Wrong number of value indices!");
-			}
-
-			for(int paramIndex = 0; paramIndex < valueIndices.length; paramIndex++){
-
-				/*
-				// TODO: temporary solution! Fix with something general that works for any parameter and can be set from file.
-				if(j == this.indexOfRef){ // Check if we have to avoid updating stats for Ref
-
-					if(this.classesValues[this.indexOfK][this.selectedCombinations[i][this.indexOfK]].equals("0")){
-						continue; // Don't update the MAB of Ref if K=0;
-					}
-
-				}*/
-
-				MoveStats localStats = localMabs[paramIndex].getMoveStats()[valueIndices[paramIndex]];
-				// Update the stats
-				localStats.incrementScoreSum(neededRewards[roleProblemIndex]);
-				localStats.incrementVisits();
-
-				localMabs[paramIndex].incrementNumUpdates();
+			for(Entry<NTuple,IncrementalMab> nTupleEntry : landscapeModel.entrySet()) {
+				nTupleValueToUpdate = this.roleProblems[roleProblemIndex].getNTupleValues(theIndividual, nTupleEntry.getKey());
+				nTupleMab = nTupleEntry.getValue();
+				nTupleValueInfo = nTupleMab.getMovesInfo().get(nTupleValueToUpdate);
+				if(nTupleValueInfo == null) {
+					nTupleValueInfo = new MyPair<MoveStats,Double>(new MoveStats(), this.parametersManager.computeCombinatorialMovePenalty(nTupleValueToUpdate.getIndices()));
+					nTupleMab.getMovesInfo().put(nTupleValueToUpdate, nTupleValueInfo);
+				}
+				nTupleValueInfo.getFirst().incrementScoreSum(neededRewards[roleProblemIndex]);
+				nTupleValueInfo.getFirst().incrementVisits();
+				nTupleMab.incrementNumUpdates();
 			}
 		}
 	}
@@ -193,13 +193,21 @@ public class UcbMultiPopEvoParametersTuner extends MultiPopEvoParametersTuner {
 
 		int roleIndex;
 
-		String globalParamsOrder = this.getGlobalParamsOrder();
+		Map<NTuple,IncrementalMab> landscapeModel;
 
-		FixedMab[] localMabs;
+		int nTupleLength;
+
+		String parameterNames;
 
 		for(int roleProblemIndex = 0; roleProblemIndex < this.getRoleProblems().length; roleProblemIndex++){
 
-			String toLog = "";
+			// We create one string to log for each n-tuple length
+			// NOTE that if we are not using a certain length, the corresponding string will stay
+			// empty and not be logged.
+			String[] toLog = new String[this.parametersManager.getNumTunableParameters()];
+			for(int i = 0; i < toLog.length; i++) {
+				toLog[i] = "";
+			}
 
 			if(this.tuneAllRoles){
 				roleIndex = roleProblemIndex;
@@ -207,43 +215,56 @@ public class UcbMultiPopEvoParametersTuner extends MultiPopEvoParametersTuner {
 				roleIndex = this.gameDependentParameters.getMyRoleIndex();
 			}
 
-			localMabs = this.roleProblems[roleProblemIndex].getLocalMabs();
+			landscapeModel = this.roleProblems[roleProblemIndex].getLandscapeModelForStatsUpdate();
 
-			for(int paramIndex = 0; paramIndex < localMabs.length; paramIndex++){
-				for(int paramValueIndex = 0; paramValueIndex < localMabs[paramIndex].getMoveStats().length; paramValueIndex++){
-					//GamerLogger.log(GamerLogger.FORMAT.CSV_FORMAT, "ParametersTunerStats", "ROLE=;" + i + ";MAB=;LOCAL" + j + ";UNIT_MOVE=;" + k + ";VISITS=;" + localMabs[j].getMoveStats()[k].getVisits() + ";SCORE_SUM=;" + localMabs[j].getMoveStats()[k].getScoreSum() + ";AVG_VALUE=;" + (localMabs[j].getMoveStats()[k].getVisits() <= 0 ? "0" : (localMabs[j].getMoveStats()[k].getScoreSum()/((double)localMabs[j].getMoveStats()[k].getVisits()))));
-					toLog += "\nROLE=;" + this.gameDependentParameters.getTheMachine().convertToExplicitRole(this.gameDependentParameters.getTheMachine().getRoles().get(roleIndex)) + ";PARAM=;" + this.parametersManager.getName(paramIndex) + ";UNIT_MOVE=;" + this.parametersManager.getPossibleValues(paramIndex)[paramValueIndex] + ";PENALTY=;" + (this.parametersManager.getPossibleValuesPenalty(paramIndex) != null ? this.parametersManager.getPossibleValuesPenalty(paramIndex)[paramValueIndex] : 0) + ";VISITS=;" + localMabs[paramIndex].getMoveStats()[paramValueIndex].getVisits() + ";SCORE_SUM=;" + localMabs[paramIndex].getMoveStats()[paramValueIndex].getScoreSum() + ";AVG_VALUE=;" + (localMabs[paramIndex].getMoveStats()[paramValueIndex].getVisits() <= 0 ? "0" : (localMabs[paramIndex].getMoveStats()[paramValueIndex].getScoreSum()/((double)localMabs[paramIndex].getMoveStats()[paramValueIndex].getVisits()))) + ";";
+			for(Entry<NTuple,IncrementalMab> nTupleEntry : landscapeModel.entrySet()){
+				parameterNames = this.getParamsNames(nTupleEntry.getKey());
+				nTupleLength = nTupleEntry.getKey().getParamIndices().length;
+				for(Entry<Move,MyPair<MoveStats,Double>> nTupleValueInfo : nTupleEntry.getValue().getMovesInfo().entrySet()){
+					toLog[nTupleLength-1] += "\nROLE=;" + this.gameDependentParameters.getTheMachine().convertToExplicitRole(this.gameDependentParameters.getTheMachine().getRoles().get(roleIndex)) +
+							";PARAMS=;" + parameterNames + ";VALUES=;" + this.valuesToString(((CombinatorialCompactMove) nTupleValueInfo.getKey()).getIndices(), nTupleEntry.getKey()) +
+							";PENALTY=;" + nTupleValueInfo.getValue().getSecond() + ";VISITS=;" + nTupleValueInfo.getValue().getFirst().getVisits() +
+							";SCORE_SUM=;" + nTupleValueInfo.getValue().getFirst().getScoreSum() +
+							";AVG_VALUE=;" + (nTupleValueInfo.getValue().getFirst().getVisits() <= 0 ? "0" : (nTupleValueInfo.getValue().getFirst().getScoreSum()/((double)nTupleValueInfo.getValue().getFirst().getVisits()))) + ";";
 				}
 			}
 
-			toLog += "\n";
-
-			GamerLogger.log(GamerLogger.FORMAT.CSV_FORMAT, "LocalParamTunerStats", toLog);
-
-			toLog = "";
-
-			Map<Move,MyPair<MoveStats,Double>> globalInfo = this.roleProblems[roleProblemIndex].getGlobalMab().getMovesInfo();
-
-			CombinatorialCompactMove theValuesIndices;
-			String theValues;
-
-			for(Entry<Move,MyPair<MoveStats,Double>> entry : globalInfo.entrySet()){
-
-				theValuesIndices = (CombinatorialCompactMove) entry.getKey();
-				theValues = "[ ";
-				for(int paramIndex = 0; paramIndex < theValuesIndices.getIndices().length; paramIndex++){
-					theValues += (this.parametersManager.getPossibleValues(paramIndex)[theValuesIndices.getIndices()[paramIndex]] + " ");
+			for(int i = 0; i < toLog.length; i++) {
+				if(!toLog[i].equals("")) {
+					if(i == 0) {
+						GamerLogger.log(GamerLogger.FORMAT.CSV_FORMAT, "LocalParamTunerStats", "\n" + toLog[i]);
+					}else if(i == this.parametersManager.getNumTunableParameters()-1) {
+						GamerLogger.log(GamerLogger.FORMAT.CSV_FORMAT, "GlobalParamTunerStats", "\n" + toLog[i]);
+					}else {
+						GamerLogger.log(GamerLogger.FORMAT.CSV_FORMAT, "" + (i+1) + "TupleParamTunerStats", "\n" + toLog[i]);
+					}
 				}
-				theValues += "]";
-
-				//GamerLogger.log(GamerLogger.FORMAT.CSV_FORMAT, "ParametersTunerStats", "ROLE=;" + i + ";MAB=;GLOBAL;COMBINATORIAL_MOVE=;" + entry.getKey() + ";VISITS=;" + entry.getValue().getVisits() + ";SCORE_SUM=;" + entry.getValue().getScoreSum() + ";AVG_VALUE=;" + (entry.getValue().getVisits() <= 0 ? "0" : (entry.getValue().getScoreSum()/((double)entry.getValue().getVisits()))));
-				toLog += "\nROLE=;" + this.gameDependentParameters.getTheMachine().convertToExplicitRole(this.gameDependentParameters.getTheMachine().getRoles().get(roleIndex)) + ";PARAMS=;" + globalParamsOrder + ";COMB_MOVE=;" + theValues + ";PENALTY=;" + entry.getValue().getSecond() + ";VISITS=;" + entry.getValue().getFirst().getVisits() + ";SCORE_SUM=;" + entry.getValue().getFirst().getScoreSum() + ";AVG_VALUE=;" + (entry.getValue().getFirst().getVisits() <= 0 ? "0" : (entry.getValue().getFirst().getScoreSum()/((double)entry.getValue().getFirst().getVisits()))) + ";";
 			}
-
-			toLog += "\n";
-
-			GamerLogger.log(GamerLogger.FORMAT.CSV_FORMAT, "GlobalParamTunerStats", toLog);
 		}
+	}
+
+	protected String getParamsNames(NTuple nTuple){
+		String paramsNames = "[ ";
+		for(int paramIndex : nTuple.getParamIndices()){
+			paramsNames += (this.parametersManager.getName(paramIndex) + " ");
+		}
+		paramsNames += "]";
+
+		return paramsNames;
+	}
+
+	private String valuesToString(int[] valueIndices, NTuple nTuple) {
+
+		int[] paramIndices = nTuple.getParamIndices();
+
+		String values = "[ ";
+		for(int i = 0; i < paramIndices.length; i++){
+			values += (this.parametersManager.getPossibleValues(paramIndices[i])[valueIndices[i]] + " ");
+		}
+		values += "]";
+
+		return values;
+
 	}
 
 	@Override
@@ -252,6 +273,20 @@ public class UcbMultiPopEvoParametersTuner extends MultiPopEvoParametersTuner {
 		String superParams = super.getComponentParameters(indentation);
 
 		String params = indentation + "USE_GLOBAL_BEST = " + this.useGlobalBest;
+
+		if(this.nTuplesForUCBLengths != null){
+			String nTuplesForUCBLengthsString = "[ ";
+
+			for(Integer i : this.nTuplesForUCBLengths){
+				nTuplesForUCBLengthsString += i.intValue() + " ";
+			}
+
+			nTuplesForUCBLengthsString += "]";
+
+			params += indentation + "N_TUPLES_FOR_UCB_LENGTHS = " + nTuplesForUCBLengthsString;
+		}else{
+			params += indentation + "N_TUPLES_FOR_UCB_LENGTHS = null (i.e. using all lengths)";
+		}
 
 		if(superParams != null){
 			return superParams + params;

@@ -56,21 +56,37 @@ public class PlayerStatsAggregator {
 		double theValue;
 
 		for(int i = 0; i < gamesFolders.length; i++){
-			if(gamesFolders[i].isDirectory()){
+
+			if(gamesFolders[i].isDirectory() && gamesFolders[i].getName().endsWith("-Stats")){
+
+				System.out.println(gamesFolders[i].getName());
+
 				splittedString = gamesFolders[i].getName().split("\\.");
 
-				if(splittedString.length == 4){
-					gameKey = splittedString[2];
+				if(splittedString.length == 4 || splittedString.length == 3){
+					if(splittedString.length == 4) {
+						gameKey = splittedString[2];
+					}else {
+						gameKey = splittedString[1];
+					}
+
+					System.out.println(gameKey);
+
 					statsFolders = gamesFolders[i].listFiles();
 
 					for(int j = 0; j < statsFolders.length; j++){
 
 						if(statsFolders[j].getName().endsWith(theStatsFolderType)){
 
+							System.out.println(statsFolders[j].getName());
+
 							statsFiles = statsFolders[j].listFiles();
 
 							for(int k = 0; k < statsFiles.length; k++){
 								if(statsFiles[k].getName().startsWith(theStatsFileName)){
+
+									System.out.println(statsFiles[k].getName());
+
 									theValue = extractStatFomFile(statsFiles[k].getPath(), thaStatName, theStatType);
 									if(theValue != -1){
 										writeToFile(theStatsFolderPath + "/" + theStatsFileName + "-AllGames.csv", gameKey + ";" + theValue + ";");

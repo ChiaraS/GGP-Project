@@ -18,7 +18,7 @@ public class TunerAfterGame extends AfterGameStrategy {
 			GamerSettings gamerSettings, SharedReferencesCollector sharedReferencesCollector, String id) {
 		super(gameDependentParameters, random, gamerSettings, sharedReferencesCollector, id);
 
-		this.logAfterGame = gamerSettings.getBooleanPropertyValue("AfterGameStrategy.logAfterGame");
+		this.logAfterGame = gamerSettings.getBooleanPropertyValue("AfterGameStrategy" + id + ".logAfterGame");
 	}
 
 	@Override
@@ -53,7 +53,8 @@ public class TunerAfterGame extends AfterGameStrategy {
 
 	@Override
 	public String getComponentParameters(String indentation) {
-		return indentation + "PARAMETERS_TUNER = " + this.parametersTuner.getClass().getSimpleName();
+		return indentation + "PARAMETERS_TUNER = " + this.parametersTuner.getClass().getSimpleName() +
+				indentation + "LOG_AFTER_GAME = " + this.logAfterGame;
 	}
 
 }

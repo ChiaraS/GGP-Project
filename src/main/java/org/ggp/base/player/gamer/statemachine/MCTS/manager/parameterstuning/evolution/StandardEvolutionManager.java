@@ -154,9 +154,11 @@ public class StandardEvolutionManager extends EvolutionManager {
 		});
 
 		// For the individuals that we are keeping, reset all statistics.
+		/*
 		for(int i = 0; i < this.eliteSize; i++){
 			roleProblem.getPopulation()[i].resetStats();
 		}
+		*/
 
 		// For other individuals, generate new individuals to substitute them and reset also statistics.
 		// Keep the first eliteSize best individuals and create new individuals

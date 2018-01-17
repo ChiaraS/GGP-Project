@@ -70,7 +70,7 @@ public class MoveStats{
 
 	public void decreaseByFactor(double factor){
 
-		if(factor == 0.0){
+		if(factor == 0.0 || this.visits == 0){
 			this.visits = 0;
 			this.scoreSum = 0;
 		}else if(factor != 1.0){

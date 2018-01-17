@@ -12,6 +12,7 @@ import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.strategies.sel
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.strategies.selection.ProgressiveHistoryGraveSelection;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.strategies.selection.evaluators.td.GlobalExtremeValues;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.parameterstuning.ParametersTuner;
+import org.ggp.base.player.gamer.statemachine.MCTS.manager.parameterstuning.SimLimitedLsiParametersTuner;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.parameterstuning.structure.ParametersManager;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.parameterstuning.structure.parameters.ContinuousTunableParameter;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.parameterstuning.structure.parameters.DiscreteTunableParameter;
@@ -56,6 +57,8 @@ public class SharedReferencesCollector {
 	private ParametersManager parametersManager;
 
 	private MctsTranspositionTable transpositionTable;
+
+	private SimLimitedLsiParametersTuner simLimitedLsiParametersTuner;
 
 	public SharedReferencesCollector() {
 		// TODO Auto-generated constructor stub
@@ -293,6 +296,14 @@ public class SharedReferencesCollector {
 			GamerLogger.logError("SearchManagerCreation", "Trying to get TranspositionTable that has never been set! Probably a wrong combination of strategies has been set.");
 			throw new RuntimeException("Trying to get TranspositionTable that has never been set!");
 		}
+	}
+
+	public SimLimitedLsiParametersTuner getSimLimitedLsiParametersTuner() {
+		return this.simLimitedLsiParametersTuner;
+	}
+
+	public void setSimLimitedLsiParametersTuner(SimLimitedLsiParametersTuner simLimitedLsiParametersTuner) {
+		this.simLimitedLsiParametersTuner = simLimitedLsiParametersTuner;
 	}
 
 }

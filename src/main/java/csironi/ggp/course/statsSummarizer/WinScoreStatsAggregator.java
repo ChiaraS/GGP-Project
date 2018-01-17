@@ -135,7 +135,7 @@ public class WinScoreStatsAggregator {
 		// For the folder of each game...
 		for(int i = 0; i < gamesDirs.length; i++){
 
-			if(gamesDirs[i].isDirectory()){
+			if(gamesDirs[i].isDirectory() && gamesDirs[i].getName().endsWith("-Stats")){
 
 				// ...scan the content until you find the ".Statistics" folder of the game.
 				statsDirs = gamesDirs[i].listFiles();
@@ -143,16 +143,23 @@ public class WinScoreStatsAggregator {
 				for(int j = 0; j < statsDirs.length; j++){
 
 
-					if(statsDirs[j].isDirectory() && statsDirs[j].getName() != null && (statsDirs[j].getName().endsWith("-Stats") || statsDirs[j].getName().endsWith("-stats") || statsDirs[j].getName().endsWith(".Statistics") || statsDirs[j].getName().endsWith(".statistics"))){
+					if(statsDirs[j].isDirectory() && statsDirs[j].getName() != null && (statsDirs[j].getName().equals("Statistics") || statsDirs[j].getName().endsWith("-Stats") || statsDirs[j].getName().endsWith("-stats") || statsDirs[j].getName().endsWith(".Statistics") || statsDirs[j].getName().endsWith(".statistics"))){
 
 						writeToFile(scoresFile, ";");
 						writeToFile(winsFile, ";");
 
 						if(statsDirs[j].getName().endsWith("-Stats") || statsDirs[j].getName().endsWith("-stats")){
 							gameKey = statsDirs[j].getName().substring(0, statsDirs[j].getName().length()-6);
-						}else{
+						}else if(statsDirs[j].getName().endsWith(".Statistics") || statsDirs[j].getName().endsWith(".statistics")){
 							String[] splitStatsDir = statsDirs[j].getName().split("\\.");
 							gameKey = splitStatsDir[1];
+						}else {
+							String[] splitParent = statsDirs[j].getParentFile().getName().split("\\.");
+							if(splitParent.length == 4) {
+								gameKey = splitParent[2];
+							}else {
+								gameKey = splitParent[1];
+							}
 						}
 
 						System.out.println(gameKey);
