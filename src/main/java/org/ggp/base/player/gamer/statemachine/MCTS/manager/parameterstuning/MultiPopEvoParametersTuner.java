@@ -8,6 +8,7 @@ import org.ggp.base.player.gamer.statemachine.GamerSettings;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.GameDependentParameters;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.SearchManagerComponent;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.SharedReferencesCollector;
+import org.ggp.base.player.gamer.statemachine.MCTS.manager.parameterstuning.discretetuners.DiscreteParametersTuner;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.parameterstuning.evolution.EvolutionManager;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.parameterstuning.selectors.TunerSelector;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.parameterstuning.structure.AllCombosOfIndividualsIterator;
@@ -29,7 +30,7 @@ import org.ggp.base.util.statemachine.structure.Move;
  * @author C.Sironi
  *
  */
-public abstract class MultiPopEvoParametersTuner extends ParametersTuner {
+public abstract class MultiPopEvoParametersTuner extends DiscreteParametersTuner {
 
 	private boolean logPopulations;
 
@@ -275,7 +276,7 @@ public abstract class MultiPopEvoParametersTuner extends ParametersTuner {
 
 				this.evalRepetitionsCount = -1;
 
-				this.selectedCombinations = new int[numRolesToTune][this.parametersManager.getNumTunableParameters()];
+				this.selectedCombinations = new int[numRolesToTune][this.discreteParametersManager.getNumTunableParameters()];
 			}
 
 			this.bestCombinations = null;
@@ -351,7 +352,7 @@ public abstract class MultiPopEvoParametersTuner extends ParametersTuner {
 			 }
 		 }*/
 
-		 this.parametersManager.setParametersValues(this.selectedCombinations);
+		 this.discreteParametersManager.setParametersValues(this.selectedCombinations);
 
 	}
 
@@ -359,7 +360,7 @@ public abstract class MultiPopEvoParametersTuner extends ParametersTuner {
 	public void setBestCombinations() {
 
 		if(this.isMemorizingBestCombo()){
-			 this.parametersManager.setParametersValues(this.bestCombinations);
+			 this.discreteParametersManager.setParametersValues(this.bestCombinations);
 		}else{
 			this.computeAndSetBestCombinations();
 		}
@@ -455,7 +456,7 @@ public abstract class MultiPopEvoParametersTuner extends ParametersTuner {
 						 comboIndices = ((CombinatorialCompactMove) theParametersCombination).getIndices();
 						 theValues = "[ ";
 						 for(int paramIndex = 0; paramIndex < comboIndices.length; paramIndex++){
-							 theValues += (this.parametersManager.getPossibleValues(paramIndex)[comboIndices[paramIndex]] + " ");
+							 theValues += (this.discreteParametersManager.getPossibleValues(paramIndex)[comboIndices[paramIndex]] + " ");
 						 }
 						 theValues += "]";
 

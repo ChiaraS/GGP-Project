@@ -94,10 +94,10 @@ public class HierarchicalSingleMabParametersTuner extends SingleMabParametersTun
 		this.rolesMabs = new HierarchicalFixedMab[numRolesToTune];
 
 		for(int rolesMabsIndex = 0; rolesMabsIndex < this.rolesMabs.length; rolesMabsIndex++){
-			rolesMabs[rolesMabsIndex] = new HierarchicalFixedMab(this.parametersManager.getNumPossibleValuesForAllParams(), 0);
+			rolesMabs[rolesMabsIndex] = new HierarchicalFixedMab(this.discreteParametersManager.getNumPossibleValuesForAllParams(), 0);
 		}
 
-		this.selectedExpandedCombinationsIndices = new int[numRolesToTune][this.parametersManager.getNumTunableParameters()];
+		this.selectedExpandedCombinationsIndices = new int[numRolesToTune][this.discreteParametersManager.getNumTunableParameters()];
 
 	}
 
@@ -111,16 +111,16 @@ public class HierarchicalSingleMabParametersTuner extends SingleMabParametersTun
 
 			currentRoleMab = this.rolesMabs[rolesMabsIndex];
 
-			for(int paramIndex = 0; paramIndex < this.parametersManager.getNumTunableParameters(); paramIndex++){
+			for(int paramIndex = 0; paramIndex < this.discreteParametersManager.getNumTunableParameters(); paramIndex++){
 				this.selectedExpandedCombinationsIndices[rolesMabsIndex][paramIndex] = -1; // It means that the index has not been set yet
 			}
 
 			// ...for each parameter (i.e. each level of the hierarchical representation)...
-			for(int paramIndex = 0; paramIndex < this.parametersManager.getNumTunableParameters(); paramIndex++){
+			for(int paramIndex = 0; paramIndex < this.discreteParametersManager.getNumTunableParameters(); paramIndex++){
 				this.selectedExpandedCombinationsIndices[rolesMabsIndex][paramIndex] = this.nextCombinationSelector.selectMove(
 						currentRoleMab.getMoveStats(),
-						this.parametersManager.getValuesFeasibility(paramIndex, this.selectedExpandedCombinationsIndices[rolesMabsIndex]),
-						(this.parametersManager.getPossibleValuesPenalty(paramIndex) != null ? this.parametersManager.getPossibleValuesPenalty(paramIndex) : new double[this.parametersManager.getNumPossibleValues(paramIndex)]),
+						this.discreteParametersManager.getValuesFeasibility(paramIndex, this.selectedExpandedCombinationsIndices[rolesMabsIndex]),
+						(this.discreteParametersManager.getPossibleValuesPenalty(paramIndex) != null ? this.discreteParametersManager.getPossibleValuesPenalty(paramIndex) : new double[this.discreteParametersManager.getNumPossibleValues(paramIndex)]),
 						currentRoleMab.getNumUpdates());
 				if(currentRoleMab.getNextMabs() != null){
 					currentRoleMab = currentRoleMab.getNextMabs()[this.selectedExpandedCombinationsIndices[rolesMabsIndex][paramIndex]];
@@ -128,7 +128,7 @@ public class HierarchicalSingleMabParametersTuner extends SingleMabParametersTun
 			}
 		}
 
-		this.parametersManager.setParametersValues(this.selectedExpandedCombinationsIndices);
+		this.discreteParametersManager.setParametersValues(this.selectedExpandedCombinationsIndices);
 
 	}
 
@@ -142,16 +142,16 @@ public class HierarchicalSingleMabParametersTuner extends SingleMabParametersTun
 
 			currentRoleMab = this.rolesMabs[rolesMabsIndex];
 
-			for(int paramIndex = 0; paramIndex < this.parametersManager.getNumTunableParameters(); paramIndex++){
+			for(int paramIndex = 0; paramIndex < this.discreteParametersManager.getNumTunableParameters(); paramIndex++){
 				this.selectedExpandedCombinationsIndices[rolesMabsIndex][paramIndex] = -1; // It means that the index has not been set yet
 			}
 
 			// ...for each parameter (i.e. each level of the hierarchical representation)...
-			for(int paramIndex = 0; paramIndex < this.parametersManager.getNumTunableParameters(); paramIndex++){
+			for(int paramIndex = 0; paramIndex < this.discreteParametersManager.getNumTunableParameters(); paramIndex++){
 				this.selectedExpandedCombinationsIndices[rolesMabsIndex][paramIndex] = this.bestCombinationSelector.selectMove(
 						currentRoleMab.getMoveStats(),
-						this.parametersManager.getValuesFeasibility(paramIndex, this.selectedExpandedCombinationsIndices[rolesMabsIndex]),
-						(this.parametersManager.getPossibleValuesPenalty(paramIndex) != null ? this.parametersManager.getPossibleValuesPenalty(paramIndex) : new double[this.parametersManager.getNumPossibleValues(paramIndex)]),
+						this.discreteParametersManager.getValuesFeasibility(paramIndex, this.selectedExpandedCombinationsIndices[rolesMabsIndex]),
+						(this.discreteParametersManager.getPossibleValuesPenalty(paramIndex) != null ? this.discreteParametersManager.getPossibleValuesPenalty(paramIndex) : new double[this.discreteParametersManager.getNumPossibleValues(paramIndex)]),
 						currentRoleMab.getNumUpdates());
 				if(currentRoleMab.getNextMabs() != null){
 					currentRoleMab = currentRoleMab.getNextMabs()[this.selectedExpandedCombinationsIndices[rolesMabsIndex][paramIndex]];
@@ -159,7 +159,7 @@ public class HierarchicalSingleMabParametersTuner extends SingleMabParametersTun
 			}
 		}
 
-		this.parametersManager.setParametersValues(this.selectedExpandedCombinationsIndices);
+		this.discreteParametersManager.setParametersValues(this.selectedExpandedCombinationsIndices);
 
 		this.stopTuning();
 
@@ -194,7 +194,7 @@ public class HierarchicalSingleMabParametersTuner extends SingleMabParametersTun
 			currentRoleMab = this.rolesMabs[roleMabIndex];
 
 			// ...for each parameter (i.e. each level of the hierarchical representation)...
-			for(int paramIndex = 0; paramIndex < this.parametersManager.getNumTunableParameters(); paramIndex++){
+			for(int paramIndex = 0; paramIndex < this.discreteParametersManager.getNumTunableParameters(); paramIndex++){
 
 				stat = currentRoleMab.getMoveStats()[this.selectedExpandedCombinationsIndices[roleMabIndex][paramIndex]];
 
@@ -238,9 +238,9 @@ public class HierarchicalSingleMabParametersTuner extends SingleMabParametersTun
 			for(int paramValueIndex = 0; paramValueIndex < stats.length; paramValueIndex++){
 				GamerLogger.log(GamerLogger.FORMAT.CSV_FORMAT, "HierParamTunerStats",
 						"ROLE=;" + this.gameDependentParameters.getTheMachine().convertToExplicitRole(this.gameDependentParameters.getTheMachine().getRoles().get(roleIndex)) +
-						";PARAMS=;[ " + partialParams + this.parametersManager.getName(paramIndex) +
-						" ];PARTIAL_VALUES=;[ " + partialParamValues + this.parametersManager.getPossibleValues(paramIndex)[paramValueIndex] +
-						" ];PENALTY=;" + (this.parametersManager.getPossibleValuesPenalty(paramIndex) != null ? this.parametersManager.getPossibleValuesPenalty(paramIndex)[paramValueIndex] : 0) +
+						";PARAMS=;[ " + partialParams + this.discreteParametersManager.getName(paramIndex) +
+						" ];PARTIAL_VALUES=;[ " + partialParamValues + this.discreteParametersManager.getPossibleValues(paramIndex)[paramValueIndex] +
+						" ];PENALTY=;" + (this.discreteParametersManager.getPossibleValuesPenalty(paramIndex) != null ? this.discreteParametersManager.getPossibleValuesPenalty(paramIndex)[paramValueIndex] : 0) +
 						";VISITS=;" + stats[paramValueIndex].getVisits() + ";SCORE_SUM=;" + stats[paramValueIndex].getScoreSum() +
 						";AVG_VALUE=;" + (stats[paramValueIndex].getVisits() <= 0 ? "0" : (stats[paramValueIndex].getScoreSum()/((double)stats[paramValueIndex].getVisits()))));
 			}
@@ -251,8 +251,8 @@ public class HierarchicalSingleMabParametersTuner extends SingleMabParametersTun
 				for(int paramValueIndex = 0; paramValueIndex < nextMabs.length; paramValueIndex++){
 					GamerLogger.log(GamerLogger.FORMAT.CSV_FORMAT, "HierParamTunerStats", "");
 					this.logStatsOfMab(nextMabs[paramValueIndex], roleIndex, partialParamValues +
-							this.parametersManager.getPossibleValues(paramIndex)[paramValueIndex] + " ",
-							partialParams + this.parametersManager.getName(paramIndex) + " ", paramIndex+1);
+							this.discreteParametersManager.getPossibleValues(paramIndex)[paramValueIndex] + " ",
+							partialParams + this.discreteParametersManager.getName(paramIndex) + " ", paramIndex+1);
 				}
 			}
 		}

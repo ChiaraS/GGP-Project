@@ -65,7 +65,7 @@ public class StandardMultiPopEvoParametersTuner extends	MultiPopEvoParametersTun
 		// Log the combination that we are selecting as best
 		GamerLogger.log(GamerLogger.FORMAT.CSV_FORMAT, "BestParamsCombo", this.getLogOfCombinations(this.selectedCombinations));
 
-		this.parametersManager.setParametersValues(this.selectedCombinations);
+		this.discreteParametersManager.setParametersValues(this.selectedCombinations);
 
 	}
 

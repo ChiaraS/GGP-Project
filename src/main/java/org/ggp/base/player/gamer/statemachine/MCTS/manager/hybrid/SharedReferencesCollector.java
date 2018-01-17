@@ -13,7 +13,8 @@ import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.strategies.sel
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.strategies.selection.evaluators.td.GlobalExtremeValues;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.parameterstuning.ParametersTuner;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.parameterstuning.SimLimitedLsiParametersTuner;
-import org.ggp.base.player.gamer.statemachine.MCTS.manager.parameterstuning.structure.ParametersManager;
+import org.ggp.base.player.gamer.statemachine.MCTS.manager.parameterstuning.structure.ContinuousParametersManager;
+import org.ggp.base.player.gamer.statemachine.MCTS.manager.parameterstuning.structure.DiscreteParametersManager;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.parameterstuning.structure.parameters.ContinuousTunableParameter;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.parameterstuning.structure.parameters.DiscreteTunableParameter;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.hybrid.MctsTranspositionTable;
@@ -54,7 +55,9 @@ public class SharedReferencesCollector {
 
 	private PlayoutStrategy playoutStrategy;
 
-	private ParametersManager parametersManager;
+	private DiscreteParametersManager discreteParametersManager;
+
+	private ContinuousParametersManager continuousParametersManager;
 
 	private MctsTranspositionTable transpositionTable;
 
@@ -270,12 +273,20 @@ public class SharedReferencesCollector {
 		}
 	}
 
-	public void setParametersManager(ParametersManager parametersManager){
-		this.parametersManager = parametersManager;
+	public void setDiscreteParametersManager(DiscreteParametersManager discreteParametersManager){
+		this.discreteParametersManager = discreteParametersManager;
 	}
 
-	public ParametersManager getParametersManager(){
-		return this.parametersManager;
+	public DiscreteParametersManager getDiscreteParametersManager(){
+		return this.discreteParametersManager;
+	}
+
+	public void setContinuousParametersManager(ContinuousParametersManager continuousParametersManager){
+		this.continuousParametersManager = continuousParametersManager;
+	}
+
+	public ContinuousParametersManager getContinuousParametersManager(){
+		return this.continuousParametersManager;
 	}
 
 	public void setTranspositionTable(MctsTranspositionTable transpositionTable){

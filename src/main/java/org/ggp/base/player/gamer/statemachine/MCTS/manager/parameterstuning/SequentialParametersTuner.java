@@ -11,13 +11,14 @@ import org.ggp.base.player.gamer.statemachine.MCS.manager.MoveStats;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.GameDependentParameters;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.SearchManagerComponent;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.SharedReferencesCollector;
+import org.ggp.base.player.gamer.statemachine.MCTS.manager.parameterstuning.discretetuners.DiscreteParametersTuner;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.parameterstuning.selectors.TunerSelector;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.parameterstuning.structure.mabs.FixedMab;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.parameterstuning.structure.problemrep.SequentialProblemRepresentation;
 import org.ggp.base.util.logging.GamerLogger;
 import org.ggp.base.util.reflection.ProjectSearcher;
 
-public class SequentialParametersTuner extends ParametersTuner {
+public class SequentialParametersTuner extends DiscreteParametersTuner {
 
 	/**
 	 * If true, after all the parameters have been tuned once sequentially,
@@ -157,7 +158,7 @@ public class SequentialParametersTuner extends ParametersTuner {
 
 		this.tuningOrder = new ArrayList<Integer>();
 
-		for(int i = 0; i < this.parametersManager.getNumTunableParameters(); i++){
+		for(int i = 0; i < this.discreteParametersManager.getNumTunableParameters(); i++){
 			this.tuningOrder.add(new Integer(i));
 		}
 
@@ -199,19 +200,19 @@ public class SequentialParametersTuner extends ParametersTuner {
 				// Create the representation of the combinatorial problem for each role
 				this.roleProblems = new SequentialProblemRepresentation[numRolesToTune];
 				for(int roleProblemIndex = 0; roleProblemIndex < this.roleProblems.length; roleProblemIndex++){
-					roleProblems[roleProblemIndex] = new SequentialProblemRepresentation(this.parametersManager.getNumPossibleValuesForAllParams());
+					roleProblems[roleProblemIndex] = new SequentialProblemRepresentation(this.discreteParametersManager.getNumPossibleValuesForAllParams());
 				}
 
-				this.selectedCombinations = new int[numRolesToTune][this.parametersManager.getNumTunableParameters()];
+				this.selectedCombinations = new int[numRolesToTune][this.discreteParametersManager.getNumTunableParameters()];
 
 				// Initialize selectedCombinations with the currently set values for the parameters.
 				// This is needed because when we start tuning we will only tune one parameter and we need the others
 				// to be set to the correct values to compute the feasibility for the values of the tuned parameter.
 				// For each parameter, we retrieve the indices of the currently set values for each role and set them.
 				int[] currentValuesIndices;
-				for(int paramIndex = 0; paramIndex < this.parametersManager.getNumTunableParameters(); paramIndex++){
+				for(int paramIndex = 0; paramIndex < this.discreteParametersManager.getNumTunableParameters(); paramIndex++){
 
-					currentValuesIndices = this.parametersManager.getCurrentValuesIndicesForParam(paramIndex);
+					currentValuesIndices = this.discreteParametersManager.getCurrentValuesIndicesForParam(paramIndex);
 
 					if(this.tuneAllRoles){
 						for(int roleProblemIndex = 0; roleProblemIndex < this.selectedCombinations.length; roleProblemIndex++){
@@ -286,7 +287,7 @@ public class SequentialParametersTuner extends ParametersTuner {
 			// NOTE that we can pass directly this.selectedCombinations[roleIndex][paramIndex] to the getValuesFeasibility() function
 			// because the function guarantees that at the end of its execution this.selectedCombinations[roleIndex][paramIndex] will
 			// have the same values that it had when passed to the function.
-			this.valuesFeasibility[roleIndex] = this.parametersManager.getValuesFeasibility(paramIndex, this.selectedCombinations[roleIndex]);
+			this.valuesFeasibility[roleIndex] = this.discreteParametersManager.getValuesFeasibility(paramIndex, this.selectedCombinations[roleIndex]);
 
 			this.selectedCombinations[roleIndex][paramIndex] = memIndex;
 
@@ -319,13 +320,13 @@ public class SequentialParametersTuner extends ParametersTuner {
 			newValuesOfParameter[roleProblemIndex] = this.nextValueSelector.selectMove(currentParamMabPerRole.getMoveStats(),
 					this.valuesFeasibility[roleProblemIndex],
 					// If for a parameter no penalties are specified, a penalty of 0 is assumed for all of the values.
-					(this.parametersManager.getPossibleValuesPenalty(paramIndex) != null ? this.parametersManager.getPossibleValuesPenalty(paramIndex) : new double[this.parametersManager.getNumPossibleValues(paramIndex)]),
+					(this.discreteParametersManager.getPossibleValuesPenalty(paramIndex) != null ? this.discreteParametersManager.getPossibleValuesPenalty(paramIndex) : new double[this.discreteParametersManager.getNumPossibleValues(paramIndex)]),
 					currentParamMabPerRole.getNumUpdates());
 
 			this.selectedCombinations[roleProblemIndex][paramIndex] = newValuesOfParameter[roleProblemIndex];
 		}
 
-		this.parametersManager.setSingleParameterValues(newValuesOfParameter, paramIndex);
+		this.discreteParametersManager.setSingleParameterValues(newValuesOfParameter, paramIndex);
 
 	}
 
@@ -372,7 +373,7 @@ public class SequentialParametersTuner extends ParametersTuner {
 			// Log the combination that we are selecting as best
 			GamerLogger.log(GamerLogger.FORMAT.CSV_FORMAT, "BestParamsCombo", this.getLogOfCombinations(this.bestCombinations));
 
-			this.parametersManager.setParametersValues(this.bestCombinations);
+			this.discreteParametersManager.setParametersValues(this.bestCombinations);
 
 		/*}else if(this.singleBest){
 			this.setSingleBestCombination();*/
@@ -408,13 +409,13 @@ public class SequentialParametersTuner extends ParametersTuner {
 			newValuesOfParameter[roleProblemIndex] = this.bestValueSelector.selectMove(currentParamMabPerRole.getMoveStats(),
 					this.valuesFeasibility[roleProblemIndex],
 					// If for a parameter no penalties are specified, a penalty of 0 is assumed for all of the values.
-					(this.parametersManager.getPossibleValuesPenalty(paramIndex) != null ? this.parametersManager.getPossibleValuesPenalty(paramIndex) : new double[this.parametersManager.getNumPossibleValues(paramIndex)]),
+					(this.discreteParametersManager.getPossibleValuesPenalty(paramIndex) != null ? this.discreteParametersManager.getPossibleValuesPenalty(paramIndex) : new double[this.discreteParametersManager.getNumPossibleValues(paramIndex)]),
 					currentParamMabPerRole.getNumUpdates());
 
 			this.selectedCombinations[roleProblemIndex][paramIndex] = newValuesOfParameter[roleProblemIndex];
 		}
 
-		this.parametersManager.setSingleParameterValues(newValuesOfParameter, paramIndex);
+		this.discreteParametersManager.setSingleParameterValues(newValuesOfParameter, paramIndex);
 
 	}
 
@@ -486,8 +487,8 @@ public class SequentialParametersTuner extends ParametersTuner {
 					for(int paramValueIndex = 0; paramValueIndex < localMabs[paramIndex].getMoveStats().length; paramValueIndex++){
 						//GamerLogger.log(GamerLogger.FORMAT.CSV_FORMAT, "ParametersTunerStats", "ROLE=;" + i + ";MAB=;LOCAL" + j + ";UNIT_MOVE=;" + k + ";VISITS=;" + localMabs[j].getMoveStats()[k].getVisits() + ";SCORE_SUM=;" + localMabs[j].getMoveStats()[k].getScoreSum() + ";AVG_VALUE=;" + (localMabs[j].getMoveStats()[k].getVisits() <= 0 ? "0" : (localMabs[j].getMoveStats()[k].getScoreSum()/((double)localMabs[j].getMoveStats()[k].getVisits()))));
 						toLog += "\nROLE=;" + this.gameDependentParameters.getTheMachine().convertToExplicitRole(this.gameDependentParameters.getTheMachine().getRoles().get(roleIndex)) +
-								";PARAM=;" + this.parametersManager.getName(paramIndex) + ";UNIT_MOVE=;" + this.parametersManager.getPossibleValues(paramIndex)[paramValueIndex] +
-								";PENALTY=;" + (this.parametersManager.getPossibleValuesPenalty(paramIndex) != null ? this.parametersManager.getPossibleValuesPenalty(paramIndex)[paramValueIndex] : 0) +
+								";PARAM=;" + this.discreteParametersManager.getName(paramIndex) + ";UNIT_MOVE=;" + this.discreteParametersManager.getPossibleValues(paramIndex)[paramValueIndex] +
+								";PENALTY=;" + (this.discreteParametersManager.getPossibleValuesPenalty(paramIndex) != null ? this.discreteParametersManager.getPossibleValuesPenalty(paramIndex)[paramValueIndex] : 0) +
 								";VISITS=;" + localMabs[paramIndex].getMoveStats()[paramValueIndex].getVisits() + ";SCORE_SUM=;" + localMabs[paramIndex].getMoveStats()[paramValueIndex].getScoreSum() +
 								";AVG_VALUE=;" + (localMabs[paramIndex].getMoveStats()[paramValueIndex].getVisits() <= 0 ? "0" : (localMabs[paramIndex].getMoveStats()[paramValueIndex].getScoreSum()/((double)localMabs[paramIndex].getMoveStats()[paramValueIndex].getVisits()))) + ";";
 					}

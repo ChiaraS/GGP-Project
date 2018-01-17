@@ -67,7 +67,7 @@ public class UcbMultiPopEvoParametersTuner extends MultiPopEvoParametersTuner {
 		this.roleProblems = new NTupleEvoProblemRepresentation[numRolesToTune];
 		for(int roleProblemIndex = 0; roleProblemIndex < this.roleProblems.length; roleProblemIndex++){
 			roleProblems[roleProblemIndex] = new NTupleEvoProblemRepresentation(this.evolutionManager.getInitialPopulation(),
-					this.parametersManager.getNumPossibleValuesForAllParams(), this.nTuplesForUCBLengths);
+					this.discreteParametersManager.getNumPossibleValuesForAllParams(), this.nTuplesForUCBLengths);
 		}
 	}
 
@@ -100,17 +100,17 @@ public class UcbMultiPopEvoParametersTuner extends MultiPopEvoParametersTuner {
 				// visited (NOTE that this should be impossible, unless no search iterations were performed
 				// at all!), a random value will be selected for the parameter among the available ones.
 
-				int[] indices = new int[this.parametersManager.getNumTunableParameters()];
+				int[] indices = new int[this.discreteParametersManager.getNumTunableParameters()];
 				for(int i = 0; i < indices.length; i++){
 					indices[i] = -1;
 				}
 
 				// Select a value for each local mab independently
 				IncrementalMab oneTupleMab;
-				for(int paramIndex = 0; paramIndex < this.parametersManager.getNumTunableParameters(); paramIndex++){
+				for(int paramIndex = 0; paramIndex < this.discreteParametersManager.getNumTunableParameters(); paramIndex++){
 					oneTupleMab = this.roleProblems[roleProblemIndex].getLandscapeModelForStatsUpdate().get(new NTuple(new int[] {paramIndex}));
 					Move m = this.bestCombinationSelector.selectMove(oneTupleMab.getMovesInfo(),
-							this.parametersManager.getValuesFeasibility(paramIndex, oneTupleMab.getMovesInfo().keySet(), indices),
+							this.discreteParametersManager.getValuesFeasibility(paramIndex, oneTupleMab.getMovesInfo().keySet(), indices),
 							oneTupleMab.getNumUpdates());
 					indices[paramIndex] = ((CombinatorialCompactMove) m).getIndices()[0];
 				}
@@ -121,13 +121,13 @@ public class UcbMultiPopEvoParametersTuner extends MultiPopEvoParametersTuner {
 		// Log the combination that we are selecting as best
 		GamerLogger.log(GamerLogger.FORMAT.CSV_FORMAT, "BestParamsCombo", this.getLogOfCombinations(this.selectedCombinations));
 
-		this.parametersManager.setParametersValues(this.selectedCombinations);
+		this.discreteParametersManager.setParametersValues(this.selectedCombinations);
 
 	}
 
 	private NTuple getCompleteNTuple() {
-		int[] completeCombo = new int[this.parametersManager.getNumTunableParameters()];
-		for(int i = 0; i < this.parametersManager.getNumTunableParameters(); i++) {
+		int[] completeCombo = new int[this.discreteParametersManager.getNumTunableParameters()];
+		for(int i = 0; i < this.discreteParametersManager.getNumTunableParameters(); i++) {
 			completeCombo[i] = i;
 		}
 		return new NTuple(completeCombo);
@@ -172,7 +172,7 @@ public class UcbMultiPopEvoParametersTuner extends MultiPopEvoParametersTuner {
 				nTupleMab = nTupleEntry.getValue();
 				nTupleValueInfo = nTupleMab.getMovesInfo().get(nTupleValueToUpdate);
 				if(nTupleValueInfo == null) {
-					nTupleValueInfo = new MyPair<MoveStats,Double>(new MoveStats(), this.parametersManager.computeCombinatorialMovePenalty(nTupleValueToUpdate.getIndices()));
+					nTupleValueInfo = new MyPair<MoveStats,Double>(new MoveStats(), this.discreteParametersManager.computeCombinatorialMovePenalty(nTupleValueToUpdate.getIndices()));
 					nTupleMab.getMovesInfo().put(nTupleValueToUpdate, nTupleValueInfo);
 				}
 				nTupleValueInfo.getFirst().incrementScoreSum(neededRewards[roleProblemIndex]);
@@ -204,7 +204,7 @@ public class UcbMultiPopEvoParametersTuner extends MultiPopEvoParametersTuner {
 			// We create one string to log for each n-tuple length
 			// NOTE that if we are not using a certain length, the corresponding string will stay
 			// empty and not be logged.
-			String[] toLog = new String[this.parametersManager.getNumTunableParameters()];
+			String[] toLog = new String[this.discreteParametersManager.getNumTunableParameters()];
 			for(int i = 0; i < toLog.length; i++) {
 				toLog[i] = "";
 			}
@@ -233,7 +233,7 @@ public class UcbMultiPopEvoParametersTuner extends MultiPopEvoParametersTuner {
 				if(!toLog[i].equals("")) {
 					if(i == 0) {
 						GamerLogger.log(GamerLogger.FORMAT.CSV_FORMAT, "LocalParamTunerStats", "\n" + toLog[i]);
-					}else if(i == this.parametersManager.getNumTunableParameters()-1) {
+					}else if(i == this.discreteParametersManager.getNumTunableParameters()-1) {
 						GamerLogger.log(GamerLogger.FORMAT.CSV_FORMAT, "GlobalParamTunerStats", "\n" + toLog[i]);
 					}else {
 						GamerLogger.log(GamerLogger.FORMAT.CSV_FORMAT, "" + (i+1) + "TupleParamTunerStats", "\n" + toLog[i]);
@@ -246,7 +246,7 @@ public class UcbMultiPopEvoParametersTuner extends MultiPopEvoParametersTuner {
 	protected String getParamsNames(NTuple nTuple){
 		String paramsNames = "[ ";
 		for(int paramIndex : nTuple.getParamIndices()){
-			paramsNames += (this.parametersManager.getName(paramIndex) + " ");
+			paramsNames += (this.discreteParametersManager.getName(paramIndex) + " ");
 		}
 		paramsNames += "]";
 
@@ -259,7 +259,7 @@ public class UcbMultiPopEvoParametersTuner extends MultiPopEvoParametersTuner {
 
 		String values = "[ ";
 		for(int i = 0; i < paramIndices.length; i++){
-			values += (this.parametersManager.getPossibleValues(paramIndices[i])[valueIndices[i]] + " ");
+			values += (this.discreteParametersManager.getPossibleValues(paramIndices[i])[valueIndices[i]] + " ");
 		}
 		values += "]";
 

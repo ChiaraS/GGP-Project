@@ -23,7 +23,7 @@ public class NaivePhaseSettings extends SearchManagerComponent{
 
 	private TunerSelector localMabsSelector;
 
-	private ParametersManager parametersManager;
+	private DiscreteParametersManager discreteParametersManager;
 
 	public NaivePhaseSettings(GameDependentParameters gameDependentParameters, Random random,
 			GamerSettings gamerSettings, SharedReferencesCollector sharedReferencesCollector, String id) {
@@ -60,7 +60,7 @@ public class NaivePhaseSettings extends SearchManagerComponent{
 	public void setReferences(SharedReferencesCollector sharedReferencesCollector) {
 		this.globalMabSelector.setReferences(sharedReferencesCollector);
 		this.localMabsSelector.setReferences(sharedReferencesCollector);
-		this.parametersManager = sharedReferencesCollector.getParametersManager();
+		this.discreteParametersManager = sharedReferencesCollector.getDiscreteParametersManager();
 	}
 
 	@Override
@@ -119,9 +119,9 @@ public class NaivePhaseSettings extends SearchManagerComponent{
 
 		for(int paramIndex = 0; paramIndex < localMabs.length; paramIndex++){
 			indices[paramIndex] = this.localMabsSelector.selectMove(localMabs[paramIndex].getMoveStats(),
-					this.parametersManager.getValuesFeasibility(paramIndex, indices),
+					this.discreteParametersManager.getValuesFeasibility(paramIndex, indices),
 					// If for a parameter no penalties are specified, a penalty of 0 is assumed for all of the values.
-					(this.parametersManager.getPossibleValuesPenalty(paramIndex) != null ? this.parametersManager.getPossibleValuesPenalty(paramIndex) : new double[this.parametersManager.getNumPossibleValues(paramIndex)]),
+					(this.discreteParametersManager.getPossibleValuesPenalty(paramIndex) != null ? this.discreteParametersManager.getPossibleValuesPenalty(paramIndex) : new double[this.discreteParametersManager.getNumPossibleValues(paramIndex)]),
 					localMabs[paramIndex].getNumUpdates());
 		}
 
@@ -147,7 +147,7 @@ public class NaivePhaseSettings extends SearchManagerComponent{
 		return indentation + "EPSILON0 = " + this.epsilon0 +
 				indentation + "GLOBAL_MAB_SELECTOR = " + this.globalMabSelector.printComponent(indentation + "  ") +
 				indentation + "LOCAL_MABS_SELECTOR = " + this.localMabsSelector.printComponent(indentation + "  ") +
-				indentation + "PARAMETERS_MANAGER = " + this.parametersManager.printComponent(indentation + "  ");
+				indentation + "PARAMETERS_MANAGER = " + this.discreteParametersManager.printComponent(indentation + "  ");
 	}
 
 }

@@ -13,6 +13,7 @@ import org.ggp.base.player.gamer.statemachine.MCS.manager.hybrid.CompleteMoveSta
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.GameDependentParameters;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.SearchManagerComponent;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.SharedReferencesCollector;
+import org.ggp.base.player.gamer.statemachine.MCTS.manager.parameterstuning.discretetuners.DiscreteParametersTuner;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.parameterstuning.selectors.RandomSelector;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.parameterstuning.selectors.TunerSelector;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.parameterstuning.structure.CombinatorialCompactMove;
@@ -24,7 +25,7 @@ import org.ggp.base.util.logging.GamerLogger;
 import org.ggp.base.util.logging.GamerLogger.FORMAT;
 import org.ggp.base.util.reflection.ProjectSearcher;
 
-public class SimLimitedLsiParametersTuner extends ParametersTuner {
+public class SimLimitedLsiParametersTuner extends DiscreteParametersTuner {
 
 	/**
 	 * Number of combinations evaluated so far.
@@ -250,10 +251,10 @@ public class SimLimitedLsiParametersTuner extends ParametersTuner {
 				Collections.shuffle(actionsToTest);
 				*/
 
-				this.roleProblems[roleProblemIndex] = new SimLimitedLsiProblemRepresentation(this.parametersManager, this.random, this.problemRepParameters);
+				this.roleProblems[roleProblemIndex] = new SimLimitedLsiProblemRepresentation(this.discreteParametersManager, this.random, this.problemRepParameters);
 			}
 
-			this.selectedCombinations = new int[numRolesToTune][this.parametersManager.getNumTunableParameters()];
+			this.selectedCombinations = new int[numRolesToTune][this.discreteParametersManager.getNumTunableParameters()];
 
 			this.bestCombinations = null;
 
@@ -300,7 +301,7 @@ public class SimLimitedLsiParametersTuner extends ParametersTuner {
 			}
 		}
 
-		this.parametersManager.setParametersValues(selectedCombinations);
+		this.discreteParametersManager.setParametersValues(selectedCombinations);
 
 		if(foundAllBest){
 			// Log the combination that we are selecting as best
@@ -329,7 +330,7 @@ public class SimLimitedLsiParametersTuner extends ParametersTuner {
 			// Log the combination that we are selecting as best
 			GamerLogger.log(GamerLogger.FORMAT.CSV_FORMAT, "BestParamsCombo", this.getLogOfCombinations(this.bestCombinations, this.isIntermediate));
 
-			this.parametersManager.setParametersValues(this.bestCombinations);
+			this.discreteParametersManager.setParametersValues(this.bestCombinations);
 		}else{
 			// Set best combo found so far
 			this.setBestCombinationSoFar();
@@ -358,11 +359,11 @@ public class SimLimitedLsiParametersTuner extends ParametersTuner {
 			for(int roleProblemIndex = 0; roleProblemIndex < this.gameDependentParameters.getNumRoles(); roleProblemIndex++){
 				toLog += ("ROLE=;" + this.gameDependentParameters.getTheMachine().convertToExplicitRole(this.gameDependentParameters.getTheMachine().getRoles().get(roleProblemIndex)) + ";PARAMS=;" + globalParamsOrder + ";SELECTED_COMBINATION=;[ ");
 				if(combinations != null && combinations[roleProblemIndex] != null){
-					for(int paramIndex = 0; paramIndex < this.parametersManager.getNumTunableParameters(); paramIndex++){
-						toLog += this.parametersManager.getPossibleValues(paramIndex)[combinations[roleProblemIndex][paramIndex]] + " ";
+					for(int paramIndex = 0; paramIndex < this.discreteParametersManager.getNumTunableParameters(); paramIndex++){
+						toLog += this.discreteParametersManager.getPossibleValues(paramIndex)[combinations[roleProblemIndex][paramIndex]] + " ";
 					}
 				}else{
-					for(int paramIndex = 0; paramIndex < this.parametersManager.getNumTunableParameters(); paramIndex++){
+					for(int paramIndex = 0; paramIndex < this.discreteParametersManager.getNumTunableParameters(); paramIndex++){
 						toLog += null + " ";
 					}
 				}
@@ -371,11 +372,11 @@ public class SimLimitedLsiParametersTuner extends ParametersTuner {
 		}else{ // Tuning only my role
 			toLog += ("ROLE=;" + this.gameDependentParameters.getTheMachine().convertToExplicitRole(this.gameDependentParameters.getTheMachine().getRoles().get(this.gameDependentParameters.getMyRoleIndex())) + ";PARAMS=;" + globalParamsOrder + ";SELECTED_COMBINATION=;[ ");
 			if(combinations != null && combinations[0] != null){
-				for(int paramIndex = 0; paramIndex < this.parametersManager.getNumTunableParameters(); paramIndex++){
-					toLog += this.parametersManager.getPossibleValues(paramIndex)[combinations[0][paramIndex]] + " ";
+				for(int paramIndex = 0; paramIndex < this.discreteParametersManager.getNumTunableParameters(); paramIndex++){
+					toLog += this.discreteParametersManager.getPossibleValues(paramIndex)[combinations[0][paramIndex]] + " ";
 				}
 			}else{
-				for(int paramIndex = 0; paramIndex < this.parametersManager.getNumTunableParameters(); paramIndex++){
+				for(int paramIndex = 0; paramIndex < this.discreteParametersManager.getNumTunableParameters(); paramIndex++){
 					toLog += null + " ";
 				}
 			}
@@ -408,9 +409,9 @@ public class SimLimitedLsiParametersTuner extends ParametersTuner {
 						numUpdates += paramsStats[paramIndex][valueIndex].getVisits();
 					}
 					indices[paramIndex] = this.bestCombinationSoFarSelector.selectMove(paramsStats[paramIndex],
-							this.parametersManager.getValuesFeasibility(paramIndex, indices),
+							this.discreteParametersManager.getValuesFeasibility(paramIndex, indices),
 							// If for a parameter no penalties are specified, a penalty of 0 is assumed for all of the values.
-							(this.parametersManager.getPossibleValuesPenalty(paramIndex) != null ? this.parametersManager.getPossibleValuesPenalty(paramIndex) : new double[this.parametersManager.getNumPossibleValues(paramIndex)]),
+							(this.discreteParametersManager.getPossibleValuesPenalty(paramIndex) != null ? this.discreteParametersManager.getPossibleValuesPenalty(paramIndex) : new double[this.discreteParametersManager.getNumPossibleValues(paramIndex)]),
 							numUpdates);
 				}
 				this.selectedCombinations[roleProblemIndex] = indices;
@@ -460,7 +461,7 @@ public class SimLimitedLsiParametersTuner extends ParametersTuner {
 			}
 		}
 
-		this.parametersManager.setParametersValues(selectedCombinations);
+		this.discreteParametersManager.setParametersValues(selectedCombinations);
 
 		// Log the combination that we are selecting as best
 		GamerLogger.log(GamerLogger.FORMAT.CSV_FORMAT, "BestParamsCombo", this.getLogOfCombinations(this.selectedCombinations, this.isIntermediate));
@@ -540,8 +541,8 @@ public class SimLimitedLsiParametersTuner extends ParametersTuner {
 					for(int paramValueIndex = 0; paramValueIndex < paramsStats[paramIndex].length; paramValueIndex++){
 						//GamerLogger.log(GamerLogger.FORMAT.CSV_FORMAT, "ParametersTunerStats", "ROLE=;" + i + ";MAB=;LOCAL" + j + ";UNIT_MOVE=;" + k + ";VISITS=;" + localMabs[j].getMoveStats()[k].getVisits() + ";SCORE_SUM=;" + localMabs[j].getMoveStats()[k].getScoreSum() + ";AVG_VALUE=;" + (localMabs[j].getMoveStats()[k].getVisits() <= 0 ? "0" : (localMabs[j].getMoveStats()[k].getScoreSum()/((double)localMabs[j].getMoveStats()[k].getVisits()))));
 						toLog += "\nROLE=;" + this.gameDependentParameters.getTheMachine().convertToExplicitRole(this.gameDependentParameters.getTheMachine().getRoles().get(roleIndex)) +
-								";PARAM=;" + this.parametersManager.getName(paramIndex) + ";UNIT_MOVE=;" + this.parametersManager.getPossibleValues(paramIndex)[paramValueIndex] +
-								";PENALTY=;" + (this.parametersManager.getPossibleValuesPenalty(paramIndex) != null ? this.parametersManager.getPossibleValuesPenalty(paramIndex)[paramValueIndex] : 0) +
+								";PARAM=;" + this.discreteParametersManager.getName(paramIndex) + ";UNIT_MOVE=;" + this.discreteParametersManager.getPossibleValues(paramIndex)[paramValueIndex] +
+								";PENALTY=;" + (this.discreteParametersManager.getPossibleValuesPenalty(paramIndex) != null ? this.discreteParametersManager.getPossibleValuesPenalty(paramIndex)[paramValueIndex] : 0) +
 								";VISITS=;" + paramsStats[paramIndex][paramValueIndex].getVisits() + ";SCORE_SUM=;" + paramsStats[paramIndex][paramValueIndex].getScoreSum() +
 								";AVG_VALUE=;" + (paramsStats[paramIndex][paramValueIndex].getVisits() <= 0 ? "0" : (paramsStats[paramIndex][paramValueIndex].getScoreSum()/((double)paramsStats[paramIndex][paramValueIndex].getVisits()))) + ";";
 					}
@@ -575,7 +576,7 @@ public class SimLimitedLsiParametersTuner extends ParametersTuner {
 						theValuesIndices = (CombinatorialCompactMove) stats.getTheMove();
 						theValues = "[ ";
 						for(int paramIndex = 0; paramIndex < theValuesIndices.getIndices().length; paramIndex++){
-							theValues += (this.parametersManager.getPossibleValues(paramIndex)[theValuesIndices.getIndices()[paramIndex]] + " ");
+							theValues += (this.discreteParametersManager.getPossibleValues(paramIndex)[theValuesIndices.getIndices()[paramIndex]] + " ");
 						}
 						theValues += "]";
 

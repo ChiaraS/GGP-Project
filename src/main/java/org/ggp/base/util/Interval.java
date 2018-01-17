@@ -53,4 +53,25 @@ public class Interval {
 				(value < this.rightExtreme || (this.rightClosed && value == this.rightExtreme)));
 	}
 
+	@Override
+	public String toString() {
+		String interval = "";
+
+		if(this.leftClosed) {
+			interval += "[";
+		}else {
+			interval += "(";
+		}
+
+		interval += (this.leftExtreme + "," + this.rightExtreme);
+
+		if(this.rightClosed) {
+			interval += "]";
+		}else {
+			interval += ")";
+		}
+
+		return interval;
+	}
+
 }

@@ -85,7 +85,7 @@ public class FlatSingleMabParametersTuner extends SingleMabParametersTuner {
 		// combinations of values are the same for each role.
 
 		// Create all the possible combinatorial moves and corresponding penalty
-		this.combinatorialMoves = this.parametersManager.getAllLegalParametersCombinations();
+		this.combinatorialMoves = this.discreteParametersManager.getAllLegalParametersCombinations();
 
 		/*
 		this.combinatorialMoves = new ArrayList<CombinatorialCompactMove>();
@@ -98,7 +98,7 @@ public class FlatSingleMabParametersTuner extends SingleMabParametersTuner {
 
         this.combinatorialMovesPenalty = new double[this.combinatorialMoves.size()];
        	for(int i = 0; i < this.combinatorialMoves.size(); i++){
-       		this.combinatorialMovesPenalty[i] = this.parametersManager.computeCombinatorialMovePenalty(this.combinatorialMoves.get(i).getIndices());
+       		this.combinatorialMovesPenalty[i] = this.discreteParametersManager.computeCombinatorialMovePenalty(this.combinatorialMoves.get(i).getIndices());
         }
 
 	}
@@ -296,7 +296,7 @@ public class FlatSingleMabParametersTuner extends SingleMabParametersTuner {
 			nextCombinations[i] = this.combinatorialMoves.get(this.selectedCombinationsIndices[i]).getIndices();
 		}
 
-		this.parametersManager.setParametersValues(nextCombinations);
+		this.discreteParametersManager.setParametersValues(nextCombinations);
 
 	}
 
@@ -326,7 +326,7 @@ public class FlatSingleMabParametersTuner extends SingleMabParametersTuner {
 			nextCombinations[i] = this.combinatorialMoves.get(this.selectedCombinationsIndices[i]).getIndices();
 		}
 
-		this.parametersManager.setParametersValues(nextCombinations);
+		this.discreteParametersManager.setParametersValues(nextCombinations);
 
 		this.stopTuning();
 
@@ -376,8 +376,8 @@ public class FlatSingleMabParametersTuner extends SingleMabParametersTuner {
 		GamerLogger.log(GamerLogger.FORMAT.CSV_FORMAT, "GlobalParamTunerStats", "");
 
 		String globalParamsOrder = "[ ";
-		for(int paramIndex = 0; paramIndex < this.parametersManager.getNumTunableParameters(); paramIndex++){
-			globalParamsOrder += (this.parametersManager.getName(paramIndex) + " ");
+		for(int paramIndex = 0; paramIndex < this.discreteParametersManager.getNumTunableParameters(); paramIndex++){
+			globalParamsOrder += (this.discreteParametersManager.getName(paramIndex) + " ");
 		}
 		globalParamsOrder += "]";
 
@@ -400,7 +400,7 @@ public class FlatSingleMabParametersTuner extends SingleMabParametersTuner {
 				theValuesIndices = this.combinatorialMoves.get(comboIndex);
 				theValues = "[ ";
 				for(int paramIndex = 0; paramIndex < theValuesIndices.getIndices().length; paramIndex++){
-					theValues += (this.parametersManager.getPossibleValues(paramIndex)[theValuesIndices.getIndices()[paramIndex]] + " ");
+					theValues += (this.discreteParametersManager.getPossibleValues(paramIndex)[theValuesIndices.getIndices()[paramIndex]] + " ");
 				}
 				theValues += "]";
 

@@ -9,6 +9,7 @@ import org.ggp.base.player.gamer.statemachine.MCS.manager.hybrid.CompleteMoveSta
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.GameDependentParameters;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.SearchManagerComponent;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.SharedReferencesCollector;
+import org.ggp.base.player.gamer.statemachine.MCTS.manager.parameterstuning.discretetuners.DiscreteParametersTuner;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.parameterstuning.evolution.EvolutionManager;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.parameterstuning.evolution.fitness.FitnessComputer;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.parameterstuning.selectors.TunerSelector;
@@ -22,7 +23,7 @@ import org.ggp.base.util.statemachine.structure.Move;
 
 import csironi.ggp.course.utils.MyPair;
 
-public class SinglePopEvoParametersTuner extends ParametersTuner {
+public class SinglePopEvoParametersTuner extends DiscreteParametersTuner {
 
 	private boolean logPopulations;
 
@@ -215,7 +216,7 @@ public class SinglePopEvoParametersTuner extends ParametersTuner {
 
 				this.evalRepetitionsCount = -1;
 
-				this.selectedCombination = new int[this.parametersManager.getNumTunableParameters()];
+				this.selectedCombination = new int[this.discreteParametersManager.getNumTunableParameters()];
 			}
 
 			this.bestCombination = null;
@@ -283,7 +284,7 @@ public class SinglePopEvoParametersTuner extends ParametersTuner {
 			}
 		}
 
-		this.parametersManager.setParametersValues(combinationsToSet);
+		this.discreteParametersManager.setParametersValues(combinationsToSet);
 	}
 
 	@Override
@@ -328,7 +329,7 @@ public class SinglePopEvoParametersTuner extends ParametersTuner {
 				combinationsToSet[roleIndex] = this.selectedCombination;
 			}
 
-			this.parametersManager.setParametersValues(combinationsToSet);
+			this.discreteParametersManager.setParametersValues(combinationsToSet);
 		}
 
 		this.stopTuning();
@@ -423,7 +424,7 @@ public class SinglePopEvoParametersTuner extends ParametersTuner {
 					comboIndices = ((CombinatorialCompactMove) theParametersCombination).getIndices();
 					theValues = "[ ";
 					for(int paramIndex = 0; paramIndex < comboIndices.length; paramIndex++){
-						theValues += (this.parametersManager.getPossibleValues(paramIndex)[comboIndices[paramIndex]] + " ");
+						theValues += (this.discreteParametersManager.getPossibleValues(paramIndex)[comboIndices[paramIndex]] + " ");
 					}
 					theValues += "]";
 
