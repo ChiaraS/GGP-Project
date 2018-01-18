@@ -1,5 +1,7 @@
 package org.ggp.base.player.gamer.statemachine.MCTS.manager.parameterstuning.structure.parameters;
 
+import java.util.Arrays;
+
 public class TunableParameter {
 
 	private String name;
@@ -85,6 +87,11 @@ public class TunableParameter {
 
 	public String getName(){
 		return this.name;
+	}
+
+	public double[] getCurrentValues() {
+		// return a copy to be sure values won't be modified
+		return Arrays.copyOf(currentValues, currentValues.length);
 	}
 
 }

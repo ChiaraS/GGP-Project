@@ -6,6 +6,7 @@ import org.ggp.base.player.gamer.statemachine.GamerSettings;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.GameDependentParameters;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.SearchManagerComponent;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.SharedReferencesCollector;
+import org.ggp.base.player.gamer.statemachine.MCTS.manager.parameterstuning.structure.ParametersManager;
 
 /**
  * ATTENTION! NOT ALL IMPLEMENTATIONS OF THIS CLASS PROVIDE A WAY TO CONSIDER A BIAS
@@ -223,8 +224,16 @@ public abstract class ParametersTuner extends SearchManagerComponent{
 
 	public abstract void memorizeBestCombinations();
 
-	protected abstract String getGlobalParamsOrder();
+	protected String getGlobalParamsOrder(){
+		String globalParamsOrder = "[ ";
+		for(int paramIndex = 0; paramIndex < this.getParametersManager().getNumTunableParameters(); paramIndex++){
+			globalParamsOrder += (this.getParametersManager().getName(paramIndex) + " ");
+		}
+		globalParamsOrder += "]";
 
-	protected abstract String getLogOfCombinations(int[][] combinations);
+		return globalParamsOrder;
+	}
+
+	public abstract ParametersManager getParametersManager();
 
 }

@@ -1,5 +1,6 @@
 package org.ggp.base.player.gamer.statemachine.MCTS.manager.parameterstuning.structure;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Random;
 
 import org.ggp.base.util.logging.GamerLogger;
@@ -14,7 +15,9 @@ import org.ggp.base.util.statemachine.structure.Move;
  * @author J. Liu
  *
  */
+@SuppressWarnings("serial")
 public class ContinuousMove extends Move {
+
     private int length;
     private double[] continuousMove;
     private ArrayList<Double> fitness;
@@ -25,7 +28,7 @@ public class ContinuousMove extends Move {
 
     public ContinuousMove(double[] entry) {
         if (entry == null || entry.length == 0) {
-            GamerLogger.logError("ContinuousMove", "ContinuousMove - Initialization with null or empty array of continuous tunable parameter!");
+            GamerLogger.logError("ParametersTuner", "ContinuousMove - Initialization with null or empty array of continuous tunable parameter!");
             throw new RuntimeException("ContinuousMove - Initialization with null or empty array of continuous tunable parameter!");
         }
 
@@ -34,14 +37,14 @@ public class ContinuousMove extends Move {
         for (int i=0; i<this.continuousMove.length; i++) {
             this.continuousMove[i] = entry[i];
         }
-        this.fitness = new ArrayList();
+        this.fitness = new ArrayList<Double>();
         this.nbSamples = 0;
         this.sumFitness = 0.0;
     }
 
     public ContinuousMove(double[] entry, double stepSize) {
         if (entry == null || entry.length == 0) {
-            GamerLogger.logError("ContinuousMove", "ContinuousMove - Initialization with null or empty array of continuous tunable parameter!");
+            GamerLogger.logError("ParametersTuner", "ContinuousMove - Initialization with null or empty array of continuous tunable parameter!");
             throw new RuntimeException("ContinuousMove - Initialization with null or empty array of continuous tunable parameter!");
         }
 
@@ -136,18 +139,35 @@ public class ContinuousMove extends Move {
             return 0;
         }
     }
+
     @Override
     public boolean equals(Object o) {
+    	if ((o != null) && (o instanceof ContinuousMove)) {
+    		ContinuousMove move = (ContinuousMove) o;
+            return Arrays.equals(this.continuousMove, move.getContinuousMove());
+        }
+
         return false;
     }
 
     @Override
     public int hashCode() {
-        return 0;
+    	return Arrays.hashCode(this.continuousMove);
     }
 
     @Override
     public String toString() {
-        return null;
+
+    	if(this.continuousMove != null){
+    		String s = "[ ";
+    		for(int i = 0; i < this.continuousMove.length; i++){
+    			s += this.continuousMove[i] + " ";
+    		}
+    		s += "]";
+    		return s;
+    	}else{
+    		return "null";
+    	}
+
     }
 }

@@ -105,7 +105,7 @@ public class StandardEvolutionManager extends EvolutionManager {
 
 		CompleteMoveStats[] population = new CompleteMoveStats[this.populationsSize];
 
-		List<CombinatorialCompactMove> allLegalCombos = this.parametersManager.getAllLegalParametersCombinations();
+		List<CombinatorialCompactMove> allLegalCombos = this.discreteParametersManager.getAllLegalParametersCombinations();
 
 		for(int i = 0; i < this.populationsSize; i++){
 			population[i] = new CompleteMoveStats(allLegalCombos.get(this.random.nextInt(allLegalCombos.size())));

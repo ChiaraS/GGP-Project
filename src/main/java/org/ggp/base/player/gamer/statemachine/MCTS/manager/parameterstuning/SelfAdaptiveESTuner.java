@@ -1,23 +1,40 @@
 package org.ggp.base.player.gamer.statemachine.MCTS.manager.parameterstuning;
 
+import java.lang.reflect.InvocationTargetException;
+import java.util.List;
+import java.util.Random;
+
 import org.ggp.base.player.gamer.statemachine.GamerSettings;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.GameDependentParameters;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.SearchManagerComponent;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.SharedReferencesCollector;
+import org.ggp.base.player.gamer.statemachine.MCTS.manager.parameterstuning.continuoustuners.ContinuousParametersTuner;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.parameterstuning.evolution.SelfAdaptiveEvolutionStrategyManager;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.parameterstuning.selectors.TunerSelector;
-import org.ggp.base.player.gamer.statemachine.MCTS.manager.parameterstuning.structure.*;
+import org.ggp.base.player.gamer.statemachine.MCTS.manager.parameterstuning.structure.AllCombosOfIndividualsIterator;
+import org.ggp.base.player.gamer.statemachine.MCTS.manager.parameterstuning.structure.CombinatorialCompactMove;
+import org.ggp.base.player.gamer.statemachine.MCTS.manager.parameterstuning.structure.CombosOfIndividualsIterator;
+import org.ggp.base.player.gamer.statemachine.MCTS.manager.parameterstuning.structure.ContinuousMove;
+import org.ggp.base.player.gamer.statemachine.MCTS.manager.parameterstuning.structure.RandomCombosOfIndividualsIterator;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.parameterstuning.structure.problemrep.EvoProblemRepresentation;
 import org.ggp.base.util.logging.GamerLogger;
 import org.ggp.base.util.reflection.ProjectSearcher;
 import org.ggp.base.util.statemachine.structure.Move;
 
-import java.lang.reflect.InvocationTargetException;
-import java.util.List;
-import java.util.Random;
-
-
-public class SelfAdaptiveESTuner extends ParametersTuner {
+/**
+ * This class tunes the parameters for each role independently. Each role has its own population.
+ *
+ * ATTENTION! Parts of this class assume that the size of the populations is always the same
+ * (e.g. the CombosOfIndividualsIterator).
+ * If a population can change size over time, those parts must be fixed.
+ *
+ * TODO: this class shares a lot of similarities with MultiPopEvoParametersTuner, but it's a separate
+ * class because it needs to use a ContinuousParametersManager instead of a DiscreteParametersManager.
+ * Refactor the code in such a way that the two classes can share the common code (not done yet for lack
+ * of time).
+ *
+ */
+public class SelfAdaptiveESTuner extends ContinuousParametersTuner {
 
     private boolean logPopulations;
 
@@ -35,7 +52,7 @@ public class SelfAdaptiveESTuner extends ParametersTuner {
      * If true, when evaluating a population, the fitness of each individual will result from
      * testing with a simulation ALL combinations of individuals, one from each population.
      * If false, random combinations of individuals (one for each population) will be evaluated,
-     * so that each individual is evaluated the same number fo times as the other individuals.
+     * so that each individual is evaluated the same number of times as the other individuals.
      *
      * When evaluating the current populations, all combinations of individuals, one from each population,
      * are tested in a MCTS simulation.
@@ -53,7 +70,7 @@ public class SelfAdaptiveESTuner extends ParametersTuner {
      * (c_02, c_10, c20) (c_02, c_10, c21) (c_02, c_10, c22) (c_02, c_11, c20) (c_02, c_11, c21) (c_02, c_11, c22)
      * (c_02, c_12, c20) (c_02, c_12, c21) (c_02, c_12, c22).
      */
-    private boolean evaluateAllCombosOfIndividuals = false;
+    private boolean evaluateAllCombosOfIndividuals;
 
     /**
      * Keeps track of which combinations of individuals must be evaluated and in which order.
@@ -110,12 +127,12 @@ public class SelfAdaptiveESTuner extends ParametersTuner {
      * the best combinations until we know if the final game result was a win (and thus we memorize
      * the combinations permanently in bestCombinations), or a loss.
      */
-    protected double[] selectedCombinations;
+    protected double[][] selectedCombinations;
 
     /**
      * Memorizes the best so far combination of parameters values for each role.
      */
-    private double[] bestCombination;
+    private double[][] bestCombinations;
 
     private EvoProblemRepresentation[] roleProblems;
 
@@ -164,9 +181,9 @@ public class SelfAdaptiveESTuner extends ParametersTuner {
 
         this.selectedCombinations = null;
 
-        this.bestCombination = null;
-        // TODO: 04/12/2017
-//        this.roleProblems = new EvoProblemRepresentation[numRolesToTune];
+        this.bestCombinations = null;
+
+        this.roleProblems = null;
 
 
     }

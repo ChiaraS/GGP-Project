@@ -7,6 +7,7 @@ import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.GameDependentP
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.SharedReferencesCollector;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.parameterstuning.ParametersTuner;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.parameterstuning.structure.DiscreteParametersManager;
+import org.ggp.base.player.gamer.statemachine.MCTS.manager.parameterstuning.structure.ParametersManager;
 
 public abstract class DiscreteParametersTuner extends ParametersTuner {
 
@@ -24,6 +25,7 @@ public abstract class DiscreteParametersTuner extends ParametersTuner {
 
 	@Override
 	public void setReferences(SharedReferencesCollector sharedReferencesCollector){
+		super.setReferences(sharedReferencesCollector);
 		this.discreteParametersManager.setReferences(sharedReferencesCollector);
 	}
 
@@ -54,18 +56,6 @@ public abstract class DiscreteParametersTuner extends ParametersTuner {
 
 	}
 
-	@Override
-	protected String getGlobalParamsOrder(){
-		String globalParamsOrder = "[ ";
-		for(int paramIndex = 0; paramIndex < this.discreteParametersManager.getNumTunableParameters(); paramIndex++){
-			globalParamsOrder += (this.discreteParametersManager.getName(paramIndex) + " ");
-		}
-		globalParamsOrder += "]";
-
-		return globalParamsOrder;
-	}
-
-	@Override
 	protected String getLogOfCombinations(int[][] combinations){
 
 		String globalParamsOrder = this.getGlobalParamsOrder();
@@ -100,6 +90,11 @@ public abstract class DiscreteParametersTuner extends ParametersTuner {
 		}
 
 		return toLog;
+	}
+
+	@Override
+	public ParametersManager getParametersManager() {
+		return this.discreteParametersManager;
 	}
 
 }

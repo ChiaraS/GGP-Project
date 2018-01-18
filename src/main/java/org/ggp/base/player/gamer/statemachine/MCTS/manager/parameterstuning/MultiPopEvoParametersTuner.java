@@ -48,7 +48,7 @@ public abstract class MultiPopEvoParametersTuner extends DiscreteParametersTuner
 	 * If true, when evaluating a population, the fitness of each individual will result from
 	 * testing with a simulation ALL combinations of individuals, one from each population.
 	 * If false, random combinations of individuals (one for each population) will be evaluated,
-	 * so that each individual is evaluated the same number fo times as the other individuals.
+	 * so that each individual is evaluated the same number of times as the other individuals.
 	 *
 	 * When evaluating the current populations, all combinations of individuals, one from each population,
 	 * are tested in a MCTS simulation.

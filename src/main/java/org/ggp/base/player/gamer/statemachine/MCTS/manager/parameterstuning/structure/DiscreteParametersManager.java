@@ -20,7 +20,7 @@ public class DiscreteParametersManager extends ParametersManager {
 	 * List of the parameters that we are tuning.
 	 * They also specify their name, possible values, (optional) penalty, etc...
 	 */
-	private List<DiscreteTunableParameter> tunableParameters;
+	private List<DiscreteTunableParameter> discreteTunableParameters;
 
 
 
@@ -28,7 +28,7 @@ public class DiscreteParametersManager extends ParametersManager {
 			GamerSettings gamerSettings, SharedReferencesCollector sharedReferencesCollector) {
 		super(gameDependentParameters, random, gamerSettings, sharedReferencesCollector);
 
-		this.tunableParameters = null;
+		this.discreteTunableParameters = null;
 
 	}
 
@@ -38,21 +38,21 @@ public class DiscreteParametersManager extends ParametersManager {
 
 		super.setReferences(sharedReferencesCollector);
 
-		this.tunableParameters = sharedReferencesCollector.getTheDiscreteParametersToTune();
+		this.discreteTunableParameters = sharedReferencesCollector.getTheDiscreteParametersToTune();
 
-		if(this.tunableParameters == null || this.tunableParameters.size() == 0){
+		if(this.discreteTunableParameters == null || this.discreteTunableParameters.size() == 0){
 			GamerLogger.logError("SearchManagerCreation", "ParametersManager - Initialization with null or empty list of tunable parameters!");
 			throw new RuntimeException("ParametersManager - Initialization with null or empty list of tunable parameters!");
 		}
 
-		this.initialParametersOrder.imposeOrder(this.tunableParameters);
+		this.initialParametersOrder.imposeOrder(this.discreteTunableParameters);
 
 
 		this.indexOfK = -1;
 		this.indexOfRef = -1;
 
 		int i = 0;
-		for(TunableParameter t : this.tunableParameters){
+		for(TunableParameter t : this.discreteTunableParameters){
 			if(t.getName().equals("K")){
 				this.indexOfK = i;
 			}else if(t.getName().equals("Ref")){
@@ -91,12 +91,12 @@ public class DiscreteParametersManager extends ParametersManager {
 	public boolean[] getValuesFeasibility(int paramIndex, int[] otherParamsValueIndices){
 
 		if(otherParamsValueIndices[paramIndex] != -1){
-			GamerLogger.logError("ParametersTuner", "ParametersManager - Asking feasible values for parameter " + this.tunableParameters.get(paramIndex).getName() +
-					" that is already set to the value " + this.tunableParameters.get(paramIndex).getPossibleValues()[otherParamsValueIndices[paramIndex]] + ".");
+			GamerLogger.logError("ParametersTuner", "ParametersManager - Asking feasible values for parameter " + this.discreteTunableParameters.get(paramIndex).getName() +
+					" that is already set to the value " + this.discreteTunableParameters.get(paramIndex).getPossibleValues()[otherParamsValueIndices[paramIndex]] + ".");
 			throw new RuntimeException("ParametersManager - Asking feasible values for parameter that is already set!");
 		}
 
-		boolean[] feasibility = new boolean[this.tunableParameters.get(paramIndex).getNumPossibleValues()];
+		boolean[] feasibility = new boolean[this.discreteTunableParameters.get(paramIndex).getNumPossibleValues()];
 
 		for(int i = 0; i < feasibility.length; i++){
 			otherParamsValueIndices[paramIndex] = i;
@@ -129,8 +129,8 @@ public class DiscreteParametersManager extends ParametersManager {
 	public Set<Move> getValuesFeasibility(int paramIndex, Set<Move> valuesIndices, int[] otherParamsValueIndices){
 
 		if(otherParamsValueIndices[paramIndex] != -1){
-			GamerLogger.logError("ParametersTuner", "ParametersManager - Asking feasible values for parameter " + this.tunableParameters.get(paramIndex).getName() +
-					" that is already set to the value " + this.tunableParameters.get(paramIndex).getPossibleValues()[otherParamsValueIndices[paramIndex]] + ".");
+			GamerLogger.logError("ParametersTuner", "ParametersManager - Asking feasible values for parameter " + this.discreteTunableParameters.get(paramIndex).getName() +
+					" that is already set to the value " + this.discreteTunableParameters.get(paramIndex).getPossibleValues()[otherParamsValueIndices[paramIndex]] + ".");
 			throw new RuntimeException("ParametersManager - Asking feasible values for parameter that is already set!");
 		}
 
@@ -138,17 +138,17 @@ public class DiscreteParametersManager extends ParametersManager {
 
 		for(Move m : valuesIndices){
 			if(! (m instanceof CombinatorialCompactMove)) {
-				GamerLogger.logError("ParametersTuner", "ParametersManager - Asking feasible values for parameter " + this.tunableParameters.get(paramIndex).getName() +
+				GamerLogger.logError("ParametersTuner", "ParametersManager - Asking feasible values for parameter " + this.discreteTunableParameters.get(paramIndex).getName() +
 						", but cannot retrieve the index of the value because the Move is not of type CombinatorialCompactMove.");
-				throw new RuntimeException("ParametersManager - Asking feasible values for parameter " + this.tunableParameters.get(paramIndex).getName() +
+				throw new RuntimeException("ParametersManager - Asking feasible values for parameter " + this.discreteTunableParameters.get(paramIndex).getName() +
 						", but cannot retrieve the index of the value because the Move is not of type CombinatorialCompactMove.");
 			}
 			int[] indices = ((CombinatorialCompactMove) m).getIndices();
 			// Note that we are expecting a single index for the parameter value
 			if(indices.length != 1) {
-				GamerLogger.logError("ParametersTuner", "ParametersManager - Asking feasible values for parameter " + this.tunableParameters.get(paramIndex).getName() +
+				GamerLogger.logError("ParametersTuner", "ParametersManager - Asking feasible values for parameter " + this.discreteTunableParameters.get(paramIndex).getName() +
 						", but there are " + indices.length + " indices for the value of the considered parameter instead of a single index.");
-				throw new RuntimeException("ParametersManager - Asking feasible values for parameter " + this.tunableParameters.get(paramIndex).getName() +
+				throw new RuntimeException("ParametersManager - Asking feasible values for parameter " + this.discreteTunableParameters.get(paramIndex).getName() +
 						", but there are " + indices.length + " indices for the value of the considered parameter instead of a single index.");
 			}
 			otherParamsValueIndices[paramIndex] = indices[0];
@@ -182,14 +182,14 @@ public class DiscreteParametersManager extends ParametersManager {
 	public List<Integer> getFeasibleValues(int paramIndex, int[] otherParamsValueIndices){
 
 		if(otherParamsValueIndices[paramIndex] != -1){
-			GamerLogger.logError("ParametersTuner", "ParametersManager - Asking feasible values for parameter " + this.tunableParameters.get(paramIndex).getName() +
-					" that is already set to the value " + this.tunableParameters.get(paramIndex).getPossibleValues()[otherParamsValueIndices[paramIndex]] + ".");
+			GamerLogger.logError("ParametersTuner", "ParametersManager - Asking feasible values for parameter " + this.discreteTunableParameters.get(paramIndex).getName() +
+					" that is already set to the value " + this.discreteTunableParameters.get(paramIndex).getPossibleValues()[otherParamsValueIndices[paramIndex]] + ".");
 			throw new RuntimeException("ParametersManager - Asking feasible values for parameter that is already set!");
 		}
 
 		List<Integer> feasibleValues = new ArrayList<Integer>();
 
-		for(int i = 0; i < this.tunableParameters.get(paramIndex).getNumPossibleValues(); i++){
+		for(int i = 0; i < this.discreteTunableParameters.get(paramIndex).getNumPossibleValues(); i++){
 			otherParamsValueIndices[paramIndex] = i;
 			if(this.isValid(otherParamsValueIndices)){
 				feasibleValues.add(new Integer(i));
@@ -240,8 +240,8 @@ public class DiscreteParametersManager extends ParametersManager {
 		}
 		// We are tuning both K and Ref and a value has already been set in the partialCombination
 		// for both of them --> we must check if the combination is feasible or not.
-		double valueForK = this.tunableParameters.get(this.indexOfK).getPossibleValue(partialCombination[this.indexOfK]);
-		double valueForRef = this.tunableParameters.get(this.indexOfRef).getPossibleValue(partialCombination[this.indexOfRef]);
+		double valueForK = this.discreteTunableParameters.get(this.indexOfK).getPossibleValue(partialCombination[this.indexOfK]);
+		double valueForRef = this.discreteTunableParameters.get(this.indexOfRef).getPossibleValue(partialCombination[this.indexOfRef]);
 		return ((valueForK == 0.0 && valueForRef == -1.0) || (valueForK != 0.0 && valueForRef != -1.0));
 	}
 
@@ -253,7 +253,7 @@ public class DiscreteParametersManager extends ParametersManager {
 	 */
 	@Override
 	public String getName(int paramIndex){
-		return this.tunableParameters.get(paramIndex).getName();
+		return this.discreteTunableParameters.get(paramIndex).getName();
 	}
 
 	/**
@@ -263,11 +263,11 @@ public class DiscreteParametersManager extends ParametersManager {
 	 */
 	@Override
 	public int getNumTunableParameters(){
-		return this.tunableParameters.size();
+		return this.discreteTunableParameters.size();
 	}
 
 	public int[] getCurrentValuesIndicesForParam(int paramIndex){
-		return this.tunableParameters.get(paramIndex).getCurrentValuesIndices();
+		return this.discreteTunableParameters.get(paramIndex).getCurrentValuesIndices();
 	}
 
 	/**
@@ -278,7 +278,7 @@ public class DiscreteParametersManager extends ParametersManager {
 	 * @return
 	 */
 	public int getNumPossibleValues(int paramIndex){
-		return this.tunableParameters.get(paramIndex).getNumPossibleValues();
+		return this.discreteTunableParameters.get(paramIndex).getNumPossibleValues();
 	}
 
 
@@ -292,11 +292,11 @@ public class DiscreteParametersManager extends ParametersManager {
 	 * @return
 	 */
 	public String[] getPossibleValues(int paramIndex){
-		return this.tunableParameters.get(paramIndex).getPossibleValues();
+		return this.discreteTunableParameters.get(paramIndex).getPossibleValues();
 	}
 
 	/**
-	 *  Get for each parameter the number of possible values. This in needed to create
+	 *  Get for each parameter the number of possible values. This is needed to create
 	 *  a local MAB for each parameter.
 	 */
 
@@ -325,7 +325,7 @@ public class DiscreteParametersManager extends ParametersManager {
 	 * paramIndex in the list of tunableParameters if specified, null otherwise.
 	 */
 	public double[] getPossibleValuesPenalty(int paramIndex){
-		return this.tunableParameters.get(paramIndex).getPossibleValuesPenalty();
+		return this.discreteTunableParameters.get(paramIndex).getPossibleValuesPenalty();
 	}
 
 	public void setParametersValues(int[][] valuesIndicesPerRole){
@@ -334,7 +334,7 @@ public class DiscreteParametersManager extends ParametersManager {
 
 		// If we are tuning only for my role...
 		if(valuesIndicesPerRole.length == 1){
-			for(DiscreteTunableParameter p : this.tunableParameters){
+			for(DiscreteTunableParameter p : this.discreteTunableParameters){
 				p.setMyRoleNewValue(this.gameDependentParameters.getMyRoleIndex(), valuesIndicesPerRole[0][paramIndex]);
 				paramIndex++;
 			}
@@ -342,7 +342,7 @@ public class DiscreteParametersManager extends ParametersManager {
 
 			int[] newValuesIndices;
 
-			for(DiscreteTunableParameter p : this.tunableParameters){
+			for(DiscreteTunableParameter p : this.discreteTunableParameters){
 
 				//System.out.print(c.getClass().getSimpleName() + ": [ ");
 
@@ -365,11 +365,11 @@ public class DiscreteParametersManager extends ParametersManager {
 	public void setSingleParameterValues(int[] valuesIndicesPerRole, int paramIndex){
 		// If we are tuning only for my role...
 		if(valuesIndicesPerRole.length == 1){
-			this.tunableParameters.get(paramIndex).setMyRoleNewValue(this.gameDependentParameters.getMyRoleIndex(),
+			this.discreteTunableParameters.get(paramIndex).setMyRoleNewValue(this.gameDependentParameters.getMyRoleIndex(),
 					valuesIndicesPerRole[0]);
 		}else{ //If we are tuning for all roles...
 
-			this.tunableParameters.get(paramIndex).setAllRolesNewValues(valuesIndicesPerRole);
+			this.discreteTunableParameters.get(paramIndex).setAllRolesNewValues(valuesIndicesPerRole);
 		}
 	}
 
@@ -380,21 +380,21 @@ public class DiscreteParametersManager extends ParametersManager {
 
 		String params = "";
 
-		if(this.tunableParameters != null){
+		if(this.discreteTunableParameters != null){
 
 			String tunableParametersString = "[ ";
 
-			for(TunableParameter p : this.tunableParameters){
+			for(DiscreteTunableParameter p : this.discreteTunableParameters){
 
-				tunableParametersString += indentation + "  TUNABLE_PARAMETER = " + p.getParameters(indentation + "  ");
+				tunableParametersString += indentation + "  DISCRETE_TUNABLE_PARAMETER = " + p.getParameters(indentation + "  ");
 
 			}
 
 			tunableParametersString += "\n]";
 
-			params += indentation + "TUNABLE_PARAMETERS = " + tunableParametersString;
+			params += indentation + "DISCRETE_TUNABLE_PARAMETER = " + tunableParametersString;
 		}else{
-			params += indentation + "TUNABLE_PARAMETERS = null";
+			params += indentation + "DISCRETE_TUNABLE_PARAMETER = null";
 		}
 
 		if(superParams != null){
@@ -407,7 +407,7 @@ public class DiscreteParametersManager extends ParametersManager {
 
 	public List<CombinatorialCompactMove> getAllLegalParametersCombinations(){
 		List<CombinatorialCompactMove> combinatorialMoves = new ArrayList<CombinatorialCompactMove>();
-		int[] partialCombo = new int[this.tunableParameters.size()];
+		int[] partialCombo = new int[this.discreteTunableParameters.size()];
 		for(int i = 0; i < partialCombo.length; i++){
 			partialCombo[i] = -1;
 		}

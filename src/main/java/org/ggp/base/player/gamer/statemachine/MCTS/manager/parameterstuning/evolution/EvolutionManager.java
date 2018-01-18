@@ -7,12 +7,12 @@ import org.ggp.base.player.gamer.statemachine.MCS.manager.hybrid.CompleteMoveSta
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.GameDependentParameters;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.SearchManagerComponent;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.SharedReferencesCollector;
-import org.ggp.base.player.gamer.statemachine.MCTS.manager.parameterstuning.structure.ParametersManager;
+import org.ggp.base.player.gamer.statemachine.MCTS.manager.parameterstuning.structure.DiscreteParametersManager;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.parameterstuning.structure.problemrep.EvoProblemRepresentation;
 
 public abstract class EvolutionManager extends SearchManagerComponent {
 
-	protected ParametersManager parametersManager;
+	protected DiscreteParametersManager discreteParametersManager;
 
 	/**
 	 * Size of the populations. It's the same for all roles.
@@ -37,7 +37,7 @@ public abstract class EvolutionManager extends SearchManagerComponent {
 
 	@Override
 	public void setReferences(SharedReferencesCollector sharedReferencesCollector) {
-		this.parametersManager = sharedReferencesCollector.getParametersManager();
+		this.discreteParametersManager = sharedReferencesCollector.getDiscreteParametersManager();
 	}
 
 	@Override
@@ -64,7 +64,7 @@ public abstract class EvolutionManager extends SearchManagerComponent {
 
 	@Override
 	public String getComponentParameters(String indentation) {
-		String params = indentation + "PARAMETERS_MANAGER = " + (this.parametersManager != null ? this.parametersManager.getClass().getSimpleName() : "null") +
+		String params = indentation + "PARAMETERS_MANAGER = " + (this.discreteParametersManager != null ? this.discreteParametersManager.getClass().getSimpleName() : "null") +
 				indentation + "POPULATION_SIZE = " + this.populationsSize +
 				indentation + "ELITE_SIZE = " + this.eliteSize;
 
