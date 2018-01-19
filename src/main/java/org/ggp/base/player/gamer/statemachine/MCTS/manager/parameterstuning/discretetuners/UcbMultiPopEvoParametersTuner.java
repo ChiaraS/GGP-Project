@@ -1,4 +1,4 @@
-package org.ggp.base.player.gamer.statemachine.MCTS.manager.parameterstuning;
+package org.ggp.base.player.gamer.statemachine.MCTS.manager.parameterstuning.discretetuners;
 
 import java.util.HashSet;
 import java.util.List;
@@ -66,7 +66,7 @@ public class UcbMultiPopEvoParametersTuner extends MultiPopEvoParametersTuner {
 		// Create the initial population for each role
 		this.roleProblems = new NTupleEvoProblemRepresentation[numRolesToTune];
 		for(int roleProblemIndex = 0; roleProblemIndex < this.roleProblems.length; roleProblemIndex++){
-			roleProblems[roleProblemIndex] = new NTupleEvoProblemRepresentation(this.evolutionManager.getInitialPopulation(),
+			roleProblems[roleProblemIndex] = new NTupleEvoProblemRepresentation(this.discreteEvolutionManager.getInitialPopulation(),
 					this.discreteParametersManager.getNumPossibleValuesForAllParams(), this.nTuplesForUCBLengths);
 		}
 	}

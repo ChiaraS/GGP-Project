@@ -1,4 +1,4 @@
-package org.ggp.base.player.gamer.statemachine.MCTS.manager.parameterstuning;
+package org.ggp.base.player.gamer.statemachine.MCTS.manager.parameterstuning.discretetuners;
 
 import java.util.List;
 import java.util.Random;

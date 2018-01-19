@@ -21,7 +21,8 @@ import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.strategies.sel
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.strategies.selection.evaluators.grave.BetaComputer;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.parameterstuning.ParametersTuner;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.parameterstuning.biascomputers.BiasComputer;
-import org.ggp.base.player.gamer.statemachine.MCTS.manager.parameterstuning.evolution.EvolutionManager;
+import org.ggp.base.player.gamer.statemachine.MCTS.manager.parameterstuning.evolution.ContinuousEvolutionManager;
+import org.ggp.base.player.gamer.statemachine.MCTS.manager.parameterstuning.evolution.DiscreteEvolutionManager;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.parameterstuning.evolution.crossover.CrossoverManager;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.parameterstuning.evolution.fitness.FitnessComputer;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.parameterstuning.evolution.mutation.MutationManager;
@@ -62,7 +63,8 @@ public class ProjectSearcher {
     public static final LoadedClasses<TunerSelector> TUNER_SELECTORS = new LoadedClasses<TunerSelector>(TunerSelector.class);
     public static final LoadedClasses<ParametersOrder> PARAMETERS_ORDER = new LoadedClasses<ParametersOrder>(ParametersOrder.class);
     public static final LoadedClasses<BiasComputer> BIAS_COMPUTERS = new LoadedClasses<BiasComputer>(BiasComputer.class);
-    public static final LoadedClasses<EvolutionManager> EVOLUTION_MANAGERS = new LoadedClasses<EvolutionManager>(EvolutionManager.class);
+    public static final LoadedClasses<DiscreteEvolutionManager> DISCRETE_EVOLUTION_MANAGERS = new LoadedClasses<DiscreteEvolutionManager>(DiscreteEvolutionManager.class);
+    public static final LoadedClasses<ContinuousEvolutionManager> CONTINUOUS_EVOLUTION_MANAGERS = new LoadedClasses<ContinuousEvolutionManager>(ContinuousEvolutionManager.class);
     public static final LoadedClasses<CrossoverManager> CROSSOVER_MANAGERS = new LoadedClasses<CrossoverManager>(CrossoverManager.class);
     public static final LoadedClasses<MutationManager> MUTATION_MANAGERS = new LoadedClasses<MutationManager>(MutationManager.class);
     public static final LoadedClasses<FitnessComputer> FITNESS_COMPUTER = new LoadedClasses<FitnessComputer>(FitnessComputer.class);

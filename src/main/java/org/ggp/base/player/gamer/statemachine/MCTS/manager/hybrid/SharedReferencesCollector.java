@@ -12,7 +12,7 @@ import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.strategies.sel
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.strategies.selection.ProgressiveHistoryGraveSelection;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.strategies.selection.evaluators.td.GlobalExtremeValues;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.parameterstuning.ParametersTuner;
-import org.ggp.base.player.gamer.statemachine.MCTS.manager.parameterstuning.SimLimitedLsiParametersTuner;
+import org.ggp.base.player.gamer.statemachine.MCTS.manager.parameterstuning.discretetuners.SimLimitedLsiParametersTuner;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.parameterstuning.structure.ContinuousParametersManager;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.parameterstuning.structure.DiscreteParametersManager;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.parameterstuning.structure.parameters.ContinuousTunableParameter;

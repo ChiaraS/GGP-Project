@@ -110,6 +110,40 @@ public class ContinuousParametersManager extends ParametersManager {
 		return possibleValuesIntervals;
 	}
 
+	public void setParametersValues(double[][] valuesPerRole){
+
+		int paramIndex = 0;
+
+		// If we are tuning only for my role...
+		if(valuesPerRole.length == 1){
+			for(ContinuousTunableParameter p : this.continuousTunableParameters){
+				p.setMyRoleNewValue(this.gameDependentParameters.getMyRoleIndex(), valuesPerRole[0][paramIndex]);
+				paramIndex++;
+			}
+		}else{ //If we are tuning for all roles...
+
+			double[] newValues;
+
+			for(ContinuousTunableParameter p : this.continuousTunableParameters){
+
+				//System.out.print(c.getClass().getSimpleName() + ": [ ");
+
+				newValues = new double[valuesPerRole.length]; // valuesPerRole.length equals the number of roles for which we are tuning
+
+				for(int roleIndex = 0; roleIndex < newValues.length; roleIndex++){
+					newValues[roleIndex] = valuesPerRole[roleIndex][paramIndex];
+					//System.out.print(newValues[roleIndex] + " ");
+				}
+
+				//System.out.println("]");
+
+				p.setAllRolesNewValues(newValues);
+
+				paramIndex++;
+			}
+		}
+	}
+
 	public void setSingleParameterValues(double[] valuesPerRole, int paramIndex){
 		// If we are tuning only for my role...
 		if(valuesPerRole.length == 1){

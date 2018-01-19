@@ -1,4 +1,4 @@
-package org.ggp.base.player.gamer.statemachine.MCTS.manager.parameterstuning;
+package org.ggp.base.player.gamer.statemachine.MCTS.manager.parameterstuning.discretetuners;
 
 import java.lang.reflect.InvocationTargetException;
 import java.util.List;
@@ -8,8 +8,7 @@ import org.ggp.base.player.gamer.statemachine.GamerSettings;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.GameDependentParameters;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.SearchManagerComponent;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.SharedReferencesCollector;
-import org.ggp.base.player.gamer.statemachine.MCTS.manager.parameterstuning.discretetuners.DiscreteParametersTuner;
-import org.ggp.base.player.gamer.statemachine.MCTS.manager.parameterstuning.evolution.EvolutionManager;
+import org.ggp.base.player.gamer.statemachine.MCTS.manager.parameterstuning.evolution.DiscreteEvolutionManager;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.parameterstuning.selectors.TunerSelector;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.parameterstuning.structure.AllCombosOfIndividualsIterator;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.parameterstuning.structure.CombinatorialCompactMove;
@@ -37,7 +36,7 @@ public abstract class MultiPopEvoParametersTuner extends DiscreteParametersTuner
 	/**
 	 * Takes care of evolving a given population depending on the fitness of its individuals.
 	 */
-	protected EvolutionManager evolutionManager;
+	protected DiscreteEvolutionManager discreteEvolutionManager;
 
 	/**
 	 * Given the statistics of each combination, selects the best one among them.
@@ -137,12 +136,12 @@ public abstract class MultiPopEvoParametersTuner extends DiscreteParametersTuner
 		this.logPopulations = gamerSettings.getBooleanPropertyValue("ParametersTuner.logPopulations");
 
 		try {
-			this.evolutionManager = (EvolutionManager) SearchManagerComponent.getConstructorForSearchManagerComponent(SearchManagerComponent.getCorrespondingClass(ProjectSearcher.EVOLUTION_MANAGERS.getConcreteClasses(),
+			this.discreteEvolutionManager = (DiscreteEvolutionManager) SearchManagerComponent.getConstructorForSearchManagerComponent(SearchManagerComponent.getCorrespondingClass(ProjectSearcher.DISCRETE_EVOLUTION_MANAGERS.getConcreteClasses(),
 					gamerSettings.getPropertyValue("ParametersTuner.evolutionManagerType"))).newInstance(gameDependentParameters, random, gamerSettings, sharedReferencesCollector);
 		} catch (InstantiationException | IllegalAccessException
 				| IllegalArgumentException | InvocationTargetException e) {
 			// TODO: fix this!
-			GamerLogger.logError("SearchManagerCreation", "Error when instantiating EvolutionManager " + gamerSettings.getPropertyValue("ParametersTuner.EvolutionManagerType") + ".");
+			GamerLogger.logError("SearchManagerCreation", "Error when instantiating DiscreteEvolutionManager " + gamerSettings.getPropertyValue("ParametersTuner.evolutionManagerType") + ".");
 			GamerLogger.logStackTrace("SearchManagerCreation", e);
 			throw new RuntimeException(e);
 		}
@@ -183,7 +182,7 @@ public abstract class MultiPopEvoParametersTuner extends DiscreteParametersTuner
 	public void setReferences(SharedReferencesCollector sharedReferencesCollector){
 		super.setReferences(sharedReferencesCollector);
 
-		this.evolutionManager.setReferences(sharedReferencesCollector);
+		this.discreteEvolutionManager.setReferences(sharedReferencesCollector);
 
 		this.bestCombinationSelector.setReferences(sharedReferencesCollector);
 	}
@@ -192,7 +191,7 @@ public abstract class MultiPopEvoParametersTuner extends DiscreteParametersTuner
 	public void clearComponent() {
 		super.clearComponent();
 
-		this.evolutionManager.clearComponent();
+		this.discreteEvolutionManager.clearComponent();
 
 		this.bestCombinationSelector.clearComponent();
 	}
@@ -201,7 +200,7 @@ public abstract class MultiPopEvoParametersTuner extends DiscreteParametersTuner
 	public void setUpComponent() {
 		super.setUpComponent();
 
-		this.evolutionManager.setUpComponent();
+		this.discreteEvolutionManager.setUpComponent();
 
 		this.bestCombinationSelector.setUpComponent();
 
@@ -291,55 +290,55 @@ public abstract class MultiPopEvoParametersTuner extends DiscreteParametersTuner
 	@Override
 	public void setNextCombinations() {
 
-		 // Check if we tested all combinations.
-		 // Try to get the next combination, if all combinations have been tested this will return null
-		 // and we'll have to evolve the population or restart the evaluations. Moreover, we need to reset
-		 // the individualsCombinationsIterator to start iterating over the combinations again.
-		 // Otherwise, the next combination will be returned and the individualsCombinationsIterator will
-		 // keep track of it as the new current combination.
-		 if(this.combosOfIndividualsIterator.getNextComboOfIndividualsIndices() == null){
+		// Check if we tested all combinations.
+		// Try to get the next combination, if all combinations have been tested this will return null
+		// and we'll have to evolve the population or restart the evaluations. Moreover, we need to reset
+		// the individualsCombinationsIterator to start iterating over the combinations again.
+		// Otherwise, the next combination will be returned and the individualsCombinationsIterator will
+		// keep track of it as the new current combination.
+		if(this.combosOfIndividualsIterator.getNextComboOfIndividualsIndices() == null){
 
-			 // If we tested all combinations, increment the counter since we finished
-			 // another repetition of the evaluation of all combinations.
-			 this.evalRepetitionsCount++;
+			// If we tested all combinations, increment the counter since we finished
+			// another repetition of the evaluation of all combinations.
+			this.evalRepetitionsCount++;
 
-			 // Check if we performed all repetitions of the evaluation.
-			 if(this.evalRepetitionsCount == this.evalRepetitions){
-				 // If yes, evolve the populations.
-				 for(int roleProblemIndex = 0; roleProblemIndex < this.getRoleProblems().length; roleProblemIndex++){
-					 this.evolutionManager.evolvePopulation(this.getRoleProblems()[roleProblemIndex]);
-				 }
+			// Check if we performed all repetitions of the evaluation.
+			if(this.evalRepetitionsCount == this.evalRepetitions){
+				// If yes, evolve the populations.
+				for(int roleProblemIndex = 0; roleProblemIndex < this.getRoleProblems().length; roleProblemIndex++){
+					this.discreteEvolutionManager.evolvePopulation(this.getRoleProblems()[roleProblemIndex]);
+				}
 
-				 /*
-				 for(int populationIndex = 0; populationIndex < this.populations.length; populationIndex++){
-					 this.saesManager.evolvePopulation(this.populations[populationIndex]);
-				 }*/
+				/*
+				for(int populationIndex = 0; populationIndex < this.populations.length; populationIndex++){
+				 	this.saesManager.evolvePopulation(this.populations[populationIndex]);
+				}*/
 
-				 if(this.logPopulations){
-					 this.logPopulations();
-				 }
+				if(this.logPopulations){
+					this.logPopulations();
+				}
 
-				 this.evalRepetitionsCount = 0;
-			 }
+				this.evalRepetitionsCount = 0;
+			}
 
-			 // Prepare to start another repetition, after resetting the iterator.
-			 this.combosOfIndividualsIterator.startNewIteration();
+			// Prepare to start another repetition, after resetting the iterator.
+			this.combosOfIndividualsIterator.startNewIteration();
 
-		 }
+		}
 
-		 List<Integer> individualsIndices = this.combosOfIndividualsIterator.getCurrentComboOfIndividualsIndices();
+		List<Integer> individualsIndices = this.combosOfIndividualsIterator.getCurrentComboOfIndividualsIndices();
 
-		 Move theParametersCombination;
+		Move theParametersCombination;
 
-		 for(int roleProblemIndex = 0; roleProblemIndex < this.getRoleProblems().length; roleProblemIndex++){
-			 theParametersCombination = this.getRoleProblems()[roleProblemIndex].getPopulation()[individualsIndices.get(roleProblemIndex)].getTheMove();
-			 if(theParametersCombination instanceof CombinatorialCompactMove){
-				 this.selectedCombinations[roleProblemIndex] = ((CombinatorialCompactMove) theParametersCombination).getIndices();
-			 }else{
-				 GamerLogger.logError("ParametersTuner", "MultiPopEvoParametersTuner - Impossible to set next combinations. The Move is not of type CombinatorialCompactMove but of type " + theParametersCombination.getClass().getSimpleName() + ".");
-				 throw new RuntimeException("MultiPopEvoParametersTuner - Impossible to set next combinations. The Move is not of type CombinatorialCompactMove but of type " + theParametersCombination.getClass().getSimpleName() + ".");
-			 }
-		 }
+		for(int roleProblemIndex = 0; roleProblemIndex < this.getRoleProblems().length; roleProblemIndex++){
+			theParametersCombination = this.getRoleProblems()[roleProblemIndex].getPopulation()[individualsIndices.get(roleProblemIndex)].getTheMove();
+			if(theParametersCombination instanceof CombinatorialCompactMove){
+				this.selectedCombinations[roleProblemIndex] = ((CombinatorialCompactMove) theParametersCombination).getIndices();
+			}else{
+				GamerLogger.logError("ParametersTuner", "MultiPopEvoParametersTuner - Impossible to set next combinations. The Move is not of type CombinatorialCompactMove but of type " + theParametersCombination.getClass().getSimpleName() + ".");
+				throw new RuntimeException("MultiPopEvoParametersTuner - Impossible to set next combinations. The Move is not of type CombinatorialCompactMove but of type " + theParametersCombination.getClass().getSimpleName() + ".");
+			}
+		}
 
 		 /*
 		 for(int populationIndex = 0; populationIndex < this.populations.length; populationIndex++){
@@ -450,22 +449,22 @@ public abstract class MultiPopEvoParametersTuner extends DiscreteParametersTuner
 
 				for(int comboIndex = 0; comboIndex < this.getRoleProblems()[roleProblemIndex].getPopulation().length; comboIndex++){
 
-					 theParametersCombination = this.getRoleProblems()[roleProblemIndex].getPopulation()[comboIndex].getTheMove();
+					theParametersCombination = this.getRoleProblems()[roleProblemIndex].getPopulation()[comboIndex].getTheMove();
 
-					 if(theParametersCombination instanceof CombinatorialCompactMove){
-						 comboIndices = ((CombinatorialCompactMove) theParametersCombination).getIndices();
-						 theValues = "[ ";
-						 for(int paramIndex = 0; paramIndex < comboIndices.length; paramIndex++){
-							 theValues += (this.discreteParametersManager.getPossibleValues(paramIndex)[comboIndices[paramIndex]] + " ");
-						 }
-						 theValues += "]";
+					if(theParametersCombination instanceof CombinatorialCompactMove){
+						comboIndices = ((CombinatorialCompactMove) theParametersCombination).getIndices();
+						theValues = "[ ";
+						for(int paramIndex = 0; paramIndex < comboIndices.length; paramIndex++){
+							theValues += (this.discreteParametersManager.getPossibleValues(paramIndex)[comboIndices[paramIndex]] + " ");
+						}
+						theValues += "]";
 
-						 toLog+= (theValues + ";");
+						toLog+= (theValues + ";");
 
-					 }else{
-						 GamerLogger.logError("ParametersTuner", "MultiPopEvoParametersTuner - Impossible to log populations. The Move is not of type CombinatorialCompactMove but of type " + theParametersCombination.getClass().getSimpleName() + ".");
-						 throw new RuntimeException("MultiPopEvoParametersTuner - Impossible to log populations. The Move is not of type CombinatorialCompactMove but of type " + theParametersCombination.getClass().getSimpleName() + ".");
-					 }
+					}else{
+						GamerLogger.logError("ParametersTuner", "MultiPopEvoParametersTuner - Impossible to log populations. The Move is not of type CombinatorialCompactMove but of type " + theParametersCombination.getClass().getSimpleName() + ".");
+						throw new RuntimeException("MultiPopEvoParametersTuner - Impossible to log populations. The Move is not of type CombinatorialCompactMove but of type " + theParametersCombination.getClass().getSimpleName() + ".");
+					}
 
 				}
 
@@ -503,7 +502,7 @@ public abstract class MultiPopEvoParametersTuner extends DiscreteParametersTuner
 		String superParams = super.getComponentParameters(indentation);
 
 		String params = indentation + "LOG_POPULATIONS = " + this.logPopulations +
-				indentation + "EVOLUTION_MANAGER = " + this.evolutionManager.printComponent(indentation + "  ") +
+				indentation + "DISCRETE_EVOLUTION_MANAGER = " + this.discreteEvolutionManager.printComponent(indentation + "  ") +
 				indentation + "BEST_COMBINATION_SELECTOR = " + this.bestCombinationSelector.printComponent(indentation + "  ") +
 				indentation + "EVALUATE_ALL_COMBOS_OF_INDIVIDUALS = " + this.evaluateAllCombosOfIndividuals +
 				indentation + "INDIVIDUALS_ITERATOR = " + (this.combosOfIndividualsIterator != null ? this.combosOfIndividualsIterator.getClass().getSimpleName() : "null") +

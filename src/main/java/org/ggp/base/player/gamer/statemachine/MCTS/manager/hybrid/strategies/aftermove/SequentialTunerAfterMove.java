@@ -5,7 +5,7 @@ import java.util.Random;
 import org.ggp.base.player.gamer.statemachine.GamerSettings;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.GameDependentParameters;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.SharedReferencesCollector;
-import org.ggp.base.player.gamer.statemachine.MCTS.manager.parameterstuning.SequentialParametersTuner;
+import org.ggp.base.player.gamer.statemachine.MCTS.manager.parameterstuning.discretetuners.SequentialParametersTuner;
 
 /**
  * Only use this class when tuning sequentially AND changing parameter after the search for every move.

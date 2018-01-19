@@ -1,4 +1,4 @@
-package org.ggp.base.player.gamer.statemachine.MCTS.manager.parameterstuning;
+package org.ggp.base.player.gamer.statemachine.MCTS.manager.parameterstuning.discretetuners;
 
 import java.lang.reflect.InvocationTargetException;
 import java.util.List;
@@ -9,8 +9,7 @@ import org.ggp.base.player.gamer.statemachine.MCS.manager.hybrid.CompleteMoveSta
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.GameDependentParameters;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.SearchManagerComponent;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.SharedReferencesCollector;
-import org.ggp.base.player.gamer.statemachine.MCTS.manager.parameterstuning.discretetuners.DiscreteParametersTuner;
-import org.ggp.base.player.gamer.statemachine.MCTS.manager.parameterstuning.evolution.EvolutionManager;
+import org.ggp.base.player.gamer.statemachine.MCTS.manager.parameterstuning.evolution.DiscreteEvolutionManager;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.parameterstuning.evolution.fitness.FitnessComputer;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.parameterstuning.selectors.TunerSelector;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.parameterstuning.structure.AllCombosOfIndividualsIterator;
@@ -30,7 +29,7 @@ public class SinglePopEvoParametersTuner extends DiscreteParametersTuner {
 	/**
 	 * Takes care of evolving a given population depending on the fitness of its individuals.
 	 */
-	private EvolutionManager evolutionManager;
+	private DiscreteEvolutionManager discreteEvolutionManager;
 
 	/**
 	 * Given the statistics of each combination, selects the best one among them.
@@ -94,12 +93,12 @@ public class SinglePopEvoParametersTuner extends DiscreteParametersTuner {
 		this.logPopulations = gamerSettings.getBooleanPropertyValue("ParametersTuner.logPopulations");
 
 		try {
-			this.evolutionManager = (EvolutionManager) SearchManagerComponent.getConstructorForSearchManagerComponent(SearchManagerComponent.getCorrespondingClass(ProjectSearcher.EVOLUTION_MANAGERS.getConcreteClasses(),
+			this.discreteEvolutionManager = (DiscreteEvolutionManager) SearchManagerComponent.getConstructorForSearchManagerComponent(SearchManagerComponent.getCorrespondingClass(ProjectSearcher.DISCRETE_EVOLUTION_MANAGERS.getConcreteClasses(),
 					gamerSettings.getPropertyValue("ParametersTuner.evolutionManagerType"))).newInstance(gameDependentParameters, random, gamerSettings, sharedReferencesCollector);
 		} catch (InstantiationException | IllegalAccessException
 				| IllegalArgumentException | InvocationTargetException e) {
 			// TODO: fix this!
-			GamerLogger.logError("SearchManagerCreation", "Error when instantiating EvolutionManager " + gamerSettings.getPropertyValue("ParametersTuner.evolutionManagerType") + ".");
+			GamerLogger.logError("SearchManagerCreation", "Error when instantiating DiscreteEvolutionManager " + gamerSettings.getPropertyValue("ParametersTuner.evolutionManagerType") + ".");
 			GamerLogger.logStackTrace("SearchManagerCreation", e);
 			throw new RuntimeException(e);
 		}
@@ -144,7 +143,7 @@ public class SinglePopEvoParametersTuner extends DiscreteParametersTuner {
 	public void setReferences(SharedReferencesCollector sharedReferencesCollector){
 		super.setReferences(sharedReferencesCollector);
 
-		this.evolutionManager.setReferences(sharedReferencesCollector);
+		this.discreteEvolutionManager.setReferences(sharedReferencesCollector);
 
 		this.bestCombinationSelector.setReferences(sharedReferencesCollector);
 	}
@@ -153,7 +152,7 @@ public class SinglePopEvoParametersTuner extends DiscreteParametersTuner {
 	public void clearComponent() {
 		super.clearComponent();
 
-		this.evolutionManager.clearComponent();
+		this.discreteEvolutionManager.clearComponent();
 
 		this.bestCombinationSelector.clearComponent();
 	}
@@ -162,7 +161,7 @@ public class SinglePopEvoParametersTuner extends DiscreteParametersTuner {
 	public void setUpComponent() {
 		super.setUpComponent();
 
-		this.evolutionManager.setUpComponent();
+		this.discreteEvolutionManager.setUpComponent();
 
 		this.bestCombinationSelector.setUpComponent();
 
@@ -199,7 +198,7 @@ public class SinglePopEvoParametersTuner extends DiscreteParametersTuner {
 				}
 
 				// Create the initial population
-				this.problemRepresentation = new EvoProblemRepresentation(this.evolutionManager.getInitialPopulation());
+				this.problemRepresentation = new EvoProblemRepresentation(this.discreteEvolutionManager.getInitialPopulation());
 
 				if(this.logPopulations){
 					this.logStats();
@@ -246,7 +245,7 @@ public class SinglePopEvoParametersTuner extends DiscreteParametersTuner {
 			if(this.evalRepetitionsCount == this.evalRepetitions){
 
 				// If yes, evolve the population.
-				this.evolutionManager.evolvePopulation(this.problemRepresentation);
+				this.discreteEvolutionManager.evolvePopulation(this.problemRepresentation);
 
 				if(this.logPopulations){
 					this.logStats();
@@ -467,7 +466,7 @@ public class SinglePopEvoParametersTuner extends DiscreteParametersTuner {
 		String superParams = super.getComponentParameters(indentation);
 
 		String params = indentation + "LOG_POPULATIONS = " + this.logPopulations +
-				indentation + "EVOLUTION_MANAGER = " + this.evolutionManager.printComponent(indentation + "  ") +
+				indentation + "DISCRETE_EVOLUTION_MANAGER = " + this.discreteEvolutionManager.printComponent(indentation + "  ") +
 				indentation + "BEST_COMBINATION_SELECTOR = " + this.bestCombinationSelector.printComponent(indentation + "  ") +
 				indentation + "FITNESS_COMPUTER = " + (this.fitnessComputer != null ? this.fitnessComputer.printComponent(indentation + "  ") : "null") +
 				indentation + "INDIVIDUALS_ITERATOR = " + (this.combosOfIndividualsIterator != null ? this.combosOfIndividualsIterator.getClass().getSimpleName() : "null") +

@@ -1,4 +1,4 @@
-package org.ggp.base.player.gamer.statemachine.MCTS.manager.parameterstuning;
+package org.ggp.base.player.gamer.statemachine.MCTS.manager.parameterstuning.discretetuners;
 
 import java.util.List;
 import java.util.Random;
@@ -30,7 +30,7 @@ public class StandardMultiPopEvoParametersTuner extends	MultiPopEvoParametersTun
 		// Create the initial population for each role
 		this.roleProblems = new EvoProblemRepresentation[numRolesToTune];
 		for(int roleProblemIndex = 0; roleProblemIndex < this.roleProblems.length; roleProblemIndex++){
-			roleProblems[roleProblemIndex] = new EvoProblemRepresentation(this.evolutionManager.getInitialPopulation());
+			roleProblems[roleProblemIndex] = new EvoProblemRepresentation(this.discreteEvolutionManager.getInitialPopulation());
 		}
 	}
 

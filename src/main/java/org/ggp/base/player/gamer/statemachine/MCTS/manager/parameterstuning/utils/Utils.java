@@ -9,7 +9,7 @@ public class Utils {
      * @return
      */
     public double mapToInterval(double upperBound, double lowerBound, double valueInR) {
-        double normalised = 0.0;
+        //double normalised = 0.0;
 
         return ( mapToOne(valueInR)*(upperBound-lowerBound) + lowerBound );
     }

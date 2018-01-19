@@ -66,15 +66,15 @@ public class UniformCrossover extends CrossoverManager {
 				// Get value from first parent
 				childCombo[paramIndex.intValue()] = parentCombo1[paramIndex.intValue()];
 
-				if(!this.parametersManager.isValid(childCombo)){
+				if(!this.discreteParametersManager.isValid(childCombo)){
 
 					// If combination is invalid, get value from second parent
 					childCombo[paramIndex.intValue()] = parentCombo2[paramIndex.intValue()];
 
-					if(!this.parametersManager.isValid(childCombo)){
+					if(!this.discreteParametersManager.isValid(childCombo)){
 						// If combination is still invalid, get random feasible value
 						childCombo[paramIndex.intValue()] = -1;
-						List<Integer> feasibleValues = this.parametersManager.getFeasibleValues(paramIndex.intValue(), childCombo);
+						List<Integer> feasibleValues = this.discreteParametersManager.getFeasibleValues(paramIndex.intValue(), childCombo);
 						childCombo[paramIndex.intValue()] = feasibleValues.get(this.random.nextInt(feasibleValues.size())).intValue();
 					}
 
@@ -84,15 +84,15 @@ public class UniformCrossover extends CrossoverManager {
 				// Get value from second parent
 				childCombo[paramIndex.intValue()] = parentCombo2[paramIndex.intValue()];
 
-				if(!this.parametersManager.isValid(childCombo)){
+				if(!this.discreteParametersManager.isValid(childCombo)){
 
 					// If combination is invalid, get value from second parent
 					childCombo[paramIndex.intValue()] = parentCombo1[paramIndex.intValue()];
 
-					if(!this.parametersManager.isValid(childCombo)){
+					if(!this.discreteParametersManager.isValid(childCombo)){
 						// If combination is still invalid, get random feasible value
 						childCombo[paramIndex.intValue()] = -1;
-						List<Integer> feasibleValues = this.parametersManager.getFeasibleValues(paramIndex.intValue(), childCombo);
+						List<Integer> feasibleValues = this.discreteParametersManager.getFeasibleValues(paramIndex.intValue(), childCombo);
 						childCombo[paramIndex.intValue()] = feasibleValues.get(this.random.nextInt(feasibleValues.size())).intValue();
 					}
 

@@ -12,7 +12,7 @@ import org.ggp.base.player.gamer.statemachine.MCTS.manager.parameterstuning.stru
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.parameterstuning.structure.problemrep.EvoProblemRepresentation;
 import org.ggp.base.util.logging.GamerLogger;
 
-public class SelfAdaptiveEvolutionStrategyManager extends EvolutionManager {
+public class SelfAdaptiveEvolutionStrategyManager extends ContinuousEvolutionManager {
     protected double stepSize[];  // consider isotropic step size control
     protected int resampling = 1;
     protected double[][] population;
@@ -31,7 +31,7 @@ public class SelfAdaptiveEvolutionStrategyManager extends EvolutionManager {
         this.resampling = gamerSettings.getIntPropertyValue("SelfAdaptiveEvolutionStrategyManager.resampling");
 
         // set the pop size, etc and ignore the related setting in the properties
-        this.nbTunableParams = parametersManager.getNumTunableParameters();
+        this.nbTunableParams = this.continuousParametersManager.getNumTunableParameters();
         // according to the rule in a paper that I forgot title...
         this.populationsSize = (int) Math.ceil(4 + Math.log(nbTunableParams)) + 1;
         initStepSize();
@@ -58,7 +58,6 @@ public class SelfAdaptiveEvolutionStrategyManager extends EvolutionManager {
     /**
      * Returns random initial population with populationSize individuals.
      */
-    @Override
     public CompleteMoveStats[] getInitialPopulation() {
 
         CompleteMoveStats[] populationStats = new CompleteMoveStats[this.populationsSize];
@@ -81,10 +80,9 @@ public class SelfAdaptiveEvolutionStrategyManager extends EvolutionManager {
             bounds = new double[nbTunableParams][2];
             // set the bounds
             for (int i=0; i<nbTunableParams; i++) {
-            	// TODO: Temporary error. Merged master to update bug fixes. Changing code later to re-implement this missing method.
-                double[] _possbileValues = parametersManager.getPossibleValuesDouble(i);
-                bounds[i][0] = _possbileValues[0];  // lower bound
-                bounds[i][1] = _possbileValues[0];  // upper bound
+                bounds[i][0] = this.continuousParametersManager.getPossibleValuesInterval(i).getLeftExtreme();  // lower bound
+                bounds[i][1] = this.continuousParametersManager.getPossibleValuesInterval(i).getRightExtreme();  // upper bound
+                /*
                 for (int j=1; j<_possbileValues.length; j++) {
                     double _value = _possbileValues[j];
                     if (_value < bounds[i][0]) {
@@ -92,7 +90,7 @@ public class SelfAdaptiveEvolutionStrategyManager extends EvolutionManager {
                     } else if (_value > bounds[i][1]) {
                         bounds[i][1] = _value;
                     }
-                }
+                }*/
             }
         } else {
             System.err.println("[ERROR] SelfAdaptiveEvolutionStrategyManager: nbTunableParams == 0");
@@ -215,7 +213,6 @@ public class SelfAdaptiveEvolutionStrategyManager extends EvolutionManager {
 //        rankPopulation(roleProblem);
 //    }
 
-    @Override
     public void evolvePopulation(EvoProblemRepresentation roleProblem) {
         // The size of the elite must be at least 1
         if(this.eliteSize <= 0){

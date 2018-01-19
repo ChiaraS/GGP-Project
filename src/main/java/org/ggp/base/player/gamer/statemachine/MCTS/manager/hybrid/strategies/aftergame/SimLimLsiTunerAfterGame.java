@@ -6,7 +6,7 @@ import java.util.Random;
 import org.ggp.base.player.gamer.statemachine.GamerSettings;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.GameDependentParameters;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.SharedReferencesCollector;
-import org.ggp.base.player.gamer.statemachine.MCTS.manager.parameterstuning.SimLimitedLsiParametersTuner;
+import org.ggp.base.player.gamer.statemachine.MCTS.manager.parameterstuning.discretetuners.SimLimitedLsiParametersTuner;
 
 public class SimLimLsiTunerAfterGame extends AfterGameStrategy {
 

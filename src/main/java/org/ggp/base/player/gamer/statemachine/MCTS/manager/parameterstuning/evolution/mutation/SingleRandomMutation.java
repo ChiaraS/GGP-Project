@@ -71,13 +71,13 @@ public class SingleRandomMutation extends MutationManager {
 		int mutationIndex = this.random.nextInt(childCombo.length);
 
 		// Check if the parameter to mutate is K and Ref is also being tuned
-		if(mutationIndex == this.parametersManager.getIndexOfK() && this.parametersManager.getIndexOfRef() != -1) {
-				this.conditionalMutation(childCombo, this.parametersManager.getIndexOfK(), this.parametersManager.getIndexOfRef());
-			}else if(mutationIndex == this.parametersManager.getIndexOfRef() && this.parametersManager.getIndexOfK() != -1) { // Check if the parameter to mutate is Ref and K is also being tuned
-				this.conditionalMutation(childCombo, this.parametersManager.getIndexOfRef(), this.parametersManager.getIndexOfK());
+		if(mutationIndex == this.discreteParametersManager.getIndexOfK() && this.discreteParametersManager.getIndexOfRef() != -1) {
+				this.conditionalMutation(childCombo, this.discreteParametersManager.getIndexOfK(), this.discreteParametersManager.getIndexOfRef());
+			}else if(mutationIndex == this.discreteParametersManager.getIndexOfRef() && this.discreteParametersManager.getIndexOfK() != -1) { // Check if the parameter to mutate is Ref and K is also being tuned
+				this.conditionalMutation(childCombo, this.discreteParametersManager.getIndexOfRef(), this.discreteParametersManager.getIndexOfK());
 			}else { // Otherwise just proceed normally
 				childCombo[mutationIndex] = -1;
-				List<Integer> feasibleValues = this.parametersManager.getFeasibleValues(mutationIndex, childCombo);
+				List<Integer> feasibleValues = this.discreteParametersManager.getFeasibleValues(mutationIndex, childCombo);
 				childCombo[mutationIndex] = feasibleValues.get(this.random.nextInt(feasibleValues.size())).intValue();
 			}
 
@@ -105,10 +105,10 @@ public class SingleRandomMutation extends MutationManager {
 		// Reset index of value for secondIndex in the child combo
 		childCombo[secondIndex] = -1;
 		// Get all feasible values for firstIndex and select one
-		List<Integer> feasibleValues = this.parametersManager.getFeasibleValues(firstIndex, childCombo);
+		List<Integer> feasibleValues = this.discreteParametersManager.getFeasibleValues(firstIndex, childCombo);
 		childCombo[firstIndex] = feasibleValues.get(this.random.nextInt(feasibleValues.size())).intValue();
 		// Get all feasible values for secondIndex given the value for firstIndex
-		feasibleValues =  this.parametersManager.getFeasibleValues(secondIndex, childCombo);
+		feasibleValues =  this.discreteParametersManager.getFeasibleValues(secondIndex, childCombo);
 		// If the previous value is still feasible, set it. Otherwise select a new random value for Ref among the feasible ones.
 		if(feasibleValues.contains(new Integer(valueAtSecondIndex))) {
 			childCombo[secondIndex] = valueAtSecondIndex;

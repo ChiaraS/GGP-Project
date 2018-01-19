@@ -27,7 +27,7 @@ import org.ggp.base.util.reflection.ProjectSearcher;
  * @author C.Sironi
  *
  */
-public class StandardEvolutionManager extends EvolutionManager {
+public class StandardEvolutionManager extends DiscreteEvolutionManager {
 
 	/**
 	 * When evolving the population, a new individual is created by crossover of two random parents

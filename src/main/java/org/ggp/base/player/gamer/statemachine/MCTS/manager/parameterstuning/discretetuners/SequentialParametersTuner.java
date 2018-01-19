@@ -1,4 +1,4 @@
-package org.ggp.base.player.gamer.statemachine.MCTS.manager.parameterstuning;
+package org.ggp.base.player.gamer.statemachine.MCTS.manager.parameterstuning.discretetuners;
 
 import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
@@ -11,7 +11,6 @@ import org.ggp.base.player.gamer.statemachine.MCS.manager.MoveStats;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.GameDependentParameters;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.SearchManagerComponent;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.SharedReferencesCollector;
-import org.ggp.base.player.gamer.statemachine.MCTS.manager.parameterstuning.discretetuners.DiscreteParametersTuner;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.parameterstuning.selectors.TunerSelector;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.parameterstuning.structure.mabs.FixedMab;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.parameterstuning.structure.problemrep.SequentialProblemRepresentation;
