@@ -160,10 +160,14 @@ public class StandardEvolutionManager extends DiscreteEvolutionManager {
 		}
 		*/
 
+		int totalUpdates = roleProblem.getTotalUpdates();
+
 		// For other individuals, generate new individuals to substitute them and reset also statistics.
 		// Keep the first eliteSize best individuals and create new individuals
 		// to substitute the ones that are being thrown away.
 		for(int i = this.eliteSize; i < roleProblem.getPopulation().length; i++){
+
+			totalUpdates -= roleProblem.getPopulation()[i].getVisits(); // Remove the visits of the individual because they will be reset to 0 in the next lines
 
 			if(this.random.nextDouble() < this.crossoverProbability){
 				// Create new individual with crossover
@@ -175,6 +179,8 @@ public class StandardEvolutionManager extends DiscreteEvolutionManager {
 			}
 
 		}
+
+		roleProblem.setTotalUpdates(totalUpdates);
 
 	}
 

@@ -381,6 +381,7 @@ public class SinglePopEvoParametersTuner extends DiscreteParametersTuner {
 			toUpdate = this.problemRepresentation.getPopulation()[individualFitness.getFirst()];
 			toUpdate.incrementScoreSum(individualFitness.getSecond());
 			toUpdate.incrementVisits();
+			this.problemRepresentation.incrementTotalUpdates();
 		}
 
 	}
@@ -443,10 +444,13 @@ public class SinglePopEvoParametersTuner extends DiscreteParametersTuner {
 
 	@Override
 	public void decreaseStatistics(double factor) {
+		int totalUpdates = 0;
 		// Not really needed, so probably this method will never be used.
 		for(int i = 0; i < this.problemRepresentation.getPopulation().length; i++){
 			this.problemRepresentation.getPopulation()[i].decreaseByFactor(factor);
+			totalUpdates += this.problemRepresentation.getPopulation()[i].getVisits();
 		}
+		this.problemRepresentation.setTotalUpdates(totalUpdates);
 
 	}
 

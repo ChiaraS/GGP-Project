@@ -234,6 +234,8 @@ public class SelfAdaptiveEvolutionStrategyManager extends ContinuousEvolutionMan
             }
         }
 
+        int totalUpdates = roleProblem.getTotalUpdates();
+
         // Generate new population
         for (int i=0; i<populationsSize; i++) {
             // Get parent Index
@@ -245,8 +247,12 @@ public class SelfAdaptiveEvolutionStrategyManager extends ContinuousEvolutionMan
             for (int j=0; j<nbTunableParams; j++) {
                 newMove[j] =  prevElites[i][j] * newStepSize;
             }
+            totalUpdates -= roleProblem.getPopulation()[i].getVisits();
             roleProblem.getPopulation()[i].resetStats(new ContinuousMove(newMove, newStepSize));
         }
+
+        roleProblem.setTotalUpdates(totalUpdates);
+
         rankPopulation(roleProblem);
 
     }

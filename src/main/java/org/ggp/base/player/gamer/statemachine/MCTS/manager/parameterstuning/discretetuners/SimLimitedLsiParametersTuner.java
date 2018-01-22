@@ -366,7 +366,7 @@ public class SimLimitedLsiParametersTuner extends DiscreteParametersTuner {
 						toLog += null + " ";
 					}
 				}
-				toLog += "];FINAL=;" + !isIntermediate[roleProblemIndex] + "\n";
+				toLog += "];FINAL=;" + !isIntermediate[roleProblemIndex] + ";\n";
 			}
 		}else{ // Tuning only my role
 			toLog += ("ROLE=;" + this.gameDependentParameters.getTheMachine().convertToExplicitRole(this.gameDependentParameters.getTheMachine().getRoles().get(this.gameDependentParameters.getMyRoleIndex())) + ";PARAMS=;" + globalParamsOrder + ";SELECTED_COMBINATION=;[ ");
@@ -379,7 +379,7 @@ public class SimLimitedLsiParametersTuner extends DiscreteParametersTuner {
 					toLog += null + " ";
 				}
 			}
-			toLog += "];FINAL=;" + !isIntermediate[0] + "\n";
+			toLog += "];FINAL=;" + !isIntermediate[0] + ";\n";
 		}
 
 		return toLog;

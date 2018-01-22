@@ -1,14 +1,11 @@
 package org.ggp.base.player.gamer.statemachine.MCTS.manager.parameterstuning.evolution;
 
-import java.util.Arrays;
-import java.util.Comparator;
 import java.util.Random;
 
 import org.ggp.base.player.gamer.statemachine.GamerSettings;
 import org.ggp.base.player.gamer.statemachine.MCS.manager.hybrid.CompleteMoveStats;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.GameDependentParameters;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.SharedReferencesCollector;
-import org.ggp.base.player.gamer.statemachine.MCTS.manager.parameterstuning.structure.CombinatorialCompactMove;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.parameterstuning.structure.ContinuousMove;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.parameterstuning.structure.problemrep.SelfAdaptiveESProblemRepresentation;
 import org.ggp.base.util.logging.GamerLogger;
@@ -18,10 +15,26 @@ import inriacmaes.CMAEvolutionStrategy;
 
 public class CMAESManager extends ContinuousEvolutionManager {
 
+	/**
+	 * True if when returning a solution before the CMA-ES algorithm has terminated we want to return the
+	 * mean value, even if it has not been evaluated yet. The mean value is expected to have the best fitness,
+	 * however if the tuning was interrupted before we could have the chance to evaluate it, we cannot know for
+	 * sure. If mean==true we set it as best value anyway, otherwise we query the CMA-ES class to get the best
+	 * value evaluated so far. Note that if we did have time to evaluate the mean at least once after the end of
+	 * the optimization with the CMA-ES algorithm, we query the CMA-ES instance for the best solution evaluated
+	 * so far (which might be the mean), ignoring this class field.
+	 * NOTE that returning the mean or the best value when the execution of the algorithm is stopped before its
+	 * termination makes absolutely no difference because the game is over and the returned combination will not
+	 * be used. The only case when it makes a difference is if we want to re-use the best combination to play
+	 * the same game again.
+	 */
+	private boolean useMean;
+
 	public CMAESManager(GameDependentParameters gameDependentParameters, Random random, GamerSettings gamerSettings,
 			SharedReferencesCollector sharedReferencesCollector) {
 		super(gameDependentParameters, random, gamerSettings, sharedReferencesCollector);
-		// Do nothing
+
+		this.useMean = gamerSettings.getBooleanPropertyValue("EvolutionManager.useMean");
 	}
 
 	@Override
@@ -105,111 +118,101 @@ public class CMAESManager extends ContinuousEvolutionManager {
         // 3. the number of times the individual has been evaluated
 		CompleteMoveStats[] population = new CompleteMoveStats[pop.length];
 
-		double[] rescaledValuesOfIndividual;
-
 		for(int individualIndex = 0; individualIndex < pop.length; individualIndex++) {
-			rescaledValuesOfIndividual = new double[pop[individualIndex].length];
-			for(int paramIndex = 0; paramIndex < pop[individualIndex].length; paramIndex++) {
-				rescaledValuesOfIndividual[paramIndex] =
-						new org.ggp.base.player.gamer.statemachine.MCTS.manager.parameterstuning.utils.Utils().mapToInterval(
-								this.continuousParametersManager.getPossibleValuesInterval(paramIndex).getRightExtreme(),
-								this.continuousParametersManager.getPossibleValuesInterval(paramIndex).getLeftExtreme(),
-								pop[individualIndex][paramIndex]);
-			}
-			population[individualIndex] = new CompleteMoveStats(new ContinuousMove(rescaledValuesOfIndividual));
+			population[individualIndex] = this.scaleDownIndividual(pop[individualIndex]);
 		}
 
 		return population;
+	}
+
+	private CompleteMoveStats scaleDownIndividual(double[] individual) {
+		double[] rescaledValuesOfIndividual = new double[individual.length];
+		for(int paramIndex = 0; paramIndex < individual.length; paramIndex++) {
+			rescaledValuesOfIndividual[paramIndex] =
+					new org.ggp.base.player.gamer.statemachine.MCTS.manager.parameterstuning.utils.Utils().mapToInterval(
+							this.continuousParametersManager.getPossibleValuesInterval(paramIndex).getRightExtreme(),
+							this.continuousParametersManager.getPossibleValuesInterval(paramIndex).getLeftExtreme(),
+							individual[paramIndex]);
+		}
+		return new CompleteMoveStats(new ContinuousMove(rescaledValuesOfIndividual));
+
 	}
 
 	public void evolvePopulation(SelfAdaptiveESProblemRepresentation roleProblem) {
 
 		// If a role problem is passed to this function we know that the CMA-ES has not been stopped yet for the role
 
-		double[] fitness = new double[roleProblem.getCMAEvolutionStrategy().parameters.getPopulationSize()];
-		for(CompleteMoveStats stat : roleProblem.getPopulation()) {
-
-			// Compute fitness and invert it because CMA-ES minimized the function, while we want to maximize
-
-
-		}
-
-		roleProblem.getCMAEvolutionStrategy().updateDistribution(fitness);
+		roleProblem.getCMAEvolutionStrategy().updateDistribution(this.computeFitness(roleProblem.getPopulation()));
 
 		if(roleProblem.getCMAEvolutionStrategy().stopConditions.getNumber() > 0) { // Stop optimization
 
-			// TODO: compute fitness of mean
-			//roleProblem.getCMAEvolutionStrategy().setFitnessOfMeanX(fitnessOfMeanComputedByAnMCTSSimulation)
-
+			roleProblem.setPopulation(null);
+			roleProblem.resetTotalUpdates();
+			roleProblem.setMeanValueCombo(this.scaleDownIndividual(roleProblem.getCMAEvolutionStrategy().getMeanX()));
 
 		}else { // Get new population
 
+			double[][] pop = roleProblem.getCMAEvolutionStrategy().samplePopulation();
+
+	        // Transform the initial population into a population of statistics for ContinuousMoves
+	        // (i.e. each individual is represented by an instance of CompleteMoveStats, that contains:
+	        // 1. the individual as a combination of parameter values rescaled from [-inf,+inf] to its
+	        // own interval of feasible values
+	        // 2. the sum of the fitness obtained by all evaluations of the individual
+	        // 3. the number of times the individual has been evaluated
+			roleProblem.setPopulation(this.scaleDownPopulation(pop));
+			roleProblem.resetTotalUpdates();
+
 		}
 
+	}
 
-
-
-
-
-
-
-		// The size of the elite must be at least 1
-		if(this.eliteSize <= 0){
-			GamerLogger.logError("EvolutionManager", "StandardEvolutionManager - Impossible to evolve the population. Elite size " + this.eliteSize + " <= 0.");
-			throw new RuntimeException("StandardEvolutionManager - Impossible to evolve the population. Elite size " + this.eliteSize + " <= 0.");
-		}
-
-		Arrays.sort(roleProblem.getPopulation(),
-				new Comparator<CompleteMoveStats>(){
-
-			@Override
-			public int compare(CompleteMoveStats o1, CompleteMoveStats o2) {
-
-				double value1;
-				if(o1.getVisits() == 0){
-					value1 = 0;
-				}else{
-					value1 = o1.getScoreSum()/o1.getVisits();
-				}
-				double value2;
-				if(o2.getVisits() == 0){
-					value2 = 0;
-				}else{
-					value2 = o2.getScoreSum()/o2.getVisits();
-				}
-				// Sort from largest to smallest
-				if(value1 > value2){
-					return -1;
-				}else if(value1 < value2){
-					return 1;
-				}else{
-					return 0;
-				}
+	private double[] computeFitness(CompleteMoveStats[] population) {
+		double[] fitness = new double[population.length];
+		for(int individualIndex = 0; individualIndex < population.length; individualIndex++) {
+			// Compute fitness and invert it (i.e. fitness=-score) because CMA-ES minimizes the function, while we want to maximize
+			if(population[individualIndex].getVisits() <= 0) {
+				GamerLogger.logError("EvolutionManager", "CMAESManager - Impossible to compute fitness of population. Found individual with no visits (visits=" + population[individualIndex].getVisits() + ") to compute its fitness.");
+				throw new RuntimeException("CMAESManager - Impossible to compute fitness of population. Found individual with no visits (visits=" + population[individualIndex].getVisits() + ") to compute its fitness.");
 			}
-
-		});
-
-		// For the individuals that we are keeping, reset all statistics.
-		/*
-		for(int i = 0; i < this.eliteSize; i++){
-			roleProblem.getPopulation()[i].resetStats();
+			fitness[individualIndex] = -(population[individualIndex].getScoreSum()/((double)population[individualIndex].getVisits())); // -0.0 shouldn't be a problem here right?
 		}
-		*/
+		return fitness;
+	}
 
-		// For other individuals, generate new individuals to substitute them and reset also statistics.
-		// Keep the first eliteSize best individuals and create new individuals
-		// to substitute the ones that are being thrown away.
-		for(int i = this.eliteSize; i < roleProblem.getPopulation().length; i++){
+	public CompleteMoveStats updateMeanFitnessAndGetBest(SelfAdaptiveESProblemRepresentation roleProblem) {
 
-			if(this.random.nextDouble() < this.crossoverProbability){
-				// Create new individual with crossover
-				roleProblem.getPopulation()[i].resetStats(this.crossoverManager.crossover(((CombinatorialCompactMove)roleProblem.getPopulation()[this.random.nextInt(this.eliteSize)].getTheMove()),
-						((CombinatorialCompactMove)roleProblem.getPopulation()[this.random.nextInt(this.eliteSize)].getTheMove())));
-			}else{
-				// Create new individual with mutation
-				roleProblem.getPopulation()[i].resetStats(this.mutationManager.mutation(((CombinatorialCompactMove)roleProblem.getPopulation()[this.random.nextInt(this.eliteSize)].getTheMove())));
-			}
+		if(roleProblem.getMeanValueCombo().getVisits() <= 0) {
+			GamerLogger.logError("EvolutionManager", "CMAESManager - Impossible to set fitness of mean value. The individual with mean value has no positive numebr of visits (visits=" + roleProblem.getMeanValueCombo().getVisits() + ") to compute its fitness.");
+			throw new RuntimeException("CMAESManager - Impossible to set fitness of mean value. The individual with mean value has no positive numebr of visits (visits=" + roleProblem.getMeanValueCombo().getVisits() + ") to compute its fitness.");
+		}
+		double meanFitness = -(roleProblem.getMeanValueCombo().getScoreSum()/((double)roleProblem.getMeanValueCombo().getVisits()));
 
+		roleProblem.setMeanValueCombo(null);
+
+		return this.scaleDownIndividual(roleProblem.getCMAEvolutionStrategy().setFitnessOfMeanX(meanFitness).getX());
+
+	}
+
+	public CompleteMoveStats updatePopulationFitnessAndGetBest(SelfAdaptiveESProblemRepresentation roleProblem) {
+
+		// Check if each individual has at least one visit (i.e. has been sampled at least once)
+		boolean updateDistribution = true;
+		int individualIndex = 0;
+		while(individualIndex < roleProblem.getPopulation().length && updateDistribution) {
+			updateDistribution = roleProblem.getPopulation()[individualIndex].getVisits() > 0;
+			individualIndex++;
+		}
+		// If each individual has been sampled at least once we can update the distribution
+		if(updateDistribution) {
+			roleProblem.getCMAEvolutionStrategy().updateDistribution(this.computeFitness(roleProblem.getPopulation()));
+		}
+
+		// Return the best combination found so far
+		if(this.useMean) {
+			return this.scaleDownIndividual(roleProblem.getCMAEvolutionStrategy().getMeanX());
+		}else {
+			return this.scaleDownIndividual(roleProblem.getCMAEvolutionStrategy().getBestX());
 		}
 
 	}
@@ -217,7 +220,15 @@ public class CMAESManager extends ContinuousEvolutionManager {
 	@Override
 	public String getComponentParameters(String indentation) {
 
-		return super.getComponentParameters(indentation);
+		String superParams = super.getComponentParameters(indentation);
+
+		String params = indentation + "USE_MEAN = " + this.useMean;
+
+		if(superParams != null){
+			return superParams + params;
+		}else{
+			return params;
+		}
 
 	}
 

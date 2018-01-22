@@ -92,6 +92,43 @@ public abstract class ContinuousParametersTuner extends ParametersTuner {
 		return toLog;
 	}
 
+	protected String getLogOfCombinations(double[][] combinations, boolean[] isFinal){
+
+		String globalParamsOrder = this.getGlobalParamsOrder();
+		String toLog = "";
+
+		if(this.tuneAllRoles){
+			for(int roleProblemIndex = 0; roleProblemIndex < this.gameDependentParameters.getNumRoles(); roleProblemIndex++){
+				toLog += ("ROLE=;" + this.gameDependentParameters.getTheMachine().convertToExplicitRole(this.gameDependentParameters.getTheMachine().getRoles().get(roleProblemIndex)) + ";PARAMS=;" + globalParamsOrder + ";SELECTED_COMBINATION=;[ ");
+				if(combinations != null && combinations[roleProblemIndex] != null){
+					for(int paramIndex = 0; paramIndex < this.continuousParametersManager.getNumTunableParameters(); paramIndex++){
+						toLog += combinations[roleProblemIndex][paramIndex] + " ";
+					}
+				}else{
+					for(int paramIndex = 0; paramIndex < this.continuousParametersManager.getNumTunableParameters(); paramIndex++){
+						toLog += null + " ";
+					}
+				}
+				toLog += "];FINAL=;" + isFinal[roleProblemIndex] + ";\n";
+			}
+		}else{ // Tuning only my role
+			toLog += ("ROLE=;" + this.gameDependentParameters.getTheMachine().convertToExplicitRole(this.gameDependentParameters.getTheMachine().getRoles().get(this.gameDependentParameters.getMyRoleIndex())) + ";PARAMS=;" + globalParamsOrder + ";SELECTED_COMBINATION=;[ ");
+			if(combinations != null && combinations[0] != null){
+				for(int paramIndex = 0; paramIndex < this.continuousParametersManager.getNumTunableParameters(); paramIndex++){
+					toLog += combinations[0][paramIndex] + " ";
+				}
+			}else{
+				for(int paramIndex = 0; paramIndex < this.continuousParametersManager.getNumTunableParameters(); paramIndex++){
+					toLog += null + " ";
+				}
+			}
+			toLog += "];FINAL=;" + isFinal[0] + ";\n";
+		}
+
+		return toLog;
+
+	}
+
 	@Override
 	public ParametersManager getParametersManager() {
 		return this.continuousParametersManager;

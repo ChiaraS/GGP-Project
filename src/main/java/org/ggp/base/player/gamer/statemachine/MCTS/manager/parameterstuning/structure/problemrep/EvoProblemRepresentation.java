@@ -18,12 +18,12 @@ public class EvoProblemRepresentation {
 
 	public EvoProblemRepresentation(CompleteMoveStats[] population) {
 		this.population = population;
-		this.totalUpdates = 0;
+		//this.totalUpdates = 0;
 	}
 
 	public void setPopulation(CompleteMoveStats[] population){
 		this.population = population;
-		this.totalUpdates = 0;
+		//this.totalUpdates = 0;
 	}
 
 	public CompleteMoveStats[] getPopulation(){
@@ -36,6 +36,14 @@ public class EvoProblemRepresentation {
 
 	public void incrementTotalUpdates(){
 		this.totalUpdates++;
+	}
+
+	public void setTotalUpdates(int totalUpdates) {
+		this.totalUpdates = totalUpdates;
+	}
+
+	public void resetTotalUpdates() {
+		this.totalUpdates = 0;
 	}
 
     /**

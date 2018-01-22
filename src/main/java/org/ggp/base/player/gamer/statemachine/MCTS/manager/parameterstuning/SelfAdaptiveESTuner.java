@@ -40,6 +40,25 @@ import inriacmaes.CMAEvolutionStrategy;
  */
 public class SelfAdaptiveESTuner extends ContinuousParametersTuner {
 
+	/**
+	 * We do not decide when CMA-ES stops the execution, so if the game is over before the CMA-ES instance
+	 * for a role managed to finish the optimization we have to compute the best solution so far, instead
+	 * of the best solution overall. When memorizing the best solution (i.e. parameter combination) for a
+	 * role we also memorize its type, that describes how the solution was computed. The possible types of
+	 * solution are the following:
+	 * - PREVIOUS_POPULATION:
+	 * - UNDERSAMPLED_POPULATION:
+	 * - UNDERSAMPLED_MEAN:
+	 * - FINAL:
+	 *
+	 * @author c.sironi
+	 *
+	 */
+	Spiega i tipi di soluzione e aggiungi codice per assegnare il tipo ad ogni soluzione quando vien calcolata
+    public enum SOLUTION_TYPE{
+    	PREVIOUS_POPULATION, UNDERSAMPLED_POPULATION, UNDERSAMPLED_MEAN, FINAL
+    }
+
     private boolean logPopulations;
 
     /**
@@ -104,6 +123,12 @@ public class SelfAdaptiveESTuner extends ContinuousParametersTuner {
     private int evalRepetitions;    // resampling number
 
     /**
+     * Number of times we want to evaluate the mean combination at the end of the execution of CMA-ES
+     * for a role before we update its fitness in the CMA-ES instance of the role.
+     */
+    private int evalRepetitionsForMeanCombo;
+
+    /**
      * Used to count the repetitions performed so far.
      */
     private int evalRepetitionsCount;
@@ -137,6 +162,14 @@ public class SelfAdaptiveESTuner extends ContinuousParametersTuner {
      * Memorizes the best so far combination of parameters values for each role.
      */
     private double[][] bestCombinations;
+
+    /**
+     * For each role, true if the corresponding selected combination has been computed after the termination of
+     * the execution of the corresponding CMA-ES algorithm (and thus is the best overall), false if it is an
+     * intermediate combination or if it has been computed as best before the end of the optimization of the
+     * CMA-ES algorithm.
+     */
+    private boolean[] isFinal;
 
     private SelfAdaptiveESProblemRepresentation[] roleProblems;
 
@@ -177,6 +210,8 @@ public class SelfAdaptiveESTuner extends ContinuousParametersTuner {
 
         this.evalRepetitionsCount = 0;
 
+        this.evalRepetitionsForMeanCombo = gamerSettings.getIntPropertyValue("ParametersTuner.evalRepetitionsForMeanCombo");
+
         //this.populations = null;
 
         //this.combosOfIndividualsIndices = null;
@@ -186,6 +221,8 @@ public class SelfAdaptiveESTuner extends ContinuousParametersTuner {
         this.selectedCombinations = null;
 
         this.bestCombinations = null;
+
+        this.isFinal = null;
 
         this.roleProblems = null;
 
@@ -291,6 +328,8 @@ public class SelfAdaptiveESTuner extends ContinuousParametersTuner {
                 this.evalRepetitionsCount = -1;
 
                 this.selectedCombinations = new double[numRolesToTune][this.continuousParametersManager.getNumTunableParameters()];
+
+                this.isFinal = new boolean[this.selectedCombinations.length];
             }
 
             this.bestCombinations = null;
@@ -329,9 +368,9 @@ public class SelfAdaptiveESTuner extends ContinuousParametersTuner {
 
             // Check if we performed all repetitions of the evaluation.
             if(this.evalRepetitionsCount == this.evalRepetitions){
-                // If yes, evolve the populations.
+                // If yes, evolve the populations (the ones that still aren't null).
                 for(int roleProblemIndex = 0; roleProblemIndex < this.getRoleProblems().length; roleProblemIndex++){
-                	if(!this.getRoleProblems()[roleProblemIndex].isStopped()) {
+                	if(this.getRoleProblems()[roleProblemIndex].getPopulation() != null) {
                 		this.cmaesManager.evolvePopulation(this.getRoleProblems()[roleProblemIndex]);
                 	}
                 }
@@ -353,25 +392,43 @@ public class SelfAdaptiveESTuner extends ContinuousParametersTuner {
 
         }
 
+        boolean foundAllBest = true;
+
         List<Integer> individualsIndices = this.combosOfIndividualsIterator.getCurrentComboOfIndividualsIndices();
 
         Move theParametersCombination;
 
         for(int roleProblemIndex = 0; roleProblemIndex < this.getRoleProblems().length; roleProblemIndex++){
 
-        	// If the CMA-ES instance of the role problem is still optimizing, get the next individual from the population,
-        	// otherwise get the best individual from the CMA-ES instance.
-        	if(this.getRoleProblems()[roleProblemIndex].isStopped()) {
-        		double[] bestCombo = this.getRoleProblems()[roleProblemIndex].getCMAEvolutionStrategy().getMeanX();
-    			this.selectedCombinations[roleProblemIndex] = Arrays.copyOf(bestCombo, bestCombo.length);
-        	}else {
-	            theParametersCombination = this.getRoleProblems()[roleProblemIndex].getPopulation()[individualsIndices.get(roleProblemIndex)].getTheMove();
+        	// If the CMA-ES instance of the role problem is still optimizing (i.e. population != null),
+        	// get the next individual from the population.
+        	if(this.getRoleProblems()[roleProblemIndex].getPopulation() != null) {
+        		theParametersCombination = this.getRoleProblems()[roleProblemIndex].getPopulation()[individualsIndices.get(roleProblemIndex)].getTheMove();
 	            if(theParametersCombination instanceof ContinuousMove){
 	                this.selectedCombinations[roleProblemIndex] = ((ContinuousMove) theParametersCombination).getContinuousMove();
 	            }else{
 	                GamerLogger.logError("ParametersTuner", "SelfAdaptiveESTuner - Impossible to set next combinations. The Move is not of type ContinuousMove but of type " + theParametersCombination.getClass().getSimpleName() + ".");
 	                throw new RuntimeException("SelfAdaptiveESTuner - Impossible to set next combinations. The Move is not of type ContinuousMove but of type " + theParametersCombination.getClass().getSimpleName() + ".");
 	            }
+	            foundAllBest = false;
+
+        	}else { // If the population is null, we have two possibilities:
+        		// 1. The mean combo is not null: we have two more possibilities:
+        		// or if we reached the number of evaluations and we need to update its fitness in
+        		// the CMA-ES algorithm instance.
+        		if(this.getRoleProblems()[roleProblemIndex].getMeanValueCombo() != null) {
+        			// 1.1. If we haven't reached the number of predefined evaluations for the mean, we evaluate it again
+        			if(this.getRoleProblems()[roleProblemIndex].getMeanValueCombo().getVisits() < this.evalRepetitionsForMeanCombo) {
+        				this.selectedCombinations[roleProblemIndex] = ((ContinuousMove) this.getRoleProblems()[roleProblemIndex].getMeanValueCombo().getTheMove()).getContinuousMove();
+        				foundAllBest = false;
+        			// 1.2. We have reached the number of predefined evaluations for the mean, so we can set its fitness
+        			// and set the best combination found by the CMA-ES algorithm.
+        			}else {
+        				this.selectedCombinations[roleProblemIndex] = ((ContinuousMove) this.cmaesManager.updateMeanFitnessAndGetBest(this.getRoleProblems()[roleProblemIndex]).getTheMove()).getContinuousMove();
+        				this.isFinal[roleProblemIndex] = true;
+        			}
+        		}// 2. The mean combo is also null: this means that in the previous call to the method setNextCombinations()
+        		 // we already set the best combination for the role and we don't need to do anything anymore
         	}
         }
 
@@ -387,6 +444,12 @@ public class SelfAdaptiveESTuner extends ContinuousParametersTuner {
 		 }*/
 
         this.continuousParametersManager.setParametersValues(this.selectedCombinations);
+
+		if(foundAllBest){
+			// Log the combination that we are selecting as best
+			GamerLogger.log(GamerLogger.FORMAT.CSV_FORMAT, "BestParamsCombo", this.getLogOfCombinations(this.selectedCombinations, this.isFinal));
+			this.stopTuning();
+		}
 
     }
 
@@ -409,13 +472,35 @@ public class SelfAdaptiveESTuner extends ContinuousParametersTuner {
 
 		for(int roleProblemIndex = 0; roleProblemIndex < this.roleProblems.length; roleProblemIndex++){
 
+			// We have 3 cases:
+			// 1. The population is not null, so we were still tuning with CMA-ES: query the CMA-ES manager to get
+			// the best solution so far. Note that since the optimization was interrupted we might not have the
+			// fitness for all the individuals in the current population. In this case we cannot update the distribution
+			// for CMA-ES and we just get the best solution so far. On the contrary, if each individual has been sampled
+			// at least once, we still use the fitness of the population to update the distribution, even if such fitness
+			// has not been obtained with the desired amount of samples per individual. Then, we get the best solution so
+			// far, considering the updated distribution.
+			if(this.getRoleProblems()[roleProblemIndex].getPopulation() != null) {
+				// Check if each individual has been evaluated at least once
+				this.selectedCombinations[roleProblemIndex] =
+						((ContinuousMove) this.cmaesManager.updatePopulationFitnessAndGetBest(this.getRoleProblems()[roleProblemIndex]).getTheMove()).getContinuousMove();
+			}else {
+				// 2. The population is null, but the mean value combination is being evaluated: if the mean value combination
+				// is not null, then it must have at least one visit (i.e. has been sampled at least once), so we can update
+				// its value in the distribution and then get the best solution so far.
+				if(this.getRoleProblems()[roleProblemIndex].getMeanValueCombo() != null) {
+					Finisci e usa metodo nel CMAESManager.
+				}
+
+			}
+
 			bestCombo = this.getRoleProblems()[roleProblemIndex].getCMAEvolutionStrategy().getMeanX();
 			this.selectedCombinations[roleProblemIndex] = Arrays.copyOf(bestCombo, bestCombo.length);
 
 		}
 
 		// Log the combination that we are selecting as best
-		GamerLogger.log(GamerLogger.FORMAT.CSV_FORMAT, "BestParamsCombo", this.getLogOfCombinations(this.selectedCombinations));
+		GamerLogger.log(GamerLogger.FORMAT.CSV_FORMAT, "BestParamsCombo", this.getLogOfCombinations(this.selectedCombinations, this.isFinal));
 
 		this.continuousParametersManager.setParametersValues(this.selectedCombinations);
 
@@ -468,10 +553,22 @@ public class SelfAdaptiveESTuner extends ContinuousParametersTuner {
 		CompleteMoveStats toUpdate;
 
 		for(int roleProblemIndex = 0; roleProblemIndex < this.roleProblems.length; roleProblemIndex++){
-			this.roleProblems[roleProblemIndex].incrementTotalUpdates();
-			toUpdate = this.roleProblems[roleProblemIndex].getPopulation()[individualsIndices.get(roleProblemIndex)];
-			toUpdate.incrementScoreSum(neededRewards[roleProblemIndex]);
-			toUpdate.incrementVisits();
+			// We have 3 cases:
+			// 1. The population is non-null: we update the fitness of the selected individual
+			if(this.roleProblems[roleProblemIndex].getPopulation() != null) {
+				toUpdate = this.roleProblems[roleProblemIndex].getPopulation()[individualsIndices.get(roleProblemIndex)];
+				toUpdate.incrementScoreSum(neededRewards[roleProblemIndex]);
+				toUpdate.incrementVisits();
+				this.roleProblems[roleProblemIndex].incrementTotalUpdates();
+			}else {
+				// 2. The population is null, but we are still evaluating the mean solution: update the fitness of the mean solution
+				if(this.roleProblems[roleProblemIndex].getMeanValueCombo() != null) {
+					this.roleProblems[roleProblemIndex].getMeanValueCombo().incrementScoreSum(neededRewards[roleProblemIndex]);
+					this.roleProblems[roleProblemIndex].getMeanValueCombo().incrementVisits();
+				}
+				// 3. Both the population and the mean solution are null, so we already set the best combination
+				// and stopped tuning with CMA-ES: do nothing
+			}
 		}
 
     }
@@ -509,9 +606,11 @@ public class SelfAdaptiveESTuner extends ContinuousParametersTuner {
                 }
 
                 toLog += "ROLE=;" + this.gameDependentParameters.getTheMachine().convertToExplicitRole(this.gameDependentParameters.getTheMachine().getRoles().get(roleIndex)) +
-                        ";POPULATION=;";
+                        ";";
 
                 if(this.getRoleProblems()[roleProblemIndex].getPopulation() != null) {
+
+                	toLog += "POPULATION=;";
 
 	                for(int comboIndex = 0; comboIndex < this.getRoleProblems()[roleProblemIndex].getPopulation().length; comboIndex++){
 
@@ -534,7 +633,20 @@ public class SelfAdaptiveESTuner extends ContinuousParametersTuner {
 
 	                }
                 }else {
-                	toLog+= ("[];");
+                	if(this.getRoleProblems()[roleProblemIndex].getMeanValueCombo() != null) { // Null population cause we set the mean combo, so we log the mean combo
+                		toLog += "MEAN_COMBO=;";
+                		combo = ((ContinuousMove) this.getRoleProblems()[roleProblemIndex].getMeanValueCombo().getTheMove()).getContinuousMove();
+                		theValues = "[ ";
+                        for(int paramIndex = 0; paramIndex < combo.length; paramIndex++){
+                            theValues += (combo[paramIndex] + " ");
+                        }
+                        theValues += "]";
+
+                        toLog+= (theValues + ";");
+                	}else {
+                		toLog+= ("POPULATION=;[];");
+                	}
+
                 }
 
                 toLog += "\n";
@@ -576,6 +688,7 @@ public class SelfAdaptiveESTuner extends ContinuousParametersTuner {
                 indentation + "EVALUATE_ALL_COMBOS_OF_INDIVIDUALS = " + this.evaluateAllCombosOfIndividuals +
                 indentation + "INDIVIDUALS_ITERATOR = " + (this.combosOfIndividualsIterator != null ? this.combosOfIndividualsIterator.getClass().getSimpleName() : "null") +
                 indentation + "EVAL_REPETITIONS = " + this.evalRepetitions +
+                indentation + "EVAL_REPETITIONS_FOR_MEAN_COMBO = " + this.evalRepetitionsForMeanCombo +
                 indentation + "eval_repetitions_count = " + this.evalRepetitionsCount +
                 indentation + "num_role_problems = " + (this.getRoleProblems() != null ? this.getRoleProblems().length : 0);
         		//indentation + "num_combos_of_individuals = " + (this.combosOfIndividualsIndices != null ? this.combosOfIndividualsIndices.size() : 0) +
