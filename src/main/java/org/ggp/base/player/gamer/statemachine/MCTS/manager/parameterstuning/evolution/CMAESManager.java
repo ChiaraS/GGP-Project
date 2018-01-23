@@ -60,12 +60,29 @@ public class CMAESManager extends ContinuousEvolutionManager {
 
 		CMAEvolutionStrategy cma = new CMAEvolutionStrategy();
 
+		System.out.println("Before = " + cma.options.stopFitness);
+
 		// Is this really necessary? When calling init(), if no properties were read the CMAEvolutionStrategy should find
 		// default values for the properties in the classes CMAParameters and CMAOptions. TODO: verify if this is true.
 		//cma.readProperties(); // read options, see file CMAEvolutionStrategy.properties
 
+		// Set essential parameters
+		// TODO: here we set the parameters that must be specified. Fix the code to read them from a properties file
+		// maybe the same as used for the other settings of the agent?
+		//cma.readProperties();
 		// Set number of tuned parameters
         cma.setDimension(this.continuousParametersManager.getNumTunableParameters()); // overwrite some loaded properties
+        // Set initial standard deviation (same as in default settings file)
+        cma.setInitialStandardDeviation(0.3);
+        // Set initial X (same as in default settings file)
+        cma.setInitialX(0.5);
+        // Set minimum fitness we want to reach
+        cma.options.stopFitness = -101.0;
+        // Set minimum change in function value that must be observed for current population
+        // wrt the last 10+ceil(30*dimensions/lambda) iterations???
+        //cma.options.
+
+        System.out.println("After = " + cma.options.stopFitness);
 
         // Set population size only if specified, otherwise use default
         if(this.populationsSize > 0) {
@@ -146,6 +163,11 @@ public class CMAESManager extends ContinuousEvolutionManager {
 
 		if(roleProblem.getCMAEvolutionStrategy().stopConditions.getNumber() > 0) { // Stop optimization
 
+			String toLog = "Terminating role instance due to";
+			for (String s : roleProblem.getCMAEvolutionStrategy().stopConditions.getMessages())
+				toLog += ("  " + s);
+			GamerLogger.log("CMAESManager", toLog);
+
 			roleProblem.setPopulation(null);
 			roleProblem.resetTotalUpdates();
 			roleProblem.setMeanValueCombo(this.scaleDownIndividual(roleProblem.getCMAEvolutionStrategy().getMeanX()));
@@ -169,14 +191,37 @@ public class CMAESManager extends ContinuousEvolutionManager {
 
 	private double[] computeFitness(CompleteMoveStats[] population) {
 		double[] fitness = new double[population.length];
+
+		String popString = "POPULATION = ";
+		String fitString = "FITNESS = [";
+
 		for(int individualIndex = 0; individualIndex < population.length; individualIndex++) {
+
+			ContinuousMove combo = (ContinuousMove) population[individualIndex].getTheMove();
+			popString += "[";
+			for(int paramIndex = 0; paramIndex < combo.getContinuousMove().length; paramIndex++) {
+				popString += (" " + combo.getContinuousMove()[paramIndex]);
+			}
+			popString += " ]";
+
 			// Compute fitness and invert it (i.e. fitness=-score) because CMA-ES minimizes the function, while we want to maximize
 			if(population[individualIndex].getVisits() <= 0) {
 				GamerLogger.logError("EvolutionManager", "CMAESManager - Impossible to compute fitness of population. Found individual with no visits (visits=" + population[individualIndex].getVisits() + ") to compute its fitness.");
 				throw new RuntimeException("CMAESManager - Impossible to compute fitness of population. Found individual with no visits (visits=" + population[individualIndex].getVisits() + ") to compute its fitness.");
 			}
 			fitness[individualIndex] = -(population[individualIndex].getScoreSum()/((double)population[individualIndex].getVisits())); // -0.0 shouldn't be a problem here right?
+
+			fitString += (" " + fitness[individualIndex]);
+
 		}
+
+		fitString += " ]";
+
+		System.out.println();
+		System.out.println(popString);
+		System.out.println(fitString);
+		System.out.println();
+
 		return fitness;
 	}
 
@@ -194,19 +239,15 @@ public class CMAESManager extends ContinuousEvolutionManager {
 
 	}
 
-	public CompleteMoveStats updatePopulationFitnessAndGetBest(SelfAdaptiveESProblemRepresentation roleProblem) {
+	public CompleteMoveStats updatePopulationFitnessAndGetBestSoFar(SelfAdaptiveESProblemRepresentation roleProblem) {
 
-		// Check if each individual has at least one visit (i.e. has been sampled at least once)
-		boolean updateDistribution = true;
-		int individualIndex = 0;
-		while(individualIndex < roleProblem.getPopulation().length && updateDistribution) {
-			updateDistribution = roleProblem.getPopulation()[individualIndex].getVisits() > 0;
-			individualIndex++;
-		}
-		// If each individual has been sampled at least once we can update the distribution
-		if(updateDistribution) {
-			roleProblem.getCMAEvolutionStrategy().updateDistribution(this.computeFitness(roleProblem.getPopulation()));
-		}
+		roleProblem.getCMAEvolutionStrategy().updateDistribution(this.computeFitness(roleProblem.getPopulation()));
+
+		return this.getBestSoFar(roleProblem);
+
+	}
+
+	public CompleteMoveStats getBestSoFar(SelfAdaptiveESProblemRepresentation roleProblem) {
 
 		// Return the best combination found so far
 		if(this.useMean) {

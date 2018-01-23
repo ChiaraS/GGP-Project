@@ -3,7 +3,8 @@ package org.ggp.base.util;
 /**
  * This class represents an interval.
  * NOTE: this class assumes that the value "infinity" cannot be specified for the interval, so when the interval is closed
- * it doesn't check if the extreme is infinity (or -infinity).
+ * it doesn't check if the extreme is infinity (or -infinity). When infinity is specified for the interval, it's translated
+ * to Double.MAX_VALUE, so it makes sense that it is included in the interval if a square bracket was specified.
  * @author c.sironi
  *
  */

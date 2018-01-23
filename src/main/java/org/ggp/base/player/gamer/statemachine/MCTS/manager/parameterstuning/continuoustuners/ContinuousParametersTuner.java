@@ -92,7 +92,7 @@ public abstract class ContinuousParametersTuner extends ParametersTuner {
 		return toLog;
 	}
 
-	protected String getLogOfCombinations(double[][] combinations, boolean[] isFinal){
+	protected String getLogOfCombinations(double[][] combinations, SelfAdaptiveESTuner.SolutionType[] solutionTypes){
 
 		String globalParamsOrder = this.getGlobalParamsOrder();
 		String toLog = "";
@@ -109,7 +109,7 @@ public abstract class ContinuousParametersTuner extends ParametersTuner {
 						toLog += null + " ";
 					}
 				}
-				toLog += "];FINAL=;" + isFinal[roleProblemIndex] + ";\n";
+				toLog += "];SOLUTION_TYPE=;" + solutionTypes[roleProblemIndex] + ";\n";
 			}
 		}else{ // Tuning only my role
 			toLog += ("ROLE=;" + this.gameDependentParameters.getTheMachine().convertToExplicitRole(this.gameDependentParameters.getTheMachine().getRoles().get(this.gameDependentParameters.getMyRoleIndex())) + ";PARAMS=;" + globalParamsOrder + ";SELECTED_COMBINATION=;[ ");
@@ -122,7 +122,7 @@ public abstract class ContinuousParametersTuner extends ParametersTuner {
 					toLog += null + " ";
 				}
 			}
-			toLog += "];FINAL=;" + isFinal[0] + ";\n";
+			toLog += "];SOLUTION_TYPE=;" + solutionTypes[0] + ";\n";
 		}
 
 		return toLog;

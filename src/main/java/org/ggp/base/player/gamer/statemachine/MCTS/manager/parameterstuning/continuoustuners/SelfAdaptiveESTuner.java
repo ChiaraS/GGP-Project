@@ -1,25 +1,19 @@
-package org.ggp.base.player.gamer.statemachine.MCTS.manager.parameterstuning;
+package org.ggp.base.player.gamer.statemachine.MCTS.manager.parameterstuning.continuoustuners;
 
-import java.lang.reflect.InvocationTargetException;
-import java.util.Arrays;
 import java.util.List;
 import java.util.Random;
 
 import org.ggp.base.player.gamer.statemachine.GamerSettings;
 import org.ggp.base.player.gamer.statemachine.MCS.manager.hybrid.CompleteMoveStats;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.GameDependentParameters;
-import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.SearchManagerComponent;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.SharedReferencesCollector;
-import org.ggp.base.player.gamer.statemachine.MCTS.manager.parameterstuning.continuoustuners.ContinuousParametersTuner;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.parameterstuning.evolution.CMAESManager;
-import org.ggp.base.player.gamer.statemachine.MCTS.manager.parameterstuning.selectors.TunerSelector;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.parameterstuning.structure.AllCombosOfIndividualsIterator;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.parameterstuning.structure.CombosOfIndividualsIterator;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.parameterstuning.structure.ContinuousMove;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.parameterstuning.structure.RandomCombosOfIndividualsIterator;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.parameterstuning.structure.problemrep.SelfAdaptiveESProblemRepresentation;
 import org.ggp.base.util.logging.GamerLogger;
-import org.ggp.base.util.reflection.ProjectSearcher;
 import org.ggp.base.util.statemachine.structure.Move;
 
 import csironi.ggp.course.utils.MyPair;
@@ -46,17 +40,30 @@ public class SelfAdaptiveESTuner extends ContinuousParametersTuner {
 	 * of the best solution overall. When memorizing the best solution (i.e. parameter combination) for a
 	 * role we also memorize its type, that describes how the solution was computed. The possible types of
 	 * solution are the following:
-	 * - PREVIOUS_POPULATION:
-	 * - UNDERSAMPLED_POPULATION:
-	 * - UNDERSAMPLED_MEAN:
-	 * - FINAL:
+	 * - INTERMEDIATE: if the currently set combination for a role is not a solution but just the combination
+	 * 				   currently being evaluated.
+	 * - PREVIOUS_POPULATION: the solution corresponds to the best evaluated solution returned by the CMA-ES
+	 * 						  before it could finish its execution. The population currently being evaluated
+	 * 						  is not used to update the distribution because not all individuals have been
+	 * 						  evaluated at least once, so the best evaluated solution depends on the execution
+	 * 						  of CMA-ES up until the previous population's fitness has been updated.
+	 * - UNDERSAMPLED_POPULATION: the solution corresponds to the best evaluated solution returned by the
+	 * 							  CMA-ES before it could finish its execution and after the population
+	 * 							  currently being evaluated has been used to update the distribution, even
+	 * 							  if not all individuals have been sampled the predefined amount of times
+	 * 							  (but all of them have been sampled at least once).
+	 * - UNDERSAMPLED_MEAN: the solution corresponds to the best evaluated solution returned by the CMA-ES
+	 * 						after its execution has terminated properly, and the fitness of the mean solution
+	 * 						has been computed with LESS THAN the predefined amount of samples and updated.
+	 * - FINAL: the solution corresponds to the best evaluated solution returned by the CMA-ES after its
+	 * 			execution has terminated properly, and the fitness of the mean solution has been computed
+	 * 			with the predefined amount of samples and updated.
 	 *
 	 * @author c.sironi
 	 *
 	 */
-	Spiega i tipi di soluzione e aggiungi codice per assegnare il tipo ad ogni soluzione quando vien calcolata
-    public enum SOLUTION_TYPE{
-    	PREVIOUS_POPULATION, UNDERSAMPLED_POPULATION, UNDERSAMPLED_MEAN, FINAL
+    public enum SolutionType{
+    	INTERMEDIATE, PREVIOUS_POPULATION, UNDERSAMPLED_POPULATION, UNDERSAMPLED_MEAN, FINAL
     }
 
     private boolean logPopulations;
@@ -69,7 +76,7 @@ public class SelfAdaptiveESTuner extends ContinuousParametersTuner {
     /**
      * Given the statistics of each combination, selects the best one among them.
      */
-    protected TunerSelector bestCombinationSelector;
+    //protected TunerSelector bestCombinationSelector;
 
     /**
      * If true, when evaluating a population, the fitness of each individual will result from
@@ -164,12 +171,13 @@ public class SelfAdaptiveESTuner extends ContinuousParametersTuner {
     private double[][] bestCombinations;
 
     /**
-     * For each role, true if the corresponding selected combination has been computed after the termination of
-     * the execution of the corresponding CMA-ES algorithm (and thus is the best overall), false if it is an
-     * intermediate combination or if it has been computed as best before the end of the optimization of the
-     * CMA-ES algorithm.
+     * For each role, memorizes the type of combination that is set in the corresponding selectedCombinations
+     * entry. It will be INTERMEDIATE for each combination that is not the final solution, and one of the other
+     * types if the combination has been computed as solution at the end of the game. NOTE that it can be the
+     * final solution properly computed by CMA-ES or an intermediate solution computed before CMA-ES could
+     * properly terminate because the game being played is over.
      */
-    private boolean[] isFinal;
+    private SolutionType[] solutionTypes;
 
     private SelfAdaptiveESProblemRepresentation[] roleProblems;
 
@@ -179,6 +187,8 @@ public class SelfAdaptiveESTuner extends ContinuousParametersTuner {
 
         this.logPopulations = gamerSettings.getBooleanPropertyValue("ParametersTuner.logPopulations");
 
+        /* This class explicitly needs the evolution manager to be of type CMAESManager, so we just create it instead of
+         * allowing to set it from the settings file
         try {
             this.cmaesManager = (CMAESManager) SearchManagerComponent.getConstructorForSearchManagerComponent(SearchManagerComponent.getCorrespondingClass(ProjectSearcher.CONTINUOUS_EVOLUTION_MANAGERS.getConcreteClasses(),
                     gamerSettings.getPropertyValue("ParametersTuner.evolutionManagerType"))).newInstance(gameDependentParameters, random, gamerSettings, sharedReferencesCollector);
@@ -188,8 +198,10 @@ public class SelfAdaptiveESTuner extends ContinuousParametersTuner {
             GamerLogger.logError("SearchManagerCreation", "Error when instantiating EvolutionManager " + gamerSettings.getPropertyValue("ParametersTuner.EvolutionManagerType") + ".");
             GamerLogger.logStackTrace("SearchManagerCreation", e);
             throw new RuntimeException(e);
-        }
+        }*/
+        this.cmaesManager = new CMAESManager(gameDependentParameters, random, gamerSettings, sharedReferencesCollector);
 
+        /*
         String[] componentDetails = gamerSettings.getIDPropertyValue("ParametersTuner.bestCombinationSelectorType");
 
         try {
@@ -200,7 +212,7 @@ public class SelfAdaptiveESTuner extends ContinuousParametersTuner {
             GamerLogger.logError("SearchManagerCreation", "Error when instantiating TunerSelector " + gamerSettings.getPropertyValue("ParametersTuner.bestCombinationSelectorType") + ".");
             GamerLogger.logStackTrace("SearchManagerCreation", e);
             throw new RuntimeException(e);
-        }
+        }*/
 
         this.evaluateAllCombosOfIndividuals = gamerSettings.getBooleanPropertyValue("ParametersTuner.evaluateAllCombosOfIndividuals");
 
@@ -222,7 +234,7 @@ public class SelfAdaptiveESTuner extends ContinuousParametersTuner {
 
         this.bestCombinations = null;
 
-        this.isFinal = null;
+        this.solutionTypes = null;
 
         this.roleProblems = null;
 
@@ -235,7 +247,7 @@ public class SelfAdaptiveESTuner extends ContinuousParametersTuner {
 
         this.cmaesManager.setReferences(sharedReferencesCollector);
 
-        this.bestCombinationSelector.setReferences(sharedReferencesCollector);
+        //this.bestCombinationSelector.setReferences(sharedReferencesCollector);
     }
 
     @Override
@@ -244,7 +256,7 @@ public class SelfAdaptiveESTuner extends ContinuousParametersTuner {
 
         this.cmaesManager.clearComponent();
 
-        this.bestCombinationSelector.clearComponent();
+        //this.bestCombinationSelector.clearComponent();
     }
 
     @Override
@@ -253,7 +265,7 @@ public class SelfAdaptiveESTuner extends ContinuousParametersTuner {
 
         this.cmaesManager.setUpComponent();
 
-        this.bestCombinationSelector.setUpComponent();
+        //this.bestCombinationSelector.setUpComponent();
 
         int numRolesToTune;
 
@@ -329,7 +341,10 @@ public class SelfAdaptiveESTuner extends ContinuousParametersTuner {
 
                 this.selectedCombinations = new double[numRolesToTune][this.continuousParametersManager.getNumTunableParameters()];
 
-                this.isFinal = new boolean[this.selectedCombinations.length];
+                this.solutionTypes = new SolutionType[this.selectedCombinations.length];
+                for(int i = 0; i < this.solutionTypes.length; i++) {
+                	this.solutionTypes[i] = SolutionType.INTERMEDIATE;
+                }
             }
 
             this.bestCombinations = null;
@@ -425,7 +440,7 @@ public class SelfAdaptiveESTuner extends ContinuousParametersTuner {
         			// and set the best combination found by the CMA-ES algorithm.
         			}else {
         				this.selectedCombinations[roleProblemIndex] = ((ContinuousMove) this.cmaesManager.updateMeanFitnessAndGetBest(this.getRoleProblems()[roleProblemIndex]).getTheMove()).getContinuousMove();
-        				this.isFinal[roleProblemIndex] = true;
+        				this.solutionTypes[roleProblemIndex] = SolutionType.FINAL;
         			}
         		}// 2. The mean combo is also null: this means that in the previous call to the method setNextCombinations()
         		 // we already set the best combination for the role and we don't need to do anything anymore
@@ -447,7 +462,7 @@ public class SelfAdaptiveESTuner extends ContinuousParametersTuner {
 
 		if(foundAllBest){
 			// Log the combination that we are selecting as best
-			GamerLogger.log(GamerLogger.FORMAT.CSV_FORMAT, "BestParamsCombo", this.getLogOfCombinations(this.selectedCombinations, this.isFinal));
+			GamerLogger.log(GamerLogger.FORMAT.CSV_FORMAT, "BestParamsCombo", this.getLogOfCombinations(this.selectedCombinations, this.solutionTypes));
 			this.stopTuning();
 		}
 
@@ -468,8 +483,6 @@ public class SelfAdaptiveESTuner extends ContinuousParametersTuner {
 
     protected void computeAndSetBestCombinations(){
 
-		double[] bestCombo;
-
 		for(int roleProblemIndex = 0; roleProblemIndex < this.roleProblems.length; roleProblemIndex++){
 
 			// We have 3 cases:
@@ -481,26 +494,41 @@ public class SelfAdaptiveESTuner extends ContinuousParametersTuner {
 			// has not been obtained with the desired amount of samples per individual. Then, we get the best solution so
 			// far, considering the updated distribution.
 			if(this.getRoleProblems()[roleProblemIndex].getPopulation() != null) {
-				// Check if each individual has been evaluated at least once
-				this.selectedCombinations[roleProblemIndex] =
-						((ContinuousMove) this.cmaesManager.updatePopulationFitnessAndGetBest(this.getRoleProblems()[roleProblemIndex]).getTheMove()).getContinuousMove();
+				// Check if each individual has at least one visit (i.e. has been sampled at least once)
+				boolean updateDistribution = true;
+				int individualIndex = 0;
+				while(individualIndex < this.getRoleProblems()[roleProblemIndex].getPopulation().length && updateDistribution) {
+					updateDistribution = this.getRoleProblems()[roleProblemIndex].getPopulation()[individualIndex].getVisits() > 0;
+					individualIndex++;
+				}
+				// If each individual has been sampled at least once we can update the distribution
+				if(updateDistribution) {
+					this.selectedCombinations[roleProblemIndex] =
+							((ContinuousMove) this.cmaesManager.updatePopulationFitnessAndGetBestSoFar(this.getRoleProblems()[roleProblemIndex]).getTheMove()).getContinuousMove();
+					this.solutionTypes[roleProblemIndex] = SolutionType.UNDERSAMPLED_POPULATION;
+				}else {
+					this.selectedCombinations[roleProblemIndex] =
+							((ContinuousMove) this.cmaesManager.getBestSoFar(this.getRoleProblems()[roleProblemIndex]).getTheMove()).getContinuousMove();
+					this.solutionTypes[roleProblemIndex] = SolutionType.PREVIOUS_POPULATION;
+				}
 			}else {
 				// 2. The population is null, but the mean value combination is being evaluated: if the mean value combination
 				// is not null, then it must have at least one visit (i.e. has been sampled at least once), so we can update
 				// its value in the distribution and then get the best solution so far.
 				if(this.getRoleProblems()[roleProblemIndex].getMeanValueCombo() != null) {
-					Finisci e usa metodo nel CMAESManager.
+					this.selectedCombinations[roleProblemIndex] =
+							((ContinuousMove) this.cmaesManager.updateMeanFitnessAndGetBest(this.getRoleProblems()[roleProblemIndex]).getTheMove()).getContinuousMove();
+					this.solutionTypes[roleProblemIndex] = SolutionType.UNDERSAMPLED_MEAN;
 				}
+				// 3. The population is null and the mean value combination is null: CMA-ES terminated properly and the best
+				// combination has been already set, so we don't need to do anything.
 
 			}
-
-			bestCombo = this.getRoleProblems()[roleProblemIndex].getCMAEvolutionStrategy().getMeanX();
-			this.selectedCombinations[roleProblemIndex] = Arrays.copyOf(bestCombo, bestCombo.length);
 
 		}
 
 		// Log the combination that we are selecting as best
-		GamerLogger.log(GamerLogger.FORMAT.CSV_FORMAT, "BestParamsCombo", this.getLogOfCombinations(this.selectedCombinations, this.isFinal));
+		GamerLogger.log(GamerLogger.FORMAT.CSV_FORMAT, "BestParamsCombo", this.getLogOfCombinations(this.selectedCombinations, this.solutionTypes));
 
 		this.continuousParametersManager.setParametersValues(this.selectedCombinations);
 
@@ -684,7 +712,7 @@ public class SelfAdaptiveESTuner extends ContinuousParametersTuner {
 
         String params = indentation + "LOG_POPULATIONS = " + this.logPopulations +
                 indentation + "CONTINUOUS_EVOLUTION_MANAGER = " + this.cmaesManager.printComponent(indentation + "  ") +
-                indentation + "BEST_COMBINATION_SELECTOR = " + this.bestCombinationSelector.printComponent(indentation + "  ") +
+                //indentation + "BEST_COMBINATION_SELECTOR = " + this.bestCombinationSelector.printComponent(indentation + "  ") +
                 indentation + "EVALUATE_ALL_COMBOS_OF_INDIVIDUALS = " + this.evaluateAllCombosOfIndividuals +
                 indentation + "INDIVIDUALS_ITERATOR = " + (this.combosOfIndividualsIterator != null ? this.combosOfIndividualsIterator.getClass().getSimpleName() : "null") +
                 indentation + "EVAL_REPETITIONS = " + this.evalRepetitions +
@@ -700,7 +728,9 @@ public class SelfAdaptiveESTuner extends ContinuousParametersTuner {
             for(int i = 0; i < this.selectedCombinations.length; i++){
 
                 String singleCombinationString = "[ ";
-                singleCombinationString += this.selectedCombinations[i] + " ";
+                for(int j = 0; j < this.selectedCombinations[i].length; j++) {
+                	singleCombinationString += this.selectedCombinations[i][j] + " ";
+                }
 
                 singleCombinationString += "]";
 
@@ -721,7 +751,9 @@ public class SelfAdaptiveESTuner extends ContinuousParametersTuner {
             for(int i = 0; i < this.bestCombinations.length; i++){
 
                 String bestCombinationString = "[ ";
-                bestCombinationString += this.bestCombinations[i] + " ";
+                for(int j = 0; j < this.selectedCombinations[i].length; j++) {
+                	bestCombinationString += this.bestCombinations[i][j] + " ";
+                }
                 bestCombinationString += "]";
 
                 bestCombinationsString += bestCombinationString + " ";

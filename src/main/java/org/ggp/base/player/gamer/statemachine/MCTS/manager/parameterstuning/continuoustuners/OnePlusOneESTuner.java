@@ -1,12 +1,12 @@
-package org.ggp.base.player.gamer.statemachine.MCTS.manager.parameterstuning;
+package org.ggp.base.player.gamer.statemachine.MCTS.manager.parameterstuning.continuoustuners;
+
+import java.util.Random;
 
 import org.ggp.base.player.gamer.statemachine.GamerSettings;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.GameDependentParameters;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.SharedReferencesCollector;
 
-import java.util.Random;
-
-public class OnePlusOneESTuner extends ParametersTuner {
+public class OnePlusOneESTuner extends ContinuousParametersTuner {
 
     /**
      * For each class, for each unit move in the class, this array specifies the penalty.
