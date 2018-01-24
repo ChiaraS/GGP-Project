@@ -78,6 +78,8 @@ public class CMAESManager extends ContinuousEvolutionManager {
         cma.setInitialX(0.5);
         // Set minimum fitness we want to reach
         cma.options.stopFitness = -101.0;
+        // Set to off the logging on file of the CMA-ES instance
+        cma.options.writeDisplayToFile = 0;
         // Set minimum change in function value that must be observed for current population
         // wrt the last 10+ceil(30*dimensions/lambda) iterations???
         //cma.options.
