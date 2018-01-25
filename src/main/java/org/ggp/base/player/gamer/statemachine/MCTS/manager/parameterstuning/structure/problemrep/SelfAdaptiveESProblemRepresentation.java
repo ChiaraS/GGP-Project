@@ -1,5 +1,9 @@
 package org.ggp.base.player.gamer.statemachine.MCTS.manager.parameterstuning.structure.problemrep;
 
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+
 import org.ggp.base.player.gamer.statemachine.MCS.manager.hybrid.CompleteMoveStats;
 
 import inriacmaes.CMAEvolutionStrategy;
@@ -48,6 +52,28 @@ public class SelfAdaptiveESProblemRepresentation extends EvoProblemRepresentatio
 	private CompleteMoveStats meanValueCombo;
 
 	/**
+	 * Unordered list of indices of the individuals in the population.
+	 * Each index appears only once in a random order.
+	 * Used to keep track of which individual we must evaluate next.
+	 */
+	private List<Integer> unorderedIndividualsIndices;
+
+	/**
+	 * Index that keeps track of the population individual currently being evaluated.
+	 * More precisely, it points to the entry in the array unorderedIndividualsIndices
+	 * that corresponds to the index of the individual in the population that we are
+	 * current;y evaluating.
+	 */
+	private int currentIndex;
+
+	/**
+	 * Counts the number of times the population has been evaluated.
+	 * (i.e. Number of times we shuffled the order of the individuals indices and evaluated
+	 * each individual once).
+	 */
+	private int evalRepetitionsCount;
+
+	/**
 	 *
 	 * @param population must correspond to the initial population created by cmaes, BUT with values
 	 * for the parameters already rescaled in their feasible values and not in [-inf;+inf].
@@ -57,10 +83,54 @@ public class SelfAdaptiveESProblemRepresentation extends EvoProblemRepresentatio
 
 		super(population);
 
+		this.setIteratorForNewPopulation();
+
 		this.cmaes = cmaes;
 
 		this.meanValueCombo = null;
 
+	}
+
+	public void setPopulation(CompleteMoveStats[] population){
+		this.population = population;
+		if(population.length > 1) {
+			this.setIteratorForNewPopulation();
+		}else {
+			this.unorderedIndividualsIndices = null;
+			this.currentIndex = -1;
+			this.evalRepetitionsCount = 0;
+		}
+
+	}
+
+	private void setIteratorForNewPopulation() {
+		this.unorderedIndividualsIndices = new ArrayList<Integer>();
+		for(int individualIndex = 0; individualIndex < this.population.length; individualIndex++) {
+			this.unorderedIndividualsIndices.add(new Integer(individualIndex));
+		}
+		this.evalRepetitionsCount = 0;
+		this.startNewIterationOverPopulation();
+	}
+
+	private void startNewIterationOverPopulation() {
+		Collections.shuffle(this.unorderedIndividualsIndices);
+		this.currentIndex = 0;
+	}
+
+	public CompleteMoveStats getCurrentIndividual() {
+		return this.population[this.currentIndex];
+	}
+
+	public void advanceIterator() {
+		this.currentIndex++;
+		if(this.currentIndex >= this.unorderedIndividualsIndices.size()) {
+			this.evalRepetitionsCount++;
+			this.startNewIterationOverPopulation();
+		}
+	}
+
+	public int getEvalRepetitionsCount() {
+		return this.evalRepetitionsCount;
 	}
 
 	public CMAEvolutionStrategy getCMAEvolutionStrategy() {
@@ -73,6 +143,7 @@ public class SelfAdaptiveESProblemRepresentation extends EvoProblemRepresentatio
 
 	public void setMeanValueCombo(CompleteMoveStats meanValueCombo) {
 		this.meanValueCombo = meanValueCombo;
+
 	}
 
 	/*

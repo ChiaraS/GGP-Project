@@ -1,6 +1,7 @@
 package org.ggp.base.player.gamer.statemachine.MCTS.manager.parameterstuning.structure.problemrep;
 
 import org.ggp.base.player.gamer.statemachine.MCS.manager.hybrid.CompleteMoveStats;
+import org.ggp.base.util.logging.GamerLogger;
 
 public class EvoProblemRepresentation {
 
@@ -17,11 +18,11 @@ public class EvoProblemRepresentation {
 	protected int totalUpdates;
 
 	public EvoProblemRepresentation(CompleteMoveStats[] population) {
-		this.population = population;
-		//this.totalUpdates = 0;
-	}
+		if(population.length < 1) {
+			GamerLogger.logError("ParametersTuner", "EvoProblemRepresentation - Impossible to create EvoProblemRepresentation! Specified population must have at least one individual!");
+			throw new RuntimeException("EvoProblemRepresentation - Impossible to create EvoProblemRepresentation! Specified population must have at least one individual!");
+		}
 
-	public void setPopulation(CompleteMoveStats[] population){
 		this.population = population;
 		//this.totalUpdates = 0;
 	}

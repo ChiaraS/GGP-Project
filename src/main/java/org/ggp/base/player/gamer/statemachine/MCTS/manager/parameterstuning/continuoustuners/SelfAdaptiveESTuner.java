@@ -1,6 +1,5 @@
 package org.ggp.base.player.gamer.statemachine.MCTS.manager.parameterstuning.continuoustuners;
 
-import java.util.List;
 import java.util.Random;
 
 import org.ggp.base.player.gamer.statemachine.GamerSettings;
@@ -8,10 +7,7 @@ import org.ggp.base.player.gamer.statemachine.MCS.manager.hybrid.CompleteMoveSta
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.GameDependentParameters;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.SharedReferencesCollector;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.parameterstuning.evolution.CMAESManager;
-import org.ggp.base.player.gamer.statemachine.MCTS.manager.parameterstuning.structure.AllCombosOfIndividualsIterator;
-import org.ggp.base.player.gamer.statemachine.MCTS.manager.parameterstuning.structure.CombosOfIndividualsIterator;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.parameterstuning.structure.ContinuousMove;
-import org.ggp.base.player.gamer.statemachine.MCTS.manager.parameterstuning.structure.RandomCombosOfIndividualsIterator;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.parameterstuning.structure.problemrep.SelfAdaptiveESProblemRepresentation;
 import org.ggp.base.util.logging.GamerLogger;
 import org.ggp.base.util.statemachine.structure.Move;
@@ -79,6 +75,11 @@ public class SelfAdaptiveESTuner extends ContinuousParametersTuner {
     //protected TunerSelector bestCombinationSelector;
 
     /**
+     * NOTE: this feature is not available for this tuner, the individuals of the population are evaluated in a
+     * random order against each other. Different populations can have different sizes and be evolved at different
+     * moments in time (i.e. the instances of CMA-ES proceed in their execution independently of each other).
+     *
+     *
      * If true, when evaluating a population, the fitness of each individual will result from
      * testing with a simulation ALL combinations of individuals, one from each population.
      * If false, random combinations of individuals (one for each population) will be evaluated,
@@ -100,12 +101,12 @@ public class SelfAdaptiveESTuner extends ContinuousParametersTuner {
      * (c_02, c_10, c20) (c_02, c_10, c21) (c_02, c_10, c22) (c_02, c_11, c20) (c_02, c_11, c21) (c_02, c_11, c22)
      * (c_02, c_12, c20) (c_02, c_12, c21) (c_02, c_12, c22).
      */
-    private boolean evaluateAllCombosOfIndividuals;
+    //private boolean evaluateAllCombosOfIndividuals;
 
     /**
      * Keeps track of which combinations of individuals must be evaluated and in which order.
      */
-    private CombosOfIndividualsIterator combosOfIndividualsIterator;
+    //private CombosOfIndividualsIterator combosOfIndividualsIterator;
 
     /**
      * If evaluating all combinations of individuals before evolving the populations (i.e. evaluateAllCombosOfIndividuals == true),
@@ -134,28 +135,6 @@ public class SelfAdaptiveESTuner extends ContinuousParametersTuner {
      * for a role before we update its fitness in the CMA-ES instance of the role.
      */
     private int evalRepetitionsForMeanCombo;
-
-    /**
-     * Used to count the repetitions performed so far.
-     */
-    private int evalRepetitionsCount;
-
-    /**
-     * One population of combinations (individuals) for each role being tuned.
-     */
-    //private CompleteMoveStats[][] populations;
-
-    /**
-     * List with the indices of all possible combinations that can be obtained by taking one
-     * combination (i.e individual) for each role.
-     */
-    //private List<List<Integer>> combosOfIndividualsIndices;
-
-    /**
-     * Index of the currently tested combination of combinations (i.e. individuals) in the
-     * combosOfCombosIndices list.
-     */
-    //private int currentComboIndex;
 
     /**
      * Memorize the currently set combinations of parameters for each role.
@@ -214,13 +193,9 @@ public class SelfAdaptiveESTuner extends ContinuousParametersTuner {
             throw new RuntimeException(e);
         }*/
 
-        this.evaluateAllCombosOfIndividuals = gamerSettings.getBooleanPropertyValue("ParametersTuner.evaluateAllCombosOfIndividuals");
-
-        this.combosOfIndividualsIterator = null;
+        //this.evaluateAllCombosOfIndividuals = gamerSettings.getBooleanPropertyValue("ParametersTuner.evaluateAllCombosOfIndividuals");
 
         this.evalRepetitions = gamerSettings.getIntPropertyValue("ParametersTuner.evalRepetitions");
-
-        this.evalRepetitionsCount = 0;
 
         this.evalRepetitionsForMeanCombo = gamerSettings.getIntPropertyValue("ParametersTuner.evalRepetitionsForMeanCombo");
 
@@ -321,23 +296,20 @@ public class SelfAdaptiveESTuner extends ContinuousParametersTuner {
                     this.logPopulations();
                 }
 
+                /*
                 int[] popSizes = new int[this.getRoleProblems().length];
                 for(int i = 0; i < popSizes.length; i++){
                     popSizes[i] = this.getRoleProblems()[i].getPopulation().length;
-                }
+                }*/
 
+                /*
                 if(this.evaluateAllCombosOfIndividuals){
-					/*
-					int[] popSizes = new int[this.populations.length];
-					for(int i = 0; i < popSizes.length; i++){
-						popSizes[i] = this.populations[i].length;
-					}*/
                     this.combosOfIndividualsIterator = new AllCombosOfIndividualsIterator(popSizes);
                 }else{
                     this.combosOfIndividualsIterator = new RandomCombosOfIndividualsIterator(popSizes);
-                }
+                }*/
 
-                this.evalRepetitionsCount = -1;
+                //this.evalRepetitionsCount = -1;
 
                 this.selectedCombinations = new double[numRolesToTune][this.continuousParametersManager.getNumTunableParameters()];
 
@@ -369,47 +341,41 @@ public class SelfAdaptiveESTuner extends ContinuousParametersTuner {
     @Override
     public void setNextCombinations() {
 
-        // Check if we tested all combinations.
-        // Try to get the next combination, if all combinations have been tested this will return null
-        // and we'll have to evolve the population or restart the evaluations. Moreover, we need to reset
-        // the individualsCombinationsIterator to start iterating over the combinations again.
-        // Otherwise, the next combination will be returned and the individualsCombinationsIterator will
-        // keep track of it as the new current combination.
-        if(this.combosOfIndividualsIterator.getNextComboOfIndividualsIndices() == null){
+    	// First check for each role problem that still has a population if all individuals have been evaluated
+    	// the predefined amount of times and we need to evolve the population.
+        for(int roleProblemIndex = 0; roleProblemIndex < this.getRoleProblems().length; roleProblemIndex++){
 
-            // If we tested all combinations, increment the counter since we finished
-            // another repetition of the evaluation of all combinations.
-            this.evalRepetitionsCount++;
+        	// If the CMA-ES instance of the role problem is still optimizing (i.e. population != null),
+        	// get the next individual from the population, evolving the population if we evaluated all
+        	// individuals the expected amount of times.
+        	if(this.getRoleProblems()[roleProblemIndex].getPopulation() != null) {
 
-            // Check if we performed all repetitions of the evaluation.
-            if(this.evalRepetitionsCount == this.evalRepetitions){
-                // If yes, evolve the populations (the ones that still aren't null).
-                for(int roleProblemIndex = 0; roleProblemIndex < this.getRoleProblems().length; roleProblemIndex++){
-                	if(this.getRoleProblems()[roleProblemIndex].getPopulation() != null) {
-                		this.cmaesManager.evolvePopulation(this.getRoleProblems()[roleProblemIndex]);
-                	}
-                }
+        		// Advance to the next combination to evaluate.
+        		// Note that to make the code simpler we should advance at the end of the updateStatistics() method,
+        		// however, at the moment there is still the possibility to set the TunerBeforeSimulationStrategy
+        		// to change combination only after a batch of N simulations by calling setNextCombinations only once
+        		// every N simulations, but calling updateStatistics() for each of the N simulations. If we would
+        		// advance to the next combination in the updateStatistics() method and at the same time set the
+        		// TunerBeforeSimulationStrategy to set the next combination only every N simulation we would advance
+        		// N times anyway without actually evaluating the combinations.
+        		this.getRoleProblems()[roleProblemIndex].advanceIterator();
 
-				/*
-				for(int populationIndex = 0; populationIndex < this.populations.length; populationIndex++){
-					this.saesManager.evolvePopulation(this.populations[populationIndex]);
-				}*/
+        		// Check if we evaluated the population for the given number of iterations
+        		if(this.getRoleProblems()[roleProblemIndex].getEvalRepetitionsCount() == this.evalRepetitions) {
 
-                if(this.logPopulations){
-                    this.logPopulations();
-                }
+        			// If yes, evolve the population
+        			this.cmaesManager.evolvePopulation(this.getRoleProblems()[roleProblemIndex]);
 
-                this.evalRepetitionsCount = 0;
-            }
-
-            // Prepare to start another repetition, after resetting the iterator.
-            this.combosOfIndividualsIterator.startNewIteration();
-
+                    if(this.logPopulations){
+                        this.logPopulation(roleProblemIndex);
+                    }
+        		}
+        	}
         }
 
-        boolean foundAllBest = true;
+        // Now for each role problem get the next individual to be evaluated
 
-        List<Integer> individualsIndices = this.combosOfIndividualsIterator.getCurrentComboOfIndividualsIndices();
+        boolean foundAllBest = true;
 
         Move theParametersCombination;
 
@@ -418,7 +384,7 @@ public class SelfAdaptiveESTuner extends ContinuousParametersTuner {
         	// If the CMA-ES instance of the role problem is still optimizing (i.e. population != null),
         	// get the next individual from the population.
         	if(this.getRoleProblems()[roleProblemIndex].getPopulation() != null) {
-        		theParametersCombination = this.getRoleProblems()[roleProblemIndex].getPopulation()[individualsIndices.get(roleProblemIndex)].getTheMove();
+        		theParametersCombination = this.getRoleProblems()[roleProblemIndex].getCurrentIndividual().getTheMove();
 	            if(theParametersCombination instanceof ContinuousMove){
 	                this.selectedCombinations[roleProblemIndex] = ((ContinuousMove) theParametersCombination).getContinuousMove();
 	            }else{
@@ -426,13 +392,10 @@ public class SelfAdaptiveESTuner extends ContinuousParametersTuner {
 	                throw new RuntimeException("SelfAdaptiveESTuner - Impossible to set next combinations. The Move is not of type ContinuousMove but of type " + theParametersCombination.getClass().getSimpleName() + ".");
 	            }
 	            foundAllBest = false;
-
         	}else { // If the population is null, we have two possibilities:
         		// 1. The mean combo is not null: we have two more possibilities:
-        		// or if we reached the number of evaluations and we need to update its fitness in
-        		// the CMA-ES algorithm instance.
         		if(this.getRoleProblems()[roleProblemIndex].getMeanValueCombo() != null) {
-        			// 1.1. If we haven't reached the number of predefined evaluations for the mean, we evaluate it again
+        			// 1.1. We haven't reached the number of predefined evaluations for the mean, so we evaluate it again
         			if(this.getRoleProblems()[roleProblemIndex].getMeanValueCombo().getVisits() < this.evalRepetitionsForMeanCombo) {
         				this.selectedCombinations[roleProblemIndex] = ((ContinuousMove) this.getRoleProblems()[roleProblemIndex].getMeanValueCombo().getTheMove()).getContinuousMove();
         				foundAllBest = false;
@@ -446,17 +409,6 @@ public class SelfAdaptiveESTuner extends ContinuousParametersTuner {
         		 // we already set the best combination for the role and we don't need to do anything anymore
         	}
         }
-
-		 /*
-		 for(int populationIndex = 0; populationIndex < this.populations.length; populationIndex++){
-			 theParametersCombination = this.populations[populationIndex][individualsIndices.get(populationIndex)].getTheMove();
-			 if(theParametersCombination instanceof CombinatorialCompactMove){
-				 this.selectedCombinations[populationIndex] = ((CombinatorialCompactMove) theParametersCombination).getIndices();
-			 }else{
-				 GamerLogger.logError("ParametersTuner", "MultiPopEvoParametersTuner - Impossible to set next combinations. The Move is not of type CombinatorialCompactMove but of type " + theParametersCombination.getClass().getSimpleName() + ".");
-				 throw new RuntimeException("MultiPopEvoParametersTuner - Impossible to set next combinations. The Move is not of type CombinatorialCompactMove but of type " + theParametersCombination.getClass().getSimpleName() + ".");
-			 }
-		 }*/
 
         this.continuousParametersManager.setParametersValues(this.selectedCombinations);
 
@@ -563,9 +515,9 @@ public class SelfAdaptiveESTuner extends ContinuousParametersTuner {
 		}*/
 
         // Update fitness of evaluated individuals
-        List<Integer> individualsIndices = this.combosOfIndividualsIterator.getCurrentComboOfIndividualsIndices();
+        //List<Integer> individualsIndices = this.combosOfIndividualsIterator.getCurrentComboOfIndividualsIndices();
 
-        this.updateRoleProblems(individualsIndices, neededRewards);
+        this.updateRoleProblems(neededRewards);
 
 		 /*
 		 for(int populationIndex = 0; populationIndex < this.populations.length; populationIndex++){
@@ -576,7 +528,7 @@ public class SelfAdaptiveESTuner extends ContinuousParametersTuner {
 
     }
 
-    protected void updateRoleProblems(List<Integer> individualsIndices, int[] neededRewards) {
+    protected void updateRoleProblems(int[] neededRewards) {
 
 		CompleteMoveStats toUpdate;
 
@@ -584,7 +536,7 @@ public class SelfAdaptiveESTuner extends ContinuousParametersTuner {
 			// We have 3 cases:
 			// 1. The population is non-null: we update the fitness of the selected individual
 			if(this.roleProblems[roleProblemIndex].getPopulation() != null) {
-				toUpdate = this.roleProblems[roleProblemIndex].getPopulation()[individualsIndices.get(roleProblemIndex)];
+				toUpdate = this.roleProblems[roleProblemIndex].getCurrentIndividual();
 				toUpdate.incrementScoreSum(neededRewards[roleProblemIndex]);
 				toUpdate.incrementVisits();
 				this.roleProblems[roleProblemIndex].incrementTotalUpdates();
@@ -615,76 +567,80 @@ public class SelfAdaptiveESTuner extends ContinuousParametersTuner {
         if(this.getRoleProblems() != null){
 
             //GamerLogger.log(GamerLogger.FORMAT.CSV_FORMAT, "ParametersTunerStats", "");
-            String toLog = "";
 
-            Move theParametersCombination;
+        	for(int roleProblemIndex = 0; roleProblemIndex < this.getRoleProblems().length; roleProblemIndex++){
+        		this.logPopulation(roleProblemIndex);
+        	}
 
-            double[] combo;
+        }
 
-            String theValues;
+    }
 
-            int roleIndex;
+    private void logPopulation(int roleProblemIndex) {
 
-            for(int roleProblemIndex = 0; roleProblemIndex < this.getRoleProblems().length; roleProblemIndex++){
+    	String toLog = "";
 
-                if(this.tuneAllRoles){
-                    roleIndex = roleProblemIndex;
+    	int roleIndex;
+
+    	Move theParametersCombination;
+
+        double[] combo;
+
+        String theValues;
+
+    	if(this.tuneAllRoles){
+            roleIndex = roleProblemIndex;
+        }else{
+            roleIndex = this.gameDependentParameters.getMyRoleIndex();
+        }
+
+        toLog += "ROLE=;" + this.gameDependentParameters.getTheMachine().convertToExplicitRole(this.gameDependentParameters.getTheMachine().getRoles().get(roleIndex)) +
+                ";";
+
+        if(this.getRoleProblems()[roleProblemIndex].getPopulation() != null) {
+
+        	toLog += "POPULATION=;";
+
+            for(int comboIndex = 0; comboIndex < this.getRoleProblems()[roleProblemIndex].getPopulation().length; comboIndex++){
+
+                theParametersCombination = this.getRoleProblems()[roleProblemIndex].getPopulation()[comboIndex].getTheMove();
+
+                if(theParametersCombination instanceof ContinuousMove){
+                	combo = ((ContinuousMove) theParametersCombination).getContinuousMove();
+                    theValues = "[ ";
+                    for(int paramIndex = 0; paramIndex < combo.length; paramIndex++){
+                        theValues += (combo[paramIndex] + " ");
+                    }
+                    theValues += "]";
+
+                    toLog+= (theValues + ";");
+
                 }else{
-                    roleIndex = this.gameDependentParameters.getMyRoleIndex();
+                    GamerLogger.logError("ParametersTuner", "SelfAdaptiveESTuner - Impossible to log populations. The Move is not of type CombinatorialCompactMove but of type " + theParametersCombination.getClass().getSimpleName() + ".");
+                    throw new RuntimeException("SelfAdaptiveESTuner - Impossible to log populations. The Move is not of type CombinatorialCompactMove but of type " + theParametersCombination.getClass().getSimpleName() + ".");
                 }
-
-                toLog += "ROLE=;" + this.gameDependentParameters.getTheMachine().convertToExplicitRole(this.gameDependentParameters.getTheMachine().getRoles().get(roleIndex)) +
-                        ";";
-
-                if(this.getRoleProblems()[roleProblemIndex].getPopulation() != null) {
-
-                	toLog += "POPULATION=;";
-
-	                for(int comboIndex = 0; comboIndex < this.getRoleProblems()[roleProblemIndex].getPopulation().length; comboIndex++){
-
-	                    theParametersCombination = this.getRoleProblems()[roleProblemIndex].getPopulation()[comboIndex].getTheMove();
-
-	                    if(theParametersCombination instanceof ContinuousMove){
-	                    	combo = ((ContinuousMove) theParametersCombination).getContinuousMove();
-	                        theValues = "[ ";
-	                        for(int paramIndex = 0; paramIndex < combo.length; paramIndex++){
-	                            theValues += (combo[paramIndex] + " ");
-	                        }
-	                        theValues += "]";
-
-	                        toLog+= (theValues + ";");
-
-	                    }else{
-	                        GamerLogger.logError("ParametersTuner", "SelfAdaptiveESTuner - Impossible to log populations. The Move is not of type CombinatorialCompactMove but of type " + theParametersCombination.getClass().getSimpleName() + ".");
-	                        throw new RuntimeException("SelfAdaptiveESTuner - Impossible to log populations. The Move is not of type CombinatorialCompactMove but of type " + theParametersCombination.getClass().getSimpleName() + ".");
-	                    }
-
-	                }
-                }else {
-                	if(this.getRoleProblems()[roleProblemIndex].getMeanValueCombo() != null) { // Null population cause we set the mean combo, so we log the mean combo
-                		toLog += "MEAN_COMBO=;";
-                		combo = ((ContinuousMove) this.getRoleProblems()[roleProblemIndex].getMeanValueCombo().getTheMove()).getContinuousMove();
-                		theValues = "[ ";
-                        for(int paramIndex = 0; paramIndex < combo.length; paramIndex++){
-                            theValues += (combo[paramIndex] + " ");
-                        }
-                        theValues += "]";
-
-                        toLog+= (theValues + ";");
-                	}else {
-                		toLog+= ("POPULATION=;[];");
-                	}
-
-                }
-
-                toLog += "\n";
 
             }
+        }else {
+        	if(this.getRoleProblems()[roleProblemIndex].getMeanValueCombo() != null) { // Null population cause we set the mean combo, so we log the mean combo
+        		toLog += "MEAN_COMBO=;";
+        		combo = ((ContinuousMove) this.getRoleProblems()[roleProblemIndex].getMeanValueCombo().getTheMove()).getContinuousMove();
+        		theValues = "[ ";
+                for(int paramIndex = 0; paramIndex < combo.length; paramIndex++){
+                    theValues += (combo[paramIndex] + " ");
+                }
+                theValues += "]";
 
-            toLog += "\n";
+                toLog+= (theValues + ";");
+        	}else {
+        		toLog+= ("POPULATION=;[];");
+        	}
 
-            GamerLogger.log(GamerLogger.FORMAT.CSV_FORMAT, "Populations", toLog);
+        	toLog += "\n";
         }
+
+        GamerLogger.log(GamerLogger.FORMAT.CSV_FORMAT, "Populations", toLog);
+
 
     }
 
@@ -713,11 +669,11 @@ public class SelfAdaptiveESTuner extends ContinuousParametersTuner {
         String params = indentation + "LOG_POPULATIONS = " + this.logPopulations +
                 indentation + "CONTINUOUS_EVOLUTION_MANAGER = " + this.cmaesManager.printComponent(indentation + "  ") +
                 //indentation + "BEST_COMBINATION_SELECTOR = " + this.bestCombinationSelector.printComponent(indentation + "  ") +
-                indentation + "EVALUATE_ALL_COMBOS_OF_INDIVIDUALS = " + this.evaluateAllCombosOfIndividuals +
-                indentation + "INDIVIDUALS_ITERATOR = " + (this.combosOfIndividualsIterator != null ? this.combosOfIndividualsIterator.getClass().getSimpleName() : "null") +
+                //indentation + "EVALUATE_ALL_COMBOS_OF_INDIVIDUALS = " + this.evaluateAllCombosOfIndividuals +
+                //indentation + "INDIVIDUALS_ITERATOR = " + (this.combosOfIndividualsIterator != null ? this.combosOfIndividualsIterator.getClass().getSimpleName() : "null") +
                 indentation + "EVAL_REPETITIONS = " + this.evalRepetitions +
                 indentation + "EVAL_REPETITIONS_FOR_MEAN_COMBO = " + this.evalRepetitionsForMeanCombo +
-                indentation + "eval_repetitions_count = " + this.evalRepetitionsCount +
+                //indentation + "eval_repetitions_count = " + this.evalRepetitionsCount +
                 indentation + "num_role_problems = " + (this.getRoleProblems() != null ? this.getRoleProblems().length : 0);
         		//indentation + "num_combos_of_individuals = " + (this.combosOfIndividualsIndices != null ? this.combosOfIndividualsIndices.size() : 0) +
         		//indentation + "current_combo_index = " + this.currentComboIndex;
@@ -744,6 +700,23 @@ public class SelfAdaptiveESTuner extends ContinuousParametersTuner {
         }else{
             params += indentation + "selected_combinations_indices = null";
         }
+
+        if(this.solutionTypes != null){
+            String solutionTypesString = "[ ";
+
+            for(int i = 0; i < this.solutionTypes.length; i++){
+
+            	solutionTypesString += this.solutionTypes[i] + " ";
+
+            }
+
+            solutionTypesString += "]";
+
+            params += indentation + "solution_types = " + solutionTypesString;
+        }else{
+            params += indentation + "solution_types = null";
+        }
+
 
         if(this.bestCombinations != null){
             String bestCombinationsString = "[ ";
