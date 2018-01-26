@@ -74,12 +74,18 @@ public class SelfAdaptiveESProblemRepresentation extends EvoProblemRepresentatio
 	private int evalRepetitionsCount;
 
 	/**
+	 * For each individual in the population, for each of its parameters, true if the parameter
+	 * has been repaired, false if it has its original value.
+	 */
+	private boolean[][] repaired;
+
+	/**
 	 *
 	 * @param population must correspond to the initial population created by cmaes, BUT with values
 	 * for the parameters already rescaled in their feasible values and not in [-inf;+inf].
 	 * @param cmaes must be already initialized and ready to be used.
 	 */
-	public SelfAdaptiveESProblemRepresentation(CMAEvolutionStrategy cmaes, CompleteMoveStats[] population) {
+	public SelfAdaptiveESProblemRepresentation(CMAEvolutionStrategy cmaes, CompleteMoveStats[] population, boolean[][] repaired) {
 
 		super(population);
 
@@ -89,9 +95,11 @@ public class SelfAdaptiveESProblemRepresentation extends EvoProblemRepresentatio
 
 		this.meanValueCombo = null;
 
+		this.repaired = repaired;
+
 	}
 
-	public void setPopulation(CompleteMoveStats[] population){
+	public void setPopulation(CompleteMoveStats[] population, boolean[][] repaired){
 		this.population = population;
 		if(population.length > 1) {
 			this.setIteratorForNewPopulation();
@@ -100,7 +108,7 @@ public class SelfAdaptiveESProblemRepresentation extends EvoProblemRepresentatio
 			this.currentIndex = -1;
 			this.evalRepetitionsCount = 0;
 		}
-
+		this.repaired = repaired;
 	}
 
 	private void setIteratorForNewPopulation() {
@@ -144,6 +152,10 @@ public class SelfAdaptiveESProblemRepresentation extends EvoProblemRepresentatio
 	public void setMeanValueCombo(CompleteMoveStats meanValueCombo) {
 		this.meanValueCombo = meanValueCombo;
 
+	}
+
+	public boolean[][] getRepaired(){
+		return this.repaired;
 	}
 
 	/*

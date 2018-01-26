@@ -79,7 +79,19 @@ public class CadiaBetaComputer extends BetaComputer{
 
 		if(this.k.getValuePerRole(roleIndex) == 0){
 			return 0.0;
-		}else if(this.k.getValuePerRole(roleIndex) == Integer.MAX_VALUE){
+			// ATTENTION: here we consider 10^10 to be a value for K that's high enough to be equivalent to +infinity, so
+			// whenever K >= 10^10 we return the value 1 for beta. This is a good approximation if the maximum number of
+			// visits a node can reach is at least about 3 orders of magnitude smaller than 10^10 (i.e. 10^7). Increase this
+			// value if you estimate that a node can reach an amount of visits higher than 10^7.
+			// This trick is needed to run CMA-ES tuning so we can consider for K the interval of possible value as [0, 10^10]
+			// instead of [0, Double.MAX_VALUE]. In this way, when we perform a rescaling that maps [0,1] to [0, 10^10] there
+			// won't be issues when the value to be rescaled is >1. Such value will be mapped in a value greater that the right
+			// extreme of the interval (i.e. 10^10) but still representable as a double. This wouldn't be possible if the right
+			// extreme was Double.MAX_VALUE. This trick allows us to have no troubles with rescaling and at the same time obtain
+			// the behavior of the GRAVE strategy that we will have when K=+infinity (because if the number of visits of a node
+			// cannot exceed 10^7, the value of beta will be very close to 1 for any value greater than 10^10, as it is exaclty
+			// 1 for K=+infinity).
+		}else if(this.k.getValuePerRole(roleIndex) >= Math.pow(10.0, 10.0)){
 			return 1.0;
 		}
 

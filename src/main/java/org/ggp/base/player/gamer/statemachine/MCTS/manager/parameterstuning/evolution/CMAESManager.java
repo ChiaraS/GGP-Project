@@ -1,18 +1,56 @@
 package org.ggp.base.player.gamer.statemachine.MCTS.manager.parameterstuning.evolution;
 
+import java.lang.reflect.InvocationTargetException;
 import java.util.Random;
 
 import org.ggp.base.player.gamer.statemachine.GamerSettings;
 import org.ggp.base.player.gamer.statemachine.MCS.manager.hybrid.CompleteMoveStats;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.GameDependentParameters;
+import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.SearchManagerComponent;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.SharedReferencesCollector;
+import org.ggp.base.player.gamer.statemachine.MCTS.manager.parameterstuning.rescalers.ValueRescaler;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.parameterstuning.structure.ContinuousMove;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.parameterstuning.structure.problemrep.SelfAdaptiveESProblemRepresentation;
+import org.ggp.base.util.Interval;
 import org.ggp.base.util.logging.GamerLogger;
+import org.ggp.base.util.reflection.ProjectSearcher;
 
 import csironi.ggp.course.utils.MyPair;
 import inriacmaes.CMAEvolutionStrategy;
 
+/**
+ * This class manages the execution of the CMA-ES algorithm on each of the role problems.
+ * Each role problem has its own instance of CMA-ES. For each role, CMA-ES is executed assuming that:
+ * 1. We want to find the combination of values (one for each parameter/dimension) that MINIMIZES the fitness.
+ * 2. For each parameter/dimension the value that is part of the optimal solution (i.e. combination) is in the
+ *    interval specified by cmaEsBoundaries. (I.e. the optimal solution is in the hypercube [a,b]^n, where [a,b]
+ *    is the interval specified by cmaEsBoundaries and n is the number of dimensions/parameters being tuned).
+ * 3. The feasible values for each dimension/tuned parameter are also in the interval specified by cmaEsBoundaries.
+ * To deal with the previous assumptions, this manager must take care of:
+ * 1. Invert the rewards obtained by the parameter combinations, so that a parameter combination with maximum
+ * 	  reward has minimum fitness and viceversa. This is done by setting fitness(combo)=-MCTSreward(combo).
+ * 2. Whenever a population is returned by CMA-ES to be sampled, each parameter of each individual is rescaled
+ *    by a function that maps the interval specified by cmaEsBoundaries to the interval that represents the actual
+ *    domain of the parameter.
+ * 3. CMA-ES might return an individual with one or more component values outside of the feasible interval specified
+ *    by cmaEsBoundaries. In this case its fitness is computed by substituting the individual with the closest feasible
+ *    individual and then adding a penalty to the fitness that is proportional to the distance between the infeasible
+ *    individual and it closest feasible individual.
+ *
+ * Also, parameters like the initialStandardDeviation and the initialX (mean value) are computed according to the
+ * dimension of the considered interval specified by cmaEsBoundaries. From the documentation (see footnote on page 29
+ * of the tutorial) the optimum should be within the initial cube [m-3*sigma(1,...,1), m+3*sigma(1,...,1)], so if we
+ * expect the optimum to be in the cube determined by the rescaled feasible values of all the tuned parameters (i.e.
+ * the values specified by cmaEsBoundaries), than a good choice for m (i.e. initialX) and sigma (i.e. initialStandardDeviation)
+ * seems to be 0.5*(b-a) and 0.3*(b-a) for each parameter.
+ *
+ * NOTE: all the settings and assumptions are based on the tutorial at https://www.lri.fr/~hansen/cmaesintro.html
+ *       (https://arxiv.org/pdf/1604.00772.pdf) and on the practical hints on the source code page at
+ *       https://www.lri.fr/~hansen/cmaes_inmatlab.html#java.
+ *
+ * @author c.sironi
+ *
+ */
 public class CMAESManager extends ContinuousEvolutionManager {
 
 	/**
@@ -30,26 +68,59 @@ public class CMAESManager extends ContinuousEvolutionManager {
 	 */
 	private boolean useMean;
 
+	/**
+	 * Re-scales the values returned by the CMA-ES algorithm for the population individuals into the scale of feasible
+	 * values for the tuned parameters. I.e. we assume that the feasible values for each dimension optimized by CMA-ES are
+	 * in the interval [0,1] and we use this function to re-scale such values so that the interval [0,1] corresponds
+	 * to the actual feasible interval of values of each parameter. NOTE that the ValueRescaler must be able to re-scale
+	 * also values that don't fall in the interval [0,1], because CMA-ES might return a point to sample outside of the
+	 * feasible region. The CMA-ES interval [0,1] and the actual interval of feasible values for a given parameter are
+	 * used by the value re-scaler to compute a function that re-scales any value in R to another value in R so that the
+	 * interval [0,1] is rescaled to the interval of feasible values for the parameter.
+	 */
+	private ValueRescaler valueRescaler;
+
+	/**
+	 * Gives the interval in which we consider feasible the value of any of the variables
+	 */
+	private Interval cmaEsBoundaries;
+
 	public CMAESManager(GameDependentParameters gameDependentParameters, Random random, GamerSettings gamerSettings,
 			SharedReferencesCollector sharedReferencesCollector) {
 		super(gameDependentParameters, random, gamerSettings, sharedReferencesCollector);
 
 		this.useMean = gamerSettings.getBooleanPropertyValue("EvolutionManager.useMean");
+
+		try {
+			this.valueRescaler = (ValueRescaler) SearchManagerComponent.getConstructorForSearchManagerComponent(SearchManagerComponent.getCorrespondingClass(ProjectSearcher.VALUE_RESCALERS.getConcreteClasses(),
+					gamerSettings.getPropertyValue("EvolutionManager.valueRescalerType"))).newInstance(gameDependentParameters, random, gamerSettings, sharedReferencesCollector);
+		} catch (InstantiationException | IllegalAccessException
+				| IllegalArgumentException | InvocationTargetException e) {
+			// TODO: fix this!
+			GamerLogger.logError("SearchManagerCreation", "Error when instantiating ValueRescaler " + gamerSettings.getPropertyValue("EvolutionManager.valueRescalerType") + ".");
+			GamerLogger.logStackTrace("SearchManagerCreation", e);
+			throw new RuntimeException(e);
+		}
+
+		this.cmaEsBoundaries = gamerSettings.getDoublePropertyIntervalValue("EvolutionManager.cmaEsBoundaries");
 	}
 
 	@Override
 	public void setReferences(SharedReferencesCollector sharedReferencesCollector) {
 		super.setReferences(sharedReferencesCollector);
+		this.valueRescaler.setReferences(sharedReferencesCollector);
 	}
 
 	@Override
 	public void clearComponent() {
 		super.clearComponent();
+		this.valueRescaler.setUpComponent();
 	}
 
 	@Override
 	public void setUpComponent() {
 		super.setUpComponent();
+		this.valueRescaler.setUpComponent();
 	}
 
 	/**
@@ -73,9 +144,9 @@ public class CMAESManager extends ContinuousEvolutionManager {
 		// Set number of tuned parameters
         cma.setDimension(this.continuousParametersManager.getNumTunableParameters()); // overwrite some loaded properties
         // Set initial standard deviation (same as in default settings file)
-        cma.setInitialStandardDeviation(0.3);
+        cma.setInitialStandardDeviation(0.3*(this.cmaEsBoundaries.getRightExtreme()-this.cmaEsBoundaries.getLeftExtreme()));
         // Set initial X (same as in default settings file)
-        cma.setInitialX(0.5);
+        cma.setInitialX(0.5*(this.cmaEsBoundaries.getRightExtreme()-this.cmaEsBoundaries.getLeftExtreme()));
         // Set minimum fitness we want to reach
         cma.options.stopFitness = -101.0;
         // Set to off the logging on file of the CMA-ES instance
@@ -120,6 +191,38 @@ public class CMAESManager extends ContinuousEvolutionManager {
 
 		return new MyPair<CMAEvolutionStrategy,CompleteMoveStats[]>(cma,population);
 
+	}
+
+	private MyPair<double[][],double[]> repairPopulationAndComputePenalty(double[][] pop){
+
+		double[][] repairedPopulation = new double[pop.length][];
+
+		double[] penalty = new double[pop.length];
+
+		for(int individualIndex = 0; individualIndex < pop.length; individualIndex++) {
+
+			repairedPopulation[individualIndex] = new double[pop[individualIndex].length];
+			penalty[individualIndex] = 0;
+
+			double repairedValue;
+
+			for(int paramIndex = 0; paramIndex < pop[individualIndex].length; paramIndex++) {
+				// Check if the value is feasible
+				if(this.cmaEsBoundaries.contains(pop[individualIndex][paramIndex])) {
+					repairedPopulation[individualIndex][paramIndex] = pop[individualIndex][paramIndex];
+				}else {
+					repairedValue = this.repairValue(pop[individualIndex][paramIndex]);
+					penalty[individualIndex] = penalty[individualIndex] + this.computePenalty(pop[individualIndex][paramIndex], repairedValue);
+				}
+			}
+		}
+
+
+
+
+
+
+		return new MyPair<double[][],double[]>(repairedPopulation, penalty);
 	}
 
 	/**
@@ -265,7 +368,11 @@ public class CMAESManager extends ContinuousEvolutionManager {
 
 		String superParams = super.getComponentParameters(indentation);
 
-		String params = indentation + "USE_MEAN = " + this.useMean;
+		String params = indentation + "USE_MEAN = " + this.useMean +
+				indentation + "VALUE_RESCALER = " + this.valueRescaler.printComponent(indentation + "  ") +
+				indentation + "CMA_ES_BOUNDARIES = " + this.cmaEsBoundaries.toString() +
+				indentation + "INITIAL_STANDARD_DEVIATION = " + (0.3*(this.cmaEsBoundaries.getRightExtreme()-this.cmaEsBoundaries.getLeftExtreme())) +
+				indentation + "INITIAL_X = " + (0.5*(this.cmaEsBoundaries.getRightExtreme()-this.cmaEsBoundaries.getLeftExtreme()));
 
 		if(superParams != null){
 			return superParams + params;

@@ -1,4 +1,4 @@
-package org.ggp.base.player.gamer.statemachine.MCTS.manager.parameterstuning.functionmappers;
+package org.ggp.base.player.gamer.statemachine.MCTS.manager.parameterstuning.rescalers;
 
 import java.util.Random;
 
@@ -8,18 +8,19 @@ import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.SearchManagerC
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.SharedReferencesCollector;
 
 /**
- * This class maps a value in R in the interval given by lowerBound and upperBound.
+ * This class re-scales a value x in R using a function that maps the interval [min, max]
+ * to the interval [newMin, newMax].
  *
  * @author c.sironi
  *
  */
-public abstract class FunctionMapper extends SearchManagerComponent {
+public abstract class ValueRescaler extends SearchManagerComponent {
 
-	public FunctionMapper(GameDependentParameters gameDependentParameters, Random random,
+	public ValueRescaler(GameDependentParameters gameDependentParameters, Random random,
 			GamerSettings gamerSettings, SharedReferencesCollector sharedReferencesCollector) {
 		super(gameDependentParameters, random, gamerSettings, sharedReferencesCollector);
 	}
 
-	public abstract double mapToInterval(double upperBound, double lowerBound, double valueInR);
+	public abstract double mapToInterval(double x, double min, double max, double newMin, double newMax);
 
 }

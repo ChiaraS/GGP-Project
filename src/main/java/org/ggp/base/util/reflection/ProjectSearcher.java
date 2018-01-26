@@ -26,6 +26,7 @@ import org.ggp.base.player.gamer.statemachine.MCTS.manager.parameterstuning.evol
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.parameterstuning.evolution.crossover.CrossoverManager;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.parameterstuning.evolution.fitness.FitnessComputer;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.parameterstuning.evolution.mutation.MutationManager;
+import org.ggp.base.player.gamer.statemachine.MCTS.manager.parameterstuning.rescalers.ValueRescaler;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.parameterstuning.selectors.TunerSelector;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.parameterstuning.structure.parametersorders.ParametersOrder;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.hybrid.TreeNodeFactory;
@@ -68,6 +69,7 @@ public class ProjectSearcher {
     public static final LoadedClasses<CrossoverManager> CROSSOVER_MANAGERS = new LoadedClasses<CrossoverManager>(CrossoverManager.class);
     public static final LoadedClasses<MutationManager> MUTATION_MANAGERS = new LoadedClasses<MutationManager>(MutationManager.class);
     public static final LoadedClasses<FitnessComputer> FITNESS_COMPUTER = new LoadedClasses<FitnessComputer>(FitnessComputer.class);
+    public static final LoadedClasses<ValueRescaler> VALUE_RESCALERS = new LoadedClasses<ValueRescaler>(ValueRescaler.class);
     // Strategies
     public static final LoadedClasses<BeforeSearchStrategy> BEFORE_SEARCH_STRATEGIES = new LoadedClasses<BeforeSearchStrategy>(BeforeSearchStrategy.class);
     public static final LoadedClasses<AfterMetagameStrategy> AFTER_METAGAME_STRATEGIES = new LoadedClasses<AfterMetagameStrategy>(AfterMetagameStrategy.class);
