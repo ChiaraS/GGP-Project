@@ -11,9 +11,7 @@ import org.ggp.base.player.gamer.statemachine.MCTS.manager.parameterstuning.stru
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.parameterstuning.structure.problemrep.SelfAdaptiveESProblemRepresentation;
 import org.ggp.base.util.logging.GamerLogger;
 import org.ggp.base.util.statemachine.structure.Move;
-
-import csironi.ggp.course.utils.MyPair;
-import inriacmaes.CMAEvolutionStrategy;
+import org.ggp.base.util.statemachine.structure.Role;
 
 /**
  * This class tunes the parameters for each role independently. Each role has its own population.
@@ -331,10 +329,8 @@ public class SelfAdaptiveESTuner extends ContinuousParametersTuner {
     protected void createRoleProblems(int numRolesToTune) {
     	// Create the initial population for each role
     	this.roleProblems = new SelfAdaptiveESProblemRepresentation[numRolesToTune];
-    	MyPair<CMAEvolutionStrategy,CompleteMoveStats[]> roleProblemParameters;
     	for(int roleProblemIndex = 0; roleProblemIndex < this.roleProblems.length; roleProblemIndex++){
-    		roleProblemParameters = this.cmaesManager.getInitialCMAESPopulation();
-    		roleProblems[roleProblemIndex] = new SelfAdaptiveESProblemRepresentation(roleProblemParameters.getFirst(), roleProblemParameters.getSecond());
+    		roleProblems[roleProblemIndex] = this.cmaesManager.createRoleProblemWithInitialPopulation();
     	}
     }
 
@@ -594,10 +590,11 @@ public class SelfAdaptiveESTuner extends ContinuousParametersTuner {
             roleIndex = this.gameDependentParameters.getMyRoleIndex();
         }
 
-        toLog += "ROLE=;" + this.gameDependentParameters.getTheMachine().convertToExplicitRole(this.gameDependentParameters.getTheMachine().getRoles().get(roleIndex)) +
-                ";";
+    	Role role = this.gameDependentParameters.getTheMachine().convertToExplicitRole(this.gameDependentParameters.getTheMachine().getRoles().get(roleIndex));
 
         if(this.getRoleProblems()[roleProblemIndex].getPopulation() != null) {
+
+        	toLog += "ROLE=;" + role + ";";
 
         	toLog += "POPULATION=;";
 
@@ -619,10 +616,47 @@ public class SelfAdaptiveESTuner extends ContinuousParametersTuner {
                     GamerLogger.logError("ParametersTuner", "SelfAdaptiveESTuner - Impossible to log populations. The Move is not of type CombinatorialCompactMove but of type " + theParametersCombination.getClass().getSimpleName() + ".");
                     throw new RuntimeException("SelfAdaptiveESTuner - Impossible to log populations. The Move is not of type CombinatorialCompactMove but of type " + theParametersCombination.getClass().getSimpleName() + ".");
                 }
+            }
+
+            toLog += "\n";
+
+            toLog += "ROLE=;" + role + ";";
+
+            toLog += "IS_REPAIRED=;";
+
+            for(int comboIndex = 0; comboIndex < this.getRoleProblems()[roleProblemIndex].getRepaired().length; comboIndex++){
+
+            	theValues = "[ ";
+                for(int paramIndex = 0; paramIndex < this.getRoleProblems()[roleProblemIndex].getRepaired()[comboIndex].length; paramIndex++){
+                    theValues += (this.getRoleProblems()[roleProblemIndex].getRepaired()[comboIndex][paramIndex] + " ");
+                }
+                theValues += "]";
+
+                toLog+= (theValues + ";");
 
             }
+
+            toLog += "\n";
+
+            toLog += "ROLE=;" + role + ";";
+
+            toLog += "PENALTY=;[ ";
+
+            for(int comboIndex = 0; comboIndex < this.getRoleProblems()[roleProblemIndex].getPenalty().length; comboIndex++){
+
+            	toLog += ( this.getRoleProblems()[roleProblemIndex].getPenalty()[comboIndex] + " " );
+
+
+            }
+
+            toLog+= ("]");
+
         }else {
+
         	if(this.getRoleProblems()[roleProblemIndex].getMeanValueCombo() != null) { // Null population cause we set the mean combo, so we log the mean combo
+
+        		toLog += "ROLE=;" + role + ";";
+
         		toLog += "MEAN_COMBO=;";
         		combo = ((ContinuousMove) this.getRoleProblems()[roleProblemIndex].getMeanValueCombo().getTheMove()).getContinuousMove();
         		theValues = "[ ";
@@ -631,7 +665,28 @@ public class SelfAdaptiveESTuner extends ContinuousParametersTuner {
                 }
                 theValues += "]";
 
-                toLog+= (theValues + ";");
+                toLog += (theValues + ";");
+
+                toLog += "\n";
+
+                toLog += "ROLE=;" + role + ";";
+
+                toLog += "MEAN_COMBO_IS_REPAIRED=;";
+
+        		theValues = "[ ";
+                for(int paramIndex = 0; paramIndex < this.getRoleProblems()[roleProblemIndex].getMeanRepaired().length; paramIndex++){
+                    theValues += (this.getRoleProblems()[roleProblemIndex].getMeanRepaired()[paramIndex] + " ");
+                }
+                theValues += "]";
+
+                toLog += (theValues + ";");
+
+                toLog += "\n";
+
+                toLog += "ROLE=;" + role + ";";
+
+                toLog += "MEAN_COMBO_PENALTY=;" + this.getRoleProblems()[roleProblemIndex].getMeanPenalty() + ";";
+
         	}else {
         		toLog+= ("POPULATION=;[];");
         	}

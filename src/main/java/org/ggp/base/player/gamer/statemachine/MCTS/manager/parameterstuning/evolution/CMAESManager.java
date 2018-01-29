@@ -15,7 +15,6 @@ import org.ggp.base.util.Interval;
 import org.ggp.base.util.logging.GamerLogger;
 import org.ggp.base.util.reflection.ProjectSearcher;
 
-import csironi.ggp.course.utils.MyPair;
 import inriacmaes.CMAEvolutionStrategy;
 
 /**
@@ -81,9 +80,16 @@ public class CMAESManager extends ContinuousEvolutionManager {
 	private ValueRescaler valueRescaler;
 
 	/**
-	 * Gives the interval in which we consider feasible the value of any of the variables
+	 * Gives the interval in which we consider feasible the value of any of the variables for the CMA-ES. Before computing
+	 * the fitness of any individual we will re-scale these values to the actual feasible interval of each parameter being
+	 * tuned.
 	 */
 	private Interval cmaEsBoundaries;
+
+	/**
+	 * Re-scaling factor for the penalty that is added to solutions that have been repaired because they were not feasible.
+	 */
+	private double alpha;
 
 	public CMAESManager(GameDependentParameters gameDependentParameters, Random random, GamerSettings gamerSettings,
 			SharedReferencesCollector sharedReferencesCollector) {
@@ -103,6 +109,8 @@ public class CMAESManager extends ContinuousEvolutionManager {
 		}
 
 		this.cmaEsBoundaries = gamerSettings.getDoublePropertyIntervalValue("EvolutionManager.cmaEsBoundaries");
+
+		this.alpha = gamerSettings.getDoublePropertyValue("EvolutionManager.alpha");
 	}
 
 	@Override
@@ -127,11 +135,11 @@ public class CMAESManager extends ContinuousEvolutionManager {
 	 * Returns a new CMA-ES strategy instance and the corresponding initial population that will be used
 	 * to tune the parameters of a role.
 	 */
-	public MyPair<CMAEvolutionStrategy,CompleteMoveStats[]> getInitialCMAESPopulation() {
+	public SelfAdaptiveESProblemRepresentation createRoleProblemWithInitialPopulation() {
 
 		CMAEvolutionStrategy cma = new CMAEvolutionStrategy();
 
-		System.out.println("Before = " + cma.options.stopFitness);
+		//System.out.println("Before = " + cma.options.stopFitness);
 
 		// Is this really necessary? When calling init(), if no properties were read the CMAEvolutionStrategy should find
 		// default values for the properties in the classes CMAParameters and CMAOptions. TODO: verify if this is true.
@@ -155,7 +163,7 @@ public class CMAESManager extends ContinuousEvolutionManager {
         // wrt the last 10+ceil(30*dimensions/lambda) iterations???
         //cma.options.
 
-        System.out.println("After = " + cma.options.stopFitness);
+        //System.out.println("After = " + cma.options.stopFitness);
 
         // Set population size only if specified, otherwise use default
         if(this.populationsSize > 0) {
@@ -181,48 +189,101 @@ public class CMAESManager extends ContinuousEvolutionManager {
         // Sample the initial population
         double[][] pop = cma.samplePopulation();
 
-        // Transform the initial population into a population of statistics for ContinuousMoves
+		// The repaired population
+		double[][] repairedPopulation = new double[pop.length][];
+
+		// For each parameter in each individual, true if it has been repaired, false if it's still the original value.
+		boolean[][] repaired = new boolean[pop.length][];
+
+		double[] penalty = new double[pop.length];
+
+        this.repairPopulationAndComputePenalty(pop, repairedPopulation, repaired, penalty);
+
+        // Transform the initial (repaired) population into a population of statistics for ContinuousMoves
         // (i.e. each individual is represented by an instance of CompleteMoveStats, that contains:
         // 1. the individual as a combination of parameter values rescaled from [-inf,+inf] to its
         // own interval of feasible values
         // 2. the sum of the fitness obtained by all evaluations of the individual
         // 3. the number of times the individual has been evaluated
-		CompleteMoveStats[] population = this.scaleDownPopulation(pop);
-
-		return new MyPair<CMAEvolutionStrategy,CompleteMoveStats[]>(cma,population);
+		return new SelfAdaptiveESProblemRepresentation(cma, this.rescalePopulation(repairedPopulation), repaired, penalty);
 
 	}
 
-	private MyPair<double[][],double[]> repairPopulationAndComputePenalty(double[][] pop){
-
-		double[][] repairedPopulation = new double[pop.length][];
-
-		double[] penalty = new double[pop.length];
+	private void repairPopulationAndComputePenalty(double[][] pop, double[][] repairedPopulation,
+			boolean[][] repaired, double[] penalty){
 
 		for(int individualIndex = 0; individualIndex < pop.length; individualIndex++) {
 
 			repairedPopulation[individualIndex] = new double[pop[individualIndex].length];
-			penalty[individualIndex] = 0;
+			repaired[individualIndex] = new boolean[pop[individualIndex].length];
 
-			double repairedValue;
+			penalty[individualIndex] = this.repairIndividualAndComputePenalty(pop[individualIndex],
+					repairedPopulation[individualIndex], repaired[individualIndex]);
 
-			for(int paramIndex = 0; paramIndex < pop[individualIndex].length; paramIndex++) {
-				// Check if the value is feasible
-				if(this.cmaEsBoundaries.contains(pop[individualIndex][paramIndex])) {
-					repairedPopulation[individualIndex][paramIndex] = pop[individualIndex][paramIndex];
-				}else {
-					repairedValue = this.repairValue(pop[individualIndex][paramIndex]);
-					penalty[individualIndex] = penalty[individualIndex] + this.computePenalty(pop[individualIndex][paramIndex], repairedValue);
+		}
+
+	}
+
+	/**
+	 * Given an individual, fills the array repairedIndividual so that if there is any infeasible value in the
+	 * individual it is substituted with a feasible value. It also memorizes in the repaired array for each
+	 * value whether it was repaired or not and return the penalty for the fitness of the individual.
+	 *
+	 * @param individual
+	 * @param repairedIndividual
+	 * @param repaired
+	 * @return
+	 */
+	private double repairIndividualAndComputePenalty(double[] individual, double[] repairedIndividual, boolean[] repaired){
+
+		double penalty = 0;
+
+		boolean computePenalty = false;
+
+		double[] difference = new double[individual.length];
+
+		for(int paramIndex = 0; paramIndex < individual.length; paramIndex++) {
+			// Check if the value is feasible
+			if(this.cmaEsBoundaries.contains(individual[paramIndex])) {
+				repairedIndividual[paramIndex] = individual[paramIndex];
+				repaired[paramIndex] = false;
+				difference[paramIndex] = 0;
+			}else {
+				if(individual[paramIndex] < this.cmaEsBoundaries.getLeftExtreme()) {
+					repairedIndividual[paramIndex] = this.cmaEsBoundaries.getLeftExtreme();
+				}else { // If it's not included in the interval nor smaller than the left extreme, then it must be greater than the right extreme
+					repairedIndividual[paramIndex] = this.cmaEsBoundaries.getRightExtreme();
 				}
+				repaired[paramIndex] = true;
+				computePenalty = true; // If we repair at least one individual, we have a non-zero penalty to compute
+				difference[paramIndex] = (repairedIndividual[paramIndex] - individual[paramIndex]);
 			}
 		}
 
+		if(computePenalty) {
+			penalty = this.alpha * this.squareNorm(difference);
+		}
 
+		return penalty;
 
+	}
 
+	/**
+	 * Computes the square of the norm of the given vector
+	 *
+	 * @param vector
+	 * @return
+	 */
+	private double squareNorm(double[] vector) {
 
+		double norm = 0;
 
-		return new MyPair<double[][],double[]>(repairedPopulation, penalty);
+		for(int i = 0; i < vector.length; i++) {
+			norm += (vector[i] * vector[i]);
+		}
+
+		return norm;
+
 	}
 
 	/**
@@ -231,7 +292,7 @@ public class CMAESManager extends ContinuousEvolutionManager {
 	 * for each parameter.
 	 * @return
 	 */
-	private CompleteMoveStats[] scaleDownPopulation(double[][] pop) {
+	private CompleteMoveStats[] rescalePopulation(double[][] pop) {
         // Transform the initial population into a population of statistics for ContinuousMoves
         // (i.e. each individual is represented by an instance of CompleteMoveStats, that contains:
         // 1. the individual as a combination of parameter values rescaled from [-inf,+inf] to its
@@ -241,20 +302,19 @@ public class CMAESManager extends ContinuousEvolutionManager {
 		CompleteMoveStats[] population = new CompleteMoveStats[pop.length];
 
 		for(int individualIndex = 0; individualIndex < pop.length; individualIndex++) {
-			population[individualIndex] = this.scaleDownIndividual(pop[individualIndex]);
+			population[individualIndex] = this.rescaleIndividual(pop[individualIndex]);
 		}
 
 		return population;
 	}
 
-	private CompleteMoveStats scaleDownIndividual(double[] individual) {
+	private CompleteMoveStats rescaleIndividual(double[] individual) {
 		double[] rescaledValuesOfIndividual = new double[individual.length];
 		for(int paramIndex = 0; paramIndex < individual.length; paramIndex++) {
-			rescaledValuesOfIndividual[paramIndex] =
-					new org.ggp.base.player.gamer.statemachine.MCTS.manager.parameterstuning.utils.Utils().mapToInterval(
-							this.continuousParametersManager.getPossibleValuesInterval(paramIndex).getRightExtreme(),
-							this.continuousParametersManager.getPossibleValuesInterval(paramIndex).getLeftExtreme(),
-							individual[paramIndex]);
+			rescaledValuesOfIndividual[paramIndex] = this.valueRescaler.mapToInterval(individual[paramIndex],
+					this.cmaEsBoundaries.getLeftExtreme(), this.cmaEsBoundaries.getRightExtreme(),
+					this.continuousParametersManager.getPossibleValuesInterval(paramIndex).getLeftExtreme(),
+					this.continuousParametersManager.getPossibleValuesInterval(paramIndex).getRightExtreme());
 		}
 		return new CompleteMoveStats(new ContinuousMove(rescaledValuesOfIndividual));
 
@@ -264,22 +324,38 @@ public class CMAESManager extends ContinuousEvolutionManager {
 
 		// If a role problem is passed to this function we know that the CMA-ES has not been stopped yet for the role
 
-		roleProblem.getCMAEvolutionStrategy().updateDistribution(this.computeFitness(roleProblem.getPopulation()));
+		roleProblem.getCMAEvolutionStrategy().updateDistribution(this.computeFitness(roleProblem));
 
-		if(roleProblem.getCMAEvolutionStrategy().stopConditions.getNumber() > 0) { // Stop optimization
+		if(roleProblem.getCMAEvolutionStrategy().stopConditions.getNumber() > 0) { // Stop optimization and return mean solution to be evaluated
 
 			String toLog = "Terminating role instance due to";
 			for (String s : roleProblem.getCMAEvolutionStrategy().stopConditions.getMessages())
 				toLog += ("  " + s);
 			GamerLogger.log("CMAESManager", toLog);
 
-			roleProblem.setPopulation(null);
+			roleProblem.setPopulation(null, null, null);
 			roleProblem.resetTotalUpdates();
-			roleProblem.setMeanValueCombo(this.scaleDownIndividual(roleProblem.getCMAEvolutionStrategy().getMeanX()));
+
+			double[] meanX = roleProblem.getCMAEvolutionStrategy().getMeanX();
+			double[] repairedMeanX = new double[meanX.length];
+			boolean[] repaired = new boolean[meanX.length];
+			double meanPenalty = this.repairIndividualAndComputePenalty(meanX, repairedMeanX, repaired);
+
+			roleProblem.setMeanValueCombo(this.rescaleIndividual(repairedMeanX), repaired, meanPenalty);
 
 		}else { // Get new population
 
 			double[][] pop = roleProblem.getCMAEvolutionStrategy().samplePopulation();
+
+			// The repaired population
+			double[][] repairedPopulation = new double[pop.length][];
+
+			// For each parameter in each individual, true if it has been repaired, false if it's still the original value.
+			boolean[][] repaired = new boolean[pop.length][];
+
+			double[] penalty = new double[pop.length];
+
+	        this.repairPopulationAndComputePenalty(pop, repairedPopulation, repaired, penalty);
 
 	        // Transform the initial population into a population of statistics for ContinuousMoves
 	        // (i.e. each individual is represented by an instance of CompleteMoveStats, that contains:
@@ -287,22 +363,22 @@ public class CMAESManager extends ContinuousEvolutionManager {
 	        // own interval of feasible values
 	        // 2. the sum of the fitness obtained by all evaluations of the individual
 	        // 3. the number of times the individual has been evaluated
-			roleProblem.setPopulation(this.scaleDownPopulation(pop));
+			roleProblem.setPopulation(this.rescalePopulation(repairedPopulation), repaired, penalty);
 			roleProblem.resetTotalUpdates();
 
 		}
 
 	}
 
-	private double[] computeFitness(CompleteMoveStats[] population) {
-		double[] fitness = new double[population.length];
+	private double[] computeFitness(SelfAdaptiveESProblemRepresentation roelProblem) {
+		double[] fitness = new double[roelProblem.getPopulation().length];
 
 		String popString = "POPULATION = ";
 		String fitString = "FITNESS = [";
 
-		for(int individualIndex = 0; individualIndex < population.length; individualIndex++) {
+		for(int individualIndex = 0; individualIndex < roelProblem.getPopulation().length; individualIndex++) {
 
-			ContinuousMove combo = (ContinuousMove) population[individualIndex].getTheMove();
+			ContinuousMove combo = (ContinuousMove) roelProblem.getPopulation()[individualIndex].getTheMove();
 			popString += "[";
 			for(int paramIndex = 0; paramIndex < combo.getContinuousMove().length; paramIndex++) {
 				popString += (" " + combo.getContinuousMove()[paramIndex]);
@@ -310,11 +386,12 @@ public class CMAESManager extends ContinuousEvolutionManager {
 			popString += " ]";
 
 			// Compute fitness and invert it (i.e. fitness=-score) because CMA-ES minimizes the function, while we want to maximize
-			if(population[individualIndex].getVisits() <= 0) {
-				GamerLogger.logError("EvolutionManager", "CMAESManager - Impossible to compute fitness of population. Found individual with no visits (visits=" + population[individualIndex].getVisits() + ") to compute its fitness.");
-				throw new RuntimeException("CMAESManager - Impossible to compute fitness of population. Found individual with no visits (visits=" + population[individualIndex].getVisits() + ") to compute its fitness.");
+			// Also, add the penalty that was computed in advance
+			if(roelProblem.getPopulation()[individualIndex].getVisits() <= 0) {
+				GamerLogger.logError("EvolutionManager", "CMAESManager - Impossible to compute fitness of population. Found individual with no visits (visits=" + roelProblem.getPopulation()[individualIndex].getVisits() + ") to compute its fitness.");
+				throw new RuntimeException("CMAESManager - Impossible to compute fitness of population. Found individual with no visits (visits=" + roelProblem.getPopulation()[individualIndex].getVisits() + ") to compute its fitness.");
 			}
-			fitness[individualIndex] = -(population[individualIndex].getScoreSum()/((double)population[individualIndex].getVisits())); // -0.0 shouldn't be a problem here right?
+			fitness[individualIndex] = ( -(roelProblem.getPopulation()[individualIndex].getScoreSum()/((double)roelProblem.getPopulation()[individualIndex].getVisits())) ) + roelProblem.getPenalty()[individualIndex]; // -0.0 shouldn't be a problem here right?
 
 			fitString += (" " + fitness[individualIndex]);
 
@@ -336,17 +413,25 @@ public class CMAESManager extends ContinuousEvolutionManager {
 			GamerLogger.logError("EvolutionManager", "CMAESManager - Impossible to set fitness of mean value. The individual with mean value has no positive numebr of visits (visits=" + roleProblem.getMeanValueCombo().getVisits() + ") to compute its fitness.");
 			throw new RuntimeException("CMAESManager - Impossible to set fitness of mean value. The individual with mean value has no positive numebr of visits (visits=" + roleProblem.getMeanValueCombo().getVisits() + ") to compute its fitness.");
 		}
-		double meanFitness = -(roleProblem.getMeanValueCombo().getScoreSum()/((double)roleProblem.getMeanValueCombo().getVisits()));
+		double meanFitness = ( -(roleProblem.getMeanValueCombo().getScoreSum()/((double)roleProblem.getMeanValueCombo().getVisits())) ) + roleProblem.getMeanPenalty();
 
-		roleProblem.setMeanValueCombo(null);
+		roleProblem.setMeanValueCombo(null, null, 0);
 
-		return this.scaleDownIndividual(roleProblem.getCMAEvolutionStrategy().setFitnessOfMeanX(meanFitness).getX());
+		// Update fitness of mean solution and get best solution
+		double[] bestX = roleProblem.getCMAEvolutionStrategy().setFitnessOfMeanX(meanFitness).getX();
+		// It might be possible that the solution is infeasible, so check if it needs to be repaired
+		double[] repairedBestX = new double[bestX.length];
+		boolean[] repaired = new boolean[bestX.length];
+		// For the best solution we will not update the fitness, so here we don't need to memorize any possible penalty
+		this.repairIndividualAndComputePenalty(bestX, repairedBestX, repaired);
+
+		return this.rescaleIndividual(repairedBestX);
 
 	}
 
 	public CompleteMoveStats updatePopulationFitnessAndGetBestSoFar(SelfAdaptiveESProblemRepresentation roleProblem) {
 
-		roleProblem.getCMAEvolutionStrategy().updateDistribution(this.computeFitness(roleProblem.getPopulation()));
+		roleProblem.getCMAEvolutionStrategy().updateDistribution(this.computeFitness(roleProblem));
 
 		return this.getBestSoFar(roleProblem);
 
@@ -355,11 +440,21 @@ public class CMAESManager extends ContinuousEvolutionManager {
 	public CompleteMoveStats getBestSoFar(SelfAdaptiveESProblemRepresentation roleProblem) {
 
 		// Return the best combination found so far
+
+		double[] X;
 		if(this.useMean) {
-			return this.scaleDownIndividual(roleProblem.getCMAEvolutionStrategy().getMeanX());
+			X = roleProblem.getCMAEvolutionStrategy().getMeanX();
 		}else {
-			return this.scaleDownIndividual(roleProblem.getCMAEvolutionStrategy().getBestX());
+			X = roleProblem.getCMAEvolutionStrategy().getBestX();
 		}
+
+		// It might be possible that the solution is infeasible, so check if it needs to be repaired
+		double[] repairedX = new double[X.length];
+		boolean[] repaired = new boolean[X.length];
+		// For the best solution we will not update the fitness, so here we don't need to memorize any possible penalty
+		this.repairIndividualAndComputePenalty(X, repairedX, repaired);
+
+		return this.rescaleIndividual(repairedX);
 
 	}
 
@@ -371,6 +466,7 @@ public class CMAESManager extends ContinuousEvolutionManager {
 		String params = indentation + "USE_MEAN = " + this.useMean +
 				indentation + "VALUE_RESCALER = " + this.valueRescaler.printComponent(indentation + "  ") +
 				indentation + "CMA_ES_BOUNDARIES = " + this.cmaEsBoundaries.toString() +
+				indentation + "ALPHA = " + this.alpha +
 				indentation + "INITIAL_STANDARD_DEVIATION = " + (0.3*(this.cmaEsBoundaries.getRightExtreme()-this.cmaEsBoundaries.getLeftExtreme())) +
 				indentation + "INITIAL_X = " + (0.5*(this.cmaEsBoundaries.getRightExtreme()-this.cmaEsBoundaries.getLeftExtreme()));
 
@@ -381,5 +477,27 @@ public class CMAESManager extends ContinuousEvolutionManager {
 		}
 
 	}
+
+
+	/*
+	public static void main(String args[]) {
+
+		double[] a = new double[]{0.3, 0.5, 0.7, 0.8};
+
+		System.out.println(sqNorm(a));
+	}
+
+	private static double sqNorm(double[] vector) {
+
+		double norm = 0;
+
+		for(int i = 0; i < vector.length; i++) {
+			norm += (vector[i] * vector[i]);
+		}
+
+		return norm;
+
+	}
+	*/
 
 }

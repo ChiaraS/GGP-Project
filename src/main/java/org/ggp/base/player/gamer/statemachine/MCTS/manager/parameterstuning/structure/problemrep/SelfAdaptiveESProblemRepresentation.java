@@ -40,6 +40,17 @@ public class SelfAdaptiveESProblemRepresentation extends EvoProblemRepresentatio
 	private CMAEvolutionStrategy cmaes;
 
 	/**
+	 * For each individual in the population, for each of its parameters, true if the parameter
+	 * has been repaired, false if it has its original value.
+	 */
+	private boolean[][] repaired;
+
+	/**
+	 * Penalty that will be added to the fitness of the repaired individuals.
+	 */
+	private double[] penalty;
+
+	/**
 	 * True if CMA-ES stopped execution for this role problem. If true, the population of this
 	 * role problem shouldn't be accessed anymore and the best value found by CMA-ES should be
 	 * used instead for the remaining simulations.
@@ -50,6 +61,17 @@ public class SelfAdaptiveESProblemRepresentation extends EvoProblemRepresentatio
 	 * Combination corresponding to the mean value of the distribution computed by CMA-ES.
 	 */
 	private CompleteMoveStats meanValueCombo;
+
+	/**
+	 * For each parameter in the meanValueCombo, true if the parameter has been repaired,
+	 * false if it has its original value.
+	 */
+	private boolean[] meanRepaired;
+
+	/**
+	 * Penalty that will be added to the fitness of the repaired individuals.
+	 */
+	private double meanPenalty;
 
 	/**
 	 * Unordered list of indices of the individuals in the population.
@@ -74,18 +96,13 @@ public class SelfAdaptiveESProblemRepresentation extends EvoProblemRepresentatio
 	private int evalRepetitionsCount;
 
 	/**
-	 * For each individual in the population, for each of its parameters, true if the parameter
-	 * has been repaired, false if it has its original value.
-	 */
-	private boolean[][] repaired;
-
-	/**
 	 *
 	 * @param population must correspond to the initial population created by cmaes, BUT with values
 	 * for the parameters already rescaled in their feasible values and not in [-inf;+inf].
 	 * @param cmaes must be already initialized and ready to be used.
 	 */
-	public SelfAdaptiveESProblemRepresentation(CMAEvolutionStrategy cmaes, CompleteMoveStats[] population, boolean[][] repaired) {
+	public SelfAdaptiveESProblemRepresentation(CMAEvolutionStrategy cmaes, CompleteMoveStats[] population,
+			boolean[][] repaired, double[] penalty) {
 
 		super(population);
 
@@ -97,11 +114,13 @@ public class SelfAdaptiveESProblemRepresentation extends EvoProblemRepresentatio
 
 		this.repaired = repaired;
 
+		this.penalty = penalty;
+
 	}
 
-	public void setPopulation(CompleteMoveStats[] population, boolean[][] repaired){
+	public void setPopulation(CompleteMoveStats[] population, boolean[][] repaired, double[] penalty){
 		this.population = population;
-		if(population.length > 1) {
+		if(population != null) {
 			this.setIteratorForNewPopulation();
 		}else {
 			this.unorderedIndividualsIndices = null;
@@ -109,6 +128,7 @@ public class SelfAdaptiveESProblemRepresentation extends EvoProblemRepresentatio
 			this.evalRepetitionsCount = 0;
 		}
 		this.repaired = repaired;
+		this.penalty = penalty;
 	}
 
 	private void setIteratorForNewPopulation() {
@@ -116,8 +136,8 @@ public class SelfAdaptiveESProblemRepresentation extends EvoProblemRepresentatio
 		for(int individualIndex = 0; individualIndex < this.population.length; individualIndex++) {
 			this.unorderedIndividualsIndices.add(new Integer(individualIndex));
 		}
-		this.evalRepetitionsCount = 0;
-		this.startNewIterationOverPopulation();
+		this.evalRepetitionsCount = -1;
+		this.currentIndex = this.unorderedIndividualsIndices.size()-1;
 	}
 
 	private void startNewIterationOverPopulation() {
@@ -149,13 +169,26 @@ public class SelfAdaptiveESProblemRepresentation extends EvoProblemRepresentatio
 		return this.meanValueCombo;
 	}
 
-	public void setMeanValueCombo(CompleteMoveStats meanValueCombo) {
+	public void setMeanValueCombo(CompleteMoveStats meanValueCombo, boolean[] meanRepaired, double meanPenalty) {
 		this.meanValueCombo = meanValueCombo;
-
+		this.meanRepaired = meanRepaired;
+		this.meanPenalty = meanPenalty;
 	}
 
 	public boolean[][] getRepaired(){
 		return this.repaired;
+	}
+
+	public double[] getPenalty(){
+		return this.penalty;
+	}
+
+	public boolean[] getMeanRepaired(){
+		return this.meanRepaired;
+	}
+
+	public double getMeanPenalty(){
+		return this.meanPenalty;
 	}
 
 	/*
