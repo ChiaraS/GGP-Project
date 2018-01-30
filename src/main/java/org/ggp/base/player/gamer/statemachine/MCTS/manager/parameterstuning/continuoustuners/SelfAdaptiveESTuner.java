@@ -346,24 +346,35 @@ public class SelfAdaptiveESTuner extends ContinuousParametersTuner {
         	// individuals the expected amount of times.
         	if(this.getRoleProblems()[roleProblemIndex].getPopulation() != null) {
 
-        		// Advance to the next combination to evaluate.
-        		// Note that to make the code simpler we should advance at the end of the updateStatistics() method,
-        		// however, at the moment there is still the possibility to set the TunerBeforeSimulationStrategy
-        		// to change combination only after a batch of N simulations by calling setNextCombinations only once
-        		// every N simulations, but calling updateStatistics() for each of the N simulations. If we would
-        		// advance to the next combination in the updateStatistics() method and at the same time set the
-        		// TunerBeforeSimulationStrategy to set the next combination only every N simulation we would advance
-        		// N times anyway without actually evaluating the combinations.
-        		this.getRoleProblems()[roleProblemIndex].advanceIterator();
-
-        		// Check if we evaluated the population for the given number of iterations
-        		if(this.getRoleProblems()[roleProblemIndex].getEvalRepetitionsCount() == this.evalRepetitions) {
+        		// Advance to the next combination to evaluate and if null it means we finished evaluating the
+        		// population, so we have to evolve it.
+        		// Note that to make the code simpler we should advance to the next combination at the end of the
+        		// updateStatistics() method, however, at the moment there is still the possibility to set the
+        		// TunerBeforeSimulationStrategy to change combination only after a batch of N simulations by calling
+        		// setNextCombinations only once every N simulations, but calling updateStatistics() for each of the
+        		// N simulations. If we would advance to the next combination in the updateStatistics() method and at
+        		// the same time set the TunerBeforeSimulationStrategy to set the next combination only every N
+        		// simulations we would advance N times anyway without actually evaluating the combinations.
+        		if(this.getRoleProblems()[roleProblemIndex].advanceToNextIndividual(this.evalRepetitions) == null) {
 
         			// If yes, evolve the population
         			this.cmaesManager.evolvePopulation(this.getRoleProblems()[roleProblemIndex]);
 
                     if(this.logPopulations){
                         this.logPopulation(roleProblemIndex);
+                    }
+
+                    // If we evolved the population and if we have a new population, we have to advance again to the
+                    // next individual that must be evaluated, because the iteration is reset and the index isn't
+                    // pointing to any combination yet (index == -1).
+                    if(this.getRoleProblems()[roleProblemIndex].getPopulation() != null) {
+                    	// To be sure, check that the next individual is not null. Note that if this happens there must
+                    	// be a problem in the code, because either the evolved population has popSize individuals, or
+                    	// it is null because now we want to evaluate the mean solution.
+                    	if(this.getRoleProblems()[roleProblemIndex].advanceToNextIndividual(this.evalRepetitions) == null) {
+                    		GamerLogger.logError("ParametersTuner", "SelfAdaptiveESTuner - Impossible to set next individual for a role problem. The evolved population is null!");
+        	                throw new RuntimeException("SelfAdaptiveESTuner - Impossible to set next individual for a role problem. The evolved population is null!");
+                    	}// ...otherwise we have advanced to the next individual
                     }
         		}
         	}
@@ -687,14 +698,22 @@ public class SelfAdaptiveESTuner extends ContinuousParametersTuner {
 
                 toLog += "MEAN_COMBO_PENALTY=;" + this.getRoleProblems()[roleProblemIndex].getMeanPenalty() + ";";
 
+                toLog += "\n";
+
         	}else {
-        		toLog+= ("POPULATION=;[];");
+
+        		toLog += "ROLE=;" + role + ";";
+
+        		toLog += ("POPULATION=;[];");
+
+                toLog += "\n";
+
         	}
 
-        	toLog += "\n";
         }
 
         GamerLogger.log(GamerLogger.FORMAT.CSV_FORMAT, "Populations", toLog);
+        GamerLogger.log(GamerLogger.FORMAT.CSV_FORMAT, "Populations", "\n");
 
 
     }
@@ -793,6 +812,29 @@ public class SelfAdaptiveESTuner extends ContinuousParametersTuner {
             params += indentation + "best_combinations_indices = " + bestCombinationsString;
         }else{
             params += indentation + "best_combinations_indices = null";
+        }
+
+        if(this.roleProblems != null){
+            String initialXsString = "[ ";
+
+            for(int i = 0; i < this.roleProblems.length; i++){
+
+                String singleInitialXString = "[ ";
+                for(int j = 0; j < this.roleProblems[i].getCMAEvolutionStrategy().getInitialX().length; j++) {
+                	singleInitialXString += this.roleProblems[i].getCMAEvolutionStrategy().getInitialX()[j] + " ";
+                }
+
+                singleInitialXString += "]";
+
+                initialXsString += singleInitialXString + " ";
+
+            }
+
+            initialXsString += "]";
+
+            params += indentation + "initial_cmaes_solutions = " + initialXsString;
+        }else{
+            params += indentation + "selected_combinations_indices = null";
         }
 
         if(superParams != null){

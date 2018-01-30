@@ -53,6 +53,18 @@ import inriacmaes.CMAEvolutionStrategy;
 public class CMAESManager extends ContinuousEvolutionManager {
 
 	/**
+	 * True if the initial solution must be set as a random point in the cmaEsBoundaries interval for each
+	 * parameter, false if it must be the central point of the interval (i.e. (rightExtreme + leftExtreme)/2).
+	 */
+	private boolean randomInitialSolution;
+
+	/**
+	 * If true we set to -1 the threshold on the fitness difference between solutions named stopTolFunHist.
+	 * This means that CMA-ES will keep tuning even if the observed difference in fitness is very low or even null.
+	 */
+	private boolean disableStopTolFunHistTermination;
+
+	/**
 	 * True if when returning a solution before the CMA-ES algorithm has terminated we want to return the
 	 * mean value, even if it has not been evaluated yet. The mean value is expected to have the best fitness,
 	 * however if the tuning was interrupted before we could have the chance to evaluate it, we cannot know for
@@ -94,6 +106,10 @@ public class CMAESManager extends ContinuousEvolutionManager {
 	public CMAESManager(GameDependentParameters gameDependentParameters, Random random, GamerSettings gamerSettings,
 			SharedReferencesCollector sharedReferencesCollector) {
 		super(gameDependentParameters, random, gamerSettings, sharedReferencesCollector);
+
+		this.randomInitialSolution =  gamerSettings.getBooleanPropertyValue("EvolutionManager.randomInitialSolution");
+
+		this.disableStopTolFunHistTermination = gamerSettings.getBooleanPropertyValue("EvolutionManager.disableStopTolFunHistTermination");
 
 		this.useMean = gamerSettings.getBooleanPropertyValue("EvolutionManager.useMean");
 
@@ -153,15 +169,29 @@ public class CMAESManager extends ContinuousEvolutionManager {
         cma.setDimension(this.continuousParametersManager.getNumTunableParameters()); // overwrite some loaded properties
         // Set initial standard deviation (same as in default settings file)
         cma.setInitialStandardDeviation(0.3*(this.cmaEsBoundaries.getRightExtreme()-this.cmaEsBoundaries.getLeftExtreme()));
-        // Set initial X (same as in default settings file)
-        cma.setInitialX(0.5*(this.cmaEsBoundaries.getRightExtreme()-this.cmaEsBoundaries.getLeftExtreme()));
+        if(this.randomInitialSolution) {
+        	// Set initial X by getting random value in the cmaEsBoundaries interval for each parameter
+        	double[] l = new double[this.continuousParametersManager.getNumTunableParameters()];
+        	double[] u = new double[this.continuousParametersManager.getNumTunableParameters()];
+        	for(int paramIndex = 0; paramIndex < this.continuousParametersManager.getNumTunableParameters(); paramIndex++) {
+        		l[paramIndex] = this.cmaEsBoundaries.getLeftExtreme();
+        		u[paramIndex] = this.cmaEsBoundaries.getRightExtreme();
+        	}
+
+        	cma.setInitialX(l, u);
+
+        }else {
+        	// Set initial X (same as in default settings file)
+        	cma.setInitialX(0.5*(this.cmaEsBoundaries.getRightExtreme()+this.cmaEsBoundaries.getLeftExtreme()));
+        }
         // Set minimum fitness we want to reach
         cma.options.stopFitness = -101.0;
         // Set to off the logging on file of the CMA-ES instance
         cma.options.writeDisplayToFile = 0;
-        // Set minimum change in function value that must be observed for current population
-        // wrt the last 10+ceil(30*dimensions/lambda) iterations???
-        //cma.options.
+        // Disable minimum change in function value that must be observed
+        if(this.disableStopTolFunHistTermination) {
+        	cma.options.stopTolFunHist = -1;
+        }
 
         //System.out.println("After = " + cma.options.stopFitness);
 
@@ -370,39 +400,39 @@ public class CMAESManager extends ContinuousEvolutionManager {
 
 	}
 
-	private double[] computeFitness(SelfAdaptiveESProblemRepresentation roelProblem) {
-		double[] fitness = new double[roelProblem.getPopulation().length];
+	private double[] computeFitness(SelfAdaptiveESProblemRepresentation roleProblem) {
+		double[] fitness = new double[roleProblem.getPopulation().length];
 
-		String popString = "POPULATION = ";
-		String fitString = "FITNESS = [";
+		//String popString = "POPULATION = ";
+		//String fitString = "FITNESS = [";
 
-		for(int individualIndex = 0; individualIndex < roelProblem.getPopulation().length; individualIndex++) {
+		for(int individualIndex = 0; individualIndex < roleProblem.getPopulation().length; individualIndex++) {
 
-			ContinuousMove combo = (ContinuousMove) roelProblem.getPopulation()[individualIndex].getTheMove();
-			popString += "[";
-			for(int paramIndex = 0; paramIndex < combo.getContinuousMove().length; paramIndex++) {
-				popString += (" " + combo.getContinuousMove()[paramIndex]);
-			}
-			popString += " ]";
+			//ContinuousMove combo = (ContinuousMove) roleProblem.getPopulation()[individualIndex].getTheMove();
+			//popString += "[";
+			//for(int paramIndex = 0; paramIndex < combo.getContinuousMove().length; paramIndex++) {
+			//	popString += (" " + combo.getContinuousMove()[paramIndex]);
+			//}
+			//popString += " ]";
 
 			// Compute fitness and invert it (i.e. fitness=-score) because CMA-ES minimizes the function, while we want to maximize
 			// Also, add the penalty that was computed in advance
-			if(roelProblem.getPopulation()[individualIndex].getVisits() <= 0) {
-				GamerLogger.logError("EvolutionManager", "CMAESManager - Impossible to compute fitness of population. Found individual with no visits (visits=" + roelProblem.getPopulation()[individualIndex].getVisits() + ") to compute its fitness.");
-				throw new RuntimeException("CMAESManager - Impossible to compute fitness of population. Found individual with no visits (visits=" + roelProblem.getPopulation()[individualIndex].getVisits() + ") to compute its fitness.");
+			if(roleProblem.getPopulation()[individualIndex].getVisits() <= 0) {
+				GamerLogger.logError("EvolutionManager", "CMAESManager - Impossible to compute fitness of population. Found individual with no visits (visits=" + roleProblem.getPopulation()[individualIndex].getVisits() + ") to compute its fitness.");
+				throw new RuntimeException("CMAESManager - Impossible to compute fitness of population. Found individual with no visits (visits=" + roleProblem.getPopulation()[individualIndex].getVisits() + ") to compute its fitness.");
 			}
-			fitness[individualIndex] = ( -(roelProblem.getPopulation()[individualIndex].getScoreSum()/((double)roelProblem.getPopulation()[individualIndex].getVisits())) ) + roelProblem.getPenalty()[individualIndex]; // -0.0 shouldn't be a problem here right?
+			fitness[individualIndex] = ( -(roleProblem.getPopulation()[individualIndex].getScoreSum()/((double)roleProblem.getPopulation()[individualIndex].getVisits())) ) + roleProblem.getPenalty()[individualIndex]; // -0.0 shouldn't be a problem here right?
 
-			fitString += (" " + fitness[individualIndex]);
+			//fitString += (" " + fitness[individualIndex]);
 
 		}
 
-		fitString += " ]";
+		//fitString += " ]";
 
-		System.out.println();
-		System.out.println(popString);
-		System.out.println(fitString);
-		System.out.println();
+		//System.out.println();
+		//System.out.println(popString);
+		//System.out.println(fitString);
+		//System.out.println();
 
 		return fitness;
 	}
@@ -463,12 +493,13 @@ public class CMAESManager extends ContinuousEvolutionManager {
 
 		String superParams = super.getComponentParameters(indentation);
 
-		String params = indentation + "USE_MEAN = " + this.useMean +
+		String params = indentation + "RANDOM_INITIAL_SOLUTION = " + this.randomInitialSolution +
+				indentation + "DISABLE_STOP_TOL_FUN_HIST_TERMIANTION = " + this.disableStopTolFunHistTermination +
+				indentation + "USE_MEAN = " + this.useMean +
 				indentation + "VALUE_RESCALER = " + this.valueRescaler.printComponent(indentation + "  ") +
 				indentation + "CMA_ES_BOUNDARIES = " + this.cmaEsBoundaries.toString() +
 				indentation + "ALPHA = " + this.alpha +
-				indentation + "INITIAL_STANDARD_DEVIATION = " + (0.3*(this.cmaEsBoundaries.getRightExtreme()-this.cmaEsBoundaries.getLeftExtreme())) +
-				indentation + "INITIAL_X = " + (0.5*(this.cmaEsBoundaries.getRightExtreme()-this.cmaEsBoundaries.getLeftExtreme()));
+				indentation + "INITIAL_STANDARD_DEVIATION = " + (0.3*(this.cmaEsBoundaries.getRightExtreme()-this.cmaEsBoundaries.getLeftExtreme()));
 
 		if(superParams != null){
 			return superParams + params;

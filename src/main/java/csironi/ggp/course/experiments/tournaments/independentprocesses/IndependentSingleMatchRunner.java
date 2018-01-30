@@ -47,6 +47,7 @@ public class IndependentSingleMatchRunner {
 	 * [startClock(sec)] = start clock of the match (in seconds)
 	 * [playClock(sec)] = play clock of the match (in seconds)
 	 * [pnCreationTime(ms)] = available time to create the propnet (in milliseconds)
+	 * [logOnlyEssentialFiles] = true if we want to log only essential files (the "Stats.csv" file), false otherwise
 	 * [theGamerTypes (one or more)] = list (with repetitions) of gamer types that we want to include in the experiment, in the order in
 	 * which we want to assign them to the roles in the game. Each gamer must be specified with the exact name of the class that implements
 	 * such gamer. If the gamer is a subclass of the ConfigurableStateMachineGamer it must be specified with the exact name of the class
@@ -76,6 +77,7 @@ public class IndependentSingleMatchRunner {
 		int startClock;
 		int playClock;
 		long pnCreationTime;
+		boolean logOnlyEssentialFiles;
 		List<Class<?>> theGamersClasses = new ArrayList<Class<?>>();
 
 		logFolder = args[0];
@@ -127,41 +129,48 @@ public class IndependentSingleMatchRunner {
 		try{
 			pnCreationTime = Long.parseLong(args[6]);
 		}catch(NumberFormatException e){
-			System.out.println("Impossible to start match runner, wrong input. The propnet creation time must be an long value, not " + args[6] + ".");
+			System.out.println("Impossible to start match runner, wrong input. The propnet creation time must be a long value, not " + args[6] + ".");
+			return;
+		}
+
+		try{
+			logOnlyEssentialFiles = Boolean.parseBoolean(args[7]);
+		}catch(NumberFormatException e){
+			System.out.println("Impossible to start match runner, wrong input. The logOnlyEssentialFiles parameter must be a boolean value, not " + args[7] + ".");
 			return;
 		}
 
 		boolean buildPropnet = false;
-		String[] gamerTypes = new String[args.length-7];
+		String[] gamerTypes = new String[args.length-8];
 		// If the gamer has no associated setting, then the corresponding entry is null
-		String[] gamerSettings = new String[args.length-7];
-		String[] gamerNames = new String[args.length-7];
-		String[] gamerHosts = new String[args.length-7];
-		int[] gamerPorts = new int[args.length-7];
+		String[] gamerSettings = new String[args.length-8];
+		String[] gamerNames = new String[args.length-8];
+		String[] gamerHosts = new String[args.length-8];
+		int[] gamerPorts = new int[args.length-8];
 
-    	for (int i = 7; i < args.length; i++){
+    	for (int i = 8; i < args.length; i++){
 
     		String[] s = args[i].split("-");
 
     		if(s.length == 1){ // Internal gamer without settings
-    			gamerTypes[i-7] = s[0];
-    			gamerSettings[i-7] = null;
-    			gamerNames[i-7] = null;
-    			gamerHosts[i-7] = null;
-    			gamerPorts[i-7] = -1;
+    			gamerTypes[i-8] = s[0];
+    			gamerSettings[i-8] = null;
+    			gamerNames[i-8] = null;
+    			gamerHosts[i-8] = null;
+    			gamerPorts[i-8] = -1;
     		}else if(s.length == 2){ // Internal gamer with settings
-    			gamerTypes[i-7] = s[0];
-    			gamerSettings[i-7] = s[1];
-    			gamerNames[i-7] = null;
-    			gamerHosts[i-7] = null;
-    			gamerPorts[i-7] = -1;
+    			gamerTypes[i-8] = s[0];
+    			gamerSettings[i-8] = s[1];
+    			gamerNames[i-8] = null;
+    			gamerHosts[i-8] = null;
+    			gamerPorts[i-8] = -1;
     		}else if(s.length == 3){// External gamer with host and port
-    			gamerTypes[i-7] = null;
-    			gamerSettings[i-7] = null;
-    			gamerNames[i-7] = s[0];
-    			gamerHosts[i-7] = s[1];
+    			gamerTypes[i-8] = null;
+    			gamerSettings[i-8] = null;
+    			gamerNames[i-8] = s[0];
+    			gamerHosts[i-8] = s[1];
     			try{
-    				gamerPorts[i-7] = Integer.parseInt(s[2]);
+    				gamerPorts[i-8] = Integer.parseInt(s[2]);
     			}catch(NumberFormatException e){
     				System.out.println("Impossible to start match runner, wrong input. The port for player " + s[0] + " must be an integer value, not " + s[2] + ".");
     				return;
@@ -223,6 +232,10 @@ public class IndependentSingleMatchRunner {
 			ThreadContext.put("LOG_FOLDER", logFolder + "/" + "MatchRunner" + startID);
 		}
 
+		if(logOnlyEssentialFiles) {
+    		// Add to the files that we want to log only the Stats.csv file
+    		GamerLogger.setEssentialLogFileName("Stats");
+    	}
 		GamerLogger.startFileLogging();
 
 		GamerLogger.log("MatchRunner", "Started MatchRunner " + startID + ".");

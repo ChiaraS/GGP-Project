@@ -100,6 +100,8 @@ public class IndependentTourneyRunner {
 		// greater than 0 even if we don't have a previously created folder of stats for the tourney. The different runs will be performed
 		// in parallel and merged together later.
 		boolean continueOldExperiment = false;
+		// True if we want to log only essential files, false otherwise (false by default if not specified otherwise)
+		boolean logOnlyEssentialFiles = false;
 
 		// Map that for each external gamer contains the manager of available addresses (IP+port) on which the external gamer
 		// is listening for connections.
@@ -254,6 +256,10 @@ public class IndependentTourneyRunner {
 				timeID = System.currentTimeMillis();
 			}
 
+			if(props.getProperty("logOnlyEssentialFiles") != null) {
+				logOnlyEssentialFiles = Boolean.parseBoolean(props.getProperty("logOnlyEssentialFiles"));
+			}
+
 		} catch (IOException | NumberFormatException e) {
 			System.out.println("Impossible to perform experiment, cannot correctly read/write the .properties file for the tourney.");
 			e.printStackTrace();
@@ -288,6 +294,10 @@ public class IndependentTourneyRunner {
 	    	/** 2. Officially start the tourney and start logging. **/
 
 	    	ThreadContext.put("LOG_FOLDER", mainLogFolder);
+	    	if(logOnlyEssentialFiles) {
+	    		// Add to the files that we want to log only the Stats.csv file
+	    		GamerLogger.setEssentialLogFileName("Stats");
+	    	}
 	    	GamerLogger.startFileLogging();
 
 	    	String gamerTypesList = "[ ";
@@ -359,7 +369,7 @@ public class IndependentTourneyRunner {
 	    		GamerLogger.log("TourneyRunner" + runNumber, "Starting sub-tourney for combination " + comboIndices + ".");
 
 	    		ThreadContext.put("LOG_FOLDER", mainLogFolder + "/Combination" + comboIndices);
-	    		boolean completed = runMatchesForCombination(runNumber, gameKey, startClock, playClock, pnCreationTime, theComboGamersTypes, numParallelMatches, numMatchRunners, numSequentialMatches, externalGamersManagers);
+	    		boolean completed = runMatchesForCombination(runNumber, gameKey, startClock, playClock, pnCreationTime, theComboGamersTypes, numParallelMatches, numMatchRunners, numSequentialMatches, externalGamersManagers, logOnlyEssentialFiles);
 	    		ThreadContext.put("LOG_FOLDER", mainLogFolder);
 
 	    		if(completed){
@@ -407,7 +417,7 @@ public class IndependentTourneyRunner {
 
 	private static boolean runMatchesForCombination(int runNumber, String gameKey, int startClock, int playClock,
 			long pnCreationTime, List<String> theGamersTypes, int numParallelMatches, int numMatchRunners,
-			int numSequentialMatches, Map<String,ExternalGamerAvailabilityManager> externalGamersManagers){
+			int numSequentialMatches, Map<String,ExternalGamerAvailabilityManager> externalGamersManagers, boolean logOnlyEssentialFiles){
 
 		GamerLogger.log("TourneyRunner"+runNumber, "Starting sub-tourney.");
 
@@ -429,6 +439,7 @@ public class IndependentTourneyRunner {
 		theSettings.add("" + startClock);
 		theSettings.add("" + playClock);
 		theSettings.add("" + pnCreationTime);
+		theSettings.add("" + logOnlyEssentialFiles);
 
 		for(int i = (runNumber*numMatchRunners); i < ((runNumber+1)*numMatchRunners); i++){
 			theSettings.set(5, ""+i);

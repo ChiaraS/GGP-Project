@@ -101,6 +101,13 @@ public class GamerLogger {
         suppressLoggerOutput = bSuppress;
     }
 
+    public static void setEssentialLogFileName(String fileName) {
+    	if(essentialLogFileNames == null) {
+    		essentialLogFileNames = new HashSet<String>();
+    	}
+    	essentialLogFileNames.add(fileName);
+    }
+
     public static final int LOG_LEVEL_DATA_DUMP = 0;
     public static final int LOG_LEVEL_ORDINARY = 3;
     public static final int LOG_LEVEL_IMPORTANT = 6;
@@ -176,6 +183,12 @@ public class GamerLogger {
                 ordinaryOutput.println("[" + toFile + "] " + message);
             }
             return;
+        }
+
+        // If we are logging to file check if we only want to log essential logs (i.e. essentialLogFileNames != null).
+        // If so, we proceed only if the log has at least a lever equal to LOG_LEVEL_ESSENTIAL.
+        if(essentialLogFileNames != null && !essentialLogFileNames.contains(toFile)) {
+        	return;
         }
 
         try {
@@ -312,6 +325,10 @@ public class GamerLogger {
     private static int minLevelToDisplay = Integer.MAX_VALUE;
     private static boolean suppressLoggerOutput;
     private static String spilloverLogfile;
+
+    // If we want to save to file only essential logs, initialize this set and add all file names
+    // of logs that we want to save. If null all logs will be saved, if empty no log will be saved
+    private static HashSet<String> essentialLogFileNames;
 
 
     /************************ ADDITIONAL PARAMETERS AND METHODS FOR LOGGING DURIGN TESTS ************************

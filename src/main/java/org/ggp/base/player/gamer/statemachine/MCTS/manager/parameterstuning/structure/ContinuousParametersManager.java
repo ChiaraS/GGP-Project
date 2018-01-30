@@ -170,7 +170,7 @@ public class ContinuousParametersManager extends ParametersManager {
 
 			}
 
-			tunableParametersString += "\n]";
+			tunableParametersString += "\n" + indentation + "]";
 
 			params += indentation + "CONTINUOUS_TUNABLE_PARAMETER = " + tunableParametersString;
 		}else{

@@ -136,25 +136,27 @@ public class SelfAdaptiveESProblemRepresentation extends EvoProblemRepresentatio
 		for(int individualIndex = 0; individualIndex < this.population.length; individualIndex++) {
 			this.unorderedIndividualsIndices.add(new Integer(individualIndex));
 		}
-		this.evalRepetitionsCount = -1;
-		this.currentIndex = this.unorderedIndividualsIndices.size()-1;
+		this.evalRepetitionsCount = 0;
+		Collections.shuffle(this.unorderedIndividualsIndices);
+		this.currentIndex = -1;
 	}
 
-	private void startNewIterationOverPopulation() {
-		Collections.shuffle(this.unorderedIndividualsIndices);
-		this.currentIndex = 0;
+	public CompleteMoveStats advanceToNextIndividual(int evalRepetitions) {
+		this.currentIndex++;
+		if(this.currentIndex >= this.unorderedIndividualsIndices.size()) {
+			this.evalRepetitionsCount++;
+			// Reached number of predefined repetitions (i.e. all individuals have been evaluated at least evalRepetitions times)
+			if(this.evalRepetitionsCount >= evalRepetitions) {
+				return null;
+			}
+			Collections.shuffle(this.unorderedIndividualsIndices);
+			this.currentIndex = 0;
+		}
+		return this.getCurrentIndividual();
 	}
 
 	public CompleteMoveStats getCurrentIndividual() {
 		return this.population[this.currentIndex];
-	}
-
-	public void advanceIterator() {
-		this.currentIndex++;
-		if(this.currentIndex >= this.unorderedIndividualsIndices.size()) {
-			this.evalRepetitionsCount++;
-			this.startNewIterationOverPopulation();
-		}
 	}
 
 	public int getEvalRepetitionsCount() {
