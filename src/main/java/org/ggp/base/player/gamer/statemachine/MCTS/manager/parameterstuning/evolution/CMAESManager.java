@@ -65,6 +65,12 @@ public class CMAESManager extends ContinuousEvolutionManager {
 	private boolean disableStopTolFunHistTermination;
 
 	/**
+	 * If true we disable the check on the threshold on the fitness difference between solutions named stopTolFun.
+	 * This means that CMA-ES will keep tuning even if the observed difference in fitness is very low or even null.
+	 */
+	private boolean disableStopTolFunTermination;
+
+	/**
 	 * True if when returning a solution before the CMA-ES algorithm has terminated we want to return the
 	 * mean value, even if it has not been evaluated yet. The mean value is expected to have the best fitness,
 	 * however if the tuning was interrupted before we could have the chance to evaluate it, we cannot know for
@@ -103,6 +109,13 @@ public class CMAESManager extends ContinuousEvolutionManager {
 	 */
 	private double alpha;
 
+	/**
+	 * Value used to compute the fitness from the reward as follows: fitness(combo)=maxReward-reward(combo)
+	 * CMA-ES minimizes the fitness, but we want to maximize the reward so we need to set the fitness by
+	 * inverting the reward.
+	 */
+	private double maxReward;
+
 	public CMAESManager(GameDependentParameters gameDependentParameters, Random random, GamerSettings gamerSettings,
 			SharedReferencesCollector sharedReferencesCollector) {
 		super(gameDependentParameters, random, gamerSettings, sharedReferencesCollector);
@@ -110,6 +123,8 @@ public class CMAESManager extends ContinuousEvolutionManager {
 		this.randomInitialSolution =  gamerSettings.getBooleanPropertyValue("EvolutionManager.randomInitialSolution");
 
 		this.disableStopTolFunHistTermination = gamerSettings.getBooleanPropertyValue("EvolutionManager.disableStopTolFunHistTermination");
+
+		this.disableStopTolFunTermination = gamerSettings.getBooleanPropertyValue("EvolutionManager.disableStopTolFunTermination");
 
 		this.useMean = gamerSettings.getBooleanPropertyValue("EvolutionManager.useMean");
 
@@ -127,6 +142,8 @@ public class CMAESManager extends ContinuousEvolutionManager {
 		this.cmaEsBoundaries = gamerSettings.getDoublePropertyIntervalValue("EvolutionManager.cmaEsBoundaries");
 
 		this.alpha = gamerSettings.getDoublePropertyValue("EvolutionManager.alpha");
+
+		this.maxReward = gamerSettings.getDoublePropertyValue("EvolutionManager.maxReward");
 	}
 
 	@Override
@@ -154,6 +171,8 @@ public class CMAESManager extends ContinuousEvolutionManager {
 	public SelfAdaptiveESProblemRepresentation createRoleProblemWithInitialPopulation() {
 
 		CMAEvolutionStrategy cma = new CMAEvolutionStrategy();
+
+		cma.turnOffPrinting = true;
 
 		//System.out.println("Before = " + cma.options.stopFitness);
 
@@ -184,13 +203,17 @@ public class CMAESManager extends ContinuousEvolutionManager {
         	// Set initial X (same as in default settings file)
         	cma.setInitialX(0.5*(this.cmaEsBoundaries.getRightExtreme()+this.cmaEsBoundaries.getLeftExtreme()));
         }
-        // Set minimum fitness we want to reach
-        cma.options.stopFitness = -101.0;
+        // Set minimum fitness we want to reach and then stop.
+        // We don't want to stop even if we find the minimum possible fitness, so we set this to the minimum possible value.
+        cma.options.stopFitness = -Double.MAX_VALUE;
         // Set to off the logging on file of the CMA-ES instance
         cma.options.writeDisplayToFile = 0;
         // Disable minimum change in function value that must be observed
         if(this.disableStopTolFunHistTermination) {
         	cma.options.stopTolFunHist = -1;
+        }
+        if(this.disableStopTolFunTermination) {
+        	cma.options.stopTolFun = -1;
         }
 
         //System.out.println("After = " + cma.options.stopFitness);
@@ -421,7 +444,7 @@ public class CMAESManager extends ContinuousEvolutionManager {
 				GamerLogger.logError("EvolutionManager", "CMAESManager - Impossible to compute fitness of population. Found individual with no visits (visits=" + roleProblem.getPopulation()[individualIndex].getVisits() + ") to compute its fitness.");
 				throw new RuntimeException("CMAESManager - Impossible to compute fitness of population. Found individual with no visits (visits=" + roleProblem.getPopulation()[individualIndex].getVisits() + ") to compute its fitness.");
 			}
-			fitness[individualIndex] = ( -(roleProblem.getPopulation()[individualIndex].getScoreSum()/((double)roleProblem.getPopulation()[individualIndex].getVisits())) ) + roleProblem.getPenalty()[individualIndex]; // -0.0 shouldn't be a problem here right?
+			fitness[individualIndex] = (this.maxReward - (roleProblem.getPopulation()[individualIndex].getScoreSum()/((double)roleProblem.getPopulation()[individualIndex].getVisits()))) + roleProblem.getPenalty()[individualIndex]; // -0.0 shouldn't be a problem here right?
 
 			//fitString += (" " + fitness[individualIndex]);
 
@@ -495,10 +518,12 @@ public class CMAESManager extends ContinuousEvolutionManager {
 
 		String params = indentation + "RANDOM_INITIAL_SOLUTION = " + this.randomInitialSolution +
 				indentation + "DISABLE_STOP_TOL_FUN_HIST_TERMIANTION = " + this.disableStopTolFunHistTermination +
+				indentation + "DISABLE_STOP_TOL_FUN_TERMIANTION = " + this.disableStopTolFunTermination +
 				indentation + "USE_MEAN = " + this.useMean +
 				indentation + "VALUE_RESCALER = " + this.valueRescaler.printComponent(indentation + "  ") +
 				indentation + "CMA_ES_BOUNDARIES = " + this.cmaEsBoundaries.toString() +
 				indentation + "ALPHA = " + this.alpha +
+				indentation + "MAX_REWARD = " + this.maxReward +
 				indentation + "INITIAL_STANDARD_DEVIATION = " + (0.3*(this.cmaEsBoundaries.getRightExtreme()-this.cmaEsBoundaries.getLeftExtreme()));
 
 		if(superParams != null){
