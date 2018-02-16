@@ -102,6 +102,9 @@ public class IndependentTourneyRunner {
 		boolean continueOldExperiment = false;
 		// True if we want to log only essential files, false otherwise (false by default if not specified otherwise)
 		boolean logOnlyEssentialFiles = false;
+		// True if we want to give to external players unlimited time to respond to start and play requests (i.e. we don't check if they
+		// exceeded the timeout when answering)
+		boolean unlimitedTimeForExternal = false;
 
 		// Map that for each external gamer contains the manager of available addresses (IP+port) on which the external gamer
 		// is listening for connections.
@@ -260,6 +263,11 @@ public class IndependentTourneyRunner {
 				logOnlyEssentialFiles = Boolean.parseBoolean(props.getProperty("logOnlyEssentialFiles"));
 			}
 
+			if(props.getProperty("unlimitedTimeForExternal") != null) {
+				unlimitedTimeForExternal = Boolean.parseBoolean(props.getProperty("unlimitedTimeForExternal"));
+			}
+
+
 		} catch (IOException | NumberFormatException e) {
 			System.out.println("Impossible to perform experiment, cannot correctly read/write the .properties file for the tourney.");
 			e.printStackTrace();
@@ -295,8 +303,9 @@ public class IndependentTourneyRunner {
 
 	    	ThreadContext.put("LOG_FOLDER", mainLogFolder);
 	    	if(logOnlyEssentialFiles) {
-	    		// Add to the files that we want to log only the Stats.csv file
+	    		// Add to the files that we want to log only the Stats.csv file and the Errors.log file
 	    		GamerLogger.setEssentialLogFileName("Stats");
+	    		GamerLogger.setEssentialLogFileName("Errors");
 	    	}
 	    	GamerLogger.startFileLogging();
 
@@ -308,8 +317,9 @@ public class IndependentTourneyRunner {
 
 	    	GamerLogger.log("TourneyRunner" + runNumber, "Starting tourney " + tourneyName + " for game " + gameKey + " with following settings: START_CLOCK=" +
 	    			startClock + "s, PLAY_CLOCK=" + playClock + "s, PROPNET_CREATION_TIME=" + pnCreationTime + "ms, DESIRED_NUM_PARALLEL_PLAYERS=" +
-	    			numParallelPlayers + ", MIN_NUM_MATCHES_PER_GAMER_TYPE=" + matchesPerGamerType + ", NUM_SEQUENTIAL_MATCHES=" + numSequentialMatches + "."
-	    			+ ", GAMER_TYPES=" + gamerTypesList + ".");
+	    			numParallelPlayers + ", MIN_NUM_MATCHES_PER_GAMER_TYPE=" + matchesPerGamerType + ", NUM_SEQUENTIAL_MATCHES=" + numSequentialMatches +
+	    			", GAMER_TYPES=" + gamerTypesList + ", CONTINUE_OLD_EXPERIMENT=" + continueOldExperiment + ", LOG_ONLY_ESSENTIAL_FILES=" +
+	    			logOnlyEssentialFiles + ", UNLIMITED_TIME_FOR_EXTERNAL=" + unlimitedTimeForExternal + ".");
 
 	    	/** 3. Compute all combinations of gamer types. **/
 
@@ -369,7 +379,7 @@ public class IndependentTourneyRunner {
 	    		GamerLogger.log("TourneyRunner" + runNumber, "Starting sub-tourney for combination " + comboIndices + ".");
 
 	    		ThreadContext.put("LOG_FOLDER", mainLogFolder + "/Combination" + comboIndices);
-	    		boolean completed = runMatchesForCombination(runNumber, gameKey, startClock, playClock, pnCreationTime, theComboGamersTypes, numParallelMatches, numMatchRunners, numSequentialMatches, externalGamersManagers, logOnlyEssentialFiles);
+	    		boolean completed = runMatchesForCombination(runNumber, gameKey, startClock, playClock, pnCreationTime, theComboGamersTypes, numParallelMatches, numMatchRunners, numSequentialMatches, externalGamersManagers, logOnlyEssentialFiles, unlimitedTimeForExternal);
 	    		ThreadContext.put("LOG_FOLDER", mainLogFolder);
 
 	    		if(completed){
@@ -417,7 +427,8 @@ public class IndependentTourneyRunner {
 
 	private static boolean runMatchesForCombination(int runNumber, String gameKey, int startClock, int playClock,
 			long pnCreationTime, List<String> theGamersTypes, int numParallelMatches, int numMatchRunners,
-			int numSequentialMatches, Map<String,ExternalGamerAvailabilityManager> externalGamersManagers, boolean logOnlyEssentialFiles){
+			int numSequentialMatches, Map<String,ExternalGamerAvailabilityManager> externalGamersManagers,
+			boolean logOnlyEssentialFiles, boolean unlimitedTimeForExternal){
 
 		GamerLogger.log("TourneyRunner"+runNumber, "Starting sub-tourney.");
 
@@ -440,6 +451,7 @@ public class IndependentTourneyRunner {
 		theSettings.add("" + playClock);
 		theSettings.add("" + pnCreationTime);
 		theSettings.add("" + logOnlyEssentialFiles);
+		theSettings.add("" + unlimitedTimeForExternal);
 
 		for(int i = (runNumber*numMatchRunners); i < ((runNumber+1)*numMatchRunners); i++){
 			theSettings.set(5, ""+i);

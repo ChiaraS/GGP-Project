@@ -186,7 +186,6 @@ public class GamerLogger {
         }
 
         // If we are logging to file check if we only want to log essential logs (i.e. essentialLogFileNames != null).
-        // If so, we proceed only if the log has at least a lever equal to LOG_LEVEL_ESSENTIAL.
         if(essentialLogFileNames != null && !essentialLogFileNames.contains(toFile)) {
         	return;
         }

@@ -48,6 +48,8 @@ public class IndependentSingleMatchRunner {
 	 * [playClock(sec)] = play clock of the match (in seconds)
 	 * [pnCreationTime(ms)] = available time to create the propnet (in milliseconds)
 	 * [logOnlyEssentialFiles] = true if we want to log only essential files (the "Stats.csv" file), false otherwise
+	 * [unlimitedTimeForExternal] = true if we want to give unlimited time to external players (i.e. we don't check if they exceed the timeout
+	 * when responding to a start or play request), false otherwise.
 	 * [theGamerTypes (one or more)] = list (with repetitions) of gamer types that we want to include in the experiment, in the order in
 	 * which we want to assign them to the roles in the game. Each gamer must be specified with the exact name of the class that implements
 	 * such gamer. If the gamer is a subclass of the ConfigurableStateMachineGamer it must be specified with the exact name of the class
@@ -64,9 +66,9 @@ public class IndependentSingleMatchRunner {
 
 		/** 1. Check the correctness of the inputs **/
 
-		if(args.length < 8){
+		if(args.length < 10){
 			System.out.println("Impossible to start match runner, missing inputs. Please give the following parameters to the command line:");
-			System.out.println("[logFolder] [numMatches] [startID] [gameKey] [startClock(sec)] [playClock(sec)] [pnCreationTime(ms)] [theGamerTypes (one or more)]");
+			System.out.println("[logFolder] [numMatches] [startID] [gameKey] [startClock(sec)] [playClock(sec)] [pnCreationTime(ms)] [logOnlyEssentialFiles] [unlimitedTimeForExternal] [theGamerTypes (one or more)]");
 			return;
 		}
 
@@ -78,6 +80,7 @@ public class IndependentSingleMatchRunner {
 		int playClock;
 		long pnCreationTime;
 		boolean logOnlyEssentialFiles;
+		boolean unlimitedTimeForExternal;
 		List<Class<?>> theGamersClasses = new ArrayList<Class<?>>();
 
 		logFolder = args[0];
@@ -140,37 +143,44 @@ public class IndependentSingleMatchRunner {
 			return;
 		}
 
-		boolean buildPropnet = false;
-		String[] gamerTypes = new String[args.length-8];
-		// If the gamer has no associated setting, then the corresponding entry is null
-		String[] gamerSettings = new String[args.length-8];
-		String[] gamerNames = new String[args.length-8];
-		String[] gamerHosts = new String[args.length-8];
-		int[] gamerPorts = new int[args.length-8];
+		try{
+			unlimitedTimeForExternal = Boolean.parseBoolean(args[8]);
+		}catch(NumberFormatException e){
+			System.out.println("Impossible to start match runner, wrong input. The unlimitedTimeForExternal parameter must be a boolean value, not " + args[8] + ".");
+			return;
+		}
 
-    	for (int i = 8; i < args.length; i++){
+		boolean buildPropnet = false;
+		String[] gamerTypes = new String[args.length-9];
+		// If the gamer has no associated setting, then the corresponding entry is null
+		String[] gamerSettings = new String[args.length-9];
+		String[] gamerNames = new String[args.length-9];
+		String[] gamerHosts = new String[args.length-9];
+		int[] gamerPorts = new int[args.length-9];
+
+    	for (int i = 9; i < args.length; i++){
 
     		String[] s = args[i].split("-");
 
     		if(s.length == 1){ // Internal gamer without settings
-    			gamerTypes[i-8] = s[0];
-    			gamerSettings[i-8] = null;
-    			gamerNames[i-8] = null;
-    			gamerHosts[i-8] = null;
-    			gamerPorts[i-8] = -1;
+    			gamerTypes[i-9] = s[0];
+    			gamerSettings[i-9] = null;
+    			gamerNames[i-9] = null;
+    			gamerHosts[i-9] = null;
+    			gamerPorts[i-9] = -1;
     		}else if(s.length == 2){ // Internal gamer with settings
-    			gamerTypes[i-8] = s[0];
-    			gamerSettings[i-8] = s[1];
-    			gamerNames[i-8] = null;
-    			gamerHosts[i-8] = null;
-    			gamerPorts[i-8] = -1;
+    			gamerTypes[i-9] = s[0];
+    			gamerSettings[i-9] = s[1];
+    			gamerNames[i-9] = null;
+    			gamerHosts[i-9] = null;
+    			gamerPorts[i-9] = -1;
     		}else if(s.length == 3){// External gamer with host and port
-    			gamerTypes[i-8] = null;
-    			gamerSettings[i-8] = null;
-    			gamerNames[i-8] = s[0];
-    			gamerHosts[i-8] = s[1];
+    			gamerTypes[i-9] = null;
+    			gamerSettings[i-9] = null;
+    			gamerNames[i-9] = s[0];
+    			gamerHosts[i-9] = s[1];
     			try{
-    				gamerPorts[i-8] = Integer.parseInt(s[2]);
+    				gamerPorts[i-9] = Integer.parseInt(s[2]);
     			}catch(NumberFormatException e){
     				System.out.println("Impossible to start match runner, wrong input. The port for player " + s[0] + " must be an integer value, not " + s[2] + ".");
     				return;
@@ -360,6 +370,18 @@ public class IndependentSingleMatchRunner {
 			GameServer server;
 			try {
 				server = new GameServer(match, hostNames, portNumbers);
+
+				// Set if external players need unlimited time
+				if(unlimitedTimeForExternal) {
+					i = 0;
+					for(Class<?> gamerClass : theGamersClasses){
+						if(gamerClass == null) { // I.e. the player is external
+							server.givePlayerUnlimitedTime(i);
+						}
+						i++;
+					}
+				}
+
 			} catch (GameServerException e) {
 				GamerLogger.logError("MatchRunner", "Impossible to play the match. Error when creating game server.");
 				GamerLogger.logStackTrace("MatchRunner", e);

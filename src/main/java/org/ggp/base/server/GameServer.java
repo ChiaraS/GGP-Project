@@ -339,7 +339,7 @@ public final class GameServer extends Thread implements Subject
         List<StartRequestThread> threads = new ArrayList<StartRequestThread>(hosts.size());
         for (int i = 0; i < hosts.size(); i++) {
         	if (!playerPlaysRandomly[i]) {
-        		threads.add(new StartRequestThread(this, match, stateMachine.getExplicitRoles().get(i), hosts.get(i), ports.get(i), getPlayerNameFromMatchForRequest(i)));
+        		threads.add(new StartRequestThread(this, match, stateMachine.getExplicitRoles().get(i), hosts.get(i), ports.get(i), getPlayerNameFromMatchForRequest(i), playerGetsUnlimitedTime[i]));
         	}
         }
         for (StartRequestThread thread : threads) {
