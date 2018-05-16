@@ -12,6 +12,7 @@ import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.strategies.aft
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.strategies.aftermove.AfterMoveStrategy;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.strategies.aftersimulation.AfterSimulationStrategy;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.strategies.backpropagation.BackpropagationStrategy;
+import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.strategies.beforemove.BeforeMoveStrategy;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.strategies.beforesearch.BeforeSearchStrategy;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.strategies.beforesimualtion.BeforeSimulationStrategy;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.strategies.expansion.ExpansionStrategy;
@@ -127,6 +128,12 @@ public class HybridMctsManager {
 	 * Performs actions after every simulation.
 	 */
 	private AfterSimulationStrategy afterSimulationStrategy;
+	/**
+	 * Performs actions after every move in the game.
+	 * Not performed at the end of each call to the search() method, but only if after the search we
+	 * change game step in the real game.
+	 */
+	private BeforeMoveStrategy beforeMoveStrategy;
 	/**
 	 * Performs actions after every move in the game.
 	 * Not performed at the end of each call to the search() method, but only if after the search we
@@ -308,6 +315,22 @@ public class HybridMctsManager {
 			}
 		}
 
+		if(gamerSettings.specifiesProperty("SearchManager.beforeMoveStrategyType")){
+
+			String[] idPropertyValue = gamerSettings.getIDPropertyValue("SearchManager.beforeMoveStrategyType");
+			try {
+				this.beforeMoveStrategy = (BeforeMoveStrategy) SearchManagerComponent.getConstructorForMultiInstanceSearchManagerComponent(SearchManagerComponent.getCorrespondingClass(ProjectSearcher.BEFORE_MOVE_STRATEGIES.getConcreteClasses(),
+						idPropertyValue[0])).newInstance(gameDependentParameters, random, gamerSettings, sharedReferencesCollector, idPropertyValue[1]);
+			} catch (InstantiationException | IllegalAccessException
+					| IllegalArgumentException | InvocationTargetException e) {
+				// TODO: fix this!
+				GamerLogger.logError("SearchManagerCreation", "Error when instantiating BeforeMoveStrategy " + gamerSettings.getPropertyValue("SearchManager.beforeMoveStrategyType") + ".");
+				GamerLogger.logStackTrace("SearchManagerCreation", e);
+				throw new RuntimeException(e);
+			}
+
+		}
+
 		if(gamerSettings.specifiesProperty("SearchManager.afterMoveStrategyType")){
 
 			String[] idPropertyValue = gamerSettings.getIDPropertyValue("SearchManager.afterMoveStrategyType");
@@ -376,6 +399,9 @@ public class HybridMctsManager {
 		if(this.afterSimulationStrategy != null){
 			this.afterSimulationStrategy.setReferences(sharedReferencesCollector);
 		}
+		if(this.beforeMoveStrategy != null){
+			this.beforeMoveStrategy.setReferences(sharedReferencesCollector);
+		}
 		if(this.afterMoveStrategy != null){
 			this.afterMoveStrategy.setReferences(sharedReferencesCollector);
 		}
@@ -436,6 +462,12 @@ public class HybridMctsManager {
 			toLog += "\nAFTER_SIM_STRATEGY = null";
 		}
 
+		if(this.beforeMoveStrategy != null){
+			toLog += "\nBEFORE_MOVE_STRATEGY = " + this.beforeMoveStrategy.printComponent("\n  ");
+		}else{
+			toLog += "\nBEFORE_MOVE_STRATEGY = null";
+		}
+
 		if(this.afterMoveStrategy != null){
 			toLog += "\nAFTER_MOVE_STRATEGY = " + this.afterMoveStrategy.printComponent("\n  ");
 		}else{
@@ -493,6 +525,9 @@ public class HybridMctsManager {
 		if(this.afterSimulationStrategy != null){
 			this.afterSimulationStrategy.clearComponent();
 		}
+		if(this.beforeMoveStrategy != null){
+			this.beforeMoveStrategy.clearComponent();
+		}
 		if(this.afterMoveStrategy != null){
 			this.afterMoveStrategy.clearComponent();
 		}
@@ -527,6 +562,9 @@ public class HybridMctsManager {
 		}
 		if(this.afterSimulationStrategy != null){
 			this.afterSimulationStrategy.setUpComponent();
+		}
+		if(this.beforeMoveStrategy != null){
+			this.beforeMoveStrategy.setUpComponent();
 		}
 		if(this.afterMoveStrategy != null){
 			this.afterMoveStrategy.setUpComponent();
@@ -1105,9 +1143,11 @@ public class HybridMctsManager {
 
 		this.transpositionTable.clean();
 
-		this.transpositionTable.logTable("Start");
+		if(this.afterMoveStrategy != null){
+			this.afterMoveStrategy.afterMoveActions();
+		}
 
-		// No BeforeMoveStartegies devised so far
+		this.transpositionTable.logTable("Start");
 
 	}
 
