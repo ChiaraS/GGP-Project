@@ -17,6 +17,7 @@ import org.ggp.base.player.gamer.statemachine.MCTS.manager.parameterstuning.stru
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.parameterstuning.structure.DiscreteParametersManager;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.parameterstuning.structure.parameters.ContinuousTunableParameter;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.parameterstuning.structure.parameters.DiscreteTunableParameter;
+import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.hybrid.MctsJointMove;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.hybrid.MctsTranspositionTable;
 import org.ggp.base.util.logging.GamerLogger;
 import org.ggp.base.util.statemachine.structure.Move;
@@ -62,6 +63,8 @@ public class SharedReferencesCollector {
 	private MctsTranspositionTable transpositionTable;
 
 	private SimLimitedLsiParametersTuner simLimitedLsiParametersTuner;
+
+	private List<MctsJointMove> currentSimulationJointMoves;
 
 	public SharedReferencesCollector() {
 		// TODO Auto-generated constructor stub
@@ -315,6 +318,14 @@ public class SharedReferencesCollector {
 
 	public void setSimLimitedLsiParametersTuner(SimLimitedLsiParametersTuner simLimitedLsiParametersTuner) {
 		this.simLimitedLsiParametersTuner = simLimitedLsiParametersTuner;
+	}
+
+	public List<MctsJointMove> getCurrentSimulationJointMoves() {
+		return this.currentSimulationJointMoves;
+	}
+
+	public void setCurrentSimulationJointMoves(List<MctsJointMove> currentSimulationJointMoves) {
+		this.currentSimulationJointMoves = currentSimulationJointMoves;
 	}
 
 }

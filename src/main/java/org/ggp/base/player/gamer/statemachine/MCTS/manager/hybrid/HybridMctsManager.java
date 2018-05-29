@@ -1,6 +1,7 @@
 package org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid;
 
 import java.lang.reflect.InvocationTargetException;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
 
@@ -68,6 +69,29 @@ public class HybridMctsManager {
 	 * End time of last performed search.
 	 */
 	//private long searchEnd;
+
+	/**
+	 * Random generator.
+	 */
+	private Random random;
+
+	/**
+	 * Memorizes the joint moves performed so far in the simulation in the tree.
+	 */
+	private List<MctsJointMove> currentSimulationJointMoves;
+
+	//------------------------ Parameters to make the reward function noisy --------------------------//
+
+	/**
+	 * Probability of having a flip sample (i.e. probability that the goals that get propagated back
+	 * in the three are flip).
+	 */
+	private double pFlip;
+	/**
+	 * True if I want the possibility to flip scores with probability pFlip only when my role is winning.
+	 * False if I want the possibility to flip scores with probability pFlip always.
+	 */
+	private boolean flipWinsOnly;
 
 	//-------------------------- Parameters needed to perform the search -----------------------------//
 
@@ -177,6 +201,22 @@ public class HybridMctsManager {
 
 		GamerLogger.log("SearchManagerCreation", "Creating search manager for gamer " + gamerType + ".");
 
+		this.random = random;
+
+		// List of joint moves played during selection. Used by the multiple playout strategy.
+		this.currentSimulationJointMoves = new ArrayList<MctsJointMove>();
+
+		if(gamerSettings.specifiesProperty("SearchManager.pFlip")) {
+			this.pFlip = gamerSettings.getDoublePropertyValue("SearchManager.pFlip");
+		}else {
+			this.pFlip = 0.0;
+		}
+		if(gamerSettings.specifiesProperty("SearchManager.flipWinsOnly")) {
+			this.flipWinsOnly = gamerSettings.getBooleanPropertyValue("SearchManager.flipWinsOnly");
+		}else {
+			this.flipWinsOnly = true;
+		}
+
 		this.maxSearchDepth = gamerSettings.getIntPropertyValue("SearchManager.maxSearchDepth");
 
 		if(gamerSettings.specifiesProperty("SearchManager.numExpectedIterations")){
@@ -188,6 +228,7 @@ public class HybridMctsManager {
 
 		// Create strategies according to the types specified in the gamer configuration
 		SharedReferencesCollector sharedReferencesCollector = new SharedReferencesCollector();
+		sharedReferencesCollector.setCurrentSimulationJointMoves(currentSimulationJointMoves);
 
 		String propertyValue;
 		String[] multiPropertyValue;
@@ -424,7 +465,8 @@ public class HybridMctsManager {
 
 		//toLog += "\nMCTS manager initialized with the following state machine: " + this.theMachine.getName();
 
-		toLog += "\n\nMAX_SEARCH_DEPTH = " + this.maxSearchDepth + "\nNUM_EXPECTED_ITERATIONS = " + numExpectedIterations;
+		toLog += "\n\nFLIP_PROBABILITY = " + this.pFlip + "\nFLIP_WINS_ONLY = " + this.flipWinsOnly +
+				"\nMAX_SEARCH_DEPTH = " + this.maxSearchDepth + "\nNUM_EXPECTED_ITERATIONS = " + numExpectedIterations;
 
 		toLog += "\nTREE_NODE_FACTORY = " + this.treeNodeFactory.printComponent("\n  ");
 
@@ -707,6 +749,9 @@ public class HybridMctsManager {
 			//System.out.println();
 			//System.out.println("Inizio iterazione");
 
+			// List of joint moves played during selection. Used by the multiple playout strategy.
+			this.currentSimulationJointMoves.clear();
+
 			SimulationResult[] simulationResult = this.searchNext(initialState, initialNode);
 			for(int resultIndex = 0; resultIndex < simulationResult.length; resultIndex++){
 				this.gameDependentParameters.increaseStepIterations();
@@ -794,9 +839,10 @@ public class HybridMctsManager {
 
 			//System.out.println("Reached terminal state.");
 
+			int[] goals = currentNode.getGoals();
 			// If a state in the tree is terminal, it must record the goals for every player.
 			// If it doesn't there must be a programming error.
-			if(currentNode.getGoals() == null){
+			if(goals == null){
 				GamerLogger.logError("MctsManager", "Detected null goals for a treminal node in the tree.");
 				throw new RuntimeException("Detected null goals for a treminal node in the tree.");
 			}
@@ -818,7 +864,9 @@ public class HybridMctsManager {
 			this.gameDependentParameters.increaseStepGameLengthSum(this.gameDependentParameters.getCurrentIterationVisitedNodes());
 
 			simulationResult = new SimulationResult[1];
-			simulationResult[0] = new SimulationResult(currentNode.getGoals());
+			simulationResult[0] = new SimulationResult(goals);
+			this.flip(simulationResult); // If I have to flip, I flip the scores.
+
 			return simulationResult;
 		}
 
@@ -859,6 +907,8 @@ public class HybridMctsManager {
 
 			simulationResult = new SimulationResult[1];
 			simulationResult[0] = new SimulationResult(this.gameDependentParameters.getTheMachine().getSafeGoalsAvgForAllRoles(currentState));
+			this.flip(simulationResult);
+
 			return simulationResult;
 			//return new SimulationResult(goals);
 		}
@@ -945,8 +995,13 @@ public class HybridMctsManager {
 
 			simulationResult = new SimulationResult[1];
 			simulationResult[0] = new SimulationResult(this.gameDependentParameters.getTheMachine().getSafeGoalsAvgForAllRoles(currentState));
+			this.flip(simulationResult);
+
 			return simulationResult;
 		}
+
+		// Once we advanced to the next state, we can add the joint move to the list of joint moves for the current simulation.
+		this.currentSimulationJointMoves.add(mctsJointMove);
 
 		//System.out.println("Next state = [ " + this.gameDependentParameters.getTheMachine().convertToExplicitMachineState(nextState) + " ]");
 		//System.out.println("Next state = [ " + nextState + " ]");
@@ -1011,6 +1066,7 @@ public class HybridMctsManager {
 
 				simulationResult = new SimulationResult[1];
 				simulationResult[0] = new SimulationResult(nextNode.getGoals());
+				this.flip(simulationResult);
 			}else{
 
 				//System.out.println("Performing playout.");
@@ -1048,6 +1104,7 @@ public class HybridMctsManager {
 
 					simulationResult = new SimulationResult[1];
 					simulationResult[0] = new SimulationResult(this.gameDependentParameters.getTheMachine().getSafeGoalsAvgForAllRoles(nextState));
+					this.flip(simulationResult);
 
 				}else{
 
@@ -1055,6 +1112,7 @@ public class HybridMctsManager {
 					// Note that if no depth is left for the playout, the playout itself will take care of
 					// returning the added-state goal values (if any) or the default tie goal values.
 					simulationResult = this.playoutStrategy.playout(mctsJointMove.getJointMove(), nextState, availableDepth);
+					this.flip(simulationResult);
 
 					// IMPORTANT NOTE! Here we increment the number of nodes visited for the current iteration
 					// using ALL the performed playouts lengths. If more than one playout was performed this
@@ -1131,6 +1189,28 @@ public class HybridMctsManager {
 
 		}
 
+	}
+
+	/**
+	 * With probability pFlip, flip the terminal goals in a SimulationResult.
+	 *
+	 * @param simulationResult
+	 */
+	private void flip(SimulationResult[] simulationResults) {
+
+		if(this.pFlip > 0.0) {
+			for(SimulationResult simulationResult : simulationResults) {
+				//System.out.println();
+				//System.out.println(Arrays.toString(simulationResult.getTerminalGoals()));
+
+				if((!this.flipWinsOnly || simulationResult.getTerminalWins()[this.gameDependentParameters.getMyRoleIndex()] == 1.0) && // If I have to flip in any situation, or if I have to flip only if my role is winning and it is winning...
+						this.random.nextDouble() < this.pFlip) { // ...I check if I have to flip according to the pFlip probability.
+					simulationResult.flipTerminalScores(); // If I have to flip, I flip the scores.
+				}
+
+				//System.out.println(Arrays.toString(simulationResult.getTerminalGoals()));
+			}
+		}
 	}
 
 	public void beforeMoveActions(int currentGameStep, boolean metagame){

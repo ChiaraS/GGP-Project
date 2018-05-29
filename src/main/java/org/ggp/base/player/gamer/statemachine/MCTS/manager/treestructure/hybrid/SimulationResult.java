@@ -3,6 +3,7 @@ package org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.hybrid
 import java.util.ArrayList;
 import java.util.List;
 
+import org.ggp.base.util.logging.GamerLogger;
 import org.ggp.base.util.statemachine.structure.Move;
 
 
@@ -173,6 +174,79 @@ public class SimulationResult{
 
 		this.intermediateGoals.add(goals);
 
+	}
+
+	/**
+	 * For each role r, flips the terminal score s_{r} to 100-s_{r}.
+	 * Note that this method flips only the terminal scores, even if we are keeping intermediate scores.
+	 * If using intermediate scores, attention must be paid to the effect that a probability of flipping
+	 * scores greater than 0 might have on the rest of the algorithm.
+	 */
+	public void flipTerminalScores() {
+		if(this.intermediateGoals.size() > 0) {
+			for(int roleIndex = 0; roleIndex < this.intermediateGoals.get(0).length; roleIndex++) {
+				this.intermediateGoals.get(0)[roleIndex] = 100 - this.intermediateGoals.get(0)[roleIndex];
+			}
+		//}else if (this.intermediateGoals.size() > 1){
+		//	GamerLogger.logError("MctsManager", "Trying to flip scores for a SimulationResult that has intermediate scores that will stay unflipped.");
+		//	throw new RuntimeException("MctsManager - Trying to flip scores for a SimulationResult that has intermediate scores that will stay unflipped.");
+		}else {
+			GamerLogger.logError("MctsManager", "Trying to flip scores for a SimulationResult that has no goals.");
+			throw new RuntimeException("MctsManager - Trying to flip scores for a SimulationResult that has no goals.");
+		}
+	}
+
+	/**
+	 * This method looks at the terminal scores and returns the corresponding wins. To compute the wins
+	 * 1 point is split equally among all the agents that have the highest score. If it's a single player
+	 * game the only role gets the fraction of 1 point proportional to its score: (score/100)*1
+	 * Examples:
+	 * Scores		Wins
+	 * [100]		[1]
+	 * [80]			[0.8]
+	 * [50]			[0.5]
+	 * [100 0]		[1 0]
+	 * [30 70]		[0 1]
+	 * [30 30 30]	[0.33 0.33 0.33]
+	 * [70 70 50]	[0.5 0.5 0]
+	 *
+	 * @return
+	 */
+	public double[] getTerminalWins() {
+
+		if(this.intermediateGoals.size() > 0) {
+
+			double[] wins = new double[this.intermediateGoals.get(0).length];
+
+			if(this.intermediateGoals.get(0).length == 1) {
+				wins[0] = ((double)this.intermediateGoals.get(0)[0])/100.0;
+			}else {
+				List<Integer> bestIndices = new ArrayList<Integer>();
+				double max = -1;
+				for(int roleIndex = 0; roleIndex < this.intermediateGoals.get(0).length; roleIndex++) {
+					if(this.intermediateGoals.get(0)[roleIndex] > max) {
+						max = this.intermediateGoals.get(0)[roleIndex];
+						bestIndices.clear();
+						bestIndices.add(roleIndex);
+					}else if(this.intermediateGoals.get(0)[roleIndex] == max){
+						bestIndices.add(roleIndex);
+					}
+				}
+				if(bestIndices.size() == 0) {
+					GamerLogger.logError("MctsManager", "Found no best score when computing wins for a SimulationResult.");
+					throw new RuntimeException("MctsManager - Found no best score when computing wins for a SimulationResult.");
+				}
+				// Wins is already initialized to all 0s, so we just change the wins for the bestIndices
+				double splitPoint = 1.0/bestIndices.size();
+				for(Integer roleIndex : bestIndices) {
+					wins[roleIndex] = splitPoint;
+				}
+			}
+			return wins;
+		}else {
+			GamerLogger.logError("MctsManager", "Trying to compute wins for a SimulationResult that has no goals.");
+			throw new RuntimeException("MctsManager - Trying to compute wins for a SimulationResult that has no goals.");
+		}
 	}
 
 

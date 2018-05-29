@@ -52,7 +52,7 @@ public abstract class MctsNode{
 	}
 
 	public int[] getGoals(){
-		return this.goals;
+		return this.goals.clone();
 	}
 
 	public boolean isTerminal(){
