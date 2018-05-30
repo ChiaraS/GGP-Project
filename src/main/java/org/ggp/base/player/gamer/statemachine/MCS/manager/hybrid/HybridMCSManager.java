@@ -5,6 +5,7 @@ import java.util.List;
 import java.util.Random;
 
 import org.ggp.base.player.gamer.statemachine.MCS.manager.MCSException;
+import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.GameDependentParameters;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.strategies.playout.PlayoutStrategy;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.hybrid.SimulationResult;
 import org.ggp.base.util.logging.GamerLogger;
@@ -17,6 +18,12 @@ import org.ggp.base.util.statemachine.structure.Move;
 import org.ggp.base.util.statemachine.structure.Role;
 
 public class HybridMCSManager {
+
+	/**
+	 * All the game-dependent and global parameters needed by the MctsManager and its strategies.
+	 * Must be reset between games.
+	 */
+	private GameDependentParameters gameDependentParameters;
 
 	/**
 	 * The game state currently being searched.
@@ -267,6 +274,23 @@ public class HybridMCSManager {
 
 	public long getSearchTime(){
 		return (this.searchEnd - this.searchStart);
+	}
+
+	/**
+	 * Method that checks when it's time to stop the search.
+	 */
+	private boolean timeToStopSearch(long timeout){
+
+		if(this.numExpectedIterations > 0){
+
+			return this.gameDependentParameters.getStepIterations() == this.numExpectedIterations;
+
+		}else{
+
+			return System.currentTimeMillis() >= timeout;
+
+		}
+
 	}
 
 }

@@ -115,6 +115,8 @@ public class IndependentSingleMatchRunner {
 			return;
     	}
 
+    	//System.out.println(game.getRulesheet());
+
 		try{
 			startClock = Integer.parseInt(args[4]);
 		}catch(NumberFormatException e){
