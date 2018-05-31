@@ -1,14 +1,19 @@
 package org.ggp.base.player.gamer.statemachine.MCS.manager.hybrid;
 
+import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
 
+import org.ggp.base.player.gamer.statemachine.GamerSettings;
 import org.ggp.base.player.gamer.statemachine.MCS.manager.MCSException;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.GameDependentParameters;
+import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.SearchManagerComponent;
+import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.SharedReferencesCollector;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.strategies.playout.PlayoutStrategy;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.hybrid.SimulationResult;
 import org.ggp.base.util.logging.GamerLogger;
+import org.ggp.base.util.reflection.ProjectSearcher;
 import org.ggp.base.util.statemachine.abstractsm.AbstractStateMachine;
 import org.ggp.base.util.statemachine.exceptions.MoveDefinitionException;
 import org.ggp.base.util.statemachine.exceptions.StateMachineException;
@@ -43,12 +48,12 @@ public class HybridMCSManager {
 	/**
 	 * The state machine that this MCTS manager uses to reason on the game
 	 */
-	private AbstractStateMachine theMachine;
+	//private AbstractStateMachine theMachine;
 
 	/**
 	 * The role performing the search.
 	 */
-	private Role myRole;
+	//private Role myRole;
 
 	/**
 	 * Maximum depth that the MCTS algorithm must visit.
@@ -61,28 +66,89 @@ public class HybridMCSManager {
 	private Random random;
 
 	/**
+	 * Number of simulations per search that this MCS manager can perform.
+	 * NOTE that if this number is set to a positive number then the manager
+	 * will ignore any time limit and always perform the exact number of
+	 * simulations specified by this parameter.
+	 */
+	private int numExpectedIterations;
+
+	/**
 	 * Number of performed iterations.
 	 */
-	private int iterations;
+	//private int iterations;
 
 	/**
 	 * Number of all visited states since the start of the search.
 	 */
-	private int visitedNodes;
+	//private int visitedNodes;
 
 	/**
 	 * Start time of last performed search.
 	 */
-	private long searchStart;
+	//private long searchStart;
 
 	/**
 	 * End time of last performed search.
 	 */
-	private long searchEnd;
+	//private long searchEnd;
 
 	/**
 	 *
 	 */
+	public HybridMCSManager(Random random, GamerSettings gamerSettings, String gamerType) {
+
+		GamerLogger.log("SearchManagerCreation", "Creating search manager for gamer " + gamerType + ".");
+
+		this.random = random;
+
+		this.maxSearchDepth = gamerSettings.getIntPropertyValue("SearchManager.maxSearchDepth");
+
+		if(gamerSettings.specifiesProperty("SearchManager.numExpectedIterations")){
+			this.numExpectedIterations = gamerSettings.getIntPropertyValue("SearchManager.numExpectedIterations");
+		}else{
+			this.numExpectedIterations = -1;
+		}
+		this.gameDependentParameters = new GameDependentParameters();
+
+		// Create strategies according to the types specified in the gamer configuration
+		SharedReferencesCollector sharedReferencesCollector = new SharedReferencesCollector();
+
+		String[] multiPropertyValue;
+
+		multiPropertyValue = gamerSettings.getIDPropertyValue("SearchManager.playoutStrategyType");
+
+		try {
+			this.playoutStrategy = (PlayoutStrategy) SearchManagerComponent.getConstructorForMultiInstanceSearchManagerComponent(SearchManagerComponent.getCorrespondingClass(ProjectSearcher.PLAYOUT_STRATEGIES.getConcreteClasses(),
+					multiPropertyValue[0])).newInstance(gameDependentParameters, random, gamerSettings, sharedReferencesCollector, multiPropertyValue[1]);
+		} catch (InstantiationException | IllegalAccessException
+				| IllegalArgumentException | InvocationTargetException e) {
+			// TODO: fix this!
+			GamerLogger.logError("SearchManagerCreation", "Error when instantiating PlayoutStrategy " + gamerSettings.getIDPropertyValue("SearchManager.playoutStrategyType") + ".");
+			GamerLogger.logStackTrace("SearchManagerCreation", e);
+			throw new RuntimeException(e);
+		}
+
+		sharedReferencesCollector.setPlayoutStrategy(this.playoutStrategy);
+
+		this.playoutStrategy.setReferences(sharedReferencesCollector);
+
+		GamerLogger.log("SearchManagerCreation", "Creation of search manager for gamer " + gamerType + " ended successfully.");
+
+		this.currentState = null;
+		this.currentMovesStatistics = null;
+
+		//this.theMachine = theMachine;
+		//this.myRole = myRole;
+
+		//this.iterations = 0;
+		//this.visitedNodes = 0;
+		//this.searchStart = 0;
+		//this.searchEnd = 0;
+
+	}
+
+	/**
 	public HybridMCSManager(PlayoutStrategy playoutStrategy, AbstractStateMachine theMachine, Role myRole, int maxSearchDepth, Random random) {
 
 		this.currentState = null;
@@ -99,15 +165,17 @@ public class HybridMCSManager {
 		this.searchStart = 0;
 		this.searchEnd = 0;
 
-	}
+	}*/
 
 	public String printSearchManager(){
 
-		String toLog = "MCS manager initialized with the following state mahcine " + this.theMachine.getName();
+		String toLog = "MCTS_MANAGER_TYPE = " + this.getClass().getSimpleName();
 
-		toLog += "\nMCS manager initialized with the following parameters: [maxSearchDepth = " + this.maxSearchDepth + "]";
+		//String toLog = "MCS manager initialized with the following state mahcine " + this.theMachine.getName();
 
-		toLog += "\nMCS manager initialized with the following playout strategy: ";
+		toLog += "\n\nMAX_SEARCH_DEPTH = " + this.maxSearchDepth + "\nNUM_EXPECTED_ITERATIONS = " + numExpectedIterations;
+
+		//toLog += "\nMCS manager initialized with the following playout strategy: ";
 
 		//for(Strategy s : this.strategies){
 		//	toLog += "\n" + s.printStrategy();
@@ -115,7 +183,47 @@ public class HybridMCSManager {
 
 		toLog += "\nPLAYOUT_STRATEGY =" + this.playoutStrategy.printComponent("\n  ");
 
+		toLog += "\nabstract_state_machine = " + (this.gameDependentParameters.getTheMachine() == null ? "null" : this.gameDependentParameters.getTheMachine().getName());
+		toLog += "\nnum_roles = " + this.gameDependentParameters.getNumRoles();
+		toLog += "\nmy_role_index = " + this.gameDependentParameters.getMyRoleIndex();
+		toLog += "\ncurrent_game_step = " + this.gameDependentParameters.getGameStep();
+		String stepScoreSumForRoleStirng;
+		if(this.gameDependentParameters.getStepScoreSumForRoles() != null){
+			stepScoreSumForRoleStirng = "[ ";
+			for(int roleIndex = 0; roleIndex < this.gameDependentParameters.getStepScoreSumForRoles().length; roleIndex++){
+				stepScoreSumForRoleStirng += (this.gameDependentParameters.getStepScoreSumForRoles()[roleIndex] + " ");
+			}
+			stepScoreSumForRoleStirng += "]";
+		}else{
+			stepScoreSumForRoleStirng =	"null";
+		}
+		toLog += "\nstep_score_sum_for_role = " + stepScoreSumForRoleStirng;
+		toLog += "\nstep_iterations = " + this.gameDependentParameters.getStepIterations();
+		toLog += "\nstep_visited_nodes = " + this.gameDependentParameters.getStepVisitedNodes();
+		toLog += "\nstep_search_duration = " + this.gameDependentParameters.getStepSearchDuration();
+		toLog += "\ncurrent_iteration_visited_nodes = " + this.gameDependentParameters.getCurrentIterationVisitedNodes();
+
 		return toLog;
+
+	}
+
+	public void clearManager(){
+
+		this.playoutStrategy.clearComponent();
+
+		this.gameDependentParameters.clearGameDependentParameters();
+
+		this.currentState = null;
+
+		this.currentMovesStatistics = null;
+
+	}
+
+	public void setUpManager(AbstractStateMachine theMachine, int numRoles, int myRoleIndex, long actualPlayClock){
+
+		this.gameDependentParameters.resetGameDependentParameters(theMachine, numRoles, myRoleIndex, actualPlayClock);
+
+		this.playoutStrategy.setUpComponent();
 
 	}
 
@@ -137,6 +245,16 @@ public class HybridMCSManager {
 				double scoreSum = this.currentMovesStatistics[i].getScoreSum();
 
 				//System.out.println("Score sum: " + scoreSum);
+
+				/**
+				 * Extra check to make sure that the visits exceed the maximum
+				 * feasible value for an int type.
+				 * TODO: remove this check once you are reasonably sure that
+				 * this can never happen.
+				 */
+				if(visits < 0){
+					throw new RuntimeException("Negative value for visits : VISITS=" + visits + ".");
+				}
 
 				if(visits == 0){
 					// Default score for unvisited moves
@@ -179,13 +297,9 @@ public class HybridMCSManager {
 
 	public void search(MachineState state, long timeout) throws MCSException{
 
-		// Reset so that if the search fails we'll have a duration of 0ms for it
-		// instead of the duration of the previous search.
-		this.searchStart = 0L;
-		this.searchEnd = 0L;
+		List<Role> roles = this.gameDependentParameters.getTheMachine().getRoles();
 
-		this.iterations = 0;
-		this.visitedNodes = 0;
+		Role myRole = roles.get(this.gameDependentParameters.getMyRoleIndex());
 
 		// If the state is different from the last searched state,
 		// remove the old state and create new move statistics.
@@ -195,7 +309,7 @@ public class HybridMCSManager {
 
 			List<Move> legalMoves;
 			try {
-				legalMoves = this.theMachine.getLegalMoves(this.currentState, this.myRole);
+				legalMoves = this.gameDependentParameters.getTheMachine().getLegalMoves(this.currentState,  myRole);
 			} catch (MoveDefinitionException | StateMachineException e) {
 				GamerLogger.log("MCSManager", "Error when computing legal moves for my role in the root state before starting Monte Carlo search.");
 				GamerLogger.logStackTrace("MCSManager", e);
@@ -217,48 +331,64 @@ public class HybridMCSManager {
 		//int[] playoutVisitedNodes = new int[1];
 		int myGoal;
 
-		this.searchStart = System.currentTimeMillis();
+		long searchStart = System.currentTimeMillis();
 		// Analyze every move, iterating until the timeout is reached.
 		for (int i = 0; true; i = (i+1) % this.currentMovesStatistics.length) {
-		    if (System.currentTimeMillis() >= timeout)
+		    if (this.timeToStopSearch(timeout))
 		        break;
 
-		    this.iterations++;
+		    this.gameDependentParameters.resetIterationStatistics();
 
 		    // Get the move.
 		    myCurrentMove = this.currentMovesStatistics[i].getTheMove();
 
-		    // Always increment at least once. Even if the playout fails we consider one node to have been
-		    // visited because we update the statistics of the current move with a 0 goal.
-		    this.visitedNodes++;
-		    try {
-
-		    	// Get a random joint move where my role plays its currently analyzed move.
-				jointMove = this.theMachine.getRandomJointMove(this.currentState, this.myRole, myCurrentMove);
+			try {
+				// Get a random joint move where my role plays its currently analyzed move.
+				jointMove = this.gameDependentParameters.getTheMachine().getRandomJointMove(this.currentState, myRole, myCurrentMove);
 				// Get the state reachable with this joint move.
-				nextState =  this.theMachine.getNextState(this.currentState, jointMove);
+				nextState =  this.gameDependentParameters.getTheMachine().getNextState(this.currentState, jointMove);
+				// Increase number of visited nodes
+				this.gameDependentParameters.increaseCurrentIterationVisitedNodes();
 				// Get the goals obtained by performing playouts from this state.
 				simulationResult = this.playoutStrategy.singlePlayout(nextState, this.maxSearchDepth-1);
-				this.visitedNodes += simulationResult.getPlayoutLength();
-				myGoal = simulationResult.getTerminalGoals()[this.theMachine.getRoleIndices().get(this.myRole)];
+			} catch (TransitionDefinitionException | StateMachineException | MoveDefinitionException e) {
+				// NOTE: when an exception is thrown we consider the iteration still valid getting a reward of 0 for all players.
+				// In this case, moves that lead to game situations that the state machine cannot deal with correctly are penalized.
+				// Another option would be to skip the iteration and ignore it completely.
+				GamerLogger.logError("McsManager", "Cannot compute joint move or next state. Stopping iteration and returning a goal of 0 for all roles.");
 
-			} catch (StateMachineException | MoveDefinitionException | TransitionDefinitionException e) {
-
-				GamerLogger.logError("MCSManager", "Failed visiting next node for the currently analyzed move of my role during Monte Carlo Search (failed retrieving random joint move or next state).");
-				GamerLogger.logStackTrace("MCSManager", e);
-
-				myGoal = 0;
+				int[] goals = new int[this.gameDependentParameters.getNumRoles()];
+				for(int j = 0; j < goals.length; j++) {
+					goals[j] = 0;
+				}
+				simulationResult = new SimulationResult(goals);
 
 			}
+			myGoal = simulationResult.getTerminalGoals()[this.gameDependentParameters.getMyRoleIndex()];
 
 		    this.currentMovesStatistics[i].incrementVisits();
 		    this.currentMovesStatistics[i].incrementScoreSum(myGoal);
 
+		    this.gameDependentParameters.increaseCurrentIterationVisitedNodes(simulationResult.getPlayoutLength());
+			this.gameDependentParameters.increaseStepIterations();
+			this.gameDependentParameters.increaseStepScoreSumForRoles(simulationResult.getTerminalGoals());
+
+			this.gameDependentParameters.increaseStepVisitedNodes(this.gameDependentParameters.getCurrentIterationVisitedNodes());
+
+			// If something goes wrong in advancing with the current move, assume that the game length corresponds to the
+			// number of visited nodes so far in the current iteration
+			// TODO: if we use this sample we might underestimate the game length. Should this sample be ignored? Note that
+			// if we want to ignore this sample we must remember that when computing the average length we have to decrease
+			// by 1 the number of iterations by which we divide the total game length sum.
+			this.gameDependentParameters.increaseStepGameLengthSum(this.gameDependentParameters.getCurrentIterationVisitedNodes());
 		}
 
-		this.searchEnd = System.currentTimeMillis();
+		long searchEnd = System.currentTimeMillis();
+
+		this.gameDependentParameters.increaseStepSearchDuration(searchEnd-searchStart);
 	}
 
+	/*
 	public void resetSearch(){
 		this.currentState = null;
 		this.currentMovesStatistics = null;
@@ -274,7 +404,7 @@ public class HybridMCSManager {
 
 	public long getSearchTime(){
 		return (this.searchEnd - this.searchStart);
-	}
+	}*/
 
 	/**
 	 * Method that checks when it's time to stop the search.
@@ -291,6 +421,46 @@ public class HybridMCSManager {
 
 		}
 
+	}
+
+	public void beforeMoveActions(int currentGameStep, boolean metagame){
+
+		this.gameDependentParameters.setGameStep(currentGameStep);
+
+		this.gameDependentParameters.setMetagame(metagame);
+
+	}
+
+	public void afterMetagameActions(){
+		this.gameDependentParameters.setMetagame(false);
+	}
+
+	public double[] getStepScoreSumForRoles(){
+		return this.gameDependentParameters.getStepScoreSumForRoles();
+	}
+
+	public int getStepIterations(){
+		return this.gameDependentParameters.getStepIterations();
+	}
+
+	public int getStepVisitedNodes(){
+		return this.gameDependentParameters.getStepVisitedNodes();
+	}
+
+	public long getStepSearchDuration(){
+		return this.gameDependentParameters.getStepSearchDuration();
+	}
+
+	/**
+	 * ATTENTION! This method has to be used ONLY when testing the propnet speed, NEVER
+	 * change this parameter otherwise.
+	 */
+	public void setNumExpectedIterations(int numExpectedIterations) {
+		this.numExpectedIterations = numExpectedIterations;
+	}
+
+	public int getNumExpectedIterations() {
+		return this.numExpectedIterations;
 	}
 
 }

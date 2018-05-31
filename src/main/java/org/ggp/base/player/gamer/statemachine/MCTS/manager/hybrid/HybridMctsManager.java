@@ -1223,8 +1223,8 @@ public class HybridMctsManager {
 
 		this.transpositionTable.clean();
 
-		if(this.afterMoveStrategy != null){
-			this.afterMoveStrategy.afterMoveActions();
+		if(this.beforeMoveStrategy != null){
+			this.beforeMoveStrategy.beforeMoveActions();
 		}
 
 		this.transpositionTable.logTable("Start");
