@@ -1273,4 +1273,16 @@ public class HybridMctsManager {
 		return this.gameDependentParameters.getStepSearchDuration();
 	}
 
+	/**
+	 * ATTENTION! This method has to be used ONLY when testing the propnet speed, NEVER
+	 * change this parameter otherwise.
+	 */
+	public void setNumExpectedIterations(int numExpectedIterations) {
+		this.numExpectedIterations = numExpectedIterations;
+	}
+
+	public int getNumExpectedIterations() {
+		return this.numExpectedIterations;
+	}
+
 }

@@ -1,7 +1,5 @@
 package csironi.ggp.course;
 
-import ggpbasebenchmark.Trace;
-
 import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
@@ -21,6 +19,8 @@ import org.ggp.base.util.statemachine.implementation.propnet.SeparateInternalPro
 import org.ggp.base.util.statemachine.structure.explicit.ExplicitMachineState;
 import org.ggp.base.util.statemachine.structure.explicit.ExplicitMove;
 import org.ggp.base.util.statemachine.structure.explicit.ExplicitRole;
+
+import ggpbasebenchmark.Trace;
 
 public class TrickyGDLTester {
 
@@ -48,7 +48,7 @@ public class TrickyGDLTester {
 
         System.out.println("Looking for game " + gameKey + "...");
 
-        System.out.println(GamerConfiguration.defaultLocalGameRepositoryFolderPath);
+        System.out.println(GamerConfiguration.defaultLocalGameRepositoryFolderPath + "/" + GamerConfiguration.defaultGGPBaseRepo);
 
         //GameRepository theRepository = new ManualUpdateLocalGameRepository(GamerConfiguration.defaultLocalGameRepositoryFolderPath);
 

@@ -777,4 +777,8 @@ public class SeparateInternalPropnetManager extends Thread{
 		return this.componentsStats;
 	}
 
+	public OptimizationCaller[] getOptimizations() {
+		return this.optimizations;
+	}
+
 }

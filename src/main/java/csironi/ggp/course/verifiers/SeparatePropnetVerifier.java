@@ -182,7 +182,7 @@ public class SeparatePropnetVerifier {
 			// LINUX
 		    //theRepository = new ManualUpdateLocalGameRepository("/home/csironi/GAMEREPOS/GGPBase-GameRepo-03022016");
 
-	    	theRepository = new ManualUpdateLocalGameRepository(GamerConfiguration.defaultLocalGameRepositoryFolderPath);
+	    	theRepository = new ManualUpdateLocalGameRepository(GamerConfiguration.defaultLocalGameRepositoryFolderPath + "/" + GamerConfiguration.defaultGGPBaseRepo);
 
 	    }
 
