@@ -18,6 +18,16 @@ import org.ggp.base.util.statemachine.exceptions.TransitionDefinitionException;
 import org.ggp.base.util.statemachine.structure.MachineState;
 import org.ggp.base.util.statemachine.structure.Move;
 
+/**
+ * For this class we can also set the number of playouts that should be performed every time from the given
+ * state. Usually, for each call of the playout method only one playout is performed, but for this class we
+ * can set the parameter numSimulationsPerPlayout to specify how many playouts must be performed every time
+ * the playout method is called. NOTE that we allow to have more repetitions for the playout to enable a
+ * comparison with the
+ *
+ * @author C.Sironi
+ *
+ */
 public class StandardPlayout extends PlayoutStrategy {
 
 	/**

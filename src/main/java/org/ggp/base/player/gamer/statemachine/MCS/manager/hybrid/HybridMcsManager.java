@@ -327,7 +327,7 @@ public class HybridMcsManager {
 		Move myCurrentMove;
 		List<Move> jointMove;
 		MachineState nextState;
-		SimulationResult simulationResult;
+		SimulationResult[] simulationResults;
 		//int[] playoutVisitedNodes = new int[1];
 		int myGoal;
 
@@ -350,7 +350,7 @@ public class HybridMcsManager {
 				// Increase number of visited nodes
 				this.gameDependentParameters.increaseCurrentIterationVisitedNodes();
 				// Get the goals obtained by performing playouts from this state.
-				simulationResult = this.playoutStrategy.singlePlayout(nextState, this.maxSearchDepth-1);
+				simulationResults = this.playoutStrategy.playout(jointMove, nextState, this.maxSearchDepth-1);
 			} catch (TransitionDefinitionException | StateMachineException | MoveDefinitionException e) {
 				// NOTE: when an exception is thrown we consider the iteration still valid getting a reward of 0 for all players.
 				// In this case, moves that lead to game situations that the state machine cannot deal with correctly are penalized.
@@ -361,17 +361,21 @@ public class HybridMcsManager {
 				for(int j = 0; j < goals.length; j++) {
 					goals[j] = 0;
 				}
-				simulationResult = new SimulationResult(goals);
+				simulationResults = new SimulationResult[1];
+				simulationResults[0] = new SimulationResult(goals);
 
 			}
-			myGoal = simulationResult.getTerminalGoals()[this.gameDependentParameters.getMyRoleIndex()];
 
-		    this.currentMovesStatistics[i].incrementVisits();
-		    this.currentMovesStatistics[i].incrementScoreSum(myGoal);
+			for(SimulationResult simulationResult : simulationResults) {
+				myGoal = simulationResult.getTerminalGoals()[this.gameDependentParameters.getMyRoleIndex()];
 
-		    this.gameDependentParameters.increaseCurrentIterationVisitedNodes(simulationResult.getPlayoutLength());
-			this.gameDependentParameters.increaseStepIterations();
-			this.gameDependentParameters.increaseStepScoreSumForRoles(simulationResult.getTerminalGoals());
+				this.currentMovesStatistics[i].incrementVisits();
+				this.currentMovesStatistics[i].incrementScoreSum(myGoal);
+
+				this.gameDependentParameters.increaseCurrentIterationVisitedNodes(simulationResult.getPlayoutLength());
+				this.gameDependentParameters.increaseStepIterations();
+				this.gameDependentParameters.increaseStepScoreSumForRoles(simulationResult.getTerminalGoals());
+			}
 
 			this.gameDependentParameters.increaseStepVisitedNodes(this.gameDependentParameters.getCurrentIterationVisitedNodes());
 

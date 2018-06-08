@@ -183,7 +183,7 @@ public class HybridRandomManager {
 
 		this.currentState = state;
 
-		SimulationResult simulationResult;
+		SimulationResult[] simulationResults;
 
 		long searchStart = System.currentTimeMillis();
 
@@ -192,11 +192,13 @@ public class HybridRandomManager {
 			this.gameDependentParameters.resetIterationStatistics();
 
 			// Get the goals obtained by performing playouts from this state.
-			simulationResult = this.playoutStrategy.singlePlayout(this.currentState, this.maxSearchDepth);
+			simulationResults = this.playoutStrategy.playout(null, this.currentState, this.maxSearchDepth);
 
-			this.gameDependentParameters.increaseCurrentIterationVisitedNodes(simulationResult.getPlayoutLength());
-			this.gameDependentParameters.increaseStepIterations();
-			this.gameDependentParameters.increaseStepScoreSumForRoles(simulationResult.getTerminalGoals());
+			for(SimulationResult simulationResult : simulationResults) {
+				this.gameDependentParameters.increaseCurrentIterationVisitedNodes(simulationResult.getPlayoutLength());
+				this.gameDependentParameters.increaseStepIterations();
+				this.gameDependentParameters.increaseStepScoreSumForRoles(simulationResult.getTerminalGoals());
+			}
 
 			this.gameDependentParameters.increaseStepVisitedNodes(this.gameDependentParameters.getCurrentIterationVisitedNodes());
 

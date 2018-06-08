@@ -16,8 +16,14 @@ import org.ggp.base.util.logging.GamerLogger;
 import org.ggp.base.util.reflection.ProjectSearcher;
 import org.ggp.base.util.statemachine.structure.MachineState;
 import org.ggp.base.util.statemachine.structure.Move;
-
-public class MultiplePlayout extends PlayoutStrategy {
+/**
+ * Whenever a playout is performed from a node, this strategy checks if there is an interesting move
+ * in the path, and if so performs multiple playouts from that node. Otherwise only one playout is performed.
+ *
+ * @author C.Sironi
+ *
+ */
+public class SelectiveMultiplePlayout extends PlayoutStrategy {
 
 	/**
 	 * Shared parameter that contains all the joint moves played so far for the current simulation in the tree.
@@ -113,7 +119,7 @@ public class MultiplePlayout extends PlayoutStrategy {
 	private int currentStepIterations; // Same value for all roles
 	*/
 
-	public MultiplePlayout(GameDependentParameters gameDependentParameters,	Random random,
+	public SelectiveMultiplePlayout(GameDependentParameters gameDependentParameters,	Random random,
 			GamerSettings gamerSettings, SharedReferencesCollector sharedReferencesCollector, String id) {
 		super(gameDependentParameters, random, gamerSettings, sharedReferencesCollector, id);
 
@@ -360,16 +366,16 @@ public class MultiplePlayout extends PlayoutStrategy {
 		// If we have performed enough iterations for this game check if there is any interesting joint move performed so far.
 		boolean performMultiPlayout = false;
 
-		System.out.println("All simulation moves = " + this.currentSimulationJointMoves.size());
-		int i = 0;
+		//System.out.println("All simulation moves = " + this.currentSimulationJointMoves.size());
+		//int i = 0;
 
 		for(MctsJointMove move : this.currentSimulationJointMoves) {
 			performMultiPlayout = performMultiPlayout || this.condChecker.isMoveInteresting(move.getJointMove());
 			if(performMultiPlayout) {
-				System.out.println("Found interesting move = " + i);
+				//System.out.println("Found interesting move = " + i);
 				break;
 			}
-			i++;
+			//i++;
 		}
 
 		return performMultiPlayout;

@@ -5,12 +5,12 @@ import java.util.Random;
 import org.ggp.base.player.gamer.statemachine.GamerSettings;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.GameDependentParameters;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.SharedReferencesCollector;
-import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.strategies.playout.MultiplePlayout;
+import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.strategies.playout.SelectiveMultiplePlayout;
 import org.ggp.base.util.logging.GamerLogger;
 
 public class MultiplePlayoutAfterMove extends AfterMoveStrategy {
 
-	private MultiplePlayout multiplePlayout;
+	private SelectiveMultiplePlayout multiplePlayout;
 
 
 	public MultiplePlayoutAfterMove(GameDependentParameters gameDependentParameters, Random random,
@@ -21,8 +21,8 @@ public class MultiplePlayoutAfterMove extends AfterMoveStrategy {
 	@Override
 	public void setReferences(SharedReferencesCollector sharedReferencesCollector) {
 
-		if(sharedReferencesCollector.getPlayoutStrategy() instanceof MultiplePlayout){
-			this.multiplePlayout = (MultiplePlayout) sharedReferencesCollector.getPlayoutStrategy();
+		if(sharedReferencesCollector.getPlayoutStrategy() instanceof SelectiveMultiplePlayout){
+			this.multiplePlayout = (SelectiveMultiplePlayout) sharedReferencesCollector.getPlayoutStrategy();
 		}else{
 			GamerLogger.logError("SearchManagerCreation", "Error when instantiating after move strategy MultiplePlayoutAfterMove. " +
 					"The referenced playout strategy is of type " + sharedReferencesCollector.getPlayoutStrategy().getClass().getSimpleName() +
