@@ -221,9 +221,9 @@ public class SingleRunPNTest {
     	testSettings += "[optimizations] = " + optimizationsString + "\n";
     	testSettings += "[withCache] = " + withCache + "\n";
     	testSettings += "[cacheType] = " + cacheType + "\n";
-    	testSettings += "[randomSearchManagerSettingsFilePath] = " + randomSearchManagerSettingsFile.getPath();
-    	testSettings += "[mcsSearchManagerSettingsFilePath] = " + mcsSearchManagerSettingsFile.getPath();
-    	testSettings += "[mctsSearchManagerSettingsFilePath] = " + mctsSearchManagerSettingsFile.getPath();
+    	testSettings += "[randomSearchManagerSettingsFilePath] = " + randomSearchManagerSettingsFile.getPath()+ "\n";
+    	testSettings += "[mcsSearchManagerSettingsFilePath] = " + mcsSearchManagerSettingsFile.getPath()+ "\n";
+    	testSettings += "[mctsSearchManagerSettingsFilePath] = " + mctsSearchManagerSettingsFile.getPath()+ "\n";
 
     	GamerLogger.log("SingleRunPNTester", testSettings);
 
@@ -503,21 +503,17 @@ public class SingleRunPNTest {
 
 				} catch (FileNotFoundException e) {
 					//this.gamerSettings = null;
-					GamerLogger.logError("Gamer", "Impossible to create manager, cannot find the .properties file with the settings: " + randomSearchManagerSettingsFile.getPath() + ".");
+					GamerLogger.logError("SingleRunPNTester", "Impossible to create manager, cannot find the .properties file with the settings: " + randomSearchManagerSettingsFile.getPath() + ".");
 					throw new RuntimeException("Impossible to create manager, cannot find the .properties file with the settings.");
 				} catch (IOException e) {
 					//this.gamerSettings = null;
-					GamerLogger.logError("Gamer", "Impossible to create manager, exception when reading the .properties file with the settings: " + randomSearchManagerSettingsFile.getPath() + ".");
+					GamerLogger.logError("SingleRunPNTester", "Impossible to create manager, exception when reading the .properties file with the settings: " + randomSearchManagerSettingsFile.getPath() + ".");
 					throw new RuntimeException("Impossible to create manager, exception when reading the .properties file with the settings.");
 				}
 
 		        HybridRandomManager randomManager = new HybridRandomManager(new Random(), gamerSettings, randomSearchManagerSettingsFile.getName().split("\\.")[0]);
 
 		        AbstractStateMachine abstractStateMachine = new CompactStateMachine(thePropnetMachine);
-
-		        // Extracting roles that we need later:
-
-
 
 				//GamerLogger.log(GamerLogger.FORMAT.CSV_FORMAT, "Stats", "Game step;Thinking time(ms);Search time(ms);Iterations;Visited nodes;Iterations/second;Nodes/second;Chosen move;Move score sum;Move visits;Avg move score;Avg search score " + rolesList + ";");
 
@@ -631,11 +627,11 @@ public class SingleRunPNTest {
 
 				} catch (FileNotFoundException e) {
 					//this.gamerSettings = null;
-					GamerLogger.logError("Gamer", "Impossible to create gamer, cannot find the .properties file with the settings: " + mcsSearchManagerSettingsFile.getPath() + ".");
+					GamerLogger.logError("SingleRunPNTester", "Impossible to create gamer, cannot find the .properties file with the settings: " + mcsSearchManagerSettingsFile.getPath() + ".");
 					throw new RuntimeException("Impossible to create gamer, cannot find the .properties file with the settings.");
 				} catch (IOException e) {
 					//this.gamerSettings = null;
-					GamerLogger.logError("Gamer", "Impossible to create gamer, exception when reading the .properties file with the settings: " + mcsSearchManagerSettingsFile.getPath() + ".");
+					GamerLogger.logError("SingleRunPNTester", "Impossible to create gamer, exception when reading the .properties file with the settings: " + mcsSearchManagerSettingsFile.getPath() + ".");
 					throw new RuntimeException("Impossible to create gamer, exception when reading the .properties file with the settings.");
 				}
 
@@ -750,11 +746,11 @@ public class SingleRunPNTest {
 
 				} catch (FileNotFoundException e) {
 					//this.gamerSettings = null;
-					GamerLogger.logError("Gamer", "Impossible to create gamer, cannot find the .properties file with the settings: " + mctsSearchManagerSettingsFile.getPath() + ".");
+					GamerLogger.logError("SingleRunPNTester", "Impossible to create gamer, cannot find the .properties file with the settings: " + mctsSearchManagerSettingsFile.getPath() + ".");
 					throw new RuntimeException("Impossible to create gamer, cannot find the .properties file with the settings.");
 				} catch (IOException e) {
 					//this.gamerSettings = null;
-					GamerLogger.logError("Gamer", "Impossible to create gamer, exception when reading the .properties file with the settings: " + mctsSearchManagerSettingsFile.getPath() + ".");
+					GamerLogger.logError("SingleRunPNTester", "Impossible to create gamer, exception when reading the .properties file with the settings: " + mctsSearchManagerSettingsFile.getPath() + ".");
 					throw new RuntimeException("Impossible to create gamer, exception when reading the .properties file with the settings.");
 				}
 

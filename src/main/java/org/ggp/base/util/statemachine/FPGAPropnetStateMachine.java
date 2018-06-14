@@ -5,6 +5,7 @@ import java.util.List;
 
 import org.ggp.base.util.gdl.grammar.Gdl;
 import org.ggp.base.util.logging.GamerLogger;
+import org.ggp.base.util.placeholders.FPGAPropnetInterface;
 import org.ggp.base.util.statemachine.exceptions.MoveDefinitionException;
 import org.ggp.base.util.statemachine.exceptions.StateMachineException;
 import org.ggp.base.util.statemachine.exceptions.StateMachineInitializationException;
