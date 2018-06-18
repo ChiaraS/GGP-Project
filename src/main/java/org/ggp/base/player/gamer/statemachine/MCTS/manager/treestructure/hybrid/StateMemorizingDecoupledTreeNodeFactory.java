@@ -13,13 +13,14 @@ import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.hybrid.
 import org.ggp.base.util.logging.GamerLogger;
 import org.ggp.base.util.statemachine.exceptions.MoveDefinitionException;
 import org.ggp.base.util.statemachine.exceptions.StateMachineException;
+import org.ggp.base.util.statemachine.exceptions.TransitionDefinitionException;
 import org.ggp.base.util.statemachine.structure.MachineState;
 import org.ggp.base.util.statemachine.structure.Move;
 import org.ggp.base.util.statemachine.structure.Role;
 
-public class FpgaTreeNodeFactory extends TreeNodeFactory {
+public class StateMemorizingDecoupledTreeNodeFactory extends TreeNodeFactory {
 
-	public FpgaTreeNodeFactory(GameDependentParameters gameDependentParameters, Random random,
+	public StateMemorizingDecoupledTreeNodeFactory(GameDependentParameters gameDependentParameters, Random random,
 			GamerSettings gamerConfiguration, SharedReferencesCollector sharedReferencesCollector) {
 		super(gameDependentParameters, random, gamerConfiguration, sharedReferencesCollector);
 	}
@@ -95,7 +96,7 @@ public class FpgaTreeNodeFactory extends TreeNodeFactory {
 
 		}else{// Non-terminal state:
 
-			nextStates = this.gameDependentParameters.getTheMachine().getAllJointMovesAndNextStates();
+			nextStates = this.getNextStatesMap(state);
 			ductMovesStats = this.createDuctMctsMoves(state);
 
 			// Error when computing moves.
@@ -131,8 +132,7 @@ public class FpgaTreeNodeFactory extends TreeNodeFactory {
 	}
 
 	/**
-	 * This method creates the moves statistics to be put in the MC Tree node of the given state
-	 * for the DUCT version of the MCTS player.
+	 * This method gets the map with all joint moves and corresponding next states.
 	 *
 	 * @param state the state for which to create the moves statistics.
 	 * @return the moves statistics, if the moves can be computed, null otherwise.
@@ -143,7 +143,7 @@ public class FpgaTreeNodeFactory extends TreeNodeFactory {
 
 		//System.out.println("NUMROLES = " + roles.size());
 
-		DecoupledMctsMoveStats[][] moves = new DecoupledMctsMoveStats[roles.size()][];
+		DecoupledMctsMoveStats[][] moves = new DecoupledMctsMoveStats[this.gameDependentParameters.getNumRoles()][];
 
 		try{
 			List<Move> legalMoves;
@@ -166,6 +166,30 @@ public class FpgaTreeNodeFactory extends TreeNodeFactory {
 		}
 
 		return moves;
+	}
+
+	/**
+	 * This method creates the moves statistics to be put in the MC Tree node of the given state
+	 * for the DUCT version of the MCTS player.
+	 *
+	 * @param state the state for which to create the moves statistics.
+	 * @return the moves statistics, if the moves can be computed, null otherwise.
+	 */
+	protected Map<List<Move>,MachineState> getNextStatesMap(MachineState state){
+
+		Map<List<Move>,MachineState> nextStates;
+
+		try{
+			nextStates = this.gameDependentParameters.getTheMachine().getAllJointMovesAndNextStates(state);
+		}catch(TransitionDefinitionException | MoveDefinitionException | StateMachineException e){
+			// If for at least one player the legal moves cannot be computed, we return null.
+			GamerLogger.logError("MctsManager", "Failed to retrieve all joint moves with corresponding next states while adding non-terminal DUCT state to the tree.");
+			GamerLogger.logStackTrace("MctsManager", e);
+
+			nextStates = null;
+		}
+
+		return nextStates;
 	}
 
 	@Override

@@ -16,8 +16,8 @@ public class FPGAPropnetInterface {
 	 *
 	 * @return the initial state.
 	 */
-	public FpgaState getRootState(){
-		return new FpgaState();
+	public FpgaInternalState getRootState(){
+		return new FpgaInternalState();
 	}
 
 	/**
@@ -28,8 +28,8 @@ public class FPGAPropnetInterface {
 	 * @return all states reachable from the given state, each of which is paired with the list of moves
 	 * (one for each role in the game) that lead to the next state.
 	 */
-	public Vector<Pair<FpgaState,Vector<FpgaMove>>> getNextStates(FpgaState state){
-		return new Vector<Pair<FpgaState,Vector<FpgaMove>>>();
+	public Vector<Pair<FpgaInternalState,Vector<FpgaInternalMove>>> getNextStates(FpgaInternalState state){
+		return new Vector<Pair<FpgaInternalState,Vector<FpgaInternalMove>>>();
 	}
 
 	/**
@@ -40,7 +40,7 @@ public class FPGAPropnetInterface {
 	 * @param simulationsNumber
 	 * @return
 	 */
-	public Vector<Double> getScores(FpgaState state, int simulationsNumber){
+	public Vector<Double> getScores(FpgaInternalState state, int simulationsNumber){
 		return new Vector<Double>();
 	}
 

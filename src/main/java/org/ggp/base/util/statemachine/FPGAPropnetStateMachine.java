@@ -6,6 +6,7 @@ import java.util.List;
 import org.ggp.base.util.gdl.grammar.Gdl;
 import org.ggp.base.util.logging.GamerLogger;
 import org.ggp.base.util.placeholders.FPGAPropnetInterface;
+import org.ggp.base.util.placeholders.FpgaInternalState;
 import org.ggp.base.util.statemachine.exceptions.MoveDefinitionException;
 import org.ggp.base.util.statemachine.exceptions.StateMachineException;
 import org.ggp.base.util.statemachine.exceptions.StateMachineInitializationException;
@@ -16,10 +17,24 @@ import org.ggp.base.util.statemachine.structure.compact.CompactRole;
 import org.ggp.base.util.statemachine.structure.explicit.ExplicitMachineState;
 import org.ggp.base.util.statemachine.structure.explicit.ExplicitMove;
 import org.ggp.base.util.statemachine.structure.explicit.ExplicitRole;
+import org.ggp.base.util.statemachine.structure.fpga.FpgaMachineState;
 
 import com.google.common.collect.ImmutableList;
 
-public class FPGAPropnetStateMachine extends InternalPropnetStateMachine {
+public class FPGAPropnetStateMachine extends StateMachine {
+
+	/**
+	 * Once the functions of the FPGA library are called on a state we memorize the returned output in the
+	 * following variables. This is because this class has multiple functions that only return part of such
+	 * output and they are normally called in sequence on the same state. It would be a waste to call the
+	 * library every time one of such methods is called, and then throw away part of the output.
+	 */
+	private FpgaInternalState lastVisitedState;
+
+
+
+
+
 
 	private FPGAPropnetInterface fpgaPropnetInterface;
 
@@ -169,7 +184,7 @@ public class FPGAPropnetStateMachine extends InternalPropnetStateMachine {
 	/*** Methods to convert propnet states/moves/roles to GDL states/moves/roles and vice versa ***/
 
 	@Override
-	public ExplicitMachineState convertToExplicitMachineState(CompactMachineState state) {
+	public ExplicitMachineState convertToExplicitMachineState(FpgaMachineState state) {
 		// TODO Auto-generated method stub
 		return null;
 	}

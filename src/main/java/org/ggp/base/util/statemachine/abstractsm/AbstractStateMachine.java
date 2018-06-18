@@ -753,4 +753,17 @@ public abstract class AbstractStateMachine {
     	}
     }
 
+	public Map<List<Move>, MachineState> getAllJointMovesAndNextStates(MachineState state) throws MoveDefinitionException, StateMachineException, TransitionDefinitionException {
+
+		Map<List<Move>, MachineState> jointMovesAndNextStates = new HashMap<List<Move>, MachineState>();
+
+		List<List<Move>> allJointMoves = this.getLegalJointMoves(state);
+
+		for(List<Move> jointMove : allJointMoves) {
+			jointMovesAndNextStates.put(jointMove, this.getNextState(state, jointMove));
+		}
+
+		return jointMovesAndNextStates;
+	}
+
 }

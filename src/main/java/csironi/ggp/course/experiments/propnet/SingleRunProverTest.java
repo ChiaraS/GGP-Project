@@ -10,10 +10,6 @@ import java.util.Random;
 
 import org.apache.logging.log4j.ThreadContext;
 import org.ggp.base.player.gamer.statemachine.GamerSettings;
-import org.ggp.base.player.gamer.statemachine.MCS.manager.MCSException;
-import org.ggp.base.player.gamer.statemachine.MCS.manager.hybrid.HybridMcsManager;
-import org.ggp.base.player.gamer.statemachine.MCTS.manager.exceptions.MCTSException;
-import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.HybridMctsManager;
 import org.ggp.base.player.gamer.statemachine.RNDSimulations.HybridRandomManager;
 import org.ggp.base.player.gamer.statemachine.RNDSimulations.exceptions.RandomException;
 import org.ggp.base.util.configuration.GamerConfiguration;
@@ -396,7 +392,7 @@ public class SingleRunProverTest {
 		 * random playout for the next state after the initial one, Random -> random playout already from the
 		 * initial state.
 		 */
-
+/*
 	    if(withCache){
 	    	switch(cacheType){
 	    	case "nosync":
@@ -444,13 +440,6 @@ public class SingleRunProverTest {
 
 	        AbstractStateMachine abstractStateMachine = new ExplicitStateMachine(theProverMachine);
 
-	        /*
-	    	String rolesList = "[ ";
-	    	for(int roleIndex = 0; roleIndex < abstractStateMachine.getRoles().size(); roleIndex++){
-	    		rolesList += (abstractStateMachine.convertToExplicitRole((abstractStateMachine.getRoles().get(roleIndex))) + " ");
-	    	}
-	    	rolesList += "]";
-	    	*/
 			//GamerLogger.log(GamerLogger.FORMAT.CSV_FORMAT, "Stats", "Game step;Thinking time(ms);Search time(ms);Iterations;Visited nodes;Iterations/second;Nodes/second;Chosen move;Move score sum;Move visits;Avg move score;Avg search score " + rolesList + ";");
 
 			mcsManager.setUpManager(abstractStateMachine, numRoles, myRoleIndex, Long.MAX_VALUE);
@@ -502,9 +491,9 @@ public class SingleRunProverTest {
 		theProverMachine = null;
 
 		collect(); // TODO: Leave or not?
-
+*/
 		/******************************** MCTS SPEED TEST *********************************/
-
+/*
 	    if(withCache){
 	    	switch(cacheType){
 	    	case "nosync":
@@ -550,13 +539,7 @@ public class SingleRunProverTest {
 
 	        AbstractStateMachine abstractStateMachine = new ExplicitStateMachine(theProverMachine);
 
-	        /*
-	    	String rolesList = "[ ";
-	    	for(int roleIndex = 0; roleIndex < abstractStateMachine.getRoles().size(); roleIndex++){
-	    		rolesList += (abstractStateMachine.convertToExplicitRole((abstractStateMachine.getRoles().get(roleIndex))) + " ");
-	    	}
-	    	rolesList += "]";
-	    	*/
+
 			//GamerLogger.log(GamerLogger.FORMAT.CSV_FORMAT, "Stats", "Game step;Thinking time(ms);Search time(ms);Iterations;Visited nodes;Iterations/second;Nodes/second;Chosen move;Move score sum;Move visits;Avg move score;Avg search score " + rolesList + ";");
 
 			mctsManager.setUpManager(abstractStateMachine, numRoles, myRoleIndex, Long.MAX_VALUE);
@@ -610,7 +593,7 @@ public class SingleRunProverTest {
 		theProverMachine = null;
 
 		collect(); // TODO: Leave or not?
-
+*/
 		/************************** LOG *******************************/
 
 		ThreadContext.put("LOG_FOLDER", mainLogFolder);

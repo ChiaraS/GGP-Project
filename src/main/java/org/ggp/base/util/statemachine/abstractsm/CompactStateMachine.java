@@ -153,13 +153,13 @@ public class CompactStateMachine extends AbstractStateMachine {
 
 	private List<CompactMove> convertListOfMoves(List<Move> moves){
 
-		List<CompactMove> CompactMoves = new ArrayList<CompactMove>();
+		List<CompactMove> compactMoves = new ArrayList<CompactMove>();
 
 		for(Move m : moves){
 
 			if(m instanceof CompactMove){
 
-				CompactMoves.add((CompactMove)m);
+				compactMoves.add((CompactMove)m);
 
 			}else{
 				// Not throwing StateMachineException because failure here is not the fault of the state machine but
@@ -169,7 +169,7 @@ public class CompactStateMachine extends AbstractStateMachine {
 
 		}
 
-		return CompactMoves;
+		return compactMoves;
 
 	}
 
