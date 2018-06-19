@@ -18,6 +18,8 @@ import org.ggp.base.util.statemachine.structure.explicit.ExplicitMachineState;
 import org.ggp.base.util.statemachine.structure.explicit.ExplicitMove;
 import org.ggp.base.util.statemachine.structure.explicit.ExplicitRole;
 
+import csironi.ggp.course.utils.MyPair;
+
 
 public class CompactStateMachine extends AbstractStateMachine {
 
@@ -178,6 +180,45 @@ public class CompactStateMachine extends AbstractStateMachine {
 
 		return this.getClass().getSimpleName() + "(" + this.theMachine.getName() + ")";
 
+	}
+
+	@Override
+	public MyPair<int[], Integer> fastPlayouts(MachineState state, int numSimulationsPerPlayout, int maxDepth) {
+		if(state instanceof CompactMachineState){
+
+			return this.theMachine.fastPlayouts((CompactMachineState)state, numSimulationsPerPlayout, maxDepth);
+
+		}else{
+			// Not throwing StateMachineException because failure here is not the fault of the state machine but
+			// the fault of some programming error that caused the wrong state and role formats to end up here.
+			throw new RuntimeException("CompactStateMachine-fastPlayouts(): detected wrong type for machine state: [" + state.getClass().getSimpleName() + "].");
+		}
+	}
+
+	@Override
+	public List<Move> getJointMove(MachineState state) {
+		if(state instanceof CompactMachineState){
+
+			return new ArrayList<Move>(this.theMachine.getJointMove((CompactMachineState)state));
+
+		}else{
+			// Not throwing StateMachineException because failure here is not the fault of the state machine but
+			// the fault of some programming error that caused the wrong state and role formats to end up here.
+			throw new RuntimeException("CompactStateMachine-getJointMove(): detected wrong type for machine state: [" + state.getClass().getSimpleName() + "].");
+		}
+	}
+
+	@Override
+	public Move getMoveForRole(MachineState state, int roleIndex) {
+		if(state instanceof CompactMachineState){
+
+			return this.theMachine.getMoveForRole((CompactMachineState)state, roleIndex);
+
+		}else{
+			// Not throwing StateMachineException because failure here is not the fault of the state machine but
+			// the fault of some programming error that caused the wrong state and role formats to end up here.
+			throw new RuntimeException("CompactStateMachine-getMoveForRole(): detected wrong type for machine state: [" + state.getClass().getSimpleName() + "].");
+		}
 	}
 
 }

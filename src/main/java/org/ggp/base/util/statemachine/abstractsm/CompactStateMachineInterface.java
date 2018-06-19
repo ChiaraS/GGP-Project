@@ -5,12 +5,15 @@ import java.util.List;
 import org.ggp.base.util.statemachine.exceptions.MoveDefinitionException;
 import org.ggp.base.util.statemachine.exceptions.StateMachineException;
 import org.ggp.base.util.statemachine.exceptions.TransitionDefinitionException;
+import org.ggp.base.util.statemachine.structure.Move;
 import org.ggp.base.util.statemachine.structure.compact.CompactMachineState;
 import org.ggp.base.util.statemachine.structure.compact.CompactMove;
 import org.ggp.base.util.statemachine.structure.compact.CompactRole;
 import org.ggp.base.util.statemachine.structure.explicit.ExplicitMachineState;
 import org.ggp.base.util.statemachine.structure.explicit.ExplicitMove;
 import org.ggp.base.util.statemachine.structure.explicit.ExplicitRole;
+
+import csironi.ggp.course.utils.MyPair;
 
 public interface CompactStateMachineInterface extends AbstractStateMachineInterface{
 
@@ -36,5 +39,13 @@ public interface CompactStateMachineInterface extends AbstractStateMachineInterf
     public ExplicitMove convertToExplicitMove(CompactMove move);
 
     public ExplicitRole convertToExplicitRole(CompactRole role);
+
+    // Methods that perform playout and playout choices using the reasoner underlying the state machine
+
+	public MyPair<int[], Integer> fastPlayouts(CompactMachineState state, int numSimulationsPerPlayout, int maxDepth);
+
+	public List<CompactMove> getJointMove(CompactMachineState state);
+
+	public Move getMoveForRole(CompactMachineState state, int roleIndex);
 
 }

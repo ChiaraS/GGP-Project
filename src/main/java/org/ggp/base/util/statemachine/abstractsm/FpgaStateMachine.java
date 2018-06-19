@@ -22,6 +22,8 @@ import org.ggp.base.util.statemachine.structure.fpga.FpgaMachineState;
 import org.ggp.base.util.statemachine.structure.fpga.FpgaMove;
 import org.ggp.base.util.statemachine.structure.fpga.FpgaRole;
 
+import csironi.ggp.course.utils.MyPair;
+
 public class FpgaStateMachine extends AbstractStateMachine {
 
 	private FpgaStateMachineInterface theMachine;
@@ -209,6 +211,45 @@ public class FpgaStateMachine extends AbstractStateMachine {
 			throw new RuntimeException("FpgaStateMachine-getAllJointMovesAndNextStates(): detected wrong type for machine state: [" + state.getClass().getSimpleName() + "].");
 		}
 
+	}
+
+	@Override
+	public MyPair<int[], Integer> fastPlayouts(MachineState state, int numSimulationsPerPlayout, int maxDepth) {
+		if(state instanceof FpgaMachineState){
+
+			return this.theMachine.fastPlayouts((FpgaMachineState)state, numSimulationsPerPlayout, maxDepth);
+
+		}else{
+			// Not throwing StateMachineException because failure here is not the fault of the state machine but
+			// the fault of some programming error that caused the wrong state and role formats to end up here.
+			throw new RuntimeException("FpgaStateMachine-fastPlayouts(): detected wrong type for machine state: [" + state.getClass().getSimpleName() + "].");
+		}
+	}
+
+	@Override
+	public List<Move> getJointMove(MachineState state) {
+		if(state instanceof FpgaMachineState){
+
+			return new ArrayList<Move>(this.theMachine.getJointMove((FpgaMachineState)state));
+
+		}else{
+			// Not throwing StateMachineException because failure here is not the fault of the state machine but
+			// the fault of some programming error that caused the wrong state and role formats to end up here.
+			throw new RuntimeException("FpgaStateMachine-getJointMove(): detected wrong type for machine state: [" + state.getClass().getSimpleName() + "].");
+		}
+	}
+
+	@Override
+	public Move getMoveForRole(MachineState state, int roleIndex) {
+		if(state instanceof FpgaMachineState){
+
+			return this.theMachine.getMoveForRole((FpgaMachineState)state, roleIndex);
+
+		}else{
+			// Not throwing StateMachineException because failure here is not the fault of the state machine but
+			// the fault of some programming error that caused the wrong state and role formats to end up here.
+			throw new RuntimeException("FpgaStateMachine-getMoveForRole(): detected wrong type for machine state: [" + state.getClass().getSimpleName() + "].");
+		}
 	}
 
 }

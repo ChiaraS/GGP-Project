@@ -165,7 +165,7 @@ public class FpgaMctsManager {
 	 */
 	//private Set<Strategy> strategies = new HashSet<Strategy>();
 
-	public HybridMctsManager(Random random, GamerSettings gamerSettings, String gamerType) {
+	public FpgaMctsManager(Random random, GamerSettings gamerSettings, String gamerType) {
 
 		GamerLogger.log("SearchManagerCreation", "Creating search manager for gamer " + gamerType + ".");
 

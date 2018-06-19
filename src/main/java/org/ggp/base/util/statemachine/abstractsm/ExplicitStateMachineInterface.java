@@ -5,9 +5,12 @@ import java.util.List;
 import org.ggp.base.util.statemachine.exceptions.MoveDefinitionException;
 import org.ggp.base.util.statemachine.exceptions.StateMachineException;
 import org.ggp.base.util.statemachine.exceptions.TransitionDefinitionException;
+import org.ggp.base.util.statemachine.structure.Move;
 import org.ggp.base.util.statemachine.structure.explicit.ExplicitMachineState;
 import org.ggp.base.util.statemachine.structure.explicit.ExplicitMove;
 import org.ggp.base.util.statemachine.structure.explicit.ExplicitRole;
+
+import csironi.ggp.course.utils.MyPair;
 
 public interface ExplicitStateMachineInterface extends AbstractStateMachineInterface{
 
@@ -27,6 +30,12 @@ public interface ExplicitStateMachineInterface extends AbstractStateMachineInter
 
     public ExplicitMachineState getExplicitNextState(ExplicitMachineState state, List<ExplicitMove> moves) throws TransitionDefinitionException, StateMachineException;
 
+    // Methods that perform playout and playout choices using the reasoner underlying the state machine
 
+    public MyPair<int[], Integer> fastPlayouts(ExplicitMachineState state, int numSimulationsPerPlayout, int maxDepth);
+
+    public List<ExplicitMove> getJointMove(ExplicitMachineState state);
+
+	public Move getMoveForRole(ExplicitMachineState state, int roleIndex);
 
 }

@@ -5,7 +5,7 @@ import java.util.Map;
 import java.util.Random;
 
 import org.ggp.base.player.gamer.statemachine.GamerSettings;
-import org.ggp.base.player.gamer.statemachine.FPGAMCTS.manager.treestructure.FpgaMctsNode;
+import org.ggp.base.player.gamer.statemachine.FPGAMCTS.manager.treestructure.StateMemorizingMctsNode;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.GameDependentParameters;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.SharedReferencesCollector;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.MctsNode;
@@ -128,7 +128,7 @@ public class StateMemorizingDecoupledTreeNodeFactory extends TreeNodeFactory {
 
 	protected MctsNode createActualNewNode(Map<List<Move>,MachineState> nextStates, DecoupledMctsMoveStats[][] ductMovesStats,
 			int[] goals, boolean terminal){
-		return new FpgaMctsNode(nextStates, ductMovesStats, goals, terminal, this.gameDependentParameters.getNumRoles());
+		return new StateMemorizingMctsNode(nextStates, ductMovesStats, goals, terminal, this.gameDependentParameters.getNumRoles());
 	}
 
 	/**

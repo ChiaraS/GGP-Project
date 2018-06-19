@@ -6,6 +6,7 @@ import java.util.List;
 import java.util.Random;
 
 import org.ggp.base.player.gamer.statemachine.GamerSettings;
+import org.ggp.base.player.gamer.statemachine.FPGAMCTS.manager.treestructure.StateMemorizingMctsNode;
 import org.ggp.base.player.gamer.statemachine.MCS.manager.hybrid.CompleteMoveStats;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.exceptions.MCTSException;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.strategies.aftergame.AfterGameStrategy;
@@ -980,7 +981,7 @@ public class HybridMctsManager {
 
 		// Get the next state according to the joint move...
 		try {
-			nextState = this.gameDependentParameters.getTheMachine().getNextState(currentState, mctsJointMove.getJointMove());
+			nextState = this.getNextState(currentNode, currentState, mctsJointMove);
 		} catch (TransitionDefinitionException | StateMachineException e) {
 			GamerLogger.logError("MctsManager", "Cannot compute next state. Stopping iteration and returning safe goals.");
 
@@ -1211,6 +1212,35 @@ public class HybridMctsManager {
 				//System.out.println(Arrays.toString(simulationResult.getTerminalGoals()));
 			}
 		}
+	}
+
+	/**
+	 * Given the current state, the associated node and a joint move, this method returns the next state.
+	 * If the tree node memorizes next states, it will use the memorized map to get the next state, otherwise
+	 * it will use the state machine.
+	 *
+	 * @param currentNode
+	 * @param currentState
+	 * @param mctsJointMove
+	 * @return
+	 * @throws TransitionDefinitionException
+	 * @throws StateMachineException
+	 */
+	private MachineState getNextState(MctsNode currentNode, MachineState currentState, MctsJointMove mctsJointMove) throws TransitionDefinitionException, StateMachineException {
+
+		MachineState nextState;
+
+		if(currentNode instanceof StateMemorizingMctsNode) {
+			nextState = ((StateMemorizingMctsNode) currentNode).getNextState(mctsJointMove.getJointMove());
+			if(nextState == null) {
+				throw new TransitionDefinitionException(this.gameDependentParameters.getTheMachine().convertToExplicitMachineState(currentState), this.gameDependentParameters.getTheMachine().convertToExplicitJointMove(mctsJointMove.getJointMove()));
+			}
+		}else {
+			nextState = this.gameDependentParameters.getTheMachine().getNextState(currentState, mctsJointMove.getJointMove());
+		}
+
+		return nextState;
+
 	}
 
 	public void beforeMoveActions(int currentGameStep, boolean metagame){

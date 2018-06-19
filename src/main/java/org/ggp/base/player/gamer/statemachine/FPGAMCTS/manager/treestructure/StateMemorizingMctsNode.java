@@ -8,11 +8,11 @@ import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.hybrid.
 import org.ggp.base.util.statemachine.structure.MachineState;
 import org.ggp.base.util.statemachine.structure.Move;
 
-public class FpgaMctsNode extends DecoupledMctsNode {
+public class StateMemorizingMctsNode extends DecoupledMctsNode {
 
 	private Map<List<Move>,MachineState> nextStates;
 
-	public FpgaMctsNode(Map<List<Move>,MachineState> nextStates, DecoupledMctsMoveStats[][] movesStats, int[] goals, boolean terminal, int numRoles) {
+	public StateMemorizingMctsNode(Map<List<Move>,MachineState> nextStates, DecoupledMctsMoveStats[][] movesStats, int[] goals, boolean terminal, int numRoles) {
 
 		super(movesStats, goals, terminal, numRoles);
 
@@ -22,6 +22,18 @@ public class FpgaMctsNode extends DecoupledMctsNode {
 
 	public Map<List<Move>,MachineState> getNextStates(){
 		return this.nextStates;
+	}
+
+	/**
+	 * Looks in the table with next states for the state reachable by performing the given joint move
+	 *
+	 * @param jointMove
+	 * @return
+	 */
+	public MachineState getNextState(List<Move> jointMove) {
+
+		return this.nextStates.get(jointMove);
+
 	}
 
 }

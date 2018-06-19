@@ -7,12 +7,15 @@ import org.ggp.base.util.Pair;
 import org.ggp.base.util.statemachine.exceptions.MoveDefinitionException;
 import org.ggp.base.util.statemachine.exceptions.StateMachineException;
 import org.ggp.base.util.statemachine.exceptions.TransitionDefinitionException;
+import org.ggp.base.util.statemachine.structure.Move;
 import org.ggp.base.util.statemachine.structure.explicit.ExplicitMachineState;
 import org.ggp.base.util.statemachine.structure.explicit.ExplicitMove;
 import org.ggp.base.util.statemachine.structure.explicit.ExplicitRole;
 import org.ggp.base.util.statemachine.structure.fpga.FpgaMachineState;
 import org.ggp.base.util.statemachine.structure.fpga.FpgaMove;
 import org.ggp.base.util.statemachine.structure.fpga.FpgaRole;
+
+import csironi.ggp.course.utils.MyPair;
 
 public interface FpgaStateMachineInterface extends AbstractStateMachineInterface {
 
@@ -40,6 +43,14 @@ public interface FpgaStateMachineInterface extends AbstractStateMachineInterface
     public ExplicitMove convertToExplicitMove(FpgaMove move);
 
     public ExplicitRole convertToExplicitRole(FpgaRole role);
+
+    // Methods that perform playout and playout choices using the reasoner underlying the state machine
+
+	public List<FpgaMove> getJointMove(FpgaMachineState state);
+
+	public Move getMoveForRole(FpgaMachineState state, int roleIndex);
+
+	public MyPair<int[], Integer> fastPlayouts(FpgaMachineState state, int numSimulationsPerPlayout, int maxDepth);
 
 
 }

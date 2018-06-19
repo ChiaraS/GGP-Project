@@ -20,11 +20,14 @@ import org.ggp.base.util.statemachine.exceptions.MoveDefinitionException;
 import org.ggp.base.util.statemachine.exceptions.StateMachineException;
 import org.ggp.base.util.statemachine.exceptions.StateMachineInitializationException;
 import org.ggp.base.util.statemachine.exceptions.TransitionDefinitionException;
+import org.ggp.base.util.statemachine.structure.Move;
 import org.ggp.base.util.statemachine.structure.explicit.ExplicitMachineState;
 import org.ggp.base.util.statemachine.structure.explicit.ExplicitMove;
 import org.ggp.base.util.statemachine.structure.explicit.ExplicitRole;
 
 import com.google.common.collect.ImmutableMap;
+
+import csironi.ggp.course.utils.MyPair;
 
 
 /**
@@ -61,7 +64,8 @@ public abstract class StateMachine implements ExplicitStateMachineInterface{
 	 * used! Moreover, before discarding the state machine, make sure to shut it down (i.e. call the
 	 * shutdown() method on it).
 	 */
-    public abstract void initialize(List<Gdl> description, long timeout) throws StateMachineInitializationException;
+    @Override
+	public abstract void initialize(List<Gdl> description, long timeout) throws StateMachineInitializationException;
 
     public void initialize(List<Gdl> description) throws StateMachineInitializationException{
     	this.initialize(description, Long.MAX_VALUE);
@@ -107,7 +111,8 @@ public abstract class StateMachine implements ExplicitStateMachineInterface{
      * for the given role because of an error that occurred in the state machine and
      * couldn't be handled.
      */
-    public abstract List<Integer> getAllGoalsForOneRole(ExplicitMachineState state, ExplicitRole role) throws StateMachineException;
+    @Override
+	public abstract List<Integer> getAllGoalsForOneRole(ExplicitMachineState state, ExplicitRole role) throws StateMachineException;
 
 
     /**
@@ -117,7 +122,8 @@ public abstract class StateMachine implements ExplicitStateMachineInterface{
      * state is terminal because of an error that occurred in the state machine and
      * couldn't be handled.
      */
-    public abstract boolean isTerminal(ExplicitMachineState state) throws StateMachineException;
+    @Override
+	public abstract boolean isTerminal(ExplicitMachineState state) throws StateMachineException;
 
     /**
      * Returns a list of the roles in the game, in the same order as they
@@ -126,11 +132,13 @@ public abstract class StateMachine implements ExplicitStateMachineInterface{
      * The result will be the same as calling {@link ExplicitRole#computeRoles(List)}
      * on the game rules used to initialize this state machine.
      */
-    public abstract List<ExplicitRole> getExplicitRoles();
+    @Override
+	public abstract List<ExplicitRole> getExplicitRoles();
     /**
      * Returns the initial state of the game.
      */
-    public abstract ExplicitMachineState getExplicitInitialState();
+    @Override
+	public abstract ExplicitMachineState getExplicitInitialState();
 
     /**
      * Returns a list containing every move that is legal for the given role in the
@@ -143,7 +151,8 @@ public abstract class StateMachine implements ExplicitStateMachineInterface{
      * couldn't be handled.
      */
     // TODO: There are philosophical reasons for this to return Set<Move> rather than List<Move>.
-    public abstract List<ExplicitMove> getExplicitLegalMoves(ExplicitMachineState state, ExplicitRole role) throws MoveDefinitionException, StateMachineException;
+    @Override
+	public abstract List<ExplicitMove> getExplicitLegalMoves(ExplicitMachineState state, ExplicitRole role) throws MoveDefinitionException, StateMachineException;
 
     /**
      * Returns the next state of the game given the current state and a joint move
@@ -157,7 +166,8 @@ public abstract class StateMachine implements ExplicitStateMachineInterface{
      * state for the given state and the given joint moves because of an error
      * that occurred in the state machine and couldn't be handled.
      */
-    public abstract ExplicitMachineState getExplicitNextState(ExplicitMachineState state, List<ExplicitMove> moves) throws TransitionDefinitionException, StateMachineException;
+    @Override
+	public abstract ExplicitMachineState getExplicitNextState(ExplicitMachineState state, List<ExplicitMove> moves) throws TransitionDefinitionException, StateMachineException;
 
     /**
      * This method must allow to turn off the state machine (maybe temporarily), i.e.
@@ -181,7 +191,8 @@ public abstract class StateMachine implements ExplicitStateMachineInterface{
      * For now this method makes sense only for the YapProverStateMachine, that internally executes
      * an external instance of the Yap prolog program.
      */
-    public abstract void shutdown();
+    @Override
+	public abstract void shutdown();
 
     // The following methods are included in the abstract StateMachine base so
     // implementations which use alternative Role/Move/State representations
@@ -244,7 +255,8 @@ public abstract class StateMachine implements ExplicitStateMachineInterface{
     //   Implementations of convenience methods
     // ============================================
 
-    public String getName() {
+    @Override
+	public String getName() {
         return this.getClass().getSimpleName();
     }
 
@@ -717,4 +729,23 @@ public abstract class StateMachine implements ExplicitStateMachineInterface{
     		avgScores[j] /= repetitions;
     	}
     }
+
+    /**
+     * For now all state machines implementing ExplicitStateMachineInterface will perform random playout
+     * using the underlying reasoner
+     */
+	@Override
+	public MyPair<int[], Integer> fastPlayouts(ExplicitMachineState state, int numSimulationsPerPlayout, int maxDepth) {
+		fix!
+	}
+
+	@Override
+	public List<ExplicitMove> getJointMove(ExplicitMachineState state) {
+		fix!
+	}
+
+	@Override
+	public Move getMoveForRole(ExplicitMachineState state, int roleIndex) {
+		fix!
+	}
 }

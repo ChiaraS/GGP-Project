@@ -24,6 +24,8 @@ import org.ggp.base.util.statemachine.structure.explicit.ExplicitRole;
 
 import com.google.common.collect.ImmutableMap;
 
+import csironi.ggp.course.utils.MyPair;
+
 /**
  * This class gives a new abstract structure for a state machine.
  * This class computes the dynamics of a game (i.e. next states, legal moves, roles, goals, ...)
@@ -132,11 +134,38 @@ public abstract class AbstractStateMachine {
      */
     public abstract MachineState getNextState(MachineState state, List<Move> moves) throws TransitionDefinitionException, StateMachineException;
 
+	//---- METHODS THAT PERFORM PLAYOUTS AND MOVE CHOICES USING THE REASONER DIRECTLY ----//
+
+    /**
+     * This method performs the playout directly from the reasoner behind the state machine with
+     * the aim of making playouts faster (e.g. if there is a lot of overhead when communicating
+     * with the reasoner, this overhead happens once every numSimulationsPerPlayout instead of
+     * once for every visited state).
+     *
+     * @param state
+     * @param numSimulationsPerPlayout
+     * @param maxDepth
+     * @return average reward for each role over all the playouts and average depth of the playouts.
+     */
+    public abstract MyPair<int[],Integer> fastPlayouts(MachineState state, int numSimulationsPerPlayout, int maxDepth);
+
+	public abstract List<Move> getJointMove(MachineState state);
+
+	public abstract Move getMoveForRole(MachineState state, int roleIndex);
+
 	//---- METHODS THAT ALLOW TO TRANSLATE STATES, MOVES AND ROLES INTO THE EXPLICIT (HUMAN-READABLE) FORMAT ----//
 
     public abstract ExplicitMachineState convertToExplicitMachineState(MachineState state);
 
     public abstract ExplicitMove convertToExplicitMove(Move move);
+
+    public List<ExplicitMove> convertToExplicitJointMove(List<Move> jointMove){
+    	List<ExplicitMove> explicitJointMove = new ArrayList<ExplicitMove>();
+    	for(Move move : jointMove) {
+    		explicitJointMove.add(this.convertToExplicitMove(move));
+    	}
+    	return explicitJointMove;
+    }
 
     public abstract ExplicitRole convertToExplicitRole(Role role);
 
