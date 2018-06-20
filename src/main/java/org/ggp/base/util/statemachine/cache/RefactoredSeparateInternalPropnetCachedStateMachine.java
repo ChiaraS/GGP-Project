@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Random;
 
 import org.ggp.base.util.gdl.grammar.Gdl;
 import org.ggp.base.util.statemachine.InternalPropnetStateMachine;
@@ -39,7 +40,8 @@ public final class RefactoredSeparateInternalPropnetCachedStateMachine extends I
 		}
 	}
 
-	public RefactoredSeparateInternalPropnetCachedStateMachine(InternalPropnetStateMachine backingStateMachine){
+	public RefactoredSeparateInternalPropnetCachedStateMachine(Random random, InternalPropnetStateMachine backingStateMachine){
+		super(random);
 		this.backingStateMachine = backingStateMachine;
 		this.internalStateTtlCache = new RefactoredTtlCache<CompactMachineState, PropnetMachineStateEntry>(1);
 	}

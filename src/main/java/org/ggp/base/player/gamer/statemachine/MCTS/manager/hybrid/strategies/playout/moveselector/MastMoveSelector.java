@@ -9,10 +9,12 @@ import org.ggp.base.player.gamer.statemachine.GamerSettings;
 import org.ggp.base.player.gamer.statemachine.MCS.manager.MoveStats;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.GameDependentParameters;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.SharedReferencesCollector;
+import org.ggp.base.util.logging.GamerLogger;
 import org.ggp.base.util.statemachine.exceptions.MoveDefinitionException;
 import org.ggp.base.util.statemachine.exceptions.StateMachineException;
 import org.ggp.base.util.statemachine.structure.MachineState;
 import org.ggp.base.util.statemachine.structure.Move;
+import org.ggp.base.util.statemachine.structure.Role;
 
 public class MastMoveSelector extends MoveSelector {
 
@@ -56,15 +58,25 @@ public class MastMoveSelector extends MoveSelector {
 	 * @throws StateMachineException
 	 */
 	@Override
-	public List<Move> getJointMove(MachineState state) throws MoveDefinitionException, StateMachineException {
+	public List<Move> getJointMove(List<List<Move>> legalMovesPerRole, MachineState state) throws MoveDefinitionException, StateMachineException {
 
 		List<Move> jointMove = new ArrayList<Move>();
 
-		for(int i = 0; i < this.gameDependentParameters.getNumRoles(); i++){
-    		jointMove.add(this.getMoveForRole(state, i));
-    	}
+		if(legalMovesPerRole == null || legalMovesPerRole.isEmpty()) { // If null or empty it means the state is not memorizing the moves
+			for(int i = 0; i < this.gameDependentParameters.getTheMachine().getRoles().size(); i++) {
+				jointMove.add(this.getMoveForRole(null, state, this.gameDependentParameters.getTheMachine().getRoles().get(i)));
+			}
+		}else if(legalMovesPerRole.size() == this.gameDependentParameters.getNumRoles()) {
+			for(int i = 0; i < this.gameDependentParameters.getTheMachine().getRoles().size(); i++) {
+				jointMove.add(this.getMoveForRole(legalMovesPerRole.get(i), state, this.gameDependentParameters.getTheMachine().getRoles().get(i)));
+			}
+		}else { // We have the moves but not for all roles => there is something wrong with the input
+			GamerLogger.logError("MoveSelector", "MastMoveSelector - Trying to select a joint move giving the wrong number of lists with legal moves for the roles.");
+			throw new RuntimeException("MastMoveSelector - Trying to select a joint move giving the wrong number of lists with legal moves for the roles");
+		}
 
 		return jointMove;
+
 	}
 
 	/**
@@ -75,13 +87,16 @@ public class MastMoveSelector extends MoveSelector {
 	 * @throws MoveDefinitionException, StateMachineException
 	 */
 	@Override
-	public Move getMoveForRole(MachineState state, int roleIndex) throws MoveDefinitionException, StateMachineException {
+	public Move getMoveForRole(List<Move> legalMoves, MachineState state, Role role) throws MoveDefinitionException, StateMachineException {
 
-		// Get the list of all legal moves for the role in the state
-        List<Move> legalMovesForRole = this.gameDependentParameters.getTheMachine().getLegalMoves(state, this.gameDependentParameters.getTheMachine().getRoles().get(roleIndex));
+		if(legalMoves == null || legalMoves.isEmpty()) {
+			// Get the list of all legal moves for the role in the state
+			legalMoves = this.gameDependentParameters.getTheMachine().getLegalMoves(state, role);
+		}
 
+		int roleIndex = this.gameDependentParameters.getTheMachine().getRoleIndices().get(role);
     	// Pick the move with highest MAST value.
-		return this.getMastMove(roleIndex, legalMovesForRole);
+		return this.getMastMove(roleIndex, legalMoves);
 	}
 
 	/**

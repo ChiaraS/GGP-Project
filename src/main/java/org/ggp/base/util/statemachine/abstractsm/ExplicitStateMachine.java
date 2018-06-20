@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.ggp.base.util.gdl.grammar.Gdl;
+import org.ggp.base.util.statemachine.exceptions.GoalDefinitionException;
 import org.ggp.base.util.statemachine.exceptions.MoveDefinitionException;
 import org.ggp.base.util.statemachine.exceptions.StateMachineException;
 import org.ggp.base.util.statemachine.exceptions.StateMachineInitializationException;
@@ -182,7 +183,7 @@ public class ExplicitStateMachine extends AbstractStateMachine {
 	}
 
 	@Override
-	public MyPair<int[], Integer> fastPlayouts(MachineState state, int numSimulationsPerPlayout, int maxDepth) {
+	public MyPair<double[], Double> fastPlayouts(MachineState state, int numSimulationsPerPlayout, int maxDepth) throws TransitionDefinitionException, MoveDefinitionException, GoalDefinitionException, StateMachineException {
 		if(state instanceof ExplicitMachineState){
 
 			return this.theMachine.fastPlayouts((ExplicitMachineState)state, numSimulationsPerPlayout, maxDepth);
@@ -195,10 +196,23 @@ public class ExplicitStateMachine extends AbstractStateMachine {
 	}
 
 	@Override
-	public List<Move> getJointMove(MachineState state) {
+	public List<Move> getJointMove(List<List<Move>> legalMovesPerRole, MachineState state) throws MoveDefinitionException, StateMachineException {
 		if(state instanceof ExplicitMachineState){
 
-			return new ArrayList<Move>(this.theMachine.getJointMove((ExplicitMachineState)state));
+			List<List<ExplicitMove>> explicitLegalMovesPerRole = new ArrayList<List<ExplicitMove>>();
+			for(List<Move> legalMoves: legalMovesPerRole) {
+				List<ExplicitMove> explicitLegalMoves = new ArrayList<ExplicitMove>();
+				for(Move move: legalMoves) {
+					if(move instanceof ExplicitMove) {
+						explicitLegalMoves.add((ExplicitMove)move);
+					}else {
+						throw new RuntimeException("ExplicitStateMachine-getJointMove(): detected wrong type for move: [" + move.getClass().getSimpleName() + "].");
+					}
+				}
+				explicitLegalMovesPerRole.add(explicitLegalMoves);
+			}
+
+			return new ArrayList<Move>(this.theMachine.getJointMove(explicitLegalMovesPerRole, (ExplicitMachineState)state));
 
 		}else{
 			// Not throwing StateMachineException because failure here is not the fault of the state machine but
@@ -208,10 +222,22 @@ public class ExplicitStateMachine extends AbstractStateMachine {
 	}
 
 	@Override
-	public Move getMoveForRole(MachineState state, int roleIndex) {
+	public Move getMoveForRole(List<Move> legalMoves, MachineState state, Role role) throws StateMachineException, MoveDefinitionException {
 		if(state instanceof ExplicitMachineState){
 
-			return this.theMachine.getMoveForRole((ExplicitMachineState)state, roleIndex);
+			if(role instanceof ExplicitRole) {
+				List<ExplicitMove> explicitLegalMoves = new ArrayList<ExplicitMove>();
+				for(Move move: legalMoves) {
+					if(move instanceof ExplicitMove) {
+						explicitLegalMoves.add((ExplicitMove)move);
+					}else {
+						throw new RuntimeException("ExplicitStateMachine-getMoveForRole(): detected wrong type for move: [" + move.getClass().getSimpleName() + "].");
+					}
+				}
+				return this.theMachine.getMoveForRole(explicitLegalMoves, (ExplicitMachineState)state, (ExplicitRole)role);
+			}else {
+				throw new RuntimeException("ExplicitStateMachine-getMoveForRole(): detected wrong type for role: [" + role.getClass().getSimpleName() + "].");
+			}
 
 		}else{
 			// Not throwing StateMachineException because failure here is not the fault of the state machine but

@@ -5,6 +5,7 @@ import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Random;
 import java.util.Set;
 
 import org.ggp.base.util.gdl.grammar.Gdl;
@@ -44,6 +45,10 @@ public class FwdInterrPropnetStateMachine extends StateMachine {
 	 * If it is negative it means that the propnet didn't build in time.
 	 */
 	private long propnetConstructionTime = -1L;
+
+    public FwdInterrPropnetStateMachine(Random random){
+    	super(random);
+    }
 
     /**
      * Initializes the PropNetStateMachine. You should compute the topological

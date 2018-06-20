@@ -196,11 +196,12 @@ public class MCTSSpeedTest {
 
 			ImmutablePropNet propnet = manager.getImmutablePropnet();
 			ImmutableSeparatePropnetState propnetState = manager.getInitialPropnetState();
+			Random random = new Random();
 
 			// Create the state machine giving it the propnet and the propnet state.
 			// NOTE that if any of the two is null, it means that the propnet creation/initialization went wrong
 			// and this will be detected by the state machine during initialization.
-		    thePropnetMachine = new SeparateInternalPropnetStateMachine(propnet, propnetState);
+		    thePropnetMachine = new SeparateInternalPropnetStateMachine(random, propnet, propnetState);
 
 		    int numRoles = -1;
 	        long initializationTime;
@@ -232,7 +233,6 @@ public class MCTSSpeedTest {
 		        System.gc();
 		        /***************************************/
 
-		        Random r = new Random();
 		        double c = 0.7;
 		        double unexploredMoveDefaultSelectionValue = Double.MAX_VALUE;
 		        double uctOffset = 0.01;

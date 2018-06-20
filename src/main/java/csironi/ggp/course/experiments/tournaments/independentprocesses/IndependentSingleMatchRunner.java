@@ -359,7 +359,7 @@ public class IndependentSingleMatchRunner {
 			for(GamePlayer gamePlayer : thePlayers){
 				if(gamePlayer.getGamer() instanceof InternalPropnetGamer){
 					thePropnetGamer  = (InternalPropnetGamer) gamePlayer.getGamer();
-					thePropnetGamer.setExternalStateMachine(new SeparateInternalPropnetStateMachine(manager.getImmutablePropnet(), manager.getInitialPropnetState()));
+					thePropnetGamer.setExternalStateMachine(new SeparateInternalPropnetStateMachine(null, manager.getImmutablePropnet(), manager.getInitialPropnetState()));
 				}
 			}
 

@@ -2,6 +2,7 @@ package org.ggp.base.util.statemachine.implementation.propnet;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Random;
 import java.util.Set;
 
 import org.apache.lucene.util.OpenBitSet;
@@ -38,7 +39,8 @@ public class SeparateInternalPropnetStateMachine extends InternalPropnetStateMac
     /** The initial state */
     protected CompactMachineState initialState;
 
-	public SeparateInternalPropnetStateMachine(ImmutablePropNet propNet, ImmutableSeparatePropnetState propnetState){
+	public SeparateInternalPropnetStateMachine(Random random, ImmutablePropNet propNet, ImmutableSeparatePropnetState propnetState){
+		super(random);
 		this.propNet = propNet;
 		this.propnetState = propnetState;
 		/*

@@ -4,6 +4,7 @@
 package org.ggp.base.util.statemachine.hybrid;
 
 import java.util.List;
+import java.util.Random;
 
 import org.ggp.base.util.gdl.grammar.Gdl;
 import org.ggp.base.util.logging.GamerLogger;
@@ -62,7 +63,10 @@ public class BackedYapStateMachine extends StateMachine {
 	 * @param backupMachine the machine to be used when the main machine fails to answer
 	 * to a query.
 	 */
-	public BackedYapStateMachine(YapStateMachine mainMachine, ProverStateMachine backupMachine) {
+	public BackedYapStateMachine(Random random, YapStateMachine mainMachine, ProverStateMachine backupMachine) {
+
+		super(random);
+
 		this.mainMachine = mainMachine;
 		this.backupMachine = backupMachine;
 	}

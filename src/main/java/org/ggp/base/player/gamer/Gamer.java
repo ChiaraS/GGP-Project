@@ -2,6 +2,7 @@ package org.ggp.base.player.gamer;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Random;
 
 import org.ggp.base.apps.player.config.ConfigPanel;
 import org.ggp.base.apps.player.config.EmptyConfigPanel;
@@ -28,11 +29,14 @@ import org.ggp.base.util.observer.Subject;
  */
 public abstract class Gamer implements Subject
 {
+	protected Random random;
 	private Match match;
 	private GdlConstant roleName;
 
 	public Gamer()
 	{
+		this.random = new Random();
+
 		observers = new ArrayList<Observer>();
 
 		// When not playing a match, the variables 'match'

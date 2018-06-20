@@ -3,6 +3,7 @@ package csironi.ggp.course;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Random;
 
 import org.ggp.base.util.configuration.GamerConfiguration;
 import org.ggp.base.util.game.Game;
@@ -86,7 +87,7 @@ public class TrickyGDLTester {
 			return;
 		}
 
-		SeparateInternalPropnetStateMachine theMachine = new SeparateInternalPropnetStateMachine(manager.getImmutablePropnet(), manager.getInitialPropnetState());
+		SeparateInternalPropnetStateMachine theMachine = new SeparateInternalPropnetStateMachine(new Random(), manager.getImmutablePropnet(), manager.getInitialPropnetState());
 
 		try {
 			theMachine.initialize(description);

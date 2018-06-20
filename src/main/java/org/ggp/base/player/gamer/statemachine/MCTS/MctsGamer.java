@@ -1,7 +1,5 @@
 package org.ggp.base.player.gamer.statemachine.MCTS;
 
-import java.util.Random;
-
 import org.ggp.base.player.gamer.event.GamerSelectedMoveEvent;
 import org.ggp.base.player.gamer.statemachine.GamerSettings;
 import org.ggp.base.player.gamer.statemachine.MCS.manager.hybrid.CompleteMoveStats;
@@ -91,7 +89,7 @@ public class MctsGamer extends InternalPropnetGamer {
 
 		this.metagameSearch = gamerSettings.getBooleanPropertyValue("Gamer.metagameSearch");
 
-		this.mctsManager = new HybridMctsManager(new Random(), gamerSettings, this.gamerType);
+		this.mctsManager = new HybridMctsManager(this.random, gamerSettings, this.gamerType);
 	}
 
 	/* (non-Javadoc)

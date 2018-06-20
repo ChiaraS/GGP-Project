@@ -16,6 +16,7 @@ import org.ggp.base.util.logging.GamerLogger;
 import org.ggp.base.util.reflection.ProjectSearcher;
 import org.ggp.base.util.statemachine.structure.MachineState;
 import org.ggp.base.util.statemachine.structure.Move;
+import org.ggp.base.util.statemachine.structure.Role;
 /**
  * Whenever a playout is performed from a node, this strategy checks if there is an interesting move
  * in the path, and if so performs multiple playouts from that node. Otherwise only one playout is performed.
@@ -383,13 +384,13 @@ public class SelectiveMultiplePlayout extends PlayoutStrategy {
 	}
 
 	@Override
-	public List<Move> getJointMove(MachineState state) {
-		return this.subPlayoutStrategy.getJointMove(state);
+	public List<Move> getJointMove(List<List<Move>> legalMovesPerRole, MachineState state) {
+		return this.subPlayoutStrategy.getJointMove(legalMovesPerRole, state);
 	}
 
 	@Override
-	public Move getMoveForRole(MachineState state, int roleIndex) {
-		return this.subPlayoutStrategy.getMoveForRole(state, roleIndex);
+	public Move getMoveForRole(List<Move> legalMoves, MachineState state, Role role) {
+		return this.subPlayoutStrategy.getMoveForRole(legalMoves, state, role);
 	}
 
 	@Override

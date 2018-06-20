@@ -4,6 +4,7 @@
 package csironi.ggp.course.speedtester;
 
 import java.util.List;
+import java.util.Random;
 
 import org.ggp.base.util.game.GameRepository;
 import org.ggp.base.util.gdl.grammar.Gdl;
@@ -146,15 +147,17 @@ public class AdaptiveInitSpeedTest {
 
             List<Gdl> description = theRepository.getGame(gameKey).getRules();
 
+            Random random = new Random();
+
             StateMachine[] theMachines = new StateMachine[3];
-            theMachines[0] = new FwdInterrPropnetStateMachine();
-            theMachines[1] = new BackedYapStateMachine(new YapStateMachine(500L), new ProverStateMachine());
-            theMachines[2] = new ProverStateMachine();
+            theMachines[0] = new FwdInterrPropnetStateMachine(random);
+            theMachines[1] = new BackedYapStateMachine(random, new YapStateMachine(random, 500L), new ProverStateMachine(random));
+            theMachines[2] = new ProverStateMachine(random);
             // Create the state machine giving it the sub-state machines that it has to check
-            theSubject = new AdaptiveInitializationStateMachine(theMachines, safetyMargin);
+            theSubject = new AdaptiveInitializationStateMachine(random, theMachines, safetyMargin);
             // If the state machine must be provided with a cache, create the cached state machine
             if(withCache){
-            	theSubject = new CachedStateMachine(theSubject);
+            	theSubject = new CachedStateMachine(random, theSubject);
             }
 
             long initializationTime;

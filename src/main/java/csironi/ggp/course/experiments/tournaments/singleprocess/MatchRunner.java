@@ -100,7 +100,7 @@ public class MatchRunner extends Thread{
 				this.resetLogFolder(oldFolder);
 				return;
 			}
-			theGamer.setExternalStateMachine(new SeparateInternalPropnetStateMachine(manager.getImmutablePropnet(), manager.getInitialPropnetState()));
+			theGamer.setExternalStateMachine(new SeparateInternalPropnetStateMachine(null, manager.getImmutablePropnet(), manager.getInitialPropnetState()));
 
 			try {
 				thePlayers.add(new GamePlayer(9000 + i + (this.ID * this.theGamerClasses.size()), theGamer));

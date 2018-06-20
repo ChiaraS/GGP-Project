@@ -3,6 +3,7 @@ package org.ggp.base.util.statemachine.implementation.prover;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Random;
 import java.util.Set;
 
 import org.ggp.base.util.gdl.grammar.Gdl;
@@ -30,14 +31,14 @@ public class ProverStateMachine extends StateMachine
 	private Prover prover;
 	private ImmutableList<ExplicitRole> roles;
 
+	public ProverStateMachine(Random random)
+	{
+		super(random);
+	}
+
 	/**
 	 * Initialize must be called before using the StateMachine
 	 */
-	public ProverStateMachine()
-	{
-
-	}
-
 	@Override
 	public void initialize(List<Gdl> description, long timeout)
 	{

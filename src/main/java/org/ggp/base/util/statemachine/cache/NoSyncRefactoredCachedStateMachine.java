@@ -3,6 +3,7 @@ package org.ggp.base.util.statemachine.cache;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Random;
 
 import org.ggp.base.util.gdl.grammar.Gdl;
 import org.ggp.base.util.logging.GamerLogger;
@@ -43,7 +44,8 @@ public final class NoSyncRefactoredCachedStateMachine extends StateMachine
 		}
 	}
 
-	public NoSyncRefactoredCachedStateMachine(StateMachine backingStateMachine){
+	public NoSyncRefactoredCachedStateMachine(Random random, StateMachine backingStateMachine){
+		super(random);
 		this.backingStateMachine = backingStateMachine;
 		ttlCache = new RefactoredTtlCache<ExplicitMachineState, MachineStateEntry>(1);
 	}

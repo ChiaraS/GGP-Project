@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.ggp.base.util.gdl.grammar.Gdl;
+import org.ggp.base.util.statemachine.exceptions.GoalDefinitionException;
 import org.ggp.base.util.statemachine.exceptions.MoveDefinitionException;
 import org.ggp.base.util.statemachine.exceptions.StateMachineException;
 import org.ggp.base.util.statemachine.exceptions.StateMachineInitializationException;
@@ -183,7 +184,7 @@ public class CompactStateMachine extends AbstractStateMachine {
 	}
 
 	@Override
-	public MyPair<int[], Integer> fastPlayouts(MachineState state, int numSimulationsPerPlayout, int maxDepth) {
+	public MyPair<double[], Double> fastPlayouts(MachineState state, int numSimulationsPerPlayout, int maxDepth) throws TransitionDefinitionException, MoveDefinitionException, StateMachineException, GoalDefinitionException {
 		if(state instanceof CompactMachineState){
 
 			return this.theMachine.fastPlayouts((CompactMachineState)state, numSimulationsPerPlayout, maxDepth);
@@ -196,10 +197,23 @@ public class CompactStateMachine extends AbstractStateMachine {
 	}
 
 	@Override
-	public List<Move> getJointMove(MachineState state) {
+	public List<Move> getJointMove(List<List<Move>> legalMovesPerRole, MachineState state) throws MoveDefinitionException {
 		if(state instanceof CompactMachineState){
 
-			return new ArrayList<Move>(this.theMachine.getJointMove((CompactMachineState)state));
+			List<List<CompactMove>> comapctLegalMovesPerRole = new ArrayList<List<CompactMove>>();
+			for(List<Move> legalMoves: legalMovesPerRole) {
+				List<CompactMove> compactLegalMoves = new ArrayList<CompactMove>();
+				for(Move move: legalMoves) {
+					if(move instanceof CompactMove) {
+						compactLegalMoves.add((CompactMove)move);
+					}else {
+						throw new RuntimeException("CompactStateMachine-getJointMove(): detected wrong type for move: [" + move.getClass().getSimpleName() + "].");
+					}
+				}
+				comapctLegalMovesPerRole.add(compactLegalMoves);
+			}
+
+			return new ArrayList<Move>(this.theMachine.getJointMove(comapctLegalMovesPerRole, (CompactMachineState)state));
 
 		}else{
 			// Not throwing StateMachineException because failure here is not the fault of the state machine but
@@ -209,10 +223,25 @@ public class CompactStateMachine extends AbstractStateMachine {
 	}
 
 	@Override
-	public Move getMoveForRole(MachineState state, int roleIndex) {
+	public Move getMoveForRole(List<Move> legalMoves, MachineState state, Role role) throws MoveDefinitionException {
 		if(state instanceof CompactMachineState){
 
-			return this.theMachine.getMoveForRole((CompactMachineState)state, roleIndex);
+			if(role instanceof CompactRole) {
+
+				List<CompactMove> compactLegalMoves = new ArrayList<CompactMove>();
+				for(Move move: legalMoves) {
+					if(move instanceof CompactMove) {
+						compactLegalMoves.add((CompactMove)move);
+					}else {
+						throw new RuntimeException("CompactStateMachine-getMoveForRole(): detected wrong type for move: [" + move.getClass().getSimpleName() + "].");
+					}
+				}
+
+				return this.theMachine.getMoveForRole(compactLegalMoves, (CompactMachineState)state, (CompactRole)role);
+
+			}else {
+				throw new RuntimeException("CompactStateMachine-getMoveForRole(): detected wrong type for role: [" + role.getClass().getSimpleName() + "].");
+			}
 
 		}else{
 			// Not throwing StateMachineException because failure here is not the fault of the state machine but

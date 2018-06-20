@@ -13,7 +13,6 @@ import org.ggp.base.util.statemachine.exceptions.GoalDefinitionException;
 import org.ggp.base.util.statemachine.exceptions.MoveDefinitionException;
 import org.ggp.base.util.statemachine.exceptions.StateMachineException;
 import org.ggp.base.util.statemachine.exceptions.TransitionDefinitionException;
-import org.ggp.base.util.statemachine.structure.Move;
 import org.ggp.base.util.statemachine.structure.compact.CompactMachineState;
 import org.ggp.base.util.statemachine.structure.compact.CompactMove;
 import org.ggp.base.util.statemachine.structure.compact.CompactRole;
@@ -29,6 +28,10 @@ import csironi.ggp.course.utils.MyPair;
  * the moves and the roles.
  */
 public abstract class InternalPropnetStateMachine extends StateMachine implements CompactStateMachineInterface, ExplicitAndCompactStateMachineInterface{
+
+	public InternalPropnetStateMachine(Random random) {
+		super(random);
+	}
 
 	/** Standard state machine methods rewritten using internal representation for states, moves and roles. **/
 
@@ -573,18 +576,77 @@ public abstract class InternalPropnetStateMachine extends StateMachine implement
         }
     }
 
-	@Override
-	public MyPair<int[], Integer> fastPlayouts(CompactMachineState state, int numSimulationsPerPlayout, int maxDepth) {
-		fix!
-	}
+    public void getAverageDiscountedScoresFromRepeatedDepthCharges(final CompactMachineState state, final double[] avgScores, final double[] avgDepth, final double discountFactor, final int repetitions) throws TransitionDefinitionException, MoveDefinitionException, StateMachineException, GoalDefinitionException {
+    	avgDepth[0] = 0;
+    	for (int j = 0; j < avgScores.length; j++) {
+    		avgScores[j] = 0;
+    	}
+    	final int[] depth = new int[1];
+    	for (int i = 0; i < repetitions; i++) {
+    		CompactMachineState stateForCharge = state.clone();
+    		stateForCharge = performDepthCharge(stateForCharge, depth);
+    		avgDepth[0] += depth[0];
+    		final double accumulatedDiscountFactor = Math.pow(discountFactor, depth[0]);
+    		for (int j = 0; j < avgScores.length; j++) {
+    			avgScores[j] += getGoal(stateForCharge, this.getCompactRoles().get(j)) * accumulatedDiscountFactor;
+    		}
+    	}
+    	avgDepth[0] /= repetitions;
+    	for (int j = 0; j < avgScores.length; j++) {
+    		avgScores[j] /= repetitions;
+    	}
+    }
+
 
 	@Override
-	public List<CompactMove> getJointMove(CompactMachineState state) {
-		fix!
+	public MyPair<double[], Double> fastPlayouts(CompactMachineState state, int numSimulationsPerPlayout, int maxDepth) throws TransitionDefinitionException, MoveDefinitionException, StateMachineException, GoalDefinitionException {
+		double[] avgScores = new double[this.getCompactRoles().size()];
+		double[] avgDepth = new double[1];
+
+		this.getAverageDiscountedScoresFromRepeatedDepthCharges(state, avgScores, avgDepth, 1.0, numSimulationsPerPlayout);
+
+		return new MyPair<double[], Double>(avgScores, new Double(avgDepth[0]));
 	}
 
+	/**
+	 * For now all state machines implementing CompactStateMachineInterface will construct a joint move
+     * by selecting a random move for each role.
+	 * @throws MoveDefinitionException
+	 */
 	@Override
-	public Move getMoveForRole(CompactMachineState state, int roleIndex) {
-		fix!
+	public List<CompactMove> getJointMove(List<List<CompactMove>> legalMovesPerRole, CompactMachineState state) throws MoveDefinitionException {
+		List<CompactMove> compactJointMove = new ArrayList<CompactMove>();
+
+		List<CompactRole> roles = this.getCompactRoles();
+
+		if(legalMovesPerRole == null || legalMovesPerRole.isEmpty()) {
+			for(int i = 0; i < roles.size(); i++) {
+				compactJointMove.add(this.getMoveForRole(null, state, roles.get(i)));
+			}
+		}else if(legalMovesPerRole.size() == roles.size()) {
+			for(int i = 0; i < roles.size(); i++) {
+				compactJointMove.add(this.getMoveForRole(legalMovesPerRole.get(i), state, roles.get(i)));
+			}
+		}else {
+			GamerLogger.logError("StateMachine", "Requesting joint move in state " + state +
+					" giving legal moves for " + legalMovesPerRole.size() + " roles when the game has " + roles.size() + " roles.");
+			throw new RuntimeException("StateMachine - Requesting joint move in state " + state +
+					" giving legal moves for " + legalMovesPerRole.size() + " roles when the game has " + roles.size() + " roles.");
+		}
+
+		return compactJointMove;
+	}
+
+	/**
+	 * For now all state machines implementing CompactStateMachineInterface will select a random move for each role.
+	 * @throws MoveDefinitionException
+	 */
+	@Override
+	public CompactMove getMoveForRole(List<CompactMove> legalMoves, CompactMachineState state, CompactRole role) throws MoveDefinitionException {
+		if(legalMoves == null || legalMoves.isEmpty()) {
+			legalMoves = this.getCompactLegalMoves(state, role);
+		}
+
+		return legalMoves.get(this.random.nextInt(legalMoves.size()));
 	}
 }

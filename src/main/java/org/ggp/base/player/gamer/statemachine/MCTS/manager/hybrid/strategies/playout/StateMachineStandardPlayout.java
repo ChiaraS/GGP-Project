@@ -8,9 +8,11 @@ import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.GameDependentP
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.SharedReferencesCollector;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.hybrid.SimulationResult;
 import org.ggp.base.util.logging.GamerLogger;
+import org.ggp.base.util.statemachine.exceptions.MoveDefinitionException;
 import org.ggp.base.util.statemachine.exceptions.StateMachineException;
 import org.ggp.base.util.statemachine.structure.MachineState;
 import org.ggp.base.util.statemachine.structure.Move;
+import org.ggp.base.util.statemachine.structure.Role;
 
 import csironi.ggp.course.utils.MyPair;
 
@@ -95,7 +97,7 @@ public class StateMachineStandardPlayout extends PlayoutStrategy {
 
 		}
 
-        MyPair<int[],Integer> avgGoalsAndDepth = this.gameDependentParameters.getTheMachine().fastPlayouts(state, this.numSimulationsPerPlayout, maxDepth);
+        MyPair<double[],Double> avgGoalsAndDepth = this.gameDependentParameters.getTheMachine().fastPlayouts(state, this.numSimulationsPerPlayout, maxDepth);
 
         return new SimulationResult(avgGoalsAndDepth.getSecond(), avgGoalsAndDepth.getFirst());
 
@@ -112,8 +114,14 @@ public class StateMachineStandardPlayout extends PlayoutStrategy {
 	 * according to the same playout policy.
 	 */
 	@Override
-	public List<Move> getJointMove(MachineState state) {
-		return this.gameDependentParameters.getTheMachine().getJointMove(state);
+	public List<Move> getJointMove(List<List<Move>> legalMovesPerRole, MachineState state) {
+		try {
+			return this.gameDependentParameters.getTheMachine().getJointMove(legalMovesPerRole, state);
+		} catch (MoveDefinitionException | StateMachineException e) {
+			GamerLogger.logError("MctsManager", "Exception getting a joint move using the playout strategy.");
+			GamerLogger.logStackTrace("MctsManager", e);
+			throw new RuntimeException("Exception getting a joint move using the playout strategy.", e);
+		}
 	}
 
 	/**
@@ -122,8 +130,14 @@ public class StateMachineStandardPlayout extends PlayoutStrategy {
 	 * move according to the same playout policy.
 	 */
 	@Override
-	public Move getMoveForRole(MachineState state, int roleIndex) {
-		return this.gameDependentParameters.getTheMachine().getMoveForRole(state, roleIndex);
+	public Move getMoveForRole(List<Move> legalMoves, MachineState state, Role role) {
+		try {
+			return this.gameDependentParameters.getTheMachine().getMoveForRole(legalMoves, state, role);
+		} catch (MoveDefinitionException | StateMachineException e) {
+			GamerLogger.logError("MctsManager", "Exception getting a move for role " + this.gameDependentParameters.getTheMachine().convertToExplicitRole(role) + " using the playout strategy.");
+			GamerLogger.logStackTrace("MctsManager", e);
+			throw new RuntimeException("Exception getting a move for role " + this.gameDependentParameters.getTheMachine().convertToExplicitRole(role) + " using the playout strategy.", e);
+		}
 	}
 
 }

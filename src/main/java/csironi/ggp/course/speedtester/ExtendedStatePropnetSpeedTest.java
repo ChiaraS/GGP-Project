@@ -1,6 +1,7 @@
 package csironi.ggp.course.speedtester;
 
 import java.util.List;
+import java.util.Random;
 
 import org.ggp.base.util.game.GameRepository;
 import org.ggp.base.util.gdl.grammar.Gdl;
@@ -129,11 +130,12 @@ public class ExtendedStatePropnetSpeedTest {
           List<Gdl> description = theRepository.getGame(gameKey).getRules();
 
           // Create the propnet state machine and wrap it with the state machine that controls initialization
-          thePropnetMachine = new ExtendedStatePropnetStateMachine();
-          theSubject = new InitializationSafeStateMachine(thePropnetMachine);
+          thePropnetMachine = new ExtendedStatePropnetStateMachine(new Random());
+          Random random = new Random();
+          theSubject = new InitializationSafeStateMachine(random, thePropnetMachine);
           // If the propnet state machine must be provided with a cache, create the cached state machine
           if(withCache){
-          	theSubject = new CachedStateMachine(theSubject);
+          	theSubject = new CachedStateMachine(random, theSubject);
           }
 
           long initializationTime;

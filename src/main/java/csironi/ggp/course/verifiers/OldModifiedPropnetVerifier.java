@@ -2,6 +2,7 @@ package csironi.ggp.course.verifiers;
 
 import java.util.Arrays;
 import java.util.List;
+import java.util.Random;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
@@ -114,10 +115,10 @@ public class OldModifiedPropnetVerifier {
 
             List<Gdl> description = theRepository.getGame(gameKey).getRules();
 
-            theReference = new ProverStateMachine();
+            theReference = new ProverStateMachine(new Random());
 
             // Create propnet state machine giving it 5 minutes to build the propnet
-            thePropNetMachine = new FwdInterrPropnetStateMachine();
+            thePropNetMachine = new FwdInterrPropnetStateMachine(new Random());
 
             theReference.initialize(description, Long.MAX_VALUE);
 

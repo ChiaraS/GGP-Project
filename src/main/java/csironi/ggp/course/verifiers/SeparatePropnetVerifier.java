@@ -1,6 +1,7 @@
 package csironi.ggp.course.verifiers;
 
 import java.util.List;
+import java.util.Random;
 
 import org.apache.logging.log4j.ThreadContext;
 import org.ggp.base.util.configuration.GamerConfiguration;
@@ -202,7 +203,7 @@ public class SeparatePropnetVerifier {
 
 	        List<Gdl> description = theRepository.getGame(gameKey).getRules();
 
-	        theReference = new ProverStateMachine();
+	        theReference = new ProverStateMachine(new Random());
 
 	        // Create the propnet creation manager
 	        SeparateInternalPropnetManager manager = new SeparateInternalPropnetManager(description, System.currentTimeMillis() + initializationTime, optimizations);
@@ -217,10 +218,11 @@ public class SeparatePropnetVerifier {
 			// Create the state machine giving it the propnet and the propnet state.
 			// NOTE that if any of the two is null, it means that the propnet creation/initialization went wrong
 			// and this will be detected by the state machine during initialization.
-		    thePropnetMachine = new SeparateInternalPropnetStateMachine(propnet, propnetState);
+			Random random = new Random();
+		    thePropnetMachine = new SeparateInternalPropnetStateMachine(random, propnet, propnetState);
 
 		    if(withCache){
-		    	theSubject = new SeparateInternalPropnetCachedStateMachine(thePropnetMachine);
+		    	theSubject = new SeparateInternalPropnetCachedStateMachine(random, thePropnetMachine);
 		    }else{
 		    	theSubject = thePropnetMachine;
 		    }

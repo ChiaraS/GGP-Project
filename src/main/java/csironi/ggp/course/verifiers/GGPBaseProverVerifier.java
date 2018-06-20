@@ -4,6 +4,7 @@
 package csironi.ggp.course.verifiers;
 
 import java.util.List;
+import java.util.Random;
 
 import org.ggp.base.util.game.GameRepository;
 import org.ggp.base.util.gdl.grammar.Gdl;
@@ -106,10 +107,10 @@ public class GGPBaseProverVerifier {
 
             List<Gdl> description = theRepository.getGame(gameKey).getRules();
 
-            theReference = new ProverStateMachine();
+            theReference = new ProverStateMachine(new Random());
 
             // Create the second prover state machine
-            theProverMachine = new ProverStateMachine();
+            theProverMachine = new ProverStateMachine(new Random());
 
             long initializationTime;
             int rounds;

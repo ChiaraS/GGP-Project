@@ -7,9 +7,6 @@ import org.ggp.base.player.gamer.statemachine.GamerSettings;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.GameDependentParameters;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.SharedReferencesCollector;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.hybrid.SimulationResult;
-import org.ggp.base.util.logging.GamerLogger;
-import org.ggp.base.util.statemachine.exceptions.MoveDefinitionException;
-import org.ggp.base.util.statemachine.exceptions.StateMachineException;
 import org.ggp.base.util.statemachine.structure.MachineState;
 import org.ggp.base.util.statemachine.structure.Move;
 
@@ -38,21 +35,6 @@ public class MultipleStandardPlayout extends StandardPlayout {
 
 		this.playoutRepetitions = gamerSettings.getIntPropertyValue("PlayoutStrategy" + id + ".playoutRepetitions");
 
-	}
-
-	@Override
-	public void setReferences(SharedReferencesCollector sharedReferencesCollector) {
-		super.setReferences(sharedReferencesCollector);
-	}
-
-	@Override
-	public void clearComponent() {
-		super.clearComponent();
-	}
-
-	@Override
-	public void setUpComponent() {
-		super.setUpComponent();
 	}
 
 	@Override
@@ -93,28 +75,6 @@ public class MultipleStandardPlayout extends StandardPlayout {
 			return params;
 		}else{
 			return superParams + params;
-		}
-	}
-
-	@Override
-	public List<Move> getJointMove(MachineState state) {
-		try {
-			return this.moveSelector.getJointMove(state);
-		} catch (MoveDefinitionException | StateMachineException e) {
-			GamerLogger.logError("MctsManager", "Exception getting a joint move using the playout strategy.");
-			GamerLogger.logStackTrace("MctsManager", e);
-			throw new RuntimeException("Exception getting a joint move using the playout strategy.", e);
-		}
-	}
-
-	@Override
-	public Move getMoveForRole(MachineState state, int roleIndex) {
-		try {
-			return this.moveSelector.getMoveForRole(state, roleIndex);
-		} catch (MoveDefinitionException | StateMachineException e) {
-			GamerLogger.logError("MctsManager", "Exception getting a move for role with index " + roleIndex + " using the playout strategy.");
-			GamerLogger.logStackTrace("MctsManager", e);
-			throw new RuntimeException("Exception getting a move for role with index " + roleIndex + " using the playout strategy.", e);
 		}
 	}
 

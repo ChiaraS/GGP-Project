@@ -9,6 +9,7 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Random;
 
 import org.apache.logging.log4j.ThreadContext;
 import org.ggp.base.server.event.ServerAbortedMatchEvent;
@@ -77,7 +78,7 @@ public final class GameServer extends Thread implements Subject
         playerPlaysRandomly = new Boolean[hosts.size()];
         Arrays.fill(playerPlaysRandomly, Boolean.FALSE);
 
-        stateMachine = new ProverStateMachine();
+        stateMachine = new ProverStateMachine(new Random());
         try {
 			stateMachine.initialize(match.getGame().getRules(), Long.MAX_VALUE);
 		} catch (StateMachineInitializationException e) {

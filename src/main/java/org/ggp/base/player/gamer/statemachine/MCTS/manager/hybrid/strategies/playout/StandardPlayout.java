@@ -17,6 +17,7 @@ import org.ggp.base.util.statemachine.exceptions.StateMachineException;
 import org.ggp.base.util.statemachine.exceptions.TransitionDefinitionException;
 import org.ggp.base.util.statemachine.structure.MachineState;
 import org.ggp.base.util.statemachine.structure.Move;
+import org.ggp.base.util.statemachine.structure.Role;
 
 /**
  * For this class we can also set the number of playouts that should be performed every time from the given
@@ -151,9 +152,9 @@ public class StandardPlayout extends PlayoutStrategy {
 	}
 
 	@Override
-	public List<Move> getJointMove(MachineState state) {
+	public List<Move> getJointMove(List<List<Move>> legalMovesPerRole, MachineState state) {
 		try {
-			return this.moveSelector.getJointMove(state);
+			return this.moveSelector.getJointMove(legalMovesPerRole, state);
 		} catch (MoveDefinitionException | StateMachineException e) {
 			GamerLogger.logError("MctsManager", "Exception getting a joint move using the playout strategy.");
 			GamerLogger.logStackTrace("MctsManager", e);
@@ -162,13 +163,13 @@ public class StandardPlayout extends PlayoutStrategy {
 	}
 
 	@Override
-	public Move getMoveForRole(MachineState state, int roleIndex) {
+	public Move getMoveForRole(List<Move> legalMoves, MachineState state, Role role) {
 		try {
-			return this.moveSelector.getMoveForRole(state, roleIndex);
+			return this.moveSelector.getMoveForRole(legalMoves, state, role);
 		} catch (MoveDefinitionException | StateMachineException e) {
-			GamerLogger.logError("MctsManager", "Exception getting a move for role with index " + roleIndex + " using the playout strategy.");
+			GamerLogger.logError("MctsManager", "Exception getting a move for role " + this.gameDependentParameters.getTheMachine().convertToExplicitRole(role) + " using the playout strategy.");
 			GamerLogger.logStackTrace("MctsManager", e);
-			throw new RuntimeException("Exception getting a move for role with index " + roleIndex + " using the playout strategy.", e);
+			throw new RuntimeException("Exception getting a move for role " + this.gameDependentParameters.getTheMachine().convertToExplicitRole(role) + " using the playout strategy.", e);
 		}
 	}
 

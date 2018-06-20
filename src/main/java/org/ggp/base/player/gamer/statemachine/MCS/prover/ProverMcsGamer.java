@@ -3,8 +3,6 @@
  */
 package org.ggp.base.player.gamer.statemachine.MCS.prover;
 
-import java.util.Random;
-
 import org.ggp.base.player.gamer.event.GamerSelectedMoveEvent;
 import org.ggp.base.player.gamer.statemachine.MCS.manager.MCSException;
 import org.ggp.base.player.gamer.statemachine.MCS.manager.prover.ProverCompleteMoveStats;
@@ -84,13 +82,11 @@ public class ProverMcsGamer extends ProverGamer {
 
 		this.gameStep = 0;
 
-		Random r = new Random();
-
 		ExplicitRole myRole = this.getRole();
 
 		// Create the MCS manager and start simulations.
 		this.mcsManager = new ProverMCSManager(new ProverRandomPlayout(this.getStateMachine()),
-				this.getStateMachine(),	myRole, maxSearchDepth, r);
+				this.getStateMachine(),	myRole, maxSearchDepth, this.random);
 
 		// If there is enough time left start the MCT search.
 		// Otherwise return from metagaming.

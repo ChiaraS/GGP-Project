@@ -211,6 +211,7 @@ public abstract class InternalPropnetGamer extends ConfigurableStateMachineGamer
 	 */
 	public void setExternalStateMachine(InternalPropnetStateMachine thePropnetMachine){
 		this.thePropnetMachine = thePropnetMachine;
+		this.thePropnetMachine.setRandom(this.random); // To make sure that there is only one random class in the agent
 		this.propnetBuild = PROPNET_BUILD.NEVER;
 	}
 
@@ -279,7 +280,7 @@ public abstract class InternalPropnetGamer extends ConfigurableStateMachineGamer
 			// Check if we want to use the cache
 			if(this.pnCache){
 				GamerLogger.log("Gamer", "Returning PropNet state machine with cache.");
-				this.thePropnetMachine = new NoSyncRefactoredSeparateInternalPropnetCachedStateMachine(this.thePropnetMachine);
+				this.thePropnetMachine = new NoSyncRefactoredSeparateInternalPropnetCachedStateMachine(this.random, this.thePropnetMachine);
 			}else{
 				GamerLogger.log("Gamer", "Returning PropNet state machine without cache.");
 			}
@@ -288,10 +289,10 @@ public abstract class InternalPropnetGamer extends ConfigurableStateMachineGamer
 			// Check if we want to use the cache
 			if(this.proverCache){
 				GamerLogger.log("Gamer", "Returning Prover state machine with cache.");
-				return new NoSyncRefactoredCachedStateMachine(new ProverStateMachine());
+				return new NoSyncRefactoredCachedStateMachine(this.random, new ProverStateMachine(this.random));
 			}else{
 				GamerLogger.log("Gamer", "Returning Prover state machine without cache.");
-				return new ProverStateMachine();
+				return new ProverStateMachine(this.random);
 			}
 		}
 
@@ -356,7 +357,7 @@ public abstract class InternalPropnetGamer extends ConfigurableStateMachineGamer
 
 				    //return this.thePropnetMachine;
 
-				    return new SeparateInternalPropnetStateMachine(propnet, propnetState);
+				    return new SeparateInternalPropnetStateMachine(this.random, propnet, propnetState);
 
 				}else{
 					GamerLogger.logError("Gamer", "Propnet builder ended execution but at leas one among the immutable propnet structure and the propnet state is null: returning prover state machine.");

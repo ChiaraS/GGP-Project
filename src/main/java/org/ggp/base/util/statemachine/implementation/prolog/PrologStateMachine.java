@@ -2,6 +2,7 @@ package org.ggp.base.util.statemachine.implementation.prolog;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Random;
 
 import org.ggp.base.util.gdl.grammar.Gdl;
 import org.ggp.base.util.gdl.transforms.DistinctAndNotMover;
@@ -117,19 +118,22 @@ public class PrologStateMachine extends StateMachine {
 
 	// CONSTRUCTORS
 
-	public PrologStateMachine(){
-		this(PrologProver.PROLOG_TYPE.YAP, 500L);
+	public PrologStateMachine(Random random){
+		this(random, PrologProver.PROLOG_TYPE.YAP, 500L);
 	}
 
-	public PrologStateMachine(PrologProver.PROLOG_TYPE prologType){
-		this(prologType, 500L);
+	public PrologStateMachine(Random random, PrologProver.PROLOG_TYPE prologType){
+		this(random, prologType, 500L);
 	}
 
-	public PrologStateMachine(long waitingTime){
-		this(PrologProver.PROLOG_TYPE.YAP, waitingTime);
+	public PrologStateMachine(Random random, long waitingTime){
+		this(random, PrologProver.PROLOG_TYPE.YAP, waitingTime);
 	}
 
-	public PrologStateMachine(PrologProver.PROLOG_TYPE prologType, long waitingTime){
+	public PrologStateMachine(Random random, PrologProver.PROLOG_TYPE prologType, long waitingTime){
+
+		super(random);
+
 		this.prologType = prologType;
 		this.waitingTime = waitingTime;
 		this.prologProver = null;

@@ -10,6 +10,10 @@ import java.util.Random;
 
 import org.apache.logging.log4j.ThreadContext;
 import org.ggp.base.player.gamer.statemachine.GamerSettings;
+import org.ggp.base.player.gamer.statemachine.MCS.manager.MCSException;
+import org.ggp.base.player.gamer.statemachine.MCS.manager.hybrid.HybridMcsManager;
+import org.ggp.base.player.gamer.statemachine.MCTS.manager.exceptions.MCTSException;
+import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.HybridMctsManager;
 import org.ggp.base.player.gamer.statemachine.RNDSimulations.HybridRandomManager;
 import org.ggp.base.player.gamer.statemachine.RNDSimulations.exceptions.RandomException;
 import org.ggp.base.util.configuration.GamerConfiguration;
@@ -276,18 +280,19 @@ public class SingleRunProverTest {
 		/******************************** RANDOM SPEED TEST *********************************/
 
         StateMachine theProverMachine;
+        Random random = new Random();
 
 	    if(withCache){
 
 	    	switch(cacheType){
 	    	case "nosync":
-	    		theProverMachine = new NoSyncRefactoredCachedStateMachine(new ProverStateMachine());
+	    		theProverMachine = new NoSyncRefactoredCachedStateMachine(random, new ProverStateMachine(random));
 	    		break;
 	    	default:
-	    		theProverMachine = new CachedStateMachine(new ProverStateMachine());
+	    		theProverMachine = new CachedStateMachine(random, new ProverStateMachine(random));
 	    	}
         }else{
-        	theProverMachine = new ProverStateMachine();
+        	theProverMachine = new ProverStateMachine(random);
         }
 
 		GamerLogger.log("SingleRunProverTester", "Starting Random speed test.");
@@ -323,7 +328,7 @@ public class SingleRunProverTest {
 				throw new RuntimeException("Impossible to create manager, exception when reading the .properties file with the settings.");
 			}
 
-	        HybridRandomManager randomManager = new HybridRandomManager(new Random(), gamerSettings, randomSearchManagerSettingsFile.getName().split("\\.")[0]);
+	        HybridRandomManager randomManager = new HybridRandomManager(random, gamerSettings, randomSearchManagerSettingsFile.getName().split("\\.")[0]);
 
 	        AbstractStateMachine abstractStateMachine = new ExplicitStateMachine(theProverMachine);
 
@@ -392,17 +397,19 @@ public class SingleRunProverTest {
 		 * random playout for the next state after the initial one, Random -> random playout already from the
 		 * initial state.
 		 */
-/*
+
+		random = new Random();
+
 	    if(withCache){
 	    	switch(cacheType){
 	    	case "nosync":
-	    		theProverMachine = new NoSyncRefactoredCachedStateMachine(new ProverStateMachine());
+	    		theProverMachine = new NoSyncRefactoredCachedStateMachine(random, new ProverStateMachine(random));
 	    		break;
 	    	default:
-	    		theProverMachine = new CachedStateMachine(new ProverStateMachine());
+	    		theProverMachine = new CachedStateMachine(random, new ProverStateMachine(random));
 	    	}
         }else{
-        	theProverMachine = new ProverStateMachine();
+        	theProverMachine = new ProverStateMachine(random);
         }
 
 	    //GamerLogger.log("SingleRunProverTester", "Testing machine: " + theProverMachine.getClass().getSimpleName());
@@ -436,7 +443,7 @@ public class SingleRunProverTest {
 				throw new RuntimeException("Impossible to create gamer, exception when reading the .properties file with the settings.");
 			}
 
-	        HybridMcsManager mcsManager = new HybridMcsManager(new Random(), gamerSettings, mcsSearchManagerSettingsFile.getName().split("\\.")[0]);
+	        HybridMcsManager mcsManager = new HybridMcsManager(random, gamerSettings, mcsSearchManagerSettingsFile.getName().split("\\.")[0]);
 
 	        AbstractStateMachine abstractStateMachine = new ExplicitStateMachine(theProverMachine);
 
@@ -491,19 +498,21 @@ public class SingleRunProverTest {
 		theProverMachine = null;
 
 		collect(); // TODO: Leave or not?
-*/
+
 		/******************************** MCTS SPEED TEST *********************************/
-/*
+
+		random = new Random();
+
 	    if(withCache){
 	    	switch(cacheType){
 	    	case "nosync":
-	    		theProverMachine = new NoSyncRefactoredCachedStateMachine(new ProverStateMachine());
+	    		theProverMachine = new NoSyncRefactoredCachedStateMachine(random, new ProverStateMachine(random));
 	    		break;
 	    	default:
-	    		theProverMachine = new CachedStateMachine(new ProverStateMachine());
+	    		theProverMachine = new CachedStateMachine(random, new ProverStateMachine(random));
 	    	}
         }else{
-        	theProverMachine = new ProverStateMachine();
+        	theProverMachine = new ProverStateMachine(random);
         }
 
 		GamerLogger.log("SingleRunProverTester", "Starting MCTS speed test.");
@@ -535,7 +544,7 @@ public class SingleRunProverTest {
 				throw new RuntimeException("Impossible to create gamer, exception when reading the .properties file with the settings.");
 			}
 
-	        HybridMctsManager mctsManager = new HybridMctsManager(new Random(), gamerSettings, mctsSearchManagerSettingsFile.getName().split("\\.")[0]);
+	        HybridMctsManager mctsManager = new HybridMctsManager(random, gamerSettings, mctsSearchManagerSettingsFile.getName().split("\\.")[0]);
 
 	        AbstractStateMachine abstractStateMachine = new ExplicitStateMachine(theProverMachine);
 
@@ -593,7 +602,7 @@ public class SingleRunProverTest {
 		theProverMachine = null;
 
 		collect(); // TODO: Leave or not?
-*/
+
 		/************************** LOG *******************************/
 
 		ThreadContext.put("LOG_FOLDER", mainLogFolder);

@@ -1,7 +1,6 @@
 package csironi.ggp.course.gamers.old;
 
 import java.util.List;
-import java.util.Random;
 
 import org.ggp.base.player.gamer.event.GamerSelectedMoveEvent;
 import org.ggp.base.player.gamer.exception.GamePreviewException;
@@ -23,7 +22,7 @@ public final class MonteCarloUCTGamer extends StateMachineGamer {
 
 	@Override
 	public StateMachine getInitialStateMachine() {
-		return new ProverStateMachine();
+		return new ProverStateMachine(this.random);
 	}
 
 	@Override
@@ -41,7 +40,7 @@ public final class MonteCarloUCTGamer extends StateMachineGamer {
 		long start = System.currentTimeMillis();
 
 		List<ExplicitMove> moves = getStateMachine().getExplicitLegalMoves(getCurrentState(), getRole());
-		ExplicitMove selection = (moves.get(new Random().nextInt(moves.size())));
+		ExplicitMove selection = (moves.get(this.random.nextInt(moves.size())));
 
 		long stop = System.currentTimeMillis();
 

@@ -4,7 +4,6 @@
 package csironi.ggp.course.gamers;
 
 import java.util.List;
-import java.util.Random;
 
 import org.ggp.base.player.gamer.event.GamerSelectedMoveEvent;
 import org.ggp.base.util.statemachine.exceptions.GoalDefinitionException;
@@ -37,7 +36,7 @@ public class RandomActions extends RandomTerminal {
 		long start = System.currentTimeMillis();
 
 		List<ExplicitMove> moves = getStateMachine().getExplicitLegalMoves(getCurrentState(), getRole());
-		ExplicitMove selection = (moves.get(new Random().nextInt(moves.size())));
+		ExplicitMove selection = (moves.get(this.random.nextInt(moves.size())));
 
 		long stop = System.currentTimeMillis();
 

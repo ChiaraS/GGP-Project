@@ -5,6 +5,7 @@ package org.ggp.base.util.statemachine.safe;
 
 import java.util.Arrays;
 import java.util.List;
+import java.util.Random;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
@@ -68,7 +69,10 @@ public class InitializationSafeStateMachine extends StateMachine {
 	 */
 	private StateMachine theRealMachine;
 
-	public InitializationSafeStateMachine(StateMachine theRealMachine) {
+	public InitializationSafeStateMachine(Random random, StateMachine theRealMachine) {
+
+		super(random);
+
 		this.theRealMachine = theRealMachine;
 	}
 

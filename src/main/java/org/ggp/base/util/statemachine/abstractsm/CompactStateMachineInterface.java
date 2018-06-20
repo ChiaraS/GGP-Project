@@ -2,10 +2,10 @@ package org.ggp.base.util.statemachine.abstractsm;
 
 import java.util.List;
 
+import org.ggp.base.util.statemachine.exceptions.GoalDefinitionException;
 import org.ggp.base.util.statemachine.exceptions.MoveDefinitionException;
 import org.ggp.base.util.statemachine.exceptions.StateMachineException;
 import org.ggp.base.util.statemachine.exceptions.TransitionDefinitionException;
-import org.ggp.base.util.statemachine.structure.Move;
 import org.ggp.base.util.statemachine.structure.compact.CompactMachineState;
 import org.ggp.base.util.statemachine.structure.compact.CompactMove;
 import org.ggp.base.util.statemachine.structure.compact.CompactRole;
@@ -42,10 +42,10 @@ public interface CompactStateMachineInterface extends AbstractStateMachineInterf
 
     // Methods that perform playout and playout choices using the reasoner underlying the state machine
 
-	public MyPair<int[], Integer> fastPlayouts(CompactMachineState state, int numSimulationsPerPlayout, int maxDepth);
+	public MyPair<double[], Double> fastPlayouts(CompactMachineState state, int numSimulationsPerPlayout, int maxDepth) throws TransitionDefinitionException, MoveDefinitionException, StateMachineException, GoalDefinitionException;
 
-	public List<CompactMove> getJointMove(CompactMachineState state);
+	public List<CompactMove> getJointMove(List<List<CompactMove>> legalMovesPerRole, CompactMachineState state) throws MoveDefinitionException;
 
-	public Move getMoveForRole(CompactMachineState state, int roleIndex);
+	public CompactMove getMoveForRole(List<CompactMove> legalMoves, CompactMachineState state, CompactRole role) throws MoveDefinitionException;
 
 }

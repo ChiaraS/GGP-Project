@@ -1,6 +1,7 @@
 package org.ggp.base.util.statemachine.hybrid;
 
 import java.util.List;
+import java.util.Random;
 
 import org.ggp.base.util.gdl.grammar.Gdl;
 import org.ggp.base.util.logging.GamerLogger;
@@ -40,6 +41,10 @@ import org.ggp.base.util.statemachine.structure.explicit.ExplicitRole;
  */
 public class BackedPrologStateMachine extends StateMachine {
 
+	public BackedPrologStateMachine(Random random) {
+		super(random);
+	}
+
 	/**
 	 * The main machine to be used to reason on the game.
 	 */
@@ -59,7 +64,10 @@ public class BackedPrologStateMachine extends StateMachine {
 	 * @param backupMachine the machine to be used when the main machine fails to answer
 	 * to a query.
 	 */
-	public BackedPrologStateMachine(PrologStateMachine mainMachine, ProverStateMachine backupMachine) {
+	public BackedPrologStateMachine(Random random, PrologStateMachine mainMachine, ProverStateMachine backupMachine) {
+
+		super(random);
+
 		this.mainMachine = mainMachine;
 		this.backupMachine = backupMachine;
 	}

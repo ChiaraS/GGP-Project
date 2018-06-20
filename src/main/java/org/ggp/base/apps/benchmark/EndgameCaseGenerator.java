@@ -3,6 +3,7 @@ package org.ggp.base.apps.benchmark;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Random;
 import java.util.Set;
 
 import org.ggp.base.util.Pair;
@@ -38,7 +39,7 @@ import org.ggp.base.util.statemachine.structure.explicit.ExplicitRole;
  */
 public class EndgameCaseGenerator {
 	public static void main(String[] args) throws MoveDefinitionException, TransitionDefinitionException, GoalDefinitionException, StateMachineException, StateMachineInitializationException {
-		generateTestCase("connectFour", 0, 5, 6, new ProverStateMachine());
+		generateTestCase("connectFour", 0, 5, 6, new ProverStateMachine(new Random()));
 	}
 
 	public static void generateTestCase(String gameKey, int nRole, int nBackoff, int nMaxDepth, StateMachine theMachine) throws MoveDefinitionException, TransitionDefinitionException, GoalDefinitionException, StateMachineException, StateMachineInitializationException {

@@ -12,6 +12,7 @@ import org.ggp.base.util.statemachine.exceptions.MoveDefinitionException;
 import org.ggp.base.util.statemachine.exceptions.StateMachineException;
 import org.ggp.base.util.statemachine.structure.MachineState;
 import org.ggp.base.util.statemachine.structure.Move;
+import org.ggp.base.util.statemachine.structure.Role;
 
 public class EpsilonMastMoveSelector extends MoveSelector{
 
@@ -93,7 +94,7 @@ public class EpsilonMastMoveSelector extends MoveSelector{
 	}
 
 	@Override
-	public List<Move> getJointMove(MachineState state) throws MoveDefinitionException, StateMachineException {
+	public List<Move> getJointMove(List<List<Move>> legalMovesPerRole, MachineState state) throws MoveDefinitionException, StateMachineException {
 
 		List<Move> jointMove = new ArrayList<Move>();
 
@@ -110,14 +111,15 @@ public class EpsilonMastMoveSelector extends MoveSelector{
 	}
 
 	@Override
-	public Move getMoveForRole(MachineState state, int roleIndex) throws MoveDefinitionException, StateMachineException {
+	public Move getMoveForRole(List<Move> legalMoves, MachineState state, Role role) throws MoveDefinitionException, StateMachineException {
 
+		int roleIndex = this.gameDependentParameters.getTheMachine().getRoleIndices().get(role);
 		if(this.random.nextDouble() < this.epsilon.getValuePerRole(roleIndex)){
     		// Choose random action with probability epsilon
-			return this.randomSelector.getMoveForRole(state, roleIndex);
+			return this.randomSelector.getMoveForRole(legalMoves, state, role);
     	}else{
     		// Choose move with highest average score
-    		return this.mastSelector.getMoveForRole(state, roleIndex);
+    		return this.mastSelector.getMoveForRole(legalMoves, state, role);
     	}
 
 	}

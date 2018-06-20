@@ -174,10 +174,12 @@ public class MCSSpeedTest {
 			ImmutablePropNet propnet = manager.getImmutablePropnet();
 			ImmutableSeparatePropnetState propnetState = manager.getInitialPropnetState();
 
+			Random random = new Random();
+
 			// Create the state machine giving it the propnet and the propnet state.
 			// NOTE that if any of the two is null, it means that the propnet creation/initialization went wrong
 			// and this will be detected by the state machine during initialization.
-		    thePropnetMachine = new SeparateInternalPropnetStateMachine(propnet, propnetState);
+		    thePropnetMachine = new SeparateInternalPropnetStateMachine(random, propnet, propnetState);
 
 		    int numRoles = -1;
 	        long initializationTime;
@@ -209,7 +211,6 @@ public class MCSSpeedTest {
 		        System.gc();
 		        /***************************************/
 
-		        Random r = new Random();
 		        int maxSearchDepth = 500;
 
 		        long testStart = System.currentTimeMillis();
@@ -221,7 +222,7 @@ public class MCSSpeedTest {
 		        numRoles = thePropnetMachine.getCompactRoles().size();
 
 		        InternalPropnetMCSManager MCSmanager = new InternalPropnetMCSManager(new PnRandomPlayout(thePropnetMachine),
-		        		thePropnetMachine, internalPlayingRole, maxSearchDepth, r);
+		        		thePropnetMachine, internalPlayingRole, maxSearchDepth, random);
 
 		        try{
 		        	GamerLogger.log("MCSSpeedTest", "Starting search.");

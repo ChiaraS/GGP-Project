@@ -1,6 +1,7 @@
 package csironi.ggp.course.verifiers;
 
 import java.util.List;
+import java.util.Random;
 
 import org.ggp.base.util.game.GameRepository;
 import org.ggp.base.util.gdl.grammar.Gdl;
@@ -106,10 +107,10 @@ public class FirstPropnetVerifier {
 
             List<Gdl> description = theRepository.getGame(gameKey).getRules();
 
-            theReference = new ProverStateMachine();
+            theReference = new ProverStateMachine(new Random());
 
             // Create propnet state machine giving it buildingTime milliseconds to build the propnet
-            thePropnetMachine = new CheckFwdInterrPropnetStateMachine(buildingTime);
+            thePropnetMachine = new CheckFwdInterrPropnetStateMachine(new Random(), buildingTime);
 
             theReference.initialize(description, Long.MAX_VALUE);
 

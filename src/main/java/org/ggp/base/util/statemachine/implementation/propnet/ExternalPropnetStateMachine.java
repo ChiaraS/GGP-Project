@@ -43,7 +43,10 @@ public class ExternalPropnetStateMachine extends StateMachine {
     /** The initial state */
     private CompactMachineState initialState;
 
-	public ExternalPropnetStateMachine(ExternalizedStatePropNet propNet, ImmutableSeparatePropnetState propnetState){
+	public ExternalPropnetStateMachine(Random random, ExternalizedStatePropNet propNet, ImmutableSeparatePropnetState propnetState){
+
+		super(random);
+
 		this.propNet = propNet;
 		this.propnetState = propnetState;
 	}

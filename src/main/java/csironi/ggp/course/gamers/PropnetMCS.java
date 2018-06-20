@@ -109,7 +109,7 @@ public class PropnetMCS extends SampleGamer {
 	 */
 	@Override
 	public StateMachine getInitialStateMachine(){
-		return new FwdInterrPropnetStateMachine();
+		return new FwdInterrPropnetStateMachine(this.random);
 	}
 
 }

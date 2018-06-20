@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Random;
 import java.util.Set;
 
 import org.ggp.base.util.game.CloudGameRepository;
@@ -44,7 +45,7 @@ public class BasesInputsValidator implements GameValidator {
 	@Override
 	public List<ValidatorWarning> checkValidity(Game theGame) throws ValidatorException {
 		try {
-			StateMachine sm = new ProverStateMachine();
+			StateMachine sm = new ProverStateMachine(new Random());
 			sm.initialize(theGame.getRules(), Long.MAX_VALUE);
 
 			AimaProver prover = new AimaProver(theGame.getRules());

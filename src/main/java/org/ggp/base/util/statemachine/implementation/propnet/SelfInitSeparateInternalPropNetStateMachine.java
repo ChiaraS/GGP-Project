@@ -4,6 +4,7 @@
 package org.ggp.base.util.statemachine.implementation.propnet;
 
 import java.util.List;
+import java.util.Random;
 
 import org.ggp.base.util.gdl.grammar.Gdl;
 import org.ggp.base.util.propnet.architecture.separateExtendedState.immutable.ImmutablePropNet;
@@ -27,21 +28,20 @@ public class SelfInitSeparateInternalPropNetStateMachine extends
 	 * @param propNet
 	 * @param propnetState
 	 */
-	public SelfInitSeparateInternalPropNetStateMachine(
-			ImmutablePropNet propNet, ImmutableSeparatePropnetState propnetState) {
-		super(propNet, propnetState);
+	public SelfInitSeparateInternalPropNetStateMachine(Random random, ImmutablePropNet propNet, ImmutableSeparatePropnetState propnetState) {
+		super(random, propNet, propnetState);
 		this.optimizations = null;
 		this.manager = null;
 	}
 
-	public SelfInitSeparateInternalPropNetStateMachine() {
-		super(null, null);
+	public SelfInitSeparateInternalPropNetStateMachine(Random random) {
+		super(random, null, null);
 		this.optimizations = null;
 		this.manager = null;
 	}
 
-	public SelfInitSeparateInternalPropNetStateMachine(OptimizationCaller[] optimizations) {
-		super(null, null);
+	public SelfInitSeparateInternalPropNetStateMachine(Random random, OptimizationCaller[] optimizations) {
+		super(random, null, null);
 
 		this.optimizations = optimizations;
 		this.manager = null;

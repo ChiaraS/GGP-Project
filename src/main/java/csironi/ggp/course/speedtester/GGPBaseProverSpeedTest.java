@@ -1,6 +1,7 @@
 package csironi.ggp.course.speedtester;
 
 import java.util.List;
+import java.util.Random;
 
 import org.ggp.base.util.game.GameRepository;
 import org.ggp.base.util.gdl.grammar.Gdl;
@@ -126,11 +127,13 @@ public class GGPBaseProverSpeedTest {
 
             List<Gdl> description = theRepository.getGame(gameKey).getRules();
 
+            Random random = new Random();
+
             // Create prover state machine
-            theSubject = new ProverStateMachine();
+            theSubject = new ProverStateMachine(random);
             // If the prover state machine must be provided with a cache, create the cached state machine
             if(withCache){
-            	theSubject = new CachedStateMachine(theSubject);
+            	theSubject = new CachedStateMachine(random, theSubject);
             }
 
             long initializationTime;

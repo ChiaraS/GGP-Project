@@ -1,6 +1,7 @@
 package org.ggp.base.util.statemachine.hybrid;
 
 import java.util.List;
+import java.util.Random;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
@@ -200,13 +201,15 @@ public class AdaptiveInitializationStateMachine extends StateMachine {
 	 */
 	private long safetyMargin;
 
-	public AdaptiveInitializationStateMachine(StateMachine[] allTheMachines) {
+	public AdaptiveInitializationStateMachine(Random random, StateMachine[] allTheMachines) {
 
-		this(allTheMachines, 0L);
+		this(random, allTheMachines, 0L);
 
 	}
 
-	public AdaptiveInitializationStateMachine(StateMachine[] allTheMachines, long safetyMargin) {
+	public AdaptiveInitializationStateMachine(Random random, StateMachine[] allTheMachines, long safetyMargin) {
+
+		super(random);
 
 		if(allTheMachines == null || allTheMachines.length < 2){
 			throw new IllegalArgumentException("Expected at least two state machines to compare in this AdaptiveInitializationStateMachine.");

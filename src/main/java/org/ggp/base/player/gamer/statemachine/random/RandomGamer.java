@@ -1,7 +1,6 @@
 package org.ggp.base.player.gamer.statemachine.random;
 
 import java.util.List;
-import java.util.Random;
 
 import org.ggp.base.apps.player.detail.DetailPanel;
 import org.ggp.base.apps.player.detail.SimpleDetailPanel;
@@ -35,7 +34,7 @@ public final class RandomGamer extends StateMachineGamer
 		long start = System.currentTimeMillis();
 
 		List<ExplicitMove> moves = getStateMachine().getExplicitLegalMoves(getCurrentState(), getRole());
-		ExplicitMove selection = (moves.get(new Random().nextInt(moves.size())));
+		ExplicitMove selection = (moves.get(this.random.nextInt(moves.size())));
 
 		long stop = System.currentTimeMillis();
 
@@ -45,7 +44,7 @@ public final class RandomGamer extends StateMachineGamer
 
 	@Override
 	public StateMachine getInitialStateMachine() {
-		return new CachedStateMachine(new ProverStateMachine());
+		return new CachedStateMachine(this.random, new ProverStateMachine(this.random));
 	}
 
 	@Override

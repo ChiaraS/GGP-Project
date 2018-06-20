@@ -136,7 +136,9 @@ public class ProverMCTSSpeedTest {
 
 	        List<Gdl> description = theRepository.getGame(gameKey).getRules();
 
-		    theProverMachine = new ProverStateMachine();
+	        Random random = new Random();
+
+		    theProverMachine = new ProverStateMachine(random);
 
 		    int numRoles = -1;
 	        long initializationTime;
@@ -163,7 +165,6 @@ public class ProverMCTSSpeedTest {
 			System.gc();
 			/***************************************/
 
-			Random r = new Random();
 			double c = 0.7;
 			double unexploredMoveDefaultSelectionValue = Double.MAX_VALUE;
 			double uctOffset = 0.01;

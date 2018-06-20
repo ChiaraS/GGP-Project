@@ -2,6 +2,7 @@ package org.ggp.base.util.statemachine.safe;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Random;
 import java.util.Set;
 
 import org.ggp.base.util.gdl.grammar.Gdl;
@@ -33,7 +34,10 @@ public class FailsafeStateMachine extends StateMachine
     private StateMachine theBackingMachine = null;
     private List<Gdl> gameDescription;
 
-    public FailsafeStateMachine (StateMachine theInitialMachine) {
+    public FailsafeStateMachine (Random random, StateMachine theInitialMachine) {
+
+    	super(random);
+
         theBackingMachine = theInitialMachine;
     }
 
@@ -100,7 +104,7 @@ public class FailsafeStateMachine extends StateMachine
 
     private boolean attemptLoadingProverMachine() {
         try {
-            StateMachine theStateMachine = new ProverStateMachine();
+            StateMachine theStateMachine = new ProverStateMachine(this.random);
             theStateMachine.initialize(gameDescription, Long.MAX_VALUE);
             theBackingMachine = theStateMachine;
             GamerLogger.log("StateMachine", "Failsafe Machine: successfully loaded traditional prover.");

@@ -7,7 +7,6 @@ import org.ggp.base.util.Pair;
 import org.ggp.base.util.statemachine.exceptions.MoveDefinitionException;
 import org.ggp.base.util.statemachine.exceptions.StateMachineException;
 import org.ggp.base.util.statemachine.exceptions.TransitionDefinitionException;
-import org.ggp.base.util.statemachine.structure.Move;
 import org.ggp.base.util.statemachine.structure.explicit.ExplicitMachineState;
 import org.ggp.base.util.statemachine.structure.explicit.ExplicitMove;
 import org.ggp.base.util.statemachine.structure.explicit.ExplicitRole;
@@ -46,11 +45,10 @@ public interface FpgaStateMachineInterface extends AbstractStateMachineInterface
 
     // Methods that perform playout and playout choices using the reasoner underlying the state machine
 
-	public List<FpgaMove> getJointMove(FpgaMachineState state);
+	public MyPair<double[], Double> fastPlayouts(FpgaMachineState state, int numSimulationsPerPlayout, int maxDepth);
 
-	public Move getMoveForRole(FpgaMachineState state, int roleIndex);
+	public List<FpgaMove> getJointMove(List<List<FpgaMove>> legalMovesPerRole, FpgaMachineState state);
 
-	public MyPair<int[], Integer> fastPlayouts(FpgaMachineState state, int numSimulationsPerPlayout, int maxDepth);
-
+	public FpgaMove getMoveForRole(List<FpgaMove> legalMoves, FpgaMachineState state, FpgaRole role);
 
 }

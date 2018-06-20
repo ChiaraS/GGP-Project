@@ -5,6 +5,7 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Random;
 import java.util.Set;
 
 import org.apache.lucene.util.OpenBitSet;
@@ -49,6 +50,10 @@ public class ExtendedStatePropnetStateMachine extends StateMachine {
 	 * If it is negative it means that the propnet didn't build in time.
 	 */
 	private long propnetConstructionTime = -1L;
+
+	public ExtendedStatePropnetStateMachine(Random random){
+		super(random);
+	}
 
     /**
      * Initializes the PropNetStateMachine. You should compute the topological

@@ -466,20 +466,22 @@ public class SingleRunPNTest {
 
 			propnetState = manager.getInitialPropnetState();
 
+			Random random = new Random();
+
 		    if(withCache){
 
 		    	switch(cacheType){
 		    	case "ref":
-		    		thePropnetMachine = new RefactoredSeparateInternalPropnetCachedStateMachine(new SeparateInternalPropnetStateMachine(immutablePropnet, propnetState));
+		    		thePropnetMachine = new RefactoredSeparateInternalPropnetCachedStateMachine(random, new SeparateInternalPropnetStateMachine(random, immutablePropnet, propnetState));
 		    		break;
 		    	case "nosync":
-		    		thePropnetMachine = new NoSyncRefactoredSeparateInternalPropnetCachedStateMachine(new SeparateInternalPropnetStateMachine(immutablePropnet, propnetState));
+		    		thePropnetMachine = new NoSyncRefactoredSeparateInternalPropnetCachedStateMachine(random, new SeparateInternalPropnetStateMachine(random, immutablePropnet, propnetState));
 		    		break;
 		    	default:
-		    		thePropnetMachine = new SeparateInternalPropnetCachedStateMachine(new SeparateInternalPropnetStateMachine(immutablePropnet, propnetState));
+		    		thePropnetMachine = new SeparateInternalPropnetCachedStateMachine(random, new SeparateInternalPropnetStateMachine(random, immutablePropnet, propnetState));
 		    	}
 		    }else{
-	        	thePropnetMachine = new SeparateInternalPropnetStateMachine(immutablePropnet, propnetState);
+	        	thePropnetMachine = new SeparateInternalPropnetStateMachine(random, immutablePropnet, propnetState);
 	        }
 
 			GamerLogger.log("SingleRunPNTester", "Starting Random speed test.");
@@ -511,7 +513,7 @@ public class SingleRunPNTest {
 					throw new RuntimeException("Impossible to create manager, exception when reading the .properties file with the settings.");
 				}
 
-		        HybridRandomManager randomManager = new HybridRandomManager(new Random(), gamerSettings, randomSearchManagerSettingsFile.getName().split("\\.")[0]);
+		        HybridRandomManager randomManager = new HybridRandomManager(random, gamerSettings, randomSearchManagerSettingsFile.getName().split("\\.")[0]);
 
 		        AbstractStateMachine abstractStateMachine = new CompactStateMachine(thePropnetMachine);
 
@@ -588,20 +590,22 @@ public class SingleRunPNTest {
 
 			propnetState = manager.getInitialPropnetState();
 
+			random = new Random();
+
 		    if(withCache){
 
 		    	switch(cacheType){
 		    	case "ref":
-		    		thePropnetMachine = new RefactoredSeparateInternalPropnetCachedStateMachine(new SeparateInternalPropnetStateMachine(immutablePropnet, propnetState));
+		    		thePropnetMachine = new RefactoredSeparateInternalPropnetCachedStateMachine(random, new SeparateInternalPropnetStateMachine(random, immutablePropnet, propnetState));
 		    		break;
 		    	case "nosync":
-		    		thePropnetMachine = new NoSyncRefactoredSeparateInternalPropnetCachedStateMachine(new SeparateInternalPropnetStateMachine(immutablePropnet, propnetState));
+		    		thePropnetMachine = new NoSyncRefactoredSeparateInternalPropnetCachedStateMachine(random, new SeparateInternalPropnetStateMachine(random, immutablePropnet, propnetState));
 		    		break;
 		    	default:
-		    		thePropnetMachine = new SeparateInternalPropnetCachedStateMachine(new SeparateInternalPropnetStateMachine(immutablePropnet, propnetState));
+		    		thePropnetMachine = new SeparateInternalPropnetCachedStateMachine(random, new SeparateInternalPropnetStateMachine(random, immutablePropnet, propnetState));
 		    	}
 		    }else{
-	        	thePropnetMachine = new SeparateInternalPropnetStateMachine(immutablePropnet, propnetState);
+	        	thePropnetMachine = new SeparateInternalPropnetStateMachine(random, immutablePropnet, propnetState);
 	        }
 
 		    //GamerLogger.log("SingleRunPNTester", "Testing machine: " + thePropnetMachine.getClass().getSimpleName());
@@ -635,7 +639,7 @@ public class SingleRunPNTest {
 					throw new RuntimeException("Impossible to create gamer, exception when reading the .properties file with the settings.");
 				}
 
-		        HybridMcsManager mcsManager = new HybridMcsManager(new Random(), gamerSettings, mcsSearchManagerSettingsFile.getName().split("\\.")[0]);
+		        HybridMcsManager mcsManager = new HybridMcsManager(random, gamerSettings, mcsSearchManagerSettingsFile.getName().split("\\.")[0]);
 
 		        AbstractStateMachine abstractStateMachine = new CompactStateMachine(thePropnetMachine);
 
@@ -707,20 +711,22 @@ public class SingleRunPNTest {
 
 			propnetState = manager.getInitialPropnetState();
 
+			random = new Random();
+
 		    if(withCache){
 
 		    	switch(cacheType){
 		    	case "ref":
-		    		thePropnetMachine = new RefactoredSeparateInternalPropnetCachedStateMachine(new SeparateInternalPropnetStateMachine(immutablePropnet, propnetState));
+		    		thePropnetMachine = new RefactoredSeparateInternalPropnetCachedStateMachine(random, new SeparateInternalPropnetStateMachine(random, immutablePropnet, propnetState));
 		    		break;
 		    	case "nosync":
-		    		thePropnetMachine = new NoSyncRefactoredSeparateInternalPropnetCachedStateMachine(new SeparateInternalPropnetStateMachine(immutablePropnet, propnetState));
+		    		thePropnetMachine = new NoSyncRefactoredSeparateInternalPropnetCachedStateMachine(random, new SeparateInternalPropnetStateMachine(random, immutablePropnet, propnetState));
 		    		break;
 		    	default:
-		    		thePropnetMachine = new SeparateInternalPropnetCachedStateMachine(new SeparateInternalPropnetStateMachine(immutablePropnet, propnetState));
+		    		thePropnetMachine = new SeparateInternalPropnetCachedStateMachine(random, new SeparateInternalPropnetStateMachine(random, immutablePropnet, propnetState));
 		    	}
 		    }else{
-	        	thePropnetMachine = new SeparateInternalPropnetStateMachine(immutablePropnet, propnetState);
+	        	thePropnetMachine = new SeparateInternalPropnetStateMachine(random, immutablePropnet, propnetState);
 	        }
 
 		    //GamerLogger.log("SingleRunPNTester", "Testing machine: " + thePropnetMachine.getClass().getSimpleName());
@@ -754,7 +760,7 @@ public class SingleRunPNTest {
 					throw new RuntimeException("Impossible to create gamer, exception when reading the .properties file with the settings.");
 				}
 
-		        HybridMctsManager mctsManager = new HybridMctsManager(new Random(), gamerSettings, mctsSearchManagerSettingsFile.getName().split("\\.")[0]);
+		        HybridMctsManager mctsManager = new HybridMctsManager(random, gamerSettings, mctsSearchManagerSettingsFile.getName().split("\\.")[0]);
 
 		        AbstractStateMachine abstractStateMachine = new CompactStateMachine(thePropnetMachine);
 

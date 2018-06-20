@@ -3,6 +3,7 @@ package org.ggp.base.util.statemachine.cache;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Random;
 
 import org.ggp.base.util.gdl.grammar.Gdl;
 import org.ggp.base.util.statemachine.StateMachine;
@@ -35,7 +36,8 @@ public class RefactoredCachedStateMachine extends StateMachine{
 		}
 	}
 
-	public RefactoredCachedStateMachine(StateMachine backingStateMachine){
+	public RefactoredCachedStateMachine(Random random, StateMachine backingStateMachine){
+		super(random);
 		this.backingStateMachine = backingStateMachine;
 		ttlCache = new RefactoredTtlCache<ExplicitMachineState, MachineStateEntry>(1);
 	}

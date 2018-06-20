@@ -1,6 +1,7 @@
 package csironi.ggp.course.speedtester;
 
 import java.util.List;
+import java.util.Random;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
@@ -213,14 +214,16 @@ public class SeparatePropnetSpeedTest {
 			ImmutablePropNet propnet = manager.getImmutablePropnet();
 			ImmutableSeparatePropnetState propnetState = manager.getInitialPropnetState();
 
+			Random random = new Random();
+
 			// Create the state machine giving it the propnet and the propnet state.
 			// NOTE that if any of the two is null, it means that the propnet creation/initialization went wrong
 			// and this will be detected by the state machine during initialization.
-		    thePropnetMachine = new SeparateInternalPropnetStateMachine(propnet, propnetState);
+		    thePropnetMachine = new SeparateInternalPropnetStateMachine(random, propnet, propnetState);
 
 		    // For now the cache can be used only for the state machine that performs translation
 		    if(withCache){
-		    	theSubject = new SeparateInternalPropnetCachedStateMachine((SeparateInternalPropnetStateMachine) thePropnetMachine);
+		    	theSubject = new SeparateInternalPropnetCachedStateMachine(random, (SeparateInternalPropnetStateMachine) thePropnetMachine);
 	        }else{
 	        	theSubject = thePropnetMachine;
 	        }

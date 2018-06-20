@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Random;
 import java.util.Set;
 
 import org.ggp.base.util.gdl.grammar.Gdl;
@@ -48,8 +49,8 @@ public class CheckFwdInterrPropnetStateMachine extends StateMachine {
 	 * Constructor that sets the maximum time (in milliseconds) that this state machine can spend to
 	 * create the propnet to the default value of 5 minutes.
 	 */
-	public CheckFwdInterrPropnetStateMachine(){
-    	this(300000L);
+	public CheckFwdInterrPropnetStateMachine(Random random){
+    	this(random, 300000L);
     }
 
 	/**
@@ -59,7 +60,10 @@ public class CheckFwdInterrPropnetStateMachine extends StateMachine {
 	 * @param maxPropnetCreationTime the maximum time (in milliseconds) that this state machine can spend to
 	 * create the propnet.
 	 */
-    public CheckFwdInterrPropnetStateMachine(long maxPropnetCreationTime){
+    public CheckFwdInterrPropnetStateMachine(Random random, long maxPropnetCreationTime){
+
+    	super(random);
+
     	this.maxPropnetCreationTime = maxPropnetCreationTime;
     }
 

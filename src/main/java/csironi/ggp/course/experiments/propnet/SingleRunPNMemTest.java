@@ -271,12 +271,14 @@ public class SingleRunPNMemTest {
 			// NOTE that if any of the two is null, it means that the propnet creation/initialization went wrong
 			// and this will be detected by the state machine during initialization.
 
+			Random random = new Random();
+
 			InternalPropnetStateMachine thePropnetMachine;
 
 		    if(withCache){
-		    	thePropnetMachine = new SeparateInternalPropnetCachedStateMachine(new SeparateInternalPropnetStateMachine(immutablePropnet, propnetState));
+		    	thePropnetMachine = new SeparateInternalPropnetCachedStateMachine(random, new SeparateInternalPropnetStateMachine(random, immutablePropnet, propnetState));
 	        }else{
-	        	thePropnetMachine = new SeparateInternalPropnetStateMachine(immutablePropnet, propnetState);
+	        	thePropnetMachine = new SeparateInternalPropnetStateMachine(random, immutablePropnet, propnetState);
 	        }
 
 			Random r;
@@ -288,13 +290,12 @@ public class SingleRunPNMemTest {
 			try {
 				thePropnetMachine.initialize(description, System.currentTimeMillis() + givenInitTime);
 
-		        r = new Random();
 		        maxSearchDepth = 500;
 		        CompactRole internalPlayingRole = thePropnetMachine.getCompactRoles().get(0);
 		        numRoles = thePropnetMachine.getCompactRoles().size();
 
 		        InternalPropnetMCSManager MCSmanager = new InternalPropnetMCSManager(new PnRandomPlayout(thePropnetMachine),
-		        		thePropnetMachine, internalPlayingRole, maxSearchDepth, r);
+		        		thePropnetMachine, internalPlayingRole, maxSearchDepth, random);
 
 		        GamerLogger.log("SingleRunPNTester", "Starting MCS search.");
 
@@ -332,16 +333,17 @@ public class SingleRunPNMemTest {
 
 			propnetState = manager.getInitialPropnetState();
 
+			random = new Random();
+
 		    if(withCache){
-		    	thePropnetMachine = new SeparateInternalPropnetCachedStateMachine(new SeparateInternalPropnetStateMachine(immutablePropnet, propnetState));
+		    	thePropnetMachine = new SeparateInternalPropnetCachedStateMachine(random, new SeparateInternalPropnetStateMachine(random, immutablePropnet, propnetState));
 	        }else{
-	        	thePropnetMachine = new SeparateInternalPropnetStateMachine(immutablePropnet, propnetState);
+	        	thePropnetMachine = new SeparateInternalPropnetStateMachine(random, immutablePropnet, propnetState);
 	        }
 
 			try {
 				thePropnetMachine.initialize(description, System.currentTimeMillis() + givenInitTime);
 
-		        r = new Random();
 		        maxSearchDepth = 500;
 		        double c = 0.7;
 		        double unexploredMoveDefaultSelectionValue = Double.MAX_VALUE;

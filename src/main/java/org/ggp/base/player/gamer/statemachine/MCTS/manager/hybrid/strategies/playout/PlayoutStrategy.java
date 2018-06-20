@@ -10,6 +10,7 @@ import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.strategies.Str
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.hybrid.SimulationResult;
 import org.ggp.base.util.statemachine.structure.MachineState;
 import org.ggp.base.util.statemachine.structure.Move;
+import org.ggp.base.util.statemachine.structure.Role;
 
 public abstract class PlayoutStrategy extends Strategy {
 
@@ -45,16 +46,17 @@ public abstract class PlayoutStrategy extends Strategy {
 	 * @param state
 	 * @return
 	 */
-	public abstract List<Move> getJointMove(MachineState state);
+	public abstract List<Move> getJointMove(List<List<Move>> legalMovesPerRole, MachineState state);
 
 
 	/**
 	 * Returns a move for the given role in the given state, using the playout strategy implemented by the class.
 	 *
+	 * @param legalMoves
 	 * @param state
-	 * @param roleIndex
+	 * @param role
 	 * @return
 	 */
-	public abstract Move getMoveForRole(MachineState state, int roleIndex);
+	public abstract Move getMoveForRole(List<Move> legalMoves, MachineState state, Role role);
 
 }

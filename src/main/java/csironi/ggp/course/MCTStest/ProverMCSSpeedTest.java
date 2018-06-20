@@ -126,7 +126,9 @@ public class ProverMCSSpeedTest {
 
 	        List<Gdl> description = theRepository.getGame(gameKey).getRules();
 
-		    theProverMachine = new ProverStateMachine();
+	        Random random = new Random();
+
+		    theProverMachine = new ProverStateMachine(random);
 
 		    int numRoles = -1;
 	        long initializationTime;
@@ -153,7 +155,6 @@ public class ProverMCSSpeedTest {
 			System.gc();
 			/***************************************/
 
-			Random r = new Random();
 			int maxSearchDepth = 500;
 
 			long testStart = System.currentTimeMillis();
@@ -165,7 +166,7 @@ public class ProverMCSSpeedTest {
 			numRoles = theProverMachine.getExplicitRoles().size();
 
 			ProverMCSManager MCSmanager = new ProverMCSManager(new ProverRandomPlayout(theProverMachine),
-					theProverMachine, playingRole, maxSearchDepth, r);
+					theProverMachine, playingRole, maxSearchDepth, random);
 
 			try{
 				GamerLogger.log("MCSSpeedTest", "Starting search.");

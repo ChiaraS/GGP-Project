@@ -2,10 +2,10 @@ package org.ggp.base.util.statemachine.abstractsm;
 
 import java.util.List;
 
+import org.ggp.base.util.statemachine.exceptions.GoalDefinitionException;
 import org.ggp.base.util.statemachine.exceptions.MoveDefinitionException;
 import org.ggp.base.util.statemachine.exceptions.StateMachineException;
 import org.ggp.base.util.statemachine.exceptions.TransitionDefinitionException;
-import org.ggp.base.util.statemachine.structure.Move;
 import org.ggp.base.util.statemachine.structure.explicit.ExplicitMachineState;
 import org.ggp.base.util.statemachine.structure.explicit.ExplicitMove;
 import org.ggp.base.util.statemachine.structure.explicit.ExplicitRole;
@@ -32,10 +32,10 @@ public interface ExplicitStateMachineInterface extends AbstractStateMachineInter
 
     // Methods that perform playout and playout choices using the reasoner underlying the state machine
 
-    public MyPair<int[], Integer> fastPlayouts(ExplicitMachineState state, int numSimulationsPerPlayout, int maxDepth);
+    public MyPair<double[], Double> fastPlayouts(ExplicitMachineState state, int numSimulationsPerPlayout, int maxDepth) throws TransitionDefinitionException, MoveDefinitionException, GoalDefinitionException, StateMachineException;
 
-    public List<ExplicitMove> getJointMove(ExplicitMachineState state);
+    public List<ExplicitMove> getJointMove(List<List<ExplicitMove>> legalMovesPerRole, ExplicitMachineState state) throws StateMachineException, MoveDefinitionException;
 
-	public Move getMoveForRole(ExplicitMachineState state, int roleIndex);
+	public ExplicitMove getMoveForRole(List<ExplicitMove> legalMoves, ExplicitMachineState state, ExplicitRole role) throws StateMachineException, MoveDefinitionException;
 
 }

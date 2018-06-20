@@ -20,7 +20,6 @@ import org.ggp.base.util.statemachine.exceptions.MoveDefinitionException;
 import org.ggp.base.util.statemachine.exceptions.StateMachineException;
 import org.ggp.base.util.statemachine.exceptions.StateMachineInitializationException;
 import org.ggp.base.util.statemachine.exceptions.TransitionDefinitionException;
-import org.ggp.base.util.statemachine.structure.Move;
 import org.ggp.base.util.statemachine.structure.explicit.ExplicitMachineState;
 import org.ggp.base.util.statemachine.structure.explicit.ExplicitMove;
 import org.ggp.base.util.statemachine.structure.explicit.ExplicitRole;
@@ -34,6 +33,13 @@ import csironi.ggp.course.utils.MyPair;
  * Provides the base class for all state machine implementations.
  */
 public abstract class StateMachine implements ExplicitStateMachineInterface{
+
+	protected Random random;
+
+	public StateMachine(Random random) {
+		this.random = random;
+	}
+
     // ============================================
     //          Stubs for implementations
     // ============================================
@@ -88,13 +94,13 @@ public abstract class StateMachine implements ExplicitStateMachineInterface{
     	List<Integer> goals = this.getAllGoalsForOneRole(state, role);
 
 		if(goals.size() > 1){
-			GamerLogger.logError("StateMachine", "[Propnet] Got more than one true goal in state " + state + " for role " + role + ".");
+			GamerLogger.logError("StateMachine", "Got more than one true goal in state " + state + " for role " + role + ".");
 			throw new GoalDefinitionException(state, role);
 		}
 
 		// If there is no true goal proposition for the role in this state throw an exception.
 		if(goals.isEmpty()){
-			GamerLogger.logError("StateMachine", "[Propnet] Got no true goal in state " + state + " for role " + role + ".");
+			GamerLogger.logError("StateMachine", "Got no true goal in state " + state + " for role " + role + ".");
 			throw new GoalDefinitionException(state, role);
 		}
 
@@ -732,20 +738,67 @@ public abstract class StateMachine implements ExplicitStateMachineInterface{
 
     /**
      * For now all state machines implementing ExplicitStateMachineInterface will perform random playout
-     * using the underlying reasoner
+     * using the underlying reasoner. Note that this method ignores the maxDepth limit.
+     * @throws StateMachineException
+     * @throws GoalDefinitionException
+     * @throws MoveDefinitionException
+     * @throws TransitionDefinitionException
      */
 	@Override
-	public MyPair<int[], Integer> fastPlayouts(ExplicitMachineState state, int numSimulationsPerPlayout, int maxDepth) {
-		fix!
+	public MyPair<double[], Double> fastPlayouts(ExplicitMachineState state, int numSimulationsPerPlayout, int maxDepth) throws TransitionDefinitionException, MoveDefinitionException, GoalDefinitionException, StateMachineException {
+
+		double[] avgScores = new double[this.getExplicitRoles().size()];
+		double[] avgDepth = new double[1];
+
+		this.getAverageDiscountedScoresFromRepeatedDepthCharges(state, avgScores, avgDepth, 1.0, numSimulationsPerPlayout);
+
+		return new MyPair<double[], Double>(avgScores, new Double(avgDepth[0]));
+
 	}
 
+	/**
+	 * For now all state machines implementing ExplicitStateMachineInterface will construct a joint move
+     * by selecting a random move for each role.
+	 */
 	@Override
-	public List<ExplicitMove> getJointMove(ExplicitMachineState state) {
-		fix!
+	public List<ExplicitMove> getJointMove(List<List<ExplicitMove>> legalMovesPerRole, ExplicitMachineState state) throws StateMachineException, MoveDefinitionException {
+
+		List<ExplicitMove> explicitJointMove = new ArrayList<ExplicitMove>();
+
+		List<ExplicitRole> roles = this.getExplicitRoles();
+
+		if(legalMovesPerRole == null || legalMovesPerRole.isEmpty()) {
+			for(int i = 0; i < roles.size(); i++) {
+				explicitJointMove.add(this.getMoveForRole(null, state, roles.get(i)));
+			}
+		}else if(legalMovesPerRole.size() == roles.size()) {
+			for(int i = 0; i < roles.size(); i++) {
+				explicitJointMove.add(this.getMoveForRole(legalMovesPerRole.get(i), state, roles.get(i)));
+			}
+		}else {
+			GamerLogger.logError("StateMachine", "Requesting joint move in state " + state +
+					" giving legal moves for " + legalMovesPerRole.size() + " roles when the game has " + roles.size() + " roles.");
+			throw new RuntimeException("StateMachine - Requesting joint move in state " + state +
+					" giving legal moves for " + legalMovesPerRole.size() + " roles when the game has " + roles.size() + " roles.");
+		}
+
+		return explicitJointMove;
+
 	}
 
+	/**
+	 * For now all state machines implementing ExplicitStateMachineInterface will select a random move for each role.
+	 */
 	@Override
-	public Move getMoveForRole(ExplicitMachineState state, int roleIndex) {
-		fix!
+	public ExplicitMove getMoveForRole(List<ExplicitMove> legalMoves, ExplicitMachineState state, ExplicitRole role) throws StateMachineException, MoveDefinitionException {
+		if(legalMoves == null || legalMoves.isEmpty()) {
+			legalMoves = this.getExplicitLegalMoves(state, role);
+		}
+
+		return legalMoves.get(this.random.nextInt(legalMoves.size()));
+	}
+
+	public void setRandom(Random random) {
+		this.random = random;
 	}
 }

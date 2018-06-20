@@ -146,12 +146,16 @@ public abstract class AbstractStateMachine {
      * @param numSimulationsPerPlayout
      * @param maxDepth
      * @return average reward for each role over all the playouts and average depth of the playouts.
+     * @throws StateMachineException
+     * @throws GoalDefinitionException
+     * @throws MoveDefinitionException
+     * @throws TransitionDefinitionException
      */
-    public abstract MyPair<int[],Integer> fastPlayouts(MachineState state, int numSimulationsPerPlayout, int maxDepth);
+    public abstract MyPair<double[],Double> fastPlayouts(MachineState state, int numSimulationsPerPlayout, int maxDepth) throws TransitionDefinitionException, MoveDefinitionException, GoalDefinitionException, StateMachineException;
 
-	public abstract List<Move> getJointMove(MachineState state);
+	public abstract List<Move> getJointMove(List<List<Move>> legalMovesPerRole, MachineState state) throws MoveDefinitionException, StateMachineException;
 
-	public abstract Move getMoveForRole(MachineState state, int roleIndex);
+	public abstract Move getMoveForRole(List<Move> legalMoves, MachineState state, Role role) throws StateMachineException, MoveDefinitionException;
 
 	//---- METHODS THAT ALLOW TO TRANSLATE STATES, MOVES AND ROLES INTO THE EXPLICIT (HUMAN-READABLE) FORMAT ----//
 

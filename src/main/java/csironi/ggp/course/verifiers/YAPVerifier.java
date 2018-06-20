@@ -4,6 +4,7 @@
 package csironi.ggp.course.verifiers;
 
 import java.util.List;
+import java.util.Random;
 
 import org.ggp.base.util.game.GameRepository;
 import org.ggp.base.util.gdl.grammar.Gdl;
@@ -134,14 +135,16 @@ public class YAPVerifier {
 
             List<Gdl> description = theRepository.getGame(gameKey).getRules();
 
-            theReference = new ProverStateMachine();
+            theReference = new ProverStateMachine(new Random());
+
+            Random random = new Random();
 
             // Create the YAP state machine
-            theSubject = new YapStateMachine(queryWaitingTime);
+            theSubject = new YapStateMachine(random, queryWaitingTime);
 
             if(backed){
             	// Create the BackedYapStateMachine
-            	theSubject = new BackedYapStateMachine((YapStateMachine)theSubject, new ProverStateMachine());
+            	theSubject = new BackedYapStateMachine(random, (YapStateMachine)theSubject, new ProverStateMachine(random));
             }
 
             theReference.initialize(description, Long.MAX_VALUE);

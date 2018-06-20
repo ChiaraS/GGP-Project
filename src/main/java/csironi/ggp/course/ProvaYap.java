@@ -65,7 +65,7 @@ public class ProvaYap {
 
 	private static void checkDescriptionAfterProver(List<Gdl> description){
 		System.out.println(description);
-		ProverStateMachine prover = new ProverStateMachine();
+		ProverStateMachine prover = new ProverStateMachine(new Random());
 		prover.initialize(description, Long.MAX_VALUE);
 		System.out.println(description);
 	}
@@ -83,7 +83,7 @@ public class ProvaYap {
 
 		System.out.println("Starting provaStepByStep");
 
-		YapStateMachine machine = new YapStateMachine();
+		YapStateMachine machine = new YapStateMachine(new Random());
 
 		long start = System.currentTimeMillis();
 		try {

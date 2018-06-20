@@ -11,6 +11,7 @@ import org.ggp.base.util.statemachine.exceptions.MoveDefinitionException;
 import org.ggp.base.util.statemachine.exceptions.StateMachineException;
 import org.ggp.base.util.statemachine.structure.MachineState;
 import org.ggp.base.util.statemachine.structure.Move;
+import org.ggp.base.util.statemachine.structure.Role;
 
 public abstract class MoveSelector extends SearchManagerComponent{
 
@@ -19,8 +20,8 @@ public abstract class MoveSelector extends SearchManagerComponent{
 		super(gameDependentParameters, random, gamerSettings, sharedReferencesCollector);
 	}
 
-	public abstract List<Move> getJointMove(MachineState state) throws MoveDefinitionException, StateMachineException;
+	public abstract List<Move> getJointMove(List<List<Move>> legalMovesPerRole, MachineState state) throws MoveDefinitionException, StateMachineException;
 
-	public abstract Move getMoveForRole(MachineState state, int roleIndex) throws MoveDefinitionException, StateMachineException;
+	public abstract Move getMoveForRole(List<Move> legalMoves, MachineState state, Role role) throws MoveDefinitionException, StateMachineException;
 
 }

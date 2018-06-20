@@ -5,6 +5,7 @@ package org.ggp.base.util.statemachine.implementation.yapProlog;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Random;
 
 import org.ggp.base.util.gdl.grammar.Gdl;
 import org.ggp.base.util.gdl.transforms.DistinctAndNotMover;
@@ -113,11 +114,12 @@ public class YapStateMachine extends StateMachine {
 
 	// CONSTRUCTORS
 
-	public YapStateMachine(){
-		this(500L);
+	public YapStateMachine(Random random){
+		this(random, 500L);
 	}
 
-	public YapStateMachine(long waitingTime){
+	public YapStateMachine(Random random, long waitingTime){
+		super(random);
 		this.waitingTime = waitingTime;
 		this.yapProver = null;
 		this.currentYapState = null;

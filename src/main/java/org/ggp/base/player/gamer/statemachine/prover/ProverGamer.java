@@ -31,12 +31,13 @@ public abstract class ProverGamer extends StateMachineGamer {
 
 	@Override
 	public StateMachine getInitialStateMachine() {
+
 		if(cache){
 			GamerLogger.log("Gamer", "Returning Prover state machine with cache.");
-			return new NoSyncRefactoredCachedStateMachine(new ProverStateMachine());
+			return new NoSyncRefactoredCachedStateMachine(this.random, new ProverStateMachine(this.random));
 		}else{
 			GamerLogger.log("Gamer", "Returning Prover state machine without cache.");
-			return new ProverStateMachine();
+			return new ProverStateMachine(this.random);
 		}
 
 	}

@@ -9,6 +9,7 @@ import java.io.IOException;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Random;
 import java.util.Set;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -276,7 +277,7 @@ public class ProvaPropnet {
 		// Create the state machine giving it the propnet and the propnet state.
 		// NOTE that if any of the two is null, it means that the propnet creation/initialization went wrong
 		// and this will be detected by the state machine during initialization.
-		InternalPropnetStateMachine thePropnetMachine = new SeparateInternalPropnetStateMachine(ipropnet, propnetState);
+		InternalPropnetStateMachine thePropnetMachine = new SeparateInternalPropnetStateMachine(new Random(), ipropnet, propnetState);
 
 		thePropnetMachine.initialize(description, System.currentTimeMillis() + 60000L);
 
@@ -473,7 +474,7 @@ public class ProvaPropnet {
 		// Create the state machine giving it the propnet and the propnet state.
 		// NOTE that if any of the two is null, it means that the propnet creation/initialization went wrong
 		// and this will be detected by the state machine during initialization.
-		SeparateInternalPropnetStateMachine thePropnetMachine = new SeparateInternalPropnetStateMachine(propnet, propnetState);
+		SeparateInternalPropnetStateMachine thePropnetMachine = new SeparateInternalPropnetStateMachine(new Random(), propnet, propnetState);
 
 		thePropnetMachine.initialize(description, Long.MAX_VALUE);
 
@@ -1240,8 +1241,8 @@ public class ProvaPropnet {
 
             List<Gdl> description = theRepository.getGame(gameKey).getRules();
 
-            theReference = new ProverStateMachine();
-            thePropNetMachine = new CheckFwdInterrPropnetStateMachine(maxPropnetCreationTime);
+            theReference = new ProverStateMachine(new Random());
+            thePropNetMachine = new CheckFwdInterrPropnetStateMachine(new Random(), maxPropnetCreationTime);
 
             theReference.initialize(description, Long.MAX_VALUE);
             try {
@@ -1396,8 +1397,9 @@ public class ProvaPropnet {
 
             List<Gdl> description = theRepository.getGame(gameKey).getRules();
 
-            theReference = new ProverStateMachine();
-            thePropNetMachine = new InitializationSafeStateMachine(new FwdInterrPropnetStateMachine());
+            theReference = new ProverStateMachine(new Random());
+            Random random = new Random();
+            thePropNetMachine = new InitializationSafeStateMachine(random, new FwdInterrPropnetStateMachine(random));
 
             theReference.initialize(description, Long.MAX_VALUE);
             try {
@@ -1576,8 +1578,8 @@ public class ProvaPropnet {
 
             List<Gdl> description = theRepository.getGame(gameKey).getRules();
 
-            theReference = new ProverStateMachine();
-            thePropNetMachine = new FwdInterrPropnetStateMachine();
+            theReference = new ProverStateMachine(new Random());
+            thePropNetMachine = new FwdInterrPropnetStateMachine(new Random());
 
             theReference.initialize(description, Long.MAX_VALUE);
             try {

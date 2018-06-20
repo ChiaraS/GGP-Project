@@ -214,8 +214,8 @@ public class FpgaStateMachine extends AbstractStateMachine {
 	}
 
 	@Override
-	public MyPair<int[], Integer> fastPlayouts(MachineState state, int numSimulationsPerPlayout, int maxDepth) {
-		if(state instanceof FpgaMachineState){
+	public MyPair<double[], Double> fastPlayouts(MachineState state, int numSimulationsPerPlayout, int maxDepth) {
+		if(state instanceof FpgaMachineState) {
 
 			return this.theMachine.fastPlayouts((FpgaMachineState)state, numSimulationsPerPlayout, maxDepth);
 
@@ -227,10 +227,23 @@ public class FpgaStateMachine extends AbstractStateMachine {
 	}
 
 	@Override
-	public List<Move> getJointMove(MachineState state) {
+	public List<Move> getJointMove(List<List<Move>> legalMovesPerRole, MachineState state) {
 		if(state instanceof FpgaMachineState){
 
-			return new ArrayList<Move>(this.theMachine.getJointMove((FpgaMachineState)state));
+			List<List<FpgaMove>> fpgaLegalMovesPerRole = new ArrayList<List<FpgaMove>>();
+			for(List<Move> legalMoves: legalMovesPerRole) {
+				List<FpgaMove> fpgaLegalMoves = new ArrayList<FpgaMove>();
+				for(Move move: legalMoves) {
+					if(move instanceof FpgaMove) {
+						fpgaLegalMoves.add((FpgaMove)move);
+					}else {
+						throw new RuntimeException("FpgaStateMachine-getJointMove(): detected wrong type for move: [" + move.getClass().getSimpleName() + "].");
+					}
+				}
+				fpgaLegalMovesPerRole.add(fpgaLegalMoves);
+			}
+
+			return new ArrayList<Move>(this.theMachine.getJointMove(fpgaLegalMovesPerRole, (FpgaMachineState)state));
 
 		}else{
 			// Not throwing StateMachineException because failure here is not the fault of the state machine but
@@ -240,10 +253,22 @@ public class FpgaStateMachine extends AbstractStateMachine {
 	}
 
 	@Override
-	public Move getMoveForRole(MachineState state, int roleIndex) {
+	public Move getMoveForRole(List<Move> legalMoves, MachineState state, Role role) {
 		if(state instanceof FpgaMachineState){
 
-			return this.theMachine.getMoveForRole((FpgaMachineState)state, roleIndex);
+			if(role instanceof FpgaRole) {
+				List<FpgaMove> fpgaLegalMoves = new ArrayList<FpgaMove>();
+				for(Move move: legalMoves) {
+					if(move instanceof FpgaMove) {
+						fpgaLegalMoves.add((FpgaMove)move);
+					}else {
+						throw new RuntimeException("FpgaStateMachine-getMoveForRole(): detected wrong type for move: [" + move.getClass().getSimpleName() + "].");
+					}
+				}
+				return this.theMachine.getMoveForRole(fpgaLegalMoves, (FpgaMachineState)state, (FpgaRole)role);
+			}else {
+				throw new RuntimeException("FpgaStateMachine-getMoveForRole(): detected wrong type for role: [" + role.getClass().getSimpleName() + "].");
+			}
 
 		}else{
 			// Not throwing StateMachineException because failure here is not the fault of the state machine but

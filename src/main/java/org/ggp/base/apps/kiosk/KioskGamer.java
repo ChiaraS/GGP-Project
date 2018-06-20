@@ -81,7 +81,7 @@ public class KioskGamer extends StateMachineGamer implements Observer {
 
     @Override
     public StateMachine getInitialStateMachine() {
-        return new ProverStateMachine();
+        return new ProverStateMachine(this.random);
     }
 
     @Override
