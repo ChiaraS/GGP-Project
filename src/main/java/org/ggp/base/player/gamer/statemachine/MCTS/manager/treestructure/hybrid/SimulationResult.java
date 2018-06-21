@@ -35,7 +35,7 @@ public class SimulationResult{
 	 * the list of allJointMoves or the list of intermediateGoals even when this class is initialized after the
 	 * end of the playout.
 	 */
-	private int playoutLength;
+	private double playoutLength;
 
 	/**
 	 *  The joint moves that form the path of this simulation.
@@ -62,14 +62,14 @@ public class SimulationResult{
 	 *
 	 *
 	 */
-	private List<int[]> intermediateGoals;
+	private List<double[]> intermediateGoals;
 
 	/**
 	 * Constructor that initializes the playout length to 0, the two lists as empty lists and the terminal goals as null.
 	 */
 	public SimulationResult() {
 
-		this(0, new ArrayList<List<Move>>(), new ArrayList<int[]>());
+		this(0, new ArrayList<List<Move>>(), new ArrayList<double[]>());
 
 	}
 
@@ -78,7 +78,7 @@ public class SimulationResult{
 	 *
 	 * @param terminalGoals
 	 */
-	public SimulationResult(int[] terminalGoals) {
+	public SimulationResult(double[] terminalGoals) {
 
 		this(0, terminalGoals);
 
@@ -89,29 +89,29 @@ public class SimulationResult{
 	 *
 	 * @param terminalGoals
 	 */
-	public SimulationResult(int playoutLength, int[] terminalGoals) {
+	public SimulationResult(double playoutLength, double[] terminalGoals) {
 
-		this(playoutLength, new ArrayList<List<Move>>(), new ArrayList<int[]>());
+		this(playoutLength, new ArrayList<List<Move>>(), new ArrayList<double[]>());
 
 		this.intermediateGoals.add(terminalGoals);
 
 	}
 
-	public SimulationResult(int playoutLength, List<int[]> intermediateGoals) {
+	public SimulationResult(double playoutLength, List<double[]> intermediateGoals) {
 
 		this(playoutLength, new ArrayList<List<Move>>(), intermediateGoals);
 
 	}
 
-	public SimulationResult(int playoutLength, int[] terminalGoals, List<List<Move>> allJointMoves) {
+	public SimulationResult(double playoutLength, double[] terminalGoals, List<List<Move>> allJointMoves) {
 
-		this(playoutLength, allJointMoves, new ArrayList<int[]>());
+		this(playoutLength, allJointMoves, new ArrayList<double[]>());
 
 		this.intermediateGoals.add(terminalGoals);
 
 	}
 
-	public SimulationResult(int playoutLength, List<List<Move>> allJointMoves, List<int[]> intermediateGoals) {
+	public SimulationResult(double playoutLength, List<List<Move>> allJointMoves, List<double[]> intermediateGoals) {
 
 		this.playoutLength = playoutLength;
 
@@ -120,7 +120,7 @@ public class SimulationResult{
 		}
 
 		if(intermediateGoals == null){
-			intermediateGoals = new ArrayList<int[]>();
+			intermediateGoals = new ArrayList<double[]>();
 		}
 
 		this.allJointMoves = allJointMoves;
@@ -129,7 +129,7 @@ public class SimulationResult{
 
 	}
 
-	public int getPlayoutLength(){
+	public double getPlayoutLength(){
 		return this.playoutLength;
 	}
 
@@ -139,7 +139,7 @@ public class SimulationResult{
 
 	}
 
-	public List<int[]> getIntermediateGoals(){
+	public List<double[]> getIntermediateGoals(){
 
 		return this.intermediateGoals;
 
@@ -149,7 +149,7 @@ public class SimulationResult{
 	 *
 	 * @return only the terminal goals of the whole simulation.
 	 */
-	public int[] getTerminalGoals(){
+	public double[] getTerminalGoals(){
 
 		return this.intermediateGoals.get(0);
 	}
@@ -165,7 +165,7 @@ public class SimulationResult{
 
 	}
 
-	public void addGoals(int[] goals){
+	public void addGoals(double[] goals){
 
 		//if(this.intermediateGoals == null){
 		//	GamerLogger.logError("MctsManager", "Simulation result not initialized to memorize all the intermediate goals. Probably a wrong combination of strategies has been set!");
@@ -219,7 +219,7 @@ public class SimulationResult{
 			double[] wins = new double[this.intermediateGoals.get(0).length];
 
 			if(this.intermediateGoals.get(0).length == 1) {
-				wins[0] = ((double)this.intermediateGoals.get(0)[0])/100.0;
+				wins[0] = this.intermediateGoals.get(0)[0]/100.0;
 			}else {
 				List<Integer> bestIndices = new ArrayList<Integer>();
 				double max = -1;
@@ -237,7 +237,7 @@ public class SimulationResult{
 					throw new RuntimeException("MctsManager - Found no best score when computing wins for a SimulationResult.");
 				}
 				// Wins is already initialized to all 0s, so we just change the wins for the bestIndices
-				double splitPoint = 1.0/bestIndices.size();
+				double splitPoint = 1.0/((double)bestIndices.size());
 				for(Integer roleIndex : bestIndices) {
 					wins[roleIndex] = splitPoint;
 				}

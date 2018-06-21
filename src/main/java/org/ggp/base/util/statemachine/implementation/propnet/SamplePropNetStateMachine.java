@@ -72,7 +72,7 @@ public class SamplePropNetStateMachine extends StateMachine {
 	 * GoalDefinitionException because the goal is ill-defined.
 	 */
 	@Override
-	public List<Integer> getAllGoalsForOneRole(ExplicitMachineState state, ExplicitRole role) {
+	public List<Double> getAllGoalsForOneRole(ExplicitMachineState state, ExplicitRole role) {
 		// TODO: Compute the goal for role in state.
 		return null;
 	}

@@ -19,7 +19,7 @@ public class PnDecoupledMCTSNode extends MctsNode{
 	 */
 	private int[] unexploredMovesCount;
 
-	public PnDecoupledMCTSNode(PnDecoupledMCTSMoveStats[][] movesStats, int[] goals, boolean terminal, int numRoles) {
+	public PnDecoupledMCTSNode(PnDecoupledMCTSMoveStats[][] movesStats, double[] goals, boolean terminal, int numRoles) {
 
 		super(goals, terminal, numRoles);
 		this.movesStats = movesStats;

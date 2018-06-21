@@ -278,7 +278,7 @@ public class YapStateMachine extends StateMachine {
 	 * @see org.ggp.base.util.statemachine.StateMachine#getGoal(org.ggp.base.util.statemachine.MachineState, org.ggp.base.util.statemachine.Role)
 	 */
 	@Override
-	public List<Integer> getAllGoalsForOneRole(ExplicitMachineState state, ExplicitRole role)
+	public List<Double> getAllGoalsForOneRole(ExplicitMachineState state, ExplicitRole role)
 			throws StateMachineException {
 
 		updateYapState(state);
@@ -307,7 +307,7 @@ public class YapStateMachine extends StateMachine {
 		if(bindings == null){
 			//GamerLogger.logError("StateMachine", "[YAP] Got no goal when expecting at least one.");
 			//throw new GoalDefinitionException(state, role);
-			return new ArrayList<Integer>();
+			return new ArrayList<Double>();
 		}
 
 		String[] goals = (String[]) bindings[0];
@@ -319,12 +319,12 @@ public class YapStateMachine extends StateMachine {
 		}
 		*/
 
-		List<Integer> goalValues = new ArrayList<Integer>();
+		List<Double> goalValues = new ArrayList<Double>();
 
 		for(String s : goals){
 			try{
-				int goal = Integer.parseInt(s);
-				goalValues.add(new Integer(goal));
+				double goal = Double.parseDouble(s);
+				goalValues.add(new Double(goal));
 			}catch(NumberFormatException ex){
 				GamerLogger.logError("StateMachine", "[YAP] Got goal results that is not a number.");
 				GamerLogger.logStackTrace("StateMachine", ex);

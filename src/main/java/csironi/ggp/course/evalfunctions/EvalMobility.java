@@ -31,11 +31,11 @@ public class EvalMobility extends EvaluationFunction {
 	 * @see csironi.ggp.course.evalfunctions.EvaluationFunction#eval(org.ggp.base.util.statemachine.MachineState, org.ggp.base.util.statemachine.Role)
 	 */
 	@Override
-	public int eval(ExplicitMachineState state, ExplicitRole role) throws MoveDefinitionException, StateMachineException {
+	public double eval(ExplicitMachineState state, ExplicitRole role) throws MoveDefinitionException, StateMachineException {
 
 		List<ExplicitMove> legalMoves = stateMachine.getExplicitLegalMoves(state, role);
 
-		return 0;
+		return 0.0;
 	}
 
 }

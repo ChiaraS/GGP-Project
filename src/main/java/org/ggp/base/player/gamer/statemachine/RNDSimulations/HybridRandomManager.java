@@ -192,7 +192,7 @@ public class HybridRandomManager {
 			this.gameDependentParameters.resetIterationStatistics();
 
 			// Get the goals obtained by performing playouts from this state.
-			simulationResults = this.playoutStrategy.playout(null, this.currentState, this.maxSearchDepth);
+			simulationResults = this.playoutStrategy.playout(null, null, this.currentState, this.maxSearchDepth);
 
 			for(SimulationResult simulationResult : simulationResults) {
 				this.gameDependentParameters.increaseCurrentIterationVisitedNodes(simulationResult.getPlayoutLength());
@@ -272,7 +272,7 @@ public class HybridRandomManager {
 		return this.gameDependentParameters.getStepIterations();
 	}
 
-	public int getStepVisitedNodes(){
+	public double getStepVisitedNodes(){
 		return this.gameDependentParameters.getStepVisitedNodes();
 	}
 

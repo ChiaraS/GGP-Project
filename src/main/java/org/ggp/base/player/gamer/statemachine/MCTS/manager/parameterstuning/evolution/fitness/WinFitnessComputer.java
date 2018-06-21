@@ -58,7 +58,7 @@ public class WinFitnessComputer extends FitnessComputer {
 	 * same population for all individuals, not when each individual is from a different population.
 	 */
 	@Override
-	public List<MyPair<Integer,Double>> computeFitness(List<Integer> individuals, int[] rewards){
+	public List<MyPair<Integer,Double>> computeFitness(List<Integer> individuals, double[] rewards){
 
 		if(individuals.size() != rewards.length){
 			GamerLogger.logError("FitnessComputer", "WinFitnessComputer - Impossible to compute fitness for " + individuals.size() +
@@ -72,10 +72,10 @@ public class WinFitnessComputer extends FitnessComputer {
 
 		// Single player: return the same score
 		if(individuals.size() == 1){
-			individualsWithScore.add(new MyPair<Integer,Double>(individuals.get(0), (double)rewards[0]));
+			individualsWithScore.add(new MyPair<Integer,Double>(individuals.get(0), rewards[0]));
 		}else{
         	// For more roles we need to find the individual(s) that won and split 100 between them
-        	int maxScore = Integer.MIN_VALUE;
+			double maxScore = -Double.MAX_VALUE;
         	double splitScore;
         	Set<Integer> distinctIndividuals = new HashSet<Integer>();
         	Set<Integer> maxScoreIndividuals = new HashSet<Integer>();

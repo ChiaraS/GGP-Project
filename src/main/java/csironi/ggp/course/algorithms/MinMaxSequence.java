@@ -57,7 +57,7 @@ public class MinMaxSequence extends SearchAlgorithm {
 		toLog += "]";
 		log(toLog);
 
-		MyPair<List<ExplicitMove>, Integer> result = maxscore(state, role);
+		MyPair<List<ExplicitMove>, Double> result = maxscore(state, role);
 
 		toLog = "Reversed actions sequence: [ ";
 		for(ExplicitMove m: result.getFirst()){
@@ -84,7 +84,7 @@ public class MinMaxSequence extends SearchAlgorithm {
 	}
 
 
-	private MyPair<List<ExplicitMove>, Integer> maxscore(ExplicitMachineState state, ExplicitRole role)
+	private MyPair<List<ExplicitMove>, Double> maxscore(ExplicitMachineState state, ExplicitRole role)
 			throws TransitionDefinitionException, MoveDefinitionException,
 			GoalDefinitionException, StateMachineException{
 
@@ -92,9 +92,9 @@ public class MinMaxSequence extends SearchAlgorithm {
 
 		// Check if the state is terminal
 		if(stateMachine.isTerminal(state)){
-			int goal = stateMachine.getGoal(state, role);
+			double goal = stateMachine.getGoal(state, role);
 			log("Terminal state goal: " + goal);
-			return new MyPair<List<ExplicitMove>, Integer> (new ArrayList<ExplicitMove>(), goal);
+			return new MyPair<List<ExplicitMove>, Double> (new ArrayList<ExplicitMove>(), goal);
 		}
 
 		// Check all my available moves to find the best one
@@ -107,13 +107,13 @@ public class MinMaxSequence extends SearchAlgorithm {
 		toLog += "]";
 		log(toLog);
 
-		MyPair<List<ExplicitMove>, Integer> maxResult = new MyPair<List<ExplicitMove>, Integer>(new ArrayList<ExplicitMove>(),0);
+		MyPair<List<ExplicitMove>, Double> maxResult = new MyPair<List<ExplicitMove>, Double>(new ArrayList<ExplicitMove>(),0.0);
 
 		for (ExplicitMove move: moves){
 
 			log("Move [ " + move + " ]");
 
-			MyPair<List<ExplicitMove>, Integer> currentResult;
+			MyPair<List<ExplicitMove>, Double> currentResult;
 
 			if(stateMachine.getExplicitRoles().size() == 1){
 				ArrayList<ExplicitMove> jointMoves = new ArrayList<ExplicitMove>();
@@ -145,7 +145,7 @@ public class MinMaxSequence extends SearchAlgorithm {
 		return maxResult;
 	}
 
-	private MyPair<List<ExplicitMove>, Integer> minscore(ExplicitMachineState state, ExplicitRole role, ExplicitMove move)
+	private MyPair<List<ExplicitMove>, Double> minscore(ExplicitMachineState state, ExplicitRole role, ExplicitMove move)
 			throws TransitionDefinitionException, MoveDefinitionException,
 			GoalDefinitionException, StateMachineException{
 
@@ -154,7 +154,7 @@ public class MinMaxSequence extends SearchAlgorithm {
 		// Find all legal joint moves given the current move of the player
 		List<List<ExplicitMove>> jointMovesList = stateMachine.getLegalJointMoves(state, role, move);
 
-		MyPair<List<ExplicitMove>, Integer> minResult = new MyPair<List<ExplicitMove>, Integer>(new ArrayList<ExplicitMove>(),100);
+		MyPair<List<ExplicitMove>, Double> minResult = new MyPair<List<ExplicitMove>, Double>(new ArrayList<ExplicitMove>(),100.0);
 
 		for(List<ExplicitMove> jointMoves: jointMovesList){
 
@@ -165,7 +165,7 @@ public class MinMaxSequence extends SearchAlgorithm {
 			toLog += "]";
 			log(toLog);
 
-			MyPair<List<ExplicitMove>, Integer> currentResult;
+			MyPair<List<ExplicitMove>, Double> currentResult;
 
 			currentResult = maxscore(stateMachine.getExplicitNextState(state, jointMoves), role);
 			if(currentResult.getSecond().intValue() <= minResult.getSecond().intValue()){

@@ -1,6 +1,10 @@
 package org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.hybrid.decoupled;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.MctsNode;
+import org.ggp.base.util.statemachine.structure.Move;
 
 public class DecoupledMctsNode extends MctsNode {
 
@@ -19,7 +23,7 @@ public class DecoupledMctsNode extends MctsNode {
 	 */
 	private int[] unexploredMovesCount;
 
-	public DecoupledMctsNode(DecoupledMctsMoveStats[][] movesStats, int[] goals, boolean terminal, int numRoles) {
+	public DecoupledMctsNode(DecoupledMctsMoveStats[][] movesStats, double[] goals, boolean terminal, int numRoles) {
 
 		super(goals, terminal, numRoles);
 		this.movesStats = movesStats;
@@ -143,6 +147,39 @@ public class DecoupledMctsNode extends MctsNode {
 			}
 		}
 
+	}
+
+	/**
+	 * This method enables to retrieve the legal moves for each role without computing them with the state machine,
+	 * because they are already memorized in the node.
+	 *
+	 * @return
+	 */
+	public List<List<Move>> getAllLegalMoves(){
+
+		List<List<Move>> legalMoves = new ArrayList<List<Move>>();
+
+		for(int roleIndex = 0; roleIndex < this.movesStats.length; roleIndex++) {
+			legalMoves.add(this.getLegalMovesForRole(roleIndex));
+		}
+
+		return legalMoves;
+	}
+
+	/**
+	 * This method enables to retrieve the legal moves for each role without computing them with the state machine,
+	 * because they are already memorized in the node.
+	 *
+	 * @return
+	 */
+	public List<Move> getLegalMovesForRole(int roleIndex){
+
+		List<Move> legalMovesForRole = new ArrayList<Move>();
+		for(DecoupledMctsMoveStats moveStats : this.movesStats[roleIndex]) {
+			legalMovesForRole.add(moveStats.getTheMove());
+		}
+
+		return legalMovesForRole;
 	}
 
 }

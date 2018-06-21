@@ -10,13 +10,15 @@ import org.ggp.base.player.gamer.statemachine.MCS.manager.MoveStats;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.GameDependentParameters;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.SearchManagerComponent;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.SharedReferencesCollector;
+import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.MctsNode;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.hybrid.MctsJointMove;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.hybrid.SimulationResult;
 import org.ggp.base.util.logging.GamerLogger;
 import org.ggp.base.util.reflection.ProjectSearcher;
+import org.ggp.base.util.statemachine.exceptions.MoveDefinitionException;
+import org.ggp.base.util.statemachine.exceptions.StateMachineException;
 import org.ggp.base.util.statemachine.structure.MachineState;
 import org.ggp.base.util.statemachine.structure.Move;
-import org.ggp.base.util.statemachine.structure.Role;
 /**
  * Whenever a playout is performed from a node, this strategy checks if there is an interesting move
  * in the path, and if so performs multiple playouts from that node. Otherwise only one playout is performed.
@@ -324,24 +326,24 @@ public class SelectiveMultiplePlayout extends PlayoutStrategy {
 	}
 
 	@Override
-	public SimulationResult singlePlayout(MachineState state, int maxDepth) {
+	public SimulationResult singlePlayout(MctsNode node, MachineState state, int maxDepth) {
 		this.totalStepCalls++;
-		return this.subPlayoutStrategy.singlePlayout(state, maxDepth);
+		return this.subPlayoutStrategy.singlePlayout(node, state, maxDepth);
 	}
 
 	@Override
-	public SimulationResult[] playout(List<Move> jointMove, MachineState state, int maxDepth) {
+	public SimulationResult[] playout(MctsNode node, List<Move> jointMove, MachineState state, int maxDepth) {
 
 		SimulationResult[] results;
 
 		if(this.anyInterestingMoveSoFar()){
 			results = new SimulationResult[this.numPlayouts];
 			for(int repetition = 0; repetition < results.length; repetition++){
-				results[repetition] = this.subPlayoutStrategy.singlePlayout(state, maxDepth);
+				results[repetition] = this.subPlayoutStrategy.singlePlayout(node, state, maxDepth);
 			}
 			this.multiPlayoutStepCalls++;
 		}else {
-			results = this.subPlayoutStrategy.playout(jointMove, state, maxDepth);
+			results = this.subPlayoutStrategy.playout(node, jointMove, state, maxDepth);
 		}
 
 		this.totalStepCalls++;
@@ -384,13 +386,8 @@ public class SelectiveMultiplePlayout extends PlayoutStrategy {
 	}
 
 	@Override
-	public List<Move> getJointMove(List<List<Move>> legalMovesPerRole, MachineState state) {
-		return this.subPlayoutStrategy.getJointMove(legalMovesPerRole, state);
-	}
-
-	@Override
-	public Move getMoveForRole(List<Move> legalMoves, MachineState state, Role role) {
-		return this.subPlayoutStrategy.getMoveForRole(legalMoves, state, role);
+	public Move getMoveForRole(MctsNode node, MachineState state, int roleIndex) throws MoveDefinitionException, StateMachineException {
+		return this.subPlayoutStrategy.getMoveForRole(node, state, roleIndex);
 	}
 
 	@Override

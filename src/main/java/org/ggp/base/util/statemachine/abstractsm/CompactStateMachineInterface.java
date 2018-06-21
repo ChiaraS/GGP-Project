@@ -19,7 +19,7 @@ public interface CompactStateMachineInterface extends AbstractStateMachineInterf
 
 	// Methods common to all state machines, but with different types of inputs that extend general MachineState, Move and Role classes
 
-    public List<Integer> getAllGoalsForOneRole(CompactMachineState state, CompactRole role) throws StateMachineException;
+    public List<Double> getAllGoalsForOneRole(CompactMachineState state, CompactRole role) throws StateMachineException;
 
     public boolean isTerminal(CompactMachineState state) throws StateMachineException;
 
@@ -44,7 +44,7 @@ public interface CompactStateMachineInterface extends AbstractStateMachineInterf
 
 	public MyPair<double[], Double> fastPlayouts(CompactMachineState state, int numSimulationsPerPlayout, int maxDepth) throws TransitionDefinitionException, MoveDefinitionException, StateMachineException, GoalDefinitionException;
 
-	public List<CompactMove> getJointMove(List<List<CompactMove>> legalMovesPerRole, CompactMachineState state) throws MoveDefinitionException;
+	//public List<CompactMove> getJointMove(List<List<CompactMove>> legalMovesPerRole, CompactMachineState state) throws MoveDefinitionException;
 
 	public CompactMove getMoveForRole(List<CompactMove> legalMoves, CompactMachineState state, CompactRole role) throws MoveDefinitionException;
 

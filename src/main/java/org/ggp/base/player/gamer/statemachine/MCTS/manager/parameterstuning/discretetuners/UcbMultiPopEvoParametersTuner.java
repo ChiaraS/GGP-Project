@@ -134,7 +134,7 @@ public class UcbMultiPopEvoParametersTuner extends MultiPopEvoParametersTuner {
 	}
 
 	@Override
-	public void updateRoleProblems(List<Integer> individualsIndices, int[] neededRewards) {
+	public void updateRoleProblems(List<Integer> individualsIndices, double[] neededRewards) {
 
 		int individualIndex;
 

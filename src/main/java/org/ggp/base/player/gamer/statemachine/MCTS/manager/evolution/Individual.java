@@ -3,7 +3,7 @@ package org.ggp.base.player.gamer.statemachine.MCTS.manager.evolution;
 public class Individual {
 
 	// Total fitness obtained by summing the fitness value obtained after each fitness evaluation.
-	private int totalFitness;
+	private double totalFitness;
 
 	// Number of times the fitness of this individual has been evaluated.
 	private int numEvaluations;
@@ -15,7 +15,7 @@ public class Individual {
 		this.numEvaluations = 0;
 	}
 
-	public int getTotalFitness(){
+	public double getTotalFitness(){
 		return this.totalFitness;
 	}
 
@@ -44,7 +44,7 @@ public class Individual {
 
 	}
 
-	public void updateFitness(int value){
+	public void updateFitness(double value){
 
 		this.totalFitness += value;
 

@@ -54,7 +54,7 @@ public final class SampleMontecarloYapGamer extends SampleYapGamer{
 				if (System.currentTimeMillis() > finishBy)
 					break;
 
-				int theScore = performDepthChargeFromMove(getCurrentState(), moves.get(i));
+				double theScore = performDepthChargeFromMove(getCurrentState(), moves.get(i));
 				moveTotalPoints[i] += theScore;
 				moveTotalAttempts[i] += 1;
 			}
@@ -89,7 +89,7 @@ public final class SampleMontecarloYapGamer extends SampleYapGamer{
 	private ExplicitMachineState randomNextState;
 	//////////
 
-	int performDepthChargeFromMove(ExplicitMachineState theState, ExplicitMove myMove) {
+	double performDepthChargeFromMove(ExplicitMachineState theState, ExplicitMove myMove) {
 		//StateMachine theMachine = getStateMachine();
 		BackedYapStateMachine theMachine = getYapStateMachine();
 		/*

@@ -6,6 +6,7 @@ import java.util.Random;
 import org.ggp.base.player.gamer.statemachine.GamerSettings;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.GameDependentParameters;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.SharedReferencesCollector;
+import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.MctsNode;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.hybrid.SimulationResult;
 import org.ggp.base.util.statemachine.structure.MachineState;
 import org.ggp.base.util.statemachine.structure.Move;
@@ -38,16 +39,16 @@ public class MultipleStandardPlayout extends StandardPlayout {
 	}
 
 	@Override
-	public SimulationResult[] playout(List<Move> jointMove, MachineState state, int maxDepth) {
+	public SimulationResult[] playout(MctsNode node, List<Move> jointMove, MachineState state, int maxDepth) {
 
 		SimulationResult[] result = new SimulationResult[1];
 
-		int[] avgGoals = new int[this.gameDependentParameters.getNumRoles()];
-		int avgPlayoutLength = 0;
-		int[] goals = new int[this.gameDependentParameters.getNumRoles()];
+		double[] avgGoals = new double[this.gameDependentParameters.getNumRoles()];
+		double avgPlayoutLength = 0.0;
+		double[] goals = new double[this.gameDependentParameters.getNumRoles()];
 
 		for(int i = 0; i < this.playoutRepetitions; i++) {
-			result[0] = this.singlePlayout(state, maxDepth);
+			result[0] = this.singlePlayout(node, state, maxDepth);
 			goals = result[0].getTerminalGoals();
 			for(int j = 0; j < goals.length; j++){
 				avgGoals[j] += goals[j];
@@ -56,9 +57,9 @@ public class MultipleStandardPlayout extends StandardPlayout {
 		}
 
 		for(int j = 0; j < avgGoals.length; j++){
-			avgGoals[j] = (int) Math.round((double)avgGoals[j]/(double)this.playoutRepetitions);
+			avgGoals[j] = avgGoals[j]/((double)this.playoutRepetitions);
 		}
-		avgPlayoutLength = (int) Math.round((double)avgPlayoutLength/(double)this.playoutRepetitions);
+		avgPlayoutLength = avgPlayoutLength/((double)this.playoutRepetitions);
 
 		result[0] = new SimulationResult(avgPlayoutLength, avgGoals);
 

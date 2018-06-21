@@ -127,7 +127,7 @@ public class SeparateInternalPropnetStateMachine extends InternalPropnetStateMac
 	 * @param role
 	 */
 	@Override
-	public List<Integer> getAllGoalsForOneRole(ExplicitMachineState state, ExplicitRole role) {
+	public List<Double> getAllGoalsForOneRole(ExplicitMachineState state, ExplicitRole role) {
 		return this.getAllGoalsForOneRole(this.convertToCompactMachineState(state), this.convertToCompactRole(role));
 	}
 
@@ -139,7 +139,7 @@ public class SeparateInternalPropnetStateMachine extends InternalPropnetStateMac
 	 * GoalDefinitionException because the goal is ill-defined.
 	 */
 	@Override
-	public List<Integer> getAllGoalsForOneRole(CompactMachineState state, CompactRole role) {
+	public List<Double> getAllGoalsForOneRole(CompactMachineState state, CompactRole role) {
 
 		// Mark base propositions according to state.
 		if(this.markBases(state)){
@@ -157,11 +157,11 @@ public class SeparateInternalPropnetStateMachine extends InternalPropnetStateMac
 
 		int[] allGoalValues = this.propNet.getGoalValues()[role.getIndex()];
 
-		List<Integer> trueGoalValues = new ArrayList<Integer>();
+		List<Double> trueGoalValues = new ArrayList<Double>();
 
 		while(trueGoalIndex < (firstGoalIndices[role.getIndex()+1]) && trueGoalIndex != -1){
 
-			trueGoalValues.add(allGoalValues[trueGoalIndex-firstGoalIndices[role.getIndex()]]);
+			trueGoalValues.add(new Double(allGoalValues[trueGoalIndex-firstGoalIndices[role.getIndex()]]));
 
 			trueGoalIndex =	otherComponents.nextSetBit(trueGoalIndex+1);
 		}
@@ -484,7 +484,7 @@ public class SeparateInternalPropnetStateMachine extends InternalPropnetStateMac
 
 		int i = 0;
 		for(ImmutableProposition input : this.propNet.getInputPropositions()){
-			if(input.equals(moveToDoes)){
+			if(input.getName().equals(moveToDoes)){
 				break;
 			}
 			i++;

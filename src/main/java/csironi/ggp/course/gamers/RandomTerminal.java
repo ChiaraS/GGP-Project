@@ -73,7 +73,7 @@ public class RandomTerminal extends SampleGamer {
 
 		long start = System.currentTimeMillis();
 
-		List<Integer> goals = null;
+		List<Double> goals = null;
 
 		Boolean fail = false;
 

@@ -202,7 +202,7 @@ public class TrickyGDLTester {
 			// Check if current state is erroneously detected as terminal
 			if(theMachine.isTerminal(state)){
 				System.out.println("NON TERMINAL STATE DETECTED AS TERMINAL!");
-				int[] goals = theMachine.getSafeGoals(state);
+				double[] goals = theMachine.getSafeGoals(state);
 				String goalsString = "[ ";
 				for(int j = 0; j < goals.length; j++){
 					goalsString += (goals[j] + " ");

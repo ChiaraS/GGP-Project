@@ -237,14 +237,14 @@ public class FwdInterrPropnetStateMachine extends StateMachine {
 	 * are true for that role.
 	 */
 	@Override
-	public List<Integer> getAllGoalsForOneRole(ExplicitMachineState state, ExplicitRole role) {
+	public List<Double> getAllGoalsForOneRole(ExplicitMachineState state, ExplicitRole role) {
 		// Mark base propositions according to state.
 		this.markBases(state);
 
 		// Get all goal propositions for the given role.
 		Set<ForwardInterruptingProposition> goalPropsForRole = this.propNet.getGoalPropositions().get(role);
 
-		List<Integer> trueGoals = new ArrayList<Integer>();
+		List<Double> trueGoals = new ArrayList<Double>();
 
 		// Check all the goal propositions that are true for the role. If there is more than one throw an exception.
 		for(ForwardInterruptingProposition goalProp : goalPropsForRole){
@@ -397,10 +397,10 @@ public class FwdInterrPropnetStateMachine extends StateMachine {
 	 * @param goalProposition
 	 * @return the integer value of the goal proposition
 	 */
-    private int getGoalValue(ForwardInterruptingProposition goalProposition){
+    private double getGoalValue(ForwardInterruptingProposition goalProposition){
 		GdlRelation relation = (GdlRelation) goalProposition.getName();
 		GdlConstant constant = (GdlConstant) relation.get(1);
-		return Integer.parseInt(constant.toString());
+		return Double.parseDouble(constant.toString());
 	}
 
     /**

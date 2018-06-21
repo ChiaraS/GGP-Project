@@ -116,12 +116,12 @@ public class MyMinmaxGamer extends SampleGamer {
 		out.println("]");
 
 		ExplicitMove selection = myMoves.get(0);
-		int maxScore = 0;
+		double maxScore = 0;
 
 		for (ExplicitMove move: myMoves){
 
 			// Compute the score for the current move
-			int currentScore = minscore(state, myRole, move, myIndex, opponentIndex);
+			double currentScore = minscore(state, myRole, move, myIndex, opponentIndex);
 
 			// Check if the maximum score must be updated
 			/*if(currentScore == 100){
@@ -146,7 +146,7 @@ public class MyMinmaxGamer extends SampleGamer {
 	 *
 	 *
 	 */
-	private int minscore(ExplicitMachineState state, ExplicitRole myRole, ExplicitMove myMove, int myIndex, int opponentIndex)
+	private double minscore(ExplicitMachineState state, ExplicitRole myRole, ExplicitMove myMove, int myIndex, int opponentIndex)
 			throws TransitionDefinitionException, MoveDefinitionException,
 			GoalDefinitionException, StateMachineException{
 
@@ -164,7 +164,7 @@ public class MyMinmaxGamer extends SampleGamer {
 		}
 		out.println("]");
 
-		int minScore = 100;
+		double minScore = 100;
 
 		for (ExplicitMove move: moves){
 
@@ -177,7 +177,7 @@ public class MyMinmaxGamer extends SampleGamer {
 			jointMoves.set(myIndex, myMove);
 			jointMoves.set(opponentIndex, move);
 
-			int currentScore = maxscore(stateMachine.getExplicitNextState(state, jointMoves), myRole, myIndex, opponentIndex);
+			double currentScore = maxscore(stateMachine.getExplicitNextState(state, jointMoves), myRole, myIndex, opponentIndex);
 			if(currentScore < minScore){
 				minScore = currentScore;
 			}
@@ -192,7 +192,7 @@ public class MyMinmaxGamer extends SampleGamer {
 	 *
 	 *
 	 */
-	private int maxscore(ExplicitMachineState state, ExplicitRole myRole, int myIndex, int opponentIndex)
+	private double maxscore(ExplicitMachineState state, ExplicitRole myRole, int myIndex, int opponentIndex)
 			throws TransitionDefinitionException, MoveDefinitionException,
 			GoalDefinitionException, StateMachineException{
 
@@ -200,7 +200,7 @@ public class MyMinmaxGamer extends SampleGamer {
 
 		// Check if the state is terminal
 		if(stateMachine.isTerminal(state)){
-			int goal = stateMachine.getGoal(state, myRole);
+			double goal = stateMachine.getGoal(state, myRole);
 			out.println("Terminal state goal: " + goal);
 			return goal;
 		}
@@ -214,12 +214,12 @@ public class MyMinmaxGamer extends SampleGamer {
 		}
 		out.println("]");
 
-		int maxScore = 0;
+		double maxScore = 0;
 
 		for (ExplicitMove move: myMoves){
 
 			// Compute the score for the current move
-			int currentScore = minscore(state, myRole, move, myIndex, opponentIndex);
+			double currentScore = minscore(state, myRole, move, myIndex, opponentIndex);
 
 			// Check if the maximum score must be updated
 			/*if(currentScore == 100){

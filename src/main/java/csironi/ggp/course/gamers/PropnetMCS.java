@@ -56,7 +56,7 @@ public class PropnetMCS extends SampleGamer {
     		    if (System.currentTimeMillis() > finishBy)
     		        break;
 
-    		    int theScore = performDepthChargeFromMove(getCurrentState(), moves.get(i));
+    		    double theScore = performDepthChargeFromMove(getCurrentState(), moves.get(i));
     		    moveTotalPoints[i] += theScore;
     		    moveTotalAttempts[i] += 1;
     		    visitedNodes += this.depth[0] + 1;
@@ -93,7 +93,7 @@ public class PropnetMCS extends SampleGamer {
 	}
 
 	private int[] depth = new int[1];
-	int performDepthChargeFromMove(ExplicitMachineState theState, ExplicitMove myMove) {
+	double performDepthChargeFromMove(ExplicitMachineState theState, ExplicitMove myMove) {
 	    StateMachine theMachine = getStateMachine();
 	    try {
             ExplicitMachineState finalState = theMachine.performDepthCharge(theMachine.getRandomNextState(theState, getRole(), myMove), depth);

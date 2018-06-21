@@ -9,7 +9,8 @@ import org.ggp.base.player.gamer.statemachine.GamerSettings;
 import org.ggp.base.player.gamer.statemachine.MCS.manager.MoveStats;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.GameDependentParameters;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.SharedReferencesCollector;
-import org.ggp.base.util.logging.GamerLogger;
+import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.MctsNode;
+import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.hybrid.decoupled.DecoupledMctsNode;
 import org.ggp.base.util.statemachine.exceptions.MoveDefinitionException;
 import org.ggp.base.util.statemachine.exceptions.StateMachineException;
 import org.ggp.base.util.statemachine.structure.MachineState;
@@ -57,28 +58,21 @@ public class MastMoveSelector extends MoveSelector {
 	 * For each role it gets the list of all its legal moves in the state and picks the one with highest MAST expected score.
 	 * @throws StateMachineException
 	 */
-	@Override
-	public List<Move> getJointMove(List<List<Move>> legalMovesPerRole, MachineState state) throws MoveDefinitionException, StateMachineException {
+/*	@Override
+	public List<Move> getJointMove(MctsNode node, MachineState state) throws MoveDefinitionException, StateMachineException {
 
 		List<Move> jointMove = new ArrayList<Move>();
 
-		if(legalMovesPerRole == null || legalMovesPerRole.isEmpty()) { // If null or empty it means the state is not memorizing the moves
-			for(int i = 0; i < this.gameDependentParameters.getTheMachine().getRoles().size(); i++) {
-				jointMove.add(this.getMoveForRole(null, state, this.gameDependentParameters.getTheMachine().getRoles().get(i)));
-			}
-		}else if(legalMovesPerRole.size() == this.gameDependentParameters.getNumRoles()) {
-			for(int i = 0; i < this.gameDependentParameters.getTheMachine().getRoles().size(); i++) {
-				jointMove.add(this.getMoveForRole(legalMovesPerRole.get(i), state, this.gameDependentParameters.getTheMachine().getRoles().get(i)));
-			}
-		}else { // We have the moves but not for all roles => there is something wrong with the input
-			GamerLogger.logError("MoveSelector", "MastMoveSelector - Trying to select a joint move giving the wrong number of lists with legal moves for the roles.");
-			throw new RuntimeException("MastMoveSelector - Trying to select a joint move giving the wrong number of lists with legal moves for the roles");
+		for(int i = 0; i < this.gameDependentParameters.getNumRoles(); i++){
+			jointMove.add(this.getMoveForRole(node, state, i));
 		}
+
+		//System.out.println(Arrays.toString(jointMove.toArray()));
 
 		return jointMove;
 
 	}
-
+*/
 	/**
 	 * This method returns a move according to the MAST strategy.
 	 * For the given role it gets the list of all its legal moves in the state
@@ -87,15 +81,18 @@ public class MastMoveSelector extends MoveSelector {
 	 * @throws MoveDefinitionException, StateMachineException
 	 */
 	@Override
-	public Move getMoveForRole(List<Move> legalMoves, MachineState state, Role role) throws MoveDefinitionException, StateMachineException {
+	public Move getMoveForRole(MctsNode node, MachineState state, int roleIndex) throws MoveDefinitionException, StateMachineException {
 
-		if(legalMoves == null || legalMoves.isEmpty()) {
-			// Get the list of all legal moves for the role in the state
+		List<Move> legalMoves;
+
+		if(node != null && node instanceof DecoupledMctsNode) {
+			legalMoves = ((DecoupledMctsNode)node).getLegalMovesForRole(roleIndex);
+		}else {
+			Role role = this.gameDependentParameters.getTheMachine().getRoles().get(roleIndex);
 			legalMoves = this.gameDependentParameters.getTheMachine().getLegalMoves(state, role);
 		}
 
-		int roleIndex = this.gameDependentParameters.getTheMachine().getRoleIndices().get(role);
-    	// Pick the move with highest MAST value.
+		// Pick the move with highest MAST value.
 		return this.getMastMove(roleIndex, legalMoves);
 	}
 

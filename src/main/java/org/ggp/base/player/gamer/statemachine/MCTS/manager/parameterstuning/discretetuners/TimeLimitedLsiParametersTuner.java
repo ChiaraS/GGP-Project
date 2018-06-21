@@ -496,7 +496,7 @@ public class TimeLimitedLsiParametersTuner extends DiscreteParametersTuner {
 	}
 
 	@Override
-	public void updateStatistics(int[] goals) {
+	public void updateStatistics(double[] goals) {
 
 		if(this.evaluationTimeout == -1){ // For this game step we are not tuning
 			// This happens when the timeout that has been given to the tuner already expired before the start of the tuning,
@@ -505,14 +505,14 @@ public class TimeLimitedLsiParametersTuner extends DiscreteParametersTuner {
 			return;
 		}
 
-		int[] neededRewards;
+		double[] neededRewards;
 
 		// We have to check if the ParametersTuner is tuning parameters only for the playing role
 		// or for all roles and update the statistics with appropriate rewards.
 		if(this.tuneAllRoles){
 			neededRewards = goals;
 		}else{
-			neededRewards = new int[1];
+			neededRewards = new double[1];
 			neededRewards[0] = goals[this.gameDependentParameters.getMyRoleIndex()];
 
 		}

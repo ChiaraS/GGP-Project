@@ -42,7 +42,7 @@ public class FpgaStateMachine extends AbstractStateMachine {
 	}
 
 	@Override
-	public List<Integer> getAllGoalsForOneRole(MachineState state, Role role) throws StateMachineException {
+	public List<Double> getAllGoalsForOneRole(MachineState state, Role role) throws StateMachineException {
 		if(state instanceof FpgaMachineState && role instanceof FpgaRole){
 
 			return this.theMachine.getAllGoalsForOneRole((FpgaMachineState)state, (FpgaRole)role);
@@ -226,6 +226,7 @@ public class FpgaStateMachine extends AbstractStateMachine {
 		}
 	}
 
+	/*
 	@Override
 	public List<Move> getJointMove(List<List<Move>> legalMovesPerRole, MachineState state) {
 		if(state instanceof FpgaMachineState){
@@ -251,19 +252,25 @@ public class FpgaStateMachine extends AbstractStateMachine {
 			throw new RuntimeException("FpgaStateMachine-getJointMove(): detected wrong type for machine state: [" + state.getClass().getSimpleName() + "].");
 		}
 	}
+	*/
 
 	@Override
 	public Move getMoveForRole(List<Move> legalMoves, MachineState state, Role role) {
 		if(state instanceof FpgaMachineState){
 
 			if(role instanceof FpgaRole) {
-				List<FpgaMove> fpgaLegalMoves = new ArrayList<FpgaMove>();
-				for(Move move: legalMoves) {
-					if(move instanceof FpgaMove) {
-						fpgaLegalMoves.add((FpgaMove)move);
-					}else {
-						throw new RuntimeException("FpgaStateMachine-getMoveForRole(): detected wrong type for move: [" + move.getClass().getSimpleName() + "].");
+				List<FpgaMove> fpgaLegalMoves;
+				if(legalMoves != null) {
+					fpgaLegalMoves = new ArrayList<FpgaMove>();
+					for(Move move: legalMoves) {
+						if(move instanceof FpgaMove) {
+							fpgaLegalMoves.add((FpgaMove)move);
+						}else {
+							throw new RuntimeException("FpgaStateMachine-getMoveForRole(): detected wrong type for move: [" + move.getClass().getSimpleName() + "].");
+						}
 					}
+				}else {
+					fpgaLegalMoves = null;
 				}
 				return this.theMachine.getMoveForRole(fpgaLegalMoves, (FpgaMachineState)state, (FpgaRole)role);
 			}else {

@@ -16,7 +16,7 @@ public interface ExplicitStateMachineInterface extends AbstractStateMachineInter
 
 	// Methods common to all state machines, but with different types of inputs that extend general MachineState, Move and Role classes
 
-    public List<Integer> getAllGoalsForOneRole(ExplicitMachineState state, ExplicitRole role) throws StateMachineException;
+    public List<Double> getAllGoalsForOneRole(ExplicitMachineState state, ExplicitRole role) throws StateMachineException;
 
     public boolean isTerminal(ExplicitMachineState state) throws StateMachineException;
 
@@ -34,7 +34,7 @@ public interface ExplicitStateMachineInterface extends AbstractStateMachineInter
 
     public MyPair<double[], Double> fastPlayouts(ExplicitMachineState state, int numSimulationsPerPlayout, int maxDepth) throws TransitionDefinitionException, MoveDefinitionException, GoalDefinitionException, StateMachineException;
 
-    public List<ExplicitMove> getJointMove(List<List<ExplicitMove>> legalMovesPerRole, ExplicitMachineState state) throws StateMachineException, MoveDefinitionException;
+    //public List<ExplicitMove> getJointMove(List<List<ExplicitMove>> legalMovesPerRole, ExplicitMachineState state) throws StateMachineException, MoveDefinitionException;
 
 	public ExplicitMove getMoveForRole(List<ExplicitMove> legalMoves, ExplicitMachineState state, ExplicitRole role) throws StateMachineException, MoveDefinitionException;
 

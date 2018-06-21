@@ -133,7 +133,7 @@ public class MyMinmaxPlusGamer extends SampleGamer {
 		out.println("]");
 
 		ExplicitMove selection = myMoves.get(0);
-		int maxScore = 0;
+		double maxScore = 0;
 
 		for (ExplicitMove move: myMoves){
 			// Create the list of joint moves for this state with the same capacity as the size of the list of roles
@@ -145,7 +145,7 @@ public class MyMinmaxPlusGamer extends SampleGamer {
 			jointMoves.set(myIndex, move);
 
 			// Compute the score for the current move
-			int currentScore = minscore(state, myRole, roles, jointMoves, myIndex, nextOpponentIndex);
+			double currentScore = minscore(state, myRole, roles, jointMoves, myIndex, nextOpponentIndex);
 
 			// Check if the maximum score must be updated
 			/*if(currentScore == 100){
@@ -170,7 +170,7 @@ public class MyMinmaxPlusGamer extends SampleGamer {
 	 *
 	 *
 	 */
-	private int minscore(ExplicitMachineState state, ExplicitRole myRole, List<ExplicitRole> roles, List<ExplicitMove> jointMoves, int myIndex, int thisOpponentIndex)
+	private double minscore(ExplicitMachineState state, ExplicitRole myRole, List<ExplicitRole> roles, List<ExplicitMove> jointMoves, int myIndex, int thisOpponentIndex)
 			throws TransitionDefinitionException, MoveDefinitionException,
 			GoalDefinitionException, StateMachineException{
 
@@ -193,7 +193,7 @@ public class MyMinmaxPlusGamer extends SampleGamer {
 		}
 		out.println("]");
 
-		int minScore = 100;
+		double minScore = 100;
 
 		for (ExplicitMove move: moves){
 			// Add this move to a copy of the joint moves list in the position specified
@@ -206,7 +206,7 @@ public class MyMinmaxPlusGamer extends SampleGamer {
 
 			// Check if this is the last min node and thus the maxscore has to be called next
 			// and the state must be advanced. Otherwise the minscore will be called.
-			int currentScore = 0;
+			double currentScore = 0;
 			if(nextOpponentIndex >= roles.size()){
 				// Advance the state
 				ExplicitMachineState nextState = stateMachine.getExplicitNextState(state, newJointMoves);
@@ -228,7 +228,7 @@ public class MyMinmaxPlusGamer extends SampleGamer {
 	 *
 	 *
 	 */
-	private int maxscore(ExplicitMachineState state, ExplicitRole myRole, List<ExplicitRole> roles, int myIndex)
+	private double maxscore(ExplicitMachineState state, ExplicitRole myRole, List<ExplicitRole> roles, int myIndex)
 			throws TransitionDefinitionException, MoveDefinitionException,
 			GoalDefinitionException, StateMachineException{
 
@@ -236,7 +236,7 @@ public class MyMinmaxPlusGamer extends SampleGamer {
 
 		// Check if the state is terminal
 		if(stateMachine.isTerminal(state)){
-			int goal = stateMachine.getGoal(state, myRole);
+			double goal = stateMachine.getGoal(state, myRole);
 			out.println("Terminal state goal: " + goal);
 			return goal;
 		}
@@ -258,7 +258,7 @@ public class MyMinmaxPlusGamer extends SampleGamer {
 		}
 		out.println("]");
 
-		int maxScore = 0;
+		double maxScore = 0;
 
 		int numberOfRoles = roles.size();
 
@@ -272,7 +272,7 @@ public class MyMinmaxPlusGamer extends SampleGamer {
 			jointMoves.set(myIndex, move);
 
 			// Compute the score for the current move
-			int currentScore = minscore(state, myRole, roles, jointMoves, myIndex, nextOpponentIndex);
+			double currentScore = minscore(state, myRole, roles, jointMoves, myIndex, nextOpponentIndex);
 
 			// Check if the maximum score must be updated
 			/*if(currentScore == 100){

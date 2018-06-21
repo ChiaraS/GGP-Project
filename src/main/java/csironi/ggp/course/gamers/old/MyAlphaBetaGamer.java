@@ -110,13 +110,13 @@ public class MyAlphaBetaGamer extends SampleGamer {
 		ExplicitMove selection = myMoves.get(0);
 
 		// Define alpha and beta
-		int alpha = 0;
-		int beta = 100;
+		double alpha = 0;
+		double beta = 100;
 
 		for (ExplicitMove move: myMoves){
 
 			// Compute the score for the current move
-			int currentScore = minscore(state, myRole, move, myIndex, opponentIndex, alpha, beta);
+			double currentScore = minscore(state, myRole, move, myIndex, opponentIndex, alpha, beta);
 
 			// Check if the maximum score must be updated
 			/*if(currentScore == 100){
@@ -146,7 +146,7 @@ public class MyAlphaBetaGamer extends SampleGamer {
 	 *
 	 *
 	 */
-	private int minscore(ExplicitMachineState state, ExplicitRole myRole, ExplicitMove myMove, int myIndex, int opponentIndex, int alpha, int beta)
+	private double minscore(ExplicitMachineState state, ExplicitRole myRole, ExplicitMove myMove, int myIndex, int opponentIndex, double alpha, double beta)
 			throws TransitionDefinitionException, MoveDefinitionException,
 			GoalDefinitionException, StateMachineException{
 
@@ -175,7 +175,7 @@ public class MyAlphaBetaGamer extends SampleGamer {
 			jointMoves.set(myIndex, myMove);
 			jointMoves.set(opponentIndex, move);
 
-			int currentScore = maxscore(stateMachine.getExplicitNextState(state, jointMoves), myRole, myIndex, opponentIndex, alpha, beta);
+			double currentScore = maxscore(stateMachine.getExplicitNextState(state, jointMoves), myRole, myIndex, opponentIndex, alpha, beta);
 			if(currentScore < beta){
 				beta = currentScore;
 			}
@@ -196,7 +196,7 @@ public class MyAlphaBetaGamer extends SampleGamer {
 	 *
 	 *
 	 */
-	private int maxscore(ExplicitMachineState state, ExplicitRole myRole, int myIndex, int opponentIndex, int alpha, int beta)
+	private double maxscore(ExplicitMachineState state, ExplicitRole myRole, int myIndex, int opponentIndex, double alpha, double beta)
 			throws TransitionDefinitionException, MoveDefinitionException,
 			GoalDefinitionException, StateMachineException{
 
@@ -204,7 +204,7 @@ public class MyAlphaBetaGamer extends SampleGamer {
 
 		// Check if the state is terminal
 		if(stateMachine.isTerminal(state)){
-			int goal = stateMachine.getGoal(state, myRole);
+			double goal = stateMachine.getGoal(state, myRole);
 			out.println("Terminal state goal: " + goal);
 			return goal;
 		}
@@ -221,7 +221,7 @@ public class MyAlphaBetaGamer extends SampleGamer {
 		for (ExplicitMove move: myMoves){
 
 			// Compute the score for the current move
-			int currentScore = minscore(state, myRole, move, myIndex, opponentIndex, alpha, beta);
+			double currentScore = minscore(state, myRole, move, myIndex, opponentIndex, alpha, beta);
 
 			// Check if the maximum score must be updated
 			/*if(currentScore == 100){

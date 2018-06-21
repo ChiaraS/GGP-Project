@@ -214,7 +214,7 @@ public class ExtendedStatePropnetStateMachine extends StateMachine {
 	 * is true for that role.
 	 */
 	@Override
-	public List<Integer> getAllGoalsForOneRole(ExplicitMachineState state, ExplicitRole role){
+	public List<Double> getAllGoalsForOneRole(ExplicitMachineState state, ExplicitRole role){
 		if(!(state instanceof CompactAndExplicitMachineState)){
 			state = this.stateToExtendedState(state);
 		}
@@ -230,10 +230,10 @@ public class ExtendedStatePropnetStateMachine extends StateMachine {
 	 * proposition true for that role, then you should throw a
 	 * GoalDefinitionException because the goal is ill-defined.
 	 */
-	public int getGoal(CompactAndExplicitMachineState state, ExplicitRole role)
+	public double getGoal(CompactAndExplicitMachineState state, ExplicitRole role)
 	throws GoalDefinitionException {
 
-    	List<Integer> goals = this.getOneRoleGoals(state, role);
+    	List<Double> goals = this.getOneRoleGoals(state, role);
 
 		if(goals.size() > 1){
 			GamerLogger.logError("StateMachine", "[Propnet] Got more than one true goal in state " + state + " for role " + role + ".");
@@ -256,14 +256,14 @@ public class ExtendedStatePropnetStateMachine extends StateMachine {
 	 * Should return the value of the goal proposition that
 	 * is true for that role.
 	 */
-	public List<Integer> getOneRoleGoals(CompactAndExplicitMachineState state, ExplicitRole role) {
+	public List<Double> getOneRoleGoals(CompactAndExplicitMachineState state, ExplicitRole role) {
 		// Mark base propositions according to state.
 		this.markBases(state);
 
 		// Get all goal propositions for the given role.
 		Set<ExtendedStateProposition> goalPropsForRole = this.propNet.getGoalPropositions().get(role);
 
-		List<Integer> trueGoals = new ArrayList<Integer>();
+		List<Double> trueGoals = new ArrayList<Double>();
 
 		// Check all the goal propositions that are true for the role. If there is more than one throw an exception.
 		for(ExtendedStateProposition goalProp : goalPropsForRole){
@@ -473,10 +473,10 @@ public class ExtendedStatePropnetStateMachine extends StateMachine {
 	 * @param goalProposition
 	 * @return the integer value of the goal proposition
 	 */
-    private int getGoalValue(ExtendedStateProposition goalProposition){
+    private double getGoalValue(ExtendedStateProposition goalProposition){
 		GdlRelation relation = (GdlRelation) goalProposition.getName();
 		GdlConstant constant = (GdlConstant) relation.get(1);
-		return Integer.parseInt(constant.toString());
+		return Double.parseDouble(constant.toString());
 	}
 
     /**

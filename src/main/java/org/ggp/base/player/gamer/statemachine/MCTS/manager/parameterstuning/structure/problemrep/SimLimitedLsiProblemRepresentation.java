@@ -288,7 +288,7 @@ public class SimLimitedLsiProblemRepresentation /*extends LsiProblemRepresentati
 
 	}
 
-	public void updateStatsOfCombination(int reward){
+	public void updateStatsOfCombination(double reward){
 
 		switch(this.phase){
 		case GENERATION:

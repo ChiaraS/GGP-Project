@@ -82,7 +82,7 @@ public final class LeaderboardPanel extends JPanel implements Observer
 		if (!match.isCompleted()) return;
 		if (match.getMatchId().startsWith("Test")) return;
 
-		List<Integer> goals = match.getGoalValues();
+		List<Double> goals = match.getGoalValues();
 		List<Integer> errors = getErrorCounts(match.getErrorHistory());
 		List<String> players = match.getPlayerNamesFromHost();
 		for (int i = 0; i < players.size(); i++) { if (players.get(i)==null) { players.set(i, "?"); } }

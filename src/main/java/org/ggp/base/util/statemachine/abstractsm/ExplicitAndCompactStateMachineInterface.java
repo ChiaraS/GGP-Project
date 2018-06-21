@@ -21,13 +21,13 @@ public interface ExplicitAndCompactStateMachineInterface extends AbstractStateMa
 
 	// EXPLICIT
 
-    public List<Integer> getAllGoalsForOneRole(ExplicitMachineState state, ExplicitRole role) throws StateMachineException;
+    public List<Double> getAllGoalsForOneRole(ExplicitMachineState state, ExplicitRole role) throws StateMachineException;
 
     public boolean isTerminal(ExplicitMachineState state) throws StateMachineException;
 
     //COMPACT
 
-    public List<Integer> getAllGoalsForOneRole(CompactMachineState state, CompactRole role) throws StateMachineException;
+    public List<Double> getAllGoalsForOneRole(CompactMachineState state, CompactRole role) throws StateMachineException;
 
     public boolean isTerminal(CompactMachineState state) throws StateMachineException;
 
@@ -70,7 +70,7 @@ public interface ExplicitAndCompactStateMachineInterface extends AbstractStateMa
 
 	public MyPair<double[], Double> fastPlayouts(ExplicitMachineState state, int numSimulationsPerPlayout, int maxDepth) throws TransitionDefinitionException, MoveDefinitionException, GoalDefinitionException, StateMachineException;
 
-	public List<ExplicitMove> getJointMove(List<List<ExplicitMove>> legalMovesPerRole, ExplicitMachineState state)throws StateMachineException, MoveDefinitionException;
+	//public List<ExplicitMove> getJointMove(List<List<ExplicitMove>> legalMovesPerRole, ExplicitMachineState state)throws StateMachineException, MoveDefinitionException;
 
 	public ExplicitMove getMoveForRole(List<ExplicitMove> legalMoves, ExplicitMachineState state, ExplicitRole role) throws StateMachineException, MoveDefinitionException;
 
@@ -78,7 +78,7 @@ public interface ExplicitAndCompactStateMachineInterface extends AbstractStateMa
 
 	public MyPair<double[], Double> fastPlayouts(CompactMachineState state, int numSimulationsPerPlayout, int maxDepth) throws TransitionDefinitionException, MoveDefinitionException, StateMachineException, GoalDefinitionException;
 
-	public List<CompactMove> getJointMove(List<List<CompactMove>> legalMovesPerRole, CompactMachineState state) throws MoveDefinitionException;
+	//public List<CompactMove> getJointMove(List<List<CompactMove>> legalMovesPerRole, CompactMachineState state) throws MoveDefinitionException;
 
 	public CompactMove getMoveForRole(List<CompactMove> legalMoves, CompactMachineState state, CompactRole role) throws MoveDefinitionException;
 }

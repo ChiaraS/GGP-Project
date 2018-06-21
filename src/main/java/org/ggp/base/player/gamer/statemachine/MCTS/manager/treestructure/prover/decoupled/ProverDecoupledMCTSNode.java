@@ -14,7 +14,7 @@ public class ProverDecoupledMCTSNode extends MctsNode {
 	 */
 	private int[] unexploredMovesCount;
 
-	public ProverDecoupledMCTSNode(ProverDecoupledMCTSMoveStats[][] movesStats, int[] goals, boolean terminal, int numRoles) {
+	public ProverDecoupledMCTSNode(ProverDecoupledMCTSMoveStats[][] movesStats, double[] goals, boolean terminal, int numRoles) {
 
 		super(goals, terminal, numRoles);
 		this.movesStats = movesStats;

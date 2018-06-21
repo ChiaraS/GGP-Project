@@ -180,7 +180,7 @@ public class ProvaYap {
 		}
 
 		for(ExplicitRole r : roles){
-			int goal;
+			double goal;
 			start = System.currentTimeMillis();
 			try {
 				goal = machine.getGoal(currentState, r);

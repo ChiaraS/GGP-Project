@@ -47,13 +47,13 @@ public class EvoAfterSimulation extends AfterSimulationStrategy {
 			throw new RuntimeException("Detected multiple playouts results.");
 		}
 
-		int[] goals;
+		double[] goals;
 
 		// We have to check if the EvolutionManager is evolving parameters only for the playing role
 		// or for all roles and update the fitness with appropriate goals.
 		if(this.evolutionManager.getNumPopulations() == 1){
 
-			goals = new int[1];
+			goals = new double[1];
 			goals[0] = simulationResult[0].getTerminalGoals()[this.gameDependentParameters.getMyRoleIndex()];
 
 		}else{

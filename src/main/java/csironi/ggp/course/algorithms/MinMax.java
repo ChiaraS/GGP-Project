@@ -33,7 +33,7 @@ public class MinMax extends SearchAlgorithm {
 		super(log, logFileName, stateMachine);
 	}
 
-	public ExplicitMove bestmove(long finishBy, ExplicitMachineState state, ExplicitRole role, Boolean prune, int alpha, int beta, int limit, boolean shuffleTop, boolean shuffleInt, EvaluationFunction stateEval)
+	public ExplicitMove bestmove(long finishBy, ExplicitMachineState state, ExplicitRole role, Boolean prune, double alpha, double beta, int limit, boolean shuffleTop, boolean shuffleInt, EvaluationFunction stateEval)
 			throws TransitionDefinitionException, MoveDefinitionException,
 			GoalDefinitionException, StateMachineException {
 
@@ -94,7 +94,7 @@ public class MinMax extends SearchAlgorithm {
 
 					ExplicitMove move = moves.get(i);
 
-					int currentScore;
+					double currentScore;
 
 					if(stateMachine.getExplicitRoles().size() == 1){
 						ArrayList<ExplicitMove> jointMoves = new ArrayList<ExplicitMove>();
@@ -136,13 +136,13 @@ public class MinMax extends SearchAlgorithm {
 				}
 
 			}else{
-				int maxScore = 0;
+				double maxScore = 0;
 
 				for (Integer i: indexes){
 
 					ExplicitMove move = moves.get(i);
 
-					int currentScore;
+					double currentScore;
 
 					if(stateMachine.getExplicitRoles().size() == 1){
 						ArrayList<ExplicitMove> jointMoves = new ArrayList<ExplicitMove>();
@@ -195,7 +195,7 @@ public class MinMax extends SearchAlgorithm {
 
 				for (ExplicitMove move: moves){
 
-					int currentScore;
+					double currentScore;
 
 					if(stateMachine.getExplicitRoles().size() == 1){
 						ArrayList<ExplicitMove> jointMoves = new ArrayList<ExplicitMove>();
@@ -237,11 +237,11 @@ public class MinMax extends SearchAlgorithm {
 				}
 
 			}else{
-				int maxScore = 0;
+				double maxScore = 0;
 
 				for (ExplicitMove move: moves){
 
-					int currentScore;
+					double currentScore;
 
 					if(stateMachine.getExplicitRoles().size() == 1){
 						ArrayList<ExplicitMove> jointMoves = new ArrayList<ExplicitMove>();
@@ -291,7 +291,7 @@ public class MinMax extends SearchAlgorithm {
 	}
 
 
-	private int maxscore(long finishBy, ExplicitMachineState state, ExplicitRole role, int level, int limit, boolean shuffle, EvaluationFunction stateEval)
+	private double maxscore(long finishBy, ExplicitMachineState state, ExplicitRole role, int level, int limit, boolean shuffle, EvaluationFunction stateEval)
 			throws TransitionDefinitionException, MoveDefinitionException,
 			GoalDefinitionException, StateMachineException{
 
@@ -305,14 +305,14 @@ public class MinMax extends SearchAlgorithm {
 
 		// Check if the state is terminal
 		if(stateMachine.isTerminal(state)){
-			int goal = stateMachine.getGoal(state, role);
+			double goal = stateMachine.getGoal(state, role);
 			log("Terminal state goal: " + goal);
 			return goal;
 		}
 
 		if(level >= limit){
 
-			int stateValue = stateEval.eval(state, role);
+			double stateValue = stateEval.eval(state, role);
 			log("Reached depth limit. Returning state value estimation: " + stateValue);
 			return stateValue;
 
@@ -321,7 +321,7 @@ public class MinMax extends SearchAlgorithm {
 		// Check all my available moves to find the best one
 		List<ExplicitMove> moves = stateMachine.getExplicitLegalMoves(state, role);
 
-		int maxScore = 0;
+		double maxScore = 0;
 
 		if(shuffle){
 
@@ -348,7 +348,7 @@ public class MinMax extends SearchAlgorithm {
 
 				log("Move [ " + move + " ]");
 
-				int currentScore;
+				double currentScore;
 
 				if(stateMachine.getExplicitRoles().size() == 1){
 					ArrayList<ExplicitMove> jointMoves = new ArrayList<ExplicitMove>();
@@ -389,7 +389,7 @@ public class MinMax extends SearchAlgorithm {
 
 				log("Move [ " + move + " ]");
 
-				int currentScore;
+				double currentScore;
 
 				if(stateMachine.getExplicitRoles().size() == 1){
 					ArrayList<ExplicitMove> jointMoves = new ArrayList<ExplicitMove>();
@@ -419,7 +419,7 @@ public class MinMax extends SearchAlgorithm {
 		return maxScore;
 	}
 
-	private int minscore(long finishBy, ExplicitMachineState state, ExplicitRole role, ExplicitMove move, int level, int limit, boolean shuffle, EvaluationFunction stateEval)
+	private double minscore(long finishBy, ExplicitMachineState state, ExplicitRole role, ExplicitMove move, int level, int limit, boolean shuffle, EvaluationFunction stateEval)
 			throws TransitionDefinitionException, MoveDefinitionException,
 			GoalDefinitionException, StateMachineException{
 
@@ -428,7 +428,7 @@ public class MinMax extends SearchAlgorithm {
 		// Find all legal joint moves given the current move of the player
 		List<List<ExplicitMove>> jointMovesList = stateMachine.getLegalJointMoves(state, role, move);
 
-		int minScore = 100;
+		double minScore = 100;
 
 		for(List<ExplicitMove> jointMoves: jointMovesList){
 
@@ -439,7 +439,7 @@ public class MinMax extends SearchAlgorithm {
 			toLog += "]";
 			log(toLog);
 
-			int currentScore;
+			double currentScore;
 
 			currentScore = maxscore(finishBy, stateMachine.getExplicitNextState(state, jointMoves), role, level+1, limit, shuffle, stateEval);
 
@@ -458,7 +458,7 @@ public class MinMax extends SearchAlgorithm {
 	}
 
 
-	private int maxscore(long finishBy, ExplicitMachineState state, ExplicitRole role, int alpha, int beta, int level, int limit, boolean shuffle, EvaluationFunction stateEval)
+	private double maxscore(long finishBy, ExplicitMachineState state, ExplicitRole role, double alpha, double beta, int level, int limit, boolean shuffle, EvaluationFunction stateEval)
 			throws TransitionDefinitionException, MoveDefinitionException,
 			GoalDefinitionException, StateMachineException{
 
@@ -472,14 +472,14 @@ public class MinMax extends SearchAlgorithm {
 
 		// Check if the state is terminal
 		if(stateMachine.isTerminal(state)){
-			int goal = stateMachine.getGoal(state, role);
+			double goal = stateMachine.getGoal(state, role);
 			log("Terminal state goal: " + goal);
 			return goal;
 		}
 
 		if(level >= limit){
 
-			int stateValue = stateEval.eval(state, role);
+			double stateValue = stateEval.eval(state, role);
 			log("Reached depth limit. Returning state value estimation: " + stateValue);
 			return stateValue;
 		}
@@ -512,7 +512,7 @@ public class MinMax extends SearchAlgorithm {
 
 				log("Move [ " + move + " ]");
 
-				int currentScore;
+				double currentScore;
 
 				if(stateMachine.getExplicitRoles().size() == 1){
 					ArrayList<ExplicitMove> jointMoves = new ArrayList<ExplicitMove>();
@@ -557,7 +557,7 @@ public class MinMax extends SearchAlgorithm {
 
 				log("Move [ " + move + " ]");
 
-				int currentScore;
+				double currentScore;
 
 				if(stateMachine.getExplicitRoles().size() == 1){
 					ArrayList<ExplicitMove> jointMoves = new ArrayList<ExplicitMove>();
@@ -594,7 +594,7 @@ public class MinMax extends SearchAlgorithm {
 		return alpha;
 	}
 
-	private int minscore(long finishBy, ExplicitMachineState state, ExplicitRole role, ExplicitMove move, int alpha, int beta, int level, int limit, boolean shuffle, EvaluationFunction stateEval)
+	private double minscore(long finishBy, ExplicitMachineState state, ExplicitRole role, ExplicitMove move, double alpha, double beta, int level, int limit, boolean shuffle, EvaluationFunction stateEval)
 			throws TransitionDefinitionException, MoveDefinitionException,
 			GoalDefinitionException, StateMachineException{
 
@@ -612,7 +612,7 @@ public class MinMax extends SearchAlgorithm {
 			toLog += "]";
 			log(toLog);
 
-			int currentScore;
+			double currentScore;
 
 			currentScore = maxscore(finishBy, stateMachine.getExplicitNextState(state, jointMoves), role, alpha, beta, level+1, limit, shuffle, stateEval);
 

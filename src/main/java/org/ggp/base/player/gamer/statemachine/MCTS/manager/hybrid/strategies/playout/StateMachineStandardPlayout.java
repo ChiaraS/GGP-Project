@@ -6,7 +6,9 @@ import java.util.Random;
 import org.ggp.base.player.gamer.statemachine.GamerSettings;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.GameDependentParameters;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.SharedReferencesCollector;
+import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.MctsNode;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.hybrid.SimulationResult;
+import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.hybrid.decoupled.DecoupledMctsNode;
 import org.ggp.base.util.logging.GamerLogger;
 import org.ggp.base.util.statemachine.exceptions.MoveDefinitionException;
 import org.ggp.base.util.statemachine.exceptions.StateMachineException;
@@ -64,31 +66,35 @@ public class StateMachineStandardPlayout extends PlayoutStrategy {
 	}
 
 	@Override
-	public SimulationResult[] playout(List<Move> jointMove, MachineState state, int maxDepth) {
+	public SimulationResult[] playout(MctsNode node, List<Move> jointMove, MachineState state, int maxDepth) {
 		SimulationResult[] result = new SimulationResult[1];
 
-		result[0] = this.singlePlayout(state, maxDepth);
+		result[0] = this.singlePlayout(node, state, maxDepth);
 
 		return result;
 	}
 
 	@Override
-	public SimulationResult singlePlayout(MachineState state, int maxDepth) {
+	public SimulationResult singlePlayout(MctsNode node, MachineState state, int maxDepth) {
 
-		// NOTE that this is just an extra check: if the state is terminal or the depth limit has been reached,
-		// we just return the final goals of the state. At the moment the MCTS manager already doesn't call the
-        // play-out if the state is terminal or if the depth limit has been reached, so this check will never be
-        // true, but it's here just to be safe.
         boolean terminal = true;
 
-        try {
-			terminal = this.gameDependentParameters.getTheMachine().isTerminal(state);
-		} catch (StateMachineException e) {
-			GamerLogger.logError("MctsManager", "Exception computing state terminality while performing a playout.");
-			GamerLogger.logStackTrace("MctsManager", e);
-			terminal = true;
-		}
+        if(node != null) {
+        	terminal = node.isTerminal();
+        }else {
+	        try {
+				terminal = this.gameDependentParameters.getTheMachine().isTerminal(state);
+			} catch (StateMachineException e) {
+				GamerLogger.logError("MctsManager", "Exception computing state terminality while performing a playout.");
+				GamerLogger.logStackTrace("MctsManager", e);
+				terminal = true;
+			}
+        }
 
+        // NOTE that this is just an extra check: if the state is terminal or the depth limit has been reached,
+     	// we just return the final goals of the state. At the moment the MCTS manager already doesn't call the
+        // play-out if the state is terminal or if the depth limit has been reached, so this check will never be
+        // true, but it's here just to be safe.
 		if(terminal || maxDepth == 0){
 
 			GamerLogger.logError("MctsManager", "Playout strategy shouldn't be called on a terminal node. The MctsManager must take care of computing the simulation result in this case.");
@@ -99,7 +105,7 @@ public class StateMachineStandardPlayout extends PlayoutStrategy {
 
         MyPair<double[],Double> avgGoalsAndDepth = this.gameDependentParameters.getTheMachine().fastPlayouts(state, this.numSimulationsPerPlayout, maxDepth);
 
-        return new SimulationResult(avgGoalsAndDepth.getSecond(), avgGoalsAndDepth.getFirst());
+        return new SimulationResult(avgGoalsAndDepth.getSecond().doubleValue(), avgGoalsAndDepth.getFirst());
 
 	}
 
@@ -109,28 +115,19 @@ public class StateMachineStandardPlayout extends PlayoutStrategy {
 	}
 
 	/**
-	 * To implement this method we need the reasoner to offer a method that returns a joint
-	 * move given a state according to its choice policy. In this way we will pick a move
-	 * according to the same playout policy.
-	 */
-	@Override
-	public List<Move> getJointMove(List<List<Move>> legalMovesPerRole, MachineState state) {
-		try {
-			return this.gameDependentParameters.getTheMachine().getJointMove(legalMovesPerRole, state);
-		} catch (MoveDefinitionException | StateMachineException e) {
-			GamerLogger.logError("MctsManager", "Exception getting a joint move using the playout strategy.");
-			GamerLogger.logStackTrace("MctsManager", e);
-			throw new RuntimeException("Exception getting a joint move using the playout strategy.", e);
-		}
-	}
-
-	/**
 	 * To implement this method we need the reasoner to offer a method that returns a move
 	 * for a role given a state, according to its choice policy. In this way we will pick a
 	 * move according to the same playout policy.
 	 */
 	@Override
-	public Move getMoveForRole(List<Move> legalMoves, MachineState state, Role role) {
+	public Move getMoveForRole(MctsNode node, MachineState state, int roleIndex) {
+		List<Move> legalMoves;
+		if(node != null && node instanceof DecoupledMctsNode) {
+			legalMoves = ((DecoupledMctsNode)node).getLegalMovesForRole(roleIndex);
+		}else {
+			legalMoves = null;
+		}
+		Role role = this.gameDependentParameters.getTheMachine().getRoles().get(roleIndex);
 		try {
 			return this.gameDependentParameters.getTheMachine().getMoveForRole(legalMoves, state, role);
 		} catch (MoveDefinitionException | StateMachineException e) {

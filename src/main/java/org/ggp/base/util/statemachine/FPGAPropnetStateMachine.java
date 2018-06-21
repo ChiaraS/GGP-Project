@@ -5,7 +5,7 @@ import java.util.List;
 
 import org.ggp.base.util.gdl.grammar.Gdl;
 import org.ggp.base.util.logging.GamerLogger;
-import org.ggp.base.util.placeholders.FPGAPropnetInterface;
+import org.ggp.base.util.placeholders.FPGAPropnetLibrary;
 import org.ggp.base.util.placeholders.FpgaInternalState;
 import org.ggp.base.util.statemachine.exceptions.MoveDefinitionException;
 import org.ggp.base.util.statemachine.exceptions.StateMachineException;
@@ -36,7 +36,7 @@ public class FPGAPropnetStateMachine extends StateMachine {
 
 
 
-	private FPGAPropnetInterface fpgaPropnetInterface;
+	private FPGAPropnetLibrary fpgaPropnetInterface;
 
     /** The player roles */
     protected List<CompactRole> roles;
@@ -44,7 +44,7 @@ public class FPGAPropnetStateMachine extends StateMachine {
     protected CompactMachineState initialState;
 
 
-	public FPGAPropnetStateMachine(FPGAPropnetInterface fpgaPropnetInterface){
+	public FPGAPropnetStateMachine(FPGAPropnetLibrary fpgaPropnetInterface){
 		this.fpgaPropnetInterface = fpgaPropnetInterface;
 	}
 

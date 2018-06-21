@@ -214,7 +214,7 @@ public abstract class TdBackpropagation extends BackpropagationStrategy {
 			throw new RuntimeException("Detected multiple playouts results.");
 		}
 
-		int playoutLength = simulationResult[0].getPlayoutLength();
+		double playoutLength = simulationResult[0].getPlayoutLength();
 
 		if(playoutLength <= 0){ // This method should be called only if the playout was actually performed, thus the length must be at least 1!
 			GamerLogger.logError("BackpropagationStrategy", "TdBackpropagation - Playout length equals 0 when processing the playout result for TD backpropagation. Probably a wrong combination of strategies has been set or there is something wrong in the code!");
@@ -294,6 +294,6 @@ public abstract class TdBackpropagation extends BackpropagationStrategy {
 		}
 	}
 
-	public abstract int[] getReturnValuesForRolesInPlayout(SimulationResult simulationResult);
+	public abstract double[] getReturnValuesForRolesInPlayout(SimulationResult simulationResult);
 
 }

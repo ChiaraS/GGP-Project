@@ -71,7 +71,7 @@ public class StandardMultiPopEvoParametersTuner extends	MultiPopEvoParametersTun
 
 
 	@Override
-	public void updateRoleProblems(List<Integer> individualsIndices, int[] neededRewards) {
+	public void updateRoleProblems(List<Integer> individualsIndices, double[] neededRewards) {
 
 		CompleteMoveStats toUpdate;
 

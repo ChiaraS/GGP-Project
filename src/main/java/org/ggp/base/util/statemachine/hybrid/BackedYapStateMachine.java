@@ -146,7 +146,7 @@ public class BackedYapStateMachine extends StateMachine {
 	}
 
 	@Override
-	public List<Integer> getAllGoalsForOneRole(ExplicitMachineState state, ExplicitRole role)
+	public List<Double> getAllGoalsForOneRole(ExplicitMachineState state, ExplicitRole role)
 			throws StateMachineException {
 
 		if(this.mainMachine != null){

@@ -80,7 +80,7 @@ public class ProvaProver {
 
             System.out.println(role);
 
-            int g = machine.getGoal(state, role);
+            double g = machine.getGoal(state, role);
 
             System.out.println(g);
 

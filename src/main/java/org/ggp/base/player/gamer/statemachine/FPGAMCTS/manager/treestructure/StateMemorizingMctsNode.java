@@ -12,7 +12,7 @@ public class StateMemorizingMctsNode extends DecoupledMctsNode {
 
 	private Map<List<Move>,MachineState> nextStates;
 
-	public StateMemorizingMctsNode(Map<List<Move>,MachineState> nextStates, DecoupledMctsMoveStats[][] movesStats, int[] goals, boolean terminal, int numRoles) {
+	public StateMemorizingMctsNode(Map<List<Move>,MachineState> nextStates, DecoupledMctsMoveStats[][] movesStats, double[] goals, boolean terminal, int numRoles) {
 
 		super(movesStats, goals, terminal, numRoles);
 

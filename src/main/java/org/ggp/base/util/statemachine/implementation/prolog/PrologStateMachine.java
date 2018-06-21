@@ -296,7 +296,7 @@ public class PrologStateMachine extends StateMachine {
 	 * TODO: ATTNETION! This method has never been tested.
 	 */
 	@Override
-	public List<Integer> getAllGoalsForOneRole(ExplicitMachineState state, ExplicitRole role)	throws StateMachineException {
+	public List<Double> getAllGoalsForOneRole(ExplicitMachineState state, ExplicitRole role)	throws StateMachineException {
 
 		updatePrologState(state);
 
@@ -323,7 +323,7 @@ public class PrologStateMachine extends StateMachine {
 
 		if(bindings == null){
 			//GamerLogger.logError("StateMachine", "[" + this.prologType + " PROLOG] Got no goal when expecting at least one.");
-			return new ArrayList<Integer>();
+			return new ArrayList<Double>();
 		}
 
 		String[] goals = (String[]) bindings[0];
@@ -334,12 +334,12 @@ public class PrologStateMachine extends StateMachine {
 		}
 		*/
 
-		List<Integer> goalValues = new ArrayList<Integer>();
+		List<Double> goalValues = new ArrayList<Double>();
 
 		for(String s : goals){
 			try{
-				int goal = Integer.parseInt(s);
-				goalValues.add(new Integer(goal));
+				double goal = Double.parseDouble(s);
+				goalValues.add(new Double(goal));
 			}catch(NumberFormatException ex){
 				GamerLogger.logError("StateMachine", "[" + this.prologType + " PROLOG] Got goal results that is not a number.");
 				GamerLogger.logStackTrace("StateMachine", ex);

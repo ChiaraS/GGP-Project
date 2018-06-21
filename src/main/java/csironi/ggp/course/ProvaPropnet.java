@@ -1527,7 +1527,7 @@ public class ProvaPropnet {
 
 	    		}
 
-	    		List<Integer> proverGoals = null;
+	    		List<Double> proverGoals = null;
 	    		try {
 					proverGoals = theReference.getGoals(proverState);
 				} catch (GoalDefinitionException | StateMachineException e) {
@@ -1535,7 +1535,7 @@ public class ProvaPropnet {
 					e.printStackTrace();
 				}
 
-	    		List<Integer> propnetGoals = null;
+	    		List<Double> propnetGoals = null;
 	    		try {
 					propnetGoals = thePropNetMachine.getGoals(propnetState);
 				} catch (GoalDefinitionException | StateMachineException e) {

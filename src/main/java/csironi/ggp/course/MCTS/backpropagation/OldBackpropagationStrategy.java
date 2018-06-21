@@ -12,6 +12,6 @@ import java.util.List;
  */
 public interface OldBackpropagationStrategy {
 
-	public void update(List<Integer> goals);
+	public void update(List<Double> goals);
 
 }

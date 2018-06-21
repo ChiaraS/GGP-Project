@@ -139,7 +139,7 @@ public class RandomParametersTuner extends DiscreteParametersTuner {
 	}
 
 	@Override
-	public void updateStatistics(int[] goals) {
+	public void updateStatistics(double[] goals) {
 
 		//System.out.println("Update");
 		// Do nothing

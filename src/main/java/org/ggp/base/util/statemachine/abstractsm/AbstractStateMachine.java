@@ -91,7 +91,7 @@ public abstract class AbstractStateMachine {
      * for the given role because of an error that occurred in the state machine and
      * couldn't be handled.
      */
-    public abstract List<Integer> getAllGoalsForOneRole(MachineState state, Role role) throws StateMachineException;
+    public abstract List<Double> getAllGoalsForOneRole(MachineState state, Role role) throws StateMachineException;
 
     /**
      * Returns true if and only if the given state is a terminal state (i.e. the
@@ -153,7 +153,7 @@ public abstract class AbstractStateMachine {
      */
     public abstract MyPair<double[],Double> fastPlayouts(MachineState state, int numSimulationsPerPlayout, int maxDepth) throws TransitionDefinitionException, MoveDefinitionException, GoalDefinitionException, StateMachineException;
 
-	public abstract List<Move> getJointMove(List<List<Move>> legalMovesPerRole, MachineState state) throws MoveDefinitionException, StateMachineException;
+	//public abstract List<Move> getJointMove(List<List<Move>> legalMovesPerRole, MachineState state) throws MoveDefinitionException, StateMachineException;
 
 	public abstract Move getMoveForRole(List<Move> legalMoves, MachineState state, Role role) throws StateMachineException, MoveDefinitionException;
 
@@ -425,18 +425,18 @@ public abstract class AbstractStateMachine {
      * for the given role because of an error that occurred in the state machine and
      * couldn't be handled.
      */
-    public int getSingleGoalForOneRole(MachineState state, Role role) throws GoalDefinitionException, StateMachineException{
+    public double getSingleGoalForOneRole(MachineState state, Role role) throws GoalDefinitionException, StateMachineException{
 
-    	List<Integer> goals = this.getAllGoalsForOneRole(state, role);
+    	List<Double> goals = this.getAllGoalsForOneRole(state, role);
 
 		if(goals.size() > 1){
-			GamerLogger.logError("StateMachine", "[AbstractSM] Got more than one true goal in state " + state + " for role " + role + ".");
+			GamerLogger.logError("StateMachine", "[AbstractSM] Got more than one true goal in state " + this.convertToExplicitMachineState(state) + " for role " + this.convertToExplicitRole(role) + ".");
 			throw new GoalDefinitionException(this.convertToExplicitMachineState(state), this.convertToExplicitRole(role));
 		}
 
 		// If there is no true goal proposition for the role in this state throw an exception.
 		if(goals.isEmpty()){
-			GamerLogger.logError("StateMachine", "[AbstractSM] Got no true goal in state " + state + " for role " + role + ".");
+			GamerLogger.logError("StateMachine", "[AbstractSM] Got no true goal in state " + this.convertToExplicitMachineState(state) + " for role " + this.convertToExplicitRole(role) + ".");
 			throw new GoalDefinitionException(this.convertToExplicitMachineState(state), this.convertToExplicitRole(role));
 		}
 
@@ -458,8 +458,8 @@ public abstract class AbstractStateMachine {
      * with the goals for all the roles in the given state because of an error
      * that occurred in the state machine and couldn't be handled.
      */
-    public List<Integer> getSingleGoalForAllRoles(MachineState state) throws GoalDefinitionException, StateMachineException {
-        List<Integer> theGoals = new ArrayList<Integer>(getRoles().size());
+    public List<Double> getSingleGoalForAllRoles(MachineState state) throws GoalDefinitionException, StateMachineException {
+        List<Double> theGoals = new ArrayList<Double>(getRoles().size());
         for(Role r : getRoles()) {
             theGoals.add(getSingleGoalForOneRole(state, r));
         }
@@ -477,8 +477,8 @@ public abstract class AbstractStateMachine {
      * with the goals for all the roles in the given state because of an error
      * that occurred in the state machine and couldn't be handled.
      */
-    public List<List<Integer>> getAllGoalsForAllRoles(MachineState state) throws GoalDefinitionException, StateMachineException {
-        List<List<Integer>> theGoals = new ArrayList<List<Integer>>();
+    public List<List<Double>> getAllGoalsForAllRoles(MachineState state) throws GoalDefinitionException, StateMachineException {
+        List<List<Double>> theGoals = new ArrayList<List<Double>>();
         for (Role r : getRoles()) {
         	theGoals.add(getAllGoalsForOneRole(state, r));
         }
@@ -502,9 +502,9 @@ public abstract class AbstractStateMachine {
      *
      * @param state the state for which to compute the goals.
      */
-    public int[] getSafeGoalsForAllRoles(MachineState state){
+    public double[] getSafeGoalsForAllRoles(MachineState state){
     	List<Role> theRoles = this.getRoles();
-    	int[] theGoals = new int[theRoles.size()];
+    	double[] theGoals = new double[theRoles.size()];
         for (int i = 0; i < theRoles.size(); i++) {
             try {
 				theGoals[i] = getSingleGoalForOneRole(state, theRoles.get(i));
@@ -536,11 +536,11 @@ public abstract class AbstractStateMachine {
      * @param state the state for which to compute the goals.
 	 * @throws StateMachineException
      */
-    public int[] getSafeGoalsAvgForAllRoles(MachineState state){
+    public double[] getSafeGoalsAvgForAllRoles(MachineState state){
     	List<Role> theRoles = this.getRoles();
-    	int[] theGoals = new int[theRoles.size()];
-    	int avg;
-    	List<Integer> roleGoals = null;
+    	double[] theGoals = new double[theRoles.size()];
+    	double avg;
+    	List<Double> roleGoals = null;
 
     	for(int i = 0; i < theRoles.size(); i++) {
 
@@ -549,18 +549,18 @@ public abstract class AbstractStateMachine {
 
         		if(roleGoals != null && !roleGoals.isEmpty()){
 
-        			avg = 0;
+        			avg = 0.0;
 
-        			for(Integer goal : roleGoals){
+        			for(Double goal : roleGoals){
         				avg += goal;
         			}
 
-        			theGoals[i] = (int) Math.round(((double)avg)/((double)roleGoals.size()));
+        			theGoals[i] = avg/((double)roleGoals.size());
         		}
         	}catch(StateMachineException e){
         		GamerLogger.logError("StateMachine", "Failed to compute a goal value when computing safe goals.");
 				GamerLogger.logStackTrace("StateMachine", e);
-				theGoals[i] = 0;
+				theGoals[i] = 0.0;
         	}
         }
         return theGoals;

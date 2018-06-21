@@ -74,7 +74,7 @@ public class StateMemorizingDecoupledTreeNodeFactory extends TreeNodeFactory {
 
 		//System.out.println("Creating new node.");
 
-		int goals[] = null;
+		double goals[] = null;
 		boolean terminal = false;
 
 		DecoupledMctsMoveStats[][] ductMovesStats = null;
@@ -127,7 +127,7 @@ public class StateMemorizingDecoupledTreeNodeFactory extends TreeNodeFactory {
 	}
 
 	protected MctsNode createActualNewNode(Map<List<Move>,MachineState> nextStates, DecoupledMctsMoveStats[][] ductMovesStats,
-			int[] goals, boolean terminal){
+			double[] goals, boolean terminal){
 		return new StateMemorizingMctsNode(nextStates, ductMovesStats, goals, terminal, this.gameDependentParameters.getNumRoles());
 	}
 

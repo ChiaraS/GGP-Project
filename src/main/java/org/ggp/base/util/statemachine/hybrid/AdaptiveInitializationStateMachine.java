@@ -354,7 +354,7 @@ public class AdaptiveInitializationStateMachine extends StateMachine {
 	}
 
 	@Override
-	public List<Integer> getAllGoalsForOneRole(ExplicitMachineState state, ExplicitRole role)
+	public List<Double> getAllGoalsForOneRole(ExplicitMachineState state, ExplicitRole role)
 			throws StateMachineException {
 		return this.theFastestMachine.getAllGoalsForOneRole(state, role);
 	}

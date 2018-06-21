@@ -35,7 +35,7 @@ public class OnePlusOneESTuner extends ContinuousParametersTuner {
     }
 
     @Override
-    public void updateStatistics(int[] goals) {
+    public void updateStatistics(double[] goals) {
 
     }
 

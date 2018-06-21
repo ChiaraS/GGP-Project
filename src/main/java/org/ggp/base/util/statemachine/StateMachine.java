@@ -89,9 +89,9 @@ public abstract class StateMachine implements ExplicitStateMachineInterface{
      * for the given role because of an error that occurred in the state machine and
      * couldn't be handled.
      */
-    public int getGoal(ExplicitMachineState state, ExplicitRole role) throws GoalDefinitionException, StateMachineException{
+    public double getGoal(ExplicitMachineState state, ExplicitRole role) throws GoalDefinitionException, StateMachineException{
 
-    	List<Integer> goals = this.getAllGoalsForOneRole(state, role);
+    	List<Double> goals = this.getAllGoalsForOneRole(state, role);
 
 		if(goals.size() > 1){
 			GamerLogger.logError("StateMachine", "Got more than one true goal in state " + state + " for role " + role + ".");
@@ -118,7 +118,7 @@ public abstract class StateMachine implements ExplicitStateMachineInterface{
      * couldn't be handled.
      */
     @Override
-	public abstract List<Integer> getAllGoalsForOneRole(ExplicitMachineState state, ExplicitRole role) throws StateMachineException;
+	public abstract List<Double> getAllGoalsForOneRole(ExplicitMachineState state, ExplicitRole role) throws StateMachineException;
 
 
     /**
@@ -431,8 +431,8 @@ public abstract class StateMachine implements ExplicitStateMachineInterface{
      * with the goals for all the roles in the given state because of an error
      * that occurred in the state machine and couldn't be handled.
      */
-    public List<Integer> getGoals(ExplicitMachineState state) throws GoalDefinitionException, StateMachineException {
-        List<Integer> theGoals = new ArrayList<Integer>(getExplicitRoles().size());
+    public List<Double> getGoals(ExplicitMachineState state) throws GoalDefinitionException, StateMachineException {
+        List<Double> theGoals = new ArrayList<Double>(getExplicitRoles().size());
         for(ExplicitRole r : getExplicitRoles()) {
             theGoals.add(getGoal(state, r));
         }
@@ -450,8 +450,8 @@ public abstract class StateMachine implements ExplicitStateMachineInterface{
      * with the goals for all the roles in the given state because of an error
      * that occurred in the state machine and couldn't be handled.
      */
-    public List<List<Integer>> getAllRolesGoals(ExplicitMachineState state) throws GoalDefinitionException, StateMachineException {
-        List<List<Integer>> theGoals = new ArrayList<List<Integer>>();
+    public List<List<Double>> getAllRolesGoals(ExplicitMachineState state) throws GoalDefinitionException, StateMachineException {
+        List<List<Double>> theGoals = new ArrayList<List<Double>>();
         for (ExplicitRole r : getExplicitRoles()) {
         	theGoals.add(getAllGoalsForOneRole(state, r));
         }
@@ -475,9 +475,9 @@ public abstract class StateMachine implements ExplicitStateMachineInterface{
      *
      * @param state the state for which to compute the goals.
      */
-    public int[] getSafeGoals(ExplicitMachineState state){
+    public double[] getSafeGoals(ExplicitMachineState state){
     	List<ExplicitRole> theRoles = this.getExplicitRoles();
-    	int[] theGoals = new int[theRoles.size()];
+    	double[] theGoals = new double[theRoles.size()];
         for (int i = 0; i < theRoles.size(); i++) {
             try {
 				theGoals[i] = getGoal(state, theRoles.get(i));
@@ -509,11 +509,11 @@ public abstract class StateMachine implements ExplicitStateMachineInterface{
      * @param state the state for which to compute the goals.
 	 * @throws StateMachineException
      */
-    public int[] getSafeGoalsAvg(ExplicitMachineState state){
+    public double[] getSafeGoalsAvg(ExplicitMachineState state){
     	List<ExplicitRole> theRoles = this.getExplicitRoles();
-    	int[] theGoals = new int[theRoles.size()];
-    	int avg;
-    	List<Integer> roleGoals = null;
+    	double[] theGoals = new double[theRoles.size()];
+    	double avg;
+    	List<Double> roleGoals = null;
 
     	for(int i = 0; i < theRoles.size(); i++) {
 
@@ -524,11 +524,11 @@ public abstract class StateMachine implements ExplicitStateMachineInterface{
 
         			avg = 0;
 
-        			for(Integer goal : roleGoals){
+        			for(Double goal : roleGoals){
         				avg += goal;
         			}
 
-        			theGoals[i] = (int) Math.round(((double)avg)/((double)roleGoals.size()));
+        			theGoals[i] = avg/((double)roleGoals.size());
         		}
         	}catch(StateMachineException e){
         		GamerLogger.logError("StateMachine", "Failed to compute a goal value when computing safe goals.");
@@ -760,6 +760,7 @@ public abstract class StateMachine implements ExplicitStateMachineInterface{
 	 * For now all state machines implementing ExplicitStateMachineInterface will construct a joint move
      * by selecting a random move for each role.
 	 */
+	/*
 	@Override
 	public List<ExplicitMove> getJointMove(List<List<ExplicitMove>> legalMovesPerRole, ExplicitMachineState state) throws StateMachineException, MoveDefinitionException {
 
@@ -784,15 +785,20 @@ public abstract class StateMachine implements ExplicitStateMachineInterface{
 
 		return explicitJointMove;
 
-	}
+	}*/
 
 	/**
 	 * For now all state machines implementing ExplicitStateMachineInterface will select a random move for each role.
 	 */
 	@Override
 	public ExplicitMove getMoveForRole(List<ExplicitMove> legalMoves, ExplicitMachineState state, ExplicitRole role) throws StateMachineException, MoveDefinitionException {
-		if(legalMoves == null || legalMoves.isEmpty()) {
+		if(legalMoves == null) {
 			legalMoves = this.getExplicitLegalMoves(state, role);
+		}else if(legalMoves.size() < 1) {
+			GamerLogger.logError("StateMachine", "Requesting move for role " + role +
+					" in state " + state + " giving an empty list of legal moves.");
+			throw new RuntimeException("StateMachine - Requesting move for role " + role +
+					" in state " + state + " giving an empty list of legal moves.");
 		}
 
 		return legalMoves.get(this.random.nextInt(legalMoves.size()));

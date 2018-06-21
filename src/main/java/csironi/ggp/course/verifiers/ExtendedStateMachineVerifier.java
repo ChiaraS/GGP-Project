@@ -288,8 +288,8 @@ public class ExtendedStateMachineVerifier {
 
 	                for(ExplicitRole theRole : theMachines.get(0).getExplicitRoles()){
 
-	                	int referenceGoal = -1;
-	                	int subjectGoal = -2;
+	                	double referenceGoal = -1;
+	                	double subjectGoal = -2;
 
 	                	// If this throws an exception, we can skip to checking the next iteration.
 	                    referenceGoal = theMachines.get(0).getGoal(theCurrentStates[0], theRole);

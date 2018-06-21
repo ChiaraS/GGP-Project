@@ -329,7 +329,7 @@ public class HybridMcsManager {
 		MachineState nextState;
 		SimulationResult[] simulationResults;
 		//int[] playoutVisitedNodes = new int[1];
-		int myGoal;
+		double myGoal;
 
 		long searchStart = System.currentTimeMillis();
 		// Analyze every move, iterating until the timeout is reached.
@@ -350,14 +350,14 @@ public class HybridMcsManager {
 				// Increase number of visited nodes
 				this.gameDependentParameters.increaseCurrentIterationVisitedNodes();
 				// Get the goals obtained by performing playouts from this state.
-				simulationResults = this.playoutStrategy.playout(jointMove, nextState, this.maxSearchDepth-1);
+				simulationResults = this.playoutStrategy.playout(null, jointMove, nextState, this.maxSearchDepth-1);
 			} catch (TransitionDefinitionException | StateMachineException | MoveDefinitionException e) {
 				// NOTE: when an exception is thrown we consider the iteration still valid getting a reward of 0 for all players.
 				// In this case, moves that lead to game situations that the state machine cannot deal with correctly are penalized.
 				// Another option would be to skip the iteration and ignore it completely.
 				GamerLogger.logError("McsManager", "Cannot compute joint move or next state. Stopping iteration and returning a goal of 0 for all roles.");
 
-				int[] goals = new int[this.gameDependentParameters.getNumRoles()];
+				double[] goals = new double[this.gameDependentParameters.getNumRoles()];
 				for(int j = 0; j < goals.length; j++) {
 					goals[j] = 0;
 				}
@@ -447,7 +447,7 @@ public class HybridMcsManager {
 		return this.gameDependentParameters.getStepIterations();
 	}
 
-	public int getStepVisitedNodes(){
+	public double getStepVisitedNodes(){
 		return this.gameDependentParameters.getStepVisitedNodes();
 	}
 

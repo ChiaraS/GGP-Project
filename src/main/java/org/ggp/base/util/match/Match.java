@@ -65,7 +65,7 @@ public final class Match
 	private final List<Date> stateTimeHistory;
 	private boolean isCompleted;
 	private boolean isAborted;
-	private final List<Integer> goalValues;
+	private final List<Double> goalValues;
 	private final int numRoles;
 
 	private final List<String> rolesNames;
@@ -102,7 +102,7 @@ public final class Match
 		this.stateTimeHistory = new ArrayList<Date>();
 		this.errorHistory = new ArrayList<List<String>>();
 
-		this.goalValues = new ArrayList<Integer>();
+		this.goalValues = new ArrayList<Double>();
 	}
 
 	public Match(String theJSON, Game theGame, String authToken) throws JSONException, SymbolFormatException, GdlFormatException {
@@ -184,11 +184,11 @@ public final class Match
             }
         }
 
-        this.goalValues = new ArrayList<Integer>();
+        this.goalValues = new ArrayList<Double>();
         try {
             JSONArray theGoalValues = theMatchObject.getJSONArray("goalValues");
             for (int i = 0; i < theGoalValues.length(); i++) {
-                this.goalValues.add(theGoalValues.getInt(i));
+                this.goalValues.add(theGoalValues.getDouble(i));
             }
         } catch (JSONException e) {}
 
@@ -268,7 +268,7 @@ public final class Match
         errorHistory.add(theNoErrors);
     }
 
-	public void markCompleted(List<Integer> theGoalValues) {
+	public void markCompleted(List<Double> theGoalValues) {
 	    this.isCompleted = true;
 	    if (theGoalValues != null) {
 	        this.goalValues.addAll(theGoalValues);
@@ -444,7 +444,7 @@ public final class Match
 	    return isAborted;
 	}
 
-	public List<Integer> getGoalValues() {
+	public List<Double> getGoalValues() {
 	    return goalValues;
 	}
 

@@ -69,7 +69,7 @@ public class MCRandomTerminal extends SampleGamer {
 
     			this.numberOfIterations++;
 
-    		    int theScore = performPlayout(getCurrentState(), moves.get(i));
+    			double theScore = performPlayout(getCurrentState(), moves.get(i));
     		    moveTotalPoints[i] += theScore;
     		    moveTotalAttempts[i] += 1;
     		}
@@ -109,7 +109,7 @@ public class MCRandomTerminal extends SampleGamer {
 
 	}
 
-	private int performPlayout(ExplicitMachineState currentState, ExplicitMove move) throws MoveDefinitionException, TransitionDefinitionException, GoalDefinitionException, StateMachineException{
+	private double performPlayout(ExplicitMachineState currentState, ExplicitMove move) throws MoveDefinitionException, TransitionDefinitionException, GoalDefinitionException, StateMachineException{
 
 		StateMachine theMachine = getStateMachine();
 		ExplicitMachineState nextState = theMachine.getRandomNextState(currentState, getRole(), move);
@@ -118,7 +118,7 @@ public class MCRandomTerminal extends SampleGamer {
 			nextState = theMachine.getRandomNextState(nextState);
 		}
 
-		List<Integer> goals = theMachine.getGoals(nextState);
+		List<Double> goals = theMachine.getGoals(nextState);
 		this.callsNumber++;
 
 		return goals.get(theMachine.getRoleIndices().get(getRole()));

@@ -132,7 +132,7 @@ public class TimeLimitedLsiProblemRepresentation /*extends LsiProblemRepresentat
 	 * by this class, while other values have been filled in randomly).
 	 * @param reward
 	 */
-	public void updateStatsOfParamValue(int[] combination, int reward){
+	public void updateStatsOfParamValue(int[] combination, double reward){
 
 		if(this.updateAll){
 			for(int pramIndex = 0; pramIndex < combination.length; pramIndex++){
@@ -264,7 +264,7 @@ public class TimeLimitedLsiProblemRepresentation /*extends LsiProblemRepresentat
 		}*/
 	}
 
-	public void updateStatsOfCandidate(int reward){
+	public void updateStatsOfCandidate(double reward){
 
 		this.generatedCandidatesStats.get(this.evalOrder.get(this.evalOrderIndex)).incrementScoreSum(reward);
 		this.generatedCandidatesStats.get(this.evalOrder.get(this.evalOrderIndex)).incrementVisits();

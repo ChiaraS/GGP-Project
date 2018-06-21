@@ -1276,7 +1276,7 @@ public class HybridMctsManager {
 		this.gameDependentParameters.setMetagame(false);
 	}
 
-	public void afterGameActions(List<Integer> goals){
+	public void afterGameActions(List<Double> goals){
 		// Call again the AfterMoveAction because for the search of the last move it hasn't been
 		// performed yet, because it is always performed at the beginning of a new search.
 		//if(this.afterMoveStrategy != null){

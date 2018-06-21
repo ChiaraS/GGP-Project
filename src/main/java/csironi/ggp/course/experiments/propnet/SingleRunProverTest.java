@@ -249,7 +249,7 @@ public class SingleRunProverTest {
 
 		long randomSearchDuration = -1;
         int randomIterations = -1;
-        int randomVisitedNodes = -1;
+        double randomVisitedNodes = -1;
         double randomIterationsPerSecond = -1;
         double randomNodesPerSecond = -1;
         double[] randomScoreSums = new double[numRoles];
@@ -259,7 +259,7 @@ public class SingleRunProverTest {
 
 		long mcsSearchDuration = -1;
         int mcsIterations = -1;
-        int mcsVisitedNodes = -1;
+        double mcsVisitedNodes = -1;
         double mcsIterationsPerSecond = -1;
         double mcsNodesPerSecond = -1;
         double[] mcsScoreSums = new double[numRoles];
@@ -269,7 +269,7 @@ public class SingleRunProverTest {
 
         long mctsSearchDuration = -1;
         int mctsIterations = -1;
-        int mctsVisitedNodes = -1;
+        double mctsVisitedNodes = -1;
         double mctsIterationsPerSecond = -1;
         double mctsNodesPerSecond = -1;
         double[] mctsScoreSums = new double[numRoles];

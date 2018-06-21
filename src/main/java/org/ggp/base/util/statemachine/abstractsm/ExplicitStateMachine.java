@@ -39,7 +39,7 @@ public class ExplicitStateMachine extends AbstractStateMachine {
 	}
 
 	@Override
-	public List<Integer> getAllGoalsForOneRole(MachineState state, Role role) throws StateMachineException {
+	public List<Double> getAllGoalsForOneRole(MachineState state, Role role) throws StateMachineException {
 		if(state instanceof ExplicitMachineState && role instanceof ExplicitRole){
 
 			return this.theMachine.getAllGoalsForOneRole((ExplicitMachineState)state, (ExplicitRole)role);
@@ -195,6 +195,7 @@ public class ExplicitStateMachine extends AbstractStateMachine {
 		}
 	}
 
+	/*
 	@Override
 	public List<Move> getJointMove(List<List<Move>> legalMovesPerRole, MachineState state) throws MoveDefinitionException, StateMachineException {
 		if(state instanceof ExplicitMachineState){
@@ -220,19 +221,25 @@ public class ExplicitStateMachine extends AbstractStateMachine {
 			throw new RuntimeException("ExplicitStateMachine-getJointMove(): detected wrong type for machine state: [" + state.getClass().getSimpleName() + "].");
 		}
 	}
+	*/
 
 	@Override
 	public Move getMoveForRole(List<Move> legalMoves, MachineState state, Role role) throws StateMachineException, MoveDefinitionException {
 		if(state instanceof ExplicitMachineState){
 
 			if(role instanceof ExplicitRole) {
-				List<ExplicitMove> explicitLegalMoves = new ArrayList<ExplicitMove>();
-				for(Move move: legalMoves) {
-					if(move instanceof ExplicitMove) {
-						explicitLegalMoves.add((ExplicitMove)move);
-					}else {
-						throw new RuntimeException("ExplicitStateMachine-getMoveForRole(): detected wrong type for move: [" + move.getClass().getSimpleName() + "].");
+				List<ExplicitMove> explicitLegalMoves;
+				if(legalMoves != null) {
+					explicitLegalMoves = new ArrayList<ExplicitMove>();
+					for(Move move: legalMoves) {
+						if(move instanceof ExplicitMove) {
+							explicitLegalMoves.add((ExplicitMove)move);
+						}else {
+							throw new RuntimeException("ExplicitStateMachine-getMoveForRole(): detected wrong type for move: [" + move.getClass().getSimpleName() + "].");
+						}
 					}
+				}else {
+					explicitLegalMoves = null;
 				}
 				return this.theMachine.getMoveForRole(explicitLegalMoves, (ExplicitMachineState)state, (ExplicitRole)role);
 			}else {

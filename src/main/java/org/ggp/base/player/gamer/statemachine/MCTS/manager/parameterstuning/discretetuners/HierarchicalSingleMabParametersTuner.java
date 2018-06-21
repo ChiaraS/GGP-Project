@@ -166,16 +166,16 @@ public class HierarchicalSingleMabParametersTuner extends SingleMabParametersTun
 	}
 
 	@Override
-	public void updateStatistics(int[] goals) {
+	public void updateStatistics(double[] goals) {
 
-		int[] neededRewards;
+		double[] neededRewards;
 
 		// We have to check if the ParametersTuner is tuning parameters only for the playing role
 		// or for all roles and update the statistics with appropriate rewards.
 		if(this.tuneAllRoles){
 			neededRewards = goals;
 		}else{
-			neededRewards = new int[1];
+			neededRewards = new double[1];
 			neededRewards[0] = goals[this.gameDependentParameters.getMyRoleIndex()];
 		}
 

@@ -40,7 +40,7 @@ public class CompactStateMachine extends AbstractStateMachine {
 	}
 
 	@Override
-	public List<Integer> getAllGoalsForOneRole(MachineState state, Role role) throws StateMachineException {
+	public List<Double> getAllGoalsForOneRole(MachineState state, Role role) throws StateMachineException {
 		if(state instanceof CompactMachineState && role instanceof CompactRole){
 
 			return this.theMachine.getAllGoalsForOneRole((CompactMachineState)state, (CompactRole)role);
@@ -196,6 +196,7 @@ public class CompactStateMachine extends AbstractStateMachine {
 		}
 	}
 
+	/*
 	@Override
 	public List<Move> getJointMove(List<List<Move>> legalMovesPerRole, MachineState state) throws MoveDefinitionException {
 		if(state instanceof CompactMachineState){
@@ -220,7 +221,7 @@ public class CompactStateMachine extends AbstractStateMachine {
 			// the fault of some programming error that caused the wrong state and role formats to end up here.
 			throw new RuntimeException("CompactStateMachine-getJointMove(): detected wrong type for machine state: [" + state.getClass().getSimpleName() + "].");
 		}
-	}
+	}*/
 
 	@Override
 	public Move getMoveForRole(List<Move> legalMoves, MachineState state, Role role) throws MoveDefinitionException {
@@ -228,13 +229,18 @@ public class CompactStateMachine extends AbstractStateMachine {
 
 			if(role instanceof CompactRole) {
 
-				List<CompactMove> compactLegalMoves = new ArrayList<CompactMove>();
-				for(Move move: legalMoves) {
-					if(move instanceof CompactMove) {
-						compactLegalMoves.add((CompactMove)move);
-					}else {
-						throw new RuntimeException("CompactStateMachine-getMoveForRole(): detected wrong type for move: [" + move.getClass().getSimpleName() + "].");
+				List<CompactMove> compactLegalMoves;
+				if(legalMoves != null) {
+					compactLegalMoves = new ArrayList<CompactMove>();
+					for(Move move: legalMoves) {
+						if(move instanceof CompactMove) {
+							compactLegalMoves.add((CompactMove)move);
+						}else {
+							throw new RuntimeException("CompactStateMachine-getMoveForRole(): detected wrong type for move: [" + move.getClass().getSimpleName() + "].");
+						}
 					}
+				}else {
+					compactLegalMoves = null;
 				}
 
 				return this.theMachine.getMoveForRole(compactLegalMoves, (CompactMachineState)state, (CompactRole)role);

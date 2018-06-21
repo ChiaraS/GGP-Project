@@ -20,7 +20,7 @@ public interface FpgaStateMachineInterface extends AbstractStateMachineInterface
 
 	// Methods common to all state machines, but with different types of inputs that extend general MachineState, Move and Role classes
 
-    public List<Integer> getAllGoalsForOneRole(FpgaMachineState state, FpgaRole role) throws StateMachineException;
+    public List<Double> getAllGoalsForOneRole(FpgaMachineState state, FpgaRole role) throws StateMachineException;
 
     public boolean isTerminal(FpgaMachineState state) throws StateMachineException;
 
@@ -47,7 +47,7 @@ public interface FpgaStateMachineInterface extends AbstractStateMachineInterface
 
 	public MyPair<double[], Double> fastPlayouts(FpgaMachineState state, int numSimulationsPerPlayout, int maxDepth);
 
-	public List<FpgaMove> getJointMove(List<List<FpgaMove>> legalMovesPerRole, FpgaMachineState state);
+	//public List<FpgaMove> getJointMove(List<List<FpgaMove>> legalMovesPerRole, FpgaMachineState state);
 
 	public FpgaMove getMoveForRole(List<FpgaMove> legalMoves, FpgaMachineState state, FpgaRole role);
 

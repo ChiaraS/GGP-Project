@@ -34,14 +34,14 @@ public final class SeparateInternalPropnetCachedStateMachine extends InternalPro
 
 	private final class PropnetEntry{
 
-		public Map<CompactRole, List<Integer>> goals;
+		public Map<CompactRole, List<Double>> goals;
 		public Map<CompactRole, List<CompactMove>> moves;
 		public Map<List<CompactMove>, CompactMachineState> nexts;
 		public Boolean terminal;
 
 		public PropnetEntry()
 		{
-			goals = new HashMap<CompactRole, List<Integer>>();
+			goals = new HashMap<CompactRole, List<Double>>();
 			moves = new HashMap<CompactRole, List<CompactMove>>();
 			nexts = new HashMap<List<CompactMove>, CompactMachineState>();
 			terminal = null;
@@ -71,12 +71,12 @@ public final class SeparateInternalPropnetCachedStateMachine extends InternalPro
 	}
 
 	@Override
-	public List<Integer> getAllGoalsForOneRole(ExplicitMachineState state, ExplicitRole role) throws StateMachineException{
+	public List<Double> getAllGoalsForOneRole(ExplicitMachineState state, ExplicitRole role) throws StateMachineException{
 		return this.getAllGoalsForOneRole(this.backingStateMachine.convertToCompactMachineState(state), this.backingStateMachine.convertToCompactRole(role));
 	}
 
 	@Override
-	public List<Integer> getAllGoalsForOneRole(CompactMachineState state, CompactRole role) {
+	public List<Double> getAllGoalsForOneRole(CompactMachineState state, CompactRole role) {
 		PropnetEntry entry = getPropnetEntry(state);
 		synchronized (entry){
 			if (!entry.goals.containsKey(role)){

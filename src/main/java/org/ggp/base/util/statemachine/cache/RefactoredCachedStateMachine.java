@@ -55,7 +55,7 @@ public class RefactoredCachedStateMachine extends StateMachine{
 	}
 
 	@Override
-	public List<Integer> getAllGoalsForOneRole(ExplicitMachineState state, ExplicitRole role) throws StateMachineException{
+	public List<Double> getAllGoalsForOneRole(ExplicitMachineState state, ExplicitRole role) throws StateMachineException{
 		MachineStateEntry entry = getEntry(state);
 		synchronized (entry){
 			List<Integer> goals = entry.goals.get(role);

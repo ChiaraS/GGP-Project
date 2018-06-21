@@ -39,7 +39,7 @@ public class ExplicitAndCompactStateMachine extends AbstractStateMachine {
 	}
 
 	@Override
-	public List<Integer> getAllGoalsForOneRole(MachineState state, Role role) throws StateMachineException {
+	public List<Double> getAllGoalsForOneRole(MachineState state, Role role) throws StateMachineException {
 		if(state instanceof ExplicitMachineState && role instanceof ExplicitRole){
 
 			return this.theMachine.getAllGoalsForOneRole((ExplicitMachineState)state, (ExplicitRole)role);
@@ -249,6 +249,7 @@ public class ExplicitAndCompactStateMachine extends AbstractStateMachine {
 		}
 	}
 
+	/*
 	@Override
 	public List<Move> getJointMove(List<List<Move>> legalMovesPerRole, MachineState state) throws StateMachineException, MoveDefinitionException {
 		if(state instanceof ExplicitMachineState){
@@ -290,20 +291,25 @@ public class ExplicitAndCompactStateMachine extends AbstractStateMachine {
 			// the fault of some programming error that caused the wrong state and role formats to end up here.
 			throw new RuntimeException("ExplicitAndCompactStateMachine-getJointMove(): detected wrong type for machine state: [" + state.getClass().getSimpleName() + "].");
 		}
-	}
+	}*/
 
 	@Override
 	public Move getMoveForRole(List<Move> legalMoves, MachineState state, Role role) throws MoveDefinitionException, StateMachineException {
 		if(state instanceof ExplicitMachineState){
 
 			if(role instanceof ExplicitRole) {
-				List<ExplicitMove> explicitLegalMoves = new ArrayList<ExplicitMove>();
-				for(Move move: legalMoves) {
-					if(move instanceof ExplicitMove) {
-						explicitLegalMoves.add((ExplicitMove)move);
-					}else {
-						throw new RuntimeException("ExplicitAndCompactStateMachine-getMoveForRole(): detected wrong type for move: [" + move.getClass().getSimpleName() + "].");
+				List<ExplicitMove> explicitLegalMoves;
+				if(legalMoves != null) {
+					explicitLegalMoves = new ArrayList<ExplicitMove>();
+					for(Move move: legalMoves) {
+						if(move instanceof ExplicitMove) {
+							explicitLegalMoves.add((ExplicitMove)move);
+						}else {
+							throw new RuntimeException("ExplicitAndCompactStateMachine-getMoveForRole(): detected wrong type for move: [" + move.getClass().getSimpleName() + "].");
+						}
 					}
+				}else {
+					explicitLegalMoves = null;
 				}
 				return this.theMachine.getMoveForRole(explicitLegalMoves, (ExplicitMachineState)state, (ExplicitRole)role);
 			}else {
@@ -313,13 +319,18 @@ public class ExplicitAndCompactStateMachine extends AbstractStateMachine {
 		}else if(state instanceof CompactMachineState){
 
 			if(role instanceof CompactRole) {
-				List<CompactMove> compactLegalMoves = new ArrayList<CompactMove>();
-				for(Move move: legalMoves) {
-					if(move instanceof CompactMove) {
-						compactLegalMoves.add((CompactMove)move);
-					}else {
-						throw new RuntimeException("ExplicitAndCompactStateMachine-getMoveForRole(): detected wrong type for move: [" + move.getClass().getSimpleName() + "].");
+				List<CompactMove> compactLegalMoves;
+				if(legalMoves != null) {
+					compactLegalMoves = new ArrayList<CompactMove>();
+					for(Move move: legalMoves) {
+						if(move instanceof CompactMove) {
+							compactLegalMoves.add((CompactMove)move);
+						}else {
+							throw new RuntimeException("ExplicitAndCompactStateMachine-getMoveForRole(): detected wrong type for move: [" + move.getClass().getSimpleName() + "].");
+						}
 					}
+				}else {
+					compactLegalMoves = null;
 				}
 				return this.theMachine.getMoveForRole(compactLegalMoves, (CompactMachineState)state, (CompactRole)role);
 			}else {

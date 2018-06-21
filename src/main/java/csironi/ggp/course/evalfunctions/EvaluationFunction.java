@@ -26,6 +26,6 @@ public abstract class EvaluationFunction {
 		this.stateMachine = stateMachine;
 	}
 
-	public abstract int eval(ExplicitMachineState state, ExplicitRole role) throws MoveDefinitionException, GoalDefinitionException, TransitionDefinitionException, StateMachineException;
+	public abstract double eval(ExplicitMachineState state, ExplicitRole role) throws MoveDefinitionException, GoalDefinitionException, TransitionDefinitionException, StateMachineException;
 
 }

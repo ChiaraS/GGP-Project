@@ -80,7 +80,7 @@ public class ProverStateMachine extends StateMachine
 	*/
 
 	@Override
-	public List<Integer> getAllGoalsForOneRole(ExplicitMachineState state, ExplicitRole role)	{
+	public List<Double> getAllGoalsForOneRole(ExplicitMachineState state, ExplicitRole role)	{
 		Set<GdlSentence> results = prover.askAll(ProverQueryBuilder.getGoalQuery(role), ProverQueryBuilder.getContext(state));
 
 		/*
@@ -90,7 +90,7 @@ public class ProverStateMachine extends StateMachine
 		}
 		*/
 
-		List<Integer> goalValues = new ArrayList<Integer>();
+		List<Double> goalValues = new ArrayList<Double>();
 
 		for(GdlSentence sentence : results){
 
@@ -98,7 +98,7 @@ public class ProverStateMachine extends StateMachine
 			GdlConstant constant = (GdlConstant) relation.get(1);
 
 			try	{
-				int value = Integer.parseInt(constant.toString());
+				double value = Double.parseDouble(constant.toString());
 				goalValues.add(value);
 			}catch (Exception e){
 				GamerLogger.logError("StateMachine", "[Prover] Got goal results that is not a number: " + constant.toString() + ".");

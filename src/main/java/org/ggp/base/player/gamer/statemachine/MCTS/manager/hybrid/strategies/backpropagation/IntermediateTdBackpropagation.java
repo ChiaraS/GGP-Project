@@ -53,18 +53,18 @@ public class IntermediateTdBackpropagation extends TdBackpropagation {
 
 
 	@Override
-	public int[] getReturnValuesForRolesInPlayout(SimulationResult simulationResult) {
+	public double[] getReturnValuesForRolesInPlayout(SimulationResult simulationResult) {
 
-		List<int[]> allIntermediateGoals = simulationResult.getIntermediateGoals();
+		List<double[]> allIntermediateGoals = simulationResult.getIntermediateGoals();
 
 		if(allIntermediateGoals == null || allIntermediateGoals.size() <= this.goalsIndex + 1){ // Intermediate goals are needed and the ones at indices (this.goalsIndex) and (this.goalsIndex+1) must be available, this the length of the list of intermediate goals must be at least this.goalsIndex+2
 			GamerLogger.logError("MctsManager", "Necessary intermediate goals not found in the simulation result when processing the result for intermediate TD backpropagation. Probably a wrong combination of strategies has been set!");
 			throw new RuntimeException("Necessary intermediate goals not found in the simulation result.");
 		}
 
-		int[] intermediateReturnValues = new int[this.gameDependentParameters.getNumRoles()];
-		int[] nextStateGoals = allIntermediateGoals.get(this.goalsIndex);
-		int[] currentStateGoals = allIntermediateGoals.get(this.goalsIndex+1);
+		double[] intermediateReturnValues = new double[this.gameDependentParameters.getNumRoles()];
+		double[] nextStateGoals = allIntermediateGoals.get(this.goalsIndex);
+		double[] currentStateGoals = allIntermediateGoals.get(this.goalsIndex+1);
 
 		for(int i = 0; i < this.gameDependentParameters.getNumRoles(); i++){
 

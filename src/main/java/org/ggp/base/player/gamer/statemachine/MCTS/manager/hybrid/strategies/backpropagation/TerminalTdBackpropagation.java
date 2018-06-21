@@ -30,7 +30,7 @@ public class TerminalTdBackpropagation extends TdBackpropagation {
 	}
 
 	@Override
-	public int[] getReturnValuesForRolesInPlayout(SimulationResult simulationResult){
+	public double[] getReturnValuesForRolesInPlayout(SimulationResult simulationResult){
 
 		if(this.firstUpdate){
 
@@ -44,7 +44,7 @@ public class TerminalTdBackpropagation extends TdBackpropagation {
 			return simulationResult.getTerminalGoals();
 
 		}else{
-			return new int[this.gameDependentParameters.getNumRoles()];
+			return new double[this.gameDependentParameters.getNumRoles()];
 		}
 
 	}

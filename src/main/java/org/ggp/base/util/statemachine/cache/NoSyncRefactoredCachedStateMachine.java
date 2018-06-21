@@ -31,13 +31,13 @@ public final class NoSyncRefactoredCachedStateMachine extends StateMachine
 	private final RefactoredTtlCache<ExplicitMachineState, MachineStateEntry> ttlCache;
 
 	private final class MachineStateEntry{
-		public Map<ExplicitRole, List<Integer>> goals;
+		public Map<ExplicitRole, List<Double>> goals;
 		public Map<ExplicitRole, List<ExplicitMove>> moves;
 		public Map<List<ExplicitMove>, ExplicitMachineState> nexts;
 		public Boolean terminal;
 
 		public MachineStateEntry(){
-			goals = new HashMap<ExplicitRole, List<Integer>>();
+			goals = new HashMap<ExplicitRole, List<Double>>();
 			moves = new HashMap<ExplicitRole, List<ExplicitMove>>();
 			nexts = new HashMap<List<ExplicitMove>, ExplicitMachineState>();
 			terminal = null;
@@ -72,12 +72,12 @@ public final class NoSyncRefactoredCachedStateMachine extends StateMachine
 	}
 
 	@Override
-	public List<Integer> getAllGoalsForOneRole(ExplicitMachineState state, ExplicitRole role) throws StateMachineException{
+	public List<Double> getAllGoalsForOneRole(ExplicitMachineState state, ExplicitRole role) throws StateMachineException{
 		MachineStateEntry entry = getEntry(state);
 
 		//System.out.println("Prover: Looking for goals in the entry!");
 
-		List<Integer> goals = entry.goals.get(role);
+		List<Double> goals = entry.goals.get(role);
 
 		if(goals == null){
 
