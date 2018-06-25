@@ -1,7 +1,7 @@
 /**
  *
  */
-package org.ggp.base.util.statemachine;
+package org.ggp.base.util.statemachine.structure;
 
 import java.util.Set;
 

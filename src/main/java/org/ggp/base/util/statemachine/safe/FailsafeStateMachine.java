@@ -120,7 +120,7 @@ public class FailsafeStateMachine extends StateMachine
     }
 
     @Override
-    public List<Integer> getAllGoalsForOneRole(ExplicitMachineState state, ExplicitRole role) {
+    public List<Double> getAllGoalsForOneRole(ExplicitMachineState state, ExplicitRole role) {
         if(theBackingMachine == null){
             List<Integer> goals = new ArrayList<Integer>();
             goals.add(new Integer(0));

@@ -15,7 +15,7 @@ public class TdDecoupledMctsNode extends DecoupledMctsNode {
 	 */
 	private double[] maxStateActionValue;
 
-	public TdDecoupledMctsNode(DecoupledMctsMoveStats[][] movesStats, int[] goals, boolean terminal, int numRoles){
+	public TdDecoupledMctsNode(DecoupledMctsMoveStats[][] movesStats, double[] goals, boolean terminal, int numRoles){
 		super(movesStats, goals, terminal, numRoles);
 
 		this.minStateActionValue = new double[numRoles];

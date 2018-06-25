@@ -52,7 +52,7 @@ public class ProverDecoupledTreeNodeFactory implements ProverTreeNodeFactory{
 
 		//System.out.println("Creating new node.");
 
-		int goals[] = null;
+		double goals[] = null;
 		boolean terminal = false;
 
 		ProverDecoupledMCTSMoveStats[][] ductMovesStats = null;

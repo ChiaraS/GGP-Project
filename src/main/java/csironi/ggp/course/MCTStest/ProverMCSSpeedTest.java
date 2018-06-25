@@ -4,9 +4,6 @@ import java.util.List;
 import java.util.Random;
 
 import org.apache.logging.log4j.ThreadContext;
-import org.ggp.base.player.gamer.statemachine.MCS.manager.prover.ProverCompleteMoveStats;
-import org.ggp.base.player.gamer.statemachine.MCS.manager.prover.ProverMCSManager;
-import org.ggp.base.player.gamer.statemachine.MCTS.manager.prover.strategies.playout.ProverRandomPlayout;
 import org.ggp.base.util.game.GameRepository;
 import org.ggp.base.util.gdl.grammar.Gdl;
 import org.ggp.base.util.gdl.grammar.GdlPool;
@@ -165,7 +162,7 @@ public class ProverMCSSpeedTest {
 
 			numRoles = theProverMachine.getExplicitRoles().size();
 
-			ProverMCSManager MCSmanager = new ProverMCSManager(new ProverRandomPlayout(theProverMachine),
+/*			ProverMCSManager MCSmanager = new ProverMCSManager(new ProverRandomPlayout(theProverMachine),
 					theProverMachine, playingRole, maxSearchDepth, random);
 
 			try{
@@ -193,7 +190,7 @@ public class ProverMCSSpeedTest {
 				GamerLogger.logStackTrace("MCSSpeedTest", e);
 				System.out.println("Stopping test on game " + gameKey + ". Exception during search execution.");
 			}
-
+*/
 			testDuration = System.currentTimeMillis() - testStart;
 
 	        GamerLogger.log(FORMAT.PLAIN_FORMAT, "MCSSpeedTest", "");

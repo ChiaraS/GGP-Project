@@ -17,7 +17,7 @@ public class TdDecoupledTreeNodeFactory extends DecoupledTreeNodeFactory {
 	}
 
 	@Override
-	protected MctsNode createActualNewNode(DecoupledMctsMoveStats[][] ductMovesStats, int[] goals, boolean terminal) {
+	protected MctsNode createActualNewNode(DecoupledMctsMoveStats[][] ductMovesStats, double[] goals, boolean terminal) {
 		return new TdDecoupledMctsNode(ductMovesStats, goals, terminal, this.gameDependentParameters.getTheMachine().getRoles().size());
 	}
 

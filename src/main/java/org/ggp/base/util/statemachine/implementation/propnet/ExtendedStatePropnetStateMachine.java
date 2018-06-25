@@ -18,13 +18,13 @@ import org.ggp.base.util.propnet.architecture.extendedState.ExtendedStatePropNet
 import org.ggp.base.util.propnet.architecture.extendedState.components.ExtendedStateProposition;
 import org.ggp.base.util.propnet.architecture.extendedState.components.ExtendedStateTransition;
 import org.ggp.base.util.propnet.factory.ExtendedStatePropNetFactory;
-import org.ggp.base.util.statemachine.CompactAndExplicitMachineState;
 import org.ggp.base.util.statemachine.StateMachine;
 import org.ggp.base.util.statemachine.exceptions.GoalDefinitionException;
 import org.ggp.base.util.statemachine.exceptions.MoveDefinitionException;
 import org.ggp.base.util.statemachine.exceptions.StateMachineInitializationException;
 import org.ggp.base.util.statemachine.exceptions.TransitionDefinitionException;
 import org.ggp.base.util.statemachine.implementation.prover.query.ProverQueryBuilder;
+import org.ggp.base.util.statemachine.structure.CompactAndExplicitMachineState;
 import org.ggp.base.util.statemachine.structure.explicit.ExplicitMachineState;
 import org.ggp.base.util.statemachine.structure.explicit.ExplicitMove;
 import org.ggp.base.util.statemachine.structure.explicit.ExplicitRole;

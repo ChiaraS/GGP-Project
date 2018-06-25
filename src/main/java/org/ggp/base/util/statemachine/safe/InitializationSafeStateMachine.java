@@ -140,7 +140,7 @@ public class InitializationSafeStateMachine extends StateMachine {
 	 * @see org.ggp.base.util.statemachine.StateMachine#getGoal(org.ggp.base.util.statemachine.MachineState, org.ggp.base.util.statemachine.Role)
 	 */
 	@Override
-	public List<Integer> getAllGoalsForOneRole(ExplicitMachineState state, ExplicitRole role)
+	public List<Double> getAllGoalsForOneRole(ExplicitMachineState state, ExplicitRole role)
 			throws StateMachineException {
 		// We do not check if the real state machine is null, because if initialization succeeded this
 		// cannot happen and if initialization failed this state machine is not supposed to be used.

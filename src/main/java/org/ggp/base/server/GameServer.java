@@ -112,8 +112,8 @@ public final class GameServer extends Thread implements Subject
         observers.add(observer);
     }
 
-    public List<Integer> getGoals() throws GoalDefinitionException, StateMachineException {
-        List<Integer> goals = new ArrayList<Integer>();
+    public List<Double> getGoals() throws GoalDefinitionException, StateMachineException {
+        List<Double> goals = new ArrayList<Double>();
         for (ExplicitRole role : stateMachine.getExplicitRoles()) {
             goals.add(stateMachine.getGoal(currentState, role));
         }

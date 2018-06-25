@@ -126,7 +126,7 @@ public abstract class TdBackpropagation extends BackpropagationStrategy {
 
 		DecoupledMctsMoveStats currentMoveStat;
 
-		int[] returnValuesForRoles = this.getReturnValuesForRolesInPlayout(simulationResult[0]); // Here the index is useless so we set it to 0
+		double[] returnValuesForRoles = this.getReturnValuesForRolesInPlayout(simulationResult[0]); // Here the index is useless so we set it to 0
 
 		/*
 		System.out.print("R = [ ");
@@ -221,7 +221,7 @@ public abstract class TdBackpropagation extends BackpropagationStrategy {
 			throw new RuntimeException("Playout length equals 0.");
 		}
 
-		int[] returnValuesForRoles;
+		double[] returnValuesForRoles;
 		double delta;
 		//double qCurrent = this.qPlayout; Redundant! Basically qCurrent = qPlayout for the whole backpropagation in the playout part of the simulation
 

@@ -1,4 +1,4 @@
-package org.ggp.base.player.gamer.statemachine.FPGAMCTS.manager.treestructure;
+package org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.hybrid.statememorizingdecoupled;
 
 import java.util.List;
 import java.util.Map;

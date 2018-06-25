@@ -30,7 +30,7 @@ public class PnSlowSequentialTreeNodeFactory implements PnTreeNodeFactory {
 	@Override
 	public MctsNode createNewNode(CompactMachineState state) {
 
-		int goals[] = null;
+		double goals[] = null;
 		boolean terminal = false;
 		List<List<CompactMove>> allLegalMoves = null;
 

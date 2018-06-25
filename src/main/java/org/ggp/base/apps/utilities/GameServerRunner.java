@@ -116,13 +116,13 @@ public final class GameServerRunner
 
 		// Save the goals in the "/scores" file for the tournament.
 		bw = new BufferedWriter(new FileWriter(tourneyName + "/scores", true));
-		List<Integer> goals = server.getGoals();
+		List<Double> goals = server.getGoals();
 		String goalStr = "";
 		String playerStr = "";
 		for (int i = 0; i < goals.size(); i++)
 		{
-			Integer goal = server.getGoals().get(i);
-			goalStr += Integer.toString(goal);
+			Double goal = server.getGoals().get(i);
+			goalStr += Double.toString(goal);
 			playerStr += playerNames.get(i);
 			if (i != goals.size() - 1)
 			{

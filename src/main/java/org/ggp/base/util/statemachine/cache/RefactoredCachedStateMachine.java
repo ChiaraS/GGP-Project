@@ -23,13 +23,13 @@ public class RefactoredCachedStateMachine extends StateMachine{
 	private final RefactoredTtlCache<ExplicitMachineState, MachineStateEntry> ttlCache;
 
 	private final class MachineStateEntry{
-		public Map<ExplicitRole, List<Integer>> goals;
+		public Map<ExplicitRole, List<Double>> goals;
 		public Map<ExplicitRole, List<ExplicitMove>> moves;
 		public Map<List<ExplicitMove>, ExplicitMachineState> nexts;
 		public Boolean terminal;
 
 		public MachineStateEntry(){
-			goals = new HashMap<ExplicitRole, List<Integer>>();
+			goals = new HashMap<ExplicitRole, List<Double>>();
 			moves = new HashMap<ExplicitRole, List<ExplicitMove>>();
 			nexts = new HashMap<List<ExplicitMove>, ExplicitMachineState>();
 			terminal = null;
@@ -58,7 +58,7 @@ public class RefactoredCachedStateMachine extends StateMachine{
 	public List<Double> getAllGoalsForOneRole(ExplicitMachineState state, ExplicitRole role) throws StateMachineException{
 		MachineStateEntry entry = getEntry(state);
 		synchronized (entry){
-			List<Integer> goals = entry.goals.get(role);
+			List<Double> goals = entry.goals.get(role);
 
 			if(goals == null){ // If it's null because there is no such entry or because the entry is null, we must create a new one anyway.
 				goals = this.backingStateMachine.getAllGoalsForOneRole(state, role);

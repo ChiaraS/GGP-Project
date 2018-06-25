@@ -4,10 +4,6 @@
 package org.ggp.base.player.gamer.statemachine.MCS.prover;
 
 import org.ggp.base.player.gamer.event.GamerSelectedMoveEvent;
-import org.ggp.base.player.gamer.statemachine.MCS.manager.MCSException;
-import org.ggp.base.player.gamer.statemachine.MCS.manager.prover.ProverCompleteMoveStats;
-import org.ggp.base.player.gamer.statemachine.MCS.manager.prover.ProverMCSManager;
-import org.ggp.base.player.gamer.statemachine.MCTS.manager.prover.strategies.playout.ProverRandomPlayout;
 import org.ggp.base.player.gamer.statemachine.prover.ProverGamer;
 import org.ggp.base.util.logging.GamerLogger;
 import org.ggp.base.util.statemachine.exceptions.GoalDefinitionException;
@@ -39,7 +35,7 @@ public class ProverMcsGamer extends ProverGamer {
 	/**
 	 * The class that takes care of performing Monte Carlo search.
 	 */
-	protected ProverMCSManager mcsManager;
+//	protected ProverMCSManager mcsManager;
 
 	/**
 	 *
@@ -85,8 +81,8 @@ public class ProverMcsGamer extends ProverGamer {
 		ExplicitRole myRole = this.getRole();
 
 		// Create the MCS manager and start simulations.
-		this.mcsManager = new ProverMCSManager(new ProverRandomPlayout(this.getStateMachine()),
-				this.getStateMachine(),	myRole, maxSearchDepth, this.random);
+//		this.mcsManager = new ProverMCSManager(new ProverRandomPlayout(this.getStateMachine()),
+//				this.getStateMachine(),	myRole, maxSearchDepth, this.random);
 
 		// If there is enough time left start the MCT search.
 		// Otherwise return from metagaming.
@@ -96,13 +92,13 @@ public class ProverMcsGamer extends ProverGamer {
 
 			GamerLogger.log("Gamer", "Starting search during metagame.");
 
-			try {
-				this.mcsManager.search(this.getStateMachine().getExplicitInitialState(), realTimeout);
+	//		try {
+	//			this.mcsManager.search(this.getStateMachine().getExplicitInitialState(), realTimeout);
 
 				GamerLogger.log("Gamer", "Done searching during metagame.");
-				searchTime = this.mcsManager.getSearchTime();
-	        	iterations = this.mcsManager.getIterations();
-	        	visitedNodes = this.mcsManager.getVisitedNodes();
+	//			searchTime = this.mcsManager.getSearchTime();
+	//        	iterations = this.mcsManager.getIterations();
+	//        	visitedNodes = this.mcsManager.getVisitedNodes();
 	        	if(searchTime != 0){
 		        	iterationsPerSecond = ((double) iterations * 1000)/((double) searchTime);
 		        	nodesPerSecond = ((double) visitedNodes * 1000)/((double) searchTime);
@@ -111,12 +107,12 @@ public class ProverMcsGamer extends ProverGamer {
 	        		nodesPerSecond = 0;
 	        	}
 	        	thinkingTime = System.currentTimeMillis() - start;
-			}catch(MCSException e) {
-				GamerLogger.logError("Gamer", "Exception during search while metagaming.");
-				GamerLogger.logStackTrace("Gamer", e);
+		//	}catch(MCSException e) {
+			//	GamerLogger.logError("Gamer", "Exception during search while metagaming.");
+			//	GamerLogger.logStackTrace("Gamer", e);
 
-				thinkingTime = System.currentTimeMillis() - start;
-			}
+//				thinkingTime = System.currentTimeMillis() - start;
+	//		}
 		}else{
 			GamerLogger.log("Gamer", "No time to start the search during metagame.");
 
@@ -163,13 +159,13 @@ public class ProverMcsGamer extends ProverGamer {
 
 			ExplicitMachineState currentState = this.getCurrentState();
 
-			try {
-				this.mcsManager.search(currentState, realTimeout);
-				ProverCompleteMoveStats selectedMove = this.mcsManager.getBestMove();
+		//	try {
+		//		this.mcsManager.search(currentState, realTimeout);
+		//		ProverCompleteMoveStats selectedMove = this.mcsManager.getBestMove();
 
-				searchTime = this.mcsManager.getSearchTime();
-				iterations = this.mcsManager.getIterations();
-		    	visitedNodes = this.mcsManager.getVisitedNodes();
+		//		searchTime = this.mcsManager.getSearchTime();
+		//		iterations = this.mcsManager.getIterations();
+		 //   	visitedNodes = this.mcsManager.getVisitedNodes();
 		    	if(searchTime != 0){
 		        	iterationsPerSecond = ((double) iterations * 1000)/((double) searchTime);
 		        	nodesPerSecond = ((double) visitedNodes * 1000)/((double) searchTime);
@@ -177,19 +173,19 @@ public class ProverMcsGamer extends ProverGamer {
 	        		iterationsPerSecond = 0;
 	        		nodesPerSecond = 0;
 	        	}
-		    	theMove = selectedMove.getTheMove();
-		    	moveScoreSum = selectedMove.getScoreSum();
-		    	moveVisits = selectedMove.getVisits();
+		 //   	theMove = selectedMove.getTheMove();
+		 //   	moveScoreSum = selectedMove.getScoreSum();
+		 //   	moveVisits = selectedMove.getVisits();
 		    	moveAvgScore = moveScoreSum / ((double) moveVisits);
 
 				GamerLogger.log("Gamer", "Returning MCS move " + theMove + ".");
-			}catch(MCSException e){
-				GamerLogger.logError("Gamer", "MCS failed to return a move.");
-				GamerLogger.logStackTrace("Gamer", e);
-				// If the MCS manager failed to return a move return a random one.
-				theMove = this.getStateMachine().getRandomMove(this.getCurrentState(), this.getRole());
-				GamerLogger.log("Gamer", "Returning random move " + theMove + ".");
-			}
+		//	}catch(MCSException e){
+		//		GamerLogger.logError("Gamer", "MCS failed to return a move.");
+		//		GamerLogger.logStackTrace("Gamer", e);
+		//		// If the MCS manager failed to return a move return a random one.
+		//		theMove = this.getStateMachine().getRandomMove(this.getCurrentState(), this.getRole());
+		//		GamerLogger.log("Gamer", "Returning random move " + theMove + ".");
+		//	}
 		}else{
 			// If there is no time return a random move.
 			//GamerLogger.log("Gamer", "No time to start the search during metagame.");

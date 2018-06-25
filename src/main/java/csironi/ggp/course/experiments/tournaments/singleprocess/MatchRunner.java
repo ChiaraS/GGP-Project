@@ -303,7 +303,7 @@ public class MatchRunner extends Thread{
 
 		// Save the goals in the "/scores" file for the tournament.
 
-		List<Integer> goals;
+		List<Double> goals;
 		try {
 			goals = server.getGoals();
 		} catch (GoalDefinitionException | StateMachineException e) {

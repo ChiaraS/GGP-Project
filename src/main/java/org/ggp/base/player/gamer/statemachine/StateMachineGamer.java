@@ -15,6 +15,7 @@ import org.ggp.base.util.statemachine.exceptions.MoveDefinitionException;
 import org.ggp.base.util.statemachine.exceptions.StateMachineException;
 import org.ggp.base.util.statemachine.exceptions.StateMachineInitializationException;
 import org.ggp.base.util.statemachine.exceptions.TransitionDefinitionException;
+import org.ggp.base.util.statemachine.structure.MachineState;
 import org.ggp.base.util.statemachine.structure.explicit.ExplicitMachineState;
 import org.ggp.base.util.statemachine.structure.explicit.ExplicitMove;
 import org.ggp.base.util.statemachine.structure.explicit.ExplicitRole;
@@ -82,7 +83,7 @@ public abstract class StateMachineGamer extends Gamer
 	/**
 	 * Returns the current state of the game.
 	 */
-	public final ExplicitMachineState getCurrentState()
+	public final MachineState getCurrentState()
 	{
 		return currentState;
 	}
@@ -193,7 +194,7 @@ public abstract class StateMachineGamer extends Gamer
 			stateMachine.initialize(getMatch().getGame().getRules(), timeout);
 			currentState = stateMachine.getExplicitInitialState();
 			role = stateMachine.getRoleFromConstant(getRoleName());
-			getMatch().appendState(currentState.getContents());
+			getMatch().appendState(currentState);
 
 			stateMachineMetaGame(timeout);
 		}
@@ -256,9 +257,9 @@ public abstract class StateMachineGamer extends Gamer
 				currentState = stateMachine.getExplicitNextState(currentState, moves);
 				getMatch().appendState(currentState.getContents());
 
-				List<Integer> allGoals = new ArrayList<Integer>();
+				List<Double> allGoals = new ArrayList<Double>();
 
-				int[] goals = this.stateMachine.getSafeGoalsAvg(currentState);
+				double[] goals = this.stateMachine.getSafeGoalsAvg(currentState);
 
 				for(int i = 0; i < goals.length; i++){
 					allGoals.add(goals[i]);
@@ -298,7 +299,7 @@ public abstract class StateMachineGamer extends Gamer
 
     // Internal state about the current state of the state machine.
     private ExplicitRole role;
-    private ExplicitMachineState currentState;
+    private MachineState currentState;
     private StateMachine stateMachine;
 
     /**

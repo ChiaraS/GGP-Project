@@ -108,7 +108,7 @@ public class MctsGamer extends InternalPropnetGamer {
 		long thinkingTime; // Total time used for metagame
 		long searchTime = -1; // Actual time spent on the search
 		int iterations = -1;
-    	int visitedNodes = -1;
+		double visitedNodes = -1;
     	double iterationsPerSecond = -1;
     	double nodesPerSecond = -1;
     	String avgSearchScorePerRole = "[ ]";
@@ -225,7 +225,7 @@ public class MctsGamer extends InternalPropnetGamer {
 		long thinkingTime;
 		long searchTime = -1;
 		int iterations = -1;
-    	int visitedNodes = -1;
+		double visitedNodes = -1;
     	double iterationsPerSecond = -1;
     	double nodesPerSecond = -1;
     	ExplicitMove theMove = null;

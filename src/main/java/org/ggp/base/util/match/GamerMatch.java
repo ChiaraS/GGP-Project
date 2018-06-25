@@ -23,6 +23,7 @@ import org.ggp.base.util.gdl.scrambler.GdlScrambler;
 import org.ggp.base.util.gdl.scrambler.MappingGdlScrambler;
 import org.ggp.base.util.gdl.scrambler.NoOpGdlScrambler;
 import org.ggp.base.util.statemachine.structure.MachineState;
+import org.ggp.base.util.statemachine.structure.Move;
 import org.ggp.base.util.statemachine.structure.explicit.ExplicitMove;
 import org.ggp.base.util.statemachine.structure.explicit.ExplicitRole;
 import org.ggp.base.util.symbol.factory.SymbolFactory;
@@ -50,7 +51,7 @@ import external.JSON.JSONObject;
  *
  * @author Sam
  */
-public final class Match
+public final class GamerMatch
 {
     private final String matchId;
     private final String randomToken;
@@ -60,8 +61,8 @@ public final class Match
     private final int previewClock;
     private final Date startTime;
 	private final Game theGame;
-	private final List<List<GdlTerm>> moveHistory;
-	private final List<MachineState> stateHistory;
+	private final List<List<Move>> moveHistory;
+	private final List<Set<MachineState>> stateHistory;
 	private final List<List<String>> errorHistory;
 	private final List<Date> stateTimeHistory;
 	private boolean isCompleted;
@@ -77,7 +78,7 @@ public final class Match
 
 	private GdlScrambler theGdlScrambler = new NoOpGdlScrambler();
 
-	public Match(String matchId, int previewClock, int startClock, int playClock, Game theGame)
+	public GamerMatch(String matchId, int previewClock, int startClock, int playClock, Game theGame)
 	{
 		this.matchId = matchId;
 		this.previewClock = previewClock;
@@ -98,15 +99,15 @@ public final class Match
 		}
 		this.numRoles = roles.size();
 
-		this.moveHistory = new ArrayList<List<GdlTerm>>();
-		this.stateHistory = new ArrayList<MachineState>();
+		this.moveHistory = new ArrayList<List<Move>>();
+		this.stateHistory = new ArrayList<Set<MachineState>>();
 		this.stateTimeHistory = new ArrayList<Date>();
 		this.errorHistory = new ArrayList<List<String>>();
 
 		this.goalValues = new ArrayList<Double>();
 	}
 
-	public Match(String theJSON, Game theGame, String authToken) throws JSONException, SymbolFormatException, GdlFormatException {
+	public GamerMatch(String theJSON, Game theGame, String authToken) throws JSONException, SymbolFormatException, GdlFormatException {
         JSONObject theMatchObject = new JSONObject(theJSON);
 
         this.matchId = theMatchObject.getString("matchId");
@@ -144,8 +145,8 @@ public final class Match
 		}
         this.numRoles = roles.size();
 
-        this.moveHistory = new ArrayList<List<GdlTerm>>();
-        this.stateHistory = new ArrayList<MachineState>();
+        this.moveHistory = new ArrayList<List<Move>>();
+        this.stateHistory = new ArrayList<Set<MachineState>>();
         this.stateTimeHistory = new ArrayList<Date>();
         this.errorHistory = new ArrayList<List<String>>();
 
@@ -252,13 +253,7 @@ public final class Match
 		appendMoves(theMoves);
 	}
 
-	/*
 	public void appendState(Set<GdlSentence> state) {
-	    stateHistory.add(state);
-	    stateTimeHistory.add(new Date());
-	}*/
-
-	public void appendState(MachineState state) {
 	    stateHistory.add(state);
 	    stateTimeHistory.add(new Date());
 	}

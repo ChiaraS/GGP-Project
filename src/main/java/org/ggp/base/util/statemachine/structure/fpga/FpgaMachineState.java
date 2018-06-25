@@ -1,6 +1,6 @@
 package org.ggp.base.util.statemachine.structure.fpga;
 
-import org.apache.lucene.util.OpenBitSet;
+import org.ggp.base.util.placeholders.FpgaInternalState;
 import org.ggp.base.util.statemachine.structure.MachineState;
 
 public class FpgaMachineState extends MachineState {
@@ -8,23 +8,25 @@ public class FpgaMachineState extends MachineState {
 	/**
 	 * Substitute with FPGA state type.
 	 */
-	private OpenBitSet stateRepresentation;
+	private FpgaInternalState stateRepresentation;
 
 	public FpgaMachineState(){
 		this.stateRepresentation = null;
 	}
 
-	public FpgaMachineState(OpenBitSet state){
+	public FpgaMachineState(FpgaInternalState state){
 		this.stateRepresentation = state;
 	}
 
-	public OpenBitSet getStateRepresentation(){
+	public FpgaInternalState getStateRepresentation(){
 		return this.stateRepresentation;
 	}
 
 	@Override
 	public FpgaMachineState clone() {
-		return new FpgaMachineState(this.stateRepresentation.clone());
+		// TODO: fix! the clone method
+		//return new FpgaMachineState(this.stateRepresentation.clone());
+		return null;
 	}
 
 	/* Utility methods */
@@ -38,7 +40,8 @@ public class FpgaMachineState extends MachineState {
 		if(this.stateRepresentation == null){
 			return "[MachineState with null values]";
 		}else{
-			String toReturn = "[";
+			// TODO Implement depending on the state representation
+			/*String toReturn = "[";
 			for(int i = 0; i < this.stateRepresentation.size(); i++){
 				if(this.stateRepresentation.fastGet(i)){
 					toReturn += "1";
@@ -48,6 +51,8 @@ public class FpgaMachineState extends MachineState {
 			}
 			toReturn += "]";
 			return toReturn;
+			*/
+			return null;
 		}
 	}
 

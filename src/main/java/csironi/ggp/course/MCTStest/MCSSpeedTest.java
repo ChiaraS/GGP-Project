@@ -6,9 +6,6 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 
-import org.ggp.base.player.gamer.statemachine.MCS.manager.propnet.InternalPropnetMCSManager;
-import org.ggp.base.player.gamer.statemachine.MCS.manager.propnet.PnCompleteMoveStats;
-import org.ggp.base.player.gamer.statemachine.MCTS.manager.propnet.strategies.playout.PnRandomPlayout;
 import org.ggp.base.util.game.GameRepository;
 import org.ggp.base.util.gdl.grammar.Gdl;
 import org.ggp.base.util.gdl.grammar.GdlPool;
@@ -220,7 +217,7 @@ public class MCSSpeedTest {
 		        CompactRole internalPlayingRole = thePropnetMachine.getCompactRoles().get(0);
 		        playingRole = thePropnetMachine.convertToExplicitRole(internalPlayingRole);
 		        numRoles = thePropnetMachine.getCompactRoles().size();
-
+/*
 		        InternalPropnetMCSManager MCSmanager = new InternalPropnetMCSManager(new PnRandomPlayout(thePropnetMachine),
 		        		thePropnetMachine, internalPlayingRole, maxSearchDepth, random);
 
@@ -251,7 +248,7 @@ public class MCSSpeedTest {
 		        }
 
 		        testDuration = System.currentTimeMillis() - testStart;
-	        }catch(StateMachineInitializationException e){
+*/	        }catch(StateMachineInitializationException e){
 	        	initializationTime = System.currentTimeMillis() - initStart;
 	        	GamerLogger.logError("MCSSpeedTest", "State machine " + thePropnetMachine.getName() + " initialization failed, impossible to test this game. Cause: [" + e.getClass().getSimpleName() + "] " + e.getMessage() );
 	        	GamerLogger.logStackTrace("MCSSpeedTest", e);
@@ -263,7 +260,6 @@ public class MCSSpeedTest {
 	        GamerLogger.stopFileLogging();
 
 	        GamerLogger.log(FORMAT.CSV_FORMAT, "MCSSpeedTestTable", gameKey + ";" + numRoles + ";" + manager.getPropnetConstructionTime() + ";" + manager.getTotalInitTime() + ";" + initializationTime + ";" + testDuration + ";" + searchTime + ";" + iterations + ";" + visitedNodes + ";" + iterationsPerSecond + ";" + nodesPerSecond + ";" + playingRole + ";" + chosenMove + ";" + scoresSum + ";" + visits + ";" + averageScore + ";");
-
 	        /***************************************/
 	        System.gc();
 	        GdlPool.drainPool();

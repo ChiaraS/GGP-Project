@@ -1,14 +1,14 @@
-package org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.hybrid;
+package org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.hybrid.statememorizingdecoupled;
 
 import java.util.List;
 import java.util.Map;
 import java.util.Random;
 
 import org.ggp.base.player.gamer.statemachine.GamerSettings;
-import org.ggp.base.player.gamer.statemachine.FPGAMCTS.manager.treestructure.StateMemorizingMctsNode;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.GameDependentParameters;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.SharedReferencesCollector;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.MctsNode;
+import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.hybrid.TreeNodeFactory;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.hybrid.decoupled.DecoupledMctsMoveStats;
 import org.ggp.base.util.logging.GamerLogger;
 import org.ggp.base.util.statemachine.exceptions.MoveDefinitionException;

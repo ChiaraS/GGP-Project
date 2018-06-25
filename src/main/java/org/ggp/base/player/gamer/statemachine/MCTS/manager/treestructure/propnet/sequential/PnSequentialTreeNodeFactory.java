@@ -30,7 +30,7 @@ public class PnSequentialTreeNodeFactory implements PnTreeNodeFactory {
 	public MctsNode createNewNode(CompactMachineState state) {
 		//System.out.println("Creating new node.");
 
-		int goals[] = null;
+		double goals[] = null;
 		boolean terminal = false;
 		List<List<CompactMove>> allLegalMoves = null;
 

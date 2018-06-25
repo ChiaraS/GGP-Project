@@ -8,7 +8,6 @@ import java.util.concurrent.TimeUnit;
 
 import org.apache.logging.log4j.ThreadContext;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.propnet.PnTreeNodeFactory;
-import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.propnet.decoupled.PnDecoupledTreeNodeFactory;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.propnet.sequential.PnSequentialTreeNodeFactory;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.propnet.slowsequential.PnSlowSequentialTreeNodeFactory;
 import org.ggp.base.util.game.GameRepository;
@@ -271,7 +270,7 @@ public class MCTSSpeedTest {
 		        		theNodeFactory = new PnSlowSequentialTreeNodeFactory(thePropnetMachine, internalPlayingRole);
 		        		break;
 		        	default:
-			        	theNodeFactory = new PnDecoupledTreeNodeFactory(thePropnetMachine);
+		//	        	theNodeFactory = new PnDecoupledTreeNodeFactory(thePropnetMachine);
 			        	break;
 		        }
 

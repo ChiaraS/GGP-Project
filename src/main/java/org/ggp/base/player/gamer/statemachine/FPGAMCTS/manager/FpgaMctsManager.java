@@ -807,7 +807,7 @@ public class FpgaMctsManager {
 
 			//System.out.println("Reached terminal state.");
 
-			int[] goals = currentNode.getGoals();
+			double[] goals = currentNode.getGoals();
 			// If a state in the tree is terminal, it must record the goals for every player.
 			// If it doesn't there must be a programming error.
 			if(goals == null){
@@ -1041,7 +1041,7 @@ public class FpgaMctsManager {
 
 				// Check how many nodes can be visited after the current one. At this point
 				// "currentIterationVisitedNodes" can be at most equal to the "maxSearchDepth".
-				int availableDepth = this.maxSearchDepth - this.gameDependentParameters.getCurrentIterationVisitedNodes();
+				int availableDepth = this.maxSearchDepth - (int) Math.round(this.gameDependentParameters.getCurrentIterationVisitedNodes());
 
 				if(availableDepth == 0){
 
@@ -1079,7 +1079,7 @@ public class FpgaMctsManager {
 					//int[] playoutVisitedNodes = new int[1];
 					// Note that if no depth is left for the playout, the playout itself will take care of
 					// returning the added-state goal values (if any) or the default tie goal values.
-					simulationResult = this.playoutStrategy.playout(mctsJointMove.getJointMove(), nextState, availableDepth);
+					simulationResult = this.playoutStrategy.playout(nextNode, mctsJointMove.getJointMove(), nextState, availableDepth);
 					this.flip(simulationResult);
 
 					// IMPORTANT NOTE! Here we increment the number of nodes visited for the current iteration
@@ -1091,7 +1091,7 @@ public class FpgaMctsManager {
 					// iteration. We use this number to compute the length of the game simulated in this iteration. If
 					// for this iteration multiple playouts have been performed, the length of each playout will be
 					// summed to the number of nodes visited in the tree to obtain the total length of the simulated game.
-					int gameLengthInTheTree = this.gameDependentParameters.getCurrentIterationVisitedNodes();
+					double gameLengthInTheTree = this.gameDependentParameters.getCurrentIterationVisitedNodes();
 					for(int resultIndex = 0; resultIndex < simulationResult.length; resultIndex++){
 						// TODO: increase currentIterationVisitedNodes directly from the playout strategy every time a new node is visited.
 						this.gameDependentParameters.increaseCurrentIterationVisitedNodes(simulationResult[resultIndex].getPlayoutLength());
@@ -1214,7 +1214,7 @@ public class FpgaMctsManager {
 		this.gameDependentParameters.setMetagame(false);
 	}
 
-	public void afterGameActions(List<Integer> goals){
+	public void afterGameActions(List<Double> goals){
 		// Call again the AfterMoveAction because for the search of the last move it hasn't been
 		// performed yet, because it is always performed at the beginning of a new search.
 		//if(this.afterMoveStrategy != null){
@@ -1233,7 +1233,7 @@ public class FpgaMctsManager {
 		return this.gameDependentParameters.getStepIterations();
 	}
 
-	public int getStepVisitedNodes(){
+	public double getStepVisitedNodes(){
 		return this.gameDependentParameters.getStepVisitedNodes();
 	}
 

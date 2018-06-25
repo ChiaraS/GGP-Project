@@ -39,7 +39,7 @@ public class SimLimLsiTunerAfterGame extends AfterGameStrategy {
 	}
 
 	@Override
-	public void afterGameActions(List<Integer> terminalGoals) {
+	public void afterGameActions(List<Double> terminalGoals) {
 		if(this.logSamplesDistributionAfterGame) {
 			this.simLimitedLsiParametersTuner.logSamplesDistribution();
 		}

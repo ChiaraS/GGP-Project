@@ -10,8 +10,10 @@ import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.MctsNod
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.hybrid.SimulationResult;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.hybrid.decoupled.DecoupledMctsNode;
 import org.ggp.base.util.logging.GamerLogger;
+import org.ggp.base.util.statemachine.exceptions.GoalDefinitionException;
 import org.ggp.base.util.statemachine.exceptions.MoveDefinitionException;
 import org.ggp.base.util.statemachine.exceptions.StateMachineException;
+import org.ggp.base.util.statemachine.exceptions.TransitionDefinitionException;
 import org.ggp.base.util.statemachine.structure.MachineState;
 import org.ggp.base.util.statemachine.structure.Move;
 import org.ggp.base.util.statemachine.structure.Role;
@@ -103,7 +105,17 @@ public class StateMachineStandardPlayout extends PlayoutStrategy {
 
 		}
 
-        MyPair<double[],Double> avgGoalsAndDepth = this.gameDependentParameters.getTheMachine().fastPlayouts(state, this.numSimulationsPerPlayout, maxDepth);
+        MyPair<double[], Double> avgGoalsAndDepth;
+		try {
+			avgGoalsAndDepth = this.gameDependentParameters.getTheMachine().fastPlayouts(state, this.numSimulationsPerPlayout, maxDepth);
+		} catch (TransitionDefinitionException | MoveDefinitionException | GoalDefinitionException
+				| StateMachineException e) {
+			GamerLogger.logError("MctsManager", "Error while perrofming fast playouts.");
+			GamerLogger.logStackTrace("MctsManager", e);
+
+			return new SimulationResult(0, this.gameDependentParameters.getTheMachine().getSafeGoalsAvgForAllRoles(state));
+
+		}
 
         return new SimulationResult(avgGoalsAndDepth.getSecond().doubleValue(), avgGoalsAndDepth.getFirst());
 

@@ -90,7 +90,7 @@ public final class SampleSearchLightGamer extends StateMachineGamer
 		// upon a move which would cause us to win: if we find such a move, we will just
 		// immediately take it.
 		boolean reasonableMoveFound = false;
-		int maxGoal = 0;
+		double maxGoal = 0;
 		for(ExplicitMove moveUnderConsideration : moves) {
 		    // Check to see if there's time to continue.
 		    if(System.currentTimeMillis() > finishBy) break;

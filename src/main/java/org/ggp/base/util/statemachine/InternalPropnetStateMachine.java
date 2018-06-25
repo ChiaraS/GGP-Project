@@ -45,31 +45,6 @@ public abstract class InternalPropnetStateMachine extends StateMachine implement
 	@Override
 	public abstract boolean isTerminal(CompactMachineState state);
 
-	/**
-	 * Computes the goal for a role in the given state.
-	 * Should return the value of the goal proposition that
-	 * is true for that role. If there is not exactly one goal
-	 * proposition true for that role, then you should throw a
-	 * GoalDefinitionException because the goal is ill-defined.
-	 */
-	public double getGoal(CompactMachineState state, CompactRole role) throws GoalDefinitionException{
-		List<Double> goals = this.getAllGoalsForOneRole(state, role);
-
-		if(goals.size() > 1){
-			GamerLogger.logError("StateMachine", "[Propnet] Got more than one true goal in state " + state + " for role " + role + ".");
-			throw new GoalDefinitionException(this.convertToExplicitMachineState(state), this.convertToExplicitRole(role));
-		}
-
-		// If there is no true goal proposition for the role in this state throw an exception.
-		if(goals.size() == 0){
-			GamerLogger.logError("StateMachine", "[Propnet] Got no true goal in state " + state + " for role " + role + ".");
-			throw new GoalDefinitionException(this.convertToExplicitMachineState(state), this.convertToExplicitRole(role));
-		}
-
-		// Return the single goal for the given role in the given state.
-		return goals.get(0);
-	}
-
     /**
      * Returns the goal value(s) for the given role in the given state. Goal values
      * are always between 0 and 100.
@@ -161,6 +136,31 @@ public abstract class InternalPropnetStateMachine extends StateMachine implement
         }
         return theGoals;
     }
+
+	/**
+	 * Computes the goal for a role in the given state.
+	 * Should return the value of the goal proposition that
+	 * is true for that role. If there is not exactly one goal
+	 * proposition true for that role, then you should throw a
+	 * GoalDefinitionException because the goal is ill-defined.
+	 */
+	public double getGoal(CompactMachineState state, CompactRole role) throws GoalDefinitionException{
+		List<Double> goals = this.getAllGoalsForOneRole(state, role);
+
+		if(goals.size() > 1){
+			GamerLogger.logError("StateMachine", "[Propnet] Got more than one true goal in state " + state + " for role " + role + ".");
+			throw new GoalDefinitionException(this.convertToExplicitMachineState(state), this.convertToExplicitRole(role));
+		}
+
+		// If there is no true goal proposition for the role in this state throw an exception.
+		if(goals.size() == 0){
+			GamerLogger.logError("StateMachine", "[Propnet] Got no true goal in state " + state + " for role " + role + ".");
+			throw new GoalDefinitionException(this.convertToExplicitMachineState(state), this.convertToExplicitRole(role));
+		}
+
+		// Return the single goal for the given role in the given state.
+		return goals.get(0);
+	}
 
     /**
      * Returns a list containing a list for each role with all the goal values for

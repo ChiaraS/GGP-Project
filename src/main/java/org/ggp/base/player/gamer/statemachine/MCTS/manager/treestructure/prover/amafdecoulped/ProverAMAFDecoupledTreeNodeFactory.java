@@ -19,7 +19,7 @@ public class ProverAMAFDecoupledTreeNodeFactory extends ProverDecoupledTreeNodeF
 
 		//System.out.println("Creating new node.");
 
-		int goals[] = null;
+		double goals[] = null;
 		boolean terminal = false;
 
 		ProverDecoupledMCTSMoveStats[][] ductMovesStats = null;

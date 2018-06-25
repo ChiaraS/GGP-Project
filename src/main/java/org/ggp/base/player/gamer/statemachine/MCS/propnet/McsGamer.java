@@ -7,7 +7,6 @@ import org.ggp.base.player.gamer.event.GamerSelectedMoveEvent;
 import org.ggp.base.player.gamer.statemachine.MCS.manager.MCSException;
 import org.ggp.base.player.gamer.statemachine.MCS.manager.propnet.InternalPropnetMCSManager;
 import org.ggp.base.player.gamer.statemachine.MCS.manager.propnet.PnCompleteMoveStats;
-import org.ggp.base.player.gamer.statemachine.MCTS.manager.propnet.strategies.playout.PnRandomPlayout;
 import org.ggp.base.player.gamer.statemachine.propnet.InternalPropnetGamer;
 import org.ggp.base.util.logging.GamerLogger;
 import org.ggp.base.util.statemachine.exceptions.GoalDefinitionException;
@@ -99,8 +98,8 @@ public class McsGamer extends InternalPropnetGamer {
 		CompactRole myRole = this.thePropnetMachine.convertToCompactRole(this.getRole());
 
 		// Create the MCS manager and start simulations.
-		this.mcsManager = new InternalPropnetMCSManager(new PnRandomPlayout(this.thePropnetMachine),
-				this.thePropnetMachine,	myRole, maxSearchDepth, this.random);
+//		this.mcsManager = new InternalPropnetMCSManager(new PnRandomPlayout(this.thePropnetMachine),
+//				this.thePropnetMachine,	myRole, maxSearchDepth, this.random);
 
 		// If there is enough time left start the MCT search.
 		// Otherwise return from metagaming.
