@@ -1,11 +1,13 @@
 package org.ggp.base.util.statemachine;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Random;
 
 import org.ggp.base.util.Pair;
 import org.ggp.base.util.gdl.grammar.Gdl;
+import org.ggp.base.util.gdl.grammar.GdlSentence;
 import org.ggp.base.util.logging.GamerLogger;
 import org.ggp.base.util.placeholders.FPGAPropnetLibrary;
 import org.ggp.base.util.placeholders.FpgaInternalMove;
@@ -23,6 +25,7 @@ import org.ggp.base.util.statemachine.structure.explicit.ExplicitMachineState;
 import org.ggp.base.util.statemachine.structure.explicit.ExplicitMove;
 import org.ggp.base.util.statemachine.structure.explicit.ExplicitRole;
 import org.ggp.base.util.statemachine.structure.fpga.FpgaMachineState;
+import org.ggp.base.util.statemachine.structure.fpga.FpgaMove;
 import org.ggp.base.util.statemachine.structure.fpga.FpgaRole;
 
 import com.google.common.collect.ImmutableList;
@@ -55,7 +58,7 @@ public class FPGAPropnetStateMachine extends StateMachine implements FpgaStateMa
     /** The player roles */
     protected List<CompactRole> roles;
     /** The initial state */
-    protected CompactMachineState initialState;
+    protected FpgaMachineState initialState;
 
 
 	public FPGAPropnetStateMachine(Random random, FPGAPropnetLibrary fpgaPropnetInterface){
@@ -141,7 +144,7 @@ public class FPGAPropnetStateMachine extends StateMachine implements FpgaStateMa
 	}
 
 	@Override
-	public CompactMachineState getCompactInitialState() {
+	public FpgaMachineState getFpgaInitialState() {
 		return this.initialState;
 	}
 
@@ -169,7 +172,7 @@ public class FPGAPropnetStateMachine extends StateMachine implements FpgaStateMa
 	}
 
 	@Override
-	public CompactMachineState getCompactNextState(CompactMachineState state, List<CompactMove> moves) {
+	public FpgaMachineState getFpgaNextState(FpgaMachineState state, List<FpgaMove> moves) {
 		// TODO Auto-generated method stub
 		return null;
 	}
@@ -198,11 +201,11 @@ public class FPGAPropnetStateMachine extends StateMachine implements FpgaStateMa
 	@Override
 	public ExplicitMachineState convertToExplicitMachineState(FpgaMachineState state) {
 		GamerLogger.logError("StateMachine", "[FPGAPropnet] Impossible to convert FpgaMachineState to ExplicitMachineState.");
-		return null;
+		return new ExplicitMachineState(new HashSet<GdlSentence>());
 	}
 
 	@Override
-	public ExplicitMove convertToExplicitMove(CompactMove move) {
+	public ExplicitMove convertToExplicitMove(FpgaMove move) {
 		// TODO Auto-generated method stub
 		return null;
 	}
@@ -220,7 +223,7 @@ public class FPGAPropnetStateMachine extends StateMachine implements FpgaStateMa
 	}
 
 	@Override
-	public CompactMove convertToCompactMove(ExplicitMove move) {
+	public FpgaMove convertToFpgaMove(ExplicitMove move) {
 		// TODO Auto-generated method stub
 		return null;
 	}

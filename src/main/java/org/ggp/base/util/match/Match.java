@@ -22,6 +22,7 @@ import org.ggp.base.util.gdl.grammar.GdlTerm;
 import org.ggp.base.util.gdl.scrambler.GdlScrambler;
 import org.ggp.base.util.gdl.scrambler.MappingGdlScrambler;
 import org.ggp.base.util.gdl.scrambler.NoOpGdlScrambler;
+import org.ggp.base.util.statemachine.abstractsm.AbstractStateMachine;
 import org.ggp.base.util.statemachine.structure.MachineState;
 import org.ggp.base.util.statemachine.structure.explicit.ExplicitMove;
 import org.ggp.base.util.statemachine.structure.explicit.ExplicitRole;
@@ -61,7 +62,8 @@ public final class Match
     private final Date startTime;
 	private final Game theGame;
 	private final List<List<GdlTerm>> moveHistory;
-	private final List<MachineState> stateHistory;
+	private final List<Set<GdlSentence>> stateHistory;
+	private final List<MachineState> internalStateHistory;
 	private final List<List<String>> errorHistory;
 	private final List<Date> stateTimeHistory;
 	private boolean isCompleted;
@@ -99,14 +101,24 @@ public final class Match
 		this.numRoles = roles.size();
 
 		this.moveHistory = new ArrayList<List<GdlTerm>>();
-		this.stateHistory = new ArrayList<MachineState>();
+		this.stateHistory = new ArrayList<Set<GdlSentence>>();
+		this.internalStateHistory = new ArrayList<MachineState>();
 		this.stateTimeHistory = new ArrayList<Date>();
 		this.errorHistory = new ArrayList<List<String>>();
 
 		this.goalValues = new ArrayList<Double>();
 	}
 
-	public Match(String theJSON, Game theGame, String authToken) throws JSONException, SymbolFormatException, GdlFormatException {
+	/**
+	 *
+	 * @param theJSON
+	 * @param theGame
+	 * @param authToken
+	 * @throws JSONException
+	 * @throws SymbolFormatException
+	 * @throws GdlFormatException
+	 */
+	public Match(AbstractStateMachine theMachine, String theJSON, Game theGame, String authToken) throws JSONException, SymbolFormatException, GdlFormatException {
         JSONObject theMatchObject = new JSONObject(theJSON);
 
         this.matchId = theMatchObject.getString("matchId");
@@ -145,7 +157,8 @@ public final class Match
         this.numRoles = roles.size();
 
         this.moveHistory = new ArrayList<List<GdlTerm>>();
-        this.stateHistory = new ArrayList<MachineState>();
+        this.stateHistory = new ArrayList<Set<GdlSentence>>();
+        this.internalStateHistory = new ArrayList<MachineState>();
         this.stateTimeHistory = new ArrayList<Date>();
         this.errorHistory = new ArrayList<List<String>>();
 
@@ -167,6 +180,7 @@ public final class Match
                 theState.add((GdlSentence)GdlFactory.create("( true " + stateElements.get(j).toString() + " )"));
             }
             stateHistory.add(theState);
+            internalStateHistory.add(theMachine.convertToInternalMachineState(theMachine.getMachineStateFromSentenceList(theState)));
         }
         JSONArray theStateTimes = theMatchObject.getJSONArray("stateTimes");
         for (int i = 0; i < theStateTimes.length(); i++) {
@@ -252,15 +266,13 @@ public final class Match
 		appendMoves(theMoves);
 	}
 
-	/*
 	public void appendState(Set<GdlSentence> state) {
 	    stateHistory.add(state);
 	    stateTimeHistory.add(new Date());
-	}*/
+	}
 
 	public void appendState(MachineState state) {
-	    stateHistory.add(state);
-	    stateTimeHistory.add(new Date());
+	    internalStateHistory.add(state);
 	}
 
 	public void appendErrors(List<String> errors) {
@@ -288,6 +300,11 @@ public final class Match
 
 	/* Complex accessors */
 
+	/**
+	 * Note that this method doesn't log the internalStateHistory, that anyway can be reconstructed by
+     * a state machine using the stateHistory.
+	 * @return
+	 */
     public String toJSON() {
         JSONObject theJSON = new JSONObject();
 
@@ -342,6 +359,11 @@ public final class Match
         return theJSON.toString();
     }
 
+    /**
+     * Note that this method doesn't log the internalStateHistory, that anyway can be reconstructed by
+     * a state machine using the stateHistory.
+     * @return
+     */
     public String toXML() {
     	try {
     		JSONObject theJSON = new JSONObject(toJSON());
@@ -417,6 +439,10 @@ public final class Match
 
     public List<Set<GdlSentence>> getStateHistory() {
         return stateHistory;
+    }
+
+    public List<MachineState> getInternalStateHistory() {
+        return internalStateHistory;
     }
 
     public List<Date> getStateTimeHistory() {

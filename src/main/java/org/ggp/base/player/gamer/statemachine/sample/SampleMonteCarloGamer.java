@@ -4,12 +4,13 @@ import java.util.List;
 
 import org.ggp.base.player.gamer.event.GamerSelectedMoveEvent;
 import org.ggp.base.util.logging.GamerLogger;
-import org.ggp.base.util.statemachine.StateMachine;
+import org.ggp.base.util.statemachine.abstractsm.AbstractStateMachine;
 import org.ggp.base.util.statemachine.exceptions.GoalDefinitionException;
 import org.ggp.base.util.statemachine.exceptions.MoveDefinitionException;
 import org.ggp.base.util.statemachine.exceptions.StateMachineException;
 import org.ggp.base.util.statemachine.exceptions.TransitionDefinitionException;
-import org.ggp.base.util.statemachine.structure.explicit.ExplicitMachineState;
+import org.ggp.base.util.statemachine.structure.MachineState;
+import org.ggp.base.util.statemachine.structure.Move;
 import org.ggp.base.util.statemachine.structure.explicit.ExplicitMove;
 
 /**
@@ -33,14 +34,14 @@ public final class SampleMonteCarloGamer extends SampleGamer
 	@Override
 	public ExplicitMove stateMachineSelectMove(long timeout) throws TransitionDefinitionException, MoveDefinitionException, GoalDefinitionException, StateMachineException
 	{
-	    StateMachine theMachine = getStateMachine();
+	    AbstractStateMachine theMachine = getStateMachine();
 		long start = System.currentTimeMillis();
 		long finishBy = timeout - 40000;
 
 		int visitedNodes = 0;
 		int iterations = 0;
 
-		List<ExplicitMove> moves = theMachine.getExplicitLegalMoves(getCurrentState(), getRole());
+		List<ExplicitMove> moves = theMachine.convertToExplicitMoves(theMachine.getLegalMoves(getCurrentState(), getRole()));
 		ExplicitMove selection = moves.get(0);
 		if (moves.size() > 1) {
     		int[] moveTotalPoints = new int[moves.size()];
@@ -89,11 +90,11 @@ public final class SampleMonteCarloGamer extends SampleGamer
 	}
 
 	private int[] depth = new int[1];
-	double performDepthChargeFromMove(ExplicitMachineState theState, ExplicitMove myMove) {
-	    StateMachine theMachine = getStateMachine();
+	double performDepthChargeFromMove(MachineState theState, Move myMove) {
+	    AbstractStateMachine theMachine = getStateMachine();
 	    try {
-            ExplicitMachineState finalState = theMachine.performDepthCharge(theMachine.getRandomNextState(theState, getRole(), myMove), depth);
-            return theMachine.getGoal(finalState, getRole());
+            MachineState finalState = theMachine.performDepthCharge(theMachine.getRandomNextState(theState, getRole(), myMove), depth);
+            return theMachine.getSafeGoalsAvgForAllRoles(finalState)[theMachine.getRoleIndices().get(getRole())];
         } catch (Exception e) {
             e.printStackTrace();
             return 0;

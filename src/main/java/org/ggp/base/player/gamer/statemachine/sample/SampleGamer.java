@@ -5,7 +5,8 @@ import org.ggp.base.apps.player.detail.SimpleDetailPanel;
 import org.ggp.base.player.gamer.exception.GamePreviewException;
 import org.ggp.base.player.gamer.statemachine.StateMachineGamer;
 import org.ggp.base.util.game.Game;
-import org.ggp.base.util.statemachine.StateMachine;
+import org.ggp.base.util.statemachine.abstractsm.AbstractStateMachine;
+import org.ggp.base.util.statemachine.abstractsm.ExplicitStateMachine;
 import org.ggp.base.util.statemachine.cache.CachedStateMachine;
 import org.ggp.base.util.statemachine.exceptions.GoalDefinitionException;
 import org.ggp.base.util.statemachine.exceptions.MoveDefinitionException;
@@ -44,8 +45,8 @@ public abstract class SampleGamer extends StateMachineGamer
 
 	// This is the default State Machine
 	@Override
-	public StateMachine getInitialStateMachine() {
-		return new CachedStateMachine(this.random, new ProverStateMachine(this.random));
+	public AbstractStateMachine getInitialStateMachine() {
+		return new ExplicitStateMachine(new CachedStateMachine(this.random, new ProverStateMachine(this.random)));
 	}
 
 	// This is the default Sample Panel

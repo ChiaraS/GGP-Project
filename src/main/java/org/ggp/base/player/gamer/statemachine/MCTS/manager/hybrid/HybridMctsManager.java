@@ -1233,7 +1233,7 @@ public class HybridMctsManager {
 		if(currentNode instanceof StateMemorizingMctsNode) {
 			nextState = ((StateMemorizingMctsNode) currentNode).getNextState(mctsJointMove.getJointMove());
 			if(nextState == null) {
-				throw new TransitionDefinitionException(this.gameDependentParameters.getTheMachine().convertToExplicitMachineState(currentState), this.gameDependentParameters.getTheMachine().convertToExplicitJointMove(mctsJointMove.getJointMove()));
+				throw new TransitionDefinitionException(this.gameDependentParameters.getTheMachine().convertToExplicitMachineState(currentState), this.gameDependentParameters.getTheMachine().convertToExplicitMoves(mctsJointMove.getJointMove()));
 			}
 		}else {
 			nextState = this.gameDependentParameters.getTheMachine().getNextState(currentState, mctsJointMove.getJointMove());

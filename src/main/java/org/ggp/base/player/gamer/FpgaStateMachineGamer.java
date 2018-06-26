@@ -1,41 +1,26 @@
-package org.ggp.base.player.gamer.statemachine;
+package org.ggp.base.player.gamer;
 
 import java.util.ArrayList;
 import java.util.List;
 
-import org.ggp.base.player.gamer.Gamer;
 import org.ggp.base.player.gamer.exception.MetaGamingException;
 import org.ggp.base.player.gamer.exception.MoveSelectionException;
 import org.ggp.base.player.gamer.exception.StoppingException;
 import org.ggp.base.util.gdl.grammar.GdlTerm;
 import org.ggp.base.util.logging.GamerLogger;
-import org.ggp.base.util.statemachine.abstractsm.AbstractStateMachine;
+import org.ggp.base.util.statemachine.FPGAPropnetStateMachine;
 import org.ggp.base.util.statemachine.exceptions.GoalDefinitionException;
 import org.ggp.base.util.statemachine.exceptions.MoveDefinitionException;
 import org.ggp.base.util.statemachine.exceptions.StateMachineException;
 import org.ggp.base.util.statemachine.exceptions.StateMachineInitializationException;
 import org.ggp.base.util.statemachine.exceptions.TransitionDefinitionException;
-import org.ggp.base.util.statemachine.structure.MachineState;
-import org.ggp.base.util.statemachine.structure.Move;
-import org.ggp.base.util.statemachine.structure.Role;
-import org.ggp.base.util.statemachine.structure.explicit.ExplicitMachineState;
 import org.ggp.base.util.statemachine.structure.explicit.ExplicitMove;
 import org.ggp.base.util.statemachine.structure.explicit.ExplicitRole;
+import org.ggp.base.util.statemachine.structure.fpga.FpgaMachineState;
+import org.ggp.base.util.statemachine.structure.fpga.FpgaMove;
 
+public abstract class FpgaStateMachineGamer extends Gamer {
 
-/**
- * The base class for Gamers that rely on representing games as state machines.
- * Almost every player should subclass this class, since it provides the common
- * methods for interpreting the match history as transitions in a state machine,
- * and for keeping an up-to-date view of the current state of the game.
- *
- * See @SimpleSearchLightGamer, @HumanGamer, and @RandomGamer for examples.
- *
- * @author evancox
- * @author Sam
- */
-public abstract class StateMachineGamer extends Gamer
-{
     // =====================================================================
     // First, the abstract methods which need to be overriden by subclasses.
     // These determine what state machine is used, what the gamer does during
@@ -45,7 +30,7 @@ public abstract class StateMachineGamer extends Gamer
      * Defines which state machine this gamer will use.
      * @return
      */
-    public abstract AbstractStateMachine getInitialStateMachine();
+    public abstract FPGAPropnetStateMachine getInitialStateMachine();
 
     /**
      * Defines the metagaming action taken by a player during the START_CLOCK
@@ -85,35 +70,26 @@ public abstract class StateMachineGamer extends Gamer
 	/**
 	 * Returns the current state of the game.
 	 */
-    /*
-	public final ExplicitMachineState getCurrentState()
+	public final FpgaMachineState getCurrentState()
 	{
 		return currentState;
-	}*/
-
-	/**
-	 * Returns the current state of the game in its internal format.
-	 */
-	public final MachineState getCurrentState()
-	{
-		return this.internalCurrentState;
 	}
 
 	/**
 	 * Returns the role that this gamer is playing as in the game.
 	 */
-	public final Role getRole()
+	public final ExplicitRole getRole()
 	{
-		return this.role;
+		return role;
 	}
 
 	/**
 	 * Returns the state machine.  This is used for calculating the next state and other operations, such as computing
 	 * the legal moves for all players, whether states are terminal, and the goal values of terminal states.
 	 */
-	public final AbstractStateMachine getStateMachine()
+	public final FPGAPropnetStateMachine getStateMachine()
 	{
-		return this.stateMachine;
+		return stateMachine;
 	}
 
     /**
@@ -123,10 +99,9 @@ public abstract class StateMachineGamer extends Gamer
      * only used in the Proxy, for players designed to run 24/7.
      */
     protected final void cleanupAfterMatch() {
-    	this.role = null;
-        //currentState = null;
-        this.internalCurrentState = null;
-        this.stateMachine = null;
+        role = null;
+        currentState = null;
+        stateMachine = null;
         setMatch(null);
         setRoleName(null);
     }
@@ -141,36 +116,24 @@ public abstract class StateMachineGamer extends Gamer
      *
      * @param newStateMachine the new state machine
      */
-    protected final void switchStateMachine(AbstractStateMachine newStateMachine) {
+    protected final void switchStateMachine(FPGAPropnetStateMachine newStateMachine) {
         try {
-            //ExplicitMachineState newCurrentState = newStateMachine.convertToExplicitMachineState(newStateMachine.getInitialState());
-            ExplicitRole newExplicitRole = newStateMachine.getRoleFromConstant(getRoleName());
-            Role newRole = newStateMachine.convertToInternalRole(newExplicitRole);
-            MachineState newInternalCurrentState = newStateMachine.getInitialState();
+            FpgaMachineState newCurrentState = newStateMachine.getFpgaInitialState();
+            ExplicitRole newRole = newStateMachine.getRoleFromConstant(getRoleName());
 
             // Attempt to run through the game history in the new machine
-            /*List<List<GdlTerm>> theMoveHistory = getMatch().getMoveHistory();
-            for(List<GdlTerm> nextMove : theMoveHistory) {
-                List<ExplicitMove> theJointMove = new ArrayList<ExplicitMove>();
-                for(GdlTerm theSentence : nextMove)
-                    theJointMove.add(newStateMachine.getMoveFromTerm(theSentence));
-                newCurrentState = newStateMachine.getNextStateDestructively(newCurrentState, theJointMove);
-                newInternalCurrentState = newStateMachine.getNextState(newInternalCurrentState, newStateMachine.convertToInternalMoves(moves));
-            }*/
-
             List<List<GdlTerm>> theMoveHistory = getMatch().getMoveHistory();
             for(List<GdlTerm> nextMove : theMoveHistory) {
-                List<Move> theJointMove = new ArrayList<Move>();
+                List<FpgaMove> theJointMove = new ArrayList<FpgaMove>();
                 for(GdlTerm theSentence : nextMove)
-                    theJointMove.add(newStateMachine.convertToInternalMove(newStateMachine.getMoveFromTerm(theSentence)));
-                //newCurrentState = newStateMachine.getNextStateDestructively(newCurrentState, theJointMove);
-                newInternalCurrentState = newStateMachine.getNextState(newInternalCurrentState, theJointMove);
+                    theJointMove.add(newStateMachine.convertToFpgaMove(newStateMachine.getMoveFromTerm(theSentence)));
+                newCurrentState = newStateMachine.getFpgaNextState(newCurrentState, theJointMove);
             }
 
             // Finally, switch over if everything went well.
-            this.role = newRole;
-            this.internalCurrentState = newInternalCurrentState;
-            this.stateMachine = newStateMachine;
+            role = newRole;
+            currentState = newCurrentState;
+            stateMachine = newStateMachine;
         } catch (Exception e) {
             GamerLogger.log("GamePlayer", "Caught an exception while switching state machine!");
             GamerLogger.logStackTrace("GamePlayer", e);
@@ -187,18 +150,12 @@ public abstract class StateMachineGamer extends Gamer
         // The use of the tmp variable is needed to avoid substituting the current state machine
 		// with a new one before being certain that the new one will manage to initialize.
 		// If the new state machine fails initialization, the old state machine will still be available.
-		AbstractStateMachine tmp = getInitialStateMachine();
+		FPGAPropnetStateMachine tmp = getInitialStateMachine();
 		// We don't have a timeout for this operation so we give to the state machine the maximum amount of time for initialization
         tmp.initialize(getMatch().getGame().getRules(), Long.MAX_VALUE);
-        this.stateMachine = tmp;
-        ExplicitMachineState currentState = this.stateMachine.getMachineStateFromSentenceList(getMatch().getMostRecentState());
-        // NOTE: this method can be used only if the state machine correctly implements the translation of
-        // ExplicitMachineState to the internal format. Here we cannot use the most recent state in the
-        // internal format because two machines that use the same internal format might still represent the
-        // same estate in a different way. (e.g. the propnet represents moves as indices in the list of input
-        // proposition, but the order of the moves in this list is different for every new propnet creation)
-        this.internalCurrentState = this.stateMachine.convertToInternalMachineState(currentState);
-        this.role = this.stateMachine.convertToInternalRole(this.stateMachine.getRoleFromConstant(getRoleName()));
+        stateMachine = tmp;
+        currentState = stateMachine.getMachineStateFromSentenceList(getMatch().getMostRecentState());
+        role = stateMachine.getRoleFromConstant(getRoleName());
 	}
 
     // =====================================================================
@@ -220,13 +177,11 @@ public abstract class StateMachineGamer extends Gamer
 
 		try
 		{
-			this.stateMachine = getInitialStateMachine();
-			this.stateMachine.initialize(getMatch().getGame().getRules(), timeout);
-			//currentState = stateMachine.getExplicitInitialState();
-			this.internalCurrentState = this.stateMachine.getInitialState();
-			role =  this.stateMachine.convertToInternalRole(this.stateMachine.getRoleFromConstant(getRoleName()));
-			getMatch().appendState(this.internalCurrentState);
-			getMatch().appendState(this.stateMachine.convertToExplicitMachineState(this.internalCurrentState).getContents());
+			stateMachine = getInitialStateMachine();
+			stateMachine.initialize(getMatch().getGame().getRules(), timeout);
+			currentState = stateMachine.getExplicitInitialState();
+			role = stateMachine.getRoleFromConstant(getRoleName());
+			getMatch().appendState(currentState.getContents());
 
 			stateMachineMetaGame(timeout);
 		}
@@ -248,20 +203,19 @@ public abstract class StateMachineGamer extends Gamer
 	{
 		try
 		{
-			this.stateMachine.doPerMoveWork();
+			stateMachine.doPerMoveWork();
 
 			List<GdlTerm> lastMoves = getMatch().getMostRecentMoves();
 			if (lastMoves != null)
 			{
-				List<Move> moves = new ArrayList<Move>();
+				List<ExplicitMove> moves = new ArrayList<ExplicitMove>();
 				for (GdlTerm sentence : lastMoves)
 				{
-					moves.add(this.stateMachine.convertToInternalMove(this.stateMachine.getMoveFromTerm(sentence)));
+					moves.add(stateMachine.getMoveFromTerm(sentence));
 				}
 
-				this.internalCurrentState = this.stateMachine.getNextState(this.internalCurrentState, moves);
-				getMatch().appendState(this.stateMachine.convertToExplicitMachineState(this.internalCurrentState).getContents());
-				getMatch().appendState(this.internalCurrentState);
+				currentState = stateMachine.getExplicitNextState(currentState, moves);
+				getMatch().appendState(currentState.getContents());
 			}
 
 			return stateMachineSelectMove(timeout).getContents();
@@ -276,24 +230,23 @@ public abstract class StateMachineGamer extends Gamer
 	@Override
 	public void stop() throws StoppingException {
 		try {
-			this.stateMachine.doPerMoveWork();
+			stateMachine.doPerMoveWork();
 
 			List<GdlTerm> lastMoves = getMatch().getMostRecentMoves();
 			if (lastMoves != null)
 			{
-				List<Move> moves = new ArrayList<Move>();
+				List<ExplicitMove> moves = new ArrayList<ExplicitMove>();
 				for (GdlTerm sentence : lastMoves)
 				{
-					moves.add(this.stateMachine.convertToInternalMove(this.stateMachine.getMoveFromTerm(sentence)));
+					moves.add(stateMachine.getMoveFromTerm(sentence));
 				}
 
-				this.internalCurrentState = this.stateMachine.getNextState(this.internalCurrentState, moves);
-				getMatch().appendState(this.stateMachine.convertToExplicitMachineState(this.internalCurrentState).getContents());
-				getMatch().appendState(this.internalCurrentState);
+				currentState = stateMachine.getExplicitNextState(currentState, moves);
+				getMatch().appendState(currentState.getContents());
 
 				List<Double> allGoals = new ArrayList<Double>();
 
-				double[] goals = this.stateMachine.getSafeGoalsAvgForAllRoles(this.internalCurrentState);
+				double[] goals = this.stateMachine.getSafeGoalsAvg(currentState);
 
 				for(int i = 0; i < goals.length; i++){
 					allGoals.add(goals[i]);
@@ -311,7 +264,7 @@ public abstract class StateMachineGamer extends Gamer
 			stateMachineStop();
 			// Stop the state machine (if the state machine implementation needs
 			// to be stopped).
-			this.stateMachine.shutdown();
+			stateMachine.shutdown();
 		}
 	}
 
@@ -332,10 +285,9 @@ public abstract class StateMachineGamer extends Gamer
 	}
 
     // Internal state about the current state of the state machine.
-    private Role role;
-    //private ExplicitMachineState currentState;
-    private MachineState internalCurrentState;
-    private AbstractStateMachine stateMachine;
+    private ExplicitRole role;
+    private FpgaMachineState currentState;
+    private FPGAPropnetStateMachine stateMachine;
 
     /**
 	 * C.Sironi: added parameter to memorize the meta-gaming timeout so that it can be used by the

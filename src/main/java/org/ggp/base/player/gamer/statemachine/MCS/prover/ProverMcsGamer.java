@@ -3,6 +3,9 @@
  */
 package org.ggp.base.player.gamer.statemachine.MCS.prover;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import org.ggp.base.player.gamer.event.GamerSelectedMoveEvent;
 import org.ggp.base.player.gamer.statemachine.prover.ProverGamer;
 import org.ggp.base.util.logging.GamerLogger;
@@ -10,7 +13,7 @@ import org.ggp.base.util.statemachine.exceptions.GoalDefinitionException;
 import org.ggp.base.util.statemachine.exceptions.MoveDefinitionException;
 import org.ggp.base.util.statemachine.exceptions.StateMachineException;
 import org.ggp.base.util.statemachine.exceptions.TransitionDefinitionException;
-import org.ggp.base.util.statemachine.structure.explicit.ExplicitMachineState;
+import org.ggp.base.util.statemachine.structure.Move;
 import org.ggp.base.util.statemachine.structure.explicit.ExplicitMove;
 import org.ggp.base.util.statemachine.structure.explicit.ExplicitRole;
 
@@ -144,7 +147,7 @@ public class ProverMcsGamer extends ProverGamer {
     	int visitedNodes = -1;
     	double iterationsPerSecond = -1;
     	double nodesPerSecond = -1;
-    	ExplicitMove theMove = null;
+    	Move theMove = null;
     	double moveScoreSum = -1.0;
     	int moveVisits = -1;
     	double moveAvgScore = -1;
@@ -157,7 +160,7 @@ public class ProverMcsGamer extends ProverGamer {
 
 			GamerLogger.log("Gamer", "Selecting move using MCS.");
 
-			ExplicitMachineState currentState = this.getCurrentState();
+			//ExplicitMachineState currentState = this.getCurrentState();
 
 		//	try {
 		//		this.mcsManager.search(currentState, realTimeout);
@@ -189,7 +192,7 @@ public class ProverMcsGamer extends ProverGamer {
 		}else{
 			// If there is no time return a random move.
 			//GamerLogger.log("Gamer", "No time to start the search during metagame.");
-			theMove = this.getStateMachine().getRandomMove(this.getCurrentState(), this.getRole());
+			theMove = this.getStateMachine().getRandomMove(this.getCurrentState(), this.getStateMachine().convertToInternalRole(this.getRole()));
 			GamerLogger.log("Gamer", "No time to select next move using MCS. Returning random move " + theMove + ".");
 		}
 
@@ -198,9 +201,14 @@ public class ProverMcsGamer extends ProverGamer {
 		GamerLogger.log(GamerLogger.FORMAT.CSV_FORMAT, "Stats", this.gameStep + ";" + thinkingTime + ";" + searchTime + ";" + iterations + ";" + visitedNodes + ";" + iterationsPerSecond + ";" + nodesPerSecond + ";" + theMove + ";" + moveScoreSum + ";" + moveVisits + ";" + moveAvgScore + ";");
 
 		// TODO: IS THIS NEEDED? WHEN?
-		notifyObservers(new GamerSelectedMoveEvent(this.getStateMachine().getExplicitLegalMoves(this.getCurrentState(), this.getRole()), theMove, thinkingTime));
+		List<Move> legalMoves = this.getStateMachine().getLegalMoves(this.getCurrentState(), this.getStateMachine().convertToInternalRole(this.getRole()));
+		List<ExplicitMove> explicitLegalMoves = new ArrayList<ExplicitMove>();
+		for(Move m : legalMoves) {
+			explicitLegalMoves.add(this.getStateMachine().convertToExplicitMove(m));
+		}
+		notifyObservers(new GamerSelectedMoveEvent(explicitLegalMoves, this.getStateMachine().convertToExplicitMove(theMove), thinkingTime));
 
-		return theMove;
+		return this.getStateMachine().convertToExplicitMove(theMove);
 	}
 
 	@Override

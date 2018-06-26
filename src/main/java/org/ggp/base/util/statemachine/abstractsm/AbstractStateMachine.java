@@ -6,9 +6,13 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Random;
+import java.util.Set;
 
 import org.ggp.base.util.concurrency.ConcurrencyUtils;
 import org.ggp.base.util.gdl.grammar.Gdl;
+import org.ggp.base.util.gdl.grammar.GdlConstant;
+import org.ggp.base.util.gdl.grammar.GdlSentence;
+import org.ggp.base.util.gdl.grammar.GdlTerm;
 import org.ggp.base.util.logging.GamerLogger;
 import org.ggp.base.util.statemachine.exceptions.GoalDefinitionException;
 import org.ggp.base.util.statemachine.exceptions.MoveDefinitionException;
@@ -163,15 +167,29 @@ public abstract class AbstractStateMachine {
 
     public abstract ExplicitMove convertToExplicitMove(Move move);
 
-    public List<ExplicitMove> convertToExplicitJointMove(List<Move> jointMove){
-    	List<ExplicitMove> explicitJointMove = new ArrayList<ExplicitMove>();
-    	for(Move move : jointMove) {
-    		explicitJointMove.add(this.convertToExplicitMove(move));
+    public List<ExplicitMove> convertToExplicitMoves(List<Move> moves){
+    	List<ExplicitMove> explicitMoves = new ArrayList<ExplicitMove>();
+    	for(Move move : moves) {
+    		explicitMoves.add(this.convertToExplicitMove(move));
     	}
-    	return explicitJointMove;
+    	return explicitMoves;
     }
 
     public abstract ExplicitRole convertToExplicitRole(Role role);
+
+	public abstract MachineState convertToInternalMachineState(ExplicitMachineState explicitState);
+
+	public abstract Move convertToInternalMove(ExplicitMove explicitMove);
+
+	public abstract Role convertToInternalRole(ExplicitRole explicitRole);
+
+	public List<Move> convertToInternalMoves(List<ExplicitMove> moves){
+    	List<Move> internalMoves = new ArrayList<Move>();
+    	for(ExplicitMove move : moves) {
+    		internalMoves.add(this.convertToInternalMove(move));
+    	}
+    	return internalMoves;
+    }
 
 	//-------------------------- OTHER METHODS THAT ALLOW TO MANAGE THE STATE MACHINE ---------------------------//
 
@@ -203,7 +221,7 @@ public abstract class AbstractStateMachine {
      * <p>
      * CONTRACT: Should be called once per move.
      */
-    public void doPerMoveWork() {}
+    public abstract void doPerMoveWork();
 
     /** Override this to allow the state machine to be conditioned on a particular current state.
      * This means that the state machine will only handle portions of the game tree at and below
@@ -798,5 +816,20 @@ public abstract class AbstractStateMachine {
 
 		return jointMovesAndNextStates;
 	}
+
+    // The following methods are included in the AbstractStateMachine base so
+    // implementations which use alternative Role/Move/State representations
+    // can look up/compute what some Gdl corresponds to in their representation.
+    // They are implemented for convenience, using the default ways of generating
+    // these objects, but they can be overridden to support machine-specific objects.
+    public ExplicitMachineState getMachineStateFromSentenceList(Set<GdlSentence> sentenceList) {
+        return new ExplicitMachineState(sentenceList);
+    }
+    public ExplicitRole getRoleFromConstant(GdlConstant constant) {
+        return new ExplicitRole(constant);
+    }
+    public ExplicitMove getMoveFromTerm(GdlTerm term) {
+        return new ExplicitMove(term);
+    }
 
 }

@@ -3,6 +3,9 @@
  */
 package org.ggp.base.player.gamer.statemachine.MCS.propnet;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import org.ggp.base.player.gamer.event.GamerSelectedMoveEvent;
 import org.ggp.base.player.gamer.statemachine.MCS.manager.MCSException;
 import org.ggp.base.player.gamer.statemachine.MCS.manager.propnet.InternalPropnetMCSManager;
@@ -13,7 +16,9 @@ import org.ggp.base.util.statemachine.exceptions.GoalDefinitionException;
 import org.ggp.base.util.statemachine.exceptions.MoveDefinitionException;
 import org.ggp.base.util.statemachine.exceptions.StateMachineException;
 import org.ggp.base.util.statemachine.exceptions.TransitionDefinitionException;
+import org.ggp.base.util.statemachine.structure.Role;
 import org.ggp.base.util.statemachine.structure.compact.CompactMachineState;
+import org.ggp.base.util.statemachine.structure.compact.CompactMove;
 import org.ggp.base.util.statemachine.structure.compact.CompactRole;
 import org.ggp.base.util.statemachine.structure.explicit.ExplicitMove;
 
@@ -170,11 +175,25 @@ public class McsGamer extends InternalPropnetGamer {
 
 		GamerLogger.log("Gamer", "Starting move selection for game step " + this.gameStep + " with available time " + (realTimeout-start) + "ms.");
 
+		CompactMachineState currentState;
+		if(this.getCurrentState() instanceof CompactMachineState) {
+			currentState = (CompactMachineState)this.getCurrentState();
+		}else {
+			GamerLogger.logError("Gamer", "Wrong type of current state. Expected CompactMachineState, found " + this.getCurrentState().getClass().getSimpleName() + ".");
+			throw new RuntimeException("Gamer - Wrong type of current state. Expected CompactMachineState, found " + this.getCurrentState().getClass().getSimpleName() + ".");
+		}
+		Role theRole = this.getStateMachine().convertToInternalRole(this.getRole());
+		CompactRole compactRole;
+		if(theRole instanceof CompactRole) {
+			compactRole = (CompactRole)theRole;
+		}else {
+			GamerLogger.logError("Gamer", "Wrong type of role. Expected CompactRole, found " + theRole.getClass().getSimpleName() + ".");
+			throw new RuntimeException("Gamer - Wrong type of role. Expected CompactRole, found " + theRole.getClass().getSimpleName() + ".");
+		}
+
 		if(System.currentTimeMillis() < realTimeout){
 
 			GamerLogger.log("Gamer", "Selecting move using MCS.");
-
-			CompactMachineState currentState = this.thePropnetMachine.convertToCompactMachineState(this.getCurrentState());
 
 			try {
 				this.mcsManager.search(currentState, realTimeout);
@@ -200,13 +219,13 @@ public class McsGamer extends InternalPropnetGamer {
 				GamerLogger.logError("Gamer", "MCS failed to return a move.");
 				GamerLogger.logStackTrace("Gamer", e);
 				// If the MCS manager failed to return a move return a random one.
-				theMove = this.thePropnetMachine.getRandomMove(this.getCurrentState(), this.getRole());
+				theMove = this.thePropnetMachine.convertToExplicitMove(this.thePropnetMachine.getRandomMove(currentState, compactRole));
 				GamerLogger.log("Gamer", "Returning random move " + theMove + ".");
 			}
 		}else{
 			// If there is no time return a random move.
 			//GamerLogger.log("Gamer", "No time to start the search during metagame.");
-			theMove = this.thePropnetMachine.getRandomMove(this.getCurrentState(), this.getRole());
+			theMove = this.thePropnetMachine.convertToExplicitMove(this.thePropnetMachine.getRandomMove(currentState, compactRole));
 			GamerLogger.log("Gamer", "No time to select next move using MCS. Returning random move " + theMove + ".");
 		}
 
@@ -215,7 +234,12 @@ public class McsGamer extends InternalPropnetGamer {
 		GamerLogger.log(GamerLogger.FORMAT.CSV_FORMAT, "Stats", this.gameStep + ";" + thinkingTime + ";" + searchTime + ";" + iterations + ";" + visitedNodes + ";" + iterationsPerSecond + ";" + nodesPerSecond + ";" + theMove + ";" + moveScoreSum + ";" + moveVisits + ";" + moveAvgScore + ";");
 
 		// TODO: IS THIS NEEDED? WHEN?
-		notifyObservers(new GamerSelectedMoveEvent(this.thePropnetMachine.getExplicitLegalMoves(this.getCurrentState(), this.getRole()), theMove, thinkingTime));
+		List<CompactMove> compactLegalMoves = this.thePropnetMachine.getCompactLegalMoves(currentState, compactRole);
+		List<ExplicitMove> legalMoves = new ArrayList<ExplicitMove>();
+		for(CompactMove m : compactLegalMoves) {
+			legalMoves.add(this.thePropnetMachine.convertToExplicitMove(m));
+		}
+		notifyObservers(new GamerSelectedMoveEvent(legalMoves, theMove, thinkingTime));
 
 		return theMove;
 	}

@@ -23,7 +23,6 @@ import org.ggp.base.util.gdl.scrambler.GdlScrambler;
 import org.ggp.base.util.gdl.scrambler.MappingGdlScrambler;
 import org.ggp.base.util.gdl.scrambler.NoOpGdlScrambler;
 import org.ggp.base.util.statemachine.structure.MachineState;
-import org.ggp.base.util.statemachine.structure.Move;
 import org.ggp.base.util.statemachine.structure.explicit.ExplicitMove;
 import org.ggp.base.util.statemachine.structure.explicit.ExplicitRole;
 import org.ggp.base.util.symbol.factory.SymbolFactory;
@@ -61,8 +60,9 @@ public final class GamerMatch
     private final int previewClock;
     private final Date startTime;
 	private final Game theGame;
-	private final List<List<Move>> moveHistory;
-	private final List<Set<MachineState>> stateHistory;
+	private final List<List<GdlTerm>> moveHistory;
+	private final List<Set<GdlSentence>> stateHistory;
+	private final List<MachineState> internalStateHistory;
 	private final List<List<String>> errorHistory;
 	private final List<Date> stateTimeHistory;
 	private boolean isCompleted;
@@ -99,14 +99,27 @@ public final class GamerMatch
 		}
 		this.numRoles = roles.size();
 
-		this.moveHistory = new ArrayList<List<Move>>();
-		this.stateHistory = new ArrayList<Set<MachineState>>();
+		this.moveHistory = new ArrayList<List<GdlTerm>>();
+		this.stateHistory = new ArrayList<Set<GdlSentence>>();
+		this.internalStateHistory = new ArrayList<MachineState>();
 		this.stateTimeHistory = new ArrayList<Date>();
 		this.errorHistory = new ArrayList<List<String>>();
 
 		this.goalValues = new ArrayList<Double>();
 	}
 
+	/**
+	 * Note that when this method loads the match from memory we lose the internal state history (i.e. the list)
+	 * of visited states represented with the internal state format of the state machine. This can be reconstructed
+	 * by translating the GDL states in the stateHistory to the corresponding internal states using the state machine.
+	 *
+	 * @param theJSON
+	 * @param theGame
+	 * @param authToken
+	 * @throws JSONException
+	 * @throws SymbolFormatException
+	 * @throws GdlFormatException
+	 */
 	public GamerMatch(String theJSON, Game theGame, String authToken) throws JSONException, SymbolFormatException, GdlFormatException {
         JSONObject theMatchObject = new JSONObject(theJSON);
 
@@ -145,8 +158,9 @@ public final class GamerMatch
 		}
         this.numRoles = roles.size();
 
-        this.moveHistory = new ArrayList<List<Move>>();
-        this.stateHistory = new ArrayList<Set<MachineState>>();
+        this.moveHistory = new ArrayList<List<GdlTerm>>();
+        this.stateHistory = new ArrayList<Set<GdlSentence>>();
+        this.internalStateHistory = new ArrayList<MachineState>();
         this.stateTimeHistory = new ArrayList<Date>();
         this.errorHistory = new ArrayList<List<String>>();
 
@@ -258,6 +272,10 @@ public final class GamerMatch
 	    stateTimeHistory.add(new Date());
 	}
 
+	public void appendState(MachineState state) {
+	    internalStateHistory.add(state);
+	}
+
 	public void appendErrors(List<String> errors) {
 	    errorHistory.add(errors);
 	}
@@ -283,6 +301,11 @@ public final class GamerMatch
 
 	/* Complex accessors */
 
+	/**
+	 * Note that this method doesn't log the internalStateHistory, that anyway can be reconstructed by
+     * a state machine using the stateHistory.
+	 * @return
+	 */
     public String toJSON() {
         JSONObject theJSON = new JSONObject();
 
@@ -337,6 +360,11 @@ public final class GamerMatch
         return theJSON.toString();
     }
 
+    /**
+     * Note that this method doesn't log the internalStateHistory, that anyway can be reconstructed by
+     * a state machine using the stateHistory.
+     * @return
+     */
     public String toXML() {
     	try {
     		JSONObject theJSON = new JSONObject(toJSON());
@@ -412,6 +440,10 @@ public final class GamerMatch
 
     public List<Set<GdlSentence>> getStateHistory() {
         return stateHistory;
+    }
+
+    public List<MachineState> getInternalStateHistory() {
+        return internalStateHistory;
     }
 
     public List<Date> getStateTimeHistory() {
