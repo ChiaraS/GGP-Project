@@ -8,12 +8,13 @@ import java.util.List;
 import org.ggp.base.player.gamer.event.GamerSelectedMoveEvent;
 import org.ggp.base.player.gamer.statemachine.sample.SampleGamer;
 import org.ggp.base.util.logging.GamerLogger;
-import org.ggp.base.util.statemachine.StateMachine;
+import org.ggp.base.util.statemachine.abstractsm.AbstractStateMachine;
 import org.ggp.base.util.statemachine.exceptions.GoalDefinitionException;
 import org.ggp.base.util.statemachine.exceptions.MoveDefinitionException;
 import org.ggp.base.util.statemachine.exceptions.StateMachineException;
 import org.ggp.base.util.statemachine.exceptions.TransitionDefinitionException;
-import org.ggp.base.util.statemachine.structure.explicit.ExplicitMachineState;
+import org.ggp.base.util.statemachine.structure.MachineState;
+import org.ggp.base.util.statemachine.structure.Move;
 import org.ggp.base.util.statemachine.structure.explicit.ExplicitMove;
 
 /**
@@ -38,7 +39,7 @@ public class MCRandomActions extends SampleGamer {
 	@Override
 	public void stateMachineMetaGame(long timeout) throws TransitionDefinitionException, MoveDefinitionException, GoalDefinitionException
 	{
-		GamerLogger.startFileLogging(getMatch(), getRole().getName().getValue());
+		GamerLogger.startFileLogging(getMatch(), getStateMachine().convertToExplicitRole(getRole()).getName().getValue());
 	}
 
 	/* (non-Javadoc)
@@ -49,7 +50,7 @@ public class MCRandomActions extends SampleGamer {
 			throws TransitionDefinitionException, MoveDefinitionException,
 			GoalDefinitionException, StateMachineException {
 
-		StateMachine theMachine = getStateMachine();
+		AbstractStateMachine theMachine = getStateMachine();
 		long start = System.currentTimeMillis();
 		long finishBy = timeout - 30000;
 
@@ -57,8 +58,8 @@ public class MCRandomActions extends SampleGamer {
 		this.failedCalls = 0;
 		this.numberOfIterations = 0;
 
-		List<ExplicitMove> moves = theMachine.getExplicitLegalMoves(getCurrentState(), getRole());
-		ExplicitMove selection = moves.get(0);
+		List<Move> moves = theMachine.getLegalMoves(getCurrentState(), getRole());
+		Move selection = moves.get(0);
 		if (moves.size() > 1) {
     		int[] moveTotalPoints = new int[moves.size()];
     		int[] moveTotalAttempts = new int[moves.size()];
@@ -108,33 +109,30 @@ public class MCRandomActions extends SampleGamer {
 
 
 
-		notifyObservers(new GamerSelectedMoveEvent(moves, selection, stop - start));
-		return selection;
+		notifyObservers(new GamerSelectedMoveEvent(theMachine.convertToExplicitMoves(moves), theMachine.convertToExplicitMove(selection), stop - start));
+		return theMachine.convertToExplicitMove(selection);
 
 	}
 
-	private double performPlayout(ExplicitMachineState currentState, ExplicitMove move) throws MoveDefinitionException, TransitionDefinitionException, GoalDefinitionException, StateMachineException{
+	private double performPlayout(MachineState currentState, Move move) throws MoveDefinitionException, TransitionDefinitionException, GoalDefinitionException, StateMachineException{
 
-		StateMachine theMachine = getStateMachine();
-		ExplicitMachineState nextState = theMachine.getRandomNextState(currentState, getRole(), move);
+		AbstractStateMachine theMachine = getStateMachine();
+		MachineState nextState = theMachine.getRandomNextState(currentState, getRole(), move);
 
-		List<Double> goals = null;
+		double[] goals = null;
 
 		while(!theMachine.isTerminal(nextState)){
 			nextState = theMachine.getRandomNextState(nextState);
-			try{
-				this.callsNumber++;
-				goals = theMachine.getGoals(nextState);
-				//System.out.println(goals);
-			}catch(GoalDefinitionException e){
-				this.failedCalls++;
-			}
+
+			this.callsNumber++;
+			goals = theMachine.getSafeGoalsAvgForAllRoles(nextState);
+			//System.out.println(goals);
 		}
 
-		goals = theMachine.getGoals(nextState);
+		goals = theMachine.getSafeGoalsAvgForAllRoles(nextState);
 		this.callsNumber++;
 
-		return goals.get(theMachine.getRoleIndices().get(getRole()));
+		return goals[theMachine.getRoleIndices().get(getRole())];
 	}
 
 	@Override

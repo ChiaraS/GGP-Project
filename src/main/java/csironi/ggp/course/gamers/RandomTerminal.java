@@ -3,6 +3,7 @@
  */
 package csironi.ggp.course.gamers;
 
+import java.util.Arrays;
 import java.util.List;
 
 import org.ggp.base.player.gamer.event.GamerSelectedMoveEvent;
@@ -30,7 +31,7 @@ public class RandomTerminal extends SampleGamer {
 	public void stateMachineMetaGame(long timeout) throws TransitionDefinitionException, MoveDefinitionException, GoalDefinitionException
 	{
 		this.totalTime = 0L;
-		GamerLogger.startFileLogging(getMatch(), getRole().getName().getValue());
+		GamerLogger.startFileLogging(getMatch(), getStateMachine().convertToExplicitRole(getRole()).getName().getValue());
 	}
 
 	/* (non-Javadoc)
@@ -43,7 +44,7 @@ public class RandomTerminal extends SampleGamer {
 
 		long start = System.currentTimeMillis();
 
-		List<ExplicitMove> moves = getStateMachine().getExplicitLegalMoves(getCurrentState(), getRole());
+		List<ExplicitMove> moves = getStateMachine().convertToExplicitMoves(getStateMachine().getLegalMoves(getCurrentState(), getRole()));
 		ExplicitMove selection = (moves.get(this.random.nextInt(moves.size())));
 
 		long stop = System.currentTimeMillis();
@@ -73,15 +74,11 @@ public class RandomTerminal extends SampleGamer {
 
 		long start = System.currentTimeMillis();
 
-		List<Double> goals = null;
+		double[] goals = null;
 
 		Boolean fail = false;
 
-		try {
-			goals = getStateMachine().getGoals(getCurrentState());
-		} catch (GoalDefinitionException | StateMachineException e) {
-			fail=true;
-		}
+		goals = getStateMachine().getSafeGoalsAvgForAllRoles(getCurrentState());
 
 		long stop = System.currentTimeMillis();
 
@@ -89,7 +86,7 @@ public class RandomTerminal extends SampleGamer {
 
 		if(!fail){
 			if(goals != null){
-				GamerLogger.log("Goals", goals.toString());
+				GamerLogger.log("Goals", Arrays.toString(goals));
 			}
 			GamerLogger.log("Times", "Single getGoals() call: " + (stop-start) + " ms");
 		}else{

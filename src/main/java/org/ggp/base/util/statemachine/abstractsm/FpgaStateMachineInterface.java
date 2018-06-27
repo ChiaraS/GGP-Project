@@ -43,6 +43,12 @@ public interface FpgaStateMachineInterface extends AbstractStateMachineInterface
 
     public ExplicitRole convertToExplicitRole(FpgaRole role);
 
+    public FpgaMachineState convertToFpgaMachineState(ExplicitMachineState state);
+
+    public FpgaMove convertToFpgaMove(ExplicitMove move);
+
+    public FpgaRole convertToFpgaRole(ExplicitRole role);
+
     // Methods that perform playout and playout choices using the reasoner underlying the state machine
 
 	public MyPair<double[], Double> fastPlayouts(FpgaMachineState state, int numSimulationsPerPlayout, int maxDepth);

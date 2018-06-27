@@ -14,6 +14,7 @@ import org.ggp.base.util.gdl.grammar.GdlConstant;
 import org.ggp.base.util.gdl.grammar.GdlSentence;
 import org.ggp.base.util.gdl.grammar.GdlTerm;
 import org.ggp.base.util.logging.GamerLogger;
+import org.ggp.base.util.statemachine.StateMachine;
 import org.ggp.base.util.statemachine.exceptions.GoalDefinitionException;
 import org.ggp.base.util.statemachine.exceptions.MoveDefinitionException;
 import org.ggp.base.util.statemachine.exceptions.StateMachineException;
@@ -176,6 +177,14 @@ public abstract class AbstractStateMachine {
     }
 
     public abstract ExplicitRole convertToExplicitRole(Role role);
+
+    public List<ExplicitRole> convertToExplicitRoles(List<Role> roles){
+    	List<ExplicitRole> explicitRoles = new ArrayList<ExplicitRole>();
+    	for(Role role : roles) {
+    		explicitRoles.add(this.convertToExplicitRole(role));
+    	}
+    	return explicitRoles;
+    }
 
 	public abstract MachineState convertToInternalMachineState(ExplicitMachineState explicitState);
 
@@ -831,5 +840,7 @@ public abstract class AbstractStateMachine {
     public ExplicitMove getMoveFromTerm(GdlTerm term) {
         return new ExplicitMove(term);
     }
+
+    public abstract StateMachine getActualStateMachine();
 
 }

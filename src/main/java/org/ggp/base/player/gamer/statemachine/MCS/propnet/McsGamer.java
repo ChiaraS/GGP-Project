@@ -16,7 +16,6 @@ import org.ggp.base.util.statemachine.exceptions.GoalDefinitionException;
 import org.ggp.base.util.statemachine.exceptions.MoveDefinitionException;
 import org.ggp.base.util.statemachine.exceptions.StateMachineException;
 import org.ggp.base.util.statemachine.exceptions.TransitionDefinitionException;
-import org.ggp.base.util.statemachine.structure.Role;
 import org.ggp.base.util.statemachine.structure.compact.CompactMachineState;
 import org.ggp.base.util.statemachine.structure.compact.CompactMove;
 import org.ggp.base.util.statemachine.structure.compact.CompactRole;
@@ -100,8 +99,6 @@ public class McsGamer extends InternalPropnetGamer {
 
 		this.gameStep = 0;
 
-		CompactRole myRole = this.thePropnetMachine.convertToCompactRole(this.getRole());
-
 		// Create the MCS manager and start simulations.
 //		this.mcsManager = new InternalPropnetMCSManager(new PnRandomPlayout(this.thePropnetMachine),
 //				this.thePropnetMachine,	myRole, maxSearchDepth, this.random);
@@ -182,13 +179,12 @@ public class McsGamer extends InternalPropnetGamer {
 			GamerLogger.logError("Gamer", "Wrong type of current state. Expected CompactMachineState, found " + this.getCurrentState().getClass().getSimpleName() + ".");
 			throw new RuntimeException("Gamer - Wrong type of current state. Expected CompactMachineState, found " + this.getCurrentState().getClass().getSimpleName() + ".");
 		}
-		Role theRole = this.getStateMachine().convertToInternalRole(this.getRole());
 		CompactRole compactRole;
-		if(theRole instanceof CompactRole) {
-			compactRole = (CompactRole)theRole;
+		if(this.getRole() instanceof CompactRole) {
+			compactRole = (CompactRole)this.getRole();
 		}else {
-			GamerLogger.logError("Gamer", "Wrong type of role. Expected CompactRole, found " + theRole.getClass().getSimpleName() + ".");
-			throw new RuntimeException("Gamer - Wrong type of role. Expected CompactRole, found " + theRole.getClass().getSimpleName() + ".");
+			GamerLogger.logError("Gamer", "Wrong type of role. Expected CompactRole, found " + this.getRole().getClass().getSimpleName() + ".");
+			throw new RuntimeException("Gamer - Wrong type of role. Expected CompactRole, found " + this.getRole().getClass().getSimpleName() + ".");
 		}
 
 		if(System.currentTimeMillis() < realTimeout){

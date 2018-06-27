@@ -7,11 +7,12 @@ import java.util.List;
 
 import org.ggp.base.player.gamer.event.GamerSelectedMoveEvent;
 import org.ggp.base.player.gamer.statemachine.sample.SampleGamer;
-import org.ggp.base.util.statemachine.StateMachine;
+import org.ggp.base.util.statemachine.abstractsm.AbstractStateMachine;
 import org.ggp.base.util.statemachine.exceptions.GoalDefinitionException;
 import org.ggp.base.util.statemachine.exceptions.MoveDefinitionException;
 import org.ggp.base.util.statemachine.exceptions.StateMachineException;
 import org.ggp.base.util.statemachine.exceptions.TransitionDefinitionException;
+import org.ggp.base.util.statemachine.structure.Move;
 import org.ggp.base.util.statemachine.structure.explicit.ExplicitMove;
 
 import csironi.ggp.course.algorithms.MinMaxSequence;
@@ -48,11 +49,11 @@ public class CSequentialGamer extends SampleGamer {
 	public void stateMachineMetaGame(long timeout) throws TransitionDefinitionException, MoveDefinitionException, GoalDefinitionException, StateMachineException
 	{
 		// Get the state machine
-		StateMachine stateMachine = getStateMachine();
+		AbstractStateMachine stateMachine = getStateMachine();
 
 		// Search the bast sequence of action to play during the whole game
-		MinMaxSequence search = new MinMaxSequence(true, "C:\\Users\\c.sironi\\BITBUCKET REPOS\\GGP-Base\\LOG\\SequentialLog.txt", stateMachine);
-		this.bestPlan = search.bestmove(getCurrentState(), getRole());
+		MinMaxSequence search = new MinMaxSequence(true, "C:\\Users\\c.sironi\\BITBUCKET REPOS\\GGP-Base\\LOG\\SequentialLog.txt", stateMachine.getActualStateMachine());
+		this.bestPlan = search.bestmove(stateMachine.convertToExplicitMachineState(getCurrentState()), stateMachine.convertToExplicitRole(getRole()));
 
 	}
 
@@ -68,8 +69,8 @@ public class CSequentialGamer extends SampleGamer {
 		long start = System.currentTimeMillis();
 
 		// Get state machine and list of available legal moves for the player
-		StateMachine stateMachine = getStateMachine();
-		List<ExplicitMove> moves = stateMachine.getExplicitLegalMoves(getCurrentState(), getRole());
+		AbstractStateMachine stateMachine = getStateMachine();
+		List<Move> moves = stateMachine.getLegalMoves(getCurrentState(), getRole());
 
 		// Return and remove the best move for the current step from the sequence of best moves
 		ExplicitMove selection = bestPlan.remove(0);
@@ -78,7 +79,7 @@ public class CSequentialGamer extends SampleGamer {
 		// It is mandatory that stop<timeout
 		long stop = System.currentTimeMillis();
 
-		notifyObservers(new GamerSelectedMoveEvent(moves, selection, stop - start));
+		notifyObservers(new GamerSelectedMoveEvent(stateMachine.convertToExplicitMoves(moves), selection, stop - start));
 
 		return selection;
 	}

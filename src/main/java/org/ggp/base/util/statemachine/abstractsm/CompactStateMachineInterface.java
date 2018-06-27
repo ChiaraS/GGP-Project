@@ -40,6 +40,12 @@ public interface CompactStateMachineInterface extends AbstractStateMachineInterf
 
     public ExplicitRole convertToExplicitRole(CompactRole role);
 
+    public CompactMachineState convertToCompactMachineState(ExplicitMachineState state);
+
+    public CompactMove convertToCompactMove(ExplicitMove move);
+
+    public CompactRole convertToCompactRole(ExplicitRole role);
+
     // Methods that perform playout and playout choices using the reasoner underlying the state machine
 
 	public MyPair<double[], Double> fastPlayouts(CompactMachineState state, int numSimulationsPerPlayout, int maxDepth) throws TransitionDefinitionException, MoveDefinitionException, StateMachineException, GoalDefinitionException;

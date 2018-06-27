@@ -8,6 +8,7 @@ import java.util.Vector;
 
 import org.ggp.base.util.Pair;
 import org.ggp.base.util.gdl.grammar.Gdl;
+import org.ggp.base.util.statemachine.StateMachine;
 import org.ggp.base.util.statemachine.exceptions.MoveDefinitionException;
 import org.ggp.base.util.statemachine.exceptions.StateMachineException;
 import org.ggp.base.util.statemachine.exceptions.StateMachineInitializationException;
@@ -282,6 +283,31 @@ public class FpgaStateMachine extends AbstractStateMachine {
 			// the fault of some programming error that caused the wrong state and role formats to end up here.
 			throw new RuntimeException("FpgaStateMachine-getMoveForRole(): detected wrong type for machine state: [" + state.getClass().getSimpleName() + "].");
 		}
+	}
+
+	@Override
+	public MachineState convertToInternalMachineState(ExplicitMachineState explicitState) {
+		return this.theMachine.convertToFpgaMachineState(explicitState);
+	}
+
+	@Override
+	public Move convertToInternalMove(ExplicitMove explicitMove) {
+		return this.theMachine.convertToFpgaMove(explicitMove);
+	}
+
+	@Override
+	public Role convertToInternalRole(ExplicitRole explicitRole) {
+		return this.theMachine.convertToFpgaRole(explicitRole);
+	}
+
+	@Override
+	public void doPerMoveWork() {
+		this.theMachine.doPerMoveWork();
+	}
+
+	@Override
+	public StateMachine getActualStateMachine() {
+		return this.theMachine.getActualStateMachine();
 	}
 
 }

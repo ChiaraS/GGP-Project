@@ -35,7 +35,7 @@ public class RandomActions extends RandomTerminal {
 
 		long start = System.currentTimeMillis();
 
-		List<ExplicitMove> moves = getStateMachine().getExplicitLegalMoves(getCurrentState(), getRole());
+		List<ExplicitMove> moves = getStateMachine().convertToExplicitMoves(getStateMachine().getLegalMoves(getCurrentState(), getRole()));
 		ExplicitMove selection = (moves.get(this.random.nextInt(moves.size())));
 
 		long stop = System.currentTimeMillis();

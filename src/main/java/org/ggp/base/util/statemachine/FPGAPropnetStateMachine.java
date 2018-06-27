@@ -106,7 +106,17 @@ public class FPGAPropnetStateMachine extends StateMachine implements FpgaStateMa
 	 */
 	@Override
 	public boolean isTerminal(ExplicitMachineState state) {
-		return this.isTerminal(this.convertToFpgaMachineState(state));
+		// This state machine cannot translate the ExplicitMachineState to an FpgaMachineState,
+		// so it throws an exception because it cannot compute terminality of an ExplicitMachineState.
+		// NOTE: we throw exception here instead of in the method convertToFpgaMachineState() because
+		// there are still parts in the code where we don't care if that method doesn't return a correct
+		// state translation (e.g. when we just want to log the state the agent's search won't be affected
+		// by a wrong state translation).
+		GamerLogger.logError("StateMachine", "[FPGAPropnet] Impossible to compute terminality of ExplicitMachineState, cannot translate to corresponding FpgaMachineState.");
+		// Here we throw a RuntimeException instead of one of the state machine checked exceptions
+		// because the problem is not due to an error of the state machine. It means that there is
+		// something wrong in the code that should not call this method in the first place.
+		throw new RuntimeException("StateMachine - [FPGAPropnet] Impossible to compute terminality of ExplicitMachineState, cannot translate to corresponding FpgaMachineState.");
 	}
 
 	/**

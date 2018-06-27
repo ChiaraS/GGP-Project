@@ -4,7 +4,8 @@ import org.ggp.base.player.gamer.exception.GamePreviewException;
 import org.ggp.base.player.gamer.statemachine.StateMachineGamer;
 import org.ggp.base.util.game.Game;
 import org.ggp.base.util.logging.GamerLogger;
-import org.ggp.base.util.statemachine.StateMachine;
+import org.ggp.base.util.statemachine.abstractsm.AbstractStateMachine;
+import org.ggp.base.util.statemachine.abstractsm.ExplicitStateMachine;
 import org.ggp.base.util.statemachine.cache.NoSyncRefactoredCachedStateMachine;
 import org.ggp.base.util.statemachine.implementation.prover.ProverStateMachine;
 
@@ -30,14 +31,14 @@ public abstract class ProverGamer extends StateMachineGamer {
 	}
 
 	@Override
-	public StateMachine getInitialStateMachine() {
+	public AbstractStateMachine getInitialStateMachine() {
 
 		if(cache){
 			GamerLogger.log("Gamer", "Returning Prover state machine with cache.");
-			return new NoSyncRefactoredCachedStateMachine(this.random, new ProverStateMachine(this.random));
+			return new ExplicitStateMachine(new NoSyncRefactoredCachedStateMachine(this.random, new ProverStateMachine(this.random)));
 		}else{
 			GamerLogger.log("Gamer", "Returning Prover state machine without cache.");
-			return new ProverStateMachine(this.random);
+			return new ExplicitStateMachine(new ProverStateMachine(this.random));
 		}
 
 	}

@@ -6,7 +6,8 @@ import org.ggp.base.player.gamer.event.GamerSelectedMoveEvent;
 import org.ggp.base.player.gamer.exception.GamePreviewException;
 import org.ggp.base.player.gamer.statemachine.StateMachineGamer;
 import org.ggp.base.util.game.Game;
-import org.ggp.base.util.statemachine.StateMachine;
+import org.ggp.base.util.statemachine.abstractsm.AbstractStateMachine;
+import org.ggp.base.util.statemachine.abstractsm.ExplicitStateMachine;
 import org.ggp.base.util.statemachine.exceptions.GoalDefinitionException;
 import org.ggp.base.util.statemachine.exceptions.MoveDefinitionException;
 import org.ggp.base.util.statemachine.exceptions.StateMachineException;
@@ -21,8 +22,8 @@ public final class MonteCarloUCTGamer extends StateMachineGamer {
 	}
 
 	@Override
-	public StateMachine getInitialStateMachine() {
-		return new ProverStateMachine(this.random);
+	public AbstractStateMachine getInitialStateMachine() {
+		return new ExplicitStateMachine(new ProverStateMachine(this.random));
 	}
 
 	@Override
@@ -39,7 +40,7 @@ public final class MonteCarloUCTGamer extends StateMachineGamer {
 			GoalDefinitionException, StateMachineException {
 		long start = System.currentTimeMillis();
 
-		List<ExplicitMove> moves = getStateMachine().getExplicitLegalMoves(getCurrentState(), getRole());
+		List<ExplicitMove> moves = getStateMachine().convertToExplicitMoves(getStateMachine().getLegalMoves(getCurrentState(), getRole()));
 		ExplicitMove selection = (moves.get(this.random.nextInt(moves.size())));
 
 		long stop = System.currentTimeMillis();

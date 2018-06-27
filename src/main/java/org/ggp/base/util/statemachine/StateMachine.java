@@ -229,7 +229,8 @@ public abstract class StateMachine implements ExplicitStateMachineInterface{
      * <p>
      * CONTRACT: Should be called once per move.
      */
-    public void doPerMoveWork() {}
+    @Override
+	public void doPerMoveWork() {}
 
     /** Override this to provide memory-saving destructive-next-state functionality.
      * <p>
@@ -806,5 +807,10 @@ public abstract class StateMachine implements ExplicitStateMachineInterface{
 
 	public void setRandom(Random random) {
 		this.random = random;
+	}
+
+	@Override
+	public StateMachine getActualStateMachine() {
+		return this;
 	}
 }

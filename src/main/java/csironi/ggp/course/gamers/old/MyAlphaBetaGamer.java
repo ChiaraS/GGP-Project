@@ -12,14 +12,15 @@ import java.util.Map;
 
 import org.ggp.base.player.gamer.event.GamerSelectedMoveEvent;
 import org.ggp.base.player.gamer.statemachine.sample.SampleGamer;
-import org.ggp.base.util.statemachine.StateMachine;
+import org.ggp.base.util.statemachine.abstractsm.AbstractStateMachine;
 import org.ggp.base.util.statemachine.exceptions.GoalDefinitionException;
 import org.ggp.base.util.statemachine.exceptions.MoveDefinitionException;
 import org.ggp.base.util.statemachine.exceptions.StateMachineException;
 import org.ggp.base.util.statemachine.exceptions.TransitionDefinitionException;
-import org.ggp.base.util.statemachine.structure.explicit.ExplicitMachineState;
+import org.ggp.base.util.statemachine.structure.MachineState;
+import org.ggp.base.util.statemachine.structure.Move;
+import org.ggp.base.util.statemachine.structure.Role;
 import org.ggp.base.util.statemachine.structure.explicit.ExplicitMove;
-import org.ggp.base.util.statemachine.structure.explicit.ExplicitRole;
 
 /**
  * @author C.Sironi
@@ -45,13 +46,13 @@ public class MyAlphaBetaGamer extends SampleGamer {
 			GoalDefinitionException, StateMachineException {
 		long start = System.currentTimeMillis();
 
-		StateMachine stateMachine = getStateMachine();
-		ExplicitMachineState state = getCurrentState();
-		ExplicitRole myRole = getRole();
+		AbstractStateMachine stateMachine = getStateMachine();
+		MachineState state = getCurrentState();
+		Role myRole = getRole();
 
-		List<ExplicitMove> myMoves = stateMachine.getExplicitLegalMoves(state, myRole);
+		List<Move> myMoves = stateMachine.getLegalMoves(state, myRole);
 
-		ExplicitMove selection = myMoves.get(0);
+		Move selection = myMoves.get(0);
 
 		try{
 			out = new PrintWriter(new BufferedWriter(new FileWriter("C:\\Users\\c.sironi\\BITBUCKET REPOS\\GGP-Base\\LOG\\mylogAlphaBeta.txt", true)));
@@ -63,7 +64,7 @@ public class MyAlphaBetaGamer extends SampleGamer {
 
 			long stop = System.currentTimeMillis();
 
-			notifyObservers(new GamerSelectedMoveEvent(myMoves, selection, stop - start));
+			notifyObservers(new GamerSelectedMoveEvent(stateMachine.convertToExplicitMoves(myMoves), stateMachine.convertToExplicitMove(selection), stop - start));
 
 		}catch(Exception e){
 			System.out.println("Oh guarda...un'eccezione");
@@ -73,7 +74,7 @@ public class MyAlphaBetaGamer extends SampleGamer {
 		    }
 		}
 
-		return selection;
+		return stateMachine.convertToExplicitMove(selection);
 	}
 
 	/**
@@ -81,14 +82,14 @@ public class MyAlphaBetaGamer extends SampleGamer {
 	 *
 	 *
 	 */
-	private ExplicitMove bestmove(ExplicitRole myRole, ExplicitMachineState state)
+	private Move bestmove(Role myRole, MachineState state)
 			throws TransitionDefinitionException, MoveDefinitionException,
 			GoalDefinitionException, StateMachineException{
 
-		StateMachine stateMachine = getStateMachine();
+		AbstractStateMachine stateMachine = getStateMachine();
 
 		// Find out the index of my role in the list of roles
-		Map<ExplicitRole,Integer> map = stateMachine.getRoleIndices();
+		Map<Role,Integer> map = stateMachine.getRoleIndices();
 		int myIndex = map.get(myRole);
 		// Find out the index of the opponent's role in the list of roles
 		// NOTE: we are assuming that we are dealing only with two-players games
@@ -99,21 +100,21 @@ public class MyAlphaBetaGamer extends SampleGamer {
 		out.println("Opponent's index: " + opponentIndex);
 
 		// Check all my available moves to find the best one
-		List<ExplicitMove> myMoves = stateMachine.getExplicitLegalMoves(state, myRole);
+		List<Move> myMoves = stateMachine.getLegalMoves(state, myRole);
 
 		out.print("My moves: [ ");
-		for(ExplicitMove move: myMoves){
+		for(Move move: myMoves){
 			out.print(move + " ");
 		}
 		out.println("]");
 
-		ExplicitMove selection = myMoves.get(0);
+		Move selection = myMoves.get(0);
 
 		// Define alpha and beta
 		double alpha = 0;
 		double beta = 100;
 
-		for (ExplicitMove move: myMoves){
+		for (Move move: myMoves){
 
 			// Compute the score for the current move
 			double currentScore = minscore(state, myRole, move, myIndex, opponentIndex, alpha, beta);
@@ -146,28 +147,28 @@ public class MyAlphaBetaGamer extends SampleGamer {
 	 *
 	 *
 	 */
-	private double minscore(ExplicitMachineState state, ExplicitRole myRole, ExplicitMove myMove, int myIndex, int opponentIndex, double alpha, double beta)
+	private double minscore(MachineState state, Role myRole, Move myMove, int myIndex, int opponentIndex, double alpha, double beta)
 			throws TransitionDefinitionException, MoveDefinitionException,
 			GoalDefinitionException, StateMachineException{
 
-		StateMachine stateMachine = getStateMachine();
+		AbstractStateMachine stateMachine = getStateMachine();
 
 		// Retrieve the list of all roles
-		List<ExplicitRole> roles = stateMachine.getExplicitRoles();
+		List<Role> roles = stateMachine.getRoles();
 
 		// Find legal moves for the opponent
-		List<ExplicitMove> moves = stateMachine.getExplicitLegalMoves(state, roles.get(opponentIndex));
+		List<Move> moves = stateMachine.getLegalMoves(state, roles.get(opponentIndex));
 
 		out.print("Opponent moves: [ ");
-		for(ExplicitMove move: moves){
+		for(Move move: moves){
 			out.print(move + " ");
 		}
 		out.println("]");
 
-		for (ExplicitMove move: moves){
+		for (Move move: moves){
 
 			// Create the list of joint moves for this state with the same capacity of 2 (= total number if roles)
-			ArrayList<ExplicitMove> jointMoves = new ArrayList<ExplicitMove>(2);
+			ArrayList<Move> jointMoves = new ArrayList<Move>(2);
 			// Initialization as null of all joint moves
 			for(int i=0; i<2; i++){
 				jointMoves.add(null);
@@ -175,7 +176,7 @@ public class MyAlphaBetaGamer extends SampleGamer {
 			jointMoves.set(myIndex, myMove);
 			jointMoves.set(opponentIndex, move);
 
-			double currentScore = maxscore(stateMachine.getExplicitNextState(state, jointMoves), myRole, myIndex, opponentIndex, alpha, beta);
+			double currentScore = maxscore(stateMachine.getNextState(state, jointMoves), myRole, myIndex, opponentIndex, alpha, beta);
 			if(currentScore < beta){
 				beta = currentScore;
 			}
@@ -196,29 +197,29 @@ public class MyAlphaBetaGamer extends SampleGamer {
 	 *
 	 *
 	 */
-	private double maxscore(ExplicitMachineState state, ExplicitRole myRole, int myIndex, int opponentIndex, double alpha, double beta)
+	private double maxscore(MachineState state, Role myRole, int myIndex, int opponentIndex, double alpha, double beta)
 			throws TransitionDefinitionException, MoveDefinitionException,
 			GoalDefinitionException, StateMachineException{
 
-		StateMachine stateMachine = getStateMachine();
+		AbstractStateMachine stateMachine = getStateMachine();
 
 		// Check if the state is terminal
 		if(stateMachine.isTerminal(state)){
-			double goal = stateMachine.getGoal(state, myRole);
+			double goal = stateMachine.getSafeGoalsAvgForAllRoles(state)[stateMachine.getRoleIndices().get(myRole)];
 			out.println("Terminal state goal: " + goal);
 			return goal;
 		}
 
 		// Check all my available moves to find the best one
-		List<ExplicitMove> myMoves = stateMachine.getExplicitLegalMoves(state, myRole);
+		List<Move> myMoves = stateMachine.getLegalMoves(state, myRole);
 
 		out.print("My moves: [ ");
-		for(ExplicitMove move: myMoves){
+		for(Move move: myMoves){
 			out.print(move + " ");
 		}
 		out.println("]");
 
-		for (ExplicitMove move: myMoves){
+		for (Move move: myMoves){
 
 			// Compute the score for the current move
 			double currentScore = minscore(state, myRole, move, myIndex, opponentIndex, alpha, beta);

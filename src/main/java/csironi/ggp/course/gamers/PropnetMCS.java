@@ -8,13 +8,15 @@ import java.util.List;
 import org.ggp.base.player.gamer.event.GamerSelectedMoveEvent;
 import org.ggp.base.player.gamer.statemachine.sample.SampleGamer;
 import org.ggp.base.util.logging.GamerLogger;
-import org.ggp.base.util.statemachine.StateMachine;
+import org.ggp.base.util.statemachine.abstractsm.AbstractStateMachine;
+import org.ggp.base.util.statemachine.abstractsm.ExplicitStateMachine;
 import org.ggp.base.util.statemachine.exceptions.GoalDefinitionException;
 import org.ggp.base.util.statemachine.exceptions.MoveDefinitionException;
 import org.ggp.base.util.statemachine.exceptions.StateMachineException;
 import org.ggp.base.util.statemachine.exceptions.TransitionDefinitionException;
 import org.ggp.base.util.statemachine.implementation.propnet.FwdInterrPropnetStateMachine;
-import org.ggp.base.util.statemachine.structure.explicit.ExplicitMachineState;
+import org.ggp.base.util.statemachine.structure.MachineState;
+import org.ggp.base.util.statemachine.structure.Move;
 import org.ggp.base.util.statemachine.structure.explicit.ExplicitMove;
 
 /**
@@ -37,15 +39,15 @@ public class PropnetMCS extends SampleGamer {
 	public ExplicitMove stateMachineSelectMove(long timeout)
 			throws TransitionDefinitionException, MoveDefinitionException,
 			GoalDefinitionException, StateMachineException {
-	    StateMachine theMachine = getStateMachine();
+		AbstractStateMachine theMachine = getStateMachine();
 		long start = System.currentTimeMillis();
 		long finishBy = timeout - 90000;
 
 		int visitedNodes = 0;
 		int iterations = 0;
 
-		List<ExplicitMove> moves = theMachine.getExplicitLegalMoves(getCurrentState(), getRole());
-		ExplicitMove selection = moves.get(0);
+		List<Move> moves = theMachine.getLegalMoves(getCurrentState(), getRole());
+		Move selection = moves.get(0);
 		if (moves.size() > 1) {
     		int[] moveTotalPoints = new int[moves.size()];
     		int[] moveTotalAttempts = new int[moves.size()];
@@ -88,16 +90,16 @@ public class PropnetMCS extends SampleGamer {
 		GamerLogger.log("Stats", "ITERATIONS = " + iterations);
 		GamerLogger.log("Stats", "MOVE_SELECTION_TIME = " + (stop - start));
 
-		notifyObservers(new GamerSelectedMoveEvent(moves, selection, stop - start));
-		return selection;
+		notifyObservers(new GamerSelectedMoveEvent(theMachine.convertToExplicitMoves(moves), theMachine.convertToExplicitMove(selection), stop - start));
+		return theMachine.convertToExplicitMove(selection);
 	}
 
 	private int[] depth = new int[1];
-	double performDepthChargeFromMove(ExplicitMachineState theState, ExplicitMove myMove) {
-	    StateMachine theMachine = getStateMachine();
+	double performDepthChargeFromMove(MachineState theState, Move myMove) {
+		AbstractStateMachine theMachine = getStateMachine();
 	    try {
-            ExplicitMachineState finalState = theMachine.performDepthCharge(theMachine.getRandomNextState(theState, getRole(), myMove), depth);
-            return theMachine.getGoal(finalState, getRole());
+            MachineState finalState = theMachine.performDepthCharge(theMachine.getRandomNextState(theState, getRole(), myMove), depth);
+            return theMachine.getSafeGoalsAvgForAllRoles(finalState)[getStateMachine().getRoleIndices().get(getRole())];
         } catch (Exception e) {
             e.printStackTrace();
             return 0;
@@ -108,8 +110,8 @@ public class PropnetMCS extends SampleGamer {
 	 * Returns a state machine based on the Forward Interrupting PropNet.
 	 */
 	@Override
-	public StateMachine getInitialStateMachine(){
-		return new FwdInterrPropnetStateMachine(this.random);
+	public AbstractStateMachine getInitialStateMachine(){
+		return new ExplicitStateMachine(new FwdInterrPropnetStateMachine(this.random));
 	}
 
 }

@@ -18,7 +18,9 @@ import org.ggp.base.util.propnet.architecture.separateExtendedState.immutable.Im
 import org.ggp.base.util.propnet.creationManager.SeparateInternalPropnetManager;
 import org.ggp.base.util.propnet.state.ImmutableSeparatePropnetState;
 import org.ggp.base.util.statemachine.InternalPropnetStateMachine;
-import org.ggp.base.util.statemachine.StateMachine;
+import org.ggp.base.util.statemachine.abstractsm.AbstractStateMachine;
+import org.ggp.base.util.statemachine.abstractsm.CompactStateMachine;
+import org.ggp.base.util.statemachine.abstractsm.ExplicitStateMachine;
 import org.ggp.base.util.statemachine.cache.NoSyncRefactoredCachedStateMachine;
 import org.ggp.base.util.statemachine.cache.NoSyncRefactoredSeparateInternalPropnetCachedStateMachine;
 import org.ggp.base.util.statemachine.implementation.propnet.SeparateInternalPropnetStateMachine;
@@ -219,7 +221,7 @@ public abstract class InternalPropnetGamer extends ConfigurableStateMachineGamer
 	 * @see org.ggp.base.player.gamer.statemachine.StateMachineGamer#getInitialStateMachine()
 	 */
 	@Override
-	public StateMachine getInitialStateMachine() {
+	public AbstractStateMachine getInitialStateMachine() {
 
 		GamerLogger.log("Gamer", "Returning initial state machine.");
 
@@ -284,15 +286,15 @@ public abstract class InternalPropnetGamer extends ConfigurableStateMachineGamer
 			}else{
 				GamerLogger.log("Gamer", "Returning PropNet state machine without cache.");
 			}
-			return this.thePropnetMachine;
+			return new CompactStateMachine(this.thePropnetMachine);
 		}else{
 			// Check if we want to use the cache
 			if(this.proverCache){
 				GamerLogger.log("Gamer", "Returning Prover state machine with cache.");
-				return new NoSyncRefactoredCachedStateMachine(this.random, new ProverStateMachine(this.random));
+				return new ExplicitStateMachine(new NoSyncRefactoredCachedStateMachine(this.random, new ProverStateMachine(this.random)));
 			}else{
 				GamerLogger.log("Gamer", "Returning Prover state machine without cache.");
-				return new ProverStateMachine(this.random);
+				return new ExplicitStateMachine(new ProverStateMachine(this.random));
 			}
 		}
 

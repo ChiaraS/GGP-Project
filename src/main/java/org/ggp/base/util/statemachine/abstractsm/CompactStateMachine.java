@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.ggp.base.util.gdl.grammar.Gdl;
+import org.ggp.base.util.statemachine.StateMachine;
 import org.ggp.base.util.statemachine.exceptions.GoalDefinitionException;
 import org.ggp.base.util.statemachine.exceptions.MoveDefinitionException;
 import org.ggp.base.util.statemachine.exceptions.StateMachineException;
@@ -254,6 +255,31 @@ public class CompactStateMachine extends AbstractStateMachine {
 			// the fault of some programming error that caused the wrong state and role formats to end up here.
 			throw new RuntimeException("CompactStateMachine-getMoveForRole(): detected wrong type for machine state: [" + state.getClass().getSimpleName() + "].");
 		}
+	}
+
+	@Override
+	public MachineState convertToInternalMachineState(ExplicitMachineState explicitState) {
+		return this.theMachine.convertToCompactMachineState(explicitState);
+	}
+
+	@Override
+	public Move convertToInternalMove(ExplicitMove explicitMove) {
+		return this.theMachine.convertToCompactMove(explicitMove);
+	}
+
+	@Override
+	public Role convertToInternalRole(ExplicitRole explicitRole) {
+		return this.theMachine.convertToCompactRole(explicitRole);
+	}
+
+	@Override
+	public void doPerMoveWork() {
+		this.theMachine.doPerMoveWork();
+	}
+
+	@Override
+	public StateMachine getActualStateMachine() {
+		return this.theMachine.getActualStateMachine();
 	}
 
 }

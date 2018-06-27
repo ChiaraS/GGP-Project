@@ -15,7 +15,6 @@ import org.ggp.base.util.statemachine.exceptions.StateMachineException;
 import org.ggp.base.util.statemachine.exceptions.TransitionDefinitionException;
 import org.ggp.base.util.statemachine.structure.Move;
 import org.ggp.base.util.statemachine.structure.explicit.ExplicitMove;
-import org.ggp.base.util.statemachine.structure.explicit.ExplicitRole;
 
 /**
  * This gamer performs Monte Carlo Search using the Prover.
@@ -80,8 +79,6 @@ public class ProverMcsGamer extends ProverGamer {
 		GamerLogger.log(GamerLogger.FORMAT.CSV_FORMAT, "Stats", "Game step;Thinking time(ms);Search time(ms);Iterations;Visited nodes;Iterations/second;Nodes/second;Chosen move;Move score sum;Move visits;Avg move score");
 
 		this.gameStep = 0;
-
-		ExplicitRole myRole = this.getRole();
 
 		// Create the MCS manager and start simulations.
 //		this.mcsManager = new ProverMCSManager(new ProverRandomPlayout(this.getStateMachine()),
@@ -192,7 +189,7 @@ public class ProverMcsGamer extends ProverGamer {
 		}else{
 			// If there is no time return a random move.
 			//GamerLogger.log("Gamer", "No time to start the search during metagame.");
-			theMove = this.getStateMachine().getRandomMove(this.getCurrentState(), this.getStateMachine().convertToInternalRole(this.getRole()));
+			theMove = this.getStateMachine().getRandomMove(this.getCurrentState(), this.getRole());
 			GamerLogger.log("Gamer", "No time to select next move using MCS. Returning random move " + theMove + ".");
 		}
 
@@ -201,7 +198,7 @@ public class ProverMcsGamer extends ProverGamer {
 		GamerLogger.log(GamerLogger.FORMAT.CSV_FORMAT, "Stats", this.gameStep + ";" + thinkingTime + ";" + searchTime + ";" + iterations + ";" + visitedNodes + ";" + iterationsPerSecond + ";" + nodesPerSecond + ";" + theMove + ";" + moveScoreSum + ";" + moveVisits + ";" + moveAvgScore + ";");
 
 		// TODO: IS THIS NEEDED? WHEN?
-		List<Move> legalMoves = this.getStateMachine().getLegalMoves(this.getCurrentState(), this.getStateMachine().convertToInternalRole(this.getRole()));
+		List<Move> legalMoves = this.getStateMachine().getLegalMoves(this.getCurrentState(), this.getRole());
 		List<ExplicitMove> explicitLegalMoves = new ArrayList<ExplicitMove>();
 		for(Move m : legalMoves) {
 			explicitLegalMoves.add(this.getStateMachine().convertToExplicitMove(m));
