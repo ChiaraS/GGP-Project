@@ -81,12 +81,13 @@ public class FPGAPropnetLibrary {
 	 * same role order.
 	 *
 	 * @param state
-	 * @return all states reachable from the given state, each of which is paired with the list of moves
-	 * (one for each role in the game) that lead to the next state.
+	 * @return a list of lists of legal moves, one for each role, and all states reachable from the
+	 * given state, each of which is paired with the list of moves (one for each role in the game)
+	 * that lead to the next state.
 	 */
-	public List<Pair<FpgaInternalState,List<FpgaInternalMove>>> getNextStates(FpgaInternalState state){
+	public Pair<List<List<FpgaInternalMove>>,List<Pair<FpgaInternalState,List<FpgaInternalMove>>>> getNextStates(FpgaInternalState state){
 		// TODO
-		return new ArrayList<Pair<FpgaInternalState,List<FpgaInternalMove>>>();
+		return Pair.from(null);
 	}
 
 	/**

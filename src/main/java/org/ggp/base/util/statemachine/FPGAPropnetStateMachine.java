@@ -3,9 +3,9 @@ package org.ggp.base.util.statemachine;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Random;
 
-import org.ggp.base.util.Pair;
 import org.ggp.base.util.gdl.grammar.Gdl;
 import org.ggp.base.util.gdl.grammar.GdlSentence;
 import org.ggp.base.util.logging.GamerLogger;
@@ -14,8 +14,6 @@ import org.ggp.base.util.placeholders.FpgaInternalMove;
 import org.ggp.base.util.placeholders.FpgaInternalState;
 import org.ggp.base.util.statemachine.abstractsm.ExplicitAndFpgaStateMachineInterface;
 import org.ggp.base.util.statemachine.abstractsm.FpgaStateMachineInterface;
-import org.ggp.base.util.statemachine.exceptions.MoveDefinitionException;
-import org.ggp.base.util.statemachine.exceptions.StateMachineException;
 import org.ggp.base.util.statemachine.exceptions.StateMachineInitializationException;
 import org.ggp.base.util.statemachine.exceptions.TransitionDefinitionException;
 import org.ggp.base.util.statemachine.structure.compact.CompactMachineState;
@@ -29,6 +27,9 @@ import org.ggp.base.util.statemachine.structure.fpga.FpgaMove;
 import org.ggp.base.util.statemachine.structure.fpga.FpgaRole;
 
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
+
+import csironi.ggp.course.utils.MyPair;
 
 public class FPGAPropnetStateMachine extends StateMachine implements FpgaStateMachineInterface, ExplicitAndFpgaStateMachineInterface{
 
@@ -39,6 +40,16 @@ public class FPGAPropnetStateMachine extends StateMachine implements FpgaStateMa
 	 * library every time one of such methods is called, and then throw away part of the output.
 	 */
 	private FpgaInternalState lastVisitedState;
+
+	/**
+	 * Legal moves for each role.
+	 */
+	private List<List<FpgaInternalMove>> legalMovesPerRole;
+
+	/**
+	 * Next state for each joint move.
+	 */
+	private List<MyPair<FpgaInternalState,List<FpgaInternalMove>>> jointMovesAndNextStates;
 
 	/**
 	 * Tells whether lastVisitedState is terminal.
@@ -55,8 +66,10 @@ public class FPGAPropnetStateMachine extends StateMachine implements FpgaStateMa
 
 	private FPGAPropnetLibrary fpgaPropnetInterface;
 
+	/** Explicit format for the player roles */
+	protected List<ExplicitRole> explicitRoles;
     /** The player roles */
-    protected List<CompactRole> roles;
+    protected List<FpgaRole> roles;
     /** The initial state */
     protected FpgaMachineState initialState;
 
@@ -89,6 +102,15 @@ public class FPGAPropnetStateMachine extends StateMachine implements FpgaStateMa
     		}
     		this.initialState = new CompactMachineState(this.fpgaPropnetInterface.function2().clone());
     	}
+
+		this.explicitRoles = new ArrayList<ExplicitRole>();
+		this.roles = new ArrayList<FpgaRole>();
+		ExplicitRole[] rolesArray = propNet.getRoles();
+		for(int i = 0; i < rolesArray.length; i++){
+			this.explicitRoles.add(rolesArray[i]);
+			this.roles.add(new FpgaRole(i));
+		}
+
     }
 
 	/**
@@ -108,10 +130,6 @@ public class FPGAPropnetStateMachine extends StateMachine implements FpgaStateMa
 	public boolean isTerminal(ExplicitMachineState state) {
 		// This state machine cannot translate the ExplicitMachineState to an FpgaMachineState,
 		// so it throws an exception because it cannot compute terminality of an ExplicitMachineState.
-		// NOTE: we throw exception here instead of in the method convertToFpgaMachineState() because
-		// there are still parts in the code where we don't care if that method doesn't return a correct
-		// state translation (e.g. when we just want to log the state the agent's search won't be affected
-		// by a wrong state translation).
 		GamerLogger.logError("StateMachine", "[FPGAPropnet] Impossible to compute terminality of ExplicitMachineState, cannot translate to corresponding FpgaMachineState.");
 		// Here we throw a RuntimeException instead of one of the state machine checked exceptions
 		// because the problem is not due to an error of the state machine. It means that there is
@@ -128,29 +146,43 @@ public class FPGAPropnetStateMachine extends StateMachine implements FpgaStateMa
 	 */
 	@Override
 	public boolean isTerminal(FpgaMachineState state) {
-		if(!state.getStateRepresentation().equals(this.lastVisitedState)) {
-			this.getStateInfo(state.getStateRepresentation());
-		}
+		this.getStateInfo(state);
 
 		return this.terminal;
 	}
 
 	@Override
 	public List<Double> getAllGoalsForOneRole(ExplicitMachineState state, ExplicitRole role) {
-		return this.getAllGoalsForOneRole(this.convertToFpgaMachineState(state), this.convertToFpgaRole(role));
+		// This state machine cannot translate the ExplicitMachineState to an FpgaMachineState,
+		// so it throws an exception because it cannot compute goals in an ExplicitMachineState.
+		GamerLogger.logError("StateMachine", "[FPGAPropnet] Impossible to compute goals in ExplicitMachineState, cannot translate to corresponding FpgaMachineState.");
+		throw new RuntimeException("StateMachine - [FPGAPropnet] Impossible to compute goals in ExplicitMachineState, cannot translate to corresponding FpgaMachineState.");
+
 	}
 
 	@Override
-	public List<Integer> getAllGoalsForOneRole(FpgaMachineState state, FpgaRole role) {
-		// This state machine cannot get goals
+	public List<Double> getAllGoalsForOneRole(FpgaMachineState state, FpgaRole role) {
+		this.getStateInfo(state);
 
-		GamerLogger.logError("StateMachine", "[FPGAPropnet] State machine initialized with FPGAPropnetInterface set to null. Impossible to reason on the game!");
-		throw new StateMachineInitializationException("Null parameter passed during initialization of the state machine: cannot reason on the game with null FPGAPropnetInterface.");
+		List<Double> goalsForRole = new ArrayList<Double>();
+		// If the goals are null because the state is non-terminal we return an empty list of goals
+		if(this.goals != null) {
+			goalsForRole.add(this.goals.get(this.getFpgaRoleIndices().get(role)));
+		}
+
+		return goalsForRole;
 	}
 
 	@Override
 	public ExplicitMachineState getExplicitInitialState() {
-		return this.convertToExplicitMachineState(this.initialState);
+		// This state machine cannot translate the FpgaMachineState to an ExplicitMachineState, so it
+		// throws an exception because it cannot compute the initial state as an ExplicitMachineState.
+		// NOTE: we throw exception here instead of in the method convertToExplicitMachineState() because
+		// there are still parts in the code where we don't care if that method doesn't return a correct
+		// state translation (e.g. when we just want to log the state the agent's search won't be affected
+		// by a wrong state translation).
+		GamerLogger.logError("StateMachine", "[FPGAPropnet] Impossible to compute terminality of ExplicitMachineState, cannot translate to corresponding FpgaMachineState.");
+		throw new RuntimeException("StateMachine - [FPGAPropnet] Impossible to compute terminality of ExplicitMachineState, cannot translate to corresponding FpgaMachineState.");
 	}
 
 	@Override
@@ -159,46 +191,62 @@ public class FPGAPropnetStateMachine extends StateMachine implements FpgaStateMa
 	}
 
 	@Override
-	public List<ExplicitMove> getExplicitLegalMoves(ExplicitMachineState state, ExplicitRole role) throws MoveDefinitionException, StateMachineException {
-		List<ExplicitMove> moves = new ArrayList<ExplicitMove>();
-		CompactRole externalRole = this.convertToCompactRole(role);
-		for(CompactMove m : this.getCompactLegalMoves(this.convertToCompactMachineState(state), externalRole)){
-			moves.add(this.convertToExplicitMove(m));
+	public List<ExplicitMove> getExplicitLegalMoves(ExplicitMachineState state, ExplicitRole role) {
+		// This state machine cannot translate the ExplicitMachineState to an FpgaMachineState, so it
+		// throws an exception because it cannot compute the moves of an ExplicitMachineState.
+		GamerLogger.logError("StateMachine", "[FPGAPropnet] Impossible to compute legal moves in an ExplicitMachineState, cannot translate to corresponding FpgaMachineState.");
+		throw new RuntimeException("StateMachine - [FPGAPropnet] Impossible to compute legal moves in an ExplicitMachineState, cannot translate to corresponding FpgaMachineState.");
+
+	}
+
+	@Override
+	public List<FpgaMove> getFpgaLegalMoves(FpgaMachineState state, FpgaRole role) {
+		this.getStateInfo(state);
+		List<FpgaMove> legalMoves = new ArrayList<FpgaMove>();
+		if(this.legalMovesPerRole != null) {
+			for(FpgaInternalMove move : this.legalMovesPerRole.get(this.getFpgaRoleIndices().get(role))) {
+				legalMoves.add(new FpgaMove(move));
+			}
 		}
-		return moves;
+		return legalMoves;
 	}
 
 	@Override
-	public List<CompactMove> getCompactLegalMoves(CompactMachineState state, CompactRole role)
-			throws MoveDefinitionException {
-		// TODO Auto-generated method stub
-		return null;
+	public ExplicitMachineState getExplicitNextState(ExplicitMachineState state, List<ExplicitMove> moves) {
+		// This state machine cannot translate the ExplicitMachineState to an FpgaMachineState, so it
+		// throws an exception because it cannot compute the moves of an ExplicitMachineState.
+		GamerLogger.logError("StateMachine", "[FPGAPropnet] Impossible to compute the next state for an ExplicitMachineState, cannot translate to corresponding FpgaMachineState.");
+		throw new RuntimeException("StateMachine - [FPGAPropnet] Impossible to compute the next state for an ExplicitMachineState, cannot translate to corresponding FpgaMachineState.");
+
 	}
 
+	// TODO: to make node creation more efficient add getAllJointMovesAndNextStates(FpgaMachineState state)
+	// to this state machine.
 	@Override
-	public ExplicitMachineState getExplicitNextState(ExplicitMachineState state, List<ExplicitMove> moves)
-			throws TransitionDefinitionException, StateMachineException {
-		return this.convertToExplicitMachineState(this.getCompactNextState(this.convertToCompactMachineState(state), this.movesToInternalMoves(moves)));
-	}
+	public FpgaMachineState getFpgaNextState(FpgaMachineState state, List<FpgaMove> moves) throws TransitionDefinitionException{
+		this.getStateInfo(state);
+		List<FpgaInternalMove> fpgaInternalMoves = new ArrayList<FpgaInternalMove>();
+		for(FpgaMove move : moves) {
+			fpgaInternalMoves.add(move.getInternalMove());
+		}
+		for(MyPair<FpgaInternalState,List<FpgaInternalMove>> pair : this.jointMovesAndNextStates) {
+			if(this.isSameJointMove(pair.getSecond(), fpgaInternalMoves)) {
+				return new FpgaMachineState(pair.getFirst());
+			}
+		}
 
-	@Override
-	public FpgaMachineState getFpgaNextState(FpgaMachineState state, List<FpgaMove> moves) {
-		// TODO Auto-generated method stub
-		return null;
+		// If we are here we didn't find any next state
+		throw new TransitionDefinitionException(new ExplicitMachineState(), this.convertToExplicitMoves(moves));
+
 	}
 
 	@Override
 	public List<ExplicitRole> getExplicitRoles() {
-		List<ExplicitRole> roles = new ArrayList<ExplicitRole>();
-		//ExplicitRole[] rolesArray = this.fpgaPropnetInterface.getRoles();
-		//for(CompactRole r : this.roles){
-		//	roles.add(rolesArray[r.getIndex()]);
-		//}  TODO
-		return ImmutableList.copyOf(roles);
+		return ImmutableList.copyOf(this.explicitRoles);
 	}
 
 	@Override
-	public List<CompactRole> getCompactRoles() {
+	public List<FpgaRole> getFpgaRoles() {
 		return this.roles;
 	}
 
@@ -218,6 +266,14 @@ public class FPGAPropnetStateMachine extends StateMachine implements FpgaStateMa
 	public ExplicitMove convertToExplicitMove(FpgaMove move) {
 		// TODO Auto-generated method stub
 		return null;
+	}
+
+	public List<ExplicitMove> convertToExplicitMoves(List<FpgaMove> moves) {
+		List<ExplicitMove> explicitMoves = new ArrayList<ExplicitMove>();
+		for(FpgaMove move : moves) {
+			explicitMoves.add(this.convertToExplicitMove(move));
+		}
+		return explicitMoves;
 	}
 
 	@Override
@@ -250,20 +306,57 @@ public class FPGAPropnetStateMachine extends StateMachine implements FpgaStateMa
 		return null;
 	}
 
-	private void getStateInfo(FpgaInternalState state) {
-		List<Pair<FpgaInternalState,List<FpgaInternalMove>>> stateInfo = this.fpgaPropnetInterface.getNextStates(state);
-		this.terminal = stateInfo == null; // TODO: check! If there are no next states will this be null? Empty?
+	private void getStateInfo(FpgaMachineState state) {
+		if(!state.getStateRepresentation().equals(this.lastVisitedState)) {
+			MyPair<List<List<FpgaInternalMove>>,List<MyPair<FpgaInternalState,List<FpgaInternalMove>>>> stateInfo = this.fpgaPropnetInterface.getNextStates(state.getStateRepresentation());
+			// TODO: if the state is terminal what does the getNextStates() function return? Should I check if stateInfo is null?
+			this.legalMovesPerRole = stateInfo.left;
+			this.jointMovesAndNextStates = stateInfo.right;
+			this.terminal = this.jointMovesAndNextStates.isEmpty();// TODO: check! If there are no next states will this be null? Empty?
+			if(this.terminal) {
+				// Assume that on terminal states this method returns the goals in the state and does not
+				// perform any simulation, so the value of simulationsNumber is ignored.
+				this.goals = this.performSimulations(state.getStateRepresentation(), 1);
+			}else {
+				this.goals = null;
+			}
+		}
 	}
 
-	private void getStateGoals(FpgaInternalState state) {
-		List<Pair<FpgaInternalState,List<FpgaInternalMove>>> stateInfo = this.fpgaPropnetInterface.getNextStates(state);
-		this.terminal = stateInfo == null; // TODO: check! If there are no next states will this be null? Empty?
+
+	private List<Double> performSimulations(FpgaInternalState state, int simulationsNumber) {
+		List<Double> scoreSums = this.fpgaPropnetInterface.getScores(state, simulationsNumber);
+		List<Double> avgScores = new ArrayList<Double>();
+		for(Double d : scoreSums) {
+			avgScores.add(new Double(d.doubleValue()/simulationsNumber));
+		}
+		return avgScores;
 	}
+
+    private Map<FpgaRole,Integer> fpgaRoleIndices = null;
+    /**
+     * Returns a mapping from a role to the index of that role, as in
+     * the list returned by {@link #getFpgaRoles()}. This may be a faster
+     * way to check the index of a role than calling {@link List#indexOf(Object)}
+     * on that list.
+     */
+    public Map<FpgaRole, Integer> getFpgaRoleIndices()
+    {
+        if (fpgaRoleIndices == null) {
+        	ImmutableMap.Builder<FpgaRole, Integer> roleIndicesBuilder = ImmutableMap.builder();
+            List<FpgaRole> roles = getFpgaRoles();
+            for (int i = 0; i < roles.size(); i++) {
+                roleIndicesBuilder.put(roles.get(i), i);
+            }
+            fpgaRoleIndices = roleIndicesBuilder.build();
+        }
+
+        return fpgaRoleIndices;
+    }
 
 	@Override
 	public void shutdown() {
-		// TODO Auto-generated method stub
-
+		// Do nothing
 	}
 
 
