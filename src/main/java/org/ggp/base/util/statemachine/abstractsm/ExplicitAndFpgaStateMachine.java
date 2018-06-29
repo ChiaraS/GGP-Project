@@ -1,7 +1,9 @@
 package org.ggp.base.util.statemachine.abstractsm;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.ggp.base.util.gdl.grammar.Gdl;
 import org.ggp.base.util.statemachine.StateMachine;
@@ -230,6 +232,36 @@ public class ExplicitAndFpgaStateMachine extends AbstractStateMachine{
 	public String getName() {
 
 		return this.getClass().getSimpleName() + "(" + this.theMachine.getName() + ")";
+
+	}
+
+	@Override
+	public Map<List<Move>, MachineState> getAllJointMovesAndNextStates(MachineState state) throws MoveDefinitionException, StateMachineException, TransitionDefinitionException {
+
+		if(state instanceof ExplicitMachineState){
+			return super.getAllJointMovesAndNextStates(state);
+		}else if(state instanceof FpgaMachineState){
+
+			List<MyPair<FpgaMachineState,List<FpgaMove>>> allFpgaJointMovesAndNextStates = this.theMachine.getAllFpgaJointMovesAndNextStates((FpgaMachineState)state);
+
+			Map<List<Move>, MachineState> allJointMovesAndNextStates = new HashMap<List<Move>, MachineState>();
+
+			for(MyPair<FpgaMachineState,List<FpgaMove>> nextFpgaStateAndJointMove : allFpgaJointMovesAndNextStates) {
+
+				List<Move> jointMove = new ArrayList<Move>();
+				for(FpgaMove fpgaMove : nextFpgaStateAndJointMove.getSecond()) {
+					jointMove.add(fpgaMove);
+				}
+				allJointMovesAndNextStates.put(jointMove, nextFpgaStateAndJointMove.getFirst());
+			}
+
+			return allJointMovesAndNextStates;
+
+		}else{
+			// Not throwing StateMachineException because failure here is not the fault of the state machine but
+			// the fault of some programming error that caused the wrong state and role formats to end up here.
+			throw new RuntimeException("FpgaStateMachine-getAllJointMovesAndNextStates(): detected wrong type for machine state: [" + state.getClass().getSimpleName() + "].");
+		}
 
 	}
 

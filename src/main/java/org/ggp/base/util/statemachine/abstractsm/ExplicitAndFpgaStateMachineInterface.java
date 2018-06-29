@@ -55,6 +55,7 @@ public interface ExplicitAndFpgaStateMachineInterface extends AbstractStateMachi
 
     public FpgaMachineState getFpgaNextState(FpgaMachineState state, List<FpgaMove> moves) throws TransitionDefinitionException, StateMachineException;
 
+    public List<MyPair<FpgaMachineState,List<FpgaMove>>> getAllFpgaJointMovesAndNextStates(FpgaMachineState state);
 
     // Methods that translate states, moves and roles to the Explicit representation
 
@@ -66,9 +67,9 @@ public interface ExplicitAndFpgaStateMachineInterface extends AbstractStateMachi
 
     public FpgaMachineState convertToFpgaMachineState(ExplicitMachineState state);
 
-    public FpgaMachineState convertToFpgaMove(ExplicitMove move);
+    public FpgaMove convertToFpgaMove(ExplicitMove move);
 
-    public FpgaMachineState convertToFpgaRole(ExplicitRole role);
+    public FpgaRole convertToFpgaRole(ExplicitRole role);
 
     // Methods that perform playout and playout choices using the reasoner underlying the state machine
 

@@ -4,9 +4,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Vector;
 
-import org.ggp.base.util.Pair;
 import org.ggp.base.util.gdl.grammar.Gdl;
 import org.ggp.base.util.statemachine.StateMachine;
 import org.ggp.base.util.statemachine.exceptions.MoveDefinitionException;
@@ -191,17 +189,17 @@ public class FpgaStateMachine extends AbstractStateMachine {
 
 		if(state instanceof FpgaMachineState){
 
-			Vector<Pair<FpgaMachineState,Vector<FpgaMove>>> allFpgaJointMovesAndNextStates = this.theMachine.getAllFpgaJointMovesAndNextStates((FpgaMachineState)state);
+			List<MyPair<FpgaMachineState,List<FpgaMove>>> allFpgaJointMovesAndNextStates = this.theMachine.getAllFpgaJointMovesAndNextStates((FpgaMachineState)state);
 
 			Map<List<Move>, MachineState> allJointMovesAndNextStates = new HashMap<List<Move>, MachineState>();
 
-			for(Pair<FpgaMachineState,Vector<FpgaMove>> nextFpgaStateAndJointMove : allFpgaJointMovesAndNextStates) {
+			for(MyPair<FpgaMachineState,List<FpgaMove>> nextFpgaStateAndJointMove : allFpgaJointMovesAndNextStates) {
 
 				List<Move> jointMove = new ArrayList<Move>();
-				for(FpgaMove fpgaMove : nextFpgaStateAndJointMove.right) {
+				for(FpgaMove fpgaMove : nextFpgaStateAndJointMove.getSecond()) {
 					jointMove.add(fpgaMove);
 				}
-				allJointMovesAndNextStates.put(jointMove, nextFpgaStateAndJointMove.left);
+				allJointMovesAndNextStates.put(jointMove, nextFpgaStateAndJointMove.getFirst());
 			}
 
 			return allJointMovesAndNextStates;

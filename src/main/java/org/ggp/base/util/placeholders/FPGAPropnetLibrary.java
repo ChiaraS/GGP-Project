@@ -2,13 +2,13 @@ package org.ggp.base.util.placeholders;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Set;
 
-import org.ggp.base.util.Pair;
-import org.ggp.base.util.gdl.grammar.GdlSentence;
+import org.ggp.base.util.gdl.grammar.GdlTerm;
 import org.ggp.base.util.propnet.architecture.separateExtendedState.immutable.ImmutablePropNet;
 
 import com.google.common.collect.BiMap;
+
+import csironi.ggp.course.utils.MyPair;
 
 /**
  * Placeholder class for the java library that interfaces with FPGA propnet.
@@ -16,6 +16,9 @@ import com.google.common.collect.BiMap;
  * @author C.Sironi
  *
  */
+// CHANGES:
+// - Changed GDLSentence to GDLTerm
+// - Changed Pair to MyPair
 public class FPGAPropnetLibrary {
 
 	// Mapping the FPGA internal structure for moves and states with the GDL structure for moves and states.
@@ -28,7 +31,7 @@ public class FPGAPropnetLibrary {
 	 * 	ImmutableProposition inputProposition;
 	 * 	inputProposition.getName();
 	 */
-	private BiMap<FpgaInternalMove,GdlSentence> movesMap;
+	private BiMap<FpgaInternalMove,GdlTerm> movesMap;
 
 	/**
 	 * Maps an FpgaInternalState to the set of GdlSentence in the base proposition of the ImmutablePropNet
@@ -39,7 +42,7 @@ public class FPGAPropnetLibrary {
 	 * 		ImmutableProposition trueBase;
 	 * 		gdlState.add(trueBase.getName());
 	 */
-	private BiMap<FpgaInternalState,Set<GdlSentence>> statesMap;
+	//private BiMap<FpgaInternalState,Set<GdlSentence>> statesMap;
 
 	public FPGAPropnetLibrary(ImmutablePropNet propnet/*? Place here whatever input is needed to initialize the library*/) {
 		// Initialize FPGA-propnet
@@ -48,21 +51,23 @@ public class FPGAPropnetLibrary {
 		// to GDL and vice-versa.
 	}
 
-	public GdlSentence getGDLMove(FpgaInternalMove fpgaMove) {
+	// Changed GDLSentence to GDLTerm
+	public GdlTerm getGDLMove(FpgaInternalMove fpgaMove) {
 		return this.movesMap.get(fpgaMove);
 	}
 
-	public FpgaInternalMove getFpgaMove(GdlSentence gdlMove) {
+	// Changed GDLSentence to GDLTerm
+	public FpgaInternalMove getFpgaMove(GdlTerm gdlMove) {
 		return this.movesMap.inverse().get(gdlMove);
 	}
 
-	public Set<GdlSentence> getGDLState(FpgaInternalState fpgaState) {
+	/*public Set<GdlSentence> getGDLState(FpgaInternalState fpgaState) {
 		return this.statesMap.get(fpgaState);
-	}
+	}*/
 
-	public FpgaInternalState getFpgaState(Set<GdlSentence> gdlState) {
+	/*public FpgaInternalState getFpgaState(Set<GdlSentence> gdlState) {
 		return this.statesMap.inverse().get(gdlState);
-	}
+	}*/
 
 	/**
 	 *
@@ -85,9 +90,9 @@ public class FPGAPropnetLibrary {
 	 * given state, each of which is paired with the list of moves (one for each role in the game)
 	 * that lead to the next state.
 	 */
-	public Pair<List<List<FpgaInternalMove>>,List<Pair<FpgaInternalState,List<FpgaInternalMove>>>> getNextStates(FpgaInternalState state){
+	public MyPair<List<List<FpgaInternalMove>>,List<MyPair<FpgaInternalState,List<FpgaInternalMove>>>> getNextStates(FpgaInternalState state){
 		// TODO
-		return Pair.from(null);
+		return new MyPair<List<List<FpgaInternalMove>>,List<MyPair<FpgaInternalState,List<FpgaInternalMove>>>>(null, null);
 	}
 
 	/**

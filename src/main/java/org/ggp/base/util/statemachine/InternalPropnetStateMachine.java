@@ -97,10 +97,13 @@ public abstract class InternalPropnetStateMachine extends StateMachine implement
 	public abstract ExplicitRole convertToExplicitRole(CompactRole role);
 
 
+	@Override
 	public abstract CompactMachineState convertToCompactMachineState(ExplicitMachineState state);
 
+	@Override
 	public abstract CompactMove convertToCompactMove(ExplicitMove move);
 
+	@Override
 	public abstract CompactRole convertToCompactRole(ExplicitRole role);
 
 	/**

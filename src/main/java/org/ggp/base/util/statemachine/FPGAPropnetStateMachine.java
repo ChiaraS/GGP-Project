@@ -16,9 +16,6 @@ import org.ggp.base.util.statemachine.abstractsm.ExplicitAndFpgaStateMachineInte
 import org.ggp.base.util.statemachine.abstractsm.FpgaStateMachineInterface;
 import org.ggp.base.util.statemachine.exceptions.StateMachineInitializationException;
 import org.ggp.base.util.statemachine.exceptions.TransitionDefinitionException;
-import org.ggp.base.util.statemachine.structure.compact.CompactMachineState;
-import org.ggp.base.util.statemachine.structure.compact.CompactMove;
-import org.ggp.base.util.statemachine.structure.compact.CompactRole;
 import org.ggp.base.util.statemachine.structure.explicit.ExplicitMachineState;
 import org.ggp.base.util.statemachine.structure.explicit.ExplicitMove;
 import org.ggp.base.util.statemachine.structure.explicit.ExplicitRole;
@@ -74,9 +71,16 @@ public class FPGAPropnetStateMachine extends StateMachine implements FpgaStateMa
     protected FpgaMachineState initialState;
 
 
-	public FPGAPropnetStateMachine(Random random, FPGAPropnetLibrary fpgaPropnetInterface){
+	public FPGAPropnetStateMachine(Random random, FPGAPropnetLibrary fpgaPropnetInterface, ExplicitRole[] rolesArray){
 		super(random);
 		this.fpgaPropnetInterface = fpgaPropnetInterface;
+
+		this.explicitRoles = new ArrayList<ExplicitRole>();
+		this.roles = new ArrayList<FpgaRole>();
+		for(int i = 0; i < rolesArray.length; i++){
+			this.explicitRoles.add(rolesArray[i]);
+			this.roles.add(new FpgaRole(i));
+		}
 	}
 
     /**
@@ -93,24 +97,8 @@ public class FPGAPropnetStateMachine extends StateMachine implements FpgaStateMa
     		GamerLogger.log("StateMachine", "[FPGAPropnet] State machine initialized with FPGAPropnetInterface set to null. Impossible to reason on the game!");
     		throw new StateMachineInitializationException("Null parameter passed during initialization of the state machine: cannot reason on the game with null FPGAPropnetInterface.");
     	}else{
-
-    		int numRoles = this.fpgaPropnetInterface.fucntion1().getLegalMovesPerRole().length;
-
-    		this.roles = new ArrayList<CompactRole>(numRoles);
-    		for(int i = 0; i < numRoles; i++){
-    			this.roles.add(new CompactRole(i));
-    		}
-    		this.initialState = new CompactMachineState(this.fpgaPropnetInterface.function2().clone());
+    		this.initialState = new FpgaMachineState(this.fpgaPropnetInterface.getRootState());
     	}
-
-		this.explicitRoles = new ArrayList<ExplicitRole>();
-		this.roles = new ArrayList<FpgaRole>();
-		ExplicitRole[] rolesArray = propNet.getRoles();
-		for(int i = 0; i < rolesArray.length; i++){
-			this.explicitRoles.add(rolesArray[i]);
-			this.roles.add(new FpgaRole(i));
-		}
-
     }
 
 	/**
@@ -225,18 +213,29 @@ public class FPGAPropnetStateMachine extends StateMachine implements FpgaStateMa
 	@Override
 	public FpgaMachineState getFpgaNextState(FpgaMachineState state, List<FpgaMove> moves) throws TransitionDefinitionException{
 		this.getStateInfo(state);
-		List<FpgaInternalMove> fpgaInternalMoves = new ArrayList<FpgaInternalMove>();
-		for(FpgaMove move : moves) {
-			fpgaInternalMoves.add(move.getInternalMove());
-		}
 		for(MyPair<FpgaInternalState,List<FpgaInternalMove>> pair : this.jointMovesAndNextStates) {
-			if(this.isSameJointMove(pair.getSecond(), fpgaInternalMoves)) {
+			if(this.isSameJointMove(pair.getSecond(), moves)) {
 				return new FpgaMachineState(pair.getFirst());
 			}
 		}
 
 		// If we are here we didn't find any next state
 		throw new TransitionDefinitionException(new ExplicitMachineState(), this.convertToExplicitMoves(moves));
+
+	}
+
+	private boolean isSameJointMove(List<FpgaInternalMove> jointMove1, List<FpgaMove> jointMove2) {
+		if(jointMove1.size() != jointMove2.size()) {
+			return false;
+		}
+
+		for(int i = 0; i < jointMove1.size(); i++) {
+			if(!new FpgaMove(jointMove1.get(i)).equals(jointMove2.get(i))) {
+				return false;
+			}
+		}
+
+		return true;
 
 	}
 
@@ -253,7 +252,7 @@ public class FPGAPropnetStateMachine extends StateMachine implements FpgaStateMa
 	/*** Methods to convert propnet states/moves/roles to GDL states/moves/roles and vice versa ***/
 
 	/**
-	 * For the FPGA propnet we cannot convert states, so we just return null.
+	 * For the FPGA propnet we cannot convert states, so we just return an empty state.
 	 * We also log an error to signal that this method has been called.
 	 */
 	@Override
@@ -264,8 +263,7 @@ public class FPGAPropnetStateMachine extends StateMachine implements FpgaStateMa
 
 	@Override
 	public ExplicitMove convertToExplicitMove(FpgaMove move) {
-		// TODO Auto-generated method stub
-		return null;
+		return new ExplicitMove(this.fpgaPropnetInterface.getGDLMove(move.getInternalMove()));
 	}
 
 	public List<ExplicitMove> convertToExplicitMoves(List<FpgaMove> moves) {
@@ -277,41 +275,84 @@ public class FPGAPropnetStateMachine extends StateMachine implements FpgaStateMa
 	}
 
 	@Override
-	public ExplicitRole convertToExplicitRole(CompactRole role) {
-		// TODO Auto-generated method stub
-		return null;
+	public ExplicitRole convertToExplicitRole(FpgaRole role) {
+		return this.explicitRoles.get(this.getFpgaRoleIndices().get(role));
 	}
 
+	/**
+	 * For the FPGA propnet we cannot convert states, so we just return an empty state.
+	 * We also log an error to signal that this method has been called.
+	 */
 	@Override
-	public CompactMachineState convertToCompactMachineState(ExplicitMachineState state) {
-		// TODO Auto-generated method stub
-		return null;
+	public FpgaMachineState convertToFpgaMachineState(ExplicitMachineState state) {
+		GamerLogger.logError("StateMachine", "[FPGAPropnet] Impossible to convert ExplicitMachineState to FpgaMachineState.");
+		return new FpgaMachineState();
 	}
 
 	@Override
 	public FpgaMove convertToFpgaMove(ExplicitMove move) {
-		// TODO Auto-generated method stub
-		return null;
+		return new FpgaMove(this.fpgaPropnetInterface.getFpgaMove(move.getContents()));
 	}
 
 	@Override
-	public CompactRole convertToCompactRole(ExplicitRole role) {
-		// TODO Auto-generated method stub
-		return null;
+	public FpgaRole convertToFpgaRole(ExplicitRole role) {
+		return this.roles.get(this.getRoleIndices().get(role));
 	}
 
 	@Override
-	public List<CompactMove> movesToInternalMoves(List<ExplicitMove> moves) {
-		// TODO  Auto-generated method stub
-		return null;
+	public List<MyPair<FpgaMachineState,List<FpgaMove>>> getAllFpgaJointMovesAndNextStates(FpgaMachineState state) {
+		this.getStateInfo(state);
+
+		List<MyPair<FpgaMachineState,List<FpgaMove>>> fpgaJointMovesAndNextStates = new ArrayList<MyPair<FpgaMachineState,List<FpgaMove>>>();
+
+		for(MyPair<FpgaInternalState,List<FpgaInternalMove>> jointMoveAndNextState : this.jointMovesAndNextStates) {
+
+			fpgaJointMovesAndNextStates.add(new MyPair<FpgaMachineState,List<FpgaMove>>(new FpgaMachineState(jointMoveAndNextState.getFirst()), this.internalToFpgaMoves(jointMoveAndNextState.getSecond())));
+
+		}
+
+		return fpgaJointMovesAndNextStates;
+
+	}
+
+	private List<FpgaMove> internalToFpgaMoves(List<FpgaInternalMove> moves){
+		List<FpgaMove> fpgaMoves = new ArrayList<FpgaMove>();
+		for(FpgaInternalMove move : moves) {
+			fpgaMoves.add(new FpgaMove(move));
+		}
+		return fpgaMoves;
+	}
+
+	@Override
+	public MyPair<double[], Double> fastPlayouts(FpgaMachineState state, int numSimulationsPerPlayout, int maxDepth) {
+		List<Double> avgGoals = this.performSimulations(state.getStateRepresentation(), numSimulationsPerPlayout);
+		double[] goals = new double[avgGoals.size()];
+		for(int i = 0; i < avgGoals.size(); i++) {
+			goals[i] = avgGoals.get(i);
+		}
+		return new MyPair<double[], Double>(goals, new Double(0.0)); // Don't know average length of playouts so we return 0.0
+	}
+
+	@Override
+	public FpgaMove getMoveForRole(List<FpgaMove> legalMoves, FpgaMachineState state, FpgaRole role) {
+		if(legalMoves == null) {
+			legalMoves = this.getFpgaLegalMoves(state, role);
+		}else if(legalMoves.size() < 1) {
+			GamerLogger.logError("StateMachine", "Requesting move for role " + this.convertToExplicitRole(role) +
+					" in state " + this.convertToExplicitMachineState(state) + " giving an empty list of legal moves.");
+			throw new RuntimeException("StateMachine - Requesting move for role " + this.convertToExplicitRole(role) +
+					" in state " + this.convertToExplicitMachineState(state) + " giving an empty list of legal moves.");
+		}
+
+		return legalMoves.get(this.random.nextInt(legalMoves.size()));
 	}
 
 	private void getStateInfo(FpgaMachineState state) {
 		if(!state.getStateRepresentation().equals(this.lastVisitedState)) {
 			MyPair<List<List<FpgaInternalMove>>,List<MyPair<FpgaInternalState,List<FpgaInternalMove>>>> stateInfo = this.fpgaPropnetInterface.getNextStates(state.getStateRepresentation());
 			// TODO: if the state is terminal what does the getNextStates() function return? Should I check if stateInfo is null?
-			this.legalMovesPerRole = stateInfo.left;
-			this.jointMovesAndNextStates = stateInfo.right;
+			this.legalMovesPerRole = stateInfo.getFirst();
+			this.jointMovesAndNextStates = stateInfo.getSecond();
 			this.terminal = this.jointMovesAndNextStates.isEmpty();// TODO: check! If there are no next states will this be null? Empty?
 			if(this.terminal) {
 				// Assume that on terminal states this method returns the goals in the state and does not
@@ -322,7 +363,6 @@ public class FPGAPropnetStateMachine extends StateMachine implements FpgaStateMa
 			}
 		}
 	}
-
 
 	private List<Double> performSimulations(FpgaInternalState state, int simulationsNumber) {
 		List<Double> scoreSums = this.fpgaPropnetInterface.getScores(state, simulationsNumber);
@@ -358,6 +398,8 @@ public class FPGAPropnetStateMachine extends StateMachine implements FpgaStateMa
 	public void shutdown() {
 		// Do nothing
 	}
+
+
 
 
 }

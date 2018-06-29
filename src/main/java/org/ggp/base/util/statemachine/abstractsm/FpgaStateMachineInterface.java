@@ -1,9 +1,7 @@
 package org.ggp.base.util.statemachine.abstractsm;
 
 import java.util.List;
-import java.util.Vector;
 
-import org.ggp.base.util.Pair;
 import org.ggp.base.util.statemachine.exceptions.MoveDefinitionException;
 import org.ggp.base.util.statemachine.exceptions.StateMachineException;
 import org.ggp.base.util.statemachine.exceptions.TransitionDefinitionException;
@@ -34,7 +32,7 @@ public interface FpgaStateMachineInterface extends AbstractStateMachineInterface
 
     public FpgaMachineState getFpgaNextState(FpgaMachineState state, List<FpgaMove> moves) throws TransitionDefinitionException, StateMachineException;
 
-    public Vector<Pair<FpgaMachineState,Vector<FpgaMove>>> getAllFpgaJointMovesAndNextStates(FpgaMachineState state);
+    public List<MyPair<FpgaMachineState,List<FpgaMove>>> getAllFpgaJointMovesAndNextStates(FpgaMachineState state);
 
 
     public ExplicitMachineState convertToExplicitMachineState(FpgaMachineState state);
