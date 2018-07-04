@@ -161,8 +161,9 @@ public abstract class StateMachineGamer extends Gamer
             List<List<GdlTerm>> theMoveHistory = getMatch().getMoveHistory();
             for(List<GdlTerm> nextMove : theMoveHistory) {
                 List<Move> theJointMove = new ArrayList<Move>();
-                for(GdlTerm theSentence : nextMove)
-                    theJointMove.add(newStateMachine.convertToInternalMove(newStateMachine.getMoveFromTerm(theSentence)));
+                for(int roleIndex = 0; roleIndex < nextMove.size(); roleIndex++) {
+                    theJointMove.add(newStateMachine.convertToInternalMove(newStateMachine.getMoveFromTerm(nextMove.get(roleIndex)), newStateMachine.getExplicitRoles().get(roleIndex)));
+                }
                 //newCurrentState = newStateMachine.getNextStateDestructively(newCurrentState, theJointMove);
                 newInternalCurrentState = newStateMachine.getNextState(newInternalCurrentState, theJointMove);
             }
@@ -254,9 +255,9 @@ public abstract class StateMachineGamer extends Gamer
 			if (lastMoves != null)
 			{
 				List<Move> moves = new ArrayList<Move>();
-				for (GdlTerm sentence : lastMoves)
+				for (int roleIndex = 0; roleIndex < lastMoves.size(); roleIndex++)
 				{
-					moves.add(this.stateMachine.convertToInternalMove(this.stateMachine.getMoveFromTerm(sentence)));
+					moves.add(this.stateMachine.convertToInternalMove(this.stateMachine.getMoveFromTerm(lastMoves.get(roleIndex)), this.stateMachine.getExplicitRoles().get(roleIndex)));
 				}
 
 				this.internalCurrentState = this.stateMachine.getNextState(this.internalCurrentState, moves);
@@ -282,9 +283,9 @@ public abstract class StateMachineGamer extends Gamer
 			if (lastMoves != null)
 			{
 				List<Move> moves = new ArrayList<Move>();
-				for (GdlTerm sentence : lastMoves)
+				for (int roleIndex = 0; roleIndex < lastMoves.size(); roleIndex++)
 				{
-					moves.add(this.stateMachine.convertToInternalMove(this.stateMachine.getMoveFromTerm(sentence)));
+					moves.add(this.stateMachine.convertToInternalMove(this.stateMachine.getMoveFromTerm(lastMoves.get(roleIndex)), this.stateMachine.getExplicitRoles().get(roleIndex)));
 				}
 
 				this.internalCurrentState = this.stateMachine.getNextState(this.internalCurrentState, moves);

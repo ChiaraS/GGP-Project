@@ -191,7 +191,7 @@ public class SingleRunProverTest {
 		// WINDOWS
 		//GameRepository gameRepo = new ManualUpdateLocalGameRepository("C:/Users/c.sironi/BITBUCKET REPOS/GGP-Base/GGPBase-GameRepo-03022016");
 
-    	GameRepository gameRepo = new ManualUpdateLocalGameRepository(GamerConfiguration.defaultLocalGameRepositoryFolderPath + "/" + GamerConfiguration.defaultStanfordRepo);
+    	GameRepository gameRepo = new ManualUpdateLocalGameRepository(GamerConfiguration.defaultLocalGameRepositoryFolderPath + "/" + GamerConfiguration.defaultGGPBaseRepo/*GamerConfiguration.defaultStanfordRepo*/);
 
     	//GameRepository gameRepo = new LocalFolderGameRepository(GamerConfiguration.defaultLocalFolderGameRepositoryFolderPath);
 

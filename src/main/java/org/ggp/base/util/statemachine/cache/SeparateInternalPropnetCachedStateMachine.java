@@ -121,7 +121,7 @@ public final class SeparateInternalPropnetCachedStateMachine extends InternalPro
 
 	@Override
 	public ExplicitMachineState getExplicitNextState(ExplicitMachineState state, List<ExplicitMove> moves) throws TransitionDefinitionException, StateMachineException{
-		return this.backingStateMachine.convertToExplicitMachineState(this.getCompactNextState(this.backingStateMachine.convertToCompactMachineState(state), this.backingStateMachine.movesToInternalMoves(moves)));
+		return this.backingStateMachine.convertToExplicitMachineState(this.getCompactNextState(this.backingStateMachine.convertToCompactMachineState(state), this.backingStateMachine.convertToInternalJointMoves(moves)));
 	}
 
 	@Override
@@ -237,13 +237,13 @@ public final class SeparateInternalPropnetCachedStateMachine extends InternalPro
 	}
 
 	@Override
-	public CompactMove convertToCompactMove(ExplicitMove move) {
-		return this.backingStateMachine.convertToCompactMove(move);
+	public CompactMove convertToCompactMove(ExplicitMove move, ExplicitRole role) {
+		return this.backingStateMachine.convertToCompactMove(move, role);
 	}
 
 	@Override
-	public List<CompactMove> movesToInternalMoves(List<ExplicitMove> moves) {
-		return this.backingStateMachine.movesToInternalMoves(moves);
+	public List<CompactMove> convertToInternalJointMoves(List<ExplicitMove> moves) {
+		return this.backingStateMachine.convertToInternalJointMoves(moves);
 	}
 
 }

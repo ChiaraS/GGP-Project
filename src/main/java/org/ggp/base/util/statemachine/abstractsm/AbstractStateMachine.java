@@ -53,6 +53,8 @@ import csironi.ggp.course.utils.MyPair;
  */
 public abstract class AbstractStateMachine {
 
+	private List<ExplicitRole> explicitRoles;
+
 	//--------------------------------- METHODS TO INITIALIZE THE STATE MACHINE ---------------------------------//
 
 	/**
@@ -80,7 +82,9 @@ public abstract class AbstractStateMachine {
 	 * used! Moreover, before discarding the state machine, make sure to shut it down (i.e. call the
 	 * shutdown() method on it).
 	 */
-    public abstract void initialize(List<Gdl> description, long timeout) throws StateMachineInitializationException;
+    public void initialize(List<Gdl> description, long timeout) throws StateMachineInitializationException{
+    	this.explicitRoles = ExplicitRole.computeRoles(description);
+    }
 
     public void initialize(List<Gdl> description) throws StateMachineInitializationException{
     	this.initialize(description, Long.MAX_VALUE);
@@ -188,14 +192,15 @@ public abstract class AbstractStateMachine {
 
 	public abstract MachineState convertToInternalMachineState(ExplicitMachineState explicitState);
 
-	public abstract Move convertToInternalMove(ExplicitMove explicitMove);
+	public abstract Move convertToInternalMove(ExplicitMove explicitMove, ExplicitRole role);
 
 	public abstract Role convertToInternalRole(ExplicitRole explicitRole);
 
-	public List<Move> convertToInternalMoves(List<ExplicitMove> moves){
+	public List<Move> convertToInternalJointMoves(List<ExplicitMove> moves){
     	List<Move> internalMoves = new ArrayList<Move>();
-    	for(ExplicitMove move : moves) {
-    		internalMoves.add(this.convertToInternalMove(move));
+
+    	for(int i = 0; i < moves.size(); i++) {
+    		internalMoves.add(this.convertToInternalMove(moves.get(i), this.getExplicitRoles().get(i)));
     	}
     	return internalMoves;
     }
@@ -265,6 +270,10 @@ public abstract class AbstractStateMachine {
     	}
 
     	return this.roles;
+    }
+
+    public List<ExplicitRole> getExplicitRoles(){
+    	return this.explicitRoles;
     }
 
     /**

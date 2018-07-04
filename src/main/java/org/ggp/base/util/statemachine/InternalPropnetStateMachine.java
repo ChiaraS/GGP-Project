@@ -101,7 +101,7 @@ public abstract class InternalPropnetStateMachine extends StateMachine implement
 	public abstract CompactMachineState convertToCompactMachineState(ExplicitMachineState state);
 
 	@Override
-	public abstract CompactMove convertToCompactMove(ExplicitMove move);
+	public abstract CompactMove convertToCompactMove(ExplicitMove move, ExplicitRole role);
 
 	@Override
 	public abstract CompactRole convertToCompactRole(ExplicitRole role);
@@ -113,7 +113,7 @@ public abstract class InternalPropnetStateMachine extends StateMachine implement
 	 * @param roleIndex
 	 * @return
 	 */
-	public abstract List<CompactMove> movesToInternalMoves(List<ExplicitMove> moves);
+	public abstract List<CompactMove> convertToInternalJointMoves(List<ExplicitMove> moves);
 
 
 	/***************** Extra methods to replace the ones offered by the StateMachine *****************/

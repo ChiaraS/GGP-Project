@@ -16,6 +16,7 @@ import org.ggp.base.util.statemachine.abstractsm.ExplicitAndFpgaStateMachineInte
 import org.ggp.base.util.statemachine.abstractsm.FpgaStateMachineInterface;
 import org.ggp.base.util.statemachine.exceptions.StateMachineInitializationException;
 import org.ggp.base.util.statemachine.exceptions.TransitionDefinitionException;
+import org.ggp.base.util.statemachine.implementation.prover.query.ProverQueryBuilder;
 import org.ggp.base.util.statemachine.structure.explicit.ExplicitMachineState;
 import org.ggp.base.util.statemachine.structure.explicit.ExplicitMove;
 import org.ggp.base.util.statemachine.structure.explicit.ExplicitRole;
@@ -71,14 +72,13 @@ public class FPGAPropnetStateMachine extends StateMachine implements FpgaStateMa
     protected FpgaMachineState initialState;
 
 
-	public FPGAPropnetStateMachine(Random random, FPGAPropnetLibrary fpgaPropnetInterface, ExplicitRole[] rolesArray){
+	public FPGAPropnetStateMachine(Random random, FPGAPropnetLibrary fpgaPropnetInterface, List<ExplicitRole> rolesArray){
 		super(random);
 		this.fpgaPropnetInterface = fpgaPropnetInterface;
 
-		this.explicitRoles = new ArrayList<ExplicitRole>();
+		this.explicitRoles = rolesArray;
 		this.roles = new ArrayList<FpgaRole>();
-		for(int i = 0; i < rolesArray.length; i++){
-			this.explicitRoles.add(rolesArray[i]);
+		for(int i = 0; i < this.explicitRoles.size(); i++){
 			this.roles.add(new FpgaRole(i));
 		}
 	}
@@ -191,7 +191,7 @@ public class FPGAPropnetStateMachine extends StateMachine implements FpgaStateMa
 	public List<FpgaMove> getFpgaLegalMoves(FpgaMachineState state, FpgaRole role) {
 		this.getStateInfo(state);
 		List<FpgaMove> legalMoves = new ArrayList<FpgaMove>();
-		if(this.legalMovesPerRole != null) {
+		if(this.legalMovesPerRole != null && this.legalMovesPerRole.get(this.getFpgaRoleIndices().get(role)) != null) {
 			for(FpgaInternalMove move : this.legalMovesPerRole.get(this.getFpgaRoleIndices().get(role))) {
 				legalMoves.add(new FpgaMove(move));
 			}
@@ -263,7 +263,7 @@ public class FPGAPropnetStateMachine extends StateMachine implements FpgaStateMa
 
 	@Override
 	public ExplicitMove convertToExplicitMove(FpgaMove move) {
-		return new ExplicitMove(this.fpgaPropnetInterface.getGDLMove(move.getInternalMove()));
+		return new ExplicitMove(this.fpgaPropnetInterface.getGDLMove(move.getInternalMove()).get(1));
 	}
 
 	public List<ExplicitMove> convertToExplicitMoves(List<FpgaMove> moves) {
@@ -290,8 +290,8 @@ public class FPGAPropnetStateMachine extends StateMachine implements FpgaStateMa
 	}
 
 	@Override
-	public FpgaMove convertToFpgaMove(ExplicitMove move) {
-		return new FpgaMove(this.fpgaPropnetInterface.getFpgaMove(move.getContents()));
+	public FpgaMove convertToFpgaMove(ExplicitMove move, ExplicitRole role) {
+		return new FpgaMove(this.fpgaPropnetInterface.getFpgaMove(ProverQueryBuilder.toDoes(role, move)));
 	}
 
 	@Override
@@ -351,9 +351,17 @@ public class FPGAPropnetStateMachine extends StateMachine implements FpgaStateMa
 		if(!state.getStateRepresentation().equals(this.lastVisitedState)) {
 			MyPair<List<List<FpgaInternalMove>>,List<MyPair<FpgaInternalState,List<FpgaInternalMove>>>> stateInfo = this.fpgaPropnetInterface.getNextStates(state.getStateRepresentation());
 			// TODO: if the state is terminal what does the getNextStates() function return? Should I check if stateInfo is null?
-			this.legalMovesPerRole = stateInfo.getFirst();
-			this.jointMovesAndNextStates = stateInfo.getSecond();
-			this.terminal = this.jointMovesAndNextStates.isEmpty();// TODO: check! If there are no next states will this be null? Empty?
+			if(stateInfo != null && stateInfo.getFirst() != null && stateInfo.getSecond() != null && !stateInfo.getFirst().isEmpty() && !stateInfo.getSecond().isEmpty()) { // Assume that if at least one among legal moves and next states is null then also the other one will be, and we will set everything to null
+				this.legalMovesPerRole = stateInfo.getFirst();
+				this.jointMovesAndNextStates = stateInfo.getSecond();
+				this.terminal = false;
+			}else {
+				this.legalMovesPerRole = null;
+				this.jointMovesAndNextStates = null;
+				this.terminal = true;
+			}
+
+			// TODO: check! If there are no next states will this be null? Empty?
 			if(this.terminal) {
 				// Assume that on terminal states this method returns the goals in the state and does not
 				// perform any simulation, so the value of simulationsNumber is ignored.
@@ -398,8 +406,5 @@ public class FPGAPropnetStateMachine extends StateMachine implements FpgaStateMa
 	public void shutdown() {
 		// Do nothing
 	}
-
-
-
 
 }

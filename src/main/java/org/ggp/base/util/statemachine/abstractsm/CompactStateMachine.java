@@ -36,6 +36,7 @@ public class CompactStateMachine extends AbstractStateMachine {
 	@Override
 	public void initialize(List<Gdl> description, long timeout)	throws StateMachineInitializationException {
 
+		super.initialize(description, timeout);
 		this.theMachine.initialize(description, timeout);
 
 	}
@@ -263,8 +264,8 @@ public class CompactStateMachine extends AbstractStateMachine {
 	}
 
 	@Override
-	public Move convertToInternalMove(ExplicitMove explicitMove) {
-		return this.theMachine.convertToCompactMove(explicitMove);
+	public Move convertToInternalMove(ExplicitMove explicitMove, ExplicitRole explicitRole) {
+		return this.theMachine.convertToCompactMove(explicitMove, explicitRole);
 	}
 
 	@Override

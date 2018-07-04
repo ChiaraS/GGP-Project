@@ -148,7 +148,7 @@ public final class NoSyncRefactoredSeparateInternalPropnetCachedStateMachine ext
 
 		//System.out.println("PN: Wrong call of cache (next state)!");
 
-		return this.backingStateMachine.convertToExplicitMachineState(this.getCompactNextState(this.backingStateMachine.convertToCompactMachineState(state), this.backingStateMachine.movesToInternalMoves(moves)));
+		return this.backingStateMachine.convertToExplicitMachineState(this.getCompactNextState(this.backingStateMachine.convertToCompactMachineState(state), this.backingStateMachine.convertToInternalJointMoves(moves)));
 	}
 
 	@Override
@@ -282,13 +282,13 @@ public final class NoSyncRefactoredSeparateInternalPropnetCachedStateMachine ext
 	}
 
 	@Override
-	public CompactMove convertToCompactMove(ExplicitMove move) {
-		return this.backingStateMachine.convertToCompactMove(move);
+	public CompactMove convertToCompactMove(ExplicitMove move, ExplicitRole role) {
+		return this.backingStateMachine.convertToCompactMove(move, role);
 	}
 
 	@Override
-	public List<CompactMove> movesToInternalMoves(List<ExplicitMove> moves) {
-		return this.backingStateMachine.movesToInternalMoves(moves);
+	public List<CompactMove> convertToInternalJointMoves(List<ExplicitMove> moves) {
+		return this.backingStateMachine.convertToInternalJointMoves(moves);
 	}
 
 }

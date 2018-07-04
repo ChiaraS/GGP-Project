@@ -66,7 +66,7 @@ public interface ExplicitAndCompactStateMachineInterface extends AbstractStateMa
 
     public CompactMachineState convertToCompactMachineState(ExplicitMachineState state);
 
-    public CompactMove convertToCompactMove(ExplicitMove move);
+    public CompactMove convertToCompactMove(ExplicitMove move, ExplicitRole role);
 
     public CompactRole convertToCompactRole(ExplicitRole role);
 

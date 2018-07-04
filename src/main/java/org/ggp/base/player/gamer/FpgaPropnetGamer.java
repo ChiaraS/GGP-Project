@@ -1,7 +1,4 @@
-/**
- *
- */
-package org.ggp.base.player.gamer.statemachine.propnet;
+package org.ggp.base.player.gamer;
 
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -14,29 +11,20 @@ import org.ggp.base.util.configuration.GamerConfiguration;
 import org.ggp.base.util.game.Game;
 import org.ggp.base.util.gdl.grammar.GdlPool;
 import org.ggp.base.util.logging.GamerLogger;
+import org.ggp.base.util.placeholders.FPGAPropnetLibrary;
 import org.ggp.base.util.propnet.architecture.separateExtendedState.immutable.ImmutablePropNet;
 import org.ggp.base.util.propnet.creationManager.SeparateInternalPropnetManager;
 import org.ggp.base.util.propnet.state.ImmutableSeparatePropnetState;
-import org.ggp.base.util.statemachine.InternalPropnetStateMachine;
+import org.ggp.base.util.statemachine.FPGAPropnetStateMachine;
 import org.ggp.base.util.statemachine.abstractsm.AbstractStateMachine;
-import org.ggp.base.util.statemachine.abstractsm.CompactStateMachine;
-import org.ggp.base.util.statemachine.abstractsm.ExplicitStateMachine;
-import org.ggp.base.util.statemachine.cache.NoSyncRefactoredCachedStateMachine;
-import org.ggp.base.util.statemachine.cache.NoSyncRefactoredSeparateInternalPropnetCachedStateMachine;
+import org.ggp.base.util.statemachine.abstractsm.FpgaStateMachine;
 import org.ggp.base.util.statemachine.implementation.propnet.SeparateInternalPropnetStateMachine;
-import org.ggp.base.util.statemachine.implementation.prover.ProverStateMachine;
+import org.ggp.base.util.statemachine.structure.explicit.ExplicitRole;
 import org.ggp.base.util.symbol.grammar.SymbolPool;
 
-/**
- * This gamer tries to use the state machine based on the internal propnet.
- * If the propnet fails to build, the gamer will use the cached prover.
- *
- * All the gamers that want to use the internal propnet must extend this class.
- *
- * @author C.Sironi
- *
- */
-public abstract class InternalPropnetGamer extends ConfigurableStateMachineGamer {
+import com.google.common.collect.ImmutableList;
+
+public abstract class FpgaPropnetGamer extends ConfigurableStateMachineGamer {
 
 	/**
 	 * Used to tell to the player if and how to build the propnet state machine.
@@ -66,12 +54,12 @@ public abstract class InternalPropnetGamer extends ConfigurableStateMachineGamer
     	ALWAYS, ONCE, NEVER
     }
 
-    /*------------------------- THE PROPNET STATE MACHINE ---------------------------*/
+    /*------------------------- THE FPGA PROPNET STATE MACHINE ---------------------------*/
 
 	/**
 	 * The personal reference to the propnet machine.
 	 */
-	protected InternalPropnetStateMachine thePropnetMachine;
+	protected FPGAPropnetStateMachine thePropnetMachine;
 
 	/**
 	 * True if this gamer never tried to build a propnet before.
@@ -85,13 +73,6 @@ public abstract class InternalPropnetGamer extends ConfigurableStateMachineGamer
 	/*----------------------- SETTINGS FOR THE STATE MACHINE ------------------------*/
 
 	/**
-	 * True if this gamer must directly use the Prover without even trying to build the
-	 * PropNet. If false the gamer will first try to use the PropNet, and fall back to
-	 * the Prover if the PropNet cannot be built.
-	 */
-	protected boolean useProver;
-
-	/**
 	 * Its value tells how this gamer should deal with the propnet state machine:
 	 * - build a new propnet for every new match
 	 * - build the propnet only once for the first played game and then re-use always the same
@@ -102,20 +83,10 @@ public abstract class InternalPropnetGamer extends ConfigurableStateMachineGamer
 	protected PROPNET_BUILD propnetBuild;
 
 	/**
-	 * The player must complete metagaming by the time [timeout - safetyMargin(ms)]
+	 * The player must complete metagaming with by the time [timeout - safetyMargin(ms)]
 	 * to increase the certainty of answering to the Game Manager in time.
 	 */
 	protected long buildPnSafetyMargin;
-
-	/**
-	 * True if we want to use the cache for the state machine based on the Prover, false otherwise.
-	 */
-	protected boolean proverCache;
-
-	/**
-	 * True if we want to use the cache for the state machine based on the PropNet, false otherwise.
-	 */
-	protected boolean pnCache;
 
 	/*---------------------- SETTINGS FOR THE GAMER -------------------------*/
 
@@ -136,7 +107,7 @@ public abstract class InternalPropnetGamer extends ConfigurableStateMachineGamer
 	/**
 	 *
 	 */
-	public InternalPropnetGamer() {
+	public FpgaPropnetGamer() {
 
 		this(GamerConfiguration.gamersSettingsFolderPath + "/" + defaultSettingsFileName);
 		/*
@@ -151,7 +122,7 @@ public abstract class InternalPropnetGamer extends ConfigurableStateMachineGamer
 		*/
 	}
 
-	public InternalPropnetGamer(String settingsFilePath) {
+	public FpgaPropnetGamer(String settingsFilePath) {
 		super(settingsFilePath);
 	}
 
@@ -159,62 +130,25 @@ public abstract class InternalPropnetGamer extends ConfigurableStateMachineGamer
 	protected void configureGamer(GamerSettings gamerSettings){
 		this.thePropnetMachine = null;
 		this.firstTry = true;
-		this.useProver = gamerSettings.getBooleanPropertyValue("Gamer.useProver");
-		if(!this.useProver){// If we are not using the prover a priori, check how we should build the propnet
-			String propnetBuildString = gamerSettings.getPropertyValue("Gamer.propnetBuild");
-			switch(propnetBuildString){
-			case "ALWAYS": case "always":
-				this.propnetBuild = PROPNET_BUILD.ALWAYS;
-				break;
-			case "ONCE": case "once":
-				this.propnetBuild = PROPNET_BUILD.ONCE;
-				break;
-			case "NEVER": case "never":
-				this.propnetBuild = PROPNET_BUILD.NEVER;
-				break;
-			default:
-				GamerLogger.logError("Gamer", "Impossible to create gamer, wrong specification of property Gamer.propnetBuild:" + propnetBuildString + ".");
-				throw new RuntimeException("Impossible to create gamer, wrong specification of property Gamer.propnetBuild:" + propnetBuildString + ".");
-			}
+		String propnetBuildString = gamerSettings.getPropertyValue("Gamer.propnetBuild");
+		switch(propnetBuildString){
+		case "ALWAYS": case "always":
+			this.propnetBuild = PROPNET_BUILD.ALWAYS;
+			break;
+		case "ONCE": case "once":
+			this.propnetBuild = PROPNET_BUILD.ONCE;
+			break;
+		case "NEVER": case "never":
+			this.propnetBuild = PROPNET_BUILD.NEVER;
+			break;
+		default:
+			GamerLogger.logError("Gamer", "Impossible to create gamer, wrong specification of property Gamer.propnetBuild:" + propnetBuildString + ".");
+			throw new RuntimeException("Impossible to create gamer, wrong specification of property Gamer.propnetBuild:" + propnetBuildString + ".");
 		}
 		this.buildPnSafetyMargin = gamerSettings.getLongPropertyValue("Gamer.buildPnSafetyMargin");
-		this.proverCache = gamerSettings.getBooleanPropertyValue("Gamer.proverCache");
-		this.pnCache = gamerSettings.getBooleanPropertyValue("Gamer.pnCache");
 		this.metagameSafetyMargin = gamerSettings.getLongPropertyValue("Gamer.metagameSafetyMargin");
 		this.selectMoveSafetyMargin = gamerSettings.getLongPropertyValue("Gamer.selectMoveSafetyMargin");
 
-	}
-
-	/**
-	 *
-	 */
-	/*
-	public InternalPropnetGamer(InternalPropnetStateMachine thePropnetMachine){
-		// TODO: change code so that the parameters can be set from outside.
-		this.safetyMargin = 10000L;
-		this.thePropnetMachine = thePropnetMachine;
-		this.propnetBuild = PROPNET_BUILD.NEVER;
-		this.firstTry = true;
-
-	}
-	*/
-
-	/**
-	 * This method sets the state machine with a state machine built externally and sets
-	 * this game to always use such state machine without creating a new one. Always remember
-	 * to also initialize the state machine before giving it as input to this method.
-	 *
-	 * This method is safe to use if called right after the initialization of the gamer.
-	 * It should also be safe to use between matches.
-	 * However, switching state machine while playing a match is potentially not safe and depends
-	 * on the actual implementation of the state machine.
-	 *
-	 * @param thePropnetMachine the state machine to set.
-	 */
-	public void setExternalStateMachine(InternalPropnetStateMachine thePropnetMachine){
-		this.thePropnetMachine = thePropnetMachine;
-		this.thePropnetMachine.setRandom(this.random); // To make sure that there is only one random class in the agent
-		this.propnetBuild = PROPNET_BUILD.NEVER;
 	}
 
 	/* (non-Javadoc)
@@ -225,83 +159,65 @@ public abstract class InternalPropnetGamer extends ConfigurableStateMachineGamer
 
 		GamerLogger.log("Gamer", "Returning initial state machine.");
 
-		if(this.useProver){
-			// We don't need a PropNet if we always use the Prover
-			this.thePropnetMachine = null;
-			// This should be already true, but to be sure we set it to null so the code after
-			// the if-else will return the Prover (with or without cache as specified).
-		}else{
-			switch(this.propnetBuild){
-			case ALWAYS: // Create a new state machine for every game:
-				GamerLogger.log("Gamer", "Standard gamer (not single-game).");
-				GamerLogger.log("Gamer", "Creating state machine for the game.");
+		switch(this.propnetBuild){
+		case ALWAYS: // Create a new state machine for every game:
+			GamerLogger.log("Gamer", "Standard gamer (not single-game).");
+			GamerLogger.log("Gamer", "Creating state machine for the game.");
 
-				this.thePropnetMachine = this.createStateMachine();
-				//return this.createStateMachine();
-				break;
-			case ONCE: // Build once, then re-use:
+			this.thePropnetMachine = this.createStateMachine();
+			break;
+		case ONCE: // Build once, then re-use:
 
-				GamerLogger.log("Gamer", "Single-game gamer.");
+			GamerLogger.log("Gamer", "Single-game gamer.");
 
-				// If the propnet machine already exists, return it.
-				if(this.thePropnetMachine != null){
+			// If the propnet machine already exists, return it.
+			if(this.thePropnetMachine != null){
 
-					GamerLogger.log("Gamer", "Propnet state machine already created for the game. Returning same state machine.");
-					//System.out.println("Returning SAME propnet state machine.");
+				GamerLogger.log("Gamer", "Propnet state machine already created for the game. Returning same state machine.");
+				//System.out.println("Returning SAME propnet state machine.");
 
-					//return this.thePropnetMachine;
+			}else{
+
+				// Otherwise, if it doesn't exist because we never tried to build a propnet,
+				// create it and return it.
+				if(this.firstTry){
+
+					this.firstTry = false;
+
+					GamerLogger.log("Gamer", "First try to create the propnet state machine.");
+
+					this.thePropnetMachine = this.createStateMachine();
+
 				}else{
 
-					// Otherwise, if it doesn't exist because we never tried to build a propnet,
-					// create it and return it.
-					if(this.firstTry){
+					GamerLogger.log("Gamer", "Already tried to build propnet and failed. Returning prover state machine.");
+					//System.out.println("Already FAILED with propnet, not gonna try again: returning prover state machine.");
 
-						this.firstTry = false;
-
-						GamerLogger.log("Gamer", "First try to create the propnet state machine.");
-
-						this.thePropnetMachine = this.createStateMachine();
-						//return this.createStateMachine();
-
-					}else{
-
-						GamerLogger.log("Gamer", "Already tried to build propnet and failed. Returning prover state machine.");
-						//System.out.println("Already FAILED with propnet, not gonna try again: returning prover state machine.");
-
-						//return new CachedStateMachine(new ProverStateMachine());
-					}
 				}
-				break;
-			case NEVER:
-				//return this.thePropnetMachine;
-				break;
 			}
+			break;
+		case NEVER:
+			break;
 		}
 
 		if(this.thePropnetMachine != null){
-			// Check if we want to use the cache
-			if(this.pnCache){
-				GamerLogger.log("Gamer", "Returning PropNet state machine with cache.");
-				this.thePropnetMachine = new NoSyncRefactoredSeparateInternalPropnetCachedStateMachine(this.random, this.thePropnetMachine);
-			}else{
-				GamerLogger.log("Gamer", "Returning PropNet state machine without cache.");
-			}
-			return new CompactStateMachine(this.thePropnetMachine);
+			GamerLogger.log("Gamer", "Returning FPGA PropNet state machine without cache.");
+			return new FpgaStateMachine(this.thePropnetMachine);
 		}else{
-			// Check if we want to use the cache
-			if(this.proverCache){
-				GamerLogger.log("Gamer", "Returning Prover state machine with cache.");
-				return new ExplicitStateMachine(new NoSyncRefactoredCachedStateMachine(this.random, new ProverStateMachine(this.random)));
-			}else{
-				GamerLogger.log("Gamer", "Returning Prover state machine without cache.");
-				return new ExplicitStateMachine(new ProverStateMachine(this.random));
-			}
+			GamerLogger.logError("Gamer", "Impossible to create gamer, creation of FPGAStateMachine failed!");
+			throw new RuntimeException("Impossible to create gamer, creation of FPGAStateMachine failed!");
 		}
 
 	}
 
-	private InternalPropnetStateMachine createStateMachine(){
+	private FPGAPropnetStateMachine createStateMachine(){
 		if(System.currentTimeMillis() < this.getMetagamingTimeout() - this.buildPnSafetyMargin){
+
+
+			/***************** CHANGE FOLLOWING CODE TO INITIALIZE THE FPGA LIBRARY *******************
+			 * For now here we create the software propnet and use it to initialize a fake FPGA library
+			 * to test the rest of the code.
+			 */
 
 	        // Create the executor service that will run the propnet manager that creates the propnet
 	        ExecutorService executor = Executors.newSingleThreadExecutor();
@@ -354,12 +270,14 @@ public abstract class InternalPropnetGamer extends ConfigurableStateMachineGamer
 					// Create the state machine giving it the propnet and the propnet state.
 				    //this.thePropnetMachine =  new SeparateInternalPropnetStateMachine(propnet, propnetState);
 
-				    GamerLogger.log("Gamer", "Propnet built successfully: returning propnet state machine.");
+				    GamerLogger.log("Gamer", "Propnet built successfully: returning FPGA propnet state machine.");
 				    //System.out.println("Returning propnet state machine.");
 
 				    //return this.thePropnetMachine;
 
-				    return new SeparateInternalPropnetStateMachine(this.random, propnet, propnetState);
+				    SeparateInternalPropnetStateMachine softwarePropnetMachine = new SeparateInternalPropnetStateMachine(this.random, propnet, propnetState);
+
+				    return new FPGAPropnetStateMachine(this.random, new FPGAPropnetLibrary(softwarePropnetMachine), ImmutableList.copyOf(ExplicitRole.computeRoles(getMatch().getGame().getRules())));
 
 				}else{
 					GamerLogger.logError("Gamer", "Propnet builder ended execution but at leas one among the immutable propnet structure and the propnet state is null: returning prover state machine.");
@@ -431,13 +349,11 @@ public abstract class InternalPropnetGamer extends ConfigurableStateMachineGamer
 		return super.printGamer() +
 				"\nSTATE_MACHINE_TYPE = " + (this.getStateMachine() == null ? "null" : this.getStateMachine().getName()) +
 				"\nPROPNET_MACHINE_TYPE = " + (this.thePropnetMachine == null ? "null" : this.thePropnetMachine.getClass().getSimpleName()) +
-				"\nUSE_PROVER = " + this.useProver +
 				"\nPROPNET_BUILD = " + this.propnetBuild +
 				"\nBUILD_PN_SAFETY_MARGIN = " + this.buildPnSafetyMargin +
-				"\nPROVER_CACHE = " + this.proverCache +
-				"\nPROPNET_CACHE = " + this.pnCache +
 				"\nMETAGAME_SAFETY_MARGIN = " + this.metagameSafetyMargin +
 				"\nSELECT_MOVE_SAFETY_MARGIN = " + this.selectMoveSafetyMargin;
 	}
+
 
 }

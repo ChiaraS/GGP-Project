@@ -43,7 +43,7 @@ public interface FpgaStateMachineInterface extends AbstractStateMachineInterface
 
     public FpgaMachineState convertToFpgaMachineState(ExplicitMachineState state);
 
-    public FpgaMove convertToFpgaMove(ExplicitMove move);
+    public FpgaMove convertToFpgaMove(ExplicitMove move, ExplicitRole role);
 
     public FpgaRole convertToFpgaRole(ExplicitRole role);
 
