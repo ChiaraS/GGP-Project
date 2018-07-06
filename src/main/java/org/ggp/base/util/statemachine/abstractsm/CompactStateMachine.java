@@ -93,7 +93,6 @@ public class CompactStateMachine extends AbstractStateMachine {
 	public MachineState getNextState(MachineState state, List<Move> moves) throws TransitionDefinitionException, StateMachineException {
 
 		if(state instanceof CompactMachineState){
-
 			return this.theMachine.getCompactNextState((CompactMachineState)state, this.convertListOfMoves(moves));
 
 		}else{

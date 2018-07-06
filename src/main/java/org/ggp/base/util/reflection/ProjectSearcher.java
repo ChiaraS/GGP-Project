@@ -3,6 +3,7 @@ package org.ggp.base.util.reflection;
 import java.lang.reflect.Modifier;
 
 import org.ggp.base.apps.kiosk.GameCanvas;
+import org.ggp.base.player.gamer.FpgaPropnetGamer;
 import org.ggp.base.player.gamer.Gamer;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.strategies.aftergame.AfterGameStrategy;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.strategies.aftermetagame.AfterMetagameStrategy;
@@ -54,6 +55,7 @@ public class ProjectSearcher {
     public static final LoadedClasses<Gamer> GAMERS = new LoadedClasses<Gamer>(Gamer.class);
     public static final LoadedClasses<ProverGamer> PROVER_GAMERS = new LoadedClasses<ProverGamer>(ProverGamer.class);
     public static final LoadedClasses<InternalPropnetGamer> INTERNAL_PROPNET_GAMERS = new LoadedClasses<InternalPropnetGamer>(InternalPropnetGamer.class);
+    public static final LoadedClasses<FpgaPropnetGamer> FPGA_PROPNET_GAMERS = new LoadedClasses<FpgaPropnetGamer>(FpgaPropnetGamer.class);
     public static final LoadedClasses<GameCanvas> GAME_CANVASES = new LoadedClasses<GameCanvas>(GameCanvas.class);
 
     // Classes needed to create the search manager

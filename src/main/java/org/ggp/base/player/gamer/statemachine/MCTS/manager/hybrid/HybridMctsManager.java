@@ -1285,6 +1285,7 @@ public class HybridMctsManager {
 		if(this.afterGameStrategy != null){
 			this.afterGameStrategy.afterGameActions(goals);
 		}
+
 	}
 
 	public double[] getStepScoreSumForRoles(){

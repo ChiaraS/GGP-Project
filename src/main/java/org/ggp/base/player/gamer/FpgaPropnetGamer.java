@@ -16,13 +16,11 @@ import org.ggp.base.util.propnet.architecture.separateExtendedState.immutable.Im
 import org.ggp.base.util.propnet.creationManager.SeparateInternalPropnetManager;
 import org.ggp.base.util.propnet.state.ImmutableSeparatePropnetState;
 import org.ggp.base.util.statemachine.FPGAPropnetStateMachine;
+import org.ggp.base.util.statemachine.InternalPropnetStateMachine;
 import org.ggp.base.util.statemachine.abstractsm.AbstractStateMachine;
 import org.ggp.base.util.statemachine.abstractsm.FpgaStateMachine;
 import org.ggp.base.util.statemachine.implementation.propnet.SeparateInternalPropnetStateMachine;
-import org.ggp.base.util.statemachine.structure.explicit.ExplicitRole;
 import org.ggp.base.util.symbol.grammar.SymbolPool;
-
-import com.google.common.collect.ImmutableList;
 
 public abstract class FpgaPropnetGamer extends ConfigurableStateMachineGamer {
 
@@ -151,6 +149,29 @@ public abstract class FpgaPropnetGamer extends ConfigurableStateMachineGamer {
 
 	}
 
+	/**
+	 * This method sets the state machine with a state machine built externally and sets
+	 * this game to always use such state machine without creating a new one. Always remember
+	 * to also initialize the state machine before giving it as input to this method.
+	 *
+	 * This method is safe to use if called right after the initialization of the gamer.
+	 * It should also be safe to use between matches.
+	 * However, switching state machine while playing a match is potentially not safe and depends
+	 * on the actual implementation of the state machine.
+	 *
+	 * @param thePropnetMachine the state machine to set.
+	 */
+	public void setExternalStateMachine(InternalPropnetStateMachine thePropnetMachine){
+
+		if(thePropnetMachine instanceof SeparateInternalPropnetStateMachine) {
+			this.thePropnetMachine = new FPGAPropnetStateMachine(this.random, new FPGAPropnetLibrary((SeparateInternalPropnetStateMachine)thePropnetMachine));
+
+			this.propnetBuild = PROPNET_BUILD.NEVER;
+		}else {
+			GamerLogger.logError("Gamer", "Can only mock the FPGA propnet library using SeparateInternalPropnetStateMachine.");
+		}
+	}
+
 	/* (non-Javadoc)
 	 * @see org.ggp.base.player.gamer.statemachine.StateMachineGamer#getInitialStateMachine()
 	 */
@@ -277,7 +298,7 @@ public abstract class FpgaPropnetGamer extends ConfigurableStateMachineGamer {
 
 				    SeparateInternalPropnetStateMachine softwarePropnetMachine = new SeparateInternalPropnetStateMachine(this.random, propnet, propnetState);
 
-				    return new FPGAPropnetStateMachine(this.random, new FPGAPropnetLibrary(softwarePropnetMachine), ImmutableList.copyOf(ExplicitRole.computeRoles(getMatch().getGame().getRules())));
+				    return new FPGAPropnetStateMachine(this.random, new FPGAPropnetLibrary(softwarePropnetMachine));
 
 				}else{
 					GamerLogger.logError("Gamer", "Propnet builder ended execution but at leas one among the immutable propnet structure and the propnet state is null: returning prover state machine.");

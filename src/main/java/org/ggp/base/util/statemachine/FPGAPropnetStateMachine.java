@@ -72,15 +72,9 @@ public class FPGAPropnetStateMachine extends StateMachine implements FpgaStateMa
     protected FpgaMachineState initialState;
 
 
-	public FPGAPropnetStateMachine(Random random, FPGAPropnetLibrary fpgaPropnetInterface, List<ExplicitRole> rolesArray){
+	public FPGAPropnetStateMachine(Random random, FPGAPropnetLibrary fpgaPropnetInterface){
 		super(random);
 		this.fpgaPropnetInterface = fpgaPropnetInterface;
-
-		this.explicitRoles = rolesArray;
-		this.roles = new ArrayList<FpgaRole>();
-		for(int i = 0; i < this.explicitRoles.size(); i++){
-			this.roles.add(new FpgaRole(i));
-		}
 	}
 
     /**
@@ -97,6 +91,12 @@ public class FPGAPropnetStateMachine extends StateMachine implements FpgaStateMa
     		GamerLogger.log("StateMachine", "[FPGAPropnet] State machine initialized with FPGAPropnetInterface set to null. Impossible to reason on the game!");
     		throw new StateMachineInitializationException("Null parameter passed during initialization of the state machine: cannot reason on the game with null FPGAPropnetInterface.");
     	}else{
+    		this.explicitRoles = ImmutableList.copyOf(ExplicitRole.computeRoles(description));
+    		this.roles = new ArrayList<FpgaRole>();
+    		for(int i = 0; i < this.explicitRoles.size(); i++){
+    			this.roles.add(new FpgaRole(i));
+    		}
+    		this.fpgaPropnetInterface.initialize(description, timeout);
     		this.initialState = new FpgaMachineState(this.fpgaPropnetInterface.getRootState());
     	}
     }
@@ -257,7 +257,7 @@ public class FPGAPropnetStateMachine extends StateMachine implements FpgaStateMa
 	 */
 	@Override
 	public ExplicitMachineState convertToExplicitMachineState(FpgaMachineState state) {
-		GamerLogger.logError("StateMachine", "[FPGAPropnet] Impossible to convert FpgaMachineState to ExplicitMachineState.");
+		GamerLogger.log("Warning", "[FPGAPropnet] Impossible to convert FpgaMachineState to ExplicitMachineState.");
 		return new ExplicitMachineState(new HashSet<GdlSentence>());
 	}
 

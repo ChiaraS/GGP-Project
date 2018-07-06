@@ -51,7 +51,7 @@ public class FpgaMctsGamer extends FpgaPropnetGamer {
 	 */
 	//protected boolean hybridManager;
 
-	public MctsGamer() {
+	public FpgaMctsGamer() {
 
 		this(GamerConfiguration.gamersSettingsFolderPath + "/" + defaultSettingsFileName);
 
@@ -68,7 +68,7 @@ public class FpgaMctsGamer extends FpgaPropnetGamer {
 		//this.hybridManager = true;
 	}
 
-	public MctsGamer(String settingsFilePath) {
+	public FpgaMctsGamer(String settingsFilePath) {
 
 		super(settingsFilePath);
 

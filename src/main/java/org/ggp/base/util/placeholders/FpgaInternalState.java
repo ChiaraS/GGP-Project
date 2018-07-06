@@ -6,9 +6,9 @@ public class FpgaInternalState {
 
 	private final CompactMachineState compactState;
 
-	public FpgaInternalState(){
+	/*public FpgaInternalState(){
 		this.compactState = null;
-	}
+	}*/
 
 	public FpgaInternalState(CompactMachineState compactState){
 		this.compactState = compactState;

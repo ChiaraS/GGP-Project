@@ -3,12 +3,14 @@ package org.ggp.base.util.placeholders;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.ggp.base.util.gdl.grammar.Gdl;
 import org.ggp.base.util.gdl.grammar.GdlSentence;
 import org.ggp.base.util.logging.GamerLogger;
 import org.ggp.base.util.propnet.architecture.separateExtendedState.immutable.components.ImmutableProposition;
 import org.ggp.base.util.statemachine.exceptions.GoalDefinitionException;
 import org.ggp.base.util.statemachine.exceptions.MoveDefinitionException;
 import org.ggp.base.util.statemachine.exceptions.StateMachineException;
+import org.ggp.base.util.statemachine.exceptions.StateMachineInitializationException;
 import org.ggp.base.util.statemachine.exceptions.TransitionDefinitionException;
 import org.ggp.base.util.statemachine.implementation.propnet.SeparateInternalPropnetStateMachine;
 import org.ggp.base.util.statemachine.structure.compact.CompactMachineState;
@@ -59,6 +61,10 @@ public class FPGAPropnetLibrary {
 	 */
 	//private BiMap<FpgaInternalState,Set<GdlSentence>> statesMap;
 
+	public void initialize(List<Gdl> description, long timeout) throws StateMachineInitializationException {
+		this.theMachine.initialize(description, timeout);
+	}
+
 	public FPGAPropnetLibrary(SeparateInternalPropnetStateMachine theMachine/*? Place here whatever input is needed to initialize the library*/) {
 		// Initialize FPGA-propnet
 
@@ -99,6 +105,9 @@ public class FPGAPropnetLibrary {
 	 * @return the initial state.
 	 */
 	public FpgaInternalState getRootState(){
+		if(this.theMachine.getCompactInitialState() == null) {
+			System.out.println("Null root");
+		}
 		return new FpgaInternalState(this.theMachine.getCompactInitialState());
 	}
 
@@ -147,6 +156,9 @@ public class FPGAPropnetLibrary {
 		}
 		List<MyPair<FpgaInternalState,List<FpgaInternalMove>>> internalJointMovesAndNextStates = new ArrayList<MyPair<FpgaInternalState,List<FpgaInternalMove>>>();
 		CompactMachineState nextState;
+		if(allJointMoves == null) {
+			System.out.println("Null joint moves");
+		}
 		for(List<CompactMove> jointMove : allJointMoves) {
 			nextState = this.theMachine.getCompactNextState(state.getCompactMachineState(), jointMove);
 			List<FpgaInternalMove> internalJointMove = new ArrayList<FpgaInternalMove>();

@@ -94,7 +94,7 @@ public final class LeaderboardPanel extends JPanel implements Observer
 			int playerIndex = players.indexOf(rowPlayer);
 			if (playerIndex != -1) {
 				double oldScore = (Double)model.getValueAt(i, 1);
-				double oldErrors = (Double)model.getValueAt(i, 2);
+				int oldErrors = (Integer)model.getValueAt(i, 2);
 				model.setValueAt(oldScore + goals.get(playerIndex), i, 1);
 				model.setValueAt(oldErrors + errors.get(playerIndex), i, 2);
 				playersToAdd.remove(rowPlayer);

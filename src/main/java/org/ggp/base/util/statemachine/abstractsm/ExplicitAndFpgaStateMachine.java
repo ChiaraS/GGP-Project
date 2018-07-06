@@ -407,4 +407,5 @@ public class ExplicitAndFpgaStateMachine extends AbstractStateMachine{
 	public StateMachine getActualStateMachine() {
 		return this.theMachine.getActualStateMachine();
 	}
+
 }

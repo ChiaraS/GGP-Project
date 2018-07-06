@@ -7,9 +7,11 @@ import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Random;
 
 import org.apache.logging.log4j.ThreadContext;
 import org.ggp.base.player.GamePlayer;
+import org.ggp.base.player.gamer.FpgaPropnetGamer;
 import org.ggp.base.player.gamer.statemachine.ConfigurableStateMachineGamer;
 import org.ggp.base.player.gamer.statemachine.StateMachineGamer;
 import org.ggp.base.player.gamer.statemachine.propnet.InternalPropnetGamer;
@@ -106,7 +108,7 @@ public class IndependentSingleMatchRunner {
 		// LINUX
     	//GameRepository gameRepo = new ManualUpdateLocalGameRepository("/home/csironi/GAMEREPOS/GGPBase-GameRepo-03022016");
 
-    	GameRepository gameRepo = new ManualUpdateLocalGameRepository(GamerConfiguration.defaultLocalGameRepositoryFolderPath + "/" + GamerConfiguration.defaultGGPBaseRepo);
+    	GameRepository gameRepo = new ManualUpdateLocalGameRepository(GamerConfiguration.defaultLocalGameRepositoryFolderPath + "/" + GamerConfiguration.defaultStanfordRepo/*.defaultGGPBaseRepo*/);
 
     	Game game = gameRepo.getGame(gameKey);
 
@@ -199,6 +201,19 @@ public class IndependentSingleMatchRunner {
     		if(gamerTypes[i] != null){
 	    		Class<?> theCorrespondingClass = null;
 	    		for (Class<?> gamerClass : ProjectSearcher.INTERNAL_PROPNET_GAMERS.getConcreteClasses()) {
+	        		if(gamerClass.getSimpleName().equals(gamerTypes[i])){
+	        			theCorrespondingClass = gamerClass;
+	        			buildPropnet = true;
+	        			if(ConfigurableStateMachineGamer.class.isAssignableFrom(theCorrespondingClass)){ // The class is subclass of ConfigurableStateMachineGamer
+	        				// If the gamer is configurable than the settings file must be specified
+	        				if(gamerSettings[i] == null){
+	        					System.out.println("Impossible to start match runner, wrong input. No settings file specified for gamer type " + gamerTypes[i] + ".");
+	        					return;
+	        				}
+	        			}
+	        		}
+	        	}
+	    		for (Class<?> gamerClass : ProjectSearcher.FPGA_PROPNET_GAMERS.getConcreteClasses()) {
 	        		if(gamerClass.getSimpleName().equals(gamerTypes[i])){
 	        			theCorrespondingClass = gamerClass;
 	        			buildPropnet = true;
@@ -355,11 +370,16 @@ public class IndependentSingleMatchRunner {
 				}
 			}
 
+			FpgaPropnetGamer theFpgaGamer;
+
 			/** 4. Set the propnet for all players that can use it. **/
 			for(GamePlayer gamePlayer : thePlayers){
 				if(gamePlayer.getGamer() instanceof InternalPropnetGamer){
 					thePropnetGamer  = (InternalPropnetGamer) gamePlayer.getGamer();
-					thePropnetGamer.setExternalStateMachine(new SeparateInternalPropnetStateMachine(null, manager.getImmutablePropnet(), manager.getInitialPropnetState()));
+					thePropnetGamer.setExternalStateMachine(new SeparateInternalPropnetStateMachine(new Random(), manager.getImmutablePropnet(), manager.getInitialPropnetState()));
+				}else if(gamePlayer.getGamer() instanceof FpgaPropnetGamer) {
+					theFpgaGamer  = (FpgaPropnetGamer) gamePlayer.getGamer();
+					theFpgaGamer.setExternalStateMachine(new SeparateInternalPropnetStateMachine(new Random(), manager.getImmutablePropnet(), manager.getInitialPropnetState()));
 				}
 			}
 
