@@ -1,6 +1,7 @@
 package csironi.ggp.course;
 
 import java.util.List;
+import java.util.Random;
 
 import org.ggp.base.util.game.Game;
 import org.ggp.base.util.gdl.grammar.Gdl;
@@ -23,7 +24,7 @@ public class ProvaPropnetStateMachine {
 
 		List<Gdl> BeLList = BeLGame.getRules();
 
-		CheckFwdInterrPropnetStateMachine m = new CheckFwdInterrPropnetStateMachine(300000);
+		CheckFwdInterrPropnetStateMachine m = new CheckFwdInterrPropnetStateMachine(new Random(), 300000);
 		m.initialize(BeLList, Long.MAX_VALUE);
 
 		ExplicitMachineState initialState = m.getExplicitInitialState();

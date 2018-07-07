@@ -4,6 +4,7 @@ import java.awt.Dimension;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Insets;
+import java.util.Random;
 import java.util.concurrent.LinkedBlockingQueue;
 
 import javax.swing.JFrame;
@@ -174,7 +175,8 @@ public final class VisualizationPanel extends JPanel implements Observer
         frame.pack();
         frame.setVisible(true);
 
-        StateMachine theMachine = new CachedStateMachine(new ProverStateMachine());
+        Random random = new Random();
+        StateMachine theMachine = new CachedStateMachine(random, new ProverStateMachine(random));
         try {
         	theMachine.initialize(theGame.getRules(), Long.MAX_VALUE);
             ExplicitMachineState theCurrentState = theMachine.getExplicitInitialState();

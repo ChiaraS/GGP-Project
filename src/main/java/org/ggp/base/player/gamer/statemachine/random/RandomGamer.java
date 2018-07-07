@@ -1,7 +1,6 @@
 package org.ggp.base.player.gamer.statemachine.random;
 
 import java.util.List;
-import java.util.Random;
 
 import org.ggp.base.apps.player.detail.DetailPanel;
 import org.ggp.base.apps.player.detail.SimpleDetailPanel;
@@ -9,7 +8,8 @@ import org.ggp.base.player.gamer.event.GamerSelectedMoveEvent;
 import org.ggp.base.player.gamer.exception.GamePreviewException;
 import org.ggp.base.player.gamer.statemachine.StateMachineGamer;
 import org.ggp.base.util.game.Game;
-import org.ggp.base.util.statemachine.StateMachine;
+import org.ggp.base.util.statemachine.abstractsm.AbstractStateMachine;
+import org.ggp.base.util.statemachine.abstractsm.ExplicitStateMachine;
 import org.ggp.base.util.statemachine.cache.CachedStateMachine;
 import org.ggp.base.util.statemachine.exceptions.GoalDefinitionException;
 import org.ggp.base.util.statemachine.exceptions.MoveDefinitionException;
@@ -34,8 +34,8 @@ public final class RandomGamer extends StateMachineGamer
 	{
 		long start = System.currentTimeMillis();
 
-		List<ExplicitMove> moves = getStateMachine().getExplicitLegalMoves(getCurrentState(), getRole());
-		ExplicitMove selection = (moves.get(new Random().nextInt(moves.size())));
+		List<ExplicitMove> moves = getStateMachine().convertToExplicitMoves(getStateMachine().getLegalMoves(getCurrentState(), getRole()));
+		ExplicitMove selection = (moves.get(this.random.nextInt(moves.size())));
 
 		long stop = System.currentTimeMillis();
 
@@ -44,8 +44,8 @@ public final class RandomGamer extends StateMachineGamer
 	}
 
 	@Override
-	public StateMachine getInitialStateMachine() {
-		return new CachedStateMachine(new ProverStateMachine());
+	public AbstractStateMachine getInitialStateMachine() {
+		return new ExplicitStateMachine(new CachedStateMachine(this.random, new ProverStateMachine(this.random)));
 	}
 
 	@Override

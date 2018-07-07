@@ -15,7 +15,8 @@ import org.ggp.base.util.game.Game;
 import org.ggp.base.util.gdl.grammar.GdlPool;
 import org.ggp.base.util.observer.Event;
 import org.ggp.base.util.observer.Observer;
-import org.ggp.base.util.statemachine.StateMachine;
+import org.ggp.base.util.statemachine.abstractsm.AbstractStateMachine;
+import org.ggp.base.util.statemachine.abstractsm.ExplicitStateMachine;
 import org.ggp.base.util.statemachine.exceptions.GoalDefinitionException;
 import org.ggp.base.util.statemachine.exceptions.MoveDefinitionException;
 import org.ggp.base.util.statemachine.exceptions.TransitionDefinitionException;
@@ -46,12 +47,13 @@ public class KioskGamer extends StateMachineGamer implements Observer {
             GoalDefinitionException {
         if(theCanvas == null)
             throw new IllegalStateException("KioskGamer did not receive a canvas.");
-        theCanvas.setStateMachine(getStateMachine());
+
+        theCanvas.setStateMachine(this.getStateMachine().getActualStateMachine());
 
         theGUI = new GameGUI(theCanvas);
-        theGUI.setRole(getRole());
+        theGUI.setRole(this.getStateMachine().convertToExplicitRole(getRole()));
         theGUI.setBackground(theGUIPanel.getBackground());
-        theGUI.updateGameState(getStateMachine().getExplicitInitialState());
+        theGUI.updateGameState(getStateMachine().convertToExplicitMachineState(getStateMachine().getInitialState()));
         theGUI.addObserver(this);
 
         theGUIPanel.removeAll();
@@ -70,7 +72,7 @@ public class KioskGamer extends StateMachineGamer implements Observer {
             GoalDefinitionException {
     	theGUI.beginPlay();
         theQueue.clear();
-        theGUI.updateGameState(getCurrentState());
+        theGUI.updateGameState(this.getStateMachine().convertToExplicitMachineState(getCurrentState()));
         try {
             return theQueue.take();
         } catch(Exception e) {
@@ -80,8 +82,8 @@ public class KioskGamer extends StateMachineGamer implements Observer {
     }
 
     @Override
-    public StateMachine getInitialStateMachine() {
-        return new ProverStateMachine();
+    public AbstractStateMachine getInitialStateMachine() {
+        return new ExplicitStateMachine(new ProverStateMachine(this.random));
     }
 
     @Override
@@ -103,8 +105,8 @@ public class KioskGamer extends StateMachineGamer implements Observer {
         } else if(event instanceof ServerCompletedMatchEvent) {
             theGUI.updateGameState(stateFromServer);
 
-            List<ExplicitRole> theRoles = getStateMachine().getExplicitRoles();
-            List<Integer> theGoals = ((ServerCompletedMatchEvent)event).getGoals();
+            List<ExplicitRole> theRoles = getStateMachine().convertToExplicitRoles(getStateMachine().getRoles());
+            List<Double> theGoals = ((ServerCompletedMatchEvent)event).getGoals();
 
             StringBuilder finalMessage = new StringBuilder();
             finalMessage.append("Goals: ");
@@ -147,4 +149,5 @@ public class KioskGamer extends StateMachineGamer implements Observer {
 	public void preview(Game g, long timeout) throws GamePreviewException {
 		;
 	}
+
 }

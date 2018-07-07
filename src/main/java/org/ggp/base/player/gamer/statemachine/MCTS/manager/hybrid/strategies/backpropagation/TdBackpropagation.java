@@ -126,7 +126,7 @@ public abstract class TdBackpropagation extends BackpropagationStrategy {
 
 		DecoupledMctsMoveStats currentMoveStat;
 
-		int[] returnValuesForRoles = this.getReturnValuesForRolesInPlayout(simulationResult[0]); // Here the index is useless so we set it to 0
+		double[] returnValuesForRoles = this.getReturnValuesForRolesInPlayout(simulationResult[0]); // Here the index is useless so we set it to 0
 
 		/*
 		System.out.print("R = [ ");
@@ -214,14 +214,14 @@ public abstract class TdBackpropagation extends BackpropagationStrategy {
 			throw new RuntimeException("Detected multiple playouts results.");
 		}
 
-		int playoutLength = simulationResult[0].getPlayoutLength();
+		double playoutLength = simulationResult[0].getPlayoutLength();
 
 		if(playoutLength <= 0){ // This method should be called only if the playout was actually performed, thus the length must be at least 1!
 			GamerLogger.logError("BackpropagationStrategy", "TdBackpropagation - Playout length equals 0 when processing the playout result for TD backpropagation. Probably a wrong combination of strategies has been set or there is something wrong in the code!");
 			throw new RuntimeException("Playout length equals 0.");
 		}
 
-		int[] returnValuesForRoles;
+		double[] returnValuesForRoles;
 		double delta;
 		//double qCurrent = this.qPlayout; Redundant! Basically qCurrent = qPlayout for the whole backpropagation in the playout part of the simulation
 
@@ -294,6 +294,6 @@ public abstract class TdBackpropagation extends BackpropagationStrategy {
 		}
 	}
 
-	public abstract int[] getReturnValuesForRolesInPlayout(SimulationResult simulationResult);
+	public abstract double[] getReturnValuesForRolesInPlayout(SimulationResult simulationResult);
 
 }

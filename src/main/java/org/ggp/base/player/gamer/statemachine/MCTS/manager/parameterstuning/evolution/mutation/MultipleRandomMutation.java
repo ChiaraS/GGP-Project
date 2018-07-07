@@ -81,7 +81,7 @@ public class MultipleRandomMutation extends MutationManager {
 			List<Integer> feasibleValues;
 
 			for(Integer paramIndex : paramIndicesToMutate){
-				feasibleValues = this.parametersManager.getFeasibleValues(paramIndex.intValue(), childCombo);
+				feasibleValues = this.discreteParametersManager.getFeasibleValues(paramIndex.intValue(), childCombo);
 				childCombo[paramIndex.intValue()] = feasibleValues.get(this.random.nextInt(feasibleValues.size())).intValue();
 			}
 		}

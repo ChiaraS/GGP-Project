@@ -60,10 +60,10 @@ public final class LeaderboardPanel extends JPanel implements Observer
 		leaderTable.getColumnModel().getColumn(1).setPreferredWidth(10);
 		leaderTable.getColumnModel().getColumn(2).setPreferredWidth(10);
 		sorter = new TableRowSorter<TableModel>(model);
-		sorter.setComparator(1, new Comparator<Integer>() {
+		sorter.setComparator(1, new Comparator<Double>() {
 			@Override
-			public int compare(Integer a, Integer b) {
-				return a-b;
+			public int compare(Double a, Double b) {
+				return (int) (Math.round(a.doubleValue())-Math.round(b.doubleValue()));
 			}
 		});
 		sorter.setSortKeys(Arrays.asList(new SortKey[]{new SortKey(1, SortOrder.DESCENDING)}));
@@ -82,7 +82,7 @@ public final class LeaderboardPanel extends JPanel implements Observer
 		if (!match.isCompleted()) return;
 		if (match.getMatchId().startsWith("Test")) return;
 
-		List<Integer> goals = match.getGoalValues();
+		List<Double> goals = match.getGoalValues();
 		List<Integer> errors = getErrorCounts(match.getErrorHistory());
 		List<String> players = match.getPlayerNamesFromHost();
 		for (int i = 0; i < players.size(); i++) { if (players.get(i)==null) { players.set(i, "?"); } }
@@ -93,7 +93,7 @@ public final class LeaderboardPanel extends JPanel implements Observer
 			String rowPlayer = model.getValueAt(i, 0).toString();
 			int playerIndex = players.indexOf(rowPlayer);
 			if (playerIndex != -1) {
-				int oldScore = (Integer)model.getValueAt(i, 1);
+				double oldScore = (Double)model.getValueAt(i, 1);
 				int oldErrors = (Integer)model.getValueAt(i, 2);
 				model.setValueAt(oldScore + goals.get(playerIndex), i, 1);
 				model.setValueAt(oldErrors + errors.get(playerIndex), i, 2);

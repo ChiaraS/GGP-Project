@@ -7,11 +7,11 @@ import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.GameDependentP
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.SearchManagerComponent;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.SharedReferencesCollector;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.parameterstuning.structure.CombinatorialCompactMove;
-import org.ggp.base.player.gamer.statemachine.MCTS.manager.parameterstuning.structure.ParametersManager;
+import org.ggp.base.player.gamer.statemachine.MCTS.manager.parameterstuning.structure.DiscreteParametersManager;
 
 public abstract class CrossoverManager extends SearchManagerComponent {
 
-	protected ParametersManager parametersManager;
+	protected DiscreteParametersManager discreteParametersManager;
 
 	public CrossoverManager(GameDependentParameters gameDependentParameters, Random random,
 			GamerSettings gamerSettings, SharedReferencesCollector sharedReferencesCollector) {
@@ -20,7 +20,7 @@ public abstract class CrossoverManager extends SearchManagerComponent {
 
 	@Override
 	public void setReferences(SharedReferencesCollector sharedReferencesCollector) {
-		this.parametersManager = sharedReferencesCollector.getParametersManager();
+		this.discreteParametersManager = sharedReferencesCollector.getDiscreteParametersManager();
 	}
 
 	@Override
@@ -37,7 +37,7 @@ public abstract class CrossoverManager extends SearchManagerComponent {
 
 	@Override
 	public String getComponentParameters(String indentation) {
-		return indentation + "PARAMETERS_MANAGER = " + (this.parametersManager != null ? this.parametersManager.getClass().getSimpleName() : "null");
+		return indentation + "DISCRETE_PARAMETERS_MANAGER = " + (this.discreteParametersManager != null ? this.discreteParametersManager.getClass().getSimpleName() : "null");
 	}
 
 }

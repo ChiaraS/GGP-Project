@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Random;
 import java.util.Set;
 
 import org.ggp.base.util.loader.RemoteResourceLoader;
@@ -90,7 +91,7 @@ public class ImportSanchoCases {
 				acceptableMoves = acceptableMovesClean;
 			}
 			if (flipAcceptableMoves) {
-				StateMachine theMachine = new ProverStateMachine();
+				StateMachine theMachine = new ProverStateMachine(new Random());
 				theMachine.initialize(PlayerTester.getMediasResGame(gameKey, theState).getRules(), Long.MAX_VALUE);
 				List<ExplicitMove> legalMoves = theMachine.getExplicitLegalMoves(theMachine.getExplicitInitialState(), theMachine.getExplicitRoles().get(thePlayerID));
 				Set<String> newAcceptableMoves = new HashSet<String>();

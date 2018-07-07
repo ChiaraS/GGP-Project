@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Random;
 
 import org.ggp.base.util.gdl.grammar.Gdl;
 import org.ggp.base.util.statemachine.InternalPropnetStateMachine;
@@ -33,21 +34,22 @@ public final class SeparateInternalPropnetCachedStateMachine extends InternalPro
 
 	private final class PropnetEntry{
 
-		public Map<CompactRole, List<Integer>> goals;
+		public Map<CompactRole, List<Double>> goals;
 		public Map<CompactRole, List<CompactMove>> moves;
 		public Map<List<CompactMove>, CompactMachineState> nexts;
 		public Boolean terminal;
 
 		public PropnetEntry()
 		{
-			goals = new HashMap<CompactRole, List<Integer>>();
+			goals = new HashMap<CompactRole, List<Double>>();
 			moves = new HashMap<CompactRole, List<CompactMove>>();
 			nexts = new HashMap<List<CompactMove>, CompactMachineState>();
 			terminal = null;
 		}
 	}
 
-	public SeparateInternalPropnetCachedStateMachine(InternalPropnetStateMachine backingStateMachine){
+	public SeparateInternalPropnetCachedStateMachine(Random random, InternalPropnetStateMachine backingStateMachine){
+		super(random);
 		this.backingStateMachine = backingStateMachine;
 		this.internalStateTtlCache = new TtlCache<CompactMachineState, PropnetEntry>(1);
 
@@ -69,12 +71,12 @@ public final class SeparateInternalPropnetCachedStateMachine extends InternalPro
 	}
 
 	@Override
-	public List<Integer> getAllGoalsForOneRole(ExplicitMachineState state, ExplicitRole role) throws StateMachineException{
+	public List<Double> getAllGoalsForOneRole(ExplicitMachineState state, ExplicitRole role) throws StateMachineException{
 		return this.getAllGoalsForOneRole(this.backingStateMachine.convertToCompactMachineState(state), this.backingStateMachine.convertToCompactRole(role));
 	}
 
 	@Override
-	public List<Integer> getAllGoalsForOneRole(CompactMachineState state, CompactRole role) {
+	public List<Double> getAllGoalsForOneRole(CompactMachineState state, CompactRole role) {
 		PropnetEntry entry = getPropnetEntry(state);
 		synchronized (entry){
 			if (!entry.goals.containsKey(role)){
@@ -119,7 +121,7 @@ public final class SeparateInternalPropnetCachedStateMachine extends InternalPro
 
 	@Override
 	public ExplicitMachineState getExplicitNextState(ExplicitMachineState state, List<ExplicitMove> moves) throws TransitionDefinitionException, StateMachineException{
-		return this.backingStateMachine.convertToExplicitMachineState(this.getCompactNextState(this.backingStateMachine.convertToCompactMachineState(state), this.backingStateMachine.movesToInternalMoves(moves)));
+		return this.backingStateMachine.convertToExplicitMachineState(this.getCompactNextState(this.backingStateMachine.convertToCompactMachineState(state), this.backingStateMachine.convertToInternalJointMoves(moves)));
 	}
 
 	@Override
@@ -235,13 +237,13 @@ public final class SeparateInternalPropnetCachedStateMachine extends InternalPro
 	}
 
 	@Override
-	public CompactMove convertToCompactMove(ExplicitMove move) {
-		return this.backingStateMachine.convertToCompactMove(move);
+	public CompactMove convertToCompactMove(ExplicitMove move, ExplicitRole role) {
+		return this.backingStateMachine.convertToCompactMove(move, role);
 	}
 
 	@Override
-	public List<CompactMove> movesToInternalMoves(List<ExplicitMove> moves) {
-		return this.backingStateMachine.movesToInternalMoves(moves);
+	public List<CompactMove> convertToInternalJointMoves(List<ExplicitMove> moves) {
+		return this.backingStateMachine.convertToInternalJointMoves(moves);
 	}
 
 }

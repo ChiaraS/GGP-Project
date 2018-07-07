@@ -2,6 +2,7 @@ package org.ggp.base.util.statemachine.implementation.firstYapProlog;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Random;
 
 import org.ggp.base.util.gdl.grammar.Gdl;
 import org.ggp.base.util.statemachine.StateMachine;
@@ -45,8 +46,10 @@ public class FirstYapStateMachine extends StateMachine{
 
 
 
-	public FirstYapStateMachine(StateMachine backingStateMachine)
+	public FirstYapStateMachine(Random random, StateMachine backingStateMachine)
 	{
+		super(random);
+
 		this.backingStateMachine = backingStateMachine;
 	}
 
@@ -123,10 +126,10 @@ public class FirstYapStateMachine extends StateMachine{
 	 * @throws StateMachineException
 	 */
 	@Override
-	public List<Integer> getAllGoalsForOneRole(ExplicitMachineState state, ExplicitRole role) throws StateMachineException{
+	public List<Double> getAllGoalsForOneRole(ExplicitMachineState state, ExplicitRole role) throws StateMachineException{
 
-		List<Integer> goal = new ArrayList<Integer>();
-		goal.add(new Integer(yapEngine.getGoal(state, role)));
+		List<Double> goal = new ArrayList<Double>();
+		goal.add(new Double(yapEngine.getGoal(state, role)));
 		return goal;
 	}
 

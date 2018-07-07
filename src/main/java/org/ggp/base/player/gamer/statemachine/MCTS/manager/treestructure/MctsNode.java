@@ -12,7 +12,7 @@ public abstract class MctsNode{
 	/**
 	 * Goal for every role in the state (memorized only if the state corresponding to this tree node is terminal.
 	 */
-	protected int[] goals;
+	protected double[] goals;
 
 	/**
 	 * True if the state is terminal, false otherwise.
@@ -44,15 +44,15 @@ public abstract class MctsNode{
 	/**
 	 *
 	 */
-	public MctsNode(int[] goals, boolean terminal, int numRoles) {
+	public MctsNode(double[] goals, boolean terminal, int numRoles) {
 		this.goals = goals;
 		this.terminal = terminal;
 		this.totVisits = new int[numRoles];
 		this.gameStepStamp = -1;
 	}
 
-	public int[] getGoals(){
-		return this.goals;
+	public double[] getGoals(){
+		return this.goals.clone();
 	}
 
 	public boolean isTerminal(){

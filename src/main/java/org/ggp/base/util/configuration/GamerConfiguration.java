@@ -31,8 +31,18 @@ import java.net.InetAddress;
 
 public class GamerConfiguration {
 
+	/**
+	 * Path of the folder containing the local version of the GGP-Base game repository
+	 */
 	public static final String defaultLocalGameRepositoryFolderPath;
+	public static final String defaultGGPBaseRepo = "GGPBase-GameRepo-03022016";
+	public static final String defaultStanfordRepo = "Stanford-GameRepo-01062018";
 	public static final String gamersSettingsFolderPath;
+
+	/**
+	 * Path of the local folder containing .kif game description files collected manually by other repositories
+	 */
+	public static final String defaultLocalFolderGameRepositoryFolderPath;
 
     private static String strSystemOS;
     private static String strProfileName;
@@ -106,21 +116,27 @@ public class GamerConfiguration {
         }
 
         if(runningOnWindows()){
-			defaultLocalGameRepositoryFolderPath = "C:/Users/c.sironi/BITBUCKET REPOS/GGP-Base/GGPBase-GameRepo-03022016";
+			defaultLocalGameRepositoryFolderPath = "C:/Users/c.sironi/BITBUCKET REPOS/GGP-Base";
 			gamersSettingsFolderPath = "C:/Users/c.sironi/BITBUCKET REPOS/GGP-Base/GamersSettings";
+
+			defaultLocalFolderGameRepositoryFolderPath = "C:/Users/c.sironi/BITBUCKET REPOS/GGP-Base/GDLFolder";
 
 			// To run Kiosk on laptop
 			//defaultLocalGameRepositoryFolderPath = "C:/Users/Chiara/Documents/PHD/GGP DEMO/GGPBase-GameRepo-03022016";
 			//gamersSettingsFolderPath = "C:/Users/Chiara/Documents/PHD/GGP DEMO/GamersSettings";
 		}else if(runningOnLinux()){
-			defaultLocalGameRepositoryFolderPath = "/home/csironi/GAMEREPOS/GGPBase-GameRepo-03022016";
+			defaultLocalGameRepositoryFolderPath = "/home/csironi/GAMEREPOS";
 			gamersSettingsFolderPath = "/home/csironi/GamersSettings";
 			//defaultLocalGameRepositoryFolderPath = "/data/home/eex264/chiaraxps/GGPBase-GameRepo-03022016";
 			//gamersSettingsFolderPath = "/data/home/eex264/chiaraxps/GamersSettings";
 
+			defaultLocalFolderGameRepositoryFolderPath = "/home/csironi/GDLFolder";
+
 		}else{
 			defaultLocalGameRepositoryFolderPath = null;
 			gamersSettingsFolderPath = null;
+
+			defaultLocalFolderGameRepositoryFolderPath = null;
 		}
     }
 

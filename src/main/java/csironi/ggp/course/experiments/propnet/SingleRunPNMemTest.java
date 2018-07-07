@@ -2,14 +2,8 @@ package csironi.ggp.course.experiments.propnet;
 
 import java.io.File;
 import java.util.List;
-import java.util.Random;
 
 import org.apache.logging.log4j.ThreadContext;
-import org.ggp.base.player.gamer.statemachine.MCS.manager.MCSException;
-import org.ggp.base.player.gamer.statemachine.MCS.manager.propnet.InternalPropnetMCSManager;
-import org.ggp.base.player.gamer.statemachine.MCTS.manager.propnet.strategies.playout.PnRandomPlayout;
-import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.propnet.PnTreeNodeFactory;
-import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.propnet.decoupled.PnDecoupledTreeNodeFactory;
 import org.ggp.base.util.game.Game;
 import org.ggp.base.util.game.GameRepository;
 import org.ggp.base.util.game.ManualUpdateLocalGameRepository;
@@ -25,11 +19,6 @@ import org.ggp.base.util.propnet.creationManager.optimizationcallers.OptimizeAwa
 import org.ggp.base.util.propnet.creationManager.optimizationcallers.RemoveAnonPropositions;
 import org.ggp.base.util.propnet.creationManager.optimizationcallers.RemoveOutputlessComponents;
 import org.ggp.base.util.propnet.state.ImmutableSeparatePropnetState;
-import org.ggp.base.util.statemachine.InternalPropnetStateMachine;
-import org.ggp.base.util.statemachine.cache.SeparateInternalPropnetCachedStateMachine;
-import org.ggp.base.util.statemachine.exceptions.StateMachineInitializationException;
-import org.ggp.base.util.statemachine.implementation.propnet.SeparateInternalPropnetStateMachine;
-import org.ggp.base.util.statemachine.structure.compact.CompactRole;
 
 /**
  * TO DELETE!
@@ -270,31 +259,32 @@ public class SingleRunPNMemTest {
 			// Create the state machine giving it the propnet and the propnet state.
 			// NOTE that if any of the two is null, it means that the propnet creation/initialization went wrong
 			// and this will be detected by the state machine during initialization.
+/*
+			Random random = new Random();
 
 			InternalPropnetStateMachine thePropnetMachine;
 
 		    if(withCache){
-		    	thePropnetMachine = new SeparateInternalPropnetCachedStateMachine(new SeparateInternalPropnetStateMachine(immutablePropnet, propnetState));
+		    	thePropnetMachine = new SeparateInternalPropnetCachedStateMachine(random, new SeparateInternalPropnetStateMachine(random, immutablePropnet, propnetState));
 	        }else{
-	        	thePropnetMachine = new SeparateInternalPropnetStateMachine(immutablePropnet, propnetState);
+	        	thePropnetMachine = new SeparateInternalPropnetStateMachine(random, immutablePropnet, propnetState);
 	        }
 
 			Random r;
 			int maxSearchDepth;
 		    int numRoles;
 
-			GamerLogger.log("SingleRunPNTester", "Starting MCS speed test.");
+		    GamerLogger.log("SingleRunPNTester", "Starting MCS speed test.");
 
 			try {
 				thePropnetMachine.initialize(description, System.currentTimeMillis() + givenInitTime);
 
-		        r = new Random();
 		        maxSearchDepth = 500;
 		        CompactRole internalPlayingRole = thePropnetMachine.getCompactRoles().get(0);
 		        numRoles = thePropnetMachine.getCompactRoles().size();
 
-		        InternalPropnetMCSManager MCSmanager = new InternalPropnetMCSManager(new PnRandomPlayout(thePropnetMachine),
-		        		thePropnetMachine, internalPlayingRole, maxSearchDepth, r);
+		        HybridMcsManager MCSmanager = new HybridMcsManager(new PnRandomPlayout(thePropnetMachine),
+		        		thePropnetMachine, internalPlayingRole, maxSearchDepth, random);
 
 		        GamerLogger.log("SingleRunPNTester", "Starting MCS search.");
 
@@ -325,23 +315,24 @@ public class SingleRunPNMemTest {
 			thePropnetMachine = null;
 
 			collect(); // TODO: Leave or not?
-
+*/
 			/******************************** MCTS SPEED TEST *********************************/
-
+/*
 			GamerLogger.log("SingleRunPNTester", "Starting MCTS speed test.");
 
 			propnetState = manager.getInitialPropnetState();
 
+			random = new Random();
+
 		    if(withCache){
-		    	thePropnetMachine = new SeparateInternalPropnetCachedStateMachine(new SeparateInternalPropnetStateMachine(immutablePropnet, propnetState));
+		    	thePropnetMachine = new SeparateInternalPropnetCachedStateMachine(random, new SeparateInternalPropnetStateMachine(random, immutablePropnet, propnetState));
 	        }else{
-	        	thePropnetMachine = new SeparateInternalPropnetStateMachine(immutablePropnet, propnetState);
+	        	thePropnetMachine = new SeparateInternalPropnetStateMachine(random, immutablePropnet, propnetState);
 	        }
 
 			try {
 				thePropnetMachine.initialize(description, System.currentTimeMillis() + givenInitTime);
 
-		        r = new Random();
 		        maxSearchDepth = 500;
 		        double c = 0.7;
 		        double unexploredMoveDefaultSelectionValue = Double.MAX_VALUE;
@@ -354,14 +345,14 @@ public class SingleRunPNMemTest {
 
 		        PnTreeNodeFactory theNodeFactory = new PnDecoupledTreeNodeFactory(thePropnetMachine);
 
-		        /*
-		        InternalPropnetMCTSManager MCTSmanager = new InternalPropnetMCTSManager(
-		        		new PnUCTSelection(numRoles, internalPlayingRole, r, uctOffset, new PnUCTEvaluator(c, unexploredMoveDefaultSelectionValue)),
-		        		new PnRandomExpansion(numRoles, internalPlayingRole, r), new PnRandomPlayout(thePropnetMachine),
-		        		new PnStandardBackpropagation(numRoles, internalPlayingRole),
-		        		new PnMaximumScoreChoice(internalPlayingRole, r), null, null, null, theNodeFactory,
-		        		thePropnetMachine, gameStepOffset, maxSearchDepth, false);
-		        */
+
+		        //InternalPropnetMCTSManager MCTSmanager = new InternalPropnetMCTSManager(
+		        //		new PnUCTSelection(numRoles, internalPlayingRole, r, uctOffset, new PnUCTEvaluator(c, unexploredMoveDefaultSelectionValue)),
+		        //		new PnRandomExpansion(numRoles, internalPlayingRole, r), new PnRandomPlayout(thePropnetMachine),
+		        //		new PnStandardBackpropagation(numRoles, internalPlayingRole),
+		        //		new PnMaximumScoreChoice(internalPlayingRole, r), null, null, null, theNodeFactory,
+		        //		thePropnetMachine, gameStepOffset, maxSearchDepth, false);
+
 
 		        GamerLogger.log("SingleRunPNTester", "Starting MCTS search.");
 
@@ -383,11 +374,11 @@ public class SingleRunPNMemTest {
 			} catch (StateMachineInitializationException e) {
 	        	GamerLogger.logError("SingleRunPNTester", "State machine " + thePropnetMachine.getName() + " initialization failed, impossible to test MCTS for this game. Cause: [" + e.getClass().getSimpleName() + "] " + e.getMessage() );
 	        	GamerLogger.logStackTrace("SingleRunPNTester", e);
-			} /*catch (MCTSException e) {
-	        	GamerLogger.logError("SingleRunPNTester", "Search failed for MCTSManager. Impossible to test MCTS for this game. Cause: [" + e.getClass().getSimpleName() + "] " + e.getMessage() );
-	        	GamerLogger.logStackTrace("SingleRunPNTester", e);
-			}*/
-
+			} //catch (MCTSException e) {
+	        //	GamerLogger.logError("SingleRunPNTester", "Search failed for MCTSManager. Impossible to test MCTS for this game. Cause: [" + e.getClass().getSimpleName() + "] " + e.getMessage() );
+	        //	GamerLogger.logStackTrace("SingleRunPNTester", e);
+			//}
+*/
 		}
 
 		/************************** LOG *******************************/

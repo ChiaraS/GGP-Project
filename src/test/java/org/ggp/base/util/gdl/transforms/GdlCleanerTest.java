@@ -1,6 +1,7 @@
 package org.ggp.base.util.gdl.transforms;
 
 import java.util.List;
+import java.util.Random;
 
 import org.ggp.base.util.game.TestGameRepository;
 import org.ggp.base.util.gdl.grammar.Gdl;
@@ -21,7 +22,7 @@ public class GdlCleanerTest extends Assert {
 
         StaticValidator.validateDescription(description);
 
-        StateMachine sm = new ProverStateMachine();
+        StateMachine sm = new ProverStateMachine(new Random());
         sm.initialize(description, Long.MAX_VALUE);
         ExplicitMachineState state = sm.getExplicitInitialState();
         assertEquals(1, sm.getExplicitRoles().size());

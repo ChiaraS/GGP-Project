@@ -1,6 +1,7 @@
 package org.ggp.base.validator;
 
 import java.util.List;
+import java.util.Random;
 
 import org.ggp.base.util.game.Game;
 import org.ggp.base.util.statemachine.StateMachine;
@@ -28,7 +29,7 @@ public final class SimulationValidator implements GameValidator
 	@Override
 	public List<ValidatorWarning> checkValidity(Game theGame) throws ValidatorException {
 		for (int i = 0; i < numSimulations; i++) {
-			StateMachine stateMachine = new ProverStateMachine();
+			StateMachine stateMachine = new ProverStateMachine(new Random());
 			try {
 				stateMachine.initialize(theGame.getRules(), Long.MAX_VALUE);
 			} catch (StateMachineInitializationException sme) {

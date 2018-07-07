@@ -2,6 +2,7 @@ package csironi.ggp.course.verifiers;
 
 import java.util.List;
 import java.util.Locale;
+import java.util.Random;
 
 import org.ggp.base.util.game.GameRepository;
 import org.ggp.base.util.gdl.grammar.Gdl;
@@ -166,14 +167,15 @@ public class PrologVerifier {
 
             List<Gdl> description = theRepository.getGame(gameKey).getRules();
 
-            theReference = new ProverStateMachine();
+            theReference = new ProverStateMachine(new Random());
 
+            Random random = new Random();
             // Create the Prolog state machine
-            theSubject = new PrologStateMachine(prologType, queryWaitingTime);
+            theSubject = new PrologStateMachine(random, prologType, queryWaitingTime);
 
             if(backed){
             	// Create the BackedPrologStateMachine
-            	theSubject = new BackedPrologStateMachine((PrologStateMachine)theSubject, new ProverStateMachine());
+            	theSubject = new BackedPrologStateMachine(random, (PrologStateMachine)theSubject, new ProverStateMachine(random));
             }
 
             theReference.initialize(description, Long.MAX_VALUE);

@@ -4,6 +4,7 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
+import java.util.Random;
 
 import org.ggp.base.util.game.Game;
 import org.ggp.base.util.logging.GamerLogger;
@@ -42,7 +43,7 @@ public class Benchmark {
 
 		switch (reasonerType) {
 			case GGPBASEPROVER:
-				stateMachine = new ProverStateMachine();
+				stateMachine = new ProverStateMachine(new Random());
 				break;
 			case BACKWARDPROPNET:
 				//stateMachine = new BackwardPropNetStateMachine(new GGPBasePropNetStructureFactory());
@@ -65,7 +66,7 @@ public class Benchmark {
 			case TRAN_SIPN:
 			case NOTRAN_SIPN:
 				GamerLogger.setSuppressLoggerOutput(true); // Otherwise the PropNet manager that creates the PropNet will log on the console
-				stateMachine = new SelfInitSeparateInternalPropNetStateMachine();
+				stateMachine = new SelfInitSeparateInternalPropNetStateMachine(new Random());
 				break;
 		}
 

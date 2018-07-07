@@ -5,6 +5,7 @@ import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Random;
 import java.util.Set;
 
 import org.ggp.base.util.gdl.grammar.Gdl;
@@ -44,6 +45,10 @@ public class FwdInterrPropnetStateMachine extends StateMachine {
 	 * If it is negative it means that the propnet didn't build in time.
 	 */
 	private long propnetConstructionTime = -1L;
+
+    public FwdInterrPropnetStateMachine(Random random){
+    	super(random);
+    }
 
     /**
      * Initializes the PropNetStateMachine. You should compute the topological
@@ -232,14 +237,14 @@ public class FwdInterrPropnetStateMachine extends StateMachine {
 	 * are true for that role.
 	 */
 	@Override
-	public List<Integer> getAllGoalsForOneRole(ExplicitMachineState state, ExplicitRole role) {
+	public List<Double> getAllGoalsForOneRole(ExplicitMachineState state, ExplicitRole role) {
 		// Mark base propositions according to state.
 		this.markBases(state);
 
 		// Get all goal propositions for the given role.
 		Set<ForwardInterruptingProposition> goalPropsForRole = this.propNet.getGoalPropositions().get(role);
 
-		List<Integer> trueGoals = new ArrayList<Integer>();
+		List<Double> trueGoals = new ArrayList<Double>();
 
 		// Check all the goal propositions that are true for the role. If there is more than one throw an exception.
 		for(ForwardInterruptingProposition goalProp : goalPropsForRole){
@@ -392,10 +397,10 @@ public class FwdInterrPropnetStateMachine extends StateMachine {
 	 * @param goalProposition
 	 * @return the integer value of the goal proposition
 	 */
-    private int getGoalValue(ForwardInterruptingProposition goalProposition){
+    private double getGoalValue(ForwardInterruptingProposition goalProposition){
 		GdlRelation relation = (GdlRelation) goalProposition.getName();
 		GdlConstant constant = (GdlConstant) relation.get(1);
-		return Integer.parseInt(constant.toString());
+		return Double.parseDouble(constant.toString());
 	}
 
     /**

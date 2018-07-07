@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import java.util.Random;
 
 import org.ggp.base.util.game.TestGameRepository;
 import org.ggp.base.util.gdl.grammar.Gdl;
@@ -20,7 +21,7 @@ import com.google.common.collect.ImmutableSet;
 
 public class ProverStateMachineTest extends Assert {
 
-    protected final ProverStateMachine sm = new ProverStateMachine();
+    protected final ProverStateMachine sm = new ProverStateMachine(new Random());
     protected final GdlConstant C1 = GdlPool.getConstant("1");
     protected final GdlConstant C2 = GdlPool.getConstant("2");
     protected final GdlConstant C3 = GdlPool.getConstant("3");

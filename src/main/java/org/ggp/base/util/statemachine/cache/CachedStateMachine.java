@@ -3,6 +3,7 @@ package org.ggp.base.util.statemachine.cache;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Random;
 
 import org.ggp.base.util.gdl.grammar.Gdl;
 import org.ggp.base.util.statemachine.StateMachine;
@@ -23,22 +24,24 @@ public final class CachedStateMachine extends StateMachine
 
 	private final class Entry
 	{
-		public Map<ExplicitRole, List<Integer>> goals;
+		public Map<ExplicitRole, List<Double>> goals;
 		public Map<ExplicitRole, List<ExplicitMove>> moves;
 		public Map<List<ExplicitMove>, ExplicitMachineState> nexts;
 		public Boolean terminal;
 
 		public Entry()
 		{
-			goals = new HashMap<ExplicitRole, List<Integer>>();
+			goals = new HashMap<ExplicitRole, List<Double>>();
 			moves = new HashMap<ExplicitRole, List<ExplicitMove>>();
 			nexts = new HashMap<List<ExplicitMove>, ExplicitMachineState>();
 			terminal = null;
 		}
 	}
 
-	public CachedStateMachine(StateMachine backingStateMachine)
+	public CachedStateMachine(Random random, StateMachine backingStateMachine)
 	{
+		super(random);
+
 		this.backingStateMachine = backingStateMachine;
 		ttlCache = new TtlCache<ExplicitMachineState, Entry>(1);
 	}
@@ -54,7 +57,7 @@ public final class CachedStateMachine extends StateMachine
 	}
 
 	@Override
-	public List<Integer> getAllGoalsForOneRole(ExplicitMachineState state, ExplicitRole role)
+	public List<Double> getAllGoalsForOneRole(ExplicitMachineState state, ExplicitRole role)
 			throws StateMachineException {
 
 		Entry entry = getEntry(state);

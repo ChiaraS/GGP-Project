@@ -214,7 +214,7 @@ public final class Kiosk extends JPanel implements ActionListener, ItemListener,
         //theRepository = new CloudGameRepository("http://games.ggp.org/base/");
 
         // Chiara: I hope I know what I'm doing, but if Kiosk breaks, comment the following instruction and uncomment the previous one
-        theRepository = new ManualUpdateLocalGameRepository(GamerConfiguration.defaultLocalGameRepositoryFolderPath);
+        theRepository = new ManualUpdateLocalGameRepository(GamerConfiguration.defaultLocalGameRepositoryFolderPath + "/" + GamerConfiguration.defaultGGPBaseRepo);
     }
 
     class AvailableGame implements Comparable<AvailableGame> {

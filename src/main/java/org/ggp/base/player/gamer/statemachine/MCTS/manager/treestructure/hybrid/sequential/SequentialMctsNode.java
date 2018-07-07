@@ -65,7 +65,7 @@ public class SequentialMctsNode extends MctsNode {
 	 * @param goals
 	 * @param terminal
 	 */
-	public SequentialMctsNode(List<List<Move>> allLegalMoves, SequentialMctsMoveStats[] movesStats, int[] goals, boolean terminal, int unvisitedLeaves, int numRoles) {
+	public SequentialMctsNode(List<List<Move>> allLegalMoves, SequentialMctsMoveStats[] movesStats, double[] goals, boolean terminal, int unvisitedLeaves, int numRoles) {
 		super(goals, terminal, numRoles);
 		this.movesStats = movesStats;
 		this.allLegalMoves = allLegalMoves;

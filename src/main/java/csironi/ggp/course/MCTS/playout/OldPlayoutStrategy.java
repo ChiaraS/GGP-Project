@@ -30,6 +30,6 @@ public interface OldPlayoutStrategy {
 	 * @throws GoalDefinitionException
 	 * @throws StateMachineException
 	 */
-	public List<Integer> playout(MCTNode expandedNode) throws MoveDefinitionException, TransitionDefinitionException, GoalDefinitionException, StateMachineException;
+	public List<Double> playout(MCTNode expandedNode) throws MoveDefinitionException, TransitionDefinitionException, GoalDefinitionException, StateMachineException;
 
 }

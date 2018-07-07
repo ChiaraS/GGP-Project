@@ -9,6 +9,7 @@ import java.awt.event.ActionListener;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Random;
 
 import javax.swing.AbstractAction;
 import javax.swing.JButton;
@@ -212,7 +213,7 @@ public final class Server extends JPanel implements ActionListener
             if (theGame == null)
                 return;
 
-            StateMachine stateMachine = new ProverStateMachine();
+            StateMachine stateMachine = new ProverStateMachine(new Random());
             try {
 				stateMachine.initialize(theGame.getRules(), Long.MAX_VALUE);
 			} catch (StateMachineInitializationException e1) {

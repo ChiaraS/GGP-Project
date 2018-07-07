@@ -17,7 +17,7 @@ public class AmafDecoupledMctsNode extends DecoupledMctsNode implements AmafNode
 	 */
 	private Map<Move, MoveStats> amafStats;
 
-	public AmafDecoupledMctsNode(DecoupledMctsMoveStats[][] movesStats, int[] goals, boolean terminal, int numRoles) {
+	public AmafDecoupledMctsNode(DecoupledMctsMoveStats[][] movesStats, double[] goals, boolean terminal, int numRoles) {
 		super(movesStats, goals, terminal, numRoles);
 
 		if(!terminal){

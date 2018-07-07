@@ -2,6 +2,7 @@ package org.ggp.base.util.statemachine.implementation.propnet;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Random;
 import java.util.Set;
 
 import org.apache.lucene.util.OpenBitSet;
@@ -38,7 +39,8 @@ public class SeparateInternalPropnetStateMachine extends InternalPropnetStateMac
     /** The initial state */
     protected CompactMachineState initialState;
 
-	public SeparateInternalPropnetStateMachine(ImmutablePropNet propNet, ImmutableSeparatePropnetState propnetState){
+	public SeparateInternalPropnetStateMachine(Random random, ImmutablePropNet propNet, ImmutableSeparatePropnetState propnetState){
+		super(random);
 		this.propNet = propNet;
 		this.propnetState = propnetState;
 		/*
@@ -62,7 +64,7 @@ public class SeparateInternalPropnetStateMachine extends InternalPropnetStateMac
     public void initialize(List<Gdl> description, long timeout) throws StateMachineInitializationException {
 
     	if(this.propNet == null || this.propnetState == null){
-    		GamerLogger.log("StateMachine", "[ExternalPropnet] State machine initialized with at least one among the propnet structure and the propnet state set to null. Impossible to reason on the game!");
+    		GamerLogger.log("StateMachine", "[SeparateInternalPropnetStateMachine] State machine initialized with at least one among the propnet structure and the propnet state set to null. Impossible to reason on the game!");
     		throw new StateMachineInitializationException("Null parameter passed during instantiaton of the state machine: cannot reason on the game with null propnet or null propnet state.");
     	}else{
 
@@ -77,13 +79,13 @@ public class SeparateInternalPropnetStateMachine extends InternalPropnetStateMac
 	/**
 	 * Computes if the state is terminal. Should return the value of the terminal
 	 * proposition for the state.
-	 * Since the state is not an ExternalPropnetMachineState, it is first transformed
+	 * Since the state is not an CompactMachineState, it is first transformed
 	 * into one.
 	 *
 	 * NOTE that this method has been added only for compatibility with other state
 	 * machines, however its performance will be much slower than the corresponding
-	 * method for the ExternalPropnetMachineState since the state will always have
-	 * to be translated first into an ExternalPropnetMachineState.
+	 * method for the CompactMachineState since the state will always have
+	 * to be translated first into an CompactMachineState.
 	 *
 	 * @state a machine state.
 	 * @return true if the state is terminal, false otherwise.
@@ -125,7 +127,7 @@ public class SeparateInternalPropnetStateMachine extends InternalPropnetStateMac
 	 * @param role
 	 */
 	@Override
-	public List<Integer> getAllGoalsForOneRole(ExplicitMachineState state, ExplicitRole role) {
+	public List<Double> getAllGoalsForOneRole(ExplicitMachineState state, ExplicitRole role) {
 		return this.getAllGoalsForOneRole(this.convertToCompactMachineState(state), this.convertToCompactRole(role));
 	}
 
@@ -137,7 +139,7 @@ public class SeparateInternalPropnetStateMachine extends InternalPropnetStateMac
 	 * GoalDefinitionException because the goal is ill-defined.
 	 */
 	@Override
-	public List<Integer> getAllGoalsForOneRole(CompactMachineState state, CompactRole role) {
+	public List<Double> getAllGoalsForOneRole(CompactMachineState state, CompactRole role) {
 
 		// Mark base propositions according to state.
 		if(this.markBases(state)){
@@ -155,11 +157,11 @@ public class SeparateInternalPropnetStateMachine extends InternalPropnetStateMac
 
 		int[] allGoalValues = this.propNet.getGoalValues()[role.getIndex()];
 
-		List<Integer> trueGoalValues = new ArrayList<Integer>();
+		List<Double> trueGoalValues = new ArrayList<Double>();
 
 		while(trueGoalIndex < (firstGoalIndices[role.getIndex()+1]) && trueGoalIndex != -1){
 
-			trueGoalValues.add(allGoalValues[trueGoalIndex-firstGoalIndices[role.getIndex()]]);
+			trueGoalValues.add(new Double(allGoalValues[trueGoalIndex-firstGoalIndices[role.getIndex()]]));
 
 			trueGoalIndex =	otherComponents.nextSetBit(trueGoalIndex+1);
 		}
@@ -291,7 +293,7 @@ public class SeparateInternalPropnetStateMachine extends InternalPropnetStateMac
 	 */
 	@Override
 	public ExplicitMachineState getExplicitNextState(ExplicitMachineState state, List<ExplicitMove> moves){
-		return this.convertToExplicitMachineState(this.getCompactNextState(this.convertToCompactMachineState(state), this.movesToInternalMoves(moves)));
+		return this.convertToExplicitMachineState(this.getCompactNextState(this.convertToCompactMachineState(state), this.convertToInternalJointMoves(moves)));
 	}
 
 	/**
@@ -346,9 +348,10 @@ public class SeparateInternalPropnetStateMachine extends InternalPropnetStateMac
 	 * setting input values, feel free to change this for a more efficient implementation.
 	 *
 	 * @param moves the moves to be translated into 'does' propositions.
+	 * @roles the roles that play thje corresponding move in moves.
 	 * @return a list with the 'does' propositions corresponding to the given joint move.
 	 */
-	private List<GdlSentence> toDoes(List<ExplicitMove> moves){
+	private List<GdlSentence> toDoes(List<ExplicitMove> moves, List<ExplicitRole> roles){
 
 		//AGGIUNTA
     	//System.out.println("TO DOES");
@@ -374,7 +377,10 @@ public class SeparateInternalPropnetStateMachine extends InternalPropnetStateMac
 	    	//System.out.println("i=" + i);
 	    	//FINE AGGIUNTA
 
-			doeses.add(ProverQueryBuilder.toDoes(this.convertToExplicitRole(this.roles.get(i)), moves.get(i)));
+			//System.out.println("roles" + this.roles.size());
+			//System.out.println("moves" + moves.size());
+
+			doeses.add(ProverQueryBuilder.toDoes(roles.get(i), moves.get(i)));
 		}
 
 		//AGGIUNTA
@@ -475,17 +481,24 @@ public class SeparateInternalPropnetStateMachine extends InternalPropnetStateMac
 	}
 
 	@Override
-	public CompactMove convertToCompactMove(ExplicitMove move){
-		List<ExplicitMove> moveArray = new ArrayList<ExplicitMove>();
-		moveArray.add(move);
-		GdlSentence moveToDoes = this.toDoes(moveArray).get(0);
+	public CompactMove convertToCompactMove(ExplicitMove move, ExplicitRole role){
+		//List<ExplicitMove> moveArray = new ArrayList<ExplicitMove>();
+		//moveArray.add(move);
+
+		GdlSentence moveToDoes = ProverQueryBuilder.toDoes(role, move);
 
 		int i = 0;
 		for(ImmutableProposition input : this.propNet.getInputPropositions()){
-			if(input.equals(moveToDoes)){
+			if(input.getName().equals(moveToDoes)){
 				break;
 			}
 			i++;
+		}
+
+		// Check if we didn't find the move and throw exception
+		if(i == this.propNet.getInputPropositions().length) {
+			GamerLogger.log("StateMachine", "[SeparateInternalPropnetStateMachine] Couldn't find corresponding CompactMove when translating ExplicitMove " + move.toString() + ".");
+    		throw new RuntimeException("[SeparateInternalPropnetStateMachine] Couldn't find corresponding CompactMove when translating ExplicitMove " + move.toString() + ".");
 		}
 		return new CompactMove(i);
 	}
@@ -498,10 +511,10 @@ public class SeparateInternalPropnetStateMachine extends InternalPropnetStateMac
 	 * @return
 	 */
 	@Override
-	public List<CompactMove> movesToInternalMoves(List<ExplicitMove> moves){
+	public List<CompactMove> convertToInternalJointMoves(List<ExplicitMove> moves){
 
 		List<CompactMove> transformedMoves = new ArrayList<CompactMove>();
-		List<GdlSentence> movesToDoes = this.toDoes(moves);
+		List<GdlSentence> movesToDoes = this.toDoes(moves, this.getExplicitRoles());
 
 		ImmutableProposition[] inputs = this.propNet.getInputPropositions();
 
@@ -509,6 +522,11 @@ public class SeparateInternalPropnetStateMachine extends InternalPropnetStateMac
 			if(movesToDoes.contains(inputs[i].getName())){
 				transformedMoves.add(new CompactMove(i));
 			}
+		}
+
+		if(transformedMoves.size() != moves.size()) {
+			GamerLogger.log("StateMachine", "[SeparateInternalPropnetStateMachine] Couldn't find all corresponding compact moves when translating an explicit join move.");
+	    	throw new RuntimeException("[SeparateInternalPropnetStateMachine] Couldn't find corresponding compact moves when translating an explicit join move.");
 		}
 
 		return transformedMoves;

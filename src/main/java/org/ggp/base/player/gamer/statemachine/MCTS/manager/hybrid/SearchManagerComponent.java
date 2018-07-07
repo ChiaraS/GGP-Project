@@ -392,7 +392,7 @@ public abstract class SearchManagerComponent {
 		// The values must be included in round or square brackets and separated by ; with no spaces.
 		Interval possibleValuesInterval = gamerSettings.getDoublePropertyIntervalValue(callingClass + ".valuesFor" + parameterName);
 		// We must check that the specified fixed value is in the interval of possible values.
-		if(possibleValuesInterval.contains(fixedParam)){
+		if(!possibleValuesInterval.contains(fixedParam)){
 			GamerLogger.logError("SearchManagerCreation", "Error when creating tunable parameter " + parameterName + " for class " +
 					callingClass + ". The fixed value " + fixedParam + "for the parameter is not included in the interval of possible values!");
 			throw new RuntimeException("SearchManagerCreation - fixed parameter value not included in specified interval!");

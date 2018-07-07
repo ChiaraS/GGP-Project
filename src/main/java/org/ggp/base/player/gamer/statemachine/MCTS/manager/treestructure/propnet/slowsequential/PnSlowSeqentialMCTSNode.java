@@ -66,7 +66,7 @@ public class PnSlowSeqentialMCTSNode extends MctsNode {
 	 * @param goals
 	 * @param terminal
 	 */
-	public PnSlowSeqentialMCTSNode(PnSlowSequentialMCTSMoveStats[] movesStats, List<PnSlowSequentialMCTSMoveStats> unvisitedLeaves, int[] goals, boolean terminal, int numRoles) {
+	public PnSlowSeqentialMCTSNode(PnSlowSequentialMCTSMoveStats[] movesStats, List<PnSlowSequentialMCTSMoveStats> unvisitedLeaves, double[] goals, boolean terminal, int numRoles) {
 		super(goals, terminal, numRoles);
 		this.movesStats = movesStats;
 		this.unvisitedLeaves = unvisitedLeaves;

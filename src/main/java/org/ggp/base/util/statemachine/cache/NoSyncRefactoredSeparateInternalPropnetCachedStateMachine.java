@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Random;
 
 import org.ggp.base.util.gdl.grammar.Gdl;
 import org.ggp.base.util.logging.GamerLogger;
@@ -34,20 +35,23 @@ public final class NoSyncRefactoredSeparateInternalPropnetCachedStateMachine ext
 	private final RefactoredTtlCache<CompactMachineState, PropnetMachineStateEntry> internalStateTtlCache;
 
 	private final class PropnetMachineStateEntry{
-		public Map<CompactRole, List<Integer>> goals;
+		public Map<CompactRole, List<Double>> goals;
 		public Map<CompactRole, List<CompactMove>> moves;
 		public Map<List<CompactMove>, CompactMachineState> nexts;
 		public Boolean terminal;
 
 		public PropnetMachineStateEntry(){
-			goals = new HashMap<CompactRole, List<Integer>>();
+			goals = new HashMap<CompactRole, List<Double>>();
 			moves = new HashMap<CompactRole, List<CompactMove>>();
 			nexts = new HashMap<List<CompactMove>, CompactMachineState>();
 			terminal = null;
 		}
 	}
 
-	public NoSyncRefactoredSeparateInternalPropnetCachedStateMachine(InternalPropnetStateMachine backingStateMachine){
+	public NoSyncRefactoredSeparateInternalPropnetCachedStateMachine(Random random, InternalPropnetStateMachine backingStateMachine){
+
+		super(random);
+
 		this.backingStateMachine = backingStateMachine;
 		this.internalStateTtlCache = new RefactoredTtlCache<CompactMachineState, PropnetMachineStateEntry>(1);
 
@@ -76,7 +80,7 @@ public final class NoSyncRefactoredSeparateInternalPropnetCachedStateMachine ext
 	}
 
 	@Override
-	public List<Integer> getAllGoalsForOneRole(ExplicitMachineState state, ExplicitRole role){
+	public List<Double> getAllGoalsForOneRole(ExplicitMachineState state, ExplicitRole role){
 
 		//System.out.println("PN: Wrong call of cache (goals)!");
 
@@ -84,12 +88,12 @@ public final class NoSyncRefactoredSeparateInternalPropnetCachedStateMachine ext
 	}
 
 	@Override
-	public List<Integer> getAllGoalsForOneRole(CompactMachineState state, CompactRole role){
+	public List<Double> getAllGoalsForOneRole(CompactMachineState state, CompactRole role){
 		PropnetMachineStateEntry entry = getPropnetEntry(state);
 
 		//System.out.println("PN: Looking for goals in the cache!");
 
-		List<Integer> goals = entry.goals.get(role);
+		List<Double> goals = entry.goals.get(role);
 
 		if (goals == null){
 
@@ -144,7 +148,7 @@ public final class NoSyncRefactoredSeparateInternalPropnetCachedStateMachine ext
 
 		//System.out.println("PN: Wrong call of cache (next state)!");
 
-		return this.backingStateMachine.convertToExplicitMachineState(this.getCompactNextState(this.backingStateMachine.convertToCompactMachineState(state), this.backingStateMachine.movesToInternalMoves(moves)));
+		return this.backingStateMachine.convertToExplicitMachineState(this.getCompactNextState(this.backingStateMachine.convertToCompactMachineState(state), this.backingStateMachine.convertToInternalJointMoves(moves)));
 	}
 
 	@Override
@@ -278,13 +282,13 @@ public final class NoSyncRefactoredSeparateInternalPropnetCachedStateMachine ext
 	}
 
 	@Override
-	public CompactMove convertToCompactMove(ExplicitMove move) {
-		return this.backingStateMachine.convertToCompactMove(move);
+	public CompactMove convertToCompactMove(ExplicitMove move, ExplicitRole role) {
+		return this.backingStateMachine.convertToCompactMove(move, role);
 	}
 
 	@Override
-	public List<CompactMove> movesToInternalMoves(List<ExplicitMove> moves) {
-		return this.backingStateMachine.movesToInternalMoves(moves);
+	public List<CompactMove> convertToInternalJointMoves(List<ExplicitMove> moves) {
+		return this.backingStateMachine.convertToInternalJointMoves(moves);
 	}
 
 }

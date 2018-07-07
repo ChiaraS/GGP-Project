@@ -9,7 +9,6 @@ import java.util.Map;
 import java.util.Map.Entry;
 
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.MctsNode;
-import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.propnet.amafdecoupled.PnAMAFDecoupledMCTSNode;
 import org.ggp.base.util.logging.GamerLogger;
 import org.ggp.base.util.statemachine.structure.compact.CompactMachineState;
 
@@ -101,7 +100,7 @@ public class PnMCTSTranspositionTable {
 			while(iterator.hasNext()){
 				Entry<CompactMachineState,MctsNode> entry = iterator.next();
 
-				if(entry.getValue() instanceof PnAMAFDecoupledMCTSNode){
+				/*if(entry.getValue() instanceof PnAMAFDecoupledMCTSNode){
 					int actionsStats = ((PnAMAFDecoupledMCTSNode) entry.getValue()).getActionsStatsNumber();
 					int raveAmaf = ((PnAMAFDecoupledMCTSNode) entry.getValue()).getRaveAMAFStatsNumber();
 					int graveAmaf = ((PnAMAFDecoupledMCTSNode) entry.getValue()).getGraveAMAFStatsNumber();
@@ -117,11 +116,11 @@ public class PnMCTSTranspositionTable {
 						raveAmafAfterCleaning += raveAmaf;
 						graveAmafAfterCleaning += graveAmaf;
 					}
-				}else{
+				}else{*/
 					if(entry.getValue().getGameStepStamp() < (this.currentGameStepStamp-this.gameStepOffset)){
 						iterator.remove();
 					}
-				}
+				//}
 			}
 
 			double actionsStatsPerNode = ((double) actionsStatsBeforeCleaning) / ((double) sizeBeforeCleaning);

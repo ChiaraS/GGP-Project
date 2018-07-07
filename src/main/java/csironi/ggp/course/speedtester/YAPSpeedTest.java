@@ -4,6 +4,7 @@
 package csironi.ggp.course.speedtester;
 
 import java.util.List;
+import java.util.Random;
 
 import org.ggp.base.util.game.GameRepository;
 import org.ggp.base.util.gdl.grammar.Gdl;
@@ -151,16 +152,18 @@ public class YAPSpeedTest {
 
             List<Gdl> description = theRepository.getGame(gameKey).getRules();
 
+            Random random = new Random();
+
             // Create Yap state machine giving it queryWaitingTime milliseconds to wait for the result of a query
-            theSubject = new YapStateMachine(queryWaitingTime);
+            theSubject = new YapStateMachine(random, queryWaitingTime);
 
             if(backed){
             	// Create the BackedYapStateMachine
-            	theSubject = new BackedYapStateMachine((YapStateMachine)theSubject, new ProverStateMachine());
+            	theSubject = new BackedYapStateMachine(random, (YapStateMachine)theSubject, new ProverStateMachine(random));
             }
             // If the Yap state machine must be provided with a cache, create the cached state machine
             if(withCache){
-            	theSubject = new CachedStateMachine(theSubject);
+            	theSubject = new CachedStateMachine(random, theSubject);
             }
 
             long initializationTime;

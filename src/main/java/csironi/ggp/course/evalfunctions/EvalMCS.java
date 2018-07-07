@@ -35,10 +35,10 @@ public class EvalMCS extends EvaluationFunction {
 	 * @see csironi.ggp.course.evalfunctions.EvaluationFunction#eval(org.ggp.base.util.statemachine.MachineState, org.ggp.base.util.statemachine.Role)
 	 */
 	@Override
-	public int eval(ExplicitMachineState state, ExplicitRole role)
+	public double eval(ExplicitMachineState state, ExplicitRole role)
 			throws MoveDefinitionException, GoalDefinitionException, TransitionDefinitionException, StateMachineException {
 
-		int stateScore = 0;
+		double stateScore = 0;
 
 		for(int i = 1; i <= this.nPlayouts; i++){
 			stateScore += randomPlayout(state, role);
@@ -47,7 +47,7 @@ public class EvalMCS extends EvaluationFunction {
 		return stateScore/this.nPlayouts;
 	}
 
-	private int randomPlayout(ExplicitMachineState state, ExplicitRole role) throws GoalDefinitionException, MoveDefinitionException, TransitionDefinitionException, StateMachineException{
+	private double randomPlayout(ExplicitMachineState state, ExplicitRole role) throws GoalDefinitionException, MoveDefinitionException, TransitionDefinitionException, StateMachineException{
 
 		if(this.stateMachine.isTerminal(state)){
 			return this.stateMachine.getGoal(state, role);

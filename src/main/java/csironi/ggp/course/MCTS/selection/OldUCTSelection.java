@@ -42,9 +42,9 @@ public class OldUCTSelection implements OldSelectionStrategy {
 	 * @see csironi.ggp.course.MCTS.selection.SelectionStrategy#select(csironi.ggp.course.MCTS.MCTNode, org.ggp.base.util.statemachine.Role)
 	 */
 	@Override
-	public List<Integer> select(MCTNode node) throws GoalDefinitionException, MoveDefinitionException, TransitionDefinitionException, StateMachineException {
+	public List<Double> select(MCTNode node) throws GoalDefinitionException, MoveDefinitionException, TransitionDefinitionException, StateMachineException {
 
-		List<Integer> goals;
+		List<Double> goals;
 
 		// If the node has no children it means it is a leaf node of the MCTS tree
 		if(node.hasNoChildren()){

@@ -1,10 +1,9 @@
 package csironi.ggp.course;
 
-import ggpbasebenchmark.Trace;
-
 import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Random;
 
 import org.ggp.base.util.configuration.GamerConfiguration;
 import org.ggp.base.util.game.Game;
@@ -21,6 +20,8 @@ import org.ggp.base.util.statemachine.implementation.propnet.SeparateInternalPro
 import org.ggp.base.util.statemachine.structure.explicit.ExplicitMachineState;
 import org.ggp.base.util.statemachine.structure.explicit.ExplicitMove;
 import org.ggp.base.util.statemachine.structure.explicit.ExplicitRole;
+
+import ggpbasebenchmark.Trace;
 
 public class TrickyGDLTester {
 
@@ -48,7 +49,7 @@ public class TrickyGDLTester {
 
         System.out.println("Looking for game " + gameKey + "...");
 
-        System.out.println(GamerConfiguration.defaultLocalGameRepositoryFolderPath);
+        System.out.println(GamerConfiguration.defaultLocalGameRepositoryFolderPath + "/" + GamerConfiguration.defaultGGPBaseRepo);
 
         //GameRepository theRepository = new ManualUpdateLocalGameRepository(GamerConfiguration.defaultLocalGameRepositoryFolderPath);
 
@@ -86,7 +87,7 @@ public class TrickyGDLTester {
 			return;
 		}
 
-		SeparateInternalPropnetStateMachine theMachine = new SeparateInternalPropnetStateMachine(manager.getImmutablePropnet(), manager.getInitialPropnetState());
+		SeparateInternalPropnetStateMachine theMachine = new SeparateInternalPropnetStateMachine(new Random(), manager.getImmutablePropnet(), manager.getInitialPropnetState());
 
 		try {
 			theMachine.initialize(description);
@@ -201,7 +202,7 @@ public class TrickyGDLTester {
 			// Check if current state is erroneously detected as terminal
 			if(theMachine.isTerminal(state)){
 				System.out.println("NON TERMINAL STATE DETECTED AS TERMINAL!");
-				int[] goals = theMachine.getSafeGoals(state);
+				double[] goals = theMachine.getSafeGoals(state);
 				String goalsString = "[ ";
 				for(int j = 0; j < goals.length; j++){
 					goalsString += (goals[j] + " ");

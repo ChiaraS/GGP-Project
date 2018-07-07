@@ -25,8 +25,6 @@ import org.ggp.base.player.gamer.statemachine.MCTS.manager.parameterstuning.stru
  */
 public abstract class ParametersTuner extends SearchManagerComponent{
 
-	protected ParametersManager parametersManager;
-
 	/**
 	 * True if the tuner is still being used to tune parameters, false otherwise.
 	 * This parameter is needed when we only have a limited simulations budget to
@@ -93,10 +91,6 @@ public abstract class ParametersTuner extends SearchManagerComponent{
 			GamerSettings gamerSettings, SharedReferencesCollector sharedReferencesCollector) {
 		super(gameDependentParameters, random, gamerSettings, sharedReferencesCollector);
 
-		this.parametersManager = new ParametersManager(gameDependentParameters, random, gamerSettings, sharedReferencesCollector);
-
-		sharedReferencesCollector.setParametersManager(this.parametersManager);
-
 		this.tuning = true;
 
 		this.tuneAllRoles = gamerSettings.getBooleanPropertyValue("ParametersTuner.tuneAllRoles");
@@ -107,7 +101,7 @@ public abstract class ParametersTuner extends SearchManagerComponent{
 
 	@Override
 	public void setReferences(SharedReferencesCollector sharedReferencesCollector){
-		this.parametersManager.setReferences(sharedReferencesCollector);
+		// Do nothing
 	}
 
 	/*
@@ -137,21 +131,18 @@ public abstract class ParametersTuner extends SearchManagerComponent{
 
 	@Override
 	public void clearComponent() {
-		this.parametersManager.clearComponent();
 		this.tuning = false;
 	}
 
 	@Override
 	public void setUpComponent() {
-		this.parametersManager.setUpComponent();
 		this.tuning = true;
 	}
 
 	@Override
 	public String getComponentParameters(String indentation) {
 
-		String params = indentation + "PARAMETERS_MANAGER = " + this.parametersManager.printComponent(indentation + "  ") +
-				indentation + "TUNE_ALL_ROLES = " + this.tuneAllRoles +
+		String params = indentation + "TUNE_ALL_ROLES = " + this.tuneAllRoles +
 				indentation + "REUSE_BEST_COMBOS = " + this.reuseBestCombos +
 				indentation + "REUSE_STATS = " + this.reuseStats +
 				indentation + "tuning = " + this.tuning;
@@ -206,7 +197,7 @@ public abstract class ParametersTuner extends SearchManagerComponent{
 
 	public abstract void setBestCombinations();
 
-	public abstract void updateStatistics(int[] goals);
+	public abstract void updateStatistics(double[] goals);
 
 	public abstract void logStats();
 
@@ -235,48 +226,14 @@ public abstract class ParametersTuner extends SearchManagerComponent{
 
 	protected String getGlobalParamsOrder(){
 		String globalParamsOrder = "[ ";
-		for(int paramIndex = 0; paramIndex < this.parametersManager.getNumTunableParameters(); paramIndex++){
-			globalParamsOrder += (this.parametersManager.getName(paramIndex) + " ");
+		for(int paramIndex = 0; paramIndex < this.getParametersManager().getNumTunableParameters(); paramIndex++){
+			globalParamsOrder += (this.getParametersManager().getName(paramIndex) + " ");
 		}
 		globalParamsOrder += "]";
 
 		return globalParamsOrder;
 	}
 
-	protected String getLogOfCombinations(int[][] combinations){
-
-		String globalParamsOrder = this.getGlobalParamsOrder();
-		String toLog = "";
-
-		if(this.tuneAllRoles){
-			for(int roleProblemIndex = 0; roleProblemIndex < this.gameDependentParameters.getNumRoles(); roleProblemIndex++){
-				toLog += ("ROLE=;" + this.gameDependentParameters.getTheMachine().convertToExplicitRole(this.gameDependentParameters.getTheMachine().getRoles().get(roleProblemIndex)) + ";PARAMS=;" + globalParamsOrder + ";SELECTED_COMBINATION=;[ ");
-				if(combinations != null && combinations[roleProblemIndex] != null){
-					for(int paramIndex = 0; paramIndex < this.parametersManager.getNumTunableParameters(); paramIndex++){
-						toLog += this.parametersManager.getPossibleValues(paramIndex)[combinations[roleProblemIndex][paramIndex]] + " ";
-					}
-				}else{
-					for(int paramIndex = 0; paramIndex < this.parametersManager.getNumTunableParameters(); paramIndex++){
-						toLog += null + " ";
-					}
-				}
-				toLog += "];\n";
-			}
-		}else{ // Tuning only my role
-			toLog += ("ROLE=;" + this.gameDependentParameters.getTheMachine().convertToExplicitRole(this.gameDependentParameters.getTheMachine().getRoles().get(this.gameDependentParameters.getMyRoleIndex())) + ";PARAMS=;" + globalParamsOrder + ";SELECTED_COMBINATION=;[ ");
-			if(combinations != null && combinations[0] != null){
-				for(int paramIndex = 0; paramIndex < this.parametersManager.getNumTunableParameters(); paramIndex++){
-					toLog += this.parametersManager.getPossibleValues(paramIndex)[combinations[0][paramIndex]] + " ";
-				}
-			}else{
-				for(int paramIndex = 0; paramIndex < this.parametersManager.getNumTunableParameters(); paramIndex++){
-					toLog += null + " ";
-				}
-			}
-			toLog += "];\n";
-		}
-
-		return toLog;
-	}
+	public abstract ParametersManager getParametersManager();
 
 }

@@ -10,14 +10,14 @@ import org.ggp.base.util.observer.Event;
 public final class ServerCompletedMatchEvent extends Event implements Serializable
 {
 
-	private final List<Integer> goals;
+	private final List<Double> goals;
 
-	public ServerCompletedMatchEvent(List<Integer> goals)
+	public ServerCompletedMatchEvent(List<Double> goals)
 	{
 		this.goals = goals;
 	}
 
-	public List<Integer> getGoals()
+	public List<Double> getGoals()
 	{
 		return goals;
 	}

@@ -11,6 +11,7 @@ import org.ggp.base.util.statemachine.exceptions.GoalDefinitionException;
 import org.ggp.base.util.statemachine.exceptions.MoveDefinitionException;
 import org.ggp.base.util.statemachine.exceptions.StateMachineException;
 import org.ggp.base.util.statemachine.exceptions.TransitionDefinitionException;
+import org.ggp.base.util.statemachine.structure.Move;
 import org.ggp.base.util.statemachine.structure.explicit.ExplicitMove;
 
 /**
@@ -39,10 +40,10 @@ public class CLegalGamer extends SampleGamer {
 		 * is to return one of these moves. The choice of which
 		 * Move to play is the goal of GGP.
 		 */
-		List<ExplicitMove> moves = getStateMachine().getExplicitLegalMoves(getCurrentState(), getRole());
+		List<Move> moves = getStateMachine().getLegalMoves(getCurrentState(), getRole());
 
 		// SampleLegalGamer is very simple : it picks the first legal move
-		ExplicitMove selection = moves.get(0);
+		Move selection = moves.get(0);
 
 		// We get the end time
 		// It is mandatory that stop<timeout
@@ -54,8 +55,8 @@ public class CLegalGamer extends SampleGamer {
 		 * moves, selection, stop and start defined in the same way as
 		 * this example, and copy-paste these two lines in your player
 		 */
-		notifyObservers(new GamerSelectedMoveEvent(moves, selection, stop - start));
-		return selection;
+		notifyObservers(new GamerSelectedMoveEvent(this.getStateMachine().convertToExplicitMoves(moves), this.getStateMachine().convertToExplicitMove(selection), stop - start));
+		return this.getStateMachine().convertToExplicitMove(selection);
 	}
 
 }

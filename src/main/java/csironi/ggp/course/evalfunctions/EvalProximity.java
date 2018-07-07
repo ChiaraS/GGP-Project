@@ -28,10 +28,10 @@ public class EvalProximity extends EvaluationFunction {
 	 * @see csironi.ggp.course.evalfunctions.EvaluationFunction#eval(org.ggp.base.util.statemachine.MachineState, org.ggp.base.util.statemachine.Role)
 	 */
 	@Override
-	public int eval(ExplicitMachineState state, ExplicitRole role)
+	public double eval(ExplicitMachineState state, ExplicitRole role)
 			throws MoveDefinitionException, StateMachineException {
 
-		int stateScore = 0;
+		double stateScore = 0;
 
 		try {
 			stateScore = this.stateMachine.getGoal(state, role);

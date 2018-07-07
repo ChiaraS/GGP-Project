@@ -107,6 +107,9 @@ public class UcbEvolutionManager extends StandardEvolutionManager {
 				for(int individualIndex = 0; individualIndex < population.length; individualIndex++){
 					population[individualIndex].resetStats(candidateIndividuals.get(individualIndex).getFirst());
 				}
+
+				roleProblem.setTotalUpdates(0);
+
 				// TODO: What if there are multiple candidates with the same value but some of them must be excluded?
 				// Now it's just excluding the last ones in the order.
 				// Eg: list of individuals'UCB values [9 8 7 7 7 7 5 4 3 3], if we need to keep only 4 candidates
@@ -158,12 +161,17 @@ public class UcbEvolutionManager extends StandardEvolutionManager {
 				}
 				*/
 
+				int totalUpdates = roleProblem.getTotalUpdates();
+
 				// The candidates are already ordered by decreasing UCB value.
 				// Substitute the remaining individuals in the population with the first (populationSize-eliteSize)
 				// candidates.
 				for(int individualIndex = this.eliteSize; individualIndex < population.length; individualIndex++){
+					totalUpdates -= population[individualIndex].getVisits();
 					population[individualIndex].resetStats(candidateIndividuals.get(individualIndex-this.eliteSize).getFirst());
 				}
+				roleProblem.setTotalUpdates(totalUpdates);
+
 			}
 		}else{
 			GamerLogger.logError("EvolutionManager", "UcbEvolutionManager - Impossible to evolve the population " +

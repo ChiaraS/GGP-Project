@@ -3,6 +3,7 @@ package org.ggp.base.apps.benchmark;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Random;
 import java.util.Set;
 
 import org.ggp.base.util.Pair;
@@ -38,7 +39,7 @@ import org.ggp.base.util.statemachine.structure.explicit.ExplicitRole;
  */
 public class EndgameCaseGenerator {
 	public static void main(String[] args) throws MoveDefinitionException, TransitionDefinitionException, GoalDefinitionException, StateMachineException, StateMachineInitializationException {
-		generateTestCase("connectFour", 0, 5, 6, new ProverStateMachine());
+		generateTestCase("connectFour", 0, 5, 6, new ProverStateMachine(new Random()));
 	}
 
 	public static void generateTestCase(String gameKey, int nRole, int nBackoff, int nMaxDepth, StateMachine theMachine) throws MoveDefinitionException, TransitionDefinitionException, GoalDefinitionException, StateMachineException, StateMachineInitializationException {
@@ -62,12 +63,12 @@ public class EndgameCaseGenerator {
 	        // Solve the game from the backoff state. For moves that return
 	        // definite scores, track the best and worst scores. For moves that
 	        // don't return definite scores, track them separately.
-	        int bestScore = 0;
-	        int worstScore = 100;
-	        List<Pair<ExplicitMove, Integer>> scoredMoves = new ArrayList<Pair<ExplicitMove, Integer>>();
+	        double bestScore = 0;
+	        double worstScore = 100;
+	        List<Pair<ExplicitMove, Double>> scoredMoves = new ArrayList<Pair<ExplicitMove, Double>>();
 	        Set<ExplicitMove> unscoredMoves = new HashSet<ExplicitMove>();
 	        for (ExplicitMove ourMove : theMachine.getExplicitLegalMoves(theState, ourRole)) {
-	        	Pair<Integer, Integer> theScore = minimax(theMachine, nRole, ourRole, theMachine.getRandomNextState(theState, ourRole, ourMove), nMaxDepth);
+	        	Pair<Double, Double> theScore = minimax(theMachine, nRole, ourRole, theMachine.getRandomNextState(theState, ourRole, ourMove), nMaxDepth);
 	        	if (theScore.left == theScore.right) {
 		        	bestScore = Math.max(bestScore, theScore.left);
 		        	worstScore = Math.min(worstScore, theScore.left);
@@ -93,7 +94,7 @@ public class EndgameCaseGenerator {
 	        // include any unscored moves in this set, since they might be
 	        // good choices as well (we just don't know).
 	        Set<ExplicitMove> bestMoves = new HashSet<ExplicitMove>();
-	        for (Pair<ExplicitMove, Integer> scoredMove : scoredMoves) {
+	        for (Pair<ExplicitMove, Double> scoredMove : scoredMoves) {
 	        	if (scoredMove.right == bestScore) {
 	        		bestMoves.add(scoredMove.left);
 	        	}
@@ -120,28 +121,28 @@ public class EndgameCaseGenerator {
     }
 
 	// This is a traditional minimax solver.
-    private static Pair<Integer, Integer> minimax(StateMachine machine, int ourRoleIndex, ExplicitRole ourRole, ExplicitMachineState currentState, int depth) throws GoalDefinitionException, MoveDefinitionException, TransitionDefinitionException, StateMachineException {
+    private static Pair<Double, Double> minimax(StateMachine machine, int ourRoleIndex, ExplicitRole ourRole, ExplicitMachineState currentState, int depth) throws GoalDefinitionException, MoveDefinitionException, TransitionDefinitionException, StateMachineException {
     	// If we've hit our max depth, return immediately, sending back
     	// no useful information about the final score.
     	if (depth < 0) {
-    		return Pair.of(0, 100);
+    		return Pair.of(0.0, 100.0);
     	}
 
         // Upon reaching a terminal state, we know its value immediately.
         if (machine.isTerminal(currentState)) {
-            int theScore = machine.getGoal(currentState, ourRole);
+            double theScore = machine.getGoal(currentState, ourRole);
             return Pair.of(theScore, theScore);
         }
 
         // Otherwise, perform recursive descent to compute the state's value.
         List<List<ExplicitMove>> legalMoves = machine.getLegalJointMoves(currentState);
-        Pair<Integer, Integer> overallScore = Pair.of(0, 0);
+        Pair<Double, Double> overallScore = Pair.of(0.0, 0.0);
         for (ExplicitMove ourMove : machine.getExplicitLegalMoves(currentState, ourRole)) {
-        	Pair<Integer, Integer> worstMove = Pair.of(100, 100);
+        	Pair<Double, Double> worstMove = Pair.of(100.0, 100.0);
             for (List<ExplicitMove> jointMove : legalMoves) {
                 if (jointMove.get(ourRoleIndex).equals(ourMove)) {
                     ExplicitMachineState newState = machine.getExplicitNextState(currentState, jointMove);
-                    Pair<Integer, Integer> score = minimax(machine, ourRoleIndex, ourRole, newState, depth - 1);
+                    Pair<Double, Double> score = minimax(machine, ourRoleIndex, ourRole, newState, depth - 1);
                     worstMove = Pair.of(Math.min(worstMove.left, score.left), Math.min(worstMove.right, score.right));
                     if(score.right == 0)
                     	break;

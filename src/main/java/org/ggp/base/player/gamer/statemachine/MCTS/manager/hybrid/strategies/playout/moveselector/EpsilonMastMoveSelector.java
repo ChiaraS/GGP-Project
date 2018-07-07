@@ -1,13 +1,12 @@
 package org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.strategies.playout.moveselector;
 
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Random;
 
 import org.ggp.base.player.gamer.statemachine.GamerSettings;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.GameDependentParameters;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.SharedReferencesCollector;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.parameterstuning.structure.parameters.TunableParameter;
+import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.MctsNode;
 import org.ggp.base.util.statemachine.exceptions.MoveDefinitionException;
 import org.ggp.base.util.statemachine.exceptions.StateMachineException;
 import org.ggp.base.util.statemachine.structure.MachineState;
@@ -92,8 +91,9 @@ public class EpsilonMastMoveSelector extends MoveSelector{
 
 	}
 
+	/*
 	@Override
-	public List<Move> getJointMove(MachineState state) throws MoveDefinitionException, StateMachineException {
+	public List<Move> getJointMove(MctsNode node, MachineState state) throws MoveDefinitionException, StateMachineException {
 
 		List<Move> jointMove = new ArrayList<Move>();
 
@@ -101,23 +101,23 @@ public class EpsilonMastMoveSelector extends MoveSelector{
 		// NOTE that a joint move might be composed of moves that have been picked randomly for some roles and moves that
 		// have been picked according to MAST statistics for other roles.
 		for(int i = 0; i < this.gameDependentParameters.getNumRoles(); i++){
-			jointMove.add(this.getMoveForRole(state, i));
+			jointMove.add(this.getMoveForRole(node, state, i));
 		}
 
 		//System.out.println(Arrays.toString(jointMove.toArray()));
 
 		return jointMove;
-	}
+	}*/
 
 	@Override
-	public Move getMoveForRole(MachineState state, int roleIndex) throws MoveDefinitionException, StateMachineException {
+	public Move getMoveForRole(MctsNode node, MachineState state, int roleIndex) throws MoveDefinitionException, StateMachineException {
 
 		if(this.random.nextDouble() < this.epsilon.getValuePerRole(roleIndex)){
     		// Choose random action with probability epsilon
-			return this.randomSelector.getMoveForRole(state, roleIndex);
+			return this.randomSelector.getMoveForRole(node, state, roleIndex);
     	}else{
     		// Choose move with highest average score
-    		return this.mastSelector.getMoveForRole(state, roleIndex);
+    		return this.mastSelector.getMoveForRole(node, state, roleIndex);
     	}
 
 	}

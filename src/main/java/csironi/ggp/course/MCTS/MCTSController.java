@@ -62,7 +62,7 @@ public class MCTSController {
 		MCTNode root = new MCTNode(stateMachine, currentState, myRoleIndex, myRoleIndex, null, jointMove);
 		root.initializeChildren();
 
-		List<Integer> goals;
+		List<Double> goals;
 
 		long startTime = System.currentTimeMillis();
 		long endTime;

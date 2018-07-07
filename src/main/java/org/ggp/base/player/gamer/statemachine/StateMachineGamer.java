@@ -9,12 +9,15 @@ import org.ggp.base.player.gamer.exception.MoveSelectionException;
 import org.ggp.base.player.gamer.exception.StoppingException;
 import org.ggp.base.util.gdl.grammar.GdlTerm;
 import org.ggp.base.util.logging.GamerLogger;
-import org.ggp.base.util.statemachine.StateMachine;
+import org.ggp.base.util.statemachine.abstractsm.AbstractStateMachine;
 import org.ggp.base.util.statemachine.exceptions.GoalDefinitionException;
 import org.ggp.base.util.statemachine.exceptions.MoveDefinitionException;
 import org.ggp.base.util.statemachine.exceptions.StateMachineException;
 import org.ggp.base.util.statemachine.exceptions.StateMachineInitializationException;
 import org.ggp.base.util.statemachine.exceptions.TransitionDefinitionException;
+import org.ggp.base.util.statemachine.structure.MachineState;
+import org.ggp.base.util.statemachine.structure.Move;
+import org.ggp.base.util.statemachine.structure.Role;
 import org.ggp.base.util.statemachine.structure.explicit.ExplicitMachineState;
 import org.ggp.base.util.statemachine.structure.explicit.ExplicitMove;
 import org.ggp.base.util.statemachine.structure.explicit.ExplicitRole;
@@ -42,7 +45,7 @@ public abstract class StateMachineGamer extends Gamer
      * Defines which state machine this gamer will use.
      * @return
      */
-    public abstract StateMachine getInitialStateMachine();
+    public abstract AbstractStateMachine getInitialStateMachine();
 
     /**
      * Defines the metagaming action taken by a player during the START_CLOCK
@@ -82,26 +85,35 @@ public abstract class StateMachineGamer extends Gamer
 	/**
 	 * Returns the current state of the game.
 	 */
+    /*
 	public final ExplicitMachineState getCurrentState()
 	{
 		return currentState;
+	}*/
+
+	/**
+	 * Returns the current state of the game in its internal format.
+	 */
+	public final MachineState getCurrentState()
+	{
+		return this.internalCurrentState;
 	}
 
 	/**
 	 * Returns the role that this gamer is playing as in the game.
 	 */
-	public final ExplicitRole getRole()
+	public final Role getRole()
 	{
-		return role;
+		return this.role;
 	}
 
 	/**
 	 * Returns the state machine.  This is used for calculating the next state and other operations, such as computing
 	 * the legal moves for all players, whether states are terminal, and the goal values of terminal states.
 	 */
-	public final StateMachine getStateMachine()
+	public final AbstractStateMachine getStateMachine()
 	{
-		return stateMachine;
+		return this.stateMachine;
 	}
 
     /**
@@ -111,9 +123,10 @@ public abstract class StateMachineGamer extends Gamer
      * only used in the Proxy, for players designed to run 24/7.
      */
     protected final void cleanupAfterMatch() {
-        role = null;
-        currentState = null;
-        stateMachine = null;
+    	this.role = null;
+        //currentState = null;
+        this.internalCurrentState = null;
+        this.stateMachine = null;
         setMatch(null);
         setRoleName(null);
     }
@@ -128,24 +141,37 @@ public abstract class StateMachineGamer extends Gamer
      *
      * @param newStateMachine the new state machine
      */
-    protected final void switchStateMachine(StateMachine newStateMachine) {
+    protected final void switchStateMachine(AbstractStateMachine newStateMachine) {
         try {
-            ExplicitMachineState newCurrentState = newStateMachine.getExplicitInitialState();
-            ExplicitRole newRole = newStateMachine.getRoleFromConstant(getRoleName());
+            //ExplicitMachineState newCurrentState = newStateMachine.convertToExplicitMachineState(newStateMachine.getInitialState());
+            ExplicitRole newExplicitRole = newStateMachine.getRoleFromConstant(getRoleName());
+            Role newRole = newStateMachine.convertToInternalRole(newExplicitRole);
+            MachineState newInternalCurrentState = newStateMachine.getInitialState();
 
             // Attempt to run through the game history in the new machine
-            List<List<GdlTerm>> theMoveHistory = getMatch().getMoveHistory();
+            /*List<List<GdlTerm>> theMoveHistory = getMatch().getMoveHistory();
             for(List<GdlTerm> nextMove : theMoveHistory) {
                 List<ExplicitMove> theJointMove = new ArrayList<ExplicitMove>();
                 for(GdlTerm theSentence : nextMove)
                     theJointMove.add(newStateMachine.getMoveFromTerm(theSentence));
                 newCurrentState = newStateMachine.getNextStateDestructively(newCurrentState, theJointMove);
+                newInternalCurrentState = newStateMachine.getNextState(newInternalCurrentState, newStateMachine.convertToInternalMoves(moves));
+            }*/
+
+            List<List<GdlTerm>> theMoveHistory = getMatch().getMoveHistory();
+            for(List<GdlTerm> nextMove : theMoveHistory) {
+                List<Move> theJointMove = new ArrayList<Move>();
+                for(int roleIndex = 0; roleIndex < nextMove.size(); roleIndex++) {
+                    theJointMove.add(newStateMachine.convertToInternalMove(newStateMachine.getMoveFromTerm(nextMove.get(roleIndex)), newStateMachine.getExplicitRoles().get(roleIndex)));
+                }
+                //newCurrentState = newStateMachine.getNextStateDestructively(newCurrentState, theJointMove);
+                newInternalCurrentState = newStateMachine.getNextState(newInternalCurrentState, theJointMove);
             }
 
             // Finally, switch over if everything went well.
-            role = newRole;
-            currentState = newCurrentState;
-            stateMachine = newStateMachine;
+            this.role = newRole;
+            this.internalCurrentState = newInternalCurrentState;
+            this.stateMachine = newStateMachine;
         } catch (Exception e) {
             GamerLogger.log("GamePlayer", "Caught an exception while switching state machine!");
             GamerLogger.logStackTrace("GamePlayer", e);
@@ -162,12 +188,18 @@ public abstract class StateMachineGamer extends Gamer
         // The use of the tmp variable is needed to avoid substituting the current state machine
 		// with a new one before being certain that the new one will manage to initialize.
 		// If the new state machine fails initialization, the old state machine will still be available.
-		StateMachine tmp = getInitialStateMachine();
+		AbstractStateMachine tmp = getInitialStateMachine();
 		// We don't have a timeout for this operation so we give to the state machine the maximum amount of time for initialization
         tmp.initialize(getMatch().getGame().getRules(), Long.MAX_VALUE);
-        stateMachine = tmp;
-        currentState = stateMachine.getMachineStateFromSentenceList(getMatch().getMostRecentState());
-        role = stateMachine.getRoleFromConstant(getRoleName());
+        this.stateMachine = tmp;
+        ExplicitMachineState currentState = this.stateMachine.getMachineStateFromSentenceList(getMatch().getMostRecentState());
+        // NOTE: this method can be used only if the state machine correctly implements the translation of
+        // ExplicitMachineState to the internal format. Here we cannot use the most recent state in the
+        // internal format because two machines that use the same internal format might still represent the
+        // same estate in a different way. (e.g. the propnet represents moves as indices in the list of input
+        // proposition, but the order of the moves in this list is different for every new propnet creation)
+        this.internalCurrentState = this.stateMachine.convertToInternalMachineState(currentState);
+        this.role = this.stateMachine.convertToInternalRole(this.stateMachine.getRoleFromConstant(getRoleName()));
 	}
 
     // =====================================================================
@@ -189,11 +221,13 @@ public abstract class StateMachineGamer extends Gamer
 
 		try
 		{
-			stateMachine = getInitialStateMachine();
-			stateMachine.initialize(getMatch().getGame().getRules(), timeout);
-			currentState = stateMachine.getExplicitInitialState();
-			role = stateMachine.getRoleFromConstant(getRoleName());
-			getMatch().appendState(currentState.getContents());
+			this.stateMachine = getInitialStateMachine();
+			this.stateMachine.initialize(getMatch().getGame().getRules(), timeout);
+			//currentState = stateMachine.getExplicitInitialState();
+			this.internalCurrentState = this.stateMachine.getInitialState();
+			role =  this.stateMachine.convertToInternalRole(this.stateMachine.getRoleFromConstant(getRoleName()));
+			getMatch().appendState(this.internalCurrentState);
+			getMatch().appendState(this.stateMachine.convertToExplicitMachineState(this.internalCurrentState).getContents());
 
 			stateMachineMetaGame(timeout);
 		}
@@ -215,19 +249,20 @@ public abstract class StateMachineGamer extends Gamer
 	{
 		try
 		{
-			stateMachine.doPerMoveWork();
+			this.stateMachine.doPerMoveWork();
 
 			List<GdlTerm> lastMoves = getMatch().getMostRecentMoves();
 			if (lastMoves != null)
 			{
-				List<ExplicitMove> moves = new ArrayList<ExplicitMove>();
-				for (GdlTerm sentence : lastMoves)
+				List<Move> moves = new ArrayList<Move>();
+				for (int roleIndex = 0; roleIndex < lastMoves.size(); roleIndex++)
 				{
-					moves.add(stateMachine.getMoveFromTerm(sentence));
+					moves.add(this.stateMachine.convertToInternalMove(this.stateMachine.getMoveFromTerm(lastMoves.get(roleIndex)), this.stateMachine.getExplicitRoles().get(roleIndex)));
 				}
 
-				currentState = stateMachine.getExplicitNextState(currentState, moves);
-				getMatch().appendState(currentState.getContents());
+				this.internalCurrentState = this.stateMachine.getNextState(this.internalCurrentState, moves);
+				getMatch().appendState(this.stateMachine.convertToExplicitMachineState(this.internalCurrentState).getContents());
+				getMatch().appendState(this.internalCurrentState);
 			}
 
 			return stateMachineSelectMove(timeout).getContents();
@@ -242,23 +277,24 @@ public abstract class StateMachineGamer extends Gamer
 	@Override
 	public void stop() throws StoppingException {
 		try {
-			stateMachine.doPerMoveWork();
+			this.stateMachine.doPerMoveWork();
 
 			List<GdlTerm> lastMoves = getMatch().getMostRecentMoves();
 			if (lastMoves != null)
 			{
-				List<ExplicitMove> moves = new ArrayList<ExplicitMove>();
-				for (GdlTerm sentence : lastMoves)
+				List<Move> moves = new ArrayList<Move>();
+				for (int roleIndex = 0; roleIndex < lastMoves.size(); roleIndex++)
 				{
-					moves.add(stateMachine.getMoveFromTerm(sentence));
+					moves.add(this.stateMachine.convertToInternalMove(this.stateMachine.getMoveFromTerm(lastMoves.get(roleIndex)), this.stateMachine.getExplicitRoles().get(roleIndex)));
 				}
 
-				currentState = stateMachine.getExplicitNextState(currentState, moves);
-				getMatch().appendState(currentState.getContents());
+				this.internalCurrentState = this.stateMachine.getNextState(this.internalCurrentState, moves);
+				getMatch().appendState(this.stateMachine.convertToExplicitMachineState(this.internalCurrentState).getContents());
+				getMatch().appendState(this.internalCurrentState);
 
-				List<Integer> allGoals = new ArrayList<Integer>();
+				List<Double> allGoals = new ArrayList<Double>();
 
-				int[] goals = this.stateMachine.getSafeGoalsAvg(currentState);
+				double[] goals = this.stateMachine.getSafeGoalsAvgForAllRoles(this.internalCurrentState);
 
 				for(int i = 0; i < goals.length; i++){
 					allGoals.add(goals[i]);
@@ -276,7 +312,7 @@ public abstract class StateMachineGamer extends Gamer
 			stateMachineStop();
 			// Stop the state machine (if the state machine implementation needs
 			// to be stopped).
-			stateMachine.shutdown();
+			this.stateMachine.shutdown();
 		}
 	}
 
@@ -297,9 +333,10 @@ public abstract class StateMachineGamer extends Gamer
 	}
 
     // Internal state about the current state of the state machine.
-    private ExplicitRole role;
-    private ExplicitMachineState currentState;
-    private StateMachine stateMachine;
+    private Role role;
+    //private ExplicitMachineState currentState;
+    private MachineState internalCurrentState;
+    private AbstractStateMachine stateMachine;
 
     /**
 	 * C.Sironi: added parameter to memorize the meta-gaming timeout so that it can be used by the

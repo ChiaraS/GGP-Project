@@ -113,7 +113,7 @@ public class SingleParameterEvolutionManager{
 					for(int j = 0; j < this.populations[i].length; j++){
 
 						int individualEvaluations = this.populations[i][j].getNumEvaluations();
-						int totalFitness = this.populations[i][j].getTotalFitness();
+						double totalFitness = this.populations[i][j].getTotalFitness();
 
 						if(individualEvaluations != 0){
 							avgFitness = (((double)totalFitness)/((double)individualEvaluations));
@@ -203,7 +203,7 @@ public class SingleParameterEvolutionManager{
 	private double computeIndividualsValue(Individual individual, int totPopulationEvaluations, double minExtreme, double maxExtreme){
 
 		int individualEvaluations = individual.getNumEvaluations();
-		int totalFitness = individual.getTotalFitness();
+		double totalFitness = individual.getTotalFitness();
 
 		/**
 		 * Extra check to make sure that neither the numEvaluations nor the
@@ -223,11 +223,11 @@ public class SingleParameterEvolutionManager{
 
 	}
 
-	private double computeExploitation(int numEvaluations, int totalFitness, double minExtreme, double maxExtreme){
+	private double computeExploitation(int numEvaluations, double totalFitness, double minExtreme, double maxExtreme){
 
 		// Assume that the totalFitness has already been checked to be positive and the numEvaluations to be non-negative.
 
-		return this.normalize(((double)totalFitness)/((double)numEvaluations), minExtreme, maxExtreme);
+		return this.normalize(totalFitness/((double)numEvaluations), minExtreme, maxExtreme);
 
 	}
 
@@ -243,7 +243,7 @@ public class SingleParameterEvolutionManager{
 
 	}
 
-	public void updateFitness(int[] goal){
+	public void updateFitness(double[] goal){
 
 		for(int i = 0; i < goal.length; i++){
 			this.populations[i][this.currentSelectedIndividuals[i]].updateFitness(goal[i]);

@@ -9,13 +9,14 @@ import java.util.Map;
 import org.ggp.base.player.gamer.event.GamerSelectedMoveEvent;
 import org.ggp.base.player.gamer.statemachine.sample.SampleGamer;
 import org.ggp.base.util.logging.GamerLogger;
-import org.ggp.base.util.statemachine.StateMachine;
+import org.ggp.base.util.statemachine.abstractsm.AbstractStateMachine;
 import org.ggp.base.util.statemachine.exceptions.GoalDefinitionException;
 import org.ggp.base.util.statemachine.exceptions.MoveDefinitionException;
 import org.ggp.base.util.statemachine.exceptions.StateMachineException;
 import org.ggp.base.util.statemachine.exceptions.TransitionDefinitionException;
+import org.ggp.base.util.statemachine.structure.Move;
+import org.ggp.base.util.statemachine.structure.Role;
 import org.ggp.base.util.statemachine.structure.explicit.ExplicitMove;
-import org.ggp.base.util.statemachine.structure.explicit.ExplicitRole;
 
 import csironi.ggp.course.MCTS.MCTSController;
 import csironi.ggp.course.MCTS.expansion.OldRandomExpansion;
@@ -46,24 +47,25 @@ public class CMCTSRandomGamer extends SampleGamer {
 		long finishBy = timeout - 100;
 
 		// Get state machine
-		StateMachine stateMachine = getStateMachine();
+		AbstractStateMachine stateMachine = getStateMachine();
 
 		// Get all available moves
-		List<ExplicitMove> moves = stateMachine.getExplicitLegalMoves(getCurrentState(), getRole());
+		List<Move> moves = stateMachine.getLegalMoves(getCurrentState(), getRole());
 
-		ExplicitMove selection = moves.get(0);
+		Move selection = moves.get(0);
 		// If there is more than one legal move available search the best one,
 		// otherwise return the only one available.
 		if(moves.size() != 1){
 
+			// TODO: change MCTSController to use AbstractStateMachine
 			//create only once!!!!
-			MCTSController manager = new MCTSController(new OldRandomSelection(new OldRandomExpansion(), new OldRandomPlayout(stateMachine)), new OldMaxAvgScoreMoveChoice());
+			MCTSController manager = new MCTSController(new OldRandomSelection(new OldRandomExpansion(), new OldRandomPlayout(stateMachine.getActualStateMachine())), new OldMaxAvgScoreMoveChoice());
 
-			ExplicitRole myRole = getRole();
-			Map<ExplicitRole, Integer> roleIndexes = stateMachine.getRoleIndices();
+			Role myRole = getRole();
+			Map<Role, Integer> roleIndexes = stateMachine.getRoleIndices();
 			int myRoleIndex = roleIndexes.get(myRole);
 
-			selection = manager.selectBestMove(finishBy, stateMachine, myRoleIndex, getCurrentState());
+			selection = manager.selectBestMove(finishBy, stateMachine.getActualStateMachine(), myRoleIndex, stateMachine.convertToExplicitMachineState(getCurrentState()));
 		}
 
 		// We get the end time
@@ -73,8 +75,8 @@ public class CMCTSRandomGamer extends SampleGamer {
 		GamerLogger.log("Phil", "Move selected: " + selection);
 		GamerLogger.log("Phil", "End time: " + stop);
 
-		notifyObservers(new GamerSelectedMoveEvent(moves, selection, stop - start));
-		return selection;
+		notifyObservers(new GamerSelectedMoveEvent(stateMachine.convertToExplicitMoves(moves), stateMachine.convertToExplicitMove(selection), stop - start));
+		return stateMachine.convertToExplicitMove(selection);
 
 	}
 

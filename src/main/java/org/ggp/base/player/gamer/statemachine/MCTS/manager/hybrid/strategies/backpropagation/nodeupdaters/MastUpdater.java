@@ -56,7 +56,7 @@ public class MastUpdater extends NodeUpdater{
 
 		MoveStats moveStats;
 
-		int[] goals;
+		double[] goals;
 
 		for(int roleIndex = 0; roleIndex < internalJointMove.size(); roleIndex++){
 
@@ -90,7 +90,7 @@ public class MastUpdater extends NodeUpdater{
 			throw new RuntimeException("No simulation results available to pre-process!");
 		}
 
-		int[] goals;
+		double[] goals;
 		List<List<Move>> allJointMoves;
 
 		for(int resultIndex = 0; resultIndex < simulationResult.length; resultIndex++){

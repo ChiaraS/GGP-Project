@@ -100,6 +100,11 @@ public class IndependentTourneyRunner {
 		// greater than 0 even if we don't have a previously created folder of stats for the tourney. The different runs will be performed
 		// in parallel and merged together later.
 		boolean continueOldExperiment = false;
+		// True if we want to log only essential files, false otherwise (false by default if not specified otherwise)
+		boolean logOnlyEssentialFiles = false;
+		// True if we want to give to external players unlimited time to respond to start and play requests (i.e. we don't check if they
+		// exceeded the timeout when answering)
+		boolean unlimitedTimeForExternal = false;
 
 		// Map that for each external gamer contains the manager of available addresses (IP+port) on which the external gamer
 		// is listening for connections.
@@ -116,7 +121,7 @@ public class IndependentTourneyRunner {
 
 		//GameRepository gameRepo = GameRepository.getDefaultRepository();
     	//GameRepository gameRepo = new ManualUpdateLocalGameRepository("/home/csironi/GAMEREPOS/GGPBase-GameRepo-03022016");
-    	GameRepository gameRepo = new ManualUpdateLocalGameRepository(GamerConfiguration.defaultLocalGameRepositoryFolderPath);
+    	GameRepository gameRepo = new ManualUpdateLocalGameRepository(GamerConfiguration.defaultLocalGameRepositoryFolderPath + "/" + GamerConfiguration.defaultStanfordRepo/*.defaultGGPBaseRepo*/);
 
 		Game game;
 
@@ -215,6 +220,18 @@ public class IndependentTourneyRunner {
 		        			}
 		        		}
 		        	}
+		    		for (Class<?> gamerClass : ProjectSearcher.FPGA_PROPNET_GAMERS.getConcreteClasses()) {
+		        		if(gamerClass.getSimpleName().equals(gamerTypes[i])){
+		        			theCorrespondingClass = gamerClass;
+		        			if(ConfigurableStateMachineGamer.class.isAssignableFrom(theCorrespondingClass)){ // The class is subclass of ConfigurableStateMachineGamer
+		        				// If the gamer is configurable than the settings file must be specified
+		        				if(gamerSettings[i] == null){
+		        					System.out.println("Impossible to start match runner, wrong input. No settings file specified for gamer type " + gamerTypes[i] + ".");
+		        					return;
+		        				}
+		        			}
+		        		}
+		        	}
 		    		for (Class<?> gamerClass : ProjectSearcher.PROVER_GAMERS.getConcreteClasses()) {
 		        		if(gamerClass.getSimpleName().equals(gamerTypes[i])){
 		        			theCorrespondingClass = gamerClass;
@@ -254,6 +271,15 @@ public class IndependentTourneyRunner {
 				timeID = System.currentTimeMillis();
 			}
 
+			if(props.getProperty("logOnlyEssentialFiles") != null) {
+				logOnlyEssentialFiles = Boolean.parseBoolean(props.getProperty("logOnlyEssentialFiles"));
+			}
+
+			if(props.getProperty("unlimitedTimeForExternal") != null) {
+				unlimitedTimeForExternal = Boolean.parseBoolean(props.getProperty("unlimitedTimeForExternal"));
+			}
+
+
 		} catch (IOException | NumberFormatException e) {
 			System.out.println("Impossible to perform experiment, cannot correctly read/write the .properties file for the tourney.");
 			e.printStackTrace();
@@ -288,6 +314,11 @@ public class IndependentTourneyRunner {
 	    	/** 2. Officially start the tourney and start logging. **/
 
 	    	ThreadContext.put("LOG_FOLDER", mainLogFolder);
+	    	if(logOnlyEssentialFiles) {
+	    		// Add to the files that we want to log only the Stats.csv file and the Errors.log file
+	    		GamerLogger.setEssentialLogFileName("Stats");
+	    		GamerLogger.setEssentialLogFileName("Errors");
+	    	}
 	    	GamerLogger.startFileLogging();
 
 	    	String gamerTypesList = "[ ";
@@ -298,8 +329,9 @@ public class IndependentTourneyRunner {
 
 	    	GamerLogger.log("TourneyRunner" + runNumber, "Starting tourney " + tourneyName + " for game " + gameKey + " with following settings: START_CLOCK=" +
 	    			startClock + "s, PLAY_CLOCK=" + playClock + "s, PROPNET_CREATION_TIME=" + pnCreationTime + "ms, DESIRED_NUM_PARALLEL_PLAYERS=" +
-	    			numParallelPlayers + ", MIN_NUM_MATCHES_PER_GAMER_TYPE=" + matchesPerGamerType + ", NUM_SEQUENTIAL_MATCHES=" + numSequentialMatches + "."
-	    			+ ", GAMER_TYPES=" + gamerTypesList + ".");
+	    			numParallelPlayers + ", MIN_NUM_MATCHES_PER_GAMER_TYPE=" + matchesPerGamerType + ", NUM_SEQUENTIAL_MATCHES=" + numSequentialMatches +
+	    			", GAMER_TYPES=" + gamerTypesList + ", CONTINUE_OLD_EXPERIMENT=" + continueOldExperiment + ", LOG_ONLY_ESSENTIAL_FILES=" +
+	    			logOnlyEssentialFiles + ", UNLIMITED_TIME_FOR_EXTERNAL=" + unlimitedTimeForExternal + ".");
 
 	    	/** 3. Compute all combinations of gamer types. **/
 
@@ -324,7 +356,7 @@ public class IndependentTourneyRunner {
 	    			", NUM_COMBINATIONS=" + combinations.size() + ", NUM_PARALLEL_MATCHES=" + numParallelMatches + ", ACTUAL_NUM_PARALLEL_PLAYERS=" +
 	    			numParallelMatches*expectedRoles + ", ACTUAL_NUM_MATCHES_PER_COMBINATION=" + matchesPerCombination + ", ACTUAL_NUM_MATCHES_PER_GAMER_TYPE=" +
 	    			(Combinator.getLastCombinationsPerElement() * Combinator.getLastPermutationsPerCombination() * matchesPerCombination) +
-	    			", NUM_MATCH_RUNNERS");
+	    			", NUM_MATCH_RUNNERS=" + numMatchRunners);
 
 	    	// 5. For each combination run the given amount of match runners.
 
@@ -359,7 +391,7 @@ public class IndependentTourneyRunner {
 	    		GamerLogger.log("TourneyRunner" + runNumber, "Starting sub-tourney for combination " + comboIndices + ".");
 
 	    		ThreadContext.put("LOG_FOLDER", mainLogFolder + "/Combination" + comboIndices);
-	    		boolean completed = runMatchesForCombination(runNumber, gameKey, startClock, playClock, pnCreationTime, theComboGamersTypes, numParallelMatches, numMatchRunners, numSequentialMatches, externalGamersManagers);
+	    		boolean completed = runMatchesForCombination(runNumber, gameKey, startClock, playClock, pnCreationTime, theComboGamersTypes, numParallelMatches, numMatchRunners, numSequentialMatches, externalGamersManagers, logOnlyEssentialFiles, unlimitedTimeForExternal);
 	    		ThreadContext.put("LOG_FOLDER", mainLogFolder);
 
 	    		if(completed){
@@ -407,7 +439,8 @@ public class IndependentTourneyRunner {
 
 	private static boolean runMatchesForCombination(int runNumber, String gameKey, int startClock, int playClock,
 			long pnCreationTime, List<String> theGamersTypes, int numParallelMatches, int numMatchRunners,
-			int numSequentialMatches, Map<String,ExternalGamerAvailabilityManager> externalGamersManagers){
+			int numSequentialMatches, Map<String,ExternalGamerAvailabilityManager> externalGamersManagers,
+			boolean logOnlyEssentialFiles, boolean unlimitedTimeForExternal){
 
 		GamerLogger.log("TourneyRunner"+runNumber, "Starting sub-tourney.");
 
@@ -429,6 +462,8 @@ public class IndependentTourneyRunner {
 		theSettings.add("" + startClock);
 		theSettings.add("" + playClock);
 		theSettings.add("" + pnCreationTime);
+		theSettings.add("" + logOnlyEssentialFiles);
+		theSettings.add("" + unlimitedTimeForExternal);
 
 		for(int i = (runNumber*numMatchRunners); i < ((runNumber+1)*numMatchRunners); i++){
 			theSettings.set(5, ""+i);

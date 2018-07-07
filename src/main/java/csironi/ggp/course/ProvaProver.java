@@ -2,6 +2,7 @@ package csironi.ggp.course;
 
 import java.util.HashSet;
 import java.util.List;
+import java.util.Random;
 import java.util.Set;
 
 import org.ggp.base.util.game.GameRepository;
@@ -37,7 +38,7 @@ public class ProvaProver {
 
             List<Gdl> description = theRepository.getGame(gameKey).getRules();
 
-            ProverStateMachine machine = new ProverStateMachine();
+            ProverStateMachine machine = new ProverStateMachine(new Random());
 
             machine.initialize(description, Long.MAX_VALUE);
 
@@ -79,7 +80,7 @@ public class ProvaProver {
 
             System.out.println(role);
 
-            int g = machine.getGoal(state, role);
+            double g = machine.getGoal(state, role);
 
             System.out.println(g);
 

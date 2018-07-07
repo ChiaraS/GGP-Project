@@ -27,7 +27,7 @@ import org.ggp.base.util.reflection.ProjectSearcher;
  * @author C.Sironi
  *
  */
-public class StandardEvolutionManager extends EvolutionManager {
+public class StandardEvolutionManager extends DiscreteEvolutionManager {
 
 	/**
 	 * When evolving the population, a new individual is created by crossover of two random parents
@@ -105,7 +105,7 @@ public class StandardEvolutionManager extends EvolutionManager {
 
 		CompleteMoveStats[] population = new CompleteMoveStats[this.populationsSize];
 
-		List<CombinatorialCompactMove> allLegalCombos = this.parametersManager.getAllLegalParametersCombinations();
+		List<CombinatorialCompactMove> allLegalCombos = this.discreteParametersManager.getAllLegalParametersCombinations();
 
 		for(int i = 0; i < this.populationsSize; i++){
 			population[i] = new CompleteMoveStats(allLegalCombos.get(this.random.nextInt(allLegalCombos.size())));
@@ -160,10 +160,14 @@ public class StandardEvolutionManager extends EvolutionManager {
 		}
 		*/
 
+		int totalUpdates = roleProblem.getTotalUpdates();
+
 		// For other individuals, generate new individuals to substitute them and reset also statistics.
 		// Keep the first eliteSize best individuals and create new individuals
 		// to substitute the ones that are being thrown away.
 		for(int i = this.eliteSize; i < roleProblem.getPopulation().length; i++){
+
+			totalUpdates -= roleProblem.getPopulation()[i].getVisits(); // Remove the visits of the individual because they will be reset to 0 in the next lines
 
 			if(this.random.nextDouble() < this.crossoverProbability){
 				// Create new individual with crossover
@@ -175,6 +179,8 @@ public class StandardEvolutionManager extends EvolutionManager {
 			}
 
 		}
+
+		roleProblem.setTotalUpdates(totalUpdates);
 
 	}
 

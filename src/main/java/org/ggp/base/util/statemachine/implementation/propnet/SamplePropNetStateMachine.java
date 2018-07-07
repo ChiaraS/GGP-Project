@@ -5,6 +5,7 @@ import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Random;
 import java.util.Set;
 
 import org.ggp.base.util.gdl.grammar.Gdl;
@@ -32,6 +33,10 @@ public class SamplePropNetStateMachine extends StateMachine {
     private List<Proposition> ordering;
     /** The player roles */
     private List<ExplicitRole> roles;
+
+    public SamplePropNetStateMachine(Random random){
+    	super(random);
+    }
 
     /**
      * Initializes the PropNetStateMachine. You should compute the topological
@@ -67,7 +72,7 @@ public class SamplePropNetStateMachine extends StateMachine {
 	 * GoalDefinitionException because the goal is ill-defined.
 	 */
 	@Override
-	public List<Integer> getAllGoalsForOneRole(ExplicitMachineState state, ExplicitRole role) {
+	public List<Double> getAllGoalsForOneRole(ExplicitMachineState state, ExplicitRole role) {
 		// TODO: Compute the goal for role in state.
 		return null;
 	}

@@ -15,6 +15,6 @@ public abstract class AfterGameStrategy extends Strategy {
 		super(gameDependentParameters, random, gamerSettings, sharedReferencesCollector);
 	}
 
-	public abstract void afterGameActions(List<Integer> terminalGoals);
+	public abstract void afterGameActions(List<Double> terminalGoals);
 
 }

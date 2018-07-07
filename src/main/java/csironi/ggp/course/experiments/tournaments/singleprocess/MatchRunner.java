@@ -100,7 +100,7 @@ public class MatchRunner extends Thread{
 				this.resetLogFolder(oldFolder);
 				return;
 			}
-			theGamer.setExternalStateMachine(new SeparateInternalPropnetStateMachine(manager.getImmutablePropnet(), manager.getInitialPropnetState()));
+			theGamer.setExternalStateMachine(new SeparateInternalPropnetStateMachine(null, manager.getImmutablePropnet(), manager.getInitialPropnetState()));
 
 			try {
 				thePlayers.add(new GamePlayer(9000 + i + (this.ID * this.theGamerClasses.size()), theGamer));
@@ -303,7 +303,7 @@ public class MatchRunner extends Thread{
 
 		// Save the goals in the "/scores" file for the tournament.
 
-		List<Integer> goals;
+		List<Double> goals;
 		try {
 			goals = server.getGoals();
 		} catch (GoalDefinitionException | StateMachineException e) {

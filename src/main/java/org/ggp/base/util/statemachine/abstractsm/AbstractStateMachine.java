@@ -6,10 +6,15 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Random;
+import java.util.Set;
 
 import org.ggp.base.util.concurrency.ConcurrencyUtils;
 import org.ggp.base.util.gdl.grammar.Gdl;
+import org.ggp.base.util.gdl.grammar.GdlConstant;
+import org.ggp.base.util.gdl.grammar.GdlSentence;
+import org.ggp.base.util.gdl.grammar.GdlTerm;
 import org.ggp.base.util.logging.GamerLogger;
+import org.ggp.base.util.statemachine.StateMachine;
 import org.ggp.base.util.statemachine.exceptions.GoalDefinitionException;
 import org.ggp.base.util.statemachine.exceptions.MoveDefinitionException;
 import org.ggp.base.util.statemachine.exceptions.StateMachineException;
@@ -23,6 +28,8 @@ import org.ggp.base.util.statemachine.structure.explicit.ExplicitMove;
 import org.ggp.base.util.statemachine.structure.explicit.ExplicitRole;
 
 import com.google.common.collect.ImmutableMap;
+
+import csironi.ggp.course.utils.MyPair;
 
 /**
  * This class gives a new abstract structure for a state machine.
@@ -45,6 +52,8 @@ import com.google.common.collect.ImmutableMap;
  *
  */
 public abstract class AbstractStateMachine {
+
+	private List<ExplicitRole> explicitRoles;
 
 	//--------------------------------- METHODS TO INITIALIZE THE STATE MACHINE ---------------------------------//
 
@@ -73,7 +82,9 @@ public abstract class AbstractStateMachine {
 	 * used! Moreover, before discarding the state machine, make sure to shut it down (i.e. call the
 	 * shutdown() method on it).
 	 */
-    public abstract void initialize(List<Gdl> description, long timeout) throws StateMachineInitializationException;
+    public void initialize(List<Gdl> description, long timeout) throws StateMachineInitializationException{
+    	this.explicitRoles = ExplicitRole.computeRoles(description);
+    }
 
     public void initialize(List<Gdl> description) throws StateMachineInitializationException{
     	this.initialize(description, Long.MAX_VALUE);
@@ -89,7 +100,7 @@ public abstract class AbstractStateMachine {
      * for the given role because of an error that occurred in the state machine and
      * couldn't be handled.
      */
-    public abstract List<Integer> getAllGoalsForOneRole(MachineState state, Role role) throws StateMachineException;
+    public abstract List<Double> getAllGoalsForOneRole(MachineState state, Role role) throws StateMachineException;
 
     /**
      * Returns true if and only if the given state is a terminal state (i.e. the
@@ -132,13 +143,67 @@ public abstract class AbstractStateMachine {
      */
     public abstract MachineState getNextState(MachineState state, List<Move> moves) throws TransitionDefinitionException, StateMachineException;
 
+	//---- METHODS THAT PERFORM PLAYOUTS AND MOVE CHOICES USING THE REASONER DIRECTLY ----//
+
+    /**
+     * This method performs the playout directly from the reasoner behind the state machine with
+     * the aim of making playouts faster (e.g. if there is a lot of overhead when communicating
+     * with the reasoner, this overhead happens once every numSimulationsPerPlayout instead of
+     * once for every visited state).
+     *
+     * @param state
+     * @param numSimulationsPerPlayout
+     * @param maxDepth
+     * @return average reward for each role over all the playouts and average depth of the playouts.
+     * @throws StateMachineException
+     * @throws GoalDefinitionException
+     * @throws MoveDefinitionException
+     * @throws TransitionDefinitionException
+     */
+    public abstract MyPair<double[],Double> fastPlayouts(MachineState state, int numSimulationsPerPlayout, int maxDepth) throws TransitionDefinitionException, MoveDefinitionException, GoalDefinitionException, StateMachineException;
+
+	//public abstract List<Move> getJointMove(List<List<Move>> legalMovesPerRole, MachineState state) throws MoveDefinitionException, StateMachineException;
+
+	public abstract Move getMoveForRole(List<Move> legalMoves, MachineState state, Role role) throws StateMachineException, MoveDefinitionException;
+
 	//---- METHODS THAT ALLOW TO TRANSLATE STATES, MOVES AND ROLES INTO THE EXPLICIT (HUMAN-READABLE) FORMAT ----//
 
     public abstract ExplicitMachineState convertToExplicitMachineState(MachineState state);
 
     public abstract ExplicitMove convertToExplicitMove(Move move);
 
+    public List<ExplicitMove> convertToExplicitMoves(List<Move> moves){
+    	List<ExplicitMove> explicitMoves = new ArrayList<ExplicitMove>();
+    	for(Move move : moves) {
+    		explicitMoves.add(this.convertToExplicitMove(move));
+    	}
+    	return explicitMoves;
+    }
+
     public abstract ExplicitRole convertToExplicitRole(Role role);
+
+    public List<ExplicitRole> convertToExplicitRoles(List<Role> roles){
+    	List<ExplicitRole> explicitRoles = new ArrayList<ExplicitRole>();
+    	for(Role role : roles) {
+    		explicitRoles.add(this.convertToExplicitRole(role));
+    	}
+    	return explicitRoles;
+    }
+
+	public abstract MachineState convertToInternalMachineState(ExplicitMachineState explicitState);
+
+	public abstract Move convertToInternalMove(ExplicitMove explicitMove, ExplicitRole role);
+
+	public abstract Role convertToInternalRole(ExplicitRole explicitRole);
+
+	public List<Move> convertToInternalJointMoves(List<ExplicitMove> moves){
+    	List<Move> internalMoves = new ArrayList<Move>();
+
+    	for(int i = 0; i < moves.size(); i++) {
+    		internalMoves.add(this.convertToInternalMove(moves.get(i), this.getExplicitRoles().get(i)));
+    	}
+    	return internalMoves;
+    }
 
 	//-------------------------- OTHER METHODS THAT ALLOW TO MANAGE THE STATE MACHINE ---------------------------//
 
@@ -170,7 +235,7 @@ public abstract class AbstractStateMachine {
      * <p>
      * CONTRACT: Should be called once per move.
      */
-    public void doPerMoveWork() {}
+    public abstract void doPerMoveWork();
 
     /** Override this to allow the state machine to be conditioned on a particular current state.
      * This means that the state machine will only handle portions of the game tree at and below
@@ -205,6 +270,10 @@ public abstract class AbstractStateMachine {
     	}
 
     	return this.roles;
+    }
+
+    public List<ExplicitRole> getExplicitRoles(){
+    	return this.explicitRoles;
     }
 
     /**
@@ -392,18 +461,18 @@ public abstract class AbstractStateMachine {
      * for the given role because of an error that occurred in the state machine and
      * couldn't be handled.
      */
-    public int getSingleGoalForOneRole(MachineState state, Role role) throws GoalDefinitionException, StateMachineException{
+    public double getSingleGoalForOneRole(MachineState state, Role role) throws GoalDefinitionException, StateMachineException{
 
-    	List<Integer> goals = this.getAllGoalsForOneRole(state, role);
+    	List<Double> goals = this.getAllGoalsForOneRole(state, role);
 
 		if(goals.size() > 1){
-			GamerLogger.logError("StateMachine", "[AbstractSM] Got more than one true goal in state " + state + " for role " + role + ".");
+			GamerLogger.logError("StateMachine", "[AbstractSM] Got more than one true goal in state " + this.convertToExplicitMachineState(state) + " for role " + this.convertToExplicitRole(role) + ".");
 			throw new GoalDefinitionException(this.convertToExplicitMachineState(state), this.convertToExplicitRole(role));
 		}
 
 		// If there is no true goal proposition for the role in this state throw an exception.
 		if(goals.isEmpty()){
-			GamerLogger.logError("StateMachine", "[AbstractSM] Got no true goal in state " + state + " for role " + role + ".");
+			GamerLogger.logError("StateMachine", "[AbstractSM] Got no true goal in state " + this.convertToExplicitMachineState(state) + " for role " + this.convertToExplicitRole(role) + ".");
 			throw new GoalDefinitionException(this.convertToExplicitMachineState(state), this.convertToExplicitRole(role));
 		}
 
@@ -425,8 +494,8 @@ public abstract class AbstractStateMachine {
      * with the goals for all the roles in the given state because of an error
      * that occurred in the state machine and couldn't be handled.
      */
-    public List<Integer> getSingleGoalForAllRoles(MachineState state) throws GoalDefinitionException, StateMachineException {
-        List<Integer> theGoals = new ArrayList<Integer>(getRoles().size());
+    public List<Double> getSingleGoalForAllRoles(MachineState state) throws GoalDefinitionException, StateMachineException {
+        List<Double> theGoals = new ArrayList<Double>(getRoles().size());
         for(Role r : getRoles()) {
             theGoals.add(getSingleGoalForOneRole(state, r));
         }
@@ -444,8 +513,8 @@ public abstract class AbstractStateMachine {
      * with the goals for all the roles in the given state because of an error
      * that occurred in the state machine and couldn't be handled.
      */
-    public List<List<Integer>> getAllGoalsForAllRoles(MachineState state) throws GoalDefinitionException, StateMachineException {
-        List<List<Integer>> theGoals = new ArrayList<List<Integer>>();
+    public List<List<Double>> getAllGoalsForAllRoles(MachineState state) throws GoalDefinitionException, StateMachineException {
+        List<List<Double>> theGoals = new ArrayList<List<Double>>();
         for (Role r : getRoles()) {
         	theGoals.add(getAllGoalsForOneRole(state, r));
         }
@@ -469,9 +538,9 @@ public abstract class AbstractStateMachine {
      *
      * @param state the state for which to compute the goals.
      */
-    public int[] getSafeGoalsForAllRoles(MachineState state){
+    public double[] getSafeGoalsForAllRoles(MachineState state){
     	List<Role> theRoles = this.getRoles();
-    	int[] theGoals = new int[theRoles.size()];
+    	double[] theGoals = new double[theRoles.size()];
         for (int i = 0; i < theRoles.size(); i++) {
             try {
 				theGoals[i] = getSingleGoalForOneRole(state, theRoles.get(i));
@@ -503,11 +572,11 @@ public abstract class AbstractStateMachine {
      * @param state the state for which to compute the goals.
 	 * @throws StateMachineException
      */
-    public int[] getSafeGoalsAvgForAllRoles(MachineState state){
+    public double[] getSafeGoalsAvgForAllRoles(MachineState state){
     	List<Role> theRoles = this.getRoles();
-    	int[] theGoals = new int[theRoles.size()];
-    	int avg;
-    	List<Integer> roleGoals = null;
+    	double[] theGoals = new double[theRoles.size()];
+    	double avg;
+    	List<Double> roleGoals = null;
 
     	for(int i = 0; i < theRoles.size(); i++) {
 
@@ -516,18 +585,18 @@ public abstract class AbstractStateMachine {
 
         		if(roleGoals != null && !roleGoals.isEmpty()){
 
-        			avg = 0;
+        			avg = 0.0;
 
-        			for(Integer goal : roleGoals){
+        			for(Double goal : roleGoals){
         				avg += goal;
         			}
 
-        			theGoals[i] = (int) Math.round(((double)avg)/((double)roleGoals.size()));
+        			theGoals[i] = avg/((double)roleGoals.size());
         		}
         	}catch(StateMachineException e){
         		GamerLogger.logError("StateMachine", "Failed to compute a goal value when computing safe goals.");
 				GamerLogger.logStackTrace("StateMachine", e);
-				theGoals[i] = 0;
+				theGoals[i] = 0.0;
         	}
         }
         return theGoals;
@@ -752,5 +821,35 @@ public abstract class AbstractStateMachine {
     		avgScores[j] /= repetitions;
     	}
     }
+
+	public Map<List<Move>, MachineState> getAllJointMovesAndNextStates(MachineState state) throws MoveDefinitionException, StateMachineException, TransitionDefinitionException {
+
+		Map<List<Move>, MachineState> jointMovesAndNextStates = new HashMap<List<Move>, MachineState>();
+
+		List<List<Move>> allJointMoves = this.getLegalJointMoves(state);
+
+		for(List<Move> jointMove : allJointMoves) {
+			jointMovesAndNextStates.put(jointMove, this.getNextState(state, jointMove));
+		}
+
+		return jointMovesAndNextStates;
+	}
+
+    // The following methods are included in the AbstractStateMachine base so
+    // implementations which use alternative Role/Move/State representations
+    // can look up/compute what some Gdl corresponds to in their representation.
+    // They are implemented for convenience, using the default ways of generating
+    // these objects, but they can be overridden to support machine-specific objects.
+    public ExplicitMachineState getMachineStateFromSentenceList(Set<GdlSentence> sentenceList) {
+        return new ExplicitMachineState(sentenceList);
+    }
+    public ExplicitRole getRoleFromConstant(GdlConstant constant) {
+        return new ExplicitRole(constant);
+    }
+    public ExplicitMove getMoveFromTerm(GdlTerm term) {
+        return new ExplicitMove(term);
+    }
+
+    public abstract StateMachine getActualStateMachine();
 
 }

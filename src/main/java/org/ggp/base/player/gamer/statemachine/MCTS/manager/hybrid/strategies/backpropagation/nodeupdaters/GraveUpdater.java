@@ -45,7 +45,7 @@ public class GraveUpdater extends NodeUpdater{
 
 			Map<Move, MoveStats> amafStats = ((AmafNode)currentNode).getAmafStats();
 			List<List<Move>> allJointMoves;
-			int[] goals;
+			double[] goals;
 			MoveStats moveStats;
 
 			for(int resultIndex = 0; resultIndex < simulationResult.length; resultIndex++){
@@ -92,7 +92,7 @@ public class GraveUpdater extends NodeUpdater{
 		if(leafNode instanceof AmafNode){
 
 			List<List<Move>> allJointMoves;
-			int[] goals;
+			double[] goals;
 			Map<Move, MoveStats> amafStats = ((AmafNode)leafNode).getAmafStats();
 			MoveStats moveStats;
 

@@ -57,6 +57,7 @@ public class MctsTranspositionTable extends SearchManagerComponent{
 	public MctsTranspositionTable(GameDependentParameters gameDependentParameters, Random random,
 			GamerSettings gamerSettings, SharedReferencesCollector sharedReferencesCollector) {
 		super(gameDependentParameters, random, gamerSettings, sharedReferencesCollector);
+
 		this.log = gamerSettings.getBooleanPropertyValue("MctsTranspositionTable.log");
 
 		if(gamerSettings.specifiesProperty("MctsTranspositionTable.treeDecay")){
@@ -203,5 +204,10 @@ public class MctsTranspositionTable extends SearchManagerComponent{
 	public void turnOffLogging(){
 		this.log = false;
 	}
+
+	/*
+	public void printSize() {
+		System.out.println(this.transpositionTable.size());
+	}*/
 
 }

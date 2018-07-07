@@ -1,6 +1,7 @@
 package org.ggp.base.util.gdl.transforms;
 
 import java.util.List;
+import java.util.Random;
 
 import org.ggp.base.util.game.GameRepository;
 import org.ggp.base.util.gdl.grammar.Gdl;
@@ -17,8 +18,8 @@ public class TransformTester {
 	public static void main(String args[]) throws InterruptedException {
 
 	    final boolean showDiffs = false;
-        final ProverStateMachine theReference = new ProverStateMachine();
-        final ProverStateMachine theMachine = new ProverStateMachine();
+        final ProverStateMachine theReference = new ProverStateMachine(new Random());
+        final ProverStateMachine theMachine = new ProverStateMachine(new Random());
 
         GameRepository theRepository = GameRepository.getDefaultRepository();
         for(String gameKey : theRepository.getGameKeys()) {

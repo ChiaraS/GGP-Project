@@ -1,6 +1,7 @@
 package csironi.ggp.course.verifiers;
 
 import java.util.List;
+import java.util.Random;
 
 import org.apache.logging.log4j.ThreadContext;
 import org.ggp.base.util.game.GameRepository;
@@ -165,13 +166,14 @@ public class SelfInitSeparatePropnetVerifier {
 
 	        List<Gdl> description = theRepository.getGame(gameKey).getRules();
 
-	        theReference = new ProverStateMachine();
+	        theReference = new ProverStateMachine(new Random());
 
+	        Random random = new Random();
 			// Create the state machine.
-		    thePropnetMachine = new SelfInitSeparateInternalPropNetStateMachine(optimizations);
+		    thePropnetMachine = new SelfInitSeparateInternalPropNetStateMachine(random, optimizations);
 
 		    if(withCache){
-		    	theSubject = new SeparateInternalPropnetCachedStateMachine(thePropnetMachine);
+		    	theSubject = new SeparateInternalPropnetCachedStateMachine(random, thePropnetMachine);
 		    }else{
 		    	theSubject = thePropnetMachine;
 		    }

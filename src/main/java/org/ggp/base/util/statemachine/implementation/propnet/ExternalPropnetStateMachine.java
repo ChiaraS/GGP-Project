@@ -43,7 +43,10 @@ public class ExternalPropnetStateMachine extends StateMachine {
     /** The initial state */
     private CompactMachineState initialState;
 
-	public ExternalPropnetStateMachine(ExternalizedStatePropNet propNet, ImmutableSeparatePropnetState propnetState){
+	public ExternalPropnetStateMachine(Random random, ExternalizedStatePropNet propNet, ImmutableSeparatePropnetState propnetState){
+
+		super(random);
+
 		this.propNet = propNet;
 		this.propnetState = propnetState;
 	}
@@ -121,7 +124,7 @@ public class ExternalPropnetStateMachine extends StateMachine {
 	//}
 
 	@Override
-	public List<Integer> getAllGoalsForOneRole(ExplicitMachineState state, ExplicitRole role)
+	public List<Double> getAllGoalsForOneRole(ExplicitMachineState state, ExplicitRole role)
 			throws StateMachineException {
 		return this.getOneRoleGoals(this.stateToExternalState(state), this.roleToExternalRole(role));
 	}
@@ -133,7 +136,7 @@ public class ExternalPropnetStateMachine extends StateMachine {
 	 *
 	 * ATTENTION! This method has not been tested!
 	 */
-	public List<Integer> getOneRoleGoals(CompactMachineState state, CompactRole role) {
+	public List<Double> getOneRoleGoals(CompactMachineState state, CompactRole role) {
 
 		// Mark base propositions according to state.
 		this.markBases(state);
@@ -149,11 +152,11 @@ public class ExternalPropnetStateMachine extends StateMachine {
 
 		List<Integer> allGoalValues = this.propNet.getGoalValues().get(this.externalRoleToRole(role));
 
-		List<Integer> trueGoalValues = new ArrayList<Integer>();
+		List<Double> trueGoalValues = new ArrayList<Double>();
 
 		while(trueGoalIndex < (firstGoalIndices[role.getIndex()+1]) && trueGoalIndex != -1){
 
-			trueGoalValues.add(allGoalValues.get(trueGoalIndex-firstGoalIndices[role.getIndex()]));
+			trueGoalValues.add(new Double(allGoalValues.get(trueGoalIndex-firstGoalIndices[role.getIndex()])));
 
 			trueGoalIndex =	otherComponents.nextSetBit(trueGoalIndex+1);
 		}

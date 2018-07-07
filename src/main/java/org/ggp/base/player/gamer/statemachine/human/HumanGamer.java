@@ -1,5 +1,6 @@
 package org.ggp.base.player.gamer.statemachine.human;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import org.ggp.base.apps.player.detail.DetailPanel;
@@ -9,13 +10,15 @@ import org.ggp.base.player.gamer.statemachine.human.event.HumanNewMovesEvent;
 import org.ggp.base.player.gamer.statemachine.human.event.HumanTimeoutEvent;
 import org.ggp.base.player.gamer.statemachine.human.gui.HumanDetailPanel;
 import org.ggp.base.util.game.Game;
-import org.ggp.base.util.statemachine.StateMachine;
+import org.ggp.base.util.statemachine.abstractsm.AbstractStateMachine;
+import org.ggp.base.util.statemachine.abstractsm.ExplicitStateMachine;
 import org.ggp.base.util.statemachine.cache.CachedStateMachine;
 import org.ggp.base.util.statemachine.exceptions.GoalDefinitionException;
 import org.ggp.base.util.statemachine.exceptions.MoveDefinitionException;
 import org.ggp.base.util.statemachine.exceptions.StateMachineException;
 import org.ggp.base.util.statemachine.exceptions.TransitionDefinitionException;
 import org.ggp.base.util.statemachine.implementation.prover.ProverStateMachine;
+import org.ggp.base.util.statemachine.structure.Move;
 import org.ggp.base.util.statemachine.structure.explicit.ExplicitMove;
 
 /**
@@ -39,11 +42,17 @@ public final class HumanGamer extends StateMachineGamer
 	@Override
 	public synchronized ExplicitMove stateMachineSelectMove(long timeout) throws TransitionDefinitionException, MoveDefinitionException, GoalDefinitionException, StateMachineException
 	{
-		List<ExplicitMove> moves = getStateMachine().getExplicitLegalMoves(getCurrentState(), getRole());
-		move = moves.get(0);
+		List<Move> moves = getStateMachine().getLegalMoves(getCurrentState(), getRole());
+
+		List<ExplicitMove> explicitMoves = new ArrayList<ExplicitMove>();
+		for(Move m : moves) {
+			explicitMoves.add(getStateMachine().convertToExplicitMove(m));
+		}
+
+		move = explicitMoves.get(0);
 
 		try {
-			notifyObservers(new HumanNewMovesEvent(moves, move));
+			notifyObservers(new HumanNewMovesEvent(explicitMoves, move));
 			wait(timeout - System.currentTimeMillis() - 500);
 			notifyObservers(new HumanTimeoutEvent(this));
 		} catch (Exception e) {
@@ -85,8 +94,8 @@ public final class HumanGamer extends StateMachineGamer
 	}
 
 	@Override
-	public StateMachine getInitialStateMachine() {
-		return new CachedStateMachine(new ProverStateMachine());
+	public AbstractStateMachine getInitialStateMachine() {
+		return new ExplicitStateMachine(new CachedStateMachine(this.random, new ProverStateMachine(random)));
 	}
 
 	@Override

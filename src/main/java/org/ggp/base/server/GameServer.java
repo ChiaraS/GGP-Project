@@ -9,6 +9,7 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Random;
 
 import org.apache.logging.log4j.ThreadContext;
 import org.ggp.base.server.event.ServerAbortedMatchEvent;
@@ -77,7 +78,7 @@ public final class GameServer extends Thread implements Subject
         playerPlaysRandomly = new Boolean[hosts.size()];
         Arrays.fill(playerPlaysRandomly, Boolean.FALSE);
 
-        stateMachine = new ProverStateMachine();
+        stateMachine = new ProverStateMachine(new Random());
         try {
 			stateMachine.initialize(match.getGame().getRules(), Long.MAX_VALUE);
 		} catch (StateMachineInitializationException e) {
@@ -111,8 +112,8 @@ public final class GameServer extends Thread implements Subject
         observers.add(observer);
     }
 
-    public List<Integer> getGoals() throws GoalDefinitionException, StateMachineException {
-        List<Integer> goals = new ArrayList<Integer>();
+    public List<Double> getGoals() throws GoalDefinitionException, StateMachineException {
+        List<Double> goals = new ArrayList<Double>();
         for (ExplicitRole role : stateMachine.getExplicitRoles()) {
             goals.add(stateMachine.getGoal(currentState, role));
         }
@@ -339,7 +340,7 @@ public final class GameServer extends Thread implements Subject
         List<StartRequestThread> threads = new ArrayList<StartRequestThread>(hosts.size());
         for (int i = 0; i < hosts.size(); i++) {
         	if (!playerPlaysRandomly[i]) {
-        		threads.add(new StartRequestThread(this, match, stateMachine.getExplicitRoles().get(i), hosts.get(i), ports.get(i), getPlayerNameFromMatchForRequest(i)));
+        		threads.add(new StartRequestThread(this, match, stateMachine.getExplicitRoles().get(i), hosts.get(i), ports.get(i), getPlayerNameFromMatchForRequest(i), playerGetsUnlimitedTime[i]));
         	}
         }
         for (StartRequestThread thread : threads) {

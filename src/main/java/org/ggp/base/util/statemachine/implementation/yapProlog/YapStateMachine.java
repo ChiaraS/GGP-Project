@@ -5,6 +5,7 @@ package org.ggp.base.util.statemachine.implementation.yapProlog;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Random;
 
 import org.ggp.base.util.gdl.grammar.Gdl;
 import org.ggp.base.util.gdl.transforms.DistinctAndNotMover;
@@ -113,11 +114,12 @@ public class YapStateMachine extends StateMachine {
 
 	// CONSTRUCTORS
 
-	public YapStateMachine(){
-		this(500L);
+	public YapStateMachine(Random random){
+		this(random, 500L);
 	}
 
-	public YapStateMachine(long waitingTime){
+	public YapStateMachine(Random random, long waitingTime){
+		super(random);
 		this.waitingTime = waitingTime;
 		this.yapProver = null;
 		this.currentYapState = null;
@@ -276,7 +278,7 @@ public class YapStateMachine extends StateMachine {
 	 * @see org.ggp.base.util.statemachine.StateMachine#getGoal(org.ggp.base.util.statemachine.MachineState, org.ggp.base.util.statemachine.Role)
 	 */
 	@Override
-	public List<Integer> getAllGoalsForOneRole(ExplicitMachineState state, ExplicitRole role)
+	public List<Double> getAllGoalsForOneRole(ExplicitMachineState state, ExplicitRole role)
 			throws StateMachineException {
 
 		updateYapState(state);
@@ -305,7 +307,7 @@ public class YapStateMachine extends StateMachine {
 		if(bindings == null){
 			//GamerLogger.logError("StateMachine", "[YAP] Got no goal when expecting at least one.");
 			//throw new GoalDefinitionException(state, role);
-			return new ArrayList<Integer>();
+			return new ArrayList<Double>();
 		}
 
 		String[] goals = (String[]) bindings[0];
@@ -317,12 +319,12 @@ public class YapStateMachine extends StateMachine {
 		}
 		*/
 
-		List<Integer> goalValues = new ArrayList<Integer>();
+		List<Double> goalValues = new ArrayList<Double>();
 
 		for(String s : goals){
 			try{
-				int goal = Integer.parseInt(s);
-				goalValues.add(new Integer(goal));
+				double goal = Double.parseDouble(s);
+				goalValues.add(new Double(goal));
 			}catch(NumberFormatException ex){
 				GamerLogger.logError("StateMachine", "[YAP] Got goal results that is not a number.");
 				GamerLogger.logStackTrace("StateMachine", ex);

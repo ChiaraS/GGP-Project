@@ -53,7 +53,7 @@ public class GameDependentParameters {
 	 * NOTE: this value is not up-to-date at any moment but only in between playouts because
 	 * it is updated only at the end of the playout.
 	 */
-	private int stepVisitedNodes;
+	private double stepVisitedNodes;
 
 	/**
 	 * Exact time spent on search for the current game step.
@@ -68,14 +68,14 @@ public class GameDependentParameters {
 	 * with the length of the game for each playout (i.e. x playouts => x complete game lengths added
 	 * to this sum).
 	 */
-	private int stepGameLengthSum;
+	private double stepGameLengthSum;
 
 	// Parameters that change for every iteration:
 
 	/**
 	 * Number of visited nodes in the current iteration.
 	 */
-	private int currentIterationVisitedNodes;
+	private double currentIterationVisitedNodes;
 
 
 	public GameDependentParameters(){
@@ -144,7 +144,7 @@ public class GameDependentParameters {
 		return this.gameStep;
 	}
 
-	public void increaseStepScoreSumForRoles(int[] roleScores){
+	public void increaseStepScoreSumForRoles(double[] roleScores){
 		for(int roleIndex = 0; roleIndex < this.stepScoreSumForRole.length; roleIndex++){
 			this.stepScoreSumForRole[roleIndex] += roleScores[roleIndex];
 		}
@@ -162,11 +162,11 @@ public class GameDependentParameters {
 		return this.stepIterations;
 	}
 
-	public void increaseStepVisitedNodes(int increase){
+	public void increaseStepVisitedNodes(double increase){
 		this.stepVisitedNodes += increase;
 	}
 
-	public int getStepVisitedNodes(){
+	public double getStepVisitedNodes(){
 		return this.stepVisitedNodes;
 	}
 
@@ -178,15 +178,15 @@ public class GameDependentParameters {
 		return this.stepSearchDuration;
 	}
 
-	public void increaseStepGameLengthSum(int gameLength){
+	public void increaseStepGameLengthSum(double gameLength){
 		this.stepGameLengthSum += gameLength;
 	}
 
-	public int getStepGameLengthSum(){
+	public double getStepGameLengthSum(){
 		return this.stepGameLengthSum;
 	}
 
-	public void increaseCurrentIterationVisitedNodes(int increase){
+	public void increaseCurrentIterationVisitedNodes(double increase){
 		this.currentIterationVisitedNodes += increase;
 	}
 
@@ -198,7 +198,7 @@ public class GameDependentParameters {
 		this.currentIterationVisitedNodes--;
 	}
 
-	public int getCurrentIterationVisitedNodes(){
+	public double getCurrentIterationVisitedNodes(){
 		return this.currentIterationVisitedNodes;
 	}
 

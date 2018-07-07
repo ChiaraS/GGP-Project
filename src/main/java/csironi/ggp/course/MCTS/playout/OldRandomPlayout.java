@@ -48,7 +48,7 @@ public class OldRandomPlayout implements OldPlayoutStrategy {
 	 * @see csironi.ggp.course.MCTS.playout.PlayoutStrategy#playout(csironi.ggp.course.MCTS.MCTNode)
 	 */
 	@Override
-	public List<Integer> playout(MCTNode expandedNode) throws MoveDefinitionException, TransitionDefinitionException, GoalDefinitionException, StateMachineException {
+	public List<Double> playout(MCTNode expandedNode) throws MoveDefinitionException, TransitionDefinitionException, GoalDefinitionException, StateMachineException {
 
 
 		ExplicitMachineState currentState = expandedNode.getState();
@@ -100,7 +100,7 @@ public class OldRandomPlayout implements OldPlayoutStrategy {
 	 * @throws TransitionDefinitionException
 	 * @throws StateMachineException
 	 */
-	private List<Integer> continuePlayout(ExplicitMachineState state) throws GoalDefinitionException, MoveDefinitionException, TransitionDefinitionException, StateMachineException{
+	private List<Double> continuePlayout(ExplicitMachineState state) throws GoalDefinitionException, MoveDefinitionException, TransitionDefinitionException, StateMachineException{
 
 		if(stateMachine.isTerminal(state)){
 			return stateMachine.getGoals(state);

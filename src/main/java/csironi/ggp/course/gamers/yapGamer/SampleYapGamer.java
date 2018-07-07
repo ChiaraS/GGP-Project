@@ -47,7 +47,7 @@ public abstract class SampleYapGamer extends StateMachineYapGamer{
 	@Override
 	public /*YapStateMachine*/ StateMachine getInitialStateMachine() {
 		//return new CachedStateMachine(new YapStateMachine());
-		ysm = new BackedYapStateMachine(new YapStateMachine(), new ProverStateMachine());
+		ysm = new BackedYapStateMachine(this.random, new YapStateMachine(this.random), new ProverStateMachine(this.random));
 		return ysm;
 	}
 	private BackedYapStateMachine ysm;

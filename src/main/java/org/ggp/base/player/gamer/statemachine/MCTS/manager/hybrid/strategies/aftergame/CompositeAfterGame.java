@@ -73,7 +73,7 @@ public class CompositeAfterGame extends AfterGameStrategy {
 	}
 
 	@Override
-	public void afterGameActions(List<Integer> terminalGoals) {
+	public void afterGameActions(List<Double> terminalGoals) {
 		for(AfterGameStrategy afterGameStrategy : this.afterGameStrategies){
 			afterGameStrategy.afterGameActions(terminalGoals);
 		}

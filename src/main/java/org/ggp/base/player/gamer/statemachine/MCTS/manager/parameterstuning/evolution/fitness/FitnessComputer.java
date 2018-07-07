@@ -39,7 +39,7 @@ public abstract class FitnessComputer extends SearchManagerComponent {
 		// Do nothing
 	}
 
-	public abstract List<MyPair<Integer,Double>> computeFitness(List<Integer> individuals, int[] rewards);
+	public abstract List<MyPair<Integer,Double>> computeFitness(List<Integer> individuals, double[] rewards);
 
 	@Override
 	public String getComponentParameters(String indentation) {

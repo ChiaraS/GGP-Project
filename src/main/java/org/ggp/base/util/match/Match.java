@@ -22,6 +22,8 @@ import org.ggp.base.util.gdl.grammar.GdlTerm;
 import org.ggp.base.util.gdl.scrambler.GdlScrambler;
 import org.ggp.base.util.gdl.scrambler.MappingGdlScrambler;
 import org.ggp.base.util.gdl.scrambler.NoOpGdlScrambler;
+import org.ggp.base.util.statemachine.abstractsm.AbstractStateMachine;
+import org.ggp.base.util.statemachine.structure.MachineState;
 import org.ggp.base.util.statemachine.structure.explicit.ExplicitMove;
 import org.ggp.base.util.statemachine.structure.explicit.ExplicitRole;
 import org.ggp.base.util.symbol.factory.SymbolFactory;
@@ -61,11 +63,12 @@ public final class Match
 	private final Game theGame;
 	private final List<List<GdlTerm>> moveHistory;
 	private final List<Set<GdlSentence>> stateHistory;
+	private final List<MachineState> internalStateHistory;
 	private final List<List<String>> errorHistory;
 	private final List<Date> stateTimeHistory;
 	private boolean isCompleted;
 	private boolean isAborted;
-	private final List<Integer> goalValues;
+	private final List<Double> goalValues;
 	private final int numRoles;
 
 	private final List<String> rolesNames;
@@ -99,13 +102,23 @@ public final class Match
 
 		this.moveHistory = new ArrayList<List<GdlTerm>>();
 		this.stateHistory = new ArrayList<Set<GdlSentence>>();
+		this.internalStateHistory = new ArrayList<MachineState>();
 		this.stateTimeHistory = new ArrayList<Date>();
 		this.errorHistory = new ArrayList<List<String>>();
 
-		this.goalValues = new ArrayList<Integer>();
+		this.goalValues = new ArrayList<Double>();
 	}
 
-	public Match(String theJSON, Game theGame, String authToken) throws JSONException, SymbolFormatException, GdlFormatException {
+	/**
+	 *
+	 * @param theJSON
+	 * @param theGame
+	 * @param authToken
+	 * @throws JSONException
+	 * @throws SymbolFormatException
+	 * @throws GdlFormatException
+	 */
+	public Match(AbstractStateMachine theMachine, String theJSON, Game theGame, String authToken) throws JSONException, SymbolFormatException, GdlFormatException {
         JSONObject theMatchObject = new JSONObject(theJSON);
 
         this.matchId = theMatchObject.getString("matchId");
@@ -145,6 +158,7 @@ public final class Match
 
         this.moveHistory = new ArrayList<List<GdlTerm>>();
         this.stateHistory = new ArrayList<Set<GdlSentence>>();
+        this.internalStateHistory = new ArrayList<MachineState>();
         this.stateTimeHistory = new ArrayList<Date>();
         this.errorHistory = new ArrayList<List<String>>();
 
@@ -166,6 +180,7 @@ public final class Match
                 theState.add((GdlSentence)GdlFactory.create("( true " + stateElements.get(j).toString() + " )"));
             }
             stateHistory.add(theState);
+            internalStateHistory.add(theMachine.convertToInternalMachineState(theMachine.getMachineStateFromSentenceList(theState)));
         }
         JSONArray theStateTimes = theMatchObject.getJSONArray("stateTimes");
         for (int i = 0; i < theStateTimes.length(); i++) {
@@ -184,11 +199,11 @@ public final class Match
             }
         }
 
-        this.goalValues = new ArrayList<Integer>();
+        this.goalValues = new ArrayList<Double>();
         try {
             JSONArray theGoalValues = theMatchObject.getJSONArray("goalValues");
             for (int i = 0; i < theGoalValues.length(); i++) {
-                this.goalValues.add(theGoalValues.getInt(i));
+                this.goalValues.add(theGoalValues.getDouble(i));
             }
         } catch (JSONException e) {}
 
@@ -256,6 +271,10 @@ public final class Match
 	    stateTimeHistory.add(new Date());
 	}
 
+	public void appendState(MachineState state) {
+	    internalStateHistory.add(state);
+	}
+
 	public void appendErrors(List<String> errors) {
 	    errorHistory.add(errors);
 	}
@@ -268,7 +287,7 @@ public final class Match
         errorHistory.add(theNoErrors);
     }
 
-	public void markCompleted(List<Integer> theGoalValues) {
+	public void markCompleted(List<Double> theGoalValues) {
 	    this.isCompleted = true;
 	    if (theGoalValues != null) {
 	        this.goalValues.addAll(theGoalValues);
@@ -281,6 +300,11 @@ public final class Match
 
 	/* Complex accessors */
 
+	/**
+	 * Note that this method doesn't log the internalStateHistory, that anyway can be reconstructed by
+     * a state machine using the stateHistory.
+	 * @return
+	 */
     public String toJSON() {
         JSONObject theJSON = new JSONObject();
 
@@ -335,6 +359,11 @@ public final class Match
         return theJSON.toString();
     }
 
+    /**
+     * Note that this method doesn't log the internalStateHistory, that anyway can be reconstructed by
+     * a state machine using the stateHistory.
+     * @return
+     */
     public String toXML() {
     	try {
     		JSONObject theJSON = new JSONObject(toJSON());
@@ -412,6 +441,10 @@ public final class Match
         return stateHistory;
     }
 
+    public List<MachineState> getInternalStateHistory() {
+        return internalStateHistory;
+    }
+
     public List<Date> getStateTimeHistory() {
         return stateTimeHistory;
     }
@@ -444,7 +477,7 @@ public final class Match
 	    return isAborted;
 	}
 
-	public List<Integer> getGoalValues() {
+	public List<Double> getGoalValues() {
 	    return goalValues;
 	}
 

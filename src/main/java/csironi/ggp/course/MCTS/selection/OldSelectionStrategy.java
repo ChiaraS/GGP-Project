@@ -29,6 +29,6 @@ public interface OldSelectionStrategy {
 	 * @throws TransitionDefinitionException
 	 * @throws StateMachineException
 	 */
-	public List<Integer> select(MCTNode node) throws GoalDefinitionException, MoveDefinitionException, TransitionDefinitionException, StateMachineException;
+	public List<Double> select(MCTNode node) throws GoalDefinitionException, MoveDefinitionException, TransitionDefinitionException, StateMachineException;
 
 }

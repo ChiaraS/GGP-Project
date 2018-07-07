@@ -3,16 +3,11 @@ package org.ggp.base.player.gamer.statemachine.MCTS.manager.parameterstuning.evo
 import java.util.Random;
 
 import org.ggp.base.player.gamer.statemachine.GamerSettings;
-import org.ggp.base.player.gamer.statemachine.MCS.manager.hybrid.CompleteMoveStats;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.GameDependentParameters;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.SearchManagerComponent;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.SharedReferencesCollector;
-import org.ggp.base.player.gamer.statemachine.MCTS.manager.parameterstuning.structure.ParametersManager;
-import org.ggp.base.player.gamer.statemachine.MCTS.manager.parameterstuning.structure.problemrep.EvoProblemRepresentation;
 
 public abstract class EvolutionManager extends SearchManagerComponent {
-
-	protected ParametersManager parametersManager;
 
 	/**
 	 * Size of the populations. It's the same for all roles.
@@ -37,7 +32,7 @@ public abstract class EvolutionManager extends SearchManagerComponent {
 
 	@Override
 	public void setReferences(SharedReferencesCollector sharedReferencesCollector) {
-		this.parametersManager = sharedReferencesCollector.getParametersManager();
+		// Do nothing
 	}
 
 	@Override
@@ -50,22 +45,9 @@ public abstract class EvolutionManager extends SearchManagerComponent {
 		// Do nothing
 	}
 
-	public abstract CompleteMoveStats[] getInitialPopulation();
-
-	/**
-	 * Note that this method evolves the population modifying it directly.
-	 * This method must modify the given population directly and assume that the size
-	 * of the evolved population must remain the same (i.e. for each individual removed
-	 * one must be added).
-	 *
-	 * @param population
-	 */
-	public abstract void evolvePopulation(EvoProblemRepresentation roleProblem);
-
 	@Override
 	public String getComponentParameters(String indentation) {
-		String params = indentation + "PARAMETERS_MANAGER = " + (this.parametersManager != null ? this.parametersManager.getClass().getSimpleName() : "null") +
-				indentation + "POPULATION_SIZE = " + this.populationsSize +
+		String params = indentation + "POPULATION_SIZE = " + this.populationsSize +
 				indentation + "ELITE_SIZE = " + this.eliteSize;
 
 		return params;

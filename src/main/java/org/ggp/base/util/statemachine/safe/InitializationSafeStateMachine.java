@@ -5,6 +5,7 @@ package org.ggp.base.util.statemachine.safe;
 
 import java.util.Arrays;
 import java.util.List;
+import java.util.Random;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
@@ -68,7 +69,10 @@ public class InitializationSafeStateMachine extends StateMachine {
 	 */
 	private StateMachine theRealMachine;
 
-	public InitializationSafeStateMachine(StateMachine theRealMachine) {
+	public InitializationSafeStateMachine(Random random, StateMachine theRealMachine) {
+
+		super(random);
+
 		this.theRealMachine = theRealMachine;
 	}
 
@@ -136,7 +140,7 @@ public class InitializationSafeStateMachine extends StateMachine {
 	 * @see org.ggp.base.util.statemachine.StateMachine#getGoal(org.ggp.base.util.statemachine.MachineState, org.ggp.base.util.statemachine.Role)
 	 */
 	@Override
-	public List<Integer> getAllGoalsForOneRole(ExplicitMachineState state, ExplicitRole role)
+	public List<Double> getAllGoalsForOneRole(ExplicitMachineState state, ExplicitRole role)
 			throws StateMachineException {
 		// We do not check if the real state machine is null, because if initialization succeeded this
 		// cannot happen and if initialization failed this state machine is not supposed to be used.

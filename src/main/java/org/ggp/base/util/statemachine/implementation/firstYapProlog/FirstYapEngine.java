@@ -376,7 +376,7 @@ public class FirstYapEngine {
 	 * Returns the goal value for the given role in the given state
 	 * @throws StateMachineException
 	 */
-	public int getGoal(ExplicitMachineState machine, ExplicitRole role) throws StateMachineException
+	public double getGoal(ExplicitMachineState machine, ExplicitRole role) throws StateMachineException
 	{
 		//computeState(machine);
 
@@ -386,7 +386,7 @@ public class FirstYapEngine {
 		{
 			try{
 				computeState(machine);
-				return Integer.parseInt((String) engine.deterministicGoal("get_goal("+support.getFakeRole(role)+", S)", "[string(S)]") [0]);
+				return Double.parseDouble((String) engine.deterministicGoal("get_goal("+support.getFakeRole(role)+", S)", "[string(S)]") [0]);
 			}
 			catch(Exception e){
 				e.printStackTrace();
@@ -404,14 +404,14 @@ public class FirstYapEngine {
 					if( !(executor.invokeAny(Arrays.asList(QUERYsComputeState), WaitForQuery, TU)).equals("d") ) System.err.println("ERROR : computeState");
 					else currentState = machine.getContents();
 				}
-				return Integer.parseInt(executor.invokeAny(Arrays.asList(QUERYsGetGoal), WaitForQuery, TU));
+				return Double.parseDouble(executor.invokeAny(Arrays.asList(QUERYsGetGoal), WaitForQuery, TU));
 			}
 			catch(InterruptedException ie){
 				System.err.println("INTERRUPTED : getGoal");
 				reInitialize();
 				try{
 					System.out.println("backingStateMachine : getGoal");
-					int temp = backingStateMachine.getGoal(machine, role);
+					double temp = backingStateMachine.getGoal(machine, role);
 					System.out.println("GOAL :"+temp);
 					return temp;
 				}
@@ -425,7 +425,7 @@ public class FirstYapEngine {
 				reInitialize();
 				try{
 					System.out.println("backingStateMachine : getGoal");
-					int temp = backingStateMachine.getGoal(machine, role);
+					double temp = backingStateMachine.getGoal(machine, role);
 					System.out.println("GOAL :"+temp);
 					return temp;
 				}
@@ -438,7 +438,7 @@ public class FirstYapEngine {
 				reInitialize();
 				try{
 					System.out.println("backingStateMachine : getGoal");
-					int temp = backingStateMachine.getGoal(machine, role);
+					double temp = backingStateMachine.getGoal(machine, role);
 					System.out.println("GOAL :"+temp);
 					return temp;
 				}
@@ -451,7 +451,7 @@ public class FirstYapEngine {
 				reInitialize();
 				try{
 					System.out.println("backingStateMachine : getGoal");
-					int temp = backingStateMachine.getGoal(machine, role);
+					double temp = backingStateMachine.getGoal(machine, role);
 					System.out.println("GOAL :"+temp);
 					return temp;
 				}

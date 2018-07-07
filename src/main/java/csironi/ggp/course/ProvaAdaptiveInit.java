@@ -1,6 +1,7 @@
 package csironi.ggp.course;
 
 import java.util.List;
+import java.util.Random;
 
 import org.ggp.base.util.game.Game;
 import org.ggp.base.util.game.GameRepository;
@@ -48,10 +49,13 @@ public class ProvaAdaptiveInit {
             StateMachine[] theMachines = new StateMachine[1];
 
             //theMachines[0] = new FwdInterrPropnetStateMachine();
-            theMachines[0] = new BackedYapStateMachine(new YapStateMachine(500L), new ProverStateMachine());
+
+            Random random = new Random();
+
+            theMachines[0] = new BackedYapStateMachine(random, new YapStateMachine(random, 500L), new ProverStateMachine(random));
             //theMachines[0] = new ProverStateMachine();
 
-            theSubject = new AdaptiveInitializationStateMachine(theMachines, 0L);
+            theSubject = new AdaptiveInitializationStateMachine(random, theMachines, 0L);
 
             long startTime = System.currentTimeMillis();
             long initTime;

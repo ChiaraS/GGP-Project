@@ -61,6 +61,52 @@ public class DiscreteTunableParameter extends TunableParameter {
 		}
 	}
 
+	public String[] getPossibleValues() {
+		String[] values = new String[this.possibleValues.length];
+		for(int i = 0; i < this.possibleValues.length; i++){
+			if(this.possibleValues[i] == Double.MAX_VALUE){
+				values[i] = "inf";
+			}else{
+				values[i] = ""+this.possibleValues[i];
+			}
+		}
+		return values;
+	}
+
+	public double[] getPossibleValuesDouble() {
+	    return this.possibleValues;
+    }
+
+	/**
+	 * Returns the value at the given index as a double.
+	 * @param valueIndex
+	 * @return
+	 */
+	public double getPossibleValue(int valueIndex) {
+		return this.possibleValues[valueIndex];
+	}
+
+	/**
+	 * Get the index of the current value for each role.
+	 *
+	 * @return an array, where each entry corresponds to a role and is the index in the list of possible
+	 * values of the value that is currently set for the role.
+	 */
+	public int[] getCurrentValuesIndices() {
+		int[] currentValuesIndices = new int[this.currentValues.length];
+		for(int roleIndex = 0; roleIndex < this.currentValues.length; roleIndex++){
+			currentValuesIndices[roleIndex] = 0;
+			while(currentValuesIndices[roleIndex] < this.possibleValues.length && this.possibleValues[currentValuesIndices[roleIndex]] != this.currentValues[roleIndex]){
+				currentValuesIndices[roleIndex]++;
+			}
+		}
+		return currentValuesIndices;
+	}
+
+	public double[] getPossibleValuesPenalty(){
+		return this.possibleValuesPenalty;
+	}
+
 	@Override
 	public String getParameters(String indentation) {
 
@@ -107,48 +153,6 @@ public class DiscreteTunableParameter extends TunableParameter {
 			return params;
 		}
 
-	}
-
-	public String[] getPossibleValues() {
-		String[] values = new String[this.possibleValues.length];
-		for(int i = 0; i < this.possibleValues.length; i++){
-			if(this.possibleValues[i] == Double.MAX_VALUE){
-				values[i] = "inf";
-			}else{
-				values[i] = ""+this.possibleValues[i];
-			}
-		}
-		return values;
-	}
-
-	/**
-	 * Returns the value at the given index as a double.
-	 * @param valueIndex
-	 * @return
-	 */
-	public double getPossibleValue(int valueIndex) {
-		return this.possibleValues[valueIndex];
-	}
-
-	/**
-	 * Get the index of the current value for each role.
-	 *
-	 * @return an array, where each entry corresponds to a role and is the index in the list of possible
-	 * values of the value that is currently set for the role.
-	 */
-	public int[] getCurrentValuesIndices() {
-		int[] currentValuesIndices = new int[this.currentValues.length];
-		for(int roleIndex = 0; roleIndex < this.currentValues.length; roleIndex++){
-			currentValuesIndices[roleIndex] = 0;
-			while(currentValuesIndices[roleIndex] < this.possibleValues.length && this.possibleValues[currentValuesIndices[roleIndex]] != this.currentValues[roleIndex]){
-				currentValuesIndices[roleIndex]++;
-			}
-		}
-		return currentValuesIndices;
-	}
-
-	public double[] getPossibleValuesPenalty(){
-		return this.possibleValuesPenalty;
 	}
 
 }

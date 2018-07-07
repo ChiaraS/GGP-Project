@@ -1,5 +1,7 @@
 package org.ggp.base.util.statemachine.hybrid;
 
+import java.util.Random;
+
 import org.ggp.base.util.statemachine.StateMachine;
 
 /**
@@ -20,9 +22,8 @@ import org.ggp.base.util.statemachine.StateMachine;
 public class FailsafeAdaptiveInitializationStateMachine extends
 		AdaptiveInitializationStateMachine {
 
-	public FailsafeAdaptiveInitializationStateMachine(
-			StateMachine[] allTheMachines, long initializeBy) {
-		super(allTheMachines, initializeBy);
+	public FailsafeAdaptiveInitializationStateMachine(Random random, StateMachine[] allTheMachines, long initializeBy) {
+		super(random, allTheMachines, initializeBy);
 		// TODO Auto-generated constructor stub
 	}
 

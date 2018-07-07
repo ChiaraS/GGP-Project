@@ -9,6 +9,8 @@ import org.ggp.base.util.game.ManualUpdateLocalGameRepository;
 import org.ggp.base.util.logging.GamerLogger;
 
 /**
+ * NOTE!: this class must be updated to run the SingleRunPNTester.java class, because the class has been modified.
+ *
  * Inputs this program gets:
  *
  * - NECESSARY INPUTS:

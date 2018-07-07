@@ -15,7 +15,7 @@ import org.apache.commons.math3.util.Pair;
 import org.ggp.base.player.gamer.statemachine.MCS.manager.MoveStats;
 import org.ggp.base.player.gamer.statemachine.MCS.manager.hybrid.CompleteMoveStats;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.parameterstuning.structure.CombinatorialCompactMove;
-import org.ggp.base.player.gamer.statemachine.MCTS.manager.parameterstuning.structure.ParametersManager;
+import org.ggp.base.player.gamer.statemachine.MCTS.manager.parameterstuning.structure.DiscreteParametersManager;
 import org.ggp.base.util.logging.GamerLogger;
 
 import csironi.ggp.course.utils.MyPair;
@@ -59,7 +59,7 @@ public class SimLimitedLsiProblemRepresentation /*extends LsiProblemRepresentati
     /**
      * The parameters manager.
      */
-    private ParametersManager parametersManager;
+    private DiscreteParametersManager discreteParametersManager;
 
     private Random random;
 
@@ -113,7 +113,7 @@ public class SimLimitedLsiProblemRepresentation /*extends LsiProblemRepresentati
 	 */
 	private List<Integer> evalOrder;
 
-	public SimLimitedLsiProblemRepresentation(ParametersManager parametersManager, Random random, ProblemRepParameters problemRepParameters) {
+	public SimLimitedLsiProblemRepresentation(DiscreteParametersManager discreteParametersManager, Random random, ProblemRepParameters problemRepParameters) {
 
 		this.actualNumGenSamples = 0;
 
@@ -121,16 +121,16 @@ public class SimLimitedLsiProblemRepresentation /*extends LsiProblemRepresentati
 
 		this.currentIndex = 0;
 
-		this.parametersManager = parametersManager;
+		this.discreteParametersManager = discreteParametersManager;
 
 		this.random = random;
 
 		this.problemRepParameters = problemRepParameters;
 
-		this.paramsStats = new MoveStats[this.parametersManager.getNumTunableParameters()][];
+		this.paramsStats = new MoveStats[this.discreteParametersManager.getNumTunableParameters()][];
 
 		for(int paramIndex = 0; paramIndex < paramsStats.length; paramIndex++){
-			this.paramsStats[paramIndex] = new MoveStats[this.parametersManager.getNumPossibleValues(paramIndex)];
+			this.paramsStats[paramIndex] = new MoveStats[this.discreteParametersManager.getNumPossibleValues(paramIndex)];
 			for(int valueIndex = 0; valueIndex < paramsStats[paramIndex].length; valueIndex++){
 				this.paramsStats[paramIndex][valueIndex] = new MoveStats();
 			}
@@ -211,8 +211,8 @@ public class SimLimitedLsiProblemRepresentation /*extends LsiProblemRepresentati
 		// completing the parameter combination with random values for the other parameters.
 		List<MyPair<CombinatorialCompactMove,Integer>> nextCombinationsToTest = new ArrayList<MyPair<CombinatorialCompactMove,Integer>>();
 
-		for(int paramIndex = 0; paramIndex < this.parametersManager.getNumTunableParameters(); paramIndex++){
-			for(int valueIndex = 0; valueIndex < this.parametersManager.getNumPossibleValues(paramIndex); valueIndex++){
+		for(int paramIndex = 0; paramIndex < this.discreteParametersManager.getNumTunableParameters(); paramIndex++){
+			for(int valueIndex = 0; valueIndex < this.discreteParametersManager.getNumPossibleValues(paramIndex); valueIndex++){
 				nextCombinationsToTest.add(new MyPair<CombinatorialCompactMove,Integer>(new CombinatorialCompactMove(this.randomlyCompleteCombinatorialMove(paramIndex,valueIndex)),new Integer(paramIndex)));
 			}
 		}
@@ -226,7 +226,7 @@ public class SimLimitedLsiProblemRepresentation /*extends LsiProblemRepresentati
 
 	private int[] randomlyCompleteCombinatorialMove(int paramIndex, int valueIndex){
 
-		int[] combinatorialMove = new int[this.parametersManager.getNumTunableParameters()];
+		int[] combinatorialMove = new int[this.discreteParametersManager.getNumTunableParameters()];
 		for(int i = 0; i < combinatorialMove.length; i++){
 			if(i == paramIndex){
 				combinatorialMove[i] = valueIndex;
@@ -238,7 +238,7 @@ public class SimLimitedLsiProblemRepresentation /*extends LsiProblemRepresentati
 		for(int i = 0; i < combinatorialMove.length; i++){
 			if(i != paramIndex){
 				combinatorialMove[i] = this.problemRepParameters.getRandomSelector().selectMove(new MoveStats[0],
-						this.parametersManager.getValuesFeasibility(i, combinatorialMove), null, -1);
+						this.discreteParametersManager.getValuesFeasibility(i, combinatorialMove), null, -1);
 			}
 		}
 
@@ -254,7 +254,7 @@ public class SimLimitedLsiProblemRepresentation /*extends LsiProblemRepresentati
 
 		this.generatedCandidatesStats = new ArrayList<CompleteMoveStats>();
 
-		List<CombinatorialCompactMove> legalCombos = this.parametersManager.getAllLegalParametersCombinations();
+		List<CombinatorialCompactMove> legalCombos = this.discreteParametersManager.getAllLegalParametersCombinations();
 
 		for(int candidateIndex = 0; candidateIndex < this.problemRepParameters.getNumCandidatesToGenerate(); candidateIndex++){
 
@@ -288,7 +288,7 @@ public class SimLimitedLsiProblemRepresentation /*extends LsiProblemRepresentati
 
 	}
 
-	public void updateStatsOfCombination(int reward){
+	public void updateStatsOfCombination(double reward){
 
 		switch(this.phase){
 		case GENERATION:
@@ -318,7 +318,7 @@ public class SimLimitedLsiProblemRepresentation /*extends LsiProblemRepresentati
 
 				// If we don't have enough generation samples left to test each value of each parameter once more,
 				// we start the evaluation phase.
-				if(this.currentIndex + this.parametersManager.getTotalNumPossibleValues() > this.problemRepParameters.getDynamicNumGenSamples()){
+				if(this.currentIndex + this.discreteParametersManager.getTotalNumPossibleValues() > this.problemRepParameters.getDynamicNumGenSamples()){
 
 					this.phase = Phase.EVALUATION;
 					this.generateCandidates();
@@ -506,7 +506,7 @@ public class SimLimitedLsiProblemRepresentation /*extends LsiProblemRepresentati
 			// Compute feasibility of all parameter values wrt the current setting of indices
 			for(int paramIndex = 0; paramIndex < avgRewards.length; paramIndex++){
 				if(indices[paramIndex] == -1){
-					feasibility[paramIndex] = this.parametersManager.getValuesFeasibility(paramIndex, indices);
+					feasibility[paramIndex] = this.discreteParametersManager.getValuesFeasibility(paramIndex, indices);
 				}else{
 					feasibility[paramIndex] = null; // null means that no values are feasible because we already set an index for this param value
 				}

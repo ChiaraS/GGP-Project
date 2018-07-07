@@ -112,8 +112,8 @@ public class GdlScramblerTest extends Assert {
     		// be more thorough verification here, like looking at the number of
     		// legal joint moves in the first state, or simulating entire matches,
     		// but that would be expensive.
-			ProverStateMachine pNormal = new ProverStateMachine();
-			ProverStateMachine pScrambled = new ProverStateMachine();
+			ProverStateMachine pNormal = new ProverStateMachine(new Random());
+			ProverStateMachine pScrambled = new ProverStateMachine(new Random());
 			pNormal.initialize(game.getRules(), Long.MAX_VALUE);
 			pScrambled.initialize(theScrambledRules, Long.MAX_VALUE);
 			assertEquals(gameKey, pNormal.getExplicitRoles().size(), pScrambled.getExplicitRoles().size());

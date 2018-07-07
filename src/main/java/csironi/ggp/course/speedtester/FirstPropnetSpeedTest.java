@@ -4,6 +4,7 @@
 package csironi.ggp.course.speedtester;
 
 import java.util.List;
+import java.util.Random;
 
 import org.ggp.base.util.game.GameRepository;
 import org.ggp.base.util.gdl.grammar.Gdl;
@@ -135,12 +136,14 @@ public class FirstPropnetSpeedTest {
 
             List<Gdl> description = theRepository.getGame(gameKey).getRules();
 
+            Random random = new Random();
+
             // Create propnet state machine giving it buildingTime milliseconds to build the propnet
-            theSubject = thePropnetMachine = new CheckFwdInterrPropnetStateMachine(buildingTime);
+            theSubject = thePropnetMachine = new CheckFwdInterrPropnetStateMachine(random, buildingTime);
 
             // If the propnet state machine must be provided with a cache, create the cached state machine
             if(withCache){
-            	theSubject = new CachedStateMachine(thePropnetMachine);
+            	theSubject = new CachedStateMachine(random, thePropnetMachine);
             }
 
             long initializationTime;

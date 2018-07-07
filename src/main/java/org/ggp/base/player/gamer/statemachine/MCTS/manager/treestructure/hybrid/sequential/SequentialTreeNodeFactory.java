@@ -43,7 +43,7 @@ public class SequentialTreeNodeFactory extends TreeNodeFactory {
 	public MctsNode createNewNode(MachineState state) {
 		//System.out.println("Creating new node.");
 
-		int goals[] = null;
+		double goals[] = null;
 		boolean terminal = false;
 		List<List<Move>> allLegalMoves = null;
 

@@ -4,9 +4,6 @@ import java.util.List;
 import java.util.Random;
 
 import org.apache.logging.log4j.ThreadContext;
-import org.ggp.base.player.gamer.statemachine.MCS.manager.prover.ProverCompleteMoveStats;
-import org.ggp.base.player.gamer.statemachine.MCS.manager.prover.ProverMCSManager;
-import org.ggp.base.player.gamer.statemachine.MCTS.manager.prover.strategies.playout.ProverRandomPlayout;
 import org.ggp.base.util.game.GameRepository;
 import org.ggp.base.util.gdl.grammar.Gdl;
 import org.ggp.base.util.gdl.grammar.GdlPool;
@@ -126,7 +123,9 @@ public class ProverMCSSpeedTest {
 
 	        List<Gdl> description = theRepository.getGame(gameKey).getRules();
 
-		    theProverMachine = new ProverStateMachine();
+	        Random random = new Random();
+
+		    theProverMachine = new ProverStateMachine(random);
 
 		    int numRoles = -1;
 	        long initializationTime;
@@ -153,7 +152,6 @@ public class ProverMCSSpeedTest {
 			System.gc();
 			/***************************************/
 
-			Random r = new Random();
 			int maxSearchDepth = 500;
 
 			long testStart = System.currentTimeMillis();
@@ -164,8 +162,8 @@ public class ProverMCSSpeedTest {
 
 			numRoles = theProverMachine.getExplicitRoles().size();
 
-			ProverMCSManager MCSmanager = new ProverMCSManager(new ProverRandomPlayout(theProverMachine),
-					theProverMachine, playingRole, maxSearchDepth, r);
+/*			ProverMCSManager MCSmanager = new ProverMCSManager(new ProverRandomPlayout(theProverMachine),
+					theProverMachine, playingRole, maxSearchDepth, random);
 
 			try{
 				GamerLogger.log("MCSSpeedTest", "Starting search.");
@@ -192,7 +190,7 @@ public class ProverMCSSpeedTest {
 				GamerLogger.logStackTrace("MCSSpeedTest", e);
 				System.out.println("Stopping test on game " + gameKey + ". Exception during search execution.");
 			}
-
+*/
 			testDuration = System.currentTimeMillis() - testStart;
 
 	        GamerLogger.log(FORMAT.PLAIN_FORMAT, "MCSSpeedTest", "");

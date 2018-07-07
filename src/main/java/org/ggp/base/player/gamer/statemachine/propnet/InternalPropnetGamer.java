@@ -18,7 +18,9 @@ import org.ggp.base.util.propnet.architecture.separateExtendedState.immutable.Im
 import org.ggp.base.util.propnet.creationManager.SeparateInternalPropnetManager;
 import org.ggp.base.util.propnet.state.ImmutableSeparatePropnetState;
 import org.ggp.base.util.statemachine.InternalPropnetStateMachine;
-import org.ggp.base.util.statemachine.StateMachine;
+import org.ggp.base.util.statemachine.abstractsm.AbstractStateMachine;
+import org.ggp.base.util.statemachine.abstractsm.CompactStateMachine;
+import org.ggp.base.util.statemachine.abstractsm.ExplicitStateMachine;
 import org.ggp.base.util.statemachine.cache.NoSyncRefactoredCachedStateMachine;
 import org.ggp.base.util.statemachine.cache.NoSyncRefactoredSeparateInternalPropnetCachedStateMachine;
 import org.ggp.base.util.statemachine.implementation.propnet.SeparateInternalPropnetStateMachine;
@@ -84,7 +86,7 @@ public abstract class InternalPropnetGamer extends ConfigurableStateMachineGamer
 
 	/**
 	 * True if this gamer must directly use the Prover without even trying to build the
-	 * PropNet. If fale the gamer will first try to use the PropNet, and fall back to
+	 * PropNet. If false the gamer will first try to use the PropNet, and fall back to
 	 * the Prover if the PropNet cannot be built.
 	 */
 	protected boolean useProver;
@@ -100,7 +102,7 @@ public abstract class InternalPropnetGamer extends ConfigurableStateMachineGamer
 	protected PROPNET_BUILD propnetBuild;
 
 	/**
-	 * The player must complete metagaming with by the time [timeout - safetyMargin(ms)]
+	 * The player must complete metagaming by the time [timeout - safetyMargin(ms)]
 	 * to increase the certainty of answering to the Game Manager in time.
 	 */
 	protected long buildPnSafetyMargin;
@@ -211,6 +213,7 @@ public abstract class InternalPropnetGamer extends ConfigurableStateMachineGamer
 	 */
 	public void setExternalStateMachine(InternalPropnetStateMachine thePropnetMachine){
 		this.thePropnetMachine = thePropnetMachine;
+		this.thePropnetMachine.setRandom(this.random); // To make sure that there is only one random class in the agent
 		this.propnetBuild = PROPNET_BUILD.NEVER;
 	}
 
@@ -218,7 +221,7 @@ public abstract class InternalPropnetGamer extends ConfigurableStateMachineGamer
 	 * @see org.ggp.base.player.gamer.statemachine.StateMachineGamer#getInitialStateMachine()
 	 */
 	@Override
-	public StateMachine getInitialStateMachine() {
+	public AbstractStateMachine getInitialStateMachine() {
 
 		GamerLogger.log("Gamer", "Returning initial state machine.");
 
@@ -279,19 +282,19 @@ public abstract class InternalPropnetGamer extends ConfigurableStateMachineGamer
 			// Check if we want to use the cache
 			if(this.pnCache){
 				GamerLogger.log("Gamer", "Returning PropNet state machine with cache.");
-				this.thePropnetMachine = new NoSyncRefactoredSeparateInternalPropnetCachedStateMachine(this.thePropnetMachine);
+				this.thePropnetMachine = new NoSyncRefactoredSeparateInternalPropnetCachedStateMachine(this.random, this.thePropnetMachine);
 			}else{
 				GamerLogger.log("Gamer", "Returning PropNet state machine without cache.");
 			}
-			return this.thePropnetMachine;
+			return new CompactStateMachine(this.thePropnetMachine);
 		}else{
 			// Check if we want to use the cache
 			if(this.proverCache){
 				GamerLogger.log("Gamer", "Returning Prover state machine with cache.");
-				return new NoSyncRefactoredCachedStateMachine(new ProverStateMachine());
+				return new ExplicitStateMachine(new NoSyncRefactoredCachedStateMachine(this.random, new ProverStateMachine(this.random)));
 			}else{
 				GamerLogger.log("Gamer", "Returning Prover state machine without cache.");
-				return new ProverStateMachine();
+				return new ExplicitStateMachine(new ProverStateMachine(this.random));
 			}
 		}
 
@@ -356,7 +359,7 @@ public abstract class InternalPropnetGamer extends ConfigurableStateMachineGamer
 
 				    //return this.thePropnetMachine;
 
-				    return new SeparateInternalPropnetStateMachine(propnet, propnetState);
+				    return new SeparateInternalPropnetStateMachine(this.random, propnet, propnetState);
 
 				}else{
 					GamerLogger.logError("Gamer", "Propnet builder ended execution but at leas one among the immutable propnet structure and the propnet state is null: returning prover state machine.");

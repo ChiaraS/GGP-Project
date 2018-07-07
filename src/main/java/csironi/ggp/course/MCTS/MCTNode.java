@@ -197,7 +197,7 @@ public class MCTNode implements OldBackpropagationStrategy {
 		return this.visitedChildren.get(index);
 	}
 
-	public List<Integer> getTerminalGoals() throws GoalDefinitionException, StateMachineException{
+	public List<Double> getTerminalGoals() throws GoalDefinitionException, StateMachineException{
 		return this.stateMachine.getGoals(this.state);
 	}
 
@@ -206,7 +206,7 @@ public class MCTNode implements OldBackpropagationStrategy {
 	}
 
 	@Override
-	public void update(List<Integer> goals){
+	public void update(List<Double> goals){
 
 		int numberOfRoles = this.jointMoves.size();
 

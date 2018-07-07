@@ -6,7 +6,7 @@ import java.util.Random;
 import org.ggp.base.player.gamer.statemachine.GamerSettings;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.GameDependentParameters;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.SharedReferencesCollector;
-import org.ggp.base.player.gamer.statemachine.MCTS.manager.parameterstuning.SimLimitedLsiParametersTuner;
+import org.ggp.base.player.gamer.statemachine.MCTS.manager.parameterstuning.discretetuners.SimLimitedLsiParametersTuner;
 
 public class SimLimLsiTunerAfterGame extends AfterGameStrategy {
 
@@ -39,7 +39,7 @@ public class SimLimLsiTunerAfterGame extends AfterGameStrategy {
 	}
 
 	@Override
-	public void afterGameActions(List<Integer> terminalGoals) {
+	public void afterGameActions(List<Double> terminalGoals) {
 		if(this.logSamplesDistributionAfterGame) {
 			this.simLimitedLsiParametersTuner.logSamplesDistribution();
 		}

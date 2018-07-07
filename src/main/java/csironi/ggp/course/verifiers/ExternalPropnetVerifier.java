@@ -1,6 +1,7 @@
 package csironi.ggp.course.verifiers;
 
 import java.util.List;
+import java.util.Random;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
@@ -111,7 +112,7 @@ public class ExternalPropnetVerifier {
 
 			List<Gdl> description = theRepository.getGame(gameKey).getRules();
 
-			theReference = new ProverStateMachine();
+			theReference = new ProverStateMachine(new Random());
 
 			// Create the executor service that will run the propnet manager that creates the propnet
 			ExecutorService executor = Executors.newSingleThreadExecutor();
@@ -168,7 +169,7 @@ public class ExternalPropnetVerifier {
   		  	// Create the state machine giving it the propnet and the propnet state.
   		  	// NOTE that if any of the two is null, it means that the propnet creation/initialization went wrong
   		  	// and this will be detected by the state machine during initialization.
-  		  	thePropnetMachine = new ExternalPropnetStateMachine(propnet, propnetState);
+  		  	thePropnetMachine = new ExternalPropnetStateMachine(new Random(), propnet, propnetState);
 
   		  	theReference.initialize(description, Long.MAX_VALUE);
 

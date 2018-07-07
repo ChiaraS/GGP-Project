@@ -20,6 +20,8 @@ import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.hybrid.
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.hybrid.sequential.SequentialMctsNode;
 import org.ggp.base.util.logging.GamerLogger;
 import org.ggp.base.util.reflection.ProjectSearcher;
+import org.ggp.base.util.statemachine.exceptions.MoveDefinitionException;
+import org.ggp.base.util.statemachine.exceptions.StateMachineException;
 import org.ggp.base.util.statemachine.structure.MachineState;
 import org.ggp.base.util.statemachine.structure.Move;
 
@@ -140,7 +142,14 @@ public class PlayoutSupportedSelection extends SelectionStrategy {
 		if(currentNode.getTotVisits()[roleIndex] >= this.t.getValuePerRole(roleIndex)){
 			return this.selectionStrategy.selectPerRole(currentNode, state, roleIndex);
 		}else{
-			Move move = this.playoutStrategy.getMoveForRole(state, roleIndex);
+			Move move;
+			try {
+				move = this.playoutStrategy.getMoveForRole(currentNode, state, roleIndex);
+			} catch (MoveDefinitionException | StateMachineException e) {
+				GamerLogger.logError("SelectionStrategy", "Error when selecting a move during selection using the playout strategy.");
+				GamerLogger.logStackTrace("SelectionStrategy", e);
+				throw new RuntimeException("PlayoutSupportedSelection-selectPerRole(): ");
+			}
 
 			// The playout returns a plain move. We must find the indices of the move in the tree node.
 			if(currentNode instanceof DecoupledMctsNode){
@@ -148,7 +157,7 @@ public class PlayoutSupportedSelection extends SelectionStrategy {
 			}else if(currentNode instanceof SequentialMctsNode){
 				return this.seqCreateMove((SequentialMctsNode) currentNode, move, roleIndex);
 			}else{
-				throw new RuntimeException("PlayoutSupportedSelection-select(): detected a node of a non-recognizable sub-type of class MctsNode.");
+				throw new RuntimeException("PlayoutSupportedSelection-selectPerRole(): detected a node of a non-recognizable sub-type of class MctsNode.");
 			}
 		}
 	}

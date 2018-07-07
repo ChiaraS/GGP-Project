@@ -78,7 +78,7 @@ public final class HistoryPanel extends JPanel implements Observer
 		row[0] = "Terminal";
 		for (int i = 0; i < event.getGoals().size(); i++)
 		{
-			row[i + 1] = Integer.toString(event.getGoals().get(i));
+			row[i + 1] = Double.toString(event.getGoals().get(i));
 		}
 
 		DefaultTableModel model = (DefaultTableModel) historyTable.getModel();

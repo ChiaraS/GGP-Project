@@ -1,7 +1,5 @@
 package org.ggp.base.player.gamer.statemachine.MCTS;
 
-import java.util.Random;
-
 import org.ggp.base.player.gamer.event.GamerSelectedMoveEvent;
 import org.ggp.base.player.gamer.statemachine.GamerSettings;
 import org.ggp.base.player.gamer.statemachine.MCS.manager.hybrid.CompleteMoveStats;
@@ -12,16 +10,12 @@ import org.ggp.base.player.gamer.statemachine.propnet.InternalPropnetGamer;
 import org.ggp.base.util.configuration.GamerConfiguration;
 import org.ggp.base.util.logging.GamerLogger;
 import org.ggp.base.util.statemachine.abstractsm.AbstractStateMachine;
-import org.ggp.base.util.statemachine.abstractsm.CompactStateMachine;
-import org.ggp.base.util.statemachine.abstractsm.ExplicitStateMachine;
 import org.ggp.base.util.statemachine.exceptions.GoalDefinitionException;
 import org.ggp.base.util.statemachine.exceptions.MoveDefinitionException;
 import org.ggp.base.util.statemachine.exceptions.StateMachineException;
 import org.ggp.base.util.statemachine.exceptions.TransitionDefinitionException;
 import org.ggp.base.util.statemachine.structure.MachineState;
 import org.ggp.base.util.statemachine.structure.Move;
-import org.ggp.base.util.statemachine.structure.compact.CompactMove;
-import org.ggp.base.util.statemachine.structure.explicit.ExplicitMachineState;
 import org.ggp.base.util.statemachine.structure.explicit.ExplicitMove;
 
 public class MctsGamer extends InternalPropnetGamer {
@@ -91,7 +85,7 @@ public class MctsGamer extends InternalPropnetGamer {
 
 		this.metagameSearch = gamerSettings.getBooleanPropertyValue("Gamer.metagameSearch");
 
-		this.mctsManager = new HybridMctsManager(new Random(), gamerSettings, this.gamerType);
+		this.mctsManager = new HybridMctsManager(this.random, gamerSettings, this.gamerType);
 	}
 
 	/* (non-Javadoc)
@@ -110,35 +104,25 @@ public class MctsGamer extends InternalPropnetGamer {
 		long thinkingTime; // Total time used for metagame
 		long searchTime = -1; // Actual time spent on the search
 		int iterations = -1;
-    	int visitedNodes = -1;
+		double visitedNodes = -1;
     	double iterationsPerSecond = -1;
     	double nodesPerSecond = -1;
     	String avgSearchScorePerRole = "[ ]";
 
 		GamerLogger.log("Gamer", "Starting metagame with available thinking time " + (realTimeout-start) + "ms.");
 
-		AbstractStateMachine abstractStateMachine;
-		int myRoleIndex;
-		int numRoles;
-
-		if(this.thePropnetMachine != null){
-			abstractStateMachine = new CompactStateMachine(this.thePropnetMachine);
-			myRoleIndex = this.thePropnetMachine.convertToCompactRole(this.getRole()).getIndex();
-			numRoles = this.thePropnetMachine.getCompactRoles().size();
-		}else{
-			abstractStateMachine = new ExplicitStateMachine(this.getStateMachine());
-			numRoles = this.getStateMachine().getExplicitRoles().size();
-			myRoleIndex = this.getStateMachine().getRoleIndices().get(this.getRole());
-		}
+		AbstractStateMachine theMachine = this.getStateMachine();
+		int myRoleIndex = theMachine.getRoleIndices().get(this.getRole());
+		int numRoles = theMachine.getRoles().size();
 
     	String rolesList = "[ ";
-    	for(int roleIndex = 0; roleIndex < abstractStateMachine.getRoles().size(); roleIndex++){
-    		rolesList += (abstractStateMachine.convertToExplicitRole((abstractStateMachine.getRoles().get(roleIndex))) + " ");
+    	for(int roleIndex = 0; roleIndex < numRoles; roleIndex++){
+    		rolesList += (theMachine.convertToExplicitRole((theMachine.getRoles().get(roleIndex))) + " ");
     	}
     	rolesList += "]";
 		GamerLogger.log(GamerLogger.FORMAT.CSV_FORMAT, "Stats", "Game step;Thinking time(ms);Search time(ms);Iterations;Visited nodes;Iterations/second;Nodes/second;Chosen move;Move score sum;Move visits;Avg move score;Avg search score " + rolesList + ";");
 
-		this.mctsManager.setUpManager(abstractStateMachine, numRoles, myRoleIndex, ((long)this.getMatch().getPlayClock() * 1000) - this.selectMoveSafetyMargin);
+		this.mctsManager.setUpManager(theMachine, numRoles, myRoleIndex, ((long)this.getMatch().getPlayClock() * 1000) - this.selectMoveSafetyMargin);
 
 		this.logGamerSettings();
 
@@ -156,7 +140,7 @@ public class MctsGamer extends InternalPropnetGamer {
 
 				try {
 
-					this.mctsManager.search(abstractStateMachine.getInitialState(), realTimeout, this.gameStep+1);
+					this.mctsManager.search(theMachine.getInitialState(), realTimeout, this.gameStep+1);
 
 					GamerLogger.log("Gamer", "Done searching during metagame.");
 					searchTime = this.mctsManager.getStepSearchDuration();
@@ -227,7 +211,7 @@ public class MctsGamer extends InternalPropnetGamer {
 		long thinkingTime;
 		long searchTime = -1;
 		int iterations = -1;
-    	int visitedNodes = -1;
+		double visitedNodes = -1;
     	double iterationsPerSecond = -1;
     	double nodesPerSecond = -1;
     	ExplicitMove theMove = null;
@@ -257,11 +241,10 @@ public class MctsGamer extends InternalPropnetGamer {
 				MctsNode currentNode;
 				CompleteMoveStats selectedMove;
 
-				// TODO: adapt the code of StateMachineGamer to use an AbstractStateMachine so we don't need to do all these checks and casts
 				MachineState theState = this.getCurrentState();
-				if(this.thePropnetMachine != null){
+				/*if(this.thePropnetMachine != null){
 					theState = this.thePropnetMachine.convertToCompactMachineState((ExplicitMachineState)theState);
-				}
+				}*/
 
 				currentNode = this.mctsManager.search(theState, realTimeout, gameStep);
 
@@ -280,11 +263,14 @@ public class MctsGamer extends InternalPropnetGamer {
 
 				Move theAbstractMove = selectedMove.getTheMove();
 
+				theMove = this.getStateMachine().convertToExplicitMove(theAbstractMove);
+
+				/*
 				if(theAbstractMove instanceof CompactMove){
 					theMove = this.thePropnetMachine.convertToExplicitMove((CompactMove)theAbstractMove);
 				}else{
 					theMove = (ExplicitMove)theAbstractMove;
-				}
+				}*/
 
 		    	moveScoreSum = selectedMove.getScoreSum();
 		    	moveVisits = selectedMove.getVisits();
@@ -310,13 +296,13 @@ public class MctsGamer extends InternalPropnetGamer {
 				GamerLogger.logError("Gamer", "MCTS failed to return a move.");
 				GamerLogger.logStackTrace("Gamer", e);
 				// If the MCTS manager failed to return a move return a random one.
-				theMove = this.getStateMachine().getRandomMove(this.getCurrentState(), this.getRole());
+				theMove = this.getStateMachine().convertToExplicitMove(this.getStateMachine().getRandomMove(this.getCurrentState(), this.getRole()));
 				GamerLogger.log("Gamer", "Returning random move " + theMove + ".");
 			}
 		}else{
 			// If there is no time return a random move.
 			//GamerLogger.log("Gamer", "No time to start the search during metagame.");
-			theMove = this.getStateMachine().getRandomMove(this.getCurrentState(), this.getRole());
+			theMove = this.getStateMachine().convertToExplicitMove(this.getStateMachine().getRandomMove(this.getCurrentState(), this.getRole()));
 			GamerLogger.log("Gamer", "No time to select next move using MCTS. Returning random move " + theMove + ".");
 		}
 
@@ -332,7 +318,7 @@ public class MctsGamer extends InternalPropnetGamer {
 				moveScoreSum + ";" + moveVisits + ";" + moveAvgScore + ";" + avgSearchScorePerRole + ";");
 
 		// TODO: IS THIS NEEDED? WHEN?
-		notifyObservers(new GamerSelectedMoveEvent(this.getStateMachine().getExplicitLegalMoves(this.getCurrentState(), this.getRole()), theMove, thinkingTime));
+		notifyObservers(new GamerSelectedMoveEvent(this.getStateMachine().convertToExplicitMoves(this.getStateMachine().getLegalMoves(this.getCurrentState(), this.getRole())), theMove, thinkingTime));
 
 		this.mctsManager.afterMoveActions();
 

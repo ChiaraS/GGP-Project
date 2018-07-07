@@ -1,6 +1,7 @@
 package csironi.ggp.course.verifiers;
 
 import java.util.List;
+import java.util.Random;
 
 import org.ggp.base.util.game.GameRepository;
 import org.ggp.base.util.gdl.grammar.Gdl;
@@ -105,11 +106,13 @@ public class ExtendedStatePropnetVerifier {
 
             List<Gdl> description = theRepository.getGame(gameKey).getRules();
 
-            theReference = new ProverStateMachine();
+            theReference = new ProverStateMachine(new Random());
+
+            Random random = new Random();
 
             // Create the propnet state machine and wrap it with the state machine that controls initialization
-            theHiddenPropnetMachine = new ExtendedStatePropnetStateMachine();
-            thePropnetMachine = new InitializationSafeStateMachine(theHiddenPropnetMachine);
+            theHiddenPropnetMachine = new ExtendedStatePropnetStateMachine(random);
+            thePropnetMachine = new InitializationSafeStateMachine(random, theHiddenPropnetMachine);
 
             theReference.initialize(description, Long.MAX_VALUE);
 
