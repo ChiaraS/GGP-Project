@@ -301,13 +301,13 @@ public abstract class FpgaPropnetGamer extends ConfigurableStateMachineGamer {
 				    return new FPGAPropnetStateMachine(this.random, new FPGAPropnetLibrary(softwarePropnetMachine));
 
 				}else{
-					GamerLogger.logError("Gamer", "Propnet builder ended execution but at leas one among the immutable propnet structure and the propnet state is null: returning prover state machine.");
+					GamerLogger.logError("Gamer", "Propnet builder ended execution but at least one among the immutable propnet structure and the propnet state is null!");
 				}
 			}else{
-				GamerLogger.logError("Gamer", "The propnet state machine didn't build in time: returning prover state machine.");
+				GamerLogger.logError("Gamer", "The propnet state machine didn't build in time!");
 			}
 		}else{
-			GamerLogger.logError("Gamer", "No time to build propnet state machine: returning prover state machine.");
+			GamerLogger.logError("Gamer", "No time to build propnet state machine!");
 		}
 
 		//System.out.println("Returning prover state machine.");
