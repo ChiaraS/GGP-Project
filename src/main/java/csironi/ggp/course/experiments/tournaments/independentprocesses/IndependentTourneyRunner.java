@@ -220,6 +220,18 @@ public class IndependentTourneyRunner {
 		        			}
 		        		}
 		        	}
+		    		for (Class<?> gamerClass : ProjectSearcher.FPGA_PROPNET_GAMERS.getConcreteClasses()) {
+		        		if(gamerClass.getSimpleName().equals(gamerTypes[i])){
+		        			theCorrespondingClass = gamerClass;
+		        			if(ConfigurableStateMachineGamer.class.isAssignableFrom(theCorrespondingClass)){ // The class is subclass of ConfigurableStateMachineGamer
+		        				// If the gamer is configurable than the settings file must be specified
+		        				if(gamerSettings[i] == null){
+		        					System.out.println("Impossible to start match runner, wrong input. No settings file specified for gamer type " + gamerTypes[i] + ".");
+		        					return;
+		        				}
+		        			}
+		        		}
+		        	}
 		    		for (Class<?> gamerClass : ProjectSearcher.PROVER_GAMERS.getConcreteClasses()) {
 		        		if(gamerClass.getSimpleName().equals(gamerTypes[i])){
 		        			theCorrespondingClass = gamerClass;
