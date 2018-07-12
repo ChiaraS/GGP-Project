@@ -1,6 +1,7 @@
 package org.ggp.base.apps.player;
 
 import java.io.IOException;
+import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -8,6 +9,8 @@ import java.util.List;
 import org.apache.logging.log4j.ThreadContext;
 import org.ggp.base.player.GamePlayer;
 import org.ggp.base.player.gamer.Gamer;
+import org.ggp.base.player.gamer.statemachine.ConfigurableStateMachineGamer;
+import org.ggp.base.util.configuration.GamerConfiguration;
 import org.ggp.base.util.logging.GamerLogger;
 import org.ggp.base.util.reflection.ProjectSearcher;
 
@@ -30,8 +33,24 @@ public final class PlayerRunner
 			return;
 		}
     	int port = Integer.parseInt(args[0]);
-    	String name = args[1];
-    	System.out.println("Starting up preconfigured player on port " + port + " using player class named " + name);
+
+		String[] s = args[1].split("-");
+
+		String name;
+		String settings;
+
+		if(s.length == 1){ // Internal gamer without settings
+			name = s[0];
+			settings = null;
+		}else if(s.length == 2){ // Internal gamer with settings
+			name = s[0];
+			settings = s[1];
+		}else{
+			System.out.println("Impossible to start player, wrong input. Wrong definition of gamer type " + args[1] + ".");
+			return;
+		}
+
+    	System.out.println("Starting up preconfigured player on port " + port + " using player class named " + name + " and " + (settings != null ? settings : "default") + " settings.");
     	Class<?> chosenGamerClass = null;
     	List<String> availableGamers = new ArrayList<String>();
     	for (Class<?> gamerClass : ProjectSearcher.GAMERS.getConcreteClasses()) {
@@ -44,7 +63,18 @@ public final class PlayerRunner
     		System.out.println("Could not find player class with that name. Available choices are: " + Arrays.toString(availableGamers.toArray()));
     		return;
     	}
-    	Gamer gamer = (Gamer) chosenGamerClass.newInstance();
+    	Gamer gamer;
+    	if(ConfigurableStateMachineGamer.class.isAssignableFrom(chosenGamerClass) && settings != null){
+			try {
+				gamer = (Gamer) chosenGamerClass.getConstructor(String.class).newInstance(GamerConfiguration.gamersSettingsFolderPath + "/" + settings);
+			} catch (IllegalArgumentException | InvocationTargetException | NoSuchMethodException
+					| SecurityException e) {
+				System.out.println("Could not initialize player with settings " + settings);
+				return;
+			}
+		}else{
+			gamer = (Gamer) chosenGamerClass.newInstance();
+		}
 
     	ThreadContext.put("LOG_FOLDER", System.currentTimeMillis() + ".PlayerRunner");
 
