@@ -226,7 +226,7 @@ public class IndependentTourneyRunner {
 		        			if(ConfigurableStateMachineGamer.class.isAssignableFrom(theCorrespondingClass)){ // The class is subclass of ConfigurableStateMachineGamer
 		        				// If the gamer is configurable than the settings file must be specified
 		        				if(gamerSettings[i] == null){
-		        					System.out.println("Impossible to start match runner, wrong input. No settings file specified for gamer type " + gamerTypes[i] + ".");
+		        					System.out.println("Impossible to start experiment. No settings file specified for gamer type " + gamerTypes[i] + ".");
 		        					return;
 		        				}
 		        			}
@@ -452,6 +452,7 @@ public class IndependentTourneyRunner {
 		List<String> theSettings = new ArrayList<String>();
 
 		theSettings.add("java");
+		//theSettings.add("/usr/java/jdk1.8.0_131/bin/java"); // To use old java version on go4nature
 		//theSettings.add("-Xmx:25g");
 		theSettings.add("-jar");
 		theSettings.add("IndependentSingleMatchRunner.jar");

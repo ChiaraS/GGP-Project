@@ -76,6 +76,24 @@ public class StateMachineStandardPlayout extends PlayoutStrategy {
 		return result;
 	}
 
+	/*
+	 * !!!!!!! WARNING !!!!!!!
+	 *
+	 * At the moment this method returns ONLY ONE simulation result, even when this.numSimlationsPerPlayout > 1 (i.e. the
+	 * simulation result is averaged over all the performed simulations). This means that the manager will count it as a
+	 * single simulation, and this might interfere if we run the manager with a simulation limit instead of a time limit.
+	 * I.E.: assuming that for each MCTS iteration we are always performing a playout, the MCTS manager will perform
+	 * this.numSimlationsPerPlayout*HybridMctsManager.numExpectedIterations instead of only HybridMctsManager.numExpectedIterations).
+	 * Also, when using a time limit for the search, the Stats.csv logs will report a number of simulations per second that's
+	 * equal to actualNumberOfSimulation/this.numSimlationsPerPlayout.
+	 *
+	 * TODO: fix this issue so that either multiple playout results are returned, or one playout result can specify by how many
+	 * averaged play out results has been computed, so that the number of simulations can be updates accordingly.
+	 *
+	 * (non-Javadoc)
+	 * @see org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.strategies.playout.PlayoutStrategy#singlePlayout(org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.MctsNode, org.ggp.base.util.statemachine.structure.MachineState, int)
+	 */
+
 	@Override
 	public SimulationResult singlePlayout(MctsNode node, MachineState state, int maxDepth) {
 
