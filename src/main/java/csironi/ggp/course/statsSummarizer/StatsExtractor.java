@@ -182,6 +182,15 @@ public class StatsExtractor {
 
 				for(int i = 0; i < this.columnIndices.length; i++){
 
+					// Collect only logs of first 20 steps of each game for Expanded nodes
+					if(this.columnHeaders[i].equals("Added nodes") && Integer.parseInt(splitLine[0]) > 10) {
+						continue;
+					}
+
+					if(this.columnHeaders[i].equals("Memorized states") && Integer.parseInt(splitLine[0]) > 10) {
+						continue;
+					}
+
 					switch(this.columnTypes[i]){
 					case LONG:
 						((SingleValueLongStats)this.allStats.get(this.columnHeaders[i])).addValue(Long.parseLong(splitLine[this.columnIndices[i]]));

@@ -527,19 +527,80 @@ public class StatsSummarizer {
 
 			File[] playerTypesDirs;
 
-			File[] playerRolesDirs;
+			File[] playerRolesDirs = null;
 
-			String[] columnHeaders = new String[]{"Thinking time(ms)", "Search time(ms)", "Iterations/second", "Nodes/second"};
+			File[] speedLogs;
 
-			ColumnType[] columnTypes = new ColumnType[]{ColumnType.LONG, ColumnType.LONG, ColumnType.DOUBLE, ColumnType.DOUBLE};
+			//File randomSpeedLog;
 
-			int[] columnIndices = new int[]{1,2,5,6};
+			String[] columnHeaders = null;
+			ColumnType[] columnTypes = null;
+			int[] columnIndices = null;
+
+			// Iterate over the directories containing the matches logs for each player's type.
+			playerTypesDirs = speedLogsFolder.listFiles();
+
+			// Figure out if logs are old style (i.e. without added states and state mem count) or not
+			// For the folder of each player type...
+			for(int i = 0; i < playerTypesDirs.length; i++){
+				if(playerTypesDirs[i].isDirectory()){
+					playerRolesDirs = playerTypesDirs[i].listFiles();
+					break;
+				}
+			}
+
+			if(playerRolesDirs == null) {
+				System.out.println("Summarization interrupted. Cannot check speed stats log files header.");
+				return;
+			}
+
+			// Get one of the folders corresponding to the different roles the player played
+			speedLogs = playerRolesDirs[0].listFiles();
+			// For each stats file...
+			for(int k = 0; k < speedLogs.length; k++){
+				String[] splittedName = speedLogs[k].getName().split("\\.");
+				// If it's a .csv file, check the header
+				if(splittedName[splittedName.length-1].equalsIgnoreCase("csv")){
+					// Check if the header contains "Added nodes" in position 5 and "Memorized states" in osition 6
+					BufferedReader br = null;
+					try {
+						br = new BufferedReader(new FileReader(speedLogs[k]));
+						// Read header
+						String header = br.readLine();
+						String[] splitHeader = header.split(";");
+						if(splitHeader.length > 6 && splitHeader[5].equals("Added nodes") && splitHeader[6].equals("Memorized states")){
+							columnHeaders = new String[]{"Thinking time(ms)", "Search time(ms)", "Added nodes", "Memorized states", "Iterations/second", "Nodes/second"};
+							columnTypes = new ColumnType[]{ColumnType.LONG, ColumnType.LONG, ColumnType.DOUBLE, ColumnType.DOUBLE, ColumnType.DOUBLE, ColumnType.DOUBLE};
+							columnIndices = new int[]{1,2,5,6,7,8};
+						}else {
+							columnHeaders = new String[]{"Thinking time(ms)", "Search time(ms)", "Iterations/second", "Nodes/second"};
+							columnTypes = new ColumnType[]{ColumnType.LONG, ColumnType.LONG, ColumnType.DOUBLE, ColumnType.DOUBLE};
+							columnIndices = new int[]{1,2,5,6};
+						}
+						br.close();
+					} catch (IOException e) {
+						System.out.println("Exception when reading the header of the .csv file " + speedLogs[k].getName() + ".");
+						System.out.println("Cannot set correct header names, indices and types for speed stats to summrize.");
+			        	e.printStackTrace();
+			        	if(br != null){
+				        	try {
+								br.close();
+							} catch (IOException ioe) {
+								System.out.println("Exception when closing the .csv file " + speedLogs[k].getName() + ".");
+								ioe.printStackTrace();
+							}
+			        	}
+			        	columnHeaders = new String[]{"Thinking time(ms)", "Search time(ms)", "Iterations/second", "Nodes/second"};
+						columnTypes = new ColumnType[]{ColumnType.LONG, ColumnType.LONG, ColumnType.DOUBLE, ColumnType.DOUBLE};
+						columnIndices = new int[]{1,2,5,6};
+					}
+					break;
+				}
+			}
 
 			String playerType;
 
 			String playerRole;
-
-			File[] speedLogs;
 
 			StatsExtractor extractor;
 

@@ -104,6 +104,8 @@ public class FpgaMctsGamer extends FpgaPropnetGamer {
 		long searchTime = -1; // Actual time spent on the search
 		int iterations = -1;
 		double visitedNodes = -1;
+		int addedNodes = -1;
+		int memorizedStates = -1;
     	double iterationsPerSecond = -1;
     	double nodesPerSecond = -1;
     	String avgSearchScorePerRole = "[ ]";
@@ -119,7 +121,7 @@ public class FpgaMctsGamer extends FpgaPropnetGamer {
     		rolesList += (theMachine.convertToExplicitRole((theMachine.getRoles().get(roleIndex))) + " ");
     	}
     	rolesList += "]";
-		GamerLogger.log(GamerLogger.FORMAT.CSV_FORMAT, "Stats", "Game step;Thinking time(ms);Search time(ms);Iterations;Visited nodes;Iterations/second;Nodes/second;Chosen move;Move score sum;Move visits;Avg move score;Avg search score " + rolesList + ";");
+		GamerLogger.log(GamerLogger.FORMAT.CSV_FORMAT, "Stats", "Game step;Thinking time(ms);Search time(ms);Iterations;Visited nodes;Added nodes;Memorized states;Iterations/second;Nodes/second;Chosen move;Move score sum;Move visits;Avg move score;Avg search score " + rolesList + ";");
 
 		this.mctsManager.setUpManager(theMachine, numRoles, myRoleIndex, ((long)this.getMatch().getPlayClock() * 1000) - this.selectMoveSafetyMargin);
 
@@ -145,6 +147,8 @@ public class FpgaMctsGamer extends FpgaPropnetGamer {
 					searchTime = this.mctsManager.getStepSearchDuration();
 		        	iterations = this.mctsManager.getStepIterations();
 		        	visitedNodes = this.mctsManager.getStepVisitedNodes();
+		        	addedNodes = this.mctsManager.getStepAddedNodes();
+		        	memorizedStates = this.mctsManager.getStepMemorizedStates();
 
 		        	if(iterations > 0){
 			        	double[] scoreSumPerRole = this.mctsManager.getStepScoreSumForRoles();
@@ -186,7 +190,7 @@ public class FpgaMctsGamer extends FpgaPropnetGamer {
 		}
 
 		GamerLogger.log(GamerLogger.FORMAT.CSV_FORMAT, "Stats", this.gameStep + ";" + thinkingTime + ";" +
-				searchTime + ";" + iterations + ";" + visitedNodes + ";" + iterationsPerSecond + ";" +
+				searchTime + ";" + iterations + ";" + visitedNodes + ";" + addedNodes + ";" + memorizedStates + ";" + iterationsPerSecond + ";" +
 				nodesPerSecond + ";null;-1;-1;-1;" + avgSearchScorePerRole + ";");
 
 		this.metagameThinkingTime = thinkingTime;
@@ -211,6 +215,8 @@ public class FpgaMctsGamer extends FpgaPropnetGamer {
 		long searchTime = -1;
 		int iterations = -1;
 		double visitedNodes = -1;
+		int addedNodes = -1;
+		int memorizedStates = -1;
     	double iterationsPerSecond = -1;
     	double nodesPerSecond = -1;
     	ExplicitMove theMove = null;
@@ -252,6 +258,8 @@ public class FpgaMctsGamer extends FpgaPropnetGamer {
 				searchTime = this.mctsManager.getStepSearchDuration();
 				iterations = this.mctsManager.getStepIterations();
 		    	visitedNodes = this.mctsManager.getStepVisitedNodes();
+		    	addedNodes = this.mctsManager.getStepAddedNodes();
+		    	memorizedStates = this.mctsManager.getStepMemorizedStates();
 		    	if(searchTime != 0){
 		        	iterationsPerSecond = ((double) iterations * 1000)/((double) searchTime);
 		        	nodesPerSecond = ((double) visitedNodes * 1000)/((double) searchTime);
@@ -313,7 +321,7 @@ public class FpgaMctsGamer extends FpgaPropnetGamer {
 		}
 
 		GamerLogger.log(GamerLogger.FORMAT.CSV_FORMAT, "Stats", this.gameStep + ";" + thinkingTime + ";" + searchTime + ";" +
-				iterations + ";" + visitedNodes + ";" + iterationsPerSecond + ";" + nodesPerSecond + ";" + theMove + ";" +
+				iterations + ";" + visitedNodes + ";" + addedNodes + ";" + memorizedStates +  ";" + iterationsPerSecond + ";" + nodesPerSecond + ";" + theMove + ";" +
 				moveScoreSum + ";" + moveVisits + ";" + moveAvgScore + ";" + avgSearchScorePerRole + ";");
 
 		// TODO: IS THIS NEEDED? WHEN?

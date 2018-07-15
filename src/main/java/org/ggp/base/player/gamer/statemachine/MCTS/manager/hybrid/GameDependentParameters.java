@@ -70,6 +70,18 @@ public class GameDependentParameters {
 	 */
 	private double stepGameLengthSum;
 
+	/**
+	 * Number of states that are expanded during the current step (a state is considered expanded when
+	 * it is added to the tree as a node).
+	 */
+	private int stepAddedNodes;
+
+	/**
+	 * Number of states added to the tree without a node (i.e. they are memorized in the parent node).
+	 * Note that this will be non-zero only when we use state-memorizing nodes.
+	 */
+	private int stepMemorizedStates;
+
 	// Parameters that change for every iteration:
 
 	/**
@@ -93,6 +105,8 @@ public class GameDependentParameters {
 		this.stepVisitedNodes = 0;
 		this.stepSearchDuration = 0L;
 		this.stepGameLengthSum = 0;
+		this.stepAddedNodes = 0;
+		this.stepMemorizedStates = 0;
 
 		this.currentIterationVisitedNodes = 0;
 	}
@@ -186,6 +200,22 @@ public class GameDependentParameters {
 		return this.stepGameLengthSum;
 	}
 
+	public void increaseStepAddedNodes(){
+		this.stepAddedNodes++;
+	}
+
+	public int getStepAddedNodes(){
+		return this.stepAddedNodes;
+	}
+
+	public void increaseMemorizedStates(int increase){
+		this.stepMemorizedStates += increase;
+	}
+
+	public int getMemorizedStates(){
+		return this.stepMemorizedStates;
+	}
+
 	public void increaseCurrentIterationVisitedNodes(double increase){
 		this.currentIterationVisitedNodes += increase;
 	}
@@ -216,6 +246,8 @@ public class GameDependentParameters {
 		this.stepVisitedNodes = 0;
 		this.stepSearchDuration = 0L;
 		this.stepGameLengthSum = 0;
+		this.stepAddedNodes = 0;
+		this.stepMemorizedStates = 0;
 
 		this.currentIterationVisitedNodes = 0;
 	}
@@ -234,6 +266,8 @@ public class GameDependentParameters {
 		this.stepVisitedNodes = 0;
 		this.stepSearchDuration = 0L;
 		this.stepGameLengthSum = 0;
+		this.stepAddedNodes = 0;
+		this.stepMemorizedStates = 0;
 
 		this.currentIterationVisitedNodes = 0;
 	}
@@ -244,6 +278,8 @@ public class GameDependentParameters {
 		this.stepVisitedNodes = 0;
 		this.stepSearchDuration = 0L;
 		this.stepGameLengthSum = 0;
+		this.stepAddedNodes = 0;
+		this.stepMemorizedStates = 0;
 
 		this.currentIterationVisitedNodes = 0;
 	}

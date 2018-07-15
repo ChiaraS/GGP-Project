@@ -509,6 +509,8 @@ public class FpgaMctsManager {
 		toLog += "\nstep_score_sum_for_role = " + stepScoreSumForRoleStirng;
 		toLog += "\nstep_iterations = " + this.gameDependentParameters.getStepIterations();
 		toLog += "\nstep_visited_nodes = " + this.gameDependentParameters.getStepVisitedNodes();
+		toLog += "\nstep_added_nodes = " + this.gameDependentParameters.getStepAddedNodes();
+		toLog += "\nstep_memorized_states = " + this.gameDependentParameters.getMemorizedStates();
 		toLog += "\nstep_search_duration = " + this.gameDependentParameters.getStepSearchDuration();
 		toLog += "\ncurrent_iteration_visited_nodes = " + this.gameDependentParameters.getCurrentIterationVisitedNodes();
 
@@ -1006,6 +1008,8 @@ public class FpgaMctsManager {
 			nextNode = this.treeNodeFactory.createNewNode(nextState);
 			this.transpositionTable.putNode(nextState, nextNode);
 
+			this.gameDependentParameters.increaseStepAddedNodes();
+
 			// No need to perform playout if the node is terminal, we just return the goals in the node.
 			// Otherwise we perform the playout.
 			if(nextNode.isTerminal()){
@@ -1231,6 +1235,14 @@ public class FpgaMctsManager {
 
 	public int getStepIterations(){
 		return this.gameDependentParameters.getStepIterations();
+	}
+
+	public int getStepAddedNodes(){
+		return this.gameDependentParameters.getStepAddedNodes();
+	}
+
+	public int getStepMemorizedStates(){
+		return this.gameDependentParameters.getMemorizedStates();
 	}
 
 	public double getStepVisitedNodes(){

@@ -123,6 +123,10 @@ public class StateMemorizingDecoupledTreeNodeFactory extends TreeNodeFactory {
 			// If the legal moves can be computed for every player, there is no need to compute the goals.
 		}
 
+		if(nextStates != null) {
+			this.gameDependentParameters.increaseMemorizedStates(nextStates.size());
+		}
+
 		return createActualNewNode(nextStates, ductMovesStats, goals, terminal);
 	}
 
