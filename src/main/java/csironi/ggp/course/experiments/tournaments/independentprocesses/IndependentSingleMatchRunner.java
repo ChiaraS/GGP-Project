@@ -108,7 +108,7 @@ public class IndependentSingleMatchRunner {
 		// LINUX
     	//GameRepository gameRepo = new ManualUpdateLocalGameRepository("/home/csironi/GAMEREPOS/GGPBase-GameRepo-03022016");
 
-    	GameRepository gameRepo = new ManualUpdateLocalGameRepository(GamerConfiguration.defaultLocalGameRepositoryFolderPath + "/" + GamerConfiguration.defaultStanfordRepo/*.defaultGGPBaseRepo*/);
+    	GameRepository gameRepo = new ManualUpdateLocalGameRepository(GamerConfiguration.defaultLocalGameRepositoryFolderPath + "/" + GamerConfiguration./*defaultStanfordRepo*/defaultGGPBaseRepo);
 
     	Game game = gameRepo.getGame(gameKey);
 
