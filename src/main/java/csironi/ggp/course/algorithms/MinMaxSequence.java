@@ -40,7 +40,6 @@ public class MinMaxSequence extends SearchAlgorithm {
 		super(log, logFileName, stateMachine);
 	}
 
-
 	public List<ExplicitMove> bestmove(ExplicitMachineState state, ExplicitRole role)
 			throws TransitionDefinitionException, MoveDefinitionException,
 			GoalDefinitionException, StateMachineException {

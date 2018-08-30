@@ -119,7 +119,7 @@ public class StateMachineSpeedTest {
 	}
 
 	/**
-	 * This method computes the nodes visits and the Monte Carlo iterations that a propet state
+	 * This method computes the nodes visits and the Monte Carlo iterations that a propnet state
 	 * machine with external state and separate propnet can perform in the given amount of time.
 	 * This method doesn't use the standard preformDepthCharge method of all the state machines,
 	 * but uses the specific method of the ExternalPropnetStateMachine, that doesn't translate
