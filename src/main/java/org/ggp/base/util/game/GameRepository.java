@@ -18,6 +18,9 @@ import java.util.Set;
 public abstract class GameRepository {
     public static GameRepository getDefaultRepository() {
         return new CloudGameRepository("games.ggp.org/base");
+        //return new CloudGameRepository("games.ggp.org/stanford");
+        //return new CloudGameRepository("games.ggp.org/dresden");
+    	//return new CloudGameRepository("ggp.org/view/tiltyard/games/");
     }
 
     public Game getGame(String theKey) {

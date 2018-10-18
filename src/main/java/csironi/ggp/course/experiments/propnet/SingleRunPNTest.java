@@ -17,8 +17,10 @@ import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.HybridMctsMana
 import org.ggp.base.player.gamer.statemachine.RNDSimulations.HybridRandomManager;
 import org.ggp.base.player.gamer.statemachine.RNDSimulations.exceptions.RandomException;
 import org.ggp.base.util.configuration.GamerConfiguration;
+import org.ggp.base.util.game.CloudGameRepository;
 import org.ggp.base.util.game.Game;
 import org.ggp.base.util.game.GameRepository;
+import org.ggp.base.util.game.LocalFolderGameRepository;
 import org.ggp.base.util.game.ManualUpdateLocalGameRepository;
 import org.ggp.base.util.gdl.grammar.Gdl;
 import org.ggp.base.util.logging.GamerLogger;
@@ -91,13 +93,25 @@ import org.ggp.base.util.statemachine.structure.explicit.ExplicitRole;
  *  							- ref: refactored cache that should spend less time searching entries in the cache
  *  							- nosync: same as ref but doesn't synchronize code and is not thread safe
  *  				  (Default value: nosync)
+ *   	[repositoryType] = "folder" if we want to use a local folder containing .kif files for the games, "local" if
+ *  						we want to use a local copy of a remote repository without updating it, "remote" if we
+ *  						want to use a remote repository updating the local copy if any exists. (Default value: "remote")
+ *  	[repositoryLocation] = - If ([repositoryType] == "folder") specify the path of the folder where the .kif files
+ *  							 are stored
+ *  						   - If ([repositoryType] == "local") specify the path of the local copy of a remote repository
+ *  						   - If ([repositoryType] == "remote") specify the URL of the remote repository
+ *  						   (Default value: "games.ggp.org/base")
+ *  	[managerSettingsFolder] = path of the folder where the .properties files for the managers are stored. (Default value:
+ *  							  GamerConfiguration.gamersSettingsFolderPath)
  *  	[randomSearchManagerSettingsFile] = name of the .properties file that specifies the settings for the random
  *  								   		manager used in the experiment (Default value: RandomManager.properties).
- *  								   		McsManager.properties, MctsManager.properties).
+ *  								   		If the file does not exist, the test with the random manager will be skipped.
  *  	[mcsSearchManagerSettingsFile] = name of the .properties file that specifies the settings for the MCS
  *  								   	 manager used in the experiment (Default value: McsManager.properties).
+ * 										 If the file does not exist, the test with the MCS manager will be skipped.
  *  	[mctsSearchManagerSettingsFile] = name of the .properties file that specifies the settings for the MCTS
  *  								   	  manager used in the experiment (Default value: MctsManager.properties).
+ *  									  If the file does not exist, the test with the MCTS manager will be skipped.
  *
  * @author C.Sironi
  *
@@ -140,11 +154,14 @@ public class SingleRunPNTest {
     	OptimizationCaller[] optimizations = new OptimizationCaller[0];
     	boolean withCache = false;
     	String cacheType = null;
+    	String repositoryType = "remote";
+    	String repositoryLocation = "games.ggp.org/base";
+    	String managerSettingsFolder = GamerConfiguration.gamersSettingsFolderPath;
     	File randomSearchManagerSettingsFile = new File(GamerConfiguration.gamersSettingsFolderPath + "/RandomManager.properties");
     	File mcsSearchManagerSettingsFile = new File(GamerConfiguration.gamersSettingsFolderPath + "/McsManager.properties");
     	File mctsSearchManagerSettingsFile = new File(GamerConfiguration.gamersSettingsFolderPath + "/MctsManager.properties");
 
-    	if(args.length == 12){
+    	if(args.length == 15){
 	    	try{
 				givenInitTime = Long.parseLong(args[4]);
 			}catch(NumberFormatException nfe){
@@ -194,11 +211,26 @@ public class SingleRunPNTest {
 
 			cacheType = args[8];
 
-			randomSearchManagerSettingsFile = new File(GamerConfiguration.gamersSettingsFolderPath + "/" + args[9]);
-	    	mcsSearchManagerSettingsFile = new File(GamerConfiguration.gamersSettingsFolderPath + "/" + args[10]);
-	    	mctsSearchManagerSettingsFile = new File(GamerConfiguration.gamersSettingsFolderPath + "/" + args[11]);
+			repositoryType = args[9];
 
-	    	if(!randomSearchManagerSettingsFile.exists()) {
+			repositoryLocation = args[10];
+
+			managerSettingsFolder = args[11];
+
+			randomSearchManagerSettingsFile = new File(managerSettingsFolder + "/" + args[12]);
+			if(!randomSearchManagerSettingsFile.exists()) {
+				randomSearchManagerSettingsFile = null;
+			}
+	    	mcsSearchManagerSettingsFile = new File(managerSettingsFolder + "/" + args[13]);
+	    	if(!mcsSearchManagerSettingsFile.exists()) {
+	    		mcsSearchManagerSettingsFile = null;
+			}
+	    	mctsSearchManagerSettingsFile = new File(managerSettingsFolder + "/" + args[14]);
+	    	if(!mctsSearchManagerSettingsFile.exists()) {
+	    		mctsSearchManagerSettingsFile = null;
+			}
+
+	    	/*if(!randomSearchManagerSettingsFile.exists()) {
 	    		GamerLogger.log("SingleRunPNTester", "Cannot find property file for RandomSearchManager: " + randomSearchManagerSettingsFile.getPath());
 	    		return;
 	    	}
@@ -209,9 +241,11 @@ public class SingleRunPNTest {
 	    	if(!mctsSearchManagerSettingsFile.exists()) {
 	    		GamerLogger.log("SingleRunPNTester", "Cannot find property file for MctsSearchManager: " + mctsSearchManagerSettingsFile.getPath());
 	    		return;
-	    	}
+	    	}*/
 
     	}
+
+    	///////////////////////////////////////////////////////////////////////////////////////////////////////
 
     	String testSettings = "Settings for current test run:\n";
     	testSettings += "[gameKey] = " + gameKey + "\n";
@@ -221,18 +255,35 @@ public class SingleRunPNTest {
     	testSettings += "[optimizations] = " + optimizationsString + "\n";
     	testSettings += "[withCache] = " + withCache + "\n";
     	testSettings += "[cacheType] = " + cacheType + "\n";
-    	testSettings += "[randomSearchManagerSettingsFilePath] = " + randomSearchManagerSettingsFile.getPath()+ "\n";
-    	testSettings += "[mcsSearchManagerSettingsFilePath] = " + mcsSearchManagerSettingsFile.getPath()+ "\n";
-    	testSettings += "[mctsSearchManagerSettingsFilePath] = " + mctsSearchManagerSettingsFile.getPath()+ "\n";
+    	testSettings += "[repositoryType] = " + repositoryType + "\n";
+    	testSettings += "[repositoryLocation] = " + repositoryLocation + "\n";
+    	testSettings += "[managerSettingsFolder] = " + managerSettingsFolder + "\n";
+    	testSettings += "[randomSearchManagerSettingsFilePath] = " + (randomSearchManagerSettingsFile == null ? "null" : randomSearchManagerSettingsFile.getPath()) + "\n";
+    	testSettings += "[mcsSearchManagerSettingsFilePath] = " + (mcsSearchManagerSettingsFile == null ? "null" : mcsSearchManagerSettingsFile.getPath()) + "\n";
+    	testSettings += "[mctsSearchManagerSettingsFilePath] = " + (mctsSearchManagerSettingsFile == null ? "null" : mctsSearchManagerSettingsFile.getPath()) + "\n";
 
     	GamerLogger.log("SingleRunPNTester", testSettings);
 
-    	//GameRepository gameRepo = GameRepository.getDefaultRepository();
+    	GameRepository gameRepo;
+
+    	switch(repositoryType) {
+	    	case "folder":
+	    		//gameRepo = new LocalFolderGameRepository(GamerConfiguration.defaultLocalFolderGameRepositoryFolderPath);
+	    		gameRepo = new LocalFolderGameRepository(repositoryLocation);
+	    		break;
+	    	case "local":
+	    		//gameRepo = new ManualUpdateLocalGameRepository(GamerConfiguration.defaultLocalGameRepositoryFolderPath + "/" + GamerConfiguration.defaultGGPBaseRepo/*GamerConfiguration.defaultStanfordRepo*/);
+	    		gameRepo = new ManualUpdateLocalGameRepository(repositoryLocation);
+	    		break;
+	    	default:
+	    		gameRepo = new CloudGameRepository(repositoryLocation);
+	    		break;
+    	}
 
 		// WINDOWS
 		//GameRepository gameRepo = new ManualUpdateLocalGameRepository("C:/Users/c.sironi/BITBUCKET REPOS/GGP-Base/GGPBase-GameRepo-03022016");
 
-    	GameRepository gameRepo = new ManualUpdateLocalGameRepository(GamerConfiguration.defaultLocalGameRepositoryFolderPath + "/" + GamerConfiguration.defaultGGPBaseRepo/*GamerConfiguration.defaultStanfordRepo*/);
+    	//GameRepository gameRepo = new ManualUpdateLocalGameRepository(GamerConfiguration.defaultLocalGameRepositoryFolderPath + "/" + GamerConfiguration.defaultGGPBaseRepo/*GamerConfiguration.defaultStanfordRepo*/);
 
     	//GameRepository gameRepo = new LocalFolderGameRepository(GamerConfiguration.defaultLocalFolderGameRepositoryFolderPath);
 
@@ -456,119 +507,123 @@ public class SingleRunPNTest {
 
 			collect(); // TODO: Leave or not?
 
+			InternalPropnetStateMachine thePropnetMachine;
+			Random random;
+
 			/******************************** RANDOM SPEED TEST *********************************/
 
-			// Create the state machine giving it the propnet and the propnet state.
-			// NOTE that if any of the two is null, it means that the propnet creation/initialization went wrong
-			// and this will be detected by the state machine during initialization.
+			if(randomSearchManagerSettingsFile != null) {
 
-			InternalPropnetStateMachine thePropnetMachine;
+				// Create the state machine giving it the propnet and the propnet state.
+				// NOTE that if any of the two is null, it means that the propnet creation/initialization went wrong
+				// and this will be detected by the state machine during initialization.
 
-			propnetState = manager.getInitialPropnetState();
+				propnetState = manager.getInitialPropnetState();
 
-			Random random = new Random();
+				random = new Random();
 
-		    if(withCache){
+			    if(withCache){
 
-		    	switch(cacheType){
-		    	case "ref":
-		    		thePropnetMachine = new RefactoredSeparateInternalPropnetCachedStateMachine(random, new SeparateInternalPropnetStateMachine(random, immutablePropnet, propnetState));
-		    		break;
-		    	case "nosync":
-		    		thePropnetMachine = new NoSyncRefactoredSeparateInternalPropnetCachedStateMachine(random, new SeparateInternalPropnetStateMachine(random, immutablePropnet, propnetState));
-		    		break;
-		    	default:
-		    		thePropnetMachine = new SeparateInternalPropnetCachedStateMachine(random, new SeparateInternalPropnetStateMachine(random, immutablePropnet, propnetState));
-		    	}
-		    }else{
-	        	thePropnetMachine = new SeparateInternalPropnetStateMachine(random, immutablePropnet, propnetState);
-	        }
+			    	switch(cacheType){
+			    	case "ref":
+			    		thePropnetMachine = new RefactoredSeparateInternalPropnetCachedStateMachine(random, new SeparateInternalPropnetStateMachine(random, immutablePropnet, propnetState));
+			    		break;
+			    	case "old":
+			    		thePropnetMachine = new SeparateInternalPropnetCachedStateMachine(random, new SeparateInternalPropnetStateMachine(random, immutablePropnet, propnetState));
+			    		break;
+			    	default: // nosync
+			    		thePropnetMachine = new NoSyncRefactoredSeparateInternalPropnetCachedStateMachine(random, new SeparateInternalPropnetStateMachine(random, immutablePropnet, propnetState));
+			    	}
+			    }else{
+		        	thePropnetMachine = new SeparateInternalPropnetStateMachine(random, immutablePropnet, propnetState);
+		        }
 
-			GamerLogger.log("SingleRunPNTester", "Starting Random speed test.");
+				GamerLogger.log("SingleRunPNTester", "Starting Random speed test.");
 
-			try {
-				thePropnetMachine.initialize(description, System.currentTimeMillis() + givenInitTime);
-
-				GamerSettings gamerSettings;
 				try {
-					FileReader reader = new FileReader(randomSearchManagerSettingsFile);
-					Properties props = new Properties();
+					thePropnetMachine.initialize(description, System.currentTimeMillis() + givenInitTime);
 
-					// load the properties file:
-					props.load(reader);
+					GamerSettings gamerSettings;
+					try {
+						FileReader reader = new FileReader(randomSearchManagerSettingsFile);
+						Properties props = new Properties();
 
-					reader.close();
+						// load the properties file:
+						props.load(reader);
 
-					gamerSettings = new GamerSettings(props);
+						reader.close();
 
-					//this.configureGamer(gamerSettings);
+						gamerSettings = new GamerSettings(props);
 
-				} catch (FileNotFoundException e) {
-					//this.gamerSettings = null;
-					GamerLogger.logError("SingleRunPNTester", "Impossible to create manager, cannot find the .properties file with the settings: " + randomSearchManagerSettingsFile.getPath() + ".");
-					throw new RuntimeException("Impossible to create manager, cannot find the .properties file with the settings.");
-				} catch (IOException e) {
-					//this.gamerSettings = null;
-					GamerLogger.logError("SingleRunPNTester", "Impossible to create manager, exception when reading the .properties file with the settings: " + randomSearchManagerSettingsFile.getPath() + ".");
-					throw new RuntimeException("Impossible to create manager, exception when reading the .properties file with the settings.");
+						//this.configureGamer(gamerSettings);
+
+					} catch (FileNotFoundException e) {
+						//this.gamerSettings = null;
+						GamerLogger.logError("SingleRunPNTester", "Impossible to create manager, cannot find the .properties file with the settings: " + randomSearchManagerSettingsFile.getPath() + ".");
+						throw new RuntimeException("Impossible to create manager, cannot find the .properties file with the settings.");
+					} catch (IOException e) {
+						//this.gamerSettings = null;
+						GamerLogger.logError("SingleRunPNTester", "Impossible to create manager, exception when reading the .properties file with the settings: " + randomSearchManagerSettingsFile.getPath() + ".");
+						throw new RuntimeException("Impossible to create manager, exception when reading the .properties file with the settings.");
+					}
+
+			        HybridRandomManager randomManager = new HybridRandomManager(random, gamerSettings, randomSearchManagerSettingsFile.getName().split("\\.")[0]);
+
+			        AbstractStateMachine abstractStateMachine = new CompactStateMachine(thePropnetMachine);
+
+					//GamerLogger.log(GamerLogger.FORMAT.CSV_FORMAT, "Stats", "Game step;Thinking time(ms);Search time(ms);Iterations;Visited nodes;Iterations/second;Nodes/second;Chosen move;Move score sum;Move visits;Avg move score;Avg search score " + rolesList + ";");
+
+			    	randomManager.setUpManager(abstractStateMachine, numRoles, myRoleIndex, Long.MAX_VALUE);
+
+					GamerLogger.log("GamerSettings", randomManager.printSearchManager());
+
+					// OFFICIALLY STARTING!!!
+
+			        GamerLogger.log("SingleRunPNTester", "Starting Random search.");
+
+			        int numExpectedIterations = randomManager.getNumExpectedIterations();
+			        // If we want to limit the simulations, we set the limit here in the manager...
+			        if(simBudget > 0) {	// If using simulation budget, set the number of expected iterations to the simulation budget
+			        	randomManager.setNumExpectedIterations(simBudget);
+			        }else { // If using time budget, make sure it will be considered by setting to -1 the number of expected iterations
+			        	randomManager.setNumExpectedIterations(-1);
+			        }
+
+			        randomManager.beforeMoveActions(1, false);
+
+			        randomManager.search(abstractStateMachine.getInitialState(), System.currentTimeMillis() + timeBudget);
+
+			        // Reset the number of expected iterations to the original value.
+			        randomManager.setNumExpectedIterations(numExpectedIterations);
+
+			       	GamerLogger.log("SingleRunPNTester", "Random search ended correctly.");
+
+			       	randomSearchDuration = randomManager.getStepSearchDuration();
+			       	randomIterations = randomManager.getStepIterations();
+			       	randomVisitedNodes = randomManager.getStepVisitedNodes();
+
+			        if(randomSearchDuration != 0){
+			        	randomIterationsPerSecond = ((double) randomIterations * 1000)/((double) randomSearchDuration);
+			        	randomNodesPerSecond = ((double) randomVisitedNodes * 1000)/((double) randomSearchDuration);
+			        }
+
+			        randomScoreSums = randomManager.getStepScoreSumForRoles();
+
+			        GamerLogger.log("SingleRunPNTester", "Random speed test successful.");
+
+				} catch (StateMachineInitializationException e) {
+		        	GamerLogger.logError("SingleRunPNTester", "State machine " + thePropnetMachine.getName() + " initialization failed, impossible to test Random for this game. Cause: [" + e.getClass().getSimpleName() + "] " + e.getMessage() );
+		        	GamerLogger.logStackTrace("SingleRunPNTester", e);
+				} catch (RandomException e) {
+		        	GamerLogger.logError("SingleRunPNTester", "Search failed for RandomManager. Impossible to test Random for this game. Cause: [" + e.getClass().getSimpleName() + "] " + e.getMessage() );
+		        	GamerLogger.logStackTrace("SingleRunPNTester", e);
 				}
 
-		        HybridRandomManager randomManager = new HybridRandomManager(random, gamerSettings, randomSearchManagerSettingsFile.getName().split("\\.")[0]);
+				propnetState = null;
+				thePropnetMachine = null;
 
-		        AbstractStateMachine abstractStateMachine = new CompactStateMachine(thePropnetMachine);
-
-				//GamerLogger.log(GamerLogger.FORMAT.CSV_FORMAT, "Stats", "Game step;Thinking time(ms);Search time(ms);Iterations;Visited nodes;Iterations/second;Nodes/second;Chosen move;Move score sum;Move visits;Avg move score;Avg search score " + rolesList + ";");
-
-		    	randomManager.setUpManager(abstractStateMachine, numRoles, myRoleIndex, Long.MAX_VALUE);
-
-				GamerLogger.log("GamerSettings", randomManager.printSearchManager());
-
-				// OFFICIALLY STARTING!!!
-
-		        GamerLogger.log("SingleRunPNTester", "Starting Random search.");
-
-		        int numExpectedIterations = randomManager.getNumExpectedIterations();
-		        // If we want to limit the simulations, we set the limit here in the manager...
-		        if(simBudget > 0) {	// If using simulation budget, set the number of expected iterations to the simulation budget
-		        	randomManager.setNumExpectedIterations(simBudget);
-		        }else { // If using time budget, make sure it will be considered by setting to -1 the number of expected iterations
-		        	randomManager.setNumExpectedIterations(-1);
-		        }
-
-		        randomManager.beforeMoveActions(1, false);
-
-		        randomManager.search(abstractStateMachine.getInitialState(), System.currentTimeMillis() + timeBudget);
-
-		        // Reset the number of expected iterations to the original value.
-		        randomManager.setNumExpectedIterations(numExpectedIterations);
-
-		       	GamerLogger.log("SingleRunPNTester", "Random search ended correctly.");
-
-		       	randomSearchDuration = randomManager.getStepSearchDuration();
-		       	randomIterations = randomManager.getStepIterations();
-		       	randomVisitedNodes = randomManager.getStepVisitedNodes();
-
-		        if(randomSearchDuration != 0){
-		        	randomIterationsPerSecond = ((double) randomIterations * 1000)/((double) randomSearchDuration);
-		        	randomNodesPerSecond = ((double) randomVisitedNodes * 1000)/((double) randomSearchDuration);
-		        }
-
-		        randomScoreSums = randomManager.getStepScoreSumForRoles();
-
-		        GamerLogger.log("SingleRunPNTester", "Random speed test successful.");
-
-			} catch (StateMachineInitializationException e) {
-	        	GamerLogger.logError("SingleRunPNTester", "State machine " + thePropnetMachine.getName() + " initialization failed, impossible to test Random for this game. Cause: [" + e.getClass().getSimpleName() + "] " + e.getMessage() );
-	        	GamerLogger.logStackTrace("SingleRunPNTester", e);
-			} catch (RandomException e) {
-	        	GamerLogger.logError("SingleRunPNTester", "Search failed for RandomManager. Impossible to test Random for this game. Cause: [" + e.getClass().getSimpleName() + "] " + e.getMessage() );
-	        	GamerLogger.logStackTrace("SingleRunPNTester", e);
+				collect(); // TODO: Leave or not?
 			}
-
-			propnetState = null;
-			thePropnetMachine = null;
-
-			collect(); // TODO: Leave or not?
 
 			/******************************** MCS SPEED TEST *********************************/
 
@@ -584,248 +639,254 @@ public class SingleRunPNTest {
 			 * initial state.
 			 */
 
-			// Create the state machine giving it the propnet and the propnet state.
-			// NOTE that if any of the two is null, it means that the propnet creation/initialization went wrong
-			// and this will be detected by the state machine during initialization.
+			if(randomSearchManagerSettingsFile != null) {
 
-			propnetState = manager.getInitialPropnetState();
+				// Create the state machine giving it the propnet and the propnet state.
+				// NOTE that if any of the two is null, it means that the propnet creation/initialization went wrong
+				// and this will be detected by the state machine during initialization.
 
-			random = new Random();
+				propnetState = manager.getInitialPropnetState();
 
-		    if(withCache){
+				random = new Random();
 
-		    	switch(cacheType){
-		    	case "ref":
-		    		thePropnetMachine = new RefactoredSeparateInternalPropnetCachedStateMachine(random, new SeparateInternalPropnetStateMachine(random, immutablePropnet, propnetState));
-		    		break;
-		    	case "nosync":
-		    		thePropnetMachine = new NoSyncRefactoredSeparateInternalPropnetCachedStateMachine(random, new SeparateInternalPropnetStateMachine(random, immutablePropnet, propnetState));
-		    		break;
-		    	default:
-		    		thePropnetMachine = new SeparateInternalPropnetCachedStateMachine(random, new SeparateInternalPropnetStateMachine(random, immutablePropnet, propnetState));
-		    	}
-		    }else{
-	        	thePropnetMachine = new SeparateInternalPropnetStateMachine(random, immutablePropnet, propnetState);
-	        }
+			    if(withCache){
 
-		    //GamerLogger.log("SingleRunPNTester", "Testing machine: " + thePropnetMachine.getClass().getSimpleName());
+			    	switch(cacheType){
+			    	case "ref":
+			    		thePropnetMachine = new RefactoredSeparateInternalPropnetCachedStateMachine(random, new SeparateInternalPropnetStateMachine(random, immutablePropnet, propnetState));
+			    		break;
+			    	case "old":
+			    		thePropnetMachine = new SeparateInternalPropnetCachedStateMachine(random, new SeparateInternalPropnetStateMachine(random, immutablePropnet, propnetState));
+			    		break;
+			    	default: // nosync
+			    		thePropnetMachine = new NoSyncRefactoredSeparateInternalPropnetCachedStateMachine(random, new SeparateInternalPropnetStateMachine(random, immutablePropnet, propnetState));
+			    	}
+			    }else{
+		        	thePropnetMachine = new SeparateInternalPropnetStateMachine(random, immutablePropnet, propnetState);
+		        }
 
-			GamerLogger.log("SingleRunPNTester", "Starting MCS speed test.");
+			    //GamerLogger.log("SingleRunPNTester", "Testing machine: " + thePropnetMachine.getClass().getSimpleName());
 
-			try {
-				thePropnetMachine.initialize(description, System.currentTimeMillis() + givenInitTime);
+				GamerLogger.log("SingleRunPNTester", "Starting MCS speed test.");
 
-				GamerSettings gamerSettings;
 				try {
-					FileReader reader = new FileReader(mcsSearchManagerSettingsFile);
-					Properties props = new Properties();
+					thePropnetMachine.initialize(description, System.currentTimeMillis() + givenInitTime);
 
-					// load the properties file:
-					props.load(reader);
+					GamerSettings gamerSettings;
+					try {
+						FileReader reader = new FileReader(mcsSearchManagerSettingsFile);
+						Properties props = new Properties();
 
-					reader.close();
+						// load the properties file:
+						props.load(reader);
 
-					gamerSettings = new GamerSettings(props);
+						reader.close();
 
-					//this.configureGamer(gamerSettings);
+						gamerSettings = new GamerSettings(props);
 
-				} catch (FileNotFoundException e) {
-					//this.gamerSettings = null;
-					GamerLogger.logError("SingleRunPNTester", "Impossible to create gamer, cannot find the .properties file with the settings: " + mcsSearchManagerSettingsFile.getPath() + ".");
-					throw new RuntimeException("Impossible to create gamer, cannot find the .properties file with the settings.");
-				} catch (IOException e) {
-					//this.gamerSettings = null;
-					GamerLogger.logError("SingleRunPNTester", "Impossible to create gamer, exception when reading the .properties file with the settings: " + mcsSearchManagerSettingsFile.getPath() + ".");
-					throw new RuntimeException("Impossible to create gamer, exception when reading the .properties file with the settings.");
+						//this.configureGamer(gamerSettings);
+
+					} catch (FileNotFoundException e) {
+						//this.gamerSettings = null;
+						GamerLogger.logError("SingleRunPNTester", "Impossible to create gamer, cannot find the .properties file with the settings: " + mcsSearchManagerSettingsFile.getPath() + ".");
+						throw new RuntimeException("Impossible to create gamer, cannot find the .properties file with the settings.");
+					} catch (IOException e) {
+						//this.gamerSettings = null;
+						GamerLogger.logError("SingleRunPNTester", "Impossible to create gamer, exception when reading the .properties file with the settings: " + mcsSearchManagerSettingsFile.getPath() + ".");
+						throw new RuntimeException("Impossible to create gamer, exception when reading the .properties file with the settings.");
+					}
+
+			        HybridMcsManager mcsManager = new HybridMcsManager(random, gamerSettings, mcsSearchManagerSettingsFile.getName().split("\\.")[0]);
+
+			        AbstractStateMachine abstractStateMachine = new CompactStateMachine(thePropnetMachine);
+
+			        /*
+			    	String rolesList = "[ ";
+			    	for(int roleIndex = 0; roleIndex < abstractStateMachine.getRoles().size(); roleIndex++){
+			    		rolesList += (abstractStateMachine.convertToExplicitRole((abstractStateMachine.getRoles().get(roleIndex))) + " ");
+			    	}
+			    	rolesList += "]";
+			    	*/
+					//GamerLogger.log(GamerLogger.FORMAT.CSV_FORMAT, "Stats", "Game step;Thinking time(ms);Search time(ms);Iterations;Visited nodes;Iterations/second;Nodes/second;Chosen move;Move score sum;Move visits;Avg move score;Avg search score " + rolesList + ";");
+
+					mcsManager.setUpManager(abstractStateMachine, numRoles, myRoleIndex, Long.MAX_VALUE);
+
+					GamerLogger.log("GamerSettings", mcsManager.printSearchManager());
+
+					// OFFICIALLY STARTING!!!
+
+			        GamerLogger.log("SingleRunPNTester", "Starting MCS search.");
+
+			        int numExpectedIterations = mcsManager.getNumExpectedIterations();
+			        // If we want to limit the simulations, we set the limit here in the manager...
+			        if(simBudget > 0) {	// If using simulation budget, set the number of expected iterations to the simulation budget
+			        	mcsManager.setNumExpectedIterations(simBudget);
+			        }else { // If using time budget, make sure it will be considered by setting to -1 the number of expected iterations
+			        	mcsManager.setNumExpectedIterations(-1);
+			        }
+
+			        mcsManager.beforeMoveActions(1, false);
+
+			        mcsManager.search(abstractStateMachine.getInitialState(), System.currentTimeMillis() + timeBudget);
+
+			        // Reset the number of expected iterations to the original value.
+			        mcsManager.setNumExpectedIterations(numExpectedIterations);
+
+			       	GamerLogger.log("SingleRunPNTester", "MCS search ended correctly.");
+
+			       	mcsSearchDuration = mcsManager.getStepSearchDuration();
+			       	mcsIterations = mcsManager.getStepIterations();
+			        mcsVisitedNodes = mcsManager.getStepVisitedNodes();
+
+			        if(mcsSearchDuration != 0){
+			        	mcsIterationsPerSecond = ((double) mcsIterations * 1000)/((double) mcsSearchDuration);
+				        mcsNodesPerSecond = ((double) mcsVisitedNodes * 1000)/((double) mcsSearchDuration);
+			        }
+
+			        mcsScoreSums = mcsManager.getStepScoreSumForRoles();
+
+			        GamerLogger.log("SingleRunPNTester", "MCS speed test successful.");
+
+				} catch (StateMachineInitializationException e) {
+		        	GamerLogger.logError("SingleRunPNTester", "State machine " + thePropnetMachine.getName() + " initialization failed, impossible to test MCS for this game. Cause: [" + e.getClass().getSimpleName() + "] " + e.getMessage() );
+		        	GamerLogger.logStackTrace("SingleRunPNTester", e);
+				} catch (MCSException e) {
+		        	GamerLogger.logError("SingleRunPNTester", "Search failed for MCSManager. Impossible to test MCS for this game. Cause: [" + e.getClass().getSimpleName() + "] " + e.getMessage() );
+		        	GamerLogger.logStackTrace("SingleRunPNTester", e);
 				}
 
-		        HybridMcsManager mcsManager = new HybridMcsManager(random, gamerSettings, mcsSearchManagerSettingsFile.getName().split("\\.")[0]);
+				propnetState = null;
+				thePropnetMachine = null;
 
-		        AbstractStateMachine abstractStateMachine = new CompactStateMachine(thePropnetMachine);
-
-		        /*
-		    	String rolesList = "[ ";
-		    	for(int roleIndex = 0; roleIndex < abstractStateMachine.getRoles().size(); roleIndex++){
-		    		rolesList += (abstractStateMachine.convertToExplicitRole((abstractStateMachine.getRoles().get(roleIndex))) + " ");
-		    	}
-		    	rolesList += "]";
-		    	*/
-				//GamerLogger.log(GamerLogger.FORMAT.CSV_FORMAT, "Stats", "Game step;Thinking time(ms);Search time(ms);Iterations;Visited nodes;Iterations/second;Nodes/second;Chosen move;Move score sum;Move visits;Avg move score;Avg search score " + rolesList + ";");
-
-				mcsManager.setUpManager(abstractStateMachine, numRoles, myRoleIndex, Long.MAX_VALUE);
-
-				GamerLogger.log("GamerSettings", mcsManager.printSearchManager());
-
-				// OFFICIALLY STARTING!!!
-
-		        GamerLogger.log("SingleRunPNTester", "Starting MCS search.");
-
-		        int numExpectedIterations = mcsManager.getNumExpectedIterations();
-		        // If we want to limit the simulations, we set the limit here in the manager...
-		        if(simBudget > 0) {	// If using simulation budget, set the number of expected iterations to the simulation budget
-		        	mcsManager.setNumExpectedIterations(simBudget);
-		        }else { // If using time budget, make sure it will be considered by setting to -1 the number of expected iterations
-		        	mcsManager.setNumExpectedIterations(-1);
-		        }
-
-		        mcsManager.beforeMoveActions(1, false);
-
-		        mcsManager.search(abstractStateMachine.getInitialState(), System.currentTimeMillis() + timeBudget);
-
-		        // Reset the number of expected iterations to the original value.
-		        mcsManager.setNumExpectedIterations(numExpectedIterations);
-
-		       	GamerLogger.log("SingleRunPNTester", "MCS search ended correctly.");
-
-		       	mcsSearchDuration = mcsManager.getStepSearchDuration();
-		       	mcsIterations = mcsManager.getStepIterations();
-		        mcsVisitedNodes = mcsManager.getStepVisitedNodes();
-
-		        if(mcsSearchDuration != 0){
-		        	mcsIterationsPerSecond = ((double) mcsIterations * 1000)/((double) mcsSearchDuration);
-			        mcsNodesPerSecond = ((double) mcsVisitedNodes * 1000)/((double) mcsSearchDuration);
-		        }
-
-		        mcsScoreSums = mcsManager.getStepScoreSumForRoles();
-
-		        GamerLogger.log("SingleRunPNTester", "MCS speed test successful.");
-
-			} catch (StateMachineInitializationException e) {
-	        	GamerLogger.logError("SingleRunPNTester", "State machine " + thePropnetMachine.getName() + " initialization failed, impossible to test MCS for this game. Cause: [" + e.getClass().getSimpleName() + "] " + e.getMessage() );
-	        	GamerLogger.logStackTrace("SingleRunPNTester", e);
-			} catch (MCSException e) {
-	        	GamerLogger.logError("SingleRunPNTester", "Search failed for MCSManager. Impossible to test MCS for this game. Cause: [" + e.getClass().getSimpleName() + "] " + e.getMessage() );
-	        	GamerLogger.logStackTrace("SingleRunPNTester", e);
+				collect(); // TODO: Leave or not?
 			}
-
-			propnetState = null;
-			thePropnetMachine = null;
-
-			collect(); // TODO: Leave or not?
 
 			/******************************** MCTS SPEED TEST *********************************/
 
-			// Create the state machine giving it the propnet and the propnet state.
-			// NOTE that if any of the two is null, it means that the propnet creation/initialization went wrong
-			// and this will be detected by the state machine during initialization.
+			if(randomSearchManagerSettingsFile != null) {
 
-			propnetState = manager.getInitialPropnetState();
+				// Create the state machine giving it the propnet and the propnet state.
+				// NOTE that if any of the two is null, it means that the propnet creation/initialization went wrong
+				// and this will be detected by the state machine during initialization.
 
-			random = new Random();
+				propnetState = manager.getInitialPropnetState();
 
-		    if(withCache){
+				random = new Random();
 
-		    	switch(cacheType){
-		    	case "ref":
-		    		thePropnetMachine = new RefactoredSeparateInternalPropnetCachedStateMachine(random, new SeparateInternalPropnetStateMachine(random, immutablePropnet, propnetState));
-		    		break;
-		    	case "nosync":
-		    		thePropnetMachine = new NoSyncRefactoredSeparateInternalPropnetCachedStateMachine(random, new SeparateInternalPropnetStateMachine(random, immutablePropnet, propnetState));
-		    		break;
-		    	default:
-		    		thePropnetMachine = new SeparateInternalPropnetCachedStateMachine(random, new SeparateInternalPropnetStateMachine(random, immutablePropnet, propnetState));
-		    	}
-		    }else{
-	        	thePropnetMachine = new SeparateInternalPropnetStateMachine(random, immutablePropnet, propnetState);
-	        }
+			    if(withCache){
 
-		    //GamerLogger.log("SingleRunPNTester", "Testing machine: " + thePropnetMachine.getClass().getSimpleName());
-
-			GamerLogger.log("SingleRunPNTester", "Starting MCTS speed test.");
-
-			try {
-				thePropnetMachine.initialize(description, System.currentTimeMillis() + givenInitTime);
-
-				GamerSettings gamerSettings;
-				try {
-					FileReader reader = new FileReader(mctsSearchManagerSettingsFile);
-					Properties props = new Properties();
-
-					// load the properties file:
-					props.load(reader);
-
-					reader.close();
-
-					gamerSettings = new GamerSettings(props);
-
-					//this.configureGamer(gamerSettings);
-
-				} catch (FileNotFoundException e) {
-					//this.gamerSettings = null;
-					GamerLogger.logError("SingleRunPNTester", "Impossible to create gamer, cannot find the .properties file with the settings: " + mctsSearchManagerSettingsFile.getPath() + ".");
-					throw new RuntimeException("Impossible to create gamer, cannot find the .properties file with the settings.");
-				} catch (IOException e) {
-					//this.gamerSettings = null;
-					GamerLogger.logError("SingleRunPNTester", "Impossible to create gamer, exception when reading the .properties file with the settings: " + mctsSearchManagerSettingsFile.getPath() + ".");
-					throw new RuntimeException("Impossible to create gamer, exception when reading the .properties file with the settings.");
+				   	switch(cacheType){
+				   		case "ref":
+				   			thePropnetMachine = new RefactoredSeparateInternalPropnetCachedStateMachine(random, new SeparateInternalPropnetStateMachine(random, immutablePropnet, propnetState));
+				   			break;
+				   		case "old":
+				   			thePropnetMachine = new SeparateInternalPropnetCachedStateMachine(random, new SeparateInternalPropnetStateMachine(random, immutablePropnet, propnetState));
+				   			break;
+				   		default: // nosync
+				    		thePropnetMachine = new NoSyncRefactoredSeparateInternalPropnetCachedStateMachine(random, new SeparateInternalPropnetStateMachine(random, immutablePropnet, propnetState));
+				    }
+				}else{
+			       	thePropnetMachine = new SeparateInternalPropnetStateMachine(random, immutablePropnet, propnetState);
 				}
 
-		        HybridMctsManager mctsManager = new HybridMctsManager(random, gamerSettings, mctsSearchManagerSettingsFile.getName().split("\\.")[0]);
+			    //GamerLogger.log("SingleRunPNTester", "Testing machine: " + thePropnetMachine.getClass().getSimpleName());
 
-		        AbstractStateMachine abstractStateMachine = new CompactStateMachine(thePropnetMachine);
+				GamerLogger.log("SingleRunPNTester", "Starting MCTS speed test.");
 
-		        /*
-		    	String rolesList = "[ ";
-		    	for(int roleIndex = 0; roleIndex < abstractStateMachine.getRoles().size(); roleIndex++){
-		    		rolesList += (abstractStateMachine.convertToExplicitRole((abstractStateMachine.getRoles().get(roleIndex))) + " ");
-		    	}
-		    	rolesList += "]";
-		    	*/
-				//GamerLogger.log(GamerLogger.FORMAT.CSV_FORMAT, "Stats", "Game step;Thinking time(ms);Search time(ms);Iterations;Visited nodes;Iterations/second;Nodes/second;Chosen move;Move score sum;Move visits;Avg move score;Avg search score " + rolesList + ";");
+				try {
+					thePropnetMachine.initialize(description, System.currentTimeMillis() + givenInitTime);
 
-				mctsManager.setUpManager(abstractStateMachine, numRoles, myRoleIndex, Long.MAX_VALUE);
+					GamerSettings gamerSettings;
+					try {
+						FileReader reader = new FileReader(mctsSearchManagerSettingsFile);
+						Properties props = new Properties();
 
-				GamerLogger.log("GamerSettings", mctsManager.printSearchManager());
+						// load the properties file:
+						props.load(reader);
 
-				// OFFICIALLY STARTING!!!
+						reader.close();
 
-		        GamerLogger.log("SingleRunPNTester", "Starting MCTS search.");
+						gamerSettings = new GamerSettings(props);
 
-		        int numExpectedIterations = mctsManager.getNumExpectedIterations();
-		        // If we want to limit the simulations, we set the limit here in the manager...
-		        if(simBudget > 0) {	// If using simulation budget, set the number of expected iterations to the simulation budget
-		        	mctsManager.setNumExpectedIterations(simBudget);
-		        }else { // If using time budget, make sure it will be considered by setting to -1 the number of expected iterations
-		        	mctsManager.setNumExpectedIterations(-1);
-		        }
+						//this.configureGamer(gamerSettings);
 
-		        mctsManager.beforeMoveActions(1, false);
+					} catch (FileNotFoundException e) {
+						//this.gamerSettings = null;
+						GamerLogger.logError("SingleRunPNTester", "Impossible to create gamer, cannot find the .properties file with the settings: " + mctsSearchManagerSettingsFile.getPath() + ".");
+						throw new RuntimeException("Impossible to create gamer, cannot find the .properties file with the settings.");
+					} catch (IOException e) {
+						//this.gamerSettings = null;
+						GamerLogger.logError("SingleRunPNTester", "Impossible to create gamer, exception when reading the .properties file with the settings: " + mctsSearchManagerSettingsFile.getPath() + ".");
+						throw new RuntimeException("Impossible to create gamer, exception when reading the .properties file with the settings.");
+					}
 
-		        mctsManager.search(abstractStateMachine.getInitialState(), System.currentTimeMillis() + timeBudget, 1);
+			        HybridMctsManager mctsManager = new HybridMctsManager(random, gamerSettings, mctsSearchManagerSettingsFile.getName().split("\\.")[0]);
 
-		        // Reset the number of expected iterations to the original value.
-		        mctsManager.setNumExpectedIterations(numExpectedIterations);
+			        AbstractStateMachine abstractStateMachine = new CompactStateMachine(thePropnetMachine);
 
-		       	GamerLogger.log("SingleRunPNTester", "MCTS search ended correctly.");
+			        /*
+			    	String rolesList = "[ ";
+			    	for(int roleIndex = 0; roleIndex < abstractStateMachine.getRoles().size(); roleIndex++){
+			    		rolesList += (abstractStateMachine.convertToExplicitRole((abstractStateMachine.getRoles().get(roleIndex))) + " ");
+			    	}
+			    	rolesList += "]";
+			    	*/
+					//GamerLogger.log(GamerLogger.FORMAT.CSV_FORMAT, "Stats", "Game step;Thinking time(ms);Search time(ms);Iterations;Visited nodes;Iterations/second;Nodes/second;Chosen move;Move score sum;Move visits;Avg move score;Avg search score " + rolesList + ";");
 
-		       	mctsSearchDuration = mctsManager.getStepSearchDuration();
-		       	mctsIterations = mctsManager.getStepIterations();
-		        mctsVisitedNodes = mctsManager.getStepVisitedNodes();
+					mctsManager.setUpManager(abstractStateMachine, numRoles, myRoleIndex, Long.MAX_VALUE);
 
-		        if(mctsSearchDuration != 0){
-		        	mctsIterationsPerSecond = ((double) mctsIterations * 1000)/((double) mctsSearchDuration);
-			        mctsNodesPerSecond = ((double) mctsVisitedNodes * 1000)/((double) mctsSearchDuration);
-		        }
+					GamerLogger.log("GamerSettings", mctsManager.printSearchManager());
 
-		        mctsScoreSums = mctsManager.getStepScoreSumForRoles();
+					// OFFICIALLY STARTING!!!
 
-				mctsManager.afterMoveActions(); // Not really needed
+			        GamerLogger.log("SingleRunPNTester", "Starting MCTS search.");
 
-		        GamerLogger.log("SingleRunPNTester", "MCTS speed test successful.");
+			        int numExpectedIterations = mctsManager.getNumExpectedIterations();
+			        // If we want to limit the simulations, we set the limit here in the manager...
+			        if(simBudget > 0) {	// If using simulation budget, set the number of expected iterations to the simulation budget
+			        	mctsManager.setNumExpectedIterations(simBudget);
+			        }else { // If using time budget, make sure it will be considered by setting to -1 the number of expected iterations
+			        	mctsManager.setNumExpectedIterations(-1);
+			        }
 
-			} catch (StateMachineInitializationException e) {
-	        	GamerLogger.logError("SingleRunPNTester", "State machine " + thePropnetMachine.getName() + " initialization failed, impossible to test MCTS for this game. Cause: [" + e.getClass().getSimpleName() + "] " + e.getMessage() );
-	        	GamerLogger.logStackTrace("SingleRunPNTester", e);
-			} catch (MCTSException e) {
-	        	GamerLogger.logError("SingleRunPNTester", "Search failed for MCTSManager. Impossible to test MCTS for this game. Cause: [" + e.getClass().getSimpleName() + "] " + e.getMessage() );
-	        	GamerLogger.logStackTrace("SingleRunPNTester", e);
+			        mctsManager.beforeMoveActions(1, false);
+
+			        mctsManager.search(abstractStateMachine.getInitialState(), System.currentTimeMillis() + timeBudget, 1);
+
+			        // Reset the number of expected iterations to the original value.
+			        mctsManager.setNumExpectedIterations(numExpectedIterations);
+
+			       	GamerLogger.log("SingleRunPNTester", "MCTS search ended correctly.");
+
+			       	mctsSearchDuration = mctsManager.getStepSearchDuration();
+			       	mctsIterations = mctsManager.getStepIterations();
+			        mctsVisitedNodes = mctsManager.getStepVisitedNodes();
+
+			        if(mctsSearchDuration != 0){
+			        	mctsIterationsPerSecond = ((double) mctsIterations * 1000)/((double) mctsSearchDuration);
+				        mctsNodesPerSecond = ((double) mctsVisitedNodes * 1000)/((double) mctsSearchDuration);
+			        }
+
+			        mctsScoreSums = mctsManager.getStepScoreSumForRoles();
+
+					mctsManager.afterMoveActions(); // Not really needed
+
+			        GamerLogger.log("SingleRunPNTester", "MCTS speed test successful.");
+
+				} catch (StateMachineInitializationException e) {
+		        	GamerLogger.logError("SingleRunPNTester", "State machine " + thePropnetMachine.getName() + " initialization failed, impossible to test MCTS for this game. Cause: [" + e.getClass().getSimpleName() + "] " + e.getMessage() );
+		        	GamerLogger.logStackTrace("SingleRunPNTester", e);
+				} catch (MCTSException e) {
+		        	GamerLogger.logError("SingleRunPNTester", "Search failed for MCTSManager. Impossible to test MCTS for this game. Cause: [" + e.getClass().getSimpleName() + "] " + e.getMessage() );
+		        	GamerLogger.logStackTrace("SingleRunPNTester", e);
+				}
+
+				propnetState = null;
+				thePropnetMachine = null;
+
+				collect(); // TODO: Leave or not?
+
 			}
-
-			propnetState = null;
-			thePropnetMachine = null;
-
-			collect(); // TODO: Leave or not?
-
 		}
 
 		/************************** LOG *******************************/

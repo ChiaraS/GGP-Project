@@ -15,12 +15,12 @@ public class LocalFolderGameRepository extends GameRepository {
 
 	public LocalFolderGameRepository(String theLocalFolderPath) {
 
-		System.out.println(theLocalFolderPath);
+		//System.out.println(theLocalFolderPath);
 
 		if(theLocalFolderPath == null || theLocalFolderPath == ""){
 			this.theLocalFolder = null;
 
-			System.out.println("null1");
+			//System.out.println("null1");
 
 			return;
 		}
@@ -31,10 +31,10 @@ public class LocalFolderGameRepository extends GameRepository {
 		// Otherwise, set it null.
 		if (!(theDirectory.exists())) {
 			this.theLocalFolder = null;
-			System.out.println("null2");
+			//System.out.println("null2");
         }else{
         	this.theLocalFolder = theDirectory;
-        	System.out.println(this.theLocalFolder.getPath());
+        	//System.out.println(this.theLocalFolder.getPath());
         }
 	}
 
