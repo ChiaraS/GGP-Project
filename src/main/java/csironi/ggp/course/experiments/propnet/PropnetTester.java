@@ -3,19 +3,20 @@ package csironi.ggp.course.experiments.propnet;
 import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
+import java.util.List;
 import java.util.Properties;
 
 import org.apache.logging.log4j.ThreadContext;
 import org.ggp.base.util.configuration.GamerConfiguration;
 import org.ggp.base.util.game.CloudGameRepository;
+import org.ggp.base.util.game.Game;
 import org.ggp.base.util.game.GameRepository;
 import org.ggp.base.util.game.LocalFolderGameRepository;
 import org.ggp.base.util.game.ManualUpdateLocalGameRepository;
 import org.ggp.base.util.logging.GamerLogger;
+import org.ggp.base.util.statemachine.structure.explicit.ExplicitRole;
 
 /**
- * NOTE!: this class must be updated to run the SingleRunPNTester.java class, because the class has been modified.
- *
  * Inputs this program gets:
  *
  * [fileSetting] = the .properties file that specifies the settings for this experiment. (Give full path if the file is not
@@ -244,21 +245,21 @@ public class PropnetTester {
 
     	GameRepository gameRepo;
 
-    	if(gameKey.equals("ALL")){
+    	switch(repositoryType) {
+    	case "folder":
+    		//gameRepo = new LocalFolderGameRepository(GamerConfiguration.defaultLocalFolderGameRepositoryFolderPath);
+    		gameRepo = new LocalFolderGameRepository(repositoryLocation);
+    		break;
+    	case "local":
+    		//gameRepo = new ManualUpdateLocalGameRepository(GamerConfiguration.defaultLocalGameRepositoryFolderPath + "/" + GamerConfiguration.defaultGGPBaseRepo/*GamerConfiguration.defaultStanfordRepo*/);
+    		gameRepo = new ManualUpdateLocalGameRepository(repositoryLocation);
+    		break;
+    	default:
+    		gameRepo = new CloudGameRepository(repositoryLocation);
+    		break;
+    	}
 
-        	switch(repositoryType) {
-	    	case "folder":
-	    		//gameRepo = new LocalFolderGameRepository(GamerConfiguration.defaultLocalFolderGameRepositoryFolderPath);
-	    		gameRepo = new LocalFolderGameRepository(repositoryLocation);
-	    		break;
-	    	case "local":
-	    		//gameRepo = new ManualUpdateLocalGameRepository(GamerConfiguration.defaultLocalGameRepositoryFolderPath + "/" + GamerConfiguration.defaultGGPBaseRepo/*GamerConfiguration.defaultStanfordRepo*/);
-	    		gameRepo = new ManualUpdateLocalGameRepository(repositoryLocation);
-	    		break;
-	    	default:
-	    		gameRepo = new CloudGameRepository(repositoryLocation);
-	    		break;
-        	}
+    	if(gameKey.equals("ALL")){
 
     	    //GameRepository theRepository = GameRepository.getDefaultRepository();
 
@@ -272,14 +273,24 @@ public class PropnetTester {
     	    for(String aGameKey : gameRepo.getGameKeys()) {
     	        if(aGameKey.contains("laikLee")) continue;
 
-    	        testGame(mainLogFolder, aGameKey, repetitions, givenInitTime, searchBudget, optimizationsString,
-    	        		withCache, cacheType, repositoryType, repositoryLocation, managerSettingsFolder,
-    	        		randomSearchManagerSettingsFile, mcsSearchManagerSettingsFile, mctsSearchManagerSettingsFile);
+    	        Game game = gameRepo.getGame(aGameKey);
+    	        List<ExplicitRole> explicitRoles = ExplicitRole.computeRoles(game.getRules());
+    	    	int numRoles = explicitRoles.size();
+
+    	        testGame(mainLogFolder, aGameKey, repetitions, givenInitTime, searchBudget, numRoles,
+    	        		optimizationsString, withCache, cacheType, repositoryType, repositoryLocation,
+    	        		managerSettingsFolder, randomSearchManagerSettingsFile, mcsSearchManagerSettingsFile,
+    	        		mctsSearchManagerSettingsFile);
 
     	    }
 
     	}else{
-    		testGame(mainLogFolder, gameKey, repetitions, givenInitTime, searchBudget, optimizationsString,
+
+    		Game game = gameRepo.getGame(gameKey);
+	        List<ExplicitRole> explicitRoles = ExplicitRole.computeRoles(game.getRules());
+	    	int numRoles = explicitRoles.size();
+
+    		testGame(mainLogFolder, gameKey, repetitions, givenInitTime, searchBudget, numRoles, optimizationsString,
     				withCache, cacheType, repositoryType, repositoryLocation, managerSettingsFolder,
     				randomSearchManagerSettingsFile, mcsSearchManagerSettingsFile, mctsSearchManagerSettingsFile);
     	}
@@ -287,7 +298,7 @@ public class PropnetTester {
 	}
 
 	private static void testGame(String mainLogFolder, String gameKey, int repetitions, long givenInitTime,
-			String searchBudget, String optimizationsString, boolean withCache, String cacheType,
+			String searchBudget, int numRoles, String optimizationsString, boolean withCache, String cacheType,
 			String repositoryType, String repositoryLocation, String managerSettingsFolder,
 			String randomSearchManagerSettingsFile, String mcsSearchManagerSettingsFile,
 			String mctsSearchManagerSettingsFile){
@@ -315,11 +326,19 @@ public class PropnetTester {
 		String singleRunID = null;
 		String singleRunFolder = null;
 		File logFile = null;
-		ProcessBuilder pb = new ProcessBuilder("java", "-jar", "SingleRunPNTest.jar", gameFolder, singleRunFolder, gameKey, ""+givenInitTime, searchBudget, optimizationsString, ""+withCache, cacheType, repositoryType, repositoryLocation, managerSettingsFolder, randomSearchManagerSettingsFile, mcsSearchManagerSettingsFile, mctsSearchManagerSettingsFile);
+		ProcessBuilder pb = new ProcessBuilder("java", "-jar", "SingleRunPNTest.jar", gameFolder, singleRunFolder, gameKey,
+				""+0, ""+givenInitTime, searchBudget, optimizationsString, ""+withCache, cacheType, repositoryType,
+				repositoryLocation, managerSettingsFolder, randomSearchManagerSettingsFile, mcsSearchManagerSettingsFile,
+				mctsSearchManagerSettingsFile);
+
 
 		//System.out.println(pb.command());
 
+		int myRoleIndex;
+
 		for(int i = 0; i < repetitions; i++){
+
+			myRoleIndex = (i%numRoles);
 
 			Process process = null;
 
@@ -342,6 +361,7 @@ public class PropnetTester {
 				}
 
 				pb.command().set(4, singleRunFolder);
+				pb.command().set(6, ""+myRoleIndex);
 
 				//System.out.println(pb.command());
 
