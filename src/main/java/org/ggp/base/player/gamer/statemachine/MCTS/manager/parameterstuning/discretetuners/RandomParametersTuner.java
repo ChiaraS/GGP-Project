@@ -12,11 +12,27 @@ import org.ggp.base.util.logging.GamerLogger;
 public class RandomParametersTuner extends DiscreteParametersTuner {
 
 	/**
+	 * Used to specify when the tuner should select a random combination.
+	 *
+	 * SIM = set random combination before every simulation
+	 * MOVE = set random combination before every move
+	 * GAME = set random combination only once at the start of the game
+	 */
+	public enum RND_TYPE{
+    	SIM, MOVE, GAME
+    }
+
+	/**
 	 * If true, this tuner selects a random combination for each tuned role only the first time
 	 * and then keeps it fixed for the rest of the game. If false, this tuner will select every
 	 * time a new random combination for each tuned role.
 	 */
-	private boolean fixedCombination;
+	//private boolean fixedCombination;
+
+	/**
+	 * Specifies when the tuner should select a random combination.
+	 */
+	private RND_TYPE randomizationType;
 
 	private List<CombinatorialCompactMove> allCombiantions;
 
@@ -26,7 +42,24 @@ public class RandomParametersTuner extends DiscreteParametersTuner {
 			GamerSettings gamerSettings, SharedReferencesCollector sharedReferencesCollector) {
 		super(gameDependentParameters, random, gamerSettings, sharedReferencesCollector);
 
-		this.fixedCombination = gamerSettings.getBooleanPropertyValue("ParametersTuner.fixedCombination");
+		//this.fixedCombination = gamerSettings.getBooleanPropertyValue("ParametersTuner.fixedCombination");
+
+		String randomizationTypeString = gamerSettings.getPropertyValue("ParametersTuner.randomizationType");
+
+		switch(randomizationTypeString) {
+			case "SIM":
+				this.randomizationType = RND_TYPE.SIM;
+				break;
+			case "MOVE":
+				this.randomizationType = RND_TYPE.MOVE;
+				break;
+			case "GAME":
+				this.randomizationType = RND_TYPE.GAME;
+				break;
+			default:
+				GamerLogger.logError("SearchManagerCreation", "Wrong or not specified type of randomization for the parameter values: " + gamerSettings.getPropertyValue("ParametersTuner.randomizationType") + ".");
+				throw new RuntimeException("SearchManagerCreation - Wrong or not specified type of randomization for the parameter values: " + gamerSettings.getPropertyValue("ParametersTuner.randomizationType") + ".");
+		}
 
 	}
 
@@ -73,10 +106,9 @@ public class RandomParametersTuner extends DiscreteParametersTuner {
 
 		//System.out.println("Next");
 
-		if(this.fixedCombination) {
+		if(this.randomizationType == RND_TYPE.GAME) {
 			this.setBestCombinations();
-		}else {
-
+		}else if(this.randomizationType == RND_TYPE.MOVE && this.gameDependentParameters.getStepIterations() == 0 || this.randomizationType == RND_TYPE.SIM) {
 			int numRolesToTune;
 
 			if(this.tuneAllRoles){
@@ -213,7 +245,7 @@ public class RandomParametersTuner extends DiscreteParametersTuner {
 	@Override
 	public String getComponentParameters(String indentation) {
 
-		String params = indentation + "FIXED_COMBINATION = " + this.fixedCombination +
+		String params = indentation + "RANDOMIZATION_TYPE = " + this.randomizationType +
 				indentation + "NUM_COMBINATORIAL_MOVES = " + (this.allCombiantions != null ? this.allCombiantions.size() : 0) ;
 
 		String superParams = super.getComponentParameters(indentation);
