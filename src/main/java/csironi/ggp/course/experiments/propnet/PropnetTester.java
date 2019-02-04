@@ -24,7 +24,7 @@ import org.ggp.base.util.statemachine.structure.explicit.ExplicitRole;
  *
  * NECESSARY ENTRIES FOR THE FILE:
  * 		[mainLogFolder] = the outer folder containing all the logs and files produced by this program and its subprograms.
- * 		[gameKey] = the key of the game to test (use the string "ALL" to test all games in the repository at once).
+ * 		[gameKey] = the keys of the games to test separated by ";" (use the string "ALL" to test all games in the repository at once).
  *
  * OPTIONAL ENTRIES FOR THE FILE:
  * 		[repetitions] = number of times a single test (Random + MCS + MCTS speed test) has to be run for each game. (Default value: 100)
@@ -223,7 +223,7 @@ public class PropnetTester {
     	if(gameKey.equals("ALL")){
     		GamerLogger.log("PropNetTester", "Running PropNet test for ALL games.");
     	}else{
-    		GamerLogger.log("PropNetTester", "Running PropNet test for game " + gameKey + ".");
+    		GamerLogger.log("PropNetTester", "Running PropNet test for the following games: " + gameKey + ".");
     	}
     	GamerLogger.log("PropNetTester", "Logging in folder " + mainLogFolder + ".");
 
@@ -286,13 +286,31 @@ public class PropnetTester {
 
     	}else{
 
-    		Game game = gameRepo.getGame(gameKey);
-	        List<ExplicitRole> explicitRoles = ExplicitRole.computeRoles(game.getRules());
-	    	int numRoles = explicitRoles.size();
+    		String[] gameKeysArray = gameKey.split(";");
 
-    		testGame(mainLogFolder, gameKey, repetitions, givenInitTime, searchBudget, numRoles, optimizationsString,
-    				withCache, cacheType, repositoryType, repositoryLocation, managerSettingsFolder,
-    				randomSearchManagerSettingsFile, mcsSearchManagerSettingsFile, mctsSearchManagerSettingsFile);
+    		if(gameKeysArray.length ==0) {
+    			GamerLogger.log("PropNetTester", "No valid game keys specified. Stopping the experiment.");
+				return;
+    		}
+
+    		for(String aGameKey : gameKeysArray) {
+
+    			Game game = gameRepo.getGame(aGameKey);
+
+    			if(game == null) {
+    				GamerLogger.log("PropNetTester", "Could not find game " + aGameKey + ". Continuing experiment for other games.");
+    				return;
+    			}
+
+    			System.out.println("Starting test for game " + aGameKey + ".");
+
+    			List<ExplicitRole> explicitRoles = ExplicitRole.computeRoles(game.getRules());
+    			int numRoles = explicitRoles.size();
+
+    			testGame(mainLogFolder, aGameKey, repetitions, givenInitTime, searchBudget, numRoles, optimizationsString,
+    					withCache, cacheType, repositoryType, repositoryLocation, managerSettingsFolder,
+    					randomSearchManagerSettingsFile, mcsSearchManagerSettingsFile, mctsSearchManagerSettingsFile);
+    		}
     	}
 
 	}
@@ -326,7 +344,16 @@ public class PropnetTester {
 		String singleRunID = null;
 		String singleRunFolder = null;
 		File logFile = null;
-		ProcessBuilder pb = new ProcessBuilder("java", "-jar", "SingleRunPNTest.jar", gameFolder, singleRunFolder, gameKey,
+		/*ProcessBuilder pb = new ProcessBuilder("java", "-Xms512M", "-Xmx1524M", "-jar", "SingleRunPNTest.jar", gameFolder, singleRunFolder, gameKey,
+				""+0, ""+givenInitTime, searchBudget, optimizationsString, ""+withCache, cacheType, repositoryType,
+				repositoryLocation, managerSettingsFolder, randomSearchManagerSettingsFile, mcsSearchManagerSettingsFile,
+				mctsSearchManagerSettingsFile);*/
+		/*ProcessBuilder pb = new ProcessBuilder("java", "-jar", "SingleRunPNTest.jar", gameFolder, singleRunFolder, gameKey,
+				""+0, ""+givenInitTime, searchBudget, optimizationsString, ""+withCache, cacheType, repositoryType,
+				repositoryLocation, managerSettingsFolder, randomSearchManagerSettingsFile, mcsSearchManagerSettingsFile,
+				mctsSearchManagerSettingsFile);*/
+
+		ProcessBuilder pb = new ProcessBuilder("/usr/java/jdk1.8.0_131/bin/java", "-jar", "SingleRunPNTest.jar", gameFolder, singleRunFolder, gameKey,
 				""+0, ""+givenInitTime, searchBudget, optimizationsString, ""+withCache, cacheType, repositoryType,
 				repositoryLocation, managerSettingsFolder, randomSearchManagerSettingsFile, mcsSearchManagerSettingsFile,
 				mctsSearchManagerSettingsFile);
@@ -360,6 +387,8 @@ public class PropnetTester {
 					logFile.createNewFile();
 				}
 
+				//pb.command().set(6, singleRunFolder);
+				//pb.command().set(8, ""+myRoleIndex);
 				pb.command().set(4, singleRunFolder);
 				pb.command().set(6, ""+myRoleIndex);
 

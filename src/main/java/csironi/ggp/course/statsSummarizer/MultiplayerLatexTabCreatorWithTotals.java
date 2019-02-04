@@ -479,6 +479,19 @@ public class MultiplayerLatexTabCreatorWithTotals {
 
 		String latexRow;
 
+		// This variable is used to memorize the CI as a string so that its format can be checked.
+		// If only one decimal position is occupied by a number, the second decimal position is set to 0 in the string.
+		// This is needed when creating a tab in latex to have all CIs with two decimal position after the comma.
+		String ci;
+		String[] splitCi;
+
+		// This variable is used to memorize the win percentage as a string so that its format can be checked.
+		// If the number is less than 10, we put in front of it the characters "\,\,\," that in latex will
+		// correctly align the number with the other numbers.
+		// This is needed when creating a tab in latex to have all CIs with two decimal position after the comma.
+		String win;
+		String[] splitWin;
+
 		// Iterate over the games in order and create their row in the table
 		for(String game : gamesOrder){
 
@@ -517,7 +530,21 @@ public class MultiplayerLatexTabCreatorWithTotals {
 						for(String secondGamerName : playerNamesOrder){
 							playersPairStats = opponentsMap.get(secondGamerName);
 							if(playersPairStats != null){
-								latexRow += (" & $" + round(playersPairStats.getAvgWins() * 100.0, 1) + "(\\pm" + round(playersPairStats.getWinsSEM() * 1.96 * 100.0, 2) + ")$");
+								if(playersPairStats.getWins().size() < 500) {
+									System.out.println("Samples for game " + latexGameKey + " for players " + firstGamerName + " and " + secondGamerName + " are " + playersPairStats.getWins().size());
+								}
+								ci = "" + round(playersPairStats.getWinsSEM() * 1.96 * 100.0, 2);
+								splitCi = ci.split("\\.");
+								if(splitCi[1].length() == 1) {
+									ci += "0";
+								}
+								win = "" + round(playersPairStats.getAvgWins() * 100.0, 1);
+								splitWin = win.split("\\.");
+								if(splitWin[0].length() == 1) {
+									win = "\\,\\,\\," + win;
+								}
+
+								latexRow += (" & $" + win + "(\\pm" + ci + ")$");
 							}else{
 								latexRow += (" & ");
 							}

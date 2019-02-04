@@ -796,6 +796,17 @@ public class HybridMctsManager {
 	 */
 	private SimulationResult[] searchNext(MachineState currentState, MctsNode currentNode) {
 
+		/*for(GdlSentence s : ((ExplicitMachineState) currentState).getContents()) {
+			if(s instanceof GdlProposition) {
+				System.out.println("GdlProposition " + s);
+			}else if(s instanceof GdlRelation) {
+				System.out.println("GdlRelation " + s);
+			}else {
+				System.out.println("Unidentified " + s);
+			}
+
+		}*/
+
 		//System.out.println();
 		//System.out.println("Search step:");
 

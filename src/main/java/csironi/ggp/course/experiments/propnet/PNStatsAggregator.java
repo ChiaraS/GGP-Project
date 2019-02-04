@@ -18,6 +18,7 @@ public class PNStatsAggregator {
 	 * repetition (i.e. PN building time, nodes/sec, iterations/sec, num components,...). This method, for each game computes the
 	 * statistics over all the repetitions of the test saving them in a file in the folder of the game. Moreover, it aggregates all
 	 * the statistics for all games in another cumulative file, if its path is specified as input.
+	 * This class also created a file with an entry for each game and the corresponding iterations per second with CI for RND, MCS and MCTS.
 	 * @param args
 	 */
 	public static void main(String[] args){
@@ -45,6 +46,13 @@ public class PNStatsAggregator {
 		File theDestinationFile = new File(theMainFolderPath + "/" + theMainFolder.getName() + "-AggregatedStatistics.csv");
 		if(theDestinationFile.exists() && theDestinationFile.isFile()){
 			theDestinationFile.delete();
+		}
+
+		// Check if the file with the aggregated iterations per seconds statistics already exists. If so, delete it since we have to re-compute it
+		File theDestinationFileForIterations = new File(theMainFolderPath + "/" + theMainFolder.getName() + "-IterationsPerSecond.csv");
+		String theDestinationFileForIterationsPath = theDestinationFileForIterations.getAbsolutePath();
+		if(theDestinationFileForIterations.exists() && theDestinationFileForIterations.isFile()){
+			theDestinationFileForIterations.delete();
 		}
 
 		File[] theSubFiles = theMainFolder.listFiles();
@@ -76,6 +84,8 @@ public class PNStatsAggregator {
 					System.out.println("Found no .csv file for game " + gameKey + ". Skipping game summarization.");
 					continue;
 				}
+
+				String theReducedHeader = "";
 
 				// If the destination file for the statistics doesn't exist yet, we must create it and insert the header line
 				if(!theDestinationFile.exists()){
@@ -113,13 +123,22 @@ public class PNStatsAggregator {
 
 					for(int i = 0; i < theSplitHeader.length; i++){
 						emptyLine += ";";
-						if(theSplitHeader[i].equals("MCSIterationsPerSecond") ||
+						if(theSplitHeader[i].equals("RNDIterationsPerSecond") ||
+								theSplitHeader[i].equals("RNDNodesPerSecond") ||
+								theSplitHeader[i].equals("MCSIterationsPerSecond") ||
 								theSplitHeader[i].equals("MCSNodesPerSecond") ||
 								theSplitHeader[i].equals("MCTSIterationsPerSecond") ||
 								theSplitHeader[i].equals("MCTSNodesPerSecond")){
 							columnsFormat[i] = ColumnType.DOUBLE;
-						}else{
+
+							theReducedHeader += theSplitHeader[i] + ";";
+
+						}else if(theSplitHeader[i].contains("Name")){
+							columnsFormat[i] = ColumnType.STRING;
+						}else {
 							columnsFormat[i] = ColumnType.LONG;
+
+							theReducedHeader += theSplitHeader[i] + ";";
 						}
 
 						statsOfAverages[i] = new SingleValueDoubleStats();
@@ -136,11 +155,11 @@ public class PNStatsAggregator {
 					}
 
 					// Write the header on the file
-					writeToFile(theDestinationFile.getAbsolutePath(), "GameKey;Statistic;"+theHeader);
+					writeToFile(theDestinationFile.getAbsolutePath(), "GameKey;Statistic;"+theReducedHeader);
 					writeToFile(theDestinationFile.getAbsolutePath(), ";;" + emptyLine);
 				}
 
-				if(summarizeSingleFile(gameKey, theCSVFile[0], theHeader, columnsFormat, theDestinationFile.getAbsolutePath(), statsOfAverages, statsOfConfidenceIntervals)){
+				if(summarizeSingleFile(gameKey, theCSVFile[0], theHeader, columnsFormat, theDestinationFile.getAbsolutePath(), statsOfAverages, statsOfConfidenceIntervals, theDestinationFileForIterationsPath)){
 					writeToFile(theDestinationFile.getAbsolutePath(), ";;" + emptyLine);
 				}
 			}
@@ -225,7 +244,7 @@ public class PNStatsAggregator {
 
 	}
 
-	private static boolean summarizeSingleFile(String gameKey, File theCSVFile, String theHeader, ColumnType[] columnsFormat, String destinationFileName, SingleValueDoubleStats[] statsOfAverages, SingleValueDoubleStats[] statsOfConfidenceIntervals){
+	private static boolean summarizeSingleFile(String gameKey, File theCSVFile, String theHeader, ColumnType[] columnsFormat, String destinationFileName, SingleValueDoubleStats[] statsOfAverages, SingleValueDoubleStats[] statsOfConfidenceIntervals, String theDestinationFileForIterationsPath){
 
 		if(gameKey == null || theCSVFile == null || theHeader == null || columnsFormat == null ||destinationFileName == null || statsOfAverages == null || statsOfConfidenceIntervals == null){
 			System.out.println("Detected some null input parameters for the summarization of the .csv file for the game " + gameKey + ".");
@@ -299,6 +318,10 @@ public class PNStatsAggregator {
 
 		for(int i = 0; i < allStats.length; i++){
 			switch(columnsFormat[i]){
+				case STRING:
+					//System.out.println("Index set to null for allStats " + i);
+					allStats[i] = null;
+					break;
 				case LONG:
 					allStats[i] = new SingleValueLongStats();
 					break;
@@ -335,8 +358,15 @@ public class PNStatsAggregator {
 					for(int i = 0; i < columnsStringValues.length; i++){
 
 						switch(columnsFormat[i]){
+						case STRING:
+							columnsValues[i] = null;
+							break;
 						case LONG:
-							columnsValues[i] = Long.parseLong(columnsStringValues[i]);
+							try {
+								columnsValues[i] = Long.parseLong(columnsStringValues[i]);
+							}catch(NumberFormatException e) {
+								columnsValues[i] = Double.valueOf(columnsStringValues[i]).longValue();
+							}
 							break;
 						case DOUBLE:
 							columnsValues[i] = Double.parseDouble(columnsStringValues[i]);
@@ -358,6 +388,8 @@ public class PNStatsAggregator {
 					for(int i = 0; i < columnsValues.length; i++){
 
 						switch(columnsFormat[i]){
+						case STRING:
+							break;
 						case LONG:
 							((SingleValueLongStats)allStats[i]).addValue((Long)columnsValues[i]);
 							break;
@@ -418,20 +450,49 @@ public class PNStatsAggregator {
 		// Write everything on file
 		String[] toWrite = new String[]{gameKey+";"+"#Samples;",gameKey+";"+"MIN;",gameKey+";"+"MAX;",gameKey+";"+"SD;",gameKey+";"+"SEM;",gameKey+";"+"AVG;",gameKey+";"+"CI;"};
 
-		for(int i = 0; i < allStats.length; i++){
-			toWrite[0] += allStats[i].getNumSamples() + ";";
-			toWrite[1] += allStats[i].getMinValue() + ";";
-			toWrite[2] += allStats[i].getMaxValue() + ";";
-			toWrite[3] += allStats[i].getValuesStandardDeviation() + ";";
-			toWrite[4] += allStats[i].getValuesSEM() + ";";
-			toWrite[5] += allStats[i].getAvgValue() + ";";
-			toWrite[6] += allStats[i].get95ConfidenceInterval() + ";";
+		File theDestinationFileForIterations = new File(theDestinationFileForIterationsPath);
+		if(!theDestinationFileForIterations.exists()){
 
+			try {
+				theDestinationFileForIterations.createNewFile();
+			} catch (IOException e) {
+				System.out.println("Couldn't create the file where to aggregate the statistics for the interations per second.");
+				System.out.println("Interrupting summarization.");
+				e.printStackTrace();
+				return false;
+			}
 
-			// Save average of the statistic for all games
-			statsOfAverages[i].addValue(allStats[i].getAvgValue());
-			statsOfConfidenceIntervals[i].addValue(allStats[i].get95ConfidenceInterval());
+			writeToFile(theDestinationFileForIterations.getAbsolutePath(), "GameKey;RNDIterationsPerSecond;RNDIterationsPerSecondCI;MCSIterationsPerSecond;MCSIterationsPerSecondCI;MCTSIterationsPerSecond;MCTSIterationsPerSecondCI;");
+
 		}
+		String[] theSplitHeader = theHeader.split(";");
+		String aggregatedIterationsStatsString = gameKey + ";";
+
+		for(int i = 0; i < allStats.length; i++){
+			if(allStats[i] != null) {
+				//System.out.println("Index of column" + i);
+				toWrite[0] += allStats[i].getNumSamples() + ";";
+				toWrite[1] += allStats[i].getMinValue() + ";";
+				toWrite[2] += allStats[i].getMaxValue() + ";";
+				toWrite[3] += allStats[i].getValuesStandardDeviation() + ";";
+				toWrite[4] += allStats[i].getValuesSEM() + ";";
+				toWrite[5] += allStats[i].getAvgValue() + ";";
+				toWrite[6] += allStats[i].get95ConfidenceInterval() + ";";
+
+
+				// Save average of the statistic for all games
+				statsOfAverages[i].addValue(allStats[i].getAvgValue());
+				statsOfConfidenceIntervals[i].addValue(allStats[i].get95ConfidenceInterval());
+
+				if(theSplitHeader[i].equals("RNDIterationsPerSecond") ||
+						theSplitHeader[i].equals("MCSIterationsPerSecond") ||
+						theSplitHeader[i].equals("MCTSIterationsPerSecond")) {
+					aggregatedIterationsStatsString += (allStats[i].getAvgValue() + ";" + allStats[i].get95ConfidenceInterval() + ";");
+				}
+			}
+		}
+
+		writeToFile(theDestinationFileForIterations.getAbsolutePath(), aggregatedIterationsStatsString);
 
 		for(int i = 0; i < toWrite.length; i++){
 			writeToFile(destinationFileName, toWrite[i]);

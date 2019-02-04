@@ -171,7 +171,7 @@ public class HybridMcsManager {
 
 		String toLog = "MCS_MANAGER_TYPE = " + this.getClass().getSimpleName();
 
-		//String toLog = "MCS manager initialized with the following state mahcine " + this.theMachine.getName();
+		//String toLog = "MCS manager initialized with the following state machine " + this.theMachine.getName();
 
 		toLog += "\n\nMAX_SEARCH_DEPTH = " + this.maxSearchDepth + "\nNUM_EXPECTED_ITERATIONS = " + numExpectedIterations;
 
