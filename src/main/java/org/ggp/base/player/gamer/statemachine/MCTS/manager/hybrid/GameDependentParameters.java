@@ -45,6 +45,13 @@ public class GameDependentParameters {
 	private int stepIterations;
 
 	/**
+	 * Iterations performed so far during the whole game. Corrsponds to the sum of stepIterations
+	 * for each step, therefore when using multiple playouts in the same iteration the number of
+	 * iterations will be increased by the number of performed playouts and not only by 1.
+	 */
+	private int totIterations;
+
+	/**
 	 * Node visited so far for the current step.
 	 * NOTE: when performing multiple playouts each node visited by any playout counts as 1.
 	 * The nodes visited in the tree before performing multiple playouts are counted only once
@@ -102,6 +109,7 @@ public class GameDependentParameters {
 		this.gameStep = 0;
 		this.stepScoreSumForRole = null;
 		this.stepIterations = 0;
+		this.totIterations = 0;
 		this.stepVisitedNodes = 0;
 		this.stepSearchDuration = 0L;
 		this.stepGameLengthSum = 0;
@@ -170,10 +178,15 @@ public class GameDependentParameters {
 
 	public void increaseStepIterations(){
 		this.stepIterations++;
+		this.totIterations++;
 	}
 
 	public int getStepIterations(){
 		return this.stepIterations;
+	}
+
+	public int getTotIterations(){
+		return this.totIterations;
 	}
 
 	public void increaseStepVisitedNodes(double increase){
@@ -243,6 +256,7 @@ public class GameDependentParameters {
 		this.gameStep = 0;
 		this.stepScoreSumForRole = null;
 		this.stepIterations = 0;
+		this.totIterations = 0;
 		this.stepVisitedNodes = 0;
 		this.stepSearchDuration = 0L;
 		this.stepGameLengthSum = 0;
@@ -263,6 +277,7 @@ public class GameDependentParameters {
 		this.gameStep = 0;
 		this.stepScoreSumForRole = new double[this.numRoles]; // Initialized to all 0s by default
 		this.stepIterations = 0;
+		this.totIterations = 0;
 		this.stepVisitedNodes = 0;
 		this.stepSearchDuration = 0L;
 		this.stepGameLengthSum = 0;

@@ -26,10 +26,26 @@ public class MctsJointMove {
 		for(Move m : this.jointMove){
 			s += m + " ";
 		}
-		s += " ]";
+		s += "]";
 
 		return s;
 	}
+
+    @Override
+    public boolean equals(Object o){
+        if ((o != null) && (o instanceof MctsJointMove)) {
+        	MctsJointMove move = (MctsJointMove) o;
+            return this.jointMove.equals(move.getJointMove());
+        }
+
+        return false;
+    }
+
+    @Override
+    public int hashCode()
+    {
+        return this.jointMove.hashCode();
+    }
 
 
 }

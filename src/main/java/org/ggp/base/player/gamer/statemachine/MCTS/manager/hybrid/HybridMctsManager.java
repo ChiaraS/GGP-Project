@@ -20,6 +20,7 @@ import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.strategies.exp
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.strategies.movechoice.MoveChoiceStrategy;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.strategies.playout.PlayoutStrategy;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.strategies.selection.SelectionStrategy;
+import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.LogTreeNode;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.MctsNode;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.hybrid.MctsJointMove;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.hybrid.MctsTranspositionTable;
@@ -33,6 +34,7 @@ import org.ggp.base.util.statemachine.abstractsm.AbstractStateMachine;
 import org.ggp.base.util.statemachine.exceptions.StateMachineException;
 import org.ggp.base.util.statemachine.exceptions.TransitionDefinitionException;
 import org.ggp.base.util.statemachine.structure.MachineState;
+import org.ggp.base.util.statemachine.structure.Move;
 
 /**
  * @author C.Sironi
@@ -190,6 +192,26 @@ public class HybridMctsManager {
 	 * and solves collisions with linked lists).
 	 */
 	private MctsTranspositionTable transpositionTable;
+
+	/**
+	 * Tree representation of the game that does not consider transpositions.
+	 * This is used to log the tree built during the game. Set the parameter
+	 * 'buildLogTree' to false if you don't want to log the tree and therefore
+	 * not build this tree at all.
+	 */
+	private LogTreeNode logTree;
+	/**
+	 * If true the log tree is built, otherwise not.
+	 */
+	private boolean buildLogTree;
+	/**
+	 * Keeps track of the node that is the current root of the log tree
+	 */
+	private LogTreeNode currentLogRoot;
+	/**
+	 * Keeps track of the current node being visited in the log tree
+	 */
+	private LogTreeNode currentLogNode;
 
 	/** NOT NEEDED FOR NOW SINCE ALL STRATEGIES ARE SEPARATE
 	 * A set containing all the distinct concrete strategy classes only once.
@@ -423,6 +445,12 @@ public class HybridMctsManager {
 
 		sharedReferencesCollector.setTranspositionTable(transpositionTable);
 
+		if(gamerSettings.specifiesProperty("SearchManager.buildLogTree")) {
+			this.buildLogTree = gamerSettings.getBooleanPropertyValue("SearchManager.buildLogTree");
+		}else {
+			this.buildLogTree = false;
+		}
+
 		// Let all strategies set references if needed.
 		this.selectionStrategy.setReferences(sharedReferencesCollector);
 		this.expansionStrategy.setReferences(sharedReferencesCollector);
@@ -525,6 +553,8 @@ public class HybridMctsManager {
 
 		toLog += "\nTRANSPOSITION_TABLE = " + this.transpositionTable.printComponent("\n  ");
 
+		toLog += "\nBUILD_LOG_TREE = " + this.buildLogTree;
+
 		toLog += "\nabstract_state_machine = " + (this.gameDependentParameters.getTheMachine() == null ? "null" : this.gameDependentParameters.getTheMachine().getName());
 		toLog += "\nnum_roles = " + this.gameDependentParameters.getNumRoles();
 		toLog += "\nmy_role_index = " + this.gameDependentParameters.getMyRoleIndex();
@@ -582,6 +612,10 @@ public class HybridMctsManager {
 		this.treeNodeFactory.clearComponent();
 
 		this.transpositionTable.clearComponent();
+
+		this.logTree = null;
+		this.currentLogRoot = null;
+		this.currentLogNode = null;
 
 		this.gameDependentParameters.clearGameDependentParameters();
 
@@ -721,6 +755,7 @@ public class HybridMctsManager {
 
 			initialNode = this.treeNodeFactory.createNewNode(initialState);
 			this.transpositionTable.putNode(initialState, initialNode);
+
 		}
 
 		return initialNode;
@@ -754,6 +789,10 @@ public class HybridMctsManager {
 
 			// List of joint moves played during selection. Used by the multiple playout strategy.
 			this.currentSimulationJointMoves.clear();
+
+			if(this.buildLogTree) {
+				this.currentLogNode = this.currentLogRoot;
+			}
 
 			SimulationResult[] simulationResult = this.searchNext(initialState, initialNode);
 			for(int resultIndex = 0; resultIndex < simulationResult.length; resultIndex++){
@@ -1017,6 +1056,13 @@ public class HybridMctsManager {
 		// Once we advanced to the next state, we can add the joint move to the list of joint moves for the current simulation.
 		this.currentSimulationJointMoves.add(mctsJointMove);
 
+		if(this.buildLogTree) {
+			if(this.currentLogNode.getChild(mctsJointMove) == null) {
+				this.currentLogNode.addChild(mctsJointMove, new LogTreeNode(this.gameDependentParameters.getGameStep(),this.gameDependentParameters.getTotIterations()));
+			}
+			this.currentLogNode = this.currentLogNode.getChild(mctsJointMove);
+		}
+
 		//System.out.println("Next state = [ " + this.gameDependentParameters.getTheMachine().convertToExplicitMachineState(nextState) + " ]");
 		//System.out.println("Next state = [ " + nextState + " ]");
 
@@ -1258,7 +1304,7 @@ public class HybridMctsManager {
 
 	}
 
-	public void beforeMoveActions(int currentGameStep, boolean metagame){
+	public void beforeMoveActions(int currentGameStep, boolean metagame, List<Move> internalLastJointMove){
 
 		this.gameDependentParameters.setGameStep(currentGameStep);
 
@@ -1273,6 +1319,36 @@ public class HybridMctsManager {
 		}
 
 		this.transpositionTable.logTable("Start");
+
+		if(this.buildLogTree) {
+
+			if(this.logTree == null) {
+				this.logTree = new LogTreeNode(this.gameDependentParameters.getGameStep(), this.gameDependentParameters.getTotIterations());
+				this.currentLogRoot = this.logTree;
+				this.currentLogNode = this.currentLogRoot;
+				this.logTree.setOnPath();
+			}else {
+				// Here we assume that the current log root refers to the root of the previous step.
+				if(this.currentLogRoot == null) {
+					GamerLogger.logError("MctsManager", "Unexpected null root for log tree in step " + currentGameStep + ". Stopping tree logging for this agent (also for any future game).");
+					this.buildLogTree = false;
+				}else {
+					if(internalLastJointMove == null) {
+						GamerLogger.logError("MctsManager", "The last performed joint move is null, cannot advance the root state of the log tree. Stopping tree logging for this agent (also for any future game).");
+						this.buildLogTree = false;
+					}else {
+						MctsJointMove mctsJointMove = new MctsJointMove(internalLastJointMove);
+						if(this.currentLogRoot.getChild(mctsJointMove) == null) {
+							this.currentLogRoot.addChild(mctsJointMove, new LogTreeNode(this.gameDependentParameters.getGameStep(),this.gameDependentParameters.getTotIterations()));
+						}
+						this.currentLogRoot = this.currentLogRoot.getChild(mctsJointMove);
+						this.currentLogNode = this.currentLogRoot;
+						this.currentLogRoot.setOnPath();
+					}
+				}
+
+			}
+		}
 
 	}
 
@@ -1291,7 +1367,7 @@ public class HybridMctsManager {
 		this.gameDependentParameters.setMetagame(false);
 	}
 
-	public void afterGameActions(List<Double> goals){
+	public void afterGameActions(List<Double> goals, List<Move> internalLastJointMove){
 		// Call again the AfterMoveAction because for the search of the last move it hasn't been
 		// performed yet, because it is always performed at the beginning of a new search.
 		//if(this.afterMoveStrategy != null){
@@ -1299,6 +1375,33 @@ public class HybridMctsManager {
 		//}
 		if(this.afterGameStrategy != null){
 			this.afterGameStrategy.afterGameActions(goals);
+		}
+		// If we are building the tree as well, log it.
+		if(this.buildLogTree) {
+
+			// At the end of the game we have to advance to the final game node in the tree and set it on the path of game nodes.
+			if(this.logTree == null) {
+				GamerLogger.logError("MctsManager", "Unexpected null log tree. Terminating match without logging the tree.");
+			}else {
+				// Here we assume that the current log root refers to the root of the last game step.
+				if(this.currentLogRoot == null) {
+					GamerLogger.logError("MctsManager", "Unexpected null root for log tree in the last step. Logging tree without terminal node.");
+				}else {
+					if(internalLastJointMove == null) {
+						GamerLogger.logError("MctsManager", "The last performed joint move is null, cannot advance to the terminal node of the log tree. Logging tree without terminal node.");
+					}else {
+						MctsJointMove mctsJointMove = new MctsJointMove(internalLastJointMove);
+						if(this.currentLogRoot.getChild(mctsJointMove) == null) {
+							this.currentLogRoot.addChild(mctsJointMove, new LogTreeNode(this.gameDependentParameters.getGameStep()+1,this.gameDependentParameters.getTotIterations()));
+						}
+						this.currentLogRoot = this.currentLogRoot.getChild(mctsJointMove);
+						this.currentLogNode = this.currentLogRoot;
+						this.currentLogRoot.setOnPath();
+					}
+				}
+				this.logLogTree();
+			}
+
 		}
 
 	}
@@ -1337,6 +1440,16 @@ public class HybridMctsManager {
 
 	public int getNumExpectedIterations() {
 		return this.numExpectedIterations;
+	}
+
+	private void logLogTree() {
+
+		// Perform BFS to assign coordinates to the nodes.
+		// Nodes in a given level of BFS will have the same x coordinate and
+		// be distributed at equal distance over the y coordinate.
+		//List<LogTreeNode>
+
+
 	}
 
 }

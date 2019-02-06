@@ -129,7 +129,7 @@ public class FpgaMctsGamer extends FpgaPropnetGamer {
 
 		if(this.metagameSearch){
 
-			this.mctsManager.beforeMoveActions(1, true);
+			this.mctsManager.beforeMoveActions(1, true, this.getInternalLastJointMove());
 
 			// If there is enough time left start the MCT search.
 			// Otherwise return from metagaming.
@@ -234,7 +234,7 @@ public class FpgaMctsGamer extends FpgaPropnetGamer {
 		GamerLogger.log("Gamer", "Starting move selection for game step " + this.gameStep + " with available time " + (realTimeout-start) + "ms.");
 
 		if((!this.metagameSearch) || this.gameStep > 1){ // For game step 1 is the metagame method that calls the before-move-actions
-			this.mctsManager.beforeMoveActions(this.gameStep, false);
+			this.mctsManager.beforeMoveActions(this.gameStep, false, this.getInternalLastJointMove());
 		}
 
 		if(System.currentTimeMillis() < realTimeout){
@@ -339,7 +339,7 @@ public class FpgaMctsGamer extends FpgaPropnetGamer {
 	public void stateMachineStop() {
 
 		this.gameStep = 0;
-		this.mctsManager.afterGameActions(this.getMatch().getGoalValues());
+		this.mctsManager.afterGameActions(this.getMatch().getGoalValues(), this.getInternalLastJointMove());
 		this.mctsManager.clearManager();
 		super.stateMachineStop();
 
@@ -352,7 +352,7 @@ public class FpgaMctsGamer extends FpgaPropnetGamer {
 	public void stateMachineAbort() {
 
 		this.gameStep = 0;
-		this.mctsManager.afterGameActions(this.getMatch().getGoalValues());
+		this.mctsManager.afterGameActions(this.getMatch().getGoalValues(), null);
 		this.mctsManager.clearManager();
 		super.stateMachineAbort();
 

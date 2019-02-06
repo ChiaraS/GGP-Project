@@ -567,7 +567,7 @@ public class SingleRunProverTest {
 	        	mctsManager.setNumExpectedIterations(-1);
 	        }
 
-	        mctsManager.beforeMoveActions(1, false);
+	        mctsManager.beforeMoveActions(1, false, null);
 
 	        mctsManager.search(abstractStateMachine.getInitialState(), System.currentTimeMillis() + timeBudget, 1);
 

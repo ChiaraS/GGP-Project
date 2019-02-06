@@ -100,6 +100,14 @@ public abstract class StateMachineGamer extends Gamer
 	}
 
 	/**
+	 * Returns the last performed joint move of the real game in its internal format.
+	 */
+	public final List<Move> getInternalLastJointMove()
+	{
+		return this.internalLastJointMove;
+	}
+
+	/**
 	 * Returns the role that this gamer is playing as in the game.
 	 */
 	public final Role getRole()
@@ -225,6 +233,7 @@ public abstract class StateMachineGamer extends Gamer
 			this.stateMachine.initialize(getMatch().getGame().getRules(), timeout);
 			//currentState = stateMachine.getExplicitInitialState();
 			this.internalCurrentState = this.stateMachine.getInitialState();
+			this.internalLastJointMove = null;
 			role =  this.stateMachine.convertToInternalRole(this.stateMachine.getRoleFromConstant(getRoleName()));
 			getMatch().appendState(this.internalCurrentState);
 			getMatch().appendState(this.stateMachine.convertToExplicitMachineState(this.internalCurrentState).getContents());
@@ -254,13 +263,16 @@ public abstract class StateMachineGamer extends Gamer
 			List<GdlTerm> lastMoves = getMatch().getMostRecentMoves();
 			if (lastMoves != null)
 			{
-				List<Move> moves = new ArrayList<Move>();
+				this.internalLastJointMove = new ArrayList<Move>();
+				//List<Move> moves = new ArrayList<Move>();
 				for (int roleIndex = 0; roleIndex < lastMoves.size(); roleIndex++)
 				{
-					moves.add(this.stateMachine.convertToInternalMove(this.stateMachine.getMoveFromTerm(lastMoves.get(roleIndex)), this.stateMachine.getExplicitRoles().get(roleIndex)));
+					this.internalLastJointMove.add(this.stateMachine.convertToInternalMove(this.stateMachine.getMoveFromTerm(lastMoves.get(roleIndex)), this.stateMachine.getExplicitRoles().get(roleIndex)));
+					//moves.add(this.stateMachine.convertToInternalMove(this.stateMachine.getMoveFromTerm(lastMoves.get(roleIndex)), this.stateMachine.getExplicitRoles().get(roleIndex)));
 				}
 
-				this.internalCurrentState = this.stateMachine.getNextState(this.internalCurrentState, moves);
+				//this.internalCurrentState = this.stateMachine.getNextState(this.internalCurrentState, moves);
+				this.internalCurrentState = this.stateMachine.getNextState(this.internalCurrentState, this.internalLastJointMove);
 				getMatch().appendState(this.stateMachine.convertToExplicitMachineState(this.internalCurrentState).getContents());
 				getMatch().appendState(this.internalCurrentState);
 			}
@@ -282,13 +294,16 @@ public abstract class StateMachineGamer extends Gamer
 			List<GdlTerm> lastMoves = getMatch().getMostRecentMoves();
 			if (lastMoves != null)
 			{
-				List<Move> moves = new ArrayList<Move>();
+				this.internalLastJointMove = new ArrayList<Move>();
+				//List<Move> moves = new ArrayList<Move>();
 				for (int roleIndex = 0; roleIndex < lastMoves.size(); roleIndex++)
 				{
-					moves.add(this.stateMachine.convertToInternalMove(this.stateMachine.getMoveFromTerm(lastMoves.get(roleIndex)), this.stateMachine.getExplicitRoles().get(roleIndex)));
+					this.internalLastJointMove.add(this.stateMachine.convertToInternalMove(this.stateMachine.getMoveFromTerm(lastMoves.get(roleIndex)), this.stateMachine.getExplicitRoles().get(roleIndex)));
+					//moves.add(this.stateMachine.convertToInternalMove(this.stateMachine.getMoveFromTerm(lastMoves.get(roleIndex)), this.stateMachine.getExplicitRoles().get(roleIndex)));
 				}
 
-				this.internalCurrentState = this.stateMachine.getNextState(this.internalCurrentState, moves);
+				//this.internalCurrentState = this.stateMachine.getNextState(this.internalCurrentState, moves);
+				this.internalCurrentState = this.stateMachine.getNextState(this.internalCurrentState, this.internalLastJointMove);
 				getMatch().appendState(this.stateMachine.convertToExplicitMachineState(this.internalCurrentState).getContents());
 				getMatch().appendState(this.internalCurrentState);
 
@@ -336,6 +351,8 @@ public abstract class StateMachineGamer extends Gamer
     private Role role;
     //private ExplicitMachineState currentState;
     private MachineState internalCurrentState;
+    // Last performed joint move in the real game
+    private List<Move> internalLastJointMove;
     private AbstractStateMachine stateMachine;
 
     /**
