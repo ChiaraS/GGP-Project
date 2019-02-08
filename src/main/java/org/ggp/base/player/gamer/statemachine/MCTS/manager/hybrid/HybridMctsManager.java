@@ -2,8 +2,10 @@ package org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid;
 
 import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Random;
+import java.util.Set;
 
 import org.ggp.base.player.gamer.statemachine.GamerSettings;
 import org.ggp.base.player.gamer.statemachine.MCS.manager.hybrid.CompleteMoveStats;
@@ -35,6 +37,8 @@ import org.ggp.base.util.statemachine.exceptions.StateMachineException;
 import org.ggp.base.util.statemachine.exceptions.TransitionDefinitionException;
 import org.ggp.base.util.statemachine.structure.MachineState;
 import org.ggp.base.util.statemachine.structure.Move;
+
+import csironi.ggp.course.utils.MyPair;
 
 /**
  * @author C.Sironi
@@ -1444,10 +1448,103 @@ public class HybridMctsManager {
 
 	private void logLogTree() {
 
-		// Perform BFS to assign coordinates to the nodes.
-		// Nodes in a given level of BFS will have the same x coordinate and
-		// be distributed at equal distance over the y coordinate.
-		//List<LogTreeNode>
+		if(this.buildLogTree) {
+
+			// Perform BFS to assign coordinates to the nodes.
+			// Nodes in a given level of BFS will have the same x coordinate and
+			// be distributed at equal distance over the y coordinate.
+			List<LogTreeNode> currentLevel = new ArrayList<LogTreeNode>();
+			List<LogTreeNode> nextLevel = new ArrayList<LogTreeNode>();
+			currentLevel.add(this.logTree);
+
+			// The minimum values for x is always 0, while the maximum is the depth of the tree,
+			// that can be recorded after visiting all the tree.
+			int xMin = 0;
+			int xMax;
+
+			// yMin (i.e. the minimum value of y) is equal to -yMax. Any of the two can be computed
+			// while assigning coordinates to the nodes. The level with most nodes will determine them.
+			double yMax = 0;
+
+			int x = 0;
+
+			double y;
+
+			// Distance in the y coordinate between two nodes on the same level.
+			double d = 0.5;
+
+			// Keep an array that for each entry contains a set of nodes that have to be printed.
+			// The order in which nodes are memorized in this array corresponds to the order in which they have to be printed.
+			List<Set<LogTreeNode>> orderedNodes = new ArrayList<Set<LogTreeNode>>(this.gameDependentParameters.getTotIterations());
+			for(int i = 0; i < this.gameDependentParameters.getTotIterations(); i++) {
+				orderedNodes.add(new HashSet<LogTreeNode>());
+			}
+
+			// First set the coordinates of the root and put all its children in the current level
+			MyPair<Double,Double> coordinates = new MyPair<Double,Double>(0.0,0.0);
+			this.logTree.setCoordinates(coordinates);
+			for(LogTreeNode child : this.logTree.getChildren().values()) {
+				child.setParentCoordinates(coordinates);
+				currentLevel.add(child);
+			}
+
+			// The root is not included in the .
+			// We want to print only nodes that have a parent, because printing a node corresponds to printing
+			// the edge that leads to it.
+
+			while(!currentLevel.isEmpty()) {
+
+				x++; // Increment the x coordinate
+
+				y = ((currentLevel.size()-1)/2.0)*d; // Max y for this level
+				// Check if it's the maximum so far
+				if(y > yMax) {
+					yMax = y;
+				}
+
+				y = -y; // Start with the lowest value for y
+
+				for(LogTreeNode node : currentLevel) {
+					coordinates = new MyPair<Double,Double>((double)x,y);
+					node.setCoordinates(coordinates);
+					for(LogTreeNode child : node.getChildren().values()) {
+						child.setParentCoordinates(coordinates);
+						nextLevel.add(child);
+					}
+					orderedNodes.get(node.getInsertionOrder()).add(node);
+					y+=d;
+				}
+
+				currentLevel = nextLevel;
+				nextLevel.clear();
+
+			}
+
+			// Log the tree with the format required by the matlab function that will print it (use space as separator)
+
+			// The first line has 4 double values that represent the minimum and maximum value for the x and y axis respectively
+			// (i.e. xMin xMax yMin yMax)
+			String newline = "\n";
+			String s = xMin + " " + x + " " + (-yMax-d) + " " + (yMax+d) + newline;
+
+			int step = 0;
+
+			// Iterate over the ordered nodes to log their coordinates, checking when the step needs to be changed
+			// Nodes in the same set must be logged in the same line
+			for(Set<LogTreeNode> nodeSet : orderedNodes) {
+
+			}
+
+
+
+			/*
+			GamerLogger.log(GamerLogger.FORMAT.CSV_FORMAT, "TreeSizeStatistics", this.gameDependentParameters.getGameStep() +
+					";" + logMoment + ";" + size + ";" + totalActionsStats + ";" +
+					totalRaveAmaf + ";" + totalGraveAmaf + ";" + actionsStatsPerNode + ";" +
+					raveAmafPerNode + ";" + graveAmafPerNode + ";");
+					*/
+
+		}
 
 
 	}

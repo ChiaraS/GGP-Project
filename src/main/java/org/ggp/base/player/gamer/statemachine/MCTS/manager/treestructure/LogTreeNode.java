@@ -36,6 +36,11 @@ public class LogTreeNode {
 	 */
 	private MyPair<Double,Double> coordinates;
 
+	/**
+	 * Coordinates [x, y] of the parent node needed when plotting.
+	 */
+	private MyPair<Double,Double> parentCoordinates;
+
 	public LogTreeNode(int step, int insertionOrder) {
 		super();
 		this.step = step;
@@ -79,6 +84,14 @@ public class LogTreeNode {
 
 	public void setCoordinates(MyPair<Double, Double> coordinates) {
 		this.coordinates = coordinates;
+	}
+
+	public MyPair<Double, Double> getParentCoordinates() {
+		return this.parentCoordinates;
+	}
+
+	public void setParentCoordinates(MyPair<Double, Double> coordinates) {
+		this.parentCoordinates = coordinates;
 	}
 
 	@Override

@@ -17,6 +17,15 @@ public class ProvaProva {
 		//	System.out.println(gamerClass.getSimpleName());
 		//}
 
+		int xMin = 0;
+		int x = 10;
+		double yMax = 5;
+		double d = 0.5;
+
+		String s = xMin + " " + x + " " + (-yMax-d) + " " + (yMax+d);
+
+		System.out.println(s);
+
 		List<Move> jointMove1 = new ArrayList<Move>();
 
 		jointMove1.add(new CompactMove(2));
