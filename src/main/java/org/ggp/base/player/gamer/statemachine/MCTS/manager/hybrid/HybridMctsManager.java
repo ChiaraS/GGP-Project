@@ -2,8 +2,11 @@ package org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid;
 
 import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Random;
 import java.util.Set;
 
@@ -197,6 +200,12 @@ public class HybridMctsManager {
 	 */
 	private MctsTranspositionTable transpositionTable;
 
+
+	/***************************************************************************************************
+	 * ATTENTION: the logging of the tree has been implemented quickly, therefore it is not guaranteed *
+	 * to work correctly when the execution of the search is not smooth, e.g. no search is performed   *
+	 * for a turn in the game because there was no time.                                               *
+	 ***************************************************************************************************/
 	/**
 	 * Tree representation of the game that does not consider transpositions.
 	 * This is used to log the tree built during the game. Set the parameter
@@ -216,6 +225,12 @@ public class HybridMctsManager {
 	 * Keeps track of the current node being visited in the log tree
 	 */
 	private LogTreeNode currentLogNode;
+	/**
+	 * For each step in which the search was performed, keeps track of the number
+	 * of simulations performed up till the end of the step.
+	 */
+	private Map<Integer,Integer> accumSimulationsPerStep;
+
 
 	/** NOT NEEDED FOR NOW SINCE ALL STRATEGIES ARE SEPARATE
 	 * A set containing all the distinct concrete strategy classes only once.
@@ -658,6 +673,10 @@ public class HybridMctsManager {
 		this.treeNodeFactory.setUpComponent();
 
 		this.transpositionTable.setUpComponent();
+
+		if(this.buildLogTree) {
+			this.accumSimulationsPerStep = new HashMap<Integer,Integer>();
+		}
 
 	}
 
@@ -1310,6 +1329,8 @@ public class HybridMctsManager {
 
 	public void beforeMoveActions(int currentGameStep, boolean metagame, List<Move> internalLastJointMove){
 
+		int previousGameStep = this.gameDependentParameters.getGameStep();
+
 		this.gameDependentParameters.setGameStep(currentGameStep);
 
 		this.gameDependentParameters.setMetagame(metagame);
@@ -1330,9 +1351,9 @@ public class HybridMctsManager {
 				this.logTree = new LogTreeNode(this.gameDependentParameters.getGameStep(), this.gameDependentParameters.getTotIterations());
 				this.currentLogRoot = this.logTree;
 				this.currentLogNode = this.currentLogRoot;
-				this.logTree.setOnPath();
+				this.logTree.setOnPath(0); // Assume the root is always on path and was added in the step previous to 1.
 			}else {
-				// Here we assume that the current log root refers to the root of the previous step.
+				// The current log root always refers to the root of the previous step, because it gets updated even if no search is performed in a step..
 				if(this.currentLogRoot == null) {
 					GamerLogger.logError("MctsManager", "Unexpected null root for log tree in step " + currentGameStep + ". Stopping tree logging for this agent (also for any future game).");
 					this.buildLogTree = false;
@@ -1343,11 +1364,11 @@ public class HybridMctsManager {
 					}else {
 						MctsJointMove mctsJointMove = new MctsJointMove(internalLastJointMove);
 						if(this.currentLogRoot.getChild(mctsJointMove) == null) {
-							this.currentLogRoot.addChild(mctsJointMove, new LogTreeNode(this.gameDependentParameters.getGameStep(),this.gameDependentParameters.getTotIterations()));
-						}
+							this.currentLogRoot.addChild(mctsJointMove, new LogTreeNode(this.gameDependentParameters.getGameStep(),-1)); // Since the action was never added to the actual tree, we do not give it an order index, we will only add it to the plotted tree when it gets selected.
+						} // If the edge of the selected action was not in the tree yet, we have to add it here so we can log that this action was selected, even if in the transposition table this edge is not present and might be discovered later.
 						this.currentLogRoot = this.currentLogRoot.getChild(mctsJointMove);
 						this.currentLogNode = this.currentLogRoot;
-						this.currentLogRoot.setOnPath();
+						this.currentLogRoot.setOnPath(previousGameStep);
 					}
 				}
 
@@ -1360,6 +1381,11 @@ public class HybridMctsManager {
 		if(this.afterMoveStrategy != null){
 			this.afterMoveStrategy.afterMoveActions();
 		}
+
+		if(this.buildLogTree) {
+			this.accumSimulationsPerStep.put(this.gameDependentParameters.getGameStep(), this.gameDependentParameters.getTotIterations());
+		}
+
 
 		this.transpositionTable.logTable("End");
 	}
@@ -1400,7 +1426,7 @@ public class HybridMctsManager {
 						}
 						this.currentLogRoot = this.currentLogRoot.getChild(mctsJointMove);
 						this.currentLogNode = this.currentLogRoot;
-						this.currentLogRoot.setOnPath();
+						this.currentLogRoot.setOnPath(this.gameDependentParameters.getGameStep());
 					}
 				}
 				this.logLogTree();
@@ -1450,17 +1476,24 @@ public class HybridMctsManager {
 
 		if(this.buildLogTree) {
 
+			int[] count = new int[1];
+			count[0] = 0;
+
+			DFS(this.logTree, "", count);
+
+			System.out.println("Nodes in the tree: " + count[0]);
+
 			// Perform BFS to assign coordinates to the nodes.
 			// Nodes in a given level of BFS will have the same x coordinate and
 			// be distributed at equal distance over the y coordinate.
 			List<LogTreeNode> currentLevel = new ArrayList<LogTreeNode>();
 			List<LogTreeNode> nextLevel = new ArrayList<LogTreeNode>();
-			currentLevel.add(this.logTree);
+			//currentLevel.add(this.logTree);
 
 			// The minimum values for x is always 0, while the maximum is the depth of the tree,
 			// that can be recorded after visiting all the tree.
 			int xMin = 0;
-			int xMax;
+			//int xMax;
 
 			// yMin (i.e. the minimum value of y) is equal to -yMax. Any of the two can be computed
 			// while assigning coordinates to the nodes. The level with most nodes will determine them.
@@ -1479,6 +1512,10 @@ public class HybridMctsManager {
 			for(int i = 0; i < this.gameDependentParameters.getTotIterations(); i++) {
 				orderedNodes.add(new HashSet<LogTreeNode>());
 			}
+
+			// Keep an array that for contains an entry for each step of the game. Each entry contains the node that is reached by
+			// performing the action selected at the end of the corresponding step.
+			LogTreeNode[] selectedActionNodes = new LogTreeNode[this.gameDependentParameters.getGameStep()];
 
 			// First set the coordinates of the root and put all its children in the current level
 			MyPair<Double,Double> coordinates = new MyPair<Double,Double>(0.0,0.0);
@@ -1512,40 +1549,97 @@ public class HybridMctsManager {
 						nextLevel.add(child);
 					}
 					orderedNodes.get(node.getInsertionOrder()).add(node);
+					if(node.isOnPath()) {
+						int index = node.getSelectionStep() - 1;
+						if(selectedActionNodes[index] == null) {
+							selectedActionNodes[index] = node;
+						}else {
+							GamerLogger.logError("MctsManager", "Error logging the tree. There are multiple selected action for game step " + index+1 + ". Stopping logging on file.");
+							return;
+						}
+					}
 					y+=d;
 				}
 
 				currentLevel = nextLevel;
-				nextLevel.clear();
+				nextLevel = new ArrayList<LogTreeNode>();
 
 			}
+
+			System.out.println("Ordered nodes: " + orderedNodes.size());
 
 			// Log the tree with the format required by the matlab function that will print it (use space as separator)
 
 			// The first line has 4 double values that represent the minimum and maximum value for the x and y axis respectively
 			// (i.e. xMin xMax yMin yMax)
 			String newline = "\n";
-			String s = xMin + " " + x + " " + (-yMax-d) + " " + (yMax+d) + newline;
+			String toLog = xMin + " " + x + " " + (-yMax-d) + " " + (yMax+d) + newline;
 
-			int step = 0;
+
+			// Assuming that steps start at 1 and increase by 1 after every turn.
+			int currentStep = 1;
+			toLog += (currentStep + newline);
+
+			System.out.println(currentStep);
 
 			// Iterate over the ordered nodes to log their coordinates, checking when the step needs to be changed
 			// Nodes in the same set must be logged in the same line
+			// Iterations where the set is empty will be logged as empty lines, so the tree builder program can duplicate
+			// the previous frame whenever no edge was added to the tree for an iteration.
 			for(Set<LogTreeNode> nodeSet : orderedNodes) {
+				for(LogTreeNode node : nodeSet) {
+
+					if(node.getStep() != currentStep) {
+						// PROBLEM: if the step changed in an iteration where no nodes were added to the tree
+						// we will not detect it immediately. The step will be changed in the log file only after
+						// the first iteration in the step where nodes where added to the tree.
+						currentStep = node.getStep();
+
+						System.out.println(currentStep);
+
+						toLog += currentStep + newline; // Log step
+						// Log selected action for the step, which has to be colored in red
+						LogTreeNode selectedActionNode = selectedActionNodes[currentStep-2]; // -1 because we need the one of the previous step, -1 because the nodes are memorized shifted back by 1 position.
+						toLog += selectedActionNode.getParentCoordinates().getFirst() + " " + selectedActionNode.getCoordinates().getFirst() + " " +
+								selectedActionNode.getParentCoordinates().getSecond() + " " + selectedActionNode.getCoordinates().getSecond() + newline;
+					}
+
+					toLog += node.getParentCoordinates().getFirst() + " " + node.getCoordinates().getFirst() + " " +
+							node.getParentCoordinates().getSecond() + " " + node.getCoordinates().getSecond() + " ";
+
+				}
+
+				toLog += newline; // If there are no nodes in the set, print empty line
 
 			}
 
+			toLog += (currentStep+1) + newline;
+			// Check
+			if(currentStep != selectedActionNodes.length) {
+				GamerLogger.logError("MctsManager", "Error logging the tree. There are " + selectedActionNodes.length + " selected actions, but the game had " + currentStep + " steps.");
+				return;
+			}
+			LogTreeNode selectedActionNode = selectedActionNodes[currentStep-1]; // -1 because we need the one of this step, but the nodes are memorized shifted back by 1 position.
+			toLog += selectedActionNode.getParentCoordinates().getFirst() + " " + selectedActionNode.getCoordinates().getFirst() + " " +
+					selectedActionNode.getParentCoordinates().getSecond() + " " + selectedActionNode.getCoordinates().getSecond() + newline;
 
-
-			/*
-			GamerLogger.log(GamerLogger.FORMAT.CSV_FORMAT, "TreeSizeStatistics", this.gameDependentParameters.getGameStep() +
-					";" + logMoment + ";" + size + ";" + totalActionsStats + ";" +
-					totalRaveAmaf + ";" + totalGraveAmaf + ";" + actionsStatsPerNode + ";" +
-					raveAmafPerNode + ";" + graveAmafPerNode + ";");
-					*/
+			GamerLogger.log(GamerLogger.FORMAT.CSV_FORMAT, "TreeSizeStatistics", toLog);
 
 		}
 
+
+	}
+
+	private void DFS(LogTreeNode node, String indent, int[] count) {
+
+		count[0]++;
+
+		if(!node.getChildren().isEmpty()) {
+			for(Entry<MctsJointMove,LogTreeNode> action : node.getChildren().entrySet()) {
+				//System.out.println(indent + action.getKey());
+				DFS(action.getValue(), indent + "  ", count);
+			}
+		}
 
 	}
 

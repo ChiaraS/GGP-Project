@@ -52,7 +52,7 @@ public class WinScoreStatsAggregator {
 
 		/************************************ Prepare the folders *********************************/
 
-		if(args.length != 2 && args.length != 3){
+		if(args.length < 2){
 			System.out.println("Impossible to aggregate statistics. Specify both the absolute path of the folder containing statistics and the name of the aggragate statistics file.");
 			System.out.println("This code will create two aggragated statistics files: [NameYouProvide]ScoreStatistics.csv and [NameYouProvide]WinsStatistics.csv.");
 			return;
@@ -393,13 +393,22 @@ public class WinScoreStatsAggregator {
 					}
 
 					String stringAvg = split[7];
-					double avg = Double.parseDouble(stringAvg);
+					String avg = "" + round(Double.parseDouble(stringAvg),1);
+					String[] splitAvg = avg.split("\\.");
+					if(splitAvg[0].length() == 1) {
+						avg = "\\,\\,\\," + avg;
+					}
 					//averagesSum.put(playerType, new Double(averagesSum.get(playerType).doubleValue() + avg));
 					//numGames.put(playerType, new Integer(numGames.get(playerType).intValue() + 1));
 
 					String game = split[0];
-					double ci = Double.parseDouble(split[8]);
-					latexData.put(playerType, (latexData.get(playerType) + game + ";$" + round(avg,1) + "(\\pm" + round(ci,2) + ")$;\n"));
+					String ci = "" + round(Double.parseDouble(split[8]),2);
+					String[] splitCi = ci.split("\\.");
+					if(splitCi[1].length() == 1) {
+						ci += "0";
+					}
+
+					latexData.put(playerType, (latexData.get(playerType) + game + ";$" + avg + "(\\pm" + ci + ")$;\n"));
 					//latexAvg.put(playerType, new Double(latexAvg.get(playerType).doubleValue() + round(avg,1)));
 
 					theLine = br.readLine();

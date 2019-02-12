@@ -24,7 +24,12 @@ public class LogTreeNode {
 	/**
 	 * True if this node is part of the path of actions played during the real game, false otherwise.
 	 */
-	private boolean onPath;
+	//private boolean onPath;
+	/**
+	 * This value is set to the step at the end of which the action leading to this node was selected.
+	 * If this is set to -1 it means that the action was never selected.
+	 */
+	 private int selectionStep;
 
 	/**
 	 * Children nodes with joint actions as keys.
@@ -45,7 +50,8 @@ public class LogTreeNode {
 		super();
 		this.step = step;
 		this.insertionOrder = insertionOrder;
-		this.onPath = false;
+		//this.onPath = false;
+		this.selectionStep = -1;
 		this.children = new HashMap<MctsJointMove,LogTreeNode>();
 		this.coordinates = null;
 	}
@@ -59,11 +65,18 @@ public class LogTreeNode {
 	}
 
 	public boolean isOnPath() {
-		return onPath;
+		//return onPath;
+		return this.selectionStep > 0;
 	}
 
-	public void setOnPath() {
-		this.onPath = true;
+	public void setOnPath(int selectionStep) {
+		//this.onPath = true;
+		this.selectionStep = selectionStep;
+	}
+
+	public int getSelectionStep() {
+		//this.onPath = true;
+		return this.selectionStep;
 	}
 
 	public HashMap<MctsJointMove, LogTreeNode> getChildren() {
