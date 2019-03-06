@@ -17,8 +17,17 @@ public final class SymbolFactory
     {
         try
         {
+        	//System.out.println();
+        	//System.out.println(string);
+
             String preprocessed = preprocess(string);
+            //System.out.println();
+            //System.out.println(preprocessed);
             List<String> tokens = lex(preprocessed);
+            //System.out.println();
+            //for(String token : tokens) {
+            //	System.out.print(token + " ");
+            //}
             return convert(new LinkedList<String>(tokens));
         }
         catch (Exception e)

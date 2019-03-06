@@ -321,7 +321,7 @@ public class TimeLimitedLsiParametersTuner extends DiscreteParametersTuner {
 		}
 
 		if(changed){
-			this.discreteParametersManager.setParametersValues(selectedCombinations);
+			this.setParametersValues(selectedCombinations);
 		}else if(!this.doneForStep){
 			this.doneForStep = true;
 		}
@@ -357,7 +357,7 @@ public class TimeLimitedLsiParametersTuner extends DiscreteParametersTuner {
 			// Log the combination that we are selecting as best
 			GamerLogger.log(GamerLogger.FORMAT.CSV_FORMAT, "BestParamsCombo", this.getLogOfCombinations(this.bestCombinations, this.isIntermediate));
 
-			this.discreteParametersManager.setParametersValues(this.bestCombinations);
+			this.setBestParametersValues(this.bestCombinations);
 		}else{
 			// Set best combo found so far
 			this.setBestCombinationSoFar();
@@ -488,7 +488,7 @@ public class TimeLimitedLsiParametersTuner extends DiscreteParametersTuner {
 			}
 		}
 
-		this.discreteParametersManager.setParametersValues(selectedCombinations);
+		this.setBestParametersValues(selectedCombinations);
 
 		// Log the combination that we are selecting as best
 		GamerLogger.log(GamerLogger.FORMAT.CSV_FORMAT, "BestParamsCombo", this.getLogOfCombinations(this.selectedCombinations, this.isIntermediate));

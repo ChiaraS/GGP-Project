@@ -19,7 +19,6 @@ import org.apache.lucene.util.OpenBitSet;
 import org.ggp.base.player.gamer.statemachine.MCTS.MctsGamer;
 import org.ggp.base.util.game.Game;
 import org.ggp.base.util.game.GameRepository;
-import org.ggp.base.util.game.LocalFolderGameRepository;
 import org.ggp.base.util.gdl.grammar.Gdl;
 import org.ggp.base.util.logging.GamerLogger;
 import org.ggp.base.util.match.Match;
@@ -108,7 +107,7 @@ public class ProvaPropnet {
             printPropnetImprovements(gameKey);
         }
 */
-		printPropnet("hexworse");
+		printPropnet("buttons");
 
 		//provaOpenbitset();
 
@@ -754,8 +753,8 @@ public class ProvaPropnet {
 	 */
 	public static void printPropnet(String gameKey){
 
-		//GameRepository theRepository = GameRepository.getDefaultRepository();
-        GameRepository theRepository = new LocalFolderGameRepository("C:/Users/c.sironi/BITBUCKET REPOS/GGP-Base/GDLFolder");
+		GameRepository theRepository = GameRepository.getDefaultRepository();
+        //GameRepository theRepository = new LocalFolderGameRepository("C:/Users/c.sironi/BITBUCKET REPOS/GGP-Base/GDLFolder");
 
 		List<Gdl> description = theRepository.getGame(gameKey).getRules();
 

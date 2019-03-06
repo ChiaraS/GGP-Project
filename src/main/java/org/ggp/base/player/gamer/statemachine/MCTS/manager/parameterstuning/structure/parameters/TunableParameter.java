@@ -94,4 +94,12 @@ public class TunableParameter {
 		return Arrays.copyOf(currentValues, currentValues.length);
 	}
 
+	public void resetAllOpponentsValues(int myRoleIndex){
+		for(int roleIndex = 0; roleIndex < this.currentValues.length; roleIndex++){
+			if(roleIndex != myRoleIndex) {
+				this.currentValues[roleIndex] = this.fixedValue;
+			}
+		}
+	}
+
 }

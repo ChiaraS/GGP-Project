@@ -1,6 +1,5 @@
 package org.ggp.base.player.gamer.statemachine.MCTS.manager.parameterstuning.discretetuners;
 
-import java.util.List;
 import java.util.Random;
 
 import org.ggp.base.player.gamer.statemachine.GamerSettings;
@@ -34,7 +33,7 @@ public class RandomParametersTuner extends DiscreteParametersTuner {
 	 */
 	private RND_TYPE randomizationType;
 
-	private List<CombinatorialCompactMove> allCombiantions;
+	//private List<CombinatorialCompactMove> allCombiantions;
 
 	private int[][] combinationsVisits;
 
@@ -67,7 +66,7 @@ public class RandomParametersTuner extends DiscreteParametersTuner {
 	public void setReferences(SharedReferencesCollector sharedReferencesCollector) {
 		super.setReferences(sharedReferencesCollector);
 
-		this.allCombiantions = this.discreteParametersManager.getAllLegalParametersCombinations();
+		//this.allCombiantions = this.discreteParametersManager.getAllLegalParametersCombinations();
 
 	}
 
@@ -97,7 +96,7 @@ public class RandomParametersTuner extends DiscreteParametersTuner {
 			numRolesToTune = 1;
 		}
 
-		this.combinationsVisits = new int[numRolesToTune][this.allCombiantions.size()];
+		this.combinationsVisits = new int[numRolesToTune][this.allCombinations.size()];
 
 	}
 
@@ -123,15 +122,15 @@ public class RandomParametersTuner extends DiscreteParametersTuner {
 
 			for(int roleIndex = 0; roleIndex < nextCombinations.length; roleIndex++){
 
-				nextComboIndex = this.random.nextInt(this.allCombiantions.size());
+				nextComboIndex = this.random.nextInt(this.allCombinations.size());
 
 				this.combinationsVisits[roleIndex][nextComboIndex]++;
 
-				nextCombinations[roleIndex] = this.allCombiantions.get(nextComboIndex).getIndices();
+				nextCombinations[roleIndex] = this.allCombinations.get(nextComboIndex).getIndices();
 
 			}
 
-			this.discreteParametersManager.setParametersValues(nextCombinations);
+			this.setParametersValues(nextCombinations);
 		}
 
 	}
@@ -153,15 +152,15 @@ public class RandomParametersTuner extends DiscreteParametersTuner {
 
 		for(int roleIndex = 0; roleIndex < nextCombinations.length; roleIndex++){
 
-			nextComboIndex = this.random.nextInt(this.allCombiantions.size());
+			nextComboIndex = this.random.nextInt(this.allCombinations.size());
 
 			this.combinationsVisits[roleIndex][nextComboIndex]++;
 
-			nextCombinations[roleIndex] = this.allCombiantions.get(nextComboIndex).getIndices();
+			nextCombinations[roleIndex] = this.allCombinations.get(nextComboIndex).getIndices();
 
 		}
 
-		this.discreteParametersManager.setParametersValues(nextCombinations);
+		this.setBestParametersValues(nextCombinations);
 
 		// Log the combination that we are selecting as best
 		GamerLogger.log(GamerLogger.FORMAT.CSV_FORMAT, "BestParamsCombo", this.getLogOfCombinations(nextCombinations));
@@ -202,11 +201,11 @@ public class RandomParametersTuner extends DiscreteParametersTuner {
 			CombinatorialCompactMove combination;
 			String theValues;
 
-			for(int comboIndex = 0; comboIndex < this.allCombiantions.size(); comboIndex++){
+			for(int comboIndex = 0; comboIndex < this.allCombinations.size(); comboIndex++){
 
 				//System.out.println(comboIndex);
 
-				combination = this.allCombiantions.get(comboIndex);
+				combination = this.allCombinations.get(comboIndex);
 				theValues = "[ ";
 				for(int paramIndex = 0; paramIndex < combination.getIndices().length; paramIndex++){
 					theValues += (this.discreteParametersManager.getPossibleValues(paramIndex)[combination.getIndices()[paramIndex]] + " ");
@@ -245,8 +244,7 @@ public class RandomParametersTuner extends DiscreteParametersTuner {
 	@Override
 	public String getComponentParameters(String indentation) {
 
-		String params = indentation + "RANDOMIZATION_TYPE = " + this.randomizationType +
-				indentation + "NUM_COMBINATORIAL_MOVES = " + (this.allCombiantions != null ? this.allCombiantions.size() : 0) ;
+		String params = indentation + "RANDOMIZATION_TYPE = " + this.randomizationType;
 
 		String superParams = super.getComponentParameters(indentation);
 

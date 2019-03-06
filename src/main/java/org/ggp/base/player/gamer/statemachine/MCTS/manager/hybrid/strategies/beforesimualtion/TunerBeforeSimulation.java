@@ -14,6 +14,11 @@ import org.ggp.base.util.reflection.ProjectSearcher;
 
 public class TunerBeforeSimulation extends BeforeSimulationStrategy {
 
+
+	// For debugging
+	// private List<DiscreteTunableParameter> discreteTunableParameters;
+	// For debugging
+
 	/**
 	 * Number of simulations that are available to tune parameters.
 	 * Once this number has been reached, the tuning will stop and we will
@@ -93,6 +98,9 @@ public class TunerBeforeSimulation extends BeforeSimulationStrategy {
 			throw new RuntimeException("ParametersTuner - Initialization with null or empty list of tunable parameters!");
 		}*/
 
+		// For debugging
+		// this.discreteTunableParameters = sharedReferencesCollector.getTheDiscreteParametersToTune();
+		// For debugging
 	}
 
 	@Override
@@ -163,6 +171,18 @@ public class TunerBeforeSimulation extends BeforeSimulationStrategy {
 				// We still have simulations left to tune parameters and we finished performing the batch of simulations
 				// for the current configuration of parameters.
 				this.parametersTuner.setNextCombinations();
+
+				/* For debugging
+				System.out.println();
+				for(DiscreteTunableParameter t : this.discreteTunableParameters) {
+					String vals = "" + t.getName() + "[ ";
+					for(Double d : t.getCurrentValues()) {
+						vals += (d + " ");
+					}
+					vals += "]";
+					System.out.println(vals);
+				}
+				For debugging */
 
 			}
 

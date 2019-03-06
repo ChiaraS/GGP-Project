@@ -1513,7 +1513,7 @@ public class HybridMctsManager {
 				orderedNodes.add(new HashSet<LogTreeNode>());
 			}
 
-			// Keep an array that for contains an entry for each step of the game. Each entry contains the node that is reached by
+			// Keep an array that contains an entry for each step of the game. Each entry contains the node that is reached by
 			// performing the action selected at the end of the corresponding step.
 			LogTreeNode[] selectedActionNodes = new LogTreeNode[this.gameDependentParameters.getGameStep()];
 

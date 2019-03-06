@@ -325,7 +325,7 @@ public class SequentialParametersTuner extends DiscreteParametersTuner {
 			this.selectedCombinations[roleProblemIndex][paramIndex] = newValuesOfParameter[roleProblemIndex];
 		}
 
-		this.discreteParametersManager.setSingleParameterValues(newValuesOfParameter, paramIndex);
+		this.setSingleParameterValues(newValuesOfParameter, paramIndex);
 
 	}
 
@@ -372,7 +372,7 @@ public class SequentialParametersTuner extends DiscreteParametersTuner {
 			// Log the combination that we are selecting as best
 			GamerLogger.log(GamerLogger.FORMAT.CSV_FORMAT, "BestParamsCombo", this.getLogOfCombinations(this.bestCombinations));
 
-			this.discreteParametersManager.setParametersValues(this.bestCombinations);
+			this.setBestParametersValues(this.bestCombinations);
 
 		/*}else if(this.singleBest){
 			this.setSingleBestCombination();*/
@@ -414,7 +414,9 @@ public class SequentialParametersTuner extends DiscreteParametersTuner {
 			this.selectedCombinations[roleProblemIndex][paramIndex] = newValuesOfParameter[roleProblemIndex];
 		}
 
-		this.discreteParametersManager.setSingleParameterValues(newValuesOfParameter, paramIndex);
+		// Reset to default values the parameter of all other roles
+
+		this.setBestSingleParameterValues(newValuesOfParameter, paramIndex);
 
 	}
 

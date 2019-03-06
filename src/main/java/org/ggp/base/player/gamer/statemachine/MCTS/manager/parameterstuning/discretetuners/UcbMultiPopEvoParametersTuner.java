@@ -121,7 +121,7 @@ public class UcbMultiPopEvoParametersTuner extends MultiPopEvoParametersTuner {
 		// Log the combination that we are selecting as best
 		GamerLogger.log(GamerLogger.FORMAT.CSV_FORMAT, "BestParamsCombo", this.getLogOfCombinations(this.selectedCombinations));
 
-		this.discreteParametersManager.setParametersValues(this.selectedCombinations);
+		this.setBestParametersValues(this.selectedCombinations);
 
 	}
 

@@ -789,7 +789,7 @@ public class StatsSummarizer {
 
 				System.out.println();
 
-				System.out.println("!!! Not all the Speed Stats files have been included in the Speed statistics due to some error. Speed stats are not completely clean!");
+				System.out.println("!!! Unless you are testing external players, not all the Speed Stats files have been included in the Speed statistics due to some error. Speed stats are not completely clean!");
 
 			}
 		}else {

@@ -128,7 +128,7 @@ public class HierarchicalSingleMabParametersTuner extends SingleMabParametersTun
 			}
 		}
 
-		this.discreteParametersManager.setParametersValues(this.selectedExpandedCombinationsIndices);
+		this.setParametersValues(this.selectedExpandedCombinationsIndices);
 
 	}
 
@@ -159,7 +159,7 @@ public class HierarchicalSingleMabParametersTuner extends SingleMabParametersTun
 			}
 		}
 
-		this.discreteParametersManager.setParametersValues(this.selectedExpandedCombinationsIndices);
+		this.setBestParametersValues(this.selectedExpandedCombinationsIndices);
 
 		this.stopTuning();
 

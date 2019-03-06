@@ -261,7 +261,7 @@ public class NaiveParametersTuner extends DiscreteParametersTuner {
 			this.selectedCombinations = this.phase2Settings.selectNextCombinations(this.roleProblems);
 		}
 
-		this.discreteParametersManager.setParametersValues(this.selectedCombinations);
+		this.setParametersValues(this.selectedCombinations);
 
 	}
 
@@ -290,7 +290,7 @@ public class NaiveParametersTuner extends DiscreteParametersTuner {
 		// Log the combination that we are selecting as best
 		GamerLogger.log(GamerLogger.FORMAT.CSV_FORMAT, "BestParamsCombo", this.getLogOfCombinations(this.bestCombinations));
 
-		this.discreteParametersManager.setParametersValues(this.bestCombinations);
+		this.setBestParametersValues(this.bestCombinations);
 	}
 
 	/**
@@ -328,7 +328,7 @@ public class NaiveParametersTuner extends DiscreteParametersTuner {
 		// Log the combination that we are selecting as best
 		GamerLogger.log(GamerLogger.FORMAT.CSV_FORMAT, "BestParamsCombo", this.getLogOfCombinations(this.selectedCombinations));
 
-		this.discreteParametersManager.setParametersValues(this.selectedCombinations);
+		this.setBestParametersValues(this.selectedCombinations);
 	}
 
 	/**
@@ -410,7 +410,7 @@ public class NaiveParametersTuner extends DiscreteParametersTuner {
 		GamerLogger.log(GamerLogger.FORMAT.CSV_FORMAT, "BestParamsCombo", toLog);
 
 		// Set
-		this.discreteParametersManager.setParametersValues(this.selectedCombinations);
+		this.setBestParametersValues(this.selectedCombinations);
 	}
 
 	private void setSingleLocalBestCombination(){
@@ -485,7 +485,7 @@ public class NaiveParametersTuner extends DiscreteParametersTuner {
 		GamerLogger.log(GamerLogger.FORMAT.CSV_FORMAT, "BestParamsCombo", toLog);
 
 		// Set
-		this.discreteParametersManager.setParametersValues(this.selectedCombinations);
+		this.setBestParametersValues(this.selectedCombinations);
 
 	}
 

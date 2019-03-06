@@ -34,7 +34,17 @@ public abstract class ParametersTuner extends SearchManagerComponent{
 	 */
 	protected boolean tuning;
 
+	/**
+	 * If true, parameters will be tuned for all the roles, otherwise only for the playing role.
+	 */
 	protected boolean tuneAllRoles;
+
+	/**
+	 * When parameters are tuned only for the playing role (i.e. tuneAllRoles=false), this parameter
+	 * controls how the other roles are modeled. If true, the parameters for the other roles are randomized,
+	 * otherwise they are kept fixed to the default values.
+	 */
+	protected boolean randomOpponents;
 
 	/**
 	 * True if the tuner must memorize the best combinations found after the end of the first game
@@ -95,6 +105,12 @@ public abstract class ParametersTuner extends SearchManagerComponent{
 
 		this.tuneAllRoles = gamerSettings.getBooleanPropertyValue("ParametersTuner.tuneAllRoles");
 
+		if(!this.tuneAllRoles && gamerSettings.specifiesProperty("ParametersTuner.randomOpponents")) {
+			this.randomOpponents = gamerSettings.getBooleanPropertyValue("ParametersTuner.randomOpponents");
+		}else {
+			this.randomOpponents = false;
+		}
+
 		this.reuseBestCombos = gamerSettings.getBooleanPropertyValue("ParametersTuner.reuseBestCombos");
 
 	}
@@ -143,6 +159,7 @@ public abstract class ParametersTuner extends SearchManagerComponent{
 	public String getComponentParameters(String indentation) {
 
 		String params = indentation + "TUNE_ALL_ROLES = " + this.tuneAllRoles +
+				indentation + "RANDOM-OPPONENTS = " + this.randomOpponents +
 				indentation + "REUSE_BEST_COMBOS = " + this.reuseBestCombos +
 				indentation + "REUSE_STATS = " + this.reuseStats +
 				indentation + "tuning = " + this.tuning;

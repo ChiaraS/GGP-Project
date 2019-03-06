@@ -283,7 +283,7 @@ public class SinglePopEvoParametersTuner extends DiscreteParametersTuner {
 			}
 		}
 
-		this.discreteParametersManager.setParametersValues(combinationsToSet);
+		this.setParametersValues(combinationsToSet);
 	}
 
 	@Override
@@ -297,8 +297,9 @@ public class SinglePopEvoParametersTuner extends DiscreteParametersTuner {
 			numRolesToTune = 1;
 		}
 
+		int[][] combinationsToSet;
 		if(this.isMemorizingBestCombo()){
-			int[][] combinationsToSet = new int[numRolesToTune][];
+			combinationsToSet = new int[numRolesToTune][];
 
 			for(int roleIndex = 0; roleIndex < numRolesToTune; roleIndex++){
 				combinationsToSet[roleIndex] = this.bestCombination;
@@ -322,14 +323,18 @@ public class SinglePopEvoParametersTuner extends DiscreteParametersTuner {
 				 throw new RuntimeException("MultiPopEvoParametersTuner - Impossible to set best combination. The Move is not of type CombinatorialCompactMove but of type " + theParametersCombination.getClass().getSimpleName() + ".");
 			}
 
-			int[][] combinationsToSet = new int[numRolesToTune][];
+			combinationsToSet = new int[numRolesToTune][];
 
 			for(int roleIndex = 0; roleIndex < numRolesToTune; roleIndex++){
 				combinationsToSet[roleIndex] = this.selectedCombination;
 			}
 
-			this.discreteParametersManager.setParametersValues(combinationsToSet);
+			//this.discreteParametersManager.resetParametersToDefaultValues();
+			//this.discreteParametersManager.setParametersValues(combinationsToSet);
+
 		}
+
+		this.setBestParametersValues(combinationsToSet);
 
 		this.stopTuning();
 

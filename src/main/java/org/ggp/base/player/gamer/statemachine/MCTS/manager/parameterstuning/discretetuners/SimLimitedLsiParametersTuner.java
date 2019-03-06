@@ -300,7 +300,7 @@ public class SimLimitedLsiParametersTuner extends DiscreteParametersTuner {
 			}
 		}
 
-		this.discreteParametersManager.setParametersValues(selectedCombinations);
+		this.setParametersValues(selectedCombinations);
 
 		if(foundAllBest){
 			// Log the combination that we are selecting as best
@@ -329,7 +329,7 @@ public class SimLimitedLsiParametersTuner extends DiscreteParametersTuner {
 			// Log the combination that we are selecting as best
 			GamerLogger.log(GamerLogger.FORMAT.CSV_FORMAT, "BestParamsCombo", this.getLogOfCombinations(this.bestCombinations, this.isIntermediate));
 
-			this.discreteParametersManager.setParametersValues(this.bestCombinations);
+			this.setBestParametersValues(this.bestCombinations);
 		}else{
 			// Set best combo found so far
 			this.setBestCombinationSoFar();
@@ -460,7 +460,7 @@ public class SimLimitedLsiParametersTuner extends DiscreteParametersTuner {
 			}
 		}
 
-		this.discreteParametersManager.setParametersValues(selectedCombinations);
+		this.setBestParametersValues(selectedCombinations);
 
 		// Log the combination that we are selecting as best
 		GamerLogger.log(GamerLogger.FORMAT.CSV_FORMAT, "BestParamsCombo", this.getLogOfCombinations(this.selectedCombinations, this.isIntermediate));

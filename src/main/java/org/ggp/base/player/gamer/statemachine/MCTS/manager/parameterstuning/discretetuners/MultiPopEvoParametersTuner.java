@@ -351,7 +351,8 @@ public abstract class MultiPopEvoParametersTuner extends DiscreteParametersTuner
 			 }
 		 }*/
 
-		 this.discreteParametersManager.setParametersValues(this.selectedCombinations);
+		 //this.discreteParametersManager.setParametersValues(this.selectedCombinations);
+		 this.setParametersValues(this.selectedCombinations);
 
 	}
 
@@ -359,7 +360,7 @@ public abstract class MultiPopEvoParametersTuner extends DiscreteParametersTuner
 	public void setBestCombinations() {
 
 		if(this.isMemorizingBestCombo()){
-			 this.discreteParametersManager.setParametersValues(this.bestCombinations);
+			this.setBestParametersValues(this.bestCombinations);
 		}else{
 			this.computeAndSetBestCombinations();
 		}

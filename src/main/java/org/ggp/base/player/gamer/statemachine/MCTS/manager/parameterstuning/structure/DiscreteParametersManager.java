@@ -271,6 +271,25 @@ public class DiscreteParametersManager extends ParametersManager {
 	}
 
 	/**
+	 * Given the index of a role returns an array with the indices of the values set for the role for each parameter.
+	 *
+	 * @param roleIndex
+	 * @return
+	 */
+	public int[] getCurrentParamValueIndicesForRole(int roleIndex){
+
+		int[] paramValuesIndicesForRole = new int[this.discreteTunableParameters.size()];
+
+		int paramIndex = 0;
+		for(DiscreteTunableParameter param : this.discreteTunableParameters) {
+			paramValuesIndicesForRole[paramIndex] = param.getCurrentValuesIndices()[roleIndex];
+			paramIndex++;
+		}
+
+		return paramValuesIndicesForRole;
+	}
+
+	/**
 	 * Returns the number of possible values of the parameter at position paramIndex in
 	 * the list of tunableParameters.
 	 *
@@ -485,6 +504,13 @@ public class DiscreteParametersManager extends ParametersManager {
 		}
 
 		return penaltySum/parameterValuesIndices.length;
+	}
+
+
+	public void resetOpponentsParametersToDefaultValues() {
+		for(DiscreteTunableParameter param : this.discreteTunableParameters) {
+			param.resetAllOpponentsValues(this.gameDependentParameters.getMyRoleIndex());
+		}
 	}
 
 }
