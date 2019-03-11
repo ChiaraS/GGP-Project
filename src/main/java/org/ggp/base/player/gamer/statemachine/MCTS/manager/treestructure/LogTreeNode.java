@@ -11,15 +11,15 @@ public class LogTreeNode {
 	/**
 	 * Game step in which this node was added to the tree.
 	 */
-	private int step;
+	//private int step;
 
 	/**
 	 * Index that keeps track of the order in which nodes are added to the tree.
-	 * Corresponds to the number of simulations performed until this node was added.
-	 * E.g. if insertionOrder=4 it means that this node was added after 4 MCTS
-	 * simulations since the start of the game, thus during the 5th simulation.
+	 * Corresponds to the number of iterations performed until this node was added.
+	 * E.g. if insertionIteration=4 it means that this node was added after 4 MCTS
+	 * iterations since the start of the game, thus during the 5th iteration.
 	 */
-	private int insertionOrder;
+	private int insertionIteration;
 
 	/**
 	 * True if this node is part of the path of actions played during the real game, false otherwise.
@@ -27,7 +27,7 @@ public class LogTreeNode {
 	//private boolean onPath;
 	/**
 	 * This value is set to the step at the end of which the action leading to this node was selected.
-	 * If this is set to -1 it means that the action was never selected.
+	 * If this is set to 0 it means that the action was never selected.
 	 */
 	 private int selectionStep;
 
@@ -46,27 +46,27 @@ public class LogTreeNode {
 	 */
 	private MyPair<Double,Double> parentCoordinates;
 
-	public LogTreeNode(int step, int insertionOrder) {
+	public LogTreeNode(int insertionOrder) {
 		super();
-		this.step = step;
-		this.insertionOrder = insertionOrder;
+		//this.step = step;
+		this.insertionIteration = insertionOrder;
 		//this.onPath = false;
 		this.selectionStep = -1;
 		this.children = new HashMap<MctsJointMove,LogTreeNode>();
 		this.coordinates = null;
 	}
 
-	public int getStep() {
-		return step;
-	}
+	//public int getStep() {
+	//	return step;
+	//}
 
-	public int getInsertionOrder() {
-		return insertionOrder;
+	public int getInsertionIteration() {
+		return insertionIteration;
 	}
 
 	public boolean isOnPath() {
 		//return onPath;
-		return this.selectionStep > 0;
+		return this.selectionStep > -1;
 	}
 
 	public void setOnPath(int selectionStep) {
@@ -109,7 +109,7 @@ public class LogTreeNode {
 
 	@Override
 	public String toString(){
-		return "[ " + this.step + ", " + this.insertionOrder + " ]";
+		return "[ " + this.insertionIteration + ", " + this.selectionStep + " ]";
 	}
 
 }

@@ -130,6 +130,7 @@ public class MctsGamer extends InternalPropnetGamer {
 
 		if(this.metagameSearch){
 
+			// Before move actions are performed ALWAYS, even when there is no time to start the search
 			this.mctsManager.beforeMoveActions(1, true, this.getInternalLastJointMove());
 
 			// If there is enough time left start the MCT search.

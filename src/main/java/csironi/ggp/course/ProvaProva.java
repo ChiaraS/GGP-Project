@@ -45,30 +45,30 @@ public class ProvaProva {
 		MctsJointMove jm2 = new MctsJointMove(jointMove2);
 		MctsJointMove jm3 = new MctsJointMove(jointMove3);
 
-		LogTreeNode node = new LogTreeNode(1,2);
-		node.addChild(jm1, new LogTreeNode(2,2));
+		//LogTreeNode node = new LogTreeNode(1,2);
+		//node.addChild(jm1, new LogTreeNode(2,2));
 
 		System.out.println();
 
-		for(Entry<MctsJointMove,LogTreeNode> jm : node.getChildren().entrySet()) {
-			System.out.println("( " + jm.getKey() + ", " + jm.getValue() + ")");
-		}
+		//for(Entry<MctsJointMove,LogTreeNode> jm : node.getChildren().entrySet()) {
+		//	System.out.println("( " + jm.getKey() + ", " + jm.getValue() + ")");
+		//}
 
-		node.addChild(jm2, new LogTreeNode(3,2));
-
-		System.out.println();
-
-		for(Entry<MctsJointMove,LogTreeNode> jm : node.getChildren().entrySet()) {
-			System.out.println("( " + jm.getKey() + ", " + jm.getValue() + ")");
-		}
-
-		node.addChild(jm3, new LogTreeNode(4,2));
+		//node.addChild(jm2, new LogTreeNode(3,2));
 
 		System.out.println();
 
-		for(Entry<MctsJointMove,LogTreeNode> jm : node.getChildren().entrySet()) {
-			System.out.println("( " + jm.getKey() + ", " + jm.getValue() + ")");
-		}
+		//for(Entry<MctsJointMove,LogTreeNode> jm : node.getChildren().entrySet()) {
+		//	System.out.println("( " + jm.getKey() + ", " + jm.getValue() + ")");
+		//}
+
+		//node.addChild(jm3, new LogTreeNode(4,2));
+
+		System.out.println();
+
+		//for(Entry<MctsJointMove,LogTreeNode> jm : node.getChildren().entrySet()) {
+		//	System.out.println("( " + jm.getKey() + ", " + jm.getValue() + ")");
+		//}
 
 
 

@@ -38,6 +38,11 @@ public class GraveUpdater extends NodeUpdater{
 		// Do nothing
 	}
 
+	/**
+	 * GRAVE update. Updates the AMAF for all actions in the state that have been performed from this state on
+	 * (including the action directly performed in the state). Updates the expected value only for the action
+	 * directly performed in the state.
+	 */
 	@Override
 	public void update(MctsNode currentNode, MachineState currentState, MctsJointMove jointMove, SimulationResult[] simulationResult) {
 
