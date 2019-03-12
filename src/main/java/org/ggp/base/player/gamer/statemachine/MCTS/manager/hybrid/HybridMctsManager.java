@@ -1577,11 +1577,12 @@ public class HybridMctsManager {
 
 			// Log the tree with the format required by the matlab function that will print it (use space as separator)
 
-			// The first line has 1 integer value representing the total number of steps of the search and
+			// The first line has 1 integer value representing the total number of steps of the search,
+			// 1 integer value representing the total number of simulations performed during the search and
 			// 4 double values that represent the minimum and maximum value for the x and y axis respectively
-			// (i.e. xMin xMax yMin yMax)
+			// (i.e. step iterartions xMin xMax yMin yMax)
 			String newline = "\n";
-			String toLog = this.gameDependentParameters.getGameStep() + " " + xMin + " " + x + " " + (-yMax-d) + " " + (yMax+d) + newline;
+			String toLog = this.gameDependentParameters.getGameStep() + " " + this.gameDependentParameters.getTotIterations() + " " + xMin + " " + x + " " + (-yMax-d) + " " + (yMax+d) + newline;
 
 
 			//// Assuming that steps start at 1 and increase by 1 after every turn.

@@ -45,7 +45,7 @@ public class GameDependentParameters {
 	private int stepIterations;
 
 	/**
-	 * Iterations performed so far during the whole game. Corrsponds to the sum of stepIterations
+	 * Iterations performed so far during the whole game. Corresponds to the sum of stepIterations
 	 * for each step, therefore when using multiple playouts in the same iteration the number of
 	 * iterations will be increased by the number of performed playouts and not only by 1.
 	 */
