@@ -77,7 +77,11 @@ public class CadiaBetaComputer extends BetaComputer{
 	public double computeBeta(MoveStats theMoveStats, MoveStats theAmafMoveStats,
 			int nodeVisits, int roleIndex) {
 
-		if(this.k.getValuePerRole(roleIndex) == 0){
+		double kValuePerRole = this.k.getValuePerRole(roleIndex);
+
+		//System.out.println("Role=" + roleIndex + "K=" + kValuePerRole);
+
+		if(kValuePerRole == 0){
 			return 0.0;
 			// ATTENTION: here we consider 10^10 to be a value for K that's high enough to be equivalent to +infinity, so
 			// whenever K >= 10^10 we return the value 1 for beta. This is a good approximation if the maximum number of
@@ -91,12 +95,12 @@ public class CadiaBetaComputer extends BetaComputer{
 			// the behavior of the GRAVE strategy that we will have when K=+infinity (because if the number of visits of a node
 			// cannot exceed 10^7, the value of beta will be very close to 1 for any value greater than 10^10, as it is exaclty
 			// 1 for K=+infinity).
-		}else if(this.k.getValuePerRole(roleIndex) >= Math.pow(10.0, 10.0)){
+		}else if(kValuePerRole >= Math.pow(10.0, 10.0)){
 			return 1.0;
 		}
 
-		double numerator = this.k.getValuePerRole(roleIndex);
-		double denominator = ((3*nodeVisits) + this.k.getValuePerRole(roleIndex));
+		double numerator = kValuePerRole;
+		double denominator = ((3*nodeVisits) + kValuePerRole);
 		return Math.sqrt(numerator / denominator);
 	}
 

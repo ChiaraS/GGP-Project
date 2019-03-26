@@ -112,7 +112,11 @@ public class EpsilonMastMoveSelector extends MoveSelector{
 	@Override
 	public Move getMoveForRole(MctsNode node, MachineState state, int roleIndex) throws MoveDefinitionException, StateMachineException {
 
-		if(this.random.nextDouble() < this.epsilon.getValuePerRole(roleIndex)){
+		double epsilonValuePerRole = this.epsilon.getValuePerRole(roleIndex);
+
+		//System.out.println("Role=" + roleIndex + "Epsilon=" + epsilonValuePerRole);
+
+		if(this.random.nextDouble() < epsilonValuePerRole){
     		// Choose random action with probability epsilon
 			return this.randomSelector.getMoveForRole(node, state, roleIndex);
     	}else{

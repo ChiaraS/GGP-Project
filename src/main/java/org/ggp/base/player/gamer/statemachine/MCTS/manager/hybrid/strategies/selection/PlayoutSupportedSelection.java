@@ -139,7 +139,12 @@ public class PlayoutSupportedSelection extends SelectionStrategy {
 
 	@Override
 	public MctsMove selectPerRole(MctsNode currentNode, MachineState state, int roleIndex) {
-		if(currentNode.getTotVisits()[roleIndex] >= this.t.getValuePerRole(roleIndex)){
+
+		double tValuePerRole = this.t.getValuePerRole(roleIndex);
+
+		//System.out.println("Role=" + roleIndex + "T=" + tValuePerRole);
+
+		if(currentNode.getTotVisits()[roleIndex] >= tValuePerRole){
 			return this.selectionStrategy.selectPerRole(currentNode, state, roleIndex);
 		}else{
 			Move move;

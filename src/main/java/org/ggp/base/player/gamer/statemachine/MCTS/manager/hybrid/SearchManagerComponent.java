@@ -306,6 +306,14 @@ public abstract class SearchManagerComponent {
 				tuningOrderIndex =  gamerSettings.getIntPropertyValue(callingClass + ".tuningOrderIndex" + parameterName);
 			}
 
+			// Also check if the parameter has to be randomized per state. If so, issue a warning saying that any other
+			// tuning strategy will not be active, if any is specified.
+			boolean randomizePerCall = false;
+			if(gamerSettings.specifiesProperty(callingClass + ".randomizePerCall" + parameterName)){
+				randomizePerCall =  gamerSettings.getBooleanPropertyValue(callingClass + ".randomizePerCall" + parameterName);
+				GamerLogger.log("SearchManagerCreation", "WARNING! Using parameter randomization per call will deactivate any other type of randomization or modification to the parameter values!");
+			}
+
 			// If we have to tune the parameter then we look in the settings for the values that we must use
 			// Note:
 			// 1. The format for these values in the file must be the following when we are using discrete values:
@@ -322,20 +330,20 @@ public abstract class SearchManagerComponent {
 			// We check in the settings if possible values are specified as a discrete list or as a continuous interval
 			// and create the parameter type accordingly.
 			if(gamerSettings.isIntervalProperty(callingClass + ".valuesFor" + parameterName)){
-				theParameter = this.createContinuousTunableParameter(fixedParam, tuningOrderIndex, callingClass, parameterName, gamerSettings, sharedReferencesCollector);
+				theParameter = this.createContinuousTunableParameter(fixedParam, tuningOrderIndex, randomizePerCall, callingClass, parameterName, gamerSettings, sharedReferencesCollector);
 			}else{
-				theParameter = this.createDiscreteTunableParameter(fixedParam, tuningOrderIndex, callingClass, parameterName, gamerSettings, sharedReferencesCollector);
+				theParameter = this.createDiscreteTunableParameter(fixedParam, tuningOrderIndex, randomizePerCall, callingClass, parameterName, gamerSettings, sharedReferencesCollector);
 			}
 
 		}else{
-			theParameter = new TunableParameter(parameterName, fixedParam, -1); // No need for tuningOrderIndex when param is not being tuned
+			theParameter = new TunableParameter(this.random, parameterName, fixedParam, -1, false); // No need for tuningOrderIndex when param is not being tuned, and impossible to randomize per state because we are not even checking if the feasible values are specified.
 		}
 
 		return theParameter;
 
 	}
 
-	protected DiscreteTunableParameter createDiscreteTunableParameter(double fixedParam, int tuningOrderIndex, String callingClass, String parameterName, GamerSettings gamerSettings, SharedReferencesCollector sharedReferencesCollector){
+	protected DiscreteTunableParameter createDiscreteTunableParameter(double fixedParam, int tuningOrderIndex, boolean randomizePerCall, String callingClass, String parameterName, GamerSettings gamerSettings, SharedReferencesCollector sharedReferencesCollector){
 
 		DiscreteTunableParameter theParameter;
 
@@ -371,7 +379,7 @@ public abstract class SearchManagerComponent {
 			}
 		}
 
-		theParameter = new DiscreteTunableParameter(parameterName, fixedParam, tuningOrderIndex, possibleValues, possibleValuesPenalty);
+		theParameter = new DiscreteTunableParameter(this.random, parameterName, fixedParam, tuningOrderIndex, randomizePerCall, possibleValues, possibleValuesPenalty);
 
 		// If the parameter must be tuned online, then we should add its reference to the sharedReferencesCollector
 		sharedReferencesCollector.addDiscreteParameterToTune(theParameter);
@@ -380,7 +388,7 @@ public abstract class SearchManagerComponent {
 
 	}
 
-	protected ContinuousTunableParameter createContinuousTunableParameter(double fixedParam, int tuningOrderIndex, String callingClass, String parameterName, GamerSettings gamerSettings, SharedReferencesCollector sharedReferencesCollector){
+	protected ContinuousTunableParameter createContinuousTunableParameter(double fixedParam, int tuningOrderIndex, boolean randomizePerCall, String callingClass, String parameterName, GamerSettings gamerSettings, SharedReferencesCollector sharedReferencesCollector){
 
 		ContinuousTunableParameter theParameter;
 
@@ -398,7 +406,7 @@ public abstract class SearchManagerComponent {
 			throw new RuntimeException("SearchManagerCreation - fixed parameter value not included in specified interval!");
 		}
 
-		theParameter = new ContinuousTunableParameter(parameterName, fixedParam, tuningOrderIndex, possibleValuesInterval);
+		theParameter = new ContinuousTunableParameter(this.random, parameterName, fixedParam, tuningOrderIndex, randomizePerCall, possibleValuesInterval);
 
 		// If the parameter must be tuned online, then we should add its reference to the sharedReferencesCollector
 		sharedReferencesCollector.addContinuousParameterToTune(theParameter);

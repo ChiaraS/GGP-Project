@@ -84,9 +84,9 @@ public class ContinuousParametersManager extends ParametersManager {
 		return this.continuousTunableParameters.size();
 	}
 
-	public double[] getCurrentValuesForParam(int paramIndex){
-		return this.continuousTunableParameters.get(paramIndex).getCurrentValues();
-	}
+	//public double[] getCurrentValuesForParam(int paramIndex){
+	//	return this.continuousTunableParameters.get(paramIndex).getCurrentValues();
+	//}
 
 	/**
 	 * Returns the interval of possible values for the parameter at position paramIndex in

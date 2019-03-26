@@ -1,5 +1,7 @@
 package org.ggp.base.player.gamer.statemachine.MCTS.manager.parameterstuning.structure.parameters;
 
+import java.util.Random;
+
 /**
  * TODO: should this become a generic class?
  * @author C.Sironi
@@ -30,9 +32,9 @@ public class DiscreteTunableParameter extends TunableParameter {
 	 */
 	private double[] possibleValuesPenalty;
 
-	public DiscreteTunableParameter(String name, double fixedValue, int tuningOrderIndex, double[] possibleValues, double[] possibleValuesPenalty) {
+	public DiscreteTunableParameter(Random random, String name, double fixedValue, int tuningOrderIndex, boolean randomizePerCall, double[] possibleValues, double[] possibleValuesPenalty) {
 
-		super(name, fixedValue, tuningOrderIndex);
+		super(random, name, fixedValue, tuningOrderIndex, randomizePerCall);
 
 		this.possibleValues = possibleValues;
 
@@ -153,6 +155,19 @@ public class DiscreteTunableParameter extends TunableParameter {
 			return params;
 		}
 
+	}
+
+	@Override
+	public double getValuePerRole(int roleIndex){
+		if(this.randomizePerCall) {
+			return this.getRandomValuePerRole();
+		}else {
+			return this.currentValues[roleIndex];
+		}
+	}
+
+	private double getRandomValuePerRole() {
+		return this.possibleValues[this.random.nextInt(this.possibleValues.length)];
 	}
 
 }

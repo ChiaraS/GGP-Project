@@ -150,11 +150,15 @@ public class MoveValueSelection extends SelectionStrategy {
 
 		//System.out.print("MoveValues = [ ");
 
+		double valueOffsetValuePerRole = this.valueOffset.getValuePerRole(roleIndex);
+
+		//System.out.println("Role=" + roleIndex + "VO=" + valueOffsetValuePerRole);
+
 		for(int j = 0; j < moveValues.length; j++){
 
 			//System.out.print(moveValues[j] + " ");
 
-			if(moveValues[j] >= (maxMoveValue-this.valueOffset.getValuePerRole(roleIndex))){
+			if(moveValues[j] >= (maxMoveValue-valueOffsetValuePerRole)){
 				selectedMovesIndices.add(new Integer(j));
 			}
 		}
@@ -214,8 +218,10 @@ public class MoveValueSelection extends SelectionStrategy {
 			// in the interval [maxMoveValue-valueOffset, maxMoveValue].
 			List<Integer> selectedMovesIndices = new ArrayList<Integer>();
 
+			double valueOffsetValuePerRole = this.valueOffset.getValuePerRole(roleIndex);
+			//System.out.println("Role=" + roleIndex + "VO=" + valueOffsetValuePerRole);
 			for(int i = 0; i < moveValues.length; i++){
-				if(moveValues[i] >= (maxMoveValue-this.valueOffset.getValuePerRole(roleIndex))){
+				if(moveValues[i] >= (maxMoveValue-valueOffsetValuePerRole)){
 					selectedMovesIndices.add(new Integer(i));
 				}
 			}

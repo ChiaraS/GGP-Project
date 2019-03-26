@@ -128,10 +128,13 @@ public class UctEvaluator extends MoveEvaluator {
 		double exploitation = this.computeExploitation(theNode, theMove, roleIndex, theMoveStats);
 		double exploration = this.computeExploration(theNode, roleIndex, theMoveStats, parentVisits);
 
+		double fpuValuePerRole = this.fpu.getValuePerRole(roleIndex);
+		//System.out.println("Role=" + roleIndex + "Fpu=" + fpuValuePerRole);
+
 		if(exploitation != -1 && exploration != -1){
 			return exploitation + exploration;
 		}else{
-			return this.fpu.getValuePerRole(roleIndex);
+			return fpuValuePerRole;
 		}
 	}
 
@@ -152,11 +155,15 @@ public class UctEvaluator extends MoveEvaluator {
 
 		//int parentVisits = theNode.getTotVisits()[roleIndex];
 
+		double cValuePerRole = this.c.getValuePerRole(roleIndex);
+
+		//System.out.println("Role=" + roleIndex + "C=" + cValuePerRole);
+
 		double moveVisits = theMoveStats.getVisits();
 
 		if(parentVisits != 0 && moveVisits != 0){
 
-			return (this.c.getValuePerRole(roleIndex) * (Math.sqrt(Math.log(parentVisits)/moveVisits)));
+			return (cValuePerRole * (Math.sqrt(Math.log(parentVisits)/moveVisits)));
 		}else{
 			return -1.0;
 		}

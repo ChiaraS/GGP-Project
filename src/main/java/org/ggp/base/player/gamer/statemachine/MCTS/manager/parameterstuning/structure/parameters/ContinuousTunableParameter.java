@@ -1,5 +1,7 @@
 package org.ggp.base.player.gamer.statemachine.MCTS.manager.parameterstuning.structure.parameters;
 
+import java.util.Random;
+
 import org.ggp.base.util.Interval;
 import org.ggp.base.util.logging.GamerLogger;
 
@@ -7,9 +9,9 @@ public class ContinuousTunableParameter extends TunableParameter {
 
 	private Interval possibleValuesInterval;
 
-	public ContinuousTunableParameter(String name, double fixedValue, int tuningOrderIndex, Interval possibleValuesInterval) {
+	public ContinuousTunableParameter(Random random, String name, double fixedValue, int tuningOrderIndex, boolean randomizePerCall, Interval possibleValuesInterval) {
 
-		super(name, fixedValue, tuningOrderIndex);
+		super(random, name, fixedValue, tuningOrderIndex, randomizePerCall);
 		this.possibleValuesInterval = possibleValuesInterval;
 	}
 
@@ -80,4 +82,20 @@ public class ContinuousTunableParameter extends TunableParameter {
 		}
 
 	}
+
+
+	@Override
+	public double getValuePerRole(int roleIndex){
+		if(this.randomizePerCall) {
+			return this.getRandomValuePerRole();
+		}else {
+			return this.currentValues[roleIndex];
+		}
+	}
+
+	private double getRandomValuePerRole() {
+		// TODO: implement so that it returns a random value in the interval
+		return 0;
+	}
+
 }

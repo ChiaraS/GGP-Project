@@ -73,6 +73,10 @@ public class GraveBetaComputer extends BetaComputer {
 	public double computeBeta(MoveStats theMoveStats, MoveStats theAmafMoveStats,
 			int nodeVisits, int roleIndex) {
 
+		double biasValuePerRole = this.bias.getValuePerRole(roleIndex);
+
+		//System.out.println("Role=" + roleIndex + "Bias=" + biasValuePerRole);
+
 		if(theAmafMoveStats == null){
 			return -1.0;
 		}
@@ -80,7 +84,7 @@ public class GraveBetaComputer extends BetaComputer {
 		double amafVisits = theAmafMoveStats.getVisits();
 		double moveVisits = theMoveStats.getVisits();
 
-		return (amafVisits / (amafVisits + moveVisits + (this.bias.getValuePerRole(roleIndex) * amafVisits * moveVisits)));
+		return (amafVisits / (amafVisits + moveVisits + (biasValuePerRole * amafVisits * moveVisits)));
 	}
 
 	@Override

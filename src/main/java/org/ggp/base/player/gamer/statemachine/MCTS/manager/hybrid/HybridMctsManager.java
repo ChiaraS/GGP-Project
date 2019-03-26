@@ -797,6 +797,8 @@ public class HybridMctsManager {
 
 		while(! this.timeToStopSearch(timeout)){
 
+			//System.out.println();
+
 			this.gameDependentParameters.resetIterationStatistics();
 
 			//System.out.println();
@@ -1504,10 +1506,10 @@ public class HybridMctsManager {
 			double y;
 
 			// Distance in the y coordinate between two nodes on the same level.
-			double d = 0.5;
+			double d = 1;
 
 			// Keep a map that for each entry contains a list of nodes that have to be printed for the corresponding game turn.
-			// Note that before printing the nopdes of each game turn must be ordered
+			// Note that before printing the nodes of each game turn must be ordered
 			Map<Integer,List<LogTreeNode>> nodesPerStep = new HashMap<Integer,List<LogTreeNode>>();
 
 			// Keep an array that contains an entry for each step of the game. Each entry contains the node that is reached by
@@ -1697,6 +1699,9 @@ public class HybridMctsManager {
 		int currentIteration = firstIteration; // Keeps track of the current iteration that we are logging
 		int currentNodeIndex = 0; // Keeps track of the current node that still has to be logged in the list of nodes to log
 		int iterationsWithNoInsertions = 0;
+
+		boolean problem = true;
+
 		while(currentIteration <= lastIteration && currentNodeIndex < stepNodes.size()) { // Iterate until all game iterations have been logged
 			// 2.1 First check if there are iterations where no node was added and sum them
 			while(currentIteration < stepNodes.get(currentNodeIndex).getInsertionIteration()) { // We assume that if there is a node then its insertion iteration must be < than the
@@ -1708,12 +1713,17 @@ public class HybridMctsManager {
 			if(iterationsWithNoInsertions > 0) {
 				toLog += iterationsWithNoInsertions + newline;
 				iterationsWithNoInsertions = 0;
+				problem = false;
 			}
 			// 2.3 Log in the same line all nodes inserted in the same iteration
 			while(currentNodeIndex < stepNodes.size() && stepNodes.get(currentNodeIndex).getInsertionIteration() == currentIteration) {
 				toLog += stepNodes.get(currentNodeIndex).getParentCoordinates().getFirst() + " " + stepNodes.get(currentNodeIndex).getCoordinates().getFirst() + " " +
 						stepNodes.get(currentNodeIndex).getParentCoordinates().getSecond() + " " + stepNodes.get(currentNodeIndex).getCoordinates().getSecond() + " ";
 				currentNodeIndex++;
+				problem = false;
+			}
+			if(problem == true) {
+				GamerLogger.logError("MctsManager", "Error logging the tree. Step = " + step + ", FirstIteration = " + firstIteration + ", LastIteration = " + lastIteration + ", NumStepNodes = " + stepNodes.size() + (stepNodes.size() > 0 ? (", InsertionIterationOfFirstNode = " + stepNodes.get(0).getInsertionIteration()) : "."));
 			}
 			toLog += newline;
 			currentIteration++;
@@ -1721,7 +1731,9 @@ public class HybridMctsManager {
 
 		// 2.4 Check if there are other simulations to log where no node was added to the tree.
 		//Note that it shouldn't be possible to finish iterating over all iterations without having logged all nodes first.
-		toLog += (lastIteration - currentIteration + 1) + newline;
+		if(lastIteration - currentIteration + 1 > 0) {
+			toLog += (lastIteration - currentIteration + 1) + newline;
+		}
 
 		return toLog;
 
