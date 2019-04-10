@@ -81,7 +81,7 @@ public class LatexTabCreator {
 
 		// Gives the order in which games results must be inserted in the table
 
-		/*********** GAMES ORDER FOR PN PAPER ************
+		/*********** GAMES ORDER FOR PN PAPER ************/
 		gamesOrder.add("amazons");
 		gamesOrder.add("battle");
 		gamesOrder.add("breakthrough");
@@ -95,9 +95,9 @@ public class LatexTabCreator {
 		gamesOrder.add("pentago");
 		gamesOrder.add("skirmish");
 		gamesOrder.add("ticTacToe");
-		*********** GAMES ORDER FOR PN PAPER - END *************/
+		/*********** GAMES ORDER FOR PN PAPER - END *************/
 
-		/*********** GAMES ORDER FOR GRAVE PAPER *************/
+		/*********** GAMES ORDER FOR GRAVE PAPER *************
 		gamesOrder.add("tictactoe_3d_2player");
 		gamesOrder.add("breakthrough");
 		gamesOrder.add("knightThrough");
@@ -119,7 +119,7 @@ public class LatexTabCreator {
 		gamesOrder.add("pentago");
 		gamesOrder.add("reversi");
 		gamesOrder.add("ticTacToe");
-		/*********** GAMES ORDER FOR GRAVE PAPER -END *************/
+		*********** GAMES ORDER FOR GRAVE PAPER -END *************/
 
 		/*********** GAMES ORDER FOR GVGAI PAPER *************/
 		gamesOrder.add("aliens");

@@ -1083,6 +1083,12 @@ public class HybridMctsManager {
 
 		if(this.buildLogTree) {
 			if(this.currentLogNode.getChild(mctsJointMove) == null) {
+
+				int totIterations = this.gameDependentParameters.getTotIterations();
+				if(totIterations < 0) {
+					GamerLogger.logError("MctsManager", "[searchNext] TotIterations = " + totIterations + ". Expected to be at least 0.");
+				}
+
 				this.currentLogNode.addChild(mctsJointMove, new LogTreeNode(this.gameDependentParameters.getTotIterations()));
 			}
 			this.currentLogNode = this.currentLogNode.getChild(mctsJointMove);
@@ -1350,7 +1356,11 @@ public class HybridMctsManager {
 		if(this.buildLogTree) {
 
 			if(this.logTree == null) {
-				this.logTree = new LogTreeNode(this.gameDependentParameters.getTotIterations());
+				int totIterations = this.gameDependentParameters.getTotIterations();
+				if(totIterations < 0) {
+					GamerLogger.logError("MctsManager", "[beforeMoveActions] TotIterations = " + totIterations + ". Expected to be at least 0.");
+				}
+				this.logTree = new LogTreeNode(totIterations);
 				this.currentLogRoot = this.logTree;
 				this.currentLogNode = this.currentLogRoot;
 				this.logTree.setOnPath(0); // Assume the root is always on path and was added in the step previous to 1.
@@ -1424,6 +1434,12 @@ public class HybridMctsManager {
 					}else {
 						MctsJointMove mctsJointMove = new MctsJointMove(internalLastJointMove);
 						if(this.currentLogRoot.getChild(mctsJointMove) == null) {
+
+							int totIterations = this.gameDependentParameters.getTotIterations();
+							if(totIterations < 0) {
+								GamerLogger.logError("MctsManager", "[afterGameActions] TotIterations = " + totIterations + ". Expected to be at least 0.");
+							}
+
 							this.currentLogRoot.addChild(mctsJointMove, new LogTreeNode(this.gameDependentParameters.getTotIterations()));
 						}
 						this.currentLogRoot = this.currentLogRoot.getChild(mctsJointMove);
@@ -1644,7 +1660,7 @@ public class HybridMctsManager {
 			toLog += ((this.gameDependentParameters.getGameStep()+1) + " " + selectedNode.getParentCoordinates().getFirst() + " " + selectedNode.getCoordinates().getFirst() + " " +
 					selectedNode.getParentCoordinates().getSecond() + " " + selectedNode.getCoordinates().getSecond() + newline);
 
-			GamerLogger.log(GamerLogger.FORMAT.CSV_FORMAT, "TreeSizeStatistics", toLog);
+			GamerLogger.log(GamerLogger.FORMAT.CSV_FORMAT, "TreePlot", toLog);
 
 		}
 
@@ -1652,14 +1668,16 @@ public class HybridMctsManager {
 	}
 
 	private int getInsertionStep(int insertionIteration) {
-		for(int step = 1; step <= this.gameDependentParameters.getGameStep(); step++) {
-			Integer cumulativeNumIterations = this.accumSimulationsPerStep.get(step);
-			if(cumulativeNumIterations == null) {
-				GamerLogger.logError("MctsManager", "Error logging the tree. There are no recorded cumulative simulations for step " + step + ".");
-				return -1;
-			}
-			if(cumulativeNumIterations.intValue() > insertionIteration) {
-				return step;
+		if(insertionIteration >= 0) {
+			for(int step = 1; step <= this.gameDependentParameters.getGameStep(); step++) {
+				Integer cumulativeNumIterations = this.accumSimulationsPerStep.get(step);
+				if(cumulativeNumIterations == null) {
+					GamerLogger.logError("MctsManager", "Error logging the tree. There are no recorded cumulative simulations for step " + step + ".");
+					return -1;
+				}
+				if(cumulativeNumIterations.intValue() > insertionIteration) {
+					return step;
+				}
 			}
 		}
 		return -1;

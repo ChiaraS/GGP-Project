@@ -270,198 +270,202 @@ public class MultiplayerLatexTabCreatorWithTotals {
 
 						gameKey = getGameKey(gameFolder.getName());
 
-						playersMap = gamesMap.get(gameKey);
-						if(playersMap == null) {
-							playersMap = new HashMap<String,Map<String,ExperimentsStats>>();
-							gamesMap.put(gameKey, playersMap);
-						}
+						// Only consider the stats if the game is specified in the gamesOrder list.
+						if(gamesOrder.contains(gameKey)) {
 
-						allGamesPlayersMap = gamesMap.get("OverallStats");
-						if(allGamesPlayersMap == null) {
-							allGamesPlayersMap = new HashMap<String,Map<String,ExperimentsStats>>();
-							gamesMap.put("OverallStats", allGamesPlayersMap);
-						}
-
-						File[] statsFoldersPerGame = gameFolder.listFiles();
-
-						for(File statsFolder : statsFoldersPerGame){
-
-							//System.out.println("      " + statsFolder.getName());
-
-							if(statsFolder.getName().endsWith(".Statistics") || statsFolder.getName().endsWith(".statistics") ||
-									statsFolder.getName().equals("Statistics") || statsFolder.getName().equals("statistics")){
-
-								File[] statFiles = statsFolder.listFiles();
-
-								playerA = null;
-								playerB = null;
-
-								for(File statFile : statFiles){
-
-									//System.out.println("         " + statFile.getName());
-
-									if(statFile.getName().endsWith("WinsSamples.csv")){
-
-										splitLine = statFile.getName().split("-");
-
-										if(playerA == null) {
-											playerA = splitLine[0];
-											aliasPlayerA = aliases.get(playerA); // If no alias is specified, then this will be null;
-											if(aliasPlayerA == null){
-												aliasPlayerA = playerA;
-											}
-											allPlayerNames.add(aliasPlayerA);
-											samplesPlayerA = getSamplesFromFile(statFile);
-										}else {
-											playerB = splitLine[0];
-											aliasPlayerB = aliases.get(playerB); // If no alias is specified, then this will be null;
-											if(aliasPlayerB == null){
-												aliasPlayerB = playerB;
-											}
-											allPlayerNames.add(aliasPlayerB);
-											samplesPlayerB = getSamplesFromFile(statFile);
-										}
-
-									}
-								}
-
-								if(playerA == null || playerB == null || aliasPlayerA == null || aliasPlayerB == null || samplesPlayerA == null || samplesPlayerB == null) {
-									System.out.println("Cannot find all necessary files for the expected two players, skipping game folder!");
-									break;
-								}
-
-								///////////////////////////////////////////////////
-								// Add samples of player A...
-								opponentsMap = playersMap.get(aliasPlayerA);
-								if(opponentsMap == null) {
-									opponentsMap = new HashMap<String,ExperimentsStats>();
-									playersMap.put(aliasPlayerA, opponentsMap);
-								}
-								allGamesOpponentsMap = allGamesPlayersMap.get(aliasPlayerA);
-								if(allGamesOpponentsMap == null) {
-									allGamesOpponentsMap = new HashMap<String,ExperimentsStats>();
-									allGamesPlayersMap.put(aliasPlayerA, allGamesOpponentsMap);
-								}
-
-								// ...against player B and...
-								playersPairStats = opponentsMap.get(aliasPlayerB);
-								if(playersPairStats == null) {
-									playersPairStats = new ExperimentsStats();
-									opponentsMap.put(aliasPlayerB, playersPairStats);
-								}
-								allGamesPlayersPairStats = allGamesOpponentsMap.get(aliasPlayerB);
-								if(allGamesPlayersPairStats == null) {
-									allGamesPlayersPairStats = new ExperimentsStats();
-									allGamesOpponentsMap.put(aliasPlayerB, allGamesPlayersPairStats);
-								}
-								for(Double win : samplesPlayerA) {
-									playersPairStats.addWins(win);
-									allGamesPlayersPairStats.addWins(win);
-								}
-								// ...against all other players
-								playersPairStats = opponentsMap.get("ALL");
-								if(playersPairStats == null) {
-									playersPairStats = new ExperimentsStats();
-									opponentsMap.put("ALL", playersPairStats);
-								}
-								allGamesPlayersPairStats = allGamesOpponentsMap.get("ALL");
-								if(allGamesPlayersPairStats == null) {
-									allGamesPlayersPairStats = new ExperimentsStats();
-									allGamesOpponentsMap.put("ALL", allGamesPlayersPairStats);
-								}
-								for(Double win : samplesPlayerA) {
-									playersPairStats.addWins(win);
-									allGamesPlayersPairStats.addWins(win);
-								}
-								//////////////////////////////////////////////////////////
-								// Add samples of player B...
-								opponentsMap = playersMap.get(aliasPlayerB);
-								if(opponentsMap == null) {
-									opponentsMap = new HashMap<String,ExperimentsStats>();
-									playersMap.put(aliasPlayerB, opponentsMap);
-								}
-								allGamesOpponentsMap = allGamesPlayersMap.get(aliasPlayerB);
-								if(allGamesOpponentsMap == null) {
-									allGamesOpponentsMap = new HashMap<String,ExperimentsStats>();
-									allGamesPlayersMap.put(aliasPlayerB, allGamesOpponentsMap);
-								}
-								// ...against player A and...
-								playersPairStats = opponentsMap.get(aliasPlayerA);
-								if(playersPairStats == null) {
-									playersPairStats = new ExperimentsStats();
-									opponentsMap.put(aliasPlayerA, playersPairStats);
-								}
-								allGamesPlayersPairStats = allGamesOpponentsMap.get(aliasPlayerA);
-								if(allGamesPlayersPairStats == null) {
-									allGamesPlayersPairStats = new ExperimentsStats();
-									allGamesOpponentsMap.put(aliasPlayerA, allGamesPlayersPairStats);
-								}
-								for(Double win : samplesPlayerB) {
-									playersPairStats.addWins(win);
-									allGamesPlayersPairStats.addWins(win);
-								}
-								// ...against all other players
-								playersPairStats = opponentsMap.get("ALL");
-								if(playersPairStats == null) {
-									playersPairStats = new ExperimentsStats();
-									opponentsMap.put("ALL", playersPairStats);
-								}
-								allGamesPlayersPairStats = allGamesOpponentsMap.get("ALL");
-								if(allGamesPlayersPairStats == null) {
-									allGamesPlayersPairStats = new ExperimentsStats();
-									allGamesOpponentsMap.put("ALL", allGamesPlayersPairStats);
-								}
-								for(Double win : samplesPlayerB) {
-									playersPairStats.addWins(win);
-									allGamesPlayersPairStats.addWins(win);
-								}
-								//////////////////////////////////////////////
-								// Add samples of ALL players...
-								opponentsMap = playersMap.get("ALL");
-								if(opponentsMap == null) {
-									opponentsMap = new HashMap<String,ExperimentsStats>();
-									playersMap.put("ALL", opponentsMap);
-								}
-								allGamesOpponentsMap = allGamesPlayersMap.get("ALL");
-								if(allGamesOpponentsMap == null) {
-									allGamesOpponentsMap = new HashMap<String,ExperimentsStats>();
-									allGamesPlayersMap.put("ALL", allGamesOpponentsMap);
-								}
-								// ...against player A and...
-								playersPairStats = opponentsMap.get(aliasPlayerA);
-								if(playersPairStats == null) {
-									playersPairStats = new ExperimentsStats();
-									opponentsMap.put(aliasPlayerA, playersPairStats);
-								}
-								allGamesPlayersPairStats = allGamesOpponentsMap.get(aliasPlayerA);
-								if(allGamesPlayersPairStats == null) {
-									allGamesPlayersPairStats = new ExperimentsStats();
-									allGamesOpponentsMap.put(aliasPlayerA, allGamesPlayersPairStats);
-								}
-								for(Double win : samplesPlayerB) {
-									playersPairStats.addWins(win);
-									allGamesPlayersPairStats.addWins(win);
-								}
-								// ...against player B.
-								playersPairStats = opponentsMap.get(aliasPlayerB);
-								if(playersPairStats == null) {
-									playersPairStats = new ExperimentsStats();
-									opponentsMap.put(aliasPlayerB, playersPairStats);
-								}
-								allGamesPlayersPairStats = allGamesOpponentsMap.get(aliasPlayerB);
-								if(allGamesPlayersPairStats == null) {
-									allGamesPlayersPairStats = new ExperimentsStats();
-									allGamesOpponentsMap.put(aliasPlayerB, allGamesPlayersPairStats);
-								}
-								for(Double win : samplesPlayerA) {
-									playersPairStats.addWins(win);
-									allGamesPlayersPairStats.addWins(win);
-								}
-								////////////////////////////////////////////////
-
-
+							playersMap = gamesMap.get(gameKey);
+							if(playersMap == null) {
+								playersMap = new HashMap<String,Map<String,ExperimentsStats>>();
+								gamesMap.put(gameKey, playersMap);
 							}
 
+							allGamesPlayersMap = gamesMap.get("OverallStats");
+							if(allGamesPlayersMap == null) {
+								allGamesPlayersMap = new HashMap<String,Map<String,ExperimentsStats>>();
+								gamesMap.put("OverallStats", allGamesPlayersMap);
+							}
+
+							File[] statsFoldersPerGame = gameFolder.listFiles();
+
+							for(File statsFolder : statsFoldersPerGame){
+
+								//System.out.println("      " + statsFolder.getName());
+
+								if(statsFolder.getName().endsWith(".Statistics") || statsFolder.getName().endsWith(".statistics") ||
+										statsFolder.getName().equals("Statistics") || statsFolder.getName().equals("statistics")){
+
+									File[] statFiles = statsFolder.listFiles();
+
+									playerA = null;
+									playerB = null;
+
+									for(File statFile : statFiles){
+
+										//System.out.println("         " + statFile.getName());
+
+										if(statFile.getName().endsWith("WinsSamples.csv")){
+
+											splitLine = statFile.getName().split("-");
+
+											if(playerA == null) {
+												playerA = splitLine[0];
+												aliasPlayerA = aliases.get(playerA); // If no alias is specified, then this will be null;
+												if(aliasPlayerA == null){
+													aliasPlayerA = playerA;
+												}
+												allPlayerNames.add(aliasPlayerA);
+												samplesPlayerA = getSamplesFromFile(statFile);
+											}else {
+												playerB = splitLine[0];
+												aliasPlayerB = aliases.get(playerB); // If no alias is specified, then this will be null;
+												if(aliasPlayerB == null){
+													aliasPlayerB = playerB;
+												}
+												allPlayerNames.add(aliasPlayerB);
+												samplesPlayerB = getSamplesFromFile(statFile);
+											}
+
+										}
+									}
+
+									if(playerA == null || playerB == null || aliasPlayerA == null || aliasPlayerB == null || samplesPlayerA == null || samplesPlayerB == null) {
+										System.out.println("Cannot find all necessary files for the expected two players, skipping game folder " + gameFolder.getPath() + "!");
+										break;
+									}
+
+									///////////////////////////////////////////////////
+									// Add samples of player A...
+									opponentsMap = playersMap.get(aliasPlayerA);
+									if(opponentsMap == null) {
+										opponentsMap = new HashMap<String,ExperimentsStats>();
+										playersMap.put(aliasPlayerA, opponentsMap);
+									}
+									allGamesOpponentsMap = allGamesPlayersMap.get(aliasPlayerA);
+									if(allGamesOpponentsMap == null) {
+										allGamesOpponentsMap = new HashMap<String,ExperimentsStats>();
+										allGamesPlayersMap.put(aliasPlayerA, allGamesOpponentsMap);
+									}
+
+									// ...against player B and...
+									playersPairStats = opponentsMap.get(aliasPlayerB);
+									if(playersPairStats == null) {
+										playersPairStats = new ExperimentsStats();
+										opponentsMap.put(aliasPlayerB, playersPairStats);
+									}
+									allGamesPlayersPairStats = allGamesOpponentsMap.get(aliasPlayerB);
+									if(allGamesPlayersPairStats == null) {
+										allGamesPlayersPairStats = new ExperimentsStats();
+										allGamesOpponentsMap.put(aliasPlayerB, allGamesPlayersPairStats);
+									}
+									for(Double win : samplesPlayerA) {
+										playersPairStats.addWins(win);
+										allGamesPlayersPairStats.addWins(win);
+									}
+									// ...against all other players
+									playersPairStats = opponentsMap.get("ALL");
+									if(playersPairStats == null) {
+										playersPairStats = new ExperimentsStats();
+										opponentsMap.put("ALL", playersPairStats);
+									}
+									allGamesPlayersPairStats = allGamesOpponentsMap.get("ALL");
+									if(allGamesPlayersPairStats == null) {
+										allGamesPlayersPairStats = new ExperimentsStats();
+										allGamesOpponentsMap.put("ALL", allGamesPlayersPairStats);
+									}
+									for(Double win : samplesPlayerA) {
+										playersPairStats.addWins(win);
+										allGamesPlayersPairStats.addWins(win);
+									}
+									//////////////////////////////////////////////////////////
+									// Add samples of player B...
+									opponentsMap = playersMap.get(aliasPlayerB);
+									if(opponentsMap == null) {
+										opponentsMap = new HashMap<String,ExperimentsStats>();
+										playersMap.put(aliasPlayerB, opponentsMap);
+									}
+									allGamesOpponentsMap = allGamesPlayersMap.get(aliasPlayerB);
+									if(allGamesOpponentsMap == null) {
+										allGamesOpponentsMap = new HashMap<String,ExperimentsStats>();
+										allGamesPlayersMap.put(aliasPlayerB, allGamesOpponentsMap);
+									}
+									// ...against player A and...
+									playersPairStats = opponentsMap.get(aliasPlayerA);
+									if(playersPairStats == null) {
+										playersPairStats = new ExperimentsStats();
+										opponentsMap.put(aliasPlayerA, playersPairStats);
+									}
+									allGamesPlayersPairStats = allGamesOpponentsMap.get(aliasPlayerA);
+									if(allGamesPlayersPairStats == null) {
+										allGamesPlayersPairStats = new ExperimentsStats();
+										allGamesOpponentsMap.put(aliasPlayerA, allGamesPlayersPairStats);
+									}
+									for(Double win : samplesPlayerB) {
+										playersPairStats.addWins(win);
+										allGamesPlayersPairStats.addWins(win);
+									}
+									// ...against all other players
+									playersPairStats = opponentsMap.get("ALL");
+									if(playersPairStats == null) {
+										playersPairStats = new ExperimentsStats();
+										opponentsMap.put("ALL", playersPairStats);
+									}
+									allGamesPlayersPairStats = allGamesOpponentsMap.get("ALL");
+									if(allGamesPlayersPairStats == null) {
+										allGamesPlayersPairStats = new ExperimentsStats();
+										allGamesOpponentsMap.put("ALL", allGamesPlayersPairStats);
+									}
+									for(Double win : samplesPlayerB) {
+										playersPairStats.addWins(win);
+										allGamesPlayersPairStats.addWins(win);
+									}
+									//////////////////////////////////////////////
+									// Add samples of ALL players...
+									opponentsMap = playersMap.get("ALL");
+									if(opponentsMap == null) {
+										opponentsMap = new HashMap<String,ExperimentsStats>();
+										playersMap.put("ALL", opponentsMap);
+									}
+									allGamesOpponentsMap = allGamesPlayersMap.get("ALL");
+									if(allGamesOpponentsMap == null) {
+										allGamesOpponentsMap = new HashMap<String,ExperimentsStats>();
+										allGamesPlayersMap.put("ALL", allGamesOpponentsMap);
+									}
+									// ...against player A and...
+									playersPairStats = opponentsMap.get(aliasPlayerA);
+									if(playersPairStats == null) {
+										playersPairStats = new ExperimentsStats();
+										opponentsMap.put(aliasPlayerA, playersPairStats);
+									}
+									allGamesPlayersPairStats = allGamesOpponentsMap.get(aliasPlayerA);
+									if(allGamesPlayersPairStats == null) {
+										allGamesPlayersPairStats = new ExperimentsStats();
+										allGamesOpponentsMap.put(aliasPlayerA, allGamesPlayersPairStats);
+									}
+									for(Double win : samplesPlayerB) {
+										playersPairStats.addWins(win);
+										allGamesPlayersPairStats.addWins(win);
+									}
+									// ...against player B.
+									playersPairStats = opponentsMap.get(aliasPlayerB);
+									if(playersPairStats == null) {
+										playersPairStats = new ExperimentsStats();
+										opponentsMap.put(aliasPlayerB, playersPairStats);
+									}
+									allGamesPlayersPairStats = allGamesOpponentsMap.get(aliasPlayerB);
+									if(allGamesPlayersPairStats == null) {
+										allGamesPlayersPairStats = new ExperimentsStats();
+										allGamesOpponentsMap.put(aliasPlayerB, allGamesPlayersPairStats);
+									}
+									for(Double win : samplesPlayerA) {
+										playersPairStats.addWins(win);
+										allGamesPlayersPairStats.addWins(win);
+									}
+									////////////////////////////////////////////////
+
+
+								}
+
+							}
 						}
 					}
 				}
@@ -608,7 +612,7 @@ public class MultiplayerLatexTabCreatorWithTotals {
 						sample = Double.parseDouble(splitLine[2]);
 						theSamples.add(sample);
 					}catch(NumberFormatException e){
-						System.out.println("Impossible read win sample. Skipping.");
+						System.out.println("Impossible to read win sample. Skipping.");
 						e.printStackTrace();
 					}
 				}

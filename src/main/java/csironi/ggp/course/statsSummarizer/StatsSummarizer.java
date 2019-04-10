@@ -529,7 +529,7 @@ public class StatsSummarizer {
 
 			File[] playerRolesDirs = null;
 
-			File[] speedLogs;
+			File[] speedLogs = null;
 
 			//File randomSpeedLog;
 
@@ -555,7 +555,18 @@ public class StatsSummarizer {
 			}
 
 			// Get one of the folders corresponding to the different roles the player played
-			speedLogs = playerRolesDirs[0].listFiles();
+			for(File f : playerRolesDirs) {
+				if(f.isDirectory()) {
+					speedLogs = f.listFiles();
+					break;
+				}
+			}
+
+			if(speedLogs == null) {
+				System.out.println("Summarization interrupted. Cannot check speed stats log files header because no player role directory was found.");
+				return;
+			}
+
 			// For each stats file...
 			for(int k = 0; k < speedLogs.length; k++){
 				String[] splittedName = speedLogs[k].getName().split("\\.");
@@ -627,113 +638,115 @@ public class StatsSummarizer {
 					// Iterate over all the folders corresponding to the different roles the player played
 					for(int j = 0; j < playerRolesDirs.length; j++){
 
-						playerRole = playerRolesDirs[j].getName();
+						if(playerRolesDirs[j].isDirectory()) {
+							playerRole = playerRolesDirs[j].getName();
 
-						// Create the cumulative speed stats files for the player
-						for(int k = 0; k < columnHeaders.length; k++){
+							// Create the cumulative speed stats files for the player
+							for(int k = 0; k < columnHeaders.length; k++){
 
-							//String acceptableHeader = columnHeaders[i].replaceAll(" ", "_");
+								//String acceptableHeader = columnHeaders[i].replaceAll(" ", "_");
 
-							String acceptableHeader = headerToFile.get(columnHeaders[k]);
+								String acceptableHeader = headerToFile.get(columnHeaders[k]);
 
-							if(acceptableHeader == null){
-								acceptableHeader = columnHeaders[k];
+								if(acceptableHeader == null){
+									acceptableHeader = columnHeaders[k];
+								}
+
+								writeToFile(speedStatsFolderPath + "/" + playerType + "/" + acceptableHeader + "-AllMatches-" + playerRole + ".csv", "MatchID;#Samples;Min;Max;Median;SD;SEM;Avg;CI");
+
 							}
 
-							writeToFile(speedStatsFolderPath + "/" + playerType + "/" + acceptableHeader + "-AllMatches-" + playerRole + ".csv", "MatchID;#Samples;Min;Max;Median;SD;SEM;Avg;CI");
+							speedLogs = playerRolesDirs[j].listFiles();
 
-						}
+							// For each stats file...
+							for(int k = 0; k < speedLogs.length; k++){
 
-						speedLogs = playerRolesDirs[j].listFiles();
+								String[] splittedName = speedLogs[k].getName().split("\\.");
 
-						// For each stats file...
-						for(int k = 0; k < speedLogs.length; k++){
-
-							String[] splittedName = speedLogs[k].getName().split("\\.");
-
-							// If it's a .csv file, compute and log the statistics
-							if(!(splittedName[splittedName.length-1].equalsIgnoreCase("csv"))){
-								System.out.println("Found file with no .csv extension when summarizing speed statistics.");
-								rejectFile(speedLogs[k], rejectedSpeedFilesFolderPath + "/" + playerType + "/" + playerRole);
-							}else{
-
-								// If the stats are referring to a match that was rejected, reject them too
-
-								if(!(acceptedMatches.containsKey(speedLogs[k].getName().substring(0, speedLogs[k].getName().length()-10)))){
-
-									System.out.println("Found Speed Statistics file for a match that was previously rejected from statistics.");
+								// If it's a .csv file, compute and log the statistics
+								if(!(splittedName[splittedName.length-1].equalsIgnoreCase("csv"))){
+									System.out.println("Found file with no .csv extension when summarizing speed statistics.");
 									rejectFile(speedLogs[k], rejectedSpeedFilesFolderPath + "/" + playerType + "/" + playerRole);
 								}else{
 
-									extractor = new StatsExtractor(speedLogs[k], columnHeaders, columnTypes, columnIndices);
+									// If the stats are referring to a match that was rejected, reject them too
 
-									Map<String, SingleValueStats> extractedStats = extractor.getExtractedStats();
+									if(!(acceptedMatches.containsKey(speedLogs[k].getName().substring(0, speedLogs[k].getName().length()-10)))){
 
-									if(extractedStats == null){
-
-										System.out.println("Error when computing speed statistics for the .csv file " + speedLogs[k].getName() + ".");
-										System.out.println("Excluding file from statistics. NOTE THAT THE SPEED STATISTICS WON'T REFER TO THE WHOLE TOURNAMENT ANYMORE!");
+										System.out.println("Found Speed Statistics file for a match that was previously rejected from statistics.");
 										rejectFile(speedLogs[k], rejectedSpeedFilesFolderPath + "/" + playerType + "/" + playerRole);
-
 									}else{
 
-										boolean reject = false;
+										extractor = new StatsExtractor(speedLogs[k], columnHeaders, columnTypes, columnIndices);
 
-										List<SingleValueStats> allTheStats = new ArrayList<SingleValueStats>();
+										Map<String, SingleValueStats> extractedStats = extractor.getExtractedStats();
 
-										// ...prepare an entry for each cumulative speed stats file
-										for(int l = 0; l < columnHeaders.length; l++){
+										if(extractedStats == null){
 
-											SingleValueStats statsToWrite = extractedStats.get(columnHeaders[l]);
-
-											if(statsToWrite == null){
-												System.out.println("Error when computing speed statistics for the value " + columnHeaders[l] + " for the .csv file " + speedLogs[k].getName() + ".");
-												reject = true;
-												break;
-											}else{
-
-												allTheStats.add(statsToWrite);
-
-											}
-										}
-
-										if(reject){
+											System.out.println("Error when computing speed statistics for the .csv file " + speedLogs[k].getName() + ".");
 											System.out.println("Excluding file from statistics. NOTE THAT THE SPEED STATISTICS WON'T REFER TO THE WHOLE TOURNAMENT ANYMORE!");
 											rejectFile(speedLogs[k], rejectedSpeedFilesFolderPath + "/" + playerType + "/" + playerRole);
+
 										}else{
 
-											summarizedFiles++;
+											boolean reject = false;
 
-											// ...write an entry in each cumulative speed stats file
+											List<SingleValueStats> allTheStats = new ArrayList<SingleValueStats>();
+
+											// ...prepare an entry for each cumulative speed stats file
 											for(int l = 0; l < columnHeaders.length; l++){
 
-												String acceptableHeader = headerToFile.get(columnHeaders[l]);
+												SingleValueStats statsToWrite = extractedStats.get(columnHeaders[l]);
 
-												if(acceptableHeader == null){
-													acceptableHeader = columnHeaders[l];
+												if(statsToWrite == null){
+													System.out.println("Error when computing speed statistics for the value " + columnHeaders[l] + " for the .csv file " + speedLogs[k].getName() + ".");
+													reject = true;
+													break;
+												}else{
+
+													allTheStats.add(statsToWrite);
+
 												}
+											}
 
-												SingleValueStats statsToWrite = allTheStats.get(l);
+											if(reject){
+												System.out.println("Excluding file from statistics. NOTE THAT THE SPEED STATISTICS WON'T REFER TO THE WHOLE TOURNAMENT ANYMORE!");
+												rejectFile(speedLogs[k], rejectedSpeedFilesFolderPath + "/" + playerType + "/" + playerRole);
+											}else{
 
-												statisticsValues[0] = statsToWrite.getNumSamples();
-												statisticsValues[1] = statsToWrite.getMinValue();
-												statisticsValues[2] = statsToWrite.getMaxValue();
-												statisticsValues[3] = statsToWrite.getMedian();
-												statisticsValues[4] = statsToWrite.getValuesStandardDeviation();
-												statisticsValues[5] = statsToWrite.getValuesSEM();
-												statisticsValues[6] = statsToWrite.getAvgValue();
-												statisticsValues[7] = statsToWrite.get95ConfidenceInterval();
+												summarizedFiles++;
 
-												writeToFile(speedStatsFolderPath + "/" + playerType + "/" + acceptableHeader + "-AllMatches-" + playerRole + ".csv",
-														speedLogs[k].getName().substring(0, speedLogs[k].getName().length()-10) + ";" + statisticsValues[0] +
-														";" + statisticsValues[1] + ";" + statisticsValues[2] + ";" + statisticsValues[3] + ";" + statisticsValues[4] +
-														";" + statisticsValues[5] +	";" + statisticsValues[6] + ";" + statisticsValues[7] + ";");
+												// ...write an entry in each cumulative speed stats file
+												for(int l = 0; l < columnHeaders.length; l++){
 
-												// Add all values to the correct cumulative SingleValueStats
-												addStatisticsValues(aggregatedStatistics, playerType + "-AllRoles", acceptableHeader, statisticsNames, statisticsValues);
+													String acceptableHeader = headerToFile.get(columnHeaders[l]);
 
-												addStatisticsValues(aggregatedStatistics, playerType + "-" + playerRole, acceptableHeader, statisticsNames, statisticsValues);
+													if(acceptableHeader == null){
+														acceptableHeader = columnHeaders[l];
+													}
 
+													SingleValueStats statsToWrite = allTheStats.get(l);
+
+													statisticsValues[0] = statsToWrite.getNumSamples();
+													statisticsValues[1] = statsToWrite.getMinValue();
+													statisticsValues[2] = statsToWrite.getMaxValue();
+													statisticsValues[3] = statsToWrite.getMedian();
+													statisticsValues[4] = statsToWrite.getValuesStandardDeviation();
+													statisticsValues[5] = statsToWrite.getValuesSEM();
+													statisticsValues[6] = statsToWrite.getAvgValue();
+													statisticsValues[7] = statsToWrite.get95ConfidenceInterval();
+
+													writeToFile(speedStatsFolderPath + "/" + playerType + "/" + acceptableHeader + "-AllMatches-" + playerRole + ".csv",
+															speedLogs[k].getName().substring(0, speedLogs[k].getName().length()-10) + ";" + statisticsValues[0] +
+															";" + statisticsValues[1] + ";" + statisticsValues[2] + ";" + statisticsValues[3] + ";" + statisticsValues[4] +
+															";" + statisticsValues[5] +	";" + statisticsValues[6] + ";" + statisticsValues[7] + ";");
+
+													// Add all values to the correct cumulative SingleValueStats
+													addStatisticsValues(aggregatedStatistics, playerType + "-AllRoles", acceptableHeader, statisticsNames, statisticsValues);
+
+													addStatisticsValues(aggregatedStatistics, playerType + "-" + playerRole, acceptableHeader, statisticsNames, statisticsValues);
+
+												}
 											}
 										}
 									}

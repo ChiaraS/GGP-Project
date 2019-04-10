@@ -10,8 +10,6 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Map.Entry;
 
-import com.google.common.io.Files;
-
 import csironi.ggp.course.utils.MyPair;
 
 /**
@@ -24,7 +22,7 @@ import csironi.ggp.course.utils.MyPair;
  * This class creates a single folder, with a subfolder for each game, each of which has a subfolder
  * for each role in the game, each of which has a subfolder for each agent that appears in any of the
  * considered experiments, each of which has a subfolder for each match 0 where the agent played the
- * game with that role. This subfolder contains a 'compressed' version of the TreeSizeStatistics.csv
+ * game with that role. This subfolder contains a 'compressed' version of the TreePlot.csv
  * file for the match. This compressed version has all the edges added in a game turn reported on the
  * same line (they will be plotted all at the same time disregarding the iteration number). Moreover,
  * the first line will report the axis limits for x and y not for the single match only but as the
@@ -136,7 +134,7 @@ public class CompressedTreePlotLogsFormatter {
 
 		String[] splitLogFileName;
 
-		String outputFileName;
+		String outputFilePath;
 
 		MyPair<Integer,Double> axisLimits;
 
@@ -152,6 +150,8 @@ public class CompressedTreePlotLogsFormatter {
 					if(gamesDirs[j].isDirectory()){
 
 						gameKey = gamesDirs[j].getName();
+
+						//System.out.println(gameKey);
 
 						playerDirs = gamesDirs[j].listFiles();
 
@@ -218,8 +218,6 @@ public class CompressedTreePlotLogsFormatter {
 
 		// Format all files with the computed maximum axis values.
 
-		! Count the iterations !
-
 		for(int i = 0; i < tourneyDirs.length; i++){
 
 			if(tourneyDirs[i].isDirectory()){
@@ -231,6 +229,8 @@ public class CompressedTreePlotLogsFormatter {
 					if(gamesDirs[j].isDirectory()){
 
 						gameKey = gamesDirs[j].getName();
+
+						//System.out.println(gameKey);
 
 						axisLimits = axisMap.get(gameKey);
 
@@ -246,6 +246,8 @@ public class CompressedTreePlotLogsFormatter {
 
 								playerType = playerDirs[k].getName();
 
+								//System.out.println(playerType);
+
 								roleDirs = playerDirs[k].listFiles();
 
 								for(int l = 0; l < roleDirs.length; l++){
@@ -254,19 +256,27 @@ public class CompressedTreePlotLogsFormatter {
 
 										roleName = roleDirs[l].getName();
 
+										//System.out.println(roleName);
+
 										treePlotFiles = roleDirs[l].listFiles();
 
 										for(int m = 0; m < treePlotFiles.length; m++){
 
 											if(treePlotFiles[m].isFile()) {
 
-												splitLogFileName = treePlotFiles[m].getName().split("\\.");
+												//System.out.println(treePlotFiles[m].getName());
+
+												splitLogFileName = treePlotFiles[m].getName().split("-");
+
+												splitLogFileName = splitLogFileName[0].split("\\.");
 
 												matchAndTourneyID = splitLogFileName[0] + "-" + splitLogFileName[1] + "-" + splitLogFileName[2];
 
-												outputFileName = matchAndTourneyID + "-" + roleName + "-" + playerType;
+												splitLogFileName = treePlotFiles[m].getName().split("-");
 
-												compressAndSaveLogs(treePlotFiles[m], resultFolderPath, outputFileName, axisLimits);
+												outputFilePath =  gameKey + "/" + roleName + "/" + playerType + "/" + splitLogFileName[0] + "/" + matchAndTourneyID + "-" + roleName + "-" + playerType + ".csv";
+
+												compressAndSaveLogs(treePlotFiles[m], resultFolderPath, outputFilePath, axisLimits);
 
 											}
 
@@ -342,11 +352,21 @@ public class CompressedTreePlotLogsFormatter {
 		return new MyPair<Integer,Double>(x,y);
 	}
 
-	private static void compressAndSaveLogs(File statsFile, String resultFolderPath, String outputFileName, MyPair<Integer,Double> axisLimits){
+	private static void compressAndSaveLogs(File statsFile, String resultFolderPath, String outputFilePath, MyPair<Integer,Double> axisLimits){
+
+		String newline = "\n";
 
 		BufferedReader br = null;
 		String theLine;
 		String[] splitLine;
+
+		String toLog = "";
+
+		int turnIterations = 0;
+
+		int numEmptyLines = 0;
+
+		int iterations;
 
 		try {
 			br = new BufferedReader(new FileReader(statsFile));
@@ -356,25 +376,63 @@ public class CompressedTreePlotLogsFormatter {
 
 			splitLine = theLine.split(" ");
 
-			try {
-				x = Integer.parseInt(splitLine[3]);
-				y = Double.parseDouble(splitLine[5]);
-			}catch(NumberFormatException nfe) {
-				System.out.println("Error parsing file " + statsFile.getPath() + ". Cannot parse x = " + splitLine[3] + " and y = " + splitLine[5]);
-				try {
-					br.close();
-				} catch (IOException ioe) {
-					System.out.println("Exception when closing the .csv file " + statsFile.getPath() + ".");
-					ioe.printStackTrace();
+			toLog += splitLine[0] + " " + splitLine[1] + " " + splitLine[2] + " " + axisLimits.getFirst() +" " + (-axisLimits.getSecond()) + " " + axisLimits.getSecond() + newline;
+
+			while(theLine != null) {
+
+				//System.out.println(theLine);
+
+				if(theLine.isEmpty()) {
+					numEmptyLines++;
+				}else {
+
+					splitLine = theLine.split(" ");
+
+					if(splitLine.length == 1) {
+
+						try {
+							iterations = Integer.parseInt(splitLine[0]);
+						}catch(NumberFormatException nfe) {
+							System.out.println("Error parsing file " + statsFile.getPath() + ". Cannot parse iterations = " + splitLine[0] + ".");
+							try {
+								br.close();
+							} catch (IOException ioe) {
+								System.out.println("Exception when closing the .csv file " + statsFile.getPath() + ".");
+								ioe.printStackTrace();
+							}
+							return;
+						}
+
+						turnIterations += iterations;
+
+					}else if((splitLine.length % 4) == 0) {
+
+						// ATTENTION! Here we don't add a space between the previously added lines
+						// and the new one because of how logs are saved in the original file.
+						// Each line with coordinates in the original file always ends with a space.
+						toLog += theLine;
+						turnIterations++;
+
+					}else if(splitLine.length == 5) {
+						toLog += newline;
+						toLog += turnIterations + " " + theLine + newline;
+						//turnIterations = 0;
+					}
 				}
-				return null;
+
+				theLine = br.readLine();
+
+			}
+
+			if(numEmptyLines > 1) {
+				System.out.println("More than a single empty line in file " + statsFile.getPath() + "!");
 			}
 
 			br.close();
 
 		} catch (IOException e) {
 			System.out.println("Exception when reading the .csv file " + statsFile.getPath() + ".");
-			System.out.println("Its coordinates are not considered when computing the maximum.");
+			System.out.println("This file won't be compressed correctly.");
 	       	e.printStackTrace();
 	       	if(br != null){
 		       	try {
@@ -384,10 +442,11 @@ public class CompressedTreePlotLogsFormatter {
 					ioe.printStackTrace();
 				}
 	       	}
-	       	return null;
 		}
 
-		return new MyPair<Integer,Double>(x,y);
+		writeToFile(resultFolderPath + "/" + outputFilePath, toLog);
+
+
 	}
 
 	private static void writeToFile(String filename, String message){
