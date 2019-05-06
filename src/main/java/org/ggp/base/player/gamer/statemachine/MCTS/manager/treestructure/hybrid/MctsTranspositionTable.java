@@ -133,6 +133,7 @@ public class MctsTranspositionTable extends SearchManagerComponent{
 					iterator.remove();
 				}else{
 					entry.getValue().decayStatistics(this.treeDecay);
+					/*Decay AMAF stats*/
 				}
 			}
 		}

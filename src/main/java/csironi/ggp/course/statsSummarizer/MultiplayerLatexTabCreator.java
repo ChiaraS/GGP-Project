@@ -1,10 +1,8 @@
 package csironi.ggp.course.statsSummarizer;
 
 import java.io.BufferedReader;
-import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileReader;
-import java.io.FileWriter;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -327,7 +325,7 @@ public class MultiplayerLatexTabCreator {
 
 			if(gameMap != null){
 
-				writeToFile(destinationFilePath, "\\hline");
+				StatsUtils.writeToFile(destinationFilePath, "\\hline");
 
 				// Prepare and write header
 
@@ -344,9 +342,9 @@ public class MultiplayerLatexTabCreator {
 
 				latexRow += " \\\\";
 
-				writeToFile(destinationFilePath, latexRow);
+				StatsUtils.writeToFile(destinationFilePath, latexRow);
 
-				writeToFile(destinationFilePath, "\\hline");
+				StatsUtils.writeToFile(destinationFilePath, "\\hline");
 
 				for(String firstGamerName : playerNamesOrder){
 					latexRow = firstGamerName;
@@ -366,27 +364,15 @@ public class MultiplayerLatexTabCreator {
 						}
 					}
 					latexRow += " \\\\";
-					writeToFile(destinationFilePath, latexRow);
+					StatsUtils.writeToFile(destinationFilePath, latexRow);
 				}
 
-				writeToFile(destinationFilePath, "\\hline");
+				StatsUtils.writeToFile(destinationFilePath, "\\hline");
 			}
 
 		}
 
 
-	}
-
-	private static void writeToFile(String filename, String message){
-		BufferedWriter out;
-		try {
-			out = new BufferedWriter(new FileWriter(filename, true));
-			out.write(message+"\n");
-            out.close();
-		} catch (IOException e) {
-			System.out.println("Error writing file " + filename + ".");
-			e.printStackTrace();
-		}
 	}
 
 	private static double round(double value, int places) {

@@ -1,10 +1,8 @@
 package csironi.ggp.course.statsSummarizer;
 
 import java.io.BufferedReader;
-import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileReader;
-import java.io.FileWriter;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
@@ -108,12 +106,12 @@ public class StatsForChart {
 				e.printStackTrace();
 			}
 
-			writeToFile(resultFileName, "PlayerType;K;#Samples;Min;Max;StdDev;StdErrMean;Avg;ConfInt;");
+			StatsUtils.writeToFile(resultFileName, "PlayerType;K;#Samples;Min;Max;StdDev;StdErrMean;Avg;ConfInt;");
 		}
 
 		for(Entry<String, SingleValueDoubleStats> entry : allCumulativeStats.entrySet()){
 
-			writeToFile(resultFileName, entry.getKey() + ";" + k + ";" + entry.getValue().getNumSamples() + ";" +
+			StatsUtils.writeToFile(resultFileName, entry.getKey() + ";" + k + ";" + entry.getValue().getNumSamples() + ";" +
 					entry.getValue().getMinValue() + ";" + entry.getValue().getMaxValue() + ";" +
 					entry.getValue().getValuesStandardDeviation() + ";" + entry.getValue().getValuesSEM() + ";" +
 					entry.getValue().getAvgValue() + ";" + entry.getValue().get95ConfidenceInterval() + ";");
@@ -225,18 +223,6 @@ public class StatsForChart {
 				System.out.println("Cannot properly close file " + filename + ".");
 				e.printStackTrace();
 			}
-		}
-	}
-
-	private static void writeToFile(String filename, String message){
-		BufferedWriter out;
-		try {
-			out = new BufferedWriter(new FileWriter(filename, true));
-			out.write(message+"\n");
-            out.close();
-		} catch (IOException e) {
-			System.out.println("Error writing file " + filename + ".");
-			e.printStackTrace();
 		}
 	}
 

@@ -1,10 +1,8 @@
 package csironi.ggp.course.statsSummarizer;
 
 import java.io.BufferedReader;
-import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileReader;
-import java.io.FileWriter;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
@@ -444,27 +442,9 @@ public class CompressedTreePlotLogsFormatter {
 	       	}
 		}
 
-		writeToFile(resultFolderPath + "/" + outputFilePath, toLog);
+		StatsUtils.writeToFileMkParentDir(resultFolderPath + "/" + outputFilePath, toLog);
 
 
-	}
-
-	private static void writeToFile(String filename, String message){
-
-		File destinationFile = new File(filename);
-		if(!destinationFile.getParentFile().isDirectory()){
-			destinationFile.getParentFile().mkdirs();
-		}
-
-		BufferedWriter out;
-		try {
-			out = new BufferedWriter(new FileWriter(filename, true));
-			out.write(message+"\n");
-            out.close();
-		} catch (IOException e) {
-			System.out.println("Error writing file " + filename + ".");
-			e.printStackTrace();
-		}
 	}
 
 }

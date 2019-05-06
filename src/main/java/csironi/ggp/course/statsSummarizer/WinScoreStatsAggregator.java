@@ -1,10 +1,8 @@
 package csironi.ggp.course.statsSummarizer;
 
 import java.io.BufferedReader;
-import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileReader;
-import java.io.FileWriter;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -121,9 +119,9 @@ public class WinScoreStatsAggregator {
 
 		System.out.println(winsFile);
 
-		writeToFile(scoresFile, "Game;Player;#Samples;MinScore;MaxScore;StandardDeviation;StdErrMean;AvgScore;ConfidenceInterval;MinExtreme;MaxExtreme;Robustness;");
+		StatsUtils.writeToFile(scoresFile, "Game;Player;#Samples;MinScore;MaxScore;StandardDeviation;StdErrMean;AvgScore;ConfidenceInterval;MinExtreme;MaxExtreme;Robustness;");
 
-		writeToFile(winsFile, "Game;Player;#Samples;MinPoints;MaxPoints;StandardDeviation;StdErrMean;AvgWin%;ConfidenceInterval;MinExtreme;MaxExtreme;Robustness;");
+		StatsUtils.writeToFile(winsFile, "Game;Player;#Samples;MinPoints;MaxPoints;StandardDeviation;StdErrMean;AvgWin%;ConfidenceInterval;MinExtreme;MaxExtreme;Robustness;");
 
 		BufferedReader br;
 		String theLine;
@@ -145,8 +143,8 @@ public class WinScoreStatsAggregator {
 
 					if(statsDirs[j].isDirectory() && statsDirs[j].getName() != null && (statsDirs[j].getName().equals("Statistics") || statsDirs[j].getName().endsWith("-Stats") || statsDirs[j].getName().endsWith("-stats") || statsDirs[j].getName().endsWith(".Statistics") || statsDirs[j].getName().endsWith(".statistics"))){
 
-						writeToFile(scoresFile, ";");
-						writeToFile(winsFile, ";");
+						StatsUtils.writeToFile(scoresFile, ";");
+						StatsUtils.writeToFile(winsFile, ";");
 
 						if(statsDirs[j].getName().endsWith("-Stats") || statsDirs[j].getName().endsWith("-stats")){
 							gameKey = statsDirs[j].getName().substring(0, statsDirs[j].getName().length()-6);
@@ -183,7 +181,7 @@ public class WinScoreStatsAggregator {
 
 									//System.out.println("4: " + theLine);
 
-									writeToFile(scoresFile, gameKey + ";" + theLine);
+									StatsUtils.writeToFile(scoresFile, gameKey + ";" + theLine);
 									theLine = br.readLine();
 
 									// Forgot to do this when computing statistics, adding this temporary fix
@@ -192,7 +190,7 @@ public class WinScoreStatsAggregator {
 									// Check if the player name must be substituted by its alias
 									theLine = setPlayerAlias(theLine, aliases);
 
-									writeToFile(scoresFile, gameKey + ";" + theLine);
+									StatsUtils.writeToFile(scoresFile, gameKey + ";" + theLine);
 									br.close();
 								} catch (IOException e) {
 									System.out.println("Exception when reading a file while aggregating the statistics.");
@@ -214,7 +212,7 @@ public class WinScoreStatsAggregator {
 									// Check if the player name must be substituted by its alias
 									theLine = setPlayerAlias(theLine, aliases);
 
-									writeToFile(winsFile, gameKey + ";" + theLine);
+									StatsUtils.writeToFile(winsFile, gameKey + ";" + theLine);
 									theLine = br.readLine();
 
 									// Forgot to do this when computing statistics, adding this temporary fix
@@ -223,7 +221,7 @@ public class WinScoreStatsAggregator {
 									// Check if the player name must be substituted by its alias
 									theLine = setPlayerAlias(theLine, aliases);
 
-									writeToFile(winsFile, gameKey + ";" + theLine);
+									StatsUtils.writeToFile(winsFile, gameKey + ";" + theLine);
 									br.close();
 								} catch (IOException e) {
 									System.out.println("Exception when reading a file while aggregating the statistics.");
@@ -286,6 +284,10 @@ public class WinScoreStatsAggregator {
 
 								playerName = statsFiles[k].getName().substring(0, statsFiles[k].getName().length()-16);
 
+								//System.out.println(playerName);
+
+								//int count = 0;
+
 								// Check if the player name must be substituted by its alias
 								alias = aliases.get(playerName);
 
@@ -310,14 +312,37 @@ public class WinScoreStatsAggregator {
 
 										if(splitLine.length == 3){
 
+											/********************* Compute win stats for less matches than the available ones ***************************
+											int matchid  = -1;
+											try{
+												matchid = Integer.parseInt(splitLine[1]);
+
+											}catch(NumberFormatException e){
+												System.out.println("Impossible to read match ID. Adding sample which might need to be excluded.");
+												e.printStackTrace();
+												matchid = -1;
+											}
+
+											//Max match ID is hard coded to compute win stats for less matches than the available ones.
+											// Note that the max match ID changes depending on the number of roles in the games:
+											// 2 roles  ->  < 250
+											// 3 roles  ->  <  84
+											if((gameKey.equals("chineseCheckers3") && matchid < 84) || (!gameKey.equals("chineseCheckers3") && matchid < 250)) {
+											*************************************************************************************************************/
+
 											double sample;
 											try{
 												sample = Double.parseDouble(splitLine[2]);
 												expStats.addWins(sample);
+												//count++;
 											}catch(NumberFormatException e){
 												System.out.println("Impossible read win sample. Skipping.");
 												e.printStackTrace();
 											}
+
+											/********************* Compute win stats for less matches than the available ones ***************************
+											}
+											*************************************************************************************************************/
 										}
 
 										theLine = br.readLine();
@@ -330,6 +355,8 @@ public class WinScoreStatsAggregator {
 						        	e.printStackTrace();
 								}
 
+								//System.out.println(count);
+
 							}
 						}
 					}
@@ -337,8 +364,8 @@ public class WinScoreStatsAggregator {
 			}
 		}
 
-		writeToFile(scoresFile, ";");
-		writeToFile(winsFile, ";");
+		StatsUtils.writeToFile(scoresFile, ";");
+		StatsUtils.writeToFile(winsFile, ";");
 
 		// Add line to aggregated file with statistics over all the game
 		for(Entry<String,ExperimentsStats> entry : totalStatistics.entrySet()){
@@ -346,7 +373,7 @@ public class WinScoreStatsAggregator {
 			double avgWinPerc = entry.getValue().getAvgWins()*100;
 			double winCi = entry.getValue().getWinsSEM() * 1.96 * 100;
 
-			writeToFile(winsFile, "OverallStats;" + entry.getKey() + ";" + entry.getValue().getWins().size() + ";" +
+			StatsUtils.writeToFile(winsFile, "OverallStats;" + entry.getKey() + ";" + entry.getValue().getWins().size() + ";" +
 					entry.getValue().getMinWinPercentage() + ";" + entry.getValue().getMaxWinPercentage() + ";" +
 					entry.getValue().getWinsStandardDeviation() + ";" + entry.getValue().getWinsSEM() + ";" +
 					avgWinPerc + ";" + winCi + ";" + (avgWinPerc - winCi) + ";" + (avgWinPerc + winCi) + ";");
@@ -354,7 +381,7 @@ public class WinScoreStatsAggregator {
 			double avgScore =  entry.getValue().getAvgScore();
 			double scoreCi = entry.getValue().getScoresSEM() * 1.96;
 
-			writeToFile(scoresFile, "OverallStats;" + entry.getKey() + ";" + entry.getValue().getScores().size() + ";" +
+			StatsUtils.writeToFile(scoresFile, "OverallStats;" + entry.getKey() + ";" + entry.getValue().getScores().size() + ";" +
 					entry.getValue().getMinScore() + ";" + entry.getValue().getMaxScore() + ";" +
 					entry.getValue().getScoresStandardDeviation() + ";" + entry.getValue().getScoresSEM() + ";" +
 					avgScore + ";" + scoreCi + ";" + (avgWinPerc - winCi) + ";" + (avgWinPerc + winCi) + ";");
@@ -428,7 +455,7 @@ public class WinScoreStatsAggregator {
 				//writeToFile(winsFile, "OverallAvg;" + s + ";" + ";;;;;" + overallAvg);
 				String latexFile = resultFile + s + "-Latex.csv";
 				//double overallLatexAvg = (latexAvg.get(s).doubleValue() / numGames.get(s).intValue());
-				writeToFile(latexFile, latexData.get(s));
+				StatsUtils.writeToFile(latexFile, latexData.get(s));
 			}
 
 		} catch (IOException e) {
@@ -509,16 +536,6 @@ public class WinScoreStatsAggregator {
 		}
 	}
 
-	private static void writeToFile(String filename, String message){
-		BufferedWriter out;
-		try {
-			out = new BufferedWriter(new FileWriter(filename, true));
-			out.write(message+"\n");
-            out.close();
-		} catch (IOException e) {
-			System.out.println("Error writing file " + filename + ".");
-			e.printStackTrace();
-		}
-	}
+
 
 }

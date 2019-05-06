@@ -1,10 +1,8 @@
 package csironi.ggp.course.statsSummarizer;
 
 import java.io.BufferedReader;
-import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileReader;
-import java.io.FileWriter;
 import java.io.IOException;
 
 public class NewSpeedStatisticComputer {
@@ -61,7 +59,7 @@ public class NewSpeedStatisticComputer {
 			playerCumulativeFile.delete();
 		}
 
-		writeToFile(playerCumulativeFilePath, "Role;Stats file;Average speed");
+		StatsUtils.writeToFileMkParentDir(playerCumulativeFilePath, "Role;Stats file;Average speed");
 
 		String playerName = playerFolder.getName();
 
@@ -88,7 +86,7 @@ public class NewSpeedStatisticComputer {
 
 					if(average >= 0){
 
-						writeToFile(playerCumulativeFilePath, role + ";" + statFile.getName().substring(0, statFile.getName().length()-10) + ";" + average + ";");
+						StatsUtils.writeToFileMkParentDir(playerCumulativeFilePath, role + ";" + statFile.getName().substring(0, statFile.getName().length()-10) + ";" + average + ";");
 
 						sumOfAverages += average;
 						parsedFiles++;
@@ -102,15 +100,15 @@ public class NewSpeedStatisticComputer {
 		File destination = new File(mainFolder + "\\" + playerName + "-Stats.csv");
 
 		if(!destination.exists()){
-			writeToFile(mainFolder + "\\" + playerName + "-Stats.csv", "Game;Samples;Avg of avg speed;");
+			StatsUtils.writeToFileMkParentDir(mainFolder + "\\" + playerName + "-Stats.csv", "Game;Samples;Avg of avg speed;");
 		}
 
-		writeToFile(mainFolder + "\\" + playerName + "-Stats.csv", game + ";" + parsedFiles + ";" + averageOfAverages + ";");
+		StatsUtils.writeToFileMkParentDir(mainFolder + "\\" + playerName + "-Stats.csv", game + ";" + parsedFiles + ";" + averageOfAverages + ";");
 
 		if(averageOfAverages < 100){
-			writeToFile(mainFolder + "\\" + playerName + "-Latex.csv", game + ";" + round(averageOfAverages, 1) + ";");
+			StatsUtils.writeToFileMkParentDir(mainFolder + "\\" + playerName + "-Latex.csv", game + ";" + round(averageOfAverages, 1) + ";");
 		}else{
-			writeToFile(mainFolder + "\\" + playerName + "-Latex.csv", game + ";" + round(averageOfAverages, 0) + ";");
+			StatsUtils.writeToFileMkParentDir(mainFolder + "\\" + playerName + "-Latex.csv", game + ";" + round(averageOfAverages, 0) + ";");
 		}
 
 
@@ -182,22 +180,5 @@ public class NewSpeedStatisticComputer {
 	    return (double) tmp / factor;
 	}
 
-	private static void writeToFile(String filename, String message){
-
-		File destinationFile = new File(filename);
-		if(!destinationFile.getParentFile().isDirectory()){
-			destinationFile.getParentFile().mkdirs();
-		}
-
-		BufferedWriter out;
-		try {
-			out = new BufferedWriter(new FileWriter(filename, true));
-			out.write(message+"\n");
-            out.close();
-		} catch (IOException e) {
-			System.out.println("Error writing file " + filename + ".");
-			e.printStackTrace();
-		}
-	}
 
 }

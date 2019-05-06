@@ -1,10 +1,8 @@
 package csironi.ggp.course.statsSummarizer;
 
 import java.io.BufferedReader;
-import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileReader;
-import java.io.FileWriter;
 import java.io.IOException;
 
 public class PlayerStatsAggregator {
@@ -89,8 +87,8 @@ public class PlayerStatsAggregator {
 
 									theValue = extractStatFomFile(statsFiles[k].getPath(), thaStatName, theStatType);
 									if(theValue != -1){
-										writeToFile(theStatsFolderPath + "/" + theStatsFileName + "-AllGames.csv", gameKey + ";" + theValue + ";");
-										writeToFile(theStatsFolderPath + "/" + theStatsFileName + "-AllGames-Latex.csv", gameKey + "; $" + round(theValue, 2) + "$;");
+										StatsUtils.writeToFile(theStatsFolderPath + "/" + theStatsFileName + "-AllGames.csv", gameKey + ";" + theValue + ";");
+										StatsUtils.writeToFile(theStatsFolderPath + "/" + theStatsFileName + "-AllGames-Latex.csv", gameKey + "; $" + round(theValue, 2) + "$;");
 									}
 								}
 							}
@@ -183,15 +181,4 @@ public class PlayerStatsAggregator {
 	    return (double) tmp / factor;
 	}
 
-	private static void writeToFile(String filename, String message){
-		BufferedWriter out;
-		try {
-			out = new BufferedWriter(new FileWriter(filename, true));
-			out.write(message+"\n");
-            out.close();
-		} catch (IOException e) {
-			System.out.println("Error writing file " + filename + ".");
-			e.printStackTrace();
-		}
-	}
 }

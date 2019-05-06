@@ -1,10 +1,8 @@
 package csironi.ggp.course.statsSummarizer;
 
 import java.io.BufferedReader;
-import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileReader;
-import java.io.FileWriter;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -81,7 +79,7 @@ public class LatexTabCreator {
 
 		// Gives the order in which games results must be inserted in the table
 
-		/*********** GAMES ORDER FOR PN PAPER ************/
+		/*********** GAMES ORDER FOR PN PAPER ************
 		gamesOrder.add("amazons");
 		gamesOrder.add("battle");
 		gamesOrder.add("breakthrough");
@@ -95,9 +93,9 @@ public class LatexTabCreator {
 		gamesOrder.add("pentago");
 		gamesOrder.add("skirmish");
 		gamesOrder.add("ticTacToe");
-		/*********** GAMES ORDER FOR PN PAPER - END *************/
+		*********** GAMES ORDER FOR PN PAPER - END *************/
 
-		/*********** GAMES ORDER FOR GRAVE PAPER *************
+		/*********** GAMES ORDER FOR GRAVE PAPER ************
 		gamesOrder.add("tictactoe_3d_2player");
 		gamesOrder.add("breakthrough");
 		gamesOrder.add("knightThrough");
@@ -249,7 +247,7 @@ public class LatexTabCreator {
 
 			if(!emptyLine){
 				latexRow += " \\\\";
-				writeToFile(filePath, latexRow);
+				StatsUtils.writeToFile(filePath, latexRow);
 			}
 
 		}
@@ -298,16 +296,5 @@ public class LatexTabCreator {
 		return theMap;
 	}
 
-	private static void writeToFile(String filename, String message){
-		BufferedWriter out;
-		try {
-			out = new BufferedWriter(new FileWriter(filename, true));
-			out.write(message+"\n");
-            out.close();
-		} catch (IOException e) {
-			System.out.println("Error writing file " + filename + ".");
-			e.printStackTrace();
-		}
-	}
 
 }

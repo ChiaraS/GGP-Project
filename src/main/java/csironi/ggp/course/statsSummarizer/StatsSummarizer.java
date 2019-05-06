@@ -4,10 +4,8 @@
 package csironi.ggp.course.statsSummarizer;
 
 import java.io.BufferedReader;
-import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileReader;
-import java.io.FileWriter;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -272,7 +270,7 @@ public class StatsSummarizer {
 				toWrite += playersNames[i] + ";";
 			}
 
-			writeToFile(statsFolder + "/Combination" + infoList.get(0).getCombination() + ".csv", toWrite);
+			StatsUtils.writeToFileMkParentDir(statsFolder + "/Combination" + infoList.get(0).getCombination() + ".csv", toWrite);
 
 			for(MatchInfo mi : infoList){
 
@@ -283,7 +281,7 @@ public class StatsSummarizer {
 				for(int i = 0; i < playersGoals.length; i++){
 					toWrite += playersGoals[i] + ";";
 				}
-				writeToFile(statsFolder + "/Combination" + mi.getCombination() + ".csv", toWrite);
+				StatsUtils.writeToFileMkParentDir(statsFolder + "/Combination" + mi.getCombination() + ".csv", toWrite);
 			}
 		}
 
@@ -398,9 +396,9 @@ public class StatsSummarizer {
 
 		String winsStatsFilePath = statsFolder + "/WinsStats.csv";
 
-		writeToFile(scoresStatsFilePath, "Player;#Samples;MinScore;MaxScore;StandardDeviation;StdErrMean;AvgScore;ConfidenceInterval;MinAvgScore;MaxAvgScore;");
+		StatsUtils.writeToFileMkParentDir(scoresStatsFilePath, "Player;#Samples;MinScore;MaxScore;StandardDeviation;StdErrMean;AvgScore;ConfidenceInterval;MinAvgScore;MaxAvgScore;");
 
-		writeToFile(winsStatsFilePath, "Player;#Samples;MinWins;MaxWins;StandardDeviation;StdErrMean;AvgWin%;ConfidenceInterval;MinAvgWin%;MaxAvgWin%");
+		StatsUtils.writeToFileMkParentDir(winsStatsFilePath, "Player;#Samples;MinWins;MaxWins;StandardDeviation;StdErrMean;AvgWin%;ConfidenceInterval;MinAvgWin%;MaxAvgWin%");
 
 
 		PlayerStatistics stats;
@@ -417,33 +415,33 @@ public class StatsSummarizer {
 			combinations = stats.getScoresCombinations();
 			matchNumbers = stats.getScoresMatchNumbers();
 
-			writeToFile(statsFolder + "/" + entry.getKey() + "-ScoreSamples.csv", "Combination;Match number;Score;");
+			StatsUtils.writeToFileMkParentDir(statsFolder + "/" + entry.getKey() + "-ScoreSamples.csv", "Combination;Match number;Score;");
 
 			for(int i = 0; i < scores.size(); i++){
-				writeToFile(statsFolder + "/" + entry.getKey() + "-ScoreSamples.csv", "C" + combinations.get(i) + ";" + matchNumbers.get(i) + ";" + scores.get(i) + ";");
+				StatsUtils.writeToFileMkParentDir(statsFolder + "/" + entry.getKey() + "-ScoreSamples.csv", "C" + combinations.get(i) + ";" + matchNumbers.get(i) + ";" + scores.get(i) + ";");
 			}
 
 			wins = stats.getWins();
 			combinations = stats.getWinsCombinations();
 			matchNumbers = stats.getWinsMatchNumbers();
 
-			writeToFile(statsFolder + "/" + entry.getKey() + "-WinsSamples.csv", "Combination;Match number;Win percentage;");
+			StatsUtils.writeToFileMkParentDir(statsFolder + "/" + entry.getKey() + "-WinsSamples.csv", "Combination;Match number;Win percentage;");
 
 			for(int i = 0; i < wins.size(); i++){
-				writeToFile(statsFolder + "/" + entry.getKey() + "-WinsSamples.csv", "C" + combinations.get(i) + ";" + matchNumbers.get(i) + ";" + wins.get(i) + ";");
+				StatsUtils.writeToFileMkParentDir(statsFolder + "/" + entry.getKey() + "-WinsSamples.csv", "C" + combinations.get(i) + ";" + matchNumbers.get(i) + ";" + wins.get(i) + ";");
 			}
 
 			double avgScore = stats.getAvgScore();
 			double scoreCi = (stats.getScoresSEM() * 1.96);
 
-			writeToFile(scoresStatsFilePath, entry.getKey() + ";" + scores.size() + ";" + stats.getMinScore() + ";"
+			StatsUtils.writeToFileMkParentDir(scoresStatsFilePath, entry.getKey() + ";" + scores.size() + ";" + stats.getMinScore() + ";"
 					+ stats.getMaxScore() + ";" + stats.getScoresStandardDeviation() + ";" + stats.getScoresSEM() + ";"
 					+ avgScore + ";" + scoreCi + ";" + (avgScore - scoreCi) + ";" + (avgScore + scoreCi) + ";");
 
 			double avgWinPerc = (stats.getAvgWins()*100);
 			double winCi = (stats.getWinsSEM() * 1.96 * 100);
 
-			writeToFile(winsStatsFilePath, entry.getKey() + ";" + wins.size() + ";" + stats.getMinWinPercentage() + ";"
+			StatsUtils.writeToFileMkParentDir(winsStatsFilePath, entry.getKey() + ";" + wins.size() + ";" + stats.getMinWinPercentage() + ";"
 					+ stats.getMaxWinPercentage() + ";" + stats.getWinsStandardDeviation() + ";" + stats.getWinsSEM() + ";"
 					+ avgWinPerc + ";" + winCi + ";" + (avgWinPerc - winCi) + ";" + (avgWinPerc + winCi) + ";");
 		}
@@ -652,7 +650,7 @@ public class StatsSummarizer {
 									acceptableHeader = columnHeaders[k];
 								}
 
-								writeToFile(speedStatsFolderPath + "/" + playerType + "/" + acceptableHeader + "-AllMatches-" + playerRole + ".csv", "MatchID;#Samples;Min;Max;Median;SD;SEM;Avg;CI");
+								StatsUtils.writeToFileMkParentDir(speedStatsFolderPath + "/" + playerType + "/" + acceptableHeader + "-AllMatches-" + playerRole + ".csv", "MatchID;#Samples;Min;Max;Median;SD;SEM;Avg;CI");
 
 							}
 
@@ -736,7 +734,7 @@ public class StatsSummarizer {
 													statisticsValues[6] = statsToWrite.getAvgValue();
 													statisticsValues[7] = statsToWrite.get95ConfidenceInterval();
 
-													writeToFile(speedStatsFolderPath + "/" + playerType + "/" + acceptableHeader + "-AllMatches-" + playerRole + ".csv",
+													StatsUtils.writeToFileMkParentDir(speedStatsFolderPath + "/" + playerType + "/" + acceptableHeader + "-AllMatches-" + playerRole + ".csv",
 															speedLogs[k].getName().substring(0, speedLogs[k].getName().length()-10) + ";" + statisticsValues[0] +
 															";" + statisticsValues[1] + ";" + statisticsValues[2] + ";" + statisticsValues[3] + ";" + statisticsValues[4] +
 															";" + statisticsValues[5] +	";" + statisticsValues[6] + ";" + statisticsValues[7] + ";");
@@ -765,13 +763,13 @@ public class StatsSummarizer {
 
 				for(Entry<String, Map<String, SingleValueDoubleStats>> statHeaderStats: playerRoleStats.getValue().entrySet()){
 
-					writeToFile(speedStatsFolderPath + "/" + playerRoleStats.getKey() + "-" + statHeaderStats.getKey() + "-AggrStats.csv", "StatType;#Samples;Min;Max;Median;SD;SEM;Avg;CI");
+					StatsUtils.writeToFileMkParentDir(speedStatsFolderPath + "/" + playerRoleStats.getKey() + "-" + statHeaderStats.getKey() + "-AggrStats.csv", "StatType;#Samples;Min;Max;Median;SD;SEM;Avg;CI");
 
 					for(int j = 0; j< statisticsNames.length; j++){
 						theStatsToLog = statHeaderStats.getValue().get(statisticsNames[j]);
 
 						if(theStatsToLog != null){
-							writeToFile(speedStatsFolderPath + "/" + playerRoleStats.getKey() + "-" + statHeaderStats.getKey() + "-AggrStats.csv", statisticsNames[j] +
+							StatsUtils.writeToFileMkParentDir(speedStatsFolderPath + "/" + playerRoleStats.getKey() + "-" + statHeaderStats.getKey() + "-AggrStats.csv", statisticsNames[j] +
 									";" + theStatsToLog.getNumSamples() + ";" + theStatsToLog.getMinValue() + ";" + theStatsToLog.getMaxValue() + ";" +
 									theStatsToLog.getMedian() + ";" + theStatsToLog.getValuesStandardDeviation() + ";" + theStatsToLog.getValuesSEM() +
 									";" + theStatsToLog.getAvgValue() + ";" + theStatsToLog.get95ConfidenceInterval() + ";");
@@ -919,7 +917,7 @@ public class StatsSummarizer {
 								acceptableHeader = columnHeaders[k];
 							}
 
-							writeToFile(treeStatsFolderPath + "/" + playerType + "/" + acceptableHeader + "-AllMatches-" + playerRole + ".csv", "MatchID;#Samples;Min;Max;Median;SD;SEM;Avg;CI");
+							StatsUtils.writeToFileMkParentDir(treeStatsFolderPath + "/" + playerType + "/" + acceptableHeader + "-AllMatches-" + playerRole + ".csv", "MatchID;#Samples;Min;Max;Median;SD;SEM;Avg;CI");
 
 						}
 
@@ -1000,7 +998,7 @@ public class StatsSummarizer {
 												statisticsValues[6] = statsToWrite.getAvgValue();
 												statisticsValues[7] = statsToWrite.get95ConfidenceInterval();
 
-												writeToFile(treeStatsFolderPath + "/" + playerType + "/" + acceptableHeader + "-AllMatches-" + playerRole + ".csv",
+												StatsUtils.writeToFileMkParentDir(treeStatsFolderPath + "/" + playerType + "/" + acceptableHeader + "-AllMatches-" + playerRole + ".csv",
 														treeLogs[k].getName().substring(0, treeLogs[k].getName().length()-10) + ";" + statisticsValues[0] +
 														";" + statisticsValues[1] + ";" + statisticsValues[2] + ";" + statisticsValues[3] + ";" + statisticsValues[4] +
 														";" + statisticsValues[5] +	";" + statisticsValues[6] + ";" + statisticsValues[7] + ";");
@@ -1028,13 +1026,13 @@ public class StatsSummarizer {
 
 				for(Entry<String, Map<String, SingleValueDoubleStats>> statHeaderStats: playerRoleStats.getValue().entrySet()){
 
-					writeToFile(treeStatsFolderPath + "/" + playerRoleStats.getKey() + "-" + statHeaderStats.getKey() + "-AggrStats.csv", "StatType;#Samples;Min;Max;Median;SD;SEM;Avg;CI");
+					StatsUtils.writeToFileMkParentDir(treeStatsFolderPath + "/" + playerRoleStats.getKey() + "-" + statHeaderStats.getKey() + "-AggrStats.csv", "StatType;#Samples;Min;Max;Median;SD;SEM;Avg;CI");
 
 					for(int j = 0; j< statisticsNames.length; j++){
 						theStatsToLog = statHeaderStats.getValue().get(statisticsNames[j]);
 
 						if(theStatsToLog != null){
-							writeToFile(treeStatsFolderPath + "/" + playerRoleStats.getKey() + "-" + statHeaderStats.getKey() + "-AggrStats.csv", statisticsNames[j] +
+							StatsUtils.writeToFileMkParentDir(treeStatsFolderPath + "/" + playerRoleStats.getKey() + "-" + statHeaderStats.getKey() + "-AggrStats.csv", statisticsNames[j] +
 									";" + theStatsToLog.getNumSamples() + ";" + theStatsToLog.getMinValue() + ";" + theStatsToLog.getMaxValue() + ";" +
 									theStatsToLog.getMedian() + ";" + theStatsToLog.getValuesStandardDeviation() + ";" + theStatsToLog.getValuesSEM() +
 									";" + theStatsToLog.getAvgValue() + ";" + theStatsToLog.get95ConfidenceInterval() + ";");
@@ -1271,16 +1269,16 @@ public class StatsSummarizer {
 
 						for(Entry<String,Map<String,Map<String,Map<String,SingleValueStats>>>> roleStats: mabTypeStats.getValue().entrySet()){
 
-							writeToFile(paramsStatsFolderPath + "/" + playerTypeStats.getKey() + "-" + playerRoleStats.getKey() +
+							StatsUtils.writeToFileMkParentDir(paramsStatsFolderPath + "/" + playerTypeStats.getKey() + "-" + playerRoleStats.getKey() +
 									"-" + mabTypeStats.getKey() + "ParamTuner-AggrStats.csv", "ROLE = " + roleStats.getKey());
-							writeToFile(paramsStatsFolderPath + "/" + playerTypeStats.getKey() + "-" + playerRoleStats.getKey() +
+							StatsUtils.writeToFileMkParentDir(paramsStatsFolderPath + "/" + playerTypeStats.getKey() + "-" + playerRoleStats.getKey() +
 									"-" + mabTypeStats.getKey() + "ParamTuner-AggrStats.csv", "");
 
 							for(Entry<String,Map<String,Map<String,SingleValueStats>>> parameterStats: roleStats.getValue().entrySet()){
 
-								writeToFile(paramsStatsFolderPath + "/" + playerTypeStats.getKey() + "-" + playerRoleStats.getKey() +
+								StatsUtils.writeToFileMkParentDir(paramsStatsFolderPath + "/" + playerTypeStats.getKey() + "-" + playerRoleStats.getKey() +
 										"-" + mabTypeStats.getKey() + "ParamTuner-AggrStats.csv", "PARAM = " + parameterStats.getKey());
-								writeToFile(paramsStatsFolderPath + "/" + playerTypeStats.getKey() + "-" + playerRoleStats.getKey() +
+								StatsUtils.writeToFileMkParentDir(paramsStatsFolderPath + "/" + playerTypeStats.getKey() + "-" + playerRoleStats.getKey() +
 										"-" + mabTypeStats.getKey() + "ParamTuner-AggrStats.csv", "VALUE;TOTAL_VISITS;AVG_VISITS;AVG_SCORE_SUM;AVG_AVG_VALUE;AVG_PENALTY;NUM_SAMPLES;");
 
 								for(Entry<String,Map<String,SingleValueStats>> parameterValueStats: parameterStats.getValue().entrySet()){
@@ -1306,17 +1304,17 @@ public class StatsSummarizer {
 											numSamples + ";";
 
 
-									writeToFile(paramsStatsFolderPath + "/" + playerTypeStats.getKey() + "-" + playerRoleStats.getKey() +
+									StatsUtils.writeToFileMkParentDir(paramsStatsFolderPath + "/" + playerTypeStats.getKey() + "-" + playerRoleStats.getKey() +
 											"-" + mabTypeStats.getKey() + "ParamTuner-AggrStats.csv", statisToLog);
 
 								}
 
-								writeToFile(paramsStatsFolderPath + "/" + playerTypeStats.getKey() + "-" + playerRoleStats.getKey() +
+								StatsUtils.writeToFileMkParentDir(paramsStatsFolderPath + "/" + playerTypeStats.getKey() + "-" + playerRoleStats.getKey() +
 										"-" + mabTypeStats.getKey() + "ParamTuner-AggrStats.csv", "");
 
 							}
 
-							writeToFile(paramsStatsFolderPath + "/" + playerTypeStats.getKey() + "-" + playerRoleStats.getKey() +
+							StatsUtils.writeToFileMkParentDir(paramsStatsFolderPath + "/" + playerTypeStats.getKey() + "-" + playerRoleStats.getKey() +
 									"-" + mabTypeStats.getKey() + "ParamTuner-AggrStats.csv", "");
 
 						}
@@ -1330,18 +1328,18 @@ public class StatsSummarizer {
 				for(Entry<String,Map<String,Map<String,Map<String,ParamsComboInfo>>>> playerRoleComboStats : playerTypeComboStats.getValue().entrySet()){
 					for(Entry<String,Map<String,Map<String,ParamsComboInfo>>> roleCombosStats : playerRoleComboStats.getValue().entrySet()){
 
-						writeToFile(paramsStatsFolderPath + "/" + playerTypeComboStats.getKey() + "-" + playerRoleComboStats.getKey() +
+						StatsUtils.writeToFileMkParentDir(paramsStatsFolderPath + "/" + playerTypeComboStats.getKey() + "-" + playerRoleComboStats.getKey() +
 								"-BestParamsCombo-AggrStats.csv", "");
-						writeToFile(paramsStatsFolderPath + "/" + playerTypeComboStats.getKey() + "-" + playerRoleComboStats.getKey() +
+						StatsUtils.writeToFileMkParentDir(paramsStatsFolderPath + "/" + playerTypeComboStats.getKey() + "-" + playerRoleComboStats.getKey() +
 								"-BestParamsCombo-AggrStats.csv", "ROLE = " + roleCombosStats.getKey());
 
 						for(Entry<String,Map<String,ParamsComboInfo>> paramCombosStats : roleCombosStats.getValue().entrySet()){
 
-							writeToFile(paramsStatsFolderPath + "/" + playerTypeComboStats.getKey() + "-" + playerRoleComboStats.getKey() +
+							StatsUtils.writeToFileMkParentDir(paramsStatsFolderPath + "/" + playerTypeComboStats.getKey() + "-" + playerRoleComboStats.getKey() +
 									"-BestParamsCombo-AggrStats.csv", "PARAMS = " + paramCombosStats.getKey() + ";NUM_COMMITS;NUM_WINS;NUM_TIES;NUM_LOSSES;");
 
 							for(Entry<String,ParamsComboInfo> comboStat : paramCombosStats.getValue().entrySet()){
-								writeToFile(paramsStatsFolderPath + "/" + playerTypeComboStats.getKey() + "-" + playerRoleComboStats.getKey() +
+								StatsUtils.writeToFileMkParentDir(paramsStatsFolderPath + "/" + playerTypeComboStats.getKey() + "-" + playerRoleComboStats.getKey() +
 										"-BestParamsCombo-AggrStats.csv", comboStat.getKey() + ";" + comboStat.getValue().getNumCommits() + ";" +
 										comboStat.getValue().getNumWins() + ";" + comboStat.getValue().getNumTies() + ";" +
 										comboStat.getValue().getNumLosses() + ";");
@@ -1532,7 +1530,7 @@ public class StatsSummarizer {
 				String playerType = samplesEstimatesForPlayer.getKey();
 				for(Entry<String,StatsFileData> samplesEstimatesForPlayerForRole: samplesEstimatesForPlayer.getValue().entrySet()) {
 					String playerRole = samplesEstimatesForPlayerForRole.getKey();
-					writeToFile(tunerSamplesStatsFolderPath + "/" + playerType + "-" + playerRole + "-SamplesEstimates.csv", samplesEstimatesForPlayerForRole.getValue().toLogs());
+					StatsUtils.writeToFileMkParentDir(tunerSamplesStatsFolderPath + "/" + playerType + "-" + playerRole + "-SamplesEstimates.csv", samplesEstimatesForPlayerForRole.getValue().toLogs());
 				}
 			}
 
@@ -1540,7 +1538,7 @@ public class StatsSummarizer {
 				String playerType = samplesUsagePerRoleForPlayer.getKey();
 				for(Entry<String,StatsFileData> samplesUsagePerRoleForPlayerForRole: samplesUsagePerRoleForPlayer.getValue().entrySet()) {
 					String playerRole = samplesUsagePerRoleForPlayerForRole.getKey();
-					writeToFile(tunerSamplesStatsFolderPath + "/" + playerType + "-" + playerRole + "-SamplesUsagePerRole.csv", samplesUsagePerRoleForPlayerForRole.getValue().toLogs());
+					StatsUtils.writeToFileMkParentDir(tunerSamplesStatsFolderPath + "/" + playerType + "-" + playerRole + "-SamplesUsagePerRole.csv", samplesUsagePerRoleForPlayerForRole.getValue().toLogs());
 				}
 			}
 
@@ -2133,23 +2131,7 @@ public class StatsSummarizer {
     	}
 	}
 
-	private static void writeToFile(String filename, String message){
 
-		File destinationFile = new File(filename);
-		if(!destinationFile.getParentFile().isDirectory()){
-			destinationFile.getParentFile().mkdirs();
-		}
-
-		BufferedWriter out;
-		try {
-			out = new BufferedWriter(new FileWriter(filename, true));
-			out.write(message+"\n");
-            out.close();
-		} catch (IOException e) {
-			System.out.println("Error writing file " + filename + ".");
-			e.printStackTrace();
-		}
-	}
 
 	private static void preprocessTreeStats(String mainFolderPath, String tourneyType, String gameKey){
 
@@ -2233,7 +2215,7 @@ public class StatsSummarizer {
 										theLine = br.readLine();
 
 										if(theLine != null){
-											writeToFile(destFile,theLine);
+											StatsUtils.writeToFileMkParentDir(destFile,theLine);
 
 											theLine = br.readLine();
 
@@ -2242,7 +2224,7 @@ public class StatsSummarizer {
 												splitLine = theLine.split(";");
 
 												if(splitLine.length >= 2 && splitLine[1].equals("End")){
-													writeToFile(destFile,theLine);
+													StatsUtils.writeToFileMkParentDir(destFile,theLine);
 												}
 
 												theLine = br.readLine();
