@@ -10,7 +10,11 @@ import java.io.IOException;
 import org.jfree.chart.ChartFactory;
 import org.jfree.chart.ChartUtilities;
 import org.jfree.chart.JFreeChart;
+import org.jfree.chart.axis.NumberAxis;
+import org.jfree.chart.axis.NumberTickUnit;
+import org.jfree.chart.axis.ValueAxis;
 import org.jfree.chart.plot.PlotOrientation;
+import org.jfree.chart.plot.SeriesRenderingOrder;
 import org.jfree.chart.plot.XYPlot;
 import org.jfree.chart.renderer.xy.XYItemRenderer;
 import org.jfree.chart.title.PaintScaleLegend;
@@ -18,7 +22,7 @@ import org.jfree.data.xy.XYSeries;
 import org.jfree.data.xy.XYSeriesCollection;
 import org.jfree.ui.RectangleEdge;
 
-import csironi.ggp.course.statsSummarizer.treeDrawer.SVGGameTurn;
+import csironi.ggp.course.statsSummarizer.treeDrawer.svg.SVGGameTurn;
 
 public class JFCTree {
 
@@ -39,7 +43,7 @@ public class JFCTree {
 
 
 	// Limit on the number of turns being plotted (i.e. limit on the plotted depth of the tree)
-	public static int DEPTH_LIMIT = 4; //Integer.MAX_VALUE;
+	public static int DEPTH_LIMIT = Integer.MAX_VALUE;
 
 	/**
 	 *
@@ -140,6 +144,8 @@ public class JFCTree {
 
 			while((theLine != null && theNextLine !=null && !theNextLine.isEmpty()) && currentTurn <= DEPTH_LIMIT) {
 
+				//System.out.println("Turn " + currentTurn);
+
 				if(!this.parseGameTurn(theLine, theNextLine, yMax, currentTurn, dataset, edgesPerTurn, iterationsPerTurn)) {
 					System.out.println("Error initializing turn " + currentTurn + "!");
 					br.close();
@@ -160,7 +166,7 @@ public class JFCTree {
         	return false;
 		}
 
-		if(!this.createAndSaveTreePlot(dataset, edgesPerTurn, xMaxForPlot)) {
+		if(!this.createAndSaveTreePlot(dataset, edgesPerTurn, xMinForPlot, xMaxForPlot, yMinForPlot, yMaxForPlot)) {
 			System.out.println("Error creating the plot!");
 			return false;
 		}
@@ -169,21 +175,48 @@ public class JFCTree {
 
 	}
 
-	private boolean createAndSaveTreePlot(XYSeriesCollection dataset, int[] edgesPerTurn, int xMaxForPlot) {
+	private boolean createAndSaveTreePlot(XYSeriesCollection dataset, int[] edgesPerTurn, int xMinForPlot,
+			int xMaxForPlot, double yMinForPlot, double yMaxForPlot) {
 
-		JFreeChart xylineChart = ChartFactory.createXYLineChart("TreePlot-" + this.gameKey, "Turn", "Num. branches", dataset,
+		//System.out.println("Plot");
+
+		JFreeChart xylineChart = ChartFactory.createXYLineChart("TreePlot-" + this.gameKey, "Turn", "Branches", dataset,
 				PlotOrientation.HORIZONTAL, false, false, false); //Sets x to be displayed vertically and y horizontally
 
 		XYPlot plot = xylineChart.getXYPlot();
 		plot.setDomainGridlinesVisible(false); // Remove grid lines for x
 		plot.setRangeGridlinesVisible(false); // Remove grid lines for y
 		plot.getDomainAxis().setInverted(true); // Invert x axis
+		plot.getDomainAxis().setRange(xMinForPlot, xMaxForPlot);
+		plot.getRangeAxis().setRange(yMinForPlot, yMaxForPlot);
+		NumberAxis axisX = (NumberAxis)plot.getDomainAxis();
+		axisX.setTickUnit(new NumberTickUnit(1));
+		//NumberAxis axisY = (NumberAxis)plot.getRangeAxis();
+		//axisY.setTickUnit(new NumberTickUnit(100));
+
+		plot.setSeriesRenderingOrder(SeriesRenderingOrder.FORWARD);
+
+		ColorPaintScale scale = new ColorPaintScale(1, xMaxForPlot);
+
+		PaintScaleLegend legend;
+		try {
+			legend = new PaintScaleLegend(scale, (ValueAxis) plot.getDomainAxis().clone());
+		} catch (CloneNotSupportedException e) {
+			System.out.println("Exception when creating the scale legend of the plot!");
+        	e.printStackTrace();
+        	return false;
+		}
+		xylineChart.addSubtitle(legend);
+		legend.setPosition(RectangleEdge.LEFT);
+		legend.setStripWidth(30);
+		legend.setMargin(8.4, 0.0, 48.0, 0.0); // Top, left, bottom, right
+
+		plot.getDomainAxis().setVisible(false);
 
 		XYItemRenderer renderer = plot.getRenderer();
 
-		ColorPaintScale scale = new ColorPaintScale(1, xMaxForPlot);
 		Paint turnColor;
-		Paint moveColor = new Color(0, 0, 0); // Black
+		Paint moveColor = scale.getSelectedActionColor();
 		int currentSeries = 0;
 		for(int turn = 1; turn <= edgesPerTurn.length; turn++) {
 
@@ -199,11 +232,7 @@ public class JFCTree {
 
 		}
 
-		PaintScaleLegend legend = new PaintScaleLegend(scale, plot.getDomainAxis());
-		xylineChart.addSubtitle(legend);
-		legend.setPosition(RectangleEdge.LEFT);
-		legend.setStripWidth(30);
-		legend.setMargin(10, 0, 40.0, 0.0); // Top, left, bottom, right
+		//System.out.println("Save");
 
 		try {
 			ChartUtilities.saveChartAsJPEG(new File(this.outputFile), xylineChart, 1000, 1000);

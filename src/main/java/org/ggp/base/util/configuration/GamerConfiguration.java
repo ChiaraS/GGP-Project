@@ -116,14 +116,17 @@ public class GamerConfiguration {
         }
 
         if(runningOnWindows()){
-			defaultLocalGameRepositoryFolderPath = "C:/Users/c.sironi/BITBUCKET REPOS/GGP-Base";
-			gamersSettingsFolderPath = "C:/Users/c.sironi/BITBUCKET REPOS/GGP-Base/GamersSettings";
+			//defaultLocalGameRepositoryFolderPath = "C:/Users/c.sironi/BITBUCKET REPOS/GGP-Base";
+			//gamersSettingsFolderPath = "C:/Users/c.sironi/BITBUCKET REPOS/GGP-Base/GamersSettings";
 
 			defaultLocalFolderGameRepositoryFolderPath = "C:/Users/c.sironi/BITBUCKET REPOS/GGP-Base/GDLFolder";
 
 			// To run Kiosk on laptop
 			//defaultLocalGameRepositoryFolderPath = "C:/Users/Chiara/Documents/PHD/GGP DEMO/GGPBase-GameRepo-03022016";
 			//gamersSettingsFolderPath = "C:/Users/Chiara/Documents/PHD/GGP DEMO/GamersSettings";
+			// To run Kiosk on work laptop
+			defaultLocalGameRepositoryFolderPath = "C:/Users/c.sironi/Documents/GGPBase/GGPBase-GameRepo-03022016";
+			gamersSettingsFolderPath = "C:/Users/c.sironi/Documents/GGPBase/GamersSettings";
 		}else if(runningOnLinux()){
 			defaultLocalGameRepositoryFolderPath = "/home/csironi/GAMEREPOS";
 			gamersSettingsFolderPath = "/home/csironi/GamersSettings";

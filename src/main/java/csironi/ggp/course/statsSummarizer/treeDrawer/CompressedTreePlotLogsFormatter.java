@@ -1,4 +1,4 @@
-package csironi.ggp.course.statsSummarizer;
+package csironi.ggp.course.statsSummarizer.treeDrawer;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -8,6 +8,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Map.Entry;
 
+import csironi.ggp.course.statsSummarizer.StatsUtils;
 import csironi.ggp.course.utils.MyPair;
 
 /**
@@ -19,7 +20,7 @@ import csironi.ggp.course.utils.MyPair;
  *
  * This class creates a single folder, with a subfolder for each game, each of which has a subfolder
  * for each role in the game, each of which has a subfolder for each agent that appears in any of the
- * considered experiments, each of which has a subfolder for each match 0 where the agent played the
+ * considered experiments, each of which has a subfolder for each match where the agent played the
  * game with that role. This subfolder contains a 'compressed' version of the TreePlot.csv
  * file for the match. This compressed version has all the edges added in a game turn reported on the
  * same line (they will be plotted all at the same time disregarding the iteration number). Moreover,
@@ -41,6 +42,13 @@ import csironi.ggp.course.utils.MyPair;
  *
  * PlayerCDE=PlayerC;PlayerD;PlayerE
  *
+ * E.g. input
+ *
+ * [folderPathWithStatsFolders] [resultFolderName] [(optional) listOfAliases]
+ *
+ * C:\Users\c.sironi\RES\GGP\!!!!!BranchingFactorPlot\4PNTBEAvs4PRND 4PNTBEAvs4PRND 4PRND=Print4PRandomTunerCGMDMctsGamer 4PNTBEA=Print4PNTBEATunerCGMDMctsGamer
+ *
+ *
  * @param args
  */
 public class CompressedTreePlotLogsFormatter {
@@ -50,7 +58,7 @@ public class CompressedTreePlotLogsFormatter {
 		/************************************ Prepare the folders *********************************/
 
 		if(args.length < 2){
-			System.out.println("Impossible to compress and modify logs to create comparable tree plots. Specify both the absolute path of the folder containing a folder with statistics for each experiment and the name of the folder that will contain the compressed logs.");
+			System.out.println("Impossible to compress and modify logs to create comparable tree plots. Specify the absolute path of the folder containing a folder with statistics for each experiment and the name of the folder that will contain the compressed logs.");
 			return;
 		}
 
@@ -270,7 +278,7 @@ public class CompressedTreePlotLogsFormatter {
 
 												matchAndTourneyID = splitLogFileName[0] + "-" + splitLogFileName[1] + "-" + splitLogFileName[2];
 
-												splitLogFileName = treePlotFiles[m].getName().split("-");
+												//splitLogFileName = treePlotFiles[m].getName().split("-");
 
 												outputFilePath =  gameKey + "/" + roleName + "/" + playerType + "/" + splitLogFileName[0] + "/" + matchAndTourneyID + "-" + roleName + "-" + playerType + ".csv";
 

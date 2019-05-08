@@ -3,12 +3,12 @@ package csironi.ggp.course.statsSummarizer.treeDrawer.chart;
 import java.awt.Color;
 import java.awt.Paint;
 
-public class ColorPaintScale implements TreePaintScale {
+public class ExtendedColorPaintScale implements TreePaintScale {
 
 	private final double lowerBound;
     private final double upperBound;
 
-    public ColorPaintScale(double lowerBound, double upperBound) {
+    public ExtendedColorPaintScale(double lowerBound, double upperBound) {
         this.lowerBound = lowerBound;
         this.upperBound = upperBound;
     }
@@ -41,7 +41,7 @@ public class ColorPaintScale implements TreePaintScale {
 		int g = 0;
 		int b = 0;
 
-		int rescaledValue = (int) Math.round((intValue-this.lowerBound)/(this.upperBound-this.lowerBound) * 255.0);
+		int rescaledValue = (int) Math.round((intValue-this.lowerBound)/(this.upperBound-this.lowerBound) * (255.0*6.0));
 
 		//System.out.println(rescaledValue);
 
@@ -54,30 +54,40 @@ public class ColorPaintScale implements TreePaintScale {
 		//System.out.println(colorValue);
 
 		switch(colorInterval) {
-			case 0: // R=255, G=colorValue, B=0
-				r = 255;
-				g = colorValue;
-				b = 0;
-				break;
-			case 1: // R=255-colorValue, G=255, B=0
-				r = 255-colorValue;
-				g = 255;
-				b = 0;
-				break;
-			case 2: // R=0, G=255, B=colorValue
+			case 0: // R=0, G=255, B=colorValue -- green -> light blue
 				r = 0;
 				g = 255;
 				b = colorValue;
 				break;
-			case 3: // R=0, G=255-colorValue, B=255
+			case 1: // R=0, G=255-colorValue, B=255 -- light blue -> blue
 				r = 0;
 				g = 255-colorValue;
 				b = 255;
 				break;
-			case 4: // R=0, G=0, B=255
-				r = 0;
+			case 2: // R=colorValue, G=0, B=255 -- blue -> purple
+				r = colorValue;
 				g = 0;
 				b = 255;
+				break;
+			case 3: // R=255, G=255-colorValue, B=255-colorValue -- purple -> red
+				r = 255;
+				g = 0;
+				b = 255-colorValue;
+				break;
+			case 4: // R=255, G=colorValue, B=0 -- red -> yellow
+				r = 255;
+				g = colorValue;
+				b = 0;
+				break;
+			case 5: // R=255-colorValue, G=255, B=0 -- yellow -> green
+				r = 255-colorValue;
+				g = 255;
+				b = 0;
+				break;
+			case 6: // R=0, G=255, B=0 -- green
+				r = 0;
+				g = 255;
+				b = 0;
 				break;
 			default:
 				System.out.println("Something went wrong when computing the color!");

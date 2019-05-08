@@ -1,10 +1,12 @@
-package csironi.ggp.course.statsSummarizer;
+package csironi.ggp.course.statsSummarizer.treeDrawer;
 
 import java.io.File;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Map.Entry;
+
+import org.ggp.base.util.Interval;
 
 import com.google.common.io.Files;
 
@@ -14,7 +16,8 @@ public class TreePlotLogsExtractor {
 	 * Given the path of a folder with the folders containing the statistics of a set of games
 	 * (i.e. the folders ending with -Stats), extracts the TreeSizeLog.csv files for each game,
 	 * for each player type, for each role played by the type, for each possible assignments of
-	 * other roles. Only the TreeSizeLog.csv file for one match per type per role are extracted.
+	 * other roles. The TreeSizeLog.csv file is extracted for all the matches with the match
+	 * number in the specified interval.
 	 * The default now is match 0 of each combination.
 	 *
 	 * As optional extra arguments, ALIAS names for players can be specified together
@@ -30,19 +33,27 @@ public class TreePlotLogsExtractor {
 	 *
 	 * PlayerCDE=PlayerC;PlayerD;PlayerE
 	 *
+	 * E.g. input
+	 *
+	 * [folderPathWithStatsFolders] [resultFolderName] [matchNumberInterval] [(optional) listOfAliases]
+	 *
+	 * C:\Users\c.sironi\RES\GGP\!!!!!BranchingFactorPlot\4PNTBEAvs4PRND 4PNTBEAvs4PRND 0-5 4PRND=Print4PRandomTunerCGMDMctsGamer 4PNTBEA=Print4PNTBEATunerCGMDMctsGamer
+	 *
 	 * @param args
 	 */
 	public static void main(String args[]) {
 
 		/************************************ Prepare the folders *********************************/
 
-		if(args.length < 2){
-			System.out.println("Impossible to collect logs to create tree plots. Specify both the absolute path of the folder containing statistics and the name of the folder that will contain the logs and the plots.");
+		if(args.length < 3){
+			System.out.println("Impossible to collect logs to create tree plots. Specify the absolute path of the folder containing statistics, the name of the folder that will contain the logs and the plots, and the interval for the match numbers to be extracted.");
 			return;
 		}
 
 		String sourceFolderPath = args[0];
 		String resultFolderPath = sourceFolderPath + "/" + args[1];
+		String[] interval = args[2].split("-");
+		Interval matchInterval = new Interval(Integer.parseInt(interval[0]), Integer.parseInt(interval[1]), true, true);
 
 		// Create a map that maps each player to its alias
 		Map<String,String> aliases = new HashMap<String,String>();
@@ -51,7 +62,7 @@ public class TreePlotLogsExtractor {
 		String[] aliasSpecification;
 		String alias;
 		String[] playersWithSameAlias;
-		for(int i = 2; i < args.length; i++){
+		for(int i = 3; i < args.length; i++){
 			aliasSpecification = args[i].split("=");
 
 			//System.out.println(aliasSpecification);
@@ -91,8 +102,8 @@ public class TreePlotLogsExtractor {
 		File resultFolder = new File(resultFolderPath);
 
 		if(resultFolder.isDirectory()){
-			System.out.println("The folder where to move the tree log files already exists! Delete folder first!");
-			return;
+			System.out.println("The folder where to move the tree log files already exists! Only the logs that are not already in this folder will be moved!");
+			//return;
 		}
 
 		File[] gamesDirs = sourceFolder.listFiles();
@@ -156,7 +167,11 @@ public class TreePlotLogsExtractor {
 
 								for(int m = 0; m < treePlotFiles.length; m++){
 
-									if(treePlotFiles[m].getName().startsWith("0.")) {
+									String[] splitFileName = treePlotFiles[m].getName().split("\\.");
+
+									int matchNumebr = Integer.parseInt(splitFileName[0]);
+
+									if(matchInterval.contains(matchNumebr)) {
 
 										String destinationPath = resultFolderPath + "/" + gameKey + "/" + playerType + "/" + roleName;
 
@@ -165,11 +180,15 @@ public class TreePlotLogsExtractor {
 
 										File destinationFile = new File(destinationPath + "/" + treePlotFiles[m].getName());
 
-										try {
-											Files.copy(treePlotFiles[m], destinationFile);
-										} catch (IOException e) {
-											System.out.println("Error copying file! Trying to find another file for match 0 in the folder.");
-											e.printStackTrace();
+										if(!destinationFile.exists() || !destinationFile.isFile()) {
+
+											try {
+												Files.copy(treePlotFiles[m], destinationFile);
+											} catch (IOException e) {
+												System.out.println("Error copying file! Trying to find another file for match 0 in the folder.");
+												e.printStackTrace();
+											}
+
 										}
 
 									}

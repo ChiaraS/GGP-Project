@@ -1,4 +1,4 @@
-package csironi.ggp.course.statsSummarizer.treeDrawer;
+package csironi.ggp.course.statsSummarizer.treeDrawer.svg;
 
 import java.io.BufferedReader;
 import java.io.File;

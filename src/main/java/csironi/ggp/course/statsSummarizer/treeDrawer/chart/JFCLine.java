@@ -8,6 +8,7 @@ import org.jfree.chart.ChartFactory;
 import org.jfree.chart.ChartUtilities;
 import org.jfree.chart.JFreeChart;
 import org.jfree.chart.plot.PlotOrientation;
+import org.jfree.chart.plot.SeriesRenderingOrder;
 import org.jfree.chart.plot.XYPlot;
 import org.jfree.chart.renderer.xy.XYItemRenderer;
 import org.jfree.data.xy.XYSeries;
@@ -73,6 +74,8 @@ public class JFCLine {
 		plot.setRangeGridlinesVisible(false); // Remove grid lines for y
 		plot.getDomainAxis().setInverted(true); // Invert x axis
 
+		plot.setSeriesRenderingOrder(SeriesRenderingOrder.FORWARD);
+
 
 
 		XYItemRenderer renderer = plot.getRenderer();
@@ -80,7 +83,7 @@ public class JFCLine {
 	      renderer.setSeriesPaint( 1 , new Color(255, 0, 0, 255));
 	      renderer.setSeriesPaint( 2 , new Color(0, 255, 0));
 	      renderer.setSeriesPaint( 3 , new Color(0, 255, 255));
-	      //renderer.setSeriesPaint( 4 , new Color(0, 0, 0));
+	      renderer.setSeriesPaint( 4 , new Color(0, 0, 0));
 	      //plot.setRenderer( renderer );
 	      //setContentPane( chartPanel );
 

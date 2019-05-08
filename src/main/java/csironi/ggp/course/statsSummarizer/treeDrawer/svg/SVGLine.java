@@ -1,4 +1,4 @@
-package csironi.ggp.course.statsSummarizer.treeDrawer;
+package csironi.ggp.course.statsSummarizer.treeDrawer.svg;
 
 public class SVGLine {
 
