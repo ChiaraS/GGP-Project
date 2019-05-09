@@ -22,19 +22,40 @@ import org.jfree.data.xy.XYSeries;
 import org.jfree.data.xy.XYSeriesCollection;
 import org.jfree.ui.RectangleEdge;
 
-import csironi.ggp.course.statsSummarizer.treeDrawer.svg.SVGGameTurn;
-
 public class JFCTree {
 
+	/**
+	 * Given a file with compressed tree plot logs without duplicate edges creates a .jpeg file containing the
+	 * plot of the tree with the given color scale.
+	 *
+	 * Two arguments expected:
+	 * [treePlotLogsFilePath] = path of the file containing the tree logs to be plotted
+	 * [scaleType] = type of color scale to be used. The type can be one of the following:
+	 * 		- COLOR: color scale with 255*4 distinct colors ranging from red->yellow-green-light blue
+	 * 		- EXTENDED_COLOR: color scale with 255*6 distinct colors, cycling as follows:
+	 * 		  green->lightblue->blue->purple->red->yellow->green
+	 * 		- GRAY_SMALL: gray scale with 12 distinct shades of gray (no white)
+	 * 		- GRAY_BIG: gray scale with 23 distinct shades of gray (no white)
+	 * 		- REPEATED_COLOR: samples the EXTENDED_COLOR scale X*6 times and the X*6 obtained colors are
+	 * 		  repeated cyclically (at the moment X=5)
+	 *
+	 * @param args
+	 */
 	public static void main(String[] args) {
 
+		if(args.length != 2) {
+			System.out.println("Expecting 2 inputs. Specify the path of the .csv file to be plotted and the type of scale to be used (COLOR|EXTENDED_COLOR|GRAY_SMALL|GRAY_BIG|REPEATED_COLOR)");
+			return;
+		}
+
 		String filePath = args[0];
+		String scaleType = args[1];
 
 		File file = new File(filePath);
 
 		//String outputFile = file.getParent() + "/Tree.svg";
 
-		JFCTree tree = new JFCTree(file);
+		JFCTree tree = new JFCTree(file, scaleType);
 
 		tree.parseTree();
 
@@ -54,18 +75,22 @@ public class JFCTree {
 
 	private String gameKey;
 
+	private String scaleType;
+
 	/**
 	 * Lines corresponding to actions added to the tree in this game turn
 	 */
 	//private ArrayList<XYSeries> series;
 
 
-	public JFCTree(File logFile) {
+	public JFCTree(File logFile, String scaleType) {
 		this.logFile = logFile;
 		String filename = logFile.getName();
 		this.gameKey = filename.split("-")[1];
 
 		this.outputFile = logFile.getParent() + "/" + logFile.getName().substring(0, logFile.getName().length()-4) + ".jpeg";
+
+		this.scaleType = scaleType;
 	}
 
 
@@ -88,7 +113,6 @@ public class JFCTree {
 		String theLine;
 		String theNextLine;
 		String[] splitLine;
-		SVGGameTurn theTurn;
 
 		int playedTurns;
 		int xMin;
@@ -118,7 +142,7 @@ public class JFCTree {
 
 			try {
 				playedTurns = Integer.parseInt(splitLine[0]);
-				int totalGameIterations = Integer.parseInt(splitLine[1]);
+				//int totalGameIterations = Integer.parseInt(splitLine[1]);
 				xMin =  Integer.parseInt(splitLine[2]);
 				xMax =  Integer.parseInt(splitLine[3]);
 				yMin =  Double.parseDouble(splitLine[4]);
@@ -184,6 +208,7 @@ public class JFCTree {
 				PlotOrientation.HORIZONTAL, false, false, false); //Sets x to be displayed vertically and y horizontally
 
 		XYPlot plot = xylineChart.getXYPlot();
+		plot.setBackgroundPaint(Color.WHITE);
 		plot.setDomainGridlinesVisible(false); // Remove grid lines for x
 		plot.setRangeGridlinesVisible(false); // Remove grid lines for y
 		plot.getDomainAxis().setInverted(true); // Invert x axis
@@ -196,7 +221,28 @@ public class JFCTree {
 
 		plot.setSeriesRenderingOrder(SeriesRenderingOrder.FORWARD);
 
-		ColorPaintScale scale = new ColorPaintScale(1, xMaxForPlot);
+		TreePaintScale scale;
+
+		switch(this.scaleType) {
+			case "COLOR":
+				scale = new ColorPaintScale(1, xMaxForPlot);
+				break;
+			case "EXTENDED_COLOR":
+				scale = new ExtendedColorPaintScale(1, xMaxForPlot);
+				break;
+			case "GRAY_SMALL":
+				scale = new SmallRepeatedGrayPaintScale(1, xMaxForPlot);
+				break;
+			case "GRAY_BIG":
+				scale = new BigRepeatedGrayPaintScale(1, xMaxForPlot);
+				break;
+			case "REPEATED_COLOR":
+				scale = new RepeatingColorPaintScale(1, xMaxForPlot, 5);
+				break;
+			default:
+				System.out.println("Unrecognized print scale type " + this.scaleType + ".");
+				return false;
+		}
 
 		PaintScaleLegend legend;
 		try {

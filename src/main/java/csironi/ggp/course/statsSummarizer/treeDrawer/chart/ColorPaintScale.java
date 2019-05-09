@@ -41,7 +41,7 @@ public class ColorPaintScale implements TreePaintScale {
 		int g = 0;
 		int b = 0;
 
-		int rescaledValue = (int) Math.round((intValue-this.lowerBound)/(this.upperBound-this.lowerBound) * 255.0);
+		int rescaledValue = (int) Math.round((intValue-this.lowerBound)/(this.upperBound-this.lowerBound) * (255.0*0.4));
 
 		//System.out.println(rescaledValue);
 
