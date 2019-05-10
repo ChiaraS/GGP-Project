@@ -14,20 +14,16 @@ public class SmallRepeatedGrayPaintScale implements TreePaintScale{
         this.lowerBound = (int)Math.floor(lowerBound);
         this.upperBound = (int)Math.floor(upperBound);
 
-        this.grayScaleColors = new Color[12];
-        this.grayScaleColors[0] = new Color(0, 0, 0, 235);
-        this.grayScaleColors[1] = new Color(0, 0, 0, 215);
-        this.grayScaleColors[2] = new Color(0, 0, 0, 195);
-        this.grayScaleColors[3] = new Color(0, 0, 0, 175);
-        this.grayScaleColors[4] = new Color(0, 0, 0, 155);
-        this.grayScaleColors[5] = new Color(0, 0, 0, 135);
-        this.grayScaleColors[6] = new Color(0, 0, 0, 115);
-        this.grayScaleColors[7] = new Color(0, 0, 0, 95);
-        this.grayScaleColors[8] = new Color(0, 0, 0, 75);
-        this.grayScaleColors[9] = new Color(0, 0, 0, 55);
-        this.grayScaleColors[10] = new Color(0, 0, 0, 35);
-        this.grayScaleColors[11] = new Color(0, 0, 0, 15);
-
+        this.grayScaleColors = new Color[9];
+        this.grayScaleColors[0] = new Color(0, 0, 0);
+        this.grayScaleColors[1] = new Color(51, 51, 51);
+        this.grayScaleColors[2] = new Color(77, 77, 77);
+        this.grayScaleColors[3] = new Color(102, 102, 102);
+        this.grayScaleColors[4] = new Color(128, 128, 128);
+        this.grayScaleColors[5] = new Color(153, 153, 153);
+        this.grayScaleColors[6] = new Color(179, 179, 179);
+        this.grayScaleColors[7] = new Color(204, 204, 204);
+        this.grayScaleColors[8] = new Color(230, 230, 230);
     }
 
     @Override

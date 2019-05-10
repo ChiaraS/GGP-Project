@@ -14,30 +14,23 @@ public class BigRepeatedGrayPaintScale implements TreePaintScale {
         this.lowerBound = (int) Math.floor(lowerBound);
         this.upperBound = (int) Math.floor(upperBound);
 
-        this.grayScaleColors = new Color[23];
-        this.grayScaleColors[0] = new Color(0, 0, 0, 235);
-        this.grayScaleColors[1] = new Color(0, 0, 0, 225);
-        this.grayScaleColors[2] = new Color(0, 0, 0, 215);
-        this.grayScaleColors[3] = new Color(0, 0, 0, 205);
-        this.grayScaleColors[4] = new Color(0, 0, 0, 195);
-        this.grayScaleColors[5] = new Color(0, 0, 0, 185);
-        this.grayScaleColors[6] = new Color(0, 0, 0, 175);
-        this.grayScaleColors[7] = new Color(0, 0, 0, 165);
-        this.grayScaleColors[8] = new Color(0, 0, 0, 155);
-        this.grayScaleColors[9] = new Color(0, 0, 0, 145);
-        this.grayScaleColors[10] = new Color(0, 0, 0, 135);
-        this.grayScaleColors[11] = new Color(0, 0, 0, 125);
-        this.grayScaleColors[12] = new Color(0, 0, 0, 115);
-        this.grayScaleColors[13] = new Color(0, 0, 0, 105);
-        this.grayScaleColors[14] = new Color(0, 0, 0, 95);
-        this.grayScaleColors[15] = new Color(0, 0, 0, 85);
-        this.grayScaleColors[16] = new Color(0, 0, 0, 75);
-        this.grayScaleColors[17] = new Color(0, 0, 0, 65);
-        this.grayScaleColors[18] = new Color(0, 0, 0, 55);
-        this.grayScaleColors[19] = new Color(0, 0, 0, 45);
-        this.grayScaleColors[20] = new Color(0, 0, 0, 35);
-        this.grayScaleColors[21] = new Color(0, 0, 0, 25);
-        this.grayScaleColors[22] = new Color(0, 0, 0, 15);
+        this.grayScaleColors = new Color[16];
+        this.grayScaleColors[0] = new Color(0, 0, 0);
+        this.grayScaleColors[1] = new Color(40, 40, 40);
+        this.grayScaleColors[2] = new Color(60, 60, 60);
+        this.grayScaleColors[3] = new Color(75, 75, 75);
+        this.grayScaleColors[4] = new Color(90, 90, 90);
+        this.grayScaleColors[5] = new Color(105, 105, 105);
+        this.grayScaleColors[6] = new Color(120, 120, 120);
+        this.grayScaleColors[7] = new Color(135, 135, 135);
+        this.grayScaleColors[8] = new Color(150, 150, 150);
+        this.grayScaleColors[9] = new Color(165, 165, 165);
+        this.grayScaleColors[10] = new Color(180, 180, 180);
+        this.grayScaleColors[11] = new Color(195, 195, 195);
+        this.grayScaleColors[12] = new Color(210, 210, 210);
+        this.grayScaleColors[13] = new Color(225, 225, 225);
+        this.grayScaleColors[14] = new Color(235, 235, 235);
+        this.grayScaleColors[15] = new Color(245, 245, 245);
 
     }
 

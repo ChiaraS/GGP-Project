@@ -34,17 +34,18 @@ public class JFCTree {
 	 * 		- COLOR: color scale with 255*4 distinct colors ranging from red->yellow-green-light blue
 	 * 		- EXTENDED_COLOR: color scale with 255*6 distinct colors, cycling as follows:
 	 * 		  green->lightblue->blue->purple->red->yellow->green
-	 * 		- GRAY_SMALL: gray scale with 12 distinct shades of gray (no white)
-	 * 		- GRAY_BIG: gray scale with 23 distinct shades of gray (no white)
-	 * 		- REPEATED_COLOR: samples the EXTENDED_COLOR scale X*6 times and the X*6 obtained colors are
-	 * 		  repeated cyclically (at the moment X=5)
+	 * 		- GRAY_SMALL: gray scale with 9 distinct shades of gray (no white)
+	 * 		- GRAY_BIG: gray scale with 16 distinct shades of gray (no white)
+	 * 		- REPEATED_COLOR: samples the EXTENDED_COLOR scale X times and the X obtained colors are
+	 * 		  repeated cyclically (at the moment X=30)
+	 * 		- REPEATED_DARK_COLOR: dark color scale with 15 distinct colors
 	 *
 	 * @param args
 	 */
 	public static void main(String[] args) {
 
 		if(args.length != 2) {
-			System.out.println("Expecting 2 inputs. Specify the path of the .csv file to be plotted and the type of scale to be used (COLOR|EXTENDED_COLOR|GRAY_SMALL|GRAY_BIG|REPEATED_COLOR)");
+			System.out.println("Expecting 2 inputs. Specify the path of the .csv file to be plotted and the type of scale to be used (COLOR|EXTENDED_COLOR|GRAY_SMALL|GRAY_BIG|REPEATED_COLOR|REPEATED_DARK_COLOR)");
 			return;
 		}
 
@@ -237,7 +238,10 @@ public class JFCTree {
 				scale = new BigRepeatedGrayPaintScale(1, xMaxForPlot);
 				break;
 			case "REPEATED_COLOR":
-				scale = new RepeatingColorPaintScale(1, xMaxForPlot, 5);
+				scale = new RepeatingColorPaintScale(1, xMaxForPlot, 30);
+				break;
+			case "REPEATED_DARK_COLOR":
+				scale = new RepeatedDarkColorPaintScale(1, xMaxForPlot);
 				break;
 			default:
 				System.out.println("Unrecognized print scale type " + this.scaleType + ".");

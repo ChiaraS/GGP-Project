@@ -12,7 +12,7 @@ public class IndependentTreePlotter {
 	public static void main(String args[]) {
 
 		if(args.length != 3) {
-			System.out.println("Expecting 3 arguments: (i) the folder that contains the compressed tree plot logs without duplicate edges for each game, role, agent and match, (ii) the number of plots that can be generated in parallel, and (iii) the color scale type (COLOR|EXTENDED_COLOR|GRAY_SMALL|GRAY_BIG|REPEATED_COLOR).");
+			System.out.println("Expecting 3 arguments: (i) the folder that contains the compressed tree plot logs without duplicate edges for each game, role, agent and match, (ii) the number of plots that can be generated in parallel, and (iii) the color scale type (COLOR|EXTENDED_COLOR|GRAY_SMALL|GRAY_BIG|REPEATED_COLOR|REPEATED_DARK_COLOR).");
 			return;
 		}
 
@@ -31,8 +31,8 @@ public class IndependentTreePlotter {
 			return;
 		}
 		String colorScaleType = args[2];
-		if(!(args[2].equals("COLOR") || args[2].equals("EXTENDED_COLOR") || args[2].equals("GRAY_SMALL") || args[2].equals("GRAY_BIG") || args[2].equals("REPEATED_COLOR"))) {
-			System.out.println("Impossible to plot the trees! Unrecognized color scale type " + args[2] + "! Accepted types are (COLOR|EXTENDED_COLOR|GRAY_SMALL|GRAY_BIG|REPEATED_COLOR).");
+		if(!(args[2].equals("COLOR") || args[2].equals("EXTENDED_COLOR") || args[2].equals("GRAY_SMALL") || args[2].equals("GRAY_BIG") || args[2].equals("REPEATED_COLOR") || args[2].equals("REPEATED_DARK_COLOR"))) {
+			System.out.println("Impossible to plot the trees! Unrecognized color scale type " + args[2] + "! Accepted types are (COLOR|EXTENDED_COLOR|GRAY_SMALL|GRAY_BIG|REPEATED_COLOR|REPEATED_DARK_COLOR).");
 			return;
 		}
 
