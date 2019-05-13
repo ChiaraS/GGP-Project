@@ -260,6 +260,7 @@ public class JFCTree {
 		legend.setPosition(RectangleEdge.LEFT);
 		legend.setStripWidth(30);
 		legend.setMargin(8.4, 0.0, 48.0, 0.0); // Top, left, bottom, right
+		legend.setSubdivisionCount(xMaxForPlot-xMinForPlot);
 
 		plot.getDomainAxis().setVisible(false);
 
