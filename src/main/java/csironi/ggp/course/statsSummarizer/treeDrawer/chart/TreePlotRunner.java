@@ -25,6 +25,7 @@ public class TreePlotRunner extends Thread {
 
 		//System.out.println(pb.command());
 
+
 		File stdOutputErrorFile = new File(this.stdOutputErrorFolderPath + "/" + fileNameWithoutExtension + ".log");
 
 		if(!stdOutputErrorFile.exists()){

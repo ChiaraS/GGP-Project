@@ -47,7 +47,7 @@ public class IndependentTreePlotter {
 		//theSettings.add("/usr/java/jdk1.8.0_131/bin/java"); // To use old java version on go4nature
 		//theSettings.add("-Xmx:25g");
 		theSettings.add("-jar");
-		theSettings.add("TreePlotRunner.jar");
+		theSettings.add("JFCTree.jar");
 		theSettings.add(""); // Path of the .csv file with the compressed log of the coordinates without duplicates
 		theSettings.add(colorScaleType);
 
@@ -57,7 +57,7 @@ public class IndependentTreePlotter {
 
 		File[] playerDirs;
 
-		File[] matchDirs;
+		File[] opponentDirs;
 
 		File[] treePlotFiles;
 
@@ -77,13 +77,13 @@ public class IndependentTreePlotter {
 
 							if(playerDirs[k].isDirectory()){
 
-								matchDirs = playerDirs[k].listFiles();
+								opponentDirs = playerDirs[k].listFiles();
 
-								for(int l = 0; l < matchDirs.length; l++){
+								for(int l = 0; l < opponentDirs.length; l++){
 
-									if(matchDirs[l].isDirectory()){
+									if(opponentDirs[l].isDirectory()){
 
-										treePlotFiles = matchDirs[l].listFiles();
+										treePlotFiles = opponentDirs[l].listFiles();
 
 										for(int m = 0; m < treePlotFiles.length; m++){
 

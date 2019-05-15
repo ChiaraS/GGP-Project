@@ -97,6 +97,10 @@ public class JFCTree {
 
 	public boolean parseTree() {
 
+		if(new File(this.outputFile).exists()) {
+			return true;
+		}
+
 		/**
 		 * For each turn, memorizes the number of edges added to the tree, which corresponds to the number of series
 		 * added to the plot;
@@ -167,7 +171,7 @@ public class JFCTree {
 
 			int currentTurn = 1;
 
-			while((theLine != null && theNextLine !=null && !theNextLine.isEmpty()) && currentTurn <= DEPTH_LIMIT) {
+			while(!this.done(theLine, theNextLine, currentTurn)) {
 
 				//System.out.println("Turn " + currentTurn);
 
@@ -185,7 +189,7 @@ public class JFCTree {
 			}
 
 			br.close();
-		} catch (IOException e) {
+		} catch (IOException | WrongFormatException e) {
 			System.out.println("Exception when reading the log file to create the tree.");
         	e.printStackTrace();
         	return false;
@@ -198,6 +202,25 @@ public class JFCTree {
 
 		return true;
 
+	}
+
+	private boolean done(String theLine, String theNextLine, int currentTurn) throws WrongFormatException{
+
+		if(currentTurn > DEPTH_LIMIT) {
+			return true;
+		}
+
+		if(theNextLine != null && !(theNextLine.isEmpty())) { // Assuming that when theNextLine is not null, also theLine is not null
+			return false;
+		}
+
+		// If we get here, theNextLine is either null or empty
+		if(theLine != null && !(theLine.isEmpty())) {
+			System.out.println("The log file has the wrong format. The line with coordinates of edges exists for turn " + currentTurn + ", but the line with the selected action doesn't!");
+			throw new WrongFormatException();
+		}
+
+		return true;
 	}
 
 	private boolean createAndSaveTreePlot(XYSeriesCollection dataset, int[] edgesPerTurn, int xMinForPlot,
@@ -318,36 +341,40 @@ public class JFCTree {
 	private boolean parseCoordinates(String linesCoordinates, double yMax, int gameTurn,
 			XYSeriesCollection dataset, int[] edgesPerTurn, int[] iterationsPerTurn) {
 
-		String[] coordinatesString = linesCoordinates.split(" ");
+		if(linesCoordinates.length() > 0) {
 
-		if(coordinatesString.length % 4 != 0) {
-			System.out.println("Wrong number of coordinate values for turn " + gameTurn +
-					"! Found " + coordinatesString.length + " single coordinate values. Ignoring game turn in the printing of the tree!");
-			return false;
-		}
+			String[] coordinatesString = linesCoordinates.split(" ");
 
-		int count = 0;
-		try {
-			int index = 0;
-			while(index <= coordinatesString.length - 4) {
+			if(coordinatesString.length % 4 != 0) {
+				System.out.println("Wrong number of coordinate values for turn " + gameTurn +
+						"! Found " + coordinatesString.length + " single coordinate values. Ignoring game turn in the printing of the tree!");
 
-				double x1 = Double.parseDouble(coordinatesString[index]) + 1;
-				double x2 = Double.parseDouble(coordinatesString[index+1]) + 1;
-				double y1 = Double.parseDouble(coordinatesString[index+2]) + yMax;
-				double y2 = Double.parseDouble(coordinatesString[index+3]) + yMax;
-
-				dataset.addSeries(this.toJFCSeries(x1, x2, y1, y2, gameTurn, count));
-
-				index+=4;
-				count++;
+				return false;
 			}
-			edgesPerTurn[gameTurn-1] = count; // Turns start at 1 but the array starts at 0
-		}catch(NumberFormatException nfe){
-			System.out.println("Wrong format of coordinate values for turn " + gameTurn + "!");
-					/*The error is in the following four coordinates: [ " +
-					coordinatesString[index] + " " + coordinatesString[index+1] + " " +
-					coordinatesString[index+2] + " " + coordinatesString[index+3] + " ]");*/
-			return false;
+
+			int count = 0;
+			try {
+				int index = 0;
+				while(index <= coordinatesString.length - 4) {
+
+					double x1 = Double.parseDouble(coordinatesString[index]) + 1;
+					double x2 = Double.parseDouble(coordinatesString[index+1]) + 1;
+					double y1 = Double.parseDouble(coordinatesString[index+2]) + yMax;
+					double y2 = Double.parseDouble(coordinatesString[index+3]) + yMax;
+
+					dataset.addSeries(this.toJFCSeries(x1, x2, y1, y2, gameTurn, count));
+
+					index+=4;
+					count++;
+				}
+				edgesPerTurn[gameTurn-1] = count; // Turns start at 1 but the array starts at 0
+			}catch(NumberFormatException nfe){
+				System.out.println("Wrong format of coordinate values for turn " + gameTurn + "!");
+						/*The error is in the following four coordinates: [ " +
+						coordinatesString[index] + " " + coordinatesString[index+1] + " " +
+						coordinatesString[index+2] + " " + coordinatesString[index+3] + " ]");*/
+				return false;
+			}
 		}
 
 		return true;
