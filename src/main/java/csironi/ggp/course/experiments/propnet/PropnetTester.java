@@ -348,15 +348,15 @@ public class PropnetTester {
 				""+0, ""+givenInitTime, searchBudget, optimizationsString, ""+withCache, cacheType, repositoryType,
 				repositoryLocation, managerSettingsFolder, randomSearchManagerSettingsFile, mcsSearchManagerSettingsFile,
 				mctsSearchManagerSettingsFile);*/
-		/*ProcessBuilder pb = new ProcessBuilder("java", "-jar", "SingleRunPNTest.jar", gameFolder, singleRunFolder, gameKey,
-				""+0, ""+givenInitTime, searchBudget, optimizationsString, ""+withCache, cacheType, repositoryType,
-				repositoryLocation, managerSettingsFolder, randomSearchManagerSettingsFile, mcsSearchManagerSettingsFile,
-				mctsSearchManagerSettingsFile);*/
-
-		ProcessBuilder pb = new ProcessBuilder("/usr/java/jdk1.8.0_131/bin/java", "-jar", "SingleRunPNTest.jar", gameFolder, singleRunFolder, gameKey,
+		ProcessBuilder pb = new ProcessBuilder("java", "-jar", "SingleRunPNTest.jar", gameFolder, singleRunFolder, gameKey,
 				""+0, ""+givenInitTime, searchBudget, optimizationsString, ""+withCache, cacheType, repositoryType,
 				repositoryLocation, managerSettingsFolder, randomSearchManagerSettingsFile, mcsSearchManagerSettingsFile,
 				mctsSearchManagerSettingsFile);
+
+		/*ProcessBuilder pb = new ProcessBuilder("/usr/java/jdk1.8.0_131/bin/java", "-jar", "SingleRunPNTest.jar", gameFolder, singleRunFolder, gameKey,
+				""+0, ""+givenInitTime, searchBudget, optimizationsString, ""+withCache, cacheType, repositoryType,
+				repositoryLocation, managerSettingsFolder, randomSearchManagerSettingsFile, mcsSearchManagerSettingsFile,
+				mctsSearchManagerSettingsFile);*/
 
 
 		//System.out.println(pb.command());

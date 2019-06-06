@@ -41,6 +41,7 @@ import org.ggp.base.util.statemachine.exceptions.TransitionDefinitionException;
 import org.ggp.base.util.statemachine.structure.MachineState;
 import org.ggp.base.util.statemachine.structure.Move;
 
+import csironi.ggp.course.experiments.propnet.SingleValueLongStats;
 import csironi.ggp.course.utils.MyPair;
 
 /**
@@ -214,9 +215,15 @@ public class HybridMctsManager {
 	 */
 	private LogTreeNode logTree;
 	/**
-	 * If true the log tree is built, otherwise not.
+	 * If true the log tree is logged, otherwise not.
+	 * Note that setting this to true automatically sets the log tree to be built.
 	 */
-	private boolean buildLogTree;
+	private boolean logLogTree;
+	/**
+	 * If true, after each move the branching factor and tree depth are logged, otherwise not.
+	 * Note that setting this to true automatically sets the log tree to be built, but not necessarily logged.
+	 */
+	private boolean logBranchingAndDepth;
 	/**
 	 * Keeps track of the node that is the current root of the log tree
 	 */
@@ -464,10 +471,16 @@ public class HybridMctsManager {
 
 		sharedReferencesCollector.setTranspositionTable(transpositionTable);
 
-		if(gamerSettings.specifiesProperty("SearchManager.buildLogTree")) {
-			this.buildLogTree = gamerSettings.getBooleanPropertyValue("SearchManager.buildLogTree");
+		if(gamerSettings.specifiesProperty("SearchManager.logLogTree")) {
+			this.logLogTree = gamerSettings.getBooleanPropertyValue("SearchManager.logLogTree");
 		}else {
-			this.buildLogTree = false;
+			this.logLogTree = false;
+		}
+
+		if(gamerSettings.specifiesProperty("SearchManager.logBranchingAndDepth")) {
+			this.logBranchingAndDepth = gamerSettings.getBooleanPropertyValue("SearchManager.logBranchingAndDepth");
+		}else {
+			this.logBranchingAndDepth = false;
 		}
 
 		// Let all strategies set references if needed.
@@ -572,7 +585,9 @@ public class HybridMctsManager {
 
 		toLog += "\nTRANSPOSITION_TABLE = " + this.transpositionTable.printComponent("\n  ");
 
-		toLog += "\nBUILD_LOG_TREE = " + this.buildLogTree;
+		toLog += "\nLOG_LOG_TREE = " + this.logLogTree;
+
+		toLog += "\nLOG_BRANCHING_AND_DEPTH = " + this.logBranchingAndDepth;
 
 		toLog += "\nabstract_state_machine = " + (this.gameDependentParameters.getTheMachine() == null ? "null" : this.gameDependentParameters.getTheMachine().getName());
 		toLog += "\nnum_roles = " + this.gameDependentParameters.getNumRoles();
@@ -674,8 +689,13 @@ public class HybridMctsManager {
 
 		this.transpositionTable.setUpComponent();
 
-		if(this.buildLogTree) {
+		if(this.logLogTree || this.logBranchingAndDepth) {
 			this.accumSimulationsPerStep = new HashMap<Integer,Integer>();
+		}
+
+		if(this.logBranchingAndDepth) {
+			GamerLogger.log(GamerLogger.FORMAT.CSV_FORMAT, "BranchingLogs", "Step;#Samples;Min;Max;Median;SD;SEM;Avg;CI;");
+			GamerLogger.log(GamerLogger.FORMAT.CSV_FORMAT, "DepthLogs", "Step;#Samples;Min;Max;Median;SD;SEM;Avg;CI;");
 		}
 
 	}
@@ -815,7 +835,7 @@ public class HybridMctsManager {
 			// List of joint moves played during selection. Used by the multiple playout strategy.
 			this.currentSimulationJointMoves.clear();
 
-			if(this.buildLogTree) {
+			if(this.logLogTree || this.logBranchingAndDepth) {
 				this.currentLogNode = this.currentLogRoot;
 			}
 
@@ -1081,7 +1101,7 @@ public class HybridMctsManager {
 		// Once we advanced to the next state, we can add the joint move to the list of joint moves for the current simulation.
 		this.currentSimulationJointMoves.add(mctsJointMove);
 
-		if(this.buildLogTree) {
+		if(this.logLogTree || this.logBranchingAndDepth) {
 			if(this.currentLogNode.getChild(mctsJointMove) == null) {
 
 				int totIterations = this.gameDependentParameters.getTotIterations();
@@ -1353,7 +1373,7 @@ public class HybridMctsManager {
 
 		this.transpositionTable.logTable("Start");
 
-		if(this.buildLogTree) {
+		if(this.logLogTree || this.logBranchingAndDepth) {
 
 			if(this.logTree == null) {
 				int totIterations = this.gameDependentParameters.getTotIterations();
@@ -1368,11 +1388,13 @@ public class HybridMctsManager {
 				// The current log root always refers to the root of the previous step, because it gets updated even if no search is performed in a step.
 				if(this.currentLogRoot == null) {
 					GamerLogger.logError("MctsManager", "Unexpected null root for log tree in step " + currentGameStep + ". Stopping tree logging for this agent (also for any future game).");
-					this.buildLogTree = false;
+					this.logLogTree = false;
+					this.logBranchingAndDepth = false;
 				}else {
 					if(internalLastJointMove == null) {
-						GamerLogger.logError("MctsManager", "The last performed joint move is null, cannot advance the root state of the log tree. Stopping tree logging for this agent (also for any future game).");
-						this.buildLogTree = false;
+						GamerLogger.logError("MctsManager", "The last performed joint move is null, cannot advance the root state of the log tree. Stopping tree logging and branching and depth logging for this agent (also for any future game).");
+						this.logLogTree = false;
+						this.logBranchingAndDepth = false;
 					}else {
 						MctsJointMove mctsJointMove = new MctsJointMove(internalLastJointMove);
 						if(this.currentLogRoot.getChild(mctsJointMove) == null) { // If the edge of the selected action was not in the tree yet, we have to add it here so we can log that this action was selected, even if in the transposition table this edge is not present and might be discovered later.
@@ -1394,10 +1416,13 @@ public class HybridMctsManager {
 			this.afterMoveStrategy.afterMoveActions();
 		}
 
-		if(this.buildLogTree) {
+		if(this.logLogTree || this.logBranchingAndDepth) {
 			this.accumSimulationsPerStep.put(this.gameDependentParameters.getGameStep(), this.gameDependentParameters.getTotIterations());
 		}
 
+		if(this.logBranchingAndDepth) {
+			this.logBranchingAndDepth();
+		}
 
 		this.transpositionTable.logTable("End");
 	}
@@ -1419,7 +1444,7 @@ public class HybridMctsManager {
 			this.afterGameStrategy.afterGameActions(goals);
 		}
 		// If we are building the tree as well, log it.
-		if(this.buildLogTree) {
+		if(this.logLogTree) {
 
 			// At the end of the game we have to advance to the final game node in the tree and set it on the path of game nodes.
 			if(this.logTree == null) {
@@ -1492,7 +1517,7 @@ public class HybridMctsManager {
 
 	private void logLogTree() {
 
-		if(this.buildLogTree) {
+		if(this.logLogTree) {
 
 			int[] count = new int[1];
 			count[0] = 0;
@@ -1765,6 +1790,39 @@ public class HybridMctsManager {
 			for(Entry<MctsJointMove,LogTreeNode> action : node.getChildren().entrySet()) {
 				//System.out.println(indent + action.getKey());
 				DFS(action.getValue(), indent + "  ", count);
+			}
+		}
+
+	}
+
+	private void logBranchingAndDepth() {
+
+		SingleValueLongStats branchingStats = new SingleValueLongStats();
+
+		SingleValueLongStats depthStats = new SingleValueLongStats();
+
+		this.DFSlogBranchingAndDepth(this.currentLogRoot, branchingStats, depthStats, 0);
+
+		GamerLogger.log(GamerLogger.FORMAT.CSV_FORMAT, "BranchingLogs", this.gameDependentParameters.getGameStep() + ";" +
+				branchingStats.getNumSamples() + ";" + branchingStats.getLongMinValue() + ";" + branchingStats.getLongMaxValue() + ";" +
+				branchingStats.getMedian() + ";" + branchingStats.getValuesStandardDeviation() + ";" + branchingStats.getValuesSEM() +
+				";" + branchingStats.getAvgValue() + ";" + branchingStats.get95ConfidenceInterval() + ";");
+
+		GamerLogger.log(GamerLogger.FORMAT.CSV_FORMAT, "DepthLogs", this.gameDependentParameters.getGameStep() + ";" +
+				depthStats.getNumSamples() + ";" + depthStats.getLongMinValue() + ";" + depthStats.getLongMaxValue() + ";" +
+				depthStats.getMedian() + ";" + depthStats.getValuesStandardDeviation() + ";" + depthStats.getValuesSEM() +
+				";" + depthStats.getAvgValue() + ";" + depthStats.get95ConfidenceInterval() + ";");
+
+	}
+
+	private void DFSlogBranchingAndDepth(LogTreeNode currentNode, SingleValueLongStats branchingStats, SingleValueLongStats depthStats, int depth) {
+
+		if(currentNode.getChildren().isEmpty()) { // Leaf node => memorize the depth
+			depthStats.addValue(depth);
+		}else {
+			branchingStats.addValue(currentNode.getChildren().size());
+			for(LogTreeNode child : currentNode.getChildren().values()) {
+				this.DFSlogBranchingAndDepth(child, branchingStats, depthStats, depth+1);
 			}
 		}
 

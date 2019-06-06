@@ -11,8 +11,8 @@ public class IndependentTreePlotter {
 
 	public static void main(String args[]) {
 
-		if(args.length != 3) {
-			System.out.println("Expecting 3 arguments: (i) the folder that contains the compressed tree plot logs without duplicate edges for each game, role, agent and match, (ii) the number of plots that can be generated in parallel, and (iii) the color scale type (COLOR|EXTENDED_COLOR|GRAY_SMALL|GRAY_BIG|REPEATED_COLOR|REPEATED_DARK_COLOR).");
+		if(args.length != 3 && args.length != 7) {
+			System.out.println("Expecting 3 compulsory arguments and 4 optional: (i) the folder that contains the compressed tree plot logs (without duplicate edges) for each game, role, agent and match, (ii) the number of plots that can be generated in parallel, and (iii) the color scale type (COLOR|EXTENDED_COLOR|GRAY_SMALL|GRAY_BIG|REPEATED_COLOR|REPEATED_DARK_COLOR). Optionally, the extreme values for the x and y coordinates of the plot can be specified.");
 			return;
 		}
 
@@ -36,6 +36,10 @@ public class IndependentTreePlotter {
 			return;
 		}
 
+		if(args.length == 7) {
+			// TODO add here check for sorrect format of coordinates extremes
+		}
+
 		// Create the executor as a pool with the desired number of threads
 		// (corresponding to the number of trees we want to plot in parallel).
 		ExecutorService executor = Executors.newFixedThreadPool(numParallelPlots);
@@ -51,13 +55,23 @@ public class IndependentTreePlotter {
 		theSettings.add(""); // Path of the .csv file with the compressed log of the coordinates without duplicates
 		theSettings.add(colorScaleType);
 
+		if(args.length == 7) {
+			theSettings.add(args[3]);
+			theSettings.add(args[4]);
+			theSettings.add(args[5]);
+			theSettings.add(args[6]);
+		}
+
+
 		File[] gamesDirs = sourceFolder.listFiles();
 
-		File[] roleDirs;
+		File[] statsDirs;
 
 		File[] playerDirs;
 
-		File[] opponentDirs;
+		File[] roleDirs;
+
+		File[] comboDirs;
 
 		File[] treePlotFiles;
 
@@ -65,31 +79,38 @@ public class IndependentTreePlotter {
 
 			if(gamesDirs[i].isDirectory()){
 
-				roleDirs = gamesDirs[i].listFiles();
+				statsDirs = gamesDirs[i].listFiles();
 
-				for(int j = 0; j < roleDirs.length; j++){
+				for(int j = 0; j < statsDirs.length; j++){
 
-					if(roleDirs[j].isDirectory()){
+					if(statsDirs[j].isDirectory() && statsDirs[j].getName().equals("TreePlotLogs")){
 
-						playerDirs = roleDirs[j].listFiles();
+						playerDirs = statsDirs[j].listFiles();
 
 						for(int k = 0; k < playerDirs.length; k++){
 
 							if(playerDirs[k].isDirectory()){
 
-								opponentDirs = playerDirs[k].listFiles();
+								roleDirs = playerDirs[k].listFiles();
 
-								for(int l = 0; l < opponentDirs.length; l++){
+								for(int l = 0; l < roleDirs.length; l++){
 
-									if(opponentDirs[l].isDirectory()){
+									if(roleDirs[l].isDirectory()){
 
-										treePlotFiles = opponentDirs[l].listFiles();
+										comboDirs = roleDirs[l].listFiles();
 
-										for(int m = 0; m < treePlotFiles.length; m++){
+										for(int m = 0; m < comboDirs.length; m++){
 
-											if(treePlotFiles[m].isFile()) {
-												theSettings.set(3, treePlotFiles[m].getPath());
-												executor.execute(new TreePlotRunner(new ArrayList<String>(theSettings), treePlotFiles[m].getParent(), getNameWithoutExtension(treePlotFiles[m].getName())));
+											if(comboDirs[m].isDirectory()){
+
+												treePlotFiles = comboDirs[m].listFiles();
+
+												for(int n = 0; n < treePlotFiles.length; n++){
+													if(treePlotFiles[n].isFile() && treePlotFiles[n].getName().startsWith("C-")) {
+														theSettings.set(3, treePlotFiles[n].getPath());
+														executor.execute(new TreePlotRunner(new ArrayList<String>(theSettings), treePlotFiles[n].getParent(), getNameWithoutExtension(treePlotFiles[n].getName())));
+													}
+												}
 											}
 										}
 									}

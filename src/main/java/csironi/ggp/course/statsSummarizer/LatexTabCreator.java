@@ -95,7 +95,7 @@ public class LatexTabCreator {
 		gamesOrder.add("ticTacToe");
 		*********** GAMES ORDER FOR PN PAPER - END *************/
 
-		/*********** GAMES ORDER FOR GRAVE PAPER ************
+		/*********** GAMES ORDER FOR GRAVE PAPER ************/
 		gamesOrder.add("tictactoe_3d_2player");
 		gamesOrder.add("breakthrough");
 		gamesOrder.add("knightThrough");
@@ -117,7 +117,7 @@ public class LatexTabCreator {
 		gamesOrder.add("pentago");
 		gamesOrder.add("reversi");
 		gamesOrder.add("ticTacToe");
-		*********** GAMES ORDER FOR GRAVE PAPER -END *************/
+		/*********** GAMES ORDER FOR GRAVE PAPER -END *************/
 
 		/*********** GAMES ORDER FOR GVGAI PAPER *************/
 		gamesOrder.add("aliens");
@@ -139,7 +139,13 @@ public class LatexTabCreator {
 		gamesOrder.add("roguelike");
 		gamesOrder.add("seaquest");
 		gamesOrder.add("survivezombies");
-		gamesOrder.add("waitforbreakfast");
+		gamesOrder.add("decepticoins");
+		gamesOrder.add("deceptizelda");
+		gamesOrder.add("flower");
+		gamesOrder.add("invest");
+		gamesOrder.add("sistersavior");
+		gamesOrder.add("waferthinmints");
+		gamesOrder.add("waferthinmintsexit");
 		/*********** GAMES ORDER FOR GVGAI PAPER -END *************/
 
 		gamesOrder.add("OverallStats");

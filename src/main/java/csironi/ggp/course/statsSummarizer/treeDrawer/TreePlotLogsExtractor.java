@@ -13,6 +13,8 @@ import com.google.common.io.Files;
 public class TreePlotLogsExtractor {
 
 	/**
+	 * OLD EXTRACTOR: this class extracts logs to plot the tree outside of the Stats folder.
+	 *
 	 * Given the path of a folder with the folders containing the statistics of a set of games
 	 * (i.e. the folders ending with -Stats), extracts the TreeSizeLog.csv files for each game,
 	 * for each player type, for each role played by the type, for each possible assignments of

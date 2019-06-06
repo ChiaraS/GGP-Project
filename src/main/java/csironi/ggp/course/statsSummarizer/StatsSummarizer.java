@@ -1555,6 +1555,385 @@ public class StatsSummarizer {
 			//System.out.println("Impossible to find the tuner samples logs directory to summarize: " + tunerSamplesLogsFolder.getPath());
 		}
 
+
+		/****************** Compute branching statistics of the matches that were considered in the previous statistics *******************/
+
+		String branchingLogsFolderPath;
+
+		if(simpleFolderFormat) {
+			branchingLogsFolderPath = mainFolderPath + "/BranchingLogs";
+		}else{
+			branchingLogsFolderPath = mainFolderPath + "/" + tourneyType + "." + gameKey + ".BranchingLogs";
+		}
+
+		//System.out.println("speedLogsFolderPath= " + speedLogsFolderPath);
+
+		File branchingLogsFolder = new File(branchingLogsFolderPath);
+
+		if(branchingLogsFolder.isDirectory()){
+			// Create (or empty if it already exists) the folder where to move all the speed log files
+			// that have been rejected and haven't been considered when computing the statistics.
+			String rejectedBranchingLogsFolderPath;
+			if(simpleFolderFormat){
+				rejectedBranchingLogsFolderPath = mainFolderPath + "/RejectedBranchingLogs";
+			}else{
+				rejectedBranchingLogsFolderPath = mainFolderPath + "/" + tourneyType + "." + gameKey + ".RejectedBranchingLogs";
+			}
+
+			//System.out.println("RejectedSpeedFilesFolderPath= " + rejectedSpeedFilesFolderPath);
+
+
+			File rejectedBranchingLogsFolder = new File(rejectedBranchingLogsFolderPath);
+			if(rejectedBranchingLogsFolder.isDirectory()){
+				if(!emptyFolder(rejectedBranchingLogsFolder)){
+					System.out.println("Summarization interrupted. Cannot empty the RejectedBranchingLogs folder: " + rejectedBranchingLogsFolder.getPath());
+					return;
+				}
+			}else{
+				if(!rejectedBranchingLogsFolder.mkdir()){
+					System.out.println("Summarization interrupted. Cannot create the RejectedBranchingLogs folder: " + rejectedBranchingLogsFolder.getPath());
+					return;
+				}
+			}
+
+			// Create (or empty if it already exists) the folder where to save all the speed statistics.
+			String branchingStatsFolderPath;
+			if(simpleFolderFormat){
+				branchingStatsFolderPath = mainFolderPath + "/BranchingStatistics";
+			}else{
+				branchingStatsFolderPath = mainFolderPath + "/" + tourneyType + "." + gameKey + ".BranchingStatistics";
+			}
+			File branchingStatsFolder = new File(branchingStatsFolderPath);
+			if(branchingStatsFolder.isDirectory()){
+				if(!emptyFolder(branchingStatsFolder)){
+					System.out.println("Summarization interrupted. Cannot empty the BranchingStatistics folder: " + branchingStatsFolder.getPath());
+					return;
+				}
+			}else{
+				if(!branchingStatsFolder.mkdir()){
+					System.out.println("Summarization interrupted. Cannot create the BranchingStatistics folder: " + branchingStatsFolder.getPath());
+					return;
+				}
+			}
+
+			//List<String> acceptedMatches = new ArrayList<String>();
+
+			File[] playerTypesDirs;
+
+			File[] playerRolesDirs = null;
+
+			File[] branchingLogs = null;
+
+			//File randomSpeedLog;
+
+			String playerType;
+
+			String playerRole;
+
+			// Prepare all the SingleValueStats that will compute the aggregated statistics for each player-role combination over all the matches
+			Map<String, Map<String, Map<String, Map<String, SingleValueDoubleStats>>>> aggregatedBranchingStatistics =
+					new HashMap<String, Map<String, Map<String, Map<String, SingleValueDoubleStats>>>>();
+
+			Map<String, Map<String, Map<String, SingleValueDoubleStats>>> playerTypeBranchingMap =
+					new HashMap<String, Map<String, Map<String, SingleValueDoubleStats>>>();
+
+			Map<String, Map<String, SingleValueDoubleStats>> roleBranchingMap =
+					new HashMap<String, Map<String, SingleValueDoubleStats>>();
+			Map<String, Map<String, SingleValueDoubleStats>> allRoleBranchingMap =
+					new HashMap<String, Map<String, SingleValueDoubleStats>>();
+
+			// Iterate over the directories containing the matches logs for each player's type.
+			playerTypesDirs = branchingLogsFolder.listFiles();
+
+			// For the folder of each player type...
+			for(int i = 0; i < playerTypesDirs.length; i++){
+
+				if(playerTypesDirs[i].isDirectory()){
+
+					playerType = playerTypesDirs[i].getName();
+
+					// Get the map corresponding to this player type
+					playerTypeBranchingMap = aggregatedBranchingStatistics.get(playerType);
+					if(playerTypeBranchingMap == null){
+						playerTypeBranchingMap = new HashMap<String, Map<String, Map<String, SingleValueDoubleStats>>>();
+						aggregatedBranchingStatistics.put(playerType, playerTypeBranchingMap);
+					}
+
+					playerRolesDirs = playerTypesDirs[i].listFiles();
+
+					// Iterate over all the folders corresponding to the different roles the player played
+					for(int j = 0; j < playerRolesDirs.length; j++){
+
+						if(playerRolesDirs[j].isDirectory()) {
+							playerRole = playerRolesDirs[j].getName();
+
+							// Get the map corresponding to this role
+							roleBranchingMap = playerTypeBranchingMap.get(playerRole);
+							if(roleBranchingMap == null){
+								roleBranchingMap =  new HashMap<String, Map<String, SingleValueDoubleStats>>();
+								playerTypeBranchingMap.put(playerRole, roleBranchingMap);
+							}
+							// Get the map corresponding to all roles
+							allRoleBranchingMap = playerTypeBranchingMap.get("AllRoles");
+							if(allRoleBranchingMap == null){
+								allRoleBranchingMap =  new HashMap<String, Map<String, SingleValueDoubleStats>>();
+								playerTypeBranchingMap.put("AllRoles", allRoleBranchingMap);
+							}
+
+							branchingLogs = playerRolesDirs[j].listFiles();
+
+							// For each stats file...
+							for(int k = 0; k < branchingLogs.length; k++){
+
+								String[] splittedName = branchingLogs[k].getName().split("\\.");
+
+								// If it's a .csv file, compute and log the statistics
+								if(!(splittedName[splittedName.length-1].equalsIgnoreCase("csv"))){
+									System.out.println("Found file with no .csv extension when summarizing branching statistics.");
+									rejectFile(branchingLogs[k], rejectedBranchingLogsFolder + "/" + playerType + "/" + playerRole);
+								}else{
+
+									// If the stats are referring to a match that was rejected, reject them too
+
+									if(!(acceptedMatches.containsKey(branchingLogs[k].getName().substring(0, branchingLogs[k].getName().length()-18)))){
+
+										System.out.println("Found Branching Statistics file for a match that was previously rejected from statistics.");
+										rejectFile(branchingLogs[k], rejectedBranchingLogsFolder + "/" + playerType + "/" + playerRole);
+									}else{
+
+										extractBranchingStats(branchingLogs[k], allRoleBranchingMap, roleBranchingMap);
+
+									}
+								}
+							}
+						}
+					}
+				}
+			}
+
+			// Log all the aggregated statistics
+
+			for(Entry<String, Map<String, Map<String, Map<String, SingleValueDoubleStats>>>> playerTypeStats: aggregatedBranchingStatistics.entrySet()){
+
+				for(Entry<String, Map<String, Map<String, SingleValueDoubleStats>>> roleStats: playerTypeStats.getValue().entrySet()){
+
+					for(Entry<String, Map<String, SingleValueDoubleStats>> stepStats: roleStats.getValue().entrySet()){
+
+						StatsUtils.writeToFileMkParentDir(branchingStatsFolderPath + "/" + playerTypeStats.getKey() + "/" + roleStats.getKey() + "/" +
+								"Step" + stepStats.getKey() + "-Branching-AggrStats.csv", "StatType;#Samples;Min;Max;Median;SD;SEM;Avg;CI;");
+
+						for(Entry<String, SingleValueDoubleStats> statTypeStats: stepStats.getValue().entrySet()){
+
+							String toLog = statTypeStats.getKey() + ";" + statTypeStats.getValue().getNumSamples() + ";" +
+									statTypeStats.getValue().getMinValue() + ";" + statTypeStats.getValue().getMaxValue() + ";" +
+									statTypeStats.getValue().getMedian() + ";" + statTypeStats.getValue().getValuesStandardDeviation() + ";" +
+									statTypeStats.getValue().getValuesSEM() + ";" + statTypeStats.getValue().getAvgValue() + ";" +
+									statTypeStats.getValue().get95ConfidenceInterval() + ";";
+
+							StatsUtils.writeToFileMkParentDir(branchingStatsFolderPath + "/" + playerTypeStats.getKey() + "/" + roleStats.getKey() + "/" +
+									"Step" + stepStats.getKey() + "-Branching-AggrStats.csv", toLog);
+
+						}
+
+					}
+
+				}
+
+			}
+
+		}else {
+			//System.out.println("Impossible to find the speed logs directory to summarize: " + speedLogsFolder.getPath());
+		}
+
+		/****************** Compute depth statistics of the matches that were considered in the previous statistics *******************/
+
+		String depthLogsFolderPath;
+
+		if(simpleFolderFormat) {
+			depthLogsFolderPath = mainFolderPath + "/DepthLogs";
+		}else{
+			depthLogsFolderPath = mainFolderPath + "/" + tourneyType + "." + gameKey + ".DepthLogs";
+		}
+
+		//System.out.println("speedLogsFolderPath= " + speedLogsFolderPath);
+
+		File depthLogsFolder = new File(depthLogsFolderPath);
+
+		if(depthLogsFolder.isDirectory()){
+			// Create (or empty if it already exists) the folder where to move all the speed log files
+			// that have been rejected and haven't been considered when computing the statistics.
+			String rejectedDepthLogsFolderPath;
+			if(simpleFolderFormat){
+				rejectedDepthLogsFolderPath = mainFolderPath + "/RejectedDepthLogs";
+			}else{
+				rejectedDepthLogsFolderPath = mainFolderPath + "/" + tourneyType + "." + gameKey + ".RejectedDepthLogs";
+			}
+
+			//System.out.println("RejectedSpeedFilesFolderPath= " + rejectedSpeedFilesFolderPath);
+
+
+			File rejectedDepthLogsFolder = new File(rejectedDepthLogsFolderPath);
+			if(rejectedDepthLogsFolder.isDirectory()){
+				if(!emptyFolder(rejectedDepthLogsFolder)){
+					System.out.println("Summarization interrupted. Cannot empty the RejectedDepthLogs folder: " + rejectedDepthLogsFolder.getPath());
+					return;
+				}
+			}else{
+				if(!rejectedDepthLogsFolder.mkdir()){
+					System.out.println("Summarization interrupted. Cannot create the RejectedDepthLogs folder: " + rejectedDepthLogsFolder.getPath());
+					return;
+				}
+			}
+
+			// Create (or empty if it already exists) the folder where to save all the speed statistics.
+			String depthStatsFolderPath;
+			if(simpleFolderFormat){
+				depthStatsFolderPath = mainFolderPath + "/DepthStatistics";
+			}else{
+				depthStatsFolderPath = mainFolderPath + "/" + tourneyType + "." + gameKey + ".DepthStatistics";
+			}
+			File depthStatsFolder = new File(depthStatsFolderPath);
+			if(depthStatsFolder.isDirectory()){
+				if(!emptyFolder(depthStatsFolder)){
+					System.out.println("Summarization interrupted. Cannot empty the DepthStatistics folder: " + depthStatsFolder.getPath());
+					return;
+				}
+			}else{
+				if(!depthStatsFolder.mkdir()){
+					System.out.println("Summarization interrupted. Cannot create the DepthStatistics folder: " + depthStatsFolder.getPath());
+					return;
+				}
+			}
+
+			//List<String> acceptedMatches = new ArrayList<String>();
+
+			File[] playerTypesDirs;
+
+			File[] playerRolesDirs = null;
+
+			File[] depthLogs = null;
+
+			//File randomSpeedLog;
+
+			String playerType;
+
+			String playerRole;
+
+			// Prepare all the SingleValueStats that will compute the aggregated statistics for each player-role combination over all the matches
+			Map<String, Map<String, Map<String, Map<String, SingleValueDoubleStats>>>> aggregatedDepthStatistics =
+					new HashMap<String, Map<String, Map<String, Map<String, SingleValueDoubleStats>>>>();
+
+			Map<String, Map<String, Map<String, SingleValueDoubleStats>>> playerTypeDepthMap =
+					new HashMap<String, Map<String, Map<String, SingleValueDoubleStats>>>();
+
+			Map<String, Map<String, SingleValueDoubleStats>> roleDepthMap =
+					new HashMap<String, Map<String, SingleValueDoubleStats>>();
+			Map<String, Map<String, SingleValueDoubleStats>> allRoleDepthMap =
+					new HashMap<String, Map<String, SingleValueDoubleStats>>();
+
+			// Iterate over the directories containing the matches logs for each player's type.
+			playerTypesDirs = depthLogsFolder.listFiles();
+
+			// For the folder of each player type...
+			for(int i = 0; i < playerTypesDirs.length; i++){
+
+				if(playerTypesDirs[i].isDirectory()){
+
+					playerType = playerTypesDirs[i].getName();
+
+					// Get the map corresponding to this player type
+					playerTypeDepthMap = aggregatedDepthStatistics.get(playerType);
+					if(playerTypeDepthMap == null){
+						playerTypeDepthMap = new HashMap<String, Map<String, Map<String, SingleValueDoubleStats>>>();
+						aggregatedDepthStatistics.put(playerType, playerTypeDepthMap);
+					}
+
+					playerRolesDirs = playerTypesDirs[i].listFiles();
+
+					// Iterate over all the folders corresponding to the different roles the player played
+					for(int j = 0; j < playerRolesDirs.length; j++){
+
+						if(playerRolesDirs[j].isDirectory()) {
+							playerRole = playerRolesDirs[j].getName();
+
+							// Get the map corresponding to this role
+							roleDepthMap = playerTypeDepthMap.get(playerRole);
+							if(roleDepthMap == null){
+								roleDepthMap =  new HashMap<String, Map<String, SingleValueDoubleStats>>();
+								playerTypeDepthMap.put(playerRole, roleDepthMap);
+							}
+							// Get the map corresponding to all roles
+							allRoleDepthMap = playerTypeDepthMap.get("AllRoles");
+							if(allRoleDepthMap == null){
+								allRoleDepthMap =  new HashMap<String, Map<String, SingleValueDoubleStats>>();
+								playerTypeDepthMap.put("AllRoles", allRoleDepthMap);
+							}
+
+							depthLogs = playerRolesDirs[j].listFiles();
+
+							// For each stats file...
+							for(int k = 0; k < depthLogs.length; k++){
+
+								String[] splittedName = depthLogs[k].getName().split("\\.");
+
+								// If it's a .csv file, compute and log the statistics
+								if(!(splittedName[splittedName.length-1].equalsIgnoreCase("csv"))){
+									System.out.println("Found file with no .csv extension when summarizing depth statistics.");
+									rejectFile(depthLogs[k], rejectedDepthLogsFolder + "/" + playerType + "/" + playerRole);
+								}else{
+
+									// If the stats are referring to a match that was rejected, reject them too
+
+									if(!(acceptedMatches.containsKey(depthLogs[k].getName().substring(0, depthLogs[k].getName().length()-14)))){
+
+										System.out.println("Found Depth Statistics file for a match that was previously rejected from statistics.");
+										rejectFile(depthLogs[k], rejectedDepthLogsFolder + "/" + playerType + "/" + playerRole);
+									}else{
+
+										extractDepthStats(depthLogs[k], allRoleDepthMap, roleDepthMap);
+
+									}
+								}
+							}
+						}
+					}
+				}
+			}
+
+			// Log all the aggregated statistics
+
+			for(Entry<String, Map<String, Map<String, Map<String, SingleValueDoubleStats>>>> playerTypeStats: aggregatedDepthStatistics.entrySet()){
+
+				for(Entry<String, Map<String, Map<String, SingleValueDoubleStats>>> roleStats: playerTypeStats.getValue().entrySet()){
+
+					for(Entry<String, Map<String, SingleValueDoubleStats>> stepStats: roleStats.getValue().entrySet()){
+
+						StatsUtils.writeToFileMkParentDir(depthStatsFolderPath + "/" + playerTypeStats.getKey() + "/" + roleStats.getKey() + "/" +
+								"Step" + stepStats.getKey() + "-Depth-AggrStats.csv", "StatType;#Samples;Min;Max;Median;SD;SEM;Avg;CI;");
+
+						for(Entry<String, SingleValueDoubleStats> statTypeStats: stepStats.getValue().entrySet()){
+
+							String toLog = statTypeStats.getKey() + ";" + statTypeStats.getValue().getNumSamples() + ";" +
+									statTypeStats.getValue().getMinValue() + ";" + statTypeStats.getValue().getMaxValue() + ";" +
+									statTypeStats.getValue().getMedian() + ";" + statTypeStats.getValue().getValuesStandardDeviation() + ";" +
+									statTypeStats.getValue().getValuesSEM() + ";" + statTypeStats.getValue().getAvgValue() + ";" +
+									statTypeStats.getValue().get95ConfidenceInterval() + ";";
+
+							StatsUtils.writeToFileMkParentDir(depthStatsFolderPath + "/" + playerTypeStats.getKey() + "/" + roleStats.getKey() + "/" +
+									"Step" + stepStats.getKey() + "-Branching-AggrStats.csv", toLog);
+
+						}
+
+					}
+
+				}
+
+			}
+
+		}else {
+			//System.out.println("Impossible to find the speed logs directory to summarize: " + speedLogsFolder.getPath());
+		}
+
 	}
 
 	private static void summarizeBestCombos(File theBestComboStatsFile, MatchInfo matchInfo,
@@ -1685,6 +2064,15 @@ public class StatsSummarizer {
 		}
 
 	}
+
+
+	// Read each line
+
+	// Get the map for the step
+
+	// for each stat type...
+
+	// ..get corresponding maps and add the value
 
 	private static void extractParamsStats(File theParamsStatsFile, String mabType, Map<String,Map<String,Map<String,Map<String,SingleValueStats>>>> mabTypeMap,
 			Map<String,Map<String,Map<String,Map<String,SingleValueStats>>>> mabTypeMapAllRoles){
@@ -2252,5 +2640,193 @@ public class StatsSummarizer {
 				}
 			}
 		}
+	}
+
+	private static void extractBranchingStats(File theBranchingStatsFile,
+			Map<String, Map<String, SingleValueDoubleStats>> allRolesBranchingMap ,
+			Map<String, Map<String, SingleValueDoubleStats>> roleBranchingMap ){
+
+		BufferedReader br = null;
+		String theLine;
+		String[] splitLine;
+
+		Map<String, SingleValueDoubleStats> allRolesStepBranchingMap =
+				new HashMap<String, SingleValueDoubleStats>();
+		Map<String, SingleValueDoubleStats> stepBranchingMap =
+				new HashMap<String, SingleValueDoubleStats>();
+
+		SingleValueDoubleStats allRolesStatTypeBranchingStat;
+		SingleValueDoubleStats statTypeBranchingStat;
+
+		String step;
+
+		// Statistics for which to compute the aggregated statistics
+		String[] statisticsNames = new String[]{"#Samples","Min","Max","Median","SD","SEM","Avg","CI"};
+
+		try {
+			br = new BufferedReader(new FileReader(theBranchingStatsFile));
+
+			// Skip first line
+			theLine = br.readLine();
+			theLine = br.readLine();
+
+			while(theLine != null){
+
+				splitLine = theLine.split(";");
+
+				if(splitLine.length != 9){
+					System.out.println("Found wrong line when computing branching statistics: " + theLine);
+				}else {
+					// For each line, parse the parameters and add them to their statistic
+
+					// Changing role map
+					step = splitLine[0];
+
+					allRolesStepBranchingMap = allRolesBranchingMap.get(step);
+					if(allRolesStepBranchingMap == null){
+						allRolesStepBranchingMap = new HashMap<String, SingleValueDoubleStats>();
+						allRolesBranchingMap.put(step, allRolesStepBranchingMap);
+					}
+					stepBranchingMap = roleBranchingMap.get(step);
+					if(stepBranchingMap == null){
+						stepBranchingMap = new HashMap<String, SingleValueDoubleStats>();
+						roleBranchingMap.put(step, stepBranchingMap);
+					}
+
+					for(int i = 0; i < statisticsNames.length; i++) {
+
+						allRolesStatTypeBranchingStat = allRolesStepBranchingMap.get(statisticsNames[i]);
+						if(allRolesStatTypeBranchingStat == null){
+							allRolesStatTypeBranchingStat = new SingleValueDoubleStats();
+							allRolesStepBranchingMap.put(statisticsNames[i], allRolesStatTypeBranchingStat);
+						}
+						statTypeBranchingStat = stepBranchingMap.get(statisticsNames[i]);
+						if(statTypeBranchingStat == null){
+							statTypeBranchingStat = new SingleValueDoubleStats();
+							stepBranchingMap.put(statisticsNames[i], statTypeBranchingStat);
+						}
+
+						Double theValue = Double.parseDouble(splitLine[i+1]);
+
+						allRolesStatTypeBranchingStat.addValue(theValue);
+						statTypeBranchingStat.addValue(theValue);
+
+					}
+
+				}
+
+				theLine = br.readLine();
+			}
+
+			br.close();
+		} catch (IOException e) {
+			System.out.println("Exception when reading the .csv file " + theBranchingStatsFile.getPath() + ".");
+			System.out.println("Stopping summarization of the file. Partial summarization: the number of samples of the statistics might not be equal anymore.");
+        	e.printStackTrace();
+        	if(br != null){
+	        	try {
+					br.close();
+				} catch (IOException ioe) {
+					System.out.println("Exception when closing the .csv file " + theBranchingStatsFile.getPath() + ".");
+					ioe.printStackTrace();
+				}
+        	}
+        	return;
+		}
+
+	}
+
+	private static void extractDepthStats(File theDepthStatsFile,
+			Map<String, Map<String, SingleValueDoubleStats>> allRolesDepthMap ,
+			Map<String, Map<String, SingleValueDoubleStats>> roleDepthMap ){
+
+		BufferedReader br = null;
+		String theLine;
+		String[] splitLine;
+
+		Map<String, SingleValueDoubleStats> allRolesStepDepthMap =
+				new HashMap<String, SingleValueDoubleStats>();
+		Map<String, SingleValueDoubleStats> stepDepthMap =
+				new HashMap<String, SingleValueDoubleStats>();
+
+		SingleValueDoubleStats allRolesStatTypeDepthStat;
+		SingleValueDoubleStats statTypeDepthStat;
+
+		String step;
+
+		// Statistics for which to compute the aggregated statistics
+		String[] statisticsNames = new String[]{"#Samples","Min","Max","Median","SD","SEM","Avg","CI"};
+
+		try {
+			br = new BufferedReader(new FileReader(theDepthStatsFile));
+
+			// Skip first line
+			theLine = br.readLine();
+			theLine = br.readLine();
+
+			while(theLine != null){
+
+				splitLine = theLine.split(";");
+
+				if(splitLine.length != 9){
+					System.out.println("Found wrong line when computing branching statistics: " + theLine);
+				}else {
+					// For each line, parse the parameters and add them to their statistic
+
+					// Changing role map
+					step = splitLine[0];
+
+					allRolesStepDepthMap = allRolesDepthMap.get(step);
+					if(allRolesStepDepthMap == null){
+						allRolesStepDepthMap = new HashMap<String, SingleValueDoubleStats>();
+						allRolesDepthMap.put(step, allRolesStepDepthMap);
+					}
+					stepDepthMap = roleDepthMap.get(step);
+					if(stepDepthMap == null){
+						stepDepthMap = new HashMap<String, SingleValueDoubleStats>();
+						roleDepthMap.put(step, stepDepthMap);
+					}
+
+					for(int i = 0; i < statisticsNames.length; i++) {
+
+						allRolesStatTypeDepthStat = allRolesStepDepthMap.get(statisticsNames[i]);
+						if(allRolesStatTypeDepthStat == null){
+							allRolesStatTypeDepthStat = new SingleValueDoubleStats();
+							allRolesStepDepthMap.put(statisticsNames[i], allRolesStatTypeDepthStat);
+						}
+						statTypeDepthStat = stepDepthMap.get(statisticsNames[i]);
+						if(statTypeDepthStat == null){
+							statTypeDepthStat = new SingleValueDoubleStats();
+							stepDepthMap.put(statisticsNames[i], statTypeDepthStat);
+						}
+
+						Double theValue = Double.parseDouble(splitLine[i+1]);
+
+						allRolesStatTypeDepthStat.addValue(theValue);
+						statTypeDepthStat.addValue(theValue);
+
+					}
+
+				}
+
+				theLine = br.readLine();
+			}
+
+			br.close();
+		} catch (IOException e) {
+			System.out.println("Exception when reading the .csv file " + theDepthStatsFile.getPath() + ".");
+			System.out.println("Stopping summarization of the file. Partial summarization: the number of samples of the statistics might not be equal anymore.");
+        	e.printStackTrace();
+        	if(br != null){
+	        	try {
+					br.close();
+				} catch (IOException ioe) {
+					System.out.println("Exception when closing the .csv file " + theDepthStatsFile.getPath() + ".");
+					ioe.printStackTrace();
+				}
+        	}
+        	return;
+		}
+
 	}
 }

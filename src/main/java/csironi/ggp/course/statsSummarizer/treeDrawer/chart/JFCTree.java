@@ -22,6 +22,8 @@ import org.jfree.data.xy.XYSeries;
 import org.jfree.data.xy.XYSeriesCollection;
 import org.jfree.ui.RectangleEdge;
 
+import csironi.ggp.course.utils.MyPair;
+
 public class JFCTree {
 
 	/**
@@ -39,13 +41,21 @@ public class JFCTree {
 	 * 		- REPEATED_COLOR: samples the EXTENDED_COLOR scale X times and the X obtained colors are
 	 * 		  repeated cyclically (at the moment X=30)
 	 * 		- REPEATED_DARK_COLOR: dark color scale with 15 distinct colors
-	 *
+	 * Optional:
+	 * [xMin] = min value to be used for the x coordinate
+	 * [xMax] = max value to be used for the x coordinate
+	 * [yMin] = min value to be used for the y coordinate
+	 * [yMax] = max value to be used for the y coordinate
+	 * If not specified, the values defined in the first line of the file representing the tree being plotted are used.
+	 * Otherwise, these values can be specified the same for all trees in such a way that all plots have the same scale.
+	 * NOTE that the CompressedTreePlotLogFormatter, other than compressing the logs, also creates a table with these values
+	 * for each tourney folder.
 	 * @param args
 	 */
 	public static void main(String[] args) {
 
-		if(args.length != 2) {
-			System.out.println("Expecting 2 inputs. Specify the path of the .csv file to be plotted and the type of scale to be used (COLOR|EXTENDED_COLOR|GRAY_SMALL|GRAY_BIG|REPEATED_COLOR|REPEATED_DARK_COLOR)");
+		if(args.length != 2 && args.length != 6) {
+			System.out.println("Expecting 2 compulsory inputs and 4 optional. Specify the path of the .csv file to be plotted and the type of scale to be used (COLOR|EXTENDED_COLOR|GRAY_SMALL|GRAY_BIG|REPEATED_COLOR|REPEATED_DARK_COLOR). Optionally the extreme values for the x and y coordinates of the plot can be specified.");
 			return;
 		}
 
@@ -55,8 +65,28 @@ public class JFCTree {
 		File file = new File(filePath);
 
 		//String outputFile = file.getParent() + "/Tree.svg";
+		JFCTree tree;
 
-		JFCTree tree = new JFCTree(file, scaleType);
+		if(args.length == 6) {
+			int xMin;
+			int xMax;
+			double yMin;
+			double yMax;
+			try {
+				xMin = Integer.parseInt(args[2]);
+				xMax = Integer.parseInt(args[3]);
+				yMin = Double.parseDouble(args[4]);
+				yMax = Double.parseDouble(args[5]);
+			}catch(NumberFormatException nfe) {
+				System.out.println("Wrong format for coordinates extremes: " + args[2] + " " + args[3] + " " + args[4] + " " + args[5]);
+				return;
+			}
+
+			tree = new JFCTree(file, scaleType, xMin, xMax, yMin, yMax);
+
+		}else {
+			tree = new JFCTree(file, scaleType);
+		}
 
 		tree.parseTree();
 
@@ -78,6 +108,10 @@ public class JFCTree {
 
 	private String scaleType;
 
+	private MyPair<Integer,Integer> xExtremes;
+
+	private MyPair<Double,Double> yExtremes;
+
 	/**
 	 * Lines corresponding to actions added to the tree in this game turn
 	 */
@@ -94,6 +128,13 @@ public class JFCTree {
 		this.scaleType = scaleType;
 	}
 
+	public JFCTree(File logFile, String scaleType, int xMin, int xMax, double yMin, double yMax) {
+
+		this(logFile, scaleType);
+
+		this.xExtremes = new MyPair<Integer,Integer>(xMin, xMax);
+		this.yExtremes = new MyPair<Double,Double>(yMin, yMax);
+	}
 
 	public boolean parseTree() {
 
@@ -120,6 +161,7 @@ public class JFCTree {
 		String[] splitLine;
 
 		int playedTurns;
+
 		int xMin;
 		int xMax;
 		double yMin;
@@ -148,10 +190,17 @@ public class JFCTree {
 			try {
 				playedTurns = Integer.parseInt(splitLine[0]);
 				//int totalGameIterations = Integer.parseInt(splitLine[1]);
-				xMin =  Integer.parseInt(splitLine[2]);
-				xMax =  Integer.parseInt(splitLine[3]);
-				yMin =  Double.parseDouble(splitLine[4]);
-				yMax =  Double.parseDouble(splitLine[5]);
+				if(this.xExtremes == null || this.yExtremes == null) {
+					xMin =  Integer.parseInt(splitLine[2]);
+					xMax =  Integer.parseInt(splitLine[3]);
+					yMin =  Double.parseDouble(splitLine[4]);
+					yMax =  Double.parseDouble(splitLine[5]);
+				}else {
+					xMin =  this.xExtremes.getFirst();
+					xMax =  this.xExtremes.getSecond();
+					yMin =  this.yExtremes.getFirst();
+					yMax =  this.yExtremes.getSecond();
+				}
 			}catch(NumberFormatException nfe) {
 				System.out.println("Wrong format of coordinate values for the first line of the file!");
 				br.close();
@@ -233,7 +282,7 @@ public class JFCTree {
 
 		XYPlot plot = xylineChart.getXYPlot();
 		plot.setBackgroundPaint(Color.WHITE);
-		plot.setDomainGridlinesVisible(false); // Remove grid lines for x
+		//plot.setDomainGridlinesVisible(false); // Remove grid lines for x
 		plot.setRangeGridlinesVisible(false); // Remove grid lines for y
 		plot.getDomainAxis().setInverted(true); // Invert x axis
 		plot.getDomainAxis().setRange(xMinForPlot, xMaxForPlot);

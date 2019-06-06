@@ -12,6 +12,10 @@ import csironi.ggp.course.statsSummarizer.StatsUtils;
 import csironi.ggp.course.utils.MyPair;
 
 /**
+ * !OLD COMPRESSOR: this class compresses logs externally to the Stats folders to be merged with tree
+ * plot logs from other tournaments. It also changes max values of coordinates in each file
+ * to reflect the max values over all the tourneys. this means that whenever a new tourney is
+ * added the computation and compression has to be repeated over all the toureys.
  *
  * This class expects as input a folder where there is a folder for each performed series of
  * experiments, as created by the TreePlotLogsExtractor. E.g. we could have a folder for the
@@ -132,6 +136,8 @@ public class CompressedTreePlotLogsFormatter {
 
 		File[] roleDirs;
 
+		File[] comboDirs;
+
 		String roleName;
 
 		File[] treePlotFiles;
@@ -170,36 +176,46 @@ public class CompressedTreePlotLogsFormatter {
 
 									if(roleDirs[l].isDirectory()){
 
-										treePlotFiles = roleDirs[l].listFiles();
+										comboDirs = roleDirs[l].listFiles();
 
-										for(int m = 0; m < treePlotFiles.length; m++){
+										for(int m = 0; m < comboDirs.length; m++){
 
-											if(treePlotFiles[m].isFile()) {
+											if(comboDirs[m].isDirectory()){
 
-												axisLimits = axisMap.get(gameKey);
+												treePlotFiles = comboDirs[m].listFiles();
 
-												if(axisLimits == null) {
-													axisLimits = new MyPair<Integer,Double>(-1,-1.0);
-													axisMap.put(gameKey, axisLimits);
+												for(int n = 0; n < treePlotFiles.length; n++){
+
+													if(treePlotFiles[n].isFile()) {
+
+														axisLimits = axisMap.get(gameKey);
+
+														if(axisLimits == null) {
+															axisLimits = new MyPair<Integer,Double>(-1,-1.0);
+															axisMap.put(gameKey, axisLimits);
+														}
+
+														MyPair<Integer,Double> fileAxisValues = getAxisValues(treePlotFiles[n]);
+
+														int newX;
+														double newY;
+														if(fileAxisValues.getFirst() > axisLimits.getFirst()) {
+															newX = fileAxisValues.getFirst();
+														}else {
+															newX = axisLimits.getFirst();
+														}
+														if(fileAxisValues.getSecond() > axisLimits.getSecond()) {
+															newY = fileAxisValues.getSecond();
+														}else {
+															newY = axisLimits.getSecond();
+														}
+
+														MyPair<Integer,Double> newAxisValues = new MyPair<Integer,Double>(newX,newY);
+														axisMap.put(gameKey, newAxisValues);
+
+													}
+
 												}
-
-												MyPair<Integer,Double> fileAxisValues = getAxisValues(treePlotFiles[m]);
-
-												int newX;
-												double newY;
-												if(fileAxisValues.getFirst() > axisLimits.getFirst()) {
-													newX = fileAxisValues.getFirst();
-												}else {
-													newX = axisLimits.getFirst();
-												}
-												if(fileAxisValues.getSecond() > axisLimits.getSecond()) {
-													newY = fileAxisValues.getSecond();
-												}else {
-													newY = axisLimits.getSecond();
-												}
-
-												MyPair<Integer,Double> newAxisValues = new MyPair<Integer,Double>(newX,newY);
-												axisMap.put(gameKey, newAxisValues);
 
 											}
 
@@ -264,25 +280,35 @@ public class CompressedTreePlotLogsFormatter {
 
 										//System.out.println(roleName);
 
-										treePlotFiles = roleDirs[l].listFiles();
+										comboDirs = roleDirs[l].listFiles();
 
-										for(int m = 0; m < treePlotFiles.length; m++){
+										for(int m = 0; m < comboDirs.length; m++){
 
-											if(treePlotFiles[m].isFile()) {
+											if(comboDirs[m].isDirectory()){
 
-												//System.out.println(treePlotFiles[m].getName());
+												treePlotFiles = comboDirs[m].listFiles();
 
-												splitLogFileName = treePlotFiles[m].getName().split("-");
+												for(int n = 0; n < treePlotFiles.length; n++){
 
-												splitLogFileName = splitLogFileName[0].split("\\.");
+													if(treePlotFiles[n].isFile()) {
 
-												matchAndTourneyID = splitLogFileName[0] + "-" + splitLogFileName[1] + "-" + splitLogFileName[2];
+														//System.out.println(treePlotFiles[m].getName());
 
-												//splitLogFileName = treePlotFiles[m].getName().split("-");
+														splitLogFileName = treePlotFiles[n].getName().split("-");
 
-												outputFilePath =  gameKey + "/" + roleName + "/" + playerType + "/" + splitLogFileName[0] + "/" + matchAndTourneyID + "-" + roleName + "-" + playerType + ".csv";
+														splitLogFileName = splitLogFileName[0].split("\\.");
 
-												compressAndSaveLogs(treePlotFiles[m], resultFolderPath, outputFilePath, axisLimits);
+														matchAndTourneyID = splitLogFileName[0] + "-" + splitLogFileName[1] + "-" + splitLogFileName[2];
+
+														//splitLogFileName = treePlotFiles[n].getName().split("-");
+
+														outputFilePath =  gameKey + "/" + roleName + "/" + playerType + "/" + splitLogFileName[0] + "/" + matchAndTourneyID + "-" + roleName + "-" + playerType + ".csv";
+
+														compressAndSaveLogs(treePlotFiles[n], resultFolderPath, outputFilePath, axisLimits);
+
+													}
+
+												}
 
 											}
 
