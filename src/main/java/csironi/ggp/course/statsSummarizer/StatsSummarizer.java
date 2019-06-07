@@ -1920,7 +1920,7 @@ public class StatsSummarizer {
 									statTypeStats.getValue().get95ConfidenceInterval() + ";";
 
 							StatsUtils.writeToFileMkParentDir(depthStatsFolderPath + "/" + playerTypeStats.getKey() + "/" + roleStats.getKey() + "/" +
-									"Step" + stepStats.getKey() + "-Branching-AggrStats.csv", toLog);
+									"Step" + stepStats.getKey() + "-Depth-AggrStats.csv", toLog);
 
 						}
 
