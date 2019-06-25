@@ -41,7 +41,7 @@ public class SingleValueDoubleStats implements SingleValueStats{
 		this.tconstant = 1.96;
 		this.values = new ArrayList<Double>();
 		this.valuesSum = 0;
-		this.maxValue = Double.MIN_VALUE;
+		this.maxValue = -Double.MAX_VALUE;
 		this.minValue = Double.MAX_VALUE;
 
 	}

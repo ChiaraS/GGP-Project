@@ -9,6 +9,11 @@ import csironi.ggp.course.utils.MyPair;
 public class LogTreeNode {
 
 	/**
+	 * Visits of this node. Used to log the entropy.
+	 */
+	private int visits;
+
+	/**
 	 * Game step in which this node was added to the tree.
 	 */
 	//private int step;
@@ -48,6 +53,8 @@ public class LogTreeNode {
 
 	public LogTreeNode(int insertionOrder) {
 		super();
+
+		this.visits = 0;
 		//this.step = step;
 		this.insertionIteration = insertionOrder;
 		//this.onPath = false;
@@ -59,6 +66,14 @@ public class LogTreeNode {
 	//public int getStep() {
 	//	return step;
 	//}
+
+	public int getVisits() {
+		return this.visits;
+	}
+
+	public void increaseVisits() {
+		this.visits++;
+	}
 
 	public int getInsertionIteration() {
 		return insertionIteration;
@@ -111,5 +126,7 @@ public class LogTreeNode {
 	public String toString(){
 		return "[ " + this.insertionIteration + ", " + this.selectionStep + " ]";
 	}
+
+
 
 }

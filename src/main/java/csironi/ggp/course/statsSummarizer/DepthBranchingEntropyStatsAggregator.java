@@ -13,13 +13,13 @@ import csironi.ggp.course.utils.MyPair;
 
 /**
  * This class gets a folder with the stats of a tournament and for each game in the folder
- * aggregates statistics in the specified statistics folder (i.e. BranchingStatistics or
- * DepthStatistics). More precisely, it creates for each agent and role in such folder a
- * table with an entry for each game turn, associated with the number of games that reached
- * such game turn and the specified statistic type (e.g. Avg, Median, ...) for the specified
- * statistic name (e.g. Avg Avg will report the average of the average branching factor or depth
- * for the game turn, Median Avg will report the average of the median branching factor or depth
- * for the game turn).
+ * aggregates statistics in the specified statistics folder (i.e. BranchingStatistics,
+ * DepthStatistics or EntropyStatistics). More precisely, it creates for each agent and role
+ * in such folder a table with an entry for each game turn, associated with the number of
+ * games that reached such game turn and the specified statistic type (e.g. Avg, Median, ...)
+ * for the specified statistic name (e.g. Avg Avg will report the average of the average
+ * branching factor or depth for the game turn, Median Avg will report the average of the
+ * median branching factor or depth for the game turn).
  *
  * Expected input:
  * [tourneyFlder]
@@ -30,7 +30,7 @@ import csironi.ggp.course.utils.MyPair;
  * @author C.Sironi
  *
  */
-public class DepthBranchingStatsAggregator {
+public class DepthBranchingEntropyStatsAggregator {
 
 	public static void main(String args[]) {
 

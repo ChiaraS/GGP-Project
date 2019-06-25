@@ -41,6 +41,7 @@ import org.ggp.base.util.statemachine.exceptions.TransitionDefinitionException;
 import org.ggp.base.util.statemachine.structure.MachineState;
 import org.ggp.base.util.statemachine.structure.Move;
 
+import csironi.ggp.course.experiments.propnet.SingleValueDoubleStats;
 import csironi.ggp.course.experiments.propnet.SingleValueLongStats;
 import csironi.ggp.course.utils.MyPair;
 
@@ -223,7 +224,7 @@ public class HybridMctsManager {
 	 * If true, after each move the branching factor and tree depth are logged, otherwise not.
 	 * Note that setting this to true automatically sets the log tree to be built, but not necessarily logged.
 	 */
-	private boolean logBranchingAndDepth;
+	private boolean logTreeBranchingAndDepthAndEntropy;
 	/**
 	 * Keeps track of the node that is the current root of the log tree
 	 */
@@ -477,10 +478,10 @@ public class HybridMctsManager {
 			this.logLogTree = false;
 		}
 
-		if(gamerSettings.specifiesProperty("SearchManager.logBranchingAndDepth")) {
-			this.logBranchingAndDepth = gamerSettings.getBooleanPropertyValue("SearchManager.logBranchingAndDepth");
+		if(gamerSettings.specifiesProperty("SearchManager.logTreeBranchingAndDepthAndEntropy")) {
+			this.logTreeBranchingAndDepthAndEntropy = gamerSettings.getBooleanPropertyValue("SearchManager.logTreeBranchingAndDepthAndEntropy");
 		}else {
-			this.logBranchingAndDepth = false;
+			this.logTreeBranchingAndDepthAndEntropy = false;
 		}
 
 		// Let all strategies set references if needed.
@@ -587,7 +588,7 @@ public class HybridMctsManager {
 
 		toLog += "\nLOG_LOG_TREE = " + this.logLogTree;
 
-		toLog += "\nLOG_BRANCHING_AND_DEPTH = " + this.logBranchingAndDepth;
+		toLog += "\nLOG_TREE_BRANCHING_AND_DEPTH_AND_ENTROPY = " + this.logTreeBranchingAndDepthAndEntropy;
 
 		toLog += "\nabstract_state_machine = " + (this.gameDependentParameters.getTheMachine() == null ? "null" : this.gameDependentParameters.getTheMachine().getName());
 		toLog += "\nnum_roles = " + this.gameDependentParameters.getNumRoles();
@@ -689,13 +690,14 @@ public class HybridMctsManager {
 
 		this.transpositionTable.setUpComponent();
 
-		if(this.logLogTree || this.logBranchingAndDepth) {
+		if(this.logLogTree || this.logTreeBranchingAndDepthAndEntropy) {
 			this.accumSimulationsPerStep = new HashMap<Integer,Integer>();
 		}
 
-		if(this.logBranchingAndDepth) {
+		if(this.logTreeBranchingAndDepthAndEntropy) {
 			GamerLogger.log(GamerLogger.FORMAT.CSV_FORMAT, "BranchingLogs", "Step;#Samples;Min;Max;Median;SD;SEM;Avg;CI;");
 			GamerLogger.log(GamerLogger.FORMAT.CSV_FORMAT, "DepthLogs", "Step;#Samples;Min;Max;Median;SD;SEM;Avg;CI;");
+			GamerLogger.log(GamerLogger.FORMAT.CSV_FORMAT, "EntropyLogs", "Step;#Samples;Min;Max;Median;SD;SEM;Avg;CI;");
 		}
 
 	}
@@ -835,8 +837,9 @@ public class HybridMctsManager {
 			// List of joint moves played during selection. Used by the multiple playout strategy.
 			this.currentSimulationJointMoves.clear();
 
-			if(this.logLogTree || this.logBranchingAndDepth) {
+			if(this.logLogTree || this.logTreeBranchingAndDepthAndEntropy) {
 				this.currentLogNode = this.currentLogRoot;
+				this.currentLogNode.increaseVisits();
 			}
 
 			SimulationResult[] simulationResult = this.searchNext(initialState, initialNode);
@@ -1101,7 +1104,7 @@ public class HybridMctsManager {
 		// Once we advanced to the next state, we can add the joint move to the list of joint moves for the current simulation.
 		this.currentSimulationJointMoves.add(mctsJointMove);
 
-		if(this.logLogTree || this.logBranchingAndDepth) {
+		if(this.logLogTree || this.logTreeBranchingAndDepthAndEntropy) {
 			if(this.currentLogNode.getChild(mctsJointMove) == null) {
 
 				int totIterations = this.gameDependentParameters.getTotIterations();
@@ -1112,6 +1115,7 @@ public class HybridMctsManager {
 				this.currentLogNode.addChild(mctsJointMove, new LogTreeNode(this.gameDependentParameters.getTotIterations()));
 			}
 			this.currentLogNode = this.currentLogNode.getChild(mctsJointMove);
+			this.currentLogNode.increaseVisits();
 		}
 
 		//System.out.println("Next state = [ " + this.gameDependentParameters.getTheMachine().convertToExplicitMachineState(nextState) + " ]");
@@ -1373,7 +1377,7 @@ public class HybridMctsManager {
 
 		this.transpositionTable.logTable("Start");
 
-		if(this.logLogTree || this.logBranchingAndDepth) {
+		if(this.logLogTree || this.logTreeBranchingAndDepthAndEntropy) {
 
 			if(this.logTree == null) {
 				int totIterations = this.gameDependentParameters.getTotIterations();
@@ -1389,12 +1393,12 @@ public class HybridMctsManager {
 				if(this.currentLogRoot == null) {
 					GamerLogger.logError("MctsManager", "Unexpected null root for log tree in step " + currentGameStep + ". Stopping tree logging for this agent (also for any future game).");
 					this.logLogTree = false;
-					this.logBranchingAndDepth = false;
+					this.logTreeBranchingAndDepthAndEntropy = false;
 				}else {
 					if(internalLastJointMove == null) {
 						GamerLogger.logError("MctsManager", "The last performed joint move is null, cannot advance the root state of the log tree. Stopping tree logging and branching and depth logging for this agent (also for any future game).");
 						this.logLogTree = false;
-						this.logBranchingAndDepth = false;
+						this.logTreeBranchingAndDepthAndEntropy = false;
 					}else {
 						MctsJointMove mctsJointMove = new MctsJointMove(internalLastJointMove);
 						if(this.currentLogRoot.getChild(mctsJointMove) == null) { // If the edge of the selected action was not in the tree yet, we have to add it here so we can log that this action was selected, even if in the transposition table this edge is not present and might be discovered later.
@@ -1416,12 +1420,12 @@ public class HybridMctsManager {
 			this.afterMoveStrategy.afterMoveActions();
 		}
 
-		if(this.logLogTree || this.logBranchingAndDepth) {
+		if(this.logLogTree || this.logTreeBranchingAndDepthAndEntropy) {
 			this.accumSimulationsPerStep.put(this.gameDependentParameters.getGameStep(), this.gameDependentParameters.getTotIterations());
 		}
 
-		if(this.logBranchingAndDepth) {
-			this.logBranchingAndDepth();
+		if(this.logTreeBranchingAndDepthAndEntropy) {
+			this.logTreeBranchingAndDepthAndEntropy();
 		}
 
 		this.transpositionTable.logTable("End");
@@ -1795,37 +1799,107 @@ public class HybridMctsManager {
 
 	}
 
-	private void logBranchingAndDepth() {
+	private void logTreeBranchingAndDepthAndEntropy() {
 
 		SingleValueLongStats branchingStats = new SingleValueLongStats();
-
 		SingleValueLongStats depthStats = new SingleValueLongStats();
+		SingleValueDoubleStats entropyStats = new SingleValueDoubleStats();
 
-		this.DFSlogBranchingAndDepth(this.currentLogRoot, branchingStats, depthStats, 0);
+		this.DFSlogTreeBranchingAndDepthAndEntropy(this.currentLogRoot, branchingStats, depthStats, entropyStats, 0);
 
-		GamerLogger.log(GamerLogger.FORMAT.CSV_FORMAT, "BranchingLogs", this.gameDependentParameters.getGameStep() + ";" +
-				branchingStats.getNumSamples() + ";" + branchingStats.getLongMinValue() + ";" + branchingStats.getLongMaxValue() + ";" +
-				branchingStats.getMedian() + ";" + branchingStats.getValuesStandardDeviation() + ";" + branchingStats.getValuesSEM() +
-				";" + branchingStats.getAvgValue() + ";" + branchingStats.get95ConfidenceInterval() + ";");
+		if(branchingStats.getNumSamples() > 1) {
+			GamerLogger.log(GamerLogger.FORMAT.CSV_FORMAT, "BranchingLogs", this.gameDependentParameters.getGameStep() + ";" +
+					branchingStats.getNumSamples() + ";" + branchingStats.getLongMinValue() + ";" + branchingStats.getLongMaxValue() + ";" +
+					branchingStats.getMedian() + ";" + branchingStats.getValuesStandardDeviation() + ";" + branchingStats.getValuesSEM() +
+					";" + branchingStats.getAvgValue() + ";" + branchingStats.get95ConfidenceInterval() + ";");
+		}else if (branchingStats.getNumSamples() == 1) {
+			GamerLogger.log(GamerLogger.FORMAT.CSV_FORMAT, "BranchingLogs", this.gameDependentParameters.getGameStep() + ";" +
+					branchingStats.getNumSamples() + ";" + branchingStats.getLongMinValue() + ";" + branchingStats.getLongMaxValue() + ";" +
+					branchingStats.getMedian() + ";" + 0 + ";" + 0 +
+					";" + branchingStats.getAvgValue() + ";" + 0 + ";");
+		}else if (branchingStats.getNumSamples() == 0) {
+			GamerLogger.log(GamerLogger.FORMAT.CSV_FORMAT, "BranchingLogs", this.gameDependentParameters.getGameStep() + ";" +
+					branchingStats.getNumSamples() + ";N/A;N/A;N/A;N/A;N/A;N/A;N/A;");
+		}
 
-		GamerLogger.log(GamerLogger.FORMAT.CSV_FORMAT, "DepthLogs", this.gameDependentParameters.getGameStep() + ";" +
-				depthStats.getNumSamples() + ";" + depthStats.getLongMinValue() + ";" + depthStats.getLongMaxValue() + ";" +
-				depthStats.getMedian() + ";" + depthStats.getValuesStandardDeviation() + ";" + depthStats.getValuesSEM() +
-				";" + depthStats.getAvgValue() + ";" + depthStats.get95ConfidenceInterval() + ";");
+		if(depthStats.getNumSamples() > 1) {
+			GamerLogger.log(GamerLogger.FORMAT.CSV_FORMAT, "DepthLogs", this.gameDependentParameters.getGameStep() + ";" +
+					depthStats.getNumSamples() + ";" + depthStats.getLongMinValue() + ";" + depthStats.getLongMaxValue() + ";" +
+					depthStats.getMedian() + ";" + depthStats.getValuesStandardDeviation() + ";" + depthStats.getValuesSEM() +
+					";" + depthStats.getAvgValue() + ";" + depthStats.get95ConfidenceInterval() + ";");
+		}else if(depthStats.getNumSamples() == 1) {
+			GamerLogger.log(GamerLogger.FORMAT.CSV_FORMAT, "DepthLogs", this.gameDependentParameters.getGameStep() + ";" +
+					depthStats.getNumSamples() + ";" + depthStats.getLongMinValue() + ";" + depthStats.getLongMaxValue() + ";" +
+					depthStats.getMedian() + ";" + 0 + ";" + 0 +
+					";" + depthStats.getAvgValue() + ";" + 0 + ";");
+		}else if(depthStats.getNumSamples() == 0) {
+			GamerLogger.log(GamerLogger.FORMAT.CSV_FORMAT, "DepthLogs", this.gameDependentParameters.getGameStep() + ";" +
+					depthStats.getNumSamples() + ";N/A;N/A;N/A;N/A;N/A;N/A;N/A;");
+		}
+
+		if(entropyStats.getNumSamples() > 1) {
+			GamerLogger.log(GamerLogger.FORMAT.CSV_FORMAT, "EntropyLogs", this.gameDependentParameters.getGameStep() + ";" +
+					entropyStats.getNumSamples() + ";" + entropyStats.getMinValue() + ";" + entropyStats.getMaxValue() + ";" +
+					entropyStats.getMedian() + ";" + entropyStats.getValuesStandardDeviation() + ";" + entropyStats.getValuesSEM() +
+					";" + entropyStats.getAvgValue() + ";" + entropyStats.get95ConfidenceInterval() + ";");
+		}if(entropyStats.getNumSamples() == 1) {
+			GamerLogger.log(GamerLogger.FORMAT.CSV_FORMAT, "EntropyLogs", this.gameDependentParameters.getGameStep() + ";" +
+					entropyStats.getNumSamples() + ";" + entropyStats.getMinValue() + ";" + entropyStats.getMaxValue() + ";" +
+					entropyStats.getMedian() + ";" + 0 + ";" + 0 +
+					";" + entropyStats.getAvgValue() + ";" + 0 + ";");
+		}else if(depthStats.getNumSamples() == 0) {
+			GamerLogger.log(GamerLogger.FORMAT.CSV_FORMAT, "EntropyLogs", this.gameDependentParameters.getGameStep() + ";" +
+					entropyStats.getNumSamples() + ";N/A;N/A;N/A;N/A;N/A;N/A;N/A;");
+		}
 
 	}
 
-	private void DFSlogBranchingAndDepth(LogTreeNode currentNode, SingleValueLongStats branchingStats, SingleValueLongStats depthStats, int depth) {
+	private void DFSlogTreeBranchingAndDepthAndEntropy(LogTreeNode currentNode,
+			SingleValueLongStats branchingStats, SingleValueLongStats depthStats,
+			SingleValueDoubleStats entropyStats, int depth) {
 
 		if(currentNode.getChildren().isEmpty()) { // Leaf node => memorize the depth
 			depthStats.addValue(depth);
 		}else {
 			branchingStats.addValue(currentNode.getChildren().size());
+			entropyStats.addValue(getEntropy(currentNode));
 			for(LogTreeNode child : currentNode.getChildren().values()) {
-				this.DFSlogBranchingAndDepth(child, branchingStats, depthStats, depth+1);
+				this.DFSlogTreeBranchingAndDepthAndEntropy(child, branchingStats, depthStats, entropyStats, depth+1);
 			}
 		}
 
+	}
+
+	private double getEntropy(LogTreeNode node) {
+
+		double totVisits = 0;
+		double entropy = 0;
+		double probability;
+
+		for(LogTreeNode child : node.getChildren().values()) {
+
+			totVisits += child.getVisits();
+
+		}
+
+		// Check that the sum of visits is equal to (visits of parent -1) or (visits of parent)
+		//if(totVisits != node.getVisits() && totVisits+1 != node.getVisits()) {
+		//	GamerLogger.logError("MctsManager", "Error computing entropy. Total visits of children = " + totVisits + ", and total visits of parent = " + node.getVisits() + ".");
+		//}
+
+		for(LogTreeNode child : node.getChildren().values()) {
+
+			probability = child.getVisits()/totVisits;
+			entropy += (probability*(this.log2(probability)));
+
+		}
+
+		return -entropy;
+
+	}
+
+	private double log2(double number) {
+		return Math.log(number)/Math.log(2.0);
 	}
 
 }

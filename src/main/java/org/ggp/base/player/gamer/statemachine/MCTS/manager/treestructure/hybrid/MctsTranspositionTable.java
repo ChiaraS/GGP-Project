@@ -15,7 +15,7 @@ import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.hybrid.
 import org.ggp.base.util.logging.GamerLogger;
 import org.ggp.base.util.statemachine.structure.MachineState;
 
-public class MctsTranspositionTable extends SearchManagerComponent{
+public class MctsTranspositionTable extends SearchManagerComponent {
 
 	private boolean log;
 
@@ -204,6 +204,10 @@ public class MctsTranspositionTable extends SearchManagerComponent{
 
 	public void turnOffLogging(){
 		this.log = false;
+	}
+
+	public Map<MachineState,MctsNode> getTranspositionTable(){
+		return this.transpositionTable;
 	}
 
 	/*

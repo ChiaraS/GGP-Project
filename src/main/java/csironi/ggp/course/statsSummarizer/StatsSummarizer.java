@@ -1934,6 +1934,195 @@ public class StatsSummarizer {
 			//System.out.println("Impossible to find the speed logs directory to summarize: " + speedLogsFolder.getPath());
 		}
 
+		/****************** Compute entropy statistics of the matches that were considered in the previous statistics *******************/
+
+		String entropyLogsFolderPath;
+
+		if(simpleFolderFormat) {
+			entropyLogsFolderPath = mainFolderPath + "/EntropyLogs";
+		}else{
+			entropyLogsFolderPath = mainFolderPath + "/" + tourneyType + "." + gameKey + ".EntropyLogs";
+		}
+
+		//System.out.println("speedLogsFolderPath= " + speedLogsFolderPath);
+
+		File entropyLogsFolder = new File(entropyLogsFolderPath);
+
+		if(entropyLogsFolder.isDirectory()){
+			// Create (or empty if it already exists) the folder where to move all the speed log files
+			// that have been rejected and haven't been considered when computing the statistics.
+			String rejectedEntropyLogsFolderPath;
+			if(simpleFolderFormat){
+				rejectedEntropyLogsFolderPath = mainFolderPath + "/RejectedEntropyLogs";
+			}else{
+				rejectedEntropyLogsFolderPath = mainFolderPath + "/" + tourneyType + "." + gameKey + ".RejectedEntropyLogs";
+			}
+
+			//System.out.println("RejectedSpeedFilesFolderPath= " + rejectedSpeedFilesFolderPath);
+
+
+			File rejectedEntropyLogsFolder = new File(rejectedEntropyLogsFolderPath);
+			if(rejectedEntropyLogsFolder.isDirectory()){
+				if(!emptyFolder(rejectedEntropyLogsFolder)){
+					System.out.println("Summarization interrupted. Cannot empty the RejectedEntropyLogs folder: " + rejectedEntropyLogsFolder.getPath());
+					return;
+				}
+			}else{
+				if(!rejectedEntropyLogsFolder.mkdir()){
+					System.out.println("Summarization interrupted. Cannot create the RejectedEntropyLogs folder: " + rejectedEntropyLogsFolder.getPath());
+					return;
+				}
+			}
+
+			// Create (or empty if it already exists) the folder where to save all the speed statistics.
+			String entropyStatsFolderPath;
+			if(simpleFolderFormat){
+				entropyStatsFolderPath = mainFolderPath + "/EntropyStatistics";
+			}else{
+				entropyStatsFolderPath = mainFolderPath + "/" + tourneyType + "." + gameKey + ".EntropyStatistics";
+			}
+			File entropyStatsFolder = new File(entropyStatsFolderPath);
+			if(entropyStatsFolder.isDirectory()){
+				if(!emptyFolder(entropyStatsFolder)){
+					System.out.println("Summarization interrupted. Cannot empty the EntropyStatistics folder: " + entropyStatsFolder.getPath());
+					return;
+				}
+			}else{
+				if(!entropyStatsFolder.mkdir()){
+					System.out.println("Summarization interrupted. Cannot create the EntropyStatistics folder: " + entropyStatsFolder.getPath());
+					return;
+				}
+			}
+
+			//List<String> acceptedMatches = new ArrayList<String>();
+
+			File[] playerTypesDirs;
+
+			File[] playerRolesDirs = null;
+
+			File[] entropyLogs = null;
+
+			//File randomSpeedLog;
+
+			String playerType;
+
+			String playerRole;
+
+			// Prepare all the SingleValueStats that will compute the aggregated statistics for each player-role combination over all the matches
+			Map<String, Map<String, Map<String, Map<String, SingleValueDoubleStats>>>> aggregatedEntropyStatistics =
+					new HashMap<String, Map<String, Map<String, Map<String, SingleValueDoubleStats>>>>();
+
+			Map<String, Map<String, Map<String, SingleValueDoubleStats>>> playerTypeEntropyMap =
+					new HashMap<String, Map<String, Map<String, SingleValueDoubleStats>>>();
+
+			Map<String, Map<String, SingleValueDoubleStats>> roleEntropyMap =
+					new HashMap<String, Map<String, SingleValueDoubleStats>>();
+			Map<String, Map<String, SingleValueDoubleStats>> allRoleEntropyMap =
+					new HashMap<String, Map<String, SingleValueDoubleStats>>();
+
+			// Iterate over the directories containing the matches logs for each player's type.
+			playerTypesDirs = entropyLogsFolder.listFiles();
+
+			// For the folder of each player type...
+			for(int i = 0; i < playerTypesDirs.length; i++){
+
+				if(playerTypesDirs[i].isDirectory()){
+
+					playerType = playerTypesDirs[i].getName();
+
+					// Get the map corresponding to this player type
+					playerTypeEntropyMap = aggregatedEntropyStatistics.get(playerType);
+					if(playerTypeEntropyMap == null){
+						playerTypeEntropyMap = new HashMap<String, Map<String, Map<String, SingleValueDoubleStats>>>();
+						aggregatedEntropyStatistics.put(playerType, playerTypeEntropyMap);
+					}
+
+					playerRolesDirs = playerTypesDirs[i].listFiles();
+
+					// Iterate over all the folders corresponding to the different roles the player played
+					for(int j = 0; j < playerRolesDirs.length; j++){
+
+						if(playerRolesDirs[j].isDirectory()) {
+							playerRole = playerRolesDirs[j].getName();
+
+							// Get the map corresponding to this role
+							roleEntropyMap = playerTypeEntropyMap.get(playerRole);
+							if(roleEntropyMap == null){
+								roleEntropyMap =  new HashMap<String, Map<String, SingleValueDoubleStats>>();
+								playerTypeEntropyMap.put(playerRole, roleEntropyMap);
+							}
+							// Get the map corresponding to all roles
+							allRoleEntropyMap = playerTypeEntropyMap.get("AllRoles");
+							if(allRoleEntropyMap == null){
+								allRoleEntropyMap =  new HashMap<String, Map<String, SingleValueDoubleStats>>();
+								playerTypeEntropyMap.put("AllRoles", allRoleEntropyMap);
+							}
+
+							entropyLogs = playerRolesDirs[j].listFiles();
+
+							// For each stats file...
+							for(int k = 0; k < entropyLogs.length; k++){
+
+								String[] splittedName = entropyLogs[k].getName().split("\\.");
+
+								// If it's a .csv file, compute and log the statistics
+								if(!(splittedName[splittedName.length-1].equalsIgnoreCase("csv"))){
+									System.out.println("Found file with no .csv extension when summarizing entropy statistics.");
+									rejectFile(entropyLogs[k], rejectedEntropyLogsFolder + "/" + playerType + "/" + playerRole);
+								}else{
+
+									// If the stats are referring to a match that was rejected, reject them too
+
+									if(!(acceptedMatches.containsKey(entropyLogs[k].getName().substring(0, entropyLogs[k].getName().length()-18)))){
+
+										System.out.println("Found Entropy Statistics file for a match that was previously rejected from statistics.");
+										rejectFile(entropyLogs[k], rejectedEntropyLogsFolder + "/" + playerType + "/" + playerRole);
+									}else{
+
+										extractEntropyStats(entropyLogs[k], allRoleEntropyMap, roleEntropyMap);
+
+									}
+								}
+							}
+						}
+					}
+				}
+			}
+
+			// Log all the aggregated statistics
+
+			for(Entry<String, Map<String, Map<String, Map<String, SingleValueDoubleStats>>>> playerTypeStats: aggregatedEntropyStatistics.entrySet()){
+
+				for(Entry<String, Map<String, Map<String, SingleValueDoubleStats>>> roleStats: playerTypeStats.getValue().entrySet()){
+
+					for(Entry<String, Map<String, SingleValueDoubleStats>> stepStats: roleStats.getValue().entrySet()){
+
+						StatsUtils.writeToFileMkParentDir(entropyStatsFolderPath + "/" + playerTypeStats.getKey() + "/" + roleStats.getKey() + "/" +
+								"Step" + stepStats.getKey() + "-Entropy-AggrStats.csv", "StatType;#Samples;Min;Max;Median;SD;SEM;Avg;CI;");
+
+						for(Entry<String, SingleValueDoubleStats> statTypeStats: stepStats.getValue().entrySet()){
+
+							String toLog = statTypeStats.getKey() + ";" + statTypeStats.getValue().getNumSamples() + ";" +
+									statTypeStats.getValue().getMinValue() + ";" + statTypeStats.getValue().getMaxValue() + ";" +
+									statTypeStats.getValue().getMedian() + ";" + statTypeStats.getValue().getValuesStandardDeviation() + ";" +
+									statTypeStats.getValue().getValuesSEM() + ";" + statTypeStats.getValue().getAvgValue() + ";" +
+									statTypeStats.getValue().get95ConfidenceInterval() + ";";
+
+							StatsUtils.writeToFileMkParentDir(entropyStatsFolderPath + "/" + playerTypeStats.getKey() + "/" + roleStats.getKey() + "/" +
+									"Step" + stepStats.getKey() + "-Entropy-AggrStats.csv", toLog);
+
+						}
+
+					}
+
+				}
+
+			}
+
+		}else {
+			//System.out.println("Impossible to find the speed logs directory to summarize: " + speedLogsFolder.getPath());
+		}
+
 	}
 
 	private static void summarizeBestCombos(File theBestComboStatsFile, MatchInfo matchInfo,
@@ -2769,7 +2958,7 @@ public class StatsSummarizer {
 				splitLine = theLine.split(";");
 
 				if(splitLine.length != 9){
-					System.out.println("Found wrong line when computing branching statistics: " + theLine);
+					System.out.println("Found wrong line when computing depth statistics: " + theLine);
 				}else {
 					// For each line, parse the parameters and add them to their statistic
 
@@ -2822,6 +3011,100 @@ public class StatsSummarizer {
 					br.close();
 				} catch (IOException ioe) {
 					System.out.println("Exception when closing the .csv file " + theDepthStatsFile.getPath() + ".");
+					ioe.printStackTrace();
+				}
+        	}
+        	return;
+		}
+
+	}
+
+	private static void extractEntropyStats(File theEntropyStatsFile,
+			Map<String, Map<String, SingleValueDoubleStats>> allRolesEntropyMap ,
+			Map<String, Map<String, SingleValueDoubleStats>> roleEntropyMap ){
+
+		BufferedReader br = null;
+		String theLine;
+		String[] splitLine;
+
+		Map<String, SingleValueDoubleStats> allRolesStepEntropyMap =
+				new HashMap<String, SingleValueDoubleStats>();
+		Map<String, SingleValueDoubleStats> stepEntropyMap =
+				new HashMap<String, SingleValueDoubleStats>();
+
+		SingleValueDoubleStats allRolesStatTypeEntropyStat;
+		SingleValueDoubleStats statTypeEntropyStat;
+
+		String step;
+
+		// Statistics for which to compute the aggregated statistics
+		String[] statisticsNames = new String[]{"#Samples","Min","Max","Median","SD","SEM","Avg","CI"};
+
+		try {
+			br = new BufferedReader(new FileReader(theEntropyStatsFile));
+
+			// Skip first line
+			theLine = br.readLine();
+			theLine = br.readLine();
+
+			while(theLine != null){
+
+				splitLine = theLine.split(";");
+
+				if(splitLine.length != 9){
+					System.out.println("Found wrong line when computing entropy statistics: " + theLine);
+				}else {
+					// For each line, parse the parameters and add them to their statistic
+
+					// Changing role map
+					step = splitLine[0];
+
+					allRolesStepEntropyMap = allRolesEntropyMap.get(step);
+					if(allRolesStepEntropyMap == null){
+						allRolesStepEntropyMap = new HashMap<String, SingleValueDoubleStats>();
+						allRolesEntropyMap.put(step, allRolesStepEntropyMap);
+					}
+					stepEntropyMap = roleEntropyMap.get(step);
+					if(stepEntropyMap == null){
+						stepEntropyMap = new HashMap<String, SingleValueDoubleStats>();
+						roleEntropyMap.put(step, stepEntropyMap);
+					}
+
+					for(int i = 0; i < statisticsNames.length; i++) {
+
+						allRolesStatTypeEntropyStat = allRolesStepEntropyMap.get(statisticsNames[i]);
+						if(allRolesStatTypeEntropyStat == null){
+							allRolesStatTypeEntropyStat = new SingleValueDoubleStats();
+							allRolesStepEntropyMap.put(statisticsNames[i], allRolesStatTypeEntropyStat);
+						}
+						statTypeEntropyStat = stepEntropyMap.get(statisticsNames[i]);
+						if(statTypeEntropyStat == null){
+							statTypeEntropyStat = new SingleValueDoubleStats();
+							stepEntropyMap.put(statisticsNames[i], statTypeEntropyStat);
+						}
+
+						Double theValue = Double.parseDouble(splitLine[i+1]);
+
+						allRolesStatTypeEntropyStat.addValue(theValue);
+						statTypeEntropyStat.addValue(theValue);
+
+					}
+
+				}
+
+				theLine = br.readLine();
+			}
+
+			br.close();
+		} catch (IOException e) {
+			System.out.println("Exception when reading the .csv file " + theEntropyStatsFile.getPath() + ".");
+			System.out.println("Stopping summarization of the file. Partial summarization: the number of samples of the statistics might not be equal anymore.");
+        	e.printStackTrace();
+        	if(br != null){
+	        	try {
+					br.close();
+				} catch (IOException ioe) {
+					System.out.println("Exception when closing the .csv file " + theEntropyStatsFile.getPath() + ".");
 					ioe.printStackTrace();
 				}
         	}
