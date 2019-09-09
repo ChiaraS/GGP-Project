@@ -14,6 +14,11 @@ public class LogTreeNode {
 	private int visits;
 
 	/**
+	 * Number of legal joint moves. Used to log the difference of the entropy from the entropy of a uniform source.
+	 */
+	private int numLegalJointMoves;
+
+	/**
 	 * Game step in which this node was added to the tree.
 	 */
 	//private int step;
@@ -51,10 +56,10 @@ public class LogTreeNode {
 	 */
 	private MyPair<Double,Double> parentCoordinates;
 
-	public LogTreeNode(int insertionOrder) {
-		super();
+	public LogTreeNode(int insertionOrder, int numLegalJointMoves) {
 
 		this.visits = 0;
+		this.numLegalJointMoves = numLegalJointMoves;
 		//this.step = step;
 		this.insertionIteration = insertionOrder;
 		//this.onPath = false;
@@ -66,6 +71,14 @@ public class LogTreeNode {
 	//public int getStep() {
 	//	return step;
 	//}
+
+	public int getNumLegalJointMoves() {
+		return this.numLegalJointMoves;
+	}
+
+	public void setNumLegalJointMoves(int numLegalJointMoves) {
+		this.numLegalJointMoves = numLegalJointMoves;
+	}
 
 	public int getVisits() {
 		return this.visits;

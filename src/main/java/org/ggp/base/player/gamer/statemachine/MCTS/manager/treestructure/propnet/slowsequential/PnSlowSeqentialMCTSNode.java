@@ -6,6 +6,7 @@ package org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.propne
 import java.util.List;
 
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.MctsNode;
+import org.ggp.base.util.logging.GamerLogger;
 
 /**
  * @author C.Sironi
@@ -138,4 +139,37 @@ public class PnSlowSeqentialMCTSNode extends MctsNode {
 		// Not implemented cause this class will soon disappear
 
 	}
+
+	@Override
+	public int getNumJointMoves() {
+
+		if(this.movesStats == null) {
+			return 0;
+		}
+
+		int numJointMoves = this.recursiveGetNumJointMoves(this.movesStats);
+
+		if(numJointMoves == 0) {
+			GamerLogger.logError("MctsNode", "PnSequentialMCTSNode - Detected no legal joint moves for non-terminal node.");
+			throw new RuntimeException("PnSequentialMCTSNode - Detected no legal joint moves for non-terminal node.");
+		}
+
+		return numJointMoves;
+	}
+
+	private int recursiveGetNumJointMoves(PnSlowSequentialMCTSMoveStats[] stats) {
+
+		if(stats == null) {
+			return 1;
+		}
+		int sum = 0;
+		for(PnSlowSequentialMCTSMoveStats s : stats) {
+			sum += this.recursiveGetNumJointMoves(s.getNextRoleMovesStats());
+		}
+		return sum;
+
+
+	}
+
+
 }

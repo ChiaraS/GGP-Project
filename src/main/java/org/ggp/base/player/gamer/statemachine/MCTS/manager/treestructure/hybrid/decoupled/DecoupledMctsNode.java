@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.MctsNode;
+import org.ggp.base.util.logging.GamerLogger;
 import org.ggp.base.util.statemachine.structure.Move;
 
 public class DecoupledMctsNode extends MctsNode {
@@ -180,6 +181,27 @@ public class DecoupledMctsNode extends MctsNode {
 		}
 
 		return legalMovesForRole;
+	}
+
+	@Override
+	public int getNumJointMoves() {
+
+		if(this.movesStats == null) {
+			return 0;
+		}
+
+		int numJointMoves = 1;
+
+		for(int i = 0; i < this.movesStats.length; i++) {
+			numJointMoves *= this.movesStats[i].length;
+		}
+
+		if(numJointMoves == 0) {
+			GamerLogger.logError("MctsNode", "DecoupledMctsNode - Detected no legal joint moves for non-terminal node.");
+			throw new RuntimeException("DecoupledMctsNode - Detected no legal joint moves for non-terminal node.");
+		}
+
+		return numJointMoves;
 	}
 
 }

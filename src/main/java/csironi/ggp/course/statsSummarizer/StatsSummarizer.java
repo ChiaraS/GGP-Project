@@ -1219,7 +1219,8 @@ public class StatsSummarizer {
 
 									if(!(acceptedMatches.containsKey(paramsStatsFiles[k].getName().substring(0, paramsStatsFiles[k].getName().length()-26))) &&
 											!(acceptedMatches.containsKey(paramsStatsFiles[k].getName().substring(0, paramsStatsFiles[k].getName().length()-25))) &&
-											!(acceptedMatches.containsKey(paramsStatsFiles[k].getName().substring(0, paramsStatsFiles[k].getName().length()-20)))){
+											!(acceptedMatches.containsKey(paramsStatsFiles[k].getName().substring(0, paramsStatsFiles[k].getName().length()-20))) &&
+											!(acceptedMatches.containsKey(paramsStatsFiles[k].getName().substring(0, paramsStatsFiles[k].getName().length()-16)))){
 										System.out.println("Found Params Statistics file for a match that was previously rejected from statistics.");
 										rejectFile(paramsStatsFiles[k], rejectedParamsFilesFolderPath + "/" + playerType + "/" + playerRole);
 									}else{
@@ -2073,7 +2074,7 @@ public class StatsSummarizer {
 
 									// If the stats are referring to a match that was rejected, reject them too
 
-									if(!(acceptedMatches.containsKey(entropyLogs[k].getName().substring(0, entropyLogs[k].getName().length()-18)))){
+									if(!(acceptedMatches.containsKey(entropyLogs[k].getName().substring(0, entropyLogs[k].getName().length()-16)))){
 
 										System.out.println("Found Entropy Statistics file for a match that was previously rejected from statistics.");
 										rejectFile(entropyLogs[k], rejectedEntropyLogsFolder + "/" + playerType + "/" + playerRole);

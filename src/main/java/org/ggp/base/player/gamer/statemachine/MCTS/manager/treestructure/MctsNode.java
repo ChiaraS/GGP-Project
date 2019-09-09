@@ -79,4 +79,10 @@ public abstract class MctsNode{
 
 	public abstract void decayStatistics(double decayFactor);
 
+	/**
+	 * Returns the number of joint moves that are legal in this node.
+	 * @return
+	 */
+	public abstract int getNumJointMoves();
+
 }

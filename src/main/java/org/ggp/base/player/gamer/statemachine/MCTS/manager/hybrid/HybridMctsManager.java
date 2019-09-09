@@ -223,6 +223,10 @@ public class HybridMctsManager {
 	/**
 	 * If true, after each move the branching factor and tree depth are logged, otherwise not.
 	 * Note that setting this to true automatically sets the log tree to be built, but not necessarily logged.
+	 * TODO: the LogTreeNodes are set up to memorize also the total number of legal joint moves in each node,
+	 * so that they can be used to log the entropy of nodes when the distribution of visits over the actions is
+	 * uniform or to log the branching factor of the game tree (instead of the effective branching factor of the
+	 * search tree that is being logged now).
 	 */
 	private boolean logTreeBranchingAndDepthAndEntropy;
 	/**
@@ -698,6 +702,7 @@ public class HybridMctsManager {
 			GamerLogger.log(GamerLogger.FORMAT.CSV_FORMAT, "BranchingLogs", "Step;#Samples;Min;Max;Median;SD;SEM;Avg;CI;");
 			GamerLogger.log(GamerLogger.FORMAT.CSV_FORMAT, "DepthLogs", "Step;#Samples;Min;Max;Median;SD;SEM;Avg;CI;");
 			GamerLogger.log(GamerLogger.FORMAT.CSV_FORMAT, "EntropyLogs", "Step;#Samples;Min;Max;Median;SD;SEM;Avg;CI;");
+			GamerLogger.log(GamerLogger.FORMAT.CSV_FORMAT, "EntropyDiffLogs", "Step;#Samples;Min;Max;Median;SD;SEM;Avg;CI;");
 		}
 
 	}
@@ -801,6 +806,12 @@ public class HybridMctsManager {
 			initialNode = this.treeNodeFactory.createNewNode(initialState);
 			this.transpositionTable.putNode(initialState, initialNode);
 
+		}
+
+		if(this.logLogTree || this.logTreeBranchingAndDepthAndEntropy) {
+			if(this.currentLogRoot.getNumLegalJointMoves() == -1) {
+				this.currentLogRoot.setNumLegalJointMoves(initialNode.getNumJointMoves());
+			}
 		}
 
 		return initialNode;
@@ -1104,6 +1115,12 @@ public class HybridMctsManager {
 		// Once we advanced to the next state, we can add the joint move to the list of joint moves for the current simulation.
 		this.currentSimulationJointMoves.add(mctsJointMove);
 
+		//System.out.println("Next state = [ " + this.gameDependentParameters.getTheMachine().convertToExplicitMachineState(nextState) + " ]");
+		//System.out.println("Next state = [ " + nextState + " ]");
+
+		// ...and get the corresponding MCT node from the transposition table.
+		nextNode = this.transpositionTable.getNode(nextState);
+
 		if(this.logLogTree || this.logTreeBranchingAndDepthAndEntropy) {
 			if(this.currentLogNode.getChild(mctsJointMove) == null) {
 
@@ -1112,17 +1129,11 @@ public class HybridMctsManager {
 					GamerLogger.logError("MctsManager", "[searchNext] TotIterations = " + totIterations + ". Expected to be at least 0.");
 				}
 
-				this.currentLogNode.addChild(mctsJointMove, new LogTreeNode(this.gameDependentParameters.getTotIterations()));
+				this.currentLogNode.addChild(mctsJointMove, new LogTreeNode(this.gameDependentParameters.getTotIterations(), nextNode.getNumJointMoves()));
 			}
 			this.currentLogNode = this.currentLogNode.getChild(mctsJointMove);
 			this.currentLogNode.increaseVisits();
 		}
-
-		//System.out.println("Next state = [ " + this.gameDependentParameters.getTheMachine().convertToExplicitMachineState(nextState) + " ]");
-		//System.out.println("Next state = [ " + nextState + " ]");
-
-		// ...and get the corresponding MCT node from the transposition table.
-		nextNode = this.transpositionTable.getNode(nextState);
 
 		// If we cannot find such tree node we create it and add it to the table.
 		// NOTE: there are 3 situations when the next node might not be in the tree yet:
@@ -1384,7 +1395,7 @@ public class HybridMctsManager {
 				if(totIterations < 0) {
 					GamerLogger.logError("MctsManager", "[beforeMoveActions] TotIterations = " + totIterations + ". Expected to be at least 0.");
 				}
-				this.logTree = new LogTreeNode(totIterations);
+				this.logTree = new LogTreeNode(totIterations, -1);
 				this.currentLogRoot = this.logTree;
 				this.currentLogNode = this.currentLogRoot;
 				this.logTree.setOnPath(0); // Assume the root is always on path and was added in the step previous to 1.
@@ -1402,7 +1413,7 @@ public class HybridMctsManager {
 					}else {
 						MctsJointMove mctsJointMove = new MctsJointMove(internalLastJointMove);
 						if(this.currentLogRoot.getChild(mctsJointMove) == null) { // If the edge of the selected action was not in the tree yet, we have to add it here so we can log that this action was selected, even if in the transposition table this edge is not present and might be discovered later.
-							this.currentLogRoot.addChild(mctsJointMove, new LogTreeNode(-1)); // Since the action was never added to the actual tree, we do not give it an insertion iteration, we will only add it to the plotted tree when it gets selected.
+							this.currentLogRoot.addChild(mctsJointMove, new LogTreeNode(-1, -1)); // Since the action was never added to the actual tree, we do not give it an insertion iteration, we will only add it to the plotted tree when it gets selected.
 						}
 						this.currentLogRoot = this.currentLogRoot.getChild(mctsJointMove);
 						this.currentLogNode = this.currentLogRoot;
@@ -1469,7 +1480,7 @@ public class HybridMctsManager {
 								GamerLogger.logError("MctsManager", "[afterGameActions] TotIterations = " + totIterations + ". Expected to be at least 0.");
 							}
 
-							this.currentLogRoot.addChild(mctsJointMove, new LogTreeNode(this.gameDependentParameters.getTotIterations()));
+							this.currentLogRoot.addChild(mctsJointMove, new LogTreeNode(this.gameDependentParameters.getTotIterations(), -1)); // Here we don't care about the number of joint actions available in the node, because if it is being added now it has no children and thus it won't be used to compute the entropy difference.
 						}
 						this.currentLogRoot = this.currentLogRoot.getChild(mctsJointMove);
 						this.currentLogNode = this.currentLogRoot;

@@ -1,6 +1,7 @@
 package org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.prover.decoupled;
 
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.MctsNode;
+import org.ggp.base.util.logging.GamerLogger;
 
 public class ProverDecoupledMCTSNode extends MctsNode {
 
@@ -110,5 +111,27 @@ public class ProverDecoupledMCTSNode extends MctsNode {
 		// Not implemented cause this class will soon disappear
 
 	}
+
+	@Override
+	public int getNumJointMoves() {
+
+		if(this.movesStats == null) {
+			return 0;
+		}
+
+		int numJointMoves = 1;
+
+		for(int i = 0; i < this.movesStats.length; i++) {
+			numJointMoves *= this.movesStats[i].length;
+		}
+
+		if(numJointMoves == 0) {
+			GamerLogger.logError("MctsNode", "ProverDecoupledMCTSNode - Detected no legal joint moves for non-terminal node.");
+			throw new RuntimeException("ProverDecoupledMCTSNode - Detected no legal joint moves for non-terminal node.");
+		}
+
+		return numJointMoves;
+	}
+
 
 }
