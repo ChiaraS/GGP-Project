@@ -51,6 +51,19 @@ public class SimulationResult{
 	private List<List<Move>> allJointMoves;
 
 	/**
+	 * The siblings of each joint move in the path of this simulation.
+	 *
+	 * NOTE that since some implementations of MCTS do not need to remember all the taken actions,
+	 * this list might be empty.
+	 *
+	 * NOTE that when both the siblings of joint actions and the intermediate goals are memorized for each simulation then
+	 * the length of the list of goals will be longer than the list of all sbling moves by one element (i.e. we
+	 * save the goals of each state in the simulation, from root to last state, but in the last state we have
+	 * no sibling moves to memorize).
+	 */
+	private List<List<List<Move>>> allMovesInAllStates;
+
+	/**
 	 * The goals of each role in each state reached by performing the corresponding joint moves
 	 * (i.e. list of intermediate rewards for each role).
 	 *
@@ -69,7 +82,7 @@ public class SimulationResult{
 	 */
 	public SimulationResult() {
 
-		this(0, new ArrayList<List<Move>>(), new ArrayList<double[]>());
+		this(0, new ArrayList<List<Move>>(), new ArrayList<double[]>(), new ArrayList<List<List<Move>>>());
 
 	}
 
@@ -91,7 +104,7 @@ public class SimulationResult{
 	 */
 	public SimulationResult(double playoutLength, double[] terminalGoals) {
 
-		this(playoutLength, new ArrayList<List<Move>>(), new ArrayList<double[]>());
+		this(playoutLength, new ArrayList<List<Move>>(), new ArrayList<double[]>(), new ArrayList<List<List<Move>>>());
 
 		this.intermediateGoals.add(terminalGoals);
 
@@ -99,19 +112,34 @@ public class SimulationResult{
 
 	public SimulationResult(double playoutLength, List<double[]> intermediateGoals) {
 
-		this(playoutLength, new ArrayList<List<Move>>(), intermediateGoals);
+		this(playoutLength, new ArrayList<List<Move>>(), intermediateGoals, new ArrayList<List<List<Move>>>());
 
 	}
 
 	public SimulationResult(double playoutLength, double[] terminalGoals, List<List<Move>> allJointMoves) {
 
-		this(playoutLength, allJointMoves, new ArrayList<double[]>());
+		this(playoutLength, allJointMoves, new ArrayList<double[]>(), new ArrayList<List<List<Move>>>());
+
+		this.intermediateGoals.add(terminalGoals);
+
+	}
+
+	public SimulationResult(double playoutLength, double[] terminalGoals, List<List<Move>> allJointMoves, List<List<List<Move>>> allMovesInAllStates) {
+
+		this(playoutLength, allJointMoves, new ArrayList<double[]>(), allMovesInAllStates);
 
 		this.intermediateGoals.add(terminalGoals);
 
 	}
 
 	public SimulationResult(double playoutLength, List<List<Move>> allJointMoves, List<double[]> intermediateGoals) {
+
+		this(playoutLength, allJointMoves, intermediateGoals, new ArrayList<List<List<Move>>>());
+
+	}
+
+
+	public SimulationResult(double playoutLength, List<List<Move>> allJointMoves, List<double[]> intermediateGoals, List<List<List<Move>>> allMovesInAllStates) {
 
 		this.playoutLength = playoutLength;
 
@@ -127,21 +155,29 @@ public class SimulationResult{
 
 		this.intermediateGoals = intermediateGoals;
 
+		this.allMovesInAllStates = allMovesInAllStates;
+
 	}
 
 	public double getPlayoutLength(){
 		return this.playoutLength;
 	}
 
-	public List<List<Move>> getAllJointMoves(){
+	public List<List<List<Move>>> getAllMovesInAllStates(){
 
-		return this.allJointMoves;
+		return this.allMovesInAllStates;
 
 	}
 
 	public List<double[]> getIntermediateGoals(){
 
 		return this.intermediateGoals;
+
+	}
+
+	public List<List<Move>> getAllJointMoves(){
+
+		return this.allJointMoves;
 
 	}
 

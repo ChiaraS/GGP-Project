@@ -9,6 +9,8 @@ import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.SharedReferenc
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.MctsNode;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.hybrid.MctsJointMove;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.hybrid.SimulationResult;
+import org.ggp.base.util.statemachine.exceptions.MoveDefinitionException;
+import org.ggp.base.util.statemachine.exceptions.StateMachineException;
 import org.ggp.base.util.statemachine.structure.MachineState;
 
 public abstract class NodeUpdater extends SearchManagerComponent {
@@ -18,7 +20,7 @@ public abstract class NodeUpdater extends SearchManagerComponent {
 		super(gameDependentParameters, random, gamerSettings, sharedReferencesCollector);
 	}
 
-	public abstract void update(MctsNode currentNode, MachineState currentState, MctsJointMove jointMove, SimulationResult[] simulationResult);
+	public abstract void update(MctsNode currentNode, MachineState currentState, MctsJointMove jointMove, SimulationResult[] simulationResult) throws MoveDefinitionException, StateMachineException;
 
 	public abstract void processPlayoutResult(MctsNode leafNode, MachineState leafState, SimulationResult[] simulationResult);
 

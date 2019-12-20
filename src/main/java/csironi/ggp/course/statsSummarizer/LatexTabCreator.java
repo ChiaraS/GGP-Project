@@ -56,6 +56,9 @@ public class LatexTabCreator {
 		gameKeyMap.put("chineseCheckers6","ChineseCheckers6");
 
 
+		gameKeyMap.put("connectfour","ConnectFour");
+		gameKeyMap.put("horseshoe","Horseshoe");
+		gameKeyMap.put("jointconnectfour","JointConnect4");
 
 		/*********** GAMES KEY MAP FOR PN PAPER *************
 		gameKeyMap.put("amazons","amazons");
@@ -147,6 +150,11 @@ public class LatexTabCreator {
 		gamesOrder.add("waferthinmints");
 		gamesOrder.add("waferthinmintsexit");
 		/*********** GAMES ORDER FOR GVGAI PAPER -END *************/
+
+
+		gamesOrder.add("connectfour");
+		gamesOrder.add("horseshoe");
+		gamesOrder.add("jointconnectfour");
 
 		gamesOrder.add("OverallStats");
 

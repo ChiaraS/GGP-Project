@@ -129,6 +129,7 @@ public class FpgaMctsGamer extends FpgaPropnetGamer {
 
 		if(this.metagameSearch){
 
+
 			this.mctsManager.beforeMoveActions(1, true, this.getInternalLastJointMove());
 
 			// If there is enough time left start the MCT search.
@@ -321,7 +322,7 @@ public class FpgaMctsGamer extends FpgaPropnetGamer {
 		}
 
 		GamerLogger.log(GamerLogger.FORMAT.CSV_FORMAT, "Stats", this.gameStep + ";" + thinkingTime + ";" + searchTime + ";" +
-				iterations + ";" + visitedNodes + ";" + addedNodes + ";" + memorizedStates +  ";" + iterationsPerSecond + ";" + nodesPerSecond + ";" + theMove + ";" +
+				iterations + ";" + visitedNodes + ";" + addedNodes + ";" + memorizedStates + ";" + iterationsPerSecond + ";" + nodesPerSecond + ";" + theMove + ";" +
 				moveScoreSum + ";" + moveVisits + ";" + moveAvgScore + ";" + avgSearchScorePerRole + ";");
 
 		// TODO: IS THIS NEEDED? WHEN?

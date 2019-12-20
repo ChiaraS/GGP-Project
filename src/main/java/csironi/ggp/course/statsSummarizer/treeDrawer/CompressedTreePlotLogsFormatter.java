@@ -15,7 +15,7 @@ import csironi.ggp.course.utils.MyPair;
  * !OLD COMPRESSOR: this class compresses logs externally to the Stats folders to be merged with tree
  * plot logs from other tournaments. It also changes max values of coordinates in each file
  * to reflect the max values over all the tourneys. this means that whenever a new tourney is
- * added the computation and compression has to be repeated over all the toureys.
+ * added the computation and compression has to be repeated over all the tourneys.
  *
  * This class expects as input a folder where there is a folder for each performed series of
  * experiments, as created by the TreePlotLogsExtractor. E.g. we could have a folder for the

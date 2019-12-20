@@ -66,6 +66,9 @@ public class SharedReferencesCollector {
 
 	private List<MctsJointMove> currentSimulationJointMoves;
 
+	private List<Map<Move, Double>> weightsPerMove;
+
+
 	public SharedReferencesCollector() {
 		// TODO Auto-generated constructor stub
 	}
@@ -327,5 +330,26 @@ public class SharedReferencesCollector {
 	public void setCurrentSimulationJointMoves(List<MctsJointMove> currentSimulationJointMoves) {
 		this.currentSimulationJointMoves = currentSimulationJointMoves;
 	}
+
+	public void setWeightsPerMove(List<Map<Move, Double>> weightsPerMove){
+		// Can only be set once
+		if(this.weightsPerMove == null){
+			this.weightsPerMove = weightsPerMove;
+		}else{
+			GamerLogger.logError("SearchManagerCreation", "Trying to set WeightsPerMove multiple times! Probably a wrong combination of strategies has been set.");
+			throw new RuntimeException("Trying to set WeightsPerMove multiple times!");
+		}
+	}
+
+	public List<Map<Move, Double>> getWeightsPerMove(){
+		// If a strategy looks for the reference then another strategy must have set it
+		if(this.weightsPerMove != null){
+			return this.weightsPerMove;
+		}else{
+			GamerLogger.logError("SearchManagerCreation", "Trying to get WeightsPerMove that have never been set! Probably a wrong combination of strategies has been set.");
+			throw new RuntimeException("Trying to get WeightsPerMove that have never been set!");
+		}
+	}
+
 
 }

@@ -9,6 +9,8 @@ import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.strategies.Str
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.MctsNode;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.hybrid.MctsJointMove;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.hybrid.SimulationResult;
+import org.ggp.base.util.statemachine.exceptions.MoveDefinitionException;
+import org.ggp.base.util.statemachine.exceptions.StateMachineException;
 import org.ggp.base.util.statemachine.structure.MachineState;
 
 public abstract class BackpropagationStrategy extends Strategy {
@@ -25,8 +27,10 @@ public abstract class BackpropagationStrategy extends Strategy {
 	 * @param jointMove the joint move played in the node.
 	 * @param nextState the state reached by playing the given joint move.
 	 * @param simulationResult the result obtained by the simulation that passed by this node.
+	 * @throws StateMachineException
+	 * @throws MoveDefinitionException
 	 */
-	public abstract void update(MctsNode currentNode, MachineState currentState, MctsJointMove jointMove, SimulationResult[] simulationResult);
+	public abstract void update(MctsNode currentNode, MachineState currentState, MctsJointMove jointMove, SimulationResult[] simulationResult) throws MoveDefinitionException, StateMachineException;
 
 	/**
 	 * Method that processes the result of the playout if needed for the chosen selection and playout strategies.

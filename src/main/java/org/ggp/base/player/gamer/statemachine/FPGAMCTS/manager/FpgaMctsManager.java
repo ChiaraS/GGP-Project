@@ -32,6 +32,7 @@ import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.hybrid.
 import org.ggp.base.util.logging.GamerLogger;
 import org.ggp.base.util.reflection.ProjectSearcher;
 import org.ggp.base.util.statemachine.abstractsm.AbstractStateMachine;
+import org.ggp.base.util.statemachine.exceptions.MoveDefinitionException;
 import org.ggp.base.util.statemachine.exceptions.StateMachineException;
 import org.ggp.base.util.statemachine.exceptions.TransitionDefinitionException;
 import org.ggp.base.util.statemachine.structure.MachineState;
@@ -1142,7 +1143,11 @@ public class FpgaMctsManager {
 		*/
 
 
-		this.backpropagationStrategy.update(currentNode, currentState, mctsJointMove, simulationResult);
+		try {
+			this.backpropagationStrategy.update(currentNode, currentState, mctsJointMove, simulationResult);
+		} catch (MoveDefinitionException | StateMachineException e) {
+			GamerLogger.logError("FpgaMctsManager", "Cannot update values in node during backpropagation. Statistics will be inaccurate.");
+		}
 		return simulationResult;
 	}
 
