@@ -61,7 +61,7 @@ public class SimulationResult{
 	 * save the goals of each state in the simulation, from root to last state, but in the last state we have
 	 * no sibling moves to memorize).
 	 */
-	private List<List<List<Move>>> allMovesInAllStates;
+	private List<List<List<Move>>> allLegalMovesOfAllRoles;
 
 	/**
 	 * The goals of each role in each state reached by performing the corresponding joint moves
@@ -139,7 +139,7 @@ public class SimulationResult{
 	}
 
 
-	public SimulationResult(double playoutLength, List<List<Move>> allJointMoves, List<double[]> intermediateGoals, List<List<List<Move>>> allMovesInAllStates) {
+	public SimulationResult(double playoutLength, List<List<Move>> allJointMoves, List<double[]> intermediateGoals, List<List<List<Move>>> allLegalMovesOfAllRoles) {
 
 		this.playoutLength = playoutLength;
 
@@ -155,7 +155,7 @@ public class SimulationResult{
 
 		this.intermediateGoals = intermediateGoals;
 
-		this.allMovesInAllStates = allMovesInAllStates;
+		this.allLegalMovesOfAllRoles = allLegalMovesOfAllRoles;
 
 	}
 
@@ -163,9 +163,9 @@ public class SimulationResult{
 		return this.playoutLength;
 	}
 
-	public List<List<List<Move>>> getAllMovesInAllStates(){
+	public List<List<List<Move>>> getAllLegalMovesOfAllRoles(){
 
-		return this.allMovesInAllStates;
+		return this.allLegalMovesOfAllRoles;
 
 	}
 
@@ -198,6 +198,17 @@ public class SimulationResult{
 		//}
 
 		this.allJointMoves.add(jointMove);
+
+	}
+
+	public void addLegalMovesOfAllRoles(List<List<Move>> legalMovesOfAllRoles){
+
+		//if(this.allJointMoves == null){
+		//	GamerLogger.logError("MctsManager", "Simulation result not initialized to memorize all the joint moves. Probably a wrong combination of strategies has been set!");
+		//	throw new RuntimeException("Simulation result not initialized to memorize all the joint moves.");
+		//}
+
+		this.allLegalMovesOfAllRoles.add(legalMovesOfAllRoles);
 
 	}
 
@@ -285,5 +296,52 @@ public class SimulationResult{
 		}
 	}
 
+	/**
+	 * This method is similar to getTerminalWins() because it converts goals to wins. However, instead of returning
+	 * the wins it checks if there is only one winner. If so, it returns the index of the winner, otherwise it returns -1.
+	 * @return
+	 */
+	public int getSingleWinner(){
+
+		if(this.intermediateGoals.size() > 0) {
+
+			double[] wins = new double[this.intermediateGoals.get(0).length];
+
+			if(this.intermediateGoals.get(0).length == 1) {
+				double win = this.intermediateGoals.get(0)[0]/100.0;
+				if(win == 1){
+					return 0;
+				}else{
+					return -1;
+				}
+			}else {
+
+				List<Integer> bestIndices = new ArrayList<Integer>();
+				double max = -1;
+				for(int roleIndex = 0; roleIndex < this.intermediateGoals.get(0).length; roleIndex++) {
+					if(this.intermediateGoals.get(0)[roleIndex] > max) {
+						max = this.intermediateGoals.get(0)[roleIndex];
+						bestIndices.clear();
+						bestIndices.add(roleIndex);
+					}else if(this.intermediateGoals.get(0)[roleIndex] == max){
+						bestIndices.add(roleIndex);
+					}
+				}
+				if(bestIndices.size() == 0) {
+					GamerLogger.logError("MctsManager", "Found no best score when computing winning role for a SimulationResult.");
+					throw new RuntimeException("MctsManager - Found no best score when computing winning role for a SimulationResult.");
+				}
+				if(bestIndices.size() == 1){
+					return bestIndices.get(0);
+				}else{
+					return -1;
+				}
+			}
+		}else{
+			GamerLogger.logError("MctsManager", "Trying to compute wins for a SimulationResult that has no goals.");
+			throw new RuntimeException("MctsManager - Trying to compute wins for a SimulationResult that has no goals.");
+		}
+
+	}
 
 }

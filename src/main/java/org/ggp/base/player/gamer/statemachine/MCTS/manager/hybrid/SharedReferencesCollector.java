@@ -17,6 +17,7 @@ import org.ggp.base.player.gamer.statemachine.MCTS.manager.parameterstuning.stru
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.parameterstuning.structure.DiscreteParametersManager;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.parameterstuning.structure.parameters.ContinuousTunableParameter;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.parameterstuning.structure.parameters.DiscreteTunableParameter;
+import org.ggp.base.player.gamer.statemachine.MCTS.manager.structures.PpaWeights;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.hybrid.MctsJointMove;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.hybrid.MctsTranspositionTable;
 import org.ggp.base.util.logging.GamerLogger;
@@ -67,6 +68,8 @@ public class SharedReferencesCollector {
 	private List<MctsJointMove> currentSimulationJointMoves;
 
 	private List<Map<Move, Double>> weightsPerMove;
+
+	private PpaWeights ppaWeights;
 
 
 	public SharedReferencesCollector() {
@@ -349,6 +352,14 @@ public class SharedReferencesCollector {
 			GamerLogger.logError("SearchManagerCreation", "Trying to get WeightsPerMove that have never been set! Probably a wrong combination of strategies has been set.");
 			throw new RuntimeException("Trying to get WeightsPerMove that have never been set!");
 		}
+	}
+
+	public void setPpaWeights(PpaWeights ppaWeights) {
+		this.ppaWeights = ppaWeights;
+	}
+
+	public PpaWeights getPpaWeights() {
+		return this.ppaWeights;
 	}
 
 

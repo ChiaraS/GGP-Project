@@ -302,9 +302,9 @@ public class UcbSelector extends TunerSelector{
 			}
 			*/
 
-			for(i = 0; i < movesValues.length; i++){
-				if(movesValues[i] >= (maxValue-this.valueOffset)){
-					selectedMovesIndices.add(new Integer(i));
+			for(int j = 0; j < i; j++){ // movesValues might be longer than the actual number of moves values memorized in it, which corresponds to i
+				if(movesValues[j] >= (maxValue-this.valueOffset)){
+					selectedMovesIndices.add(new Integer(j));
 				}
 			}
 

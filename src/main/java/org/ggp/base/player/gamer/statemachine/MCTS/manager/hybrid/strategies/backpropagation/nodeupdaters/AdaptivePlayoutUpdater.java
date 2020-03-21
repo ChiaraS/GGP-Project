@@ -155,7 +155,7 @@ public class AdaptivePlayoutUpdater extends NodeUpdater {
 
 			allJointMoves = simulationResult[resultIndex].getAllJointMoves();
 
-			allMovesInAllStates = simulationResult[resultIndex].getAllMovesInAllStates();
+			allMovesInAllStates = simulationResult[resultIndex].getAllLegalMovesOfAllRoles();
 
 			//System.out.println("Joint moves and siblings match?:" + (allJointMoves.size() == allMovesInAllStates.size()));
 
@@ -251,6 +251,29 @@ public class AdaptivePlayoutUpdater extends NodeUpdater {
 	    		}
 			}
 		}
+	}
+
+	@Override
+	public String getComponentParameters(String indentation) {
+
+		String params = indentation + "ALPHA = " + this.alpha;
+
+		if(this.weightsPerMove != null){
+			String weightsPerMoveString = "[ ";
+
+			for(Map<Move, Double> roleWeightsPerMove : this.weightsPerMove){
+				weightsPerMoveString += roleWeightsPerMove.size() + " entries, ";
+			}
+
+			weightsPerMoveString += "]";
+
+			params += indentation + "weights_per_move = " + weightsPerMoveString;
+		}else{
+			params += indentation + "weights_per_move = null";
+		}
+
+		return params;
+
 	}
 
 }

@@ -142,6 +142,7 @@ public class LatexTabCreator {
 		gamesOrder.add("roguelike");
 		gamesOrder.add("seaquest");
 		gamesOrder.add("survivezombies");
+		gamesOrder.add("waitforbreakfast");
 		gamesOrder.add("decepticoins");
 		gamesOrder.add("deceptizelda");
 		gamesOrder.add("flower");

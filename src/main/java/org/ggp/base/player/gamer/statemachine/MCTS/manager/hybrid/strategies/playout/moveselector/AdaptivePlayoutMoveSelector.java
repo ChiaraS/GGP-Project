@@ -97,15 +97,15 @@ public class AdaptivePlayoutMoveSelector extends MoveSelector {
 			legalMoves = this.gameDependentParameters.getTheMachine().getLegalMoves(state, role);
 		}
 
-		String toLog = "";
-		for(int index = 0; index < this.weightsPerMove.size(); index++){
-			toLog += ("ROLE=;" + this.gameDependentParameters.getTheMachine().convertToExplicitRole(this.gameDependentParameters.getTheMachine().getRoles().get(index)) + ";\n");
-			for(Entry<Move, Double> moveWeight : this.weightsPerMove.get(index).entrySet()){
-				double weight = moveWeight.getValue();
-				toLog += ("MOVE=;" + this.gameDependentParameters.getTheMachine().convertToExplicitMove(moveWeight.getKey()) +
-				";WEIGHT=;" + weight + ";\n");
-			}
-		}
+		//String toLog = "";
+		//for(int index = 0; index < this.weightsPerMove.size(); index++){
+		//	toLog += ("ROLE=;" + this.gameDependentParameters.getTheMachine().convertToExplicitRole(this.gameDependentParameters.getTheMachine().getRoles().get(index)) + ";\n");
+		//	for(Entry<Move, Double> moveWeight : this.weightsPerMove.get(index).entrySet()){
+		//		double weight = moveWeight.getValue();
+		//		toLog += ("MOVE=;" + this.gameDependentParameters.getTheMachine().convertToExplicitMove(moveWeight.getKey()) +
+		//		";WEIGHT=;" + weight + ";\n");
+		//	}
+		//}
 		//System.out.println(toLog);
 
 		// Pick the move according to the distribution computed with the weights.

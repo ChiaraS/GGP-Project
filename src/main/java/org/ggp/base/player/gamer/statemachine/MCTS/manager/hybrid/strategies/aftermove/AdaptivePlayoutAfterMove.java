@@ -174,7 +174,7 @@ public class AdaptivePlayoutAfterMove extends AfterMoveStrategy {
 
 		toLog += "\n";
 
-		GamerLogger.log(GamerLogger.FORMAT.CSV_FORMAT, "MastStats", toLog);
+		GamerLogger.log(GamerLogger.FORMAT.CSV_FORMAT, "PpaStats", toLog);
 
 	}
 }
