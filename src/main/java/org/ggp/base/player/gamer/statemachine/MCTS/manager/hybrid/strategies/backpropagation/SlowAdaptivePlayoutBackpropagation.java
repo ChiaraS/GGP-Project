@@ -5,7 +5,7 @@ import java.util.Random;
 import org.ggp.base.player.gamer.statemachine.GamerSettings;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.GameDependentParameters;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.SharedReferencesCollector;
-import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.strategies.backpropagation.nodeupdaters.AdaptivePlayoutUpdater;
+import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.strategies.backpropagation.nodeupdaters.SlowAdaptivePlayoutUpdater;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.strategies.backpropagation.nodeupdaters.StandardUpdater;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.MctsNode;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.hybrid.MctsJointMove;
@@ -18,7 +18,7 @@ public class SlowAdaptivePlayoutBackpropagation extends BackpropagationStrategy 
 
 	private StandardUpdater standardUpdater;
 
-	private AdaptivePlayoutUpdater adaptivePlayoutUpdater;
+	private SlowAdaptivePlayoutUpdater adaptivePlayoutUpdater;
 
 	public SlowAdaptivePlayoutBackpropagation(GameDependentParameters gameDependentParameters, Random random,
 			GamerSettings gamerSettings, SharedReferencesCollector sharedReferencesCollector) {
@@ -26,7 +26,7 @@ public class SlowAdaptivePlayoutBackpropagation extends BackpropagationStrategy 
 		super(gameDependentParameters, random, gamerSettings, sharedReferencesCollector);
 
 		this.standardUpdater = new StandardUpdater(gameDependentParameters, random, gamerSettings, sharedReferencesCollector);
-		this.adaptivePlayoutUpdater = new AdaptivePlayoutUpdater(gameDependentParameters, random, gamerSettings, sharedReferencesCollector);
+		this.adaptivePlayoutUpdater = new SlowAdaptivePlayoutUpdater(gameDependentParameters, random, gamerSettings, sharedReferencesCollector);
 	}
 
 	@Override

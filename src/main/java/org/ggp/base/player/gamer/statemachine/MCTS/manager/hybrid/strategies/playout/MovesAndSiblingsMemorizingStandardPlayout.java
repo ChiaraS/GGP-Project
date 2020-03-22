@@ -57,14 +57,14 @@ public class MovesAndSiblingsMemorizingStandardPlayout extends StandardPlayout {
 
         int nDepth = 0;
 
-        List<List<Move>> allJointMoves = new ArrayList<List<Move>>();
+        List<List<Move>> allJointMovesInPlayout = new ArrayList<List<Move>>();
 
         List<Move> jointMove;
 
         // For each step, for each role, memorizes the sibling moves of the selected move
-        List<List<List<Move>>> allMovesInAllStates = new ArrayList<List<List<Move>>>();
+        List<List<List<Move>>> allLegalMovesForRolesInPlayout = new ArrayList<List<List<Move>>>();
 
-        List<List<Move>> allMovesInCurrentState;
+        List<List<Move>> allLegalMovesForRoles;
 
         do{ // NOTE: if any of the try blocks fails on the first iteration this method will return a result with only the terminal goals of the starting state of the playout, depth 0 and empty moves list
 
@@ -76,9 +76,9 @@ public class MovesAndSiblingsMemorizingStandardPlayout extends StandardPlayout {
 				GamerLogger.logStackTrace("MctsManager", e);
 				break;
 			}
-			allMovesInCurrentState = null;
+			allLegalMovesForRoles = null;
 			try {
-				allMovesInCurrentState = this.gameDependentParameters.getTheMachine().getAllLegalMovesForAllRoles(state);
+				allLegalMovesForRoles = this.gameDependentParameters.getTheMachine().getAllLegalMovesForAllRoles(state);
 			} catch (MoveDefinitionException | StateMachineException e) {
 				GamerLogger.logError("MctsManager", "Exception getting all legal moves for all roles while performing a playout.");
 				GamerLogger.logStackTrace("MctsManager", e);
@@ -92,9 +92,9 @@ public class MovesAndSiblingsMemorizingStandardPlayout extends StandardPlayout {
 				break;
 			}
 
-			allJointMoves.add(jointMove);
+			allJointMovesInPlayout.add(jointMove);
 
-			allMovesInAllStates.add(allMovesInCurrentState);
+			allLegalMovesForRolesInPlayout.add(allLegalMovesForRoles);
 
 			node = null;
 
@@ -111,11 +111,11 @@ public class MovesAndSiblingsMemorizingStandardPlayout extends StandardPlayout {
 
         }while(nDepth < maxDepth && !terminal);
 
-        Collections.reverse(allJointMoves);
+        Collections.reverse(allJointMovesInPlayout);
 
-        Collections.reverse(allMovesInAllStates);
+        Collections.reverse(allLegalMovesForRolesInPlayout);
 
-        return new SimulationResult(nDepth, this.gameDependentParameters.getTheMachine().getSafeGoalsAvgForAllRoles(state), allJointMoves, allMovesInAllStates);
+        return new SimulationResult(nDepth, this.gameDependentParameters.getTheMachine().getSafeGoalsAvgForAllRoles(state), allJointMovesInPlayout, allLegalMovesForRolesInPlayout);
 
 	}
 

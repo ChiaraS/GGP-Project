@@ -6,8 +6,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 
+import org.apache.commons.math3.util.Pair;
+import org.ggp.base.util.logging.GamerLogger;
 import org.ggp.base.util.statemachine.structure.Move;
-import org.ggp.base.util.statemachine.structure.compact.CompactMove;
 
 /**
  * This class keeps track of the weights and the corresponding exponential
@@ -68,15 +69,15 @@ public class PpaWeights {
 	/**
 	 * THIS FUNCTION SHOULD BE USED WHEN SELECTING MOVES DURING THE PLAYOUT BECAUSE IT ALWAYS
 	 * RECOMPUTES THE EXPONENTIAL IF IT IS NOT CONSISTENT WITH THE WEIGHT.
-	 * This method gets a role and one of its moves and returns the exponential of the weight
-	 * corresponding to the move of the role. If the exponential is not consistent with the
-	 * weight, it gets recomputed.
+	 * This method gets a role and one of its moves and returns the PPA info corresponding to
+	 * the move of the role. If the exponential is not consistent with the weight, it gets
+	 * recomputed before the PPA info is returned.
 	 *
 	 * @param role
 	 * @param move
 	 * @return
 	 */
-	public double getExponentialForSelection(int role, Move move, int currentTimeStep){
+	public PpaInfo getPpaInfoForSelection(int role, Move move, int currentTimeStep){
 
 		// Check if there already is an entry for the move. If not, add it with a
 		// weight of 0 and exponential of 1.
@@ -89,7 +90,7 @@ public class PpaWeights {
 			// If not, compute it.
 			result.updateExp();
 		}
-		return result.getExp();
+		return result;
 
 	}
 
@@ -97,17 +98,17 @@ public class PpaWeights {
 	 * THIS FUNCTION SHOULD BE USED WHEN ADAPTING THE POLICY DURING AFTER SIMULATION ACTIONS
 	 * BECAUSE IT RECOMPUTES THE EXPONENTIAL THAT IS NOT CONSISTENT WITH THE WEIGHT ONLY IF
 	 * THE WEIGHT HASN'T BEEN INCREMENTED YET DURING THE CURRENT ADAPTATION OF THE POLICY.
-	 * This method gets a role and one of its moves and returns the exponential of the weight
-	 * corresponding to the move of the role. If the exponential is not consistent with the
-	 * value that the weight had before any increment took place during the current game step,
-	 * it gets recomputed.
+	 * This method gets a role and one of its moves and returns the PPA info corresponding
+	 * to the move of the role. If the exponential is not consistent with the value that the
+	 * weight had before any increment took place during the current game step, it gets recomputed
+	 * before returning the PPA info.
 	 *
 	 * @param role
 	 * @param move
 	 * @param currentTimeStep
 	 * @return
 	 */
-	public double getExponentialForPolicyAdaptation(int role, Move move, int currentTimeStep){
+	public PpaInfo getPpaInfoForPolicyAdaptation(int role, Move move, int currentTimeStep){
 
 		// Check if there already is an entry for the move. If not, add it with a
 		// weight of 0 and exponential of 1.
@@ -126,7 +127,7 @@ public class PpaWeights {
 			// in the current game step, then do not modify it. Use it as is, because it is consistent
 			// with the value the weight had during the playout for this time step.
 		}
-		return result.getExp();
+		return result;
 
 	}
 
@@ -140,7 +141,7 @@ public class PpaWeights {
 	 * @param move
 	 * @param newValue
 	 */
-	public void incrementWeight(int role, Move move, double increment, int currentStep){
+	/*public void incrementWeight(int role, Move move, double increment, int currentStep){
 
 		// Check if there already is an entry for the move. If not, add it with a
 		// weight of 0 and set the exponential to 1.
@@ -168,7 +169,7 @@ public class PpaWeights {
 
 		result.incrementWeight(currentStep, increment);
 
-	}
+	}*/
 
 	public String getMinimalInfo(){
 		String weightsPerMoveString = "[ ";
@@ -195,12 +196,10 @@ public class PpaWeights {
 				toLog += "null;\n";
 			}
 		}else{
-			double weight;
-			double exp;
 			for(int roleIndex = 0; roleIndex < this.weightsPerMove.size(); roleIndex++){
 				toLog += ("ROLE=;" + roleIndex + ";\n");
 				for(Entry<Move,PpaInfo> moveWeight : this.weightsPerMove.get(roleIndex).entrySet()){
-					toLog += ("MOVE=;" + moveWeight.getKey() + moveWeight.getValue() + ";\n");
+					toLog += ("MOVE=;" + moveWeight.getKey() + ";" + moveWeight.getValue() + "\n");
 				}
 			}
 		}
@@ -213,41 +212,184 @@ public class PpaWeights {
 
 	}
 
+	public List<Pair<Integer,Double>> getPlayoutProbabilities(int roleIndex, List<Move> roleMoves, double temperature, int currentIteration){
+
+		List<Pair<Integer,Double>> probabilities;
+
+		probabilities = new ArrayList<Pair<Integer,Double>>();
+
+		Map<Move,PpaInfo> weightsForRole = this.weightsPerMove.get(roleIndex);
+
+		PpaInfo[] legalMovesForWinnerInfo = new PpaInfo[roleMoves.size()];
+
+		// Iterate over all legal moves to compute the sum of the exponential of their probabilities
+		double exponentialSum = 0;
+		for(int j = 0; j < roleMoves.size(); j++){
+			legalMovesForWinnerInfo[j] = this.getPpaInfoForSelection(roleIndex, roleMoves.get(j), currentIteration);
+			exponentialSum += Math.pow(legalMovesForWinnerInfo[j].getExp(), temperature);
+		}
+
+		FIX!!!
+
+		// Iterate over all legal moves, if they are the selected one, increase the weight otherwise decrease it
+		for(int j = 0; j < legalMovesForWinner.size(); j++){
+
+			if(selectedMoveForWinner.equals(legalMovesForWinner.get(j))){
+				legalMovesForWinnerInfo[j].incrementWeight(currentIteration, alpha);
+				//System.out.println("detected1");
+			}else{
+				if(exponentialSum > 0){ // Should always be positive
+					legalMovesForWinnerInfo[j].incrementWeight(currentIteration, -alpha * (legalMovesForWinnerInfo[j].getExp()/exponentialSum));
+				}else{
+					GamerLogger.logError("AfterSimulationStrategy", "AdaptivePlayoutAfterSimulation - Found non-positive sum of exponentials when adapting the playout policy!");
+					throw new RuntimeException("Found non-positive sum of exponentials when adapting the playout policy.");
+				}
+			}
+		}
+
+
+
+
+
+
+		double[] exponentialPerMove = new double[moves.size()];
+
+		double probabilitySum = 0;
+		for(int i = 0; i < moves.size(); i++){
+
+			Double weightForMove = weightsForRole.get(moves.get(i));
+			if(weightForMove != null){
+
+				//System.out.println();
+				//System.out.println(weightForMove);
+				//System.out.println();
+
+
+				exponentialPerMove[i] = Math.exp(this.temperature*weightForMove);
+				probabilitySum += exponentialPerMove[i];
+			}else{
+				exponentialPerMove[i] = Math.exp(this.temperature*0.0);
+				probabilitySum += exponentialPerMove[i];
+			}
+
+		}
+
+		if(probabilitySum == 0){ // If all weights are 0, return random move
+			return moves.get(this.getRandom().nextInt(moves.size()));
+		}
+
+		for(int i = 0; i < moves.size(); i++){
+
+			//System.out.println(exponentialPerMove[i]);
+			//System.out.println(probabilitySum);
+			//System.out.println();
+
+			probabilities.add(new Pair<Integer,Double>(i,exponentialPerMove[i]/probabilitySum));
+		}
+
+	}
+
+	public void adaptPolicy(int winnerIndex, List<Move> legalMovesForWinner, Move selectedMoveForWinner,
+			double alpha, int currentIteration){
+
+		// If we only have one move for the role, we don't need to adapt its weight,
+		// because it will always be selected in this state independently of the policy
+		// and because if we do increment the weight we break the rule that the sum of
+		// weights for the moves of a role in a state has to be always 0.
+		if(legalMovesForWinner.size() != 1){// || !this.gameDependentParameters.getTheMachine().convertToExplicitMove(legalMoves.get(0)).getContents().toString().equals("noop")){
+
+			PpaInfo[] legalMovesForWinnerInfo = new PpaInfo[legalMovesForWinner.size()];
+
+			// Iterate over all legal moves to compute the sum of the exponential of their probabilities
+			double exponentialSum = 0;
+			for(int j = 0; j < legalMovesForWinner.size(); j++){
+				legalMovesForWinnerInfo[j] = this.getPpaInfoForPolicyAdaptation(winnerIndex, legalMovesForWinner.get(j), currentIteration);
+				exponentialSum += legalMovesForWinnerInfo[j].getExp();
+			}
+
+			// Iterate over all legal moves, if they are the selected one, increase the weight otherwise decrease it
+			for(int j = 0; j < legalMovesForWinner.size(); j++){
+
+				if(selectedMoveForWinner.equals(legalMovesForWinner.get(j))){
+					legalMovesForWinnerInfo[j].incrementWeight(currentIteration, alpha);
+					//System.out.println("detected1");
+				}else{
+					if(exponentialSum > 0){ // Should always be positive
+						legalMovesForWinnerInfo[j].incrementWeight(currentIteration, -alpha * (legalMovesForWinnerInfo[j].getExp()/exponentialSum));
+					}else{
+						GamerLogger.logError("AfterSimulationStrategy", "AdaptivePlayoutAfterSimulation - Found non-positive sum of exponentials when adapting the playout policy!");
+						throw new RuntimeException("Found non-positive sum of exponentials when adapting the playout policy.");
+					}
+				}
+			}
+
+		}
+
+		//for(Map<Move, Double> weightOfPlayer : this.weightsPerMove){
+		//	double sum = 0;
+		//	for(Entry<Move,Double> weight : weightOfPlayer.entrySet()){
+		//		sum += weight.getValue();
+		//	}
+		//	System.out.println(sum);
+		//}
+		//System.out.println();
+	}
+
 	public static void main(String[] args){
-
-		TEST!!!
-
 
 		PpaWeights w = new PpaWeights();
 		w.initialize(3);
-		w.printWeights();
-		w.getWeightAndExponential(0, new CompactMove(0));
-		w.printWeights();
-		w.getWeightAndExponential(0, new CompactMove(2));
-		w.printWeights();
-		w.getWeightAndExponential(1, new CompactMove(0));
-		w.printWeights();
-		w.getWeightAndExponential(1, new CompactMove(1));
-		w.printWeights();
-		w.getWeightAndExponential(2, new CompactMove(2));
-		w.printWeights();
 
-		w.incrementWeight(0, new CompactMove(1), 1);
-		w.printWeights();
-		w.incrementWeight(1, new CompactMove(1), -1);
-		w.printWeights();
-		w.incrementWeight(2, new CompactMove(1), 2);
-		w.printWeights();
+		// Simulate selection at step 0
+		w.printPpaWeights();
+		//w.getExponentialForSelection(0, new CompactMove(0), 0);
+		w.printPpaWeights();
+		//w.getExponentialForSelection(0, new CompactMove(2), 0);
+		w.printPpaWeights();
+		//w.getExponentialForSelection(1, new CompactMove(0), 0);
+		w.printPpaWeights();
+		//w.getExponentialForSelection(1, new CompactMove(1), 0);
+		w.printPpaWeights();
+		//w.getExponentialForSelection(2, new CompactMove(2), 0);
+		w.printPpaWeights();
 
-		w.getWeightAndExponential(0, new CompactMove(1));
-		w.printWeights();
-		w.getWeightAndExponential(1, new CompactMove(1));
-		w.printWeights();
-		w.getWeightAndExponential(2, new CompactMove(1));
-		w.printWeights();
+		// Simulate adaptation at step 0
+		//w.getExponentialForPolicyAdaptation(0, new CompactMove(1), 0);
+		w.printPpaWeights();
+		//w.getExponentialForPolicyAdaptation(1, new CompactMove(1), 0);
+		w.printPpaWeights();
+		//w.getExponentialForPolicyAdaptation(2, new CompactMove(1), 0);
+		w.printPpaWeights();
+
+
+		//w.incrementWeight(0, new CompactMove(1), 1, 0);
+		w.printPpaWeights();
+		//w.incrementWeight(1, new CompactMove(1), -1, 0);
+		w.printPpaWeights();
+		//w.incrementWeight(2, new CompactMove(1), 2, 0);
+		w.printPpaWeights();
+		//w.incrementWeight(2, new CompactMove(0), -1, 0);
+		w.printPpaWeights();
+
+		// Simulate selection at step 1
+		//w.getExponentialForSelection(0, new CompactMove(2), 1);
+		w.printPpaWeights();
+		//w.getExponentialForSelection(1, new CompactMove(1), 1);
+		w.printPpaWeights();
+
+		// Simulate adaptation at step 1
+		//w.getExponentialForPolicyAdaptation(2, new CompactMove(0), 1);
+		w.printPpaWeights();
+		//w.getExponentialForPolicyAdaptation(2, new CompactMove(0), 1);
+		w.printPpaWeights();
+
+		//w.incrementWeight(0, new CompactMove(1), 1, 1);
+		w.printPpaWeights();
+		//w.incrementWeight(0, new CompactMove(1), -1, 1);
+		w.printPpaWeights();
+		//w.incrementWeight(2, new CompactMove(0), -1, 1);
+		w.printPpaWeights();
+
 	}
-
-
-
 
 }

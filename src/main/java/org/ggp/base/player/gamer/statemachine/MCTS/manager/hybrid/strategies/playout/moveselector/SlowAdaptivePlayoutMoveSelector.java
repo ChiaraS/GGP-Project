@@ -11,7 +11,6 @@ import org.apache.commons.math3.util.Pair;
 import org.ggp.base.player.gamer.statemachine.GamerSettings;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.GameDependentParameters;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.SharedReferencesCollector;
-import org.ggp.base.player.gamer.statemachine.MCTS.manager.structures.PpaWeights;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.MctsNode;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.hybrid.decoupled.DecoupledMctsNode;
 import org.ggp.base.util.statemachine.exceptions.MoveDefinitionException;
@@ -20,43 +19,74 @@ import org.ggp.base.util.statemachine.structure.MachineState;
 import org.ggp.base.util.statemachine.structure.Move;
 import org.ggp.base.util.statemachine.structure.Role;
 
-public class AdaptivePlayoutMoveSelector extends MoveSelector {
+public class SlowAdaptivePlayoutMoveSelector extends MoveSelector {
 
-	private PpaWeights ppaWeights;
+	private List<Map<Move, Double>> weightsPerMove;
 
-	// Used to multiply the exponent of e when computing the exponential of the weight.
-	private double temperature;
+	private double temperature = 1; // TODO: make this parameter assignable from the config file
 
-	public AdaptivePlayoutMoveSelector(GameDependentParameters gameDependentParameters, Random random,
+	/**
+	 * First play urgency for a move never explored before.
+	 * Note that this must be in the range [0,100] because MAST doesn't
+	 * bother normalizing the move values (it's not necessary).
+	 */
+	//private double mastFpu;
+
+	public SlowAdaptivePlayoutMoveSelector(GameDependentParameters gameDependentParameters, Random random,
 			GamerSettings gamerSettings, SharedReferencesCollector sharedReferencesCollector) {
+
 		super(gameDependentParameters, random, gamerSettings, sharedReferencesCollector);
 
-		this.temperature = gamerSettings.getDoublePropertyValue("MoveSelector.temperature");
+
+		//this.mastFpu = gamerSettings.getDoublePropertyValue("MoveSelector.mastFpu");
 
 	}
 
 	@Override
 	public void setReferences(SharedReferencesCollector sharedReferencesCollector) {
-
-		this.ppaWeights = sharedReferencesCollector.getPpaWeights();
-
+		this.weightsPerMove = sharedReferencesCollector.getWeightsPerMove();
 	}
 
 	@Override
 	public void clearComponent() {
-		// TODO Auto-generated method stub
-
+		// Do nothing
 	}
 
 	@Override
 	public void setUpComponent() {
-		// TODO Auto-generated method stub
-
+		// Do nothing
 	}
 
+	/**
+	 * This method returns a joint move according to the MAST strategy.
+	 * For each role it gets the list of all its legal moves in the state and picks the one with highest MAST expected score.
+	 * @throws StateMachineException
+	 */
+/*	@Override
+	public List<Move> getJointMove(MctsNode node, MachineState state) throws MoveDefinitionException, StateMachineException {
+
+		List<Move> jointMove = new ArrayList<Move>();
+
+		for(int i = 0; i < this.gameDependentParameters.getNumRoles(); i++){
+			jointMove.add(this.getMoveForRole(node, state, i));
+		}
+
+		//System.out.println(Arrays.toString(jointMove.toArray()));
+
+		return jointMove;
+
+	}
+*/
+	/**
+	 * This method returns a move according to the AdaprtivePlayout strategy.
+	 * For the given role it gets the list of all its legal moves in the state
+	 * and picks one according to the distribution generated using the weights
+	 * of the move.
+	 *
+	 * @throws MoveDefinitionException, StateMachineException
+	 */
 	@Override
-	public Move getMoveForRole(MctsNode node, MachineState state, int roleIndex)
-			throws MoveDefinitionException, StateMachineException {
+	public Move getMoveForRole(MctsNode node, MachineState state, int roleIndex) throws MoveDefinitionException, StateMachineException {
 
 		List<Move> legalMoves;
 
@@ -87,10 +117,6 @@ public class AdaptivePlayoutMoveSelector extends MoveSelector {
 	 * @return
 	 */
 	private Move getMoveFromDistribution(int roleIndex, List<Move> moves) {
-
-		if(moves.size() == 1){
-			return moves.get(0);
-		}
 
 		EnumeratedDistribution<Integer> distribution;
 		List<Pair<Integer,Double>> probabilities;
@@ -162,13 +188,22 @@ public class AdaptivePlayoutMoveSelector extends MoveSelector {
 	public String getComponentParameters(String indentation) {
 		String params = indentation + "TEMPERATURE = " + this.temperature;
 
-		if(this.ppaWeights != null){
-			params += indentation + "ppa_weights = " + this.ppaWeights.getMinimalInfo();
+		if(this.weightsPerMove != null){
+			String weightsPerMoveString = "[ ";
+
+			for(Map<Move, Double> roleWeightsPerMove : this.weightsPerMove){
+				weightsPerMoveString += roleWeightsPerMove.size() + " entries, ";
+			}
+
+			weightsPerMoveString += "]";
+
+			params += indentation + "weights_per_move = " + weightsPerMoveString;
 		}else{
-			params += indentation + "ppa_weights = null";
+			params += indentation + "weights_per_move = null";
 		}
 
 		return params;
+
 	}
 
 }

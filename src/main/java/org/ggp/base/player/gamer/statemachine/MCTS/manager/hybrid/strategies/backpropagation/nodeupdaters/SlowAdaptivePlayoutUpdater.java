@@ -20,14 +20,14 @@ import org.ggp.base.util.statemachine.structure.MachineState;
 import org.ggp.base.util.statemachine.structure.Move;
 import org.ggp.base.util.statemachine.structure.Role;
 
-public class AdaptivePlayoutUpdater extends NodeUpdater {
+public class SlowAdaptivePlayoutUpdater extends NodeUpdater {
 
 	private List<Map<Move, Double>> weightsPerMove;
 
 	// Parameter that decides how much the weight changes
 	private double alpha = 1; // TODO: make possible to set from the properties file.
 
-	public AdaptivePlayoutUpdater(GameDependentParameters gameDependentParameters, Random random,
+	public SlowAdaptivePlayoutUpdater(GameDependentParameters gameDependentParameters, Random random,
 			GamerSettings gamerSettings, SharedReferencesCollector sharedReferencesCollector) {
 
 		super(gameDependentParameters, random, gamerSettings, sharedReferencesCollector);
@@ -141,7 +141,7 @@ public class AdaptivePlayoutUpdater extends NodeUpdater {
 	public void processPlayoutResult(MctsNode leafNode,	MachineState leafState, SimulationResult[] simulationResult) {
 
 		if(simulationResult == null || simulationResult.length < 1){
-			GamerLogger.logError("NodeUpdater", "AdaptivePlayoutUpdater - No simulation results available to pre-process!");
+			GamerLogger.logError("NodeUpdater", "SlowAdaptivePlayoutUpdater - No simulation results available to pre-process!");
 			throw new RuntimeException("No simulation results available to pre-process!");
 		}
 
@@ -160,12 +160,12 @@ public class AdaptivePlayoutUpdater extends NodeUpdater {
 			//System.out.println("Joint moves and siblings match?:" + (allJointMoves.size() == allMovesInAllStates.size()));
 
 			if(goals == null){
-				GamerLogger.logError("NodeUpdater", "AdaptivePlayoutUpdater - Found null terminal goals in the simulation result when updating the MAST statistics with the playout moves. Probably a wrong combination of strategies has been set!");
+				GamerLogger.logError("NodeUpdater", "SlowAdaptivePlayoutUpdater - Found null terminal goals in the simulation result when updating the MAST statistics with the playout moves. Probably a wrong combination of strategies has been set!");
 				throw new RuntimeException("Null terminal goals in the simulation result.");
 			}
 
 			if(allJointMoves == null || allJointMoves.size() == 0){ // This method should be called only if the playout has actually been performed, so there must be at least one joint move
-				GamerLogger.logError("NodeUpdater", "AdaptivePlayoutUpdater - Found no joint moves in the simulation result when updating the MAST statistics. Probably a wrong combination of strategies has been set!");
+				GamerLogger.logError("NodeUpdater", "SlowAdaptivePlayoutUpdater - Found no joint moves in the simulation result when updating the MAST statistics. Probably a wrong combination of strategies has been set!");
 				throw new RuntimeException("No joint moves in the simulation result.");
 			}
 
