@@ -20,16 +20,17 @@ import org.ggp.base.util.statemachine.structure.Move;
  * More precisely, a PpaInfo for a move can be accessed (i) when selecting a move during the
  * playout or (ii) when updating the weight during the after simulation action.
  * For (i), we need the exponential of the current weight. If the weight has changed during the
- * after simulation action in one of the previous steps and the exponential is not consistent,
+ * after simulation action in one of the previous iterations and the exponential is not consistent,
  * the exponential must be computed first. Otherwise, the exponential is returned as it is.
  * For (ii), we always need the exponential of the value that the weight had BEFORE any increment
- * takes place during the current step. Therefore, if the exponential is inconsistent because
- * the last update of the weight happened in an earlier step, we update it before returning it.
+ * takes place during the current iteration. Therefore, if the exponential is inconsistent because
+ * the last update of the weight happened in an earlier iteration, we update it before returning it.
  * Otherwise, the reason why the exponential is inconsistent is that the weight has already been
- * incremented in the current step. We know that before the increment could be computed we
- * must have accessed this instance and updated the exponential if it wasn't consistent. So we know
- * that the current exponential is consistent with the value of the weight before the increment. Thus,
- * we return that exponential.
+ * incremented in the current iteration. We know that before the increment could be computed we
+ * must have accessed this instance and updated the exponential if it wasn't consistent (because we
+ * need the sum of ALL exponentials of all weights of all moves in the state). So we know that the
+ * current exponential is consistent with the value of the weight before the increment. Thus, we
+ * return that exponential.
  *
  * Note that all these checks wouldn't be necessary if we only used the moves in the playout to update the policy.
  * In that case, all the moves would be visited when selecting actions in each node in the playout, so their
@@ -40,7 +41,7 @@ import org.ggp.base.util.statemachine.structure.Move;
  *
  * Note that this setup has a particular effect if we are performing multiple playouts in the same simulation.
  * First of all, for all playouts the same policy (i.e. the same weights) will be used to select actions. Then,
- * the simulation with all playouts will be used to update the weights as they were in the previous step. This
+ * the simulation with all playouts will be used to update the weights as they were in the previous iteration. This
  * means that we do not use the weights to select moves in the first playout of the series of playouts for the
  * current simulation, then update the weights with the result of this playout, use the new weights to select
  * the moves in the next playout of the series, and so on. We first use the current weights to select moves in
@@ -77,13 +78,13 @@ public class PpaWeights {
 	 * @param move
 	 * @return
 	 */
-	public PpaInfo getPpaInfoForSelection(int role, Move move, int currentTimeStep){
+	public PpaInfo getPpaInfoForSelection(int role, Move move, int currentIteration){
 
 		// Check if there already is an entry for the move. If not, add it with a
 		// weight of 0 and exponential of 1.
 		PpaInfo result = this.weightsPerMove.get(role).get(move);
 		if(result == null){
-			result = new PpaInfo(0.0, 1.0,true, currentTimeStep);
+			result = new PpaInfo(0.0, 1.0,true, currentIteration);
 			this.weightsPerMove.get(role).put(move, result);
 		}else if(!result.isConsistent()){
 			// If the entry exists, we need to check if the exponential has already been computed.
@@ -100,32 +101,32 @@ public class PpaWeights {
 	 * THE WEIGHT HASN'T BEEN INCREMENTED YET DURING THE CURRENT ADAPTATION OF THE POLICY.
 	 * This method gets a role and one of its moves and returns the PPA info corresponding
 	 * to the move of the role. If the exponential is not consistent with the value that the
-	 * weight had before any increment took place during the current game step, it gets recomputed
+	 * weight had before any increment took place during the current iteration, it gets recomputed
 	 * before returning the PPA info.
 	 *
 	 * @param role
 	 * @param move
-	 * @param currentTimeStep
+	 * @param currentIteration
 	 * @return
 	 */
-	public PpaInfo getPpaInfoForPolicyAdaptation(int role, Move move, int currentTimeStep){
+	public PpaInfo getPpaInfoForPolicyAdaptation(int role, Move move, int currentIteration){
 
 		// Check if there already is an entry for the move. If not, add it with a
 		// weight of 0 and exponential of 1.
 		PpaInfo result = this.weightsPerMove.get(role).get(move);
 		if(result == null){
-			result = new PpaInfo(0.0, 1.0,true, currentTimeStep);
+			result = new PpaInfo(0.0, 1.0,true, currentIteration);
 			this.weightsPerMove.get(role).put(move, result);
 		}else if(!result.isConsistent()){
 			// If the entry exists, we need to check if the exponential has already been computed.
-			// If not, check if it is not consistent because the weight was increased in a previous step.
+			// If not, check if it is not consistent because the weight was increased in a previous iteration.
 			// If so, update it.
-			if(result.getLastIncrementStep() != currentTimeStep){
+			if(result.getLastIncrementIteration() != currentIteration){
 				result.updateExp();
 			}
 			// If it's not consistent because the weight has already been incremented at least once
-			// in the current game step, then do not modify it. Use it as is, because it is consistent
-			// with the value the weight had during the playout for this time step.
+			// in the current game iteration, then do not modify it. Use it as is, because it is consistent
+			// with the value the weight had during the playout for this iteration.
 		}
 		return result;
 
@@ -136,18 +137,18 @@ public class PpaWeights {
 	 * This method updates the weight of the given move of the given role with the
 	 * given increment. The increment is added to the original value of the weight.
 	 * Moreover, PpaInfo record that the exponential is now inconsistent with the weight
-	 * and that the weight was incremented last in this time step.
+	 * and that the weight was incremented last in this iteration.
 	 * @param role
 	 * @param move
 	 * @param newValue
 	 */
-	/*public void incrementWeight(int role, Move move, double increment, int currentStep){
+	/*public void incrementWeight(int role, Move move, double increment, int currentIteration){
 
 		// Check if there already is an entry for the move. If not, add it with a
 		// weight of 0 and set the exponential to 1.
 		PpaInfo result = this.weightsPerMove.get(role).get(move);
 		if(result == null){
-			result = new PpaInfo(0.0, 1.0, true, currentStep);
+			result = new PpaInfo(0.0, 1.0, true, currentIteration);
 			this.weightsPerMove.get(role).put(move, result);
 		}else{
 			// Note that it could be that the weight we are increasing belongs to the move that was
@@ -162,12 +163,12 @@ public class PpaWeights {
 			// we did not use the policy given by the weights to chose it, therefore we did not update their
 			// exponentials either.
 			// Here, we check if the exponential needs to be updated.
-			if(!result.isConsistent() && result.getLastIncrementStep() != currentStep){
+			if(!result.isConsistent() && result.getLastIncrementIteration() != currentIteration){
 				result.updateExp();
 			}
 		}
 
-		result.incrementWeight(currentStep, increment);
+		result.incrementWeight(currentIteration, increment);
 
 	}*/
 
@@ -218,74 +219,30 @@ public class PpaWeights {
 
 		probabilities = new ArrayList<Pair<Integer,Double>>();
 
-		Map<Move,PpaInfo> weightsForRole = this.weightsPerMove.get(roleIndex);
+		double[] legalMovesForWinnerExponential = new double[roleMoves.size()];
 
-		PpaInfo[] legalMovesForWinnerInfo = new PpaInfo[roleMoves.size()];
+		PpaInfo currentInfo;
 
 		// Iterate over all legal moves to compute the sum of the exponential of their probabilities
 		double exponentialSum = 0;
 		for(int j = 0; j < roleMoves.size(); j++){
-			legalMovesForWinnerInfo[j] = this.getPpaInfoForSelection(roleIndex, roleMoves.get(j), currentIteration);
-			exponentialSum += Math.pow(legalMovesForWinnerInfo[j].getExp(), temperature);
+			currentInfo = this.getPpaInfoForSelection(roleIndex, roleMoves.get(j), currentIteration);
+			legalMovesForWinnerExponential[j] = Math.pow(currentInfo.getExp(), temperature); // Adding the temperature to the exponential
+			exponentialSum += legalMovesForWinnerExponential[j];
 		}
 
-		FIX!!!
-
-		// Iterate over all legal moves, if they are the selected one, increase the weight otherwise decrease it
-		for(int j = 0; j < legalMovesForWinner.size(); j++){
-
-			if(selectedMoveForWinner.equals(legalMovesForWinner.get(j))){
-				legalMovesForWinnerInfo[j].incrementWeight(currentIteration, alpha);
-				//System.out.println("detected1");
-			}else{
-				if(exponentialSum > 0){ // Should always be positive
-					legalMovesForWinnerInfo[j].incrementWeight(currentIteration, -alpha * (legalMovesForWinnerInfo[j].getExp()/exponentialSum));
-				}else{
-					GamerLogger.logError("AfterSimulationStrategy", "AdaptivePlayoutAfterSimulation - Found non-positive sum of exponentials when adapting the playout policy!");
-					throw new RuntimeException("Found non-positive sum of exponentials when adapting the playout policy.");
-				}
-			}
+		if(exponentialSum == 0){ // If the sum is 0 (should never happen) return null.
+			return null;
 		}
 
+		// Iterate over all the exponentials and create the probability distribution
+		for(int j = 0; j < legalMovesForWinnerExponential.length; j++){
 
-
-
-
-
-		double[] exponentialPerMove = new double[moves.size()];
-
-		double probabilitySum = 0;
-		for(int i = 0; i < moves.size(); i++){
-
-			Double weightForMove = weightsForRole.get(moves.get(i));
-			if(weightForMove != null){
-
-				//System.out.println();
-				//System.out.println(weightForMove);
-				//System.out.println();
-
-
-				exponentialPerMove[i] = Math.exp(this.temperature*weightForMove);
-				probabilitySum += exponentialPerMove[i];
-			}else{
-				exponentialPerMove[i] = Math.exp(this.temperature*0.0);
-				probabilitySum += exponentialPerMove[i];
-			}
+			probabilities.add(new Pair<Integer,Double>(j,legalMovesForWinnerExponential[j]/exponentialSum));
 
 		}
 
-		if(probabilitySum == 0){ // If all weights are 0, return random move
-			return moves.get(this.getRandom().nextInt(moves.size()));
-		}
-
-		for(int i = 0; i < moves.size(); i++){
-
-			//System.out.println(exponentialPerMove[i]);
-			//System.out.println(probabilitySum);
-			//System.out.println();
-
-			probabilities.add(new Pair<Integer,Double>(i,exponentialPerMove[i]/probabilitySum));
-		}
+		return probabilities;
 
 	}
 

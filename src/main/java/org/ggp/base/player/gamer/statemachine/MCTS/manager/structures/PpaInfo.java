@@ -16,24 +16,24 @@ public class PpaInfo {
 	private boolean consistent;
 
 	/**
-	 * Memorizes the last step in which the weight has been updated.
-	 * If it has been updated in this step, it means that we are in the "AfterSimulation"
+	 * Memorizes the last iteration in which the weight has been updated.
+	 * If it has been updated in this iteration, it means that we are in the "AfterSimulation"
 	 * phase, and the exponential of this weight has already been updated to the correct one
-	 * for this step, because the update has happened at the latest the first time this PpaInfo
+	 * for this iteration, because the update has happened at the latest the first time this PpaInfo
 	 * was accessed to compute the update value during AfterSimulationAcion.
 	 */
-	private int lastIncrementStep;
+	private int lastIncrementIteration;
 
 	// If the exponential is consistent, use it.
 	// If it's not consistent there are two options:
-	// - it's not consistent from an update in a previous step -> needs to be recomputed
-	// - it's not consistent because it's been updated in the current step -> do nothing, we still need to use the old exponential
+	// - it's not consistent from an update in a previous iteration -> needs to be recomputed
+	// - it's not consistent because it's been updated in the current iteration -> do nothing, we still need to use the old exponential
 
-	public PpaInfo(double weight, double exp, boolean consistent, int incrementStep) {
+	public PpaInfo(double weight, double exp, boolean consistent, int incrementIteration) {
 		this.weight = weight;
 		this.exp = exp;
 		this.consistent = consistent;
-		this.lastIncrementStep = incrementStep;
+		this.lastIncrementIteration = incrementIteration;
 	}
 
 	public double getWeight() {
@@ -60,12 +60,12 @@ public class PpaInfo {
 	//	this.consistent = consistent;
 	//}
 
-	public int getLastIncrementStep() {
-		return this.lastIncrementStep;
+	public int getLastIncrementIteration() {
+		return this.lastIncrementIteration;
 	}
 
-	//public void setIncrementStep(int incrementStep) {
-	//	this.incrementStep = incrementStep;
+	//public void setIncrementIteration(int incrementIteration) {
+	//	this.incrementIteration = incrementIteration;
 	//}
 
 	public void updateExp(){
@@ -73,15 +73,15 @@ public class PpaInfo {
 		this.consistent = true;
 	}
 
-	public void incrementWeight(int incrementStep, double increment){
+	public void incrementWeight(int incrementIteration, double increment){
 		this.weight += increment;
-		this.lastIncrementStep = incrementStep;
+		this.lastIncrementIteration = incrementIteration;
 		this.consistent = false;
 	}
 
 	@Override
 	public String toString(){
 		return "WEIGHT=;" + this.weight + ";EXP=;" + this.exp + ";CONSISTENT=;" + this.consistent +
-				";LAST_INRCEMENT_STEP=;" + this.lastIncrementStep + ";";
+				";LAST_INRCEMENT_ITERATION=;" + this.lastIncrementIteration + ";";
 	}
 }
