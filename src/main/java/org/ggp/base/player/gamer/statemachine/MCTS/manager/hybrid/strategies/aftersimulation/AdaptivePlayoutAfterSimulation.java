@@ -37,12 +37,12 @@ public class AdaptivePlayoutAfterSimulation extends AfterSimulationStrategy {
 
 	@Override
 	public void clearComponent() {
-		this.ppaWeights = null;
+		this.ppaWeights.clear();
 	}
 
 	@Override
 	public void setUpComponent() {
-		this.ppaWeights.initialize(this.gameDependentParameters.getNumRoles());
+		this.ppaWeights.setUp(this.gameDependentParameters.getNumRoles());
 	}
 
 	@Override
@@ -86,6 +86,8 @@ public class AdaptivePlayoutAfterSimulation extends AfterSimulationStrategy {
 			}
 
 			int winnerIndex = simulationResult[resultIndex].getSingleWinner();
+
+			//System.out.println("Winner=" + winnerIndex);
 
 			// Use the simulation result to figure out for which player to change the weights.
 			// For the player with the highest score, weights are increased by alpha for the simulated

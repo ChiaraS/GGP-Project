@@ -2,6 +2,7 @@ package org.ggp.base.player.gamer.statemachine.MCTS.manager.structures;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -60,11 +61,15 @@ public class PpaWeights {
 	private List<Map<Move,PpaInfo>> weightsPerMove;
 
 
-	public void initialize(int numRoles){
+	public void setUp(int numRoles){
 		this.weightsPerMove = new ArrayList<Map<Move,PpaInfo>>();
 		for(int roleIndex = 0; roleIndex < numRoles; roleIndex++){
 			this.weightsPerMove.add(new HashMap<Move,PpaInfo>());
 		}
+	}
+
+	public void clear(){
+		this.weightsPerMove.clear();
 	}
 
 	/**
@@ -78,13 +83,17 @@ public class PpaWeights {
 	 * @param move
 	 * @return
 	 */
-	public PpaInfo getPpaInfoForSelection(int role, Move move, int currentIteration){
+	public PpaInfo getPpaInfoForSelection(int role, Move move){
 
 		// Check if there already is an entry for the move. If not, add it with a
 		// weight of 0 and exponential of 1.
 		PpaInfo result = this.weightsPerMove.get(role).get(move);
 		if(result == null){
-			result = new PpaInfo(0.0, 1.0,true, currentIteration);
+			// No increment took place yet, so we set the last increment iteration to -1.
+			// Anyway it has no influence because the exponential is consistent. The moment
+			// the exponential becomes inconsistent is because of an increment, therefore
+			// the value of the last increment iteration gets updated correctly too.
+			result = new PpaInfo(0.0, 1.0,true, -1);
 			this.weightsPerMove.get(role).put(move, result);
 		}else if(!result.isConsistent()){
 			// If the entry exists, we need to check if the exponential has already been computed.
@@ -104,6 +113,16 @@ public class PpaWeights {
 	 * weight had before any increment took place during the current iteration, it gets recomputed
 	 * before returning the PPA info.
 	 *
+	 * NOTE: here, the currentIteration is already set to count the current iteration as completed,
+	 * so it does not match the value that this variable had during the simulation that just ended.
+	 * However, the currentIteration is used locally only to the after simulation strategy to keep
+	 * track of when an increment took place so that we can know whether the exponential has to be
+	 * updated or not. Therefore, this system still works, because every time the after simulation
+	 * strategy is executed, the currentIteration will have a higher value that the previous time
+	 * the after simulation strategy was executed. The currentIteration has no effect on the selection
+	 * of the moves during playout, because there each inconsistent exponential will always be updated
+	 * when needed.
+	 *
 	 * @param role
 	 * @param move
 	 * @param currentIteration
@@ -115,13 +134,13 @@ public class PpaWeights {
 		// weight of 0 and exponential of 1.
 		PpaInfo result = this.weightsPerMove.get(role).get(move);
 		if(result == null){
-			result = new PpaInfo(0.0, 1.0,true, currentIteration);
+			result = new PpaInfo(0.0, 1.0,true, -1);
 			this.weightsPerMove.get(role).put(move, result);
 		}else if(!result.isConsistent()){
 			// If the entry exists, we need to check if the exponential has already been computed.
 			// If not, check if it is not consistent because the weight was increased in a previous iteration.
 			// If so, update it.
-			if(result.getLastIncrementIteration() != currentIteration){
+			if(result.getLastWeightUpdateIteration() != currentIteration){
 				result.updateExp();
 			}
 			// If it's not consistent because the weight has already been incremented at least once
@@ -173,15 +192,21 @@ public class PpaWeights {
 	}*/
 
 	public String getMinimalInfo(){
-		String weightsPerMoveString = "[ ";
 
-		for(Map<Move,PpaInfo> ppaWeights : this.weightsPerMove){
-			weightsPerMoveString += ppaWeights.size() + " entries, ";
+		if(this.weightsPerMove != null){
+			String weightsPerMoveString = "[ ";
+
+			for(Map<Move,PpaInfo> ppaWeights : this.weightsPerMove){
+				weightsPerMoveString += ppaWeights.size() + " entries, ";
+			}
+
+			weightsPerMoveString += "]";
+
+			return weightsPerMoveString;
+		}else{
+			return "null";
 		}
 
-		weightsPerMoveString += "]";
-
-		return weightsPerMoveString;
 	}
 
 	/**
@@ -213,7 +238,11 @@ public class PpaWeights {
 
 	}
 
-	public List<Pair<Integer,Double>> getPlayoutProbabilities(int roleIndex, List<Move> roleMoves, double temperature, int currentIteration){
+	public List<Pair<Integer,Double>> getPlayoutProbabilities(int roleIndex, List<Move> roleMoves, double temperature){
+
+		//System.out.println("select");
+		//this.printPpaWeights();
+		//System.out.println();
 
 		List<Pair<Integer,Double>> probabilities;
 
@@ -226,7 +255,7 @@ public class PpaWeights {
 		// Iterate over all legal moves to compute the sum of the exponential of their probabilities
 		double exponentialSum = 0;
 		for(int j = 0; j < roleMoves.size(); j++){
-			currentInfo = this.getPpaInfoForSelection(roleIndex, roleMoves.get(j), currentIteration);
+			currentInfo = this.getPpaInfoForSelection(roleIndex, roleMoves.get(j));
 			legalMovesForWinnerExponential[j] = Math.pow(currentInfo.getExp(), temperature); // Adding the temperature to the exponential
 			exponentialSum += legalMovesForWinnerExponential[j];
 		}
@@ -242,12 +271,22 @@ public class PpaWeights {
 
 		}
 
+		//this.printPpaWeights();
+		//System.out.println();
+		//System.out.println("--------------------------------");
+		//System.out.println();
+
+
 		return probabilities;
 
 	}
 
 	public void adaptPolicy(int winnerIndex, List<Move> legalMovesForWinner, Move selectedMoveForWinner,
 			double alpha, int currentIteration){
+
+		//System.out.println("adapt");
+		//this.printPpaWeights();
+		//System.out.println();
 
 		// If we only have one move for the role, we don't need to adapt its weight,
 		// because it will always be selected in this state independently of the policy
@@ -259,16 +298,20 @@ public class PpaWeights {
 
 			// Iterate over all legal moves to compute the sum of the exponential of their probabilities
 			double exponentialSum = 0;
+			//System.out.println(exponentialSum);
 			for(int j = 0; j < legalMovesForWinner.size(); j++){
 				legalMovesForWinnerInfo[j] = this.getPpaInfoForPolicyAdaptation(winnerIndex, legalMovesForWinner.get(j), currentIteration);
 				exponentialSum += legalMovesForWinnerInfo[j].getExp();
+				//System.out.println(exponentialSum);
 			}
 
-			// Iterate over all legal moves, if they are the selected one, increase the weight otherwise decrease it
+
+			// Iterate over all legal moves and decrease their weight proportionally to their expoenetial.
+			// For the selected move also increase the weight by alpha.
 			for(int j = 0; j < legalMovesForWinner.size(); j++){
 
 				if(selectedMoveForWinner.equals(legalMovesForWinner.get(j))){
-					legalMovesForWinnerInfo[j].incrementWeight(currentIteration, alpha);
+					legalMovesForWinnerInfo[j].incrementWeight(currentIteration, alpha - alpha * (legalMovesForWinnerInfo[j].getExp()/exponentialSum));
 					//System.out.println("detected1");
 				}else{
 					if(exponentialSum > 0){ // Should always be positive
@@ -282,6 +325,11 @@ public class PpaWeights {
 
 		}
 
+		//this.printPpaWeights();
+		//System.out.println();
+		//System.out.println("--------------------------------");
+		//System.out.println();
+
 		//for(Map<Move, Double> weightOfPlayer : this.weightsPerMove){
 		//	double sum = 0;
 		//	for(Entry<Move,Double> weight : weightOfPlayer.entrySet()){
@@ -292,10 +340,42 @@ public class PpaWeights {
 		//System.out.println();
 	}
 
+	// Note that decaying the weights still ensures that their sum is 0 (or close to it because of approximation)!
+	public void decayWeights(double decayFactor, int currentIteration){
+
+		if(decayFactor == 0.0){ // If we want to throw away everything, we just clear all the stats. No need to iterate.
+			for(int roleIndex = 0; roleIndex < this.weightsPerMove.size(); roleIndex++){
+				this.weightsPerMove.get(roleIndex).clear();
+			}
+		}else if(decayFactor != 1.0){ // If the decay factor is 1.0 we keep everything without modifying anything.
+			// Decrease the weight. If the weight is now 0, remove the entry form the map. In this way, we can get
+			// rid of weights for moves that will not be legal anymore in the game and are only occupying space.
+			// If they are not used anymore, over time the decay will make their weight 0 and thus we will remove
+			// them to free space. If the weight becomes zero for a coincidence and the move can still be legal,
+			// its weight will be re-added the next time the move is visited.
+			Iterator<Entry<Move,PpaInfo>> iterator;
+			PpaInfo theInfo;
+			for(int roleIndex = 0; roleIndex < this.weightsPerMove.size(); roleIndex++){
+				iterator = this.weightsPerMove.get(roleIndex).entrySet().iterator();
+				while(iterator.hasNext()){
+					theInfo = iterator.next().getValue();
+					theInfo.decayWeight(decayFactor, currentIteration);
+					if(theInfo.getWeight() == 0){
+						iterator.remove();
+					}
+				}
+			}
+		}
+	}
+
+	public List<Map<Move,PpaInfo>> getWeightsPerMove(){
+		return this.weightsPerMove;
+	}
+
 	public static void main(String[] args){
 
 		PpaWeights w = new PpaWeights();
-		w.initialize(3);
+		w.setUp(3);
 
 		// Simulate selection at step 0
 		w.printPpaWeights();

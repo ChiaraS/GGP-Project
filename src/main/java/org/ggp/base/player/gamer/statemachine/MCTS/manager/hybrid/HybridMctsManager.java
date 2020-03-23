@@ -854,7 +854,6 @@ public class HybridMctsManager {
 				this.currentLogNode.increaseVisits();
 			}
 
-			FIX! Non va bene per il PPA playout se le iterazioni sono incrementate prima dell'after simulation strategy.
 			SimulationResult[] simulationResult = this.searchNext(initialState, initialNode);
 			for(int resultIndex = 0; resultIndex < simulationResult.length; resultIndex++){
 				this.gameDependentParameters.increaseStepIterations();

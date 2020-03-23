@@ -93,7 +93,7 @@ public class AdaptivePlayoutMoveSelector extends MoveSelector {
 		EnumeratedDistribution<Integer> distribution;
 		List<Pair<Integer,Double>> probabilities;
 
-		probabilities = this.ppaWeights.getPlayoutProbabilities(roleIndex, moves, this.temperature, this.gameDependentParameters.getTotIterations());
+		probabilities = this.ppaWeights.getPlayoutProbabilities(roleIndex, moves, this.temperature);
 
 		if(probabilities == null){ // If all weights are 0 and thus probabilities are null, return random move
 			return moves.get(this.getRandom().nextInt(moves.size()));

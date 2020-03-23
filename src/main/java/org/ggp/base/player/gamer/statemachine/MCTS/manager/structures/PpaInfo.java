@@ -22,18 +22,18 @@ public class PpaInfo {
 	 * for this iteration, because the update has happened at the latest the first time this PpaInfo
 	 * was accessed to compute the update value during AfterSimulationAcion.
 	 */
-	private int lastIncrementIteration;
+	private int lastWeightUpdateIteration;
 
 	// If the exponential is consistent, use it.
 	// If it's not consistent there are two options:
 	// - it's not consistent from an update in a previous iteration -> needs to be recomputed
 	// - it's not consistent because it's been updated in the current iteration -> do nothing, we still need to use the old exponential
 
-	public PpaInfo(double weight, double exp, boolean consistent, int incrementIteration) {
+	public PpaInfo(double weight, double exp, boolean consistent, int updateIteration) {
 		this.weight = weight;
 		this.exp = exp;
 		this.consistent = consistent;
-		this.lastIncrementIteration = incrementIteration;
+		this.lastWeightUpdateIteration = updateIteration;
 	}
 
 	public double getWeight() {
@@ -60,8 +60,8 @@ public class PpaInfo {
 	//	this.consistent = consistent;
 	//}
 
-	public int getLastIncrementIteration() {
-		return this.lastIncrementIteration;
+	public int getLastWeightUpdateIteration() {
+		return this.lastWeightUpdateIteration;
 	}
 
 	//public void setIncrementIteration(int incrementIteration) {
@@ -75,13 +75,19 @@ public class PpaInfo {
 
 	public void incrementWeight(int incrementIteration, double increment){
 		this.weight += increment;
-		this.lastIncrementIteration = incrementIteration;
+		this.lastWeightUpdateIteration = incrementIteration;
+		this.consistent = false;
+	}
+
+	public void decayWeight(double decayFactor, int decayIteration){
+		this.weight *= decayFactor;
+		this.lastWeightUpdateIteration = decayIteration;
 		this.consistent = false;
 	}
 
 	@Override
 	public String toString(){
 		return "WEIGHT=;" + this.weight + ";EXP=;" + this.exp + ";CONSISTENT=;" + this.consistent +
-				";LAST_INRCEMENT_ITERATION=;" + this.lastIncrementIteration + ";";
+				";LAST_WEIGHT_UPDATE_ITERATION=;" + this.lastWeightUpdateIteration + ";";
 	}
 }
