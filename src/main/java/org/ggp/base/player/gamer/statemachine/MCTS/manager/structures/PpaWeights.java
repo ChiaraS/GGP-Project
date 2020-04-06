@@ -73,6 +73,25 @@ public class PpaWeights {
 	}
 
 	/**
+	 * THIS FUNCTION SHOULD BE USED WHEN SELECTING MOVES DURING THE PLAYOUT WITH EPSILON GREEDY
+	 * BECAUSE IT NEVER RECOMPUTES THE EXPONENTIAL IF IT IS NOT CONSISTENT WITH THE WEIGHT.
+	 * Epsilon greedy only needs the weight and not the exponential.
+	 * This method gets a role and one of its moves and returns the PPA info corresponding to
+	 * the move of the role. Differently form other methods, this one NEVER recomputes the
+	 * exponential AND does not create a new PpaInfo if the one for the move does not exist, it
+	 * simply returns null, so we know that we have to use the FPU.
+	 *
+	 * @param role
+	 * @param move
+	 * @return
+	 */
+	public PpaInfo getPpaInfoForEpsilonGreedySelection(int role, Move move){
+
+		return this.weightsPerMove.get(role).get(move);
+
+	}
+
+	/**
 	 * THIS FUNCTION SHOULD BE USED WHEN SELECTING MOVES DURING THE PLAYOUT BECAUSE IT ALWAYS
 	 * RECOMPUTES THE EXPONENTIAL IF IT IS NOT CONSISTENT WITH THE WEIGHT.
 	 * This method gets a role and one of its moves and returns the PPA info corresponding to

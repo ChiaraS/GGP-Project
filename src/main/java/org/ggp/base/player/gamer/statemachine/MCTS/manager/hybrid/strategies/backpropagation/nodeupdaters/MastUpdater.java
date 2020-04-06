@@ -19,7 +19,13 @@ import org.ggp.base.util.statemachine.structure.Move;
 
 public class MastUpdater extends NodeUpdater{
 
+	public enum MAST_UPDATE_TYPE{
+		SCORES, WINS
+	}
+
 	private List<Map<Move, MoveStats>> mastStatistics;
+
+	private MAST_UPDATE_TYPE updateType;
 
 	public MastUpdater(GameDependentParameters gameDependentParameters, Random random,
 			GamerSettings gamerSettings, SharedReferencesCollector sharedReferencesCollector) {
@@ -29,6 +35,14 @@ public class MastUpdater extends NodeUpdater{
 		this.mastStatistics = new ArrayList<Map<Move, MoveStats>>();
 
 		sharedReferencesCollector.setMastStatistics(mastStatistics);
+
+		this.updateType = MAST_UPDATE_TYPE.SCORES;
+		if(gamerSettings.specifiesProperty("NodeUpdater.updateType")){
+			String updateTypeString = gamerSettings.getPropertyValue("NodeUpdater.updateType");
+			if(updateTypeString.equalsIgnoreCase("wins")){
+				this.updateType = MAST_UPDATE_TYPE.WINS;
+			}
+		}
 
 	}
 
@@ -51,6 +65,9 @@ public class MastUpdater extends NodeUpdater{
 
 	@Override
 	public void update(MctsNode currentNode, MachineState currentState, MctsJointMove jointMove, SimulationResult[] simulationResult) {
+
+
+		FIX!
 
 		List<Move> internalJointMove = jointMove.getJointMove();
 
@@ -90,38 +107,84 @@ public class MastUpdater extends NodeUpdater{
 			throw new RuntimeException("No simulation results available to pre-process!");
 		}
 
-		double[] goals;
-		List<List<Move>> allJointMoves;
+		if(this.updateType == MAST_UPDATE_TYPE.SCORES){
+			double[] goals;
+			List<List<Move>> allJointMoves;
 
-		for(int resultIndex = 0; resultIndex < simulationResult.length; resultIndex++){
+			for(int resultIndex = 0; resultIndex < simulationResult.length; resultIndex++){
 
-			goals = simulationResult[resultIndex].getTerminalGoals();
+				goals = simulationResult[resultIndex].getTerminalGoals();
 
-			allJointMoves = simulationResult[resultIndex].getAllJointMoves();
+				allJointMoves = simulationResult[resultIndex].getAllJointMoves();
 
-			if(goals == null){
-				GamerLogger.logError("NodeUpdater", "MastUpdater - Found null terminal goals in the simulation result when updating the MAST statistics with the playout moves. Probably a wrong combination of strategies has been set!");
-				throw new RuntimeException("Null terminal goals in the simulation result.");
+				if(goals == null){
+					GamerLogger.logError("NodeUpdater", "MastUpdater - Found null terminal goals in the simulation result when updating the MAST statistics with the playout moves. Probably a wrong combination of strategies has been set!");
+					throw new RuntimeException("Null terminal goals in the simulation result.");
+				}
+
+				if(allJointMoves == null || allJointMoves.size() == 0){ // This method should be called only if the playout has actually been performed, so there must be at least one joint move
+					GamerLogger.logError("NodeUpdater", "MastUpdater - Found no joint moves in the simulation result when updating the MAST statistics. Probably a wrong combination of strategies has been set!");
+					throw new RuntimeException("No joint moves in the simulation result.");
+				}
+
+			    MoveStats moveStats;
+			    for(List<Move> jM : allJointMoves){
+			    	for(int i = 0; i<jM.size(); i++){
+			    		moveStats = this.mastStatistics.get(i).get(jM.get(i));
+			        	if(moveStats == null){
+			        		moveStats = new MoveStats();
+			        		this.mastStatistics.get(i).put(jM.get(i), moveStats);
+			        	}
+
+			        	moveStats.incrementVisits();
+			        	moveStats.incrementScoreSum(goals[i]);
+			        }
+			    }
 			}
+		}else{
 
-			if(allJointMoves == null || allJointMoves.size() == 0){ // This method should be called only if the playout has actually been performed, so there must be at least one joint move
-				GamerLogger.logError("NodeUpdater", "MastUpdater - Found no joint moves in the simulation result when updating the MAST statistics. Probably a wrong combination of strategies has been set!");
-				throw new RuntimeException("No joint moves in the simulation result.");
+			int winner;
+			List<List<Move>> allJointMoves;
+
+			for(int resultIndex = 0; resultIndex < simulationResult.length; resultIndex++){
+
+				winner = simulationResult[resultIndex].getSingleWinner();
+
+				if(winner != -1){
+
+					allJointMoves = simulationResult[resultIndex].getAllJointMoves();
+
+					if(allJointMoves == null || allJointMoves.size() == 0){ // This method should be called only if the playout has actually been performed, so there must be at least one joint move
+						GamerLogger.logError("NodeUpdater", "MastUpdater - Found no joint moves in the simulation result when updating the MAST statistics. Probably a wrong combination of strategies has been set!");
+						throw new RuntimeException("No joint moves in the simulation result.");
+					}
+
+				    MoveStats moveStats;
+				    for(List<Move> jM : allJointMoves){
+				    	// Get the statistics of the move of the winner
+				    	moveStats = this.mastStatistics.get(winner).get(jM.get(winner));
+				        if(moveStats == null){
+				        	moveStats = new MoveStats();
+				        	this.mastStatistics.get(winner).put(jM.get(winner), moveStats);
+				        }
+
+				        moveStats.incrementVisits();
+				        moveStats.incrementScoreSum(100.0); // add 100 for a win (i.e. 1 point, but MAST does not rescale between 0 and 1)
+			        }
+				}
 			}
+		}
 
-		    MoveStats moveStats;
-		    for(List<Move> jM : allJointMoves){
-		    	for(int i = 0; i<jM.size(); i++){
-		    		moveStats = this.mastStatistics.get(i).get(jM.get(i));
-		        	if(moveStats == null){
-		        		moveStats = new MoveStats();
-		        		this.mastStatistics.get(i).put(jM.get(i), moveStats);
-		        	}
+	}
 
-		        	moveStats.incrementVisits();
-		        	moveStats.incrementScoreSum(goals[i]);
-		        }
-		    }
+	@Override
+	public String getComponentParameters(String indentation) {
+		String params = super.printComponent(indentation);
+
+		if(params != null){
+			return params + indentation + "UPDATE_TYPE" + this.updateType;
+		}else{
+			return indentation + "UPDATE_TYPE" + this.updateType;
 		}
 	}
 
