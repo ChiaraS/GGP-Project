@@ -41,6 +41,29 @@ import com.google.common.collect.ImmutableSet;
 public abstract class SearchManagerComponent {
 
 	/**
+	 * Types of MAST/PPA statistics updates:
+	 * SCORES: MAST statistics/PPA weights are updated according to the score obtained by the
+	 * player in the playout where a move was played. Scores are in [0,100]
+	 * WINS: depending on their scores, roles can be given points, i.e. 1 point is split among
+	 * the roles that obtained the highest score in the playout, other roles get 0 points. MAST
+	 * statistics/PPA weights are updated with 100 times their wins, so the update values are
+	 * in [0, 100]
+	 * WINNER_ONLY: if the playout has a single winner (i.e. only one agent that obtained the
+	 * highest score) then the MAST statistics/PPA weights of the only winner of the playout
+	 * are updated. In MAST the score of the move is increased with 100.
+	 *
+	 * Note that for single-player games the SCORES and WINS update type are equivalent, while
+	 * the WINNER_ONLY update type updates the MAST statistics of the player only if it gets
+	 * the maximum score (i.e. 100).
+	 *
+	 * @author C.Sironi
+	 *
+	 */
+	public enum PLAYOUT_STAT_UPDATE_TYPE{
+		SCORES, WINS, WINNER_ONLY
+	}
+
+	/**
 	 * Arguments of the main constructor.
 	 */
 	public static Class<?>[] CONSTRUCTOR_ARGS = new Class[] {GameDependentParameters.class, Random.class,

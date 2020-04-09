@@ -6,6 +6,7 @@ import java.util.Random;
 import org.ggp.base.player.gamer.statemachine.GamerSettings;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.GameDependentParameters;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.SharedReferencesCollector;
+import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.SearchManagerComponent.PLAYOUT_STAT_UPDATE_TYPE;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.structures.PpaWeights;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.hybrid.SimulationResult;
 import org.ggp.base.util.logging.GamerLogger;
@@ -15,8 +16,10 @@ public class AdaptivePlayoutAfterSimulation extends AfterSimulationStrategy {
 
 	private PpaWeights ppaWeights;
 
-	// Parameter that decides how much the weight changes (temperautre)
+	// Parameter that decides how much the weight changes
 	private double alpha;
+
+	private PLAYOUT_STAT_UPDATE_TYPE updateType;
 
 	public AdaptivePlayoutAfterSimulation(GameDependentParameters gameDependentParameters, Random random,
 			GamerSettings gamerSettings, SharedReferencesCollector sharedReferencesCollector, String id) {
@@ -27,6 +30,26 @@ public class AdaptivePlayoutAfterSimulation extends AfterSimulationStrategy {
 		sharedReferencesCollector.setPpaWeights(ppaWeights);
 
 		this.alpha = gamerSettings.getDoublePropertyValue("AfterSimulationStrategy.alpha");
+
+		if(gamerSettings.specifiesProperty("AfterSimulationStrategy.updateType")){
+			String updateTypeString = gamerSettings.getPropertyValue("AfterSimulationStrategy.updateType");
+			switch(updateTypeString.toLowerCase()){
+				case "scores":
+					this.updateType = PLAYOUT_STAT_UPDATE_TYPE.SCORES;
+					break;
+				case "wins":
+					this.updateType = PLAYOUT_STAT_UPDATE_TYPE.WINS;
+					break;
+				case "winner_only":
+					this.updateType = PLAYOUT_STAT_UPDATE_TYPE.WINNER_ONLY;
+					break;
+				default:
+					GamerLogger.logError("SearchManagerCreation", "AfterSimulationStrategy - The property " + updateTypeString + " is not a valid update type for PPA weights.");
+					throw new RuntimeException("AfterSimulationStrategy - Invalid  update type for PPA weights " + updateTypeString + ".");
+			}
+		}else{
+			this.updateType = PLAYOUT_STAT_UPDATE_TYPE.SCORES; // Default when nothing is specified
+		}
 
 	}
 
@@ -53,14 +76,14 @@ public class AdaptivePlayoutAfterSimulation extends AfterSimulationStrategy {
 			throw new RuntimeException("No simulation results available to perform after simulation actions!");
 		}
 
-		double[] goals;
+		//double[] goals;
 		List<List<Move>> allJointMoves;
 		List<List<List<Move>>> allMovesInAllStates;
 
 		for(int resultIndex = 0; resultIndex < simulationResult.length; resultIndex++){
 
 			// Terminal goals for current simulation
-			goals = simulationResult[resultIndex].getTerminalGoals();
+			//goals = simulationResult[resultIndex].getTerminalGoals();
 
 			// All joint moves played in the current simulation
 			allJointMoves = simulationResult[resultIndex].getAllJointMoves();
@@ -70,10 +93,10 @@ public class AdaptivePlayoutAfterSimulation extends AfterSimulationStrategy {
 
 			//System.out.println("Joint moves and siblings match?:" + (allJointMoves.size() == allMovesInAllStates.size()));
 
-			if(goals == null){
-				GamerLogger.logError("AfterSimulationStrategy", "AdaptivePlayoutAfterSimulation - Found null terminal goals in the simulation result when updating the PPA weights with the playout moves. Probably a wrong combination of strategies has been set!");
-				throw new RuntimeException("Null terminal goals in the simulation result.");
-			}
+			//if(goals == null){
+			//	GamerLogger.logError("AfterSimulationStrategy", "AdaptivePlayoutAfterSimulation - Found null terminal goals in the simulation result when updating the PPA weights with the playout moves. Probably a wrong combination of strategies has been set!");
+			//	throw new RuntimeException("Null terminal goals in the simulation result.");
+			//}
 
 			if(allJointMoves == null || allJointMoves.size() == 0){ // This method should be called only if the playout has actually been performed, so there must be at least one joint move.
 				GamerLogger.logError("AfterSimulationStrategy", "AdaptivePlayoutAfterSimulation - Found no joint moves in the simulation result when updating the MAST statistics. Probably a wrong combination of strategies has been set!");
@@ -83,6 +106,10 @@ public class AdaptivePlayoutAfterSimulation extends AfterSimulationStrategy {
 			if(allMovesInAllStates == null || allMovesInAllStates.size() == 0){ // This method should be called only if the playout has actually been performed, so there must be at least one list of legal moves for all roles.
 				GamerLogger.logError("AfterSimulationStrategy", "AdaptivePlayoutAfterSimulation - Found no legal moves for all roles in the simulation result when updating the PPA weights with the playout moves. Probably a wrong combination of strategies has been set!");
 				throw new RuntimeException("No legal moves for all roles in the simulation result.");
+			}
+
+			switch(this.updateType){
+			 FINISH!
 			}
 
 			int winnerIndex = simulationResult[resultIndex].getSingleWinner();

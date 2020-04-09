@@ -297,15 +297,57 @@ public class SimulationResult{
 	}
 
 	/**
+	 * Same as getTerminalWins(), but wins are rescaled in [0, 100] instead of [0, 1]
+	 *
+	 * @return
+	 */
+	public double[] getRescaledTerminalWins() {
+
+		if(this.intermediateGoals.size() > 0) {
+
+			double[] wins = new double[this.intermediateGoals.get(0).length];
+
+			if(this.intermediateGoals.get(0).length == 1) {
+				wins[0] = this.intermediateGoals.get(0)[0];
+			}else {
+				List<Integer> bestIndices = new ArrayList<Integer>();
+				double max = -1;
+				for(int roleIndex = 0; roleIndex < this.intermediateGoals.get(0).length; roleIndex++) {
+					if(this.intermediateGoals.get(0)[roleIndex] > max) {
+						max = this.intermediateGoals.get(0)[roleIndex];
+						bestIndices.clear();
+						bestIndices.add(roleIndex);
+					}else if(this.intermediateGoals.get(0)[roleIndex] == max){
+						bestIndices.add(roleIndex);
+					}
+				}
+				if(bestIndices.size() == 0) {
+					GamerLogger.logError("MctsManager", "Found no best score when computing rescaled wins for a SimulationResult.");
+					throw new RuntimeException("MctsManager - Found no best score when computing rescaled wins for a SimulationResult.");
+				}
+				// Wins is already initialized to all 0s, so we just change the wins for the bestIndices
+				double split100Points = 100.0/((double)bestIndices.size());
+				for(Integer roleIndex : bestIndices) {
+					wins[roleIndex] = split100Points;
+				}
+			}
+			return wins;
+		}else {
+			GamerLogger.logError("MctsManager", "Trying to compute rescaled wins for a SimulationResult that has no goals.");
+			throw new RuntimeException("MctsManager - Trying to compute rescaled wins for a SimulationResult that has no goals.");
+		}
+	}
+
+	/**
 	 * This method is similar to getTerminalWins() because it converts goals to wins. However, instead of returning
 	 * the wins it checks if there is only one winner. If so, it returns the index of the winner, otherwise it returns -1.
+	 * For multi-player games the winner is the one that gets the highest score, for single-player games the only role
+	 * is a winner only if its score is 100 (i.e. the maximum).
 	 * @return
 	 */
 	public int getSingleWinner(){
 
 		if(this.intermediateGoals.size() > 0) {
-
-			double[] wins = new double[this.intermediateGoals.get(0).length];
 
 			if(this.intermediateGoals.get(0).length == 1) {
 				double win = this.intermediateGoals.get(0)[0]/100.0;
