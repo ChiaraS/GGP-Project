@@ -31,7 +31,7 @@ public class GibbsAdaptivePlayoutMoveSelector extends AdaptivePlayoutMoveSelecto
 			GamerSettings gamerSettings, SharedReferencesCollector sharedReferencesCollector) {
 		super(gameDependentParameters, random, gamerSettings, sharedReferencesCollector);
 
-		this.ppaTemperature = gamerSettings.getDoublePropertyValue("MoveSelector.temperature");
+		this.ppaTemperature = gamerSettings.getDoublePropertyValue("MoveSelector.ppaTemperature");
 
 	}
 

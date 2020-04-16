@@ -300,7 +300,7 @@ public class PpaWeights {
 
 	}
 
-	public void adaptPolicy(int winnerIndex, List<Move> legalMovesForWinner, Move selectedMoveForWinner,
+/*	public void adaptPolicy(int winnerIndex, List<Move> legalMovesForWinner, Move selectedMoveForWinner,
 			double alpha, int currentIteration){
 
 		//System.out.println("adapt");
@@ -308,9 +308,8 @@ public class PpaWeights {
 		//System.out.println();
 
 		// If we only have one move for the role, we don't need to adapt its weight,
-		// because it will always be selected in this state independently of the policy
-		// and because if we do increment the weight we break the rule that the sum of
-		// weights for the moves of a role in a state has to be always 0.
+		// because we would end up first adding and then removing alpha from the weight,
+		// because of the rule that the sum of all weights has to be always 0.
 		if(legalMovesForWinner.size() != 1){// || !this.gameDependentParameters.getTheMachine().convertToExplicitMove(legalMoves.get(0)).getContents().toString().equals("noop")){
 
 			PpaInfo[] legalMovesForWinnerInfo = new PpaInfo[legalMovesForWinner.size()];
@@ -325,7 +324,7 @@ public class PpaWeights {
 			}
 
 
-			// Iterate over all legal moves and decrease their weight proportionally to their expoenetial.
+			// Iterate over all legal moves and decrease their weight proportionally to their exponential.
 			// For the selected move also increase the weight by alpha.
 			for(int j = 0; j < legalMovesForWinner.size(); j++){
 
@@ -335,6 +334,84 @@ public class PpaWeights {
 				}else{
 					if(exponentialSum > 0){ // Should always be positive
 						legalMovesForWinnerInfo[j].incrementWeight(currentIteration, -alpha * (legalMovesForWinnerInfo[j].getExp()/exponentialSum));
+					}else{
+						GamerLogger.logError("AfterSimulationStrategy", "AdaptivePlayoutAfterSimulation - Found non-positive sum of exponentials when adapting the playout policy!");
+						throw new RuntimeException("Found non-positive sum of exponentials when adapting the playout policy.");
+					}
+				}
+			}
+
+		}
+
+		//this.printPpaWeights();
+		//System.out.println();
+		//System.out.println("--------------------------------");
+		//System.out.println();
+
+		//for(Map<Move, Double> weightOfPlayer : this.weightsPerMove){
+		//	double sum = 0;
+		//	for(Entry<Move,Double> weight : weightOfPlayer.entrySet()){
+		//		sum += weight.getValue();
+		//	}
+		//	System.out.println(sum);
+		//}
+		//System.out.println();
+	}
+*/
+
+	/**
+	 * Given a role, its legal moves in a state, the move that was simulated and the reward obtained
+	 * by the role in the simulation, updates the weights of all the legal moves, re-scaling the update
+	 * by alpha and using currentIteration as time-stamp for the update of the used weights.
+	 *
+	 * NOTE: reward should correspond to different quantities depending on the type of update:
+	 * - SCORES: reward should correspond to the obtained scores of the player rescaled in [0, 1]
+	 * - WINS: reward should correspond to the win of the player in the simulation, which is a number
+	 *         in the interval [0, 1]
+	 * - WINNER_ONLY: reward should be 1 for the only winner of the simulation. For other roles or if there
+	 * 				  is no single winner this method should not be called.
+	 *
+	 * @param roleIndex
+	 * @param legalMovesForRole
+	 * @param selectedMoveForRole
+	 * @param reward
+	 * @param alpha
+	 * @param currentIteration
+	 */
+	public void adaptPolicyForRole(int roleIndex, List<Move> legalMovesForRole, Move selectedMoveForRole,
+			double reward, double alpha, int currentIteration){
+
+		//System.out.println("adapt");
+		//this.printPpaWeights();
+		//System.out.println();
+
+		// If we only have one move for the role, we don't need to adapt its weight,
+		// because we would end up first adding and then removing alpha from the weight,
+		// because of the rule that the sum of all weights has to be always 0.
+		if(legalMovesForRole.size() != 1){// || !this.gameDependentParameters.getTheMachine().convertToExplicitMove(legalMoves.get(0)).getContents().toString().equals("noop")){
+
+			PpaInfo[] legalMovesForWinnerInfo = new PpaInfo[legalMovesForRole.size()];
+
+			// Iterate over all legal moves to compute the sum of the exponential of their probabilities
+			double exponentialSum = 0;
+			//System.out.println(exponentialSum);
+			for(int j = 0; j < legalMovesForRole.size(); j++){
+				legalMovesForWinnerInfo[j] = this.getPpaInfoForPolicyAdaptation(roleIndex, legalMovesForRole.get(j), currentIteration);
+				exponentialSum += legalMovesForWinnerInfo[j].getExp();
+				//System.out.println(exponentialSum);
+			}
+
+
+			// Iterate over all legal moves and decrease their weight proportionally to their exponential.
+			// For the selected move also increase the weight by alpha.
+			for(int j = 0; j < legalMovesForRole.size(); j++){
+
+				if(selectedMoveForRole.equals(legalMovesForRole.get(j))){
+					legalMovesForWinnerInfo[j].incrementWeight(currentIteration, reward * (alpha - alpha * (legalMovesForWinnerInfo[j].getExp()/exponentialSum)));
+					//System.out.println("detected1");
+				}else{
+					if(exponentialSum > 0){ // Should always be positive
+						legalMovesForWinnerInfo[j].incrementWeight(currentIteration, - reward * alpha * (legalMovesForWinnerInfo[j].getExp()/exponentialSum));
 					}else{
 						GamerLogger.logError("AfterSimulationStrategy", "AdaptivePlayoutAfterSimulation - Found non-positive sum of exponentials when adapting the playout policy!");
 						throw new RuntimeException("Found non-positive sum of exponentials when adapting the playout policy.");

@@ -71,7 +71,7 @@ public class EpsilonAdaptivePlayoutMoveSelector extends AdaptivePlayoutMoveSelec
 
 		List<Move> chosenMoves = new ArrayList<Move>();
 		PpaInfo moveInfo;
-		double maxWeight = -1;
+		double maxWeight = -Double.MAX_VALUE;
 		double currentWeight;
 
 		Move move;

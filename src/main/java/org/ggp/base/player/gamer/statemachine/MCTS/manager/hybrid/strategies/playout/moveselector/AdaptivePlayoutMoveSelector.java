@@ -11,8 +11,6 @@ public abstract class AdaptivePlayoutMoveSelector extends MoveSelector {
 
 	protected PpaWeights ppaWeights;
 
-
-
 	public AdaptivePlayoutMoveSelector(GameDependentParameters gameDependentParameters, Random random,
 			GamerSettings gamerSettings, SharedReferencesCollector sharedReferencesCollector) {
 		super(gameDependentParameters, random, gamerSettings, sharedReferencesCollector);

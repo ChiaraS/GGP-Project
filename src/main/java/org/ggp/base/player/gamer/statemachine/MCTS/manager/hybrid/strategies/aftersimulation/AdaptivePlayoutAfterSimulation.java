@@ -6,7 +6,6 @@ import java.util.Random;
 import org.ggp.base.player.gamer.statemachine.GamerSettings;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.GameDependentParameters;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.SharedReferencesCollector;
-import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.SearchManagerComponent.PLAYOUT_STAT_UPDATE_TYPE;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.structures.PpaWeights;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.hybrid.SimulationResult;
 import org.ggp.base.util.logging.GamerLogger;
@@ -99,7 +98,7 @@ public class AdaptivePlayoutAfterSimulation extends AfterSimulationStrategy {
 			//}
 
 			if(allJointMoves == null || allJointMoves.size() == 0){ // This method should be called only if the playout has actually been performed, so there must be at least one joint move.
-				GamerLogger.logError("AfterSimulationStrategy", "AdaptivePlayoutAfterSimulation - Found no joint moves in the simulation result when updating the MAST statistics. Probably a wrong combination of strategies has been set!");
+				GamerLogger.logError("AfterSimulationStrategy", "AdaptivePlayoutAfterSimulation - Found no joint moves in the simulation result when updating the PPA weights with the playout moves. Probably a wrong combination of strategies has been set!");
 				throw new RuntimeException("No joint moves in the simulation result.");
 			}
 
@@ -109,39 +108,76 @@ public class AdaptivePlayoutAfterSimulation extends AfterSimulationStrategy {
 			}
 
 			switch(this.updateType){
-			 FINISH!
+				case SCORES:
+
+					double[] goals = simulationResult[resultIndex].getTerminalGoals();
+
+					for(int i = 0; i < allMovesInAllStates.size(); i++){
+
+						for(int roleIndex = 0; roleIndex < goals.length; roleIndex++){
+
+			    			List<Move> legalMovesForRole = allMovesInAllStates.get(i).get(roleIndex);
+			    			Move roleMove = allJointMoves.get(i).get(roleIndex);
+			    			this.ppaWeights.adaptPolicyForRole(roleIndex, legalMovesForRole, roleMove, goals[roleIndex]/100.0, this.alpha, this.gameDependentParameters.getTotIterations());
+
+			    		}
+
+					}
+
+					break;
+
+				case WINS:
+
+					double[] wins = simulationResult[resultIndex].getTerminalWins();
+
+					for(int i = 0; i < allMovesInAllStates.size(); i++){
+
+						for(int roleIndex = 0; roleIndex < wins.length; roleIndex++){
+
+			    			List<Move> legalMovesForRole = allMovesInAllStates.get(i).get(roleIndex);
+			    			Move roleMove = allJointMoves.get(i).get(roleIndex);
+			    			this.ppaWeights.adaptPolicyForRole(roleIndex, legalMovesForRole, roleMove, wins[roleIndex], this.alpha, this.gameDependentParameters.getTotIterations());
+
+			    		}
+
+					}
+
+					break;
+
+				case WINNER_ONLY:
+					int winnerIndex = simulationResult[resultIndex].getSingleWinner();
+
+					//System.out.println("Winner=" + winnerIndex);
+
+					// Use the simulation result to figure out for which player to change the weights.
+					// For the player with the highest score, weights are increased by alpha for the simulated
+					// move and decreased for all other moves proportionally to their probability.
+					// If more than 1 player has highest score nothing happens.
+					/*List<Integer> maxIndices = new ArrayList<Integer>();
+					double max = -Double.MAX_VALUE;
+					for(int roleIndex = 0; roleIndex < goals.length; roleIndex++){
+					    if(goals[roleIndex] > max){
+					    	max = goals[roleIndex];
+					    	maxIndices.clear();
+					    	maxIndices.add(roleIndex);
+					    }else if(goals[roleIndex] == max){
+					    	maxIndices.add(roleIndex);
+					    }
+					}*/
+
+					if(winnerIndex != -1){ // Only one player with highest score
+
+					    for(int i = 0; i < allMovesInAllStates.size(); i++){
+
+			    			List<Move> legalMovesForWinner = allMovesInAllStates.get(i).get(winnerIndex);
+			    			Move winnerMove = allJointMoves.get(i).get(winnerIndex);
+			    			this.ppaWeights.adaptPolicyForRole(winnerIndex, legalMovesForWinner, winnerMove, 1.0, this.alpha, this.gameDependentParameters.getTotIterations());
+
+			    		}
+					}
+					break;
 			}
 
-			int winnerIndex = simulationResult[resultIndex].getSingleWinner();
-
-			//System.out.println("Winner=" + winnerIndex);
-
-			// Use the simulation result to figure out for which player to change the weights.
-			// For the player with the highest score, weights are increased by alpha for the simulated
-			// move and decreased for all other moves proportionally to their probability.
-			// If more than 1 player has highest score nothing happens.
-			/*List<Integer> maxIndices = new ArrayList<Integer>();
-			double max = -Double.MAX_VALUE;
-			for(int roleIndex = 0; roleIndex < goals.length; roleIndex++){
-			    if(goals[roleIndex] > max){
-			    	max = goals[roleIndex];
-			    	maxIndices.clear();
-			    	maxIndices.add(roleIndex);
-			    }else if(goals[roleIndex] == max){
-			    	maxIndices.add(roleIndex);
-			    }
-			}*/
-
-			if(winnerIndex != -1){ // Only one player with highest score
-
-			    for(int i = 0; i < allMovesInAllStates.size(); i++){
-
-	    			List<Move> legalMovesForWinner = allMovesInAllStates.get(i).get(winnerIndex);
-	    			Move winnerMove = allJointMoves.get(i).get(winnerIndex);
-	    			this.ppaWeights.adaptPolicy(winnerIndex, legalMovesForWinner, winnerMove, this.alpha, this.gameDependentParameters.getTotIterations());
-
-	    		}
-			}
 		}
 
 	}
@@ -149,7 +185,8 @@ public class AdaptivePlayoutAfterSimulation extends AfterSimulationStrategy {
 	@Override
 	public String getComponentParameters(String indentation) {
 
-		String params = indentation + "ALPHA = " + this.alpha;
+		String params = indentation + "ALPHA = " + this.alpha +
+				indentation + "UPDATE_TYPE = " + this.updateType;
 
 		if(this.ppaWeights != null){
 			params += indentation + "ppa_weights = " + this.ppaWeights.getMinimalInfo();

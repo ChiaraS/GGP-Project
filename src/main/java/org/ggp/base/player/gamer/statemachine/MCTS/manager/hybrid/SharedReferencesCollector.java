@@ -17,6 +17,7 @@ import org.ggp.base.player.gamer.statemachine.MCTS.manager.parameterstuning.stru
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.parameterstuning.structure.DiscreteParametersManager;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.parameterstuning.structure.parameters.ContinuousTunableParameter;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.parameterstuning.structure.parameters.DiscreteTunableParameter;
+import org.ggp.base.player.gamer.statemachine.MCTS.manager.structures.NGramTreeNode;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.structures.PpaWeights;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.hybrid.MctsJointMove;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.hybrid.MctsTranspositionTable;
@@ -70,6 +71,8 @@ public class SharedReferencesCollector {
 	private List<Map<Move, Double>> weightsPerMove;
 
 	private PpaWeights ppaWeights;
+
+	private List<NGramTreeNode<MoveStats>> nstStatistics;
 
 
 	public SharedReferencesCollector() {
@@ -360,6 +363,14 @@ public class SharedReferencesCollector {
 
 	public PpaWeights getPpaWeights() {
 		return this.ppaWeights;
+	}
+
+	public void setNstStatistics(List<NGramTreeNode<MoveStats>> nstStatistics) {
+		this.nstStatistics = nstStatistics;
+	}
+
+	public List<NGramTreeNode<MoveStats>> getNstStatistics() {
+		return this.nstStatistics;
 	}
 
 

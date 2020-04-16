@@ -304,12 +304,29 @@ public class MastUpdater extends NodeUpdater{
 
 	@Override
 	public String getComponentParameters(String indentation) {
-		String params = super.printComponent(indentation);
+		String params = super.getComponentParameters(indentation);
+
+		String mastStatisticsString;
+
+		if(this.mastStatistics != null){
+			mastStatisticsString = "[ ";
+
+			for(Map<Move, MoveStats> roleMastStats : this.mastStatistics){
+				mastStatisticsString += roleMastStats.size() + " entries, ";
+			}
+
+			mastStatisticsString += "]";
+
+		}else{
+			mastStatisticsString = "null";
+		}
 
 		if(params != null){
-			return params + indentation + "UPDATE_TYPE" + this.updateType;
+			return params + indentation + "UPDATE_TYPE" + this.updateType +
+					indentation + "mast_statistics = " + mastStatisticsString;
 		}else{
-			return indentation + "UPDATE_TYPE" + this.updateType;
+			return indentation + "UPDATE_TYPE" + this.updateType +
+					indentation + "mast_statistics = " + mastStatisticsString;
 		}
 	}
 
