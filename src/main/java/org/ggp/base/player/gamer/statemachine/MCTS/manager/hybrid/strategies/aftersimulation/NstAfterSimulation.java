@@ -15,6 +15,11 @@ import org.ggp.base.util.statemachine.structure.Move;
 
 public class NstAfterSimulation extends AfterSimulationStrategy {
 
+	/**
+	 * ATTENTION: the correct functioning of NST is based on the assumption that
+	 * the roles in the GDL file are specified in the same order in which they
+	 * alternate their turns in sequential-move games;
+	 */
 	private List<NGramTreeNode<MoveStats>> nstStatistics;
 
 	private PLAYOUT_STAT_UPDATE_TYPE updateType;

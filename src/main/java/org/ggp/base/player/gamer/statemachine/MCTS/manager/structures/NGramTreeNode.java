@@ -48,4 +48,16 @@ public class NGramTreeNode<E> {
 		return this.nextMoveNodes.get(move);
 	}
 
+	public Map<Move,NGramTreeNode<E>> getNextMoveNodes(){
+		return this.nextMoveNodes;
+	}
+
+	public void clear(){
+		this.nextMoveNodes.clear();
+	}
+
+	public boolean hasNoChildren(){
+		return this.nextMoveNodes.isEmpty();
+	}
+
 }
