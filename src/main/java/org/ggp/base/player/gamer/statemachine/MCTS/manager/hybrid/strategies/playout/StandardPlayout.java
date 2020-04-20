@@ -10,6 +10,7 @@ import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.SearchManagerC
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.SharedReferencesCollector;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.strategies.playout.moveselector.MoveSelector;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.MctsNode;
+import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.hybrid.MctsJointMove;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.hybrid.SimulationResult;
 import org.ggp.base.util.logging.GamerLogger;
 import org.ggp.base.util.reflection.ProjectSearcher;
@@ -39,6 +40,11 @@ public class StandardPlayout extends PlayoutStrategy {
 	 */
 	protected MoveSelector moveSelector;
 
+	/**
+	 * List with all the joint moves selected so far in the current simulation.
+	 */
+	protected List<MctsJointMove> currentSimulationJointMoves;
+
 	public StandardPlayout(GameDependentParameters gameDependentParameters, Random random,
 			GamerSettings gamerSettings, SharedReferencesCollector sharedReferencesCollector, String id) {
 
@@ -59,7 +65,12 @@ public class StandardPlayout extends PlayoutStrategy {
 
 	@Override
 	public void setReferences(SharedReferencesCollector sharedReferencesCollector) {
+
+		super.setReferences(sharedReferencesCollector);
+
 		this.moveSelector.setReferences(sharedReferencesCollector);
+
+		this.currentSimulationJointMoves = sharedReferencesCollector.getCurrentSimulationJointMoves();
 	}
 
 	@Override
@@ -73,7 +84,7 @@ public class StandardPlayout extends PlayoutStrategy {
 	}
 
 	@Override
-	public SimulationResult[] playout(MctsNode node, List<Move> jointMove, MachineState state, int maxDepth) {
+	public SimulationResult[] playout(MctsNode node, /*List<Move> jointMove,*/ MachineState state, int maxDepth) {
 
 		SimulationResult[] result = new SimulationResult[1];
 
@@ -154,7 +165,14 @@ public class StandardPlayout extends PlayoutStrategy {
 
 	@Override
 	public String getComponentParameters(String indentation) {
-		return indentation + "JOINT_MOVE_SELECTOR = " + this.moveSelector.printComponent(indentation + "  ");
+
+		String superParams = super.getComponentParameters(indentation);
+		if(superParams != null){
+			return superParams + indentation + "JOINT_MOVE_SELECTOR = " + this.moveSelector.printComponent(indentation + "  ");
+		}else{
+			return indentation + "JOINT_MOVE_SELECTOR = " + this.moveSelector.printComponent(indentation + "  ");
+		}
+
 	}
 
 	@Override

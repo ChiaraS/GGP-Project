@@ -9,6 +9,7 @@ import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.GameDependentP
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.SharedReferencesCollector;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.strategies.Strategy;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.MctsNode;
+import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.hybrid.MctsJointMove;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.hybrid.SimulationResult;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.hybrid.statememorizingdecoupled.StateMemorizingMctsNode;
 import org.ggp.base.util.statemachine.exceptions.MoveDefinitionException;
@@ -19,9 +20,24 @@ import org.ggp.base.util.statemachine.structure.Move;
 
 public abstract class PlayoutStrategy extends Strategy {
 
+	/**
+	 * List with all the joint moves selected so far in the current simulation.
+	 * NOTE that for the MultipleStandardPlayout this list will contain ALL
+	 * the joint moves visited during any of the multiple playouts, together with
+	 * the moves visited during the selection.
+	 */
+	protected List<MctsJointMove> currentSimulationJointMoves;
+
 	public PlayoutStrategy(GameDependentParameters gameDependentParameters, Random random,
 			GamerSettings gamerSettings, SharedReferencesCollector sharedReferencesCollector, String id) {
 		super(gameDependentParameters, random, gamerSettings, sharedReferencesCollector);
+	}
+
+	@Override
+	public void setReferences(SharedReferencesCollector sharedReferencesCollector) {
+
+		this.currentSimulationJointMoves = sharedReferencesCollector.getCurrentSimulationJointMoves();
+
 	}
 
 	/**
@@ -45,7 +61,7 @@ public abstract class PlayoutStrategy extends Strategy {
 	 * @return a list of results, one for each performed playout, with final (or also intermediate) goals and played
 	 * moves (optional).
 	 */
-	public abstract SimulationResult[] playout(MctsNode node, List<Move> jointMove, MachineState state, int maxDepth);
+	public abstract SimulationResult[] playout(MctsNode node, /*List<Move> jointMove,*/ MachineState state, int maxDepth);
 
 	/**
 	 * Returns a move for the given role in the given state, using the playout strategy implemented by the class.
@@ -81,6 +97,8 @@ public abstract class PlayoutStrategy extends Strategy {
 
 		//System.out.println(Arrays.toString(jointMove.toArray()));
 
+		this.currentSimulationJointMoves.add(new MctsJointMove(jointMove));
+
 		return jointMove;
 
 		/*
@@ -99,5 +117,10 @@ public abstract class PlayoutStrategy extends Strategy {
 		}else {
 			return this.gameDependentParameters.getTheMachine().getNextState(state, jointMove);
 		}
+	}
+
+	@Override
+	public String getComponentParameters(String indentation) {
+		return indentation + "CURRENT_SIMULATION_JOINT_MOVES = " + (this.currentSimulationJointMoves != null ? this.currentSimulationJointMoves.size() + " entries." : "null");
 	}
 }

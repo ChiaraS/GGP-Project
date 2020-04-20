@@ -28,11 +28,6 @@ import org.ggp.base.util.statemachine.structure.Move;
  */
 public class SelectiveMultiplePlayout extends PlayoutStrategy {
 
-	/**
-	 * Shared parameter that contains all the joint moves played so far for the current simulation in the tree.
-	 */
-	private List<MctsJointMove> currentSimulationJointMoves;
-
 	// Logging purpose
 	private int totalStepCalls;
 	private int multiPlayoutStepCalls;
@@ -289,6 +284,8 @@ public class SelectiveMultiplePlayout extends PlayoutStrategy {
 	@Override
 	public void setReferences(SharedReferencesCollector sharedReferencesCollector) {
 
+		super.setReferences(sharedReferencesCollector);
+
 		this.subPlayoutStrategy.setReferences(sharedReferencesCollector);
 		this.mastStatistics = sharedReferencesCollector.getMastStatistics();
 		this.currentSimulationJointMoves = sharedReferencesCollector.getCurrentSimulationJointMoves();
@@ -332,18 +329,23 @@ public class SelectiveMultiplePlayout extends PlayoutStrategy {
 	}
 
 	@Override
-	public SimulationResult[] playout(MctsNode node, List<Move> jointMove, MachineState state, int maxDepth) {
+	public SimulationResult[] playout(MctsNode node, /*List<Move> jointMove,*/ MachineState state, int maxDepth) {
 
 		SimulationResult[] results;
 
 		if(this.anyInterestingMoveSoFar()){
+			int numJointMovesInSelection = this.currentSimulationJointMoves.size();
 			results = new SimulationResult[this.numPlayouts];
 			for(int repetition = 0; repetition < results.length; repetition++){
 				results[repetition] = this.subPlayoutStrategy.singlePlayout(node, state, maxDepth);
+				// Cancel the joint moves played in the last playout from the list of joint moves,
+				// so that for the next playout it will again correspond to only the moves that were
+				// played during the selection phase.
+				this.currentSimulationJointMoves = this.currentSimulationJointMoves.subList(0, numJointMovesInSelection);
 			}
 			this.multiPlayoutStepCalls++;
 		}else {
-			results = this.subPlayoutStrategy.playout(node, jointMove, state, maxDepth);
+			results = this.subPlayoutStrategy.playout(node, /*jointMove,*/ state, maxDepth);
 		}
 
 		this.totalStepCalls++;
@@ -431,7 +433,12 @@ public class SelectiveMultiplePlayout extends PlayoutStrategy {
 				indentation + "iterations_till_previous_step = " + this.iterationsTillPreviousStep +
 				indentation + "score_sum_for_roles_till_previous_step = " + scoreSumForRolesTillPreviousStepStirng;
 
-		return params;
+		String superParams = super.getComponentParameters(indentation);
+		if(superParams != null){
+			return superParams + params;
+		}else{
+			return params;
+		}
 
 	}
 

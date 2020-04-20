@@ -1084,7 +1084,7 @@ public class FpgaMctsManager {
 					//int[] playoutVisitedNodes = new int[1];
 					// Note that if no depth is left for the playout, the playout itself will take care of
 					// returning the added-state goal values (if any) or the default tie goal values.
-					simulationResult = this.playoutStrategy.playout(nextNode, mctsJointMove.getJointMove(), nextState, availableDepth);
+					simulationResult = this.playoutStrategy.playout(nextNode, /*mctsJointMove.getJointMove(),*/ nextState, availableDepth);
 					this.flip(simulationResult);
 
 					// IMPORTANT NOTE! Here we increment the number of nodes visited for the current iteration

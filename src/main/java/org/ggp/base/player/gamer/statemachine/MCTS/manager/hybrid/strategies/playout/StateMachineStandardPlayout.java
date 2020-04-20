@@ -54,7 +54,7 @@ public class StateMachineStandardPlayout extends PlayoutStrategy {
 
 	@Override
 	public void setReferences(SharedReferencesCollector sharedReferencesCollector) {
-		// Do nothing.
+		super.setReferences(sharedReferencesCollector);
 	}
 
 	@Override
@@ -68,7 +68,7 @@ public class StateMachineStandardPlayout extends PlayoutStrategy {
 	}
 
 	@Override
-	public SimulationResult[] playout(MctsNode node, List<Move> jointMove, MachineState state, int maxDepth) {
+	public SimulationResult[] playout(MctsNode node, /*List<Move> jointMove,*/ MachineState state, int maxDepth) {
 		SimulationResult[] result = new SimulationResult[1];
 
 		result[0] = this.singlePlayout(node, state, maxDepth);
@@ -141,7 +141,14 @@ public class StateMachineStandardPlayout extends PlayoutStrategy {
 
 	@Override
 	public String getComponentParameters(String indentation) {
-		return indentation + "NUM_SIMULATIONS_PER_PLAYOUT = " + this.numSimulationsPerPlayout;
+
+		String superParams = super.getComponentParameters(indentation);
+		if(superParams != null){
+			return superParams + indentation + "NUM_SIMULATIONS_PER_PLAYOUT = " + this.numSimulationsPerPlayout;
+		}else{
+			return indentation + "NUM_SIMULATIONS_PER_PLAYOUT = " + this.numSimulationsPerPlayout;
+		}
+
 	}
 
 	/**

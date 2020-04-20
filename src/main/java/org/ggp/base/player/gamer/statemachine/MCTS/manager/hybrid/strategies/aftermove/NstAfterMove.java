@@ -145,7 +145,7 @@ public class NstAfterMove extends AfterMoveStrategy {
 		String toLog = "STEP=;" + this.gameDependentParameters.getGameStep() + ";\n";
 
 		if(this.nstStatistics == null){
-			for(int roleIndex = 0; roleIndex < this.nstStatistics.size(); roleIndex++){
+			for(int roleIndex = 0; roleIndex < this.gameDependentParameters.getNumRoles(); roleIndex++){
 				toLog += ("ROLE=;" + this.gameDependentParameters.getTheMachine().convertToExplicitRole(this.gameDependentParameters.getTheMachine().getRoles().get(roleIndex)) + ";\n");
 				toLog += "null;\n";
 			}
@@ -181,7 +181,7 @@ public class NstAfterMove extends AfterMoveStrategy {
 						}
 
 					}
-					currentLevel = nextLevel;
+					currentLevel = new ArrayList<MyPair<List<Move>,NGramTreeNode<MoveStats>>>(nextLevel);
 					nextLevel.clear();
 					nGramLength++;
 				}
@@ -233,5 +233,144 @@ public class NstAfterMove extends AfterMoveStrategy {
 		return params;
 
 	}
+
+
+	/* CODE FOR DEBUGGING */
+	public static void logNstStats(List<NGramTreeNode<MoveStats>> nstStatistics){
+
+		String toLog = "STEP=;" + 1 + ";\n";
+
+		if(nstStatistics == null){
+			toLog += ("ROLE=;" + 0 + ";\n");
+			toLog += "null;\n";
+		}else{
+			List<MyPair<List<Move>,NGramTreeNode<MoveStats>>> currentLevel;
+			List<MyPair<List<Move>,NGramTreeNode<MoveStats>>> nextLevel;
+			double scoreSum;
+			double visits;
+			for(int roleIndex = 0; roleIndex < nstStatistics.size(); roleIndex++){
+				toLog += ("ROLE=;" + roleIndex + ";\n");
+				currentLevel = new ArrayList<MyPair<List<Move>,NGramTreeNode<MoveStats>>>();
+				nextLevel = new ArrayList<MyPair<List<Move>,NGramTreeNode<MoveStats>>>();
+				// Add the 1-grams to the current level
+				for(Entry<Move,NGramTreeNode<MoveStats>> nGramStats : nstStatistics.get(roleIndex).getNextMoveNodes().entrySet()){
+					List<Move> nGram = new ArrayList<Move>();
+					nGram.add(nGramStats.getKey());
+					currentLevel.add(new MyPair<List<Move>,NGramTreeNode<MoveStats>>(nGram,nGramStats.getValue()));
+				}
+				int nGramLength = 1;
+
+				while(!currentLevel.isEmpty()){
+					toLog += ("N_GRAM_LENGTH=;" + nGramLength + ";\n");
+					for(MyPair<List<Move>,NGramTreeNode<MoveStats>> nGramTreeNode: currentLevel){
+						scoreSum = nGramTreeNode.getSecond().getStatistic().getScoreSum();
+						visits = nGramTreeNode.getSecond().getStatistic().getVisits();
+						toLog += ("MOVE=;" + getNGramString2(nGramTreeNode.getFirst()) +
+						";SCORE_SUM=;" + scoreSum + ";VISITS=;" + visits + ";AVG_VALUE=;" + (scoreSum/visits) + ";\n");
+
+						for(Entry<Move,NGramTreeNode<MoveStats>> nGramStats : nGramTreeNode.getSecond().getNextMoveNodes().entrySet()){
+							List<Move> nGram = new ArrayList<Move>(nGramTreeNode.getFirst());
+							nGram.add(nGramStats.getKey());
+							nextLevel.add(new MyPair<List<Move>,NGramTreeNode<MoveStats>>(nGram,nGramStats.getValue()));
+						}
+
+					}
+					currentLevel = new ArrayList<MyPair<List<Move>,NGramTreeNode<MoveStats>>>(nextLevel);
+					nextLevel.clear();
+					nGramLength++;
+				}
+			}
+		}
+
+		toLog += "\n";
+
+		System.out.println(toLog);
+
+	}
+
+	public static String getNGramString2(List<Move> reversedNGram){
+		String nGram = "]";
+
+		for(Move m : reversedNGram){
+			nGram = m.toString() + " " + nGram;
+		}
+
+		nGram = "[ " + nGram;
+
+		return nGram;
+	}
+
+/*
+	public static void main(String[] args){
+
+		List<NGramTreeNode<MoveStats>> nstStatistics = new ArrayList<NGramTreeNode<MoveStats>>();
+
+		NGramTreeNode<MoveStats> node1A = new NGramTreeNode<MoveStats>(new MoveStats(1000,30));
+		NGramTreeNode<MoveStats> node1B = new NGramTreeNode<MoveStats>(new MoveStats(2000,80));
+
+		NGramTreeNode<MoveStats> node1C = new NGramTreeNode<MoveStats>(new MoveStats(60,1));
+		NGramTreeNode<MoveStats> node1D = new NGramTreeNode<MoveStats>(new MoveStats(40,1));
+		NGramTreeNode<MoveStats> node1E = new NGramTreeNode<MoveStats>(new MoveStats(20,8));
+		NGramTreeNode<MoveStats> node1F = new NGramTreeNode<MoveStats>(new MoveStats(10,4));
+
+		NGramTreeNode<MoveStats> node1G = new NGramTreeNode<MoveStats>(new MoveStats(100,2));
+		NGramTreeNode<MoveStats> node1H = new NGramTreeNode<MoveStats>(new MoveStats(300,3));
+		NGramTreeNode<MoveStats> node1I = new NGramTreeNode<MoveStats>(new MoveStats(0,3));
+
+		NGramTreeNode<MoveStats> node1J = new NGramTreeNode<MoveStats>(new MoveStats(0,0));
+
+		node1F.addNextMoveNode(new CompactMove(8), node1A);
+		node1F.addNextMoveNode(new CompactMove(9), node1B);
+
+		node1G.addNextMoveNode(new CompactMove(4), node1C);
+		node1G.addNextMoveNode(new CompactMove(5), node1D);
+
+		node1I.addNextMoveNode(new CompactMove(6), node1E);
+		node1I.addNextMoveNode(new CompactMove(7), node1F);
+
+		node1J.addNextMoveNode(new CompactMove(1), node1G);
+		node1J.addNextMoveNode(new CompactMove(2), node1H);
+		node1J.addNextMoveNode(new CompactMove(3), node1I);
+
+		nstStatistics.add(node1J);
+
+
+		////// ROLE 2
+
+		NGramTreeNode<MoveStats> node2A = new NGramTreeNode<MoveStats>(new MoveStats(10000,300));
+		NGramTreeNode<MoveStats> node2B = new NGramTreeNode<MoveStats>(new MoveStats(20000,800));
+
+		NGramTreeNode<MoveStats> node2C = new NGramTreeNode<MoveStats>(new MoveStats(600,10));
+		NGramTreeNode<MoveStats> node2D = new NGramTreeNode<MoveStats>(new MoveStats(400,10));
+		NGramTreeNode<MoveStats> node2E = new NGramTreeNode<MoveStats>(new MoveStats(200,80));
+		NGramTreeNode<MoveStats> node2F = new NGramTreeNode<MoveStats>(new MoveStats(100,40));
+
+		NGramTreeNode<MoveStats> node2G = new NGramTreeNode<MoveStats>(new MoveStats(1000,20));
+		NGramTreeNode<MoveStats> node2H = new NGramTreeNode<MoveStats>(new MoveStats(3000,30));
+		NGramTreeNode<MoveStats> node2I = new NGramTreeNode<MoveStats>(new MoveStats(00,30));
+
+		NGramTreeNode<MoveStats> node2J = new NGramTreeNode<MoveStats>(new MoveStats(0,0));
+
+		node2F.addNextMoveNode(new CompactMove(8), node2A);
+		node2F.addNextMoveNode(new CompactMove(9), node2B);
+
+		node2G.addNextMoveNode(new CompactMove(4), node2C);
+		node2G.addNextMoveNode(new CompactMove(5), node2D);
+
+		node2I.addNextMoveNode(new CompactMove(6), node2E);
+		node2I.addNextMoveNode(new CompactMove(7), node2F);
+
+		node2J.addNextMoveNode(new CompactMove(1), node2G);
+		node2J.addNextMoveNode(new CompactMove(2), node2H);
+		node2J.addNextMoveNode(new CompactMove(3), node2I);
+
+		nstStatistics.add(node2J);
+
+		NstAfterMove.logNstStats(nstStatistics);
+
+	}
+
+*/
+
 
 }

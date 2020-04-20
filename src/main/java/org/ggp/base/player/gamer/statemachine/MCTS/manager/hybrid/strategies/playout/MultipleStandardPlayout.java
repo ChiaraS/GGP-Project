@@ -1,6 +1,5 @@
 package org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.strategies.playout;
 
-import java.util.List;
 import java.util.Random;
 
 import org.ggp.base.player.gamer.statemachine.GamerSettings;
@@ -9,7 +8,6 @@ import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.SharedReferenc
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.MctsNode;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.hybrid.SimulationResult;
 import org.ggp.base.util.statemachine.structure.MachineState;
-import org.ggp.base.util.statemachine.structure.Move;
 
 /**
  * Same as the StandardPlayout but allows to repeat a playout multiple times from the given state,
@@ -39,7 +37,7 @@ public class MultipleStandardPlayout extends StandardPlayout {
 	}
 
 	@Override
-	public SimulationResult[] playout(MctsNode node, List<Move> jointMove, MachineState state, int maxDepth) {
+	public SimulationResult[] playout(MctsNode node, /*List<Move> jointMove,*/ MachineState state, int maxDepth) {
 
 		SimulationResult[] result = new SimulationResult[1];
 

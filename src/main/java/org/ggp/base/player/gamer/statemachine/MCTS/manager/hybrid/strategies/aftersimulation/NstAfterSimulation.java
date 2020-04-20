@@ -26,8 +26,6 @@ public class NstAfterSimulation extends AfterSimulationStrategy {
 
 	private int maxNGramLength;
 
-	private int minNGramVisits;
-
 	public NstAfterSimulation(GameDependentParameters gameDependentParameters, Random random,
 			GamerSettings gamerSettings, SharedReferencesCollector sharedReferencesCollector, String id) {
 
@@ -58,8 +56,6 @@ public class NstAfterSimulation extends AfterSimulationStrategy {
 		}
 
 		this.maxNGramLength = gamerSettings.getIntPropertyValue("AfterSimulationStrategy.maxNGramLength");
-
-		this.minNGramVisits = gamerSettings.getIntPropertyValue("AfterSimulationStrategy.minNGramVisits");
 
 	}
 
@@ -95,6 +91,8 @@ public class NstAfterSimulation extends AfterSimulationStrategy {
 			// All joint moves played in the current simulation
 			allJointMoves = simulationResult[resultIndex].getAllJointMoves();
 
+			//NstAfterSimulation.printJointMoves(allJointMoves);
+
 			if(allJointMoves == null || allJointMoves.size() == 0){ // This method should be called only if the playout has actually been performed, so there must be at least one joint move.
 				GamerLogger.logError("AfterSimulationStrategy", "NstAfterSimulation - Found no joint moves in the simulation result when updating the NST statistics. Probably a wrong combination of strategies has been set!");
 				throw new RuntimeException("No joint moves in the simulation result.");
@@ -109,6 +107,15 @@ public class NstAfterSimulation extends AfterSimulationStrategy {
 						GamerLogger.logError("AfterSimulationStrategy", "NstAfterSimulation - Found null terminal goals in the simulation result when updating the NST statistics with the playout moves. Probably a wrong combination of strategies has been set!");
 						throw new RuntimeException("Null terminal goals in the simulation result.");
 					}
+
+					/*
+					System.out.println();
+					String s = "[ ";
+					for(int i = 0; i < goals.length; i++){
+						s += (goals[i] + " ");
+					}
+					s += "]";
+					System.out.println(s);*/
 
 					updateAllRolesForPlayout(allJointMoves, goals);
 
@@ -139,6 +146,8 @@ public class NstAfterSimulation extends AfterSimulationStrategy {
 
 				break;
 			}
+
+			//NstAfterMove.logNstStats(this.nstStatistics);
 		}
 	}
 
@@ -152,7 +161,7 @@ public class NstAfterSimulation extends AfterSimulationStrategy {
 	private void updateAllRolesForPlayout(List<List<Move>> allJointMoves, double[] rewards){
 
 		// Iterate over all the joint moves in the playout, starting from the last one.
-		for(int jmIndex = allJointMoves.size()-1; jmIndex <= 0; jmIndex--){
+		for(int jmIndex = allJointMoves.size()-1; jmIndex >= 0; jmIndex--){
 
 			// For a given joint move in the playout, iterate over all the roles to update all its
 			// n-grams that end with his current move in the joint move.
@@ -267,7 +276,7 @@ public class NstAfterSimulation extends AfterSimulationStrategy {
 
 			int roleIndex = 0;
 			for(NGramTreeNode<MoveStats> roleNstStats : this.nstStatistics){
-				nstStatisticsString += (roleNstStats == null ? "null " : "Tree" + roleIndex + " "); // this only counts the first level of the n-grams tree, i.e. only 1-grams.
+				nstStatisticsString += (roleNstStats == null ? "null " : "Tree" + roleIndex + " ");
 				roleIndex++;
 			}
 
@@ -278,8 +287,21 @@ public class NstAfterSimulation extends AfterSimulationStrategy {
 		}
 
 		return indentation + "UPDATE_TYPE" + this.updateType +
-				indentation + "mast_statistics = " + nstStatisticsString;
+				indentation + "nst_statistics = " + nstStatisticsString;
 
+	}
+
+
+	/* FOR DEBUGGING */
+	public static void printJointMoves(List<List<Move>> allJointMoves){
+		for(List<Move> jm : allJointMoves){
+			String s = "[ ";
+			for(Move m : jm){
+				s += m.toString() + " ";
+			}
+			s += "]";
+			System.out.println(s);
+		}
 	}
 
 }
