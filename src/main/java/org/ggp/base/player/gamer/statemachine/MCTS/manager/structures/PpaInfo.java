@@ -1,6 +1,5 @@
 package org.ggp.base.player.gamer.statemachine.MCTS.manager.structures;
 
-
 public class PpaInfo {
 
 	private double weight;
@@ -84,6 +83,65 @@ public class PpaInfo {
 		this.lastWeightUpdateIteration = decayIteration;
 		this.consistent = false;
 	}
+
+	/*
+	 * THE FOLLOWING METHODS HAVE BEEN ADDED WITH THE INTENT TO REMOVE THE USE OF THE PpaWeights CLASS.
+	 * NPPA IS ALREADY USING THESE METHODS, WHILE PPA (I.E ADAPTIVE PLAYOUT) IS NOT. HOWEVER, PPA CAN BE
+	 * REPLACED BY USING THE NPPA CLASSES WITH MAX N-GRAM LENGTH SET TO 1.
+	 */
+
+	/**
+	 * THIS FUNCTION SHOULD BE USED WHEN SELECTING MOVES DURING THE PLAYOUT BECAUSE IT ALWAYS
+	 * RECOMPUTES THE EXPONENTIAL IF IT IS NOT CONSISTENT WITH THE WEIGHT.
+	 * This method returns the exponential of the weight. If the exponential is not consistent
+	 * with the weight, it gets recomputed first.
+	 */
+	public double getExpForSelection(){
+
+		if(!this.consistent){
+			this.updateExp();
+		}
+
+		return this.exp;
+
+	}
+
+	/**
+	 * THIS FUNCTION SHOULD BE USED WHEN ADAPTING THE POLICY DURING AFTER SIMULATION ACTIONS
+	 * BECAUSE IT RECOMPUTES THE EXPONENTIAL THAT IS NOT CONSISTENT WITH THE WEIGHT ONLY IF
+	 * THE WEIGHT HASN'T BEEN INCREMENTED YET DURING THE CURRENT ADAPTATION OF THE POLICY.
+	 * This method returns the exponential of the weight. If the exponential is not consistent with
+	 * the value that the weight had before any increment took place during the current iteration,
+	 * it gets recomputed first.
+	 *
+	 * NOTE: here, the currentIteration is already set to count the current iteration as completed,
+	 * so it does not match the value that this variable had during the simulation that just ended.
+	 * However, the currentIteration is used locally only to the after simulation strategy to keep
+	 * track of when an increment took place so that we can know whether the exponential has to be
+	 * updated or not. Therefore, this system still works, because every time the after simulation
+	 * strategy is executed, the currentIteration will have a higher value that the previous time
+	 * the after simulation strategy was executed. The currentIteration has no effect on the selection
+	 * of the moves during playout, because there each inconsistent exponential will always be updated
+	 * when needed.
+	 *
+	 * @param currentIteration
+	 * @return
+	 */
+	public double getExpForPolicyAdaptation(int currentIteration){
+
+		if(!this.consistent){
+			// If the exponential is not consistent because the weight was increased
+			// in a previous iteration, update it. If the weight was increased in this
+			// iteration do not modify the exponential.
+			if(this.lastWeightUpdateIteration != currentIteration){
+				this.updateExp();
+			}
+		}
+
+		return this.exp;
+
+	}
+
 
 	@Override
 	public String toString(){

@@ -75,14 +75,10 @@ public class AdaptivePlayoutAfterSimulation extends AfterSimulationStrategy {
 			throw new RuntimeException("No simulation results available to perform after simulation actions!");
 		}
 
-		//double[] goals;
 		List<List<Move>> allJointMoves;
 		List<List<List<Move>>> allMovesInAllStates;
 
 		for(int resultIndex = 0; resultIndex < simulationResult.length; resultIndex++){
-
-			// Terminal goals for current simulation
-			//goals = simulationResult[resultIndex].getTerminalGoals();
 
 			// All joint moves played in the current simulation
 			allJointMoves = simulationResult[resultIndex].getAllJointMoves();
@@ -91,11 +87,6 @@ public class AdaptivePlayoutAfterSimulation extends AfterSimulationStrategy {
 			allMovesInAllStates = simulationResult[resultIndex].getAllLegalMovesOfAllRoles();
 
 			//System.out.println("Joint moves and siblings match?:" + (allJointMoves.size() == allMovesInAllStates.size()));
-
-			//if(goals == null){
-			//	GamerLogger.logError("AfterSimulationStrategy", "AdaptivePlayoutAfterSimulation - Found null terminal goals in the simulation result when updating the PPA weights with the playout moves. Probably a wrong combination of strategies has been set!");
-			//	throw new RuntimeException("Null terminal goals in the simulation result.");
-			//}
 
 			if(allJointMoves == null || allJointMoves.size() == 0){ // This method should be called only if the playout has actually been performed, so there must be at least one joint move.
 				GamerLogger.logError("AfterSimulationStrategy", "AdaptivePlayoutAfterSimulation - Found no joint moves in the simulation result when updating the PPA weights with the playout moves. Probably a wrong combination of strategies has been set!");
@@ -111,6 +102,11 @@ public class AdaptivePlayoutAfterSimulation extends AfterSimulationStrategy {
 				case SCORES:
 
 					double[] goals = simulationResult[resultIndex].getTerminalGoals();
+
+					if(goals == null){
+						GamerLogger.logError("AfterSimulationStrategy", "AdaptivePlayoutAfterSimulation - Found null terminal goals in the simulation result when updating the PPA weights with the playout moves. Probably a wrong combination of strategies has been set!");
+						throw new RuntimeException("Null terminal goals in the simulation result.");
+					}
 
 					for(int i = 0; i < allMovesInAllStates.size(); i++){
 
