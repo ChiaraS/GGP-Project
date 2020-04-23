@@ -32,7 +32,7 @@ public class MastUpdater extends NodeUpdater{
 
 		sharedReferencesCollector.setMastStatistics(mastStatistics);
 
-		if(gamerSettings.specifiesProperty("NodeUpdater.updateType")){
+		//if(gamerSettings.specifiesProperty("NodeUpdater.updateType")){
 			String updateTypeString = gamerSettings.getPropertyValue("NodeUpdater.updateType");
 			switch(updateTypeString.toLowerCase()){
 				case "scores":
@@ -48,9 +48,9 @@ public class MastUpdater extends NodeUpdater{
 					GamerLogger.logError("SearchManagerCreation", "MastUpdater - The property " + updateTypeString + " is not a valid update type for MAST statistics.");
 					throw new RuntimeException("MastUpdater - Invalid update type for MAST statistics " + updateTypeString + ".");
 			}
-		}else{
-			this.updateType = PLAYOUT_STAT_UPDATE_TYPE.SCORES; // Default when nothing is specified
-		}
+		//}else{
+		//	this.updateType = PLAYOUT_STAT_UPDATE_TYPE.SCORES; // Default when nothing is specified
+		//}
 
 	}
 

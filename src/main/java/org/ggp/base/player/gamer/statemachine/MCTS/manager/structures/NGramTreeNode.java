@@ -53,6 +53,7 @@ public class NGramTreeNode<E> {
 	}
 
 	public void clear(){
+		this.statistic = null;
 		this.nextMoveNodes.clear();
 	}
 

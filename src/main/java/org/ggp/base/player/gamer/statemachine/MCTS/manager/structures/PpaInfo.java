@@ -6,6 +6,8 @@ public class PpaInfo {
 
 	private double exp;
 
+	private int visits;
+
 	/**
 	 * True if the exponential is the exponential of the current weight,
 	 * false if it's still the exponential of the previous weight and needs
@@ -33,6 +35,7 @@ public class PpaInfo {
 		this.exp = exp;
 		this.consistent = consistent;
 		this.lastWeightUpdateIteration = updateIteration;
+		this.visits = 0;
 	}
 
 	public double getWeight() {
@@ -50,6 +53,10 @@ public class PpaInfo {
 	//public void setExp(double exp) {
 	//	this.exp = exp;
 	//}
+
+	public int getVisits() {
+		return this.visits;
+	}
 
 	public boolean isConsistent() {
 		return consistent;
@@ -72,16 +79,30 @@ public class PpaInfo {
 		this.consistent = true;
 	}
 
+	// Assume that the weight is incremented only once every time a move is visited, therefore
+	// every time the weight is incremented we increase the number of visits.
 	public void incrementWeight(int incrementIteration, double increment){
 		this.weight += increment;
 		this.lastWeightUpdateIteration = incrementIteration;
 		this.consistent = false;
+		this.visits++;
 	}
 
 	public void decayWeight(double decayFactor, int decayIteration){
-		this.weight *= decayFactor;
-		this.lastWeightUpdateIteration = decayIteration;
-		this.consistent = false;
+
+		if(decayFactor == 0.0){
+			this.weight = 0.0;
+			this.exp = 1.0;
+			this.visits = 0;
+			this.consistent = true;
+			this.lastWeightUpdateIteration = -1;
+		}else if(decayFactor != 1.0){
+			this.weight *= decayFactor;
+			this.lastWeightUpdateIteration = decayIteration;
+			this.consistent = false;
+			this.visits = (int) Math.round(((double)this.visits)*decayFactor); // If the weight decays, the number of visits is decreased proportionally to indicate that this weight is less accurate
+		}
+
 	}
 
 	/*

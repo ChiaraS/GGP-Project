@@ -228,7 +228,7 @@ public class NstAfterMove extends AfterMoveStrategy {
 
 		String params = indentation + "DECAY_FACTOR = " + this.decayFactor +
 				indentation + "LOG_NST_STATS = " + this.logNstStats +
-				indentation + "mast_statistics = " + nstStatisticsString;
+				indentation + "nst_statistics = " + nstStatisticsString;
 
 		return params;
 
@@ -241,8 +241,10 @@ public class NstAfterMove extends AfterMoveStrategy {
 		String toLog = "STEP=;" + 1 + ";\n";
 
 		if(nstStatistics == null){
-			toLog += ("ROLE=;" + 0 + ";\n");
-			toLog += "null;\n";
+			//for(int roleIndex = 0; roleIndex < nstStatistics.size(); roleIndex++){
+				toLog += ("ROLE=;" + 0 + ";\n");
+				toLog += "null;\n";
+			//}
 		}else{
 			List<MyPair<List<Move>,NGramTreeNode<MoveStats>>> currentLevel;
 			List<MyPair<List<Move>,NGramTreeNode<MoveStats>>> nextLevel;

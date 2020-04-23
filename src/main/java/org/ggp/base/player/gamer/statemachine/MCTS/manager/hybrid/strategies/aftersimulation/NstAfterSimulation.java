@@ -35,7 +35,7 @@ public class NstAfterSimulation extends AfterSimulationStrategy {
 
 		sharedReferencesCollector.setNstStatistics(nstStatistics);
 
-		if(gamerSettings.specifiesProperty("AfterSimulationStrategy.updateType")){
+		//if(gamerSettings.specifiesProperty("AfterSimulationStrategy.updateType")){
 			String updateTypeString = gamerSettings.getPropertyValue("AfterSimulationStrategy.updateType");
 			switch(updateTypeString.toLowerCase()){
 				case "scores":
@@ -51,9 +51,9 @@ public class NstAfterSimulation extends AfterSimulationStrategy {
 					GamerLogger.logError("SearchManagerCreation", "NstAfterSimulation - The property " + updateTypeString + " is not a valid update type for NST statistics.");
 					throw new RuntimeException("NstAfterSimulation - Invalid update type for NST statistics " + updateTypeString + ".");
 			}
-		}else{
-			this.updateType = PLAYOUT_STAT_UPDATE_TYPE.SCORES; // Default when nothing is specified
-		}
+		//}else{
+		//	this.updateType = PLAYOUT_STAT_UPDATE_TYPE.SCORES; // Default when nothing is specified
+		//}
 
 		this.maxNGramLength = gamerSettings.getIntPropertyValue("AfterSimulationStrategy.maxNGramLength");
 
@@ -186,15 +186,7 @@ public class NstAfterSimulation extends AfterSimulationStrategy {
 
 		// Iterate over all the joint moves in the playout.
 		for(int jmIndex = 0; jmIndex < allJointMoves.size(); jmIndex++){
-
-			// For a given joint move in the playout, iterate over all the roles to update all its
-			// n-grams that start with his current move in the joint move.
-			for(int roleIndex = 0; roleIndex < this.gameDependentParameters.getNumRoles(); roleIndex++){
-
-				this.updateNGramsForRoleInState(winnerIndex, jmIndex, allJointMoves, 100.0);
-
-			}
-
+			this.updateNGramsForRoleInState(winnerIndex, jmIndex, allJointMoves, 100.0);
 		}
 
 	}
@@ -209,7 +201,7 @@ public class NstAfterSimulation extends AfterSimulationStrategy {
 	 *
 	 * @param allJointMoves
 	 */
-	public void updateNGramsForRoleInState(int roleIndex, int jmIndex, List<List<Move>> allJointMoves, double reward){
+	private void updateNGramsForRoleInState(int roleIndex, int jmIndex, List<List<Move>> allJointMoves, double reward){
 
 		// This variable keeps track of the index of the role for which we are adding a move
 		// to the current n-gram, that ends with the move for roleIndex.

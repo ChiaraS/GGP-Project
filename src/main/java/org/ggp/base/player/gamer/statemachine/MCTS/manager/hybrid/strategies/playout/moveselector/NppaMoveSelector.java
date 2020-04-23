@@ -4,22 +4,18 @@ import java.util.List;
 import java.util.Random;
 
 import org.ggp.base.player.gamer.statemachine.GamerSettings;
-import org.ggp.base.player.gamer.statemachine.MCS.manager.MoveStats;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.GameDependentParameters;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.SharedReferencesCollector;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.structures.NGramTreeNode;
+import org.ggp.base.player.gamer.statemachine.MCTS.manager.structures.PpaInfo;
+import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.MctsNode;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.hybrid.MctsJointMove;
+import org.ggp.base.util.statemachine.exceptions.MoveDefinitionException;
+import org.ggp.base.util.statemachine.exceptions.StateMachineException;
+import org.ggp.base.util.statemachine.structure.MachineState;
 import org.ggp.base.util.statemachine.structure.Move;
 
-/**
- * NOTE: the play-out supported selection should work also when using NST in the playout,
- * because the list of joint moves kept by the MCTS manager should still be updated correctly.
- * However, test this before using the playout supported selection with NST.
- *
- * @author C.Sironi
- *
- */
-public abstract class NstMoveSelector extends MoveSelector {
+public class NppaMoveSelector extends MoveSelector {
 
 	/**
 	 * List with all the joint moves selected so far in the current simulation.
@@ -27,30 +23,30 @@ public abstract class NstMoveSelector extends MoveSelector {
 	protected List<MctsJointMove> currentSimulationJointMoves;
 
 	/**
-	 * ATTENTION: the correct functioning of NST is based on the assumption that
+	 * ATTENTION: the correct functioning of NPPA is based on the assumption that
 	 * the roles in the GDL file are specified in the same order in which they
 	 * alternate their turns in sequential-move games;
 	 */
-	protected List<NGramTreeNode<MoveStats>> nstStatistics;
-
-	protected double nstFpu;
+	protected List<NGramTreeNode<PpaInfo>> nppaStatistics;
 
 	protected int minNGramVisits;
 
-	public NstMoveSelector(GameDependentParameters gameDependentParameters, Random random,
+	private double nppaFpu;
+
+	public NppaMoveSelector(GameDependentParameters gameDependentParameters, Random random,
 			GamerSettings gamerSettings, SharedReferencesCollector sharedReferencesCollector) {
 		super(gameDependentParameters, random, gamerSettings, sharedReferencesCollector);
 
-		this.nstFpu = gamerSettings.getDoublePropertyValue("MoveSelector.nstFpu");
-
 		this.minNGramVisits = gamerSettings.getIntPropertyValue("MoveSelector.minNGramVisits");
+
+		this.nppaFpu = gamerSettings.getDoublePropertyValue("MoveSelector.nppaFpu");
 
 	}
 
 	@Override
 	public void setReferences(SharedReferencesCollector sharedReferencesCollector) {
 
-		this.nstStatistics = sharedReferencesCollector.getNstStatistics();
+		this.nppaStatistics = sharedReferencesCollector.getNppaStatistics();
 
 		this.currentSimulationJointMoves = sharedReferencesCollector.getCurrentSimulationJointMoves();
 
@@ -68,26 +64,26 @@ public abstract class NstMoveSelector extends MoveSelector {
 
 	}
 
-	protected double computeNstValue(int roleIndex, Move move){
+	protected double computeNppaValue(int roleIndex, Move move){
 
-		//System.out.println("Computing value for move " + move);
+		System.out.println("Computing value for move " + move);
 
 		// Find the n-gram tree node for the move of the role
-		NGramTreeNode<MoveStats> nGramTreeNode = this.nstStatistics.get(roleIndex).getNextMoveNode(move);
+		NGramTreeNode<PpaInfo> nGramTreeNode = this.nppaStatistics.get(roleIndex).getNextMoveNode(move);
 
 		// If the move has never been visited, return the FPU
 		if(nGramTreeNode == null || nGramTreeNode.getStatistic().getVisits() == 0){
-			//System.out.println("FPU value " + this.nstFpu);
-			return this.nstFpu;
+			System.out.println("FPU value " + this.nppaFpu);
+			return this.nppaFpu;
 		}
 
 		// If the move has been visited at last once, average the value of the
 		// 1-gram with the value of all the n-grams (n > 1) ending with the move
 		// that have been visited at least minNGramVisits times.
-		double nGramSum = nGramTreeNode.getStatistic().getScoreSum() / nGramTreeNode.getStatistic().getVisits();
+		double nGramSum = nGramTreeNode.getStatistic().getWeight();
 		double numNGrams = 1;
 
-		//System.out.println("1 gram = " + nGramSum);
+		System.out.println("1 gram = " + nGramSum);
 
 		// Prepare to sum the 2-gram
 		int currentRoleIndex = (roleIndex + this.gameDependentParameters.getNumRoles() - 1)%this.gameDependentParameters.getNumRoles();
@@ -99,11 +95,11 @@ public abstract class NstMoveSelector extends MoveSelector {
 		while(nGramTreeNode != null && nGramTreeNode.getStatistic().getVisits() >= this.minNGramVisits){ // If the m-gram does not have enough visits we can stop because the (m+1)-gram will also not have enough visits
 
 			// Sum the score of the n-gram
-			nGramSum += (nGramTreeNode.getStatistic().getScoreSum() / nGramTreeNode.getStatistic().getVisits());
+			nGramSum += (nGramTreeNode.getStatistic().getWeight());
 			numNGrams++;
 
-			//System.out.println(numNGrams + " gram move = " + currentMove);
-			//System.out.println(numNGrams + " gram = " + nGramSum);
+			System.out.println(currentNGramLength + " gram move = " + currentMove);
+			System.out.println(currentNGramLength + " gram = " + nGramSum);
 
 			// Update all variables
 			currentRoleIndex = (currentRoleIndex + this.gameDependentParameters.getNumRoles() - 1)%this.gameDependentParameters.getNumRoles();
@@ -123,29 +119,45 @@ public abstract class NstMoveSelector extends MoveSelector {
 
 	@Override
 	public String getComponentParameters(String indentation) {
-		String nstStatisticsString;
+		String nppaStatisticsString;
 
-		if(this.nstStatistics != null){
-			nstStatisticsString = "[ ";
+		if(this.nppaStatistics != null){
+			nppaStatisticsString = "[ ";
 
 			int roleIndex = 0;
-			for(NGramTreeNode<MoveStats> roleNstStats : this.nstStatistics){
-				nstStatisticsString += (roleNstStats == null ? "null " : "Tree" + roleIndex + " ");
+			for(NGramTreeNode<PpaInfo> roleNstStats : this.nppaStatistics){
+				nppaStatisticsString += (roleNstStats == null ? "null " : "Tree" + roleIndex + " ");
 				roleIndex++;
 			}
 
-			nstStatisticsString += "]";
+			nppaStatisticsString += "]";
 
 		}else{
-			nstStatisticsString = "null";
+			nppaStatisticsString = "null";
 		}
 
 		return indentation + "MIN_N_GRAM_VISITS" + this.minNGramVisits +
-				indentation + "NST_FPU = " + this.nstFpu +
-				indentation + "nst_statistics = " + nstStatisticsString +
+				indentation + "NPPA_FPU = " + this.nppaFpu +
+				indentation + "nppa_statistics = " + nppaStatisticsString +
 				indentation + "current_simulation_joint_moves = " +
 				(this.currentSimulationJointMoves != null ? this.currentSimulationJointMoves.size() + " entries" : "null");
 	}
 
+
+
+
+
+
+
+
+
+
+
+	@Override
+	public Move getMoveForRole(MctsNode node, MachineState state, int roleIndex)
+			throws MoveDefinitionException, StateMachineException {
+		// TODO Auto-generated method stub
+		return null;
+	}
 
 }

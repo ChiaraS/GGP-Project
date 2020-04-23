@@ -401,6 +401,10 @@ public class PpaWeights {
 				//System.out.println(exponentialSum);
 			}
 
+			if(exponentialSum <= 0){ // Should always be positive
+				GamerLogger.logError("AfterSimulationStrategy", "AdaptivePlayoutAfterSimulation - Found non-positive sum of exponentials when adapting the playout policy!");
+				throw new RuntimeException("Found non-positive sum of exponentials when adapting the playout policy.");
+			}
 
 			// Iterate over all legal moves and decrease their weight proportionally to their exponential.
 			// For the selected move also increase the weight by alpha.
@@ -410,12 +414,7 @@ public class PpaWeights {
 					legalMovesForWinnerInfo[j].incrementWeight(currentIteration, reward * (alpha - alpha * (legalMovesForWinnerInfo[j].getExp()/exponentialSum)));
 					//System.out.println("detected1");
 				}else{
-					if(exponentialSum > 0){ // Should always be positive
-						legalMovesForWinnerInfo[j].incrementWeight(currentIteration, - reward * alpha * (legalMovesForWinnerInfo[j].getExp()/exponentialSum));
-					}else{
-						GamerLogger.logError("AfterSimulationStrategy", "AdaptivePlayoutAfterSimulation - Found non-positive sum of exponentials when adapting the playout policy!");
-						throw new RuntimeException("Found non-positive sum of exponentials when adapting the playout policy.");
-					}
+					legalMovesForWinnerInfo[j].incrementWeight(currentIteration, - reward * alpha * (legalMovesForWinnerInfo[j].getExp()/exponentialSum));
 				}
 			}
 

@@ -5,7 +5,6 @@ import java.util.List;
 import java.util.Random;
 
 import org.ggp.base.player.gamer.statemachine.GamerSettings;
-import org.ggp.base.player.gamer.statemachine.MCS.manager.MoveStats;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.GameDependentParameters;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.SharedReferencesCollector;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.structures.NGramTreeNode;
@@ -41,7 +40,7 @@ public class NppaAfterSimulation extends AfterSimulationStrategy {
 
 		this.alpha = gamerSettings.getDoublePropertyValue("AfterSimulationStrategy.alpha");
 
-		if(gamerSettings.specifiesProperty("AfterSimulationStrategy.updateType")){
+		//if(gamerSettings.specifiesProperty("AfterSimulationStrategy.updateType")){
 			String updateTypeString = gamerSettings.getPropertyValue("AfterSimulationStrategy.updateType");
 			switch(updateTypeString.toLowerCase()){
 				case "scores":
@@ -57,9 +56,9 @@ public class NppaAfterSimulation extends AfterSimulationStrategy {
 					GamerLogger.logError("SearchManagerCreation", "NppaAfterSimulation - The property " + updateTypeString + " is not a valid update type for NPPA statistics.");
 					throw new RuntimeException("NppaAfterSimulation - Invalid update type for NPPA statistics " + updateTypeString + ".");
 			}
-		}else{
-			this.updateType = PLAYOUT_STAT_UPDATE_TYPE.SCORES; // Default when nothing is specified
-		}
+		//}else{
+		//	this.updateType = PLAYOUT_STAT_UPDATE_TYPE.SCORES; // Default when nothing is specified
+		//}
 
 		this.maxNGramLength = gamerSettings.getIntPropertyValue("AfterSimulationStrategy.maxNGramLength");
 
@@ -104,7 +103,7 @@ public class NppaAfterSimulation extends AfterSimulationStrategy {
 			//NstAfterSimulation.printJointMoves(allJointMoves);
 
 			if(allJointMoves == null || allJointMoves.size() == 0){ // This method should be called only if the playout has actually been performed, so there must be at least one joint move.
-				GamerLogger.logError("AfterSimulationStrategy", "NstAfterSimulation - Found no joint moves in the simulation result when updating the NST statistics. Probably a wrong combination of strategies has been set!");
+				GamerLogger.logError("AfterSimulationStrategy", "NppaAfterSimulation - Found no joint moves in the simulation result when updating the NPPA statistics. Probably a wrong combination of strategies has been set!");
 				throw new RuntimeException("No joint moves in the simulation result.");
 			}
 
@@ -114,8 +113,12 @@ public class NppaAfterSimulation extends AfterSimulationStrategy {
 					double[] goals = simulationResult[resultIndex].getTerminalGoals();
 
 					if(goals == null){
-						GamerLogger.logError("AfterSimulationStrategy", "NstAfterSimulation - Found null terminal goals in the simulation result when updating the NST statistics with the playout moves. Probably a wrong combination of strategies has been set!");
+						GamerLogger.logError("AfterSimulationStrategy", "NppaAfterSimulation - Found null terminal goals in the simulation result when updating the NPPA statistics with the playout moves. Probably a wrong combination of strategies has been set!");
 						throw new RuntimeException("Null terminal goals in the simulation result.");
+					}
+
+					for(int i = 0; i < goals.length; i++){
+						goals[i] /= 100.0;
 					}
 
 					/*
@@ -127,20 +130,20 @@ public class NppaAfterSimulation extends AfterSimulationStrategy {
 					s += "]";
 					System.out.println(s);*/
 
-					updateAllRolesForPlayout(allJointMoves, goals);
+					updateAllRolesForPlayout(allJointMoves, allMovesInAllStates, goals);
 
 					break;
 
 				case WINS:
 
-					double[] wins = simulationResult[resultIndex].getRescaledTerminalWins(); // Returns wins but in [0,100] instead of [0,1]
+					double[] wins = simulationResult[resultIndex].getTerminalWins();
 
 					if(wins == null){
-						GamerLogger.logError("AfterSimulationStrategy", "NstAfterSimulation - Found null rescaled terminal wins in the simulation result when updating the NST statistics with the playout moves. Probably a wrong combination of strategies has been set!");
+						GamerLogger.logError("AfterSimulationStrategy", "NppaAfterSimulation - Found null rescaled terminal wins in the simulation result when updating the NPPA statistics with the playout moves. Probably a wrong combination of strategies has been set!");
 						throw new RuntimeException("Null rescaled terminal wins in the simulation result.");
 					}
 
-					updateAllRolesForPlayout(allJointMoves, wins);
+					updateAllRolesForPlayout(allJointMoves, allMovesInAllStates, wins);
 
 					break;
 
@@ -150,7 +153,7 @@ public class NppaAfterSimulation extends AfterSimulationStrategy {
 
 				if(winnerIndex != -1){
 
-					this.updateWinningRoleForPlayout(allJointMoves, winnerIndex);
+					this.updateWinningRoleForPlayout(allJointMoves, allMovesInAllStates, winnerIndex);
 
 				}
 
@@ -162,22 +165,22 @@ public class NppaAfterSimulation extends AfterSimulationStrategy {
 	}
 
 	/**
-	 * Updates the NST statistics for the moves and n-grams of all roles in all states traversed during
+	 * Updates the NPPA statistics for the moves and n-grams of all roles in all states traversed during
 	 * the playout with the given rewards of all roles.
 	 *
 	 * @param allJointMoves
 	 * @param rewards
 	 */
-	private void updateAllRolesForPlayout(List<List<Move>> allJointMoves, double[] rewards){
+	private void updateAllRolesForPlayout(List<List<Move>> allJointMoves, List<List<List<Move>>> allMovesInAllStates, double[] rewards){
 
 		// Iterate over all the joint moves in the playout, starting from the last one.
 		for(int jmIndex = allJointMoves.size()-1; jmIndex >= 0; jmIndex--){
 
-			// For a given joint move in the playout, iterate over all the roles to update all its
-			// n-grams that end with his current move in the joint move.
+			// For a given joint move in the playout, iterate over all the roles to update all their
+			// n-grams that end with their current move in the joint move.
 			for(int roleIndex = 0; roleIndex < this.gameDependentParameters.getNumRoles(); roleIndex++){
 
-				this.updateNGramsForRoleInState(roleIndex, jmIndex, allJointMoves, rewards[roleIndex]);
+				this.updateNGramsForRoleInState(roleIndex, jmIndex, allJointMoves, allMovesInAllStates, rewards[roleIndex]);
 
 			}
 
@@ -186,24 +189,18 @@ public class NppaAfterSimulation extends AfterSimulationStrategy {
 	}
 
 	/**
-	 * Updates the NST statistics for the moves of the winning role in all states traversed
+	 * Updates the NPPA statistics for the moves of the winning role in all states traversed
 	 * during the playout with the maximum reward, i.e. 100.
 	 *
 	 * @param allJointMoves
 	 * @param winnerIndex
 	 */
-	private void updateWinningRoleForPlayout(List<List<Move>> allJointMoves, int winnerIndex){
+	private void updateWinningRoleForPlayout(List<List<Move>> allJointMoves, List<List<List<Move>>> allMovesInAllStates, int winnerIndex){
 
 		// Iterate over all the joint moves in the playout.
 		for(int jmIndex = 0; jmIndex < allJointMoves.size(); jmIndex++){
 
-			// For a given joint move in the playout, iterate over all the roles to update all its
-			// n-grams that start with his current move in the joint move.
-			for(int roleIndex = 0; roleIndex < this.gameDependentParameters.getNumRoles(); roleIndex++){
-
-				this.updateNGramsForRoleInState(winnerIndex, jmIndex, allJointMoves, 100.0);
-
-			}
+			this.updateNGramsForRoleInState(winnerIndex, jmIndex, allJointMoves, allMovesInAllStates, 1.0);
 
 		}
 
@@ -219,23 +216,34 @@ public class NppaAfterSimulation extends AfterSimulationStrategy {
 	 *
 	 * @param allJointMoves
 	 */
-	public void updateNGramsForRoleInState(int roleIndex, int jmIndex, List<List<Move>> allJointMoves, double reward){
+	private void updateNGramsForRoleInState(int roleIndex, int jmIndex, List<List<Move>> allJointMoves,
+			List<List<List<Move>>> allMovesInAllStates, double reward){
+
+		// If the role only has one legal move in the state (that thus corresponds to the played one),
+		// there is no need to update the weights for the role.
+		if(allMovesInAllStates.get(jmIndex).get(roleIndex).size() == 1){
+			return;
+		}
 
 		// This variable keeps track of the index of the role for which we are adding a move
 		// to the current n-gram, that ends with the move for roleIndex.
 		int currentRoleIndex = roleIndex;
 
-		// This index keeps track of the joint move that we are considering to compute the n-gram
+		// This index keeps track of the simulation step that we are considering to compute the n-gram
+		// (i.e. corresponds to the index of the current joint move and of the current list of legal
+		// moves for each role)
 		int currentJmIndex = jmIndex;
 
-		// This variable keeps track of the NST node for the n-gram that ends with the move of roleIndex
-		// and starts with the move visited in the previous iteration.
-		// The first time it corresponds to a node with no statistics, thus to a 0-gram.
-		NGramTreeNode<MoveStats> previousNstNodeForNGram = this.nstStatistics.get(currentRoleIndex);
+		// This variable keeps track of all the NPPA nodes for the currently considered n-gram length
+		// that end with any of the legal moves of roleIndex, and have the other moves corresponding
+		// to the ones selected in the joint move.
+		// At first, it contains the NPPA nodes of the 1-grams that correspond to each legal action
+		// of roleIndex in the current state.
+		List<NGramTreeNode<PpaInfo>> currentNppaNodesForNGram = new ArrayList<NGramTreeNode<PpaInfo>>();
 
-		// This variable keeps track of the NST node for the n-gram that ends with the move of roleIndex
-		// and starts with the current move.
-		NGramTreeNode<MoveStats> currentNstNodeForNGram;
+		// This variable keeps track of the NPPA nodes for the n-gram that ends with the move of roleIndex
+		// and starts with the next move in the sequence of joint moves (going backwards in the sequence).
+		List<NGramTreeNode<PpaInfo>> nextNppaNodesForNGram = new ArrayList<NGramTreeNode<PpaInfo>>();
 
 		// This variable keeps track of the length that we are currently considering for the n-grams
 		// that we are updating
@@ -244,23 +252,62 @@ public class NppaAfterSimulation extends AfterSimulationStrategy {
 		// This variable keeps track of the current move that we are considering in the n-gram
 		Move currentNGramMove;
 
+		// Keeps track of the index of the n-gram of the move that was selected by the role (i.e. roleIndex)
+		// during the current step of the simulation (i.e. in the joint move jmIndex).
+		int selectedMoveIndex = -1;
+
 		while(currentNGramLength <= this.maxNGramLength && currentJmIndex >= 0){
 
-			// 1. Get current first move in the n-gram
-			currentNGramMove = allJointMoves.get(currentJmIndex).get(currentRoleIndex);
+			if(currentNGramLength == 1){
+				// The first time we want to get the NGram nodes that correspond to all the legal moves
+				// of the current role. Iterate over all the legal moves for currentRoleIndex in the
+				// current state and add their nodes to this list.
+				NGramTreeNode<PpaInfo> nppaStatisticsForRole = this.nppaStatistics.get(currentRoleIndex);
+				int count = 0;
+				for(Move legalMove : allMovesInAllStates.get(currentJmIndex).get(currentRoleIndex)){
+					NGramTreeNode<PpaInfo> legalMoveNGram = nppaStatisticsForRole.getNextMoveNode(legalMove);
+					if(legalMoveNGram == null){
+						legalMoveNGram = new NGramTreeNode<PpaInfo>(new PpaInfo(0.0, 1.0,true, -1));
+						nppaStatisticsForRole.addNextMoveNode(legalMove, legalMoveNGram);
+					}
+					currentNppaNodesForNGram.add(legalMoveNGram);
+					// Memorize the index of the move selected in the state by the role.
+					if(legalMove.equals(allJointMoves.get(jmIndex).get(roleIndex))){
+						selectedMoveIndex = count;
+					}
+					count++;
+				}
 
-			// 2. Get NST node for the n-gram starting with the current move of the current role.
-			currentNstNodeForNGram = previousNstNodeForNGram.getNextMoveNode(currentNGramMove);
+				if(selectedMoveIndex == -1){
+					GamerLogger.logError("AfterSimulationStrategy", "NppaAfterSimulation - The move selected by the role was not found in the list of its legal moves when updating n-grams for the role in a step!");
+					throw new RuntimeException("The move selected by the role was not found in the list of its legal moves when updating n-grams for the role in a step!");
+				}
+			}else{
+				// For n-grams with length > 1, we want to get the previous entry in the list of joint move,
+				// extract the joint move of the currentRoleIndex, and extend all the n-grams that we have
+				// so far with this move (i.e. 1 n-gram for each legal move of the initial player).
+				// Get current first move in the n-gram
+				currentNGramMove = allJointMoves.get(currentJmIndex).get(currentRoleIndex);
 
-			// 3. If the node doesn't exist, add it
-			if(currentNstNodeForNGram == null){
-				currentNstNodeForNGram = new NGramTreeNode<MoveStats>(new MoveStats());
-				previousNstNodeForNGram.addNextMoveNode(currentNGramMove, currentNstNodeForNGram);
+				// For each legal move of the initial role, get the NPPA nodes for the n-grams starting
+				// with the current move of the current role, continuing with the subsequent moves selected
+				// in the playout by other roles and ending with any of the legal moves for the initial role.
+				for(NGramTreeNode<PpaInfo> legalMoveNGram : currentNppaNodesForNGram){
+					NGramTreeNode<PpaInfo> nextNGram = legalMoveNGram.getNextMoveNode(currentNGramMove);
+					if(nextNGram == null){
+						nextNGram = new NGramTreeNode<PpaInfo>(new PpaInfo(0.0, 1.0,true, -1));
+						legalMoveNGram.addNextMoveNode(currentNGramMove, nextNGram);
+					}
+					nextNppaNodesForNGram.add(nextNGram);
+				}
+
+				currentNppaNodesForNGram = nextNppaNodesForNGram;
+				nextNppaNodesForNGram = new ArrayList<NGramTreeNode<PpaInfo>>();
+
 			}
 
-			// 4. Get the statistic in the node and update them
-			currentNstNodeForNGram.getStatistic().incrementScoreSum(reward);
-			currentNstNodeForNGram.getStatistic().incrementVisits();
+			// Update the weights of the current N-grams
+			this.updateNGramWeights(currentNppaNodesForNGram, selectedMoveIndex, reward);
 
 			// Update all variables for the next iteration
 			// Go to previous role in the order
@@ -269,8 +316,42 @@ public class NppaAfterSimulation extends AfterSimulationStrategy {
 			currentJmIndex--;
 			// Increase n-gram length
 			currentNGramLength++;
-			// Update the current n-gram tree node
-			previousNstNodeForNGram = currentNstNodeForNGram;
+
+		}
+
+	}
+
+	private void updateNGramWeights(List<NGramTreeNode<PpaInfo>> nGrams, int selectedMoveIndex, double reward){
+
+		int currentIteration = this.gameDependentParameters.getTotIterations();
+
+		// Iterate over all the NGram nodes to compute the sum of the exponential of their weights
+		double exponentialSum = 0;
+		//System.out.println(exponentialSum);
+		for(NGramTreeNode<PpaInfo> nGram : nGrams){
+			exponentialSum += nGram.getStatistic().getExpForPolicyAdaptation(currentIteration);
+			//System.out.println(exponentialSum);
+		}
+
+		// check to be safe
+		if(exponentialSum <= 0){ // Should always be positive
+			GamerLogger.logError("AfterSimulationStrategy", "NppaAfterSimulation - Found non-positive sum of exponentials when adapting the playout policy!");
+			throw new RuntimeException("Found non-positive sum of exponentials when adapting the playout policy.");
+		}
+
+
+		// Iterate over all the NGramTreeNodes to decrease their weight proportionally to their exponential.
+		// For the N-gram ending with the selected move also increase the weight by alpha.
+		for(int nGramIndex = 0; nGramIndex < nGrams.size(); nGramIndex++){
+
+			if(nGramIndex == selectedMoveIndex){
+				nGrams.get(nGramIndex).getStatistic().incrementWeight(currentIteration,
+						reward * (alpha - alpha * (nGrams.get(nGramIndex).getStatistic().getExpForPolicyAdaptation(currentIteration)/exponentialSum)));
+				//System.out.println("detected1");
+			}else{
+				nGrams.get(nGramIndex).getStatistic().incrementWeight(currentIteration,
+						- reward * alpha * (nGrams.get(nGramIndex).getStatistic().getExpForPolicyAdaptation(currentIteration)/exponentialSum));
+			}
 
 		}
 
@@ -285,8 +366,8 @@ public class NppaAfterSimulation extends AfterSimulationStrategy {
 			nppaStatisticsString = "[ ";
 
 			int roleIndex = 0;
-			for(NGramTreeNode<PpaInfo> roleNstStats : this.nppaStatistics){
-				nppaStatisticsString += (roleNstStats == null ? "null " : "Tree" + roleIndex + " ");
+			for(NGramTreeNode<PpaInfo> roleNppaStats : this.nppaStatistics){
+				nppaStatisticsString += (roleNppaStats == null ? "null " : "Tree" + roleIndex + " ");
 				roleIndex++;
 			}
 
@@ -298,22 +379,7 @@ public class NppaAfterSimulation extends AfterSimulationStrategy {
 
 		return indentation + "ALPHA = " + this.alpha +
 				indentation + "UPDATE_TYPE" + this.updateType +
-				indentation + "nst_statistics = " + nppaStatisticsString;
-
-	}
-
-
-
-
-
-
-
-
-
-
-	@Override
-	public void afterSimulationActions(SimulationResult[] simulationResult) {
-		// TODO Auto-generated method stub
+				indentation + "nppa_statistics = " + nppaStatisticsString;
 
 	}
 

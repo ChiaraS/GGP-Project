@@ -30,7 +30,7 @@ public class AdaptivePlayoutAfterSimulation extends AfterSimulationStrategy {
 
 		this.alpha = gamerSettings.getDoublePropertyValue("AfterSimulationStrategy.alpha");
 
-		if(gamerSettings.specifiesProperty("AfterSimulationStrategy.updateType")){
+		//if(gamerSettings.specifiesProperty("AfterSimulationStrategy.updateType")){
 			String updateTypeString = gamerSettings.getPropertyValue("AfterSimulationStrategy.updateType");
 			switch(updateTypeString.toLowerCase()){
 				case "scores":
@@ -46,9 +46,9 @@ public class AdaptivePlayoutAfterSimulation extends AfterSimulationStrategy {
 					GamerLogger.logError("SearchManagerCreation", "AfterSimulationStrategy - The property " + updateTypeString + " is not a valid update type for PPA weights.");
 					throw new RuntimeException("AfterSimulationStrategy - Invalid  update type for PPA weights " + updateTypeString + ".");
 			}
-		}else{
-			this.updateType = PLAYOUT_STAT_UPDATE_TYPE.SCORES; // Default when nothing is specified
-		}
+		//}else{
+		//	this.updateType = PLAYOUT_STAT_UPDATE_TYPE.SCORES; // Default when nothing is specified
+		//}
 
 	}
 

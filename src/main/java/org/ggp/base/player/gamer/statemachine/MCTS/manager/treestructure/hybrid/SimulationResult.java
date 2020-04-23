@@ -57,7 +57,7 @@ public class SimulationResult{
 	 * this list might be empty.
 	 *
 	 * NOTE that when both the siblings of joint actions and the intermediate goals are memorized for each simulation then
-	 * the length of the list of goals will be longer than the list of all sbling moves by one element (i.e. we
+	 * the length of the list of goals will be longer than the list of all sibling moves by one element (i.e. we
 	 * save the goals of each state in the simulation, from root to last state, but in the last state we have
 	 * no sibling moves to memorize).
 	 */
