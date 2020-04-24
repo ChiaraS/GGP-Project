@@ -38,7 +38,12 @@ public class SimulationResult{
 	private double playoutLength;
 
 	/**
-	 *  The joint moves that form the path of this simulation.
+	 * The joint moves that form the path of this simulation.
+	 *
+	 * ATTENTION!!! They are kept in reversed order, from last to first performed one.
+	 * Whenever they are needed, retrieve them with the getAllJointMoves() method, that
+	 * will create a copy of the list and return them in the correct order, from first
+	 * to last.
 	 *
 	 * NOTE that since some implementations of MCTS do not need to remember all the taken actions,
 	 * this list might be empty.
@@ -165,7 +170,13 @@ public class SimulationResult{
 
 	public List<List<List<Move>>> getAllLegalMovesOfAllRoles(){
 
-		return this.allLegalMovesOfAllRoles;
+		List<List<List<Move>>> orderedAllLegalMovesOfAllRoles = new ArrayList<List<List<Move>>>(this.allLegalMovesOfAllRoles.size());
+
+		for(int i = this.allLegalMovesOfAllRoles.size()-1; i >= 0; i--){
+			orderedAllLegalMovesOfAllRoles.add(this.allLegalMovesOfAllRoles.get(i));
+		}
+
+		return orderedAllLegalMovesOfAllRoles;
 
 	}
 
@@ -175,9 +186,22 @@ public class SimulationResult{
 
 	}
 
+	/**
+	 * NOTE: this class keeps the joint moves in reverse order, thus from last to first played move.
+	 * Therefore, to return them in the correct order, it creates a copy of the current list, and
+	 * reverses it before returning it.
+	 *
+	 * @return
+	 */
 	public List<List<Move>> getAllJointMoves(){
 
-		return this.allJointMoves;
+		List<List<Move>> orderedJointMoves = new ArrayList<List<Move>>(this.allJointMoves.size());
+
+		for(int i = this.allJointMoves.size()-1; i >= 0; i--){
+			orderedJointMoves.add(this.allJointMoves.get(i));
+		}
+
+		return orderedJointMoves;
 
 	}
 

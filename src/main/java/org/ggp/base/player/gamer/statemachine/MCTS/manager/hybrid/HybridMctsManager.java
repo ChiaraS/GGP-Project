@@ -1089,6 +1089,8 @@ public class HybridMctsManager {
 
 		//System.out.println("Chosen move: " + mctsJointMove);
 
+		//System.out.println("Selected JM: " + this.printJointMove(mctsJointMove.getJointMove()));
+
 		//System.out.println("Computing next state and next node.");
 
 		// Get the next state according to the joint move...
@@ -1917,4 +1919,16 @@ public class HybridMctsManager {
 		return Math.log(number)/Math.log(2.0);
 	}
 
+
+	/*FOR DEBUGGING*/
+	public String printJointMove(List<Move> allJointMoves){
+
+		String s = "[ ";
+		for(Move m : allJointMoves){
+			s += this.gameDependentParameters.getTheMachine().convertToExplicitMove(m).toString() + " ";
+		}
+		s += "]";
+		return s;
+
+}
 }

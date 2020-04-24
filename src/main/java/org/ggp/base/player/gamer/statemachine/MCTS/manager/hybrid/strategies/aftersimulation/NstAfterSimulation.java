@@ -2,6 +2,7 @@ package org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.strategies.af
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map.Entry;
 import java.util.Random;
 
 import org.ggp.base.player.gamer.statemachine.GamerSettings;
@@ -12,6 +13,9 @@ import org.ggp.base.player.gamer.statemachine.MCTS.manager.structures.NGramTreeN
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.hybrid.SimulationResult;
 import org.ggp.base.util.logging.GamerLogger;
 import org.ggp.base.util.statemachine.structure.Move;
+import org.ggp.base.util.statemachine.structure.compact.CompactRole;
+
+import csironi.ggp.course.utils.MyPair;
 
 public class NstAfterSimulation extends AfterSimulationStrategy {
 
@@ -91,7 +95,7 @@ public class NstAfterSimulation extends AfterSimulationStrategy {
 			// All joint moves played in the current simulation
 			allJointMoves = simulationResult[resultIndex].getAllJointMoves();
 
-			//NstAfterSimulation.printJointMoves(allJointMoves);
+			//this.printJointMoves(allJointMoves);
 
 			if(allJointMoves == null || allJointMoves.size() == 0){ // This method should be called only if the playout has actually been performed, so there must be at least one joint move.
 				GamerLogger.logError("AfterSimulationStrategy", "NstAfterSimulation - Found no joint moves in the simulation result when updating the NST statistics. Probably a wrong combination of strategies has been set!");
@@ -115,7 +119,8 @@ public class NstAfterSimulation extends AfterSimulationStrategy {
 						s += (goals[i] + " ");
 					}
 					s += "]";
-					System.out.println(s);*/
+					System.out.println(s);
+					*/
 
 					updateAllRolesForPlayout(allJointMoves, goals);
 
@@ -147,7 +152,7 @@ public class NstAfterSimulation extends AfterSimulationStrategy {
 				break;
 			}
 
-			//NstAfterMove.logNstStats(this.nstStatistics);
+			//this.printNstStats();
 		}
 	}
 
@@ -285,15 +290,94 @@ public class NstAfterSimulation extends AfterSimulationStrategy {
 
 
 	/* FOR DEBUGGING */
-	public static void printJointMoves(List<List<Move>> allJointMoves){
+	public void printJointMoves(List<List<Move>> allJointMoves){
 		for(List<Move> jm : allJointMoves){
 			String s = "[ ";
 			for(Move m : jm){
-				s += m.toString() + " ";
+				s += this.gameDependentParameters.getTheMachine().convertToExplicitMove(m).toString() + " ";
 			}
 			s += "]";
 			System.out.println(s);
 		}
 	}
+
+	/*public static void printAllMovesForAllRoles(List<List<List<Move>>> allMoves){
+		for(List<List<Move>> legalMovesForRolesInState : allMoves){
+			printJointMoves(legalMovesForRolesInState);
+			System.out.println();
+		}
+	}*/
+
+
+
+
+	private void printNstStats(){
+
+		String toLog = "STEP=;" + 1 + ";\n";
+
+		if(nstStatistics == null){
+			for(int roleIndex = 0; roleIndex < nstStatistics.size(); roleIndex++){
+				toLog += ("ROLE=;" + this.gameDependentParameters.getTheMachine().convertToExplicitRole(new CompactRole(roleIndex)) + ";\n");
+				toLog += "null;\n";
+			}
+		}else{
+			List<MyPair<List<Move>,NGramTreeNode<MoveStats>>> currentLevel;
+			List<MyPair<List<Move>,NGramTreeNode<MoveStats>>> nextLevel;
+			double scoreSum;
+			double visits;
+			for(int roleIndex = 0; roleIndex < nstStatistics.size(); roleIndex++){
+				toLog += ("ROLE=;" + this.gameDependentParameters.getTheMachine().convertToExplicitRole(new CompactRole(roleIndex)) + ";\n");
+				currentLevel = new ArrayList<MyPair<List<Move>,NGramTreeNode<MoveStats>>>();
+				nextLevel = new ArrayList<MyPair<List<Move>,NGramTreeNode<MoveStats>>>();
+				// Add the 1-grams to the current level
+				for(Entry<Move,NGramTreeNode<MoveStats>> nGramStats : nstStatistics.get(roleIndex).getNextMoveNodes().entrySet()){
+					List<Move> nGram = new ArrayList<Move>();
+					nGram.add(nGramStats.getKey());
+					currentLevel.add(new MyPair<List<Move>,NGramTreeNode<MoveStats>>(nGram,nGramStats.getValue()));
+				}
+				int nGramLength = 1;
+
+				while(!currentLevel.isEmpty()){
+					toLog += ("N_GRAM_LENGTH=;" + nGramLength + ";\n");
+					for(MyPair<List<Move>,NGramTreeNode<MoveStats>> nGramTreeNode: currentLevel){
+						scoreSum = nGramTreeNode.getSecond().getStatistic().getScoreSum();
+						visits = nGramTreeNode.getSecond().getStatistic().getVisits();
+						toLog += ("MOVE=;" + getNGramString2(nGramTreeNode.getFirst()) +
+						";SCORE_SUM=;" + scoreSum + ";VISITS=;" + visits + ";AVG_VALUE=;" + (scoreSum/visits) + ";\n");
+
+						for(Entry<Move,NGramTreeNode<MoveStats>> nGramStats : nGramTreeNode.getSecond().getNextMoveNodes().entrySet()){
+							List<Move> nGram = new ArrayList<Move>(nGramTreeNode.getFirst());
+							nGram.add(nGramStats.getKey());
+							nextLevel.add(new MyPair<List<Move>,NGramTreeNode<MoveStats>>(nGram,nGramStats.getValue()));
+						}
+
+					}
+					currentLevel = new ArrayList<MyPair<List<Move>,NGramTreeNode<MoveStats>>>(nextLevel);
+					nextLevel.clear();
+					nGramLength++;
+				}
+			}
+		}
+
+		toLog += "\n";
+
+		System.out.println(toLog);
+
+	}
+
+	private String getNGramString2(List<Move> reversedNGram){
+		String nGram = "]";
+
+		for(Move m : reversedNGram){
+			nGram = this.gameDependentParameters.getTheMachine().convertToExplicitMove(m).toString() + " " + nGram;
+		}
+
+		nGram = "[ " + nGram;
+
+		return nGram;
+	}
+
+
+
 
 }

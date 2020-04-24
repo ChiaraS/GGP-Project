@@ -2,6 +2,7 @@ package org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.strategies.af
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map.Entry;
 import java.util.Random;
 
 import org.ggp.base.player.gamer.statemachine.GamerSettings;
@@ -12,6 +13,9 @@ import org.ggp.base.player.gamer.statemachine.MCTS.manager.structures.PpaInfo;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.hybrid.SimulationResult;
 import org.ggp.base.util.logging.GamerLogger;
 import org.ggp.base.util.statemachine.structure.Move;
+import org.ggp.base.util.statemachine.structure.compact.CompactRole;
+
+import csironi.ggp.course.utils.MyPair;
 
 public class NppaAfterSimulation extends AfterSimulationStrategy {
 
@@ -94,17 +98,38 @@ public class NppaAfterSimulation extends AfterSimulationStrategy {
 
 		for(int resultIndex = 0; resultIndex < simulationResult.length; resultIndex++){
 
+			double[] g = simulationResult[resultIndex].getTerminalGoals();
+			for(int i = 0; i < g.length; i++){
+				g[i] /= 100.0;
+			}
+			//System.out.println();
+			//String s = "[ ";
+			//for(int i = 0; i < g.length; i++){
+			//	s += (g[i] + " ");
+			//}
+			//s += "]";
+			//System.out.println("Goals = " + s);
+
 			// All joint moves played in the current simulation
 			allJointMoves = simulationResult[resultIndex].getAllJointMoves();
 
 			// All legal moves for all the roles in each state traversed by the current simulation
 			allMovesInAllStates = simulationResult[resultIndex].getAllLegalMovesOfAllRoles();
 
-			//NstAfterSimulation.printJointMoves(allJointMoves);
+			//System.out.println("JM");
+			//this.printJointMoves(allJointMoves);
+
+			//System.out.println("All legal moves");
+			//this.printAllMovesForAllRoles(allMovesInAllStates);
 
 			if(allJointMoves == null || allJointMoves.size() == 0){ // This method should be called only if the playout has actually been performed, so there must be at least one joint move.
 				GamerLogger.logError("AfterSimulationStrategy", "NppaAfterSimulation - Found no joint moves in the simulation result when updating the NPPA statistics. Probably a wrong combination of strategies has been set!");
 				throw new RuntimeException("No joint moves in the simulation result.");
+			}
+
+			if(allMovesInAllStates == null || allMovesInAllStates.size() == 0){ // This method should be called only if the playout has actually been performed, so there must be at least one list of legal moves for all roles.
+				GamerLogger.logError("AfterSimulationStrategy", "AdaptivePlayoutAfterSimulation - Found no legal moves for all roles in the simulation result when updating the PPA weights with the playout moves. Probably a wrong combination of strategies has been set!");
+				throw new RuntimeException("No legal moves for all roles in the simulation result.");
 			}
 
 			switch(this.updateType){
@@ -121,15 +146,15 @@ public class NppaAfterSimulation extends AfterSimulationStrategy {
 						goals[i] /= 100.0;
 					}
 
-					/*
+/*
 					System.out.println();
 					String s = "[ ";
 					for(int i = 0; i < goals.length; i++){
 						s += (goals[i] + " ");
 					}
 					s += "]";
-					System.out.println(s);*/
-
+					System.out.println(s);
+*/
 					updateAllRolesForPlayout(allJointMoves, allMovesInAllStates, goals);
 
 					break;
@@ -160,7 +185,7 @@ public class NppaAfterSimulation extends AfterSimulationStrategy {
 				break;
 			}
 
-			//NstAfterMove.logNstStats(this.nstStatistics);
+			//this.logNppaStats();
 		}
 	}
 
@@ -381,6 +406,85 @@ public class NppaAfterSimulation extends AfterSimulationStrategy {
 				indentation + "UPDATE_TYPE" + this.updateType +
 				indentation + "nppa_statistics = " + nppaStatisticsString;
 
+	}
+
+	public void printJointMoves(List<List<Move>> allJointMoves){
+		for(List<Move> jm : allJointMoves){
+			String s = "[ ";
+			for(Move m : jm){
+				s += this.gameDependentParameters.getTheMachine().convertToExplicitMove(m).toString() + " ";
+			}
+			s += "]";
+			System.out.println(s);
+		}
+	}
+
+	public void printAllMovesForAllRoles(List<List<List<Move>>> allMoves){
+		for(List<List<Move>> legalMovesForRolesInState : allMoves){
+			this.printJointMoves(legalMovesForRolesInState);
+			System.out.println();
+		}
+	}
+
+	/* CODE FOR DEBUGGING */
+	public void logNppaStats(){
+
+		String toLog = "STEP=;" + 1 + ";\n";
+
+		if(nppaStatistics == null){
+			for(int roleIndex = 0; roleIndex < nppaStatistics.size(); roleIndex++){
+				toLog += ("ROLE=;" + this.gameDependentParameters.getTheMachine().convertToExplicitRole(new CompactRole(roleIndex)) + ";\n");
+				toLog += "null;\n";
+			}
+		}else{
+			List<MyPair<List<Move>,NGramTreeNode<PpaInfo>>> currentLevel;
+			List<MyPair<List<Move>,NGramTreeNode<PpaInfo>>> nextLevel;
+			for(int roleIndex = 0; roleIndex < this.nppaStatistics.size(); roleIndex++){
+				toLog += ("ROLE=;" + this.gameDependentParameters.getTheMachine().convertToExplicitRole(new CompactRole(roleIndex)) + ";\n");
+				currentLevel = new ArrayList<MyPair<List<Move>,NGramTreeNode<PpaInfo>>>();
+				nextLevel = new ArrayList<MyPair<List<Move>,NGramTreeNode<PpaInfo>>>();
+				// Add the 1-grams to the current level
+				for(Entry<Move,NGramTreeNode<PpaInfo>> nGramStats : this.nppaStatistics.get(roleIndex).getNextMoveNodes().entrySet()){
+					List<Move> nGram = new ArrayList<Move>();
+					nGram.add(nGramStats.getKey());
+					currentLevel.add(new MyPair<List<Move>,NGramTreeNode<PpaInfo>>(nGram,nGramStats.getValue()));
+				}
+				int nGramLength = 1;
+
+				while(!currentLevel.isEmpty()){
+					toLog += ("N_GRAM_LENGTH=;" + nGramLength + ";\n");
+					for(MyPair<List<Move>,NGramTreeNode<PpaInfo>> nGramTreeNode: currentLevel){
+						toLog += ("MOVE=;" + getNGramString2(nGramTreeNode.getFirst()) + ";" + nGramTreeNode.getSecond().getStatistic() + "\n");
+						for(Entry<Move,NGramTreeNode<PpaInfo>> nGramStats : nGramTreeNode.getSecond().getNextMoveNodes().entrySet()){
+							List<Move> nGram = new ArrayList<Move>(nGramTreeNode.getFirst());
+							nGram.add(nGramStats.getKey());
+							nextLevel.add(new MyPair<List<Move>,NGramTreeNode<PpaInfo>>(nGram,nGramStats.getValue()));
+						}
+
+					}
+					currentLevel = new ArrayList<MyPair<List<Move>,NGramTreeNode<PpaInfo>>>(nextLevel);
+					nextLevel.clear();
+					nGramLength++;
+				}
+			}
+		}
+
+		toLog += "\n";
+
+		System.out.println(toLog);
+
+	}
+
+	public String getNGramString2(List<Move> reversedNGram){
+		String nGram = "]";
+
+		for(Move m : reversedNGram){
+			nGram = this.gameDependentParameters.getTheMachine().convertToExplicitMove(m).toString() + " " + nGram;
+		}
+
+		nGram = "[ " + nGram;
+
+		return nGram;
 	}
 
 }

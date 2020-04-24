@@ -68,6 +68,12 @@ public class MovesAndSiblingsMemorizingStandardPlayout extends StandardPlayout {
 
         do{ // NOTE: if any of the try blocks fails on the first iteration this method will return a result with only the terminal goals of the starting state of the playout, depth 0 and empty moves list
 
+        	//System.out.println("Joint moves for playout selection:");
+   	        //for(MctsJointMove jm : this.currentSimulationJointMoves){
+   	        //	System.out.println(this.printJointMove(jm.getJointMove()));
+   	        //}
+   	        //System.out.println();
+
         	jointMove = null;
 			try {
 				jointMove = this.getJointMove(node, state);
@@ -111,12 +117,37 @@ public class MovesAndSiblingsMemorizingStandardPlayout extends StandardPlayout {
 
         }while(nDepth < maxDepth && !terminal);
 
+
+        //System.out.println("-----------------------------------------------");
+
+        //NstAfterSimulation.printJointMoves(allJointMovesInPlayout);
+
         Collections.reverse(allJointMovesInPlayout);
 
+        //NstAfterSimulation.printJointMoves(allJointMovesInPlayout);
+
+        //NstAfterSimulation.printAllMovesForAllRoles(allLegalMovesForRolesInPlayout);
+
         Collections.reverse(allLegalMovesForRolesInPlayout);
+
+        //NstAfterSimulation.printAllMovesForAllRoles(allLegalMovesForRolesInPlayout);
+
+        //System.out.println("-----------------------------------------------");
+
 
         return new SimulationResult(nDepth, this.gameDependentParameters.getTheMachine().getSafeGoalsAvgForAllRoles(state), allJointMovesInPlayout, allLegalMovesForRolesInPlayout);
 
 	}
+
+	public String printJointMove(List<Move> allJointMoves){
+
+		String s = "[ ";
+		for(Move m : allJointMoves){
+			s += this.gameDependentParameters.getTheMachine().convertToExplicitMove(m).toString() + " ";
+		}
+		s += "]";
+		return s;
+
+}
 
 }

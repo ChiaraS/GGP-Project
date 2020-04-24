@@ -70,7 +70,7 @@ public abstract class NstMoveSelector extends MoveSelector {
 
 	protected double computeNstValue(int roleIndex, Move move){
 
-		//System.out.println("Computing value for move " + move);
+		//System.out.println("Computing value for move " + this.gameDependentParameters.getTheMachine().convertToExplicitMove(move));
 
 		// Find the n-gram tree node for the move of the role
 		NGramTreeNode<MoveStats> nGramTreeNode = this.nstStatistics.get(roleIndex).getNextMoveNode(move);
@@ -102,8 +102,8 @@ public abstract class NstMoveSelector extends MoveSelector {
 			nGramSum += (nGramTreeNode.getStatistic().getScoreSum() / nGramTreeNode.getStatistic().getVisits());
 			numNGrams++;
 
-			//System.out.println(numNGrams + " gram move = " + currentMove);
-			//System.out.println(numNGrams + " gram = " + nGramSum);
+			//System.out.println(currentNGramLength + " gram move = " + this.gameDependentParameters.getTheMachine().convertToExplicitMove(currentMove));
+			//System.out.println(currentNGramLength + " gram = " + nGramSum);
 
 			// Update all variables
 			currentRoleIndex = (currentRoleIndex + this.gameDependentParameters.getNumRoles() - 1)%this.gameDependentParameters.getNumRoles();

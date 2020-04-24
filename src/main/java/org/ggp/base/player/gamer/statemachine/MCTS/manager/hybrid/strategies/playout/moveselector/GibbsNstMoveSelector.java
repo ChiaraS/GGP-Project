@@ -60,6 +60,12 @@ public class GibbsNstMoveSelector extends NstMoveSelector {
 		//}
 		//System.out.println(toLog);
 
+		if(legalMoves.size() == 1){
+			Move m = legalMoves.get(0);
+			//System.out.println("Selected " + this.gameDependentParameters.getTheMachine().convertToExplicitMove(m));
+			return m;
+		}
+
 		// Pick the move according to the distribution computed with the NST values.
 		return this.getMoveFromDistribution(roleIndex, legalMoves);
 	}

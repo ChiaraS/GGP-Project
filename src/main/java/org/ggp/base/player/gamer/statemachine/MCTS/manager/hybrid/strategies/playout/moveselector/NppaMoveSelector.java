@@ -66,14 +66,14 @@ public class NppaMoveSelector extends MoveSelector {
 
 	protected double computeNppaValue(int roleIndex, Move move){
 
-		System.out.println("Computing value for move " + move);
+		//System.out.println("Computing value for move " + this.gameDependentParameters.getTheMachine().convertToExplicitMove(move));
 
 		// Find the n-gram tree node for the move of the role
 		NGramTreeNode<PpaInfo> nGramTreeNode = this.nppaStatistics.get(roleIndex).getNextMoveNode(move);
 
 		// If the move has never been visited, return the FPU
 		if(nGramTreeNode == null || nGramTreeNode.getStatistic().getVisits() == 0){
-			System.out.println("FPU value " + this.nppaFpu);
+			//System.out.println("FPU value " + this.nppaFpu);
 			return this.nppaFpu;
 		}
 
@@ -83,7 +83,7 @@ public class NppaMoveSelector extends MoveSelector {
 		double nGramSum = nGramTreeNode.getStatistic().getWeight();
 		double numNGrams = 1;
 
-		System.out.println("1 gram = " + nGramSum);
+		//System.out.println("1 gram = " + nGramSum);
 
 		// Prepare to sum the 2-gram
 		int currentRoleIndex = (roleIndex + this.gameDependentParameters.getNumRoles() - 1)%this.gameDependentParameters.getNumRoles();
@@ -98,8 +98,8 @@ public class NppaMoveSelector extends MoveSelector {
 			nGramSum += (nGramTreeNode.getStatistic().getWeight());
 			numNGrams++;
 
-			System.out.println(currentNGramLength + " gram move = " + currentMove);
-			System.out.println(currentNGramLength + " gram = " + nGramSum);
+			//System.out.println(currentNGramLength + " gram move = " + this.gameDependentParameters.getTheMachine().convertToExplicitMove(currentMove));
+			//System.out.println(currentNGramLength + " gram = " + nGramSum);
 
 			// Update all variables
 			currentRoleIndex = (currentRoleIndex + this.gameDependentParameters.getNumRoles() - 1)%this.gameDependentParameters.getNumRoles();
@@ -142,15 +142,6 @@ public class NppaMoveSelector extends MoveSelector {
 				indentation + "current_simulation_joint_moves = " +
 				(this.currentSimulationJointMoves != null ? this.currentSimulationJointMoves.size() + " entries" : "null");
 	}
-
-
-
-
-
-
-
-
-
 
 
 	@Override

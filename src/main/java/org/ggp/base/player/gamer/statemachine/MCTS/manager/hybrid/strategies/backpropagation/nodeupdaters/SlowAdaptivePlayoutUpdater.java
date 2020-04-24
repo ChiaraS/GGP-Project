@@ -20,6 +20,11 @@ import org.ggp.base.util.statemachine.structure.MachineState;
 import org.ggp.base.util.statemachine.structure.Move;
 import org.ggp.base.util.statemachine.structure.Role;
 
+/**
+ * THIS CLASS HAS BUGS, TO BE DELETED SOON!
+ * @author C.Sironi
+ *
+ */
 public class SlowAdaptivePlayoutUpdater extends NodeUpdater {
 
 	private List<Map<Move, Double>> weightsPerMove;

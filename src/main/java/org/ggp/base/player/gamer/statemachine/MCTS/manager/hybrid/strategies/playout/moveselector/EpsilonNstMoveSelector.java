@@ -44,17 +44,25 @@ public class EpsilonNstMoveSelector extends NstMoveSelector {
 			legalMoves = this.gameDependentParameters.getTheMachine().getLegalMoves(state, role);
 		}
 
+		//System.out.println("Selecting for role " + this.gameDependentParameters.getTheMachine().convertToExplicitRole(new CompactRole(roleIndex)));
+
+		if(legalMoves.size() == 1){
+			Move m = legalMoves.get(0);
+			//System.out.println("Selected " + this.gameDependentParameters.getTheMachine().convertToExplicitMove(m));
+			return m;
+		}
+
 		if(this.random.nextDouble() < this.nstEpsilon){
 			//System.out.println("Random");
     		// Choose random action with probability epsilon
 			Move m = legalMoves.get(this.random.nextInt(legalMoves.size()));
-			//System.out.println("Selected " + m);
+			//System.out.println("Selected " + this.gameDependentParameters.getTheMachine().convertToExplicitMove(m));
 			return m;
     	}else{
     		//System.out.println("Best");
     		// Choose move with highest average score
     		Move m = this.getBestMove(roleIndex, legalMoves);
-    		//System.out.println("Selected " + m);
+    		//System.out.println("Selected " + this.gameDependentParameters.getTheMachine().convertToExplicitMove(m));
     		return m;
     	}
 

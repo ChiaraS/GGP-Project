@@ -166,7 +166,7 @@ public class PpaInfo {
 
 	@Override
 	public String toString(){
-		return "WEIGHT=;" + this.weight + ";EXP=;" + this.exp + ";CONSISTENT=;" + this.consistent +
+		return "WEIGHT=;" + this.weight + ";EXP=;" + this.exp + ";VISITS=;" + this.visits + ";CONSISTENT=;" + this.consistent +
 				";LAST_WEIGHT_UPDATE_ITERATION=;" + this.lastWeightUpdateIteration + ";";
 	}
 }

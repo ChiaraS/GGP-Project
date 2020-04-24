@@ -9,6 +9,7 @@ import org.ggp.base.player.gamer.statemachine.GamerSettings;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.GameDependentParameters;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid.SharedReferencesCollector;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.MctsNode;
+import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.hybrid.MctsJointMove;
 import org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.hybrid.SimulationResult;
 import org.ggp.base.util.logging.GamerLogger;
 import org.ggp.base.util.statemachine.exceptions.MoveDefinitionException;
@@ -63,6 +64,12 @@ public class MovesMemorizingStandardPlayout extends StandardPlayout{
 
         do{ // NOTE: if any of the try blocks fails on the first iteration this method will return a result with only the terminal goals of the starting state of the playout, depth 0 and empty moves list
 
+        	System.out.println("Joint moves for playout selection:");
+   	        for(MctsJointMove jm : this.currentSimulationJointMoves){
+   	        	System.out.println(this.printJointMove(jm.getJointMove()));
+   	        }
+   	        System.out.println();
+
         	jointMove = null;
 			try {
 				jointMove = this.getJointMove(node, state);
@@ -78,6 +85,8 @@ public class MovesMemorizingStandardPlayout extends StandardPlayout{
 				GamerLogger.logStackTrace("MctsManager", e);
 				break;
 			}
+
+			System.out.println("Selected JM: " + this.printJointMove(jointMove));
 
 			allJointMoves.add(jointMove);
 
@@ -99,6 +108,17 @@ public class MovesMemorizingStandardPlayout extends StandardPlayout{
         Collections.reverse(allJointMoves);
 
         return new SimulationResult(nDepth, this.gameDependentParameters.getTheMachine().getSafeGoalsAvgForAllRoles(state), allJointMoves);
+
+	}
+
+	public String printJointMove(List<Move> allJointMoves){
+
+			String s = "[ ";
+			for(Move m : allJointMoves){
+				s += this.gameDependentParameters.getTheMachine().convertToExplicitMove(m).toString() + " ";
+			}
+			s += "]";
+			return s;
 
 	}
 

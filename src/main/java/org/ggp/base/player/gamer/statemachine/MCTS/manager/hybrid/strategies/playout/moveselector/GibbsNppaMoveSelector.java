@@ -49,6 +49,8 @@ public class GibbsNppaMoveSelector extends NppaMoveSelector {
 			legalMoves = this.gameDependentParameters.getTheMachine().getLegalMoves(state, role);
 		}
 
+		//System.out.println("Selecting for role " + this.gameDependentParameters.getTheMachine().convertToExplicitRole(new CompactRole(roleIndex)));
+
 		//String toLog = "";
 		//for(int index = 0; index < this.weightsPerMove.size(); index++){
 		//	toLog += ("ROLE=;" + this.gameDependentParameters.getTheMachine().convertToExplicitRole(this.gameDependentParameters.getTheMachine().getRoles().get(index)) + ";\n");
@@ -61,7 +63,9 @@ public class GibbsNppaMoveSelector extends NppaMoveSelector {
 		//System.out.println(toLog);
 
 		// Pick the move according to the distribution computed with the NPPA values.
-		return this.getMoveFromDistribution(roleIndex, legalMoves);
+		Move m = this.getMoveFromDistribution(roleIndex, legalMoves);
+		//System.out.println("Selected move = " + this.gameDependentParameters.getTheMachine().convertToExplicitMove(m));
+		return m;
 	}
 
 	/**

@@ -11,7 +11,7 @@ import org.ggp.base.util.logging.GamerLogger;
 
 public abstract class ConfigurableStateMachineGamer extends StateMachineGamer {
 
-	protected static final String defaultSettingsFileName = "EpsilonScoresNstDuct.properties";
+	protected static final String defaultSettingsFileName = "GibbsWinnerOnlyNppaDuct.properties";
 
 	protected String settingsFilePath;
 
