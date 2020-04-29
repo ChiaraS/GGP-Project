@@ -29,6 +29,19 @@ public class NppaAfterSimulation extends AfterSimulationStrategy {
 	// Parameter that decides how much the weight changes
 	private double alpha;
 
+	/**
+	 * This parameter decides how much alpha is discounted for each state starting
+	 * from the leaf to the root of the current simulation.
+	 * Given a simulation of length n, where the root starts at 0, we use the following
+	 * values of alpha:
+	 * alpha_(n-1) = alpha
+	 * alpha_(n-2) = alpha * alphaDiscount
+	 * alpha_(n-3) = alpha * alphaDiscount^2
+	 * alpha_(n-4) = alpha * alphaDiscount^3
+	 * etc...
+	 */
+	private double alphaDiscount;
+
 	private PLAYOUT_STAT_UPDATE_TYPE updateType;
 
 	private int maxNGramLength;
@@ -43,6 +56,8 @@ public class NppaAfterSimulation extends AfterSimulationStrategy {
 		sharedReferencesCollector.setNppaStatistics(this.nppaStatistics);
 
 		this.alpha = gamerSettings.getDoublePropertyValue("AfterSimulationStrategy.alpha");
+
+		this.alphaDiscount = gamerSettings.getDoublePropertyValue("AfterSimulationStrategy.alphaDiscount");
 
 		//if(gamerSettings.specifiesProperty("AfterSimulationStrategy.updateType")){
 			String updateTypeString = gamerSettings.getPropertyValue("AfterSimulationStrategy.updateType");
@@ -198,6 +213,8 @@ public class NppaAfterSimulation extends AfterSimulationStrategy {
 	 */
 	private void updateAllRolesForPlayout(List<List<Move>> allJointMoves, List<List<List<Move>>> allMovesInAllStates, double[] rewards){
 
+		double discountedAlpha = this.alpha;
+
 		// Iterate over all the joint moves in the playout, starting from the last one.
 		for(int jmIndex = allJointMoves.size()-1; jmIndex >= 0; jmIndex--){
 
@@ -205,9 +222,11 @@ public class NppaAfterSimulation extends AfterSimulationStrategy {
 			// n-grams that end with their current move in the joint move.
 			for(int roleIndex = 0; roleIndex < this.gameDependentParameters.getNumRoles(); roleIndex++){
 
-				this.updateNGramsForRoleInState(roleIndex, jmIndex, allJointMoves, allMovesInAllStates, rewards[roleIndex]);
+				this.updateNGramsForRoleInState(roleIndex, jmIndex, allJointMoves, allMovesInAllStates, rewards[roleIndex], discountedAlpha);
 
 			}
+
+			discountedAlpha *= this.alphaDiscount;
 
 		}
 
@@ -222,10 +241,14 @@ public class NppaAfterSimulation extends AfterSimulationStrategy {
 	 */
 	private void updateWinningRoleForPlayout(List<List<Move>> allJointMoves, List<List<List<Move>>> allMovesInAllStates, int winnerIndex){
 
-		// Iterate over all the joint moves in the playout.
-		for(int jmIndex = 0; jmIndex < allJointMoves.size(); jmIndex++){
+		double discountedAlpha = this.alpha;
 
-			this.updateNGramsForRoleInState(winnerIndex, jmIndex, allJointMoves, allMovesInAllStates, 1.0);
+		// Iterate over all the joint moves in the playout, starting from the last one.
+		for(int jmIndex = allJointMoves.size()-1; jmIndex >= 0; jmIndex--){
+
+			this.updateNGramsForRoleInState(winnerIndex, jmIndex, allJointMoves, allMovesInAllStates, 1.0, discountedAlpha);
+
+			discountedAlpha *= this.alphaDiscount;
 
 		}
 
@@ -242,7 +265,7 @@ public class NppaAfterSimulation extends AfterSimulationStrategy {
 	 * @param allJointMoves
 	 */
 	private void updateNGramsForRoleInState(int roleIndex, int jmIndex, List<List<Move>> allJointMoves,
-			List<List<List<Move>>> allMovesInAllStates, double reward){
+			List<List<List<Move>>> allMovesInAllStates, double reward, double discountedAlpha){
 
 		// If the role only has one legal move in the state (that thus corresponds to the played one),
 		// there is no need to update the weights for the role.
@@ -308,7 +331,7 @@ public class NppaAfterSimulation extends AfterSimulationStrategy {
 					throw new RuntimeException("The move selected by the role was not found in the list of its legal moves when updating n-grams for the role in a step!");
 				}
 			}else{
-				// For n-grams with length > 1, we want to get the previous entry in the list of joint move,
+				// For n-grams with length > 1, we want to get the previous entry in the list of joint moves,
 				// extract the joint move of the currentRoleIndex, and extend all the n-grams that we have
 				// so far with this move (i.e. 1 n-gram for each legal move of the initial player).
 				// Get current first move in the n-gram
@@ -332,7 +355,7 @@ public class NppaAfterSimulation extends AfterSimulationStrategy {
 			}
 
 			// Update the weights of the current N-grams
-			this.updateNGramWeights(currentNppaNodesForNGram, selectedMoveIndex, reward);
+			this.updateNGramWeights(currentNppaNodesForNGram, selectedMoveIndex, reward, discountedAlpha);
 
 			// Update all variables for the next iteration
 			// Go to previous role in the order
@@ -346,7 +369,7 @@ public class NppaAfterSimulation extends AfterSimulationStrategy {
 
 	}
 
-	private void updateNGramWeights(List<NGramTreeNode<PpaInfo>> nGrams, int selectedMoveIndex, double reward){
+	private void updateNGramWeights(List<NGramTreeNode<PpaInfo>> nGrams, int selectedMoveIndex, double reward, double discountedAlpha){
 
 		int currentIteration = this.gameDependentParameters.getTotIterations();
 
@@ -371,11 +394,11 @@ public class NppaAfterSimulation extends AfterSimulationStrategy {
 
 			if(nGramIndex == selectedMoveIndex){
 				nGrams.get(nGramIndex).getStatistic().incrementWeight(currentIteration,
-						reward * (alpha - alpha * (nGrams.get(nGramIndex).getStatistic().getExpForPolicyAdaptation(currentIteration)/exponentialSum)));
+						reward * (discountedAlpha - discountedAlpha * (nGrams.get(nGramIndex).getStatistic().getExpForPolicyAdaptation(currentIteration)/exponentialSum)));
 				//System.out.println("detected1");
 			}else{
 				nGrams.get(nGramIndex).getStatistic().incrementWeight(currentIteration,
-						- reward * alpha * (nGrams.get(nGramIndex).getStatistic().getExpForPolicyAdaptation(currentIteration)/exponentialSum));
+						- reward * discountedAlpha * (nGrams.get(nGramIndex).getStatistic().getExpForPolicyAdaptation(currentIteration)/exponentialSum));
 			}
 
 		}
@@ -403,6 +426,7 @@ public class NppaAfterSimulation extends AfterSimulationStrategy {
 		}
 
 		return indentation + "ALPHA = " + this.alpha +
+				indentation + "ALPHA_DISCOUNT = " + this.alphaDiscount +
 				indentation + "UPDATE_TYPE" + this.updateType +
 				indentation + "nppa_statistics = " + nppaStatisticsString;
 

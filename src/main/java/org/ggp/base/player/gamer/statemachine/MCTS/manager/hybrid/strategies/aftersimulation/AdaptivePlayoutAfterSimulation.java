@@ -18,6 +18,19 @@ public class AdaptivePlayoutAfterSimulation extends AfterSimulationStrategy {
 	// Parameter that decides how much the weight changes
 	private double alpha;
 
+	/**
+	 * This parameter decides how much alpha is discounted for each state starting
+	 * from the leaf to the root of the current simulation.
+	 * Given a simulation of length n, where the root starts at 0, we use the following
+	 * values of alpha:
+	 * alpha_(n-1) = alpha
+	 * alpha_(n-2) = alpha * alphaDiscount
+	 * alpha_(n-3) = alpha * alphaDiscount^2
+	 * alpha_(n-4) = alpha * alphaDiscount^3
+	 * etc...
+	 */
+	private double alphaDiscount;
+
 	private PLAYOUT_STAT_UPDATE_TYPE updateType;
 
 	public AdaptivePlayoutAfterSimulation(GameDependentParameters gameDependentParameters, Random random,
@@ -29,6 +42,8 @@ public class AdaptivePlayoutAfterSimulation extends AfterSimulationStrategy {
 		sharedReferencesCollector.setPpaWeights(ppaWeights);
 
 		this.alpha = gamerSettings.getDoublePropertyValue("AfterSimulationStrategy.alpha");
+
+		this.alphaDiscount = gamerSettings.getDoublePropertyValue("AfterSimulationStrategy.alphaDiscount");
 
 		//if(gamerSettings.specifiesProperty("AfterSimulationStrategy.updateType")){
 			String updateTypeString = gamerSettings.getPropertyValue("AfterSimulationStrategy.updateType");
@@ -108,15 +123,19 @@ public class AdaptivePlayoutAfterSimulation extends AfterSimulationStrategy {
 						throw new RuntimeException("Null terminal goals in the simulation result.");
 					}
 
-					for(int i = 0; i < allMovesInAllStates.size(); i++){
+					double discountedAlpha = this.alpha;
+
+					for(int i = allMovesInAllStates.size()-1; i >= 0; i--){
 
 						for(int roleIndex = 0; roleIndex < goals.length; roleIndex++){
 
 			    			List<Move> legalMovesForRole = allMovesInAllStates.get(i).get(roleIndex);
 			    			Move roleMove = allJointMoves.get(i).get(roleIndex);
-			    			this.ppaWeights.adaptPolicyForRole(roleIndex, legalMovesForRole, roleMove, goals[roleIndex]/100.0, this.alpha, this.gameDependentParameters.getTotIterations());
+			    			this.ppaWeights.adaptPolicyForRole(roleIndex, legalMovesForRole, roleMove, goals[roleIndex]/100.0, discountedAlpha, this.gameDependentParameters.getTotIterations());
 
 			    		}
+
+						discountedAlpha *= this.alphaDiscount;
 
 					}
 
@@ -126,15 +145,19 @@ public class AdaptivePlayoutAfterSimulation extends AfterSimulationStrategy {
 
 					double[] wins = simulationResult[resultIndex].getTerminalWins();
 
-					for(int i = 0; i < allMovesInAllStates.size(); i++){
+					discountedAlpha = this.alpha;
+
+					for(int i = allMovesInAllStates.size()-1; i >= 0; i--){
 
 						for(int roleIndex = 0; roleIndex < wins.length; roleIndex++){
 
 			    			List<Move> legalMovesForRole = allMovesInAllStates.get(i).get(roleIndex);
 			    			Move roleMove = allJointMoves.get(i).get(roleIndex);
-			    			this.ppaWeights.adaptPolicyForRole(roleIndex, legalMovesForRole, roleMove, wins[roleIndex], this.alpha, this.gameDependentParameters.getTotIterations());
+			    			this.ppaWeights.adaptPolicyForRole(roleIndex, legalMovesForRole, roleMove, wins[roleIndex], discountedAlpha, this.gameDependentParameters.getTotIterations());
 
 			    		}
+
+						discountedAlpha *= this.alphaDiscount;
 
 					}
 
@@ -163,11 +186,14 @@ public class AdaptivePlayoutAfterSimulation extends AfterSimulationStrategy {
 
 					if(winnerIndex != -1){ // Only one player with highest score
 
-					    for(int i = 0; i < allMovesInAllStates.size(); i++){
+						discountedAlpha = this.alpha;
+
+					    for(int i = allMovesInAllStates.size()-1; i >= 0; i--){
 
 			    			List<Move> legalMovesForWinner = allMovesInAllStates.get(i).get(winnerIndex);
 			    			Move winnerMove = allJointMoves.get(i).get(winnerIndex);
-			    			this.ppaWeights.adaptPolicyForRole(winnerIndex, legalMovesForWinner, winnerMove, 1.0, this.alpha, this.gameDependentParameters.getTotIterations());
+			    			this.ppaWeights.adaptPolicyForRole(winnerIndex, legalMovesForWinner, winnerMove, 1.0, discountedAlpha, this.gameDependentParameters.getTotIterations());
+			    			discountedAlpha *= this.alphaDiscount;
 
 			    		}
 					}
@@ -182,6 +208,7 @@ public class AdaptivePlayoutAfterSimulation extends AfterSimulationStrategy {
 	public String getComponentParameters(String indentation) {
 
 		String params = indentation + "ALPHA = " + this.alpha +
+				indentation + "ALPHA_DISCOUNT = " + this.alphaDiscount +
 				indentation + "UPDATE_TYPE = " + this.updateType;
 
 		if(this.ppaWeights != null){

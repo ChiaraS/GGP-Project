@@ -30,6 +30,19 @@ public class NstAfterSimulation extends AfterSimulationStrategy {
 
 	private int maxNGramLength;
 
+	/**
+	 * This parameter decides how much the reward is discounted for each state starting
+	 * from the leaf to the root of the current simulation.
+	 * Given a simulation of length n, where the root starts at 0, we use the following
+	 * values for the reward used to update the statistics of the moves used in the state:
+	 * reward_(n-1) = reward
+	 * reward_(n-2) = reward * rewardDiscount
+	 * reward_(n-3) = reward * rewardDiscount^2
+	 * reward_(n-4) = reward * rewardDiscount^3
+	 * etc...
+	 */
+	private double rewardDiscount;
+
 	public NstAfterSimulation(GameDependentParameters gameDependentParameters, Random random,
 			GamerSettings gamerSettings, SharedReferencesCollector sharedReferencesCollector, String id) {
 
@@ -60,6 +73,9 @@ public class NstAfterSimulation extends AfterSimulationStrategy {
 		//}
 
 		this.maxNGramLength = gamerSettings.getIntPropertyValue("AfterSimulationStrategy.maxNGramLength");
+
+		this.rewardDiscount = gamerSettings.getDoublePropertyValue("AfterSimulationStrategy.rewardDiscount");
+
 
 	}
 
@@ -165,6 +181,8 @@ public class NstAfterSimulation extends AfterSimulationStrategy {
 	 */
 	private void updateAllRolesForPlayout(List<List<Move>> allJointMoves, double[] rewards){
 
+		double discount = 1;
+
 		// Iterate over all the joint moves in the playout, starting from the last one.
 		for(int jmIndex = allJointMoves.size()-1; jmIndex >= 0; jmIndex--){
 
@@ -172,9 +190,11 @@ public class NstAfterSimulation extends AfterSimulationStrategy {
 			// n-grams that end with his current move in the joint move.
 			for(int roleIndex = 0; roleIndex < this.gameDependentParameters.getNumRoles(); roleIndex++){
 
-				this.updateNGramsForRoleInState(roleIndex, jmIndex, allJointMoves, rewards[roleIndex]);
+				this.updateNGramsForRoleInState(roleIndex, jmIndex, allJointMoves, rewards[roleIndex]*discount);
 
 			}
+
+			discount *= this.rewardDiscount;
 
 		}
 
@@ -189,9 +209,15 @@ public class NstAfterSimulation extends AfterSimulationStrategy {
 	 */
 	private void updateWinningRoleForPlayout(List<List<Move>> allJointMoves, int winnerIndex){
 
+		double discountedReward = 100.0;
+
 		// Iterate over all the joint moves in the playout.
-		for(int jmIndex = 0; jmIndex < allJointMoves.size(); jmIndex++){
-			this.updateNGramsForRoleInState(winnerIndex, jmIndex, allJointMoves, 100.0);
+		for(int jmIndex = allJointMoves.size()-1; jmIndex >= 0; jmIndex--){
+
+			this.updateNGramsForRoleInState(winnerIndex, jmIndex, allJointMoves, discountedReward);
+
+			discountedReward *= this.rewardDiscount;
+
 		}
 
 	}
@@ -206,7 +232,7 @@ public class NstAfterSimulation extends AfterSimulationStrategy {
 	 *
 	 * @param allJointMoves
 	 */
-	private void updateNGramsForRoleInState(int roleIndex, int jmIndex, List<List<Move>> allJointMoves, double reward){
+	private void updateNGramsForRoleInState(int roleIndex, int jmIndex, List<List<Move>> allJointMoves, double discountedReward){
 
 		// This variable keeps track of the index of the role for which we are adding a move
 		// to the current n-gram, that ends with the move for roleIndex.
@@ -246,7 +272,7 @@ public class NstAfterSimulation extends AfterSimulationStrategy {
 			}
 
 			// 4. Get the statistic in the node and update them
-			currentNstNodeForNGram.getStatistic().incrementScoreSum(reward);
+			currentNstNodeForNGram.getStatistic().incrementScoreSum(discountedReward);
 			currentNstNodeForNGram.getStatistic().incrementVisits();
 
 			// Update all variables for the next iteration
@@ -283,7 +309,9 @@ public class NstAfterSimulation extends AfterSimulationStrategy {
 			nstStatisticsString = "null";
 		}
 
-		return indentation + "UPDATE_TYPE" + this.updateType +
+		return indentation + "UPDATE_TYPE = " + this.updateType +
+				indentation + "MAX_N_GRAM_LENGTH = " + this.maxNGramLength +
+				indentation + "REWARD_DISCOUNT = " + this.rewardDiscount +
 				indentation + "nst_statistics = " + nstStatisticsString;
 
 	}
