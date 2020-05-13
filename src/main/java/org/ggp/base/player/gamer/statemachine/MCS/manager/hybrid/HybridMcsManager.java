@@ -367,14 +367,14 @@ public class HybridMcsManager {
 			}
 
 			for(SimulationResult simulationResult : simulationResults) {
-				myGoal = simulationResult.getTerminalGoals()[this.gameDependentParameters.getMyRoleIndex()];
+				myGoal = simulationResult.getTerminalGoalsIn0_100()[this.gameDependentParameters.getMyRoleIndex()];
 
 				this.currentMovesStatistics[i].incrementVisits();
 				this.currentMovesStatistics[i].incrementScoreSum(myGoal);
 
 				this.gameDependentParameters.increaseCurrentIterationVisitedNodes(simulationResult.getPlayoutLength());
 				this.gameDependentParameters.increaseStepIterations();
-				this.gameDependentParameters.increaseStepScoreSumForRoles(simulationResult.getTerminalGoals());
+				this.gameDependentParameters.increaseStepScoreSumForRoles(simulationResult.getTerminalGoalsIn0_100());
 			}
 
 			this.gameDependentParameters.increaseStepVisitedNodes(this.gameDependentParameters.getCurrentIterationVisitedNodes());

@@ -74,7 +74,7 @@ public class StandardUpdater extends NodeUpdater {
 			for(int i = 0; i < moves.length; i++){
 				// Get the decoupled MCTS Move
 				DecoupledMctsMoveStats theMoveToUpdate = moves[i][moveIndices[i]];
-				theMoveToUpdate.incrementScoreSum(simulationResult[resultIndex].getTerminalGoals()[i]);
+				theMoveToUpdate.incrementScoreSum(simulationResult[resultIndex].getTerminalGoalsIn0_100()[i]);
 				if(theMoveToUpdate.getVisits() == 0){
 					//System.out.println("!!!!!");
 					//System.out.println(node.getUnexploredMovesCount()[i]);
@@ -113,7 +113,7 @@ public class StandardUpdater extends NodeUpdater {
 
 			while(currentRoleIndex != ((this.gameDependentParameters.getMyRoleIndex()-1+this.gameDependentParameters.getNumRoles())%this.gameDependentParameters.getNumRoles())){
 				currentStatsToUpdate.incrementVisits();
-				currentStatsToUpdate.incrementScoreSum(simulationResult[resultIndex].getTerminalGoals()[currentRoleIndex]);
+				currentStatsToUpdate.incrementScoreSum(simulationResult[resultIndex].getTerminalGoalsIn0_100()[currentRoleIndex]);
 				currentRoleIndex = (currentRoleIndex+1)%this.gameDependentParameters.getNumRoles();
 				currentStatsToUpdate = currentStatsToUpdate.getNextRoleMovesStats()[jointMove.getMovesIndices()[currentRoleIndex]];
 			}
@@ -123,7 +123,7 @@ public class StandardUpdater extends NodeUpdater {
 			// first time the joint move was explored (i.e. the unvisitedSubleaves count of this move's
 			// stats equals 1 or equally its visits count equals 0).
 			currentStatsToUpdate.incrementVisits();
-			currentStatsToUpdate.incrementScoreSum(simulationResult[resultIndex].getTerminalGoals()[currentRoleIndex]);
+			currentStatsToUpdate.incrementScoreSum(simulationResult[resultIndex].getTerminalGoalsIn0_100()[currentRoleIndex]);
 
 			// If it's the first visit for this leaf, it's also the first visit of the joint move and
 			// we must decrement by 1 the unvisitedSubleaves count of all the moves in this joint move.

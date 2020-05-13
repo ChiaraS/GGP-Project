@@ -136,7 +136,7 @@ public class NppaMoveSelector extends MoveSelector {
 			nppaStatisticsString = "null";
 		}
 
-		return indentation + "MIN_N_GRAM_VISITS" + this.minNGramVisits +
+		return indentation + "MIN_N_GRAM_VISITS = " + this.minNGramVisits +
 				indentation + "NPPA_FPU = " + this.nppaFpu +
 				indentation + "nppa_statistics = " + nppaStatisticsString +
 				indentation + "current_simulation_joint_moves = " +

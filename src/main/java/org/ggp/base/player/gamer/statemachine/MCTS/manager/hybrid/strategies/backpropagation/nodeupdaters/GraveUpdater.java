@@ -57,7 +57,7 @@ public class GraveUpdater extends NodeUpdater{
 
 				allJointMoves = simulationResult[resultIndex].getAllJointMoves();
 
-				goals = simulationResult[resultIndex].getTerminalGoals();
+				goals = simulationResult[resultIndex].getTerminalGoalsIn0_100();
 
 				if(goals == null){
 					GamerLogger.logError("NodeUpdater", "GraveUpdate - Found null terminal goals in the simulation result when updating the AMAF statistics.");
@@ -105,7 +105,7 @@ public class GraveUpdater extends NodeUpdater{
 
 				allJointMoves = simulationResult[resultIndex].getAllJointMoves();
 
-				goals = simulationResult[resultIndex].getTerminalGoals();
+				goals = simulationResult[resultIndex].getTerminalGoalsIn0_100();
 
 				if(goals == null){
 					GamerLogger.logError("NodeUpdater", "GraveUpdate - Found null terminal goals in the simulation result when updating the AMAF statistics of the last node added to the tree. Probably a wrong combination of strategies has been set!");

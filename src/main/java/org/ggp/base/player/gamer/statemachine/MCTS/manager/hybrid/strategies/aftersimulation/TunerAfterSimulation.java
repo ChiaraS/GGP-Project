@@ -66,7 +66,7 @@ public class TunerAfterSimulation extends AfterSimulationStrategy {
 				throw new RuntimeException("TunerAfterSimulation-afterSimulationActions(): combinatorial tuner is tuning for the wrong number of roles.");
 			}*/
 
-			this.parametersTuner.updateStatistics(simulationResult[0].getTerminalGoals());
+			this.parametersTuner.updateStatistics(simulationResult[0].getTerminalGoalsIn0_100());
 		}
 
 	}

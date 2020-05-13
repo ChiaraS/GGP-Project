@@ -73,7 +73,7 @@ public class SlowAdaptivePlayoutUpdater extends NodeUpdater {
 
     	for(int resultIndex = 0; resultIndex < simulationResult.length; resultIndex++){
 
-    		goals = simulationResult[resultIndex].getTerminalGoals();
+    		goals = simulationResult[resultIndex].getTerminalGoalsIn0_100();
 
 			// Use the simulation result to figure out for which player to change the weights.
 			// For the player with the highest score, weights are increased by alpha for the simulated
@@ -156,7 +156,7 @@ public class SlowAdaptivePlayoutUpdater extends NodeUpdater {
 
 		for(int resultIndex = 0; resultIndex < simulationResult.length; resultIndex++){
 
-			goals = simulationResult[resultIndex].getTerminalGoals();
+			goals = simulationResult[resultIndex].getTerminalGoalsIn0_100();
 
 			allJointMoves = simulationResult[resultIndex].getAllJointMoves();
 

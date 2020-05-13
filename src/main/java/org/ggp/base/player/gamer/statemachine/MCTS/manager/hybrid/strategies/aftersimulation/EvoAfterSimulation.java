@@ -54,11 +54,11 @@ public class EvoAfterSimulation extends AfterSimulationStrategy {
 		if(this.evolutionManager.getNumPopulations() == 1){
 
 			goals = new double[1];
-			goals[0] = simulationResult[0].getTerminalGoals()[this.gameDependentParameters.getMyRoleIndex()];
+			goals[0] = simulationResult[0].getTerminalGoalsIn0_100()[this.gameDependentParameters.getMyRoleIndex()];
 
 		}else{
 
-			goals = simulationResult[0].getTerminalGoals();
+			goals = simulationResult[0].getTerminalGoalsIn0_100();
 
 		}
 

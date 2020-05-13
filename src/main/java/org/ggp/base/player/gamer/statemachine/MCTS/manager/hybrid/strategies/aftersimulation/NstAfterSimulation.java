@@ -62,7 +62,7 @@ public class NstAfterSimulation extends AfterSimulationStrategy {
 					this.updateType = PLAYOUT_STAT_UPDATE_TYPE.WINS;
 					break;
 				case "winner_only":
-					this.updateType = PLAYOUT_STAT_UPDATE_TYPE.WINNER_ONLY;
+					this.updateType = PLAYOUT_STAT_UPDATE_TYPE.SINGLE_WINNER;
 					break;
 				default:
 					GamerLogger.logError("SearchManagerCreation", "NstAfterSimulation - The property " + updateTypeString + " is not a valid update type for NST statistics.");
@@ -121,7 +121,7 @@ public class NstAfterSimulation extends AfterSimulationStrategy {
 			switch(this.updateType){
 				case SCORES:
 
-					double[] goals = simulationResult[resultIndex].getTerminalGoals();
+					double[] goals = simulationResult[resultIndex].getTerminalGoalsIn0_100();
 
 					if(goals == null){
 						GamerLogger.logError("AfterSimulationStrategy", "NstAfterSimulation - Found null terminal goals in the simulation result when updating the NST statistics with the playout moves. Probably a wrong combination of strategies has been set!");
@@ -144,7 +144,7 @@ public class NstAfterSimulation extends AfterSimulationStrategy {
 
 				case WINS:
 
-					double[] wins = simulationResult[resultIndex].getRescaledTerminalWins(); // Returns wins but in [0,100] instead of [0,1]
+					double[] wins = simulationResult[resultIndex].getTerminalWinsIn0_100(); // Returns wins but in [0,100] instead of [0,1]
 
 					if(wins == null){
 						GamerLogger.logError("AfterSimulationStrategy", "NstAfterSimulation - Found null rescaled terminal wins in the simulation result when updating the NST statistics with the playout moves. Probably a wrong combination of strategies has been set!");
@@ -155,7 +155,7 @@ public class NstAfterSimulation extends AfterSimulationStrategy {
 
 					break;
 
-			case WINNER_ONLY:
+			case SINGLE_WINNER:
 
 				int winnerIndex = simulationResult[resultIndex].getSingleWinner();
 

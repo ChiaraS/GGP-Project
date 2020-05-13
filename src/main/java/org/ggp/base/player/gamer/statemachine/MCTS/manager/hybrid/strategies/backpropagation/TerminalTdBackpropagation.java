@@ -36,12 +36,12 @@ public class TerminalTdBackpropagation extends TdBackpropagation {
 
 			this.firstUpdate = false;
 
-			if(simulationResult.getTerminalGoals() == null){
+			if(simulationResult.getTerminalGoalsIn0_100() == null){
 				GamerLogger.logError("MctsManager", "Found null terminal goals in the simulation result when processing the result for terminal TD backpropagation. Probably a wrong combination of strategies has been set!");
 				throw new RuntimeException("Null terminal goals in the simulation result.");
 			}
 
-			return simulationResult.getTerminalGoals();
+			return simulationResult.getTerminalGoalsIn0_100();
 
 		}else{
 			return new double[this.gameDependentParameters.getNumRoles()];

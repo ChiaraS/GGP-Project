@@ -42,7 +42,7 @@ public class MastUpdater extends NodeUpdater{
 					this.updateType = PLAYOUT_STAT_UPDATE_TYPE.WINS;
 					break;
 				case "winner_only":
-					this.updateType = PLAYOUT_STAT_UPDATE_TYPE.WINNER_ONLY;
+					this.updateType = PLAYOUT_STAT_UPDATE_TYPE.SINGLE_WINNER;
 					break;
 				default:
 					GamerLogger.logError("SearchManagerCreation", "MastUpdater - The property " + updateTypeString + " is not a valid update type for MAST statistics.");
@@ -83,7 +83,7 @@ public class MastUpdater extends NodeUpdater{
 
 				for(int resultIndex = 0; resultIndex < simulationResult.length; resultIndex++){
 
-		    		goals = simulationResult[resultIndex].getTerminalGoals();
+		    		goals = simulationResult[resultIndex].getTerminalGoalsIn0_100();
 
 		    		if(goals == null){
 		    			GamerLogger.logError("NodeUpdater", "MastUpdater - Found null terminal goals in the simulation result when updating the AMAF statistics. Probably a wrong combination of strategies has been set!");
@@ -102,7 +102,7 @@ public class MastUpdater extends NodeUpdater{
 
 				for(int resultIndex = 0; resultIndex < simulationResult.length; resultIndex++){
 
-		    		wins = simulationResult[resultIndex].getRescaledTerminalWins();
+		    		wins = simulationResult[resultIndex].getTerminalWinsIn0_100();
 
 		    		if(wins == null){
 		    			GamerLogger.logError("NodeUpdater", "MastUpdater - Found null rescaled terminal wins in the simulation result when updating the AMAF statistics. Probably a wrong combination of strategies has been set!");
@@ -115,7 +115,7 @@ public class MastUpdater extends NodeUpdater{
 
 				break;
 
-			case WINNER_ONLY:
+			case SINGLE_WINNER:
 
 				int winnerIndex;
 
@@ -152,7 +152,7 @@ public class MastUpdater extends NodeUpdater{
 
 				for(int resultIndex = 0; resultIndex < simulationResult.length; resultIndex++){
 
-					goals = simulationResult[resultIndex].getTerminalGoals();
+					goals = simulationResult[resultIndex].getTerminalGoalsIn0_100();
 
 					allJointMoves = simulationResult[resultIndex].getAllJointMoves();
 
@@ -178,7 +178,7 @@ public class MastUpdater extends NodeUpdater{
 
 				for(int resultIndex = 0; resultIndex < simulationResult.length; resultIndex++){
 
-					wins = simulationResult[resultIndex].getRescaledTerminalWins(); // Returns wins but in [0,100] instead of [0,1]
+					wins = simulationResult[resultIndex].getTerminalWinsIn0_100(); // Returns wins but in [0,100] instead of [0,1]
 
 					allJointMoves = simulationResult[resultIndex].getAllJointMoves();
 
@@ -198,7 +198,7 @@ public class MastUpdater extends NodeUpdater{
 
 				break;
 
-			case WINNER_ONLY:
+			case SINGLE_WINNER:
 
 				int winnerIndex;
 

@@ -197,7 +197,7 @@ public class HybridRandomManager {
 			for(SimulationResult simulationResult : simulationResults) {
 				this.gameDependentParameters.increaseCurrentIterationVisitedNodes(simulationResult.getPlayoutLength());
 				this.gameDependentParameters.increaseStepIterations();
-				this.gameDependentParameters.increaseStepScoreSumForRoles(simulationResult.getTerminalGoals());
+				this.gameDependentParameters.increaseStepScoreSumForRoles(simulationResult.getTerminalGoalsIn0_100());
 			}
 
 			this.gameDependentParameters.increaseStepVisitedNodes(this.gameDependentParameters.getCurrentIterationVisitedNodes());

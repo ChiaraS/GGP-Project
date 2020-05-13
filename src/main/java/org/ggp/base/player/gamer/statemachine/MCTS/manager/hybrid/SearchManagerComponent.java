@@ -51,6 +51,7 @@ public abstract class SearchManagerComponent {
 	 * WINNER_ONLY: if the playout has a single winner (i.e. only one agent that obtained the
 	 * highest score) then the MAST statistics/PPA weights of the only winner of the playout
 	 * are updated. In MAST the score of the move is increased with 100.
+	 * WINS_AND_LOSSES: if the playout has
 	 *
 	 * Note that for single-player games the SCORES and WINS update type are equivalent, while
 	 * the WINNER_ONLY update type updates the MAST statistics of the player only if it gets
@@ -60,7 +61,10 @@ public abstract class SearchManagerComponent {
 	 *
 	 */
 	public enum PLAYOUT_STAT_UPDATE_TYPE{
-		SCORES, WINS, WINNER_ONLY
+		SCORES, SINGLE_WINNER, WINS, RESCALED_SCORES, RESCALED_WINS,
+		ALL_WINNERS, SINGLE_WINNER_AND_LOSERS, ALL_WINNERS_AND_LOSERS,
+
+
 	}
 
 	/**

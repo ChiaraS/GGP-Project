@@ -1,6 +1,7 @@
 package org.ggp.base.player.gamer.statemachine.MCTS.manager.treestructure.hybrid;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 import org.ggp.base.util.logging.GamerLogger;
@@ -205,15 +206,6 @@ public class SimulationResult{
 
 	}
 
-	/**
-	 *
-	 * @return only the terminal goals of the whole simulation.
-	 */
-	public double[] getTerminalGoals(){
-
-		return this.intermediateGoals.get(0);
-	}
-
 	public void addJointMove(List<Move> jointMove){
 
 		//if(this.allJointMoves == null){
@@ -268,6 +260,70 @@ public class SimulationResult{
 	}
 
 	/**
+	 *
+	 * @return only the terminal goals of the whole simulation.
+	 */
+	public double[] getTerminalGoalsIn0_100(){
+
+		return this.intermediateGoals.get(0);
+	}
+
+	/**
+	 * Same as getTerminalWinsIn0_1(), but wins are rescaled in [0, 100] instead of [0, 1]
+	 *
+	 * @return
+	 */
+	public double[] getTerminalWinsIn0_100() {
+
+		if(this.intermediateGoals.size() > 0) {
+
+			double[] wins = new double[this.intermediateGoals.get(0).length];
+
+			if(this.intermediateGoals.get(0).length == 1) {
+				wins[0] = this.intermediateGoals.get(0)[0];
+			}else {
+				List<Integer> bestIndices = new ArrayList<Integer>();
+				double max = -1;
+				for(int roleIndex = 0; roleIndex < this.intermediateGoals.get(0).length; roleIndex++) {
+					if(this.intermediateGoals.get(0)[roleIndex] > max) {
+						max = this.intermediateGoals.get(0)[roleIndex];
+						bestIndices.clear();
+						bestIndices.add(roleIndex);
+					}else if(this.intermediateGoals.get(0)[roleIndex] == max){
+						bestIndices.add(roleIndex);
+					}
+				}
+				if(bestIndices.size() == 0) {
+					GamerLogger.logError("MctsManager", "Found no best score when computing rescaled wins for a SimulationResult.");
+					throw new RuntimeException("MctsManager - Found no best score when computing rescaled wins for a SimulationResult.");
+				}
+				// Wins is already initialized to all 0s, so we just change the wins for the bestIndices
+				double split100Points = 100.0/((double)bestIndices.size());
+				for(Integer roleIndex : bestIndices) {
+					wins[roleIndex] = split100Points;
+				}
+			}
+			return wins;
+		}else {
+			GamerLogger.logError("MctsManager", "Trying to compute rescaled wins for a SimulationResult that has no goals.");
+			throw new RuntimeException("MctsManager - Trying to compute rescaled wins for a SimulationResult that has no goals.");
+		}
+	}
+
+	/**
+	 *
+	 * @return only the terminal goals of the whole simulation, rescaled between 0 and 1.
+	 */
+	public double[] getTerminalGoalsIn0_1(){
+
+		double[] g = this.intermediateGoals.get(0);
+		for(int i = 0; i < g.length; i++){
+			g[i] /= 100.0;
+		}
+		return g;
+	}
+
+	/**
 	 * This method looks at the terminal scores and returns the corresponding wins. To compute the wins
 	 * 1 point is split equally among all the agents that have the highest score. If it's a single player
 	 * game the only role gets the fraction of 1 point proportional to its score: (score/100)*1
@@ -283,7 +339,7 @@ public class SimulationResult{
 	 *
 	 * @return
 	 */
-	public double[] getTerminalWins() {
+	public double[] getTerminalWinsIn0_1() {
 
 		if(this.intermediateGoals.size() > 0) {
 
@@ -321,45 +377,173 @@ public class SimulationResult{
 	}
 
 	/**
-	 * Same as getTerminalWins(), but wins are rescaled in [0, 100] instead of [0, 1]
+	 *
+	 * @return only the terminal goals of the whole simulation, rescaled between
+	 * the given leftExtreme and rightExtreme.
+	 */
+	public double[] getRescaledTerminalGoals(double leftExtreme, double rightExtreme){
+
+		double[] g = new double[this.intermediateGoals.get(0).length];
+		for(int i = 0; i < g.length; i++){
+			g[i] = this.rescaleValue(this.intermediateGoals.get(0)[i], 0.0, 100.0,
+					leftExtreme, rightExtreme);
+		}
+
+		return g;
+	}
+
+	/**
+	 * This method computes the wins looking at the terminal scores and
+	 * returns them rescaled between the given leftExtreme and rightExtreme.
 	 *
 	 * @return
 	 */
-	public double[] getRescaledTerminalWins() {
+	public double[] getRescaledTerminalWins(double leftExtreme, double rightExtreme) {
 
-		if(this.intermediateGoals.size() > 0) {
+		double[] w = this.getTerminalWinsIn0_100();
+		for(int i = 0; i < w.length; i++){
+			w[i] = this.rescaleValue(w[i], 0.0, 100.0,
+					leftExtreme, rightExtreme);
+		}
 
-			double[] wins = new double[this.intermediateGoals.get(0).length];
+		return w;
 
-			if(this.intermediateGoals.get(0).length == 1) {
-				wins[0] = this.intermediateGoals.get(0)[0];
-			}else {
-				List<Integer> bestIndices = new ArrayList<Integer>();
-				double max = -1;
-				for(int roleIndex = 0; roleIndex < this.intermediateGoals.get(0).length; roleIndex++) {
-					if(this.intermediateGoals.get(0)[roleIndex] > max) {
-						max = this.intermediateGoals.get(0)[roleIndex];
-						bestIndices.clear();
-						bestIndices.add(roleIndex);
-					}else if(this.intermediateGoals.get(0)[roleIndex] == max){
-						bestIndices.add(roleIndex);
-					}
-				}
-				if(bestIndices.size() == 0) {
-					GamerLogger.logError("MctsManager", "Found no best score when computing rescaled wins for a SimulationResult.");
-					throw new RuntimeException("MctsManager - Found no best score when computing rescaled wins for a SimulationResult.");
-				}
-				// Wins is already initialized to all 0s, so we just change the wins for the bestIndices
-				double split100Points = 100.0/((double)bestIndices.size());
-				for(Integer roleIndex : bestIndices) {
-					wins[roleIndex] = split100Points;
+	}
+
+	/**
+	 * @return an array where the player that won the simulation (if only one exists)
+	 * gets a 1, while all other players get a 0. A player wins the simulation if it
+	 * is the only one to get the highest score. For single player games, a player wins
+	 * a simulation if it gets a score higher than 50.
+	 */
+	public double[] getSingleWin() {
+
+		double[] wins = this.getTerminalWinsIn0_100();
+		double[] w = new double[wins.length];
+		// Single player
+		if(wins.length == 1){
+			if(wins[0] >= 50){
+				w[0] = 1;
+			}else{
+				w[0] = 0;
+			}
+		}else{
+			int numWinners = 0;
+			for(int i = 0; i < wins.length; i++){
+				if(wins[i] != 0){
+					numWinners++;
+					w[i] = 1.0;
 				}
 			}
-			return wins;
-		}else {
-			GamerLogger.logError("MctsManager", "Trying to compute rescaled wins for a SimulationResult that has no goals.");
-			throw new RuntimeException("MctsManager - Trying to compute rescaled wins for a SimulationResult that has no goals.");
+			if(numWinners > 1){
+				for(int i = 0; i < w.length; i++){
+					w[i] = 0;
+				}
+			}
+
 		}
+
+		return w;
+
+	}
+
+	/**
+	 * @return an array where the players that won the simulation get a 1,
+	 * while all other players get a 0. The players that win the simulation
+	 * are the ones that get the highest score. For single player games,
+	 * a player wins a simulation if it gets a score higher than 0.5.
+	 */
+	public double[] getAllWins() {
+
+		double[] wins = this.getTerminalWinsIn0_100();
+		double[] w = new double[wins.length];
+		// Single player
+		if(wins.length == 1){
+			if(wins[0] >= 50){
+				w[0] = 1;
+			}else{
+				w[0] = 0;
+			}
+		}else{
+			for(int i = 0; i < wins.length; i++){
+				if(wins[i] != 0){
+					w[i] = 1.0;
+				}
+			}
+		}
+
+		return w;
+
+	}
+
+	/**
+	 * @return an array where the player that won the simulation (if only one exists)
+	 * gets a 1, while all other players get a -1. A player wins the simulation if it
+	 * is the only one to get the highest score. For single player games, a player wins
+	 * a simulation if it gets a score higher than 50.
+	 */
+	public double[] getSingleWinAndLosses() {
+
+		double[] wins = this.getTerminalWinsIn0_100();
+		double[] w = new double[wins.length];
+		// Single player
+		if(wins.length == 1){
+			if(wins[0] >= 50){
+				w[0] = 1;
+			}else{
+				w[0] = -1;
+			}
+		}else{
+			int numWinners = 0;
+			for(int i = 0; i < wins.length; i++){
+				if(wins[i] != 0){
+					numWinners++;
+					w[i] = 1.0;
+				}else{
+					w[i] = -1.0;
+				}
+			}
+			if(numWinners > 1){
+				for(int i = 0; i < w.length; i++){
+					w[i] = 0;
+				}
+			}
+
+		}
+
+		return w;
+
+	}
+
+	/**
+	 * @return an array where the players that won the simulation get a 1,
+	 * while all other players get a -1. The players that win the simulation
+	 * are the ones that get the highest score. For single player games,
+	 * a player wins a simulation if it gets a score higher than 0.5.
+	 */
+	public double[] getAllWinsAndLosses() {
+
+		double[] wins = this.getTerminalWinsIn0_100();
+		double[] w = new double[wins.length];
+		// Single player
+		if(wins.length == 1){
+			if(wins[0] >= 50){
+				w[0] = 1;
+			}else{
+				w[0] = -1;
+			}
+		}else{
+			for(int i = 0; i < wins.length; i++){
+				if(wins[i] != 0){
+					w[i] = 1.0;
+				}else{
+					w[i] = -1.0;
+				}
+			}
+		}
+
+		return w;
+
 	}
 
 	/**
@@ -407,6 +591,161 @@ public class SimulationResult{
 			GamerLogger.logError("MctsManager", "Trying to compute wins for a SimulationResult that has no goals.");
 			throw new RuntimeException("MctsManager - Trying to compute wins for a SimulationResult that has no goals.");
 		}
+
+	}
+
+	private double rescaleValue(double value, double left, double right, double newLeft, double newRight){
+
+		if(right <= left || newRight <= newLeft){
+			GamerLogger.logError("MctsManager", "Trying to rescale value in inconsistent intervals: left=" +
+					left + ", right=" + right + ", newLeft=" + newLeft + ", newRight=" + newRight + ".");
+			throw new RuntimeException("MctsManager - Trying to rescale value in inconsistent intervals: left=" +
+					left + ", right=" + right + ", newLeft=" + newLeft + ", newRight=" + newRight + ".");
+		}
+
+		return ((newRight-newLeft)*(value-left)/(right-left))+newLeft;
+	}
+
+	public static void main(String[] args){
+
+		double[] a = {0, 0, 100};
+		double[] b = {0, 50, 50};
+		System.out.println(Arrays.toString(SimulationResult.getSingleWin(a)));
+		System.out.println(Arrays.toString(SimulationResult.getSingleWin(b)));
+		System.out.println(Arrays.toString(SimulationResult.getAllWins(a)));
+		System.out.println(Arrays.toString(SimulationResult.getAllWins(b)));
+		System.out.println(Arrays.toString(SimulationResult.getSingleWinAndLosses(a)));
+		System.out.println(Arrays.toString(SimulationResult.getSingleWinAndLosses(b)));
+		System.out.println(Arrays.toString(SimulationResult.getAllWinsAndLosses(a)));
+		System.out.println(Arrays.toString(SimulationResult.getAllWinsAndLosses(b)));
+	}
+
+	public static double[] getSingleWin(double[] wins) {
+
+
+		double[] w = new double[wins.length];
+		// Single player
+		if(wins.length == 1){
+			if(wins[0] >= 50){
+				w[0] = 1;
+			}else{
+				w[0] = 0;
+			}
+		}else{
+			int numWinners = 0;
+			for(int i = 0; i < wins.length; i++){
+				if(wins[i] != 0){
+					numWinners++;
+					w[i] = 1.0;
+				}
+			}
+			if(numWinners > 1){
+				for(int i = 0; i < w.length; i++){
+					w[i] = 0;
+				}
+			}
+
+		}
+
+		return w;
+
+	}
+
+	/**
+	 * @return an array where the players that won the simulation get a 1,
+	 * while all other players get a 0. The players that win the simulation
+	 * are the ones that get the highest score. For single player games,
+	 * a player wins a simulation if it gets a score higher than 0.5.
+	 */
+	public static double[] getAllWins(double[] wins) {
+
+
+		double[] w = new double[wins.length];
+		// Single player
+		if(wins.length == 1){
+			if(wins[0] >= 50){
+				w[0] = 1;
+			}else{
+				w[0] = 0;
+			}
+		}else{
+			for(int i = 0; i < wins.length; i++){
+				if(wins[i] != 0){
+					w[i] = 1.0;
+				}
+			}
+		}
+
+		return w;
+
+	}
+
+	/**
+	 * @return an array where the player that won the simulation (if only one exists)
+	 * gets a 1, while all other players get a -1. A player wins the simulation if it
+	 * is the only one to get the highest score. For single player games, a player wins
+	 * a simulation if it gets a score higher than 50.
+	 */
+	public static double[] getSingleWinAndLosses(double[] wins) {
+
+		double[] w = new double[wins.length];
+		// Single player
+		if(wins.length == 1){
+			if(wins[0] >= 50){
+				w[0] = 1;
+			}else{
+				w[0] = -1;
+			}
+		}else{
+			int numWinners = 0;
+			for(int i = 0; i < wins.length; i++){
+				if(wins[i] != 0){
+					numWinners++;
+					w[i] = 1.0;
+				}else{
+					w[i] = -1.0;
+				}
+			}
+			if(numWinners > 1){
+				for(int i = 0; i < w.length; i++){
+					w[i] = 0;
+				}
+			}
+
+		}
+
+		return w;
+
+	}
+
+	/**
+	 * @return an array where the players that won the simulation get a 1,
+	 * while all other players get a -1. The players that win the simulation
+	 * are the ones that get the highest score. For single player games,
+	 * a player wins a simulation if it gets a score higher than 0.5.
+	 */
+	public static double[] getAllWinsAndLosses(double[] wins) {
+
+
+		double[] w = new double[wins.length];
+		// Single player
+		if(wins.length == 1){
+			if(wins[0] >= 50){
+				w[0] = 1;
+			}else{
+				w[0] = -1;
+			}
+		}else{
+			for(int i = 0; i < wins.length; i++){
+				if(wins[i] != 0){
+					w[i] = 1.0;
+				}else{
+					w[i] = -1.0;
+				}
+			}
+		}
+
+		return w;
 
 	}
 

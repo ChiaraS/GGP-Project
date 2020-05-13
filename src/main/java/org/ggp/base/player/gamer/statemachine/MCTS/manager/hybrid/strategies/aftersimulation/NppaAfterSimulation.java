@@ -69,7 +69,7 @@ public class NppaAfterSimulation extends AfterSimulationStrategy {
 					this.updateType = PLAYOUT_STAT_UPDATE_TYPE.WINS;
 					break;
 				case "winner_only":
-					this.updateType = PLAYOUT_STAT_UPDATE_TYPE.WINNER_ONLY;
+					this.updateType = PLAYOUT_STAT_UPDATE_TYPE.SINGLE_WINNER;
 					break;
 				default:
 					GamerLogger.logError("SearchManagerCreation", "NppaAfterSimulation - The property " + updateTypeString + " is not a valid update type for NPPA statistics.");
@@ -113,7 +113,7 @@ public class NppaAfterSimulation extends AfterSimulationStrategy {
 
 		for(int resultIndex = 0; resultIndex < simulationResult.length; resultIndex++){
 
-			double[] g = simulationResult[resultIndex].getTerminalGoals();
+			double[] g = simulationResult[resultIndex].getTerminalGoalsIn0_100();
 			for(int i = 0; i < g.length; i++){
 				g[i] /= 100.0;
 			}
@@ -150,7 +150,7 @@ public class NppaAfterSimulation extends AfterSimulationStrategy {
 			switch(this.updateType){
 				case SCORES:
 
-					double[] goals = simulationResult[resultIndex].getTerminalGoals();
+					double[] goals = simulationResult[resultIndex].getTerminalGoalsIn0_100();
 
 					if(goals == null){
 						GamerLogger.logError("AfterSimulationStrategy", "NppaAfterSimulation - Found null terminal goals in the simulation result when updating the NPPA statistics with the playout moves. Probably a wrong combination of strategies has been set!");
@@ -176,7 +176,7 @@ public class NppaAfterSimulation extends AfterSimulationStrategy {
 
 				case WINS:
 
-					double[] wins = simulationResult[resultIndex].getTerminalWins();
+					double[] wins = simulationResult[resultIndex].getTerminalWinsIn0_1();
 
 					if(wins == null){
 						GamerLogger.logError("AfterSimulationStrategy", "NppaAfterSimulation - Found null rescaled terminal wins in the simulation result when updating the NPPA statistics with the playout moves. Probably a wrong combination of strategies has been set!");
@@ -187,7 +187,7 @@ public class NppaAfterSimulation extends AfterSimulationStrategy {
 
 					break;
 
-			case WINNER_ONLY:
+			case SINGLE_WINNER:
 
 				int winnerIndex = simulationResult[resultIndex].getSingleWinner();
 
@@ -427,7 +427,7 @@ public class NppaAfterSimulation extends AfterSimulationStrategy {
 
 		return indentation + "ALPHA = " + this.alpha +
 				indentation + "ALPHA_DISCOUNT = " + this.alphaDiscount +
-				indentation + "UPDATE_TYPE" + this.updateType +
+				indentation + "UPDATE_TYPE = " + this.updateType +
 				indentation + "nppa_statistics = " + nppaStatisticsString;
 
 	}

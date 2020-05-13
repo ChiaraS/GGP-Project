@@ -857,7 +857,7 @@ public class HybridMctsManager {
 			SimulationResult[] simulationResult = this.searchNext(initialState, initialNode);
 			for(int resultIndex = 0; resultIndex < simulationResult.length; resultIndex++){
 				this.gameDependentParameters.increaseStepIterations();
-				this.gameDependentParameters.increaseStepScoreSumForRoles(simulationResult[resultIndex].getTerminalGoals());
+				this.gameDependentParameters.increaseStepScoreSumForRoles(simulationResult[resultIndex].getTerminalGoalsIn0_100());
 			}
 			this.gameDependentParameters.increaseStepVisitedNodes(this.gameDependentParameters.getCurrentIterationVisitedNodes());
 
@@ -1337,7 +1337,7 @@ public class HybridMctsManager {
 				//System.out.println();
 				//System.out.println(Arrays.toString(simulationResult.getTerminalGoals()));
 
-				if((!this.flipWinsOnly || simulationResult.getTerminalWins()[this.gameDependentParameters.getMyRoleIndex()] == 1.0) && // If I have to flip in any situation, or if I have to flip only if my role is winning and it is winning...
+				if((!this.flipWinsOnly || simulationResult.getTerminalWinsIn0_1()[this.gameDependentParameters.getMyRoleIndex()] == 1.0) && // If I have to flip in any situation, or if I have to flip only if my role is winning and it is winning...
 						this.random.nextDouble() < this.pFlip) { // ...I check if I have to flip according to the pFlip probability.
 					simulationResult.flipTerminalScores(); // If I have to flip, I flip the scores.
 				}

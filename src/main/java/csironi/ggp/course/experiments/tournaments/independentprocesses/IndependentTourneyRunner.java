@@ -105,6 +105,8 @@ public class IndependentTourneyRunner {
 		// True if we want to give to external players unlimited time to respond to start and play requests (i.e. we don't check if they
 		// exceeded the timeout when answering)
 		boolean unlimitedTimeForExternal = false;
+		// True if we want to repeat an old experiment that did not finish, thus we have some matches that ran and some that still have to run.
+		boolean finishInterruptedExperiment = false;
 
 		// Map that for each external gamer contains the manager of available addresses (IP+port) on which the external gamer
 		// is listening for connections.
@@ -252,14 +254,22 @@ public class IndependentTourneyRunner {
 	    		continueOldExperiment = Boolean.parseBoolean(props.getProperty("continueOldExperiment"));
 	    	}
 
+	    	if(props.getProperty("finishInterruptedExperiment") != null){
+	    		finishInterruptedExperiment = Boolean.parseBoolean(props.getProperty("finishInterruptedExperiment"));
+	    	}
+
 			runNumber = Integer.parseInt(props.getProperty("runNumber"));
 
 			if(continueOldExperiment){
-				if(runNumber == 0){
+				if(!finishInterruptedExperiment && runNumber == 0){
 					System.out.println("Trying to start new experiment.");
 					timeID = System.currentTimeMillis();
 				}else{
-					System.out.println("Trying to continue old experiment.");
+					if(finishInterruptedExperiment){
+						System.out.println("Trying to finish continuation of old experiment.");
+					}else{
+						System.out.println("Trying to continue old experiment.");
+					}
 					String timeIDString = props.getProperty("timeID");
 					if(timeIDString == null){
 						System.out.println("Impossible to continue experiment. Missing timeID of experiment.");
@@ -268,7 +278,17 @@ public class IndependentTourneyRunner {
 					timeID = Long.parseLong(timeIDString);
 				}
 			}else{
-				timeID = System.currentTimeMillis();
+				if(finishInterruptedExperiment){
+					System.out.println("Trying to finish old experiment.");
+					String timeIDString = props.getProperty("timeID");
+					if(timeIDString == null){
+						System.out.println("Impossible to finish experiment. Missing timeID of experiment.");
+		    			return;
+					}
+					timeID = Long.parseLong(timeIDString);
+				}else{
+					timeID = System.currentTimeMillis();
+				}
 			}
 
 			if(props.getProperty("logOnlyEssentialFiles") != null) {
@@ -295,17 +315,26 @@ public class IndependentTourneyRunner {
 
 			if(!mainLogFolderFile.exists()){
 				if(continueOldExperiment){
-					if(runNumber == 0){
+					if(!finishInterruptedExperiment && runNumber == 0){
 						mainLogFolderFile.mkdirs();
-					}else{ // If it's not the first run, the folder must already exist
-						System.out.println("Impossible to continue tourney for game " + gameKey + "! The corresponding folder Doesn't exist! Skipping game.");
+					}else{ // If it's not the first run or if we are finishing the first run, the folder must already exist
+						if(finishInterruptedExperiment){
+							System.out.println("Impossible to finish tourney for game " + gameKey + "! The corresponding folder Doesn't exist! Skipping game.");
+						}else{
+							System.out.println("Impossible to continue tourney for game " + gameKey + "! The corresponding folder Doesn't exist! Skipping game.");
+						}
 						continue;
 					}
 				}else{
-					mainLogFolderFile.mkdirs();
+					if(finishInterruptedExperiment){
+						System.out.println("Impossible to finish tourney for game " + gameKey + "! The corresponding folder Doesn't exist! Skipping game.");
+						continue;
+					}else{
+						mainLogFolderFile.mkdirs();
+					}
 				}
 			}else{
-				if(!continueOldExperiment || runNumber == 0 ){
+				if(!finishInterruptedExperiment && (!continueOldExperiment || runNumber == 0) ){
 					System.out.println("Impossible to start new tourney for game " + gameKey + "! Cannot create folder " + mainLogFolder + " for the tourney. A folder with the same name already exists! Skipping game.");
 					continue;
 				}
@@ -330,8 +359,9 @@ public class IndependentTourneyRunner {
 	    	GamerLogger.log("TourneyRunner" + runNumber, "Starting tourney " + tourneyName + " for game " + gameKey + " with following settings: START_CLOCK=" +
 	    			startClock + "s, PLAY_CLOCK=" + playClock + "s, PROPNET_CREATION_TIME=" + pnCreationTime + "ms, DESIRED_NUM_PARALLEL_PLAYERS=" +
 	    			numParallelPlayers + ", MIN_NUM_MATCHES_PER_GAMER_TYPE=" + matchesPerGamerType + ", NUM_SEQUENTIAL_MATCHES=" + numSequentialMatches +
-	    			", GAMER_TYPES=" + gamerTypesList + ", CONTINUE_OLD_EXPERIMENT=" + continueOldExperiment + ", LOG_ONLY_ESSENTIAL_FILES=" +
-	    			logOnlyEssentialFiles + ", UNLIMITED_TIME_FOR_EXTERNAL=" + unlimitedTimeForExternal + ".");
+	    			", GAMER_TYPES=" + gamerTypesList + ", CONTINUE_OLD_EXPERIMENT=" + continueOldExperiment + ", FINISH_INTERRUPTED_EXPERIMENT=" +
+	    			finishInterruptedExperiment + ", LOG_ONLY_ESSENTIAL_FILES=" + logOnlyEssentialFiles + ", UNLIMITED_TIME_FOR_EXTERNAL=" +
+	    			unlimitedTimeForExternal + ".");
 
 	    	/** 3. Compute all combinations of gamer types. **/
 
@@ -391,7 +421,7 @@ public class IndependentTourneyRunner {
 	    		GamerLogger.log("TourneyRunner" + runNumber, "Starting sub-tourney for combination " + comboIndices + ".");
 
 	    		ThreadContext.put("LOG_FOLDER", mainLogFolder + "/Combination" + comboIndices);
-	    		boolean completed = runMatchesForCombination(runNumber, gameKey, startClock, playClock, pnCreationTime, theComboGamersTypes, numParallelMatches, numMatchRunners, numSequentialMatches, externalGamersManagers, logOnlyEssentialFiles, unlimitedTimeForExternal);
+	    		boolean completed = runMatchesForCombination(runNumber, gameKey, startClock, playClock, pnCreationTime, theComboGamersTypes, numParallelMatches, numMatchRunners, numSequentialMatches, externalGamersManagers, logOnlyEssentialFiles, unlimitedTimeForExternal, comboIndices);
 	    		ThreadContext.put("LOG_FOLDER", mainLogFolder);
 
 	    		if(completed){
@@ -440,7 +470,7 @@ public class IndependentTourneyRunner {
 	private static boolean runMatchesForCombination(int runNumber, String gameKey, int startClock, int playClock,
 			long pnCreationTime, List<String> theGamersTypes, int numParallelMatches, int numMatchRunners,
 			int numSequentialMatches, Map<String,ExternalGamerAvailabilityManager> externalGamersManagers,
-			boolean logOnlyEssentialFiles, boolean unlimitedTimeForExternal){
+			boolean logOnlyEssentialFiles, boolean unlimitedTimeForExternal, String comboIndices){
 
 		GamerLogger.log("TourneyRunner"+runNumber, "Starting sub-tourney.");
 
@@ -468,6 +498,15 @@ public class IndependentTourneyRunner {
 
 		for(int i = (runNumber*numMatchRunners); i < ((runNumber+1)*numMatchRunners); i++){
 			theSettings.set(5, ""+i);
+			// If the folder of the match already exists, do not run the match
+			// Addition to continue experiment that was interrupted while in progress.
+			// If the match folder already exists, do not run anything. Run only if the
+			// match folder does not exist yet.
+			if(new File(ThreadContext.get("LOG_FOLDER") + "/MatchRunner" + i).exists()){
+				System.out.println("Match " + i + " for combination " + comboIndices + " already exists, skipping!");
+				continue;
+			}
+
 			executor.execute(new MatchProcessRunner(i, new ArrayList<String>(theSettings), ThreadContext.get("LOG_FOLDER") + "/MatchRunner" + i, externalGamersManagers, theGamersTypes));
 		}
 
@@ -491,7 +530,7 @@ public class IndependentTourneyRunner {
 		// Tell the executor to wait until all currently running tasks have completed execution.
 		try {
 
-			executor.awaitTermination(3, TimeUnit.DAYS);
+			executor.awaitTermination(20, TimeUnit.DAYS);
 
 		} catch (InterruptedException e) {
 			executor.shutdownNow(); // Interrupt everything

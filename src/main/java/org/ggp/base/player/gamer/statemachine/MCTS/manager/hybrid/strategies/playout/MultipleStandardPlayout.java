@@ -47,7 +47,7 @@ public class MultipleStandardPlayout extends StandardPlayout {
 
 		for(int i = 0; i < this.playoutRepetitions; i++) {
 			result[0] = this.singlePlayout(node, state, maxDepth);
-			goals = result[0].getTerminalGoals();
+			goals = result[0].getTerminalGoalsIn0_100();
 			for(int j = 0; j < goals.length; j++){
 				avgGoals[j] += goals[j];
 			}
