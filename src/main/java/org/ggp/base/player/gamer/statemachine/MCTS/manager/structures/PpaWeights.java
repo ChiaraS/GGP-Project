@@ -401,8 +401,10 @@ public class PpaWeights {
 				//System.out.println(exponentialSum);
 			}
 
+			//System.out.println(exponentialSum);
+
 			if(exponentialSum <= 0){ // Should always be positive
-				GamerLogger.logError("AfterSimulationStrategy", "AdaptivePlayoutAfterSimulation - Found non-positive sum of exponentials when adapting the playout policy!");
+				GamerLogger.logError("AfterSimulationStrategy", "AdaptivePlayoutAfterSimulation - Found non-positive sum of exponentials when adapting the playout policy: " + exponentialSum + "!");
 				throw new RuntimeException("Found non-positive sum of exponentials when adapting the playout policy.");
 			}
 

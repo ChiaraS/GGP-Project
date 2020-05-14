@@ -54,8 +54,41 @@ public class AdaptivePlayoutAfterSimulation extends AfterSimulationStrategy {
 				case "wins":
 					this.updateType = PLAYOUT_STAT_UPDATE_TYPE.WINS;
 					break;
-				case "winner_only":
+				case "rescaled_scores":
+					this.updateType = PLAYOUT_STAT_UPDATE_TYPE.RESCALED_SCORES;
+					break;
+				case "rescaled_wins":
+					this.updateType = PLAYOUT_STAT_UPDATE_TYPE.RESCALED_WINS;
+					break;
+				case "single_winner":
 					this.updateType = PLAYOUT_STAT_UPDATE_TYPE.SINGLE_WINNER;
+					break;
+				case "all_winners":
+					this.updateType = PLAYOUT_STAT_UPDATE_TYPE.ALL_WINNERS;
+					break;
+				case "single_winner_and_losers":
+					this.updateType = PLAYOUT_STAT_UPDATE_TYPE.SINGLE_WINNER_AND_LOSERS;
+					break;
+				case "all_winners_and_losers":
+					this.updateType = PLAYOUT_STAT_UPDATE_TYPE.ALL_WINNERS_AND_LOSERS;
+					break;
+				case "proportional_single_winner":
+					this.updateType = PLAYOUT_STAT_UPDATE_TYPE.PROPORTIONAL_SINGLE_WINNER;
+					break;
+				case "proportional_all_winners":
+					this.updateType = PLAYOUT_STAT_UPDATE_TYPE.PROPORTIONAL_ALL_WINNERS;
+					break;
+				case "proportional_single_winner_and_losers":
+					this.updateType = PLAYOUT_STAT_UPDATE_TYPE.PROPORTIONAL_SINGLE_WINNER_AND_LOSERS;
+					break;
+				case "proportional_all_winners_and_losers":
+					this.updateType = PLAYOUT_STAT_UPDATE_TYPE.PROPORTIONAL_ALL_WINNERS_AND_LOSERS;
+					break;
+				case "losers_with_single_winner":
+					this.updateType = PLAYOUT_STAT_UPDATE_TYPE.LOSERS_WITH_SINGLE_WINNER;
+					break;
+				case "losers_with_all_winners":
+					this.updateType = PLAYOUT_STAT_UPDATE_TYPE.LOSERS_WITH_ALL_WINNERS;
 					break;
 				default:
 					GamerLogger.logError("SearchManagerCreation", "AfterSimulationStrategy - The property " + updateTypeString + " is not a valid update type for PPA weights.");
@@ -113,91 +146,111 @@ public class AdaptivePlayoutAfterSimulation extends AfterSimulationStrategy {
 				throw new RuntimeException("No legal moves for all roles in the simulation result.");
 			}
 
+			double[] updateFactors;
+
 			switch(this.updateType){
 				case SCORES:
 
-					double[] goals = simulationResult[resultIndex].getTerminalGoalsIn0_100();
+					updateFactors = simulationResult[resultIndex].getTerminalGoalsIn0_1();
 
-					if(goals == null){
+					if(updateFactors == null){
 						GamerLogger.logError("AfterSimulationStrategy", "AdaptivePlayoutAfterSimulation - Found null terminal goals in the simulation result when updating the PPA weights with the playout moves. Probably a wrong combination of strategies has been set!");
 						throw new RuntimeException("Null terminal goals in the simulation result.");
-					}
-
-					double discountedAlpha = this.alpha;
-
-					for(int i = allMovesInAllStates.size()-1; i >= 0; i--){
-
-						for(int roleIndex = 0; roleIndex < goals.length; roleIndex++){
-
-			    			List<Move> legalMovesForRole = allMovesInAllStates.get(i).get(roleIndex);
-			    			Move roleMove = allJointMoves.get(i).get(roleIndex);
-			    			this.ppaWeights.adaptPolicyForRole(roleIndex, legalMovesForRole, roleMove, goals[roleIndex]/100.0, discountedAlpha, this.gameDependentParameters.getTotIterations());
-
-			    		}
-
-						discountedAlpha *= this.alphaDiscount;
-
 					}
 
 					break;
 
 				case WINS:
 
-					double[] wins = simulationResult[resultIndex].getTerminalWinsIn0_1();
-
-					discountedAlpha = this.alpha;
-
-					for(int i = allMovesInAllStates.size()-1; i >= 0; i--){
-
-						for(int roleIndex = 0; roleIndex < wins.length; roleIndex++){
-
-			    			List<Move> legalMovesForRole = allMovesInAllStates.get(i).get(roleIndex);
-			    			Move roleMove = allJointMoves.get(i).get(roleIndex);
-			    			this.ppaWeights.adaptPolicyForRole(roleIndex, legalMovesForRole, roleMove, wins[roleIndex], discountedAlpha, this.gameDependentParameters.getTotIterations());
-
-			    		}
-
-						discountedAlpha *= this.alphaDiscount;
-
-					}
+					updateFactors = simulationResult[resultIndex].getTerminalWinsIn0_1();
 
 					break;
 
 				case SINGLE_WINNER:
-					int winnerIndex = simulationResult[resultIndex].getSingleWinner();
 
-					//System.out.println("Winner=" + winnerIndex);
+					updateFactors = simulationResult[resultIndex].getSingleWin();
 
-					// Use the simulation result to figure out for which player to change the weights.
-					// For the player with the highest score, weights are increased by alpha for the simulated
-					// move and decreased for all other moves proportionally to their probability.
-					// If more than 1 player has highest score nothing happens.
-					/*List<Integer> maxIndices = new ArrayList<Integer>();
-					double max = -Double.MAX_VALUE;
-					for(int roleIndex = 0; roleIndex < goals.length; roleIndex++){
-					    if(goals[roleIndex] > max){
-					    	max = goals[roleIndex];
-					    	maxIndices.clear();
-					    	maxIndices.add(roleIndex);
-					    }else if(goals[roleIndex] == max){
-					    	maxIndices.add(roleIndex);
-					    }
-					}*/
-
-					if(winnerIndex != -1){ // Only one player with highest score
-
-						discountedAlpha = this.alpha;
-
-					    for(int i = allMovesInAllStates.size()-1; i >= 0; i--){
-
-			    			List<Move> legalMovesForWinner = allMovesInAllStates.get(i).get(winnerIndex);
-			    			Move winnerMove = allJointMoves.get(i).get(winnerIndex);
-			    			this.ppaWeights.adaptPolicyForRole(winnerIndex, legalMovesForWinner, winnerMove, 1.0, discountedAlpha, this.gameDependentParameters.getTotIterations());
-			    			discountedAlpha *= this.alphaDiscount;
-
-			    		}
-					}
 					break;
+				case ALL_WINNERS:
+
+					updateFactors = simulationResult[resultIndex].getAllWins();
+
+					break;
+				case ALL_WINNERS_AND_LOSERS:
+
+					updateFactors = simulationResult[resultIndex].getAllWinsAndLosses();
+
+					break;
+				case LOSERS_WITH_ALL_WINNERS:
+
+					updateFactors = simulationResult[resultIndex].getLossesWithAllWins();
+
+					break;
+				case LOSERS_WITH_SINGLE_WINNER:
+
+					updateFactors = simulationResult[resultIndex].getLossesWithSingleWin();
+
+					break;
+				case PROPORTIONAL_ALL_WINNERS:
+
+					updateFactors = simulationResult[resultIndex].getProportionalAllWins();
+
+					break;
+				case PROPORTIONAL_ALL_WINNERS_AND_LOSERS:
+
+					updateFactors = simulationResult[resultIndex].getProportionalAllWinsAndLosses();
+
+					break;
+				case PROPORTIONAL_SINGLE_WINNER:
+
+					updateFactors = simulationResult[resultIndex].getProportionalSingleWin();
+
+					break;
+				case PROPORTIONAL_SINGLE_WINNER_AND_LOSERS:
+
+					updateFactors = simulationResult[resultIndex].getProportionalSingleWinAndLosses();
+
+					//System.out.println(Arrays.toString(updateFactors));
+
+					break;
+				case RESCALED_SCORES:
+
+					updateFactors = simulationResult[resultIndex].getRescaledTerminalGoals(-1.0, 1.0);
+
+					break;
+				case RESCALED_WINS:
+
+					updateFactors = simulationResult[resultIndex].getRescaledTerminalWins(-1.0, 1.0);
+
+					break;
+				case SINGLE_WINNER_AND_LOSERS:
+
+					updateFactors = simulationResult[resultIndex].getSingleWinAndLosses();
+
+					break;
+				default:
+
+					GamerLogger.logError("AfterSimulationStrategy", "AdaptivePlayoutAfterSimulation - Unexisting update type for the weights: " + this.updateType + "!");
+					throw new RuntimeException("Unexisting update type for the weights: " + this.updateType + "!");
+
+			}
+
+			double discountedAlpha = this.alpha;
+
+			for(int i = allMovesInAllStates.size()-1; i >= 0; i--){
+
+				for(int roleIndex = 0; roleIndex < updateFactors.length; roleIndex++){
+
+					if(updateFactors[roleIndex] != 0){
+		    			List<Move> legalMovesForRole = allMovesInAllStates.get(i).get(roleIndex);
+		    			Move roleMove = allJointMoves.get(i).get(roleIndex);
+		    			this.ppaWeights.adaptPolicyForRole(roleIndex, legalMovesForRole, roleMove, updateFactors[roleIndex], discountedAlpha, this.gameDependentParameters.getTotIterations());
+					}
+
+	    		}
+
+				discountedAlpha *= this.alphaDiscount;
+
 			}
 
 		}

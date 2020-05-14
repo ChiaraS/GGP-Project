@@ -11,7 +11,7 @@ import org.ggp.base.util.logging.GamerLogger;
 
 public abstract class ConfigurableStateMachineGamer extends StateMachineGamer {
 
-	protected static final String defaultSettingsFileName = "1000sim032Alpha1DecayGSAdaptivePlayoutDuct.properties";
+	protected static final String defaultSettingsFileName = "1000sim032A1DGPSWLPPADuct.properties";
 
 	protected String settingsFilePath;
 

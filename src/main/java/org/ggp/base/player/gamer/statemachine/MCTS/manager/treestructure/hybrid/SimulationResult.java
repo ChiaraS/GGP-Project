@@ -547,6 +547,233 @@ public class SimulationResult{
 	}
 
 	/**
+	 * @return an array where the player that won the simulation (if only one exists)
+	 * gets an update proportional to its score, while all other players get a 0.
+	 * A player wins the simulation if it is the only one to get the highest score.
+	 * For single player games, a player wins a simulation if it gets a score higher
+	 * than 50.
+	 * For example:
+	 * scores [0 20 20  80]
+	 * wins   [0  0  0   1]
+	 * output [0  0  0 0.8]
+	 */
+	public double[] getProportionalSingleWin() {
+
+		double[] wins = this.getTerminalWinsIn0_100();
+		double[] score = this.getTerminalGoalsIn0_100();
+		double[] w = new double[wins.length];
+		// Single player
+		if(wins.length == 1){
+			if(wins[0] >= 50){
+				w[0] = score[0]/100.0;
+			}else{
+				w[0] = 0;
+			}
+		}else{
+			int numWinners = 0;
+			for(int i = 0; i < wins.length; i++){
+				if(wins[i] != 0){
+					numWinners++;
+					w[i] = score[i]/100.0;
+				}
+			}
+			if(numWinners > 1){
+				for(int i = 0; i < w.length; i++){
+					w[i] = 0;
+				}
+			}
+
+		}
+
+		return w;
+
+	}
+
+	/**
+	 * @return an array where the players that won the simulation get an update
+	 * proportional to their score while all other players get a 0. The players
+	 * that win the simulation are the ones that get the highest score. For single
+	 * player games, a player wins a simulation if it gets a score higher than 0.5.
+	 * For example:
+	 * scores [0 20  80  80]
+	 * wins   [0  0   1   1]
+	 * output [0  0 0.8 0.8]
+	 */
+	public double[] getProportionalAllWins() {
+
+		double[] wins = this.getTerminalWinsIn0_100();
+		double[] score = this.getTerminalGoalsIn0_100();
+		double[] w = new double[wins.length];
+		// Single player
+		if(wins.length == 1){
+			if(wins[0] >= 50){
+				w[0] = score[0]/100.0;
+			}else{
+				w[0] = 0;
+			}
+		}else{
+			for(int i = 0; i < wins.length; i++){
+				if(wins[i] != 0){
+					w[i] = score[i]/100.0;
+				}
+			}
+		}
+
+		return w;
+
+	}
+
+	/**
+	 * @return an array where the player that won the simulation (if only one exists)
+	 * gets an update proportional to its score, while all other players get a decrement
+	 * proportional to their score. A player wins the simulation if it is the only one
+	 * to get the highest score. For single player games, a player wins a simulation if
+	 * it gets a score higher than 50. The decrement for a losing player is computed as
+	 * (1-score/100).
+	 * For example:
+	 * scores [ 0   20   20  80]
+	 * wins   [-1   -1   -1   1]
+	 * output [-1 -0.8 -0.8 0.8]
+	 */
+	public double[] getProportionalSingleWinAndLosses() {
+
+		double[] wins = this.getTerminalWinsIn0_100();
+		double[] score = this.getTerminalGoalsIn0_100();
+		double[] w = new double[wins.length];
+		// Single player
+		if(wins.length == 1){
+			if(wins[0] >= 50){
+				w[0] = score[0]/100.0;
+			}else{
+				w[0] = -(1.0-(score[0]/100.0));
+			}
+		}else{
+			int numWinners = 0;
+			for(int i = 0; i < wins.length; i++){
+				if(wins[i] != 0){
+					numWinners++;
+					w[i] = score[i]/100.0;
+				}else{
+					w[i] = -(1.0-(score[i]/100.0));
+				}
+			}
+			if(numWinners > 1){
+				for(int i = 0; i < w.length; i++){
+					w[i] = 0;
+				}
+			}
+
+		}
+
+		return w;
+
+	}
+
+	/**
+	 * @return an array where the players that won the simulation get an upate
+	 * proportional to their score, while all other players get a decrement
+	 * proportional to their scores. The players that win the simulation
+	 * are the ones that get the highest score. For single player games,
+	 * a player wins a simulation if it gets a score higher than 0.5. The
+	 * decrement for a losing player is computed as (1-score/100).
+	 */
+	public double[] getProportionalAllWinsAndLosses() {
+
+		double[] wins = this.getTerminalWinsIn0_100();
+		double[] score = this.getTerminalGoalsIn0_100();
+		double[] w = new double[wins.length];
+		// Single player
+		if(wins.length == 1){
+			if(wins[0] >= 50){
+				w[0] = score[0]/100.0;
+			}else{
+				w[0] = -(1.0-score[0]/100.0);
+			}
+		}else{
+			for(int i = 0; i < wins.length; i++){
+				if(wins[i] != 0){
+					w[i] = score[i]/100.0;
+				}else{
+					w[i] = -(1.0-score[i]/100.0);
+				}
+			}
+		}
+
+		return w;
+
+	}
+
+	/**
+	 * @return an array where the player that won the simulation (if only one exists)
+	 * gets a 1, while all other players get a -1. A player wins the simulation if it
+	 * is the only one to get the highest score. For single player games, a player wins
+	 * a simulation if it gets a score higher than 50.
+	 */
+	public double[] getLossesWithSingleWin() {
+
+		double[] wins = this.getTerminalWinsIn0_100();
+		double[] w = new double[wins.length];
+		// Single player
+		if(wins.length == 1){
+			if(wins[0] >= 50){
+				w[0] = 0;
+			}else{
+				w[0] = -1;
+			}
+		}else{
+			int numWinners = 0;
+			for(int i = 0; i < wins.length; i++){
+				if(wins[i] != 0){
+					numWinners++;
+					w[i] = 0;
+				}else{
+					w[i] = -1.0;
+				}
+			}
+			if(numWinners > 1){
+				for(int i = 0; i < w.length; i++){
+					w[i] = 0;
+				}
+			}
+
+		}
+
+		return w;
+
+	}
+
+	/**
+	 * @return an array where the players that won the simulation get a 1,
+	 * while all other players get a -1. The players that win the simulation
+	 * are the ones that get the highest score. For single player games,
+	 * a player wins a simulation if it gets a score higher than 0.5.
+	 */
+	public double[] getLossesWithAllWins() {
+
+		double[] wins = this.getTerminalWinsIn0_100();
+		double[] w = new double[wins.length];
+		// Single player
+		if(wins.length == 1){
+			if(wins[0] >= 50){
+				w[0] = 0;
+			}else{
+				w[0] = -1;
+			}
+		}else{
+			for(int i = 0; i < wins.length; i++){
+				if(wins[i] != 0){
+					w[i] = 0.0;
+				}else{
+					w[i] = -1.0;
+				}
+			}
+		}
+
+		return w;
+
+	}
+
+	/**
 	 * This method is similar to getTerminalWins() because it converts goals to wins. However, instead of returning
 	 * the wins it checks if there is only one winner. If so, it returns the index of the winner, otherwise it returns -1.
 	 * For multi-player games the winner is the one that gets the highest score, for single-player games the only role
@@ -608,16 +835,102 @@ public class SimulationResult{
 
 	public static void main(String[] args){
 
-		double[] a = {0, 0, 100};
-		double[] b = {0, 50, 50};
+		double[] aa = {0, 20, 20, 80};
+		double[] bb = {0, 20, 80, 80};
+		double[] cc = {0, 100};
+		double[] dd = {50, 50};
+
+		double[] a = SimulationResult.getTerminalWinsIn0_100(aa);
+		double[] b = SimulationResult.getTerminalWinsIn0_100(bb);
+		double[] c = SimulationResult.getTerminalWinsIn0_100(cc);
+		double[] d = SimulationResult.getTerminalWinsIn0_100(dd);
+
+		System.out.println(Arrays.toString(a));
+		System.out.println(Arrays.toString(b));
+		System.out.println(Arrays.toString(c));
+		System.out.println(Arrays.toString(d));
+
+		System.out.println();
+
+		System.out.println("Single Win");
 		System.out.println(Arrays.toString(SimulationResult.getSingleWin(a)));
 		System.out.println(Arrays.toString(SimulationResult.getSingleWin(b)));
+		System.out.println(Arrays.toString(SimulationResult.getSingleWin(c)));
+		System.out.println(Arrays.toString(SimulationResult.getSingleWin(d)));
+
+		System.out.println();
+
+		System.out.println("All Wins");
 		System.out.println(Arrays.toString(SimulationResult.getAllWins(a)));
 		System.out.println(Arrays.toString(SimulationResult.getAllWins(b)));
+		System.out.println(Arrays.toString(SimulationResult.getAllWins(c)));
+		System.out.println(Arrays.toString(SimulationResult.getAllWins(d)));
+
+		System.out.println();
+
+		System.out.println("Single Win and Losses");
 		System.out.println(Arrays.toString(SimulationResult.getSingleWinAndLosses(a)));
 		System.out.println(Arrays.toString(SimulationResult.getSingleWinAndLosses(b)));
+		System.out.println(Arrays.toString(SimulationResult.getSingleWinAndLosses(c)));
+		System.out.println(Arrays.toString(SimulationResult.getSingleWinAndLosses(d)));
+
+		System.out.println();
+
+		System.out.println("All Wins and Losses");
 		System.out.println(Arrays.toString(SimulationResult.getAllWinsAndLosses(a)));
 		System.out.println(Arrays.toString(SimulationResult.getAllWinsAndLosses(b)));
+		System.out.println(Arrays.toString(SimulationResult.getAllWinsAndLosses(c)));
+		System.out.println(Arrays.toString(SimulationResult.getAllWinsAndLosses(d)));
+
+		System.out.println();
+
+		System.out.println("Proportional Single Win");
+		System.out.println(Arrays.toString(SimulationResult.getProportionalSingleWin(a,aa)));
+		System.out.println(Arrays.toString(SimulationResult.getProportionalSingleWin(b,bb)));
+		System.out.println(Arrays.toString(SimulationResult.getProportionalSingleWin(c,cc)));
+		System.out.println(Arrays.toString(SimulationResult.getProportionalSingleWin(d,dd)));
+
+		System.out.println();
+
+		System.out.println("Proportional All Wins");
+		System.out.println(Arrays.toString(SimulationResult.getProportionalAllWins(a,aa)));
+		System.out.println(Arrays.toString(SimulationResult.getProportionalAllWins(b,bb)));
+		System.out.println(Arrays.toString(SimulationResult.getProportionalAllWins(c,cc)));
+		System.out.println(Arrays.toString(SimulationResult.getProportionalAllWins(d,dd)));
+
+		System.out.println();
+
+		System.out.println("Proportional Single Win and Losses");
+		System.out.println(Arrays.toString(SimulationResult.getProportionalSingleWinAndLosses(a,aa)));
+		System.out.println(Arrays.toString(SimulationResult.getProportionalSingleWinAndLosses(b,bb)));
+		System.out.println(Arrays.toString(SimulationResult.getProportionalSingleWinAndLosses(c,cc)));
+		System.out.println(Arrays.toString(SimulationResult.getProportionalSingleWinAndLosses(d,dd)));
+
+		System.out.println();
+
+		System.out.println("Proportional All Wins and Losses");
+		System.out.println(Arrays.toString(SimulationResult.getProportionalAllWinsAndLosses(a,aa)));
+		System.out.println(Arrays.toString(SimulationResult.getProportionalAllWinsAndLosses(b,bb)));
+		System.out.println(Arrays.toString(SimulationResult.getProportionalAllWinsAndLosses(c,cc)));
+		System.out.println(Arrays.toString(SimulationResult.getProportionalAllWinsAndLosses(d,dd)));
+
+		System.out.println();
+
+		System.out.println("Losses With Single Win");
+		System.out.println(Arrays.toString(SimulationResult.getLossesWithSingleWin(a)));
+		System.out.println(Arrays.toString(SimulationResult.getLossesWithSingleWin(b)));
+		System.out.println(Arrays.toString(SimulationResult.getLossesWithSingleWin(c)));
+		System.out.println(Arrays.toString(SimulationResult.getLossesWithSingleWin(d)));
+
+		System.out.println();
+
+		System.out.println("Losses With All Wins");
+		System.out.println(Arrays.toString(SimulationResult.getLossesWithAllWins(a)));
+		System.out.println(Arrays.toString(SimulationResult.getLossesWithAllWins(b)));
+		System.out.println(Arrays.toString(SimulationResult.getLossesWithAllWins(c)));
+		System.out.println(Arrays.toString(SimulationResult.getLossesWithAllWins(d)));
+
+
 	}
 
 	public static double[] getSingleWin(double[] wins) {
@@ -747,6 +1060,260 @@ public class SimulationResult{
 
 		return w;
 
+	}
+
+
+	public static double[] getProportionalSingleWin(double[] wins, double[] score) {
+
+		//double[] wins = this.getTerminalWinsIn0_100();
+		//double[] score = this.getTerminalGoalsIn0_100();
+		double[] w = new double[wins.length];
+		// Single player
+		if(wins.length == 1){
+			if(wins[0] >= 50){
+				w[0] = score[0]/100.0;
+			}else{
+				w[0] = 0;
+			}
+		}else{
+			int numWinners = 0;
+			for(int i = 0; i < wins.length; i++){
+				if(wins[i] != 0){
+					numWinners++;
+					w[i] = score[i]/100.0;
+				}
+			}
+			if(numWinners > 1){
+				for(int i = 0; i < w.length; i++){
+					w[i] = 0;
+				}
+			}
+
+		}
+
+		return w;
+
+	}
+
+	/**
+	 * @return an array where the players that won the simulation get an update
+	 * proportional to their score while all other players get a 0. The players
+	 * that win the simulation are the ones that get the highest score. For single
+	 * player games, a player wins a simulation if it gets a score higher than 0.5.
+	 * For example:
+	 * scores [0 20  80  80]
+	 * wins   [0  0   1   1]
+	 * output [0  0 0.8 0.8]
+	 */
+	public static double[] getProportionalAllWins(double[] wins, double[] score) {
+
+		//double[] wins = this.getTerminalWinsIn0_100();
+		//double[] score = this.getTerminalGoalsIn0_100();
+		double[] w = new double[wins.length];
+		// Single player
+		if(wins.length == 1){
+			if(wins[0] >= 50){
+				w[0] = score[0]/100.0;
+			}else{
+				w[0] = 0;
+			}
+		}else{
+			for(int i = 0; i < wins.length; i++){
+				if(wins[i] != 0){
+					w[i] = score[i]/100.0;
+				}
+			}
+		}
+
+		return w;
+
+	}
+
+	/**
+	 * @return an array where the player that won the simulation (if only one exists)
+	 * gets an update proportional to its score, while all other players get a decrement
+	 * proportional to their score. A player wins the simulation if it is the only one
+	 * to get the highest score. For single player games, a player wins a simulation if
+	 * it gets a score higher than 50. The decrement for a losing player is computed as
+	 * (1-score/100).
+	 * For example:
+	 * scores [ 0   20   20  80]
+	 * wins   [-1   -1   -1   1]
+	 * output [-1 -0.8 -0.8 0.8]
+	 */
+	public static double[] getProportionalSingleWinAndLosses(double[] wins, double[] score) {
+
+		//double[] wins = this.getTerminalWinsIn0_100();
+		//double[] score = this.getTerminalGoalsIn0_100();
+		double[] w = new double[wins.length];
+		// Single player
+		if(wins.length == 1){
+			if(wins[0] >= 50){
+				w[0] = score[0]/100.0;
+			}else{
+				w[0] = -(1.0-score[0]/100.0);
+			}
+		}else{
+			int numWinners = 0;
+			for(int i = 0; i < wins.length; i++){
+				if(wins[i] != 0){
+					numWinners++;
+					w[i] = score[i]/100.0;
+				}else{
+					w[i] = -(1.0-score[i]/100.0);
+				}
+			}
+			if(numWinners > 1){
+				for(int i = 0; i < w.length; i++){
+					w[i] = 0;
+				}
+			}
+
+		}
+
+		return w;
+
+	}
+
+	/**
+	 * @return an array where the players that won the simulation get an upate
+	 * proportional to their score, while all other players get a decrement
+	 * proportional to their scores. The players that win the simulation
+	 * are the ones that get the highest score. For single player games,
+	 * a player wins a simulation if it gets a score higher than 0.5. The
+	 * decrement for a losing player is computed as (1-score/100).
+	 */
+	public static double[] getProportionalAllWinsAndLosses(double[] wins, double[] score) {
+
+		//double[] wins = this.getTerminalWinsIn0_100();
+		//double[] score = this.getTerminalGoalsIn0_100();
+		double[] w = new double[wins.length];
+		// Single player
+		if(wins.length == 1){
+			if(wins[0] >= 50){
+				w[0] = score[0]/100.0;
+			}else{
+				w[0] = -(1.0-score[0]/100.0);
+			}
+		}else{
+			for(int i = 0; i < wins.length; i++){
+				if(wins[i] != 0){
+					w[i] = score[i]/100.0;
+				}else{
+					w[i] = -(1.0-score[i]/100.0);
+				}
+			}
+		}
+
+		return w;
+
+	}
+
+	/**
+	 * @return an array where the player that won the simulation (if only one exists)
+	 * gets a 1, while all other players get a -1. A player wins the simulation if it
+	 * is the only one to get the highest score. For single player games, a player wins
+	 * a simulation if it gets a score higher than 50.
+	 */
+	public static double[] getLossesWithSingleWin(double[] wins) {
+
+		//double[] wins = this.getTerminalWinsIn0_100();
+		double[] w = new double[wins.length];
+		// Single player
+		if(wins.length == 1){
+			if(wins[0] >= 50){
+				w[0] = 0;
+			}else{
+				w[0] = -1;
+			}
+		}else{
+			int numWinners = 0;
+			for(int i = 0; i < wins.length; i++){
+				if(wins[i] != 0){
+					numWinners++;
+					w[i] = 0;
+				}else{
+					w[i] = -1.0;
+				}
+			}
+			if(numWinners > 1){
+				for(int i = 0; i < w.length; i++){
+					w[i] = 0;
+				}
+			}
+
+		}
+
+		return w;
+
+	}
+
+	/**
+	 * @return an array where the players that won the simulation get a 1,
+	 * while all other players get a -1. The players that win the simulation
+	 * are the ones that get the highest score. For single player games,
+	 * a player wins a simulation if it gets a score higher than 0.5.
+	 */
+	public static double[] getLossesWithAllWins(double[] wins) {
+
+		//double[] wins = this.getTerminalWinsIn0_100();
+		double[] w = new double[wins.length];
+		// Single player
+		if(wins.length == 1){
+			if(wins[0] >= 50){
+				w[0] = 0;
+			}else{
+				w[0] = -1;
+			}
+		}else{
+			for(int i = 0; i < wins.length; i++){
+				if(wins[i] != 0){
+					w[i] = 0.0;
+				}else{
+					w[i] = -1.0;
+				}
+			}
+		}
+
+		return w;
+
+	}
+
+	public static double[] getTerminalWinsIn0_100(double[] scores) {
+
+		if(scores.length > 0) {
+
+			double[] wins = new double[scores.length];
+
+			if(scores.length == 1) {
+				wins[0] = scores[0];
+			}else {
+				List<Integer> bestIndices = new ArrayList<Integer>();
+				double max = -1;
+				for(int roleIndex = 0; roleIndex < scores.length; roleIndex++) {
+					if(scores[roleIndex] > max) {
+						max = scores[roleIndex];
+						bestIndices.clear();
+						bestIndices.add(roleIndex);
+					}else if(scores[roleIndex] == max){
+						bestIndices.add(roleIndex);
+					}
+				}
+				if(bestIndices.size() == 0) {
+					GamerLogger.logError("MctsManager", "Found no best score when computing rescaled wins for a SimulationResult.");
+					throw new RuntimeException("MctsManager - Found no best score when computing rescaled wins for a SimulationResult.");
+				}
+				// Wins is already initialized to all 0s, so we just change the wins for the bestIndices
+				double split100Points = 100.0/((double)bestIndices.size());
+				for(Integer roleIndex : bestIndices) {
+					wins[roleIndex] = split100Points;
+				}
+			}
+			return wins;
+		}else {
+			GamerLogger.logError("MctsManager", "Trying to compute rescaled wins for a SimulationResult that has no goals.");
+			throw new RuntimeException("MctsManager - Trying to compute rescaled wins for a SimulationResult that has no goals.");
+		}
 	}
 
 }

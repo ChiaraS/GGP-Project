@@ -85,7 +85,11 @@ public class GibbsAdaptivePlayoutMoveSelector extends AdaptivePlayoutMoveSelecto
 		try{
 			distribution = new EnumeratedDistribution<Integer>(probabilities);
 		}catch(Exception e){
-			GamerLogger.logError("MoveSelector", "AdaptivePlayoutMoveSelector - Found non-positive sum of exponentials when adapting the playout policy!");
+			for(Pair<Integer,Double> p : probabilities){
+				System.out.println("[ " + p.getFirst() + ", " + p.getSecond() + "]");
+			}
+			this.ppaWeights.printPpaWeights();
+			GamerLogger.logError("MoveSelector", "AdaptivePlayoutMoveSelector - Error creating probability distribution when selecting a move in the playout!");
 			throw new RuntimeException(e);
 		}
 
