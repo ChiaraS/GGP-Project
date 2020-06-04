@@ -133,14 +133,14 @@ public class GamerConfiguration {
 		}else if(runningOnLinux()){
 
 			// GoGeneral + Go4Nature
-			defaultLocalGameRepositoryFolderPath = "/home/csironi/GAMEREPOS";
-			gamersSettingsFolderPath = "/home/csironi/GamersSettings";
-			defaultLocalFolderGameRepositoryFolderPath = "/home/csironi/GDLFolder";
+			//defaultLocalGameRepositoryFolderPath = "/home/csironi/GAMEREPOS";
+			//gamersSettingsFolderPath = "/home/csironi/GamersSettings";
+			//defaultLocalFolderGameRepositoryFolderPath = "/home/csironi/GDLFolder";
 
 			// Aachen
-			//defaultLocalGameRepositoryFolderPath = "/home/ni348364/CHIARA/GAMEREPOS";
-			//gamersSettingsFolderPath = "/home/ni348364/CHIARA/GamersSettings";
-			//defaultLocalFolderGameRepositoryFolderPath = "/home/ni348364/CHIARA/GDLFolder";
+			defaultLocalGameRepositoryFolderPath = "/home/cs692591/GAMEREPOS";
+			gamersSettingsFolderPath = "/home/cs692591/GamersSettings";
+			defaultLocalFolderGameRepositoryFolderPath = "/home/cs692591/GDLFolder";
 
 
 

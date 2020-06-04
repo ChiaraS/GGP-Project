@@ -18,6 +18,25 @@ public class AdaptivePlayoutAfterSimulation extends AfterSimulationStrategy {
 	// Parameter that decides how much the weight changes
 	private double alpha;
 
+	// THIS PARAMETER HAS AN EFFECT ONLY WHEN WEIGHTS CAN HAVE A NEGATIVE UPDATE FOR THE
+	// MOVES PLAYED IN THE SIMULATION (i.e. for the following types of updates: RESCALED_SCORES,
+	// RESCALED_WINS, SINGLE_WINNER_AND_LOSERS, ALL_WINNERS_AND_LOSERS, PROPORTIONAL_SINGLE_WINNER_AND_LOSERS,
+	// PROPORTIONAL_ALL_WINNERS_AND_LOSERS, LOSERS_WITH_SINGLE_WINNER, LOSERS_WITH_ALL_WINNERS
+	// Parameter that decides how much the weight changes when the roles is losing.
+	// Can be specified as equal to alpha, when the update of weights is performed only
+	// for the winner.
+	// When updating the weights for the losing player, some weights might explode in value
+	// over time. This parameter can be used to keep those values in check.
+	private double alphaLoss;
+
+	// THIS PARAMETER HAS AN EFFECT ONLY WHEN WEIGHTS CAN AVE A NEGATIVE UPDATE FOR THE
+	// MOVES PLAYED IN THE SIMULATION (i.e. for the following types of updates: RESCALED_SCORES,
+	// RESCALED_WINS, SINGLE_WINNER_AND_LOSERS, ALL_WINNERS_AND_LOSERS, PROPORTIONAL_SINGLE_WINNER_AND_LOSERS,
+	// PROPORTIONAL_ALL_WINNERS_AND_LOSERS, LOSERS_WITH_SINGLE_WINNER, LOSERS_WITH_ALL_WINNERS
+	// If true, when updating weights for a loss (i.e. with a negative update) the update formulas
+	// are inverted for the played move and the non-played moves in a state.
+	private boolean invert;
+
 	/**
 	 * This parameter decides how much alpha is discounted for each state starting
 	 * from the leaf to the root of the current simulation.
@@ -43,6 +62,10 @@ public class AdaptivePlayoutAfterSimulation extends AfterSimulationStrategy {
 
 		this.alpha = gamerSettings.getDoublePropertyValue("AfterSimulationStrategy.alpha");
 
+		this.alphaLoss = gamerSettings.getDoublePropertyValue("AfterSimulationStrategy.alphaLoss");
+
+		this.invert = gamerSettings.getBooleanPropertyValue("AfterSimulationStrategy.invert");
+
 		this.alphaDiscount = gamerSettings.getDoublePropertyValue("AfterSimulationStrategy.alphaDiscount");
 
 		//if(gamerSettings.specifiesProperty("AfterSimulationStrategy.updateType")){
@@ -60,7 +83,7 @@ public class AdaptivePlayoutAfterSimulation extends AfterSimulationStrategy {
 				case "rescaled_wins":
 					this.updateType = PLAYOUT_STAT_UPDATE_TYPE.RESCALED_WINS;
 					break;
-				case "single_winner":
+				case "single_winner": case "winner_only":
 					this.updateType = PLAYOUT_STAT_UPDATE_TYPE.SINGLE_WINNER;
 					break;
 				case "all_winners":
@@ -236,20 +259,29 @@ public class AdaptivePlayoutAfterSimulation extends AfterSimulationStrategy {
 			}
 
 			double discountedAlpha = this.alpha;
+			double discountedAlphaLoss = this.alphaLoss;
 
 			for(int i = allMovesInAllStates.size()-1; i >= 0; i--){
 
+				//System.out.println();
+
 				for(int roleIndex = 0; roleIndex < updateFactors.length; roleIndex++){
+
+					//System.out.println("Role = " + roleIndex);
 
 					if(updateFactors[roleIndex] != 0){
 		    			List<Move> legalMovesForRole = allMovesInAllStates.get(i).get(roleIndex);
 		    			Move roleMove = allJointMoves.get(i).get(roleIndex);
-		    			this.ppaWeights.adaptPolicyForRole(roleIndex, legalMovesForRole, roleMove, updateFactors[roleIndex], discountedAlpha, this.gameDependentParameters.getTotIterations());
+		    			this.ppaWeights.adaptPolicyForRole(roleIndex, legalMovesForRole,
+		    					roleMove, updateFactors[roleIndex], this.invert, discountedAlpha,
+		    					discountedAlphaLoss, this.gameDependentParameters.getTotIterations(),
+		    					this.gameDependentParameters.getTheMachine());
 					}
 
 	    		}
 
 				discountedAlpha *= this.alphaDiscount;
+				discountedAlphaLoss *= this.alphaDiscount;
 
 			}
 
@@ -261,6 +293,8 @@ public class AdaptivePlayoutAfterSimulation extends AfterSimulationStrategy {
 	public String getComponentParameters(String indentation) {
 
 		String params = indentation + "ALPHA = " + this.alpha +
+				indentation + "ALPHA_LOSS = " + this.alphaLoss +
+				indentation + "INVERT = " + this.invert +
 				indentation + "ALPHA_DISCOUNT = " + this.alphaDiscount +
 				indentation + "UPDATE_TYPE = " + this.updateType;
 

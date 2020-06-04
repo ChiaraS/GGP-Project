@@ -76,7 +76,7 @@ public class GibbsAdaptivePlayoutMoveSelector extends AdaptivePlayoutMoveSelecto
 		EnumeratedDistribution<Integer> distribution;
 		List<Pair<Integer,Double>> probabilities;
 
-		probabilities = this.ppaWeights.getPlayoutProbabilities(roleIndex, moves, this.ppaTemperature);
+		probabilities = this.ppaWeights.getPlayoutProbabilities(roleIndex, moves, this.ppaTemperature, this.gameDependentParameters.getTheMachine());
 
 		if(probabilities == null){ // If all weights are 0 and thus probabilities are null, return random move
 			return moves.get(this.getRandom().nextInt(moves.size()));
@@ -85,10 +85,10 @@ public class GibbsAdaptivePlayoutMoveSelector extends AdaptivePlayoutMoveSelecto
 		try{
 			distribution = new EnumeratedDistribution<Integer>(probabilities);
 		}catch(Exception e){
-			for(Pair<Integer,Double> p : probabilities){
-				System.out.println("[ " + p.getFirst() + ", " + p.getSecond() + "]");
-			}
-			this.ppaWeights.printPpaWeights();
+			//for(Pair<Integer,Double> p : probabilities){
+			//	System.out.println("[ " + p.getFirst() + ", " + p.getSecond() + "]");
+			//}
+			//this.ppaWeights.printPpaWeights(this.gameDependentParameters.getTheMachine());
 			GamerLogger.logError("MoveSelector", "AdaptivePlayoutMoveSelector - Error creating probability distribution when selecting a move in the playout!");
 			throw new RuntimeException(e);
 		}

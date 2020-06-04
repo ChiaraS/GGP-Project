@@ -2,6 +2,12 @@ package org.ggp.base.player.gamer.statemachine.MCTS.manager.structures;
 
 public class PpaInfo {
 
+	// FOR DEBUGGING
+
+	//private List<Double> updates;
+
+	/////////////////////////
+
 	private double weight;
 
 	private double exp;
@@ -36,6 +42,10 @@ public class PpaInfo {
 		this.consistent = consistent;
 		this.lastWeightUpdateIteration = updateIteration;
 		this.visits = 0;
+
+
+		//this.updates = new ArrayList<Double>();
+
 	}
 
 	public double getWeight() {
@@ -47,7 +57,8 @@ public class PpaInfo {
 	//}
 
 	public double getExp() {
-		return exp;
+		//System.out.println(this.exp);
+		return this.exp;
 	}
 
 	//public void setExp(double exp) {
@@ -75,6 +86,15 @@ public class PpaInfo {
 	//}
 
 	public void updateExp(){
+
+		//if(Math.exp(this.weight) == Double.NaN ||
+			//	Math.exp(this.weight) == Double.POSITIVE_INFINITY){
+			//System.out.println("Illegal exponential detected!");
+			//System.out.println("Old weight = " + this.weight);
+			//System.out.println("Old exponential = " + this.exp);
+			//System.out.println("New exponnetial = " + (Math.exp(this.weight)));
+		//}
+
 		this.exp = Math.exp(this.weight);
 		this.consistent = true;
 	}
@@ -82,6 +102,23 @@ public class PpaInfo {
 	// Assume that the weight is incremented only once every time a move is visited, therefore
 	// every time the weight is incremented we increase the number of visits.
 	public void incrementWeight(int incrementIteration, double increment){
+
+		//System.out.println("Given increment;" + increment);
+
+		//System.out.print(increment + " ");
+
+		//this.updates.add(increment);
+
+/*
+		if((this.weight + increment) == Double.NaN ||
+				(this.weight + increment) == Double.POSITIVE_INFINITY ||
+				(this.weight + increment) == Double.NEGATIVE_INFINITY ){
+			System.out.println("Illegal weight detected!");
+			System.out.println("Old weight = " + this.weight);
+			System.out.println("Increment = " + increment);
+			System.out.println("New weight = " + (this.weight + increment));
+		}
+*/
 		this.weight += increment;
 		this.lastWeightUpdateIteration = incrementIteration;
 		this.consistent = false;
@@ -169,4 +206,17 @@ public class PpaInfo {
 		return "WEIGHT=;" + this.weight + ";EXP=;" + this.exp + ";VISITS=;" + this.visits + ";CONSISTENT=;" + this.consistent +
 				";LAST_WEIGHT_UPDATE_ITERATION=;" + this.lastWeightUpdateIteration + ";";
 	}
+
+
+	/*public String printUpdates(){
+		String s = "[ ";
+		for(Double d : this.updates){
+			s += d + " ";
+		}
+		s += "]";
+
+		return s;
+	}*/
+
 }
+
