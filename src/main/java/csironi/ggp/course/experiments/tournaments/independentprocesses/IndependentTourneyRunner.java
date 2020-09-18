@@ -481,9 +481,15 @@ public class IndependentTourneyRunner {
 		// Create the settings for the process
 		List<String> theSettings = new ArrayList<String>();
 
-		theSettings.add("java");
+		// Remeber to change this when the number of settings in the list changes
+		int runNumberIndex = 5;
+
+		//theSettings.add("java");
 		//theSettings.add("/usr/java/jdk1.8.0_131/bin/java"); // To use old java version on go4nature
-		//theSettings.add("-Xmx:25g");
+		theSettings.add("/usr/java/jdk1.8.0_191-amd64/bin/java"); // To use old java version 8 on goGeneral
+		//theSettings.add("-Xms4096M");
+		//theSettings.add("-Xmx4096M");
+		//theSettings.add("-XX:+HeapDumpOnOutOfMemoryError");
 		theSettings.add("-jar");
 		theSettings.add("IndependentSingleMatchRunner.jar");
 		theSettings.add(ThreadContext.get("LOG_FOLDER"));
@@ -497,7 +503,7 @@ public class IndependentTourneyRunner {
 		theSettings.add("" + unlimitedTimeForExternal);
 
 		for(int i = (runNumber*numMatchRunners); i < ((runNumber+1)*numMatchRunners); i++){
-			theSettings.set(5, ""+i);
+			theSettings.set(runNumberIndex, ""+i);
 			// If the folder of the match already exists, do not run the match
 			// Addition to continue experiment that was interrupted while in progress.
 			// If the match folder already exists, do not run anything. Run only if the

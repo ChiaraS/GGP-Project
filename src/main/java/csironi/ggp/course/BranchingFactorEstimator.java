@@ -31,12 +31,12 @@ public class BranchingFactorEstimator {
 		String[] gameKeys = args[0].split(";");
 
 		for(String key : gameKeys){
-			computeBranchingFactorForGame(key);
+			computeBranchingFactorAndDepthAndWinsForGame(key);
 		}
 
 	}
 
-	public static void computeBranchingFactorForGame(String gameKey){
+	public static void computeBranchingFactorAndDepthAndWinsForGame(String gameKey){
 
 		// Get game description
 
@@ -95,6 +95,10 @@ public class BranchingFactorEstimator {
 				}
 				double visitedStates = 0;
 
+				double numSimulations = 0;
+				double depthSum = 0;
+				double[] goalSums = new double[abstractStateMachine.getRoles().size()];
+
 				int maxDepth = 500;
 
 				while(System.currentTimeMillis() < timeout) {
@@ -150,6 +154,15 @@ public class BranchingFactorEstimator {
 
 				     }while(nDepth < maxDepth && !terminal);
 
+				    depthSum += nDepth;
+				    numSimulations++;
+
+				    double[] goals = abstractStateMachine.getSafeGoalsAvgForAllRoles(currentState);
+
+				    for(int roleIndex = 0; roleIndex < goals.length; roleIndex++){
+				    	goalSums[roleIndex] +=goals[roleIndex];
+				    }
+
 				}
 
 				System.out.println("Visited states = " + visitedStates);
@@ -158,6 +171,15 @@ public class BranchingFactorEstimator {
 				int i = 0;
 				for(Role r : abstractStateMachine.getRoles()){
 					System.out.println("    " + abstractStateMachine.convertToExplicitRole(r) + " = " + branchesPerRole[i]/visitedStates);
+					i++;
+				}
+
+				System.out.println("Average depth = " + depthSum/numSimulations);
+
+				System.out.println("Average goals per role:");
+				i = 0;
+				for(Role r : abstractStateMachine.getRoles()){
+					System.out.println("    " + abstractStateMachine.convertToExplicitRole(r) + " = " + goalSums[i]/numSimulations);
 					i++;
 				}
 
