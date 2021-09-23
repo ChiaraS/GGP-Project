@@ -1,6 +1,13 @@
 package org.ggp.base.player.gamer.statemachine.MCTS.manager.hybrid;
 
+import java.util.List;
+
 import org.ggp.base.util.statemachine.abstractsm.AbstractStateMachine;
+import org.ggp.base.util.statemachine.exceptions.MoveDefinitionException;
+import org.ggp.base.util.statemachine.exceptions.StateMachineException;
+import org.ggp.base.util.statemachine.exceptions.TransitionDefinitionException;
+import org.ggp.base.util.statemachine.structure.MachineState;
+import org.ggp.base.util.statemachine.structure.Move;
 
 public class GameDependentParameters {
 
@@ -11,6 +18,8 @@ public class GameDependentParameters {
 	private int numRoles;
 
 	private int myRoleIndex;
+
+	private boolean simultaneousMove;
 
 	/**
 	 * Time available for each game step to perform the search (in milliseconds).
@@ -131,6 +140,10 @@ public class GameDependentParameters {
 		return this.myRoleIndex;
 	}
 
+	public boolean isSimultaneousMove(){
+		return this.simultaneousMove;
+	}
+
 	public long getActualPlayClock(){
 		return this.actualPlayClock;
 	}
@@ -249,6 +262,7 @@ public class GameDependentParameters {
 		this.theMachine = null;
 		this.numRoles = -1;
 		this.myRoleIndex = -1;
+		this.simultaneousMove = false;
 		this.actualPlayClock = -1;
 
 		this.metagame = false;
@@ -270,6 +284,7 @@ public class GameDependentParameters {
 		this.theMachine = theMachine;
 		this.numRoles = numRoles;
 		this.myRoleIndex = myRoleIndex;
+		this.simultaneousMove = this.checkForSimultaneousMoves();
 		this.actualPlayClock = actualPlayClock;
 
 		this.metagame = false;
@@ -301,6 +316,63 @@ public class GameDependentParameters {
 
 	public void resetIterationStatistics(){
 		this.currentIterationVisitedNodes = 0;
+	}
+
+	private boolean checkForSimultaneousMoves(){
+
+		// Consider single-player games as a special case of simultaneous move games
+		// (they should be treated as such when using NST/NPPA, for how it has been set up for now)
+		if(this.numRoles == 1){
+			return true;
+		}
+
+		MachineState state = this.theMachine.getInitialState();
+
+		// If we cannot check if it is a simultaneous move game, we assume it is
+		// to be consistent with how GDL represents games
+		try {
+			if(this.theMachine.isTerminal(state)){
+				return true;
+			}
+		} catch (StateMachineException e1) {
+			return true;
+		}
+
+		for(int repetitions = 0; repetitions < 5; repetitions++){
+			try {
+				List<List<Move>> allMoves = this.theMachine.getAllLegalMovesForAllRoles(state);
+
+				int numRolesThatCanMove = 0;
+
+				for(int i = 0; i < allMoves.size(); i++){
+					if(allMoves.get(i).size() > 1 || !(this.theMachine.convertToExplicitMove(allMoves.get(i).get(0)).equals("noop"))){
+						numRolesThatCanMove++;
+					}
+				}
+				if(numRolesThatCanMove > 1){
+					return true;
+				}
+			} catch (MoveDefinitionException | StateMachineException e) {
+				// Do nothing and just get next state
+			}
+
+			try {
+				state = this.theMachine.getRandomNextState(state);
+			} catch (MoveDefinitionException | TransitionDefinitionException | StateMachineException e) {
+				return true; // If we don't know if it's simultaneous, we treat it like one
+			}
+
+			try {
+				if(this.theMachine.isTerminal(state)){
+					break;
+				}
+			} catch (StateMachineException e1) {
+				break;
+			}
+		}
+
+		return false;
+
 	}
 
 }

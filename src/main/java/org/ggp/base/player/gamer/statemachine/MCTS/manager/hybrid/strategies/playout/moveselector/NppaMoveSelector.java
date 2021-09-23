@@ -143,7 +143,6 @@ public class NppaMoveSelector extends MoveSelector {
 				(this.currentSimulationJointMoves != null ? this.currentSimulationJointMoves.size() + " entries" : "null");
 	}
 
-
 	@Override
 	public Move getMoveForRole(MctsNode node, MachineState state, int roleIndex)
 			throws MoveDefinitionException, StateMachineException {

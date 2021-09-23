@@ -169,6 +169,13 @@ public class SimulationResult{
 		return this.playoutLength;
 	}
 
+	/**
+	 * NOTE: this class keeps the legal moves for all the roles in each visited state in reverse order, thus from last to first visited state.
+	 * Therefore, to return them in the correct order, it creates a copy of the current list, and
+	 * reverses it before returning it.
+	 *
+	 * @return
+	 */
 	public List<List<List<Move>>> getAllLegalMovesOfAllRoles(){
 
 		List<List<List<Move>>> orderedAllLegalMovesOfAllRoles = new ArrayList<List<List<Move>>>(this.allLegalMovesOfAllRoles.size());
@@ -181,6 +188,13 @@ public class SimulationResult{
 
 	}
 
+	/**
+	 * ATTENTION: this class keeps the goals for each intermediate state in the simulation in reverse order, thus from last to first visited state.
+	 * If using this method together with the one that returns intermediate moves or all legal moves in all states, the list of intermediate goals
+	 * must be first reversed to have it in the same order as the moves.
+	 *
+	 * @return
+	 */
 	public List<double[]> getIntermediateGoals(){
 
 		return this.intermediateGoals;

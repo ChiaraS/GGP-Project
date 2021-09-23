@@ -22,7 +22,8 @@ public class NstAfterSimulation extends AfterSimulationStrategy {
 	/**
 	 * ATTENTION: the correct functioning of NST is based on the assumption that
 	 * the roles in the GDL file are specified in the same order in which they
-	 * alternate their turns in sequential-move games;
+	 * alternate their turns in sequential-move games; this is usually the case,
+	 * but should be checked.
 	 */
 	private List<NGramTreeNode<MoveStats>> nstStatistics;
 
@@ -105,6 +106,7 @@ public class NstAfterSimulation extends AfterSimulationStrategy {
 		}
 
 		List<List<Move>> allJointMoves;
+		List<List<List<Move>>> allLegalMovesOfAllRoles;
 
 		for(int resultIndex = 0; resultIndex < simulationResult.length; resultIndex++){
 
@@ -116,6 +118,13 @@ public class NstAfterSimulation extends AfterSimulationStrategy {
 			if(allJointMoves == null || allJointMoves.size() == 0){ // This method should be called only if the playout has actually been performed, so there must be at least one joint move.
 				GamerLogger.logError("AfterSimulationStrategy", "NstAfterSimulation - Found no joint moves in the simulation result when updating the NST statistics. Probably a wrong combination of strategies has been set!");
 				throw new RuntimeException("No joint moves in the simulation result.");
+			}
+
+			allLegalMovesOfAllRoles = simulationResult[resultIndex].getAllLegalMovesOfAllRoles();
+
+			if(allLegalMovesOfAllRoles == null || allLegalMovesOfAllRoles.size() == 0){ // This method should be called only if the playout has actually been performed, so there must be at least one joint move.
+				GamerLogger.logError("AfterSimulationStrategy", "NstAfterSimulation - Found no legal moves for all roles in the simulation result when updating the NST statistics. Probably a wrong combination of strategies has been set!");
+				throw new RuntimeException("No legal moves for all roles in the simulation result.");
 			}
 
 			switch(this.updateType){
@@ -138,7 +147,7 @@ public class NstAfterSimulation extends AfterSimulationStrategy {
 					System.out.println(s);
 					*/
 
-					updateAllRolesForPlayout(allJointMoves, goals);
+					updateAllRolesForPlayout(allJointMoves, allLegalMovesOfAllRoles, goals);
 
 					break;
 
@@ -151,7 +160,7 @@ public class NstAfterSimulation extends AfterSimulationStrategy {
 						throw new RuntimeException("Null rescaled terminal wins in the simulation result.");
 					}
 
-					updateAllRolesForPlayout(allJointMoves, wins);
+					updateAllRolesForPlayout(allJointMoves, allLegalMovesOfAllRoles, wins);
 
 					break;
 
@@ -161,7 +170,7 @@ public class NstAfterSimulation extends AfterSimulationStrategy {
 
 				if(winnerIndex != -1){
 
-					this.updateWinningRoleForPlayout(allJointMoves, winnerIndex);
+					this.updateWinningRoleForPlayout(allJointMoves, allLegalMovesOfAllRoles, winnerIndex);
 
 				}
 
@@ -179,7 +188,7 @@ public class NstAfterSimulation extends AfterSimulationStrategy {
 	 * @param allJointMoves
 	 * @param rewards
 	 */
-	private void updateAllRolesForPlayout(List<List<Move>> allJointMoves, double[] rewards){
+	private void updateAllRolesForPlayout(List<List<Move>> allJointMoves, List<List<List<Move>>> allLegalMovesOfAllRoles, double[] rewards){
 
 		double discount = 1;
 
@@ -187,10 +196,10 @@ public class NstAfterSimulation extends AfterSimulationStrategy {
 		for(int jmIndex = allJointMoves.size()-1; jmIndex >= 0; jmIndex--){
 
 			// For a given joint move in the playout, iterate over all the roles to update all its
-			// n-grams that end with his current move in the joint move.
+			// n-grams that end with its current move in the joint move.
 			for(int roleIndex = 0; roleIndex < this.gameDependentParameters.getNumRoles(); roleIndex++){
 
-				this.updateNGramsForRoleInState(roleIndex, jmIndex, allJointMoves, rewards[roleIndex]*discount);
+				this.updateNGramsForRoleInState(roleIndex, jmIndex, allJointMoves, /*allLegalMovesOfAllRoles,*/ rewards[roleIndex]*discount);
 
 			}
 
@@ -207,7 +216,7 @@ public class NstAfterSimulation extends AfterSimulationStrategy {
 	 * @param allJointMoves
 	 * @param winnerIndex
 	 */
-	private void updateWinningRoleForPlayout(List<List<Move>> allJointMoves, int winnerIndex){
+	private void updateWinningRoleForPlayout(List<List<Move>> allJointMoves, List<List<List<Move>>> allLegalMovesOfAllRoles, int winnerIndex){
 
 		double discountedReward = 100.0;
 
@@ -215,6 +224,7 @@ public class NstAfterSimulation extends AfterSimulationStrategy {
 		for(int jmIndex = allJointMoves.size()-1; jmIndex >= 0; jmIndex--){
 
 			this.updateNGramsForRoleInState(winnerIndex, jmIndex, allJointMoves, discountedReward);
+			//this.updateNGramsForRoleInState(winnerIndex, jmIndex, allJointMoves, discountedReward);
 
 			discountedReward *= this.rewardDiscount;
 
@@ -228,11 +238,11 @@ public class NstAfterSimulation extends AfterSimulationStrategy {
 	 * start with the move performed by the given role in the considered joint move. To do so, the method
 	 * needs the list of all the joint moves and the reward obtained by the role in the simulation.
 	 * This method assumes that maxNGramsLength is at least 1 (i.e. at least one iteration must be performed
-	 * in this method.
+	 * in this method).
 	 *
 	 * @param allJointMoves
 	 */
-	private void updateNGramsForRoleInState(int roleIndex, int jmIndex, List<List<Move>> allJointMoves, double discountedReward){
+	private void updateNGramsForRoleInState(int roleIndex, int jmIndex, List<List<Move>> allJointMoves, /*List<List<List<Move>>> allLegalMovesOfAllRoles,*/ double discountedReward){
 
 		// This variable keeps track of the index of the role for which we are adding a move
 		// to the current n-gram, that ends with the move for roleIndex.
@@ -264,11 +274,13 @@ public class NstAfterSimulation extends AfterSimulationStrategy {
 
 			// 2. Get NST node for the n-gram starting with the current move of the current role.
 			currentNstNodeForNGram = previousNstNodeForNGram.getNextMoveNode(currentNGramMove);
+			//currentNstNodeForNGram = previousNstNodeForNGram.getNextMoveNode(currentRoleIndex, currentNGramMove);
 
 			// 3. If the node doesn't exist, add it
 			if(currentNstNodeForNGram == null){
 				currentNstNodeForNGram = new NGramTreeNode<MoveStats>(new MoveStats());
 				previousNstNodeForNGram.addNextMoveNode(currentNGramMove, currentNstNodeForNGram);
+				//previousNstNodeForNGram.addNextMoveNode(currentRoleIndex, currentNGramMove, currentNstNodeForNGram);
 			}
 
 			// 4. Get the statistic in the node and update them
@@ -276,10 +288,22 @@ public class NstAfterSimulation extends AfterSimulationStrategy {
 			currentNstNodeForNGram.getStatistic().incrementVisits();
 
 			// Update all variables for the next iteration
-			// Go to previous role in the order
-			currentRoleIndex = (currentRoleIndex-1+this.gameDependentParameters.getNumRoles())%this.gameDependentParameters.getNumRoles();
 			// Got to previous joint move
 			currentJmIndex--;
+			// TODO: Go to previous role in the order (this depends on the type of game: if the game is simultaneous move,
+			// the previous player is the previous one in a cyclic order, if it is a sequential move game, the previous player is the only
+			// one that has one move that is not "noop" in the previous joint move. In general, the previous player is identified
+			// as the first preceding player (in a cyclic order) in the previous joint move that did not perform a "noop".
+			// If all players performed noop, then the previous player is the previous one in a cyclic order.
+			// NOTE!!!: this has been checked to work only for the 14 games considered in all papers, but it's not guaranteed for all other games.
+			// Get the previous index
+			//if(this.gameDependentParameters.isSimultaneousMove()){
+				currentRoleIndex = (currentRoleIndex-1+this.gameDependentParameters.getNumRoles())%this.gameDependentParameters.getNumRoles();
+			//}else{
+
+			//}
+			// While its move is "noop" get the pervious index.
+
 			// Increase n-gram length
 			currentNGramLength++;
 			// Update the current n-gram tree node
@@ -287,6 +311,10 @@ public class NstAfterSimulation extends AfterSimulationStrategy {
 
 		}
 
+	}
+
+	private boolean isNoop(Move move){
+		return this.gameDependentParameters.getTheMachine().convertToExplicitMove(move).getContents().toString().equals("noop");
 	}
 
 	@Override

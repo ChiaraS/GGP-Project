@@ -27,13 +27,15 @@ public class NGramTreeNode<E> {
 	private E statistic;
 
 	/**
-	 * All the possible moves that can be added to the n-gram.
+	 * All the possible moves that can be added to the n-gram with their role index.
 	 */
 	private Map<Move,NGramTreeNode<E>> nextMoveNodes;
+	//private Map<MyPair<Integer,Move>,NGramTreeNode<E>> nextMoveNodes;
 
 	public NGramTreeNode(E statistic){
 		this.statistic = statistic;
 		this.nextMoveNodes = new HashMap<Move,NGramTreeNode<E>>();
+		//this.nextMoveNodes = new HashMap<MyPair<Integer,Move>,NGramTreeNode<E>>();
 	}
 
 	public E getStatistic(){
@@ -44,13 +46,25 @@ public class NGramTreeNode<E> {
 		this.nextMoveNodes.put(move, nextMoveNode);
 	}
 
+	//public void addNextMoveNode(int roleIndex, Move move, NGramTreeNode<E> nextMoveNode){
+	//	this.nextMoveNodes.put(new MyPair<Integer,Move>(new Integer(roleIndex),move), nextMoveNode);
+	//}
+
 	public NGramTreeNode<E> getNextMoveNode(Move move){
 		return this.nextMoveNodes.get(move);
 	}
 
+	//public NGramTreeNode<E> getNextMoveNode(int roleIndex, Move move){
+	//	return this.nextMoveNodes.get(new MyPair<Integer,Move>(new Integer(roleIndex),move));
+	//}
+
 	public Map<Move,NGramTreeNode<E>> getNextMoveNodes(){
 		return this.nextMoveNodes;
 	}
+
+	//public Map<MyPair<Integer,Move>,NGramTreeNode<E>> getNextMoveNodes(){
+	//	return this.nextMoveNodes;
+	//}
 
 	public void clear(){
 		this.statistic = null;
