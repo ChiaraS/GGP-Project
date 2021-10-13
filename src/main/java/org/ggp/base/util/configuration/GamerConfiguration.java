@@ -133,9 +133,9 @@ public class GamerConfiguration {
 		}else if(runningOnLinux()){
 
 			// GoGeneral + Go4Nature
-			defaultLocalGameRepositoryFolderPath = "/home/csironi/GAMEREPOS";
-			gamersSettingsFolderPath = "/home/csironi/GamersSettings";
-			defaultLocalFolderGameRepositoryFolderPath = "/home/csironi/GDLFolder";
+			defaultLocalGameRepositoryFolderPath = "/home/csironi/GAMEREPOS"; // Folder with GDL game descriptions
+			gamersSettingsFolderPath = "/home/csironi/GamersSettings"; // Folder with Agent's properties
+			defaultLocalFolderGameRepositoryFolderPath = "/home/csironi/GDLFolder"; // Own games folder
 
 			// Aachen
 			//defaultLocalGameRepositoryFolderPath = "/home/cs692591/GAMEREPOS";
